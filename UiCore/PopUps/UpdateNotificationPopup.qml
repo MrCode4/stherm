@@ -12,11 +12,14 @@ I_PopUp {
 
     /* Property Declaration
      * ****************************************************************************************/
-
+    property bool mandatoryUpdate: false
 
     /* Object properties
      * ****************************************************************************************/
     title: ""
+
+    closeButtonEnabled: !mandatoryUpdate
+    closePolicy: mandatoryUpdate ? Popup.NoAutoClose : (Popup.CloseOnReleaseOutside | Popup.CloseOnEscape)
 
     /* Signals
      * ****************************************************************************************/
@@ -56,6 +59,7 @@ I_PopUp {
             ButtonInverted {
                 id: ignoreButton
 
+                visible: !mandatoryUpdate
                 Layout.fillHeight: true
                 leftPadding: 8
                 rightPadding: 8
@@ -75,6 +79,7 @@ I_PopUp {
                 id: retryButton
 
                 Layout.fillHeight: true
+                Layout.alignment: Qt.AlignRight
                 leftPadding: 8
                 rightPadding: 8
                 text: "Update Now"

@@ -25,6 +25,8 @@ Item {
      * ****************************************************************************************/
     property DeviceController deviceController: parent.deviceController
 
+    property System system: deviceController.deviceControllerCPP.system
+
     //!
     property alias exitConfirmPopup:        exitConfPop
 
@@ -75,6 +77,8 @@ Item {
     UpdateNotificationPopup {
         id: updateNotificationPopup
 
+        mandatoryUpdate: deviceController.mandatoryUpdate
+
         onOpenUpdatePage: {
             root.openPageFromHome("qrc:/Stherm/View/SystemUpdatePage.qml");
         }
@@ -87,7 +91,7 @@ Item {
 
     //! Connections to show installConfirmation popup
     Connections {
-        target: deviceController.deviceControllerCPP.system
+        target: system
 
         function onPartialUpdateReady(isBackdoor : bool, isResetToVersion: bool) {
             if (downloadingPopup.visible)
@@ -121,8 +125,11 @@ Item {
         }
 
         function onNotifyNewUpdateAvailable() {
-            if (deviceController.deviceControllerCPP.system.updateAvailable)
+            if (system.updateAvailable) {
+                deviceController.mandatoryUpdate = deviceController.deviceControllerCPP.system.isInitialSetup();
+
                 updateNotificationPopup.open();
+            }
         }
     }
 

@@ -19,9 +19,14 @@ I_DeviceController {
 
     property int editMode: AppSpec.EMNone
 
-    property bool initalSetup: false;
+    property bool initialSetup: false;
 
-    property var uiSession
+    //! mandatory update
+    //! Set to true when in initial setup exist new update
+    //! more usage in future like force update with permission
+    property bool mandatoryUpdate: false;
+
+    property var  uiSession
 
     //! Night mode brighness when screen saver is off.
     property real nightModeBrightness: -1
@@ -197,7 +202,7 @@ I_DeviceController {
 
     property Timer  settingsLoader: Timer {
         repeat: true;
-        running: !initalSetup;
+        running: !initialSetup;
         interval: 5000;
         onTriggered:
         {
@@ -280,7 +285,9 @@ I_DeviceController {
      * ****************************************************************************************/
 
     function setInitialSetup(init: bool) {
-        initalSetup = init;
+        initialSetup = init;
+        if (init)
+            deviceControllerCPP.system.setIsInitialSetup(init);
     }
 
     function updateEditMode(editMode : int, enable = true) {

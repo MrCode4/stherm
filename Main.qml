@@ -186,7 +186,9 @@ ApplicationWindow {
     //! Popup layout
     PopUpLayout {
         id: popUpLayoutId
+
         anchors.fill: parent
+        mandatoryUpdate: uiSessionId.deviceController.mandatoryUpdate
     }
 
     ShortcutManager {

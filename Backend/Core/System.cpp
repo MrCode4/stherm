@@ -81,6 +81,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mSync(sync),
     mUpdateAvailable (false),
     mHasForceUpdate(false),
+    mIsInitialSetup(false),
     mTestMode(false)
 {
 
@@ -121,10 +122,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     auto oldFormatDate = QDate::fromString(mLastInstalledUpdateDate, "dd/MM/yyyy");
     if (oldFormatDate.isValid())
         mLastInstalledUpdateDate = oldFormatDate.toString("dd MMM yyyy");
-
-    QTimer::singleShot(2000, this, [=]() {
-        checkPartialUpdate(true);
-    });
 
     connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::onSnReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
@@ -460,7 +457,9 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 
     mUpdateTimer.start();
 
-    getUpdateInformation(true);
+    // When is initial setup do not update Information!
+    if (!mIsInitialSetup)
+        getUpdateInformation(true);
 
     getBackdoorInformation();
 }
@@ -565,6 +564,16 @@ bool NUVE::System::testMode() {
 
 bool NUVE::System::isManualMode() {
     return mStartedWithManualUpdate;
+}
+
+bool NUVE::System::isInitialSetup()
+{
+    return mIsInitialSetup;
+}
+
+void NUVE::System::setIsInitialSetup(bool isInitailSetup)
+{
+    mIsInitialSetup = isInitailSetup;
 }
 
 bool NUVE::System::updateSequenceOnStart()
@@ -1106,12 +1115,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     auto currentVersion = qApp->applicationVersion();
 
 
-    // Compare versions lexicographically
-    // installableVersionKey > currentVersion
-    if (isVersionNewer(installableVersionKey, currentVersion)) {
-        setUpdateAvailable(true);
-        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
-    }
 
     auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
     auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
@@ -1131,10 +1134,19 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
             mLastInstalledUpdateDate = mLatestVersionDate;
 
         emit latestVersionChanged();
+    }
+
+    // Compare versions lexicographically
+    // installableVersionKey > currentVersion
+    if (isVersionNewer(installableVersionKey, currentVersion)) {
+        setUpdateAvailable(true);
+        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
 
         if (notifyUser  && !mIsManualUpdate)
             emit notifyNewUpdateAvailable();
     }
+
+    setIsInitialSetup(false);
 
     // Check all logs
     updateLog(mUpdateJsonObject);

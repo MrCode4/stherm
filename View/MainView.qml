@@ -69,7 +69,9 @@ Item {
 
         function onShowHome()
         {
-            _mainStackView.pop(null) //! Pop all items except the first one which is _mainViewSw
+            //! Avoid to close the SystemUpdatePage force update mode
+            if (!uiSession.deviceController.mandatoryUpdate || !(_mainStackView.currentItem instanceof SystemUpdatePage))
+                _mainStackView.pop(null) //! Pop all items except the first one which is _mainViewSw
 
             //! Close all popups too.
             uiSession.popupLayout.closeAllPopups();

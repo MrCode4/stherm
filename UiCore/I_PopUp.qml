@@ -36,6 +36,8 @@ Popup {
     //! Popup content item
     default property list<QtObject>     contents
 
+    property bool closeButtonEnabled: true
+
     /* Object Properties
      * ****************************************************************************************/
     anchors.centerIn: T.Overlay.overlay ?? parent
@@ -83,6 +85,7 @@ Popup {
 
             ToolButton {
                 Layout.rightMargin: -_popup.rightPadding + 4
+                visible: closeButtonEnabled
                 contentItem: RoniaTextIcon {
                     font.pointSize: Application.font.pointSize * 1.2
                     text: FAIcons.xmark

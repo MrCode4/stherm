@@ -30,7 +30,6 @@ BasePageView {
 
     Component.onDestruction: {
         if (initialSetup) {
-            deviceController.setInitialSetup(false);
             deviceController.pushSettings();
         }
     }
