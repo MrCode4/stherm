@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Universal
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * RoniaNumberEditor allows users to enter integer and float numbers direcly, or by draging the mouse

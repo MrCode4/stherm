@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import QTemplateProject
+import Stherm
 import Qt.labs.platform
 
 /*! ***********************************************************************************************

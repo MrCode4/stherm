@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * Switch (2/3 way)

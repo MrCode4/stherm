@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * About Window
@@ -26,7 +26,7 @@ I_PopUp {
     //! Logo
     Image {
         id: logoImage
-//        source: "qrc:/QTemplateProject/Images/Logo.png"
+//        source: "qrc:/Stherm/Images/Logo.png"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.rightMargin: 30

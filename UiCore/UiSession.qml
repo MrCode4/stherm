@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import Qt.labs.platform
 
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * The UiSession contains all information required by graphical components to display the right

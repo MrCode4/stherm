@@ -1,5 +1,5 @@
 import QtQuick
-import QTemplateProject
+import Stherm
 import QtQuickStream
 
 /*! ***********************************************************************************************

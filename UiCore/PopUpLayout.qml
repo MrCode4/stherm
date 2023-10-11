@@ -1,6 +1,6 @@
 import QtQuick 2.0
 
-import QTemplateProject
+import Stherm
 /*! ***********************************************************************************************
  * The PopUpLayout listens to the UiSession and shows any popups that might be pending. We use a
  * queued (first-in-first-out) approach.

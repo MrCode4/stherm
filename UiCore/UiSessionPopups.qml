@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * UiSessionPopups is a helper class to contain all the popups that can be called throughout the
@@ -10,7 +10,7 @@ import QTemplateProject
  * same popup, which should improve performance, and, most of all, warrant consistency.
  *
  * \todo The current implementation is limited/questionable as uiSession cannot be passed to the
- *       popups. In reality, the popups belog the the QTemplateProject, not to the session, and should be
+ *       popups. In reality, the popups belog the the Stherm, not to the session, and should be
  *       moved there. The question then remains how the communication should work.
  *
  * \todo A better API could allow any class to call uiSession.popUps.xyz.show(), or to simply call

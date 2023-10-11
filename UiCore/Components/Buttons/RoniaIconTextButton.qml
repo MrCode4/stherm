@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * RIGIconTextButton provides a standard button with icon and text.

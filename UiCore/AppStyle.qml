@@ -2,7 +2,7 @@
 
 import QtQml 2.11
 import QtQuick 2.11
-import QTemplateProject
+import Stherm
 
 QtObject {
     readonly property string primaryColor:          "#ff6446"

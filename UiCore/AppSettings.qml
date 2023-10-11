@@ -1,7 +1,7 @@
 pragma Singleton
 
 import QtQuick
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * This class extends AppSettingsCPP and is responsible for saving/loading

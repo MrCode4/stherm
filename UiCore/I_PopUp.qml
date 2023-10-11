@@ -1,6 +1,6 @@
 import QtQuick
 
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * The I_PopUp is the interface/base class that should be extended by notification popups.

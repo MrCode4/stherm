@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * The RIGIconButton is button with a icon as contentItem. The reason that the textIcon is not used

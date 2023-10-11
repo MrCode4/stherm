@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import QTemplateProject
+import Stherm
 
 Item {
     id: control

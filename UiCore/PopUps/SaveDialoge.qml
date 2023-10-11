@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Dialogs
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * Save Dialoge

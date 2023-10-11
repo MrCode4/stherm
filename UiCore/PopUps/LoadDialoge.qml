@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Dialogs
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * Load Dialoge
@@ -14,7 +14,7 @@ FileDialog {
     nameFilters: [ "QtQuickStream Files (*.json)" ]
 
     onAccepted: {
-        AppCore.defaultRepo._localImports =  [ "QTemplateProject"]
+        AppCore.defaultRepo._localImports =  [ "Stherm"]
 
         // Correct file extention and pass to currect file
         uiSession.currentFile = loadDialog.currentFile;

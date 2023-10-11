@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QTemplateProject
+import Stherm
 
 /*! ***********************************************************************************************
  * The central widget of the application top level gui.

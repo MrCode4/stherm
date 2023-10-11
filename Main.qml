@@ -3,7 +3,8 @@ import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
-import QTemplateProject
+
+import Stherm
 
 
 /*! ***********************************************************************************************
@@ -39,11 +40,11 @@ ApplicationWindow {
 
     /* Fonts
      * ****************************************************************************************/
-    FontLoader { source: "qrc:/QTemplateProject/Fonts/Font Awesome 6 Pro-Thin-100.otf" }
-    FontLoader { source: "qrc:/QTemplateProject/Fonts/Font Awesome 6 Pro-Solid-900.otf" }
-    FontLoader { source: "qrc:/QTemplateProject/Fonts/Font Awesome 6 Pro-Regular-400.otf" }
-    FontLoader { source: "qrc:/QTemplateProject/Fonts/Font Awesome 6 Pro-Light-300.otf" }
-    FontLoader { source: "qrc:/QTemplateProject/Fonts/RobotoMono-Regular.ttf" }
+    FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Thin-100.otf" }
+    FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Solid-900.otf" }
+    FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Regular-400.otf" }
+    FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Light-300.otf" }
+    FontLoader { source: "qrc:/Stherm/Fonts/RobotoMono-Regular.ttf" }
 
 
     /* Style

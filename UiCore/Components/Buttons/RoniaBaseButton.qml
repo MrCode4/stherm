@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Controls
-import QTemplateProject
+import Stherm
 
 /*! ************************************************************************************************
  * The RoniaBaseButton class is used to add some additional functionality to all the buttons. To do this

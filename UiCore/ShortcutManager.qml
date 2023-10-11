@@ -1,6 +1,6 @@
 import QtQuick 2.11
 import QtQuick.Dialogs
-import QTemplateProject
+import Stherm
 
 Item {
     /* Property Declarations

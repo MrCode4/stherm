@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(QTemplateProject VERSION 0.1 LANGUAGES CXX)
+project(Stherm VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -41,13 +41,13 @@ set_source_files_properties(
 # Project Files
 # ##################################################################################################
 # Executable Definition
-qt_add_executable(appQTemplateProject
+qt_add_executable(appStherm
     main.cpp
 )
 
 # Project Files
-qt6_add_qml_module(appQTemplateProject
-    URI QTemplateProject
+qt6_add_qml_module(appStherm
+    URI Stherm
     VERSION 1.0
     QML_FILES
         Main.qml
@@ -123,21 +123,21 @@ qt6_add_qml_module(appQTemplateProject
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
-set_target_properties(appQTemplateProject PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appQTemplateProject
+set_target_properties(appStherm PROPERTIES
+#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appStherm
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
 
-target_link_libraries(appQTemplateProject
+target_link_libraries(appStherm
     PRIVATE Qt6::Quick Qt6::QuickControls2
     QtQuickStreamplugin
 )
 
 include(GNUInstallDirs)
-install(TARGETS appQTemplateProject
+install(TARGETS appStherm
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

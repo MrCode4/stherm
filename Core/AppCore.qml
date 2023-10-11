@@ -16,7 +16,7 @@ QSCore {
     }
 
     property QtObject _internal: QtObject {
-        readonly property var imports: [ "QtQuickStream", "QTemplateProject"]
+        readonly property var imports: [ "QtQuickStream", "Stherm"]
     }
 
     /* Object Properties

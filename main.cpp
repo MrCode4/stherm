@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     QQuickStyle::setStyle("Material");
 
     engine.addImportPath(":/");
-    const QUrl url(u"qrc:/QTemplateProject/Main.qml"_qs);
+    const QUrl url(u"qrc:/Stherm/Main.qml"_qs);
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
         &app, []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
