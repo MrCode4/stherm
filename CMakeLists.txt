@@ -60,7 +60,13 @@ qt6_add_qml_module(appStherm
         Core/I_Device.qml
         Core/Device.qml
         Core/SimDevice.qml
-        Core/SelectionModel.qml
+        Core/Wifi.qml
+        Core/WifiController.qml
+        Core/Fan.qml
+        Core/Backlight.qml
+        Core/WifiDevice.qml
+        Core/DeviceController.qml
+        Core/SimDeviceController.qml
 
 
         # Primitive Components
@@ -121,11 +127,6 @@ qt6_add_qml_module(appStherm
         Fonts/Font\ Awesome\ 6\ Pro-Regular-400.otf
         Fonts/Font\ Awesome\ 6\ Pro-Light-300.otf
         Fonts/RobotoMono-Regular.ttf
-        QML_FILES Core/Wifi.qml
-        QML_FILES Core/WifiController.qml
-        QML_FILES Core/Fan.qml
-        QML_FILES Core/Backlight.qml
-        QML_FILES Core/WifiDevice.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

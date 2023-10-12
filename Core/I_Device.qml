@@ -10,15 +10,19 @@ QSObject {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property real requestedTemp: 0.0
+    property real       requestedTemp:  0.0
 
-    property real currentTemp: 0.0
+    property real       currentTemp:    0.0
 
-    property real requestedHum: 0.0
+    property real       requestedHum:   0.0
 
-    property real currentHum: 0.0
+    property real       currentHum:     0.0
 
-    property Backlight backlight: Backlight {}
+    property Backlight  backlight:      Backlight {}
+
+    property Wifi       wifi:           Wifi {}
+
+    property Fan        fan:            Fan {}
 
     /* Functions
      * ****************************************************************************************/

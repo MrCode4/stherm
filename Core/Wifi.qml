@@ -7,4 +7,7 @@ import Stherm
  * ************************************************************************************************/
 QSObject {
 
+    //! Array of wifi devices
+    //! Array<WifiDevice>
+    property var devices: []
 }
