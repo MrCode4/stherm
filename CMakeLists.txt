@@ -115,6 +115,8 @@ qt6_add_qml_module(appStherm
 
         # Widgets
         View/MainView.qml
+        View/NexgenIcon.qml
+        View/ScreenSaver.qml
 
     SOURCES
         Backend/AppSpecCPP.h
