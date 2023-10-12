@@ -67,6 +67,7 @@ qt6_add_qml_module(appStherm
         Core/WifiDevice.qml
         Core/DeviceController.qml
         Core/SimDeviceController.qml
+        Core/I_DeviceController.qml
 
 
         # Primitive Components

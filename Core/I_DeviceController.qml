@@ -1,19 +1,32 @@
 import QtQuick
-import Stherm
 
 /*! ***********************************************************************************************
  * Device Controller
- *
  * ************************************************************************************************/
-I_DeviceController {
+Item {
 
     /* Property Declarations
      * ****************************************************************************************/
+    required property I_Device device
+
 
     /* Object Properties
      * ****************************************************************************************/
 
-    /* Children
+    Connections {
+        target: device
+
+        function onRequestedTempChanged() {
+            // send request (in this case it's simulation only)
+        }
+
+        function onRequestedHumChanged() {
+            // send request (in this case it's simulation only)
+        }
+    }
+
+
+    /* Functions
      * ****************************************************************************************/
 
 }

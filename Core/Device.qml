@@ -7,10 +7,15 @@ import Stherm
  * \todo Some of the implemented functions should be moved to a controller
  * ************************************************************************************************/
 I_Device {
+    id: device
 
     /* Property Declarations
      * ****************************************************************************************/
+    property DeviceController _controller: DeviceController {
+        device: device
+    }
 
-
-    //! Logger Object
+    /* Object Properties
+     * ****************************************************************************************/
+    type: AppSpec.DeviceType.DT_IMX6
 }
