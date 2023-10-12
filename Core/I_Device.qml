@@ -10,13 +10,15 @@ QSObject {
 
     /* Property Declarations
      * ****************************************************************************************/
+    property real requestedTemp: 0.0
 
-    //! Selection Model
-    property SelectionModel selectionModel: SelectionModel {}
+    property real currentTemp: 0.0
 
-    //! Adding a sample device
-    Component.onCompleted: {
-    }
+    property real requestedHum: 0.0
+
+    property real currentHum: 0.0
+
+    property Backlight backlight: Backlight {}
 
     /* Functions
      * ****************************************************************************************/
