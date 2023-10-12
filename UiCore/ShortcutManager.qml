@@ -8,7 +8,7 @@ Item {
 
     property UiSession uiSession
 
-    property I_Model   appModel:     uiSession.appModel
+    property I_Device   appModel:     uiSession.appModel
 
     //! Save a project
     Shortcut {

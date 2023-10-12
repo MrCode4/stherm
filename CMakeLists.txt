@@ -6,9 +6,11 @@ cmake_minimum_required(VERSION 3.16)
 project(Stherm VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 opengl Multimedia Concurrent)
 
 qt_standard_project_setup()
 
@@ -55,8 +57,9 @@ qt6_add_qml_module(appStherm
         # Core
         Core/AppCore.qml
         Core/AppSpec.qml
-        Core/RootModel.qml
-        Core/I_Model.qml
+        Core/I_Device.qml
+        Core/Device.qml
+        Core/SimDevice.qml
         Core/SelectionModel.qml
 
 
@@ -132,7 +135,15 @@ set_target_properties(appStherm PROPERTIES
 )
 
 target_link_libraries(appStherm
-    PRIVATE Qt6::Quick Qt6::QuickControls2
+    PRIVATE
+    Qt6::Quick
+    Qt6::Qml
+    Qt6::Gui
+    Qt6::Core
+    Qt6::QuickControls2
+    Qt6::Multimedia
+    Qt6::OpenGL
+    Qt6::Concurrent
     QtQuickStreamplugin
 )
 

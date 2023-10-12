@@ -46,7 +46,7 @@ QtObject {
     property UiPreferences      uiPreferences:  UiPreferences {}
 
     //! app core
-    property I_Model            appModel:        AppCore.model
+    property I_Device            appModel:        AppCore.model
 
     //! Path of File to save model.
     property string             currentFile:    ""

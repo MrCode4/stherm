@@ -11,7 +11,7 @@ QSCore {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property I_Model model: RootModel {
+    property I_Device model: Device {
         _qsRepo: defaultRepo
     }
 
