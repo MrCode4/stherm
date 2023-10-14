@@ -121,6 +121,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/FanButton.qml
         UiCore/Components/HumidityLabel.qml
         UiCore/Components/HoldButton.qml
+        UiCore/Components/WifiButton.qml
 
         # Widgets
         View/MainView.qml
@@ -149,6 +150,7 @@ qt6_add_qml_module(appStherm
         Images/fan-off.png
         Images/fan-on.png
         Images/water.png
+        Images/Wifi/disconnected.svg
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
