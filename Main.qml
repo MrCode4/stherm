@@ -24,14 +24,11 @@ ApplicationWindow {
 
     /* Object Properties
      * ****************************************************************************************/
-    width: 1024
-    height: 768
+    width: 480
+    height: 480
     visible: true
 //    visibility: uiSession.uiPreferences.windowMode
     title: qsTr("Template" + "               " + currentFile)
-    background: Rectangle {
-        color: AppStyle.primaryDarkGrey
-    }
 
     //! Create defualt repo and root object to save and load
     Component.onCompleted: {
