@@ -17,6 +17,9 @@ Popup {
     //! reading temprature from that model
     property int        temprature: 72
 
+    //! Unit
+    property string     unit:       "F"
+
     /* Object properties
      * ****************************************************************************************/
     implicitHeight: 480
@@ -38,6 +41,21 @@ Popup {
             Layout.alignment: Qt.AlignCenter
             font.pointSize: 80
             text: temprature
+
+            Label {
+                anchors {
+                    left: parent.right
+                    top: parent.top
+                    topMargin: 20
+                }
+
+                opacity: 0.6
+                font {
+                    pixelSize: 40
+                    capitalization: "AllUppercase"
+                }
+                text: `\u00b0${unit}`
+            }
         }
 
         //! Mode button

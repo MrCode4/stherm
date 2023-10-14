@@ -5,7 +5,6 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import Stherm
-import "./View"
 
 /*! ***********************************************************************************************
  * This is the highest level graphical object, i.e., the main application window. The state
