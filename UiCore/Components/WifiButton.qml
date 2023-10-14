@@ -8,7 +8,7 @@ import Stherm
 /*! ***********************************************************************************************
  * WifiButton provide a ui for connecting to a wifi network and show status of current connection
  * ***********************************************************************************************/
-ToolButton {
+RoundButton {
     id: _root
 
     /* Property declration
@@ -24,24 +24,15 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
+    flat: true
     padding: 12
-    icon {
-        width: 32
-        height: 32
-    }
-
-    /* Childrent
-     * ****************************************************************************************/
-    Image {
-        anchors.centerIn: parent
-        width: _root.icon.width
-        height: _root.icon.height
-        sourceSize.width: width
-        sourceSize.height: height
-        source: "qrc:/Stherm/Images/Wifi/disconnected.svg"
+    contentItem: RoniaTextIcon {
+        font.pixelSize: 24
+        color: _root.Material.foreground
+        text: "\uf6ac"
     }
 
     onClicked: {
-        //! Open a popup to select wifi
+        //! Go to select wifi page
     }
 }
