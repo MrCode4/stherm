@@ -26,6 +26,28 @@ Slider {
         layer.enabled: true
         layer.samples: 8
 
+        Rectangle {
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: (1. / 9.) * parent.height + height / 2 + 4
+            anchors.leftMargin: 7
+            width: 12//parent.pathWidth
+            height: width
+            radius: width / 2
+            color: "#0097cd"
+        }
+
+        Rectangle {
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: (1. / 9.) * parent.height + height / 2 + 4
+            anchors.rightMargin: 7
+            width: 12//parent.pathWidth
+            height: width
+            radius: width / 2
+            color: "#ea0600"
+        }
+
         Shape {
             anchors.fill: parent
             anchors.margins: 4
@@ -66,7 +88,7 @@ Slider {
                 startY: background.shapeHeight
                 capStyle: ShapePath.RoundCap
                 strokeColor: "transparent"
-                fillColor: Material.background
+                fillColor: _control.Material.background
 
                 PathAngleArc {
                     centerX: background.shapeWidth / 2
@@ -83,13 +105,13 @@ Slider {
         readonly property int angleRange: 160
 
         x: _control.width / 2
-        y: _control.height - 4
+        y: _control.height - 2
         rotation: (value / Math.abs(to - from)) * angleRange + 10
 
         Rectangle {
-            x: -background.shapeWidth / 2 - width / 2 + 4
+            x: -background.shapeWidth / 2 - width / 2 + 6
             y: - height / 2
-            width: 24
+            width: 20
             height: width
             radius: width / 2
         }
