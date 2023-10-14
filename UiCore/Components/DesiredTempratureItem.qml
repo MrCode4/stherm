@@ -4,7 +4,7 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 
 import Stherm
-import "."
+
 /*! ***********************************************************************************************
  * DesiredTempratureItem provides a ui for setting desired temprature
  * ***********************************************************************************************/

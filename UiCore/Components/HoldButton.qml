@@ -20,8 +20,10 @@ Button {
 
     /* Object properties
      * ****************************************************************************************/
+    Material.roundedScale: Material.NotRounded
     flat: true
     opacity: isHoldEnabled ? 1. : 0.6
+    font.pixelSize: 24
     text: "Hold"
 
     onClicked: {
