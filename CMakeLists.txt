@@ -136,6 +136,9 @@ qt6_add_qml_module(appStherm
         Fonts/Font\ Awesome\ 6\ Pro-Regular-400.otf
         Fonts/Font\ Awesome\ 6\ Pro-Light-300.otf
         Fonts/RobotoMono-Regular.ttf
+        Images/auto.png
+        Images/cool.png
+        Images/sun.png
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

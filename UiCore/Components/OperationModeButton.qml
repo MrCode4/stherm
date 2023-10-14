@@ -27,8 +27,8 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: 120
-    implicitHeight: 90
+    implicitWidth: _coolingStateItem.implicitWidth + leftPadding + rightPadding
+    implicitHeight: _coolingStateItem.implicitHeight + topPadding + bottomPadding
 
     /* Children
      * ****************************************************************************************/
@@ -39,7 +39,7 @@ ToolButton {
         Label {
             id: _offStateItem
             anchors.centerIn: parent
-            text: "OFF"
+            text: "\u23fbFF"
             visible: opacity > 0
             opacity: _control.state === "off" ? 1. : 0.
         }
@@ -52,9 +52,9 @@ ToolButton {
             opacity: _control.state === "heating" ? 1. : 0.
 
             //! HEATING mode icon
-            Label {
+            Image {
                 Layout.alignment: Qt.AlignCenter
-                text: " - "
+                source: "qrc:/Stherm/Images/sun.png"
             }
 
             Label {
@@ -71,9 +71,9 @@ ToolButton {
             opacity: _control.state === "cooling" ? 1. : 0.
 
             //! COOLING mode icon
-            Label {
+            Image {
                 Layout.alignment: Qt.AlignCenter
-                text: " - "
+                source: "qrc:/Stherm/Images/cool.png"
             }
 
             Label {
@@ -90,9 +90,9 @@ ToolButton {
             opacity: _control.state === "auto" ? 1. : 0.
 
             //! AUTO mode icon
-            Label {
+            Image {
                 Layout.alignment: Qt.AlignCenter
-                text: " - "
+                source: "qrc:/Stherm/Images/auto.png"
             }
 
             Label {
@@ -100,6 +100,10 @@ ToolButton {
                 text: "Auto"
             }
         }
+    }
+
+    FontMetrics {
+        id: _sizeMetric
     }
 
     state: _stateNames[operationMode] ?? ""
