@@ -5,7 +5,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import Stherm
-
+import "./View"
 
 /*! ***********************************************************************************************
  * This is the highest level graphical object, i.e., the main application window. The state
@@ -80,5 +80,39 @@ ApplicationWindow {
 
     ShortcutManager {
        uiSession: window.uiSession
+    }
+
+    ScreenSaver {
+        id: _screenSaver
+        anchors.centerIn: parent
+    }
+
+    //! This mouse area is to detect app interactions to prevent screen saver being shown
+    MouseArea {
+        anchors.fill: parent
+        parent: Overlay.overlay //! Parent must be Overlay.overlay so MouseArea works when there is a Popup opened
+        preventStealing: true
+        z: 10
+        onPressed: function(event) {
+            if (_screenSaver.visible) {
+                _screenSaver.close();
+            } else {
+                //! Restart timer
+                _screenSaverTimer.restart();
+            }
+
+            //! Set accepted to true to let it propagate to below items
+            event.accepted = false;
+        }
+    }
+
+    Timer {
+        id: _screenSaverTimer
+        interval: 5000
+        running: !_screenSaver.visible
+        repeat: false
+        onTriggered: {
+            _screenSaver.open();
+        }
     }
 }
