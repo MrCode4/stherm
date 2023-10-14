@@ -113,6 +113,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/LoadDialoge.qml
         UiCore/ShortcutManager.qml
         UiCore/Components/SemiCircleSlider.qml
+        UiCore/Components/OperationModeButton.qml
 
         # Widgets
         View/MainView.qml
