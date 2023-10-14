@@ -84,6 +84,7 @@ ApplicationWindow {
     ScreenSaver {
         id: _screenSaver
         anchors.centerIn: parent
+        device: uiSession.appModel
     }
 
     //! This mouse area is to detect app interactions to prevent screen saver being shown

@@ -13,9 +13,8 @@ Popup {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Temprature: holds current temprature. This will probably be replaced by a ref to a model and
-    //! reading temprature from that model
-    property int        temprature: 72
+    //! Reference to I_Device
+    property I_Device   device
 
     //! Unit
     property string     unit:       "F"
@@ -40,7 +39,7 @@ Popup {
 
             Layout.alignment: Qt.AlignCenter
             font.pointSize: 80
-            text: temprature
+            text: Number(device?.currentTemp ?? 0).toLocaleString(locale, "f", 0)
 
             Label {
                 anchors {

@@ -37,13 +37,13 @@ I_DeviceController {
         onTriggered: {
             //! Move simulation temprature to desired one
             if (_tempChangeDirection > 0) {
-                device.currentTemp += Math.random() * 1
+                device.currentTemp += Math.random() * 3
 
                 if (device.currentTemp > (device.requestedTemp + _currentTempError)) {
                     _tempChangeDirection = -1 //! Make it decrease
                 }
             } else {
-                device.currentTemp -= Math.random() * 1
+                device.currentTemp -= Math.random() * 3
 
                 if (device.currentTemp < (device.requestedTemp - _currentTempError)) {
                     _tempChangeDirection = 1 //! Make it increase
@@ -52,13 +52,13 @@ I_DeviceController {
 
             //! Randomly change humidity towards requested one
             if (_humChangeDirection > 0) {
-                device.currentHum += Math.random() * 1
+                device.currentHum += Math.random() * 3
 
                 if (device.currentHum > (device.requestedHum + _currentHumError)) {
                     _humChangeDirection = -1 //! Make it decrease
                 }
             } else {
-                device.currentHum -= Math.random() * 1
+                device.currentHum -= Math.random() * 3
 
                 if (device.currentHum < (device.requestedHum - _currentHumError)) {
                     _humChangeDirection = 1 //! Make it increase
