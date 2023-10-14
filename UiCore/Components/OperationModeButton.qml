@@ -42,6 +42,8 @@ ToolButton {
             text: "\u23fbFF"
             visible: opacity > 0
             opacity: _control.state === "off" ? 1. : 0.
+
+            Behavior on opacity { NumberAnimation { duration: 200 } }
         }
 
         //! Item for HEATING state
@@ -61,6 +63,8 @@ ToolButton {
                 Layout.alignment: Qt.AlignCenter
                 text: "Heating"
             }
+
+            Behavior on opacity { NumberAnimation { duration: 200 } }
         }
 
         //! Item for COOLING state
@@ -80,6 +84,8 @@ ToolButton {
                 Layout.alignment: Qt.AlignCenter
                 text: "Cooling"
             }
+
+            Behavior on opacity { NumberAnimation { duration: 200 } }
         }
 
         //! Item for AUTO state
@@ -99,6 +105,8 @@ ToolButton {
                 Layout.alignment: Qt.AlignCenter
                 text: "Auto"
             }
+
+            Behavior on opacity { NumberAnimation { duration: 200 } }
         }
     }
 
