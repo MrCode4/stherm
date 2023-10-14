@@ -107,7 +107,7 @@ ApplicationWindow {
 
     Timer {
         id: _screenSaverTimer
-        interval: 5000
+        interval: 20000
         running: !_screenSaver.visible
         repeat: false
         onTriggered: {
