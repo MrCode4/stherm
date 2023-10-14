@@ -120,6 +120,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/AirConditionItem.qml
         UiCore/Components/FanButton.qml
         UiCore/Components/HumidityLabel.qml
+        UiCore/Components/HoldButton.qml
 
         # Widgets
         View/MainView.qml
