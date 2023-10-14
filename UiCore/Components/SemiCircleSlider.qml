@@ -17,40 +17,36 @@ Slider {
     implicitHeight: 200
     leftInset: 0
     rightInset: 0
-    value: 0
     background: Item {
         readonly property int pathWidth: 12
-        readonly property real shapeWidth: width - 8
-        readonly property real shapeHeight: height - 8
+        readonly property real shapeWidth: shapeHeight * 2
+        readonly property real shapeHeight: height - 20
 
         layer.enabled: true
         layer.samples: 8
 
         Rectangle {
-            anchors.left: parent.left
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: (1. / 9.) * parent.height + height / 2 + 4
-            anchors.leftMargin: 7
-            width: 12//parent.pathWidth
+            y: (parent.shapeHeight + 4)
+            x: (parent.width - parent.shapeWidth) / 2
+            width: parent.pathWidth
             height: width
             radius: width / 2
             color: "#0097cd"
         }
 
         Rectangle {
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: (1. / 9.) * parent.height + height / 2 + 4
-            anchors.rightMargin: 7
-            width: 12//parent.pathWidth
+            y: (parent.shapeHeight + 4)
+            x: (parent.shapeWidth + (parent.width - parent.shapeWidth) / 2 - width)
+            width: parent.pathWidth
             height: width
             radius: width / 2
             color: "#ea0600"
         }
 
         Shape {
-            anchors.fill: parent
-            anchors.margins: 4
+            anchors.centerIn: parent
+            height: parent.shapeHeight
+            width: parent.shapeWidth
 
             ShapePath {
                 startX: 0
@@ -78,8 +74,8 @@ Slider {
                     centerY: background.shapeHeight
                     radiusX: background.shapeWidth / 2
                     radiusY: background.shapeHeight
-                    startAngle: 190
-                    sweepAngle: 160
+                    startAngle: 180
+                    sweepAngle: 180
                 }
             }
 
@@ -92,21 +88,21 @@ Slider {
 
                 PathAngleArc {
                     centerX: background.shapeWidth / 2
-                    centerY: background.shapeHeight - 2
+                    centerY: background.shapeHeight
                     radiusX: background.shapeWidth / 2 - background.pathWidth
                     radiusY: background.shapeHeight  - background.pathWidth
-                    startAngle: 190
-                    sweepAngle: 160
+                    startAngle: 180
+                    sweepAngle: 180
                 }
             }
         }
     }
     handle: Item {
-        readonly property int angleRange: 160
+        readonly property int angleRange: 180
 
         x: _control.width / 2
-        y: _control.height - 2
-        rotation: (value / Math.abs(to - from)) * angleRange + 10
+        y: _control.height - 10
+        rotation: (value / Math.abs(to - from)) * angleRange
 
         Rectangle {
             x: -background.shapeWidth / 2 - width / 2 + 6
