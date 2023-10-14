@@ -76,7 +76,7 @@ Control {
         rowSpacing: 56
 
         //! Humidity item
-        HumidityLabel {
+        CurrentHumidityLabel {
             Layout.alignment: Qt.AlignCenter
         }
 
