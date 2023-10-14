@@ -17,4 +17,5 @@ I_Device {
     /* Object Properties
      * ****************************************************************************************/
     type: AppSpec.DeviceType.DT_Sim
+    requestedHum: 35.0
 }

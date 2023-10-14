@@ -78,6 +78,7 @@ Control {
         //! Humidity item
         CurrentHumidityLabel {
             Layout.alignment: Qt.AlignCenter
+            device: _root.uiSession.appModel
         }
 
         //! Date and Timer

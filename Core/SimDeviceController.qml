@@ -10,10 +10,16 @@ I_DeviceController {
     /* Property Declarations
      * ****************************************************************************************/
     //! Determines whether temprature should increase or decrease
-    property int    _changeDirection: 1
+    property int    _tempChangeDirection: 1
 
     //! Maximum temprature error in simulation
     property real   _currentTempError:  Math.max(1, Math.min(2, (device?.requestedTemp ?? 0) * 0.1))
+
+    //! Determines whether humidity should increase or decrease
+    property int    _humChangeDirection: 1
+
+    //! Maximum humidity error in simulation
+    property real   _currentHumError:  Math.max(1, Math.min(3, (device?.requestedHum ?? 0) * 0.1))
 
 
     /* Object Properties
@@ -30,23 +36,35 @@ I_DeviceController {
         repeat: true
         onTriggered: {
             //! Move simulation temprature to desired one
-            if (_changeDirection > 0) {
+            if (_tempChangeDirection > 0) {
                 device.currentTemp += Math.random() * 1
 
                 if (device.currentTemp > (device.requestedTemp + _currentTempError)) {
-                    _changeDirection = -1 //! Make it decrease
+                    _tempChangeDirection = -1 //! Make it decrease
                 }
             } else {
                 device.currentTemp -= Math.random() * 1
 
                 if (device.currentTemp < (device.requestedTemp - _currentTempError)) {
-                    _changeDirection = 1 //! Make it increase
+                    _tempChangeDirection = 1 //! Make it increase
                 }
             }
 
+            //! Randomly change humidity towards requested one
+            if (_humChangeDirection > 0) {
+                device.currentHum += Math.random() * 1
 
-//            device.currentTemp = Math.random() * 3 + 20;
-//            device.currentHum = Math.random() * 5 + 60
+                if (device.currentHum > (device.requestedHum + _currentHumError)) {
+                    _humChangeDirection = -1 //! Make it decrease
+                }
+            } else {
+                device.currentHum -= Math.random() * 1
+
+                if (device.currentHum < (device.requestedHum - _currentHumError)) {
+                    _humChangeDirection = 1 //! Make it increase
+                }
+            }
+
 //            device.co2 = Math.random() * 5 + 60
 //            device.tof = Math.random() * 5 + 60
         }
