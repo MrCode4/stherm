@@ -11,7 +11,7 @@ QSCore {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property I_Device model: Device {
+    property I_Device model: SimDevice {
         _qsRepo: defaultRepo
     }
 

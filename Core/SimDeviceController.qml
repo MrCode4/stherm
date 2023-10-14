@@ -9,6 +9,11 @@ I_DeviceController {
 
     /* Property Declarations
      * ****************************************************************************************/
+    //! Determines whether temprature should increase or decrease
+    property int    _changeDirection: 1
+
+    //! Maximum temprature error in simulation
+    property real   _currentTempError:  Math.max(1, Math.min(2, (device?.requestedTemp ?? 0) * 0.1))
 
 
     /* Object Properties
@@ -24,10 +29,26 @@ I_DeviceController {
         running: true
         repeat: true
         onTriggered: {
-            device.currentTemp = Math.random() * 3 + 20;
-            device.currentHum = Math.random() * 5 + 60
-            device.co2 = Math.random() * 5 + 60
-            device.tof = Math.random() * 5 + 60
+            //! Move simulation temprature to desired one
+            if (_changeDirection > 0) {
+                device.currentTemp += Math.random() * 1
+
+                if (device.currentTemp > (device.requestedTemp + _currentTempError)) {
+                    _changeDirection = -1 //! Make it decrease
+                }
+            } else {
+                device.currentTemp -= Math.random() * 1
+
+                if (device.currentTemp < (device.requestedTemp - _currentTempError)) {
+                    _changeDirection = 1 //! Make it increase
+                }
+            }
+
+
+//            device.currentTemp = Math.random() * 3 + 20;
+//            device.currentHum = Math.random() * 5 + 60
+//            device.co2 = Math.random() * 5 + 60
+//            device.tof = Math.random() * 5 + 60
         }
     }
 
