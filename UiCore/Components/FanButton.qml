@@ -18,6 +18,7 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
+    padding: 12
     flat: true
     checkable: true
     checked: false //! \todo: connect to a property in Fan

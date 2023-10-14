@@ -59,6 +59,7 @@ Control {
 
     //! Other items
     GridLayout {
+        id: _otherItemsLay
         anchors {
             verticalCenter: _desiredTempItem.bottom
             horizontalCenter: parent.horizontalCenter
@@ -70,7 +71,6 @@ Control {
         //! Humidity item
         HumidityLabel {
             Layout.alignment: Qt.AlignCenter
-
         }
 
         //! Date and Timer
@@ -82,13 +82,11 @@ Control {
         //! Air condition item
         AirConditionItem {
             Layout.alignment: Qt.AlignCenter
-
         }
 
         //! Fan
         FanButton {
             Layout.alignment: Qt.AlignCenter
-
         }
 
         //! Hold button
@@ -98,5 +96,28 @@ Control {
     }
 
     //! NEXGEN icon
+    NexgenIcon {
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            top: _otherItemsLay.bottom
+            topMargin: 16
+        }
+        font.pixelSize: 48
+    }
 
+    //! Menu button
+    MenuButton {
+        anchors {
+            left: parent.left
+            bottom: parent.bottom
+        }
+    }
+
+    //! Schedule button
+    ScheduleButton {
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+        }
+    }
 }
