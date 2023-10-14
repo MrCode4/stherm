@@ -13,6 +13,9 @@ Control {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Reference to I_Device
+    property I_Device   device
+
     //! Unit of temprature
     property string     unit: "F"
 
@@ -34,6 +37,13 @@ Control {
             anchors.fill: parent
             from: minTemprature
             to: maxTemprature
+            value: device?.requestedTemp
+
+            onValueChanged: {
+                if (device && device.requestedTemp !== value) {
+                    device.requestedTemp = value;
+                }
+            }
         }
 
         //! Desired temprature label

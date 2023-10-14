@@ -17,6 +17,8 @@ Control {
     property string     unit: "F"
 
     //! \todo: add a property to get a ref to a temprature model
+    //! I_Device
+    property I_Device   device
 
     /* Object properties
      * ****************************************************************************************/
@@ -34,8 +36,7 @@ Control {
                 family: "Roboto Mono"
                 pixelSize: 32
             }
-
-            text: "72"
+            text: Number(device?.currentTemp ?? 0).toLocaleString(locale, "f", 0)
         }
 
         //! Unit
