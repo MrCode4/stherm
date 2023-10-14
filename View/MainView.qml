@@ -11,11 +11,12 @@ Item {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property UiSession uiSession
+    property UiSession  uiSession
 
     /* Children
      * ****************************************************************************************/
     Home {
         anchors.fill: parent
+        uiSession: mainView.uiSession
     }
 }

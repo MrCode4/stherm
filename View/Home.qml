@@ -13,6 +13,11 @@ Control {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Reference to UiSession
+    property UiSession              uiSession
+
+    //! Reference to I_Device
+    readonly property   I_Device    device: uiSession?.appModel ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -29,6 +34,7 @@ Control {
             top: parent.top
         }
         z: 1
+        device: _root.uiSession.appModel
     }
 
     //! Wifi status
@@ -47,6 +53,7 @@ Control {
         anchors.horizontalCenter: parent.horizontalCenter
         height: parent.height / 2
         width: parent.availableWidth
+        device: uiSession.appModel
     }
 
     //! Operation mode button
