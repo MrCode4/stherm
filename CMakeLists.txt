@@ -112,11 +112,13 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/SaveDialoge.qml
         UiCore/PopUps/LoadDialoge.qml
         UiCore/ShortcutManager.qml
+        UiCore/Components/SemiCircleSlider.qml
 
         # Widgets
         View/MainView.qml
         View/NexgenIcon.qml
         View/ScreenSaver.qml
+        View/Home.qml
 
     SOURCES
         Backend/AppSpecCPP.h
