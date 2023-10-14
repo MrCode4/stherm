@@ -122,6 +122,8 @@ qt6_add_qml_module(appStherm
         UiCore/Components/HumidityLabel.qml
         UiCore/Components/HoldButton.qml
         UiCore/Components/WifiButton.qml
+        UiCore/Components/MenuButton.qml
+        UiCore/Components/ScheduleButton.qml
 
         # Widgets
         View/MainView.qml
