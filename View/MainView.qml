@@ -1,4 +1,6 @@
 import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import Stherm
 
@@ -15,8 +17,11 @@ Item {
 
     /* Children
      * ****************************************************************************************/
-    Home {
+    StackView {
         anchors.fill: parent
-        uiSession: mainView.uiSession
+
+        initialItem: Home {
+            uiSession: mainView.uiSession
+        }
     }
 }

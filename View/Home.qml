@@ -136,6 +136,13 @@ Control {
                 right: parent.right
                 bottom: parent.bottom
             }
+
+            onClicked: {
+                //! Push ScheduleView to StackView
+                if (_root.StackView.view) {
+                    _root.StackView.view.push("qrc:/Stherm/View/ScheduleView.qml");
+                }
+            }
         }
     }
 
