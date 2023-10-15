@@ -126,6 +126,8 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ScheduleButton.qml
         View/ApplicationMenu.qml
         View/ApplicationMenuList.qml
+        View/BasePageView.qml
+        View/ScheduleView.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
