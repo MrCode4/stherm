@@ -127,7 +127,12 @@ Control {
                 bottom: parent.bottom
             }
 
-            onClicked: _applicationMenu.open()
+            onClicked: {
+                //! Push ApplicationMenu to StackView
+                if (_root.StackView.view) {
+                    _root.StackView.view.push("qrc:/Stherm/View/ApplicationMenu.qml");
+                }
+            }
         }
 
         //! Schedule button
@@ -144,13 +149,6 @@ Control {
                 }
             }
         }
-    }
-
-    //! ApplicationMenu
-    ApplicationMenu {
-        id: _applicationMenu
-        edge: "LeftEdge"
-        dragMargin: -1
     }
 
 
