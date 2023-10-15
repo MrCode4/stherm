@@ -124,6 +124,11 @@ qt6_add_qml_module(appStherm
         UiCore/Components/WifiButton.qml
         UiCore/Components/MenuButton.qml
         UiCore/Components/ScheduleButton.qml
+        View/ApplicationMenu.qml
+        View/ApplicationMenuList.qml
+
+        # Delegates
+        View/Delegates/ApplicationMenuDelegate.qml
 
         # Widgets
         View/MainView.qml
