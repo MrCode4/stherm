@@ -124,19 +124,23 @@ qt6_add_qml_module(appStherm
         UiCore/Components/WifiButton.qml
         UiCore/Components/MenuButton.qml
         UiCore/Components/ScheduleButton.qml
+        UiCore/Components/ColorSlider.qml
+
+
+        # Views and Widgets
         View/ApplicationMenu.qml
         View/ApplicationMenuList.qml
         View/BasePageView.qml
         View/ScheduleView.qml
-
-        # Delegates
-        View/Delegates/ApplicationMenuDelegate.qml
-
-        # Widgets
+        View/BacklightPage.qml
         View/MainView.qml
         View/NexgenIcon.qml
         View/ScreenSaver.qml
         View/Home.qml
+
+
+        # Delegates
+        View/Delegates/ApplicationMenuDelegate.qml
 
     SOURCES
         Backend/AppSpecCPP.h
