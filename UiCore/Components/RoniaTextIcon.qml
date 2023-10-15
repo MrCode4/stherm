@@ -13,4 +13,5 @@ Text {
     horizontalAlignment: Qt.AlignHCenter
     verticalAlignment: Qt.AlignVCenter
     font.weight: 900
+    color: enabled ? Material.foreground : Material.hintTextColor
 }
