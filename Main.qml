@@ -91,7 +91,8 @@ ApplicationWindow {
     MouseArea {
         anchors.fill: parent
         parent: Overlay.overlay //! Parent must be Overlay.overlay so MouseArea works when there is a Popup opened
-        preventStealing: true
+        propagateComposedEvents: true
+        preventStealing: false
         z: 10
         onPressed: function(event) {
             if (_screenSaver.visible) {

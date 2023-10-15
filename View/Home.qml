@@ -126,6 +126,8 @@ Control {
                 left: parent.left
                 bottom: parent.bottom
             }
+
+            onClicked: _applicationMenu.open()
         }
 
         //! Schedule button
@@ -136,6 +138,15 @@ Control {
             }
         }
     }
+
+    //! ApplicationMenu
+    ApplicationMenu {
+        id: _applicationMenu
+        edge: "LeftEdge"
+        dragMargin: -1
+    }
+
+
     /* States and Transitions
      * ****************************************************************************************/
     state: "idle"
