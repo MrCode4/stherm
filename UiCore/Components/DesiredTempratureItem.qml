@@ -25,11 +25,18 @@ Control {
     //! Maximum temprature
     property int        maxTemprature: 100
 
+    //! Offset of desired temp label
+    property int        labelVerticalOffset: -8
+
+    //! Holds whether SemiCircleSlider is being dragged
+    readonly property alias dragging: _tempSlider.pressed
+
     /* Object properties
      * ****************************************************************************************/
     //    Material.theme: Material.Dark
     implicitWidth: 360
     implicitHeight: 180
+    font.pixelSize: 48
     background: null
     contentItem: Item {
         SemiCircleSlider {
@@ -37,7 +44,7 @@ Control {
             anchors.fill: parent
             from: minTemprature
             to: maxTemprature
-            value: device?.requestedTemp
+            value: device?.requestedTemp ?? 0
 
             onValueChanged: {
                 if (device && device.requestedTemp !== value) {
@@ -50,8 +57,7 @@ Control {
         Label {
             id: _desiredTempratureLbl
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: -8
-            font.pixelSize: 48
+            anchors.verticalCenterOffset: labelVerticalOffset
             text: Number(_tempSlider.value).toLocaleString(locale, "f", 0)
 
             //! Unit
