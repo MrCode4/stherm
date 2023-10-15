@@ -8,8 +8,23 @@ import Stherm
 /*! ***********************************************************************************************
  * SemiCircleSlider
  * ***********************************************************************************************/
-Slider {
+Control {
     id: _control
+
+    /* Property declaration
+     * ****************************************************************************************/
+    //! Value of Slider
+    //! \NOTE: Any bindings to this value will be broken, use Connections instead
+    property real   value: 0
+
+    //! Min value of slider
+    property real   from: 0
+
+    //! Max value of slider
+    property real   to: 10
+
+    //! Holds whether slider is being dragged
+    readonly property alias pressed: _handleMa.dragging
 
     /* Object properties
      * ****************************************************************************************/
@@ -97,12 +112,17 @@ Slider {
             }
         }
     }
-    handle: Item {
+
+    Item {
+        id: _handle
         readonly property int angleRange: 180
 
         x: _control.width / 2
         y: _control.height - 10
-        rotation: (value / Math.abs(to - from)) * angleRange
+        rotation: {
+            var valueRange = Math.abs(to - from);
+            return (value / (valueRange > 0 ? valueRange : 1)) * angleRange
+        }
 
         Rectangle {
             x: -background.shapeWidth / 2 - width / 2 + 6
@@ -110,6 +130,33 @@ Slider {
             width: 20
             height: width
             radius: width / 2
+
+            MouseArea {
+                id: _handleMa
+
+                property bool dragging: false
+
+                anchors.fill: parent
+                anchors.margins: -8 //! To increase its size
+                enabled: Math.abs(_control.to - _control.from) > 0
+
+                onPressed: dragging = true
+                onReleased: dragging = false
+                onPositionChanged: function(event) {
+                    //! Get angle to center
+                    var center = Qt.point(_control.background.shapeWidth / 2, _control.height);
+                    var point = mapToItem(_control, event.x, event.y);
+
+                    //! Angle in degree
+                    var angle = Math.atan2(center.y - point.y, center.x - point.x) * 57.2958;
+
+                    //! If angle < 0 don't update value
+                    if (angle >= 0) {
+                        //! Set value based on angle
+                        value = Math.min(to, Math.max(from, angle / _handle.angleRange) * Math.abs(to - from));
+                    }
+                }
+            }
         }
     }
 }
