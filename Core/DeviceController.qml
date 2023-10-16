@@ -16,4 +16,27 @@ I_DeviceController {
     /* Children
      * ****************************************************************************************/
 
+    /* Methods
+     * ****************************************************************************************/
+    function sendReceive(className, method, data)
+    {
+        var data_msg = {};
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/engine/index.php", false); //! Synchronous
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(JSON.stringify(data_msg));
+
+        if (xhr.status === 200) {
+            return JSON.parse(xhr.responseText);
+        } else {
+            console.error("Error in HTTP request:", xhr.status, xhr.statusText);
+            return null;
+        }
+    }
+
+    function updateBacklight()
+    {
+        //! Use a REST request to update device backlight
+    }
 }

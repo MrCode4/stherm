@@ -28,5 +28,9 @@ Item {
 
     /* Functions
      * ****************************************************************************************/
+    //! These methods should be overriden by subclasses to provide implementation
 
+    function updateBacklight() {}
+
+    function updateFan() {}
 }

@@ -45,6 +45,11 @@ BasePageView {
         }
 
         onClicked: {
+            //! Update backlight
+            if (deviceController) {
+                deviceController.updateBacklight();
+            }
+
             //! Show test color page
             if (_root.StackView.view) {
                 _root.StackView.view.push("qrc:/Stherm/View/ColorTestPage.qml", {
