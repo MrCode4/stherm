@@ -18,6 +18,8 @@ Page {
 
     /* Object properties
      * ****************************************************************************************/
+    implicitWidth: 480
+    implicitHeight: 480
     leftPadding: 8
     rightPadding: 8
     topPadding: 8

@@ -129,6 +129,7 @@ qt6_add_qml_module(appStherm
 
 
         # Views and Widgets
+        View/Home.qml
         View/ApplicationMenu.qml
         View/ApplicationMenuList.qml
         View/BasePageView.qml
@@ -137,11 +138,12 @@ qt6_add_qml_module(appStherm
         View/MainView.qml
         View/NexgenIcon.qml
         View/ScreenSaver.qml
-        View/Home.qml
+        View/ColorTestPage.qml
 
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
+        View/Delegates/ShadeButtonDelegate.qml
 
     SOURCES
         Backend/AppSpecCPP.h
