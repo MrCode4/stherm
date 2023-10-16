@@ -189,7 +189,6 @@ target_link_libraries(appStherm
     Qt6::Core
     Qt6::QuickControls2
     Qt6::Multimedia
-    Qt6::OpenGL
     Qt6::Concurrent
     QtQuickStreamplugin
 )
