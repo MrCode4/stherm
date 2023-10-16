@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 
 import Stherm
-import "../UiCore/Components"
 
 /*! ***********************************************************************************************
  * BacklightPage is for tweaking back light
@@ -14,17 +13,44 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Selected backlight color from shade buttons
+    readonly property color selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
+
+    //! Actual color calculated from sliders without shade
+    readonly property color _slidersColorNotShaded: {
+        var clr = _colorSlider.currentColor;
+        return Qt.rgba(clr.r * _brSlider.visualPosition,
+                       clr.g * _brSlider.visualPosition,
+                       clr.b * _brSlider.visualPosition,
+                       1.,)
+    }
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: 480
-    implicitHeight: 480
     leftPadding: 40
     rightPadding: 40
-    title: "Backlight Test"
+    title: "Backlight"
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button
+    ToolButton {
+        Layout.alignment: Qt.AlignCenter
+        parent: _root.header
+        contentItem: RoniaTextIcon {
+            text: "\uf00c"
+        }
+
+        onClicked: {
+            //! Show test color page
+            if (_root.StackView.view) {
+                _root.StackView.view.push("qrc:/Stherm/View/ColorTestPage.qml", {
+                                              "Material.background": selectedColor
+                                          });
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         width: _root.availableWidth
@@ -54,19 +80,28 @@ BasePageView {
             Layout.fillWidth: true
         }
 
-        Rectangle {
-            Layout.topMargin: 32
-            Layout.alignment: Qt.AlignCenter
-            implicitWidth: 32
-            implicitHeight: 32
-            radius: width / 2
-            color: {
-                var clr = _colorSlider.currentColor;
+        //! Group for shade buttons
+        ButtonGroup {
+            id: _shadeButtonsGrp
+            buttons: _buttonsRow.children
+        }
 
-                return Qt.rgba(clr.r * _brSlider.visualPosition,
-                               clr.g * _brSlider.visualPosition,
-                               clr.b * _brSlider.visualPosition,
-                               1.,);
+        //! Shades of selected color
+        RowLayout {
+            id: _buttonsRow
+            Layout.preferredWidth: _root.availableWidth
+            Layout.leftMargin: 16
+            Layout.rightMargin: 16
+            Layout.topMargin: 32
+
+            Repeater {
+                id: _shadeButtonsRepeater
+                model: 5
+                delegate: ShadeButtonDelegate {
+                    checked: index === 4
+                    sourceColor: _slidersColorNotShaded
+                    shadeFactor: index / 4.
+                }
             }
         }
     }
