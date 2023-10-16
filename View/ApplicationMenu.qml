@@ -13,8 +13,6 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Get a referenct to UiSession
-    property UiSession      uiSession
 
     /* Object properties
      * ****************************************************************************************/
@@ -25,10 +23,16 @@ BasePageView {
             if (_root.StackView.view) {
                 switch(menuTitle) {
                 case "Backlight":
-                    _root.StackView.view.push("qrc:/Stherm/View/BacklightPage.qml");
+                    _root.StackView.view.push("qrc:/Stherm/View/BacklightPage.qml",
+                                              {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
                     break;
                 case "Fan Control":
-                    _root.StackView.view.push("qrc:/Stherm/View/FanPage.qml");
+                    _root.StackView.view.push("qrc:/Stherm/View/FanPage.qml",
+                                              {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
                 }
             }
         }
