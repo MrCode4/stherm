@@ -5,7 +5,7 @@ import QtQuick 2.11
 import Stherm
 
 QtObject {
-    property int  size: Screen.width
+    property int  size:                             Screen.height > 480 ? 480 : Screen.height
     property color backgroundColor:                 "#000000"
 
     readonly property string primaryColor:          "#ff6446"
