@@ -13,8 +13,14 @@ Page {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Reference to app UiSession since most pages need this
+    property UiSession              uiSession
+
+    //! Ref to I_DeviceController
+    property I_DeviceController     deviceController
+
     //! This should hold a callback to be called when back button is clicked.
-    property var    backButtonCallback
+    property var                    backButtonCallback
 
     /* Object properties
      * ****************************************************************************************/

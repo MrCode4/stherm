@@ -13,6 +13,9 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Ref to Backlight model
+    property Backlight              backlight
+
     //! Selected backlight color from shade buttons
     readonly property color selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
 
