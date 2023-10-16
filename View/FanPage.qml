@@ -47,32 +47,35 @@ BasePageView {
             buttons: [_autoButton, _onButton]
         }
 
-        Button {
-            id: _autoButton
-
-            Material.theme: checked ? (_root.Material.theme === Material.Dark ? Material.Light : Material.Dark)
-                                    : _root.Material.theme
+        RowLayout {
             Layout.alignment: Qt.AlignCenter
-            leftPadding: AppStyle.size / 10
-            rightPadding: AppStyle.size / 10
-            font.weight: checked ? Font.ExtraBold : Font.Normal
-            checked: true
-            checkable: true
-            text: "Auto"
-        }
+            Button {
+                id: _autoButton
 
-        Button {
-            id: _onButton
+                Material.theme: checked ? (_root.Material.theme === Material.Dark ? Material.Light : Material.Dark)
+                                        : _root.Material.theme
+                Layout.alignment: Qt.AlignCenter
+                leftPadding: AppStyle.size / 10
+                rightPadding: AppStyle.size / 10
+                font.weight: checked ? Font.ExtraBold : Font.Normal
+                checked: true
+                checkable: true
+                text: "Auto"
+            }
 
-            Material.theme: checked ? (_root.Material.theme === Material.Dark ? Material.Light : Material.Dark)
-                                    : _root.Material.theme
-            Layout.alignment: Qt.AlignCenter
-            Layout.preferredWidth: _autoButton.width
-            leftPadding: AppStyle.size / 10
-            rightPadding: AppStyle.size / 10
-            font.weight: checked ? Font.ExtraBold : Font.Normal
-            checkable: true
-            text: "On"
+            Button {
+                id: _onButton
+
+                Material.theme: checked ? (_root.Material.theme === Material.Dark ? Material.Light : Material.Dark)
+                                        : _root.Material.theme
+                Layout.alignment: Qt.AlignCenter
+                Layout.preferredWidth: _autoButton.width
+                leftPadding: AppStyle.size / 10
+                rightPadding: AppStyle.size / 10
+                font.weight: checked ? Font.ExtraBold : Font.Normal
+                checkable: true
+                text: "On"
+            }
         }
 
         Label {
