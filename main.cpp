@@ -1,6 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
+#include <QScreen>
+#include <QQmlContext>
 
 
 int main(int argc, char *argv[])
@@ -17,6 +19,19 @@ int main(int argc, char *argv[])
         &app, []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection)*/
     ;
+
+    QScreen* screen = app.primaryScreen();
+
+    QVariantMap deviceInfo;
+    deviceInfo["width"] = screen->size().width();
+    deviceInfo["height"] = screen->size().height();
+    deviceInfo["devicePixelRatio"] = screen->devicePixelRatio();
+    deviceInfo["logicalDotsPerInch"] = screen->logicalDotsPerInch();
+    deviceInfo["physicalDotsPerInch"] = screen->physicalDotsPerInch();
+
+
+    engine.rootContext()->setContextProperty("deviceInfo", deviceInfo);
+
     engine.load(url);
 
     return app.exec();

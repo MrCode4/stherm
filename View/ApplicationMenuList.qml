@@ -68,6 +68,10 @@ ListView {
             "icon": "",
             "text": "System Setup"
         },
+        {
+            "icon": "",
+            "text": "System Info"
+        }
     ]
     delegate: ApplicationMenuDelegate {
         width: ListView.view.width

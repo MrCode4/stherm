@@ -140,6 +140,7 @@ qt6_add_qml_module(appStherm
         View/ScreenSaver.qml
         View/ColorTestPage.qml
         View/FanPage.qml
+        View/SystemInfoPage.qml
 
 
         # Delegates
