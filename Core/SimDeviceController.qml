@@ -70,4 +70,12 @@ I_DeviceController {
         }
     }
 
+    /* Methods
+     * ****************************************************************************************/
+    //! Override I_DeviceController's methods
+    function updateBacklight()
+    {
+        //! Change background color of application
+        AppStyle.backgroundColor = device.backlight.color;
+    }
 }

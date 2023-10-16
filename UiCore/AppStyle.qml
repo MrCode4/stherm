@@ -5,6 +5,8 @@ import QtQuick 2.11
 import Stherm
 
 QtObject {
+    property color backgroundColor:                 "#000000"
+
     readonly property string primaryColor:          "#ff6446"
     readonly property string primaryColorDarker:    Qt.darker(primaryColor)
     readonly property string primaryDarkGrey:       "#121314"   
