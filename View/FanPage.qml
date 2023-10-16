@@ -101,16 +101,16 @@ BasePageView {
             id: _ticksRow
             Layout.alignment: Qt.AlignCenter
             Layout.topMargin: -8
-            spacing: 5
+            spacing: 6 * AppStyle.size / 240
 
             Repeater {
-                model: 25
+                model: 21
                 delegate: Rectangle {
                     Layout.alignment: Qt.AlignCenter
-                    implicitWidth: 2
+                    implicitWidth: 2.5 * AppStyle.size / 240
                     implicitHeight: (index % 4) ? 8 : 16
                     opacity: (index % 4) ? 0.5 : 1.
-                    radius: 1
+                    radius: 2
                 }
             }
         }
@@ -123,7 +123,7 @@ BasePageView {
             Repeater {
                 model: 6
                 delegate: Label {
-                    Layout.preferredWidth: 5 * (_ticksRow.spacing + 2)
+                    Layout.preferredWidth: 5 * (_ticksRow.spacing + 1)
                     opacity: 0.5
                     text: index * 10
                     horizontalAlignment: "AlignHCenter"
