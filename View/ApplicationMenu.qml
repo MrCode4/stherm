@@ -22,10 +22,13 @@ BasePageView {
     contentItem: ApplicationMenuList {
         onMenuActivated: function(menuTitle) {
             //! Push related menu to stack
-            switch(menuTitle) {
-            case "Backlight":
-                if (_root.StackView.view) {
+            if (_root.StackView.view) {
+                switch(menuTitle) {
+                case "Backlight":
                     _root.StackView.view.push("qrc:/Stherm/View/BacklightPage.qml");
+                    break;
+                case "Fan Control":
+                    _root.StackView.view.push("qrc:/Stherm/View/FanPage.qml");
                 }
             }
         }

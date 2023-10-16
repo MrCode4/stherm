@@ -139,6 +139,7 @@ qt6_add_qml_module(appStherm
         View/NexgenIcon.qml
         View/ScreenSaver.qml
         View/ColorTestPage.qml
+        View/FanPage.qml
 
 
         # Delegates
