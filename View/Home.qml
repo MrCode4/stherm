@@ -21,8 +21,8 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: 480
-    implicitHeight: 480
+    implicitWidth: AppStyle.size
+    implicitHeight: AppStyle.size
 
     /* Children
      * ****************************************************************************************/
@@ -66,7 +66,7 @@ Control {
         OperationModeButton {
             anchors {
                 horizontalCenter: parent.horizontalCenter
-                horizontalCenterOffset: -width - 48
+                horizontalCenterOffset: -width
             }
             y: (_desiredTempItem.height - height) / 2 - 4
         }
@@ -76,11 +76,11 @@ Control {
             id: _otherItemsLay
             anchors {
                 horizontalCenter: parent.horizontalCenter
-                verticalCenterOffset: 24
+                verticalCenterOffset: AppStyle.size / 24
             }
-            y: _desiredTempItem.height - 48
+            y: _desiredTempItem.height - AppStyle.size / 10
             columns: 3
-            rowSpacing: 56
+            rowSpacing: AppStyle.size / 12
 
             //! Humidity item
             CurrentHumidityLabel {
@@ -115,9 +115,9 @@ Control {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 top: _otherItemsLay.bottom
-                topMargin: 16
+                topMargin: AppStyle.size / 60
             }
-            font.pixelSize: 48
+            font.pixelSize: AppStyle.size / 10
         }
 
         //! Menu button
@@ -127,7 +127,14 @@ Control {
                 bottom: parent.bottom
             }
 
-            onClicked: _applicationMenu.open()
+            onClicked: {
+                //! Push ApplicationMenu to StackView
+                if (_root.StackView.view) {
+                    _root.StackView.view.push("qrc:/Stherm/View/ApplicationMenu.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                }
+            }
         }
 
         //! Schedule button
@@ -144,13 +151,6 @@ Control {
                 }
             }
         }
-    }
-
-    //! ApplicationMenu
-    ApplicationMenu {
-        id: _applicationMenu
-        edge: "LeftEdge"
-        dragMargin: -1
     }
 
 
@@ -181,7 +181,7 @@ Control {
             PropertyChanges {
                 target: _desiredTempItem
                 font.pixelSize: 80
-                labelVerticalOffset: 32
+                labelVerticalOffset: AppStyle.size / 15
             }
 
             PropertyChanges {

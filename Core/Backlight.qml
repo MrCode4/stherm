@@ -8,7 +8,7 @@ import Stherm
 QSObject {
 
     //! Backlight color
-    property string color: Qt.black
+    property string color: "black"
 
     //! Screen Brightness
     property int brightness: 60

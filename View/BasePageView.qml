@@ -13,15 +13,23 @@ Page {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Reference to app UiSession since most pages need this
+    property UiSession              uiSession
+
+    //! Ref to I_DeviceController
+    property I_DeviceController     deviceController: uiSession?.deviceController ?? null
+
     //! This should hold a callback to be called when back button is clicked.
-    property var    backButtonCallback
+    property var                    backButtonCallback
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 8
-    rightPadding: 8
-    topPadding: 8
-    bottomPadding: 8
+    implicitWidth: AppStyle.size
+    implicitHeight: AppStyle.size
+    leftPadding: AppStyle.size / 60
+    rightPadding: AppStyle.size / 60
+    topPadding: AppStyle.size / 60
+    bottomPadding: AppStyle.size / 60
     header: RowLayout {
         ToolButton {
             contentItem: RoniaTextIcon {

@@ -10,9 +10,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 OpenGL Multimedia Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 Multimedia Concurrent)
 
-qt_standard_project_setup()
+#qt_standard_project_setup()
 
 # ##################################################################################################
 # Dependencies
@@ -124,19 +124,27 @@ qt6_add_qml_module(appStherm
         UiCore/Components/WifiButton.qml
         UiCore/Components/MenuButton.qml
         UiCore/Components/ScheduleButton.qml
+        UiCore/Components/ColorSlider.qml
+        UiCore/Components/BrightnessSlider.qml
+
+
+        # Views and Widgets
+        View/Home.qml
         View/ApplicationMenu.qml
         View/ApplicationMenuList.qml
         View/BasePageView.qml
         View/ScheduleView.qml
-
-        # Delegates
-        View/Delegates/ApplicationMenuDelegate.qml
-
-        # Widgets
+        View/BacklightPage.qml
         View/MainView.qml
         View/NexgenIcon.qml
         View/ScreenSaver.qml
-        View/Home.qml
+        View/ColorTestPage.qml
+        View/FanPage.qml
+
+
+        # Delegates
+        View/Delegates/ApplicationMenuDelegate.qml
+        View/Delegates/ShadeButtonDelegate.qml
 
     SOURCES
         Backend/AppSpecCPP.h

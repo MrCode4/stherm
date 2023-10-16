@@ -20,10 +20,10 @@ Control {
      * ****************************************************************************************/
     implicitWidth: _mainRow.implicitWidth + leftPadding + rightPadding
     implicitHeight: _mainRow.implicitHeight + topPadding + bottomPadding
-    leftPadding: 8
-    rightPadding: 8
-    topPadding: 4
-    bottomPadding: 4
+    leftPadding: AppStyle.size / 60
+    rightPadding: AppStyle.size / 60
+    topPadding: AppStyle.size / 60 / 2
+    bottomPadding: AppStyle.size / 60 / 2
     background: null
 
     /* Children
@@ -54,7 +54,7 @@ Control {
             readonly property var conditionNames: [ "Good", "Moderate", "Poor" ]
 
             Layout.fillWidth: true
-            font.pixelSize: 22
+            font.pixelSize: AppStyle.size / 20
             text: 0 < condition && condition < conditionNames.length ? conditionNames[condition] : "Good"
         }
     }

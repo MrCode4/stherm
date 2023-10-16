@@ -16,10 +16,10 @@ Control {
      * ****************************************************************************************/
     implicitWidth: _dateTimeCol.implicitWidth + leftPadding + rightPadding
     implicitHeight: _dateTimeCol.implicitHeight + topPadding + bottomPadding
-    leftPadding: 8
-    rightPadding: 8
-    topPadding: 4
-    bottomPadding: 4
+    leftPadding: AppStyle.size / 60
+    rightPadding: AppStyle.size / 60
+    topPadding:AppStyle.size / 60 / 2
+    bottomPadding: AppStyle.size / 60 / 2
     background: null
 
     /* Childrent
@@ -36,7 +36,7 @@ Control {
             Layout.alignment: Qt.AlignHCenter
             font {
                 family: "monospace"
-                pixelSize: 30
+                pixelSize: AppStyle.size / 20
             }
             text: "00:00"
         }
@@ -53,6 +53,9 @@ Control {
             Layout.fillWidth: true
             opacity: 0.75
             horizontalAlignment: "AlignHCenter"
+            font {
+                pixelSize: AppStyle.size / 30
+            }
         }
     }
 
