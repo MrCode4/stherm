@@ -10,9 +10,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 OpenGL Multimedia Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 Multimedia Concurrent)
 
-qt_standard_project_setup()
+#qt_standard_project_setup()
 
 # ##################################################################################################
 # Dependencies

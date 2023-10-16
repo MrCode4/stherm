@@ -18,10 +18,10 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 8
-    rightPadding: 8
-    topPadding: 4
-    bottomPadding: 4
+    leftPadding: AppStyle.size / 60
+    rightPadding: AppStyle.size / 60
+    topPadding: AppStyle.size / 60 / 2
+    bottomPadding: AppStyle.size / 60 / 2
     background: null
 
     /* Children
@@ -41,7 +41,7 @@ Control {
         //! Humidity level label
         Label {
             Layout.alignment: Qt.AlignCenter
-            font.pixelSize: 24
+            font.pixelSize: AppStyle.size / 20
             text: Number(device?.currentHum ?? 0).toLocaleString(locale, "f", 0)
         }
 

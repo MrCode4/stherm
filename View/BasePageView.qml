@@ -24,12 +24,12 @@ Page {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: 480
-    implicitHeight: 480
-    leftPadding: 8
-    rightPadding: 8
-    topPadding: 8
-    bottomPadding: 8
+    implicitWidth: AppStyle.size
+    implicitHeight: AppStyle.size
+    leftPadding: AppStyle.size / 60
+    rightPadding: AppStyle.size / 60
+    topPadding: AppStyle.size / 60
+    bottomPadding: AppStyle.size / 60
     header: RowLayout {
         ToolButton {
             contentItem: RoniaTextIcon {

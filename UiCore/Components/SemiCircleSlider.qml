@@ -28,14 +28,14 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: 400
-    implicitHeight: 200
+    implicitWidth: AppStyle.size / 1.2
+    implicitHeight: AppStyle.size / 2.4
     leftInset: 0
     rightInset: 0
     background: Item {
-        readonly property int pathWidth: 12
+        readonly property int pathWidth: AppStyle.size / 40
         readonly property real shapeWidth: shapeHeight * 2
-        readonly property real shapeHeight: height - 20
+        readonly property real shapeHeight: height - AppStyle.size / 24
 
         layer.enabled: true
         layer.samples: 8
@@ -118,16 +118,16 @@ Control {
         readonly property int angleRange: 180
 
         x: _control.width / 2
-        y: _control.height - 10
+        y: _control.height - AppStyle.size / 48
         rotation: {
             var valueRange = Math.abs(to - from);
             return (value / (valueRange > 0 ? valueRange : 1)) * angleRange
         }
 
         Rectangle {
-            x: -background.shapeWidth / 2 - width / 2 + 6
+            x: -background.shapeWidth / 2 - width / 2 + AppStyle.size / 80
             y: - height / 2
-            width: 20
+            width: AppStyle.size / 24
             height: width
             radius: width / 2
 

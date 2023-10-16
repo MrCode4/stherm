@@ -22,10 +22,10 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 8
-    rightPadding: 8
-    topPadding: 4
-    bottomPadding: 4
+    leftPadding: AppStyle.size / 60
+    rightPadding: AppStyle.size / 60
+    topPadding: AppStyle.size / 60 / 2
+    bottomPadding: AppStyle.size / 60 / 2
     contentItem: GridLayout {
         columnSpacing: 0
         rowSpacing: 0
@@ -42,7 +42,7 @@ Control {
         //! Unit
         Label {
             Layout.alignment: Qt.AlignTop
-            Layout.topMargin: 4
+            Layout.topMargin: AppStyle.size / 60 / 2
             opacity: 0.6
             font {
                 pixelSize: 20

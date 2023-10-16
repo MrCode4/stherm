@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 
+import Stherm
+
 /*! ***********************************************************************************************
  * ShadeButtonDelegate is a delegate for selecting shades of a color
  * ***********************************************************************************************/
@@ -24,8 +26,8 @@ RoundButton {
      * ****************************************************************************************/
     Layout.alignment: Qt.AlignCenter
     Layout.topMargin: checked ? -12 : 0
-    background.implicitWidth: 52
-    background.implicitHeight: 52
+    background.implicitWidth: AppStyle.size / 9
+    background.implicitHeight: AppStyle.size / 9
     checkable: true
     flat: !checked
     down: checked
@@ -35,8 +37,8 @@ RoundButton {
     Rectangle {
         id: _shadeColor
         anchors.centerIn: parent
-        width: 32
-        height: 32
+        width: AppStyle.size / 16
+        height: AppStyle.size / 16
         radius: width / 2
         border.width: 2
         border.color: _root.Material.foreground

@@ -41,7 +41,7 @@ BasePageView {
     ColumnLayout {
         id: _contentsLay
         anchors.centerIn: parent
-        spacing: 4
+        spacing: AppStyle.size / 120
 
         ButtonGroup {
             buttons: [_autoButton, _onButton]
@@ -53,8 +53,8 @@ BasePageView {
             Material.theme: checked ? (_root.Material.theme === Material.Dark ? Material.Light : Material.Dark)
                                     : _root.Material.theme
             Layout.alignment: Qt.AlignCenter
-            leftPadding: 48
-            rightPadding: 48
+            leftPadding: AppStyle.size / 10
+            rightPadding: AppStyle.size / 10
             font.weight: checked ? Font.ExtraBold : Font.Normal
             checked: true
             checkable: true
@@ -68,15 +68,15 @@ BasePageView {
                                     : _root.Material.theme
             Layout.alignment: Qt.AlignCenter
             Layout.preferredWidth: _autoButton.width
-            leftPadding: 48
-            rightPadding: 48
+            leftPadding: AppStyle.size / 10
+            rightPadding: AppStyle.size / 10
             font.weight: checked ? Font.ExtraBold : Font.Normal
             checkable: true
             text: "On"
         }
 
         Label {
-            Layout.topMargin: 32
+            Layout.topMargin: AppStyle.size / 15
             Layout.alignment: Qt.AlignCenter
             text: "Fan working period during each hour"
         }

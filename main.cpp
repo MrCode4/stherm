@@ -13,9 +13,10 @@ int main(int argc, char *argv[])
 
     engine.addImportPath(":/");
     const QUrl url(u"qrc:/Stherm/Main.qml"_qs);
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
+    /*    QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
         &app, []() { QCoreApplication::exit(-1); },
-        Qt::QueuedConnection);
+        Qt::QueuedConnection)*/
+    ;
     engine.load(url);
 
     return app.exec();

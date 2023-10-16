@@ -23,10 +23,11 @@ ApplicationWindow {
 
     /* Object Properties
      * ****************************************************************************************/
-    width: 480
-    height: 480
+    width: AppStyle.size
+    height: AppStyle.size
+
     visible: true
-//    visibility: uiSession.uiPreferences.windowMode
+//    visibility: Window.FullScreen
     title: qsTr("Template" + "               " + currentFile)
 
     //! Create defualt repo and root object to save and load

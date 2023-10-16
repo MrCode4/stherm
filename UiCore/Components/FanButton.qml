@@ -18,7 +18,7 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    padding: 12
+    padding: AppStyle.size / 90
     flat: true
     checkable: true
     checked: false //! \todo: connect to a property in Fan
@@ -27,8 +27,8 @@ ToolButton {
      * ****************************************************************************************/
     Image {
         anchors.centerIn: parent
-        width: _root.icon.width
-        height: _root.icon.height
+        width: _root.icon.width *  AppStyle.size / 480
+        height: _root.icon.height * AppStyle.size / 480
         source: _root.checked ? "qrc:/Stherm/Images/fan-on.png" : "qrc:/Stherm/Images/fan-off.png"
     }
 }

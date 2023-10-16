@@ -30,8 +30,8 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 40
-    rightPadding: 40
+    leftPadding: AppStyle.size / 12
+    rightPadding: AppStyle.size / 12
     title: "Backlight"
 
     /* Children
@@ -55,7 +55,7 @@ BasePageView {
     ColumnLayout {
         anchors.centerIn: parent
         width: _root.availableWidth
-        spacing: 16
+        spacing: AppStyle.size / 30
 
         Label {
             Layout.leftMargin: 4
@@ -69,8 +69,8 @@ BasePageView {
         }
 
         Label {
-            Layout.topMargin: 40
-            Layout.leftMargin: 4
+            Layout.topMargin: AppStyle.size / 12
+            Layout.leftMargin: AppStyle.size / 120
             text: "Brightness"
         }
 
@@ -91,9 +91,9 @@ BasePageView {
         RowLayout {
             id: _buttonsRow
             Layout.preferredWidth: _root.availableWidth
-            Layout.leftMargin: 16
-            Layout.rightMargin: 16
-            Layout.topMargin: 32
+            Layout.leftMargin: AppStyle.size / 30
+            Layout.rightMargin: AppStyle.size / 30
+            Layout.topMargin: AppStyle.size / 16
 
             Repeater {
                 id: _shadeButtonsRepeater
