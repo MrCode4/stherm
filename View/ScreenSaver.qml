@@ -21,8 +21,8 @@ Popup {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitHeight: 480
-    implicitWidth:  480
+    implicitHeight: AppStyle.size
+    implicitWidth:  AppStyle.size
     background: Rectangle {
         color: _root.Material.background
     }
@@ -38,19 +38,19 @@ Popup {
             id: _tempratureLbl
 
             Layout.alignment: Qt.AlignCenter
-            font.pointSize: 80
+            font.pointSize: AppStyle.size / 6
             text: Number(device?.currentTemp ?? 0).toLocaleString(locale, "f", 0)
 
             Label {
                 anchors {
                     left: parent.right
                     top: parent.top
-                    topMargin: 20
+                    topMargin: AppStyle.size / 24
                 }
 
                 opacity: 0.6
                 font {
-                    pixelSize: 40
+                    pixelSize: AppStyle.size / 12
                     capitalization: "AllUppercase"
                 }
                 text: `\u00b0${unit}`

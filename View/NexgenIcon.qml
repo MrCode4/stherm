@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 
+import Stherm
+
 /*! ***********************************************************************************************
  * Icon of NEXGEN
  * \todo This should be designed as svg and displayed using Image
@@ -12,7 +14,7 @@ Label {
      * ****************************************************************************************/
     font {
         family: "monospace"
-        pointSize: 64
+        pointSize: AppStyle.size / 7.5
         capitalization: "AllUppercase"
     }
     textFormat: "RichText"
