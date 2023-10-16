@@ -14,7 +14,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Ref to Backlight model
-    property Backlight              backlight
+    property Backlight              backlight: uiSession?.appModel?.backlight
 
     //! Selected backlight color from shade buttons
     readonly property color selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
@@ -48,13 +48,6 @@ BasePageView {
             //! Update backlight
             if (deviceController) {
                 deviceController.updateBacklight();
-            }
-
-            //! Show test color page
-            if (_root.StackView.view) {
-                _root.StackView.view.push("qrc:/Stherm/View/ColorTestPage.qml", {
-                                              "Material.background": selectedColor
-                                          });
             }
         }
     }
@@ -111,6 +104,12 @@ BasePageView {
                     shadeFactor: index / 4.
                 }
             }
+        }
+    }
+
+    onSelectedColorChanged: {
+        if (backlight) {
+            backlight.color = selectedColor;
         }
     }
 }

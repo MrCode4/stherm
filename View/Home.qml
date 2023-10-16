@@ -130,7 +130,9 @@ Control {
             onClicked: {
                 //! Push ApplicationMenu to StackView
                 if (_root.StackView.view) {
-                    _root.StackView.view.push("qrc:/Stherm/View/ApplicationMenu.qml");
+                    _root.StackView.view.push("qrc:/Stherm/View/ApplicationMenu.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
                 }
             }
         }

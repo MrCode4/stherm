@@ -17,7 +17,7 @@ Page {
     property UiSession              uiSession
 
     //! Ref to I_DeviceController
-    property I_DeviceController     deviceController
+    property I_DeviceController     deviceController: uiSession?.deviceController ?? null
 
     //! This should hold a callback to be called when back button is clicked.
     property var                    backButtonCallback
