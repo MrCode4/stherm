@@ -28,6 +28,8 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
 # Dependencies
 add_subdirectory(QtQuickStream)
 
+add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
+
 # Extra QML File properties
 set_source_files_properties(
     Core/AppCore.qml
@@ -183,6 +185,10 @@ set_target_properties(appStherm PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
+target_link_directories(appStherm PRIVATE
+    ${QT_QML_OUTPUT_DIRECTORY}/Ronia
+)
+
 target_link_libraries(appStherm
     PRIVATE
     Qt6::Quick
@@ -193,6 +199,8 @@ target_link_libraries(appStherm
     Qt6::Multimedia
     Qt6::Concurrent
     QtQuickStreamplugin
+    RoniaStyle
+    RoniaStyleplugin
 )
 
 include(GNUInstallDirs)

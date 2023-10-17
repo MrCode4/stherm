@@ -12,7 +12,6 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-    QQuickStyle::setStyle("Material");
 
     engine.addImportPath(":/");
     const QUrl url(u"qrc:/Stherm/Main.qml"_qs);
