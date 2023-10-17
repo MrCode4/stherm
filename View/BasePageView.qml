@@ -22,6 +22,9 @@ Page {
     //! This should hold a callback to be called when back button is clicked.
     property var                    backButtonCallback
 
+    //! Controls visibility of backbutton
+    property bool                   backButtonVisible: true
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
@@ -32,6 +35,7 @@ Page {
     bottomPadding: AppStyle.size / 60
     header: RowLayout {
         ToolButton {
+            visible: backButtonVisible
             contentItem: RoniaTextIcon {
                 text: "\uf060"
             }

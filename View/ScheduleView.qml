@@ -29,6 +29,11 @@ BasePageView {
 
         onClicked: {
             //! Open adding a schedule page
+            if (_root.StackView.view) {
+                _root.StackView.view.push("qrc:/Stherm/View/AddSchedulePage.qml", {
+                                              "uiSession": uiSession
+                                          });
+            }
         }
     }
 
