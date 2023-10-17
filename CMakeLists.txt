@@ -126,6 +126,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ScheduleButton.qml
         UiCore/Components/ColorSlider.qml
         UiCore/Components/BrightnessSlider.qml
+        UiCore/Components/TickedSlider.qml
 
 
         # Views and Widgets
@@ -145,6 +146,7 @@ qt6_add_qml_module(appStherm
 
         View/Schedule/ScheduleBasePage.qml
         View/Schedule/ScheduleTypePage.qml
+        View/Schedule/ScheduleTempraturePage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
