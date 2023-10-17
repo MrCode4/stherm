@@ -141,7 +141,10 @@ qt6_add_qml_module(appStherm
         View/ColorTestPage.qml
         View/FanPage.qml
         View/SystemInfoPage.qml
+        View/AddSchedulePage.qml
 
+        View/Schedule/ScheduleBasePage.qml
+        View/Schedule/ScheduleTypePage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
