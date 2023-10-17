@@ -3,6 +3,7 @@
 #include <QQuickStyle>
 #include <QScreen>
 #include <QQmlContext>
+#include <QFontDatabase>
 
 
 int main(int argc, char *argv[])
@@ -29,6 +30,15 @@ int main(int argc, char *argv[])
     deviceInfo["logicalDotsPerInch"] = screen->logicalDotsPerInch();
     deviceInfo["physicalDotsPerInch"] = screen->physicalDotsPerInch();
 
+    //! Load default font -> Roboto-Regular for now
+    int robotoId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Roboto-Regular.ttf");
+    if (robotoId == -1) {
+        qWarning() << "Could not load Roboto-Regular font.";
+    } else {
+        auto iransSansFontFamilies = QFontDatabase::applicationFontFamilies(robotoId);
+        QFont defaultFont(iransSansFontFamilies[0], qApp->font().pointSize());
+        qApp->setFont(defaultFont);
+    }
 
     engine.rootContext()->setContextProperty("deviceInfo", deviceInfo);
 
