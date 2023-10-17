@@ -54,6 +54,7 @@ I_DeviceController {
 
     function updateFan()
     {
-        console.log("starting rest for updateFan")
+        console.log("starting rest for updateFan :", device.fan.working_per_hour)
+        sendReceive('system', 'setFan', device.fan.working_per_hour);
     }
 }
