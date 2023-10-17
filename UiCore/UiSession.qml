@@ -48,10 +48,31 @@ QtObject {
     //! app core
     property I_Device           appModel:        AppCore.model
 
+
     //! Device controller
-    property I_DeviceController deviceController:   SimDeviceController {
+    property bool simulating:   true
+
+    onSimulatingChanged: {
+        if (!simulating) {
+            AppStyle.backgroundColor = "black";
+            realDeviceController.updateBacklight();
+            // start real device
+        }
+    }
+
+
+    //! Device controller
+    property I_DeviceController realDeviceController:   DeviceController {
         device: appModel
     }
+    //! Device controller
+    property I_DeviceController simDeviceController:   SimDeviceController {
+        device: appModel
+    }
+
+
+    //! Device controller
+    property I_DeviceController deviceController:  simulating ? simDeviceController : realDeviceController
 
     //! Path of File to save model.
     property string             currentFile:    ""

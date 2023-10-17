@@ -14,7 +14,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Reference to Fan model
-    property Fan    fan
+    property Fan    fan : uiSession?.appModel?.fan
 
     /* Object properties
      * ****************************************************************************************/
@@ -87,13 +87,15 @@ BasePageView {
         Slider {
             Layout.preferredWidth: _ticksRow.implicitWidth + implicitHandleWidth + leftPadding + rightPadding
             Layout.alignment: Qt.AlignCenter
-            value: 0.5
+            value: fan.working_per_hour
             from: 0
             to: 55
             stepSize: 1
             snapMode: "SnapAlways"
             //! Uncomment following line to remove Slider's ticks (on backgroun)
             //! Component.onCompleted: background.children[0].repeater.model = 0
+
+            onValueChanged: fan.working_per_hour = value
         }
 
         //! Slider ticks

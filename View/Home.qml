@@ -112,12 +112,24 @@ Control {
 
         //! NEXGEN icon
         NexgenIcon {
+            id: logo
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 top: _otherItemsLay.bottom
                 topMargin: AppStyle.size / 60
             }
             font.pixelSize: AppStyle.size / 10
+        }
+
+        //! Device Toggle Button
+        DeviceToggleButton {
+            anchors {
+                horizontalCenter: logo.horizontalCenter
+                top: logo.bottom
+                topMargin: AppStyle.size / 60
+            }
+
+            uiSession : _root.uiSession
         }
 
         //! Menu button
