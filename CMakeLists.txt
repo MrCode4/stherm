@@ -143,8 +143,6 @@ qt6_add_qml_module(appStherm
         View/FanPage.qml
         View/SystemInfoPage.qml
         View/AddSchedulePage.qml
-
-        View/Schedule/ScheduleBasePage.qml
         View/Schedule/ScheduleTypePage.qml
         View/Schedule/ScheduleTempraturePage.qml
 

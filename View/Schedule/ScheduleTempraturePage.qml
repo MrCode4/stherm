@@ -7,7 +7,7 @@ import Stherm
 /*! ***********************************************************************************************
  *  ScheduleTempraturePage is a page for setting temprature in AddSchedulePage
  * ***********************************************************************************************/
-ScheduleBasePage {
+BasePageView {
     id: _root
 
     /* Property declaration
@@ -17,6 +17,7 @@ ScheduleBasePage {
     /* Object properties
      * ****************************************************************************************/
     title: "Temprature"
+    backButtonVisible: false
 
     /* Children
      * ****************************************************************************************/

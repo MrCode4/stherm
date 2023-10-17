@@ -3,12 +3,11 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import Stherm
-import "."
 
 /*! ***********************************************************************************************
  * ScheduleTypePage
  * ***********************************************************************************************/
-ScheduleBasePage {
+BasePageView {
     id: _root
 
     /* Property declaration
@@ -18,6 +17,7 @@ ScheduleBasePage {
     /* Object properties
      * ****************************************************************************************/
     title: "Schedule Type"
+    backButtonVisible: false
 
     /* Children
      * ****************************************************************************************/
