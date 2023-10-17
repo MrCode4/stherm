@@ -19,21 +19,35 @@ I_DeviceController {
 
     /* Methods
      * ****************************************************************************************/
+
     function sendReceive(className, method, data)
     {
-        var data_msg = {};
+        var data_msg = '{"request": {"class": "' + className + '", "method": "' + method + '", "params": ' + JSON.stringify(data) + '}}';
 
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/engine/index.php", false); //! Synchronous
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.send(JSON.stringify(data_msg));
+        let xhr = new XMLHttpRequest();
 
-        if (xhr.status === 200) {
-            return JSON.parse(xhr.responseText);
-        } else {
-            console.error("Error in HTTP request:", xhr.status, xhr.statusText);
-            return null;
+        xhr.onreadystatechange = function() {
+            console.error("XMLHttpRequest onreadystatechange", xhr.readyState);
+
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                let response = {
+                    status : xhr.status,
+                    headers : xhr.getAllResponseHeaders(),
+                    contentType : xhr.responseType,
+                    content : xhr.response
+                };
+                console.error("XMLHttpRequest done", xhr.status, xhr.statusText, xhr.responseType);
+
+                if (xhr.status === 200) {
+                    console.error("XMLHttpRequest done", responseText, JSON.parse(xhr.responseText));
+                } else {
+                    console.error("Error in HTTP request:", xhr.status, xhr.statusText);
+                }
+            }
         }
+        xhr.open("POST", "/engine/index.php", true);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(data_msg);
     }
 
     function updateBacklight()
