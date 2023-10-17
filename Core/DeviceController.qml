@@ -1,4 +1,5 @@
 import QtQuick
+
 import Stherm
 
 /*! ***********************************************************************************************
@@ -37,8 +38,18 @@ I_DeviceController {
 
     function updateBacklight()
     {
-        console.log("starting rest for updateBacklight")
+        console.log("starting rest for updateBacklight, color: ", device.backlight.color)
         //! Use a REST request to update device backlight
+        var color = Qt.color(device.backlight.color);
+        var r = color.r
+        var g = color.g
+        var b = color.b
+
+        console.log("colors: ", r, ",", g, ",", b)
+        var send_data = [color.r, color.g, color.b, 0, 'true']
+
+        console.log("send data: ", send_data)
+        sendReceive('hardware', 'setBacklight', send_data);
     }
 
     function updateFan()
