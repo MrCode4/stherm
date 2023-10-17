@@ -123,6 +123,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/FanButton.qml
         UiCore/Components/CurrentHumidityLabel.qml
         UiCore/Components/HoldButton.qml
+        UiCore/Components/DeviceToggleButton.qml
         UiCore/Components/WifiButton.qml
         UiCore/Components/MenuButton.qml
         UiCore/Components/ScheduleButton.qml

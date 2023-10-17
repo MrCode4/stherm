@@ -37,6 +37,12 @@ I_DeviceController {
 
     function updateBacklight()
     {
+        console.log("starting rest for updateBacklight")
         //! Use a REST request to update device backlight
+    }
+
+    function updateFan()
+    {
+        console.log("starting rest for updateFan")
     }
 }
