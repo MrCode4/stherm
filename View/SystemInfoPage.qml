@@ -32,11 +32,6 @@ BasePageView {
             lineHeight: 1.2
             wrapMode: Text.WordWrap
             text: JSON.stringify(deviceInfo, null, 4)
-            background: Rectangle {
-                color: "transparent"
-                border.width: 2
-                border.color: "white"
-            }
         }
     }
 }

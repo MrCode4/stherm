@@ -142,6 +142,7 @@ Control {
 
                 onPressed: dragging = true
                 onReleased: dragging = false
+                onCanceled: dragging = false
                 onPositionChanged: function(event) {
                     //! Get angle to center
                     var center = Qt.point(_control.background.shapeWidth / 2, _control.height);
