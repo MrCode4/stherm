@@ -16,6 +16,11 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
+    implicitWidth: contentItem.children.length === 1 ? contentItem.children[0].implicitWidth + leftPadding + rightPadding : 0
+    implicitHeight: contentItem.children.length === 1 ? contentItem.children[0].implicitHeight + implicitHeaderHeight
+                                                        + implicitFooterHeight + topPadding + bottomPadding
+                                                      : 0
+
     title: "Schedule Type"
     backButtonVisible: false
 

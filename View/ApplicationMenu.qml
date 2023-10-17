@@ -37,6 +37,9 @@ BasePageView {
                 case "System Info":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
                     break;
+                case "Schedule":
+                    _root.StackView.view.push("qrc:/Stherm/View/ScheduleView.qml");
+                    break;
                 }
             }
         }
