@@ -18,8 +18,14 @@ Page {
     //! Ref to I_DeviceController
     property I_DeviceController     deviceController: uiSession?.deviceController ?? null
 
+    //! Page title heading level: from 1 to 6
+    property int                    titleHeadeingLevel: 2
+
     //! This should hold a callback to be called when back button is clicked.
     property var                    backButtonCallback
+
+    //! FontAwesome text icon of backbutton
+    property string                 backButtonTextIcon: "\uf060"
 
     //! Controls visibility of backbutton
     property bool                   backButtonVisible: true
@@ -36,7 +42,7 @@ Page {
         ToolButton {
             visible: backButtonVisible
             contentItem: RoniaTextIcon {
-                text: "\uf060"
+                text: backButtonTextIcon
             }
 
             onClicked: if (backButtonCallback instanceof Function) backButtonCallback();
@@ -48,7 +54,7 @@ Page {
             textFormat: "MarkdownText"
             verticalAlignment: "AlignVCenter"
             horizontalAlignment: "AlignHCenter"
-            text: `## ${title}`
+            text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} ${title}`
             elide: "ElideRight"
         }
     }
