@@ -45,7 +45,7 @@ I_DeviceController {
                 }
             }
         }
-        xhr.open("POST", "/engine/index.php", true);
+        xhr.open("POST", "http://127.0.0.1/engine/index.php", true);
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         xhr.send(data_msg);
     }
