@@ -37,7 +37,9 @@ BasePageView {
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
                     break;
                 case "Schedule":
-                    _root.StackView.view.push("qrc:/Stherm/View/ScheduleView.qml");
+                    _root.StackView.view.push("qrc:/Stherm/View/ScheduleView.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
                     break;
                 }
             }
