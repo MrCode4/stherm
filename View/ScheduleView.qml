@@ -12,6 +12,8 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! ScheduleController instance
+    property ScheduleController     scheduleController: uiSession?.scheduleController
 
     /* Object properties
      * ****************************************************************************************/
@@ -37,4 +39,28 @@ BasePageView {
     }
 
     //! Contents should be a list of current schedules
+    ListView {
+        anchors.fill: parent
+        clip: true
+        model: scheduleController?.schedules
+        delegate: ScheduleDelegate {
+            required property var modelData
+            required property int index
+
+            width: ListView.view.width
+            height: Material.delegateHeight
+            schedule: modelData
+            delegateIndex: index
+
+            onRemoved: {
+                if (scheduleController) {
+                    scheduleController.removeSchedule(schedule);
+                }
+            }
+        }
+    }
+
+    FontMetrics {
+        id: _fontMetric
+    }
 }
