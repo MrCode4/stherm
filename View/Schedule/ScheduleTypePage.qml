@@ -39,6 +39,7 @@ BasePageView {
         Button {
             Layout.fillWidth: true
             checkable: true
+            checked: true
             text: "Away"
         }
 

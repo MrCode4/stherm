@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 import Ronia
 import Stherm
-import "./Schedule"
+
 /*! ***********************************************************************************************
  * AddSchedulePage
  * ***********************************************************************************************/
@@ -12,6 +12,7 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    property Schedule       schedule: uiSession?.appModel?.schedule ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -51,7 +52,16 @@ BasePageView {
         onClicked: {
             if (!_newSchedulePages.currentItem.nextPage) {
                 //! It's done, save schedule
-                console.log('Save Schedule');
+                if (schedule) {
+                    schedule.name = _internal.newSchedule.name;
+                    schedule.type = _internal.newSchedule.type;
+                    schedule.temprature = _internal.newSchedule.temprature;
+                    schedule.humidity = _internal.newSchedule.humidity;
+                    schedule.startTime = _internal.newSchedule.startTime;
+                    schedule.endTime = _internal.newSchedule.endTime;
+                    schedule.repeats = _internal.newSchedule.repeats;
+                    schedule.dataSource = _internal.newSchedule.dataSource;
+                }
             } else {
                 //! Go to next page
                 _newSchedulePages.push(_newSchedulePages.currentItem.nextPage)
@@ -63,10 +73,16 @@ BasePageView {
     StackView {
         id: _newSchedulePages
         anchors.centerIn: parent
-        implicitHeight: currentItem?.implicitHeight
-        implicitWidth: currentItem?.implicitWidth
+        implicitHeight: Math.min(parent.height, currentItem?.implicitHeight)
+        implicitWidth: Math.min(parent.width, currentItem?.implicitWidth)
 
         initialItem: _typePage
+    }
+
+    QtObject {
+        id: _internal
+
+        property Schedule newSchedule: Schedule { }
     }
 
     //! Page Components
@@ -75,6 +91,12 @@ BasePageView {
 
         ScheduleTypePage {
             readonly property Component nextPage: _tempraturePage
+
+            onTypeChanged: {
+                if (type !== _internal.newSchedule.type) {
+                    _internal.newSchedule.type = type;
+                }
+            }
         }
     }
 
@@ -83,6 +105,12 @@ BasePageView {
 
         ScheduleTempraturePage {
             readonly property Component nextPage: _startTimePage
+
+            onTempratureChanged: {
+                if (temprature !== _internal.newSchedule.temprature) {
+                    _internal.newSchedule.temprature = temprature;
+                }
+            }
         }
     }
 
@@ -93,6 +121,11 @@ BasePageView {
             readonly property Component nextPage: _endTimePage
 
             title: "Start Time"
+            onSelectedTimeChanged: {
+                if (selectedTime !== _internal.newSchedule.startTime) {
+                    _internal.newSchedule.startTime = selectedTime;
+                }
+            }
         }
     }
 
@@ -103,6 +136,11 @@ BasePageView {
             readonly property Component nextPage: _repeatPage
 
             title: "End Time"
+            onSelectedTimeChanged: {
+                if (selectedTime !== _internal.newSchedule.endTime) {
+                    _internal.newSchedule.endTime = selectedTime;
+                }
+            }
         }
     }
 
@@ -111,17 +149,22 @@ BasePageView {
 
         ScheduleRepeatPage {
             readonly property Component nextPage: _preivewPage
+
+            onRepeatsChanged: {
+                if (repeats.toString() !== _internal.newSchedule.repeats.toString()) {
+                    _internal.newSchedule.repeats = repeats;
+                }
+            }
         }
     }
 
     Component {
         id: _preivewPage
 
-        Label {
+        SchedulePreviewPage {
             readonly property Component nextPage: null
 
-            textFormat: "MarkdownText"
-            text: "# New Schedule Preview"
+            schedule: _internal.newSchedule
         }
     }
 }
