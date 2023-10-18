@@ -39,7 +39,7 @@ I_DeviceController {
                 console.error("XMLHttpRequest done", xhr.status, xhr.statusText, xhr.responseType);
 
                 if (xhr.status === 200) {
-                    console.error("XMLHttpRequest done", responseText, JSON.parse(xhr.responseText));
+                    console.error("XMLHttpRequest done", xhr.responseText, JSON.parse(xhr.responseText));
                 } else {
                     console.error("Error in HTTP request:", xhr.status, xhr.statusText);
                 }
