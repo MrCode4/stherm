@@ -39,5 +39,15 @@ BasePageView {
         from: 0
         to: 100
         stepSize: tickStepSize
+
+        ToolTip {
+            parent: _tempSlider.handle
+            y: -height - 16
+            x: (parent.width - width) / 2
+            visible: _tempSlider.pressed
+            timeout: Number.MAX_VALUE
+            delay: 0
+            text: _tempSlider.value
+        }
     }
 }
