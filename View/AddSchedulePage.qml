@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 import Ronia
 import Stherm
-
+import "./Schedule"
 /*! ***********************************************************************************************
  * AddSchedulePage
  * ***********************************************************************************************/
@@ -28,6 +28,7 @@ BasePageView {
             }
         }
     }
+    backButtonTextIcon: _newSchedulePages.depth > 1 ? "\uf00d" : "\uf060"
 
     /* Children
      * ****************************************************************************************/
@@ -88,33 +89,28 @@ BasePageView {
     Component {
         id: _startTimePage
 
-        Label {
+        ScheduleTimePage {
             readonly property Component nextPage: _endTimePage
 
-            textFormat: "MarkdownText"
-            text: "# Start Time"
+            title: "Start Time"
         }
     }
 
     Component {
         id: _endTimePage
 
-        Label {
+        ScheduleTimePage {
             readonly property Component nextPage: _repeatPage
 
-            textFormat: "MarkdownText"
-            text: "# End Time"
+            title: "End Time"
         }
     }
 
     Component {
         id: _repeatPage
 
-        Label {
+        ScheduleRepeatPage {
             readonly property Component nextPage: _preivewPage
-
-            textFormat: "MarkdownText"
-            text: "# Repeat"
         }
     }
 
