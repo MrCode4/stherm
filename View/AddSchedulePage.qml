@@ -12,7 +12,8 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property Schedule       schedule: uiSession?.appModel?.schedule ?? null
+    //! ScheduleController instance
+    property ScheduleController     scheduleController: uiSession?.scheduleController
 
     /* Object properties
      * ****************************************************************************************/
@@ -52,15 +53,8 @@ BasePageView {
         onClicked: {
             if (!_newSchedulePages.currentItem.nextPage) {
                 //! It's done, save schedule and go back
-                if (schedule) {
-                    schedule.name = _internal.newSchedule.name;
-                    schedule.type = _internal.newSchedule.type;
-                    schedule.temprature = _internal.newSchedule.temprature;
-                    schedule.humidity = _internal.newSchedule.humidity;
-                    schedule.startTime = _internal.newSchedule.startTime;
-                    schedule.endTime = _internal.newSchedule.endTime;
-                    schedule.repeats = _internal.newSchedule.repeats;
-                    schedule.dataSource = _internal.newSchedule.dataSource;
+                if (scheduleController) {
+                    scheduleController.saveNewSchedule(_internal.newSchedule);
                 }
 
                 if (_root.StackView.view) {
