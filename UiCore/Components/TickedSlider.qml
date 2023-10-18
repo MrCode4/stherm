@@ -46,7 +46,7 @@ Slider {
         width: _control.horizontal ? _control.availableWidth : 4
         height: _control.horizontal ? 4 : _control.availableHeight
         scale: _control.horizontal && _control.mirrored ? -1 : 1
-        color: _control.enabled ? Color.transparent(_control.Material.accentColor, 0.33) : _control.Material.sliderDisabledColor
+        color: _control.enabled ? Qt.alpha(_control.Material.accentColor, 0.33) : _control.Material.sliderDisabledColor
 
         Rectangle {
             x: _control.horizontal ? 0 : (parent.width - width) / 2
