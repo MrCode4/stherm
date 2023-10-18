@@ -1,0 +1,67 @@
+import QtQuick
+import QtQuick.Layouts
+
+import Ronia
+import Stherm
+
+/*! ***********************************************************************************************
+ * ScheduleStartTimePage provides ui for selecting start time in AddSchedulePage
+ * ***********************************************************************************************/
+BasePageView {
+    id: _root
+
+    /* Property declaration
+     * ****************************************************************************************/
+
+    /* Object properties
+     * ****************************************************************************************/
+    implicitWidth: _contentLay.implicitWidth + leftPadding + rightPadding
+    implicitHeight: _contentLay.implicitHeight + implicitHeaderHeight + implicitFooterHeight + topPadding + bottomPadding
+    backButtonVisible: false
+
+    /* Children
+     * ****************************************************************************************/
+    GridLayout {
+        id: _contentLay
+        anchors.fill: parent
+
+        columns: 4
+        columnSpacing: 12
+        rowSpacing: 32
+
+        Label {
+            text: "Time"
+        }
+
+        Tumbler {
+            id: _hourTumbler
+            model: Array.from({ length: 12 }, (elem, indx) => indx + 1)
+        }
+
+        Label {
+            textFormat: "MarkdownText"
+            text: "# :"
+        }
+
+        Tumbler {
+            id: _minuteTumbler
+            model: 60
+        }
+
+        //! AM and PM radio buttons
+        RadioButton {
+            id: _amRBtn
+            Layout.columnSpan: 2
+            Layout.alignment: Qt.AlignCenter
+            text: "AM"
+            checked: true
+        }
+
+        RadioButton {
+            id: _pmRBtn
+            Layout.columnSpan: 2
+            Layout.alignment: Qt.AlignCenter
+            text: "PM"
+        }
+    }
+}
