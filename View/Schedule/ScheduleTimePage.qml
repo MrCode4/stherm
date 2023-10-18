@@ -17,21 +17,19 @@ BasePageView {
      * ****************************************************************************************/
     implicitWidth: _contentLay.implicitWidth + leftPadding + rightPadding
     implicitHeight: _contentLay.implicitHeight + implicitHeaderHeight + implicitFooterHeight + topPadding + bottomPadding
+    topPadding: 24
     backButtonVisible: false
+    titleHeadeingLevel: 3
 
     /* Children
      * ****************************************************************************************/
     GridLayout {
         id: _contentLay
-        anchors.fill: parent
+        anchors.centerIn: parent
 
-        columns: 4
+        columns: 3
         columnSpacing: 12
         rowSpacing: 32
-
-        Label {
-            text: "Time"
-        }
 
         Tumbler {
             id: _hourTumbler
@@ -51,15 +49,15 @@ BasePageView {
         //! AM and PM radio buttons
         RadioButton {
             id: _amRBtn
-            Layout.columnSpan: 2
             Layout.alignment: Qt.AlignCenter
             text: "AM"
             checked: true
         }
 
+        Item { }
+
         RadioButton {
             id: _pmRBtn
-            Layout.columnSpan: 2
             Layout.alignment: Qt.AlignCenter
             text: "PM"
         }

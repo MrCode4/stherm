@@ -17,9 +17,11 @@ BasePageView {
      * ****************************************************************************************/
     implicitWidth: Math.max(_contentLay.implicitWidth, implicitHeaderWidth) + leftPadding + rightPadding
     implicitHeight: _contentLay.implicitHeight + implicitHeaderHeight + implicitFooterHeight + topPadding + bottomPadding
+    topPadding: 24
+    font.bold: true
     title: "Repeat"
     backButtonVisible: false
-    font.bold: true
+    titleHeadeingLevel: 3
 
     /* Children
      * ****************************************************************************************/
@@ -37,7 +39,7 @@ BasePageView {
         Label { Layout.alignment: Qt.AlignCenter; text: "Sa" }
         Label { Layout.alignment: Qt.AlignCenter; text: "Su" }
 
-        RadioButton {id: _muBtn; autoExclusive: false }
+        RadioButton {id: _muBtn; autoExclusive: false; checked: true }
         RadioButton {id: _tuBtn; autoExclusive: false }
         RadioButton {id: _weBtn; autoExclusive: false }
         RadioButton {id: _thBtn; autoExclusive: false }

@@ -20,9 +20,10 @@ BasePageView {
     implicitHeight: contentItem.children.length === 1 ? contentItem.children[0].implicitHeight + implicitHeaderHeight
                                                         + implicitFooterHeight + topPadding + bottomPadding
                                                       : 0
-
+    topPadding: 24
     title: "Schedule Type"
     backButtonVisible: false
+    titleHeadeingLevel: 3
 
     /* Children
      * ****************************************************************************************/
