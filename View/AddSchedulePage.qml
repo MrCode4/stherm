@@ -51,7 +51,7 @@ BasePageView {
 
         onClicked: {
             if (!_newSchedulePages.currentItem.nextPage) {
-                //! It's done, save schedule
+                //! It's done, save schedule and go back
                 if (schedule) {
                     schedule.name = _internal.newSchedule.name;
                     schedule.type = _internal.newSchedule.type;
@@ -61,6 +61,10 @@ BasePageView {
                     schedule.endTime = _internal.newSchedule.endTime;
                     schedule.repeats = _internal.newSchedule.repeats;
                     schedule.dataSource = _internal.newSchedule.dataSource;
+                }
+
+                if (_root.StackView.view) {
+                    _root.StackView.view.pop();
                 }
             } else {
                 //! Go to next page
@@ -76,7 +80,7 @@ BasePageView {
         implicitHeight: Math.min(parent.height, currentItem?.implicitHeight)
         implicitWidth: Math.min(parent.width, currentItem?.implicitWidth)
 
-        initialItem: _typePage
+        initialItem: _sheduleNamePage
     }
 
     QtObject {
@@ -86,6 +90,20 @@ BasePageView {
     }
 
     //! Page Components
+    Component {
+        id: _sheduleNamePage
+
+        ScheduleNamePage {
+            readonly property Component nextPage: _typePage
+
+            onScheduleNameChanged: {
+                if (_internal.newSchedule.name !== scheduleName) {
+                    _internal.newSchedule.name = scheduleName;
+                }
+            }
+        }
+    }
+
     Component {
         id: _typePage
 

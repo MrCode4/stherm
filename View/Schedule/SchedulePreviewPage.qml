@@ -18,6 +18,7 @@ BasePageView {
      * ****************************************************************************************/
     leftPadding: 16
     rightPadding: 4
+    topPadding: 32
     title: "Shedule Preivew"
     backButtonVisible: false
     titleHeadeingLevel: 3

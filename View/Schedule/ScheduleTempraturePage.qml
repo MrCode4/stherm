@@ -38,7 +38,7 @@ BasePageView {
         ticksCount: 100 / tickStepSize
         from: 0
         to: 100
-        stepSize: tickStepSize
+        stepSize: 1
 
         ToolTip {
             parent: _tempSlider.handle
