@@ -12,7 +12,8 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property int    temprature
+    //! Temprature value
+    property alias      temprature: _tempSlider.value
 
     /* Object properties
      * ****************************************************************************************/
@@ -28,6 +29,7 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     TickedSlider {
+        id: _tempSlider
         readonly property int tickStepSize: 4
 
         implicitWidth: implicitHeaderWidth * 3

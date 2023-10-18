@@ -12,6 +12,20 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Selected days for repeating
+    readonly property var repeats: {
+        var rps = [];
+
+        if (_muBtn.checked) rps.push("Mu");
+        if (_tuBtn.checked) rps.push("Tu");
+        if (_weBtn.checked) rps.push("We");
+        if (_thBtn.checked) rps.push("Th");
+        if (_frBtn.checked) rps.push("Fr");
+        if (_saBtn.checked) rps.push("Sa");
+        if (_suBtn.checked) rps.push("Su");
+
+        return rps;
+    }
 
     /* Object properties
      * ****************************************************************************************/

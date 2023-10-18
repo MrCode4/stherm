@@ -12,6 +12,16 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Time in string format: 'hh:mm AM/PM'
+    readonly property string selectedTime: {
+        var h = `${_hourTumbler.currentItem.modelData}`;
+        var m = `${_minuteTumbler.currentItem.modelData}`;
+
+        if (h.length === 1) h = "0" + h;
+        if (m.length === 1) m = "0" + m;
+
+        return `${h}:${m} ${_amRBtn.checked ? "AM" : "PM"}`;
+    }
 
     /* Object properties
      * ****************************************************************************************/
