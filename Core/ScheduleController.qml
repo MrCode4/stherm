@@ -18,7 +18,7 @@ QSObject {
     //! Saves new schedule
     function saveNewSchedule(schedule: Schedule)
     {
-        var newSchedule = QSSerializer.createQSObject("Schedule", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
+        var newSchedule = QSSerializer.createQSObject("Schedule", ["Stherm", ""], AppCore.defaultRepo);
         newSchedule._qsRepo = AppCore.defaultRepo;
         newSchedule.name = schedule.name;
         newSchedule.type = schedule.type;
@@ -31,5 +31,19 @@ QSObject {
 
         schedules.push(preset);
         schedulesChanged();
+    }
+
+    //! Remove an schedule
+    function removeSchedule(schedule: Schedule)
+    {
+        var schIndex = schedules.findIndex(elem => elem === schedule);
+
+        if (schIndex !== -1) {
+            console.log('removed: ', schIndex);
+            schedules.splice(schIndex, 1);
+            schedulesChanged();
+
+            schedule.destroy();
+        }
     }
 }
