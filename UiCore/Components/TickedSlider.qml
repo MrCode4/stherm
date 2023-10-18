@@ -1,8 +1,8 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.Controls.Material.impl
 import QtQuick.Layouts
+
+import Ronia
 
 /*! ***********************************************************************************************
  * TickedSlider is an special slider with value ticks

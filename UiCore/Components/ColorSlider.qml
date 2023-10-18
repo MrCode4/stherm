@@ -1,7 +1,6 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Material
 
+import Ronia
 
 /*! ***********************************************************************************************
  * ColorSlider is an slider for selecting a color
