@@ -3,6 +3,7 @@ import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import QtQuick.VirtualKeyboard
 
 import Ronia
 import Stherm
@@ -66,10 +67,19 @@ ApplicationWindow {
     /* Children
      * ****************************************************************************************/
 
-    MainView {
-        id: mainView
-        anchors.fill: parent
-        uiSession: window.uiSession
+    Flickable {
+        width: window.width
+        height: window.height - (window.height - _virtualKb.y)
+        interactive: _virtualKb.active
+        boundsBehavior: Flickable.StopAtBounds
+        contentWidth: width
+        contentHeight: window.width
+
+        MainView {
+            id: mainView
+            anchors.fill: parent
+            uiSession: window.uiSession
+        }
     }
 
     //! Popup layout
@@ -117,6 +127,56 @@ ApplicationWindow {
         repeat: false
         onTriggered: {
             _screenSaver.open();
+        }
+    }
+
+    //! Virtual keyboard
+    InputPanel {
+        id: _virtualKb
+        z: 99
+        x: 0
+        y: window.height
+        width: window.width
+        implicitHeight: keyboard.height + _closeBtn.height
+
+        //! ToolButton to close keyboard.
+        //! This SHOULD steal focus from other controls, otherwise an already focused TextField
+        //! will not be able to activate keyboard. No onClicked handling is required.
+        TabButton {
+            id: _closeBtn
+            anchors {
+                right: parent.right
+                rightMargin: 4
+            }
+            padding: 8
+            background: null
+            contentItem: RoniaTextIcon {
+                anchors.centerIn: parent
+                text: "\uf078"
+            }
+        }
+
+        states: State {
+            name: "visible"
+            when: _virtualKb.active
+            PropertyChanges {
+                target: _virtualKb
+                y: window.height - _virtualKb.height
+            }
+        }
+
+        transitions: Transition {
+            from: ""
+            to: "visible"
+            reversible: true
+
+            ParallelAnimation {
+                NumberAnimation {
+                    properties: "y"
+                    duration: 300
+                    easing.type: Easing.InOutQuad
+                }
+            }
         }
     }
 }
