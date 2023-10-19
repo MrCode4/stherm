@@ -18,7 +18,7 @@ QSObject {
     //! Saves new schedule
     function saveNewSchedule(schedule: Schedule)
     {
-        var newSchedule = QSSerializer.createQSObject("Schedule", ["Stherm", ""], AppCore.defaultRepo);
+        var newSchedule = QSSerializer.createQSObject("Schedule", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
         newSchedule._qsRepo = AppCore.defaultRepo;
         newSchedule.name = schedule.name;
         newSchedule.type = schedule.type;
@@ -29,7 +29,7 @@ QSObject {
         newSchedule.repeats = schedule.repeats;
         newSchedule.dataSource = schedule.dataSource;
 
-        schedules.push(preset);
+        schedules.push(newSchedule);
         schedulesChanged();
     }
 
@@ -39,7 +39,6 @@ QSObject {
         var schIndex = schedules.findIndex(elem => elem === schedule);
 
         if (schIndex !== -1) {
-            console.log('removed: ', schIndex);
             schedules.splice(schIndex, 1);
             schedulesChanged();
 

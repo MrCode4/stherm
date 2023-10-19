@@ -38,7 +38,7 @@ ItemDelegate {
             Layout.alignment: Qt.AlignCenter
             Layout.rightMargin: 4
             text: {
-                switch(schedule.type) {
+                switch(schedule?.type) {
                 case "Away":
                     return "\uf30d";
                 case "Night":
@@ -57,7 +57,7 @@ ItemDelegate {
         Label {
             Layout.fillWidth: true
             font.bold: true
-            text: schedule.name
+            text: schedule?.name ?? ""
         }
 
         //! Schedule repeat
@@ -70,7 +70,7 @@ ItemDelegate {
                 anchors.centerIn: parent
                 spacing: 3
                 Repeater {
-                    model: schedule.repeats
+                    model: schedule?.repeats ?? 0
                     delegate: Label {
                         Layout.alignment: Qt.AlignTop
                         text: modelData

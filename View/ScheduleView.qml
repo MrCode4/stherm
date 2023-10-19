@@ -49,7 +49,7 @@ BasePageView {
 
             width: ListView.view.width
             height: Material.delegateHeight
-            schedule: modelData
+            schedule: (modelData instanceof Schedule) ? modelData : null
             delegateIndex: index
 
             onRemoved: {
