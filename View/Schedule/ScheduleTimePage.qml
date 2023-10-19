@@ -49,6 +49,7 @@ BasePageView {
         Label {
             textFormat: "MarkdownText"
             text: "# :"
+            Layout.fillWidth:  true
         }
 
         Tumbler {
@@ -64,7 +65,7 @@ BasePageView {
             checked: true
         }
 
-        Item { }
+        Item {Layout.fillWidth:  true }
 
         RadioButton {
             id: _pmRBtn
