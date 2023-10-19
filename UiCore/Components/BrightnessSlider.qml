@@ -1,8 +1,6 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Material
 
-
+import Ronia
 /*! ***********************************************************************************************
  * BrightnessSlider is a slider for changint brightness of a color
  * ***********************************************************************************************/

@@ -14,6 +14,7 @@ qt_add_qml_module(RoniaStyle
     URI Ronia
     STATIC
     VERSION 1.0
+    IMPORTS QtQuick.Controls.Material
     QML_FILES
         ItemDelegate.qml
 )

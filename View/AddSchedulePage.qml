@@ -1,7 +1,7 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 
+import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
@@ -12,6 +12,8 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! ScheduleController instance
+    property ScheduleController     scheduleController: uiSession?.scheduleController
 
     /* Object properties
      * ****************************************************************************************/
@@ -28,6 +30,7 @@ BasePageView {
             }
         }
     }
+    backButtonTextIcon: _newSchedulePages.depth > 1 ? "\uf00d" : "\uf060"
 
     /* Children
      * ****************************************************************************************/
@@ -49,8 +52,14 @@ BasePageView {
 
         onClicked: {
             if (!_newSchedulePages.currentItem.nextPage) {
-                //! It's done, save schedule
-                console.log('Save Schedule');
+                //! It's done, save schedule and go back
+                if (scheduleController) {
+                    scheduleController.saveNewSchedule(_internal.newSchedule);
+                }
+
+                if (_root.StackView.view) {
+                    _root.StackView.view.pop();
+                }
             } else {
                 //! Go to next page
                 _newSchedulePages.push(_newSchedulePages.currentItem.nextPage)
@@ -62,18 +71,44 @@ BasePageView {
     StackView {
         id: _newSchedulePages
         anchors.centerIn: parent
-        implicitHeight: currentItem?.implicitHeight
-        implicitWidth: currentItem?.implicitWidth
+        implicitHeight: Math.min(parent.height, currentItem?.implicitHeight)
+        implicitWidth: Math.min(parent.width, currentItem?.implicitWidth)
 
-        initialItem: _typePage
+        initialItem: _sheduleNamePage
+    }
+
+    QtObject {
+        id: _internal
+
+        property Schedule newSchedule: Schedule { }
     }
 
     //! Page Components
+    Component {
+        id: _sheduleNamePage
+
+        ScheduleNamePage {
+            readonly property Component nextPage: _typePage
+
+            onScheduleNameChanged: {
+                if (_internal.newSchedule.name !== scheduleName) {
+                    _internal.newSchedule.name = scheduleName;
+                }
+            }
+        }
+    }
+
     Component {
         id: _typePage
 
         ScheduleTypePage {
             readonly property Component nextPage: _tempraturePage
+
+            onTypeChanged: {
+                if (type !== _internal.newSchedule.type) {
+                    _internal.newSchedule.type = type;
+                }
+            }
         }
     }
 
@@ -82,50 +117,66 @@ BasePageView {
 
         ScheduleTempraturePage {
             readonly property Component nextPage: _startTimePage
+
+            onTempratureChanged: {
+                if (temprature !== _internal.newSchedule.temprature) {
+                    _internal.newSchedule.temprature = temprature;
+                }
+            }
         }
     }
 
     Component {
         id: _startTimePage
 
-        Label {
+        ScheduleTimePage {
             readonly property Component nextPage: _endTimePage
 
-            textFormat: "MarkdownText"
-            text: "# Start Time"
+            title: "Start Time"
+            onSelectedTimeChanged: {
+                if (selectedTime !== _internal.newSchedule.startTime) {
+                    _internal.newSchedule.startTime = selectedTime;
+                }
+            }
         }
     }
 
     Component {
         id: _endTimePage
 
-        Label {
+        ScheduleTimePage {
             readonly property Component nextPage: _repeatPage
 
-            textFormat: "MarkdownText"
-            text: "# End Time"
+            title: "End Time"
+            onSelectedTimeChanged: {
+                if (selectedTime !== _internal.newSchedule.endTime) {
+                    _internal.newSchedule.endTime = selectedTime;
+                }
+            }
         }
     }
 
     Component {
         id: _repeatPage
 
-        Label {
+        ScheduleRepeatPage {
             readonly property Component nextPage: _preivewPage
 
-            textFormat: "MarkdownText"
-            text: "# Repeat"
+            onRepeatsChanged: {
+                if (repeats.toString() !== _internal.newSchedule.repeats.toString()) {
+                    _internal.newSchedule.repeats = repeats;
+                }
+            }
         }
     }
 
     Component {
         id: _preivewPage
 
-        Label {
+        SchedulePreviewPage {
             readonly property Component nextPage: null
 
-            textFormat: "MarkdownText"
-            text: "# New Schedule Preview"
+            schedule: _internal.newSchedule
         }
     }
 }

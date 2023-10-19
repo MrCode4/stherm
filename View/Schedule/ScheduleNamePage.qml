@@ -5,29 +5,28 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * FanButton is a button for controlling fan
+ * ScheduleNamePage
  * ***********************************************************************************************/
-ToolButton {
+BasePageView {
     id: _root
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Reference to Fan
-    property Fan    fan
+    property alias  scheduleName: _nameTf.text
 
     /* Object properties
      * ****************************************************************************************/
-    padding: AppStyle.size / 90
-    flat: true
-    checkable: true
-    checked: false //! \todo: connect to a property in Fan
+    implicitHeight: implicitHeaderHeight * 6 + _nameTf.implicitHeight + topPadding + bottomPadding
+    title: "New Schedule Name"
+    titleHeadeingLevel: 3
+    backButtonVisible: false
 
-    /* Childrent
+    /* Children
      * ****************************************************************************************/
-    Image {
+    TextField {
+        id: _nameTf
         anchors.centerIn: parent
-        width: _root.icon.width *  AppStyle.size / 480
-        height: _root.icon.height * AppStyle.size / 480
-        source: _root.checked ? "qrc:/Stherm/Images/fan-on.png" : "qrc:/Stherm/Images/fan-off.png"
+        implicitWidth: implicitHeaderWidth * 1.5
+        placeholderText: "Enter Schedule Name"
     }
 }

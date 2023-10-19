@@ -1,8 +1,7 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.Shapes
 
+import Ronia
 import Stherm
 
 /*! ***********************************************************************************************

@@ -70,6 +70,8 @@ qt6_add_qml_module(appStherm
         Core/DeviceController.qml
         Core/SimDeviceController.qml
         Core/I_DeviceController.qml
+        Core/Schedule.qml
+        Core/ScheduleController.qml
 
 
         # Primitive Components
@@ -148,10 +150,15 @@ qt6_add_qml_module(appStherm
         View/AddSchedulePage.qml
         View/Schedule/ScheduleTypePage.qml
         View/Schedule/ScheduleTempraturePage.qml
+        View/Schedule/ScheduleTimePage.qml
+        View/Schedule/ScheduleRepeatPage.qml
+        View/Schedule/SchedulePreviewPage.qml
+        View/Schedule/ScheduleNamePage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
         View/Delegates/ShadeButtonDelegate.qml
+        View/Delegates/ScheduleDelegate.qml
 
     SOURCES
         Backend/AppSpecCPP.h

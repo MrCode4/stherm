@@ -1,7 +1,7 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 
+import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
@@ -20,9 +20,10 @@ BasePageView {
     implicitHeight: contentItem.children.length === 1 ? contentItem.children[0].implicitHeight + implicitHeaderHeight
                                                         + implicitFooterHeight + topPadding + bottomPadding
                                                       : 0
-
+    topPadding: 24
     title: "Schedule Type"
     backButtonVisible: false
+    titleHeadeingLevel: 3
 
     /* Children
      * ****************************************************************************************/
@@ -38,6 +39,7 @@ BasePageView {
         Button {
             Layout.fillWidth: true
             checkable: true
+            checked: true
             text: "Away"
         }
 

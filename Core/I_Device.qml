@@ -40,6 +40,9 @@ QSObject {
     //! Fan
     property Fan        fan:            Fan {}
 
+    //! Schedule model
+    property Schedule   schedule:       Schedule {}
+
     /* Functions
      * ****************************************************************************************/
 }

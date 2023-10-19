@@ -1,8 +1,7 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Material
+﻿import QtQuick
 import QtQuick.Layouts
 
+import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
@@ -14,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Reference to Fan model
-    property Fan    fan : uiSession?.appModel?.fan
+    property Fan    fan:    uiSession?.appModel?.fan
 
     /* Object properties
      * ****************************************************************************************/
@@ -84,51 +83,31 @@ BasePageView {
             text: "Fan working period during each hour"
         }
 
-        Slider {
-            Layout.preferredWidth: _ticksRow.implicitWidth + implicitHandleWidth + leftPadding + rightPadding
-            Layout.alignment: Qt.AlignCenter
-            value: fan.working_per_hour
+        TickedSlider {
+            id: _hourSliders
+            readonly property int tickStepSize: 2
+
+            implicitWidth: implicitHeaderWidth * 3
+            majorTickCount: ticksCount / 5
+            ticksCount: to / tickStepSize
             from: 0
-            to: 55
+            to: 50
             stepSize: 1
-            snapMode: "SnapAlways"
-            //! Uncomment following line to remove Slider's ticks (on backgroun)
-            //! Component.onCompleted: background.children[0].repeater.model = 0
+            value: fan?.working_per_hour ?? 0
 
-            onValueChanged: fan.working_per_hour = value
-        }
-
-        //! Slider ticks
-        RowLayout {
-            id: _ticksRow
-            Layout.alignment: Qt.AlignCenter
-            Layout.topMargin: -8
-            spacing: 6 * AppStyle.size / 240
-
-            Repeater {
-                model: 21
-                delegate: Rectangle {
-                    Layout.alignment: Qt.AlignCenter
-                    implicitWidth: 2.5 * AppStyle.size / 240
-                    implicitHeight: (index % 4) ? 8 : 16
-                    opacity: (index % 4) ? 0.5 : 1.
-                    radius: 2
-                }
+            ToolTip {
+                parent: _hourSliders.handle
+                y: -height - 16
+                x: (parent.width - width) / 2
+                visible: _hourSliders.pressed
+                timeout: Number.MAX_VALUE
+                delay: 0
+                text: _hourSliders.value
             }
-        }
 
-        //! Ticks labels
-        RowLayout {
-            Layout.alignment: Qt.AlignCenter
-            spacing: 0
-
-            Repeater {
-                model: 6
-                delegate: Label {
-                    Layout.preferredWidth: 5 * (_ticksRow.spacing + 1)
-                    opacity: 0.5
-                    text: index * 10
-                    horizontalAlignment: "AlignHCenter"
+            onValueChanged: {
+                if (fan && fan.working_per_hour !== value) {
+                    fan.working_per_hour = value
                 }
             }
         }
