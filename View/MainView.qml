@@ -42,6 +42,7 @@ Item {
         }
 
         Home {
+            mainStackView: _mainStackView
             uiSession: mainView.uiSession
         }
 
