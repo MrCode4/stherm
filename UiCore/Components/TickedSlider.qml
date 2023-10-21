@@ -13,10 +13,13 @@ Slider {
     /* Property declaration
      * ****************************************************************************************/
     //! Major tick count interval
-    property int   majorTickCount: 3
+    property int    majorTickCount: 3
 
     //! Total tick count to show
-    property int   ticksCount: 15
+    property int    ticksCount: 15
+
+    //! Value change animation
+    property bool   valueChangeAnimation: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -62,7 +65,7 @@ Slider {
     GridLayout {
         id: _ticksLay
 
-        readonly property int tickStepSize: Math.round(Math.abs(to - from) / ticksCount)
+        readonly property real tickStepSize: Math.abs(to - from) / ticksCount
         readonly property int majorTickInterval: majorTickCount * tickStepSize
         readonly property int ticksWidth: 4
 
@@ -87,11 +90,17 @@ Slider {
                 model: ticksCount + 1
                 delegate: Rectangle {
                     readonly property bool isMajor: (index % majorTickCount) === 0
+                    readonly property real relativePosition: (x + width / 2) / _ticksRepeater.parent.width
+                    readonly property real distFromHandle: valueChangeAnimation ? Math.abs(_control.visualPosition - relativePosition) : 0;
 
+                    y: (parent.height - height) / 2
                     x: index * (_ticksLay.width / ticksCount) - width / 2
                     width: horizontal ? _ticksLay.ticksWidth : (isMajor ? 16 : 8)
                     height: horizontal ? (isMajor ? 16 : 8) : _ticksLay.ticksWidth
-                    opacity: isMajor ? 0.8 : 0.5
+                    opacity: valueChangeAnimation ? (distFromHandle < 0.02
+                                                     ? (1. - distFromHandle * 8)
+                                                     : 0.5)
+                                                  : (isMajor ? 0.8 : 0.5)
                     radius: Math.min(width, height) / 2
                 }
             }
@@ -104,9 +113,14 @@ Slider {
             Repeater {
                 model: Math.floor(ticksCount / majorTickCount) + 1
                 delegate: Label {
-                    opacity: 0.8
-                    x: index * majorTickCount * (_ticksLay.width / ticksCount) - width / 2
-                    text: index * _ticksLay.majorTickInterval
+                    readonly property int actualTickPos: index * majorTickCount
+                    readonly property Rectangle relatedTick: actualTickPos < _ticksRepeater.count ? _ticksRepeater.itemAt(actualTickPos) : null
+
+                    y: 4
+                    x: actualTickPos * (_ticksLay.width / ticksCount) - width / 2
+                    scale: valueChangeAnimation ? (relatedTick ? Math.max(0.7, Math.min(1.4, 1.4 - relatedTick.distFromHandle * 8)) : 1.) : 1.
+                    opacity: relatedTick ? relatedTick.opacity : 0.8
+                    text: (Math.min(_control.to, _control.from) + index * _ticksLay.majorTickInterval)
                 }
             }
         }
