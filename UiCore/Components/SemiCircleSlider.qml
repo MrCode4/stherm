@@ -138,6 +138,7 @@ Control {
                 anchors.fill: parent
                 anchors.margins: -8 //! To increase its size
                 enabled: Math.abs(_control.to - _control.from) > 0
+                preventStealing: true
 
                 onPressed: dragging = true
                 onReleased: dragging = false
