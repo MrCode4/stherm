@@ -52,6 +52,7 @@ class NetworkInterface : public QObject
     Q_OBJECT
 
     Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis NOTIFY wifisChanged)
+    Q_PROPERTY(bool isRunning        READ isRunning       NOTIFY isRunningChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -65,7 +66,11 @@ public:
      * ****************************************************************************************/
     WifiInfoList        wifis();
 
+    bool                isRunning();
+
     Q_INVOKABLE void    refereshWifis(bool forced = false);
+    Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
+
 
     /* Private methods and slots
      * ****************************************************************************************/
@@ -75,17 +80,21 @@ private:
 
 private slots:
     void                onWifiProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void                onWifiConnectFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
     /* Signals
      * ****************************************************************************************/
 signals:
     void                wifisChanged();
+    void                isRunningChanged();
 
     /* Private attributes
      * ****************************************************************************************/
 private:
     QList<WifiInfo*>    mWifiInfos;
     QProcess*           mWifiReadProc;
+
+    WifiInfo*           mRequestedWifiToConnect;
 };
 
 #endif // NETWORKINTERFACE_H

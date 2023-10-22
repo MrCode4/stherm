@@ -7,6 +7,7 @@
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
     , mWifiReadProc { nullptr }
+    , mRequestedWifiToConnect { nullptr }
 {
 }
 
@@ -15,6 +16,12 @@ NetworkInterface::WifiInfoList NetworkInterface::wifis()
     return QQmlListProperty<WifiInfo>(this, nullptr,
                                       &NetworkInterface::networkCount,
                                       &NetworkInterface::networkAt);
+}
+
+bool NetworkInterface::isRunning()
+{
+    return mWifiReadProc && (mWifiReadProc->state() == QProcess::Starting
+                             || mWifiReadProc->state() == QProcess::Running);
 }
 
 void NetworkInterface::refereshWifis(bool forced)
@@ -40,6 +47,32 @@ void NetworkInterface::refereshWifis(bool forced)
 
 #elif defined Q_OS_WIN32
     //! Use commands suitable for Windows
+#endif
+}
+
+void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
+{
+    if (!wifiInfo || wifiInfo->mConnected) {
+        return;
+    }
+
+    if (!mWifiReadProc || isRunning()) {
+        return;
+    }
+
+    mRequestedWifiToConnect = wifiInfo;
+    connect(mWifiReadProc, &QProcess::finished, this, &NetworkInterface::onWifiConnectFinished,
+            Qt::SingleShotConnection);
+
+#ifdef Q_OS_LINUX
+    mWifiReadProc->start("nmcli", { "d",
+                                      "wifi",
+                                      "connect",
+                                      wifiInfo->mSsid,
+                                      "password",
+                                      password,
+                                   });
+#elif defined Q_OS_WIN32
 #endif
 }
 
@@ -136,4 +169,24 @@ void NetworkInterface::onWifiProcessFinished(int exitCode, QProcess::ExitStatus 
 #endif
 
     emit wifisChanged();
+}
+
+void NetworkInterface::onWifiConnectFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if (exitCode == 0) {
+        //! Find already connected wifi
+        auto oldConnectionIter = std::find_if(mWifiInfos.begin(), mWifiInfos.end(),
+                                              [](WifiInfo* wi) { return wi->mConnected; });
+
+        if (oldConnectionIter != mWifiInfos.end()) {
+            (*oldConnectionIter)->setProperty("connected", false);
+        }
+
+        if (mRequestedWifiToConnect) {
+            mRequestedWifiToConnect->setProperty("connected", true);
+            mRequestedWifiToConnect = nullptr;
+        }
+    } else {
+        qWarning() << "Error in connecting: " << mWifiReadProc->errorString();
+    }
 }
