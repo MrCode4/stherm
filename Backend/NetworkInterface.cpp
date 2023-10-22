@@ -103,7 +103,7 @@ qsizetype NetworkInterface::networkCount(WifiInfoList* list)
 void NetworkInterface::onWifiProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode != 0) {
-        qWarning() << "Error in scanning wifis: " << mWifiReadProc->errorString();
+        emit errorOccured("Error in scanning wifi networks: ", "");
         return;
     }
 
@@ -177,18 +177,22 @@ void NetworkInterface::onWifiProcessFinished(int exitCode, QProcess::ExitStatus 
 
 void NetworkInterface::onWifiConnectFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    if (exitCode == 0) {
-        //! Find already connected wifi
-        auto oldConnectionIter = std::find_if(mWifiInfos.begin(), mWifiInfos.end(),
-                                              [](WifiInfo* wi) { return wi->mConnected; });
+    if (exitCode != 0) {
+        emit errorOccured("Error in connecting to wifi network: ", mRequestedWifiToConnect->mSsid);
+        mRequestedWifiToConnect = nullptr;
+        return;
+    }
 
-        if (oldConnectionIter != mWifiInfos.end()) {
-            (*oldConnectionIter)->setProperty("connected", false);
-        }
+    //! Find already connected wifi
+    auto oldConnectionIter = std::find_if(mWifiInfos.begin(), mWifiInfos.end(),
+                                          [](WifiInfo* wi) { return wi->mConnected; });
 
-        if (mRequestedWifiToConnect) {
-            mRequestedWifiToConnect->setProperty("connected", true);
-            mRequestedWifiToConnect = nullptr;
-        }
+    if (oldConnectionIter != mWifiInfos.end()) {
+        (*oldConnectionIter)->setProperty("connected", false);
+    }
+
+    if (mRequestedWifiToConnect) {
+        mRequestedWifiToConnect->setProperty("connected", true);
+        mRequestedWifiToConnect = nullptr;
     }
 }

@@ -88,6 +88,14 @@ private slots:
 signals:
     void                wifisChanged();
     void                isRunningChanged();
+    //!
+    //! \brief errorOccured This is a private signal and is emitted when an error occurs during an
+    //! opration. The \a ssid param holds name of the wifi network that this error is related to and
+    //! is empty if error is not related to a specific wifi network
+    //! \param error
+    //! \param ssid
+    //!
+    void                errorOccured(QString error, QString ssid);
 
     /* Private attributes
      * ****************************************************************************************/
