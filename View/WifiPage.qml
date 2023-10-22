@@ -68,13 +68,17 @@ BasePageView {
             wifi: modelData
             delegateIndex: index
             onClicked: {
-                if (_wifiConnectLay.parent === this) {
+                if (NetworkInterface.isRunning) {
+                    return;
+                }
+
+                if (_wifiConnectLay.parent === _wifiDelegate) {
                     _wifiConnectLay.visible = false;
                     _wifiConnectLay.parent = _root
                     _wifiConnectLay.y = 0;
                 } else if (!modelData.connected){
                     _wifiConnectLay.visible = true
-                    _wifiConnectLay.parent = this;
+                    _wifiConnectLay.parent = _wifiDelegate;
                     _wifiConnectLay.y = _root.Material.delegateHeight + 8
                 }
             }
@@ -134,10 +138,55 @@ BasePageView {
 
             onClicked: {
                 //! Connect to this wifi
-                if (_wifiConnectLay.parent instanceof ItemDelegate) {
-                    NetworkInterface.connectWifi(_wifiConnectLay.parent.modelData, _passwordTf.text)
+                if (_wifiConnectLay.parent instanceof WifiDelegate) {
+                    NetworkInterface.connectWifi(_wifiConnectLay.parent.wifi, _passwordTf.text)
                 }
             }
+        }
+    }
+
+    //! Error Drawer
+    Drawer {
+        id: _errorDrawer
+
+        Material.background: AppStyle.primaryRed
+        width: parent.width
+        height: Math.min(_errorMessageLbl.implicitHeight + topPadding + bottomPadding, parent.height / 2.8)
+        edge: "BottomEdge"
+        interactive: false
+        closePolicy: Popup.NoAutoClose
+        modal: false
+        dim: false
+        topPadding: 16
+        bottomPadding: 16
+        leftPadding: 8
+        rightPadding: 8
+
+        Label {
+            id: _errorMessageLbl
+            anchors.fill: parent
+            textFormat: "MarkdownText"
+            verticalAlignment: "AlignVCenter"
+            horizontalAlignment: "AlignHCenter"
+            wrapMode: "WordWrap"
+            clip: true
+        }
+
+        Timer {
+            interval: 4000 //! Drawer time out
+            running: _errorDrawer.opened
+            repeat: false
+            onTriggered: _errorDrawer.close()
+        }
+    }
+
+    Connections {
+        target: NetworkInterface
+
+        function onErrorOccured(error, ssid)
+        {
+            _errorMessageLbl.text = `${error} ${ssid ? "**" + ssid + "**" : ""}`;
+            _errorDrawer.open();
         }
     }
 
