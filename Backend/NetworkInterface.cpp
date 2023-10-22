@@ -29,6 +29,9 @@ void NetworkInterface::refereshWifis(bool forced)
     if (!mWifiReadProc) {
         mWifiReadProc = new QProcess(this);
         mWifiReadProc->setReadChannel(QProcess::StandardOutput);
+
+        //! Connect QProcess status changed to isRunningChanged();
+        connect(mWifiReadProc, &QProcess::stateChanged, this, &NetworkInterface::isRunningChanged);
     }
 
     if (isRunning()) {
