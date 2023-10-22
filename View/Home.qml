@@ -18,6 +18,9 @@ Control {
     //! Reference to I_Device
     readonly property   I_Device    device: uiSession?.appModel ?? null
 
+    //! Reference to main StackView
+    required property   StackView   mainStackView
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
@@ -140,10 +143,10 @@ Control {
 
             onClicked: {
                 //! Push ApplicationMenu to StackView
-                if (_root.StackView.view) {
-                    _root.StackView.view.push("qrc:/Stherm/View/ApplicationMenu.qml", {
-                                                  "uiSession": Qt.binding(() => uiSession)
-                                              });
+                if (mainStackView) {
+                    mainStackView.push("qrc:/Stherm/View/ApplicationMenu.qml", {
+                                           "uiSession": Qt.binding(() => uiSession)
+                                       });
                 }
             }
         }
@@ -157,10 +160,10 @@ Control {
 
             onClicked: {
                 //! Push ScheduleView to StackView
-                if (_root.StackView.view) {
-                    _root.StackView.view.push("qrc:/Stherm/View/ScheduleView.qml", {
-                                                  "uiSession": Qt.binding(() => uiSession)
-                                              });
+                if (mainStackView) {
+                    mainStackView.push("qrc:/Stherm/View/ScheduleView.qml", {
+                                           "uiSession": Qt.binding(() => uiSession)
+                                       });
                 }
             }
         }
