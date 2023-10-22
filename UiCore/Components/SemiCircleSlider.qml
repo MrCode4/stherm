@@ -140,7 +140,11 @@ Control {
                 enabled: Math.abs(_control.to - _control.from) > 0
                 preventStealing: true
 
-                onPressed: dragging = true
+                onPressed: {
+                    //! Make Control grab active focus.
+                    _control.forceActiveFocus();
+                    dragging = true
+                }
                 onReleased: dragging = false
                 onCanceled: dragging = false
                 onPositionChanged: function(event) {
