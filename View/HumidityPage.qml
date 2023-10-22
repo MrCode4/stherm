@@ -21,8 +21,8 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Humidity Control"
-    leftPadding: 40
-    rightPadding: 40
+    leftPadding: AppStyle.size / 12
+    rightPadding: AppStyle.size / 12
 
     /* Children
      * ****************************************************************************************/
@@ -65,7 +65,7 @@ BasePageView {
 
         ToolTip {
             parent: _humSlider.handle
-            y: -height - 16
+            y: -height - AppStyle.size / 30
             x: (parent.width - width) / 2
             visible: _humSlider.pressed
             timeout: Number.MAX_VALUE
