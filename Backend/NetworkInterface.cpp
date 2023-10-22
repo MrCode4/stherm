@@ -141,15 +141,20 @@ void NetworkInterface::onWifiProcessFinished(int exitCode, QProcess::ExitStatus 
     QString line = mWifiReadProc->readLine();
     while(!line.isEmpty()) {
         const bool isConnected = line.startsWith("*");
-        const QString ssid = ssidStartIndx >= 0 && ssidStartIndx + ssidColLength < line.size()
-                                 ? line.sliced(ssidStartIndx, ssidColLength)
-                                 : "";
+        QString ssid = ssidStartIndx >= 0 && ssidStartIndx + ssidColLength < line.size()
+                           ? line.sliced(ssidStartIndx, ssidColLength)
+                           : "";
         const int strength = signalStartIndx >= 0 && signalStartIndx + signalColLength < line.size()
                                  ? line.sliced(signalStartIndx, signalColLength).toInt()
                                  : 0;
         const QString secur = securStartIndx >= 0 && securStartIndx + securColLength < line.size()
                                   ? line.sliced(securStartIndx, securColLength)
                                   : 0;
+
+        //! Remove trailing whitespaces from ssid
+        while (ssid.size() > 0 && ssid.back().isSpace()) {
+            ssid.chop(1);
+        }
 
         wifis.append(new WifiInfo(
             isConnected,
