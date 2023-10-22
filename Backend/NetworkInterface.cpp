@@ -19,6 +19,28 @@ NetworkInterface::WifiInfoList NetworkInterface::wifis()
 
 void NetworkInterface::refereshWifis(bool forced)
 {
+    if (!mWifiReadProc) {
+        mWifiReadProc = new QProcess(this);
+        mWifiReadProc->setReadChannel(QProcess::StandardOutput);
+        connect(mWifiReadProc, &QProcess::finished, this, &NetworkInterface::onWifiProcessFinished);
+    }
+
+    if (mWifiReadProc->state() == QProcess::Starting
+        || mWifiReadProc->state() == QProcess::Running) {
+        return;
+    }
+
+#ifdef Q_OS_LINUX
+    mWifiReadProc->start("nmcli", { "d",
+                                    "wifi",
+                                    "list",
+                                    "--rescan",
+                                    (forced ? "yes" : "auto")
+                                  } );
+
+#elif defined Q_OS_WIN32
+  //! Use commands suitable for Windows
+#endif
 }
 
 WifiInfo* NetworkInterface::networkAt(WifiInfoList* list, qsizetype index)
@@ -39,4 +61,9 @@ qsizetype NetworkInterface::networkCount(WifiInfoList* list)
     }
 
     return 0;
+}
+
+void NetworkInterface::onWifiProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+
 }

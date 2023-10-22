@@ -73,6 +73,9 @@ private:
     static WifiInfo*    networkAt(WifiInfoList* list, qsizetype index);
     static qsizetype    networkCount(WifiInfoList* list);
 
+private slots:
+    void                onWifiProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
     /* Signals
      * ****************************************************************************************/
 signals:
