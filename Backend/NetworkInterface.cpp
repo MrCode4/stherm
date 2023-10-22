@@ -29,13 +29,14 @@ void NetworkInterface::refereshWifis(bool forced)
     if (!mWifiReadProc) {
         mWifiReadProc = new QProcess(this);
         mWifiReadProc->setReadChannel(QProcess::StandardOutput);
-        connect(mWifiReadProc, &QProcess::finished, this, &NetworkInterface::onWifiProcessFinished);
     }
 
-    if (mWifiReadProc->state() == QProcess::Starting
-        || mWifiReadProc->state() == QProcess::Running) {
+    if (isRunning()) {
         return;
     }
+
+    connect(mWifiReadProc, &QProcess::finished, this, &NetworkInterface::onWifiProcessFinished,
+            Qt::SingleShotConnection);
 
 #ifdef Q_OS_LINUX
     mWifiReadProc->start("nmcli", { "d",
@@ -186,7 +187,5 @@ void NetworkInterface::onWifiConnectFinished(int exitCode, QProcess::ExitStatus 
             mRequestedWifiToConnect->setProperty("connected", true);
             mRequestedWifiToConnect = nullptr;
         }
-    } else {
-        qWarning() << "Error in connecting: " << mWifiReadProc->errorString();
     }
 }
