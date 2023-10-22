@@ -4,7 +4,7 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 
 import Stherm
-
+import "./Delegates"
 /*! ***********************************************************************************************
  * WifiPage provides a ui to connect to a Wifi network
  * ***********************************************************************************************/
@@ -20,24 +20,43 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Referesh button
-    ToolButton {
+    //! Referesh button and running BusyIndicator
+    Item {
         parent: _root.header
-        contentItem: RoniaTextIcon {
-            text: "\uf2f9" //! rotate-right
+        implicitWidth: _refereshBtn.implicitWidth
+        implicitHeight: _refereshBtn.implicitHeight
+
+        ToolButton {
+            id: _refereshBtn
+            visible: !NetworkInterface.isRunning
+            contentItem: RoniaTextIcon {
+                text: "\uf2f9" //! rotate-right
+            }
+
+            onClicked: {
+                //! Force refresh
+                NetworkInterface.refereshWifis(true);
+            }
         }
 
-        onClicked: {
-            //! Force refresh
-            NetworkInterface.refereshWifis(true);
+        //! BusyIndicator for NetworkInterface running status
+        BusyIndicator {
+            anchors {
+                fill: parent
+                margins: 4
+            }
+            running: visible
+            visible: NetworkInterface.isRunning
         }
     }
 
+    //! Wifis ListView
     ListView {
         anchors.fill: parent
         model: NetworkInterface.wifis
-        delegate: ItemDelegate {
+        delegate: WifiDelegate {
             id: _wifiDelegate
+
             required property var modelData
             required property int index
 
@@ -46,26 +65,8 @@ BasePageView {
                     + (_wifiConnectLay.parent === this ? _wifiConnectLay.implicitHeight + 16 : 0)
             clip: true
 
-            RowLayout {
-                x: 8
-                width: parent.width - 16
-                height: _root.Material.delegateHeight
-                spacing: 12
-
-                RoniaTextIcon {
-                    color: modelData.connected ? _root.Material.accentColor : _root.Material.foreground
-                    text: "\uf1eb" //! wifi icon
-                }
-
-                Label {
-                    Layout.fillWidth: true
-                    color: modelData.connected ? _root.Material.accentColor : _root.Material.foreground
-                    text: modelData.ssid
-                }
-            }
-
-            Behavior on height { NumberAnimation { } }
-
+            wifi: modelData
+            delegateIndex: index
             onClicked: {
                 if (_wifiConnectLay.parent === this) {
                     _wifiConnectLay.visible = false;
@@ -79,7 +80,7 @@ BasePageView {
             }
 
             Connections {
-                target: _wifiDelegate.modelData
+                target: _wifiDelegate.wifi
 
                 function onConnectedChanged() {
                     if (_wifiConnectLay.parent === _wifiDelegate) {
@@ -106,7 +107,7 @@ BasePageView {
             id: _passwordTf
             Layout.fillWidth: true
             maximumLength: 256
-            rightPadding: _passwordEchoBtn.width + 4
+            rightPadding: _passwordEchoBtn.width
             placeholderText: "Enter Wifi password"
             echoMode: _passwordEchoBtn.checked ? TextField.Normal : TextField.Password
 
@@ -115,6 +116,7 @@ BasePageView {
                 anchors {
                     right: parent.right
                     verticalCenter: parent.verticalCenter
+                    verticalCenterOffset: -6
                 }
                 checkable: true
                 contentItem: RoniaTextIcon {
@@ -127,7 +129,7 @@ BasePageView {
             Layout.alignment: Qt.AlignRight
             leftPadding: 16
             rightPadding: 16
-            enabled: _passwordTf.length > 0
+            enabled: _passwordTf.length > 0 && !NetworkInterface.isRunning
             text: "Connect"
 
             onClicked: {
