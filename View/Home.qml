@@ -62,6 +62,13 @@ Control {
                 top: parent.top
             }
             z: 1
+
+            onClicked: {
+                //! Open WifiPage
+                if (mainStackView) {
+                    mainStackView.push("qrc:/Stherm/View/WifiPage.qml");
+                }
+            }
         }
 
         //! Operation mode button
