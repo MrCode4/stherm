@@ -23,7 +23,7 @@ Control {
     property real   to: 10
 
     //! Holds whether slider is being dragged
-    readonly property alias pressed: _handleMa.dragging
+    readonly property alias pressed: _handleDh.dragging
 
     /* Object properties
      * ****************************************************************************************/
@@ -117,48 +117,63 @@ Control {
         readonly property int angleRange: 180
 
         x: _control.width / 2
-        y: _control.height - AppStyle.size / 48
+        y: _control.height - _handleCircle.height / 2
         rotation: {
             var valueRange = Math.abs(to - from);
             return (value / (valueRange > 0 ? valueRange : 1)) * angleRange
         }
 
         Rectangle {
-            x: -background.shapeWidth / 2 - width / 2 + AppStyle.size / 80
-            y: - height / 2
+            id: _handleCircle
+            x: -background.shapeWidth / 2 - width / 2 + background.pathWidth / 2
+            y: -height / 2
             width: AppStyle.size / 24
             height: width
             radius: width / 2
+        }
 
-            MouseArea {
-                id: _handleMa
+        Item {
+            anchors.fill: _handleCircle
+            anchors.margins: -16
 
+            DragHandler {
+                id: _handleDh
                 property bool dragging: false
+                property point handlePosInStart: Qt.point(_handle.x, _handle.y)
 
-                anchors.fill: parent
-                anchors.margins: -8 //! To increase its size
-                enabled: Math.abs(_control.to - _control.from) > 0
-                preventStealing: true
-
-                onPressed: {
-                    //! Make Control grab active focus.
-                    _control.forceActiveFocus();
-                    dragging = true
+                target: null //! To handle dragging arbitrarily
+                dragThreshold: 2
+                onGrabChanged: function(grabState, point){
+                    //! See enum QPointingDevice::GrabTransition
+                    if (grabState === 1) {
+                        handlePosInStart = _handleCircle.mapToItem(
+                                    _control,
+                                    _handleCircle.width / 2,
+                                    _handleCircle.height / 2)
+                        handlePosInStart.x -= _handle.x;
+                        handlePosInStart.y -= _handle.y;
+                        dragging = true;
+                    } else if (grabState === 2 || grabState === 0x30 || grabState === 0x20) {
+                        dragging = false;
+                    }
                 }
-                onReleased: dragging = false
-                onCanceled: dragging = false
-                onPositionChanged: function(event) {
-                    //! Get angle to center
-                    var center = Qt.point(_control.background.shapeWidth / 2, _control.height);
-                    var point = mapToItem(_control, event.x, event.y);
 
-                    //! Angle in degree
-                    var angle = Math.atan2(center.y - point.y, center.x - point.x) * 57.2958;
+                onActiveTranslationChanged: {
+                    var point = Qt.point(activeTranslation.x, activeTranslation.y);
 
-                    //! If angle < 0 don't update value
-                    if (angle >= 0) {
+                    var newHandlePos = Qt.point(0, 0);
+                    newHandlePos.x = handlePosInStart.x + point.x + _handleCircle.width / 2;
+                    newHandlePos.y = handlePosInStart.y + point.y + _handleCircle.height / 2;
+
+                    var angle = Math.atan2(-newHandlePos.y, -newHandlePos.x) * 57.2958;
+
+                    //! Allow angle a little more beyond 0 and 180 to make sure 'to' and 'from' are
+                    //! always easily reached. This won't effect on value since it's always clamped
+                    //! between 'to' and 'from'
+                    if (angle > -8 || angle < -172) {
                         //! Set value based on angle
-                        value = Math.min(to, Math.max(from, angle / _handle.angleRange) * Math.abs(to - from));
+                        angle = angle < -170 ? angle + 360 : angle;
+                        value = Math.min(to, Math.max(from, angle / (_handle.angleRange)) * Math.abs(to - from));
                     }
                 }
             }
