@@ -161,6 +161,7 @@ qt6_add_qml_module(appStherm
         View/Delegates/ApplicationMenuDelegate.qml
         View/Delegates/ShadeButtonDelegate.qml
         View/Delegates/ScheduleDelegate.qml
+        View/Delegates/WifiDelegate.qml
 
     SOURCES
         Backend/AppSpecCPP.h
