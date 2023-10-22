@@ -36,6 +36,9 @@ Item {
         id: _mainViewSw
         currentIndex: 1
 
+        //! This should be sync either with the model (I_Device) or with the FanPage used in
+        //! ApplicationMenu to prevent further issues or use exactly this FanPage instance in
+        //! ApplicationMenu to push to _mainStackView.
         FanPage {
             uiSession: mainView.uiSession
             backButtonVisible: false
