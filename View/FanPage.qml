@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Reference to Fan model
-    property Fan    fan:    uiSession?.appModel?.fan
+    property Fan    fan:    uiSession?.appModel?.fan ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -94,6 +94,7 @@ BasePageView {
             to: 50
             stepSize: 1
             value: fan?.working_per_hour ?? 0
+            valueChangeAnimation: true
 
             ToolTip {
                 parent: _hourSliders.handle

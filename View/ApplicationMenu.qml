@@ -41,6 +41,11 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;
+                case "Humidity Control":
+                    _root.StackView.view.push("qrc:/Stherm/View/HumidityPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
                 }
             }
         }
