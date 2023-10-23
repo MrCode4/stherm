@@ -55,12 +55,12 @@ I_DeviceController {
         console.log("starting rest for updateBacklight, color: ", device.backlight.color)
         //! Use a REST request to update device backlight
         var color = Qt.color(device.backlight.color);
-        var r = color.r
-        var g = color.g
-        var b = color.b
+        var r = Math.round(color.r * 255)
+        var g = Math.round(color.g * 255)
+        var b = Math.round(color.b * 255)
 
         console.log("colors: ", r, ",", g, ",", b)
-        var send_data = [color.r, color.g, color.b, 0, 'true']
+        var send_data = [r, g, b, 0, 'true']
 
         console.log("send data: ", send_data)
         sendReceive('hardware', 'setBacklight', send_data);
