@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Ref to Backlight model
-    property Backlight              backlight: uiSession?.appModel?.backlight
+    property Backlight              backlight: uiSession?.appModel?.backlight ?? null
 
     //! Selected backlight color from shade buttons
     readonly property color selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
@@ -35,18 +35,34 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Confirm button
-    ToolButton {
-        Layout.alignment: Qt.AlignCenter
+    RowLayout {
         parent: _root.header
-        contentItem: RoniaTextIcon {
-            text: "\uf00c"
+        spacing: 8
+
+        //! Backlight on/off button
+        Switch {
+            id: _backlightOnOffSw
+            checked: backlight?.on ?? false
+
+            onToggled: {
+                if (backlight && backlight.on !== checked) {
+                    backlight.on = checked;
+                }
+            }
         }
 
-        onClicked: {
-            //! Update backlight
-            if (deviceController) {
-                deviceController.updateBacklight();
+        //! Confirm button
+        ToolButton {
+            Layout.alignment: Qt.AlignCenter
+            contentItem: RoniaTextIcon {
+                text: "\uf00c"
+            }
+
+            onClicked: {
+                //! Update backlight
+                if (deviceController) {
+                    deviceController.updateBacklight();
+                }
             }
         }
     }
@@ -55,6 +71,7 @@ BasePageView {
         anchors.centerIn: parent
         width: _root.availableWidth
         spacing: AppStyle.size / 30
+        enabled: _backlightOnOffSw.checked
 
         Label {
             Layout.leftMargin: 4
@@ -65,6 +82,7 @@ BasePageView {
         ColorSlider {
             id: _colorSlider
             Layout.fillWidth: true
+            opacity: enabled ? 1. : 0.4
         }
 
         Label {
@@ -78,6 +96,7 @@ BasePageView {
             id: _brSlider
             Material.foreground: _colorSlider.currentColor
             Layout.fillWidth: true
+            opacity: enabled ? 1. : 0.4
         }
 
         //! Group for shade buttons
@@ -93,6 +112,7 @@ BasePageView {
             Layout.leftMargin: AppStyle.size / 30
             Layout.rightMargin: AppStyle.size / 30
             Layout.topMargin: AppStyle.size / 16
+            opacity: enabled ? 1. : 0.4
 
             Repeater {
                 id: _shadeButtonsRepeater
@@ -101,6 +121,7 @@ BasePageView {
                     checked: index === 4
                     sourceColor: _slidersColorNotShaded
                     shadeFactor: index / 4.
+                    hoverEnabled: enabled
                 }
             }
         }
