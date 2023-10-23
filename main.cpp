@@ -4,6 +4,8 @@
 #include <QScreen>
 #include <QQmlContext>
 #include <QFontDatabase>
+#include <QSysInfo>
+#include <QProcess>
 
 
 int main(int argc, char *argv[])
@@ -25,11 +27,16 @@ int main(int argc, char *argv[])
     QScreen* screen = app.primaryScreen();
 
     QVariantMap deviceInfo;
-    deviceInfo["width"] = screen->size().width();
-    deviceInfo["height"] = screen->size().height();
-    deviceInfo["devicePixelRatio"] = screen->devicePixelRatio();
-    deviceInfo["logicalDotsPerInch"] = screen->logicalDotsPerInch();
-    deviceInfo["physicalDotsPerInch"] = screen->physicalDotsPerInch();
+    deviceInfo["Width"] = screen->size().width();
+    deviceInfo["Height"] = screen->size().height();
+    deviceInfo["DPR"] = screen->devicePixelRatio();
+    deviceInfo["L-DPI"] = screen->logicalDotsPerInch();
+    deviceInfo["P-DPI"] = screen->physicalDotsPerInch();
+    //! Grab some system info also
+    deviceInfo["Kernel"] = QSysInfo::kernelType();
+    deviceInfo["Kernel Version"] = QSysInfo::kernelVersion();
+    deviceInfo["OS"] = QSysInfo::prettyProductName();
+    deviceInfo["Nmcli"] = QProcess().execute("nmcli") == 0 ? "True" : "False";
 
     //! Load default font -> Roboto-Regular for now
     int robotoId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Roboto-Regular.ttf");

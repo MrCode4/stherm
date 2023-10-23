@@ -28,10 +28,6 @@ RoundButton {
     contentItem: RoniaTextIcon {
         font.pixelSize: 24
         color: _root.Material.foreground
-        text: "\uf6ac"
-    }
-
-    onClicked: {
-        //! Go to select wifi page
+        text: wifi?.connectedSsid ? "\uf1eb" : "\uf6ac"
     }
 }
