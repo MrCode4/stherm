@@ -7,8 +7,12 @@ import Stherm
 /*! ***********************************************************************************************
  * A delegate to be used in WifiPage
  * ***********************************************************************************************/
-ItemDelegate {
+Control {
     id: _root
+
+    /* Signals
+     * ****************************************************************************************/
+    signal clicked()
 
     /* Property declaration
      * ****************************************************************************************/
@@ -18,24 +22,49 @@ ItemDelegate {
     //! Index in ListView
     property int        delegateIndex
 
+    /* Object properties
+     * ****************************************************************************************/
+    hoverEnabled: true
+    background: Rectangle {
+        implicitHeight: _root.Material.delegateHeight
+
+        color: _delegateButton.pressed ? _root.Material.rippleColor
+                                       : (_root.highlighted ? _root.Material.listHighlightColor
+                                                            : "transparent")
+
+        Rectangle {
+            anchors.fill: parent
+            color: _root.hovered ? _root.Material.rippleColor : "transparent"
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
-    RowLayout {
-        x: 8
-        width: parent.width - 16
+    ItemDelegate {
+        id: _delegateButton
+        width: parent.width
         height: _root.Material.delegateHeight
-        spacing: 12
+        background: null
 
-        RoniaTextIcon {
-            color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
-            text: "\uf1eb" //! wifi icon
+        RowLayout {
+            x: 8
+            width: parent.width - 16
+            height: _root.Material.delegateHeight
+            spacing: 12
+
+            RoniaTextIcon {
+                color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
+                text: "\uf1eb" //! wifi icon
+            }
+
+            Label {
+                Layout.fillWidth: true
+                color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
+                text: wifi?.ssid ?? ""
+            }
         }
 
-        Label {
-            Layout.fillWidth: true
-            color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
-            text: wifi?.ssid ?? ""
-        }
+        onClicked: _root.clicked();
     }
 
     Behavior on height { NumberAnimation { } }
