@@ -19,18 +19,48 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    Flickable {
+    ListView {
         anchors.fill: parent
         clip: true
-        contentWidth: _infoLabel.implicitWidth
-        contentHeight: _infoLabel.implicitHeight
-        boundsBehavior: Flickable.StopAtBounds
+        spacing: 12
+        model: [
+            "OS",
+            "Kernel",
+            "Kernel Version",
+            "DPR",
+            "L-DPI",
+            "P-DPI",
+            "Width",
+            "Height",
+            "Nmcli"
+        ]
+        delegate: Control {
+            id: _infoDel
+            width: ListView.view.width
+            height: Material.delegateHeight
 
-        Label {
-            id: _infoLabel
-            lineHeight: 1.2
-            wrapMode: Text.WordWrap
-            text: JSON.stringify(deviceInfo, null, 4)
+            ColumnLayout {
+                anchors.fill: parent
+
+                Label {
+                    opacity: 0.8
+                    font.pointSize: _infoDel.font.pointSize * 0.65
+                    text: modelData
+                }
+
+                Label {
+                    Layout.fillHeight: true
+                    Layout.leftMargin: 12
+                    verticalAlignment: Text.AlignVCenter
+                    text: deviceInfo[modelData]
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Material.frameColor
+                }
+            }
         }
     }
 }

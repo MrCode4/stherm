@@ -155,17 +155,21 @@ qt6_add_qml_module(appStherm
         View/Schedule/SchedulePreviewPage.qml
         View/Schedule/ScheduleNamePage.qml
         View/HumidityPage.qml
+        View/WifiPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
         View/Delegates/ShadeButtonDelegate.qml
         View/Delegates/ScheduleDelegate.qml
+        View/Delegates/WifiDelegate.qml
 
     SOURCES
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
         Backend/AppSettingsCPP.h
         Backend/AppSettingsCPP.cpp
+        Backend/NetworkInterface.h
+        Backend/NetworkInterface.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf

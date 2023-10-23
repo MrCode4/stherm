@@ -35,6 +35,9 @@ ApplicationWindow {
     //! Create defualt repo and root object to save and load
     Component.onCompleted: {
         AppCore.defaultRepo.initRootObject("QSObject");
+
+        //! Refereh wifis.
+        NetworkInterface.refereshWifis();
     }
 
     /* Fonts
