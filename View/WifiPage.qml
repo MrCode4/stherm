@@ -4,7 +4,7 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 
 import Stherm
-import "./Delegates"
+
 /*! ***********************************************************************************************
  * WifiPage provides a ui to connect to a Wifi network
  * ***********************************************************************************************/
@@ -188,9 +188,5 @@ BasePageView {
             _errorMessageLbl.text = `${error} ${ssid ? "**" + ssid + "**" : ""}`;
             _errorDrawer.open();
         }
-    }
-
-    Component.onCompleted: {
-        NetworkInterface.refereshWifis();
     }
 }
