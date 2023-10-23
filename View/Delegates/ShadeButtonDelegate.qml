@@ -24,7 +24,7 @@ RoundButton {
     /* Object properties
      * ****************************************************************************************/
     Layout.alignment: Qt.AlignCenter
-    Layout.topMargin: checked ? -12 : 0
+    Layout.topMargin: enabled && checked ? -12 : 0
     background.implicitWidth: AppStyle.size / 9
     background.implicitHeight: AppStyle.size / 9
     checkable: true
