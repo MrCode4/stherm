@@ -1,5 +1,4 @@
-#ifndef NETWORKINTERFACE_H
-#define NETWORKINTERFACE_H
+#pragma once
 
 #include <QObject>
 #include <QQmlEngine>
@@ -54,6 +53,7 @@ class NetworkInterface : public QObject
 
     Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis NOTIFY wifisChanged)
     Q_PROPERTY(bool isRunning        READ isRunning       NOTIFY isRunningChanged)
+    Q_PROPERTY(QString  connectedSsid   READ connectedSsid NOTIFY connectedSsidChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -68,6 +68,8 @@ public:
     WifiInfoList        wifis();
 
     bool                isRunning();
+
+    QString             connectedSsid() const;
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
     Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
@@ -88,6 +90,7 @@ private slots:
 signals:
     void                wifisChanged();
     void                isRunningChanged();
+    void                connectedSsidChanged();
     //!
     //! \brief errorOccured This is a private signal and is emitted when an error occurs during an
     //! opration. The \a ssid param holds name of the wifi network that this error is related to and
@@ -103,7 +106,6 @@ private:
     QList<WifiInfo*>    mWifiInfos;
     QProcess*           mWifiReadProc;
 
-    WifiInfo*           mRequestedWifiToConnect;
+    WifiInfo*           mConnectedWifiInfo;
+    WifiInfo*           mRequestedToConnectedWifi;
 };
-
-#endif // NETWORKINTERFACE_H

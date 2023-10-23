@@ -7,7 +7,8 @@
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
     , mWifiReadProc { nullptr }
-    , mRequestedWifiToConnect { nullptr }
+    , mConnectedWifiInfo { nullptr }
+    , mRequestedToConnectedWifi { nullptr }
 {
 }
 
@@ -22,6 +23,11 @@ bool NetworkInterface::isRunning()
 {
     return mWifiReadProc && (mWifiReadProc->state() == QProcess::Starting
                              || mWifiReadProc->state() == QProcess::Running);
+}
+
+QString NetworkInterface::connectedSsid() const
+{
+    return (mConnectedWifiInfo ? mConnectedWifiInfo->mSsid : "");
 }
 
 void NetworkInterface::refereshWifis(bool forced)
@@ -64,7 +70,7 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
         return;
     }
 
-    mRequestedWifiToConnect = wifiInfo;
+    mRequestedToConnectedWifi = wifiInfo;
     connect(mWifiReadProc, &QProcess::finished, this, &NetworkInterface::onWifiConnectFinished,
             Qt::SingleShotConnection);
 
@@ -141,6 +147,8 @@ void NetworkInterface::onWifiProcessFinished(int exitCode, QProcess::ExitStatus 
     QString line = mWifiReadProc->readLine();
     while(!line.isEmpty()) {
         const bool isConnected = line.startsWith("*");
+
+
         QString ssid = ssidStartIndx >= 0 && ssidStartIndx + ssidColLength < line.size()
                            ? line.sliced(ssidStartIndx, ssidColLength)
                            : "";
@@ -164,6 +172,10 @@ void NetworkInterface::onWifiProcessFinished(int exitCode, QProcess::ExitStatus 
             this
             ));
 
+        if (isConnected) {
+            mConnectedWifiInfo = wifis.back();
+            emit connectedSsidChanged();
+        }
 
         //! Read next line
         line = mWifiReadProc->readLine();
@@ -171,6 +183,9 @@ void NetworkInterface::onWifiProcessFinished(int exitCode, QProcess::ExitStatus 
 
     //! Update mNetworks
     qDeleteAll(mWifiInfos);
+    //! Set mConnectedWifiInfo since it's not valid anymore
+    mConnectedWifiInfo = nullptr;
+
     mWifiInfos.clear();
     mWifiInfos = std::move(wifis);
 #elif defined Q_OS_WIN32
@@ -183,21 +198,21 @@ void NetworkInterface::onWifiProcessFinished(int exitCode, QProcess::ExitStatus 
 void NetworkInterface::onWifiConnectFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode != 0) {
-        emit errorOccured("Error in connecting to wifi network: ", mRequestedWifiToConnect->mSsid);
-        mRequestedWifiToConnect = nullptr;
+        //! Maybe it's needed to set mConnectedWifiInfo's connected property to false.
+        emit errorOccured("Error in connecting to wifi network: ", mConnectedWifiInfo->mSsid);
+        mRequestedToConnectedWifi = nullptr;
         return;
     }
 
-    //! Find already connected wifi
-    auto oldConnectionIter = std::find_if(mWifiInfos.begin(), mWifiInfos.end(),
-                                          [](WifiInfo* wi) { return wi->mConnected; });
-
-    if (oldConnectionIter != mWifiInfos.end()) {
-        (*oldConnectionIter)->setProperty("connected", false);
+    if (mConnectedWifiInfo) {
+        mConnectedWifiInfo->setProperty("connected", false);
     }
 
-    if (mRequestedWifiToConnect) {
-        mRequestedWifiToConnect->setProperty("connected", true);
-        mRequestedWifiToConnect = nullptr;
+    if (mRequestedToConnectedWifi) {
+        mRequestedToConnectedWifi->setProperty("connected", true);
+
+        mConnectedWifiInfo = mRequestedToConnectedWifi;
+        mRequestedToConnectedWifi = nullptr;
+        emit connectedSsidChanged();
     }
 }
