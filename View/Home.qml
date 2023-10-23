@@ -63,10 +63,13 @@ Control {
             }
             z: 1
 
+            wifi: uiSession?.appModel?.wifi ?? null
             onClicked: {
                 //! Open WifiPage
                 if (mainStackView) {
-                    mainStackView.push("qrc:/Stherm/View/WifiPage.qml");
+                    mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
+                                           "uiSession": uiSession
+                                       });
                 }
             }
         }
