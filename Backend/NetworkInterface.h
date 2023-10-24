@@ -78,6 +78,9 @@ public:
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
     Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
+    Q_INVOKABLE void    disconnect();
+    Q_INVOKABLE void    turnOn();
+    Q_INVOKABLE void    turnOff();
 
 
     /* Private methods and slots
@@ -89,6 +92,7 @@ private:
 private slots:
     void                onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis);
     void                onWifiConnected(const QString& bssid);
+    void                onWifiDisconnected();
 
     /* Signals
      * ****************************************************************************************/

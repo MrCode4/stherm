@@ -8,6 +8,7 @@
 
 #define NC_COMMAND          "nmcli"
 #define NC_ARG_DEVICE       "device"
+#define NC_ARG_NETWORKING   "networking"
 #define NC_ARG_WIFI         "wifi"
 #define NC_ARG_LIST         "list"
 #define NC_ARG_CONNECT      "connect"
@@ -221,11 +222,7 @@ inline bool NmcliInterface::isRunning() const
 
 inline void NmcliInterface::refreshWifis(bool rescan)
 {
-    if (!mProcess) {
-        return;
-    }
-
-    if (isRunning()) {
+    if (!mProcess || isRunning()) {
         return;
     }
 
@@ -245,11 +242,7 @@ inline void NmcliInterface::refreshWifis(bool rescan)
 
 inline void NmcliInterface::connectToWifi(const QString& bssid, const QString& password)
 {
-    if (!mProcess) {
-        return;
-    }
-
-    if (isRunning()) {
+    if (!mProcess || isRunning()) {
         return;
     }
 
@@ -265,6 +258,81 @@ inline void NmcliInterface::connectToWifi(const QString& bssid, const QString& p
         bssid,
         NC_ARG_PASSWORD,
         password,
+    });
+
+    mProcess->start(NC_COMMAND, args);
+}
+
+inline void NmcliInterface::disconnectWifi()
+{
+    if (!mProcess || isRunning() || mWifiDevice.isEmpty()) {
+        return;
+    }
+
+    connect(mProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus) {
+            if (exitCode == 0) {
+                emit wifiDisconnected();
+            } else {
+                emit errorOccured(NmcliInterface::Error(exitCode));
+            }
+        }, Qt::SingleShotConnection);
+
+    //! Perform disconnect command
+    const QStringList args({
+        NC_ARG_DEVICE,
+        NC_ARG_DISCONNECT,
+        mWifiDevice,
+    });
+
+    mProcess->start(NC_COMMAND, args);
+}
+
+inline void NmcliInterface::forgetWifi(const QString& bssid)
+{
+    //! Does nothing for now
+}
+
+inline void NmcliInterface::turnWifiDeviceOn()
+{
+    if (!mProcess || isRunning()) {
+        return;
+    }
+
+    connect(mProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus) {
+        if (exitCode == 0) {
+            emit wifiDevicePowerChanged(true);
+        } else {
+            emit errorOccured(NmcliInterface::Error(exitCode));
+        }
+    });
+
+    //! Perform connection command
+    const QStringList args({
+        NC_ARG_NETWORKING,
+        "on"
+    });
+
+    mProcess->start(NC_COMMAND, args);
+}
+
+inline void NmcliInterface::turnWifiDeviceOff()
+{
+    if (!mProcess || isRunning()) {
+        return;
+    }
+
+    connect(mProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus) {
+        if (exitCode == 0) {
+            emit wifiDevicePowerChanged(false);
+        } else {
+            emit errorOccured(NmcliInterface::Error(exitCode));
+        }
+    });
+
+    //! Perform connection command
+    const QStringList args({
+        NC_ARG_NETWORKING,
+        "off"
     });
 
     mProcess->start(NC_COMMAND, args);
