@@ -56,7 +56,11 @@ Control {
                 id: _wifiIcon
                 font.pointSize: _root.font.pointSize * 1.2
                 color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
-                text: "\uf1eb" //! wifi icon
+                text: wifi ? ( wifi.strength > 80 ? "\uf1eb" //! wifi icon
+                                         : (wifi.strength > 50 ? "\uf6ab" //! wifi-fair icon
+                                                               : "\uf6aa" //! wifi-weak icon
+                                            )
+                              ) : ""
             }
 
             ColumnLayout {

@@ -238,6 +238,7 @@ BasePageView {
 
         Button {
             Layout.alignment: Qt.AlignRight
+            Layout.columnSpan: 2
 //            Layout.preferredWidth: _disconnectBtn.width
             leftPadding: 16
             rightPadding: 16
