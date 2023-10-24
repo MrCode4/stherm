@@ -13,10 +13,22 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    readonly property var sortedWifis: {
+        var wifis = Array.from(NetworkInterface.wifis);
+
+        if (wifis.length > 0) {
+            var connectedIndex = wifis.findIndex((element) => {
+                                                     return element.connected === true;
+                                                 });
+            wifis.unshift(wifis.splice(connectedIndex, 1)[0]);
+        }
+        return wifis;
+    }
 
     /* Object properties
      * ****************************************************************************************/
     title: "Wifi Settings"
+    topPadding: bottomPadding + 12
 
     /* Children
      * ****************************************************************************************/
@@ -50,53 +62,110 @@ BasePageView {
         }
     }
 
-    //! Wifis ListView
-    ListView {
+    ColumnLayout {
         anchors.fill: parent
-        model: NetworkInterface.wifis
-        delegate: WifiDelegate {
-            id: _wifiDelegate
 
-            required property var modelData
-            required property int index
+        Label {
+            visible: sortedWifis.length > 0 && (sortedWifis[0]?.connected ?? false)
+            font.pointSize: _root.font.pointSize * 0.85
+            opacity: 0.7
+            leftPadding: 8
+            text: "Current Network"
+        }
 
-            width: ListView.view.width
-            height: + _root.Material.delegateHeight
-                    + (_wifiConnectLay.parent === this ? _wifiConnectLay.implicitHeight + 16 : 0)
+        //! WifiDelegate for currently connected Wifi
+        WifiDelegate {
+            id: _currentWifi
+            Layout.fillWidth: true
+            Layout.preferredHeight: + _root.Material.delegateHeight
+                                    + (_wifiConnectLay.parent === this ? _wifiConnectLay.implicitHeight + 16 : 0)
+
             clip: true
+            visible: sortedWifis.length > 0 && (sortedWifis[0]?.connected ?? false)
+            wifi: sortedWifis.length > 0 && sortedWifis[0] instanceof WifiInfo ? sortedWifis[0] : null
 
-            wifi: modelData
-            delegateIndex: index
             onClicked: {
                 if (NetworkInterface.isRunning) {
                     return;
                 }
 
-                if (_wifiConnectLay.parent === _wifiDelegate) {
+                if (_wifiConnectLay.parent === this) {
                     _wifiConnectLay.visible = false;
                     _wifiConnectLay.parent = _root
                     _wifiConnectLay.y = 0;
-                } else if (!modelData.connected){
+                } else {
+                    _wifiConnectLay.isConnected = true;
                     _wifiConnectLay.visible = true
-                    _wifiConnectLay.parent = _wifiDelegate;
+                    _wifiConnectLay.parent = this;
                     _wifiConnectLay.y = _root.Material.delegateHeight + 8
                 }
             }
 
-            Connections {
-                target: _wifiDelegate.wifi
+            Behavior on Layout.preferredHeight { NumberAnimation { } }
+        }
 
-                function onConnectedChanged() {
+        Label {
+            Layout.topMargin: _currentWifi.visible ? 20 : 0
+            visible: sortedWifis.length > 0
+            font.pointSize: _root.font.pointSize * 0.85
+            opacity: 0.7
+            leftPadding: 8
+            text: "Available Networks"
+        }
+
+        //! Wifis ListView
+        ListView {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            visible: sortedWifis.length > 0
+            clip: true
+            model: sortedWifis.filter((element) => !element.connected)
+            delegate: WifiDelegate {
+                id: _wifiDelegate
+
+                required property var modelData
+                required property int index
+
+                width: ListView.view.width
+                height: + _root.Material.delegateHeight
+                        + (_wifiConnectLay.parent === this ? _wifiConnectLay.implicitHeight + 16 : 0)
+                clip: true
+
+                wifi: modelData
+                delegateIndex: index
+                onClicked: {
+                    if (NetworkInterface.isRunning) {
+                        return;
+                    }
+
                     if (_wifiConnectLay.parent === _wifiDelegate) {
-                        _wifiDelegate.clicked();
+                        _wifiConnectLay.visible = false;
+                        _wifiConnectLay.parent = _root
+                        _wifiConnectLay.y = 0;
+                    } else if (!modelData.connected){
+                        _wifiConnectLay.isConnected = false;
+                        _wifiConnectLay.visible = true
+                        _wifiConnectLay.parent = _wifiDelegate;
+                        _wifiConnectLay.y = _root.Material.delegateHeight + 8
+                    }
+                }
+
+                Connections {
+                    target: _wifiDelegate.wifi
+
+                    function onConnectedChanged() {
+                        if (_wifiConnectLay.parent === _wifiDelegate) {
+                            //! Also re-evaluate sortedWifis since this is changed too.
+                            NetworkInterface.wifisChanged();
+                            _wifiDelegate.clicked();
+                        }
                     }
                 }
             }
         }
     }
-
     //! Column for wifi password textfield and connect button
-    ColumnLayout {
+    GridLayout {
         id: _wifiConnectLay
 
         property bool isConnected: false
@@ -105,11 +174,18 @@ BasePageView {
         visible: false
         x: 16
 
+        columns: 2
+        columnSpacing: 8
+        rowSpacing: 4
+
         onParentChanged: _passwordTf.clear()
 
         TextField {
             id: _passwordTf
             Layout.fillWidth: true
+            Layout.columnSpan: 2
+
+            visible: !_wifiConnectLay.isConnected
             maximumLength: 256
             rightPadding: _passwordEchoBtn.width
             placeholderText: "Enter Wifi password"
@@ -129,17 +205,38 @@ BasePageView {
             }
         }
 
+//        Button {
+//            id: _disconnectBtn
+//            Layout.alignment: Qt.AlignLeft
+//            leftPadding: 16
+//            rightPadding: 16
+//            text: "Disconnect"
+
+//            onClicked: {
+//                //! Disconnect from current network
+//                if (_wifiConnectLay.parent instanceof WifiDelegate) {
+//                    NetworkInterface.connectWifi(_wifiConnectLay.parent.wifi, _passwordTf.text)
+//                }
+//            }
+//        }
+
         Button {
             Layout.alignment: Qt.AlignRight
+//            Layout.preferredWidth: _disconnectBtn.width
             leftPadding: 16
             rightPadding: 16
-            enabled: _passwordTf.length > 0 && !NetworkInterface.isRunning
-            text: "Connect"
+            enabled: _wifiConnectLay.isConnected || (_passwordTf.length > 0 && !NetworkInterface.isRunning)
+            text: _wifiConnectLay.isConnected ? "Disconnect" : "Connect"
 
             onClicked: {
-                //! Connect to this wifi
-                if (_wifiConnectLay.parent instanceof WifiDelegate) {
-                    NetworkInterface.connectWifi(_wifiConnectLay.parent.wifi, _passwordTf.text)
+                if (text === "Disconnect") {
+                    //! Disconnect
+                    NetworkInterface.disconnect();
+                } else if (text === "Connect") {
+                    //! Connect to this wifi
+                    if (_wifiConnectLay.parent instanceof WifiDelegate) {
+                        NetworkInterface.connectWifi(_wifiConnectLay.parent.wifi, _passwordTf.text)
+                    }
                 }
             }
         }
