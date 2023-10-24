@@ -18,26 +18,44 @@ RoundButton {
     //! Shade factor
     property real           shadeFactor
 
+    //! Size of the place where this button should be placed
+    property int            cellSize
+
     //! Actual color of shaded
     readonly property alias shadeColor: _shadeColor.color
 
     /* Object properties
      * ****************************************************************************************/
-    Layout.alignment: Qt.AlignCenter
-    Layout.topMargin: enabled && checked ? -12 : 0
-    background.implicitWidth: AppStyle.size / 9
-    background.implicitHeight: AppStyle.size / 9
+    y: enabled && checked ? -cellSize / 3.2 : 0
+    height: width
     checkable: true
     flat: !checked
     down: checked
+    padding: 20
+    background: Rectangle {
+        implicitWidth: cellSize * (enabled && checked ? 1 : 0.85)
+        implicitHeight: background.implicitWidth
+        radius: _root.radius
+        color: !_root.enabled ? _root.Material.buttonDisabledColor
+            : _root.checked || _root.highlighted ? _root.Material.accentColor : _root.Material.buttonColor
+
+
+        Rectangle {
+            width: parent.width
+            height: parent.height
+            radius: _root.radius
+            visible: _root.hovered
+            color: _root.Material.rippleColor
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
     Rectangle {
         id: _shadeColor
         anchors.centerIn: parent
-        width: AppStyle.size / 16
-        height: AppStyle.size / 16
+        width: parent.availableWidth
+        height: width
         radius: width / 2
         border.width: 2
         border.color: _root.Material.foreground
@@ -49,5 +67,6 @@ RoundButton {
         }
     }
 
-    Behavior on Layout.topMargin { NumberAnimation { duration: 150 } }
+    Behavior on implicitWidth { NumberAnimation { duration: 200 } }
+    Behavior on y { NumberAnimation { duration: 200 } }
 }

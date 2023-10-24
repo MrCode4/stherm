@@ -42,7 +42,7 @@ BasePageView {
         //! Backlight on/off button
         Switch {
             id: _backlightOnOffSw
-            checked: backlight?.on ?? false
+            checked: true//backlight?.on ?? false
 
             onToggled: {
                 if (backlight && backlight.on !== checked) {
@@ -70,7 +70,7 @@ BasePageView {
     ColumnLayout {
         anchors.centerIn: parent
         width: _root.availableWidth
-        spacing: AppStyle.size / 30
+        spacing: AppStyle.size / 18
         enabled: _backlightOnOffSw.checked
 
         Label {
@@ -86,7 +86,7 @@ BasePageView {
         }
 
         Label {
-            Layout.topMargin: AppStyle.size / 12
+            Layout.topMargin: AppStyle.size / 48
             Layout.leftMargin: AppStyle.size / 120
             text: "Brightness"
         }
@@ -94,9 +94,15 @@ BasePageView {
         //! Brightness slider
         BrightnessSlider {
             id: _brSlider
-            Material.foreground: _colorSlider.currentColor
+            Material.accent: _colorSlider.currentColor
             Layout.fillWidth: true
             opacity: enabled ? 1. : 0.4
+        }
+
+        Label {
+            Layout.topMargin: AppStyle.size / 48
+            Layout.leftMargin: AppStyle.size / 120
+            text: "Shades"
         }
 
         //! Group for shade buttons
@@ -106,22 +112,27 @@ BasePageView {
         }
 
         //! Shades of selected color
-        RowLayout {
+        Item {
             id: _buttonsRow
-            Layout.preferredWidth: _root.availableWidth
-            Layout.leftMargin: AppStyle.size / 30
-            Layout.rightMargin: AppStyle.size / 30
-            Layout.topMargin: AppStyle.size / 16
+
+            readonly property int cellSize: AppStyle.size / 8
+
+            Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + 8)
+            Layout.preferredHeight: cellSize
+            Layout.alignment: Qt.AlignCenter
             opacity: enabled ? 1. : 0.4
 
             Repeater {
                 id: _shadeButtonsRepeater
                 model: 5
                 delegate: ShadeButtonDelegate {
+                    x: index * (_buttonsRow.cellSize + 8) + (cellSize - width) / 2
                     checked: index === 4
+                    hoverEnabled: enabled
+
                     sourceColor: _slidersColorNotShaded
                     shadeFactor: index / 4.
-                    hoverEnabled: enabled
+                    cellSize: _buttonsRow.cellSize
                 }
             }
         }
