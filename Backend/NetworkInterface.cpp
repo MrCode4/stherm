@@ -113,6 +113,10 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
             wifi["signal"].toInt(),
             wifi["security"].toString()
         ));
+
+        if (wifi["inUse"].toBool()) {
+            mConnectedWifiInfo = wifiInfos.back();
+        }
     }
 
     //! Update mNetworks
@@ -123,6 +127,7 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
     mWifiInfos.clear();
     mWifiInfos = std::move(wifiInfos);
 
+    emit connectedSsidChanged();
     emit wifisChanged();
 }
 
@@ -139,7 +144,6 @@ void NetworkInterface::onWifiConnected(const QString& bssid)
         mRequestedToConnectedWifi = nullptr;
         emit connectedSsidChanged();
     }
-
 }
 
 void NetworkInterface::onWifiDisconnected()
