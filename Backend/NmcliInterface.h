@@ -309,7 +309,7 @@ inline void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::Ex
 
         emit wifiListRefereshed(wifis);
     } else {
-        qCritical() << "Error occured : " << mProcess->readAllStandardError();
+        emit errorOccured(NmcliInterface::Error(exitCode));
     }
 }
 
