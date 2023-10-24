@@ -21,6 +21,11 @@ BasePageView {
             //! Push related menu to stack
             if (_root.StackView.view) {
                 switch(menuTitle) {
+                case "System Mode":
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
                 case "Backlight":
                     _root.StackView.view.push("qrc:/Stherm/View/BacklightPage.qml",
                                               {

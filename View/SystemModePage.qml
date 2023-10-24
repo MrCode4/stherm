@@ -64,6 +64,15 @@ BasePageView {
             rightPadding: 24
             checkable: true
             text: "Vacation"
+
+            onClicked: {
+                //! Push VacationModePage to StackView
+                if (_root.StackView.view) {
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemMode/VacationModePage.qml", {
+                                                  "uiSession": uiSession
+                                              });
+                }
+            }
         }
 
         Button {
