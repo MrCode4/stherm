@@ -164,6 +164,7 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemRunDelayPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
+        View/SystemModePage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
