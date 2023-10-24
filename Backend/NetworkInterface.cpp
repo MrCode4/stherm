@@ -17,6 +17,14 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(mNmcliInterface, &NmcliInterface::wifiDisconnected, this, &NetworkInterface::onWifiDisconnected);
     connect(mNmcliInterface, &NmcliInterface::isRunningChanged, this, &NetworkInterface::isRunningChanged);
     connect(mNmcliInterface, &NmcliInterface::wifiDevicePowerChanged, this, [&](bool on) {
+        if (!on) {
+            qDeleteAll(mWifiInfos);
+            mWifiInfos.clear();
+
+            emit connectedSsidChanged();
+            emit wifisChanged();
+        }
+
         mDeviceIsOn = on;
         emit deviceIsOnChanged();
     });
@@ -41,7 +49,7 @@ QString NetworkInterface::connectedSsid() const
 
 void NetworkInterface::refereshWifis(bool forced)
 {
-    if (mNmcliInterface->isRunning()) {
+    if (isRunning()) {
         return;
     }
 
@@ -50,7 +58,7 @@ void NetworkInterface::refereshWifis(bool forced)
 
 void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 {
-    if (!wifiInfo || mNmcliInterface->isRunning()) {
+    if (!wifiInfo || isRunning()) {
         return;
     }
 
@@ -60,7 +68,7 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 
 void NetworkInterface::disconnect()
 {
-    if (!mNmcliInterface || mNmcliInterface->isRunning()) {
+    if (isRunning()) {
         return;
     }
 
@@ -69,7 +77,7 @@ void NetworkInterface::disconnect()
 
 void NetworkInterface::turnOn()
 {
-    if (!mNmcliInterface || mNmcliInterface->isRunning()) {
+    if (isRunning()) {
         return;
     }
 
@@ -78,7 +86,7 @@ void NetworkInterface::turnOn()
 
 void NetworkInterface::turnOff()
 {
-    if (!mNmcliInterface || mNmcliInterface->isRunning()) {
+    if (isRunning()) {
         return;
     }
 

@@ -359,7 +359,6 @@ inline void NmcliInterface::turnWifiDeviceOff()
         "off"
     });
 
-    qDebug() << "turing off : " << args;
     mProcess->start(NC_COMMAND, args);
 }
 
