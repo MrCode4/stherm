@@ -30,7 +30,7 @@ Slider {
             gradient: Gradient {
                 orientation: _control.orientation
                 GradientStop { position: 0.0 ; color: "#000000" }
-                GradientStop { position: 1.0 ; color: _control.Material.foreground}
+                GradientStop { position: 1.0 ; color: _control.Material.accent}
             }
         }
     }
@@ -42,7 +42,7 @@ Slider {
         implicitHeight: 16
         radius: width / 2
         color: {
-            var clr = _control.Material.foreground;
+            var clr = _control.Material.accent;
             return Qt.rgba(clr.r * brightness, clr.g * brightness, clr.b * brightness, 1.);
         }
         border.width: 2
