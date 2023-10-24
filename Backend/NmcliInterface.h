@@ -73,7 +73,7 @@ public:
      * \brief connectToWifi Connects to a wifi network with the given \a bssid (or ssid)
      * \param bssid
      */
-    void    connectToWifi(const QString& bssid);
+    void    connectToWifi(const QString& bssid, const QString& password);
 
     /*!
      * \brief disconnectWifi Disconnects from currently connected wifi
@@ -97,7 +97,23 @@ public:
     void    turnWifiDeviceOff();
 
 private slots:
+    /*!
+     * \brief onWifiListRefreshFinished This slot is connected to \a\b QProcess::finished() as
+     * single-shot in \ref refreshWifis(bool) to get wifi lists and emit \ref
+     * wifiListRefereshed(WifiListMap) signal
+     * \param exitCode
+     * \param exitStatus
+     */
     void    onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+    /*!
+     * \brief onWifiConnectedFinished This slot is connected to \a\b QProcess::finished() as
+     * single-shot in \ref connectToWifi(QString) to propaget that a connection is finished
+     * successfully or not
+     * \param exitCode
+     * \param exitStatus
+     */
+    void    onWifiConnectedFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 signals:
     /*!
@@ -116,9 +132,8 @@ signals:
     /*!
      * \brief connectedToWifi This signal is emitted when a connection to a wifi is successfully made
      * \param bssid
-     * \param ssid
      */
-    void    wifiConnected(QString bssid, QString ssid);
+    void    wifiConnected(QString bssid);
 
     /*!
      * \brief disconnectedFromWifi This signal is emitted when currently connected wifi is
@@ -144,6 +159,11 @@ private:
      * \brief mProcess The \a\b QProcess that is used to do everything;
      */
     QProcess*           mProcess;
+
+    /*!
+     * \brief mRequestedWifiToConnect Holds the SSID/BSSID of a wifi that is requested to connect
+     */
+    QString             mRequestedWifiToConnect;
 
     /*!
      * \brief cWifiInfoFields
@@ -193,7 +213,33 @@ inline void NmcliInterface::refreshWifis(bool rescan)
                                  rescan ? "yes" : "auto"
                              });
 
-    qDebug() << "Command started";
+    mProcess->start(NC_COMMAND, args);
+}
+
+inline void NmcliInterface::connectToWifi(const QString& bssid, const QString& password)
+{
+    if (!mProcess) {
+        return;
+    }
+
+    if (isRunning()) {
+        return;
+    }
+
+    mRequestedWifiToConnect = bssid;
+    connect(mProcess, &QProcess::finished, this, &NmcliInterface::onWifiConnectedFinished,
+            Qt::SingleShotConnection);
+
+    //! Perform connection command
+    const QStringList args({
+        NC_ARG_DEVICE,
+        NC_ARG_WIFI,
+        NC_ARG_CONNECT,
+        bssid,
+        NC_ARG_PASSWORD,
+        password,
+    });
+
     mProcess->start(NC_COMMAND, args);
 }
 
@@ -264,5 +310,17 @@ inline void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::Ex
         emit wifiListRefereshed(wifis);
     } else {
         qCritical() << "Error occured : " << mProcess->readAllStandardError();
+    }
+}
+
+inline void NmcliInterface::onWifiConnectedFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if (exitCode == 0) {
+        //! Connection was successful
+        emit wifiConnected(mRequestedWifiToConnect);
+        mRequestedWifiToConnect = "";
+    } else {
+        //! Connection failed
+        emit errorOccured(NmcliInterface::Error(exitCode));
     }
 }
