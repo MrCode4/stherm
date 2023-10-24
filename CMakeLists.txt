@@ -132,6 +132,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ColorSlider.qml
         UiCore/Components/BrightnessSlider.qml
         UiCore/Components/TickedSlider.qml
+        UiCore/Components/RangeSliderLabeled.qml
 
 
         # Views and Widgets
