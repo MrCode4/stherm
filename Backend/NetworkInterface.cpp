@@ -10,11 +10,16 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , mNmcliInterface { new NmcliInterface(this) }
     , mConnectedWifiInfo { nullptr }
     , mRequestedToConnectedWifi { nullptr }
+    , mDeviceIsOn { false }
 {
     connect(mNmcliInterface, &NmcliInterface::wifiListRefereshed, this, &NetworkInterface::onWifiListRefreshed);
     connect(mNmcliInterface, &NmcliInterface::wifiConnected, this, &NetworkInterface::onWifiConnected);
     connect(mNmcliInterface, &NmcliInterface::wifiDisconnected, this, &NetworkInterface::onWifiDisconnected);
     connect(mNmcliInterface, &NmcliInterface::isRunningChanged, this, &NetworkInterface::isRunningChanged);
+    connect(mNmcliInterface, &NmcliInterface::wifiDevicePowerChanged, this, [&](bool on) {
+        mDeviceIsOn = on;
+        emit deviceIsOnChanged();
+    });
 }
 
 NetworkInterface::WifiInfoList NetworkInterface::wifis()

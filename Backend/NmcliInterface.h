@@ -9,6 +9,7 @@
 #define NC_COMMAND          "nmcli"
 #define NC_ARG_DEVICE       "device"
 #define NC_ARG_NETWORKING   "networking"
+#define NC_ARG_GENERAL      "general"
 #define NC_ARG_WIFI         "wifi"
 #define NC_ARG_LIST         "list"
 #define NC_ARG_CONNECT      "connect"
@@ -98,6 +99,20 @@ public:
      * \brief turnWifiDeviceOff Turn on wifi device
      */
     void    turnWifiDeviceOff();
+
+private:
+    void    getWifiDeviceName()
+    {
+        //! Get wifi device name
+        connect(mProcess, &QProcess::finished, this, &NmcliInterface::onGetWifiDeviceNameFinished,
+                Qt::SingleShotConnection);
+        mProcess->start(NC_COMMAND, {
+                                        NC_ARG_GET_VALUES,
+                                        "GENERAL.TYPE,GENERAL.DEVICE",
+                                        NC_ARG_DEVICE,
+                                        NC_ARG_SHOW,
+                                    });
+    }
 
 private slots:
     /*!
@@ -203,14 +218,20 @@ inline NmcliInterface::NmcliInterface(QObject* parent)
     mProcess->setReadChannel(QProcess::StandardOutput);
     connect(mProcess, &QProcess::stateChanged, this, &NmcliInterface::isRunningChanged);
 
-    //! Get wifi device name
-    connect(mProcess, &QProcess::finished, this, &NmcliInterface::onGetWifiDeviceNameFinished,
-            Qt::SingleShotConnection);
+    //! First check wifi device on/off state
+    connect(mProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus) {
+            if (exitCode == 0) {
+                emit wifiDevicePowerChanged(mProcess->readLine().contains("enabled"));
+            }
+
+            //! Now get device wifi name
+            getWifiDeviceName();
+        },Qt::SingleShotConnection);
     mProcess->start(NC_COMMAND, {
                                     NC_ARG_GET_VALUES,
-                                    "GENERAL.TYPE,GENERAL.DEVICE",
-                                    NC_ARG_DEVICE,
-                                    NC_ARG_SHOW,
+                                    "WIFI",
+                                    NC_ARG_GENERAL,
+                                    "status",
                                 });
 }
 

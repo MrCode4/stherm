@@ -59,6 +59,7 @@ class NetworkInterface : public QObject
     Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis NOTIFY wifisChanged)
     Q_PROPERTY(bool isRunning        READ isRunning       NOTIFY isRunningChanged)
     Q_PROPERTY(QString  connectedSsid   READ connectedSsid NOTIFY connectedSsidChanged)
+    Q_PROPERTY(bool deviceIsOn      MEMBER mDeviceIsOn NOTIFY deviceIsOnChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -100,6 +101,7 @@ signals:
     void                wifisChanged();
     void                isRunningChanged();
     void                connectedSsidChanged();
+    void                deviceIsOnChanged();
     //!
     //! \brief errorOccured This is a private signal and is emitted when an error occurs during an
     //! opration. The \a ssid param holds name of the wifi network that this error is related to and
@@ -113,6 +115,8 @@ signals:
      * ****************************************************************************************/
 private:
     NmcliInterface*     mNmcliInterface;
+
+    bool                mDeviceIsOn;
 
     QList<WifiInfo*>    mWifiInfos;
 
