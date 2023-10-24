@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     deviceInfo["Kernel"] = QSysInfo::kernelType();
     deviceInfo["Kernel Version"] = QSysInfo::kernelVersion();
     deviceInfo["OS"] = QSysInfo::prettyProductName();
-    deviceInfo["Nmcli"] = QProcess().execute("nmcli") == 0 ? "True" : "False";
+    deviceInfo["Nmcli"] = QProcess().execute("command", { "-v", "nmcli" }) == 0 ? "True" : "False";
 
     //! Load default font -> Roboto-Regular for now
     int robotoId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Roboto-Regular.ttf");
