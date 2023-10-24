@@ -32,33 +32,49 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Referesh button and running BusyIndicator
-    Item {
+    RowLayout {
         parent: _root.header
-        implicitWidth: _refereshBtn.implicitWidth
-        implicitHeight: _refereshBtn.implicitHeight
 
-        ToolButton {
-            id: _refereshBtn
-            visible: !NetworkInterface.isRunning
-            contentItem: RoniaTextIcon {
-                text: "\uf2f9" //! rotate-right
-            }
+        Switch {
+            id: _wifiOnOffSw
 
-            onClicked: {
-                //! Force refresh
-                NetworkInterface.refereshWifis(true);
+            checked: NetworkInterface.deviceIsOn
+            onToggled: {
+                if (checked) {
+                    NetworkInterface.turnOn();
+                } else {
+                    NetworkInterface.turnOff();
+                }
             }
         }
 
-        //! BusyIndicator for NetworkInterface running status
-        BusyIndicator {
-            anchors {
-                fill: parent
-                margins: 4
+        //! Referesh button and running BusyIndicator
+        Item {
+            implicitWidth: _refereshBtn.implicitWidth
+            implicitHeight: _refereshBtn.implicitHeight
+
+            ToolButton {
+                id: _refereshBtn
+                visible: !NetworkInterface.isRunning
+                contentItem: RoniaTextIcon {
+                    text: "\uf2f9" //! rotate-right
+                }
+
+                onClicked: {
+                    //! Force refresh
+                    NetworkInterface.refereshWifis(true);
+                }
             }
-            running: visible
-            visible: NetworkInterface.isRunning
+
+            //! BusyIndicator for NetworkInterface running status
+            BusyIndicator {
+                anchors {
+                    fill: parent
+                    margins: 4
+                }
+                running: visible
+                visible: NetworkInterface.isRunning
+            }
         }
     }
 
