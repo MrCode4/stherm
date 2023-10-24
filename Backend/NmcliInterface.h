@@ -8,6 +8,7 @@
 
 #define NC_COMMAND          "nmcli"
 #define NC_ARG_DEVICE       "device"
+#define NC_ARG_RADIO        "radio"
 #define NC_ARG_NETWORKING   "networking"
 #define NC_ARG_GENERAL      "general"
 #define NC_ARG_WIFI         "wifi"
@@ -329,7 +330,8 @@ inline void NmcliInterface::turnWifiDeviceOn()
 
     //! Perform connection command
     const QStringList args({
-        NC_ARG_NETWORKING,
+        NC_ARG_RADIO,
+        NC_ARG_WIFI,
         "on"
     });
 
@@ -352,10 +354,12 @@ inline void NmcliInterface::turnWifiDeviceOff()
 
     //! Perform connection command
     const QStringList args({
-        NC_ARG_NETWORKING,
+        NC_ARG_RADIO,
+        NC_ARG_WIFI,
         "off"
     });
 
+    qDebug() << "turing off : " << args;
     mProcess->start(NC_COMMAND, args);
 }
 
