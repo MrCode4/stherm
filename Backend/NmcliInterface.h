@@ -13,6 +13,8 @@
 #define NC_ARG_CONNECT      "connect"
 #define NC_ARG_DISCONNECT   "disconnect"
 #define NC_ARG_PASSWORD     "password"
+#define NC_ARG_SHOW         "show"
+#define NC_ARG_GET_VALUES   "--get-values"
 #define NC_ARG_RESCAN       "--rescan"
 #define NC_ARG_FIELDS       "--fields"
 
@@ -98,6 +100,14 @@ public:
 
 private slots:
     /*!
+     * \brief onGetWifiDeviceNameFinished This slot is used to get the name of wifi device and store
+     * it in \a\b mWifiDevice
+     * \param exitCode
+     * \param exitStatus
+     */
+    void    onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+    /*!
      * \brief onWifiListRefreshFinished This slot is connected to \a\b QProcess::finished() as
      * single-shot in \ref refreshWifis(bool) to get wifi lists and emit \ref
      * wifiListRefereshed(WifiListMap) signal
@@ -161,9 +171,16 @@ private:
     QProcess*           mProcess;
 
     /*!
+     * \brief mWifiDevice This will hold the name of wifi device. This is necessary to perform
+     * disconnecting and it is fetched in ctor. Possible values are wlp2s0, wlp1s0, etc.
+     */
+    QString             mWifiDevice;
+
+    /*!
      * \brief mRequestedWifiToConnect Holds the SSID/BSSID of a wifi that is requested to connect
      */
     QString             mRequestedWifiToConnect;
+
 
     /*!
      * \brief cWifiInfoFields
@@ -184,6 +201,16 @@ inline NmcliInterface::NmcliInterface(QObject* parent)
 {
     mProcess->setReadChannel(QProcess::StandardOutput);
     connect(mProcess, &QProcess::stateChanged, this, &NmcliInterface::isRunningChanged);
+
+    //! Get wifi device name
+    connect(mProcess, &QProcess::finished, this, &NmcliInterface::onGetWifiDeviceNameFinished,
+            Qt::SingleShotConnection);
+    mProcess->start(NC_COMMAND, {
+                                    NC_ARG_GET_VALUES,
+                                    "GENERAL.TYPE,GENERAL.DEVICE",
+                                    NC_ARG_DEVICE,
+                                    NC_ARG_SHOW,
+                                });
 }
 
 inline bool NmcliInterface::isRunning() const
@@ -241,6 +268,21 @@ inline void NmcliInterface::connectToWifi(const QString& bssid, const QString& p
     });
 
     mProcess->start(NC_COMMAND, args);
+}
+
+inline void NmcliInterface::onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if (exitCode == 0) {
+        QByteArray line = mProcess->readLine();
+        while (!line.isEmpty() && line != "wifi\n") {
+            line = mProcess->readLine();
+        }
+
+        mWifiDevice = mProcess->readLine();
+        if (!mWifiDevice.isEmpty()) {
+            mWifiDevice.remove(mWifiDevice.size() - 1, 1);
+        }
+    }
 }
 
 inline void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus)
