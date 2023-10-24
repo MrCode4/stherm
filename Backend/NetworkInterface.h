@@ -88,7 +88,7 @@ private:
 
 private slots:
     void                onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis);
-    void                onWifiConnectFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void                onWifiConnected(const QString& bssid);
 
     /* Signals
      * ****************************************************************************************/
