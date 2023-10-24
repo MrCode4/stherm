@@ -30,6 +30,9 @@ Control {
     //! Holds whether SemiCircleSlider is being dragged
     readonly property alias dragging: _tempSlider.pressed
 
+    //!
+    property bool       labelVisible: true
+
     /* Object properties
      * ****************************************************************************************/
     //    Material.theme: Material.Dark
@@ -41,6 +44,7 @@ Control {
         SemiCircleSlider {
             id: _tempSlider
             anchors.fill: parent
+            enabled: labelVisible
             from: minTemprature
             to: maxTemprature
             value: device?.requestedTemp ?? 0
@@ -55,6 +59,7 @@ Control {
         //! Desired temprature label
         Label {
             id: _desiredTempratureLbl
+            visible: labelVisible
             anchors.centerIn: parent
             anchors.verticalCenterOffset: labelVerticalOffset
             text: Number(_tempSlider.value).toLocaleString(locale, "f", 0)
