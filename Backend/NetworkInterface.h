@@ -5,6 +5,7 @@
 #include <QNetworkInterface>
 #include <QProcess>
 
+class NmcliInterface;
 
 /*!
  * \brief The WifiInfo class holds information of a wifi network
@@ -21,12 +22,13 @@ class WifiInfo : public QObject
 
 public:
     explicit WifiInfo(QObject* parent=nullptr) : QObject(parent) {}
-    WifiInfo(bool connected, const QString& name, int strength, const QString& security,
-             QObject* parent=nullptr)
+    WifiInfo(bool connected, const QString& ssid, const QString& bssid, int strength,
+             const QString& security, QObject* parent=nullptr)
         : QObject(parent)
         , mConnected (connected)
         , mStrength(strength)
-        , mSsid(name)
+        , mSsid(ssid)
+        , mBssid(bssid)
         , mSecurity(security)
         {
         };
@@ -34,6 +36,7 @@ public:
     bool        mConnected;
     int         mStrength;
     QString     mSsid;
+    QString     mBssid;
     QString     mSecurity;
 
 signals:
@@ -46,6 +49,8 @@ signals:
 /*!
  * \brief The NetworkInterface class provides an interface to fetch all avialable wifi connections
  * on this device and connecting to one of them.
+ * \note \ref NetworkInterface is designed to work with \a \b nmcli on linux for more information
+ * read it man page.
  */
 class NetworkInterface : public QObject
 {
@@ -82,7 +87,7 @@ private:
     static qsizetype    networkCount(WifiInfoList* list);
 
 private slots:
-    void                onWifiProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void                onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis);
     void                onWifiConnectFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
     /* Signals
@@ -103,6 +108,8 @@ signals:
     /* Private attributes
      * ****************************************************************************************/
 private:
+    NmcliInterface*     mNmcliInterface;
+
     QList<WifiInfo*>    mWifiInfos;
     QProcess*           mWifiReadProc;
 
