@@ -115,7 +115,6 @@ private:
     NmcliInterface*     mNmcliInterface;
 
     QList<WifiInfo*>    mWifiInfos;
-    QProcess*           mWifiReadProc;
 
     WifiInfo*           mConnectedWifiInfo;
     WifiInfo*           mRequestedToConnectedWifi;

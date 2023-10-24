@@ -8,13 +8,13 @@
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
     , mNmcliInterface { new NmcliInterface(this) }
-    , mWifiReadProc { nullptr }
     , mConnectedWifiInfo { nullptr }
     , mRequestedToConnectedWifi { nullptr }
 {
     connect(mNmcliInterface, &NmcliInterface::wifiListRefereshed, this, &NetworkInterface::onWifiListRefreshed);
     connect(mNmcliInterface, &NmcliInterface::wifiConnected, this, &NetworkInterface::onWifiConnected);
     connect(mNmcliInterface, &NmcliInterface::wifiDisconnected, this, &NetworkInterface::onWifiDisconnected);
+    connect(mNmcliInterface, &NmcliInterface::isRunningChanged, this, &NetworkInterface::isRunningChanged);
 }
 
 NetworkInterface::WifiInfoList NetworkInterface::wifis()
@@ -26,8 +26,7 @@ NetworkInterface::WifiInfoList NetworkInterface::wifis()
 
 bool NetworkInterface::isRunning()
 {
-    return mWifiReadProc && (mWifiReadProc->state() == QProcess::Starting
-                             || mWifiReadProc->state() == QProcess::Running);
+    return mNmcliInterface && mNmcliInterface->isRunning();
 }
 
 QString NetworkInterface::connectedSsid() const
