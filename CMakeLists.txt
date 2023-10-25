@@ -164,12 +164,14 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemRunDelayPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
+        View/AlertsNotificationsPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
         View/Delegates/ShadeButtonDelegate.qml
         View/Delegates/ScheduleDelegate.qml
         View/Delegates/WifiDelegate.qml
+        View/Delegates/AlertNotificationDelegate.qml
 
     SOURCES
         Backend/AppSpecCPP.h
