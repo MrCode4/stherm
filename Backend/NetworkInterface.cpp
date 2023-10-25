@@ -20,6 +20,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
         if (!on) {
             qDeleteAll(mWifiInfos);
             mWifiInfos.clear();
+            mConnectedWifiInfo = nullptr;
 
             emit connectedSsidChanged();
             emit wifisChanged();
