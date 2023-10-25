@@ -221,25 +221,25 @@ BasePageView {
             }
         }
 
-//        Button {
-//            id: _disconnectBtn
-//            Layout.alignment: Qt.AlignLeft
-//            leftPadding: 16
-//            rightPadding: 16
-//            text: "Disconnect"
+        Button {
+            id: _forgetBtn
+            Layout.alignment: Qt.AlignLeft
+            Layout.preferredWidth: _connectBtn.width
+            leftPadding: 16
+            rightPadding: 16
+            text: "Forget"
 
-//            onClicked: {
-//                //! Disconnect from current network
-//                if (_wifiConnectLay.parent instanceof WifiDelegate) {
-//                    NetworkInterface.connectWifi(_wifiConnectLay.parent.wifi, _passwordTf.text)
-//                }
-//            }
-//        }
+            onClicked: {
+                //! Forget selected network
+                if (_wifiConnectLay.parent instanceof WifiDelegate) {
+                    NetworkInterface.forgetWifi(_wifiConnectLay.parent.wifi);
+                }
+            }
+        }
 
         Button {
+            id: _connectBtn
             Layout.alignment: Qt.AlignRight
-            Layout.columnSpan: 2
-//            Layout.preferredWidth: _disconnectBtn.width
             leftPadding: 16
             rightPadding: 16
             enabled: _wifiConnectLay.isConnected || (_passwordTf.length > 0 && !NetworkInterface.isRunning)
@@ -248,7 +248,7 @@ BasePageView {
             onClicked: {
                 if (text === "Disconnect") {
                     //! Disconnect
-                    NetworkInterface.disconnect();
+                    NetworkInterface.disconnectWifi(_wifiConnectLay.parent.wifi)
                 } else if (text === "Connect") {
                     //! Connect to this wifi
                     if (_wifiConnectLay.parent instanceof WifiDelegate) {
