@@ -65,6 +65,11 @@ public:
 
 public:
     explicit NmcliInterface(QObject* parent = nullptr);
+    ~NmcliInterface() {
+        if (isRunning()) {
+            mProcess->kill();
+        }
+    }
 
     /*!
      * \brief isRunning Determines if a process is already running
@@ -108,17 +113,50 @@ public:
     void    turnWifiDeviceOff();
 
 private:
-    void    getWifiDeviceName()
+    /*!
+     * \brief initialize Gets initial information about wifi device
+     */
+    void    initialize()
+    {
+        //! Use another instance of QProcess to avoid possible possible immediate call to \ref
+        //! refreshWifis() failing.
+        QProcess* process = new QProcess(this);
+
+        //! First check wifi device on/off state
+        connect(process, &QProcess::finished, this, [this, process](int exitCode, QProcess::ExitStatus) {
+                if (exitCode == 0) {
+                    emit wifiDevicePowerChanged(process->readLine().contains("enabled"));
+                }
+
+                //! Now get device wifi name
+                getWifiDeviceName(process);
+            }, Qt::SingleShotConnection);
+
+        process->start(NC_COMMAND, {
+                                       NC_ARG_GET_VALUES,
+                                       "WIFI",
+                                       NC_ARG_GENERAL,
+                                       "status",
+                                   });
+    }
+
+    void    getWifiDeviceName(QProcess* process)
     {
         //! Get wifi device name
-        connect(mProcess, &QProcess::finished, this, &NmcliInterface::onGetWifiDeviceNameFinished,
-                Qt::SingleShotConnection);
-        mProcess->start(NC_COMMAND, {
-                                        NC_ARG_GET_VALUES,
-                                        "GENERAL.TYPE,GENERAL.DEVICE",
-                                        NC_ARG_DEVICE,
-                                        NC_ARG_SHOW,
-                                    });
+        connect(process, &QProcess::finished, this,
+            [this, process](int exitCode, QProcess::ExitStatus exitStatus) {
+                onGetWifiDeviceNameFinished(exitCode, exitStatus);
+
+                //! Delete process
+                process->deleteLater();
+            }, Qt::SingleShotConnection);
+
+        process->start(NC_COMMAND, {
+                                       NC_ARG_GET_VALUES,
+                                       "GENERAL.TYPE,GENERAL.DEVICE",
+                                       NC_ARG_DEVICE,
+                                       NC_ARG_SHOW,
+                                   });
     }
 
 private slots:
@@ -231,21 +269,7 @@ inline NmcliInterface::NmcliInterface(QObject* parent)
     mProcess->setReadChannel(QProcess::StandardOutput);
     connect(mProcess, &QProcess::stateChanged, this, &NmcliInterface::isRunningChanged);
 
-    //! First check wifi device on/off state
-    connect(mProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus) {
-            if (exitCode == 0) {
-                emit wifiDevicePowerChanged(mProcess->readLine().contains("enabled"));
-            }
-
-            //! Now get device wifi name
-            getWifiDeviceName();
-        },Qt::SingleShotConnection);
-    mProcess->start(NC_COMMAND, {
-                                    NC_ARG_GET_VALUES,
-                                    "WIFI",
-                                    NC_ARG_GENERAL,
-                                    "status",
-                                });
+    initialize();
 }
 
 inline bool NmcliInterface::isRunning() const
