@@ -10,12 +10,23 @@ import Stherm
 BasePageView {
     id: _root
 
+    /* Signals
+     * ****************************************************************************************/
+    signal saved();
+    signal canceled();
+
     /* Property declaration
      * ****************************************************************************************/
 
     /* Object properties
      * ****************************************************************************************/
     title: "Vacation"
+    backButtonCallback: function() {
+        canceled();
+        if (_root.StackView.view) {
+            _root.StackView.view.pop();
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -28,6 +39,13 @@ BasePageView {
 
         onClicked: {
             //! Apply settings and go back
+
+            saved();
+
+            //! Go back
+            if (_root.StackView.view) {
+                _root.StackView.view.pop();
+            }
         }
     }
 

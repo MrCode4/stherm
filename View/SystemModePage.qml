@@ -21,8 +21,17 @@ BasePageView {
      * ****************************************************************************************/
     //! Make buttons mutually-exclusive
     ButtonGroup {
+        property Button previousButton: null
+
         id: _buttonsGrp
+
         buttons: _buttonsLay.children
+
+        onCheckedButtonChanged: {
+            if (checkedButton !== _vacationButton) {
+                previousButton = checkedButton;
+            }
+        }
     }
 
     ColumnLayout {
@@ -59,6 +68,7 @@ BasePageView {
 
         Button {
             id: _vacationButton
+
             Layout.fillWidth: true
             leftPadding: 24
             rightPadding: 24
@@ -68,9 +78,7 @@ BasePageView {
             onClicked: {
                 //! Push VacationModePage to StackView
                 if (_root.StackView.view) {
-                    _root.StackView.view.push("qrc:/Stherm/View/SystemMode/VacationModePage.qml", {
-                                                  "uiSession": uiSession
-                                              });
+                    _root.StackView.view.push(_vacationPageCompo);
                 }
             }
         }
@@ -82,6 +90,22 @@ BasePageView {
             rightPadding: 24
             checkable: true
             text: "Off"
+        }
+    }
+
+    Component {
+        id: _vacationPageCompo
+
+        VacationModePage {
+            uiSession: _root.uiSession
+
+            onSaved: _buttonsGrp.previousButton = null
+            onCanceled: {
+                //! Restore previous mode
+                if (_buttonsGrp.previousButton) {
+                    _buttonsGrp.previousButton.checked = true;
+                }
+            }
         }
     }
 }
