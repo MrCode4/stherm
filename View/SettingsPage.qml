@@ -12,6 +12,8 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! UiPreferences
+    property UiPreferences      uiPreferences: uiSession?.uiPreferences ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -62,6 +64,13 @@ BasePageView {
                 Layout.fillWidth: true
                 from: 0
                 to: 100
+                value: uiPreferences?.brightness
+
+                onValueChanged: {
+                    if (uiPreferences && uiPreferences.brightness !== value) {
+                        uiPreferences.brightness = value;
+                    }
+                }
             }
 
             Label {
@@ -97,6 +106,13 @@ BasePageView {
                 Layout.fillWidth: true
                 from: 0
                 to: 100
+                value: uiPreferences?.volume
+
+                onValueChanged: {
+                    if (uiPreferences && uiPreferences.volume !== value) {
+                        uiPreferences.volume = value;
+                    }
+                }
             }
 
             Label {
@@ -118,6 +134,13 @@ BasePageView {
 
             Switch {
                 id: _adaptiveBrSw
+                checked: uiPreferences?.adaptiveBrightness
+
+                onToggled: {
+                    if (uiPreferences && uiPreferences.adaptiveBrightness !== checked) {
+                        uiPreferences.adaptiveBrightness = checked;
+                    }
+                }
             }
         }
 
@@ -137,11 +160,25 @@ BasePageView {
             RadioButton {
                 id: _tempFarenUnitBtn
                 text: "\u00b0F"
+                checked: uiPreferences?.tempratureUnit === UiPreferences.TempratureUnit.Fah
+
+                onToggled: {
+                    if (uiPreferences && uiPreferences.tempratureUnit !== UiPreferences.TempratureUnit.Fah) {
+                        uiPreferences.tempratureUnit = UiPreferences.TempratureUnit.Fah;
+                    }
+                }
             }
 
             RadioButton {
                 id: _tempCelciUnitBtn
                 text: "\u00b0C"
+                checked: uiPreferences?.tempratureUnit === UiPreferences.TempratureUnit.Cel
+
+                onToggled: {
+                    if (uiPreferences && uiPreferences.tempratureUnit !== UiPreferences.TempratureUnit.Cel) {
+                        uiPreferences.tempratureUnit = UiPreferences.TempratureUnit.Cel;
+                    }
+                }
             }
 
             //! Time Format
@@ -151,14 +188,37 @@ BasePageView {
                 text: "Time Format"
             }
 
+            //! Use explicit ButtonGroup to avoid time format RadioButtons being mutually exclusive
+            //! with temprature RadioButtons.
+            ButtonGroup {
+                id: _timeButtonGrp
+                buttons: [_time24FormBtn, _time12FormBtn]
+            }
+
             RadioButton {
                 id: _time24FormBtn
+                autoExclusive: false
                 text: "24H"
+                checked: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour24
+
+                onToggled: {
+                    if (uiPreferences && uiPreferences.timeFormat !== UiPreferences.TimeFormat.Hour24) {
+                        uiPreferences.timeFormat = UiPreferences.TimeFormat.Hour24;
+                    }
+                }
             }
 
             RadioButton {
                 id: _time12FormBtn
+                autoExclusive: false
                 text: "12H"
+                checked: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
+
+                onToggled: {
+                    if (uiPreferences && uiPreferences.timeFormat !== UiPreferences.TimeFormat.Hour12) {
+                        uiPreferences.timeFormat = UiPreferences.TimeFormat.Hour12;
+                    }
+                }
             }
         }
     }
