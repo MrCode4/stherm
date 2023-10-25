@@ -154,6 +154,14 @@ qt6_add_qml_module(appStherm
         View/Schedule/ScheduleRepeatPage.qml
         View/Schedule/SchedulePreviewPage.qml
         View/Schedule/ScheduleNamePage.qml
+        View/SystemSetupPage.qml
+        View/SystemSetup/SystemTypePage.qml
+        View/SystemSetup/SystemTypeTraditionPage.qml
+        View/SystemSetup/SystemTypeHeatPumpPage.qml
+        View/SystemSetup/SystemTypeCoolOnlyPage.qml
+        View/SystemSetup/SystemTypeHeatOnlyPage.qml
+        View/SystemSetup/SystemAccessoriesPage.qml
+        View/SystemSetup/SystemRunDelayPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
 

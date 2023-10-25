@@ -33,9 +33,6 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;
-                case "System Info":
-                    _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
-                    break;
                 case "Schedule":
                     _root.StackView.view.push("qrc:/Stherm/View/ScheduleView.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
@@ -45,6 +42,14 @@ BasePageView {
                     _root.StackView.view.push("qrc:/Stherm/View/HumidityPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
+                    break;
+                case "System Setup":
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
+                case "System Info":
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
                     break;
                 }
             }
