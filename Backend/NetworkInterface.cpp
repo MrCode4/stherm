@@ -28,6 +28,15 @@ NetworkInterface::NetworkInterface(QObject *parent)
         mDeviceIsOn = on;
         emit deviceIsOnChanged();
     });
+
+    connect(mNmcliInterface, &NmcliInterface::wifiForgotten, this, [this](const QString& ssid) {
+        if (mConnectedWifiInfo && mConnectedWifiInfo->mSsid == ssid) {
+            mConnectedWifiInfo->setProperty("connected", false);
+
+            mConnectedWifiInfo = nullptr;
+            emit connectedSsidChanged();
+        }
+    });
 }
 
 NetworkInterface::WifiInfoList NetworkInterface::wifis()
@@ -66,13 +75,22 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
     mNmcliInterface->connectToWifi(wifiInfo->mBssid, password);
 }
 
-void NetworkInterface::disconnect()
+void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 {
-    if (isRunning()) {
+    if (!wifiInfo || isRunning()) {
+        return;
+    }
+    
+    mNmcliInterface->disconnectFromWifi(wifiInfo->mSsid);
+}
+
+void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
+{
+    if (!wifiInfo || isRunning()) {
         return;
     }
 
-    mNmcliInterface->disconnectWifi();
+    mNmcliInterface->forgetWifi(wifiInfo->mSsid);
 }
 
 void NetworkInterface::turnOn()
@@ -125,7 +143,7 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
             wifi["bssid"].toString(),
             wifi["signal"].toInt(),
             wifi["security"].toString()
-        ));
+            ));
 
         if (wifi["inUse"].toBool()) {
             mConnectedWifiInfo = wifiInfos.back();

@@ -79,7 +79,8 @@ public:
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
     Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
-    Q_INVOKABLE void    disconnect();
+    Q_INVOKABLE void    disconnectWifi(WifiInfo* wifiInfo);
+    Q_INVOKABLE void    forgetWifi(WifiInfo* wifiInfo);
     Q_INVOKABLE void    turnOn();
     Q_INVOKABLE void    turnOff();
 
