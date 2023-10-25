@@ -133,6 +133,9 @@ qsizetype NetworkInterface::networkCount(WifiInfoList* list)
 
 void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis)
 {
+    //! Set mConnectedWifiInfo since it will not be valid anymore
+    mConnectedWifiInfo = nullptr;
+
     //! Wifi list
     QList<WifiInfo*> wifiInfos;
 
@@ -152,8 +155,6 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
 
     //! Update mNetworks
     qDeleteAll(mWifiInfos);
-    //! Set mConnectedWifiInfo since it's not valid anymore
-    mConnectedWifiInfo = nullptr;
 
     mWifiInfos.clear();
     mWifiInfos = std::move(wifiInfos);
