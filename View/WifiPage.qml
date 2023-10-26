@@ -342,8 +342,10 @@ BasePageView {
             var w = _wifisModel.get(i).wifi;
             if (!availableWifis.find(element => element.bssid === w.bssid)) {
                 _wifisModel.remove(i);
-                //! Also remove its WifiInfo instance
-                w.destroy();
+                //! Also remove its WifiInfo instance it its not the connected wifi instance
+                if (w !== sortedWifis[0]) {
+                    w.destroy();
+                }
             }
         }
 

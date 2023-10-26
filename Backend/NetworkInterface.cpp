@@ -173,14 +173,14 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
                 );
             QJSEngine::setObjectOwnership(newWifi, QJSEngine::JavaScriptOwnership);
             wifiInfos.push_back(newWifi);
-
-            if (wifi["inUse"].toBool()) {
-                mConnectedWifiInfo = wifiInfos.back();
-            }
         } else {
             (*wiInstance)->setProperty("connected", wifi["inUse"].toBool());
             (*wiInstance)->setProperty("strength", wifi["signal"].toInt());
             wifiInfos.push_back((*wiInstance));
+        }
+
+        if (wifi["inUse"].toBool()) {
+            mConnectedWifiInfo = wifiInfos.back();
         }
     }
 
