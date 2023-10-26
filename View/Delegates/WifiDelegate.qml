@@ -53,14 +53,32 @@ Control {
             spacing: 12
 
             RoniaTextIcon {
+                id: _wifiIcon
+                font.pointSize: _root.font.pointSize * 1.2
                 color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
-                text: "\uf1eb" //! wifi icon
+                text: wifi ? ( wifi.strength > 80 ? "\uf1eb" //! wifi icon
+                                         : (wifi.strength > 50 ? "\uf6ab" //! wifi-fair icon
+                                                               :"\uf6aa" //! wifi-weak icon
+                              )) : ""
             }
 
-            Label {
-                Layout.fillWidth: true
-                color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
-                text: wifi?.ssid ?? ""
+            ColumnLayout {
+                spacing: 2
+
+                Label {
+                    Layout.fillWidth: true
+                    color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
+                    text: wifi?.ssid ?? ""
+                    elide: "ElideRight"
+                }
+
+                Label {
+                    opacity: 0.7
+                    visible: wifi?.connected ?? false
+                    font.pointSize: _root.font.pointSize * 0.8
+                    color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
+                    text: "Connected"
+                }
             }
         }
 

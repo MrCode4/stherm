@@ -178,6 +178,7 @@ qt6_add_qml_module(appStherm
         Backend/AppSettingsCPP.cpp
         Backend/NetworkInterface.h
         Backend/NetworkInterface.cpp
+        Backend/NmcliInterface.h
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf

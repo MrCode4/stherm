@@ -76,6 +76,10 @@ I_DeviceController {
     function updateBacklight()
     {
         //! Change background color of application
-        AppStyle.backgroundColor = device.backlight.color;
+        if (device.backlight.on) {
+            AppStyle.backgroundColor = device.backlight.color;
+        } else {
+            AppStyle.backgroundColor = "#000000";
+        }
     }
 }
