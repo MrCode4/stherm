@@ -38,6 +38,7 @@ BasePageView {
         Switch {
             id: _wifiOnOffSw
 
+            enabled: !NetworkInterface.isRunning
             checked: NetworkInterface.deviceIsOn
             onToggled: {
                 if (checked) {
@@ -62,7 +63,9 @@ BasePageView {
 
                 onClicked: {
                     //! Force refresh
-                    NetworkInterface.refereshWifis(true);
+                    if (NetworkInterface.deviceIsOn && !NetworkInterface.isRunning) {
+                        NetworkInterface.refereshWifis(true);
+                    }
                 }
             }
 
@@ -72,8 +75,8 @@ BasePageView {
                     fill: parent
                     margins: 4
                 }
-                running: visible
-                visible: NetworkInterface.isRunning
+                visible: running
+                running: NetworkInterface.isRunning
             }
         }
     }
@@ -312,6 +315,37 @@ BasePageView {
         {
             _errorMessageLbl.text = `${error} ${ssid ? "**" + ssid + "**" : ""}`;
             _errorDrawer.open();
+        }
+
+        function onDeviceIsOnChanged()
+        {
+            if (NetworkInterface.deviceIsOn) {
+                if (NetworkInterface.isRunning) {
+                    NetworkInterface.isRunningChanged.connect(_singleshotRefresh);
+                } else {
+                    _singleshotRefresh();
+                }
+            }
+        }
+    }
+
+    Timer {
+        id: _delayedRefreshTmr
+        interval: 5000
+        running: false
+        repeat: false
+        onTriggered: {
+            if (NetworkInterface.deviceIsOn && !NetworkInterface.isRunning) {
+                NetworkInterface.refereshWifis();
+            }
+        }
+    }
+
+    function _singleshotRefresh()
+    {
+        NetworkInterface.isRunningChanged.disconnect(_singleshotRefresh);
+        if (!NetworkInterface.isRunning) {
+            _delayedRefreshTmr.start();
         }
     }
 }
