@@ -130,7 +130,7 @@ void NetworkInterface::turnOff()
 WifiInfo* NetworkInterface::networkAt(WifiInfoList* list, qsizetype index)
 {
     if (NetworkInterface* ni = qobject_cast<NetworkInterface*>(list->object)) {
-        if (index >= 0 && index < ni->mWifiInfos.count() && ni->mDeviceIsOn) {
+        if (ni->mDeviceIsOn && index >= 0 && index < ni->mWifiInfos.count()) {
             return ni->mWifiInfos.at(index);
         }
     }
@@ -152,6 +152,19 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
     //! Set mConnectedWifiInfo since it will not be valid anymore
     mConnectedWifiInfo = nullptr;
 
+    //! Find wifis to be deleted.
+    QList<WifiInfo*> toDeleteWifis;
+    for (WifiInfo* wi : mWifiInfos) {
+        auto wiInWifis = std::find_if(wifis.begin(), wifis.end(), [&](const QMap<QString, QVariant>& wf) {
+            return wi->mBssid == wf["bssid"].toString();
+        });
+
+        if (wiInWifis == wifis.end()) {
+            //! This should be deleted
+            toDeleteWifis.push_back(wi);
+        }
+    }
+
     //! Wifi list
     QList<WifiInfo*> wifiInfos;
 
@@ -171,7 +184,6 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
                                     wifi["signal"].toInt(),
                                     wifi["security"].toString()
                 );
-            QJSEngine::setObjectOwnership(newWifi, QJSEngine::JavaScriptOwnership);
             wifiInfos.push_back(newWifi);
         } else {
             (*wiInstance)->setProperty("connected", wifi["inUse"].toBool());
@@ -186,11 +198,13 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
 
     //! Just clear mWifiInfos, don't delete instance as ownership is transfered to js
     mWifiInfos.clear();
-
     mWifiInfos = std::move(wifiInfos);
 
     emit connectedSsidChanged();
     emit wifisChanged();
+
+    //! Now delete not needed wifis
+    qDeleteAll(toDeleteWifis);
 }
 
 void NetworkInterface::onWifiConnected(const QString& bssid)

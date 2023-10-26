@@ -33,6 +33,9 @@ public:
         , mSecurity(security)
         {
         };
+    ~WifiInfo() {
+        qDebug() << "Destructed: " << mSsid;
+    }
 
     bool        mConnected;
     int         mStrength;
