@@ -59,7 +59,7 @@ class NetworkInterface : public QObject
     Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis NOTIFY wifisChanged)
     Q_PROPERTY(bool isRunning        READ isRunning       NOTIFY isRunningChanged)
     Q_PROPERTY(QString  connectedSsid   READ connectedSsid NOTIFY connectedSsidChanged)
-    Q_PROPERTY(bool deviceIsOn      MEMBER mDeviceIsOn NOTIFY deviceIsOnChanged)
+    Q_PROPERTY(bool deviceIsOn      READ deviceIsOn NOTIFY deviceIsOnChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -76,6 +76,8 @@ public:
     bool                isRunning();
 
     QString             connectedSsid() const;
+
+    bool                deviceIsOn() const { return mDeviceIsOn; }
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
     Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
