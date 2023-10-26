@@ -139,13 +139,15 @@ BasePageView {
         ListView {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            visible: sortedWifis.length > 0
             clip: true
-            model: sortedWifis.filter((element) => !element.connected)
+            model: ListModel {
+                id: _wifisModel
+            }
+
             delegate: WifiDelegate {
                 id: _wifiDelegate
 
-                required property var modelData
+                required property var model
                 required property int index
 
                 width: ListView.view.width
@@ -153,7 +155,7 @@ BasePageView {
                         + (_wifiConnectLay.parent === this ? _wifiConnectLay.implicitHeight + 16 : 0)
                 clip: true
 
-                wifi: modelData
+                wifi: model.wifi ?? null
                 delegateIndex: index
                 onClicked: {
                     if (NetworkInterface.isRunning) {
@@ -166,7 +168,7 @@ BasePageView {
                         _wifiConnectLay.y = 0;
                         _wifiConnectLay.isSaved = false;
                         _wifiConnectLay.isConnected = false;
-                    } else if (!modelData.connected){
+                    } else if (!wifi.connected){
                         _wifiConnectLay.minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
                         _wifiConnectLay.isSaved = NetworkInterface.isWifiSaved(wifi);
                         _wifiConnectLay.isConnected = false;
@@ -329,5 +331,40 @@ BasePageView {
             _errorMessageLbl.text = `${error} ${ssid ? "**" + ssid + "**" : ""}`;
             _errorDrawer.open();
         }
+    }
+
+    onSortedWifisChanged: {
+        var availableWifis = sortedWifis.slice(1);
+
+        //! Remove items that are not in availableWifis
+        for (var i = 0; i < _wifisModel.count; ++i) {
+            var w = _wifisModel.get(i).wifi;
+            if (!availableWifis.find(element => element.bssid === w.bssid)) {
+                _wifisModel.remove(i);
+                //! Also remove its WifiInfo instance
+                w.destroy();
+            }
+        }
+
+        availableWifis.forEach(function(element, index) {
+            //! Check if this element is in _wifisModel
+            var indexInLm = _listModelWifiIndex(element);
+            if (indexInLm < 0) {
+                _wifisModel.append({
+                                       "wifi": element
+                                   });
+            }
+        });
+    }
+
+    function _listModelWifiIndex(wifi)
+    {
+        for (var i = 0; i < _wifisModel.count; ++i) {
+            if (_wifisModel.get(i).wifi === wifi) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }
