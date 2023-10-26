@@ -112,8 +112,11 @@ BasePageView {
                     _wifiConnectLay.visible = false;
                     _wifiConnectLay.parent = _root
                     _wifiConnectLay.y = 0;
+                    _wifiConnectLay.isSaved = false;
+                    _wifiConnectLay.isConnected = false;
                 } else {
                     _wifiConnectLay.isConnected = true;
+                    _wifiConnectLay.isSaved = true;
                     _wifiConnectLay.visible = true
                     _wifiConnectLay.parent = this;
                     _wifiConnectLay.y = _root.Material.delegateHeight + 8
@@ -161,10 +164,13 @@ BasePageView {
                         _wifiConnectLay.visible = false;
                         _wifiConnectLay.parent = _root
                         _wifiConnectLay.y = 0;
+                        _wifiConnectLay.isSaved = false;
+                        _wifiConnectLay.isConnected = false;
                     } else if (!modelData.connected){
                         _wifiConnectLay.minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
+                        _wifiConnectLay.isSaved = NetworkInterface.isWifiSaved(wifi);
                         _wifiConnectLay.isConnected = false;
-                        _wifiConnectLay.visible = true
+                        _wifiConnectLay.visible = true;
                         _wifiConnectLay.parent = _wifiDelegate;
                         _wifiConnectLay.y = _root.Material.delegateHeight + 8
                     }
@@ -190,6 +196,7 @@ BasePageView {
         id: _wifiConnectLay
 
         property bool isConnected: false
+        property bool isSaved: false
         property int minPasswordLength: 0
 
         width: parent ? parent.width - 32 : 0
@@ -205,7 +212,7 @@ BasePageView {
             Layout.fillWidth: true
             Layout.columnSpan: 2
 
-            visible: !_wifiConnectLay.isConnected
+            visible: !_wifiConnectLay.isConnected && !_wifiConnectLay.isSaved
             maximumLength: 256
             rightPadding: _passwordEchoBtn.width
             placeholderText: "Enter Wifi password"
@@ -235,7 +242,7 @@ BasePageView {
                 id: _forgetBtn
                 Layout.alignment: Qt.AlignLeft
                 Layout.preferredWidth: _connectBtn.width
-                visible: _wifiConnectLay.isConnected
+                visible: _wifiConnectLay.isSaved
                 leftPadding: 16
                 rightPadding: 16
                 text: "Forget"
@@ -255,17 +262,23 @@ BasePageView {
                 Layout.alignment: Qt.AlignRight
                 leftPadding: 16
                 rightPadding: 16
-                enabled: /*_wifiConnectLay.isConnected || */(_passwordTf.acceptableInput && !NetworkInterface.isRunning)
+                enabled: _wifiConnectLay.isConnected || _wifiConnectLay.isSaved
+                         || (_passwordTf.acceptableInput && !NetworkInterface.isRunning)
                 text: _wifiConnectLay.isConnected ? "Disconnect" : "Connect"
 
                 onClicked: {
                     if (text === "Disconnect") {
                         //! Disconnect
-                        NetworkInterface.disconnectWifi(_wifiConnectLay.parent.wifi)
+                        NetworkInterface.disconnectWifi(_wifiConnectLay.parent.wifi);
                     } else if (text === "Connect") {
                         //! Connect to this wifi
                         if (_wifiConnectLay.parent instanceof WifiDelegate) {
-                            NetworkInterface.connectWifi(_wifiConnectLay.parent.wifi, _passwordTf.text)
+                            if (_wifiConnectLay.isSaved) {
+                                console.log('connecting using saved')
+                                NetworkInterface.connectSavedWifi(_wifiConnectLay.parent.wifi);
+                            } else {
+                                NetworkInterface.connectWifi(_wifiConnectLay.parent.wifi, _passwordTf.text);
+                            }
                         }
                     }
                 }
