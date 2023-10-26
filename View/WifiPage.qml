@@ -341,11 +341,14 @@ BasePageView {
             var availableWifis = sortedWifis[0].connected ? sortedWifis.slice(1) : sortedWifis;
 
             //! Remove items that are not in availableWifis
-            for (var i = 0; i < _wifisModel.count; ++i) {
+            for (var i = 0; i < _wifisModel.count;) {
                 var w = _wifisModel.get(i).wifi;
-                if (!availableWifis.find(element => element.bssid === w.bssid)) {
+                if (!availableWifis.find(element => element?.bssid === w.bssid)) {
                     _wifisModel.remove(i);
+                    continue;
                 }
+
+                ++i;
             }
 
             availableWifis.forEach(function(element, index) {
@@ -357,6 +360,8 @@ BasePageView {
                                        });
                 }
             });
+        } else {
+            _wifisModel.clear();
         }
     }
 
