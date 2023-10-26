@@ -22,7 +22,7 @@ BasePageView {
                                                  });
             wifis.unshift(wifis.splice(connectedIndex, 1)[0]);
         }
-        return wifis;
+        return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.ssid !== "");
     }
 
     /* Object properties
@@ -350,7 +350,7 @@ BasePageView {
             //! Check if this element is in _wifisModel
             var indexInLm = _listModelWifiIndex(element);
             if (indexInLm < 0) {
-                _wifisModel.append({
+                _wifisModel.insert(Math.min(index, _wifisModel.count), {
                                        "wifi": element
                                    });
             }
