@@ -38,6 +38,7 @@ public:
     QString     mSsid;
     QString     mBssid;
     QString     mSecurity;
+    bool        isSaved;
 
 signals:
     void        connectedChanged();
@@ -81,8 +82,10 @@ public:
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
     Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
+    Q_INVOKABLE void    connectSavedWifi(WifiInfo* wifiInfo);
     Q_INVOKABLE void    disconnectWifi(WifiInfo* wifiInfo);
     Q_INVOKABLE void    forgetWifi(WifiInfo* wifiInfo);
+    Q_INVOKABLE bool    isWifiSaved(WifiInfo* wifiInfo);
     Q_INVOKABLE void    turnOn();
     Q_INVOKABLE void    turnOff();
 

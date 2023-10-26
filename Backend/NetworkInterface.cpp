@@ -72,6 +72,16 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
     mNmcliInterface->connectToWifi(wifiInfo->mBssid, password);
 }
 
+void NetworkInterface::connectSavedWifi(WifiInfo* wifiInfo)
+{
+    if (!wifiInfo || isRunning() || !mDeviceIsOn) {
+        return;
+    }
+
+    mRequestedToConnectedWifi = wifiInfo;
+    mNmcliInterface->connectSavedWifi(wifiInfo->mSsid, wifiInfo->mBssid);
+}
+
 void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 {
     if (!wifiInfo || isRunning() || !mDeviceIsOn) {
@@ -88,6 +98,15 @@ void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
     }
 
     mNmcliInterface->forgetWifi(wifiInfo->mSsid);
+}
+
+bool NetworkInterface::isWifiSaved(WifiInfo* wifiInfo)
+{
+    if (!wifiInfo) {
+        return false;
+    }
+
+    return mNmcliInterface->hasWifiProfile(wifiInfo->mSsid, wifiInfo->mBssid);
 }
 
 void NetworkInterface::turnOn()

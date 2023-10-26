@@ -103,9 +103,11 @@ public:
      * password, if the given \a ssid is not saved into \a\b NetworkManager this returns
      * immediately otherwise connection process starts
      * \param ssid The SSID (and not BSSID) of wifi
+     * \param bssid The BSSID of wifi
+     * \return False if wifi profile with this \a ssid doesn't exit
      * \note This methods uses \ref hasWifiProfile(const QStrig&) to check if \a ssid is saved.
      */
-    void    connectToWifi(const QString& ssid);
+    bool    connectSavedWifi(const QString& ssid, const QString& bssid);
 
     /*!
      * \brief disconnectWifi Disconnects from currently connected wifi
@@ -360,9 +362,26 @@ inline void NmcliInterface::connectToWifi(const QString& bssid, const QString& p
     mProcess->start(NC_COMMAND, args);
 }
 
-inline void NmcliInterface::connectToWifi(const QString& bssid)
+inline bool NmcliInterface::connectSavedWifi(const QString& ssid, const QString& bssid)
 {
+    if (!hasWifiProfile(ssid, bssid)) {
+        return false;
+    }
 
+    //! Profile exist, connect to it.
+    mRequestedWifiToConnect = ssid;
+    connect(mProcess, &QProcess::finished, this, &NmcliInterface::onWifiConnectedFinished,
+            Qt::SingleShotConnection);
+
+    //! Perform connection command
+    const QStringList args({
+        NC_ARG_CONNECTION,
+        NC_ARG_UP,
+        ssid,
+    });
+
+    mProcess->start(NC_COMMAND, args);
+    return true;
 }
 
 inline void NmcliInterface::disconnectFromWifi(const QString& ssid)
