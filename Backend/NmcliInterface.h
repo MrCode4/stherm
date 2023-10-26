@@ -504,7 +504,7 @@ inline void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::Ex
 
 inline void NmcliInterface::onWifiConnectedFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    if (exitCode == 0) {
+    if (exitCode == 0 && !mProcess->readLine().startsWith("Error")) {
         //! Connection was successful
         emit wifiConnected(mRequestedWifiToConnect);
         mRequestedWifiToConnect = "";
