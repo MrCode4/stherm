@@ -52,14 +52,26 @@ Control {
             height: _root.Material.delegateHeight
             spacing: 12
 
-            RoniaTextIcon {
-                id: _wifiIcon
-                font.pointSize: _root.font.pointSize * 1.2
-                color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
-                text: wifi ? ( wifi.strength > 80 ? "\uf1eb" //! wifi icon
-                                         : (wifi.strength > 50 ? "\uf6ab" //! wifi-fair icon
-                                                               :"\uf6aa" //! wifi-weak icon
-                              )) : ""
+            Item {
+                width: _wifiIcon.implicitWidth
+                height: _wifiIcon.implicitHeight
+                RoniaTextIcon {
+                    anchors.fill: parent
+                    font.pointSize: _root.font.pointSize * 1.2
+                    color: "gray"
+                    opacity: 0.2
+                    text: "\uf1eb"
+                }
+                RoniaTextIcon {
+                    id: _wifiIcon
+                    anchors.fill: parent
+                    font.pointSize: _root.font.pointSize * 1.2
+                    color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
+                    text: wifi ? ( wifi.strength > 80 ? "\uf1eb" //! wifi icon
+                                                      : (wifi.strength > 50 ? "\uf6ab": //! wifi-fair icon
+                                                                              (wifi.strength > 25 ?"\uf6aa" : "")//! wifi-weak icon
+                                                         )) : ""
+                }
             }
 
             ColumnLayout {
