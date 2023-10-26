@@ -20,7 +20,9 @@ BasePageView {
             var connectedIndex = wifis.findIndex((element) => {
                                                      return element.connected === true;
                                                  });
-            wifis.unshift(wifis.splice(connectedIndex, 1)[0]);
+            if (connectedIndex > -1) {
+                wifis.unshift(wifis.splice(connectedIndex, 1)[0]);
+            }
         }
         return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.ssid !== "");
     }
@@ -128,7 +130,7 @@ BasePageView {
 
         Label {
             Layout.topMargin: _currentWifi.visible ? 20 : 0
-            visible: sortedWifis.length > 0
+            visible: _wifisModel.count > 0
             font.pointSize: _root.font.pointSize * 0.85
             opacity: 0.7
             leftPadding: 8
@@ -335,29 +337,27 @@ BasePageView {
     }
 
     onSortedWifisChanged: {
-        var availableWifis = sortedWifis.slice(1);
+        if (sortedWifis.length > 0) {
+            var availableWifis = sortedWifis[0].connected ? sortedWifis.slice(1) : sortedWifis;
 
-        //! Remove items that are not in availableWifis
-        for (var i = 0; i < _wifisModel.count; ++i) {
-            var w = _wifisModel.get(i).wifi;
-            if (!availableWifis.find(element => element.bssid === w.bssid)) {
-                _wifisModel.remove(i);
-                //! Also remove its WifiInfo instance it its not the connected wifi instance
-                if (w !== sortedWifis[0]) {
-                    w.destroy();
+            //! Remove items that are not in availableWifis
+            for (var i = 0; i < _wifisModel.count; ++i) {
+                var w = _wifisModel.get(i).wifi;
+                if (!availableWifis.find(element => element.bssid === w.bssid)) {
+                    _wifisModel.remove(i);
                 }
             }
-        }
 
-        availableWifis.forEach(function(element, index) {
-            //! Check if this element is in _wifisModel
-            var indexInLm = _listModelWifiIndex(element);
-            if (indexInLm < 0) {
-                _wifisModel.insert(Math.min(index, _wifisModel.count), {
-                                       "wifi": element
-                                   });
-            }
-        });
+            availableWifis.forEach(function(element, index) {
+                //! Check if this element is in _wifisModel
+                var indexInLm = _listModelWifiIndex(element);
+                if (indexInLm < 0) {
+                    _wifisModel.insert(Math.min(index, _wifisModel.count), {
+                                           "wifi": element
+                                       });
+                }
+            });
+        }
     }
 
     function _listModelWifiIndex(wifi)
