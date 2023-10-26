@@ -481,7 +481,7 @@ inline void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::Ex
             //! Read SIGNAL line: it's in this form: SIGNAL:<signal>
             line = mProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
-            const int signalLen = 6;
+            const int signalLen = 7;
             wifi["signal"] = line.size() > signalLen ? line.sliced(signalLen) : "";
 
             //! Read SECURITY line: it's in this form: SECURITY:<security>
