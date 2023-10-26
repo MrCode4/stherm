@@ -39,7 +39,6 @@ public:
     QString     mSsid;
     QString     mBssid;
     QString     mSecurity;
-    bool        isSaved;
 
 signals:
     void        connectedChanged();

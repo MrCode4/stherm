@@ -58,9 +58,7 @@ Control {
                 color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
                 text: wifi ? ( wifi.strength > 80 ? "\uf1eb" //! wifi icon
                                          : (wifi.strength > 50 ? "\uf6ab" //! wifi-fair icon
-                                                               : (wifi.strength > 25 ? "\uf6aa" //! wifi-weak icon
-                                                                                     : ""
-                                            )
+                                                               :"\uf6aa" //! wifi-weak icon
                               )) : ""
             }
 
