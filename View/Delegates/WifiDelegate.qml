@@ -56,6 +56,7 @@ Control {
                 width: _wifiIcon.implicitWidth
                 height: _wifiIcon.implicitHeight
                 RoniaTextIcon {
+                    id: _wifiIcon
                     anchors.fill: parent
                     font.pointSize: _root.font.pointSize * 1.2
                     color: "gray"
@@ -63,7 +64,6 @@ Control {
                     text: "\uf1eb"
                 }
                 RoniaTextIcon {
-                    id: _wifiIcon
                     anchors.fill: parent
                     font.pointSize: _root.font.pointSize * 1.2
                     color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
