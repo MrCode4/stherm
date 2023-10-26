@@ -381,7 +381,7 @@ inline void NmcliInterface::turnWifiDeviceOn()
         } else {
             emit errorOccured(NmcliInterface::Error(exitCode));
         }
-    });
+    }, Qt::SingleShotConnection);
 
     //! Perform connection command
     const QStringList args({
@@ -400,12 +400,12 @@ inline void NmcliInterface::turnWifiDeviceOff()
     }
 
     connect(mProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus) {
-        if (exitCode == 0) {
-            emit wifiDevicePowerChanged(false);
-        } else {
-            emit errorOccured(NmcliInterface::Error(exitCode));
-        }
-    });
+            if (exitCode == 0) {
+                emit wifiDevicePowerChanged(false);
+            } else {
+                emit errorOccured(NmcliInterface::Error(exitCode));
+            }
+        }, Qt::SingleShotConnection);
 
     //! Perform connection command
     const QStringList args({
