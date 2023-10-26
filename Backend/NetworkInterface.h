@@ -16,6 +16,7 @@ class WifiInfo : public QObject
     Q_PROPERTY(bool     connected       MEMBER mConnected       NOTIFY connectedChanged)
     Q_PROPERTY(int      strength        MEMBER mStrength        NOTIFY strengthChanged)
     Q_PROPERTY(QString  ssid            MEMBER mSsid            NOTIFY ssidChanged)
+    Q_PROPERTY(QString  bssid           MEMBER mBssid           NOTIFY bssidChanged)
     Q_PROPERTY(QString  security        MEMBER mSecurity        NOTIFY securityChanged)
     QML_ELEMENT
     QML_UNCREATABLE("WifiInfo cannot be created from QML.")
@@ -44,6 +45,7 @@ signals:
     void        connectedChanged();
     void        strengthChanged();
     void        ssidChanged();
+    void        bssidChanged();
     void        securityChanged();
 };
 

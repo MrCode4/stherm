@@ -156,23 +156,37 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
     QList<WifiInfo*> wifiInfos;
 
     for (const auto& wifi : wifis) {
-        wifiInfos.push_back(new WifiInfo(
-            wifi["inUse"].toBool(),
-            wifi["ssid"].toString(),
-            wifi["bssid"].toString(),
-            wifi["signal"].toInt(),
-            wifi["security"].toString()
-            ));
+        const QString bssid = wifi["bssid"].toString();
 
-        if (wifi["inUse"].toBool()) {
-            mConnectedWifiInfo = wifiInfos.back();
+        //! Check if this bssid is in mWifiInfos
+        auto wiInstance = std::find_if(mWifiInfos.begin(), mWifiInfos.end(), [&](WifiInfo* w) {
+            return w->mBssid == bssid;
+        });
+
+        if (wiInstance == mWifiInfos.end()) {
+            WifiInfo* newWifi = new WifiInfo(
+                                    wifi["inUse"].toBool(),
+                                    wifi["ssid"].toString(),
+                                    wifi["bssid"].toString(),
+                                    wifi["signal"].toInt(),
+                                    wifi["security"].toString()
+                );
+            QJSEngine::setObjectOwnership(newWifi, QJSEngine::JavaScriptOwnership);
+            wifiInfos.push_back(newWifi);
+
+            if (wifi["inUse"].toBool()) {
+                mConnectedWifiInfo = wifiInfos.back();
+            }
+        } else {
+            (*wiInstance)->setProperty("connected", wifi["inUse"].toBool());
+            (*wiInstance)->setProperty("strength", wifi["signal"].toInt());
+            wifiInfos.push_back((*wiInstance));
         }
     }
 
-    //! Update mNetworks
-    qDeleteAll(mWifiInfos);
-
+    //! Just clear mWifiInfos, don't delete instance as ownership is transfered to js
     mWifiInfos.clear();
+
     mWifiInfos = std::move(wifiInfos);
 
     emit connectedSsidChanged();
