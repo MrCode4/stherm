@@ -159,6 +159,7 @@ BasePageView {
                         _wifiConnectLay.parent = _root
                         _wifiConnectLay.y = 0;
                     } else if (!modelData.connected){
+                        _wifiConnectLay.minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
                         _wifiConnectLay.isConnected = false;
                         _wifiConnectLay.visible = true
                         _wifiConnectLay.parent = _wifiDelegate;
@@ -180,19 +181,19 @@ BasePageView {
             }
         }
     }
+
     //! Column for wifi password textfield and connect button
-    GridLayout {
+    ColumnLayout {
         id: _wifiConnectLay
 
         property bool isConnected: false
+        property int minPasswordLength: 0
 
         width: parent ? parent.width - 32 : 0
         visible: false
         x: 16
 
-        columns: 2
-        columnSpacing: 8
-        rowSpacing: 4
+        spacing: 8
 
         onParentChanged: _passwordTf.clear()
 
@@ -206,6 +207,9 @@ BasePageView {
             rightPadding: _passwordEchoBtn.width
             placeholderText: "Enter Wifi password"
             echoMode: _passwordEchoBtn.checked ? TextField.Normal : TextField.Password
+            validator: RegularExpressionValidator {
+                regularExpression: new RegExp(`.{${_wifiConnectLay.minPasswordLength},${_passwordTf.maximumLength}}`)
+            }
 
             ToolButton {
                 id: _passwordEchoBtn
@@ -221,38 +225,45 @@ BasePageView {
             }
         }
 
-        Button {
-            id: _forgetBtn
-            Layout.alignment: Qt.AlignLeft
-            Layout.preferredWidth: _connectBtn.width
-            leftPadding: 16
-            rightPadding: 16
-            text: "Forget"
+        RowLayout {
+            Layout.fillWidth: true
 
-            onClicked: {
-                //! Forget selected network
-                if (_wifiConnectLay.parent instanceof WifiDelegate) {
-                    NetworkInterface.forgetWifi(_wifiConnectLay.parent.wifi);
+            Button {
+                id: _forgetBtn
+                Layout.alignment: Qt.AlignLeft
+                Layout.preferredWidth: _connectBtn.width
+                visible: _wifiConnectLay.isConnected
+                leftPadding: 16
+                rightPadding: 16
+                text: "Forget"
+
+                onClicked: {
+                    //! Forget selected network
+                    if (_wifiConnectLay.parent instanceof WifiDelegate) {
+                        NetworkInterface.forgetWifi(_wifiConnectLay.parent.wifi);
+                    }
                 }
             }
-        }
 
-        Button {
-            id: _connectBtn
-            Layout.alignment: Qt.AlignRight
-            leftPadding: 16
-            rightPadding: 16
-            enabled: _wifiConnectLay.isConnected || (_passwordTf.length > 0 && !NetworkInterface.isRunning)
-            text: _wifiConnectLay.isConnected ? "Disconnect" : "Connect"
+            Item { Layout.fillWidth: true }
 
-            onClicked: {
-                if (text === "Disconnect") {
-                    //! Disconnect
-                    NetworkInterface.disconnectWifi(_wifiConnectLay.parent.wifi)
-                } else if (text === "Connect") {
-                    //! Connect to this wifi
-                    if (_wifiConnectLay.parent instanceof WifiDelegate) {
-                        NetworkInterface.connectWifi(_wifiConnectLay.parent.wifi, _passwordTf.text)
+            Button {
+                id: _connectBtn
+                Layout.alignment: Qt.AlignRight
+                leftPadding: 16
+                rightPadding: 16
+                enabled: /*_wifiConnectLay.isConnected || */(_passwordTf.acceptableInput && !NetworkInterface.isRunning)
+                text: _wifiConnectLay.isConnected ? "Disconnect" : "Connect"
+
+                onClicked: {
+                    if (text === "Disconnect") {
+                        //! Disconnect
+                        NetworkInterface.disconnectWifi(_wifiConnectLay.parent.wifi)
+                    } else if (text === "Connect") {
+                        //! Connect to this wifi
+                        if (_wifiConnectLay.parent instanceof WifiDelegate) {
+                            NetworkInterface.connectWifi(_wifiConnectLay.parent.wifi, _passwordTf.text)
+                        }
                     }
                 }
             }
