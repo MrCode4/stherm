@@ -253,6 +253,7 @@ BasePageView {
                     //! Forget selected network
                     if (_wifiConnectLay.parent instanceof WifiDelegate) {
                         NetworkInterface.forgetWifi(_wifiConnectLay.parent.wifi);
+                        _wifiConnectLay.isSaved = false;
                     }
                 }
             }
