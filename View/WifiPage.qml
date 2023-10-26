@@ -51,8 +51,8 @@ BasePageView {
 
         //! Referesh button and running BusyIndicator
         Item {
-            implicitWidth: _refereshBtn.implicitWidth
-            implicitHeight: _refereshBtn.implicitHeight
+            implicitWidth: Material.touchTarget
+            implicitHeight: Material.touchTarget
 
             ToolButton {
                 id: _refereshBtn
@@ -315,37 +315,6 @@ BasePageView {
         {
             _errorMessageLbl.text = `${error} ${ssid ? "**" + ssid + "**" : ""}`;
             _errorDrawer.open();
-        }
-
-        function onDeviceIsOnChanged()
-        {
-            if (NetworkInterface.deviceIsOn) {
-                if (NetworkInterface.isRunning) {
-                    NetworkInterface.isRunningChanged.connect(_singleshotRefresh);
-                } else {
-                    _singleshotRefresh();
-                }
-            }
-        }
-    }
-
-    Timer {
-        id: _delayedRefreshTmr
-        interval: 5000
-        running: false
-        repeat: false
-        onTriggered: {
-            if (NetworkInterface.deviceIsOn && !NetworkInterface.isRunning) {
-                NetworkInterface.refereshWifis();
-            }
-        }
-    }
-
-    function _singleshotRefresh()
-    {
-        NetworkInterface.isRunningChanged.disconnect(_singleshotRefresh);
-        if (!NetworkInterface.isRunning) {
-            _delayedRefreshTmr.start();
         }
     }
 }

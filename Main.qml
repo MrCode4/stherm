@@ -133,6 +133,16 @@ ApplicationWindow {
         }
     }
 
+    //! A Timer to periodically refresh wifis (every 2 seconds)
+    Timer {
+        running: true
+        interval: 5000
+        repeat: true
+        onTriggered: {
+            NetworkInterface.refereshWifis();
+        }
+    }
+
     //! Virtual keyboard
     InputPanel {
         id: _virtualKb
