@@ -85,10 +85,27 @@ public:
     void    refreshWifis(bool rescan=false);
 
     /*!
+     * \brief hasWifiProfile Check if a profile for the given wifi is there (i.e wifi password is saved)
+     * \param ssid The SSID (and not BSSID) of wifi
+     * \param bssid The BSSID to make sure if retrived profile is for this ssid
+     * \return
+     */
+    bool    hasWifiProfile(const QString& ssid, const QString& bssid);
+
+    /*!
      * \brief connectToWifi Connects to a wifi network with the given \a bssid (or ssid)
      * \param bssid
      */
     void    connectToWifi(const QString& bssid, const QString& password);
+
+    /*!
+     * \brief connectToWifi This is an overloaded method and connects to the given wifi without any
+     * password, if the given \a ssid is not saved into \a\b NetworkManager this returns
+     * immediately otherwise connection process starts
+     * \param ssid The SSID (and not BSSID) of wifi
+     * \note This methods uses \ref hasWifiProfile(const QStrig&) to check if \a ssid is saved.
+     */
+    void    connectToWifi(const QString& ssid);
 
     /*!
      * \brief disconnectWifi Disconnects from currently connected wifi
@@ -298,6 +315,28 @@ inline void NmcliInterface::refreshWifis(bool rescan)
     mProcess->start(NC_COMMAND, args);
 }
 
+inline bool NmcliInterface::hasWifiProfile(const QString& ssid, const QString& bssid)
+{
+    QProcess process;
+    process.setReadChannel(QProcess::StandardOutput);
+    process.start(NC_COMMAND, {
+                                  NC_ARG_GET_VALUES,
+                                  "802-11-wireless.seen-bssids",
+                                  "--escape",
+                                  "no",
+                                  NC_ARG_CONNECTION,
+                                  NC_ARG_SHOW,
+                                  ssid
+                              });
+    process.waitForFinished(100);
+    if (process.exitCode() == 0) {
+        //! Profile is saved
+        return process.readLine() == bssid + "\n";
+    }
+
+    return false;
+}
+
 inline void NmcliInterface::connectToWifi(const QString& bssid, const QString& password)
 {
     if (!mProcess || isRunning()) {
@@ -319,6 +358,11 @@ inline void NmcliInterface::connectToWifi(const QString& bssid, const QString& p
     });
 
     mProcess->start(NC_COMMAND, args);
+}
+
+inline void NmcliInterface::connectToWifi(const QString& bssid)
+{
+
 }
 
 inline void NmcliInterface::disconnectFromWifi(const QString& ssid)
