@@ -35,6 +35,7 @@ Control {
         height: parent.height / 2
         width: parent.availableWidth
         device: uiSession.appModel
+        labelVisible: _operationModeBtn.operationMode !== OperationModeButton.OperationMode.Off
     }
 
     //! This holds other items which gets hidden when DesiredTempratureItem is being dragged
@@ -76,6 +77,7 @@ Control {
 
         //! Operation mode button
         OperationModeButton {
+            id: _operationModeBtn
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 horizontalCenterOffset: -width
@@ -124,20 +126,21 @@ Control {
 
         //! NEXGEN icon
         NexgenIcon {
-            id: logo
+            id: _logo
             anchors {
+                bottom: parent.bottom
                 horizontalCenter: parent.horizontalCenter
-                top: _otherItemsLay.bottom
-                topMargin: AppStyle.size / 60
+                bottomMargin: _menuButton.implicitHeight * 1.8
             }
-            font.pixelSize: AppStyle.size / 10
+            width: parent.width * 0.5
+            height: sourceSize.height * width / sourceSize.width
         }
 
         //! Device Toggle Button
         DeviceToggleButton {
             anchors {
-                horizontalCenter: logo.horizontalCenter
-                top: logo.bottom
+                horizontalCenter: _logo.horizontalCenter
+                top: _logo.bottom
                 topMargin: AppStyle.size / 60
             }
 
@@ -146,6 +149,7 @@ Control {
 
         //! Menu button
         MenuButton {
+            id: _menuButton
             anchors {
                 left: parent.left
                 bottom: parent.bottom

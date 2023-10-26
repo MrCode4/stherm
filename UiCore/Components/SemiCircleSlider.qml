@@ -22,6 +22,8 @@ Control {
     //! Max value of slider
     property real   to: 10
 
+    readonly property real darkerShade: 3.8
+
     //! Holds whether slider is being dragged
     readonly property alias pressed: _handleDh.dragging
 
@@ -45,7 +47,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: "#0097cd"
+            color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
         }
 
         Rectangle {
@@ -54,7 +56,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: "#ea0600"
+            color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
         }
 
         Shape {
@@ -75,11 +77,11 @@ Control {
 
                     GradientStop {
                         position: 0
-                        color: "#0097cd"
+                        color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
                     }
                     GradientStop {
                         position: 1
-                        color: "#ea0600"
+                        color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
                     }
                 }
 
@@ -98,7 +100,7 @@ Control {
                 startY: background.shapeHeight
                 capStyle: ShapePath.RoundCap
                 strokeColor: "transparent"
-                fillColor: _control.Material.background
+                fillColor: AppStyle.backgroundColor
 
                 PathAngleArc {
                     centerX: background.shapeWidth / 2
@@ -130,6 +132,8 @@ Control {
             width: AppStyle.size / 24
             height: width
             radius: width / 2
+            color: enabled ? _control.Material.foreground
+                           : (Qt.darker(_control.Material.foreground, _control.darkerShade))
         }
 
         Item {

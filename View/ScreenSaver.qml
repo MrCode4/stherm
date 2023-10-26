@@ -64,6 +64,8 @@ Popup {
         //! NEXGEN icon
         NexgenIcon {
             Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: _root.width * 0.75
+            Layout.preferredHeight: sourceSize.height * width / sourceSize.width
         }
     }
 }
