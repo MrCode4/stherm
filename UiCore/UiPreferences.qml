@@ -12,13 +12,13 @@ QtObject {
     /* Enums
      * ****************************************************************************************/
     enum TempratureUnit {
-        Fah, //! Fahrenheit
-        Cel  //! Celsius
+        Cel,    //! Celsius
+        Fah     //! Fahrenheit
     }
 
     enum TimeFormat {
-        Hour24,
-        Hour12
+        Hour12,
+        Hour24
     }
 
     /* Property Declarations
