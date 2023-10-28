@@ -18,9 +18,6 @@ ToolButton {
     //! I_Device
     property I_Device               device: deviceController?.device ?? null
 
-    //! Names of each state to show
-    readonly property var _stateNames: ["off", "heating", "cooling", "auto", "auto"]
-
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: _coolingStateItem.implicitWidth + leftPadding + rightPadding
@@ -121,17 +118,17 @@ ToolButton {
 
     state: {
         switch(device?.systemMode) {
-            case I_Device.SystemMode.Off:
-                return "off";
-            case I_Device.SystemMode.Heating:
-                return "heating";
-            case I_Device.SystemMode.Cooling:
-                return "cooling";
-            case I_Device.SystemMode.Vacation:
-            case I_Device.SystemMode.Auto:
-                return "auto";
-            default:
-                return ""
+        case I_Device.SystemMode.Off:
+            return "off";
+        case I_Device.SystemMode.Heating:
+            return "heating";
+        case I_Device.SystemMode.Cooling:
+            return "cooling";
+        case I_Device.SystemMode.Vacation:
+        case I_Device.SystemMode.Auto:
+            return "auto";
+        default:
+            return ""
         }
     }
     states: [
@@ -154,22 +151,20 @@ ToolButton {
 
     onClicked: {
         //! Find next state
-        if (device) {
-            switch(device.systemMode) {
-                case I_Device.SystemMode.Off:
-                    deviceController.setSystemModeTo(I_Device.SystemMode.Heating);
-                    break;
-                case I_Device.SystemMode.Heating:
-                    deviceController.setSystemModeTo(I_Device.SystemMode.Cooling);
-                    break;
-                case I_Device.SystemMode.Cooling:
-                    deviceController.setSystemModeTo(I_Device.SystemMode.Auto);
-                    break;
-                case I_Device.SystemMode.Vacation:
-                case I_Device.SystemMode.Auto:
-                    deviceController.setSystemModeTo(I_Device.SystemMode.Off);
-                    break;
-            }
+        switch(device?.systemMode) {
+        case I_Device.SystemMode.Off:
+            deviceController.setSystemModeTo(I_Device.SystemMode.Heating);
+            break;
+        case I_Device.SystemMode.Heating:
+            deviceController.setSystemModeTo(I_Device.SystemMode.Cooling);
+            break;
+        case I_Device.SystemMode.Cooling:
+            deviceController.setSystemModeTo(I_Device.SystemMode.Auto);
+            break;
+        case I_Device.SystemMode.Vacation:
+        case I_Device.SystemMode.Auto:
+            deviceController.setSystemModeTo(I_Device.SystemMode.Off);
+            break;
         }
     }
 }
