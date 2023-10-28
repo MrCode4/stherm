@@ -11,11 +11,11 @@ QSObject {
     /* Enums
      * ****************************************************************************************/
     enum SystemMode {
-        Off,
-        Heating,
         Cooling,
+        Heating,
+        Auto,
         Vacation,
-        Auto
+        Off
     }
 
     /* Property Declarations
