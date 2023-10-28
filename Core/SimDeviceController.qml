@@ -85,7 +85,7 @@ I_DeviceController {
 
     function setSystemModeTo(systemMode: int)
     {
-        if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Auto) {
+        if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Off) {
             device.systemMode = systemMode;
 
             //! Do required actions if any
