@@ -39,7 +39,7 @@ Control {
         width: parent.availableWidth
         device: uiSession.appModel
         labelVisible: _operationModeBtn.operationMode !== OperationModeButton.OperationMode.Off
-        unit: uiPreferences?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C"
+        uiPreference: _root.uiPreferences
     }
 
     //! This holds other items which gets hidden when DesiredTempratureItem is being dragged
@@ -57,7 +57,7 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
-            unit: uiPreferences?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C"
+            uiPreference: uiPreferences
         }
 
         //! Wifi status

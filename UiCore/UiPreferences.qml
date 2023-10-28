@@ -52,4 +52,8 @@ QtObject {
         property alias timeFormat:              _root.timeFormat
         property alias windowMode:              _root.windowMode
     }
+
+   function convertedTemperature(temp) {
+       return tempratureUnit === UiPreferences.TempratureUnit.Fah ? 32 + 1.8 * temp  : temp
+   }
 }

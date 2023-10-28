@@ -12,8 +12,10 @@ Control {
 
     /* Property declaration
      * ****************************************************************************************/
+    property UiPreferences uiPreference
+
     //! Holds current unit of temprature (Fahrenheit or Celsius)
-    property string     unit: "F"
+    property string     unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! \todo: add a property to get a ref to a temprature model
     //! I_Device
@@ -35,7 +37,7 @@ Control {
                 family: "Roboto Mono"
                 pixelSize: 32
             }
-            text: Number(device?.currentTemp ?? 0).toLocaleString(locale, "f", 0)
+            text: Number(uiPreference.convertedTemperature(device?.currentTemp ?? 0)).toLocaleString(locale, "f", 0)
         }
 
         //! Unit

@@ -101,7 +101,7 @@ ApplicationWindow {
         id: _screenSaver
         anchors.centerIn: parent
         device: uiSession.appModel
-        unit: uiSession?.uiPreferences?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C"
+        uiPreference: uiSession?.uiPreferences
     }
 
     //! This mouse area is to detect app interactions to prevent screen saver being shown
