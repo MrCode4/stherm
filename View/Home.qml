@@ -111,6 +111,8 @@ Control {
             DateTimeLabel {
                 Layout.rowSpan: 2
                 Layout.alignment: Qt.AlignCenter
+                Layout.leftMargin: AppStyle.size / 30
+                Layout.rightMargin: AppStyle.size / 30
                 is12Hour: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
             }
 

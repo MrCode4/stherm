@@ -18,12 +18,12 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: _dateTimeCol.implicitWidth + leftPadding + rightPadding
+    implicitWidth:  _dateTimeCol.implicitWidth + leftPadding + rightPadding
     implicitHeight: _dateTimeCol.implicitHeight + topPadding + bottomPadding
-    leftPadding: AppStyle.size / 60
-    rightPadding: AppStyle.size / 60
-    topPadding:AppStyle.size / 60 / 2
-    bottomPadding: AppStyle.size / 60 / 2
+    leftPadding:   AppStyle.size / 30
+    rightPadding:  AppStyle.size / 30
+    topPadding:    AppStyle.size / 30
+    bottomPadding: AppStyle.size / 30
     background: null
 
     /* Childrent
@@ -58,7 +58,7 @@ Control {
             opacity: 0.75
             horizontalAlignment: "AlignHCenter"
             font {
-                pixelSize: AppStyle.size / 30
+                pixelSize: AppStyle.size / 20
             }
         }
     }
@@ -72,7 +72,7 @@ Control {
         onTriggered: {
             var now = new Date();
             _timeLbl.text = now.toLocaleTimeString(locale, is12Hour ? "hh:mm AP" : "hh:mm")
-            _dateLbl.text = now.toLocaleDateString(locale, "MMMM dd ddd")
+            _dateLbl.text = now.toLocaleDateString(locale, "MMM dd ddd")
         }
     }
 }
