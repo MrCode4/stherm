@@ -4,7 +4,7 @@ import QtQuickStream
 import Stherm
 
 /*! ***********************************************************************************************
- * schedules: keeps all schedule objects and create new one.
+ * schedules: keeps all schedule objects and create new one and remove schedules.
  * ***********************************************************************************************/
 QSObject {
     id: root
