@@ -117,7 +117,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/LoadDialoge.qml
         UiCore/ShortcutManager.qml
         UiCore/Components/SemiCircleSlider.qml
-        UiCore/Components/OperationModeButton.qml
+        UiCore/Components/SystemModeButton.qml
         UiCore/Components/DateTimeLabel.qml
         UiCore/Components/CurrentTempratureLabel.qml
         UiCore/Components/DesiredTempratureItem.qml

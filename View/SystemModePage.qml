@@ -12,6 +12,8 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! I_Device
+    property I_Device       device: deviceController?.device
 
     /* Object properties
      * ****************************************************************************************/
@@ -19,6 +21,42 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button
+    ToolButton {
+        parent: _root.header
+        contentItem: RoniaTextIcon {
+            text: "\uf00c" //! check icon
+        }
+
+        onClicked: {
+            if (deviceController) {
+                //! Save system mode and exit
+                switch(_buttonsGrp.checkedButton) {
+                    case _coolingButton:
+                        deviceController.setSystemModeTo(I_Device.SystemMode.Cooling);
+                        break;
+                    case _heatingButton:
+                        deviceController.setSystemModeTo(I_Device.SystemMode.Heating);
+                        break;
+                    case _autoButton:
+                        deviceController.setSystemModeTo(I_Device.SystemMode.Auto);
+                        break;
+                    case _vacationButton:
+                        deviceController.setSystemModeTo(I_Device.SystemMode.Vacation);
+                        break;
+                    case _offButton:
+                        deviceController.setSystemModeTo(I_Device.SystemMode.Off);
+                        break;
+                }
+            }
+
+            //! Go back to previous page
+            if (_root.StackView.view) {
+                _root.StackView.view.pop();
+            }
+        }
+    }
+
     //! Make buttons mutually-exclusive
     ButtonGroup {
         property Button previousButton: null
@@ -44,7 +82,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: true
+            checked: device?.systemMode === I_Device.SystemMode.Cooling
             text: "Cooling"
         }
 
@@ -54,6 +92,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
+            checked: device?.systemMode === I_Device.SystemMode.Heating
             text: "Heating"
         }
 
@@ -63,6 +102,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
+            checked: device?.systemMode === I_Device.SystemMode.Auto
             text: "Auto"
         }
 
@@ -73,6 +113,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
+            checked: device?.systemMode === I_Device.SystemMode.Vacation
             text: "Vacation"
 
             onClicked: {
@@ -89,6 +130,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
+            checked: device?.systemMode === I_Device.SystemMode.Off
             text: "Off"
         }
     }

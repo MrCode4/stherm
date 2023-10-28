@@ -35,7 +35,7 @@ Control {
         height: parent.height / 2
         width: parent.availableWidth
         device: uiSession.appModel
-        labelVisible: _operationModeBtn.operationMode !== OperationModeButton.OperationMode.Off
+        labelVisible: device?.systemMode !== I_Device.SystemMode.Off
     }
 
     //! This holds other items which gets hidden when DesiredTempratureItem is being dragged
@@ -75,14 +75,15 @@ Control {
             }
         }
 
-        //! Operation mode button
-        OperationModeButton {
-            id: _operationModeBtn
+        //! System mode button
+        SystemModeButton {
+            id: _systemModeBtn
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 horizontalCenterOffset: -width
             }
             y: (_desiredTempItem.height - height) / 2 - 4
+            deviceController: uiSession?.deviceController ?? null
         }
 
         //! Other items
