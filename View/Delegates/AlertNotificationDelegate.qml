@@ -12,23 +12,26 @@ ItemDelegate {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Alert/Notification -> They better be of same type or atlease share a common base class
-    property var        alnotData
+    //! Message for this delegate
+    property Message    message
 
     //! index of this delegate in model/view
     property int        delegateIndex: -1
 
     /* Object properties
      * ****************************************************************************************/
-    text: alnotData?.type === "Alert" || alnotData?.type === "Notification" ? alnotData.type : "UNKNOWN"
+    text: message?.type === Message.Type.Alert
+          ? "Alert" : (message?.type === Message.Type.Notification ? "Notification"
+                                                                   : "Message")
     contentItem: RowLayout {
         //! Icon
         RoniaTextIcon {
             Layout.alignment: Qt.AlignCenter
-            text: alnotData?.type === "Alert" ? "\uf071" // triangle-exclamation icon
-                                              : (alnotData?.type === "Notification"
-                                                 ? "\uf0f3" //! bell icon
-                                                 : "")
+            text: message?.type === Message.Type.Alert
+                  ? "\uf071" // triangle-exclamation icon
+                  : (message?.type === Message.Type.Notification
+                     ? "\uf0f3" //! bell icon
+                     : "")
         }
 
         Label {

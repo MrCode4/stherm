@@ -12,6 +12,8 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! MessageController
+    property MessageController      messageController: uiSession?.messageController ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -27,15 +29,19 @@ BasePageView {
 
         anchors.fill: parent
         clip: true
-        model: []
+        model: messageController?.messages ?? 0
         delegate: AlertNotificationDelegate {
             required property var modelData
             required property int index
 
             width: ListView.view.width
             height: Material.delegateHeight
-            alnotData: modelData
+            message: (modelData instanceof Message ? modelData : null)
             delegateIndex: index
+
+            onClicked: {
+                //! Show Message in a popup
+            }
         }
     }
 }

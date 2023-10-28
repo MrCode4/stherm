@@ -9,7 +9,7 @@ QSObject {
     /* Enums
      * ****************************************************************************************/
     enum Type {
-        Unknow,
+        Unknown,
         Alert,
         Notification,
         Error
