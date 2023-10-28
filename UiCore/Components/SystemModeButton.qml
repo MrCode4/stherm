@@ -151,20 +151,26 @@ ToolButton {
 
     onClicked: {
         //! Find next state
+        var nextMode = -1;
+
         switch(device?.systemMode) {
         case I_Device.SystemMode.Off:
-            deviceController.setSystemModeTo(I_Device.SystemMode.Heating);
+            nextMode = I_Device.SystemMode.Heating;
             break;
         case I_Device.SystemMode.Heating:
-            deviceController.setSystemModeTo(I_Device.SystemMode.Cooling);
+            nextMode = I_Device.SystemMode.Cooling;
             break;
         case I_Device.SystemMode.Cooling:
-            deviceController.setSystemModeTo(I_Device.SystemMode.Auto);
+            nextMode = I_Device.SystemMode.Auto;
             break;
         case I_Device.SystemMode.Vacation:
         case I_Device.SystemMode.Auto:
-            deviceController.setSystemModeTo(I_Device.SystemMode.Off);
+            nextMode = I_Device.SystemMode.Off;
             break;
+        }
+
+        if (nextMode > -1) {
+            deviceController.setSystemModeTo(nextMode);
         }
     }
 }

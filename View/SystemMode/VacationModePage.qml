@@ -40,7 +40,7 @@ BasePageView {
         onClicked: {
             //! Apply settings and go back
             if (deviceController) {
-                DeviceController.setVacation(_tempSlider.first.value, _tempSlider.second.value,
+                deviceController.setVacation(_tempSlider.first.value, _tempSlider.second.value,
                                              _humSlider.first.value, _humSlider.second.value);
             }
 
