@@ -73,6 +73,11 @@ I_DeviceController {
         sendReceive('system', 'setFan', device.fan.working_per_hour);
     }
 
+    function setVacation(temp_min, temp_max, hum_min, hum_max)
+    {
+        sendReceive('system', 'setVacation', [temp_min, temp_max, hum_min, hum_max]);
+    }
+
     function setSystemModeTo(systemMode: int)
     {
         if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Off) {
