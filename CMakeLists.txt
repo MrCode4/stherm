@@ -174,6 +174,9 @@ qt6_add_qml_module(appStherm
         View/Delegates/WifiDelegate.qml
         View/Delegates/AlertNotificationDelegate.qml
 
+        # Popups
+        UiCore/PopUps/AlertNotifPopup.qml
+
     SOURCES
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
