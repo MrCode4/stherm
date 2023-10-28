@@ -30,6 +30,35 @@ BasePageView {
 
         onClicked: {
             //! Save settings
+            if (uiPreferences) {
+                if (uiPreferences.brightness !== _brightnessSlider.value) {
+                    uiPreferences.brightness = _brightnessSlider.value;
+                }
+
+                if (uiPreferences.volume !== _speakerSlider.value) {
+                    uiPreferences.volume = _speakerSlider.value;
+                }
+
+                if (uiPreferences.adaptiveBrightness !== _adaptiveBrSw.checked) {
+                    uiPreferences.adaptiveBrightness = _adaptiveBrSw.checked;
+                }
+
+                var timeFormat = _time24FormBtn.checked ? UiPreferences.TimeFormat.Hour24
+                                                        : UiPreferences.TimeFormat.Hour12;
+                if (uiPreferences.timeFormat !== timeFormat) {
+                    uiPreferences.timeFormat = timeFormat;
+                }
+
+                var tempUnit = _tempFarenUnitBtn.checked ? UiPreferences.TempratureUnit.Fah
+                                                         : UiPreferences.TempratureUnit.Cel
+                if (uiPreferences.tempratureUnit !== tempUnit) {
+                    uiPreferences.tempratureUnit = tempUnit;
+                }
+            }
+
+            if (_root.StackView.view) {
+                _root.StackView.view.pop();
+            }
         }
     }
 
@@ -64,13 +93,7 @@ BasePageView {
                 Layout.fillWidth: true
                 from: 0
                 to: 100
-                value: uiPreferences?.brightness
-
-                onValueChanged: {
-                    if (uiPreferences && uiPreferences.brightness !== value) {
-                        uiPreferences.brightness = value;
-                    }
-                }
+                value: uiPreferences?.brightness ?? 0
             }
 
             Label {
@@ -106,13 +129,7 @@ BasePageView {
                 Layout.fillWidth: true
                 from: 0
                 to: 100
-                value: uiPreferences?.volume
-
-                onValueChanged: {
-                    if (uiPreferences && uiPreferences.volume !== value) {
-                        uiPreferences.volume = value;
-                    }
-                }
+                value: uiPreferences?.volume ?? 0
             }
 
             Label {
@@ -134,13 +151,7 @@ BasePageView {
 
             Switch {
                 id: _adaptiveBrSw
-                checked: uiPreferences?.adaptiveBrightness
-
-                onToggled: {
-                    if (uiPreferences && uiPreferences.adaptiveBrightness !== checked) {
-                        uiPreferences.adaptiveBrightness = checked;
-                    }
-                }
+                checked: uiPreferences?.adaptiveBrightness ?? false
             }
         }
 
@@ -161,24 +172,12 @@ BasePageView {
                 id: _tempFarenUnitBtn
                 text: "\u00b0F"
                 checked: uiPreferences?.tempratureUnit === UiPreferences.TempratureUnit.Fah
-
-                onToggled: {
-                    if (uiPreferences && uiPreferences.tempratureUnit !== UiPreferences.TempratureUnit.Fah) {
-                        uiPreferences.tempratureUnit = UiPreferences.TempratureUnit.Fah;
-                    }
-                }
             }
 
             RadioButton {
                 id: _tempCelciUnitBtn
                 text: "\u00b0C"
                 checked: uiPreferences?.tempratureUnit === UiPreferences.TempratureUnit.Cel
-
-                onToggled: {
-                    if (uiPreferences && uiPreferences.tempratureUnit !== UiPreferences.TempratureUnit.Cel) {
-                        uiPreferences.tempratureUnit = UiPreferences.TempratureUnit.Cel;
-                    }
-                }
             }
 
             //! Time Format
@@ -200,12 +199,6 @@ BasePageView {
                 autoExclusive: false
                 text: "24H"
                 checked: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour24
-
-                onToggled: {
-                    if (uiPreferences && uiPreferences.timeFormat !== UiPreferences.TimeFormat.Hour24) {
-                        uiPreferences.timeFormat = UiPreferences.TimeFormat.Hour24;
-                    }
-                }
             }
 
             RadioButton {
@@ -213,12 +206,6 @@ BasePageView {
                 autoExclusive: false
                 text: "12H"
                 checked: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
-
-                onToggled: {
-                    if (uiPreferences && uiPreferences.timeFormat !== UiPreferences.TimeFormat.Hour12) {
-                        uiPreferences.timeFormat = UiPreferences.TimeFormat.Hour12;
-                    }
-                }
             }
         }
     }
