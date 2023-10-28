@@ -8,6 +8,16 @@ import Stherm
 QSObject {
     id: appModel
 
+    /* Enums
+     * ****************************************************************************************/
+    enum SystemMode {
+        Off,
+        Heating,
+        Cooling,
+        Vacation,
+        Auto
+    }
+
     /* Property Declarations
      * ****************************************************************************************/
     //! Device Type
@@ -30,6 +40,9 @@ QSObject {
 
     //! TOF: Time of flight (distance sensor)
     property real       tof:            0.0
+
+    //! System mode
+    property int        systemMode:     I_Device.SystemMode.Off
 
     //! Backlight
     property Backlight  backlight:      Backlight {}
