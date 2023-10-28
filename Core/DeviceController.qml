@@ -76,9 +76,10 @@ I_DeviceController {
     function setSystemModeTo(systemMode: int)
     {
         if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Auto) {
-            device.systemMode = systemMode;
-
             //! Do required actions if any
+            sendReceive('system', 'setMode', [ systemMode ]);
+
+            device.systemMode = systemMode;
         }
     }
 }
