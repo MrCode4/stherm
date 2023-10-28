@@ -64,7 +64,7 @@ Control {
             visible: labelVisible
             anchors.centerIn: parent
             anchors.verticalCenterOffset: labelVerticalOffset
-            text: Number(uiPreference.convertedTemperature(_tempSlider.value)).toLocaleString(locale, "f", 0)
+            text: Number(uiPreference?.convertedTemperature(_tempSlider.value) ?? 0).toLocaleString(locale, "f", 0)
 
             //! Unit
             Label {

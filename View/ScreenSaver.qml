@@ -40,7 +40,7 @@ Popup {
 
             Layout.alignment: Qt.AlignCenter
             font.pointSize: AppStyle.size / 6
-            text: Number(uiPreference.convertedTemperature(device?.currentTemp ?? 0)).toLocaleString(locale, "f", 0)
+            text: Number(uiPreference?.convertedTemperature(device?.currentTemp ?? 0) ?? 0).toLocaleString(locale, "f", 0)
 
             Label {
                 anchors {

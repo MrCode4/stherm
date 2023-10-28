@@ -37,7 +37,7 @@ Control {
                 family: "Roboto Mono"
                 pixelSize: 32
             }
-            text: Number(uiPreference.convertedTemperature(device?.currentTemp ?? 0)).toLocaleString(locale, "f", 0)
+            text: Number(uiPreference?.convertedTemperature(device?.currentTemp ?? 0) ?? 0).toLocaleString(locale, "f", 0)
         }
 
         //! Unit
