@@ -111,6 +111,7 @@ Control {
             DateTimeLabel {
                 Layout.rowSpan: 2
                 Layout.alignment: Qt.AlignCenter
+                is12Hour: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
             }
 
             //! Air condition item

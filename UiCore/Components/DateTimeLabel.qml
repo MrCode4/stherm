@@ -11,6 +11,11 @@ import Stherm
 Control {
     id: _root
 
+    /* Property declaration
+     * ****************************************************************************************/
+    //!
+    property bool   is12Hour:   false
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: _dateTimeCol.implicitWidth + leftPadding + rightPadding
@@ -66,7 +71,7 @@ Control {
         triggeredOnStart: true
         onTriggered: {
             var now = new Date();
-            _timeLbl.text = now.toLocaleTimeString(locale, "hh:mm")
+            _timeLbl.text = now.toLocaleTimeString(locale, is12Hour ? "hh:mm AP" : "hh:mm")
             _dateLbl.text = now.toLocaleDateString(locale, "MMMM dd ddd")
         }
     }
