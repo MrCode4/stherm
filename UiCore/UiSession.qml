@@ -121,13 +121,6 @@ QtObject {
         sigHidePopUp(popUp);
     }
 
-    //! Goes to default UiMode or UnavilableUiMode, depending on line availability
-    function resetSession() {
-        currentMode = !smartLine.sosIsAvailable
-                    ? UiModeRegister.unavailableMode
-                    : defaultMode;
-    }
-
     //! Indicates that a panel needs to be shown (the PanelLayout handles this)
     function showPanel(panel) {
         // Sanity check: skip if we already have the panel on the stack
@@ -147,26 +140,5 @@ QtObject {
 
         popUpQueue.push(popUp);
         sigShowPopUp(popUp);
-    }
-
-    function loadUiPreferences() : bool
-    {
-        console.log("[UiSession] Failed to load the UiPreferences")
-        return false;
-
-    }
-
-    function writeUiPreferences() : bool
-    {
-        console.log("[UiSession] Saving failed, aborting")
-        return false;
-
-    }
-
-    Component.onCompleted: {
-        if (!loadUiPreferences()) {
-            console.log("failed to load the UiPreferences")
-            writeUiPreferences();
-        }
     }
 }
