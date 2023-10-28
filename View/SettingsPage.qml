@@ -30,7 +30,17 @@ BasePageView {
 
         onClicked: {
             //! Save settings
-            if (uiPreferences) {
+            if (uiPreferences && deviceController) {
+                //! Set setting using DeviceController
+                deviceController.setSettings(_brightnessSlider.value,
+                                             _speakerSlider.value,
+                                             _tempFarenUnitBtn.checked ? UiPreferences.TempratureUnit.Fah
+                                                                       : UiPreferences.TempratureUnit.Cel,
+                                             _time24FormBtn.checked ? UiPreferences.TimeFormat.Hour24
+                                                                    : UiPreferences.TimeFormat.Hour12,
+                                             false, //! Reset
+                                             _adaptiveBrSw.checked);
+
                 if (uiPreferences.brightness !== _brightnessSlider.value) {
                     uiPreferences.brightness = _brightnessSlider.value;
                 }
