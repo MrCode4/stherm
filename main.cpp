@@ -13,6 +13,10 @@ int main(int argc, char *argv[])
     //! Enable virtual keyboard
     qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));
 
+    //! Setting application organization name and domain
+    QGuiApplication::setOrganizationName("STherm");
+    QGuiApplication::setOrganizationDomain("SThermOrg");
+
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;

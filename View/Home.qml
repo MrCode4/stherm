@@ -15,6 +15,9 @@ Control {
     //! Reference to UiSession
     property UiSession              uiSession
 
+    //! UiPreferences
+    property UiPreferences          uiPreferences: uiSession?.uiPreferences ?? null
+
     //! Reference to I_Device
     readonly property   I_Device    device: uiSession?.appModel ?? null
 
@@ -36,6 +39,7 @@ Control {
         width: parent.availableWidth
         device: uiSession.appModel
         labelVisible: _operationModeBtn.operationMode !== OperationModeButton.OperationMode.Off
+        uiPreference: _root.uiPreferences
     }
 
     //! This holds other items which gets hidden when DesiredTempratureItem is being dragged
@@ -53,6 +57,7 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
+            uiPreference: uiPreferences
         }
 
         //! Wifi status
@@ -106,6 +111,9 @@ Control {
             DateTimeLabel {
                 Layout.rowSpan: 2
                 Layout.alignment: Qt.AlignCenter
+                Layout.leftMargin: AppStyle.size / 30
+                Layout.rightMargin: AppStyle.size / 30
+                is12Hour: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
             }
 
             //! Air condition item
