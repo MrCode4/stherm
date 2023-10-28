@@ -70,6 +70,11 @@ QtObject {
         device: appModel
     }
 
+    //! MessageController instance
+    property MessageController messageController: MessageController {
+        _qsRepo: AppCore.defaultRepo
+    }
+
 
     //! Device controller
     property I_DeviceController deviceController:  simulating ? simDeviceController : realDeviceController
