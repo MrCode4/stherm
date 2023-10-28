@@ -32,13 +32,15 @@ QSObject {
     property real       tof:            0.0
 
     //! Backlight
-    property Backlight  backlight:      Backlight {}
+    property Backlight        backlight:      Backlight {}
 
     //! Fan
-    property Fan        fan:            Fan {}
+    property Fan              fan:            Fan {}
 
     //! Schedule model
-    property Schedule   schedule:       Schedule {}
+    property SchedulesModel   schedulesModel: SchedulesModel {
+        _qsRepo: appModel._qsRepo
+    }
 
     /* Functions
      * ****************************************************************************************/

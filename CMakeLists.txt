@@ -68,7 +68,7 @@ qt6_add_qml_module(appStherm
         Core/SimDeviceController.qml
         Core/I_DeviceController.qml
         Core/Schedule.qml
-        Core/ScheduleController.qml
+        Core/SchedulesModel.qml
 
 
         # Primitive Components

@@ -79,11 +79,6 @@ QtObject {
     //! Device controller
     property I_DeviceController deviceController:  simulating ? simDeviceController : realDeviceController
 
-    //! ScheduleController
-    property ScheduleController         scheduleController: ScheduleController {
-        _qsRepo: AppCore.defaultRepo
-    }
-
     //! Path of File to save model.
     property string             currentFile:    ""
 

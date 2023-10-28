@@ -4,10 +4,10 @@ import QtQuickStream
 import Stherm
 
 /*! ***********************************************************************************************
- *
+ * schedules: keeps all schedule objects and create new one.
  * ***********************************************************************************************/
 QSObject {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -19,7 +19,7 @@ QSObject {
     function saveNewSchedule(schedule: Schedule)
     {
         var newSchedule = QSSerializer.createQSObject("Schedule", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
-        newSchedule._qsRepo = AppCore.defaultRepo;
+        newSchedule._qsRepo = root._qsRepo;
         newSchedule.name = schedule.name;
         newSchedule.type = schedule.type;
         newSchedule.temprature = schedule.temprature;
