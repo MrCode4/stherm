@@ -33,4 +33,6 @@ Item {
     function updateBacklight() {}
 
     function updateFan() {}
+
+    function setSettings(brightness, volume, temperature, time, reset, adaptive) {}
 }
