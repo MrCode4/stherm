@@ -25,8 +25,13 @@ QtObject {
 
     /* Property Declarations
      * ****************************************************************************************/
+
+    //! Config file path
+    readonly property string  configFilePath: "sthermConfig.QQS.json"
+
     // Debug or not
     property bool               debug:          userLevel >= UiSession.UserLevel.DEVELOPER
+
 
     // Logged in user level
     property int                userLevel:      UiSession.UserLevel.USER
@@ -46,7 +51,7 @@ QtObject {
     property UiPreferences      uiPreferences:  UiPreferences {}
 
     //! app core
-    property I_Device           appModel:        AppCore.model
+    property I_Device           appModel
 
 
     //! Device controller

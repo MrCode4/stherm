@@ -32,9 +32,28 @@ ApplicationWindow {
 //    visibility: Window.FullScreen
     title: qsTr("Template" + "               " + currentFile)
 
+    //! Save the app configuration when the app closed
+    onClosing: {
+        // Save to found path
+        AppCore.defaultRepo.saveToFile(window.uiSession.configFilePath);
+    }
+
     //! Create defualt repo and root object to save and load
     Component.onCompleted: {
-        AppCore.defaultRepo.initRootObject("QSObject");
+
+        // Create and prepare DefaultRepo and RootModel as root.
+        AppCore.defaultRepo = AppCore.createDefaultRepo(["QtQuickStream", "Stherm"]);
+
+        // Bind appModel to qsRootObject to capture loaded model from configuration.
+        window.uiSession.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
+
+
+        // Load the file
+        console.info("Load the config file: ", window.uiSession.configFilePath)
+        if (AppCore.defaultRepo.loadFromFile(window.uiSession.configFilePath))
+            console.info("Config file succesfully loaded.")
+        else
+            AppCore.defaultRepo.initRootObject("SimDevice");
 
         //! Refereh wifis.
         NetworkInterface.refereshWifis();
