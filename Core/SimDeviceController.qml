@@ -82,4 +82,13 @@ I_DeviceController {
             AppStyle.backgroundColor = "#000000";
         }
     }
+
+    function setSystemModeTo(systemMode: int)
+    {
+        if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Auto) {
+            device.systemMode = systemMode;
+
+            //! Do required actions if any
+        }
+    }
 }

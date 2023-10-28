@@ -33,4 +33,6 @@ Item {
     function updateBacklight() {}
 
     function updateFan() {}
+
+    function setSystemModeTo(systemMode: int) {}
 }

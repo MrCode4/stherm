@@ -72,4 +72,13 @@ I_DeviceController {
         console.log("starting rest for updateFan :", device.fan.working_per_hour)
         sendReceive('system', 'setFan', device.fan.working_per_hour);
     }
+
+    function setSystemModeTo(systemMode: int)
+    {
+        if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Auto) {
+            device.systemMode = systemMode;
+
+            //! Do required actions if any
+        }
+    }
 }
