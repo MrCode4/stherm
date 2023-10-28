@@ -62,11 +62,8 @@ qt6_add_qml_module(appStherm
         Core/I_Device.qml
         Core/Device.qml
         Core/SimDevice.qml
-        Core/Wifi.qml
-        Core/WifiController.qml
         Core/Fan.qml
         Core/Backlight.qml
-        Core/WifiDevice.qml
         Core/DeviceController.qml
         Core/SimDeviceController.qml
         Core/I_DeviceController.qml

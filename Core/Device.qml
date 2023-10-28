@@ -11,9 +11,6 @@ I_Device {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property DeviceController _controller: DeviceController {
-        device: device
-    }
 
     /* Object Properties
      * ****************************************************************************************/

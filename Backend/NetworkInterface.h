@@ -58,10 +58,10 @@ class NetworkInterface : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis NOTIFY wifisChanged)
-    Q_PROPERTY(bool isRunning        READ isRunning       NOTIFY isRunningChanged)
-    Q_PROPERTY(QString  connectedSsid   READ connectedSsid NOTIFY connectedSsidChanged)
-    Q_PROPERTY(bool deviceIsOn      READ deviceIsOn NOTIFY deviceIsOnChanged)
+    Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis           NOTIFY wifisChanged)
+    Q_PROPERTY(bool isRunning                   READ isRunning       NOTIFY isRunningChanged)
+    Q_PROPERTY(QString  connectedSsid           READ connectedSsid   NOTIFY connectedSsidChanged)
+    Q_PROPERTY(bool deviceIsOn                  READ deviceIsOn      NOTIFY deviceIsOnChanged)
 
     QML_ELEMENT
     QML_SINGLETON

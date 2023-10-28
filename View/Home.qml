@@ -58,13 +58,13 @@ Control {
         //! Wifi status
         WifiButton {
             id: _wifiBtn
+
             anchors {
                 right: parent.right
                 top: parent.top
             }
             z: 1
 
-            wifi: uiSession?.appModel?.wifi ?? null
             onClicked: {
                 //! Open WifiPage
                 if (mainStackView) {

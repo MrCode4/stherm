@@ -34,9 +34,6 @@ QSObject {
     //! Backlight
     property Backlight  backlight:      Backlight {}
 
-    //! Wifi
-    property Wifi       wifi:           Wifi {}
-
     //! Fan
     property Fan        fan:            Fan {}
 
