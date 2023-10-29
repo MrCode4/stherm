@@ -30,18 +30,25 @@ Popup {
     //! Icon of popup: this should be a font-awesome icon
     property string     icon:               ""
 
-    //! Default property
-    default property alias contents:        _contentPane.data
+    //! Content pane
+    property alias      contentControl:     _contentControl
+
+    //! Popup content item
+    default property alias contents:        _contentControl.data
 
     /* Object Properties
      * ****************************************************************************************/
-    verticalPadding: 6
+    anchors.centerIn: T.Overlay.overlay ?? parent
+    implicitWidth: Math.min(_mainCol.implicitWidth + leftPadding + rightPadding,
+                            (T.Overlay.overlay?.width ?? AppStyle.size) * 0.80)
+    implicitHeight: Math.min(_mainCol.implicitHeight + bottomPadding + topPadding,
+                             (T.Overlay.overlay?.height ?? AppStyle.size) * 0.80)
+    spacing: 32
     horizontalPadding: 12
-    spacing: 8
-    leftMargin: (T.Overlay.overlay?.width ?? 0) * 0.08
-    rightMargin: (T.Overlay.overlay?.width ?? 0) * 0.08
-    topMargin: (T.Overlay.overlay?.height ?? 0) * 0.08
-    bottomMargin: (T.Overlay.overlay?.height ?? 0) * 0.08
+    topPadding: 16
+    bottomPadding: 24
+    dim: true
+    modal: true
     closePolicy: Popup.CloseOnReleaseOutside | Popup.CloseOnEscape
 
     /* Children
@@ -55,6 +62,7 @@ Popup {
         RowLayout {
             id: _header
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+            Layout.fillHeight: false
 
             visible: titleBar
             spacing: 16
@@ -70,7 +78,6 @@ Popup {
 
             RoniaTextIcon {
                 id: _closeBtn
-                font.pointSize: Qt.application.font.pointSize * 1.5
                 text: "\uf00d" //! xmark icon
 
                 TapHandler {
@@ -91,10 +98,12 @@ Popup {
         }
 
         //! Content
-        Pane {
-            id: _contentPane
+        Control {
+            id: _contentControl
             Layout.fillHeight: true
             Layout.fillWidth: true
+            implicitWidth: children.length > 0 ? children[0].implicitWidth ?? (AppStyle * 0.7) : AppStyle * 0.7
+            implicitHeight: children.length > 0 ? children[0].implicitHeight ?? (AppStyle * 0.7) : AppStyle * 0.7
             background: null
         }
     }
