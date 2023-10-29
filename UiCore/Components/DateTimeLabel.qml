@@ -40,7 +40,7 @@ Control {
             Layout.alignment: Qt.AlignHCenter
             font {
                 family: "monospace"
-                pixelSize: AppStyle.size / 20
+                pointSize: Qt.application.font.pointSize * 1.4
             }
             text: "00:00"
         }
@@ -58,7 +58,7 @@ Control {
             opacity: 0.75
             horizontalAlignment: "AlignHCenter"
             font {
-                pixelSize: AppStyle.size / 20
+                pointSize: Qt.application.font.pointSize * 1.4
             }
         }
     }

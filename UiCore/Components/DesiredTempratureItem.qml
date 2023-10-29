@@ -40,7 +40,7 @@ Control {
     //    Material.theme: Material.Dark
     implicitWidth: 360
     implicitHeight: 180
-    font.pixelSize: 48
+    font.pointSize: Qt.application.font.pointSize * 2.8
     background: null
     contentItem: Item {
         SemiCircleSlider {
@@ -73,7 +73,7 @@ Control {
                 anchors.topMargin: 20
                 opacity: 0.6
                 font {
-                    pixelSize: 20
+                    pointSize: Qt.application.font.pointSize * 1.2
                     capitalization: "AllUppercase"
                 }
                 text: `\u00b0${unit}`

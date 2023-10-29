@@ -53,7 +53,7 @@ Control {
             readonly property var conditionNames: [ "Good", "Moderate", "Poor" ]
 
             Layout.fillWidth: true
-            font.pixelSize: AppStyle.size / 20
+            font.pointSize: Qt.application.font.pointSize * 1.4
             text: 0 < condition && condition < conditionNames.length ? conditionNames[condition] : "Good"
         }
     }

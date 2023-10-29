@@ -10,9 +10,10 @@ import QtQuick.Controls.Material
 Text {
     /* Object Properties
      * ****************************************************************************************/
+    font.pointSize: Qt.application.font.pointSize
     font.family: "Font Awesome 6 Pro"
+    font.weight: 900
     horizontalAlignment: Qt.AlignHCenter
     verticalAlignment: Qt.AlignVCenter
-    font.weight: 900
     color: enabled ? Material.foreground : Material.hintTextColor
 }

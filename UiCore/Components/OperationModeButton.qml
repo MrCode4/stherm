@@ -29,10 +29,6 @@ ToolButton {
     implicitWidth: _coolingStateItem.implicitWidth + leftPadding + rightPadding
     implicitHeight: _coolingStateItem.implicitHeight + topPadding + bottomPadding
 
-    font {
-        pixelSize: AppStyle.size / 30
-    }
-
     /* Children
      * ****************************************************************************************/
     Item {

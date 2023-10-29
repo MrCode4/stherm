@@ -51,7 +51,7 @@ Popup {
 
                 opacity: 0.6
                 font {
-                    pixelSize: AppStyle.size / 12
+                    pointSize: Qt.application.font.pointSize * 2.4
                     capitalization: "AllUppercase"
                 }
                 text: `\u00b0${unit}`

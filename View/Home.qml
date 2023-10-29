@@ -202,7 +202,7 @@ Control {
 
             PropertyChanges {
                 target: _desiredTempItem
-                font.pixelSize: 52
+                font.pointSize: Qt.application.font.pointSize * 3
                 labelVerticalOffset: -8
             }
 
@@ -218,7 +218,7 @@ Control {
 
             PropertyChanges {
                 target: _desiredTempItem
-                font.pixelSize: 80
+                font.pointSize: Qt.application.font.pointSize * 4.8
                 labelVerticalOffset: AppStyle.size / 15
             }
 
@@ -237,7 +237,7 @@ Control {
             //! First change
             NumberAnimation {
                 targets: [_desiredTempItem, _itemsToHide]
-                properties: "labelVerticalOffset,font.pixelSize,opacity"
+                properties: "labelVerticalOffset,font.pointSize,opacity"
                 duration: 250
             }
         }

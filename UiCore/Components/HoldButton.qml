@@ -21,7 +21,7 @@ Button {
      * ****************************************************************************************/
     flat: true
     opacity: isHoldEnabled ? 1. : 0.6
-    font.pixelSize: AppStyle.size / 20
+    font.pointSize: Qt.application.font.pointSize * 1.4
     text: "Hold"
 
     onClicked: {
