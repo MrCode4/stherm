@@ -24,9 +24,10 @@ qt_add_qml_module(RoniaStyle
     VERSION 1.0
     IMPORTS QtQuick.Controls.Material
     QML_FILES
+        Style.qml
         ItemDelegate.qml
         Button.qml
-        Style.qml
+        Switch.qml
 )
 
 qt_add_qml_module(RoniaStyleImpl
@@ -36,6 +37,7 @@ qt_add_qml_module(RoniaStyleImpl
     QML_FILES
         impl/ButtonStyle.qml
         impl/ButtonLabel.qml
+        impl/SwitchIndicator.qml
 
     RESOURCES
         res/check.png
