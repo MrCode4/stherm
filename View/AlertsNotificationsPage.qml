@@ -41,7 +41,16 @@ BasePageView {
 
             onClicked: {
                 //! Show Message in a popup
+                _alertNotifPop.message = message;
+                _alertNotifPop.open();
             }
         }
+    }
+
+    //! This should be shown using popup layout
+    AlertNotifPopup {
+        id: _alertNotifPop
+        dim: true
+        modal: true
     }
 }
