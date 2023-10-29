@@ -5,24 +5,18 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * ControlModeButton provides a ui for switching application operation modes
+ * SystemModeButton provides a ui for switching application operation (system) modes
  * ***********************************************************************************************/
 ToolButton {
     id: _control
 
     /* Property declaration
      * ****************************************************************************************/
-    //! This should be moved to related controller
-    enum OperationMode {
-        Off,
-        Heating,
-        Cooling,
-        Auto
-    }
+    //! I_DeviceController
+    property I_DeviceController     deviceController
 
-    property int operationMode: 0
-
-    readonly property var _stateNames: ["off", "heating", "cooling", "auto"]
+    //! I_Device
+    property I_Device               device: deviceController?.device ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -35,12 +29,21 @@ ToolButton {
         anchors.fill: parent
 
         //! Label for OFF state
-        Label {
+        Row {
             id: _offStateItem
             anchors.centerIn: parent
-            text: "\u23fbFF"
             visible: opacity > 0
             opacity: _control.state === "off" ? 1. : 0.
+            spacing: 0
+
+            //! Power off icon
+            RoniaTextIcon {
+                text: "\uf011" //! power-off icon
+            }
+
+            Label {
+                text: "FF"
+            }
 
             Behavior on opacity { NumberAnimation { duration: 200 } }
         }
@@ -113,7 +116,23 @@ ToolButton {
         id: _sizeMetric
     }
 
-    state: _stateNames[operationMode] ?? ""
+    state: {
+        switch(device?.systemMode) {
+        case I_Device.SystemMode.Off:
+            return "off";
+        case I_Device.SystemMode.Heating:
+            return "heating";
+        case I_Device.SystemMode.Cooling:
+            return "cooling";
+        case I_Device.SystemMode.Vacation:
+            // there is no design for vacation, so we show it as auto
+            // if design added the order should be specified as well as the next state in onClicked
+        case I_Device.SystemMode.Auto:
+            return "auto";
+        default:
+            return ""
+        }
+    }
     states: [
         State {
             name: "off"
@@ -133,9 +152,27 @@ ToolButton {
     ]
 
     onClicked: {
-        operationMode++;
-        if (operationMode > 3) {
-            operationMode = 0;
+        //! Find next state
+        var nextMode = -1;
+
+        switch(device?.systemMode) {
+        case I_Device.SystemMode.Off:
+            nextMode = I_Device.SystemMode.Heating;
+            break;
+        case I_Device.SystemMode.Heating:
+            nextMode = I_Device.SystemMode.Cooling;
+            break;
+        case I_Device.SystemMode.Cooling:
+            nextMode = I_Device.SystemMode.Auto;
+            break;
+        case I_Device.SystemMode.Vacation:
+        case I_Device.SystemMode.Auto:
+            nextMode = I_Device.SystemMode.Off;
+            break;
+        }
+
+        if (nextMode > -1) {
+            deviceController.setSystemModeTo(nextMode);
         }
     }
 }

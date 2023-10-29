@@ -117,7 +117,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/LoadDialoge.qml
         UiCore/ShortcutManager.qml
         UiCore/Components/SemiCircleSlider.qml
-        UiCore/Components/OperationModeButton.qml
+        UiCore/Components/SystemModeButton.qml
         UiCore/Components/DateTimeLabel.qml
         UiCore/Components/CurrentTempratureLabel.qml
         UiCore/Components/DesiredTempratureItem.qml
@@ -132,6 +132,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ColorSlider.qml
         UiCore/Components/BrightnessSlider.qml
         UiCore/Components/TickedSlider.qml
+        UiCore/Components/RangeSliderLabeled.qml
 
 
         # Views and Widgets
@@ -164,6 +165,8 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemRunDelayPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
+        View/SystemModePage.qml
+        View/SystemMode/VacationModePage.qml
         View/SettingsPage.qml
 
         # Delegates

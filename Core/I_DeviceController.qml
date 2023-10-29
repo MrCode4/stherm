@@ -34,5 +34,9 @@ Item {
 
     function updateFan() {}
 
+    function setVacation(temp_min, temp_max, hum_min, hum_max) {}
+
+    function setSystemModeTo(systemMode: int) {}
+
     function setSettings(brightness, volume, temperature, time, reset, adaptive) {}
 }
