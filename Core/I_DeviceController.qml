@@ -30,7 +30,7 @@ Item {
      * ****************************************************************************************/
     //! These methods should be overriden by subclasses to provide implementation
 
-    function updateBacklight() {}
+    function updateBacklight(h, s, l) {}
 
     function updateFan() {}
 

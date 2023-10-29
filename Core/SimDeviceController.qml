@@ -73,9 +73,13 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
     //! Override I_DeviceController's methods
-    function updateBacklight()
+    function updateBacklight(h, s, l)
     {
         //! Change background color of application
+        device.backlight.hue = h;
+        device.backlight.saturation = s;
+        device.backlight.value = l;
+
         if (device.backlight.on) {
             AppStyle.backgroundColor = device.backlight.color;
         } else {

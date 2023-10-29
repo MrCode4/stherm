@@ -50,14 +50,18 @@ I_DeviceController {
         xhr.send(data_msg);
     }
 
-    function updateBacklight()
+    function updateBacklight(h, s, l)
     {
         console.log("starting rest for updateBacklight, color: ", device.backlight.color)
+
+        device.backlight.hue = h;
+        device.backlight.saturation = s;
+        device.backlight.value = l;
+
         //! Use a REST request to update device backlight
-        var color = Qt.color(device.backlight.color);
-        var r = Math.round(color.r * 255)
-        var g = Math.round(color.g * 255)
-        var b = Math.round(color.b * 255)
+        var r = Math.round(device.backlight.color.r * 255)
+        var g = Math.round(device.backlight.color.g * 255)
+        var b = Math.round(device.backlight.color.b * 255)
 
         console.log("colors: ", r, ",", g, ",", b)
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
