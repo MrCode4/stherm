@@ -12,6 +12,7 @@ Slider {
      * ****************************************************************************************/
     //! Current selected color
     readonly property alias currentColor: _internal.currentColor
+    width: 700
 
     /* Object properties
      * ****************************************************************************************/
@@ -30,12 +31,13 @@ Slider {
             radius: Math.min(height, width) / 2
             gradient: Gradient {
                 orientation: _control.orientation
-                GradientStop { position: 0.0 ; color: "#ff0000" }
-                GradientStop { position: 0.2 ; color: "#ffff00" }
-                GradientStop { position: 0.4 ; color: "#00ff00" }
-                GradientStop { position: 0.6 ; color: "#00ffff" }
-                GradientStop { position: 0.8 ; color: "#0000ff" }
-                GradientStop { position: 1.0 ; color: "#ff00ff" }
+                GradientStop { position: _internal.hue0 ; color: "#ff0000" }
+                GradientStop { position: _internal.hue1 ; color: "#ffff00" }
+                GradientStop { position: _internal.hue2 ; color: "#00ff00" }
+                GradientStop { position: _internal.hue3 ; color: "#00ffff" }
+                GradientStop { position: _internal.hue4 ; color: "#0000ff" }
+                GradientStop { position: _internal.hue5 ; color: "#ff00ff" }
+                GradientStop { position: _internal.hue6 ; color: "#ff0000" }
             }
         }
     }
@@ -57,25 +59,50 @@ Slider {
         id: _internal
 
         property color currentColor: "#FF0000"
+
+        readonly property real hueSpan: 0.16666
+        //! Position in slider color based on hue circle
+        readonly property real hue0:    0.00000 //! #000000 OR #ffffff
+        readonly property real hue1:    0.16666 //! #ffff00
+        readonly property real hue2:    0.33334 //! #00ff00
+        readonly property real hue3:    0.50000 //! #00ffff
+        readonly property real hue4:    0.66666 //! #0000ff
+        readonly property real hue5:    0.83334 //! #ff00ff
+        readonly property real hue6:    1.00000 //! #ff0000
     }
 
     onPositionChanged: function(event) {
-        var r = (position < 0.2 ? 1 : (position < 0.4
-                                       ? (0.4 - position) / 0.2
-                                       : (position > 0.8 ? (position - 0.8) / 0.2
-                                                         : 0)
-                                       )
+        //! Calculate red channel
+        var r = (position < _internal.hue1 || position > _internal.hue5
+                 ? 1
+                 : (position < _internal.hue2
+                    ? (_internal.hue2 - position) / _internal.hueSpan
+                    : (position > _internal.hue4
+                       ? (position - _internal.hue4) / _internal.hueSpan
+                       : 0)
+                    )
                  );
-        var g = (position < 0.2 ? position / 0.2
-                                : (position < 0.6 ? 1 : (position < 0.8
-                                                         ? (0.8 - position) / 0.2
-                                                         : 0)
-                                   )
+
+        //! Calculate green channel
+        var g = (position < _internal.hue1
+                 ? position / _internal.hueSpan
+                 : (position < _internal.hue3
+                    ? 1
+                    : (position < _internal.hue4
+                       ? (_internal.hue4 - position) / _internal.hueSpan
+                       : 0)
+                    )
                  );
-        var b = (position < 0.4 ? 0 : (position < 0.6
-                                       ? (position - 0.4) / 0.2
-                                       : 1
-                                       )
+
+        //! Calculate blue channel
+        var b = (position < _internal.hue2
+                 ? 0
+                 : (position < _internal.hue3
+                    ? (position - _internal.hue2) / _internal.hueSpan
+                    : (position > _internal.hue5)
+                      ? (_internal.hue6 - position) / _internal.hueSpan
+                      : 1
+                    )
                  );
 
         _internal.currentColor = Qt.rgba(r, g, b, 1);
