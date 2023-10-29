@@ -16,6 +16,19 @@ QSObject {
 
     /* Methods
      * ****************************************************************************************/
+    function addNewMessageFromData(type, message, datetime)
+    {
+        var newMessage = QSSerializer.createQSObject("Message", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
+        newMessage._qsRepo = AppCore.defaultRepo;
+        newMessage.type = type;
+        newMessage.message = message;
+        newMessage.datetime = datetime;
+        newMessage.isRead = false;
+
+        messages.push(newMessage);
+        messagesChanged();
+    }
+
     function addNewMessage(message: Message)
     {
         messages.push(message);
