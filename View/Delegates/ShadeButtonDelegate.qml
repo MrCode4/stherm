@@ -15,8 +15,8 @@ RoundButton {
     //! Size of the place where this button should be placed
     property int            cellSize
 
-    //! Color lightness
-    property real           lightness
+    //! Color value
+    property real           value
 
     //! Color hue
     property real           hue
@@ -62,7 +62,7 @@ RoundButton {
         radius: width / 2
         border.width: 2
         border.color: _root.Material.foreground
-        color: Qt.hsla(hue, saturation, lightness)
+        color: Qt.hsva(hue, saturation, value)
     }
 
     Behavior on implicitWidth { NumberAnimation { duration: 200 } }

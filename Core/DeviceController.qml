@@ -50,13 +50,13 @@ I_DeviceController {
         xhr.send(data_msg);
     }
 
-    function updateBacklight(h, s, l)
+    function updateBacklight(h, s, v)
     {
         console.log("starting rest for updateBacklight, color: ", device.backlight.color)
 
         device.backlight.hue = h;
         device.backlight.saturation = s;
-        device.backlight.lightness = l;
+        device.backlight.value = v;
 
         //! Use a REST request to update device backlight
         var r = Math.round(device.backlight.color.r * 255)

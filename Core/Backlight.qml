@@ -12,7 +12,7 @@ QSObject {
     property bool               on:             true
 
     //! Backlight color
-    readonly property color     color:          Qt.hsla(hue, saturation, lightness)
+    readonly property color     color:          Qt.hsva(hue, saturation, value)
 
     //! Hue of color
     property real               hue:            0.
@@ -20,6 +20,6 @@ QSObject {
     //! Saturation of color
     property real               saturation:     0.
 
-    //! Lightness of color
-    property real               lightness:      0.
+    //! Value of color
+    property real               value:          0.
 }

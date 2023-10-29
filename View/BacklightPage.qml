@@ -52,9 +52,9 @@ BasePageView {
             onClicked: {
                 //! Update backlight
                 if (deviceController) {
-                    deviceController.updateBacklight(selectedColor.hslHue,
-                                                     selectedColor.hslSaturation,
-                                                     selectedColor.hslLightness);
+                    deviceController.updateBacklight(selectedColor.hsvHue,
+                                                     selectedColor.hsvSaturation,
+                                                     selectedColor.hsvValue);
                 }
             }
         }
@@ -125,17 +125,17 @@ BasePageView {
 
                     saturation: index / 4.
                     cellSize: _buttonsRow.cellSize
-                    lightness: _brSlider.value
+                    value: _brSlider.value
                     hue: _colorSlider.value
                 }
             }
         }
     }
 
-    function setCurrentColor(h, s, l)
+    function setCurrentColor(h, s, v)
     {
         _colorSlider.value = h;
-        _brSlider.value = l
+        _brSlider.value = v;
 
         var shadeToSelect = Math.max(0, Math.ceil(s / 0.2) - 1);
         _shadeButtonsRepeater.itemAt(shadeToSelect).checked = true;
@@ -143,7 +143,7 @@ BasePageView {
 
     Component.onCompleted: {
         if (backlight) {
-            setCurrentColor(backlight.hue, backlight.saturation, backlight.lightness);
+            setCurrentColor(backlight.hue, backlight.saturation, backlight.value);
         }
     }
 }
