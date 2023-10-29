@@ -100,7 +100,7 @@ Control {
                 startY: background.shapeHeight
                 capStyle: ShapePath.RoundCap
                 strokeColor: "transparent"
-                fillColor: AppStyle.backgroundColor
+                fillColor: Style.background
 
                 PathAngleArc {
                     centerX: background.shapeWidth / 2
