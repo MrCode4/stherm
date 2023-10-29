@@ -51,6 +51,11 @@ BasePageView {
                 case "System Info":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
                     break;
+                case "Alerts/Notifications":
+                    _root.StackView.view.push("qrc:/Stherm/View/AlertsNotificationsPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
                 }
             }
         }

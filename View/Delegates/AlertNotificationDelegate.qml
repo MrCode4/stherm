@@ -24,6 +24,7 @@ ItemDelegate {
           ? "Alert" : (message?.type === Message.Type.Notification ? "Notification"
                                                                    : "Message")
     contentItem: RowLayout {
+        spacing: 16
         //! Icon
         RoniaTextIcon {
             Layout.alignment: Qt.AlignCenter
