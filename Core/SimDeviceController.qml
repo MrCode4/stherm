@@ -75,18 +75,11 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
     //! Override I_DeviceController's methods
-    function updateBacklight(h, s, v)
+    function updateDeviceBacklight()
     {
-        //! Change background color of application
-        device.backlight.hue = h;
-        device.backlight.saturation = s;
-        device.backlight.value = v;
+        console.log("settign sim background color")
 
-        if (device.backlight.on) {
-            Style.background = device.backlight.color;
-        } else {
-            Style.background = "#000000";
-        }
+        Style.background = device.backlight.on ?  device.backlight.color : "#000000";
     }
 
     function setSystemModeTo(systemMode: int)
