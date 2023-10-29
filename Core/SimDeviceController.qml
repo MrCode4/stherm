@@ -1,4 +1,6 @@
 import QtQuick
+
+import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
@@ -81,9 +83,9 @@ I_DeviceController {
         device.backlight.lightness = l;
 
         if (device.backlight.on) {
-            AppStyle.backgroundColor = device.backlight.color;
+            Style.background = device.backlight.color;
         } else {
-            AppStyle.backgroundColor = "#000000";
+            Style.background = "#000000";
         }
     }
 
