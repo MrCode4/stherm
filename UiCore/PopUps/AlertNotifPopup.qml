@@ -30,5 +30,8 @@ I_PopUp {
         anchors.fill: parent
         textFormat: "MarkdownText"
         text: message?.message ?? ""
+        wrapMode: "Wrap"
+        verticalAlignment: "AlignVCenter"
+        horizontalAlignment: "AlignHCenter"
     }
 }
