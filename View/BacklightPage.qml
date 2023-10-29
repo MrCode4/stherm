@@ -13,10 +13,10 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Ref to Backlight model
-    property Backlight              backlight: uiSession?.appModel?.backlight ?? null
+    property Backlight          backlight: uiSession?.appModel?.backlight ?? null
 
     //! Selected backlight color from shade buttons
-    readonly property color selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
+    readonly property color     selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
 
     /* Object properties
      * ****************************************************************************************/
@@ -33,7 +33,7 @@ BasePageView {
         //! Backlight on/off button
         Switch {
             id: _backlightOnOffSw
-            checked: true//backlight?.on ?? false
+            checked: backlight?.on ?? false
 
             onToggled: {
                 if (backlight && backlight.on !== checked) {
@@ -52,9 +52,9 @@ BasePageView {
             onClicked: {
                 //! Update backlight
                 if (deviceController) {
-                    deviceController.updateBacklight(selectedColor.hsvHue,
-                                                     selectedColor.hsvSaturation,
-                                                     selectedColor.hsvValue);
+                    deviceController.updateBacklight(selectedColor.hslHue,
+                                                     selectedColor.hslSaturation,
+                                                     selectedColor.hslLightness);
                 }
             }
         }

@@ -62,9 +62,7 @@ RoundButton {
         radius: width / 2
         border.width: 2
         border.color: _root.Material.foreground
-        color: {
-            return Qt.hsva(hue, saturation, lightness, 1.0);
-        }
+        color: Qt.hsla(hue, saturation, lightness)
     }
 
     Behavior on implicitWidth { NumberAnimation { duration: 200 } }
