@@ -125,6 +125,8 @@ ToolButton {
         case I_Device.SystemMode.Cooling:
             return "cooling";
         case I_Device.SystemMode.Vacation:
+            // there is no design for vacation, so we show it as auto
+            // if design added the order should be specified as well as the next state in onClicked
         case I_Device.SystemMode.Auto:
             return "auto";
         default:
