@@ -38,10 +38,10 @@ Popup {
     verticalPadding: 6
     horizontalPadding: 12
     spacing: 8
-    leftMargin: T.Overlay.overlay.width * 0.08
-    rightMargin: T.Overlay.overlay.width * 0.08
-    topMargin: T.Overlay.overlay.height * 0.08
-    bottomMargin: T.Overlay.overlay.height * 0.08
+    leftMargin: (T.Overlay.overlay?.width ?? 0) * 0.08
+    rightMargin: (T.Overlay.overlay?.width ?? 0) * 0.08
+    topMargin: (T.Overlay.overlay?.height ?? 0) * 0.08
+    bottomMargin: (T.Overlay.overlay?.height ?? 0) * 0.08
     closePolicy: Popup.CloseOnReleaseOutside | Popup.CloseOnEscape
 
     /* Children
