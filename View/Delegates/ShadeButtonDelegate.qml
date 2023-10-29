@@ -12,14 +12,17 @@ RoundButton {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Source color of which a shade is provided
-    property color          sourceColor
-
-    //! Shade factor
-    property real           shadeFactor
-
     //! Size of the place where this button should be placed
     property int            cellSize
+
+    //! Color lightness
+    property real           lightness
+
+    //! Color hue
+    property real           hue
+
+    //! Saturation
+    property real           saturation
 
     //! Actual color of shaded
     readonly property alias shadeColor: _shadeColor.color
@@ -60,10 +63,7 @@ RoundButton {
         border.width: 2
         border.color: _root.Material.foreground
         color: {
-            return Qt.hsva(sourceColor.hsvHue,
-                           sourceColor.hsvSaturation * shadeFactor,
-                           sourceColor.hsvValue,
-                           1.0);
+            return Qt.hsva(hue, saturation, lightness, 1.0);
         }
     }
 
