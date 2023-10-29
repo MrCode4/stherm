@@ -56,7 +56,7 @@ I_DeviceController {
 
         device.backlight.hue = h;
         device.backlight.saturation = s;
-        device.backlight.value = l;
+        device.backlight.lightness = l;
 
         //! Use a REST request to update device backlight
         var r = Math.round(device.backlight.color.r * 255)

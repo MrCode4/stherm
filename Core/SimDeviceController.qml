@@ -78,7 +78,7 @@ I_DeviceController {
         //! Change background color of application
         device.backlight.hue = h;
         device.backlight.saturation = s;
-        device.backlight.value = l;
+        device.backlight.lightness = l;
 
         if (device.backlight.on) {
             AppStyle.backgroundColor = device.backlight.color;
