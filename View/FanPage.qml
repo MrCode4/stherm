@@ -46,7 +46,7 @@ BasePageView {
             buttons: [_autoButton, _onButton]
         }
 
-        RowLayout {
+        ColumnLayout {
             Layout.alignment: Qt.AlignCenter
             Button {
                 id: _autoButton
@@ -78,16 +78,20 @@ BasePageView {
         }
 
         Label {
+            id: _sliderDescLbl
             Layout.topMargin: AppStyle.size / 15
-            Layout.alignment: Qt.AlignCenter
+            Layout.fillWidth: true
             text: "Fan working period during each hour"
+            wrapMode: "WrapAtWordBoundaryOrAnywhere"
+            horizontalAlignment: "AlignHCenter"
         }
 
         TickedSlider {
             id: _hourSliders
             readonly property int tickStepSize: 2
 
-            implicitWidth: implicitHeaderWidth * 3
+            Layout.alignment: Qt.AlignHCenter
+            implicitWidth: _root.width * 0.8
             majorTickCount: ticksCount / 5
             ticksCount: to / tickStepSize
             from: 0

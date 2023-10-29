@@ -87,4 +87,18 @@ I_DeviceController {
             device.systemMode = systemMode;
         }
     }
+
+    //! Set device settings
+    function setSettings(brightness, volume, temperature, time, reset, adaptive)
+    {
+        console.log("Change settings to : ",
+                    "brightness: ",     brightness,     "\n    ",
+                    "volume: ",         volume,         "\n    ",
+                    "temperature: ",    temperature,    "\n    ",
+                    "time: ",           time,           "\n    ",
+                    "reset: ",          reset,          "\n    ",
+                    "adaptive: ",       adaptive,       "\n    "
+                    );
+        sendReceive('hardware', 'setSettings', [brightness, volume, temperature, time, reset, adaptive]);
+    }
 }

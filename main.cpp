@@ -13,6 +13,10 @@ int main(int argc, char *argv[])
     //! Enable virtual keyboard
     qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));
 
+    //! Setting application organization name and domain
+    QGuiApplication::setOrganizationName("STherm");
+    QGuiApplication::setOrganizationDomain("SThermOrg");
+
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
@@ -38,13 +42,21 @@ int main(int argc, char *argv[])
     deviceInfo["OS"] = QSysInfo::prettyProductName();
     deviceInfo["Nmcli"] = QProcess().execute("command", { "-v", "nmcli" }) == 0 ? "True" : "False";
 
+    //! Cacluate a font factor based on system specifications
+    const double refFontPt = 13;
+    const double refDPI = 141;
+    const double dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch();
+    const double factor = qMax(1., dpi / refDPI);
+
     //! Load default font -> Roboto-Regular for now
     int robotoId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Roboto-Regular.ttf");
     if (robotoId == -1) {
         qWarning() << "Could not load Roboto-Regular font.";
     } else {
-        auto iransSansFontFamilies = QFontDatabase::applicationFontFamilies(robotoId);
-        QFont defaultFont(iransSansFontFamilies[0], qApp->font().pointSize());
+        QStringList roboto = QFontDatabase::applicationFontFamilies(robotoId);
+        QFont defaultFont(roboto[0], refFontPt * factor);
+        qDebug() << "Default font pt: " << defaultFont.pointSize();
+
         qApp->setFont(defaultFont);
     }
 

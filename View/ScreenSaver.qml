@@ -15,8 +15,10 @@ Popup {
     //! Reference to I_Device
     property I_Device   device
 
+    property UiPreferences uiPreference
+
     //! Unit
-    property string     unit:       "F"
+    property string     unit: uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C" ?? "F"
 
     /* Object properties
      * ****************************************************************************************/
@@ -38,7 +40,7 @@ Popup {
 
             Layout.alignment: Qt.AlignCenter
             font.pointSize: AppStyle.size / 6
-            text: Number(device?.currentTemp ?? 0).toLocaleString(locale, "f", 0)
+            text: Number(uiPreference?.convertedTemperature(device?.currentTemp ?? 0) ?? 0).toLocaleString(locale, "f", 0)
 
             Label {
                 anchors {
@@ -49,7 +51,7 @@ Popup {
 
                 opacity: 0.6
                 font {
-                    pixelSize: AppStyle.size / 12
+                    pointSize: Qt.application.font.pointSize * 2.4
                     capitalization: "AllUppercase"
                 }
                 text: `\u00b0${unit}`

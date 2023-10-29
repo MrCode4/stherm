@@ -40,7 +40,7 @@ Control {
         //! Humidity level label
         Label {
             Layout.alignment: Qt.AlignCenter
-            font.pixelSize: AppStyle.size / 20
+            font.pointSize: Qt.application.font.pointSize * 1.4
             text: Number(device?.currentHum ?? 0).toLocaleString(locale, "f", 0)
         }
 

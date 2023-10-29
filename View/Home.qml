@@ -15,6 +15,9 @@ Control {
     //! Reference to UiSession
     property UiSession              uiSession
 
+    //! UiPreferences
+    property UiPreferences          uiPreferences: uiSession?.uiPreferences ?? null
+
     //! Reference to I_Device
     readonly property   I_Device    device: uiSession?.appModel ?? null
 
@@ -36,6 +39,7 @@ Control {
         width: parent.availableWidth
         device: uiSession.appModel
         labelVisible: device?.systemMode !== I_Device.SystemMode.Off
+        uiPreference: _root.uiPreferences
     }
 
     //! This holds other items which gets hidden when DesiredTempratureItem is being dragged
@@ -53,6 +57,7 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
+            uiPreference: uiPreferences
         }
 
         //! Wifi status
@@ -107,6 +112,9 @@ Control {
             DateTimeLabel {
                 Layout.rowSpan: 2
                 Layout.alignment: Qt.AlignCenter
+                Layout.leftMargin: AppStyle.size / 30
+                Layout.rightMargin: AppStyle.size / 30
+                is12Hour: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
             }
 
             //! Air condition item
@@ -195,7 +203,7 @@ Control {
 
             PropertyChanges {
                 target: _desiredTempItem
-                font.pixelSize: 52
+                font.pointSize: Qt.application.font.pointSize * 3
                 labelVerticalOffset: -8
             }
 
@@ -211,7 +219,7 @@ Control {
 
             PropertyChanges {
                 target: _desiredTempItem
-                font.pixelSize: 80
+                font.pointSize: Qt.application.font.pointSize * 4.8
                 labelVerticalOffset: AppStyle.size / 15
             }
 
@@ -230,7 +238,7 @@ Control {
             //! First change
             NumberAnimation {
                 targets: [_desiredTempItem, _itemsToHide]
-                properties: "labelVerticalOffset,font.pixelSize,opacity"
+                properties: "labelVerticalOffset,font.pointSize,opacity"
                 duration: 250
             }
         }
