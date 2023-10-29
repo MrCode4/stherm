@@ -21,6 +21,11 @@ BasePageView {
             //! Push related menu to stack
             if (_root.StackView.view) {
                 switch(menuTitle) {
+                case "System Mode":
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
                 case "Backlight":
                     _root.StackView.view.push("qrc:/Stherm/View/BacklightPage.qml",
                                               {
@@ -40,6 +45,11 @@ BasePageView {
                     break;
                 case "Humidity Control":
                     _root.StackView.view.push("qrc:/Stherm/View/HumidityPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
+                case "Settings":
+                    _root.StackView.view.push("qrc:/Stherm/View/SettingsPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;

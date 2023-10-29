@@ -1,42 +1,59 @@
 import QtQuick
+import Qt.labs.settings
+
 import Stherm
 
+/*! ***********************************************************************************************
+ * UiPreferences holds settings related to application ui
+ * ***********************************************************************************************/
 QtObject {
+    id: _root
+
+    /* Enums
+     * ****************************************************************************************/
+    enum TempratureUnit {
+        Cel,    //! Celsius
+        Fah     //! Fahrenheit
+    }
+
+    enum TimeFormat {
+        Hour12,
+        Hour24
+    }
 
     /* Property Declarations
      * ****************************************************************************************/
-    // Display weights in the metric system or the imperial system
-    property bool   isMetric: true
-    property string touchMethod: "test"
+    //! Screen brightness: 0 to 100
+    property int        brightness:             80
+
+    //! Adaptive brightness
+    property bool       adaptiveBrightness:     false
+
+    //! Speaker volume: 0 to 100
+    property int        volume:                 80
+
+    //! Temprature unit
+    property int        tempratureUnit:         UiPreferences.TempratureUnit.Fah
+
+    //! Timer format
+    property int        timeFormat:             UiPreferences.TimeFormat.Hour12
 
     // Whether the window is fullscreen or windowed
-    property string windowMode: "Hidden"
+    property int        windowMode:             Window.Windowed
 
-    /* Functions
-     * ****************************************************************************************/
-    function toGuiSOM(weight) : real
-    {
-        if (isMetric) {
-            return weight
-        }        
-        console.log("To SOM: " + weight * 2.2046226218)
-        return (weight * 2.2046226218)
+    //! Settings object
+    property Settings   _settings:              Settings {
+        category: "ui"
+
+        property alias brightness:              _root.brightness
+        property alias adaptiveBrightness:      _root.adaptiveBrightness
+        property alias volume:                  _root.volume
+        property alias tempratureUnit:          _root.tempratureUnit
+        property alias timeFormat:              _root.timeFormat
+        property alias windowMode:              _root.windowMode
     }
 
-    function fromGuiSOM(weight) : real
-    {
-        if (isMetric) {
-            return weight
-        }
-        console.log("From SOM: " + weight * 0.45359237)
-        return (weight * 0.45359237)
-    }
-
-    function showWeightSuffix() : string
-    {
-        if (isMetric) {
-            return "kg"
-        }
-        return "lbs"
-    }
+   function convertedTemperature(temp) {
+       return tempratureUnit === UiPreferences.TempratureUnit.Fah ? 32 + 1.8 * temp  : temp
+   }
 }

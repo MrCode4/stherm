@@ -18,7 +18,7 @@ RoundButton {
     flat: true
     padding: 12
     contentItem: RoniaTextIcon {
-        font.pixelSize: 24
+        font.pointSize: Qt.application.font.pointSize * 1.4
         color: _root.Material.foreground
         text: NetworkInterface.connectedSsid ? "\uf1eb" : "\uf6ac"
     }
