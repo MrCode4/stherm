@@ -52,8 +52,8 @@ ApplicationWindow {
     /* Style
      * ****************************************************************************************/
     Material.theme: Material.Dark
-    Material.background: AppStyle.backgroundColor
-    Material.accent: AppStyle.primaryColor
+    Material.background: Style.background
+    Material.accent: Style.accent
 
     /* Splash Window
      * ****************************************************************************************/
