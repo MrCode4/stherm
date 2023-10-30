@@ -36,6 +36,9 @@ ApplicationWindow {
     Component.onCompleted: {
         AppCore.defaultRepo.initRootObject("QSObject");
 
+        //! Can set screen saver timeout here. By default its 20000
+        //! ScreenSaverManager.screenSaverTimeout = ..;
+
         //! Refereh wifis.
         NetworkInterface.refereshWifis();
     }
@@ -102,36 +105,7 @@ ApplicationWindow {
         anchors.centerIn: parent
         device: uiSession.appModel
         uiPreference: uiSession?.uiPreferences
-    }
-
-    //! This mouse area is to detect app interactions to prevent screen saver being shown
-    MouseArea {
-        anchors.fill: parent
-        parent: Overlay.overlay //! Parent must be Overlay.overlay so MouseArea works when there is a Popup opened
-        propagateComposedEvents: true
-        preventStealing: false
-        z: 10
-        onPressed: function(event) {
-            if (_screenSaver.visible) {
-                _screenSaver.close();
-            } else {
-                //! Restart timer
-                _screenSaverTimer.restart();
-            }
-
-            //! Set accepted to true to let it propagate to below items
-            event.accepted = false;
-        }
-    }
-
-    Timer {
-        id: _screenSaverTimer
-        interval: 20000
-        running: !_screenSaver.visible
-        repeat: false
-        onTriggered: {
-            _screenSaver.open();
-        }
+        visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
     }
 
     //! A Timer to periodically refresh wifis (every 2 seconds)
