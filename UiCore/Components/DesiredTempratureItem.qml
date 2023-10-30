@@ -12,10 +12,14 @@ Control {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Reference to I_Device
-    property I_Device   device
 
-    property  UiPreferences uiPreference
+    property  UiSession uiSession
+
+    //! Reference to I_Device
+    property I_Device   device: uiSession.appModel
+
+    property  UiPreferences uiPreference: uiSession.uiPreferences
+
 
     //! Unit of temprature
     property string     unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
@@ -53,7 +57,7 @@ Control {
 
             onPressedChanged: {
                 if (!pressed && device && device.requestedTemp !== value) {
-                    device.requestedTemp = value;
+                    uiSession.deviceController.setDesiredTemperature(value);
                 }
             }
         }
@@ -77,6 +81,17 @@ Control {
                     capitalization: "AllUppercase"
                 }
                 text: `\u00b0${unit}`
+            }
+        }
+
+        //! Connections to sync slider with device.
+        Connections {
+            target: device
+
+            //! Update slider value (UI) with changed requestedTemp
+            //! When setDesiredTemperature failed, update slider with previous value.
+            function onRequestedTempChanged() {
+                _tempSlider.value = device.requestedTemp;
             }
         }
     }

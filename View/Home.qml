@@ -37,9 +37,8 @@ Control {
         anchors.horizontalCenter: parent.horizontalCenter
         height: parent.height / 2
         width: parent.availableWidth
-        device: uiSession.appModel
         labelVisible: device?.systemMode !== I_Device.SystemMode.Off
-        uiPreference: _root.uiPreferences
+        uiSession: _root.uiSession
     }
 
     //! This holds other items which gets hidden when DesiredTempratureItem is being dragged

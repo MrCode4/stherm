@@ -82,6 +82,11 @@ I_DeviceController {
         Style.background = device.backlight.on ?  device.backlight.color : "#000000";
     }
 
+    function setVacation(temp_min, temp_max, hum_min, hum_max)
+    {
+        // udpate model
+    }
+
     function setSystemModeTo(systemMode: int)
     {
         if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Off) {
@@ -89,5 +94,16 @@ I_DeviceController {
 
             //! Do required actions if any
         }
+    }
+
+    //! Set device settings
+    function setSettings(brightness, volume, temperature, time, reset, adaptive)
+    {
+        // udpate model
+    }
+
+    //! Set temperature to device (system) and update model.
+    function setDesiredTemperature(temperature: real) {
+        device.requestedTemp = temperature;
     }
 }

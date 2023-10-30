@@ -101,4 +101,12 @@ I_DeviceController {
                     );
         sendReceive('hardware', 'setSettings', [brightness, volume, temperature, time, reset, adaptive]);
     }
+
+    //! Set temperature to device (system) and update model.
+    function setDesiredTemperature(temperature: real) {
+        sendReceive('system', 'setTemperature', [temperature]);
+
+        // Update device temperature when setTemperature is successful.
+        device.requestedTemp = temperature;
+    }
 }

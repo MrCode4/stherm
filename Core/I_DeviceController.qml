@@ -49,4 +49,6 @@ Item {
     function setSystemModeTo(systemMode: int) {}
 
     function setSettings(brightness, volume, temperature, time, reset, adaptive) {}
+
+    function setDesiredTemperature(temperature: real) {}
 }
