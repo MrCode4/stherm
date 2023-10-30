@@ -36,8 +36,8 @@ ApplicationWindow {
     Component.onCompleted: {
         AppCore.defaultRepo.initRootObject("QSObject");
 
-        //! Can set screen saver timeout here. By default its 20000
-        ScreenSaverManager.screenSaverTimeout = 3000;
+        //! set screen saver timeout here. default is 20000
+        ScreenSaverManager.screenSaverTimeout = 20000;
 
         //! Refereh wifis.
         NetworkInterface.refereshWifis();
