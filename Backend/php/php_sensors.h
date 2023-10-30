@@ -11,6 +11,18 @@ class php_sensors : public QObject
 public:
     explicit php_sensors(QObject *parent = nullptr);
 
+    void getSensorsData(void);
+    void getSensorList(void);
+    void remove(void);
+    void getSensorPairList(void);
+    void setSensor(void);
+    void checkSensorName(void);
+    void getSensorInfo(void);
+    void getSensorLocations(void);
+
+    void startEndPairing(void);
+    void startEndPairing(void);
+    
 signals:
 
 };

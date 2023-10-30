@@ -11,6 +11,24 @@ class php_hardware : public QObject
 public:
     explicit php_hardware(QObject *parent = nullptr);
 
+
+    void getStartMode(void);
+
+    void setBacklight(void);
+    void getBacklight(void);
+
+    void getWiring(void);
+    
+    void getActualWiring(void);
+
+    void checkClient(void);
+
+    void getSettings(void);
+    void setSettings(void);
+
+    void setBrightness(void);
+
+
 signals:
 
 };

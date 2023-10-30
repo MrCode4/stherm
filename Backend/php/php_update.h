@@ -11,6 +11,10 @@ class php_update : public QObject
 public:
     explicit php_update(QObject *parent = nullptr);
 
+    void getSoftwareUpdateInfo(void);
+    void install(void);
+
+
 signals:
 
 };

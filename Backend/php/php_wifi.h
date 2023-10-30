@@ -10,6 +10,12 @@ class php_wifi : public QObject
     QML_ELEMENT
 public:
     explicit php_wifi(QObject *parent = nullptr);
+    
+    void getWifiList(void);
+    void connect(void);
+    void forgot(void);
+    void disconnect(void);
+    void manualConnect(void);
 
 signals:
 

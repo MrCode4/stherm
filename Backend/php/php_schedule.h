@@ -11,6 +11,15 @@ class php_schedule : public QObject
 public:
     explicit php_schedule(QObject *parent = nullptr);
 
+    void getScheduleList(void);
+    void enableSchedule(void);
+    void removeSchedule(void);
+    void checkScheduleName(void);
+
+    void getSchedule(void);
+    void setSchedule(void);
+
+
 signals:
 
 };

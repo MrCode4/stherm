@@ -5,3 +5,4 @@ php_hardware::php_hardware(QObject *parent)
 {
 
 }
+
