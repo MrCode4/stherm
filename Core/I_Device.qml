@@ -34,6 +34,14 @@ QSObject {
     //! System mode
     property int        systemMode:     AppSpec.SystemMode.Auto
 
+    //! List of all the Messages
+    //! List <Message>
+    property var        messages: []
+
+    //! List of device sensors
+    //! List <Sensor>
+    property var        sensors: []
+
     //! Backlight
     property Backlight        backlight:      Backlight {}
 

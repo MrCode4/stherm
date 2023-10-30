@@ -10,11 +10,6 @@ import Stherm
 BasePageView {
     id: _root
 
-    /* Property declaration
-     * ****************************************************************************************/
-    //! Sensor controller
-    property SensorController       sensorController: uiSession?.sensorController ?? null
-
     /* Object properties
      * ****************************************************************************************/
     title: "Sensors"
@@ -30,7 +25,7 @@ BasePageView {
         anchors.centerIn: parent
         width: parent.width * 0.6
         height: Math.min(contentHeight, parent.height)
-        model: sensorController?.sensors ?? 0
+        model: appModel?.sensors ?? []
         spacing: 10
         delegate: SensorDelegate {
             required property var modelData

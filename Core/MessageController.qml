@@ -6,18 +6,17 @@ import Stherm
 /*! ***********************************************************************************************
  * MessageController
  * ***********************************************************************************************/
-QSObject {
+QtObject {
     id: _root
+
+    /* Property Declarations
+     * ****************************************************************************************/
+    property I_Device device
 
     /* Signals
      * ****************************************************************************************/
     signal newMessageReceived(Message message)
 
-
-    /* Property declaration
-     * ****************************************************************************************/
-    //! List of all the Messages
-    property var    messages: []
 
     /* Methods
      * ****************************************************************************************/
@@ -30,23 +29,23 @@ QSObject {
         newMessage.datetime = datetime;
         newMessage.isRead = false;
 
-        messages.push(newMessage);
-        messagesChanged();
+        device.messages.push(newMessage);
+        device.messagesChanged();
 
         newMessageReceived(newMessage);
     }
 
     function addNewMessage(message: Message)
     {
-        messages.push(message);
-        messagesChanged();
+        device.messages.push(message);
+        device.messagesChanged();
     }
 
     function removeMessage(message: Message)
     {
-        var msgIndex = messages.findIndex((element, index) => element === message);
+        var msgIndex = device.messages.findIndex((element, index) => element === message);
         if (msgIndex > -1) {
-            var msgToRemove = messages.splice(msgIndex, 1)[0];
+            var msgToRemove = device.messages.splice(msgIndex, 1)[0];
             msgToRemove.destroy();
         }
     }

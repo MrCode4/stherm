@@ -6,13 +6,13 @@ import Stherm
 /*! ***********************************************************************************************
  * SensorController handles sensors of the system
  * ***********************************************************************************************/
-QSObject {
+QtObject {
     id: _root
 
     /* Property declaration
      * ****************************************************************************************/
-    //! List of device sensors
-    property var        sensors: []
+    property I_Device device
+
 
     /* Methods
      * ****************************************************************************************/
@@ -23,26 +23,29 @@ QSObject {
         sensor.name = name;
         sensor.location = location;
 
-        sensors.push(sensor);
-        sensorsChanged();
+        device.sensors.push(sensor);
+        device.sensorsChanged();
     }
 
     function addSensor(sensor: Sensor)
     {
-        sensors.push(sensor);
-        sensorsChanged();
+        device.sensors.push(sensor);
+        device.sensorsChanged();
     }
 
     function removeSensor(sensor: Sensor)
     {
-        var sensorIndx = sensors.findIndex((element, index) => element === sensor);
+        var sensorIndx = device.sensors.findIndex((element, index) => element === sensor);
         if (sensorIndx > -1) {
-            var sensorToDelete = sensors.splice(sensorIndx, 1)[0];
+            var sensorToDelete = device.sensors.splice(sensorIndx, 1)[0];
             sensorToDelete.destroy();
         }
     }
 
     Component.onCompleted: {
+        if (device.sensors.length !==0)
+            return;
+
         addSensorData("Hum Sensor", Sensor.Location.Unknown);
         addSensorData("CO2 Sens - Bedroom", Sensor.Location.Bedroom);
         addSensorData("Temp Sens - LR", Sensor.Location.LivingRoom);

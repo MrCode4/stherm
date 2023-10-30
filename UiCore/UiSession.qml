@@ -75,15 +75,14 @@ QtObject {
         device: appModel
     }
 
-
     //! SensorController instance
     property SensorController   sensorController:       SensorController {
-        _qsRepo: AppCore.defaultRepo
+        device: appModel
     }
 
     //! MessageController instance
     property MessageController messageController: MessageController {
-        _qsRepo: AppCore.defaultRepo
+        device: appModel
     }
 
 
