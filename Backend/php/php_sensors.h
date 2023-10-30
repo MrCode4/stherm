@@ -21,8 +21,7 @@ public:
     void getSensorLocations(void);
 
     void startEndPairing(void);
-    void startEndPairing(void);
-    
+
 signals:
 
 };
