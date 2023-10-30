@@ -29,7 +29,7 @@ ApplicationWindow {
     height: AppStyle.size
 
     visible: true
-//    visibility: Window.FullScreen
+    //    visibility: Window.FullScreen
     title: qsTr("Template" + "               " + currentFile)
 
     //! Create defualt repo and root object to save and load
@@ -73,18 +73,30 @@ ApplicationWindow {
     /* Children
      * ****************************************************************************************/
 
-    Flickable {
-        width: window.width
-        height: window.height - (window.height - _virtualKb.y)
-        interactive: _virtualKb.active
-        boundsBehavior: Flickable.StopAtBounds
-        contentWidth: width
-        contentHeight: window.width
+    StackLayout {
+        id: _normalAndVacationModeStV
+        currentIndex: uiSession?.appModel.systemMode === I_Device.SystemMode.Vacation ? 1 : 0
 
-        MainView {
-            id: mainView
-            anchors.fill: parent
+        Flickable {
+            id: _mainViewFlick
+            width: window.width
+            height: window.height - (window.height - _virtualKb.y)
+            interactive: _virtualKb.active
+            boundsBehavior: Flickable.StopAtBounds
+            contentWidth: width
+            contentHeight: window.width
+
+            MainView {
+                id: mainView
+                anchors.fill: parent
+                uiSession: window.uiSession
+            }
+        }
+
+        VacationModeView {
+            id: _vacationModeView
             uiSession: window.uiSession
+            visible: parent.currentIndex === 1
         }
     }
 
@@ -97,7 +109,7 @@ ApplicationWindow {
     }
 
     ShortcutManager {
-       uiSession: window.uiSession
+        uiSession: window.uiSession
     }
 
     ScreenSaver {
