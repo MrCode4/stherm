@@ -14,13 +14,13 @@ Control {
      * ****************************************************************************************/
     //! Value of Slider
     //! \NOTE: Any bindings to this value will be broken, use Connections instead
-    property real   value: 0
+    property real   value: 18.0
 
     //! Min value of slider
-    property real   from: 0
+    property real   from: 18.0
 
     //! Max value of slider
-    property real   to: 10
+    property real   to: 30.0
 
     readonly property real darkerShade: 3.8
 
@@ -122,7 +122,7 @@ Control {
         y: _control.height - _handleCircle.height / 2
         rotation: {
             var valueRange = Math.abs(to - from);
-            return (value / (valueRange > 0 ? valueRange : 1)) * angleRange
+            return ((value - from)/ (valueRange > 0 ? valueRange : 1)) * angleRange
         }
 
         Rectangle {
@@ -177,7 +177,7 @@ Control {
                     if (angle > -8 || angle < -172) {
                         //! Set value based on angle
                         angle = angle < -170 ? angle + 360 : angle;
-                        value = Math.min(to, Math.max(from, angle / (_handle.angleRange)) * Math.abs(to - from));
+                        value = from + Math.min(to - from, Math.max(0, angle / (_handle.angleRange)) * Math.abs(to - from));
                     }
                 }
             }

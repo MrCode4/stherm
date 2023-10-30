@@ -21,10 +21,10 @@ Control {
     property string     unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property int        minTemprature: 0
+    property int        minTemprature: 18
 
     //! Maximum temprature
-    property int        maxTemprature: 100
+    property int        maxTemprature: 30
 
     //! Offset of desired temp label
     property int        labelVerticalOffset: -8
@@ -49,7 +49,7 @@ Control {
             enabled: labelVisible
             from: minTemprature
             to: maxTemprature
-            value: device?.requestedTemp ?? 0
+            value: device?.requestedTemp ?? 18.0
 
             onValueChanged: {
                 if (device && device.requestedTemp !== value) {
