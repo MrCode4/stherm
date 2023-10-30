@@ -10,7 +10,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 Multimedia Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 Multimedia Concurrent Core5Compat)
 
 #qt_standard_project_setup()
 
@@ -72,6 +72,8 @@ qt6_add_qml_module(appStherm
         Core/I_DeviceController.qml
         Core/Schedule.qml
         Core/ScheduleController.qml
+        Core/Sensor.qml
+        Core/SensorController.qml
         Core/Message.qml
         Core/MessageController.qml
 
@@ -119,7 +121,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/LoadDialoge.qml
         UiCore/ShortcutManager.qml
         UiCore/Components/SemiCircleSlider.qml
-        UiCore/Components/OperationModeButton.qml
+        UiCore/Components/SystemModeButton.qml
         UiCore/Components/DateTimeLabel.qml
         UiCore/Components/CurrentTempratureLabel.qml
         UiCore/Components/DesiredTempratureItem.qml
@@ -134,6 +136,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ColorSlider.qml
         UiCore/Components/BrightnessSlider.qml
         UiCore/Components/TickedSlider.qml
+        UiCore/Components/RangeSliderLabeled.qml
 
 
         # Views and Widgets
@@ -166,6 +169,12 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemRunDelayPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
+        View/SystemModePage.qml
+        View/SystemMode/VacationModePage.qml
+        View/SettingsPage.qml
+        View/Sensor/AddSensorPage.qml
+        View/Sensor/AddSensorLocationPage.qml
+        View/SensorsPage.qml
         View/AlertsNotificationsPage.qml
 
         # Delegates
@@ -173,6 +182,7 @@ qt6_add_qml_module(appStherm
         View/Delegates/ShadeButtonDelegate.qml
         View/Delegates/ScheduleDelegate.qml
         View/Delegates/WifiDelegate.qml
+        View/Delegates/SensorDelegate.qml
         View/Delegates/AlertNotificationDelegate.qml
 
         # Popups
@@ -186,6 +196,8 @@ qt6_add_qml_module(appStherm
         Backend/NetworkInterface.h
         Backend/NetworkInterface.cpp
         Backend/NmcliInterface.h
+        Backend/ScreenSaverManager.h
+        Backend/ScreenSaverManager.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf

@@ -50,14 +50,14 @@ I_DeviceController {
         xhr.send(data_msg);
     }
 
-    function updateBacklight()
+    function updateDeviceBacklight()
     {
         console.log("starting rest for updateBacklight, color: ", device.backlight.color)
+
         //! Use a REST request to update device backlight
-        var color = Qt.color(device.backlight.color);
-        var r = Math.round(color.r * 255)
-        var g = Math.round(color.g * 255)
-        var b = Math.round(color.b * 255)
+        var r = Math.round(device.backlight.color.r * 255)
+        var g = Math.round(device.backlight.color.g * 255)
+        var b = Math.round(device.backlight.color.b * 255)
 
         console.log("colors: ", r, ",", g, ",", b)
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
@@ -71,5 +71,34 @@ I_DeviceController {
     {
         console.log("starting rest for updateFan :", device.fan.working_per_hour)
         sendReceive('system', 'setFan', device.fan.working_per_hour);
+    }
+
+    function setVacation(temp_min, temp_max, hum_min, hum_max)
+    {
+        sendReceive('system', 'setVacation', [temp_min, temp_max, hum_min, hum_max]);
+    }
+
+    function setSystemModeTo(systemMode: int)
+    {
+        if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Off) {
+            //! Do required actions if any
+            sendReceive('system', 'setMode', [ systemMode ]);
+
+            device.systemMode = systemMode;
+        }
+    }
+
+    //! Set device settings
+    function setSettings(brightness, volume, temperature, time, reset, adaptive)
+    {
+        console.log("Change settings to : ",
+                    "brightness: ",     brightness,     "\n    ",
+                    "volume: ",         volume,         "\n    ",
+                    "temperature: ",    temperature,    "\n    ",
+                    "time: ",           time,           "\n    ",
+                    "reset: ",          reset,          "\n    ",
+                    "adaptive: ",       adaptive,       "\n    "
+                    );
+        sendReceive('hardware', 'setSettings', [brightness, volume, temperature, time, reset, adaptive]);
     }
 }

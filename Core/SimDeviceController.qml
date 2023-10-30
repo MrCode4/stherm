@@ -1,4 +1,6 @@
 import QtQuick
+
+import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
@@ -73,13 +75,19 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
     //! Override I_DeviceController's methods
-    function updateBacklight()
+    function updateDeviceBacklight()
     {
-        //! Change background color of application
-        if (device.backlight.on) {
-            AppStyle.backgroundColor = device.backlight.color;
-        } else {
-            AppStyle.backgroundColor = "#000000";
+        console.log("settign sim background color")
+
+        Style.background = device.backlight.on ?  device.backlight.color : "#000000";
+    }
+
+    function setSystemModeTo(systemMode: int)
+    {
+        if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Off) {
+            device.systemMode = systemMode;
+
+            //! Do required actions if any
         }
     }
 }

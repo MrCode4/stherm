@@ -13,13 +13,14 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property Schedule   schedule
+    property bool isCelcius : _root.uiSession.uiPreferences.tempratureUnit !== UiPreferences.TempratureUnit.Fah
 
     /* Object properties
      * ****************************************************************************************/
     leftPadding: 16
     rightPadding: 4
     topPadding: 32
-    title: "Shedule Preivew"
+    title: "Schedule Preview"
     backButtonVisible: false
     titleHeadeingLevel: 3
 
@@ -51,7 +52,7 @@ BasePageView {
                         model: [
                             "Name",
                             "Type",
-                            "Temprature",
+                            "Temprature (\u00b0" + (isCelcius ? "C" : "F") + ")",
                             "Humidity",
                             "Start Time",
                             "End Time",

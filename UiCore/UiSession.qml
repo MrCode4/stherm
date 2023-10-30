@@ -2,7 +2,7 @@ import QtQuick 2.0
 import Qt.labs.platform
 
 import Stherm
-
+import Ronia
 /*! ***********************************************************************************************
  * The UiSession contains all information required by graphical components to display the right
  * state. Additionally, it keeps track of the user's movement through the UI and serves as the
@@ -54,9 +54,9 @@ QtObject {
 
     onSimulatingChanged: {
         if (!simulating) {
-            AppStyle.backgroundColor = "black";
-            realDeviceController.updateBacklight();
+            Style.background = "#000000";
             // start real device
+            realDeviceController.updateDeviceBacklight();
         }
     }
 
@@ -68,6 +68,12 @@ QtObject {
     //! Device controller
     property I_DeviceController simDeviceController:   SimDeviceController {
         device: appModel
+    }
+
+
+    //! SensorController instance
+    property SensorController   sensorController:       SensorController {
+        _qsRepo: AppCore.defaultRepo
     }
 
     //! MessageController instance

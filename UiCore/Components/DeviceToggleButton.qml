@@ -20,7 +20,7 @@ Button {
      * ****************************************************************************************/
     flat: true
     opacity: uiSession ? 1. : 0.6
-    font.pixelSize: AppStyle.size / 20
+    font.pointSize: Qt.application.font.pointSize * 1.4
     text: isSimulationMode ? "Simulation" : "Device"
 
     onClicked: {

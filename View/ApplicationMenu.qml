@@ -21,6 +21,21 @@ BasePageView {
             //! Push related menu to stack
             if (_root.StackView.view) {
                 switch(menuTitle) {
+                case "System Mode":
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
+                case "Sensors":
+                    _root.StackView.view.push("qrc:/Stherm/View/SensorsPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              })
+                    break
+                case "Alerts/Notifications":
+                    _root.StackView.view.push("qrc:/Stherm/View/AlertsNotificationsPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
                 case "Backlight":
                     _root.StackView.view.push("qrc:/Stherm/View/BacklightPage.qml",
                                               {
@@ -43,6 +58,11 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;
+                case "Settings":
+                    _root.StackView.view.push("qrc:/Stherm/View/SettingsPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
                 case "System Setup":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
@@ -50,11 +70,6 @@ BasePageView {
                     break;
                 case "System Info":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
-                    break;
-                case "Alerts/Notifications":
-                    _root.StackView.view.push("qrc:/Stherm/View/AlertsNotificationsPage.qml", {
-                                                  "uiSession": Qt.binding(() => uiSession)
-                                              });
                     break;
                 }
             }

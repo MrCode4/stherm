@@ -15,14 +15,16 @@ Control {
     //! Reference to I_Device
     property I_Device   device
 
+    property  UiPreferences uiPreference
+
     //! Unit of temprature
-    property string     unit: "F"
+    property string     unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property int        minTemprature: 0
+    property int        minTemprature: 18
 
     //! Maximum temprature
-    property int        maxTemprature: 100
+    property int        maxTemprature: 30
 
     //! Offset of desired temp label
     property int        labelVerticalOffset: -8
@@ -38,7 +40,7 @@ Control {
     //    Material.theme: Material.Dark
     implicitWidth: 360
     implicitHeight: 180
-    font.pixelSize: 48
+    font.pointSize: Qt.application.font.pointSize * 2.8
     background: null
     contentItem: Item {
         SemiCircleSlider {
@@ -47,10 +49,10 @@ Control {
             enabled: labelVisible
             from: minTemprature
             to: maxTemprature
-            value: device?.requestedTemp ?? 0
+            value: device?.requestedTemp ?? 18.0
 
-            onValueChanged: {
-                if (device && device.requestedTemp !== value) {
+            onPressedChanged: {
+                if (!pressed && device && device.requestedTemp !== value) {
                     device.requestedTemp = value;
                 }
             }
@@ -62,7 +64,7 @@ Control {
             visible: labelVisible
             anchors.centerIn: parent
             anchors.verticalCenterOffset: labelVerticalOffset
-            text: Number(_tempSlider.value).toLocaleString(locale, "f", 0)
+            text: Number(uiPreference?.convertedTemperature(_tempSlider.value) ?? 0).toLocaleString(locale, "f", 0)
 
             //! Unit
             Label {
@@ -71,7 +73,7 @@ Control {
                 anchors.topMargin: 20
                 opacity: 0.6
                 font {
-                    pixelSize: 20
+                    pointSize: Qt.application.font.pointSize * 1.2
                     capitalization: "AllUppercase"
                 }
                 text: `\u00b0${unit}`

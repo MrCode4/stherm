@@ -12,8 +12,10 @@ Control {
 
     /* Property declaration
      * ****************************************************************************************/
+    property UiPreferences uiPreference
+
     //! Holds current unit of temprature (Fahrenheit or Celsius)
-    property string     unit: "F"
+    property string     unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! \todo: add a property to get a ref to a temprature model
     //! I_Device
@@ -33,9 +35,9 @@ Control {
         Label {
             font {
                 family: "Roboto Mono"
-                pixelSize: 32
+                pointSize: Qt.application.font.pointSize * 1.85
             }
-            text: Number(device?.currentTemp ?? 0).toLocaleString(locale, "f", 0)
+            text: Number(uiPreference?.convertedTemperature(device?.currentTemp ?? 0) ?? 0).toLocaleString(locale, "f", 0)
         }
 
         //! Unit
@@ -44,7 +46,7 @@ Control {
             Layout.topMargin: AppStyle.size / 60 / 2
             opacity: 0.6
             font {
-                pixelSize: 20
+                pointSize: Qt.application.font.pointSize * 1.2
                 capitalization: "AllUppercase"
             }
             text: `\u00b0${unit}`

@@ -28,9 +28,25 @@ Item {
 
     /* Functions
      * ****************************************************************************************/
+
+    function updateBacklight(h, s, v)
+    {
+        device.backlight.hue = h;
+        device.backlight.saturation = s;
+        device.backlight.value = v;
+
+        updateDeviceBacklight();
+    }
+
     //! These methods should be overriden by subclasses to provide implementation
 
-    function updateBacklight() {}
+    function updateDeviceBacklight() {}
 
     function updateFan() {}
+
+    function setVacation(temp_min, temp_max, hum_min, hum_max) {}
+
+    function setSystemModeTo(systemMode: int) {}
+
+    function setSettings(brightness, volume, temperature, time, reset, adaptive) {}
 }
