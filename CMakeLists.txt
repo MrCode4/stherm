@@ -21,6 +21,7 @@ find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 Multimedi
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 
 # Add any include directories
 #include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
@@ -219,6 +220,13 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
+        SOURCES Backend/php_api.h Backend/php_api.cpp
+        SOURCES Backend/php/php_hardware.h Backend/php/php_hardware.cpp
+        SOURCES Backend/php/php_system.h Backend/php/php_system.cpp
+        SOURCES Backend/php/php_sensors.h Backend/php/php_sensors.cpp
+        SOURCES Backend/php/php_wifi.h Backend/php/php_wifi.cpp
+        SOURCES Backend/php/php_schedule.h Backend/php/php_schedule.cpp
+        SOURCES Backend/php/php_update.h Backend/php/php_update.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
