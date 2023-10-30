@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! schedules instance: use to show and remove schedule objects
-    property SchedulesModel     schedulesModel: uiSession.appModel?.schedulesModel
+    property SchedulesController     schedulesController: uiSession?.schedulesController
 
     /* Object properties
      * ****************************************************************************************/
@@ -42,7 +42,7 @@ BasePageView {
     ListView {
         anchors.fill: parent
         clip: true
-        model: schedulesModel?.schedules
+        model: appModel?.schedules ?? []
         delegate: ScheduleDelegate {
             required property var modelData
             required property int index
@@ -53,8 +53,8 @@ BasePageView {
             delegateIndex: index
 
             onRemoved: {
-                if (schedulesModel) {
-                    schedulesModel.removeSchedule(schedule);
+                if (schedulesController) {
+                    schedulesController.removeSchedule(schedule);
                 }
             }
         }

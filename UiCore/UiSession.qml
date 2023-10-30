@@ -27,7 +27,7 @@ QtObject {
      * ****************************************************************************************/
 
     //! Config file path
-    readonly property string  configFilePath: "sthermConfig.QQS.json"
+    readonly property string  configFilePath:   "sthermConfig.QQS.json"
 
     // Debug or not
     property bool               debug:          userLevel >= UiSession.UserLevel.DEVELOPER
@@ -76,12 +76,17 @@ QtObject {
     }
 
     //! SensorController instance
-    property SensorController   sensorController:       SensorController {
+    property SensorController   sensorController:      SensorController {
         device: appModel
     }
 
     //! MessageController instance
-    property MessageController messageController: MessageController {
+    property MessageController messageController:      MessageController {
+        device: appModel
+    }
+
+    //! MessageController instance
+    property SchedulesController schedulesController:  SchedulesController {
         device: appModel
     }
 

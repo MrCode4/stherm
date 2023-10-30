@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! schedulesModel: use to create new Schedule instance
-    property SchedulesModel     schedulesModel: uiSession.appModel?.schedulesModel ?? null
+    property SchedulesController     schedulesController: uiSession?.schedulesController ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -53,8 +53,8 @@ BasePageView {
         onClicked: {
             if (!_newSchedulePages.currentItem.nextPage) {
                 //! It's done, save schedule and go back
-                if (schedulesModel) {
-                    schedulesModel.saveNewSchedule(_internal.newSchedule);
+                if (schedulesController) {
+                    schedulesController.saveNewSchedule(_internal.newSchedule);
                 }
 
                 if (_root.StackView.view) {

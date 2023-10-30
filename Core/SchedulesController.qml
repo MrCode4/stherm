@@ -19,7 +19,7 @@ QtObject {
     function saveNewSchedule(schedule: Schedule)
     {
         var newSchedule = QSSerializer.createQSObject("Schedule", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
-        newSchedule._qsRepo = AppCore._qsRepo;
+        newSchedule._qsRepo = AppCore.defaultRepo;
         newSchedule.name = schedule.name;
         newSchedule.type = schedule.type;
         newSchedule.temprature = schedule.temprature;

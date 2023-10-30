@@ -32,7 +32,7 @@ I_DeviceController {
      * ****************************************************************************************/
     //! Read sensor data (simulation)
     //! todo: move this to the interface class
-    Timer {
+    property Timer _timer: Timer {
         interval: AppSpec.simReadInterval
         running: true
         repeat: true

@@ -13,9 +13,19 @@ QtObject {
      * ****************************************************************************************/
     property I_Device device
 
+    Component.onCompleted: {
+        if (device.sensors.length !==0)
+            return;
+
+        addSensorData("Hum Sensor", Sensor.Location.Unknown);
+        addSensorData("CO2 Sens - Bedroom", Sensor.Location.Bedroom);
+        addSensorData("Temp Sens - LR", Sensor.Location.LivingRoom);
+        addSensorData("Temp Sens - Kitchen", Sensor.Location.Kitchen);
+    }
 
     /* Methods
      * ****************************************************************************************/
+
     function addSensorData(name, location)
     {
         var sensor = QSSerializer.createQSObject("Sensor", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
@@ -42,13 +52,5 @@ QtObject {
         }
     }
 
-    Component.onCompleted: {
-        if (device.sensors.length !==0)
-            return;
 
-        addSensorData("Hum Sensor", Sensor.Location.Unknown);
-        addSensorData("CO2 Sens - Bedroom", Sensor.Location.Bedroom);
-        addSensorData("Temp Sens - LR", Sensor.Location.LivingRoom);
-        addSensorData("Temp Sens - Kitchen", Sensor.Location.Kitchen);
-    }
 }
