@@ -25,6 +25,8 @@ QtObject {
 
     /* Property Declarations
      * ****************************************************************************************/
+    //! Path of File to save model.
+    property string           currentFile:    ""
 
     //! Config file path
     readonly property string  configFilePath:   "sthermConfig.QQS.json"
@@ -65,6 +67,8 @@ QtObject {
         }
     }
 
+    /* Controllers
+     * ****************************************************************************************/
 
     //! Device controller
     property I_DeviceController realDeviceController:   DeviceController {
@@ -93,9 +97,6 @@ QtObject {
 
     //! Device controller
     property I_DeviceController deviceController:  simulating ? simDeviceController : realDeviceController
-
-    //! Path of File to save model.
-    property string             currentFile:    ""
 
     /* Connections
      * ****************************************************************************************/
