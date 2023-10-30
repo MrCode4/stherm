@@ -58,18 +58,6 @@ ApplicationWindow {
     Material.background: Style.background
     Material.accent: Style.accent
 
-    /* Splash Window
-     * ****************************************************************************************/
-
-
-    /* Toolbars
-     * ****************************************************************************************/
-
-    //! Header
-    header: Item {}
-
-    footer: Item {}
-
     /* Children
      * ****************************************************************************************/
 
@@ -168,9 +156,14 @@ ApplicationWindow {
         }
     }
 
+    //! MessagePopupView
+    MessagePopupView {
+        messageController: uiSession?.messageController ?? null
+    }
+
     //! This Timer is used to generate arbitrary Messages (alert or notification)
     Timer {
-        interval: 3000
+        interval: 8000
         repeat: true
         running: true
         onTriggered: {

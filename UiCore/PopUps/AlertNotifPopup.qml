@@ -22,6 +22,14 @@ I_PopUp {
                                    ? "Notification"
                                    : "Message")
                       ) : ""
+    icon: message ? (message.icon === ""
+                     ? (message.type === Message.Type.Alert
+                        ? FAIcons.triangleExclamation
+                        : (message.type === Message.Type.Error ? FAIcons.circleXmark
+                                                               : FAIcons.bell)
+                        )
+                     : message.icon)
+                  : ""
 
 
     /* Children

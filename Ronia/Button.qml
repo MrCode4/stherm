@@ -35,8 +35,8 @@ T.Button {
     }
 
     background: Rectangle {
-        implicitWidth: 64
-        implicitHeight: Style.button.implicitHeight
+        implicitWidth: Style.button.buttonHeight
+        implicitHeight: Style.button.buttonHeight
 
         border.width: control.flat ? 0 : Style.button.borderWidth
         border.color: Style.frameColor

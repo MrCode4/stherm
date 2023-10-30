@@ -9,6 +9,11 @@ import Stherm
 QSObject {
     id: _root
 
+    /* Signals
+     * ****************************************************************************************/
+    signal newMessageReceived(Message message)
+
+
     /* Property declaration
      * ****************************************************************************************/
     //! List of all the Messages
@@ -27,6 +32,8 @@ QSObject {
 
         messages.push(newMessage);
         messagesChanged();
+
+        newMessageReceived(newMessage);
     }
 
     function addNewMessage(message: Message)
