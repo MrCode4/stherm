@@ -178,6 +178,7 @@ qt6_add_qml_module(appStherm
         View/Sensor/AddSensorLocationPage.qml
         View/SensorsPage.qml
         View/AlertsNotificationsPage.qml
+        View/MessagePopupView.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
