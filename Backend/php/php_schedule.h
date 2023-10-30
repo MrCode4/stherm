@@ -32,7 +32,7 @@ private:
  * @param array $week_days An indexed array of booleans representing the days of the week where `true` means the schedule is active on that day (starting from Sunday as 0).
  * @return array Returns an array of schedule IDs that potentially overlap with the provided details.
  */
-    private function getMatchingSchedules(int $schedule_id, string $start_time, string $end_time, array $week_days); 
+    void getMatchingSchedules(void);
 
 
 

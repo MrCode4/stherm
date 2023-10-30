@@ -267,11 +267,6 @@ public:
  * @return array Returns an associative array with keys 'img' (representing the logo)
  *               and the measure ID from the `settings` table.
  */
-public function getMainStatic() {
-    return $this->conn->getRow("SELECT logo AS img,
-                                         (SELECT measure_id FROM settings limit 1)
-                                  FROM device_config");
-}
     void getMainStatic(void);
 /**
  * Fetches dynamic main data for the device.
