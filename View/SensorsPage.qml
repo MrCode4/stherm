@@ -31,6 +31,7 @@ BasePageView {
         width: parent.width * 0.6
         height: Math.min(contentHeight, parent.height)
         model: sensorController?.sensors ?? 0
+        spacing: 10
         delegate: SensorDelegate {
             required property var modelData
             required property int index
