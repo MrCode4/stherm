@@ -137,6 +137,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/BrightnessSlider.qml
         UiCore/Components/TickedSlider.qml
         UiCore/Components/RangeSliderLabeled.qml
+        UiCore/Components/ButtonInverted.qml
 
 
         # Views and Widgets
@@ -176,6 +177,7 @@ qt6_add_qml_module(appStherm
         View/Sensor/AddSensorLocationPage.qml
         View/SensorsPage.qml
         View/AlertsNotificationsPage.qml
+        View/VacationModeView.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
