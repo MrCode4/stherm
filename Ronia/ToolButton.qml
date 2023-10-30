@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Templates as T
 import QtQuick.Controls.impl
 
+import Ronia
+
 T.ToolButton {
     id: control
 
@@ -15,7 +17,7 @@ T.ToolButton {
 
     icon.width: 24
     icon.height: 24
-    icon.color: !enabled ? Material.hintTextColor : checked || highlighted ? Material.accent : Material.foreground
+    icon.color: !enabled ? Style.hintTextColor : checked || highlighted ? Style.accent : Style.foreground
 
     contentItem: IconLabel {
         spacing: control.spacing
