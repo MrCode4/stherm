@@ -42,7 +42,7 @@ QSObject {
     property real       tof:            0.0
 
     //! System mode
-    property int        systemMode:     I_Device.SystemMode.Off
+    property int        systemMode:     I_Device.SystemMode.Auto
 
     //! Backlight
     property Backlight  backlight:      Backlight {}

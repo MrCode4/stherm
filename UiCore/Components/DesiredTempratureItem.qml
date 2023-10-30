@@ -51,8 +51,8 @@ Control {
             to: maxTemprature
             value: device?.requestedTemp ?? 18.0
 
-            onValueChanged: {
-                if (device && device.requestedTemp !== value) {
+            onPressedChanged: {
+                if (!pressed && device && device.requestedTemp !== value) {
                     device.requestedTemp = value;
                 }
             }
