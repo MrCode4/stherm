@@ -4,7 +4,7 @@ QtObject {
     property color      background
     property color      hoverColor
     property color      disabledColor
-    property real       implicitHeight
+    property real       buttonHeight
     property real       radius
     property real       horizontalPadding
     property real       verticalPadding

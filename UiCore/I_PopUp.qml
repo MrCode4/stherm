@@ -43,9 +43,9 @@ Popup {
                             (T.Overlay.overlay?.width ?? AppStyle.size) * 0.80)
     implicitHeight: Math.min(_mainCol.implicitHeight + bottomPadding + topPadding,
                              (T.Overlay.overlay?.height ?? AppStyle.size) * 0.80)
-    spacing: 32
-    horizontalPadding: 12
-    topPadding: 16
+    spacing: 24
+    horizontalPadding: 16
+    topPadding: 4
     bottomPadding: 24
     dim: true
     modal: true
@@ -56,7 +56,7 @@ Popup {
     ColumnLayout {
         id: _mainCol
         anchors.fill: parent
-        spacing: 8
+        spacing: _popup.spacing
 
         //! Header
         RowLayout {
@@ -76,16 +76,17 @@ Popup {
                 elide: "ElideRight"
             }
 
-            RoniaTextIcon {
+            ToolButton {
                 id: _closeBtn
-                text: "\uf00d" //! xmark icon
+                Layout.rightMargin: -_popup.rightPadding + 4
+                highlighted: true
+                contentItem: RoniaTextIcon {
+                    font.pointSize: Application.font.pointSize * 1.2
+                    text: FAIcons.xmark
+                }
 
-                // can be switched to mouse area with filling anchors if not working on target device
-                // on test windows os not working
-                TapHandler {
-                    onTapped: {
-                        _popup.close();
-                    }
+                onClicked: {
+                    _popup.close();
                 }
             }
         }
@@ -93,9 +94,8 @@ Popup {
         //! Icon
         RoniaTextIcon {
             Layout.alignment: Qt.AlignCenter
-            Layout.topMargin: _popup.spacing
             visible: Boolean(icon)
-            font.pointSize: Qt.application.font.pointSize * 1.5
+            font.pointSize: Qt.application.font.pointSize * 2.4
             text: icon
         }
 

@@ -28,6 +28,8 @@ qt_add_qml_module(RoniaStyle
         ItemDelegate.qml
         Button.qml
         Switch.qml
+        ToolButton.qml
+        Popup.qml
 )
 
 qt_add_qml_module(RoniaStyleImpl

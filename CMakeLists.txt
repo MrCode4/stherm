@@ -37,6 +37,7 @@ set_source_files_properties(
     Core/AppSpec.qml
     UiCore/AppStyle.qml
     UiCore/AppSettings.qml
+    UiCore/FAIcons.qml
 
     PROPERTIES
         QT_QML_SINGLETON_TYPE True
@@ -108,6 +109,7 @@ qt6_add_qml_module(appStherm
 
 
         # UiSession+Popups
+        UiCore/FAIcons.qml
         UiCore/AppStyle.qml
         UiCore/AppSettings.qml
         UiCore/UiSession.qml
@@ -139,6 +141,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/BrightnessSlider.qml
         UiCore/Components/TickedSlider.qml
         UiCore/Components/RangeSliderLabeled.qml
+        UiCore/Components/ButtonInverted.qml
 
 
         # Views and Widgets
@@ -179,6 +182,8 @@ qt6_add_qml_module(appStherm
         View/SensorsPage.qml
         View/AlertsNotificationsPage.qml
         View/WiringPage.qml
+        View/MessagePopupView.qml
+        View/VacationModeView.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml

@@ -23,11 +23,10 @@ Popup {
     /* Object properties
      * ****************************************************************************************/
     implicitHeight: AppStyle.size
-    implicitWidth:  AppStyle.size
-    background: Rectangle {
-        color: _root.Material.background
-    }
+    implicitWidth: AppStyle.size
     closePolicy: Popup.NoAutoClose
+    modal: true
+    dim: false
 
     /* Children
      * ****************************************************************************************/
