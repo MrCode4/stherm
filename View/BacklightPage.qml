@@ -13,19 +13,10 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Ref to Backlight model
-    property Backlight              backlight: uiSession?.appModel?.backlight ?? null
+    property Backlight          backlight: uiSession?.appModel?.backlight ?? null
 
     //! Selected backlight color from shade buttons
-    readonly property color selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
-
-    //! Actual color calculated from sliders without shade
-    readonly property color _slidersColorNotShaded: {
-        var clr = _colorSlider.currentColor;
-        return Qt.rgba(clr.r * _brSlider.visualPosition,
-                       clr.g * _brSlider.visualPosition,
-                       clr.b * _brSlider.visualPosition,
-                       1.,)
-    }
+    readonly property color     selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
 
     /* Object properties
      * ****************************************************************************************/
@@ -42,7 +33,7 @@ BasePageView {
         //! Backlight on/off button
         Switch {
             id: _backlightOnOffSw
-            checked: true//backlight?.on ?? false
+            checked: backlight?.on ?? false
 
             onToggled: {
                 if (backlight && backlight.on !== checked) {
@@ -61,7 +52,9 @@ BasePageView {
             onClicked: {
                 //! Update backlight
                 if (deviceController) {
-                    deviceController.updateBacklight();
+                    deviceController.updateBacklight(selectedColor.hsvHue,
+                                                     selectedColor.hsvSaturation,
+                                                     selectedColor.hsvValue);
                 }
             }
         }
@@ -130,17 +123,27 @@ BasePageView {
                     checked: index === 4
                     hoverEnabled: enabled
 
-                    sourceColor: _slidersColorNotShaded
-                    shadeFactor: index / 4.
+                    saturation: index / 4.
                     cellSize: _buttonsRow.cellSize
+                    value: _brSlider.value
+                    hue: _colorSlider.value
                 }
             }
         }
     }
 
-    onSelectedColorChanged: {
+    function setCurrentColor(h, s, v)
+    {
+        _colorSlider.value = h;
+        _brSlider.value = v;
+
+        var shadeToSelect = Math.max(0, Math.ceil(s / 0.2) - 1);
+        _shadeButtonsRepeater.itemAt(shadeToSelect).checked = true;
+    }
+
+    Component.onCompleted: {
         if (backlight) {
-            backlight.color = selectedColor;
+            setCurrentColor(backlight.hue, backlight.saturation, backlight.value);
         }
     }
 }

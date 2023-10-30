@@ -14,10 +14,10 @@ QSObject {
     property int        type:           AppSpec.DeviceType.DT_Unknown
 
     //! Requested Temperature (Cel)
-    property real       requestedTemp:  0.0
+    property real       requestedTemp:  18.0
 
     //! Current Temperature (Cel)
-    property real       currentTemp:    0.0
+    property real       currentTemp:    18.0
 
     //! Requested Humidity (Percent)
     property real       requestedHum:   0.0
@@ -32,7 +32,7 @@ QSObject {
     property real       tof:            0.0
 
     //! System mode
-    property int        systemMode:     AppSpec.SystemMode.Off
+    property int        systemMode:     AppSpec.SystemMode.Auto
 
     //! Backlight
     property Backlight        backlight:      Backlight {}
@@ -44,6 +44,9 @@ QSObject {
     property SchedulesModel   schedulesModel: SchedulesModel {
         _qsRepo: appModel._qsRepo
     }
+
+    //! Wiring
+    property Wiring     wiring:         Wiring {}
 
     /* Functions
      * ****************************************************************************************/

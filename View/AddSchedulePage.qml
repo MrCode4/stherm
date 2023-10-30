@@ -118,6 +118,8 @@ BasePageView {
         ScheduleTempraturePage {
             readonly property Component nextPage: _startTimePage
 
+            uiSession: _root.uiSession
+
             onTempratureChanged: {
                 if (temprature !== _internal.newSchedule.temprature) {
                     _internal.newSchedule.temprature = temprature;
@@ -176,6 +178,7 @@ BasePageView {
         SchedulePreviewPage {
             readonly property Component nextPage: null
 
+            uiSession: _root.uiSession
             schedule: _internal.newSchedule
         }
     }

@@ -1,4 +1,6 @@
 import QtQuick
+
+import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
@@ -73,14 +75,16 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
     //! Override I_DeviceController's methods
-    function updateBacklight()
+    function updateDeviceBacklight()
     {
-        //! Change background color of application
-        if (device.backlight.on) {
-            AppStyle.backgroundColor = device.backlight.color;
-        } else {
-            AppStyle.backgroundColor = "#000000";
-        }
+        console.log("settign sim background color")
+
+        Style.background = device.backlight.on ?  device.backlight.color : "#000000";
+    }
+
+    function setVacation(temp_min, temp_max, hum_min, hum_max)
+    {
+        // udpate model
     }
 
     function setSystemModeTo(systemMode: int)
@@ -90,5 +94,16 @@ I_DeviceController {
 
             //! Do required actions if any
         }
+    }
+
+    //! Set device settings
+    function setSettings(brightness, volume, temperature, time, reset, adaptive)
+    {
+        // udpate model
+    }
+
+    //! Set temperature to device (system) and update model.
+    function setDesiredTemperature(temperature: real) {
+        device.requestedTemp = temperature;
     }
 }

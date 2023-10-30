@@ -9,8 +9,17 @@ QSObject {
     /* Property declaration
      * ****************************************************************************************/
     //! Determines whether device backlight is on or off
-    property bool       on:         true
+    property bool               on:             false
 
     //! Backlight color
-    property string     color:      "black"
+    readonly property color     color:          Qt.hsva(hue, saturation, value)
+
+    //! Hue of color
+    property real               hue:            0.
+
+    //! Saturation of color
+    property real               saturation:     1.
+
+    //! Value of color
+    property real               value:          1.
 }

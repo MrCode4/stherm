@@ -53,6 +53,10 @@ BasePageView {
             //! Go back to previous page
             if (_root.StackView.view) {
                 _root.StackView.view.pop();
+
+                if (_buttonsGrp.checkedButton === _vacationButton) {
+                    _root.StackView.view.pop(); //! To pop ApplicationMenu
+                }
             }
         }
     }

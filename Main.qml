@@ -29,7 +29,7 @@ ApplicationWindow {
     height: AppStyle.size
 
     visible: true
-//    visibility: Window.FullScreen
+    //    visibility: Window.FullScreen
     title: qsTr("Template" + "               " + currentFile)
 
     //! Save the app configuration when the app closed
@@ -54,6 +54,9 @@ ApplicationWindow {
         else
             AppCore.defaultRepo.initRootObject("SimDevice");
 
+        //! set screen saver timeout here. default is 20000
+        ScreenSaverManager.screenSaverTimeout = 20000;
+
         //! Refereh wifis.
         NetworkInterface.refereshWifis();
     }
@@ -70,36 +73,36 @@ ApplicationWindow {
     /* Style
      * ****************************************************************************************/
     Material.theme: Material.Dark
-    Material.background: AppStyle.backgroundColor
-    Material.accent: AppStyle.primaryColor
-
-    /* Splash Window
-     * ****************************************************************************************/
-
-
-    /* Toolbars
-     * ****************************************************************************************/
-
-    //! Header
-    header: Item {}
-
-    footer: Item {}
+    Material.background: Style.background
+    Material.accent: Style.accent
 
     /* Children
      * ****************************************************************************************/
 
-    Flickable {
-        width: window.width
-        height: window.height - (window.height - _virtualKb.y)
-        interactive: _virtualKb.active
-        boundsBehavior: Flickable.StopAtBounds
-        contentWidth: width
-        contentHeight: window.width
+    StackLayout {
+        id: _normalAndVacationModeStV
+        currentIndex: uiSession?.appModel.systemMode === I_Device.SystemMode.Vacation ? 1 : 0
 
-        MainView {
-            id: mainView
-            anchors.fill: parent
+        Flickable {
+            id: _mainViewFlick
+            width: window.width
+            height: window.height - (window.height - _virtualKb.y)
+            interactive: _virtualKb.active
+            boundsBehavior: Flickable.StopAtBounds
+            contentWidth: width
+            contentHeight: window.width
+
+            MainView {
+                id: mainView
+                anchors.fill: parent
+                uiSession: window.uiSession
+            }
+        }
+
+        VacationModeView {
+            id: _vacationModeView
             uiSession: window.uiSession
+            visible: parent.currentIndex === 1
         }
     }
 
@@ -112,7 +115,7 @@ ApplicationWindow {
     }
 
     ShortcutManager {
-       uiSession: window.uiSession
+        uiSession: window.uiSession
     }
 
     ScreenSaver {
@@ -120,36 +123,7 @@ ApplicationWindow {
         anchors.centerIn: parent
         device: uiSession.appModel
         uiPreference: uiSession?.uiPreferences
-    }
-
-    //! This mouse area is to detect app interactions to prevent screen saver being shown
-    MouseArea {
-        anchors.fill: parent
-        parent: Overlay.overlay //! Parent must be Overlay.overlay so MouseArea works when there is a Popup opened
-        propagateComposedEvents: true
-        preventStealing: false
-        z: 10
-        onPressed: function(event) {
-            if (_screenSaver.visible) {
-                _screenSaver.close();
-            } else {
-                //! Restart timer
-                _screenSaverTimer.restart();
-            }
-
-            //! Set accepted to true to let it propagate to below items
-            event.accepted = false;
-        }
-    }
-
-    Timer {
-        id: _screenSaverTimer
-        interval: 20000
-        running: !_screenSaver.visible
-        repeat: false
-        onTriggered: {
-            _screenSaver.open();
-        }
+        visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
     }
 
     //! A Timer to periodically refresh wifis (every 2 seconds)
@@ -207,6 +181,37 @@ ApplicationWindow {
                     properties: "y"
                     duration: 300
                     easing.type: Easing.InOutQuad
+                }
+            }
+        }
+    }
+
+    //! MessagePopupView
+    MessagePopupView {
+        messageController: uiSession?.messageController ?? null
+    }
+
+    //! This Timer is used to generate arbitrary Messages (alert or notification)
+    Timer {
+        interval: 8000
+        repeat: true
+        running: true
+        onTriggered: {
+            if (Math.random() > 0.5) {
+                //! Create an alert
+                var now = new Date();
+                if (Math.random() > 0.5) {
+                    //! Create an Alert
+                    uiSession.messageController.addNewMessageFromData(
+                                Message.Type.Alert,
+                                "Arbitrary Alert Number " + Math.floor(Math.random() * 100),
+                                now.toLocaleTimeString("MMMM dd ddd - hh:mm:ss"))
+                } else {
+                    //! Create a Notification
+                    uiSession.messageController.addNewMessageFromData(
+                                Message.Type.Notification,
+                                "Arbitrary Notification Number " + Math.floor(Math.random() * 100),
+                                now.toLocaleTimeString("MMMM dd ddd - hh:mm:ss"))
                 }
             }
         }

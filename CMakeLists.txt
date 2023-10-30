@@ -21,6 +21,7 @@ find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 Multimedi
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 
 # Add any include directories
 #include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
@@ -36,6 +37,7 @@ set_source_files_properties(
     Core/AppSpec.qml
     UiCore/AppStyle.qml
     UiCore/AppSettings.qml
+    UiCore/FAIcons.qml
 
     PROPERTIES
         QT_QML_SINGLETON_TYPE True
@@ -69,6 +71,11 @@ qt6_add_qml_module(appStherm
         Core/I_DeviceController.qml
         Core/Schedule.qml
         Core/SchedulesModel.qml
+        Core/Sensor.qml
+        Core/SensorController.qml
+        Core/Message.qml
+        Core/MessageController.qml
+        Core/Wiring.qml
 
 
         # Primitive Components
@@ -99,6 +106,7 @@ qt6_add_qml_module(appStherm
 
 
         # UiSession+Popups
+        UiCore/FAIcons.qml
         UiCore/AppStyle.qml
         UiCore/AppSettings.qml
         UiCore/UiSession.qml
@@ -130,6 +138,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/BrightnessSlider.qml
         UiCore/Components/TickedSlider.qml
         UiCore/Components/RangeSliderLabeled.qml
+        UiCore/Components/ButtonInverted.qml
 
 
         # Views and Widgets
@@ -165,12 +174,24 @@ qt6_add_qml_module(appStherm
         View/SystemModePage.qml
         View/SystemMode/VacationModePage.qml
         View/SettingsPage.qml
+        View/Sensor/AddSensorPage.qml
+        View/Sensor/AddSensorLocationPage.qml
+        View/SensorsPage.qml
+        View/AlertsNotificationsPage.qml
+        View/WiringPage.qml
+        View/MessagePopupView.qml
+        View/VacationModeView.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
         View/Delegates/ShadeButtonDelegate.qml
         View/Delegates/ScheduleDelegate.qml
         View/Delegates/WifiDelegate.qml
+        View/Delegates/SensorDelegate.qml
+        View/Delegates/AlertNotificationDelegate.qml
+
+        # Popups
+        UiCore/PopUps/AlertNotifPopup.qml
 
     SOURCES
         Backend/AppSpecCPP.h
@@ -180,6 +201,8 @@ qt6_add_qml_module(appStherm
         Backend/NetworkInterface.h
         Backend/NetworkInterface.cpp
         Backend/NmcliInterface.h
+        Backend/ScreenSaverManager.h
+        Backend/ScreenSaverManager.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
@@ -199,6 +222,13 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
+        SOURCES Backend/php_api.h Backend/php_api.cpp
+        SOURCES Backend/php/php_hardware.h Backend/php/php_hardware.cpp
+        SOURCES Backend/php/php_system.h Backend/php/php_system.cpp
+        SOURCES Backend/php/php_sensors.h Backend/php/php_sensors.cpp
+        SOURCES Backend/php/php_wifi.h Backend/php/php_wifi.cpp
+        SOURCES Backend/php/php_schedule.h Backend/php/php_schedule.cpp
+        SOURCES Backend/php/php_update.h Backend/php/php_update.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

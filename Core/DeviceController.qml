@@ -50,14 +50,14 @@ I_DeviceController {
         xhr.send(data_msg);
     }
 
-    function updateBacklight()
+    function updateDeviceBacklight()
     {
         console.log("starting rest for updateBacklight, color: ", device.backlight.color)
+
         //! Use a REST request to update device backlight
-        var color = Qt.color(device.backlight.color);
-        var r = Math.round(color.r * 255)
-        var g = Math.round(color.g * 255)
-        var b = Math.round(color.b * 255)
+        var r = Math.round(device.backlight.color.r * 255)
+        var g = Math.round(device.backlight.color.g * 255)
+        var b = Math.round(device.backlight.color.b * 255)
 
         console.log("colors: ", r, ",", g, ",", b)
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
@@ -100,5 +100,13 @@ I_DeviceController {
                     "adaptive: ",       adaptive,       "\n    "
                     );
         sendReceive('hardware', 'setSettings', [brightness, volume, temperature, time, reset, adaptive]);
+    }
+
+    //! Set temperature to device (system) and update model.
+    function setDesiredTemperature(temperature: real) {
+        sendReceive('system', 'setTemperature', [temperature]);
+
+        // Update device temperature when setTemperature is successful.
+        device.requestedTemp = temperature;
     }
 }
