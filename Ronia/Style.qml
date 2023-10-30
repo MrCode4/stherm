@@ -18,7 +18,7 @@ QtObject {
     property color      accent:                         "#9B0EC2"
     property color      primary:                        "#E8EAF6"
     property color      frameColor:                     "#f1f1f1"
-    property color      backgroundDimColor:             "#BB444444"
+    property color      backgroundDimColor:             "#F0363636"
     property color      listHighlightColor:             "#1E626262"
     property color      disabledColor:                  "#404040"
     property color      dropShadowColor:                "#0F000000"
