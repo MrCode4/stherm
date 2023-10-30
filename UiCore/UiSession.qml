@@ -70,6 +70,9 @@ QtObject {
         device: appModel
     }
 
+    property SensorController   sensorController:       SensorController {
+        _qsRepo: AppCore.defaultRepo
+    }
 
     //! Device controller
     property I_DeviceController deviceController:  simulating ? simDeviceController : realDeviceController

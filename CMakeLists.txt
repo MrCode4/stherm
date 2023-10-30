@@ -72,6 +72,8 @@ qt6_add_qml_module(appStherm
         Core/I_DeviceController.qml
         Core/Schedule.qml
         Core/ScheduleController.qml
+        Core/Sensor.qml
+        Core/SensorController.qml
 
 
         # Primitive Components
@@ -168,12 +170,16 @@ qt6_add_qml_module(appStherm
         View/SystemModePage.qml
         View/SystemMode/VacationModePage.qml
         View/SettingsPage.qml
+        View/Sensor/AddSensorPage.qml
+        View/Sensor/AddSensorLocationPage.qml
+        View/SensorsPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
         View/Delegates/ShadeButtonDelegate.qml
         View/Delegates/ScheduleDelegate.qml
         View/Delegates/WifiDelegate.qml
+        View/Delegates/SensorDelegate.qml
 
     SOURCES
         Backend/AppSpecCPP.h
