@@ -70,7 +70,7 @@ qt6_add_qml_module(appStherm
         Core/SimDeviceController.qml
         Core/I_DeviceController.qml
         Core/Schedule.qml
-        Core/SchedulesModel.qml
+        Core/SchedulesController.qml
         Core/Sensor.qml
         Core/SensorController.qml
         Core/Message.qml

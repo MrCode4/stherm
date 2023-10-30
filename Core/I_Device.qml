@@ -42,19 +42,19 @@ QSObject {
     //! List <Sensor>
     property var        sensors: []
 
+    //! List of device schedules
+    //! List <Schedule>
+    property var        schedules: []
+
+
     //! Backlight
-    property Backlight        backlight:      Backlight {}
+    property Backlight      backlight:      Backlight {}
 
     //! Fan
-    property Fan              fan:            Fan {}
-
-    //! Schedule model
-    property SchedulesModel   schedulesModel: SchedulesModel {
-        _qsRepo: appModel._qsRepo
-    }
+    property Fan            fan:            Fan {}
 
     //! Wiring
-    property Wiring     wiring:         Wiring {}
+    property Wiring         wiring:         Wiring {}
 
     /* Functions
      * ****************************************************************************************/

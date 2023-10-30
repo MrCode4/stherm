@@ -4,14 +4,14 @@ import QtQuickStream
 import Stherm
 
 /*! ***********************************************************************************************
- * schedules: keeps all schedule objects and create new one and remove schedules.
+ * SchedulesController: create new Schedule and remove schedules.
  * ***********************************************************************************************/
-QSObject {
+QtObject {
     id: root
 
     /* Property declaration
      * ****************************************************************************************/
-    property var    schedules: []
+    property I_Device device
 
     /* Methods
      * ****************************************************************************************/
@@ -19,7 +19,7 @@ QSObject {
     function saveNewSchedule(schedule: Schedule)
     {
         var newSchedule = QSSerializer.createQSObject("Schedule", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
-        newSchedule._qsRepo = root._qsRepo;
+        newSchedule._qsRepo = AppCore._qsRepo;
         newSchedule.name = schedule.name;
         newSchedule.type = schedule.type;
         newSchedule.temprature = schedule.temprature;
@@ -29,18 +29,18 @@ QSObject {
         newSchedule.repeats = schedule.repeats;
         newSchedule.dataSource = schedule.dataSource;
 
-        schedules.push(newSchedule);
-        schedulesChanged();
+        device.schedules.push(newSchedule);
+        device.schedulesChanged();
     }
 
     //! Remove an schedule
     function removeSchedule(schedule: Schedule)
     {
-        var schIndex = schedules.findIndex(elem => elem === schedule);
+        var schIndex = device.schedules.findIndex(elem => elem === schedule);
 
         if (schIndex !== -1) {
-            schedules.splice(schIndex, 1);
-            schedulesChanged();
+            device.schedules.splice(schIndex, 1);
+            device.schedulesChanged();
 
             schedule.destroy();
         }
