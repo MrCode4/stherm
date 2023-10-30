@@ -1,6 +1,6 @@
 pragma Singleton
 
-import QtQuick 2.15
+import QtQuick
 import Stherm
 
 AppSpecCPP {
@@ -17,5 +17,13 @@ AppSpecCPP {
         DT_IMX6 = 0,
         DT_Sim,
         DT_Unknown
+    }
+
+    enum SystemMode {
+        Cooling,
+        Heating,
+        Auto,
+        Vacation,
+        Off
     }
 }

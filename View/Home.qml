@@ -38,7 +38,7 @@ Control {
         height: parent.height / 2
         width: parent.availableWidth
         device: uiSession.appModel
-        labelVisible: device?.systemMode !== I_Device.SystemMode.Off
+        labelVisible: device?.systemMode !== AppSpec.SystemMode.Off
         uiPreference: _root.uiPreferences
     }
 
