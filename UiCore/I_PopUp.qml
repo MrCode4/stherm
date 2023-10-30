@@ -80,6 +80,8 @@ Popup {
                 id: _closeBtn
                 text: "\uf00d" //! xmark icon
 
+                // can be switched to mouse area with filling anchors if not working on target device
+                // on test windows os not working
                 TapHandler {
                     onTapped: {
                         _popup.close();
