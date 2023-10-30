@@ -167,4 +167,30 @@ ApplicationWindow {
             }
         }
     }
+
+    //! This Timer is used to generate arbitrary Messages (alert or notification)
+    Timer {
+        interval: 3000
+        repeat: true
+        running: true
+        onTriggered: {
+            if (Math.random() > 0.5) {
+                //! Create an alert
+                var now = new Date();
+                if (Math.random() > 0.5) {
+                    //! Create an Alert
+                    uiSession.messageController.addNewMessageFromData(
+                                Message.Type.Alert,
+                                "Arbitrary Alert Number " + Math.floor(Math.random() * 100),
+                                now.toLocaleTimeString("MMMM dd ddd - hh:mm:ss"))
+                } else {
+                    //! Create a Notification
+                    uiSession.messageController.addNewMessageFromData(
+                                Message.Type.Notification,
+                                "Arbitrary Notification Number " + Math.floor(Math.random() * 100),
+                                now.toLocaleTimeString("MMMM dd ddd - hh:mm:ss"))
+                }
+            }
+        }
+    }
 }

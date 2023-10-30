@@ -74,6 +74,8 @@ qt6_add_qml_module(appStherm
         Core/ScheduleController.qml
         Core/Sensor.qml
         Core/SensorController.qml
+        Core/Message.qml
+        Core/MessageController.qml
 
 
         # Primitive Components
@@ -173,6 +175,7 @@ qt6_add_qml_module(appStherm
         View/Sensor/AddSensorPage.qml
         View/Sensor/AddSensorLocationPage.qml
         View/SensorsPage.qml
+        View/AlertsNotificationsPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
@@ -180,6 +183,10 @@ qt6_add_qml_module(appStherm
         View/Delegates/ScheduleDelegate.qml
         View/Delegates/WifiDelegate.qml
         View/Delegates/SensorDelegate.qml
+        View/Delegates/AlertNotificationDelegate.qml
+
+        # Popups
+        UiCore/PopUps/AlertNotifPopup.qml
 
     SOURCES
         Backend/AppSpecCPP.h

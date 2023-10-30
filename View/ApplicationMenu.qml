@@ -26,6 +26,16 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;
+                case "Sensors":
+                    _root.StackView.view.push("qrc:/Stherm/View/SensorsPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              })
+                    break
+                case "Alerts/Notifications":
+                    _root.StackView.view.push("qrc:/Stherm/View/AlertsNotificationsPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
                 case "Backlight":
                     _root.StackView.view.push("qrc:/Stherm/View/BacklightPage.qml",
                                               {
@@ -61,11 +71,6 @@ BasePageView {
                 case "System Info":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
                     break;
-                case "Sensors":
-                    _root.StackView.view.push("qrc:/Stherm/View/SensorsPage.qml", {
-                                                  "uiSession": Qt.binding(() => uiSession)
-                                              })
-                    break
                 }
             }
         }
