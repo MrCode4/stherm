@@ -56,6 +56,9 @@ QSObject {
     //! Schedule model
     property Schedule   schedule:       Schedule {}
 
+    //! Wiring
+    property Wiring     wiring:         Wiring {}
+
     /* Functions
      * ****************************************************************************************/
 }

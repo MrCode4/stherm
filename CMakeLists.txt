@@ -76,6 +76,7 @@ qt6_add_qml_module(appStherm
         Core/SensorController.qml
         Core/Message.qml
         Core/MessageController.qml
+        Core/Wiring.qml
 
 
         # Primitive Components
@@ -176,6 +177,7 @@ qt6_add_qml_module(appStherm
         View/Sensor/AddSensorLocationPage.qml
         View/SensorsPage.qml
         View/AlertsNotificationsPage.qml
+        View/WiringPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
