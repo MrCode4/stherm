@@ -100,9 +100,10 @@ BasePageView {
         Item {
             id: _buttonsRow
 
-            readonly property int cellSize: AppStyle.size / 8
+            readonly property int cellSize: 72 * scaleFactor
+            readonly property int spacing: 4
 
-            Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + 8)
+            Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + spacing)
             Layout.preferredHeight: cellSize
             Layout.alignment: Qt.AlignCenter
             opacity: enabled ? 1. : 0.4
@@ -111,7 +112,7 @@ BasePageView {
                 id: _shadeButtonsRepeater
                 model: 5
                 delegate: ShadeButtonDelegate {
-                    x: index * (_buttonsRow.cellSize + 8) + (cellSize - width) / 2
+                    x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
                     checked: index === 4
                     hoverEnabled: enabled
                     cellSize: _buttonsRow.cellSize
