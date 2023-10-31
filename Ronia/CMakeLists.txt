@@ -30,6 +30,7 @@ qt_add_qml_module(RoniaStyle
         Switch.qml
         ToolButton.qml
         Popup.qml
+        RadioButton.qml
 )
 
 qt_add_qml_module(RoniaStyleImpl
@@ -45,6 +46,8 @@ qt_add_qml_module(RoniaStyleImpl
         impl/ButtonLabel.qml
         impl/SwitchIndicator.qml
         impl/FontIconsSize.qml
+        impl/RadioIndicator.qml
+        impl/RadioButtonStyle.qml
 )
 
 target_link_libraries(RoniaStyleImpl PUBLIC
