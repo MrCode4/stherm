@@ -71,7 +71,7 @@ Popup {
                 onClicked: {
                     //! Set system mode to Auto
                     if (deviceController) {
-                        deviceController.setSystemModeTo(I_Device.SystemMode.Auto);
+                        deviceController.setSystemModeTo(AppSpec.SystemMode.Auto);
                     }
                 }
             }
