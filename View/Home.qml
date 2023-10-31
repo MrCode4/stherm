@@ -91,45 +91,73 @@ Control {
         }
 
         //! Other items
-        GridLayout {
+        Item {
             id: _otherItemsLay
             anchors {
-                horizontalCenter: parent.horizontalCenter
                 verticalCenter: parent.verticalCenter
-                verticalCenterOffset: 16 * scaleFactor
+                horizontalCenter: parent.horizontalCenter
             }
-            y: _desiredTempItem.height - AppStyle.size / 10
-            columns: 3
-            rowSpacing: _holdBtn.implicitHeight * scaleFactor
-            columnSpacing: 12 * scaleFactor
+            width: _fanButton.implicitWidth + _dateTimeHolder.width + _airCondHoldBtnLay.implicitWidth + 4
+            height: Math.max(_currHumFanBtnLay.implicitHeight,
+                             _dateTimeHolder.height,
+                             _airCondHoldBtnLay.implicitHeight)
 
-            //! Humidity item
-            CurrentHumidityLabel {
-                Layout.alignment: Qt.AlignCenter
-                device: _root.uiSession.appModel
+            ColumnLayout {
+                id: _currHumFanBtnLay
+                anchors {
+                    left: parent.left
+                    verticalCenter: parent.verticalCenter
+                }
+                spacing: 48 * scaleFactor
+
+                //! Humidity item
+                CurrentHumidityLabel {
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+                    device: _root.uiSession.appModel
+                }
+
+
+                //! Fan
+                FanButton {
+                    id: _fanButton
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+                }
             }
 
-            //! Date and Timer
-            DateTimeLabel {
-                Layout.rowSpan: 2
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-                is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+            Item {
+                id: _dateTimeHolder
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                height: _dateTimeLbl.implicitHeight
+                width: _dateTimeLbl.maximumWidth
+
+                //! Date and Timer
+                DateTimeLabel {
+                    id: _dateTimeLbl
+                    anchors.centerIn: parent
+                    is12Hour: uiPreferences?.timeFormat === AppSpec.TimeFormat.Hour12
+                }
             }
 
-            //! Air condition item
-            AirConditionItem {
-                Layout.alignment: Qt.AlignCenter
-            }
+            ColumnLayout {
+                id: _airCondHoldBtnLay
+                anchors {
+                    right: parent.right
+                    verticalCenter: parent.verticalCenter
+                    rightMargin: -16
+                }
+                spacing: 48 * scaleFactor
 
-            //! Fan
-            FanButton {
-                Layout.alignment: Qt.AlignCenter
-            }
+                //! Air condition item
+                AirConditionItem {
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                }
 
-            //! Hold button
-            HoldButton {
-                id: _holdBtn
-                Layout.alignment: Qt.AlignCenter
+                //! Hold button
+                HoldButton {
+                    id: _holdBtn
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                }
             }
         }
 
