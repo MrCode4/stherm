@@ -28,8 +28,14 @@ QtObject {
     property color      highlightedRippleColor:         Qt.alpha(accent, 0.24)
 
     //! Specific styles for some Controls
+    readonly property FontIconsSize fontIconSize: FontIconsSize {
+        largePt: Application.font.pointSize * 1.5
+        normalPt: Application.font.pointSize * 1.2
+        smallPt: Application.font.pointSize * 0.9
+    }
+
     //! Button
-    property ButtonStyle button: ButtonStyle {
+    readonly property ButtonStyle button: ButtonStyle {
         background: _style.background
         hoverColor: "#606060"
         disabledColor: "#242424"

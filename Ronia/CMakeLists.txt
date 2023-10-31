@@ -36,13 +36,15 @@ qt_add_qml_module(RoniaStyleImpl
     URI Ronia.impl
     STATIC
     VERSION 1.0
+
+    RESOURCES
+        res/check.png
+
     QML_FILES
         impl/ButtonStyle.qml
         impl/ButtonLabel.qml
         impl/SwitchIndicator.qml
-
-    RESOURCES
-        res/check.png
+        impl/FontIconsSize.qml
 )
 
 target_link_libraries(RoniaStyleImpl PUBLIC
