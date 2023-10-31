@@ -56,7 +56,6 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
-            uiPreference: uiPreferences
         }
 
         //! Wifi status
@@ -113,7 +112,7 @@ Control {
                 Layout.alignment: Qt.AlignCenter
                 Layout.leftMargin: AppStyle.size / 30
                 Layout.rightMargin: AppStyle.size / 30
-                is12Hour: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
+                is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
             }
 
             //! Air condition item

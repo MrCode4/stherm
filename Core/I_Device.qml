@@ -1,4 +1,5 @@
 import QtQuick
+
 import QtQuickStream
 import Stherm
 
@@ -54,6 +55,8 @@ QSObject {
 
     //! Wiring
     property Wiring         wiring:         Wiring {}
+
+    property Setting        setting:        Setting {}
 
     /* Functions
      * ****************************************************************************************/

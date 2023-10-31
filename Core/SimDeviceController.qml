@@ -97,9 +97,29 @@ I_DeviceController {
     }
 
     //! Set device settings
-    function setSettings(brightness, volume, temperature, time, reset, adaptive)
+    function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive)
     {
         // udpate model
+        // Update setting when sendReceive is successful.
+        if (device.setting.brightness !== brightness) {
+            device.setting.brightness = brightness;
+        }
+
+        if (device.setting.volume !== volume) {
+            device.setting.volume = volume;
+        }
+
+        if (device.setting.adaptiveBrightness !== adaptive) {
+            device.setting.adaptiveBrightness = adaptive;
+        }
+
+        if (device.setting.timeFormat !== timeFormat) {
+            device.setting.timeFormat = timeFormat;
+        }
+
+        if (device.setting.tempratureUnit !== temperatureUnit) {
+            device.setting.tempratureUnit = temperatureUnit;
+        }
     }
 
     //! Set temperature to device (system) and update model.

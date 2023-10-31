@@ -26,4 +26,14 @@ AppSpecCPP {
         Vacation,
         Off
     }
+
+    enum TempratureUnit {
+        Cel,    //! Celsius
+        Fah     //! Fahrenheit
+    }
+
+    enum TimeFormat {
+        Hour12,
+        Hour24
+    }
 }

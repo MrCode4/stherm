@@ -35,8 +35,8 @@ add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
 set_source_files_properties(
     Core/AppCore.qml
     Core/AppSpec.qml
+    Core/Utils.qml
     UiCore/AppStyle.qml
-    UiCore/AppSettings.qml
     UiCore/FAIcons.qml
 
     PROPERTIES
@@ -76,6 +76,8 @@ qt6_add_qml_module(appStherm
         Core/Message.qml
         Core/MessageController.qml
         Core/Wiring.qml
+        Core/Setting.qml
+        Core/Utils.qml
 
 
         # Primitive Components
@@ -108,7 +110,6 @@ qt6_add_qml_module(appStherm
         # UiSession+Popups
         UiCore/FAIcons.qml
         UiCore/AppStyle.qml
-        UiCore/AppSettings.qml
         UiCore/UiSession.qml
         UiCore/UiSessionPopups.qml
         UiCore/UiPreferences.qml
@@ -196,8 +197,6 @@ qt6_add_qml_module(appStherm
     SOURCES
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
-        Backend/AppSettingsCPP.h
-        Backend/AppSettingsCPP.cpp
         Backend/NetworkInterface.h
         Backend/NetworkInterface.cpp
         Backend/NmcliInterface.h

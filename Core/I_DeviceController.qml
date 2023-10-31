@@ -48,7 +48,7 @@ QtObject {
 
     function setSystemModeTo(systemMode: int) {}
 
-    function setSettings(brightness, volume, temperature, time, reset, adaptive) {}
+    function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive) {}
 
     function setDesiredTemperature(temperature: real) {}
 }

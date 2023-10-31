@@ -89,17 +89,43 @@ I_DeviceController {
     }
 
     //! Set device settings
-    function setSettings(brightness, volume, temperature, time, reset, adaptive)
+    function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive)
     {
+        if (!device)
+            return;
+
         console.log("Change settings to : ",
                     "brightness: ",     brightness,     "\n    ",
                     "volume: ",         volume,         "\n    ",
-                    "temperature: ",    temperature,    "\n    ",
-                    "time: ",           time,           "\n    ",
+                    "temperature: ",    temperatureUnit,    "\n    ",
+                    "timeFormat: ",     timeFormat,           "\n    ",
                     "reset: ",          reset,          "\n    ",
                     "adaptive: ",       adaptive,       "\n    "
                     );
-        sendReceive('hardware', 'setSettings', [brightness, volume, temperature, time, reset, adaptive]);
+
+        sendReceive('hardware', 'setSettings', [brightness, volume, temperatureUnit, time, reset, adaptive]);
+
+        // Update setting when sendReceive is successful.
+        if (device.setting.brightness !== brightness) {
+            device.setting.brightness = brightness;
+        }
+
+        if (device.setting.volume !== volume) {
+            device.setting.volume = volume;
+        }
+
+        if (device.setting.adaptiveBrightness !== adaptive) {
+            device.setting.adaptiveBrightness = adaptive;
+        }
+
+        if (device.setting.timeFormat !== timeFormat) {
+            device.setting.timeFormat = timeFormat;
+        }
+
+        if (device.setting.tempratureUnit !== temperatureUnit) {
+            device.setting.tempratureUnit = temperatureUnit;
+        }
+
     }
 
     //! Set temperature to device (system) and update model.

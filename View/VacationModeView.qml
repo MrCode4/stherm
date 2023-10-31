@@ -55,7 +55,8 @@ Popup {
             Label {
                 Layout.alignment: Qt.AlignHCenter
                 font.pointSize: Qt.application.font.pointSize * 2.5
-                text: Number(uiPreference?.convertedTemperature(device?.currentTemp ?? 0) ?? 0).toLocaleString(locale, "f", 0)
+                text: Number(Utils.convertedTemperature(device?.currentTemp ?? 0, device?.setting?.tempratureUnit))
+                      .toLocaleString(locale, "f", 0)
             }
 
             //! Date and time

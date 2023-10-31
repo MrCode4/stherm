@@ -122,7 +122,6 @@ ApplicationWindow {
         id: _screenSaver
         anchors.centerIn: parent
         device: uiSession.appModel
-        uiPreference: uiSession?.uiPreferences
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
     }
 
