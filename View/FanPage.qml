@@ -55,14 +55,15 @@ BasePageView {
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
+            spacing: 12
             Button {
                 id: _autoButton
 
                 Material.theme: checked ? (_root.Material.theme === Material.Dark ? Material.Light : Material.Dark)
                                         : _root.Material.theme
                 Layout.alignment: Qt.AlignCenter
-                leftPadding: AppStyle.size / 10
-                rightPadding: AppStyle.size / 10
+                leftPadding: 64 * scaleFactor
+                rightPadding: 64 * scaleFactor
                 font.weight: checked ? Font.ExtraBold : Font.Normal
                 checked: true
                 checkable: true
@@ -76,8 +77,8 @@ BasePageView {
                                         : _root.Material.theme
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: _autoButton.width
-                leftPadding: AppStyle.size / 10
-                rightPadding: AppStyle.size / 10
+                leftPadding: 64 * scaleFactor
+                rightPadding: 64 * scaleFactor
                 font.weight: checked ? Font.ExtraBold : Font.Normal
                 checkable: true
                 text: "On"
