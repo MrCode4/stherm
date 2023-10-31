@@ -27,8 +27,7 @@ ApplicationWindow {
     height: AppStyle.size
 
     visible: true
-    //    visibility: Window.FullScreen
-    title: qsTr("Template" + "               " + currentFile)
+    title: qsTr("STherm")
 
     //! Create defualt repo and root object to save and load
     Component.onCompleted: {
@@ -36,9 +35,6 @@ ApplicationWindow {
 
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 20000;
-
-        //! Refereh wifis.
-        NetworkInterface.refereshWifis();
     }
 
     /* Fonts
@@ -106,13 +102,18 @@ ApplicationWindow {
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
     }
 
-    //! A Timer to periodically refresh wifis (every 20 seconds)
+    //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1
+    //! seconds and then refresh every 20 seconds
     Timer {
         running: true
-        interval: 20000
+        interval: 1000
         repeat: true
         onTriggered: {
             NetworkInterface.refereshWifis();
+
+            if (interval < 20000) {
+                interval = 20000;
+            }
         }
     }
 
