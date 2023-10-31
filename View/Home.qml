@@ -35,8 +35,8 @@ Control {
     DesiredTempratureItem {
         id: _desiredTempItem
         anchors.horizontalCenter: parent.horizontalCenter
-        height: parent.height / 2
-        width: parent.availableWidth
+        height: parent.height / 2.
+        width: parent.availableWidth - (_currentTempLbl.width + _wifiBtn.width) / 3
         labelVisible: device?.systemMode !== I_Device.SystemMode.Off
         uiSession: _root.uiSession
     }
@@ -45,6 +45,7 @@ Control {
     Item {
         id: _itemsToHide
         anchors.fill: parent
+        anchors.margins: 2
         visible: opacity > 0
 
         //! Current temprature item
@@ -84,7 +85,7 @@ Control {
             id: _systemModeBtn
             anchors {
                 horizontalCenter: parent.horizontalCenter
-                horizontalCenterOffset: -width
+                horizontalCenterOffset: -_desiredTempItem.labelWidth - 12
             }
             y: (_desiredTempItem.height - height) / 2 - 4
             deviceController: uiSession?.deviceController ?? null
@@ -95,11 +96,13 @@ Control {
             id: _otherItemsLay
             anchors {
                 horizontalCenter: parent.horizontalCenter
-                verticalCenterOffset: AppStyle.size / 24
+                verticalCenter: parent.verticalCenter
+                verticalCenterOffset: 16 * scaleFactor
             }
             y: _desiredTempItem.height - AppStyle.size / 10
             columns: 3
-            rowSpacing: AppStyle.size / 12
+            rowSpacing: _holdBtn.implicitHeight * scaleFactor
+            columnSpacing: 12 * scaleFactor
 
             //! Humidity item
             CurrentHumidityLabel {
@@ -110,9 +113,7 @@ Control {
             //! Date and Timer
             DateTimeLabel {
                 Layout.rowSpan: 2
-                Layout.alignment: Qt.AlignCenter
-                Layout.leftMargin: AppStyle.size / 30
-                Layout.rightMargin: AppStyle.size / 30
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
                 is12Hour: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
             }
 
@@ -128,6 +129,7 @@ Control {
 
             //! Hold button
             HoldButton {
+                id: _holdBtn
                 Layout.alignment: Qt.AlignCenter
             }
         }
@@ -138,7 +140,7 @@ Control {
             anchors {
                 bottom: parent.bottom
                 horizontalCenter: parent.horizontalCenter
-                bottomMargin: _menuButton.implicitHeight * 1.8
+                bottomMargin: _menuButton.implicitHeight * 1.5
             }
             width: parent.width * 0.5
             height: sourceSize.height * width / sourceSize.width
