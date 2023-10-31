@@ -20,8 +20,8 @@ Button {
 
     /* Object properties
      * ****************************************************************************************/
-    horizontalPadding: 32
-    verticalPadding: 20
+    horizontalPadding: 16 * scaleFactor
+    verticalPadding: 12 * scaleFactor
     text: sensor?.name ?? ""
     contentItem: RowLayout {
         Text {
