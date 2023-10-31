@@ -45,4 +45,10 @@ QtObject {
         verticalPadding: horizontalPadding - 12
         borderWidth: 1
     }
+
+    //! RadioButton
+    readonly property RadioButtonStyle radioButton: RadioButtonStyle {
+        indicatorSize: 28
+        indicatorInnerCircleSize: 14
+    }
 }
