@@ -52,11 +52,13 @@ BasePageView {
 
         //! Referesh button and running BusyIndicator
         Item {
+            Layout.alignment: Qt.AlignCenter
             implicitWidth: Material.touchTarget
             implicitHeight: Material.touchTarget
 
             ToolButton {
                 id: _refereshBtn
+                anchors.centerIn: parent
                 visible: !NetworkInterface.isRunning
                 contentItem: RoniaTextIcon {
                     text: "\uf2f9" //! rotate-right
