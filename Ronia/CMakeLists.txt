@@ -32,6 +32,7 @@ qt_add_qml_module(RoniaStyle
         Popup.qml
         RadioButton.qml
         CheckBox.qml
+        ApplicationWindow.qml
 )
 
 qt_add_qml_module(RoniaStyleImpl
