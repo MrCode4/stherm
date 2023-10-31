@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     deviceInfo["Nmcli"] = QProcess().execute("command", { "-v", "nmcli" }) == 0 ? "True" : "False";
 
     //! Cacluate a font factor based on system specifications
-    const double refFontPt = 15;
+    const double refFontPt = 16;
     const double refDPI = 141;
     const double dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch();
     const double scaleFactor = qMax(1., dpi / refDPI);
