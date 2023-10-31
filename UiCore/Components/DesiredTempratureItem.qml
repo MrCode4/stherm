@@ -13,31 +13,34 @@ Control {
     /* Property declaration
      * ****************************************************************************************/
 
-    property  UiSession uiSession
+    property  UiSession             uiSession
 
     //! Reference to I_Device
-    property I_Device   device: uiSession.appModel
+    property I_Device           device: uiSession.appModel
 
-    property  UiPreferences uiPreference: uiSession.uiPreferences
+    property  UiPreferences     uiPreference: uiSession.uiPreferences
 
 
     //! Unit of temprature
-    property string     unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
+    property string             unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property int        minTemprature: 18
+    property int                minTemprature: 18
 
     //! Maximum temprature
-    property int        maxTemprature: 30
+    property int                maxTemprature: 30
 
     //! Offset of desired temp label
-    property int        labelVerticalOffset: -8
+    property int                labelVerticalOffset: -8
 
     //! Holds whether SemiCircleSlider is being dragged
-    readonly property alias dragging: _tempSlider.pressed
+    readonly property alias     dragging: _tempSlider.pressed
 
-    //!
-    property bool       labelVisible: true
+    //! Visibility of temprature label
+    property bool               labelVisible: true
+
+    //! Label width
+    readonly property alias     labelWidth: _desiredTempratureLbl.width
 
     /* Object properties
      * ****************************************************************************************/

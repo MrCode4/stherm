@@ -29,7 +29,7 @@ Control {
         id: _dateTimeCol
 
         anchors.fill: parent
-        spacing: 2
+        spacing: 4
 
         //! Time Label
         Label {
