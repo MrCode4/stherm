@@ -41,9 +41,6 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    //    Material.theme: Material.Dark
-    implicitWidth: 360
-    implicitHeight: 180
     font.pointSize: Qt.application.font.pointSize * 2.8
     background: null
     contentItem: Item {
@@ -74,10 +71,9 @@ Control {
             Label {
                 anchors.left: parent.right
                 anchors.top: parent.top
-                anchors.topMargin: 20
                 opacity: 0.6
                 font {
-                    pointSize: Qt.application.font.pointSize * 1.2
+                    pointSize: _root.font.pointSize / 2
                     capitalization: "AllUppercase"
                 }
                 text: `\u00b0${unit}`
