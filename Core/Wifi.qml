@@ -12,5 +12,5 @@ QSObject {
     property var devices: []
 
     //! Holds ssid of connected device
-    property string connectedSsid: NetworkInterface.connectedSsid
+    property string connectedSsid: NetworkInterface.connectedWifi?.ssid ?? ""
 }

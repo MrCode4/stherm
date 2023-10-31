@@ -27,7 +27,18 @@ ToolButton {
     contentItem: RoniaTextIcon {
         font.pointSize: Style.fontIconSize.largePt - 1
         color: _root.Material.foreground
-        text: wifi?.connectedSsid ? "\uf1eb" : "\uf6ac"
+        text: {
+            return NetworkInterface.connectedWifi
+                    ? (NetworkInterface.connectedWifi.strength > 80
+                       ? "\uf1eb" //! wifi icon
+                       : (NetworkInterface.connectedWifi.strength > 50
+                          ? "\uf6ab": //! wifi-fair icon
+                            (NetworkInterface.connectedWifi.strength > 25 ? "\uf6aa" //! wifi-weak icon
+                                                                          : "")
+                                )
+                             )
+                    : "\uf6ac";
+        }
     }
 
     Component.onCompleted: background.square = true
