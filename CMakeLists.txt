@@ -207,6 +207,22 @@ qt6_add_qml_module(appStherm
         Backend/ScreenSaverManager.h
         Backend/ScreenSaverManager.cpp
 
+        # php
+        Backend/php_api.h
+        Backend/php_api.cpp
+        Backend/php/php_hardware.h
+        Backend/php/php_hardware.cpp
+        Backend/php/php_system.h
+        Backend/php/php_system.cpp
+        Backend/php/php_sensors.h
+        Backend/php/php_sensors.cpp
+        Backend/php/php_wifi.h
+        Backend/php/php_wifi.cpp
+        Backend/php/php_schedule.h
+        Backend/php/php_schedule.cpp
+        Backend/php/php_update.h
+        Backend/php/php_update.cpp
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
@@ -225,13 +241,6 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
-        SOURCES Backend/php_api.h Backend/php_api.cpp
-        SOURCES Backend/php/php_hardware.h Backend/php/php_hardware.cpp
-        SOURCES Backend/php/php_system.h Backend/php/php_system.cpp
-        SOURCES Backend/php/php_sensors.h Backend/php/php_sensors.cpp
-        SOURCES Backend/php/php_wifi.h Backend/php/php_wifi.cpp
-        SOURCES Backend/php/php_schedule.h Backend/php/php_schedule.cpp
-        SOURCES Backend/php/php_update.h Backend/php/php_update.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
