@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Ref to Backlight model
-    property Backlight          backlight: uiSession?.appModel?.backlight ?? null
+    property Backlight          backlight: appModel?.backlight ?? null
 
     //! Selected backlight color from shade buttons
     readonly property color     selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
@@ -34,12 +34,6 @@ BasePageView {
         Switch {
             id: _backlightOnOffSw
             checked: backlight?.on ?? false
-
-            onToggled: {
-                if (backlight && backlight.on !== checked) {
-                    backlight.on = checked;
-                }
-            }
         }
 
         //! Confirm button
@@ -52,9 +46,7 @@ BasePageView {
             onClicked: {
                 //! Update backlight
                 if (deviceController) {
-                    deviceController.updateBacklight(selectedColor.hsvHue,
-                                                     selectedColor.hsvSaturation,
-                                                     selectedColor.hsvValue);
+                    deviceController.updateBacklight(_backlightOnOffSw.checked, selectedColor);
                 }
             }
         }
@@ -122,28 +114,31 @@ BasePageView {
                     x: index * (_buttonsRow.cellSize + 8) + (cellSize - width) / 2
                     checked: index === 4
                     hoverEnabled: enabled
-
-                    saturation: index / 4.
                     cellSize: _buttonsRow.cellSize
-                    value: _brSlider.value
+
                     hue: _colorSlider.value
+                    saturation: index / 4.
+                    value: _brSlider.value
                 }
             }
         }
     }
 
-    function setCurrentColor(h, s, v)
+    function setCurrentColor(color)
     {
+        var h = color.hsvHue;
+        var s = color.hsvSaturation;
+        var v = color.hsvValue;
+
         _colorSlider.value = h;
         _brSlider.value = v;
-
         var shadeToSelect = Math.max(0, Math.ceil(s / 0.2) - 1);
         _shadeButtonsRepeater.itemAt(shadeToSelect).checked = true;
     }
 
     Component.onCompleted: {
         if (backlight) {
-            setCurrentColor(backlight.hue, backlight.saturation, backlight.value);
+            setCurrentColor(backlight._color);
         }
     }
 }

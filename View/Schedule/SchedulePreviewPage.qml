@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property Schedule   schedule
-    property bool isCelcius : _root.uiSession.uiPreferences.tempratureUnit !== UiPreferences.TempratureUnit.Fah
+    property bool isCelcius : appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     /* Object properties
      * ****************************************************************************************/

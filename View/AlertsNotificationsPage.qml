@@ -10,11 +10,6 @@ import Stherm
 BasePageView {
     id: _root
 
-    /* Property declaration
-     * ****************************************************************************************/
-    //! MessageController
-    property MessageController      messageController: uiSession?.messageController ?? null
-
     /* Object properties
      * ****************************************************************************************/
     title: "Alerts/Notifications"
@@ -29,7 +24,7 @@ BasePageView {
 
         anchors.fill: parent
         clip: true
-        model: messageController?.messages ?? 0
+        model: appModel?.messages ?? []
         delegate: AlertNotificationDelegate {
             required property var modelData
             required property int index

@@ -37,7 +37,7 @@ Control {
         anchors.horizontalCenter: parent.horizontalCenter
         height: parent.height / 2
         width: parent.availableWidth
-        labelVisible: device?.systemMode !== I_Device.SystemMode.Off
+        labelVisible: device?.systemMode !== AppSpec.SystemMode.Off
         uiSession: _root.uiSession
     }
 
@@ -56,19 +56,18 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
-            uiPreference: uiPreferences
         }
 
         //! Wifi status
         WifiButton {
             id: _wifiBtn
+
             anchors {
                 right: parent.right
                 top: parent.top
             }
             z: 1
 
-            wifi: uiSession?.appModel?.wifi ?? null
             onClicked: {
                 //! Open WifiPage
                 if (mainStackView) {
@@ -113,7 +112,7 @@ Control {
                 Layout.alignment: Qt.AlignCenter
                 Layout.leftMargin: AppStyle.size / 30
                 Layout.rightMargin: AppStyle.size / 30
-                is12Hour: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
+                is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
             }
 
             //! Air condition item

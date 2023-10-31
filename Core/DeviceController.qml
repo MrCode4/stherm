@@ -55,9 +55,9 @@ I_DeviceController {
         console.log("starting rest for updateBacklight, color: ", device.backlight.color)
 
         //! Use a REST request to update device backlight
-        var r = Math.round(device.backlight.color.r * 255)
-        var g = Math.round(device.backlight.color.g * 255)
-        var b = Math.round(device.backlight.color.b * 255)
+        var r = Math.round(device.backlight._color.r * 255)
+        var g = Math.round(device.backlight._color.g * 255)
+        var b = Math.round(device.backlight._color.b * 255)
 
         console.log("colors: ", r, ",", g, ",", b)
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
@@ -67,20 +67,32 @@ I_DeviceController {
         sendReceive('hardware', 'setBacklight', send_data);
     }
 
-    function updateFan()
+    function updateFan(mode: int, workingPerHour: int)
     {
-        console.log("starting rest for updateFan :", device.fan.working_per_hour)
-        sendReceive('system', 'setFan', device.fan.working_per_hour);
+        console.log("starting rest for updateFan :", workingPerHour)
+        sendReceive('system', 'setFan', workingPerHour);
+
+        // Updatew model
+        device.fan.mode = mode
+        device.fan.workingPerHour = workingPerHour
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
     {
+        if (!device)
+            return;
+
         sendReceive('system', 'setVacation', [temp_min, temp_max, hum_min, hum_max]);
+
+        device.vacation.temp_min = temp_min;
+        device.vacation.temp_max = temp_max;
+        device.vacation.hum_min  = hum_min;
+        device.vacation.hum_max  = hum_max ;
     }
 
     function setSystemModeTo(systemMode: int)
     {
-        if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Off) {
+        if (systemMode >= 0 && systemMode <= AppSpec.SystemMode.Off) {
             //! Do required actions if any
             sendReceive('system', 'setMode', [ systemMode ]);
 
@@ -89,17 +101,43 @@ I_DeviceController {
     }
 
     //! Set device settings
-    function setSettings(brightness, volume, temperature, time, reset, adaptive)
+    function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive)
     {
+        if (!device)
+            return;
+
         console.log("Change settings to : ",
                     "brightness: ",     brightness,     "\n    ",
                     "volume: ",         volume,         "\n    ",
-                    "temperature: ",    temperature,    "\n    ",
-                    "time: ",           time,           "\n    ",
+                    "temperature: ",    temperatureUnit,    "\n    ",
+                    "timeFormat: ",     timeFormat,           "\n    ",
                     "reset: ",          reset,          "\n    ",
                     "adaptive: ",       adaptive,       "\n    "
                     );
-        sendReceive('hardware', 'setSettings', [brightness, volume, temperature, time, reset, adaptive]);
+
+        sendReceive('hardware', 'setSettings', [brightness, volume, temperatureUnit, time, reset, adaptive]);
+
+        // Update setting when sendReceive is successful.
+        if (device.setting.brightness !== brightness) {
+            device.setting.brightness = brightness;
+        }
+
+        if (device.setting.volume !== volume) {
+            device.setting.volume = volume;
+        }
+
+        if (device.setting.adaptiveBrightness !== adaptive) {
+            device.setting.adaptiveBrightness = adaptive;
+        }
+
+        if (device.setting.timeFormat !== timeFormat) {
+            device.setting.timeFormat = timeFormat;
+        }
+
+        if (device.setting.tempratureUnit !== temperatureUnit) {
+            device.setting.tempratureUnit = temperatureUnit;
+        }
+
     }
 
     //! Set temperature to device (system) and update model.

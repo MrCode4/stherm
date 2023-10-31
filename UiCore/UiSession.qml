@@ -25,8 +25,15 @@ QtObject {
 
     /* Property Declarations
      * ****************************************************************************************/
+    //! Path of File to save model.
+    property string           currentFile:    ""
+
+    //! Config file path
+    readonly property string  configFilePath:   "sthermConfig.QQS.json"
+
     // Debug or not
     property bool               debug:          userLevel >= UiSession.UserLevel.DEVELOPER
+
 
     // Logged in user level
     property int                userLevel:      UiSession.UserLevel.USER
@@ -46,7 +53,7 @@ QtObject {
     property UiPreferences      uiPreferences:  UiPreferences {}
 
     //! app core
-    property I_Device           appModel:        AppCore.model
+    property I_Device           appModel
 
 
     //! Device controller
@@ -60,38 +67,37 @@ QtObject {
         }
     }
 
+    /* Controllers
+     * ****************************************************************************************/
 
     //! Device controller
     property I_DeviceController realDeviceController:   DeviceController {
         device: appModel
     }
+
     //! Device controller
     property I_DeviceController simDeviceController:   SimDeviceController {
         device: appModel
     }
 
-
     //! SensorController instance
-    property SensorController   sensorController:       SensorController {
-        _qsRepo: AppCore.defaultRepo
+    property SensorController   sensorController:      SensorController {
+        device: appModel
     }
 
     //! MessageController instance
-    property MessageController messageController: MessageController {
-        _qsRepo: AppCore.defaultRepo
+    property MessageController  messageController:      MessageController {
+        device: appModel
+    }
+
+    //! schedulesController instance
+    property SchedulesController schedulesController:  SchedulesController {
+        device: appModel
     }
 
 
     //! Device controller
     property I_DeviceController deviceController:  simulating ? simDeviceController : realDeviceController
-
-    //! ScheduleController
-    property ScheduleController         scheduleController: ScheduleController {
-        _qsRepo: AppCore.defaultRepo
-    }
-
-    //! Path of File to save model.
-    property string             currentFile:    ""
 
     /* Connections
      * ****************************************************************************************/
@@ -127,13 +133,6 @@ QtObject {
         sigHidePopUp(popUp);
     }
 
-    //! Goes to default UiMode or UnavilableUiMode, depending on line availability
-    function resetSession() {
-        currentMode = !smartLine.sosIsAvailable
-                    ? UiModeRegister.unavailableMode
-                    : defaultMode;
-    }
-
     //! Indicates that a panel needs to be shown (the PanelLayout handles this)
     function showPanel(panel) {
         // Sanity check: skip if we already have the panel on the stack
@@ -153,26 +152,5 @@ QtObject {
 
         popUpQueue.push(popUp);
         sigShowPopUp(popUp);
-    }
-
-    function loadUiPreferences() : bool
-    {
-        console.log("[UiSession] Failed to load the UiPreferences")
-        return false;
-
-    }
-
-    function writeUiPreferences() : bool
-    {
-        console.log("[UiSession] Saving failed, aborting")
-        return false;
-
-    }
-
-    Component.onCompleted: {
-        if (!loadUiPreferences()) {
-            console.log("failed to load the UiPreferences")
-            writeUiPreferences();
-        }
     }
 }

@@ -32,9 +32,27 @@ ApplicationWindow {
     //    visibility: Window.FullScreen
     title: qsTr("Template" + "               " + currentFile)
 
+    //! Save the app configuration when the app closed
+    onClosing: {
+        // Save to found path
+        AppCore.defaultRepo.saveToFile(window.uiSession.configFilePath);
+    }
+
     //! Create defualt repo and root object to save and load
     Component.onCompleted: {
-        AppCore.defaultRepo.initRootObject("QSObject");
+
+        // Create and prepare DefaultRepo and RootModel as root.
+        AppCore.defaultRepo = AppCore.createDefaultRepo(["QtQuickStream", "Stherm"]);
+
+        // Bind appModel to qsRootObject to capture loaded model from configuration.
+        window.uiSession.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
+
+        // Load the file
+        console.info("Load the config file: ", window.uiSession.configFilePath)
+        if (AppCore.defaultRepo.loadFromFile(window.uiSession.configFilePath))
+            console.info("Config file succesfully loaded.")
+        else
+            AppCore.defaultRepo.initRootObject("Device");
 
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 20000;
@@ -63,7 +81,7 @@ ApplicationWindow {
 
     StackLayout {
         id: _normalAndVacationModeStV
-        currentIndex: uiSession?.appModel.systemMode === I_Device.SystemMode.Vacation ? 1 : 0
+        currentIndex: uiSession?.appModel.systemMode === AppSpec.SystemMode.Vacation ? 1 : 0
 
         Flickable {
             id: _mainViewFlick
@@ -104,7 +122,6 @@ ApplicationWindow {
         id: _screenSaver
         anchors.centerIn: parent
         device: uiSession.appModel
-        uiPreference: uiSession?.uiPreferences
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
     }
 

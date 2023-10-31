@@ -1,7 +1,6 @@
 import QtQuick
 
 import QtQuickStream
-import Ronia
 
 /*! ***********************************************************************************************
  * Wiring model holds info about current wiring state of the device

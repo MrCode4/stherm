@@ -3,7 +3,7 @@ import QtQuick
 /*! ***********************************************************************************************
  * Device Controller
  * ************************************************************************************************/
-Item {
+QtObject {
 
     /* Property Declarations
      * ****************************************************************************************/
@@ -13,7 +13,7 @@ Item {
     /* Object Properties
      * ****************************************************************************************/
 
-    Connections {
+    property Connections connections: Connections {
         target: device
 
         function onRequestedTempChanged() {
@@ -29,11 +29,12 @@ Item {
     /* Functions
      * ****************************************************************************************/
 
-    function updateBacklight(h, s, v)
+    function updateBacklight(isOn, color)
     {
-        device.backlight.hue = h;
-        device.backlight.saturation = s;
-        device.backlight.value = v;
+        device.backlight.on = isOn;
+        device.backlight.hue = color.hsvHue;
+        device.backlight.saturation = color.hsvSaturation,
+        device.backlight.value = color.hsvValue
 
         updateDeviceBacklight();
     }
@@ -42,13 +43,13 @@ Item {
 
     function updateDeviceBacklight() {}
 
-    function updateFan() {}
+    function updateFan(mode: int, workingPerHour: int) {}
 
     function setVacation(temp_min, temp_max, hum_min, hum_max) {}
 
     function setSystemModeTo(systemMode: int) {}
 
-    function setSettings(brightness, volume, temperature, time, reset, adaptive) {}
+    function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive) {}
 
     function setDesiredTemperature(temperature: real) {}
 }

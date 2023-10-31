@@ -15,7 +15,7 @@ BasePageView {
     //! Temprature value
     property alias      temprature: _tempSlider.value // conversion?
 
-    property bool isCelcius : _root.uiSession.uiPreferences.tempratureUnit !== UiPreferences.TempratureUnit.Fah
+    property bool isCelcius :  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     /* Object properties
      * ****************************************************************************************/
