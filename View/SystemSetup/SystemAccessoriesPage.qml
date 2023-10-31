@@ -30,9 +30,8 @@ BasePageView {
             //! Apply settings and pop this from StackView
             //! Apply settings here
 
-            if (_root.StackView.view) {
-                _root.StackView.view.pop()
-            }
+            //! Also move out of this Page
+            backButtonCallback();
         }
     }
 
