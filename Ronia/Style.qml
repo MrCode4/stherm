@@ -33,7 +33,7 @@ QtObject {
     //! Specific styles for some Controls
     readonly property FontIconsSize fontIconSize: FontIconsSize {
         largePt: Application.font.pointSize * 1.8
-        normalPt: Application.font.pointSize * 1.4
+        normalPt: Application.font.pointSize * 1.3
         smallPt: Application.font.pointSize * 1.
     }
 
@@ -45,7 +45,7 @@ QtObject {
         buttonHeight: 32
         radius: -1 //! i.e Full radius (Math.min(height, width) / 2
         horizontalPadding: 20
-        verticalPadding: horizontalPadding - 12
+        verticalPadding: horizontalPadding - 10
         borderWidth: 1
     }
 
