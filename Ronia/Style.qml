@@ -15,12 +15,12 @@ QtObject {
     property int        theme:                          Style.Theme.Light
 
     property color      background:                     "#040404"
-    property color      foreground:                     "#ffffff"
+    property color      foreground:                     "#FFFFFF"
     property color      accent:                         "#FFFFFF"
     property color      primary:                        "#E8EAF6"
 
     property color      secondaryTextColor:             "#BBBBBB"
-    property color      frameColor:                     "#f1f1f1"
+    property color      frameColor:                     "#F1F1F1"
     property color      backgroundDimColor:             "#F0363636"
     property color      listHighlightColor:             "#1E626262"
     property color      disabledColor:                  "#404040"
@@ -29,6 +29,9 @@ QtObject {
     property color      hoverColor:                     "#7F7F7F"
     property color      rippleColor:                    Qt.alpha(foreground, 0.16)
     property color      highlightedRippleColor:         Qt.alpha(accent, 0.24)
+
+    //! App specific shades of main colors
+    property color      green:      "#4EAC55"
 
     //! Specific styles for some Controls
     readonly property FontIconsSize fontIconSize: FontIconsSize {
@@ -53,5 +56,10 @@ QtObject {
     readonly property RadioButtonStyle radioButton: RadioButtonStyle {
         indicatorSize: 28
         indicatorInnerCircleSize: 14
+    }
+
+    //! Switch
+    readonly property SwitchStyle switchStyle: SwitchStyle {
+        switchCheckedTrackColor: _style.green
     }
 }

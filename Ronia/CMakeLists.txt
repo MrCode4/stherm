@@ -51,6 +51,7 @@ qt_add_qml_module(RoniaStyleImpl
         impl/RadioIndicator.qml
         impl/RadioButtonStyle.qml
         impl/CheckIndicator.qml
+        impl/SwitchStyle.qml
 )
 
 target_link_libraries(RoniaStyleImpl PUBLIC
