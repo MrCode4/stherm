@@ -4,7 +4,7 @@ import QtQuickStream
 import Stherm
 
 /*! ***********************************************************************************************
- * MessageController
+ * MessageController: Add, remove and manage messages.
  * ***********************************************************************************************/
 QtObject {
     id: _root

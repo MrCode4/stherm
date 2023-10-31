@@ -74,6 +74,7 @@ QtObject {
     property I_DeviceController realDeviceController:   DeviceController {
         device: appModel
     }
+
     //! Device controller
     property I_DeviceController simDeviceController:   SimDeviceController {
         device: appModel
@@ -85,11 +86,11 @@ QtObject {
     }
 
     //! MessageController instance
-    property MessageController messageController:      MessageController {
+    property MessageController  messageController:      MessageController {
         device: appModel
     }
 
-    //! MessageController instance
+    //! schedulesController instance
     property SchedulesController schedulesController:  SchedulesController {
         device: appModel
     }
