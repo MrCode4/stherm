@@ -43,10 +43,10 @@ int main(int argc, char *argv[])
     deviceInfo["Nmcli"] = QProcess().execute("command", { "-v", "nmcli" }) == 0 ? "True" : "False";
 
     //! Cacluate a font factor based on system specifications
-    const double refFontPt = 13;
+    const double refFontPt = 16;
     const double refDPI = 141;
     const double dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch();
-    const double factor = qMax(1., dpi / refDPI);
+    const double scaleFactor = qMax(1., dpi / refDPI);
 
     //! Load default font -> Roboto-Regular for now
     int robotoId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Roboto-Regular.ttf");
@@ -54,12 +54,14 @@ int main(int argc, char *argv[])
         qWarning() << "Could not load Roboto-Regular font.";
     } else {
         QStringList roboto = QFontDatabase::applicationFontFamilies(robotoId);
-        QFont defaultFont(roboto[0], refFontPt * factor);
+        QFont defaultFont(roboto[0], refFontPt * scaleFactor);
+        defaultFont.setCapitalization(QFont::MixedCase);
         qDebug() << "Default font pt: " << defaultFont.pointSize();
 
         qApp->setFont(defaultFont);
     }
 
+    engine.rootContext()->setContextProperty("scaleFactor", scaleFactor);
     engine.rootContext()->setContextProperty("deviceInfo", deviceInfo);
 
     engine.load(url);

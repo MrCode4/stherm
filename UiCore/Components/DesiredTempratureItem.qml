@@ -13,37 +13,34 @@ Control {
     /* Property declaration
      * ****************************************************************************************/
 
-    property  UiSession uiSession
+    property  UiSession             uiSession
 
     //! Reference to I_Device
-    property I_Device   device: uiSession.appModel
-
-    property  UiPreferences uiPreference: uiSession.uiPreferences
-
+    property I_Device           device: uiSession.appModel
 
     //! Unit of temprature
-    property string     unit: (uiPreference?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
+    property string             unit: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property int        minTemprature: 18
+    property int                minTemprature: 18
 
     //! Maximum temprature
-    property int        maxTemprature: 30
+    property int                maxTemprature: 30
 
     //! Offset of desired temp label
-    property int        labelVerticalOffset: -8
+    property int                labelVerticalOffset: -8
 
     //! Holds whether SemiCircleSlider is being dragged
-    readonly property alias dragging: _tempSlider.pressed
+    readonly property alias     dragging: _tempSlider.pressed
 
-    //!
-    property bool       labelVisible: true
+    //! Visibility of temprature label
+    property bool               labelVisible: true
+
+    //! Label width
+    readonly property alias     labelWidth: _desiredTempratureLbl.width
 
     /* Object properties
      * ****************************************************************************************/
-    //    Material.theme: Material.Dark
-    implicitWidth: 360
-    implicitHeight: 180
     font.pointSize: Qt.application.font.pointSize * 2.8
     background: null
     contentItem: Item {
@@ -75,10 +72,9 @@ Control {
             Label {
                 anchors.left: parent.right
                 anchors.top: parent.top
-                anchors.topMargin: 20
                 opacity: 0.6
                 font {
-                    pointSize: Qt.application.font.pointSize * 1.2
+                    pointSize: _root.font.pointSize / 2
                     capitalization: "AllUppercase"
                 }
                 text: `\u00b0${unit}`

@@ -29,13 +29,11 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: AppStyle.size / 1.2
-    implicitHeight: AppStyle.size / 2.4
     leftInset: 0
     rightInset: 0
     background: Item {
         readonly property int pathWidth: AppStyle.size / 40
-        readonly property real shapeWidth: shapeHeight * 2
+        readonly property real shapeWidth: width
         readonly property real shapeHeight: height - AppStyle.size / 24
 
         layer.enabled: true

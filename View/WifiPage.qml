@@ -1,8 +1,7 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.Layouts
 
+import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
@@ -35,7 +34,7 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     RowLayout {
-        parent: _root.header
+        parent: _root.header.contentItem
 
         Switch {
             id: _wifiOnOffSw
@@ -53,11 +52,13 @@ BasePageView {
 
         //! Referesh button and running BusyIndicator
         Item {
+            Layout.alignment: Qt.AlignCenter
             implicitWidth: Material.touchTarget
             implicitHeight: Material.touchTarget
 
             ToolButton {
                 id: _refereshBtn
+                anchors.centerIn: parent
                 visible: !NetworkInterface.isRunning
                 contentItem: RoniaTextIcon {
                     text: "\uf2f9" //! rotate-right

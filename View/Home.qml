@@ -35,8 +35,8 @@ Control {
     DesiredTempratureItem {
         id: _desiredTempItem
         anchors.horizontalCenter: parent.horizontalCenter
-        height: parent.height / 2
-        width: parent.availableWidth
+        height: parent.height / 2.
+        width: parent.availableWidth - (_currentTempLbl.width + _wifiBtn.width) / 3
         labelVisible: device?.systemMode !== AppSpec.SystemMode.Off
         uiSession: _root.uiSession
     }
@@ -45,6 +45,7 @@ Control {
     Item {
         id: _itemsToHide
         anchors.fill: parent
+        anchors.margins: 2
         visible: opacity > 0
 
         //! Current temprature item
@@ -83,51 +84,80 @@ Control {
             id: _systemModeBtn
             anchors {
                 horizontalCenter: parent.horizontalCenter
-                horizontalCenterOffset: -width
+                horizontalCenterOffset: -_desiredTempItem.labelWidth - 12
             }
             y: (_desiredTempItem.height - height) / 2 - 4
             deviceController: uiSession?.deviceController ?? null
         }
 
         //! Other items
-        GridLayout {
+        Item {
             id: _otherItemsLay
             anchors {
+                verticalCenter: parent.verticalCenter
                 horizontalCenter: parent.horizontalCenter
-                verticalCenterOffset: AppStyle.size / 24
             }
-            y: _desiredTempItem.height - AppStyle.size / 10
-            columns: 3
-            rowSpacing: AppStyle.size / 12
+            width: _fanButton.implicitWidth + _dateTimeHolder.width + _airCondHoldBtnLay.implicitWidth + 4
+            height: Math.max(_currHumFanBtnLay.implicitHeight,
+                             _dateTimeHolder.height,
+                             _airCondHoldBtnLay.implicitHeight)
 
-            //! Humidity item
-            CurrentHumidityLabel {
-                Layout.alignment: Qt.AlignCenter
-                device: _root.uiSession.appModel
-            }
+            ColumnLayout {
+                id: _currHumFanBtnLay
+                anchors {
+                    left: parent.left
+                    verticalCenter: parent.verticalCenter
+                }
+                spacing: 48 * scaleFactor
 
-            //! Date and Timer
-            DateTimeLabel {
-                Layout.rowSpan: 2
-                Layout.alignment: Qt.AlignCenter
-                Layout.leftMargin: AppStyle.size / 30
-                Layout.rightMargin: AppStyle.size / 30
-                is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
-            }
+                //! Humidity item
+                CurrentHumidityLabel {
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+                    device: _root.uiSession.appModel
+                }
 
-            //! Air condition item
-            AirConditionItem {
-                Layout.alignment: Qt.AlignCenter
-            }
 
-            //! Fan
-            FanButton {
-                Layout.alignment: Qt.AlignCenter
+                //! Fan
+                FanButton {
+                    id: _fanButton
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+                }
             }
 
-            //! Hold button
-            HoldButton {
-                Layout.alignment: Qt.AlignCenter
+            Item {
+                id: _dateTimeHolder
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                height: _dateTimeLbl.implicitHeight
+                width: _dateTimeLbl.maximumWidth
+
+                //! Date and Timer
+                DateTimeLabel {
+                    id: _dateTimeLbl
+                    anchors.centerIn: parent
+                    is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+                }
+            }
+
+            ColumnLayout {
+                id: _airCondHoldBtnLay
+                anchors {
+                    right: parent.right
+                    verticalCenter: parent.verticalCenter
+                    rightMargin: -16
+                }
+                spacing: 48 * scaleFactor
+
+                //! Air condition item
+                AirConditionItem {
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                }
+
+                //! Hold button
+                HoldButton {
+                    id: _holdBtn
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                }
             }
         }
 
@@ -137,7 +167,7 @@ Control {
             anchors {
                 bottom: parent.bottom
                 horizontalCenter: parent.horizontalCenter
-                bottomMargin: _menuButton.implicitHeight * 1.8
+                bottomMargin: _menuButton.implicitHeight * 1.5
             }
             width: parent.width * 0.5
             height: sourceSize.height * width / sourceSize.width

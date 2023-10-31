@@ -23,7 +23,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c" //! check icon
         }
@@ -79,6 +79,8 @@ BasePageView {
     ColumnLayout {
         id: _buttonsLay
         anchors.centerIn: parent
+        width: parent.width * 0.5
+        spacing: 12
 
         Button {
             id: _coolingButton
@@ -135,7 +137,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemMode === AppSpec.SystemMode.Off
-            text: "Off"
+            text: "OFF"
         }
     }
 

@@ -21,7 +21,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c" //! check icon
         }
@@ -30,9 +30,8 @@ BasePageView {
             //! Apply settings and pop this from StackView
             //! Apply settings here
 
-            if (_root.StackView.view) {
-                _root.StackView.view.pop()
-            }
+            //! Also move out of this Page
+            backButtonCallback();
         }
     }
 

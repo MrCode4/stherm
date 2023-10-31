@@ -21,7 +21,8 @@ BasePageView {
      * ****************************************************************************************/
     ColumnLayout {
         anchors.centerIn: parent
-        spacing: 8
+        width: parent.width * 0.5
+        spacing: 12
 
         Button {
             Layout.fillWidth: true

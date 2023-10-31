@@ -18,7 +18,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c" //! check icon
         }
@@ -45,7 +45,7 @@ BasePageView {
 
     ColumnLayout {
         anchors.centerIn: parent
-        width: parent.width * 0.85
+        width: parent.width * 0.9
         height: Math.min(implicitHeight, parent.height)
         spacing: 8
 

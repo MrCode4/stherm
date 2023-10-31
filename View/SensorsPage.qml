@@ -23,10 +23,10 @@ BasePageView {
         ScrollIndicator.vertical: ScrollIndicator { }
 
         anchors.centerIn: parent
-        width: parent.width * 0.6
+        width: parent.width * 0.5
         height: Math.min(contentHeight, parent.height)
         model: appModel?.sensors ?? []
-        spacing: 10
+        spacing: 12
         delegate: SensorDelegate {
             required property var modelData
             required property int index

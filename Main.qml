@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.VirtualKeyboard
 
 import Ronia
@@ -29,8 +27,7 @@ ApplicationWindow {
     height: AppStyle.size
 
     visible: true
-    //    visibility: Window.FullScreen
-    title: qsTr("Template" + "               " + currentFile)
+    title: qsTr("STherm")
 
     //! Save the app configuration when the app closed
     onClosing: {
@@ -56,9 +53,6 @@ ApplicationWindow {
 
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 20000;
-
-        //! Refereh wifis.
-        NetworkInterface.refereshWifis();
     }
 
     /* Fonts
@@ -125,13 +119,18 @@ ApplicationWindow {
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
     }
 
-    //! A Timer to periodically refresh wifis (every 2 seconds)
+    //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1
+    //! seconds and then refresh every 20 seconds
     Timer {
         running: true
-        interval: 5000
+        interval: 1000
         repeat: true
         onTriggered: {
             NetworkInterface.refereshWifis();
+
+            if (interval < 20000) {
+                interval = 20000;
+            }
         }
     }
 
@@ -143,6 +142,12 @@ ApplicationWindow {
         y: window.height
         width: window.width
         implicitHeight: keyboard.height + _closeBtn.height
+
+        Component.onCompleted: {
+            //! Increase key height and keyboard height
+            keyboard.style.keyboardDesignHeight = keyboard.style.keyboardDesignHeight * 1.3
+            keyboard.style.keyboardHeight = keyboard.style.keyboardDesignHeight / 3.8;
+        }
 
         //! ToolButton to close keyboard.
         //! This SHOULD steal focus from other controls, otherwise an already focused TextField

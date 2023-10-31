@@ -3,7 +3,6 @@ import QtQuick.Layouts
 
 import Ronia
 import Stherm
-
 /*! ***********************************************************************************************
  * SystemModeButton provides a ui for switching application operation (system) modes
  * ***********************************************************************************************/
@@ -21,7 +20,8 @@ ToolButton {
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: _coolingStateItem.implicitWidth + leftPadding + rightPadding
-    implicitHeight: _coolingStateItem.implicitHeight + topPadding + bottomPadding
+    implicitHeight: implicitWidth
+    padding: 10
 
     /* Children
      * ****************************************************************************************/
@@ -34,14 +34,16 @@ ToolButton {
             anchors.centerIn: parent
             visible: opacity > 0
             opacity: _control.state === "off" ? 1. : 0.
-            spacing: 0
+            spacing: 1
 
             //! Power off icon
             RoniaTextIcon {
+                y: (parent.height - height) / 2
                 text: "\uf011" //! power-off icon
             }
 
             Label {
+                y: (parent.height - height) / 2
                 text: "FF"
             }
 
@@ -63,6 +65,7 @@ ToolButton {
 
             Label {
                 Layout.alignment: Qt.AlignCenter
+                font.pointSize: Application.font.pointSize * 0.75
                 text: "Heating"
             }
 
@@ -84,6 +87,7 @@ ToolButton {
 
             Label {
                 Layout.alignment: Qt.AlignCenter
+                font.pointSize: Application.font.pointSize * 0.75
                 text: "Cooling"
             }
 
@@ -105,6 +109,7 @@ ToolButton {
 
             Label {
                 Layout.alignment: Qt.AlignCenter
+                font.pointSize: Application.font.pointSize * 0.75
                 text: "Auto"
             }
 
@@ -130,7 +135,7 @@ ToolButton {
         case AppSpec.SystemMode.Auto:
             return "auto";
         default:
-            return ""
+            return "off"
         }
     }
     states: [

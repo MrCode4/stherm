@@ -1,11 +1,10 @@
 import QtQuick
-import QtQuick.Controls.Material.impl
 import QtQuick.Templates as T
 
 import Ronia
 import Ronia.impl
 
-T.Switch {
+T.CheckBox {
     id: control
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
@@ -14,22 +13,24 @@ T.Switch {
                              implicitContentHeight + topPadding + bottomPadding,
                              implicitIndicatorHeight + topPadding + bottomPadding)
 
-    padding: 8
     spacing: 8
+    padding: 8
+    verticalPadding: padding + 7
 
-    indicator: SwitchIndicator {
+    indicator: CheckIndicator {
         x: control.text ? (control.mirrored ? control.width - width - control.rightPadding : control.leftPadding) : control.leftPadding + (control.availableWidth - width) / 2
         y: control.topPadding + (control.availableHeight - height) / 2
         control: control
 
         Rectangle {
-            x: parent.handle.x + parent.handle.width / 2 - width / 2
-            y: parent.handle.y + parent.handle.height / 2 - height / 2
-            height: parent.height
-            width: height
-            radius: width / 2
+            x: (parent.width - width) / 2
+            y: (parent.height - height) / 2
+            width: parent.width + 20
+            height: width
+            z: -1
             visible: control.hovered
-            color: control.checked ? Qt.alpha(Style.accent, 0.3) : Qt.alpha(Style.foreground, 0.2)
+            radius: width / 2
+            color: control.checked ? control.Material.highlightedRippleColor : control.Material.rippleColor
         }
     }
 
@@ -39,7 +40,7 @@ T.Switch {
 
         text: control.text
         font: control.font
-        color: control.enabled ? Style.foreground : Style.hintTextColor
+        color: control.enabled ? control.Material.foreground : control.Material.hintTextColor
         elide: Text.ElideRight
         verticalAlignment: Text.AlignVCenter
     }

@@ -23,7 +23,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c"
         }
@@ -36,6 +36,12 @@ BasePageView {
                                                                          AppSpec.FanMode.FMOff)
                 deviceController.updateFan(fanMode, _hourSliders.value);
             }
+
+            //! Also move out of this Page
+            if (_root.StackView.view && _root.StackView.view.depth > 1
+                    && _root.StackView.view.currentItem === _root) {
+                _root.StackView.view.pop();
+            }
         }
     }
 
@@ -43,7 +49,8 @@ BasePageView {
     ColumnLayout {
         id: _contentsLay
         anchors.centerIn: parent
-        spacing: AppStyle.size / 120
+        width: parent.width
+        spacing: 8 * scaleFactor
 
         ButtonGroup {
             buttons: [_autoButton, _onButton]
@@ -51,14 +58,15 @@ BasePageView {
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
+            spacing: 12
             Button {
                 id: _autoButton
 
                 Material.theme: checked ? (_root.Material.theme === Material.Dark ? Material.Light : Material.Dark)
                                         : _root.Material.theme
                 Layout.alignment: Qt.AlignCenter
-                leftPadding: AppStyle.size / 10
-                rightPadding: AppStyle.size / 10
+                leftPadding: 64 * scaleFactor
+                rightPadding: 64 * scaleFactor
                 font.weight: checked ? Font.ExtraBold : Font.Normal
                 checkable: true
                 text: "Auto"
@@ -73,8 +81,8 @@ BasePageView {
                                         : _root.Material.theme
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: _autoButton.width
-                leftPadding: AppStyle.size / 10
-                rightPadding: AppStyle.size / 10
+                leftPadding: 64 * scaleFactor
+                rightPadding: 64 * scaleFactor
                 font.weight: checked ? Font.ExtraBold : Font.Normal
                 checkable: true
                 text: "On"
@@ -85,7 +93,7 @@ BasePageView {
 
         Label {
             id: _sliderDescLbl
-            Layout.topMargin: AppStyle.size / 15
+            Layout.topMargin: 40 * scaleFactor
             Layout.fillWidth: true
             text: "Fan working period during each hour"
             wrapMode: "WrapAtWordBoundaryOrAnywhere"
@@ -97,7 +105,9 @@ BasePageView {
             readonly property int tickStepSize: 2
 
             Layout.alignment: Qt.AlignHCenter
-            implicitWidth: _root.width * 0.8
+            Layout.fillWidth: true
+            Layout.leftMargin: 24 * scaleFactor
+            Layout.rightMargin: 24 * scaleFactor
             majorTickCount: ticksCount / 5
             ticksCount: to / tickStepSize
             from: 0

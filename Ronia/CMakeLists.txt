@@ -30,19 +30,28 @@ qt_add_qml_module(RoniaStyle
         Switch.qml
         ToolButton.qml
         Popup.qml
+        RadioButton.qml
+        CheckBox.qml
+        ApplicationWindow.qml
 )
 
 qt_add_qml_module(RoniaStyleImpl
     URI Ronia.impl
     STATIC
     VERSION 1.0
+
+    RESOURCES
+        res/check.png
+
     QML_FILES
         impl/ButtonStyle.qml
         impl/ButtonLabel.qml
         impl/SwitchIndicator.qml
-
-    RESOURCES
-        res/check.png
+        impl/FontIconsSize.qml
+        impl/RadioIndicator.qml
+        impl/RadioButtonStyle.qml
+        impl/CheckIndicator.qml
+        impl/SwitchStyle.qml
 )
 
 target_link_libraries(RoniaStyleImpl PUBLIC

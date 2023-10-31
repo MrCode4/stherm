@@ -32,8 +32,7 @@ Control {
         //! Current temprature
         Label {
             font {
-                family: "Roboto Mono"
-                pointSize: Qt.application.font.pointSize * 1.85
+                pointSize: Qt.application.font.pointSize * 1.5
             }
             text: Number(Utils.convertedTemperature(device?.currentTemp ?? 0,
                                                       device?.setting?.tempratureUnit))
@@ -55,6 +54,7 @@ Control {
         //!
         Label {
             Layout.columnSpan: 2
+            font.pointSize: Application.font.pointSize * 0.85
             opacity: 0.6
             text: "Current"
         }

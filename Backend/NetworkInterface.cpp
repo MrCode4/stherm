@@ -22,7 +22,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
             emit deviceIsOnChanged();
         }
 
-        emit connectedSsidChanged();
+        emit connectedWifiChanged();
         emit wifisChanged();
     });
 
@@ -31,7 +31,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
             mConnectedWifiInfo->setProperty("connected", false);
 
             mConnectedWifiInfo = nullptr;
-            emit connectedSsidChanged();
+            emit connectedWifiChanged();
         }
     });
 }
@@ -48,9 +48,9 @@ bool NetworkInterface::isRunning()
     return mNmcliInterface && mNmcliInterface->isRunning();
 }
 
-QString NetworkInterface::connectedSsid() const
+WifiInfo* NetworkInterface::connectedWifi() const
 {
-    return (mDeviceIsOn && mConnectedWifiInfo ? mConnectedWifiInfo->mSsid : "");
+    return (mDeviceIsOn ? mConnectedWifiInfo : nullptr);
 }
 
 void NetworkInterface::refereshWifis(bool forced)
@@ -149,9 +149,6 @@ qsizetype NetworkInterface::networkCount(WifiInfoList* list)
 
 void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis)
 {
-    //! Set mConnectedWifiInfo since it will not be valid anymore
-    mConnectedWifiInfo = nullptr;
-
     //! Find wifis to be deleted.
     QList<WifiInfo*> toDeleteWifis;
     for (WifiInfo* wi : mWifiInfos) {
@@ -165,6 +162,7 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
         }
     }
 
+    bool anyWifiConnected = false;
     //! Wifi list
     QList<WifiInfo*> wifiInfos;
 
@@ -191,7 +189,8 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
             wifiInfos.push_back((*wiInstance));
         }
 
-        if (wifi["inUse"].toBool()) {
+        if (wifi["inUse"].toBool() && !anyWifiConnected) {
+            anyWifiConnected = true;
             mConnectedWifiInfo = wifiInfos.back();
         }
     }
@@ -200,7 +199,11 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
     mWifiInfos.clear();
     mWifiInfos = std::move(wifiInfos);
 
-    emit connectedSsidChanged();
+    if (!anyWifiConnected
+        || std::find(toDeleteWifis.begin(), toDeleteWifis.end(), mConnectedWifiInfo) != toDeleteWifis.end()) {
+        mConnectedWifiInfo = nullptr;
+    }
+    emit connectedWifiChanged();
     emit wifisChanged();
 
     //! Now delete not needed wifis
@@ -218,7 +221,7 @@ void NetworkInterface::onWifiConnected(const QString& bssid)
 
         mConnectedWifiInfo = mRequestedToConnectedWifi;
         mRequestedToConnectedWifi = nullptr;
-        emit connectedSsidChanged();
+        emit connectedWifiChanged();
     }
 }
 
@@ -228,6 +231,6 @@ void NetworkInterface::onWifiDisconnected()
         mConnectedWifiInfo->setProperty("connected", false);
 
         mConnectedWifiInfo = nullptr;
-        emit connectedSsidChanged();
+        emit connectedWifiChanged();
     }
 }

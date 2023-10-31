@@ -1,5 +1,6 @@
-import QtQuick 2.0
+import QtQuick
 
+import Ronia
 import Stherm
 /*! ***********************************************************************************************
  * The PopUpLayout listens to the UiSession and shows any popups that might be pending. We use a
@@ -79,14 +80,13 @@ Rectangle {
         enabled: currentPopUp !== null && currentPopUp.visible
     }
 
-    RoniaIconButtonRound {
+    ToolButton {
         id: closeButton
 
-        size: 48
         z: 100
-
-        backColor: "darkred"
-        text: "\uf00d"
+        contentItem: RoniaTextIcon {
+            text: "\uf00d"
+        }
 
         onClicked: {
             uiSession.hidePopUp(currentPopUp);

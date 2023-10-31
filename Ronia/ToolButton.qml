@@ -32,9 +32,14 @@ T.ToolButton {
     }
 
     background: Rectangle {
+        property bool square: control.contentItem.width <= control.contentItem.height
+
         implicitWidth: Style.button.buttonHeight
         implicitHeight: Style.button.buttonHeight
-        height: width
+        width: square ? control.height : control.width
+        height: square ? control.height : control.height
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
         color: control.hovered ? (control.highlighted ? Style.highlightedRippleColor : Style.rippleColor)
                                : "transparent"
         radius: Math.min(width, height) / 2
