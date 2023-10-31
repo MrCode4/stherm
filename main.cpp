@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
     } else {
         QStringList roboto = QFontDatabase::applicationFontFamilies(robotoId);
         QFont defaultFont(roboto[0], refFontPt * scaleFactor);
+        defaultFont.setCapitalization(QFont::MixedCase);
         qDebug() << "Default font pt: " << defaultFont.pointSize();
 
         qApp->setFont(defaultFont);
