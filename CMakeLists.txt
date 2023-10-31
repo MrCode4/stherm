@@ -82,30 +82,7 @@ qt6_add_qml_module(appStherm
 
 
         # Primitive Components
-        UiCore/Components/RoniaFlatButton.qml
         UiCore/Components/RoniaTextIcon.qml
-        UiCore/Components/RoniaMenuItem.qml
-        UiCore/Components/RoniaThreeWaySwitch.qml
-        UiCore/Components/RoniaExpandableItem.qml
-        UiCore/Components/RoniaUserInputBase.qml
-        UiCore/Components/RoniaUserInputCombo.qml
-        UiCore/Components/RoniaUserInputNumberEditor.qml
-        UiCore/Components/RoniaUserInputTextField.qml
-        UiCore/Components/RoniaUserInputToggle.qml
-        UiCore/Components/RoniaToolTip.qml
-        UiCore/Components/RoniaNumberEditor.qml
-        UiCore/Components/RoniaComboBox.qml
-        UiCore/Components/RoniaColorButton.qml
-        UiCore/Components/RoniaContextMenu.qml
-        UiCore/Components/RoniaContextMenuItem.qml
-        UiCore/Components/RoniaRoundMouseArea.qml
-        UiCore/Components/Buttons/RoniaBaseButton.qml
-        UiCore/Components/Buttons/RoniaButton.qml
-        UiCore/Components/Buttons/RoniaIconButton.qml
-        UiCore/Components/Buttons/RoniaIconButtonRound.qml
-        UiCore/Components/Buttons/RoniaIconTextButton.qml
-        UiCore/Components/Buttons/RoniaSideMenuButton.qml
-        UiCore/Components/Buttons/RoniaControlToolButton.qml
 
 
         # UiSession+Popups
