@@ -40,6 +40,12 @@ BasePageView {
 
                 //! Update requested humidity to device
             }
+
+            //! Also move out of this Page
+            if (_root.StackView.view && _root.StackView.view.depth > 1
+                    && _root.StackView.view.currentItem === _root) {
+                _root.StackView.view.pop();
+            }
         }
     }
 

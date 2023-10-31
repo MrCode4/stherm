@@ -33,6 +33,12 @@ BasePageView {
             if (deviceController) {
                 deviceController.updateFan();
             }
+
+            //! Also move out of this Page
+            if (_root.StackView.view && _root.StackView.view.depth > 1
+                    && _root.StackView.view.currentItem === _root) {
+                _root.StackView.view.pop();
+            }
         }
     }
 
@@ -40,7 +46,8 @@ BasePageView {
     ColumnLayout {
         id: _contentsLay
         anchors.centerIn: parent
-        spacing: AppStyle.size / 120
+        width: parent.width
+        spacing: 8 * scaleFactor
 
         ButtonGroup {
             buttons: [_autoButton, _onButton]
@@ -79,7 +86,7 @@ BasePageView {
 
         Label {
             id: _sliderDescLbl
-            Layout.topMargin: AppStyle.size / 15
+            Layout.topMargin: 40 * scaleFactor
             Layout.fillWidth: true
             text: "Fan working period during each hour"
             wrapMode: "WrapAtWordBoundaryOrAnywhere"
@@ -91,7 +98,9 @@ BasePageView {
             readonly property int tickStepSize: 2
 
             Layout.alignment: Qt.AlignHCenter
-            implicitWidth: _root.width * 0.8
+            Layout.fillWidth: true
+            Layout.leftMargin: 24 * scaleFactor
+            Layout.rightMargin: 24 * scaleFactor
             majorTickCount: ticksCount / 5
             ticksCount: to / tickStepSize
             from: 0
