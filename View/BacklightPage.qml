@@ -16,7 +16,7 @@ BasePageView {
     property Backlight          backlight: uiSession?.appModel?.backlight ?? null
 
     //! Selected backlight color from shade buttons
-    readonly property color     selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
+    readonly property color     selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Style.background
 
     /* Object properties
      * ****************************************************************************************/

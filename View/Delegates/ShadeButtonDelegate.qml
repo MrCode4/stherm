@@ -40,7 +40,8 @@ RoundButton {
         implicitHeight: background.implicitWidth
         radius: _root.radius
         color: !_root.enabled ? _root.Material.buttonDisabledColor
-            : _root.checked || _root.highlighted ? _root.Material.accentColor : _root.Material.buttonColor
+                              : _root.checked || _root.highlighted ? Qt.alpha(Style.accent, 0.3)
+                                                                   : _root.Material.buttonColor
 
 
         Rectangle {
@@ -48,7 +49,7 @@ RoundButton {
             height: parent.height
             radius: _root.radius
             visible: _root.hovered
-            color: _root.Material.rippleColor
+            color: Style.rippleColor
         }
     }
 
