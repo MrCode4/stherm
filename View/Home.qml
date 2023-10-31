@@ -135,7 +135,7 @@ Control {
                 DateTimeLabel {
                     id: _dateTimeLbl
                     anchors.centerIn: parent
-                    is12Hour: uiPreferences?.timeFormat === AppSpec.TimeFormat.Hour12
+                    is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
                 }
             }
 

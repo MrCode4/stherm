@@ -115,7 +115,7 @@ I_DeviceController {
                     "adaptive: ",       adaptive,       "\n    "
                     );
 
-        sendReceive('hardware', 'setSettings', [brightness, volume, temperatureUnit, time, reset, adaptive]);
+        sendReceive('hardware', 'setSettings', [brightness, volume, temperatureUnit, timeFormat, reset, adaptive]);
 
         // Update setting when sendReceive is successful.
         if (device.setting.brightness !== brightness) {
