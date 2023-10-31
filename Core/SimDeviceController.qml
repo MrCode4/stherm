@@ -79,7 +79,7 @@ I_DeviceController {
     {
         console.log("settign sim background color")
 
-        Style.background = device.backlight.on ?  device.backlight.color : "#000000";
+        Style.background = device.backlight.on ?  device.backlight._color : "#000000";
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)

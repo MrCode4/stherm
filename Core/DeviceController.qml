@@ -55,9 +55,9 @@ I_DeviceController {
         console.log("starting rest for updateBacklight, color: ", device.backlight.color)
 
         //! Use a REST request to update device backlight
-        var r = Math.round(device.backlight.color.r * 255)
-        var g = Math.round(device.backlight.color.g * 255)
-        var b = Math.round(device.backlight.color.b * 255)
+        var r = Math.round(device.backlight._color.r * 255)
+        var g = Math.round(device.backlight._color.g * 255)
+        var b = Math.round(device.backlight._color.b * 255)
 
         console.log("colors: ", r, ",", g, ",", b)
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.

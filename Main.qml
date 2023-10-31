@@ -52,7 +52,7 @@ ApplicationWindow {
         if (AppCore.defaultRepo.loadFromFile(window.uiSession.configFilePath))
             console.info("Config file succesfully loaded.")
         else
-            AppCore.defaultRepo.initRootObject("SimDevice");
+            AppCore.defaultRepo.initRootObject("Device");
 
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 20000;

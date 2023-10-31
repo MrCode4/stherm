@@ -29,11 +29,12 @@ QtObject {
     /* Functions
      * ****************************************************************************************/
 
-    function updateBacklight(h, s, v)
+    function updateBacklight(isOn, color)
     {
-        device.backlight.hue = h;
-        device.backlight.saturation = s;
-        device.backlight.value = v;
+        device.backlight.on = isOn;
+        device.backlight.hue = color.hsvHue;
+        device.backlight.saturation = color.hsvSaturation,
+        device.backlight.value = color.hsvValue
 
         updateDeviceBacklight();
     }
@@ -41,7 +42,6 @@ QtObject {
     //! These methods should be overriden by subclasses to provide implementation
 
     function updateDeviceBacklight() {}
-
 
     function updateFan(mode: int, workingPerHour: int) {}
 
