@@ -72,7 +72,7 @@ BasePageView {
         id: _newSchedulePages
         anchors.centerIn: parent
         implicitHeight: Math.min(parent.height, currentItem?.implicitHeight)
-        implicitWidth: Math.min(parent.width, currentItem?.implicitWidth)
+        width: _root.availableWidth
 
         initialItem: _sheduleNamePage
     }
