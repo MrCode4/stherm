@@ -76,6 +76,7 @@ qt6_add_qml_module(appStherm
         Core/Message.qml
         Core/MessageController.qml
         Core/Wiring.qml
+        Core/Vacation.qml
         Core/Setting.qml
         Core/Utils.qml
 

@@ -30,7 +30,12 @@ BasePageView {
 
         onClicked: {
             //! Update Fan
-            if (deviceController) {
+            if (deviceController && fan) {
+                if (fan.working_per_hour !== _hourSliders.value)
+                    fan.working_per_hour = _hourSliders.value
+
+                fan.mode = _autoButton.checked ? AppSpec.FanMode.FMAuto :
+                                                  AppSpec.FanMode.FMOn
                 deviceController.updateFan();
             }
         }
@@ -57,9 +62,10 @@ BasePageView {
                 leftPadding: AppStyle.size / 10
                 rightPadding: AppStyle.size / 10
                 font.weight: checked ? Font.ExtraBold : Font.Normal
-                checked: true
                 checkable: true
                 text: "Auto"
+
+                checked: fan?.mode === AppSpec.FanMode.FMAuto
             }
 
             Button {
@@ -74,6 +80,8 @@ BasePageView {
                 font.weight: checked ? Font.ExtraBold : Font.Normal
                 checkable: true
                 text: "On"
+
+                checked: fan?.mode === AppSpec.FanMode.FMOn
             }
         }
 
@@ -108,12 +116,6 @@ BasePageView {
                 timeout: Number.MAX_VALUE
                 delay: 0
                 text: _hourSliders.value
-            }
-
-            onValueChanged: {
-                if (fan && fan.working_per_hour !== value) {
-                    fan.working_per_hour = value
-                }
             }
         }
     }

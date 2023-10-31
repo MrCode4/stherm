@@ -75,7 +75,15 @@ I_DeviceController {
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
     {
+        if (!device)
+            return;
+
         sendReceive('system', 'setVacation', [temp_min, temp_max, hum_min, hum_max]);
+
+        device.vacation.temp_min = temp_min;
+        device.vacation.temp_max = temp_max;
+        device.vacation.hum_min  = hum_min;
+        device.vacation.hum_max  = hum_max ;
     }
 
     function setSystemModeTo(systemMode: int)

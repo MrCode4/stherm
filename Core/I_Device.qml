@@ -58,6 +58,8 @@ QSObject {
 
     property Setting        setting:        Setting {}
 
+    property Vacation       vacation:       Vacation {}
+
     /* Functions
      * ****************************************************************************************/
 }
