@@ -127,6 +127,12 @@ ApplicationWindow {
         width: window.width
         implicitHeight: keyboard.height + _closeBtn.height
 
+        Component.onCompleted: {
+            //! Increase key height and keyboard height
+            keyboard.style.keyboardDesignHeight = keyboard.style.keyboardDesignHeight * 1.3
+            keyboard.style.keyboardHeight = keyboard.style.keyboardDesignHeight / 3.8;
+        }
+
         //! ToolButton to close keyboard.
         //! This SHOULD steal focus from other controls, otherwise an already focused TextField
         //! will not be able to activate keyboard. No onClicked handling is required.
