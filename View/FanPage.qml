@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Reference to Fan model
-    property Fan    fan:    uiSession?.appModel?.fan ?? null
+    property Fan    fan:    appModel?.fan ?? null
 
     /* Object properties
      * ****************************************************************************************/

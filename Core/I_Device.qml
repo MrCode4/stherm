@@ -56,8 +56,10 @@ QSObject {
     //! Wiring
     property Wiring         wiring:         Wiring {}
 
+    //! Setting
     property Setting        setting:        Setting {}
 
+    //! Vacation
     property Vacation       vacation:       Vacation {}
 
     /* Functions
