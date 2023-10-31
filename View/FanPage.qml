@@ -30,13 +30,11 @@ BasePageView {
 
         onClicked: {
             //! Update Fan
-            if (deviceController && fan) {
-                if (fan.working_per_hour !== _hourSliders.value)
-                    fan.working_per_hour = _hourSliders.value
-
-                fan.mode = _autoButton.checked ? AppSpec.FanMode.FMAuto :
-                                                  AppSpec.FanMode.FMOn
-                deviceController.updateFan();
+            if (deviceController) {
+                var fanMode = _autoButton.checked ? AppSpec.FanMode.FMAuto :
+                                                    (_onButton.checked ? AppSpec.FanMode.FMOn :
+                                                                         AppSpec.FanMode.FMOff)
+                deviceController.updateFan(fanMode, _hourSliders.value);
             }
         }
     }
@@ -105,7 +103,7 @@ BasePageView {
             from: 0
             to: 50
             stepSize: 1
-            value: fan?.working_per_hour ?? 0
+            value: fan?.workingPerHour ?? 0
             valueChangeAnimation: true
 
             ToolTip {

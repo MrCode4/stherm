@@ -42,7 +42,8 @@ QtObject {
 
     function updateDeviceBacklight() {}
 
-    function updateFan() {}
+
+    function updateFan(mode: int, workingPerHour: int) {}
 
     function setVacation(temp_min, temp_max, hum_min, hum_max) {}
 

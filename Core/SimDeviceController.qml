@@ -103,6 +103,14 @@ I_DeviceController {
         }
     }
 
+    //! Update fan
+    function updateFan(mode: int, workingPerHour: int)
+    {
+        // Updatew model
+        device.fan.mode = mode
+        device.fan.workingPerHour = workingPerHour
+    }
+
     //! Set device settings
     function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive)
     {

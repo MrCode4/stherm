@@ -67,10 +67,14 @@ I_DeviceController {
         sendReceive('hardware', 'setBacklight', send_data);
     }
 
-    function updateFan()
+    function updateFan(mode: int, workingPerHour: int)
     {
-        console.log("starting rest for updateFan :", device.fan.working_per_hour)
-        sendReceive('system', 'setFan', device.fan.working_per_hour);
+        console.log("starting rest for updateFan :", workingPerHour)
+        sendReceive('system', 'setFan', workingPerHour);
+
+        // Updatew model
+        device.fan.mode = mode
+        device.fan.workingPerHour = workingPerHour
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
