@@ -18,11 +18,8 @@ Control {
     //! Reference to I_Device
     property I_Device           device: uiSession.appModel
 
-    property  UiPreferences     uiPreference: uiSession.uiPreferences
-
-
     //! Unit of temprature
-    property string             unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
+    property string             unit: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
     property int                minTemprature: 18
@@ -68,7 +65,8 @@ Control {
             visible: labelVisible
             anchors.centerIn: parent
             anchors.verticalCenterOffset: labelVerticalOffset
-            text: Number(uiPreference?.convertedTemperature(_tempSlider.value) ?? 0).toLocaleString(locale, "f", 0)
+            text: Number(Utils.convertedTemperature(_tempSlider.value, device.setting.tempratureUnit))
+                  .toLocaleString(locale, "f", 0)
 
             //! Unit
             Label {

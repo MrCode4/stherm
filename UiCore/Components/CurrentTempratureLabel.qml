@@ -12,10 +12,8 @@ Control {
 
     /* Property declaration
      * ****************************************************************************************/
-    property UiPreferences uiPreference
-
     //! Holds current unit of temprature (Fahrenheit or Celsius)
-    property string     unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
+    property string     unit: (device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! \todo: add a property to get a ref to a temprature model
     //! I_Device
@@ -36,7 +34,9 @@ Control {
             font {
                 pointSize: Qt.application.font.pointSize * 1.5
             }
-            text: Number(uiPreference?.convertedTemperature(device?.currentTemp ?? 0) ?? 0).toLocaleString(locale, "f", 0)
+            text: Number(Utils.convertedTemperature(device?.currentTemp ?? 0,
+                                                      device?.setting?.tempratureUnit))
+                        .toLocaleString(locale, "f", 0)
         }
 
         //! Unit

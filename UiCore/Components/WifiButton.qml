@@ -12,14 +12,6 @@ ToolButton {
 
     /* Property declration
      * ****************************************************************************************/
-    //! Referenct to WifiController
-    property WifiController     wifiController
-
-    //! Reference to Wifi model
-    property Wifi               wifi
-
-    //! UiSessionPopups
-    property UiSessionPopups    popups
 
     /* Object properties
      * ****************************************************************************************/

@@ -32,7 +32,7 @@ I_DeviceController {
      * ****************************************************************************************/
     //! Read sensor data (simulation)
     //! todo: move this to the interface class
-    Timer {
+    property Timer _timer: Timer {
         interval: AppSpec.simReadInterval
         running: true
         repeat: true
@@ -79,27 +79,62 @@ I_DeviceController {
     {
         console.log("settign sim background color")
 
-        Style.background = device.backlight.on ?  device.backlight.color : "#000000";
+        Style.background = device.backlight.on ?  device.backlight._color : "#000000";
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
     {
+        if (!device)
+            return
+
         // udpate model
+        device.vacation.temp_min = temp_min;
+        device.vacation.temp_max = temp_max;
+        device.vacation.hum_min  = hum_min;
+        device.vacation.hum_max  = hum_max ;
     }
 
     function setSystemModeTo(systemMode: int)
     {
-        if (systemMode >= 0 && systemMode <= I_Device.SystemMode.Off) {
+        if (systemMode >= 0 && systemMode <= AppSpec.SystemMode.Off) {
             device.systemMode = systemMode;
 
             //! Do required actions if any
         }
     }
 
+    //! Update fan
+    function updateFan(mode: int, workingPerHour: int)
+    {
+        // Updatew model
+        device.fan.mode = mode
+        device.fan.workingPerHour = workingPerHour
+    }
+
     //! Set device settings
-    function setSettings(brightness, volume, temperature, time, reset, adaptive)
+    function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive)
     {
         // udpate model
+        // Update setting when sendReceive is successful.
+        if (device.setting.brightness !== brightness) {
+            device.setting.brightness = brightness;
+        }
+
+        if (device.setting.volume !== volume) {
+            device.setting.volume = volume;
+        }
+
+        if (device.setting.adaptiveBrightness !== adaptive) {
+            device.setting.adaptiveBrightness = adaptive;
+        }
+
+        if (device.setting.timeFormat !== timeFormat) {
+            device.setting.timeFormat = timeFormat;
+        }
+
+        if (device.setting.tempratureUnit !== temperatureUnit) {
+            device.setting.tempratureUnit = temperatureUnit;
+        }
     }
 
     //! Set temperature to device (system) and update model.

@@ -7,7 +7,7 @@
 class php_hardware : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
+    //    QML_ELEMENT
 public:
     explicit php_hardware(QObject *parent = nullptr);
 

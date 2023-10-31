@@ -33,19 +33,19 @@ BasePageView {
                 //! Save system mode and exit
                 switch(_buttonsGrp.checkedButton) {
                     case _coolingButton:
-                        deviceController.setSystemModeTo(I_Device.SystemMode.Cooling);
+                        deviceController.setSystemModeTo(AppSpec.SystemMode.Cooling);
                         break;
                     case _heatingButton:
-                        deviceController.setSystemModeTo(I_Device.SystemMode.Heating);
+                        deviceController.setSystemModeTo(AppSpec.SystemMode.Heating);
                         break;
                     case _autoButton:
-                        deviceController.setSystemModeTo(I_Device.SystemMode.Auto);
+                        deviceController.setSystemModeTo(AppSpec.SystemMode.Auto);
                         break;
                     case _vacationButton:
-                        deviceController.setSystemModeTo(I_Device.SystemMode.Vacation);
+                        deviceController.setSystemModeTo(AppSpec.SystemMode.Vacation);
                         break;
                     case _offButton:
-                        deviceController.setSystemModeTo(I_Device.SystemMode.Off);
+                        deviceController.setSystemModeTo(AppSpec.SystemMode.Off);
                         break;
                 }
             }
@@ -88,7 +88,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === I_Device.SystemMode.Cooling
+            checked: device?.systemMode === AppSpec.SystemMode.Cooling
             text: "Cooling"
         }
 
@@ -98,7 +98,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === I_Device.SystemMode.Heating
+            checked: device?.systemMode === AppSpec.SystemMode.Heating
             text: "Heating"
         }
 
@@ -108,7 +108,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === I_Device.SystemMode.Auto
+            checked: device?.systemMode === AppSpec.SystemMode.Auto
             text: "Auto"
         }
 
@@ -119,7 +119,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === I_Device.SystemMode.Vacation
+            checked: device?.systemMode === AppSpec.SystemMode.Vacation
             text: "Vacation"
 
             onClicked: {
@@ -136,7 +136,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === I_Device.SystemMode.Off
+            checked: device?.systemMode === AppSpec.SystemMode.Off
             text: "Off"
         }
     }

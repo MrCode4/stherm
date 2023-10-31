@@ -17,8 +17,8 @@ class php_api : public QObject
      * The Q_PROPERTY macro declares a property that could be accessed from QML.
      * e.g.
      *  Q_PROPERTY(QString userName READ userName WRITE setUserName NOTIFY userNameChanged)
-    */
     QML_ELEMENT
+    */
 public:
     explicit php_api(QObject *parent = nullptr);
 

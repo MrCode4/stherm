@@ -1,4 +1,5 @@
 import QtQuick
+
 import QtQuickStream
 import Stherm
 
@@ -11,8 +12,8 @@ QSObject {
     //! Determines whether device backlight is on or off
     property bool               on:             false
 
-    //! Backlight color
-    readonly property color     color:          Qt.hsva(hue, saturation, value)
+    //! Backlight color, readonly for easier usage
+    readonly property color     _color:          Qt.hsva(hue, saturation, value)
 
     //! Hue of color
     property real               hue:            0.

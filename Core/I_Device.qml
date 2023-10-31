@@ -1,4 +1,5 @@
 import QtQuick
+
 import QtQuickStream
 import Stherm
 
@@ -7,16 +8,6 @@ import Stherm
  * ************************************************************************************************/
 QSObject {
     id: appModel
-
-    /* Enums
-     * ****************************************************************************************/
-    enum SystemMode {
-        Cooling,
-        Heating,
-        Auto,
-        Vacation,
-        Off
-    }
 
     /* Property Declarations
      * ****************************************************************************************/
@@ -42,22 +33,34 @@ QSObject {
     property real       tof:            0.0
 
     //! System mode
-    property int        systemMode:     I_Device.SystemMode.Auto
+    property int        systemMode:     AppSpec.SystemMode.Auto
+
+    //! List of all the Messages
+    //! List <Message>
+    property var        messages: []
+
+    //! List of device sensors
+    //! List <Sensor>
+    property var        sensors: []
+
+    //! List of device schedules
+    //! List <Schedule>
+    property var        schedules: []
 
     //! Backlight
-    property Backlight  backlight:      Backlight {}
-
-    //! Wifi
-    property Wifi       wifi:           Wifi {}
+    property Backlight      backlight:      Backlight {}
 
     //! Fan
-    property Fan        fan:            Fan {}
-
-    //! Schedule model
-    property Schedule   schedule:       Schedule {}
+    property Fan            fan:            Fan {}
 
     //! Wiring
-    property Wiring     wiring:         Wiring {}
+    property Wiring         wiring:         Wiring {}
+
+    //! Setting
+    property Setting        setting:        Setting {}
+
+    //! Vacation
+    property Vacation       vacation:       Vacation {}
 
     /* Functions
      * ****************************************************************************************/

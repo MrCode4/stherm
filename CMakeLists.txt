@@ -35,8 +35,8 @@ add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
 set_source_files_properties(
     Core/AppCore.qml
     Core/AppSpec.qml
+    Core/Utils.qml
     UiCore/AppStyle.qml
-    UiCore/AppSettings.qml
     UiCore/FAIcons.qml
 
     PROPERTIES
@@ -64,21 +64,21 @@ qt6_add_qml_module(appStherm
         Core/I_Device.qml
         Core/Device.qml
         Core/SimDevice.qml
-        Core/Wifi.qml
-        Core/WifiController.qml
         Core/Fan.qml
         Core/Backlight.qml
-        Core/WifiDevice.qml
         Core/DeviceController.qml
         Core/SimDeviceController.qml
         Core/I_DeviceController.qml
         Core/Schedule.qml
-        Core/ScheduleController.qml
+        Core/SchedulesController.qml
         Core/Sensor.qml
         Core/SensorController.qml
         Core/Message.qml
         Core/MessageController.qml
         Core/Wiring.qml
+        Core/Vacation.qml
+        Core/Setting.qml
+        Core/Utils.qml
 
 
         # Primitive Components
@@ -88,7 +88,6 @@ qt6_add_qml_module(appStherm
         # UiSession+Popups
         UiCore/FAIcons.qml
         UiCore/AppStyle.qml
-        UiCore/AppSettings.qml
         UiCore/UiSession.qml
         UiCore/UiSessionPopups.qml
         UiCore/UiPreferences.qml
@@ -176,13 +175,27 @@ qt6_add_qml_module(appStherm
     SOURCES
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
-        Backend/AppSettingsCPP.h
-        Backend/AppSettingsCPP.cpp
         Backend/NetworkInterface.h
         Backend/NetworkInterface.cpp
         Backend/NmcliInterface.h
         Backend/ScreenSaverManager.h
         Backend/ScreenSaverManager.cpp
+
+        # php
+        Backend/php_api.h
+        Backend/php_api.cpp
+        Backend/php/php_hardware.h
+        Backend/php/php_hardware.cpp
+        Backend/php/php_system.h
+        Backend/php/php_system.cpp
+        Backend/php/php_sensors.h
+        Backend/php/php_sensors.cpp
+        Backend/php/php_wifi.h
+        Backend/php/php_wifi.cpp
+        Backend/php/php_schedule.h
+        Backend/php/php_schedule.cpp
+        Backend/php/php_update.h
+        Backend/php/php_update.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
@@ -202,13 +215,6 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
-        SOURCES Backend/php_api.h Backend/php_api.cpp
-        SOURCES Backend/php/php_hardware.h Backend/php/php_hardware.cpp
-        SOURCES Backend/php/php_system.h Backend/php/php_system.cpp
-        SOURCES Backend/php/php_sensors.h Backend/php/php_sensors.cpp
-        SOURCES Backend/php/php_wifi.h Backend/php/php_wifi.cpp
-        SOURCES Backend/php/php_schedule.h Backend/php/php_schedule.cpp
-        SOURCES Backend/php/php_update.h Backend/php/php_update.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

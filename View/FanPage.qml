@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Reference to Fan model
-    property Fan    fan:    uiSession?.appModel?.fan ?? null
+    property Fan    fan:    appModel?.fan ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -31,7 +31,10 @@ BasePageView {
         onClicked: {
             //! Update Fan
             if (deviceController) {
-                deviceController.updateFan();
+                var fanMode = _autoButton.checked ? AppSpec.FanMode.FMAuto :
+                                                    (_onButton.checked ? AppSpec.FanMode.FMOn :
+                                                                         AppSpec.FanMode.FMOff)
+                deviceController.updateFan(fanMode, _hourSliders.value);
             }
 
             //! Also move out of this Page
@@ -65,9 +68,10 @@ BasePageView {
                 leftPadding: 64 * scaleFactor
                 rightPadding: 64 * scaleFactor
                 font.weight: checked ? Font.ExtraBold : Font.Normal
-                checked: true
                 checkable: true
                 text: "Auto"
+
+                checked: fan?.mode === AppSpec.FanMode.FMAuto
             }
 
             Button {
@@ -82,6 +86,8 @@ BasePageView {
                 font.weight: checked ? Font.ExtraBold : Font.Normal
                 checkable: true
                 text: "On"
+
+                checked: fan?.mode === AppSpec.FanMode.FMOn
             }
         }
 
@@ -107,7 +113,7 @@ BasePageView {
             from: 0
             to: 50
             stepSize: 1
-            value: fan?.working_per_hour ?? 0
+            value: fan?.workingPerHour ?? 0
             valueChangeAnimation: true
 
             ToolTip {
@@ -118,12 +124,6 @@ BasePageView {
                 timeout: Number.MAX_VALUE
                 delay: 0
                 text: _hourSliders.value
-            }
-
-            onValueChanged: {
-                if (fan && fan.working_per_hour !== value) {
-                    fan.working_per_hour = value
-                }
             }
         }
     }

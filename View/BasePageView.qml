@@ -15,6 +15,9 @@ Page {
     //! Reference to app UiSession since most pages need this
     property UiSession              uiSession
 
+    //! App model
+    property I_Device               appModel: uiSession?.appModel ?? null
+
     //! Ref to I_DeviceController
     property I_DeviceController     deviceController: uiSession?.deviceController ?? null
 

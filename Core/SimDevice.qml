@@ -9,10 +9,6 @@ I_Device {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property SimDeviceController _controller: SimDeviceController {
-        device: simDevice
-    }
-
 
     /* Object Properties
      * ****************************************************************************************/
