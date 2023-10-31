@@ -32,7 +32,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm icon
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c" //! check icon
         }

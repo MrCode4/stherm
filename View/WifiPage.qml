@@ -35,7 +35,7 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     RowLayout {
-        parent: _root.header
+        parent: _root.header.contentItem
 
         Switch {
             id: _wifiOnOffSw

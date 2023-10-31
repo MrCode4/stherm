@@ -36,7 +36,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Next/Confirm button
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
 
         RoniaTextIcon {
             anchors.centerIn: parent

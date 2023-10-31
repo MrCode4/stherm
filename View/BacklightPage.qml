@@ -27,7 +27,7 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     RowLayout {
-        parent: _root.header
+        parent: _root.header.contentItem
         spacing: 8
 
         //! Backlight on/off button

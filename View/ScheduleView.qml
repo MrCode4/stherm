@@ -23,7 +23,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Add schedule button -> add it to header
     ToolButton {
-        parent: _root.header //! Which is a RowLayout
+        parent: _root.header.contentItem //! Which is a RowLayout
         contentItem: RoniaTextIcon {
             text: "\ue197"
         }
