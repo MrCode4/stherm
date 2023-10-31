@@ -15,7 +15,7 @@ QtObject {
     property int        theme:                          Style.Theme.Light
     property color      background:                     "#040404"
     property color      foreground:                     "#ffffff"
-    property color      accent:                         "#9B0EC2"
+    property color      accent:                         "#FFFFFF"
     property color      primary:                        "#E8EAF6"
     property color      frameColor:                     "#f1f1f1"
     property color      backgroundDimColor:             "#F0363636"
