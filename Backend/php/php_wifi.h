@@ -7,7 +7,7 @@
 class php_wifi : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
+    //    QML_ELEMENT
 public:
     explicit php_wifi(QObject *parent = nullptr);
     

@@ -7,7 +7,7 @@
 class php_schedule : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
+    //    QML_ELEMENT
 public:
     explicit php_schedule(QObject *parent = nullptr);
 
