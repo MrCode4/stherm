@@ -20,10 +20,7 @@ Control {
      * ****************************************************************************************/
     implicitWidth:  _dateTimeCol.implicitWidth + leftPadding + rightPadding
     implicitHeight: _dateTimeCol.implicitHeight + topPadding + bottomPadding
-    leftPadding:   AppStyle.size / 30
-    rightPadding:  AppStyle.size / 30
-    topPadding:    AppStyle.size / 30
-    bottomPadding: AppStyle.size / 30
+    padding: 4
     background: null
 
     /* Childrent
@@ -40,7 +37,7 @@ Control {
             Layout.alignment: Qt.AlignHCenter
             font {
                 family: "monospace"
-                pointSize: Qt.application.font.pointSize * 1.4
+                pointSize: Qt.application.font.pointSize * 1.5
             }
             text: "00:00"
         }
@@ -56,10 +53,8 @@ Control {
             id: _dateLbl
             Layout.fillWidth: true
             opacity: 0.75
+            font.pointSize: Application.font.pointSize * 0.85
             horizontalAlignment: "AlignHCenter"
-            font {
-                pointSize: Qt.application.font.pointSize * 1.4
-            }
         }
     }
 
