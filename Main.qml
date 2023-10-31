@@ -106,10 +106,10 @@ ApplicationWindow {
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
     }
 
-    //! A Timer to periodically refresh wifis (every 2 seconds)
+    //! A Timer to periodically refresh wifis (every 20 seconds)
     Timer {
         running: true
-        interval: 5000
+        interval: 20000
         repeat: true
         onTriggered: {
             NetworkInterface.refereshWifis();
