@@ -1,7 +1,8 @@
 import QtQuick
 import QtQuick.Templates as T
 import QtQuick.Controls.impl
-import QtQuick.Controls.Material
+
+import Ronia
 
 T.ItemDelegate {
     id: control
@@ -29,17 +30,17 @@ T.ItemDelegate {
         icon: control.icon
         text: control.text
         font: control.font
-        color: control.enabled ? control.Material.foreground : control.Material.hintTextColor
+        color: control.enabled ? Style.foreground : Style.hintTextColor
     }
 
     background: Rectangle {
-        implicitHeight: control.Material.delegateHeight
+        implicitHeight: Style.delegateHeight
 
-        color: control.pressed ? control.Material.rippleColor : (control.highlighted ? control.Material.listHighlightColor : "transparent")
+        color: control.pressed ? Style.rippleColor : (control.highlighted ? Style.listHighlightColor : "transparent")
 
         Rectangle {
             anchors.fill: parent
-            color: control.hovered ? control.Material.rippleColor : "transparent"
+            color: control.hovered ? Style.rippleColor : "transparent"
         }
     }
 }

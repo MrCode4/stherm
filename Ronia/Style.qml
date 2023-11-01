@@ -33,6 +33,11 @@ QtObject {
     //! App specific shades of main colors
     property color      green:      "#4EAC55"
 
+    //! Number properties
+    property int        delegateHeight:     64
+    property int        textFieldHeight:    72
+    property int        touchTarget:        56
+
     //! Specific styles for some Controls
     readonly property FontIconsSize fontIconSize: FontIconsSize {
         largePt: Application.font.pointSize * 1.8
@@ -45,7 +50,7 @@ QtObject {
         background: _style.background
         hoverColor: "#606060"
         disabledColor: "#242424"
-        buttonHeight: 32
+        buttonHeight: 48
         radius: -1 //! i.e Full radius (Math.min(height, width) / 2
         horizontalPadding: 20
         verticalPadding: horizontalPadding - 10

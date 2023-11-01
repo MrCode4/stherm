@@ -12,7 +12,7 @@ T.ToolButton {
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
                              implicitContentHeight + topPadding + bottomPadding)
 
-    padding: 6
+    padding: 12
     spacing: 6
 
     icon.width: 24
@@ -34,8 +34,8 @@ T.ToolButton {
     background: Rectangle {
         property bool square: control.contentItem.width <= control.contentItem.height
 
-        implicitWidth: Style.button.buttonHeight
-        implicitHeight: Style.button.buttonHeight
+        implicitWidth: Style.touchTarget
+        implicitHeight: Style.touchTarget
         width: square ? control.height : control.width
         height: square ? control.height : control.height
         x: (parent.width - width) / 2
