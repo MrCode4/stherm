@@ -64,6 +64,7 @@ ApplicationWindow {
     FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Regular-400.otf" }
     FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Light-300.otf" }
     FontLoader { source: "qrc:/Stherm/Fonts/RobotoMono-Regular.ttf" }
+    FontLoader { source: "qrc:/Stherm/Fonts/Montserrat-Regular.ttf" }
 
 
     /* Style

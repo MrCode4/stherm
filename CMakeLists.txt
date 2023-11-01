@@ -202,6 +202,7 @@ qt6_add_qml_module(appStherm
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
         Fonts/Font\ Awesome\ 6\ Pro-Regular-400.otf
         Fonts/Font\ Awesome\ 6\ Pro-Light-300.otf
+        Fonts/Montserrat-Regular.ttf
         Fonts/RobotoMono-Regular.ttf
         Fonts/Roboto-Regular.ttf
         Images/auto.png

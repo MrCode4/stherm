@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     const double scaleFactor = qMax(1., dpi / refDPI);
 
     //! Load default font -> Roboto-Regular for now
-    int robotoId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Roboto-Regular.ttf");
+    int robotoId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Montserrat-Regular.ttf");
     if (robotoId == -1) {
         qWarning() << "Could not load Roboto-Regular font.";
     } else {
