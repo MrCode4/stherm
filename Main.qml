@@ -202,7 +202,7 @@ ApplicationWindow {
         repeat: true
         running: true
         onTriggered: {
-            if (Math.random() > 0.5) {
+            if (Math.random() > 0.98) {
                 //! Create an alert
                 var now = new Date();
                 if (Math.random() > 0.5) {
