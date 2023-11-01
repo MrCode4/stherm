@@ -99,8 +99,8 @@ BasePageView {
         WifiDelegate {
             id: _currentWifi
             Layout.fillWidth: true
-            Layout.preferredHeight: + _root.Material.delegateHeight
-                                    + (_wifiConnectLay.parent === this ? _wifiConnectLay.implicitHeight + 16 : 0)
+            Layout.preferredHeight: implicitHeight + (_wifiConnectLay.parent === this
+                                                      ? _wifiConnectLay.implicitHeight + 16 : 0)
 
             clip: true
             visible: sortedWifis.length > 0 && (sortedWifis[0]?.connected ?? false)
@@ -154,8 +154,8 @@ BasePageView {
                 required property int index
 
                 width: ListView.view.width
-                height: + _root.Material.delegateHeight
-                        + (_wifiConnectLay.parent === this ? _wifiConnectLay.implicitHeight + 16 : 0)
+                height: implicitHeight + (_wifiConnectLay.parent === this
+                                          ? _wifiConnectLay.implicitHeight + 16 : 0)
                 clip: true
 
                 wifi: model.wifi ?? null
@@ -204,10 +204,14 @@ BasePageView {
         property bool isSaved: false
         property int minPasswordLength: 0
 
+        anchors {
+            bottom: parent.bottom
+            bottomMargin: 8
+        }
+        x: 16
         width: parent ? parent.width - 32 : 0
         visible: false
-        x: 16
-
+        clip: true
         spacing: 8
 
         onParentChanged: _passwordTf.clear()

@@ -24,17 +24,19 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                             _delegateContentRow.implicitHeight + topPadding + bottomPadding)
     hoverEnabled: true
     background: Rectangle {
-        implicitHeight: _root.Material.delegateHeight
+        implicitHeight: Style.delegateHeight
 
-        color: _delegateButton.pressed ? _root.Material.rippleColor
-                                       : (_root.highlighted ? _root.Material.listHighlightColor
+        color: _delegateButton.pressed ? Style.rippleColor
+                                       : (_root.highlighted ? Style.listHighlightColor
                                                             : "transparent")
 
         Rectangle {
             anchors.fill: parent
-            color: _root.hovered ? _root.Material.rippleColor : "transparent"
+            color: _root.hovered ? Style.rippleColor : "transparent"
         }
     }
 
@@ -43,18 +45,20 @@ Control {
     ItemDelegate {
         id: _delegateButton
         width: parent.width
-        height: _root.Material.delegateHeight
+        height: Style.delegateHeight
         background: null
 
         RowLayout {
+            id: _delegateContentRow
             x: 8
             width: parent.width - 16
-            height: _root.Material.delegateHeight
+            height: parent.height
             spacing: 12
 
             Item {
-                width: _wifiIcon.implicitWidth
-                height: _wifiIcon.implicitHeight
+                Layout.preferredWidth: _wifiIcon.implicitWidth
+                Layout.preferredHeight: _wifiIcon.implicitHeight
+
                 RoniaTextIcon {
                     id: _wifiIcon
                     anchors.fill: parent
@@ -66,7 +70,7 @@ Control {
                 RoniaTextIcon {
                     anchors.fill: parent
                     font.pointSize: _root.font.pointSize * 1.2
-                    color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
+                    color: wifi?.connected ? Style.accent : Style.foreground
                     text: wifi ? ( wifi.strength > 80 ? "\uf1eb" //! wifi icon
                                                       : (wifi.strength > 50 ? "\uf6ab": //! wifi-fair icon
                                                                               (wifi.strength > 25 ?"\uf6aa" : "")//! wifi-weak icon
@@ -79,7 +83,7 @@ Control {
 
                 Label {
                     Layout.fillWidth: true
-                    color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
+                    color: wifi?.connected ? Style.accent : Style.foreground
                     text: wifi?.ssid ?? ""
                     elide: "ElideRight"
                 }
@@ -88,7 +92,7 @@ Control {
                     opacity: 0.7
                     visible: wifi?.connected ?? false
                     font.pointSize: _root.font.pointSize * 0.8
-                    color: wifi?.connected ? _root.Material.accentColor : _root.Material.foreground
+                    color: wifi?.connected ? Style.accent : Style.foreground
                     text: "Connected"
                 }
             }
