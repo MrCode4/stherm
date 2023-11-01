@@ -21,6 +21,7 @@ ItemDelegate {
     /* Object properties
      * ****************************************************************************************/
     contentItem: RowLayout {
+        spacing: 12
         //! Icon: this is supposed to be a unicode of Font Awesome
         RoniaTextIcon {
             text: delegateData?.icon ?? ""
