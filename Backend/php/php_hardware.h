@@ -4,12 +4,114 @@
 #include <QObject>
 #include <QQmlEngine>
 
+#include <ctime>
+
 class php_hardware : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
 
 private:
+
+    ////////////////////// class variables adopted straight from php
+
+    // TODO do tehy belong here
+    typedef time_t timestamp_t;
+
+    timestampt_t current_timestamp(void) {
+        return std::time(0);
+    }
+    timestamp_t minuteToTimestamp(uint32_t mins) {
+        return mins *60;
+    }
+
+
+
+    typedef uint64_t uid_t;
+
+    
+
+    // TODO refactor these
+    const std::string TECHNIC_QR = "https://test.hvac.z-soft.am/#EN/USA/technician/view/";
+    const std::string TECHNIC_EDIT_QR = "https://test.hvac.z-soft.am/#EN/USA/technician/edit/";
+    const int EXEC_TIMEOUT_INTERVAL = 30;
+    const int DELETE_INFO_INTERVAL = 7; // 1 week
+
+    // TODO class, with limits and getters/setters?
+    typedef struct rgbVal {
+        uint32_t red;
+        uint32_t green;
+        uint32_t blue;
+    } rgbVal_t;
+
+
+    /// @brief device_config table struct
+    struct device_config
+    {
+        uint32_t            soft_v = -1;
+        uint32_t            hard_v = -1;
+        uint32_t            mode = 1;
+        uint32_t            brightness = 80;
+        uint32_t            brightness_mode = 0;
+        std::string         serial_number = "";
+        uid_t               uid = -1;
+        std::string         timezone = "Pacific/Midway";
+        std::string         technical_access_link = TECHNIC_QR;
+        rgbVal_t            backlight_rgb = {0,0,0};
+        uint32_t            backlight_type = 0;
+        bool                backlight_status = false;
+        timestamp_t         last_update = current_timestamp();
+        timestamp_t         server_last_update = current_timestamp();
+        uint32_t            current_speed = null;
+        std::string         logo = "nexgen.png";
+        std::string         phone = "";
+        std::string         url = "";
+        std::string         user_guide = "";
+        bool                start_pairing = false;
+        bool                wiring_check = true;
+        uint32_t            is_service_titan = null;
+        uint32_t            timezone_number = null;
+        bool                qa_test = false;
+        uint32_t            forget_sensor = null;
+        std::string         contractor_name = "NextGen";
+        uint32_t            ventilator = 0;
+        uint32_t            start_mode = 0;
+        bool                shut_down = false;
+        rgbVal_t            scheme_backlight_rgb = {0,0,0};
+        uint32_t            humidifier_id = 3;
+        std::string         hum_wiring = "";
+        uint32_t            system_type = 1;
+        uint32_t            emergency_heating = 0;
+        std::string         ob_state = "cool";
+        uint32_t            technical_edit_link  = TECHNIC_EDIT_QR;
+    };
+
+    /// @brief timing table struct
+    struct timing
+    {
+        timestamp_t         s1uptime =current_timestamp();
+        timestamp_t         uptime = current_timestamp();
+        timestamp_t         s2uptime = current_timestamp();
+        bool                s2hold = false;
+        bool                s3hold = false;
+        bool                alerts = false;
+        timestamp_t         set_backlight_time = current_timestamp();
+        uint32_t            wiring_check_interval = 10;
+        timestamp_t         wiring_check_timestamp = current_timestamp();
+        uint32_t            contractor_info_interval = 1;
+        std::string         contractor_info_timestamp = "2023-01-01 00:00:00";
+        uint32_t            info_update_interval = 15;
+        timestamp_t         info_update_timestamp = current_timestamp();
+        std::string         soft_update_timestamp = "2023-01-01 00:00:00";
+        timestamp_t         fan_time = current_timestamp() - minuteToTimestamp(5);// current_timestamp - interval '5 minute'; // TODO 5 shoudl be parameter defined elsewhere, but what it is?
+        uint32_t            start_fan_timing = 0;
+        timestamp_t         delete_info_timestamp = current_timestamp();
+        uint32_t            delete_info_interval = DELETE_INFO_INTERVAL;    // TODO should not imply units
+    };
+    
+    
+    
+
 /**
  * Sets default values in various tables for device configuration.
  *
@@ -20,7 +122,7 @@ private:
  *
  * @param string $uid The unique identifier used to initialize the `device_config` table.
  */
-    void setDefaultValues(int);
+    void setDefaultValues(uid_t uid);
 
 /**
  * Sets the system's timezone based on the `timezone_number` from the `device_config` table.
