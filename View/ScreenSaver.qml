@@ -12,8 +12,11 @@ Popup {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Reference to I_DeviceController
+    property I_DeviceController     deviceController
+
     //! Reference to I_Device
-    property I_Device   device
+    property I_Device               device: deviceController?.device ?? null
 
     //! Unit
     property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C" ?? "F"
@@ -29,6 +32,7 @@ Popup {
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
+        id: _contentLay
         anchors.centerIn: parent
 
         //! Temprature Label
@@ -37,9 +41,9 @@ Popup {
 
             Layout.alignment: Qt.AlignCenter
             font.pointSize: AppStyle.size / 6
-            text: Number(Utils.convertedTemperature(device?.currentTemp ?? 0,
-                                                      device?.setting?.tempratureUnit))
-                  .toLocaleString(locale, "f", 0)
+            text: Number(Utils.convertedTemperature(
+                             device?.currentTemp ?? 0,
+                             device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
 
             Label {
                 anchors {
@@ -58,13 +62,14 @@ Popup {
         }
 
         //! Mode button
-        ToolButton {
-            //! Set icon.source: according to mode
+        SystemModeButton {
+            Layout.leftMargin: 2 * _icon.width / 3 - width / 2
+            deviceController: _root.deviceController
         }
 
         //! NEXGEN icon
         NexgenIcon {
-            Layout.alignment: Qt.AlignHCenter
+            id: _icon
             Layout.preferredWidth: _root.width * 0.75
             Layout.preferredHeight: sourceSize.height * width / sourceSize.width
         }
