@@ -36,7 +36,7 @@ Control {
         id: _desiredTempItem
         anchors.horizontalCenter: parent.horizontalCenter
         height: parent.height / 2.
-        width: parent.availableWidth - (_currentTempLbl.width + _wifiBtn.width) / 3
+        width: parent.availableWidth
         labelVisible: device?.systemMode !== AppSpec.SystemMode.Off
         uiSession: _root.uiSession
     }

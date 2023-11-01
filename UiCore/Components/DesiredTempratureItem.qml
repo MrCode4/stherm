@@ -46,7 +46,9 @@ Control {
     contentItem: Item {
         SemiCircleSlider {
             id: _tempSlider
-            anchors.fill: parent
+            anchors.centerIn: parent
+            width: parent.width
+            height: width / 2
             enabled: labelVisible
             from: minTemprature
             to: maxTemprature
