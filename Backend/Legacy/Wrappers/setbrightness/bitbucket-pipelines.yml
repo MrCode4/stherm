@@ -1,0 +1,21 @@
+image: atlassian/default-image:3
+
+pipelines:
+  branches:
+    master:
+      - step: 
+          name: Install software
+          script:
+            - apt update && apt install -y g++-arm-linux-gnueabihf
+            - cd src
+            - arm-linux-gnueabihf-g++ HvAc_Brightness.cpp -o setBrightness
+          artifacts:
+            - src/setBrightness
+      - step:
+          name: Artifactory connection
+          script:
+            - pipe: jfrog/jfrog-setup-cli:2.0.0
+            - source ./jfrog-setup-cli.sh
+            - jf rt ping
+            - jf rt u src/setBrightness nuve1-setBrightness/v${BITBUCKET_BUILD_NUMBER}/setBrightness
+            - jf rt u src/setBrightness nuve1-setBrightness/latest/setBrightness

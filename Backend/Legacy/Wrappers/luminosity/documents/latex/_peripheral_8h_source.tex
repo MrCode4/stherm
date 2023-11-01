@@ -1,0 +1,97 @@
+\doxysection{Peripheral.\+h}
+\hypertarget{_peripheral_8h_source}{}\label{_peripheral_8h_source}\mbox{\hyperlink{_peripheral_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#define\ \_POSIX\_SOURCE}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <sys/ioctl.h>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <stdio.h>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <stdlib.h>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <errno.h>}\ }
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <termios.h>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <fcntl.h>}\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <sys/stat.h>}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <sys/types.h>}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <unistd.h>}\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ <poll.h>}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ <syslog.h>}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ <signal.h>}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{serial__drv_8h}{serial\_drv.h}}"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{crc_8h}{crc.h}}"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ <linux/uinput.h>}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#define\ NRF\_SERRIAL\_PORT\ "{}/dev/ttymxc1"{}}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#define\ TI\_SERRIAL\_PORT\ "{}/dev/ttymxc3"{}}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#define\ NRF\_GPIO\_4\ \ \ \ \ \ 21}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#define\ NRF\_GPIO\_5\ \ \ \ \ \ 22}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#define\ EXPORT\_PATH\ \ \ \ \ \ "{}/sys/class/gpio/export\(\backslash\)0"{}}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#define\ SW\_VAL\_PATH\ \ \ \ \ \ "{}/sys/class/gpio/gpio\%d/value\(\backslash\)0"{}}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#define\ SW\_INT\_PATH\ \ \ \ \ \ "{}/sys/class/gpio/gpio\%d/edge\(\backslash\)0"{}}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#define\ SW\_DIR\_PATH\ \ \ \ \ \ "{}/sys/class/gpio/gpio\%d/direction\(\backslash\)0"{}}}
+\DoxyCodeLine{00040\ \ \textcolor{comment}{//\#define\ SYS\_KEY\_EVNT\ \ \ \ \ \ "{}xdotool\ key\ \%c\(\backslash\)0"{}}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ SYS\_KEY\_EVNT\ \ \ \ \ \ "{}/usr/share/apache2/default-\/site/htdocs/engine/ydotool\ type\ '\%c'\(\backslash\)0"{}}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#define\ VERSION\_FILE\ \ \ \ \ \ "{}/usr/share/apache2/default-\/site/htdocs/configuration/version.ini"{}}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#define\ VERSION\_HEAD\ \ \ \ \ \ "{}[version]"{}}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#define\ VERSION\_SW\ \ \ \ \ \ \ \ "{}SOFTWARE\_VERSION\ ="{}}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#define\ VERSION\_HW\ \ \ \ \ \ \ \ "{}HARDWARE\_VERSION\ ="{}}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#define\ IPLEN\ 512}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#define\ SQUARE(X)\ ((X)*(X))}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#define\ UNUSED\_VARIABLE(X)\ \ ((void)(X))}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#define\ POLL\_GPIO\ POLLPRI\ |\ POLLERR\ }}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#define\ POLLERRVAL\ (POLLERR\ |\ POLLHUP\ |\ POLLNVAL)}}
+\DoxyCodeLine{00054\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589e}{InThreadCMDS}}\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ead351bdac23a8797f605fa9bbbad245b0}{Set\_limits}}\ =\ 0x00,}
+\DoxyCodeLine{00056\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea2d97fb9b67632fa1de103cccc43496fc}{Set\_time}},}
+\DoxyCodeLine{00057\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589eace11109f92b197a07d8c6e380f4e8a96}{Set\_paired}},}
+\DoxyCodeLine{00058\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ead5ceb9a06382d55da21acbcbf66e8382}{Unpair}},}
+\DoxyCodeLine{00059\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea5361a19a00a5d460a218977fa6bf7f50}{Set\_ignore}},}
+\DoxyCodeLine{00060\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea80dee5065a4bad794e965f43039788bf}{Get\_wiring}},}
+\DoxyCodeLine{00061\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea4d35166f18a7ba35fdfd94a58cdf9c50}{Wiring\_check}},}
+\DoxyCodeLine{00062\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea46030ccc1a0f7679b80514370d3fa466}{Set\_relays}},}
+\DoxyCodeLine{00063\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea785693a1d550a18688638e9124af41d0}{NO\_CMD}}\ =\ 0xFF}
+\DoxyCodeLine{00064\ \};}
+\DoxyCodeLine{00068\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdac}{Led\_effect\_e}}}
+\DoxyCodeLine{00069\ \{}
+\DoxyCodeLine{00070\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdacaa725582579b273bd04c92aed8418c317}{LED\_STABLE}}\ =\ 0,}
+\DoxyCodeLine{00071\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdacadd24a832f79ede3eb64d90d8d387201e}{LED\_FADE}},}
+\DoxyCodeLine{00072\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdaca1577011fa256979ac1ad588c8d17d917}{LED\_BLINK}},}
+\DoxyCodeLine{00073\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdaca539413348482e435ca05667deee23076}{LED\_NO\_MODE}}}
+\DoxyCodeLine{00074\ \};}
+\DoxyCodeLine{00078\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfe}{Alert\_types\_en}}}
+\DoxyCodeLine{00079\ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea70cd5e640d9a4c66d1eafa94321916a6}{Alert\_temp\_high}}\ =\ 1,\textcolor{comment}{//\ +127\ max}}
+\DoxyCodeLine{00081\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea01f495f473befb2b902187215aa8bfcc}{Alert\_temp\_low}},\ \textcolor{comment}{//\ -\/128\ low}}
+\DoxyCodeLine{00082\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeafe534a4942d084ca5901451ead8c8f3b}{Alert\_Tvoc\_high}},\ \textcolor{comment}{//\ 255\ max\ (tvoc\ value\ range\ 0.1\ to\ 10+\ mg/m\string^3\ value\ is\ divided\ by\ 10.0)}}
+\DoxyCodeLine{00083\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea8b48b06b20d5808d270a68c17c720c93}{Alert\_etoh\_high}},\ \textcolor{comment}{//up\ to\ 20ppm}}
+\DoxyCodeLine{00084\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeadf35cd7df0d73c36789faca1b3b32a92}{Alert\_iaq\_high}},\ \textcolor{comment}{//1\ to\ 5}}
+\DoxyCodeLine{00085\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeaa52fa4d837c31f3f607f51eddba58853}{Alert\_humidity\_high}},\textcolor{comment}{//\ up\ to\ 100\%}}
+\DoxyCodeLine{00086\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea881adbd64fc71379482bf38f29b5cc34}{Alert\_humidity\_low}},\textcolor{comment}{//as\ low\ as\ 0\%}}
+\DoxyCodeLine{00087\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfead518fd35b8d3e773f91071e62e6cc2ee}{Alert\_pressure\_high}},\ \textcolor{comment}{//up\ to\ 1200\ hPa}}
+\DoxyCodeLine{00088\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea3b85e6ad0fe8b9093f489887f2483829}{Alert\_c02\_high}},\textcolor{comment}{//400\ to\ 5000ppm}}
+\DoxyCodeLine{00089\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea1a011066e10fa3714a5a0f2c99f717dc}{Alert\_wiring\_not\_connected}},}
+\DoxyCodeLine{00090\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea6e6cd1d150ed3233a02ca6f8dc31d075}{Alert\_could\_not\_set\_relay}},}
+\DoxyCodeLine{00091\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea6aab032c367ac121e41bcf8352c461ff}{NO\_ALlert}}}
+\DoxyCodeLine{00092\ \};}
+\DoxyCodeLine{00096\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{_peripheral_8h_af687b996a669fd319a85ad1595a0f715}{Alert\_lvl\_en}}}
+\DoxyCodeLine{00097\ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_af687b996a669fd319a85ad1595a0f715a568a09d940fd67a27b4d06d708953232}{LVL\_Emergency}}\ =\ 1,}
+\DoxyCodeLine{00099\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_af687b996a669fd319a85ad1595a0f715a913fbf82278b8d8a3b9e4d8f10dc8c87}{LVL\_Warning}},}
+\DoxyCodeLine{00100\ \ \ \ \ \mbox{\hyperlink{_peripheral_8h_af687b996a669fd319a85ad1595a0f715af33a6bd2620b02320bd09dfbc68d5bdf}{LVL\_UNIMPORTANT}}}
+\DoxyCodeLine{00101\ \};}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#define\ RELAY\_OUT\_CNT\ 10}}
+\DoxyCodeLine{00103\ \textcolor{preprocessor}{\#define\ WIRING\_IN\_CNT\ 10}}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#define\ MAX\_PAIED\_CNT\ 16}}
+\DoxyCodeLine{00108\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structthread___data}{thread\_Data}}\ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{structthread___data_ae73f44612f89eab6815c9a8e51d8fbb7}{pipe\_out}};}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{structthread___data_a1d03ed849591d8ab81c3b0e6b0a81ab8}{pipe\_in}};}
+\DoxyCodeLine{00111\ \};}
+\DoxyCodeLine{00116\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{_peripheral_8h_a7b2850ecb5a45a1df997e40f9eb33871}{set\_tty}}(termios*\ tty);}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00123\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{_peripheral_8h_ab69a1e305b76fce28a08b78fb2ddce50}{configure\_pins}}(\textcolor{keywordtype}{int}\ gpio);}
+
+\end{DoxyCode}

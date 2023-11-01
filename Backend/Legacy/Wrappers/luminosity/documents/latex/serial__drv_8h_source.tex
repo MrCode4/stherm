@@ -1,0 +1,116 @@
+\doxysection{serial\+\_\+drv.\+h}
+\hypertarget{serial__drv_8h_source}{}\label{serial__drv_8h_source}\mbox{\hyperlink{serial__drv_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#ifndef\ \_\_SERIAL\_DRV\_H\_\_}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#define\ \_\_SERIAL\_DRV\_H\_\_}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00011\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <stdint.h>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <stdbool.h>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <string.h>}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{comment}{//\ Definitions\ of\ special\ characters\ used\ in\ serial\ communication}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#define\ phyStart\ \ \ \ \ \ \ \ 0xF0}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#define\ phyStop\ \ \ \ \ \ \ \ \ 0xF1}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#define\ phyCtrlEsc\ \ \ \ \ \ 0xF2}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ phyXorByte\ \ \ \ \ \ 0xFF}}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{comment}{//\ Offsets\ for\ various\ fields\ in\ serial\ packets}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ CMD\_Offset\ \ \ \ \ \ 0}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ ACK\_Offset\ \ \ \ \ \ 1}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#define\ SID\_Offset\ \ \ \ \ \ 2}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#define\ DATA\_Offset\ \ \ \ \ 3}}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{comment}{//\ Masks\ for\ packet\ types}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#define\ CmdACK\_Mask\ \ \ \ \ 0x80}}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{comment}{//\ Packet\ types}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#define\ NONE\_Packet\ \ \ \ \ 0x00}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#define\ UART\_Packet\ \ \ \ \ 0x01}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#define\ NUS\_Packet\ \ \ \ \ \ 0x02}}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ Minimum\ packet\ length}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#define\ PacketMinLength\ 5}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#define\ CMD\_ACK\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x00}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#define\ CMD\_ERR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x01}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#define\ CMD\_ERR\_ACT\_SCH\_EXIST\ \ \ 0x02}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#define\ CMD\_ERR\_BUS\_RGB\ \ \ \ \ \ \ \ \ 0x03}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#define\ CMD\_ERR\_BUS\_TMR\ \ \ \ \ \ \ \ \ 0x04}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ CMD\_ERR\_LICENSE\ \ \ \ \ \ \ \ \ 0xFF}}
+\DoxyCodeLine{00045\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_serial___rx_data}{Serial\_RxData}}\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{struct_serial___rx_data_ac45aea7c3347c41988735d28a59e055e}{RxDataLen}};}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_serial___rx_data_a90dfe4a21553690c0b875ed76293650a}{RxActive}};}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_serial___rx_data_ad0e5a3c9b06d69d29e8b41f3ce977bfc}{RxPacketDone}};}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_serial___rx_data_a00feafa184de2c022519f0b09783ca93}{RxCtrlEsc}};}
+\DoxyCodeLine{00050\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{struct_serial___rx_data_abb0ef9fd1786dc7bf3b59af17e25c060}{RxDataArray}}[256];}
+\DoxyCodeLine{00051\ \}\ \mbox{\hyperlink{serial__drv_8h_a7735b7fdf5c771a06f6848a7907022b2}{Serial\_RxData\_t}};}
+\DoxyCodeLine{00055\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3}{SIO\_Command}}\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a66f0cf724fb07d15e82c972aae41e0be}{SetConfig}}\ =\ 0x01,}
+\DoxyCodeLine{00057\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3af93fc864bb7ad037b42d280f1255e2f0}{SetColorRGB}},}
+\DoxyCodeLine{00058\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a96118933a612e34d6a197f261459714e}{InitMcus}}\ =\ 0x21,}
+\DoxyCodeLine{00059\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3afe0e036a7a63dbc9e86878b37b03fa75}{SetChildStatus}},}
+\DoxyCodeLine{00060\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ad1f9f8a9d0daf709d114dad5ed045472}{StartPairing}},}
+\DoxyCodeLine{00061\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a52e93bd781bea06c9ec2f3a7ef6a6915}{StopPairing}},}
+\DoxyCodeLine{00062\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a834543bec9f0df51e96be14fccb27c41}{GetSensorData}},}
+\DoxyCodeLine{00063\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ac1a69c381e5831d9525f0417d0c1db12}{GetNewChild}},}
+\DoxyCodeLine{00064\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a31d73eb53a2cbac5aadfd3f2f821d921}{Get\_packets}},}
+\DoxyCodeLine{00065\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a6f9e9df127d10ca23858991ce3dea94f}{Send\_packet}},}
+\DoxyCodeLine{00066\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a28b565d3fd28e825d7ff5344f171c857}{SetRelay}}\ =\ 0x31,}
+\DoxyCodeLine{00067\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a786b48f564ec02e3f5f5021d7ed1cdc1}{GetRelaySensor}},}
+\DoxyCodeLine{00068\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a9c4de0664775a93d9c037cc600a0b156}{Check\_Wiring}},}
+\DoxyCodeLine{00069\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a2d047b541abac1fccba522171f6958a7}{feed\_wtd}},}
+\DoxyCodeLine{00070\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a432e47419ac087101368e1d3181b03a3}{Get\_addr}},}
+\DoxyCodeLine{00071\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a0ce9600eb2370128a15a91e2b0ea0ac1}{set\_wtd}},}
+\DoxyCodeLine{00072\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3aa30b4b0cf5f0e777ffada069307c45f8}{set\_update}},}
+\DoxyCodeLine{00073\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a4ee75c52c21eaf88848a1be50f6fdfdd}{GetConfig}}\ =\ 0x41,}
+\DoxyCodeLine{00074\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a050d7c8b46c7296173d8c6f565695cb0}{GetStatus}},}
+\DoxyCodeLine{00075\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a35d26106279965e650b06e636e980515}{GetInfo}},}
+\DoxyCodeLine{00076\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a19de9c37793093d5c344e87a4a07bc7d}{GetTemperature}},}
+\DoxyCodeLine{00077\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a7266a59252b5c9587664d6c7c66d08e1}{GetHumidity}},}
+\DoxyCodeLine{00078\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a1c01256e672a93c4d292421ba7a0af1f}{GetAQsData}},}
+\DoxyCodeLine{00079\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3abe0034a881a907da370b95f82dd80112}{GetBarometer}},}
+\DoxyCodeLine{00080\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3adcaf2525154f464bd5d234bd1e80f93f}{GetAmbientLight}},}
+\DoxyCodeLine{00081\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ae1daa70f55450bef9777a7e7bc53880f}{GetTOF}},}
+\DoxyCodeLine{00082\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ac58daba4eec7a51484851edae3a4caa9}{GetSensors}},}
+\DoxyCodeLine{00083\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a6da2bdc9fa6f92e89eb5909ae0698c8b}{GetIntoDFU}},}
+\DoxyCodeLine{00084\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a5a440eb2305fad120d18d26c8f505159}{GET\_DEV\_ID}},}
+\DoxyCodeLine{00085\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ad31a4d84626250454a18e18088475417}{CommandNotSupported}}=0xfe,}
+\DoxyCodeLine{00086\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a8c96fcf0eaf23cf43bc0fa98bb616be2}{NoCommand}}}
+\DoxyCodeLine{00087\ \}\ \mbox{\hyperlink{serial__drv_8h_a0c6562613d90d718ce0763065627c86d}{SIO\_Cmd\_t}};}
+\DoxyCodeLine{00091\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_s_i_o___packet}{SIO\_Packet}}\ \{}
+\DoxyCodeLine{00092\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{struct_s_i_o___packet_ad65bd5eb999fda3d1512cfd6c53f5adc}{PacketSrc}};}
+\DoxyCodeLine{00093\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_a0c6562613d90d718ce0763065627c86d}{SIO\_Cmd\_t}}\ \mbox{\hyperlink{struct_s_i_o___packet_a11ad41de86aabd479dff255e8e006fef}{CMD}};}
+\DoxyCodeLine{00094\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{struct_s_i_o___packet_aa1722bf8ca2cb43f040852d976e2fa2d}{ACK}};}
+\DoxyCodeLine{00095\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{struct_s_i_o___packet_ac8dcaa012b5eae6c361b79eedf576b3c}{SID}};}
+\DoxyCodeLine{00096\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{struct_s_i_o___packet_ab81bc4284c46cfa5378520e45441ef32}{DataLen}};}
+\DoxyCodeLine{00097\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{struct_s_i_o___packet_ac7e1ec45ad3e9e91d0100665dc20caff}{DataArray}}[250];}
+\DoxyCodeLine{00098\ \ \ \ \ uint16\_t\ \mbox{\hyperlink{struct_s_i_o___packet_afb8cac113b1a41d1c48d80018ddb6744}{CRC}};}
+\DoxyCodeLine{00099\ \}\ \mbox{\hyperlink{serial__drv_8h_a8c497a22014c5c6a04ec9f810c28b861}{SIO\_Packet\_t}};}
+\DoxyCodeLine{00103\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dc}{SIO\_Errors}}\ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca18bbd975653ed24f2333c30c9f7f7386}{ERROR\_NO}}\ =\ 0x00,}
+\DoxyCodeLine{00105\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcad72fa90dba5570304cd5b3a84f50c1ae}{ERROR\_01}},\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Error:\ I2C\_BUS}}
+\DoxyCodeLine{00106\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca22d6c6941824c64153e763d87c3dfab1}{ERROR\_02}},\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Error:\ Temperature/Humidity\ is\ not\ updated}}
+\DoxyCodeLine{00107\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcacccb923bfec6f6cc4ba96f00d4183eea}{ERROR\_GPIO\_INIT}},}
+\DoxyCodeLine{00108\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca42498341943a91e1ca862ed65d90eb3a}{ERROR\_UNKNOWN\_COMMAND}},}
+\DoxyCodeLine{00109\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca47a6be599d7b86d6078e5e150674a206}{ERROR\_CRC}},}
+\DoxyCodeLine{00110\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca4325114a5d55f2c89e86dfab47d67ede}{ERROR\_TX}},}
+\DoxyCodeLine{00111\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcaaa278998b070f1f9dac34c72fafffae4}{ERROR\_DATA\_LEN}},}
+\DoxyCodeLine{00112\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca9d17c253865c9710657678184c797906}{ERROR\_RELAY\_NOT\_FOUND}},}
+\DoxyCodeLine{00113\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcac0cc91a9cc383c6ff98e9b311b8acf8f}{USAGE\_ERROR}},\textcolor{comment}{//programm\ call\ argument\ count\ error}}
+\DoxyCodeLine{00114\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca49ccf277a69dd938c591928aa27c66cc}{ARGUMENT\_ERROR}},\textcolor{comment}{//programm\ call\ argument\ expression\ error}}
+\DoxyCodeLine{00115\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcac3958e7f70de9a0bfb39499d8edbd376}{RESOURCE\_BUSY\_ERROR}},\textcolor{comment}{//can\ not\ open\ recource\ associated\ with\ the\ programm}}
+\DoxyCodeLine{00116\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcaa6160da3d147c897d800efe3a69c941e}{INTERNAL\_ERROR}},\textcolor{comment}{//error\ on\ the\ side\ of\ microcontrollers\ }}
+\DoxyCodeLine{00117\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca52ab3b4eea34bc5e6b0d0e66ed69b232}{ERROR\_WIRING\_NOT\_CONNECTED}},}
+\DoxyCodeLine{00118\ \ \ \ \ \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcad27d4fdb21354544077aa87470515c1a}{ERROR\_COULD\_NOT\_SET\_RELAY}}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \}\ \mbox{\hyperlink{serial__drv_8h_ad5b7a96255a990ccbef7f7b2065b1897}{SIO\_Errors\_t}};}
+\DoxyCodeLine{00121\ \textcolor{comment}{//\ Function\ prototypes}}
+\DoxyCodeLine{00122\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{serial__drv_8h_acd6e20d4d40add5d0e9eda541c5b5c28}{SerialDataRx}}(uint8\_t\ RxData,\ \mbox{\hyperlink{struct_serial___rx_data}{Serial\_RxData\_t}}*\ RxDataCfg);}
+\DoxyCodeLine{00123\ uint16\_t\ \mbox{\hyperlink{serial__drv_8h_aa7bf253ba533d87ef4c4eeeea14430a9}{Set\_SIO\_TxPacket}}(uint8\_t*\ TxDataBuf,\ \mbox{\hyperlink{struct_s_i_o___packet}{SIO\_Packet\_t}}\ TxPacket);}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00126\ \ \}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//cpp}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\_\_SERIAL\_DRV\_H\_\_}}
+\DoxyCodeLine{00129\ }
+
+\end{DoxyCode}

@@ -1,0 +1,190 @@
+.TH "WifiManager" 3 "Tue Mar 28 2023" "My Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+WifiManager
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <WifiManager\&.h>\fP
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "enum \fBERROR\fP { \fBERROR_NO\fP, \fBERROR_UNKNOWN\fP, \fBERROR_INPUT\fP, \fBERROR_TIMEOUT\fP, \fBERROR_ConActFail\fP, \fBERROR_ConDactFail\fP, \fBERROR_DiscDevFail\fP, \fBERROR_ConDelFail\fP, \fBERROR_NetMng\fP, \fBERROR_NotExsist\fP =10, \fBERROR_WRONG_BSSID\fP, \fBERROR_WRONG_NAME\fP, \fBERROR_WRONG_PASS\fP, \fBERROR_NO_ACTIVE_WIFI\fP, \fBERROR_WRONG_ARGUMENTS\fP, \fBERROR_CRITICAL_DELETE\fP, \fBERROR_INTERNAL_ERROR\fP, \fBERROR_CONNECTION_ALREADY_EXISTS\fP, \fBERROR_INTERNAL_ERROR_PARSING\fP, \fBERROR_WRONG_SUBNET\fP, \fBERROR_WRONG_IP\fP, \fBERROR_WRONG_ESSID\fP }"
+.br
+.ti -1c
+.RI "enum \fBManual_connection\fP { \fBessid\fP, \fBip\fP, \fBsubnet\fP, \fBgtw\fP, \fBdns\fP, \fBdns2\fP, \fBpass\fP }"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "int \fBget_wifi_list\fP ()"
+.br
+.RI "Get a list of available WiFi networks and their properties\&. This function uses the 'nmcli' command to get a list of available WiFi networks and their properties\&. The properties include ESSID, unique name, connection status, security status, and signal strength\&. "
+.ti -1c
+.RI "int \fBget_wifi_state\fP (std::string name)"
+.br
+.ti -1c
+.RI "int \fBwifi_connect\fP (std::vector< std::string > &wifi_params)"
+.br
+.RI "You may have some primary information about this class\&. "
+.ti -1c
+.RI "int \fBwifi_disconnect\fP (std::string name)"
+.br
+.ti -1c
+.RI "int \fBwifi_forget\fP (std::string name)"
+.br
+.ti -1c
+.RI "int \fBwifi_con_up\fP (std::string name)"
+.br
+.ti -1c
+.RI "int \fBget_active_wifi\fP ()"
+.br
+.RI "test "
+.ti -1c
+.RI "int \fBget_wifi_connections\fP ()"
+.br
+.ti -1c
+.RI "int \fBdelete_all_con\fP ()"
+.br
+.ti -1c
+.RI "int \fBbssid_to_ssid\fP (std::string &bssid)"
+.br
+.ti -1c
+.RI "int \fBwrite_wifi_signal\fP ()"
+.br
+.ti -1c
+.RI "int \fBwifi_manual_connect\fP (std::vector< std::string > &args)"
+.br
+.in -1c
+.SH "Member Enumeration Documentation"
+.PP 
+.SS "enum \fBWifiManager::ERROR\fP"
+
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fIERROR_NO \fP\fP
+.TP
+\fB\fIERROR_UNKNOWN \fP\fP
+.TP
+\fB\fIERROR_INPUT \fP\fP
+.TP
+\fB\fIERROR_TIMEOUT \fP\fP
+.TP
+\fB\fIERROR_ConActFail \fP\fP
+.TP
+\fB\fIERROR_ConDactFail \fP\fP
+.TP
+\fB\fIERROR_DiscDevFail \fP\fP
+.TP
+\fB\fIERROR_ConDelFail \fP\fP
+.TP
+\fB\fIERROR_NetMng \fP\fP
+.TP
+\fB\fIERROR_NotExsist \fP\fP
+.TP
+\fB\fIERROR_WRONG_BSSID \fP\fP
+.TP
+\fB\fIERROR_WRONG_NAME \fP\fP
+.TP
+\fB\fIERROR_WRONG_PASS \fP\fP
+.TP
+\fB\fIERROR_NO_ACTIVE_WIFI \fP\fP
+.TP
+\fB\fIERROR_WRONG_ARGUMENTS \fP\fP
+.TP
+\fB\fIERROR_CRITICAL_DELETE \fP\fP
+.TP
+\fB\fIERROR_INTERNAL_ERROR \fP\fP
+.TP
+\fB\fIERROR_CONNECTION_ALREADY_EXISTS \fP\fP
+.TP
+\fB\fIERROR_INTERNAL_ERROR_PARSING \fP\fP
+.TP
+\fB\fIERROR_WRONG_SUBNET \fP\fP
+.TP
+\fB\fIERROR_WRONG_IP \fP\fP
+.TP
+\fB\fIERROR_WRONG_ESSID \fP\fP
+.SS "enum \fBWifiManager::Manual_connection\fP"
+
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fIessid \fP\fP
+.TP
+\fB\fIip \fP\fP
+.TP
+\fB\fIsubnet \fP\fP
+.TP
+\fB\fIgtw \fP\fP
+.TP
+\fB\fIdns \fP\fP
+.TP
+\fB\fIdns2 \fP\fP
+.TP
+\fB\fIpass \fP\fP
+.SH "Member Function Documentation"
+.PP 
+.SS "int WifiManager::bssid_to_ssid (std::string & bssid)"
+
+.SS "int WifiManager::delete_all_con ()"
+
+.SS "int WifiManager::get_active_wifi ()"
+
+.PP
+test 
+.PP
+\fBReturns\fP
+.RS 4
+
+.RE
+.PP
+
+.SS "int WifiManager::get_wifi_connections ()"
+
+.SS "int WifiManager::get_wifi_list ()"
+
+.PP
+Get a list of available WiFi networks and their properties\&. This function uses the 'nmcli' command to get a list of available WiFi networks and their properties\&. The properties include ESSID, unique name, connection status, security status, and signal strength\&. 
+.PP
+\fBReturns\fP
+.RS 4
+An integer indicating the success or failure of the function\&. 
+.RE
+.PP
+
+.SS "int WifiManager::get_wifi_state (std::string name)"
+
+.SS "int WifiManager::wifi_con_up (std::string name)"
+
+.SS "int WifiManager::wifi_connect (std::vector< std::string > & wifi_params)"
+
+.PP
+You may have some primary information about this class\&. dd
+.PP
+\fBReturns\fP
+.RS 4
+aa
+.RE
+.PP
+
+.SS "int WifiManager::wifi_disconnect (std::string name)"
+
+.SS "int WifiManager::wifi_forget (std::string name)"
+
+.SS "int WifiManager::wifi_manual_connect (std::vector< std::string > & args)"
+
+.SS "int WifiManager::write_wifi_signal ()"
+
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for My Project from the source code\&.

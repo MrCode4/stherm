@@ -1,0 +1,81 @@
+.TH "def_values.h" 3 "Tue Mar 28 2023" "My Project" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+def_values.h
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <iostream>\fP
+.br
+
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBARGUMENT_MIN_COUNT\fP   2"
+.br
+.ti -1c
+.RI "#define \fBARGUMENT_MAX_COUNT\fP   10"
+.br
+.in -1c
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBCOMMANDS\fP { \fBCOMMAND_SEARCH\fP =100, \fBCOMMAND_MANUAL\fP, \fBCOMMAND_CONNECT\fP, \fBCOMMAND_DISCONNECT\fP, \fBCOMMAND_FORGET\fP, \fBCOMMAND_SHOW_ACTIVE_CONNECTIONS\fP, \fBCOMMAND_SHOW_CONNECTIONS\fP, \fBCOMMAND_DELETE_ALL\fP }"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "std::string \fBmy_cmd_array\fP [] = { 'search','manual','connect','disconnect','forget','active','connections','secret_delete_all'}"
+.br
+.ti -1c
+.RI "int \fBmy_arr_size\fP = 8"
+.br
+.ti -1c
+.RI "std::string \fBwifi_manual\fP = 'essid:LanTekIV ip:172\&.16\&.0\&.227 subnet:255\&.255\&.255\&.0 gtw:172\&.16\&.0\&.1 dns:8\&.8\&.8\&.8 dns2:4\&.4\&.4\&.4 pass:IdealNetworks123*'"
+.br
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define ARGUMENT_MAX_COUNT   10"
+
+.SS "#define ARGUMENT_MIN_COUNT   2"
+
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBCOMMANDS\fP"
+
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fICOMMAND_SEARCH \fP\fP
+.TP
+\fB\fICOMMAND_MANUAL \fP\fP
+.TP
+\fB\fICOMMAND_CONNECT \fP\fP
+.TP
+\fB\fICOMMAND_DISCONNECT \fP\fP
+.TP
+\fB\fICOMMAND_FORGET \fP\fP
+.TP
+\fB\fICOMMAND_SHOW_ACTIVE_CONNECTIONS \fP\fP
+.TP
+\fB\fICOMMAND_SHOW_CONNECTIONS \fP\fP
+.TP
+\fB\fICOMMAND_DELETE_ALL \fP\fP
+.SH "Variable Documentation"
+.PP 
+.SS "int my_arr_size = 8"
+
+.SS "std::string my_cmd_array[] = { 'search','manual','connect','disconnect','forget','active','connections','secret_delete_all'}"
+
+.SS "std::string wifi_manual = 'essid:LanTekIV ip:172\&.16\&.0\&.227 subnet:255\&.255\&.255\&.0 gtw:172\&.16\&.0\&.1 dns:8\&.8\&.8\&.8 dns2:4\&.4\&.4\&.4 pass:IdealNetworks123*'"
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for My Project from the source code\&.

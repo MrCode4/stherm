@@ -1,0 +1,50 @@
+\doxysection{Peripheral.\+cpp File Reference}
+\hypertarget{_peripheral_8cpp}{}\label{_peripheral_8cpp}\index{Peripheral.cpp@{Peripheral.cpp}}
+{\ttfamily \#include \"{}Peripheral.\+h\"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{_peripheral_8cpp_ab69a1e305b76fce28a08b78fb2ddce50}{configure\+\_\+pins}} (int gpio)
+\begin{DoxyCompactList}\small\item\em Configure the GPIO pins. This function exports the specified SW GPIO, configures it as input, and sets the edge detection to falling. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{_peripheral_8cpp_a7b2850ecb5a45a1df997e40f9eb33871}{set\+\_\+tty}} (termios \texorpdfstring{$\ast$}{*}tty)
+\begin{DoxyCompactList}\small\item\em Configure the termios struct for the tty device. This function sets the options in the termios struct for the tty device, such as the data size, parity, and stop bits. It also sets flags to disable hardware flow control and enable READ and ignore ctrl lines. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{_peripheral_8cpp_ab69a1e305b76fce28a08b78fb2ddce50}\label{_peripheral_8cpp_ab69a1e305b76fce28a08b78fb2ddce50} 
+\index{Peripheral.cpp@{Peripheral.cpp}!configure\_pins@{configure\_pins}}
+\index{configure\_pins@{configure\_pins}!Peripheral.cpp@{Peripheral.cpp}}
+\doxysubsubsection{\texorpdfstring{configure\_pins()}{configure\_pins()}}
+{\footnotesize\ttfamily int configure\+\_\+pins (\begin{DoxyParamCaption}\item[{int}]{gpio }\end{DoxyParamCaption})}
+
+
+
+Configure the GPIO pins. This function exports the specified SW GPIO, configures it as input, and sets the edge detection to falling. 
+
+Function to configure a GPIO pin as input for interrupt handling.
+
+
+\begin{DoxyParams}{Parameters}
+{\em gpio} & The GPIO pin number to be configured. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns EXIT\+\_\+\+SUCCESS if successful, or EXIT\+\_\+\+FAILURE if an error occurred. 
+\end{DoxyReturn}
+\Hypertarget{_peripheral_8cpp_a7b2850ecb5a45a1df997e40f9eb33871}\label{_peripheral_8cpp_a7b2850ecb5a45a1df997e40f9eb33871} 
+\index{Peripheral.cpp@{Peripheral.cpp}!set\_tty@{set\_tty}}
+\index{set\_tty@{set\_tty}!Peripheral.cpp@{Peripheral.cpp}}
+\doxysubsubsection{\texorpdfstring{set\_tty()}{set\_tty()}}
+{\footnotesize\ttfamily void set\+\_\+tty (\begin{DoxyParamCaption}\item[{termios \texorpdfstring{$\ast$}{*}}]{tty }\end{DoxyParamCaption})}
+
+
+
+Configure the termios struct for the tty device. This function sets the options in the termios struct for the tty device, such as the data size, parity, and stop bits. It also sets flags to disable hardware flow control and enable READ and ignore ctrl lines. 
+
+Function to set the TTY configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em tty} & Pointer to the termios struct to be configured. \\
+\hline
+\end{DoxyParams}

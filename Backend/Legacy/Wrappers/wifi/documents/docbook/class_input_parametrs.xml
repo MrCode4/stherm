@@ -1,0 +1,647 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="_class_input_parametrs" xml:lang="en-US">
+<title>InputParametrs Class Reference</title>
+<indexterm><primary>InputParametrs</primary></indexterm>
+<para>
+
+<para>The class for processing command-line arguments This class is responsible for parsing and processing command-line arguments related to Wi-Fi management tasks. It works in conjunction with the <link linkend="_class_wifi_manager">WifiManager</link> class to handle tasks such as wifi connect disconnect forget manual connection, IP address validation, and subnet reformatting. </para>
+ 
+</para>
+<para>
+<computeroutput>#include &lt;InputParametrs.h&gt;</computeroutput>
+</para>
+<simplesect>
+    <title>Public Member Functions    </title>
+        <itemizedlist>
+            <listitem><para><link linkend="_class_input_parametrs_1ad69894f7986b7adf80c1dc3d2dba3688">InputParametrs</link> (char **argv, int argc)</para>
+
+<para><link linkend="_class_input_parametrs">InputParametrs</link> constructor that initializes the ip_argv and ip_argc member variables. This constructor takes command-line arguments as input and initializes the ip_argv and ip_argc member variables, which will be used to store the command-line arguments for processing by the <link linkend="_class_input_parametrs">InputParametrs</link> class. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_input_parametrs_1a756b798df75030eef5f159b88900e9ba">executeCommand</link> ()</para>
+
+<para>Executes the appropriate command based on the input parameters. This function checks if the arguments are valid and then calls the appropriate function to execute the desired command. It handles command execution for searching Wi-Fi networks, manually connecting to a network, connecting, disconnecting, forgetting a network, showing active connections, showing all connections, and deleting all connections. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Private Types    </title>
+        <itemizedlist>
+            <listitem><para>enum <link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9">Manual_connection</link> { <?linebreak?><link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9a005a3af08773c7fc15fb0792cf184dad">essid</link>
+, <link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9ac4872bbcc68002400a08320bfbe09734">ip</link>
+, <link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9aab289660335c687680292888e037cd84">subnet</link>
+, <link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9adc87e1b94ef6cbea98ced8137277ddfb">gtw</link>
+, <?linebreak?><link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9a5159d5de2ae328a292dfbe3982ba341f">dns</link>
+, <link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9a18709b455fdfebbea0dbd1209514c35e">dns2</link>
+, <link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9a4953979681e6c099c905962af8af274e">pass</link>
+ }</para>
+
+<para>Enum for indexing the wifi-IP-related command-line arguments. </para>
+</listitem>
+            <listitem><para>enum <link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eb">Subnet</link> { <?linebreak?><link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba2ec77594bd0a2cd322d23078d4e9c84d">SUBNET_0</link>
+, <link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6ebac7aaf54c7d51e8089f135ec020c529c0">SUBNET_128</link>
+, <link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6ebaacacf513053871fafb5938f772bafa7e">SUBNET_192</link>
+, <link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6ebaaf52c97fecb010c06c1ea83fedbb17c6">SUBNET_224</link>
+, <?linebreak?><link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba0e438f7539ed47f97ad051640c3c4abf">SUBNET_240</link>
+, <link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba3afc75d3828a5b4e093005eb542bb6e0">SUBNET_248</link>
+, <link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6ebaf927d532f76ed7a7137d1e03bc262990">SUBNET_252</link>
+, <link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba699bf1abb6b13d47b83965fcb01b32ca">SUBNET_254</link>
+, <?linebreak?><link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba45c0503ce0f816784ae6b5c0a637959a">SUBNET_255</link>
+ }</para>
+
+<para>Enum for representing valid subnet mask values. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Private Member Functions    </title>
+        <itemizedlist>
+            <listitem><para>bool <link linkend="_class_input_parametrs_1a9d3ba1d07e069018fcaabbbb5d343b44">find_words</link> (std::vector&lt; std::string &gt; &amp;args, std::string &amp;data, const std::vector&lt; std::string &gt; findable_words)</para>
+
+<para>Searches for specific words in a string and populates a vector with them. </para>
+</listitem>
+            <listitem><para>bool <link linkend="_class_input_parametrs_1a3e5e2f95b79a8a2d0700b426864da812">get_arguments</link> (char **argv, int argc, std::vector&lt; std::string &gt; &amp;all_argunments)</para>
+
+<para>Extracts arguments from the command line input. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_input_parametrs_1a9e96458cdc5ab59bd8b1348bc2561a8d">get_command</link> (char **argv, int argc)</para>
+
+<para>Determines the command type based on the command line input. </para>
+</listitem>
+            <listitem><para>bool <link linkend="_class_input_parametrs_1adbb5ff2b695f1df8608af058ae8be1cd">check_arg_count</link> (char **argv, int argc)</para>
+
+<para>Checks if the number of command-line arguments is valid for the given command. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_input_parametrs_1ae8801a48e08ae50b33aa315e63d3e235">print_errors</link> (int err_code)</para>
+
+<para>Prints error messages based on the given error code. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_input_parametrs_1a7e9242b9dde105009632e02232609abc">manual_connect_arguments</link> (std::vector&lt; std::string &gt; &amp;args, std::string &amp;data)</para>
+
+<para>Validates and processes manual connection arguments. </para>
+</listitem>
+            <listitem><para>bool <link linkend="_class_input_parametrs_1a39e216c81ffc8927d363bef11180ce49">is_ip</link> (std::string <link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9ac4872bbcc68002400a08320bfbe09734">ip</link>)</para>
+
+<para>Checks if the input string is a valid IP address. </para>
+</listitem>
+            <listitem><para>bool <link linkend="_class_input_parametrs_1a030cfa4c12827043ad55586423f1556f">subet_reformating</link> (std::string &amp;<link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9aab289660335c687680292888e037cd84">subnet</link>)</para>
+
+<para>Reformats a subnet mask string into CIDR notation. </para>
+</listitem>
+            <listitem><para>void <link linkend="_class_input_parametrs_1aa4440fd7b625c3eab67087fef0126827">removeSpacesFromBack</link> (std::string &amp;data)</para>
+
+<para>Removes trailing spaces from a string. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Private Attributes    </title>
+        <itemizedlist>
+            <listitem><para>std::vector&lt; std::string &gt; <link linkend="_class_input_parametrs_1a46b4d7e9baa63b6d55db4d76a972b7b6">ip_arguments</link></para>
+
+<para>Vector to store IP-related command-line arguments. </para>
+</listitem>
+            <listitem><para>char ** <link linkend="_class_input_parametrs_1a099c739a0b71c059a1ce57465f550488">ip_argv</link></para>
+
+<para>Pointer to the array of command-line arguments. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_input_parametrs_1aa91548481f15eaeee623afdb483042bb">ip_argc</link></para>
+
+<para>The number of command-line arguments. </para>
+</listitem>
+            <listitem><para><link linkend="_class_wifi_manager">WifiManager</link> <link linkend="_class_input_parametrs_1a7f4ca6a3e45a51dc4a259bd0f58791fa">wifi_function</link></para>
+
+<para>Instance of <link linkend="_class_wifi_manager">WifiManager</link> class for handling Wi-Fi connections. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<section>
+<title>Detailed Description</title>
+
+<para>The class for processing command-line arguments This class is responsible for parsing and processing command-line arguments related to Wi-Fi management tasks. It works in conjunction with the <link linkend="_class_wifi_manager">WifiManager</link> class to handle tasks such as wifi connect disconnect forget manual connection, IP address validation, and subnet reformatting. </para>
+</section>
+<section>
+<title>Member Enumeration Documentation</title>
+<anchor xml:id="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9"/><section>
+    <title>Manual_connection</title>
+<indexterm><primary>Manual_connection</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>Manual_connection</secondary></indexterm>
+<para><computeroutput>enum <link linkend="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9">InputParametrs::Manual_connection</link><computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Enum for indexing the wifi-IP-related command-line arguments. </para>
+</para>
+<informaltable frame="all">
+<title>Enumerator</title>
+    <tgroup cols="2" align="left" colsep="1" rowsep="1">
+      <colspec colname='c1'/>
+      <colspec colname='c2'/>
+<tbody>
+<row><entry><indexterm><primary>essid</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>essid</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9a005a3af08773c7fc15fb0792cf184dad"/>essid</entry><entry></entry></row><row><entry><indexterm><primary>ip</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>ip</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9ac4872bbcc68002400a08320bfbe09734"/>ip</entry><entry></entry></row><row><entry><indexterm><primary>subnet</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>subnet</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9aab289660335c687680292888e037cd84"/>subnet</entry><entry></entry></row><row><entry><indexterm><primary>gtw</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>gtw</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9adc87e1b94ef6cbea98ced8137277ddfb"/>gtw</entry><entry></entry></row><row><entry><indexterm><primary>dns</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>dns</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9a5159d5de2ae328a292dfbe3982ba341f"/>dns</entry><entry></entry></row><row><entry><indexterm><primary>dns2</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>dns2</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9a18709b455fdfebbea0dbd1209514c35e"/>dns2</entry><entry></entry></row><row><entry><indexterm><primary>pass</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>pass</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a9313f87d3b33e142ca0e31799e711fa9a4953979681e6c099c905962af8af274e"/>pass</entry><entry></entry></row>    </tbody>
+    </tgroup>
+</informaltable>
+</section>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eb"/><section>
+    <title>Subnet</title>
+<indexterm><primary>Subnet</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>Subnet</secondary></indexterm>
+<para><computeroutput>enum <link linkend="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eb">InputParametrs::Subnet</link><computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Enum for representing valid subnet mask values. </para>
+</para>
+<informaltable frame="all">
+<title>Enumerator</title>
+    <tgroup cols="2" align="left" colsep="1" rowsep="1">
+      <colspec colname='c1'/>
+      <colspec colname='c2'/>
+<tbody>
+<row><entry><indexterm><primary>SUBNET_0</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>SUBNET_0</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba2ec77594bd0a2cd322d23078d4e9c84d"/>SUBNET_0</entry><entry></entry></row><row><entry><indexterm><primary>SUBNET_128</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>SUBNET_128</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6ebac7aaf54c7d51e8089f135ec020c529c0"/>SUBNET_128</entry><entry></entry></row><row><entry><indexterm><primary>SUBNET_192</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>SUBNET_192</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6ebaacacf513053871fafb5938f772bafa7e"/>SUBNET_192</entry><entry></entry></row><row><entry><indexterm><primary>SUBNET_224</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>SUBNET_224</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6ebaaf52c97fecb010c06c1ea83fedbb17c6"/>SUBNET_224</entry><entry></entry></row><row><entry><indexterm><primary>SUBNET_240</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>SUBNET_240</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba0e438f7539ed47f97ad051640c3c4abf"/>SUBNET_240</entry><entry></entry></row><row><entry><indexterm><primary>SUBNET_248</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>SUBNET_248</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba3afc75d3828a5b4e093005eb542bb6e0"/>SUBNET_248</entry><entry></entry></row><row><entry><indexterm><primary>SUBNET_252</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>SUBNET_252</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6ebaf927d532f76ed7a7137d1e03bc262990"/>SUBNET_252</entry><entry></entry></row><row><entry><indexterm><primary>SUBNET_254</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>SUBNET_254</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba699bf1abb6b13d47b83965fcb01b32ca"/>SUBNET_254</entry><entry></entry></row><row><entry><indexterm><primary>SUBNET_255</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>SUBNET_255</secondary></indexterm>
+<anchor xml:id="_class_input_parametrs_1a0d5790f00adf8365ad4015eca2e8a6eba45c0503ce0f816784ae6b5c0a637959a"/>SUBNET_255</entry><entry></entry></row>    </tbody>
+    </tgroup>
+</informaltable>
+</section>
+</section>
+<section>
+<title>Constructor &amp; Destructor Documentation</title>
+<anchor xml:id="_class_input_parametrs_1ad69894f7986b7adf80c1dc3d2dba3688"/><section>
+    <title>InputParametrs()</title>
+<indexterm><primary>InputParametrs</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>InputParametrs</secondary></indexterm>
+<para><computeroutput>InputParametrs::InputParametrs (char ** argv, int argc)<computeroutput>[inline]</computeroutput></computeroutput></para><para>
+
+<para><link linkend="_class_input_parametrs">InputParametrs</link> constructor that initializes the ip_argv and ip_argc member variables. This constructor takes command-line arguments as input and initializes the ip_argv and ip_argc member variables, which will be used to store the command-line arguments for processing by the <link linkend="_class_input_parametrs">InputParametrs</link> class. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>argv</entry><entry>
+<para>Pointer to an array of character pointers, containing the command-line arguments. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>argc</entry><entry>
+<para>Integer representing the number of command-line arguments. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                </para>
+</section>
+</section>
+<section>
+<title>Member Function Documentation</title>
+<anchor xml:id="_class_input_parametrs_1adbb5ff2b695f1df8608af058ae8be1cd"/><section>
+    <title>check_arg_count()</title>
+<indexterm><primary>check_arg_count</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>check_arg_count</secondary></indexterm>
+<para><computeroutput>bool InputParametrs::check_arg_count (char ** argv, int argc)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Checks if the number of command-line arguments is valid for the given command. </para>
+</para>
+
+<para>This function takes the command-line arguments and their count as input and checks if the number of arguments is valid for the command specified by the user. It returns true if the argument count is valid, otherwise returns false.</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>argv</entry><entry>
+<para>The command-line arguments. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>argc</entry><entry>
+<para>The count of command-line arguments. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>Returns true if the argument count is valid for the given command, false otherwise. </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a756b798df75030eef5f159b88900e9ba"/><section>
+    <title>executeCommand()</title>
+<indexterm><primary>executeCommand</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>executeCommand</secondary></indexterm>
+<para><computeroutput>int InputParametrs::executeCommand ( )</computeroutput></para><para>
+
+<para>Executes the appropriate command based on the input parameters. This function checks if the arguments are valid and then calls the appropriate function to execute the desired command. It handles command execution for searching Wi-Fi networks, manually connecting to a network, connecting, disconnecting, forgetting a network, showing active connections, showing all connections, and deleting all connections. </para>
+</para>
+
+<para><formalpara><title>Returns</title>
+
+<para>int 0 if the operation is successful, otherwise returns the corresponding error code. </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a9d3ba1d07e069018fcaabbbb5d343b44"/><section>
+    <title>find_words()</title>
+<indexterm><primary>find_words</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>find_words</secondary></indexterm>
+<para><computeroutput>bool InputParametrs::find_words (std::vector&lt; std::string &gt; &amp; args, std::string &amp; data, const std::vector&lt; std::string &gt; findable_words)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Searches for specific words in a string and populates a vector with them. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>args</entry><entry>
+<para>Vector to store found words </para>
+</entry>
+                            </row>
+                            <row>
+<entry>data</entry><entry>
+<para>String to search in </para>
+</entry>
+                            </row>
+                            <row>
+<entry>findable_words</entry><entry>
+<para>Vector of words to search for </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>True if all findable words were found, false otherwise </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a3e5e2f95b79a8a2d0700b426864da812"/><section>
+    <title>get_arguments()</title>
+<indexterm><primary>get_arguments</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>get_arguments</secondary></indexterm>
+<para><computeroutput>bool InputParametrs::get_arguments (char ** argv, int argc, std::vector&lt; std::string &gt; &amp; all_argunments)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Extracts arguments from the command line input. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>argv</entry><entry>
+<para>Array of command line argument strings </para>
+</entry>
+                            </row>
+                            <row>
+<entry>argc</entry><entry>
+<para>Number of command line arguments </para>
+</entry>
+                            </row>
+                            <row>
+<entry>all_arguments</entry><entry>
+<para>Vector to store extracted arguments </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                </para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a9e96458cdc5ab59bd8b1348bc2561a8d"/><section>
+    <title>get_command()</title>
+<indexterm><primary>get_command</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>get_command</secondary></indexterm>
+<para><computeroutput>int InputParametrs::get_command (char ** argv, int argc)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Determines the command type based on the command line input. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>argv</entry><entry>
+<para>Array of command line argument strings </para>
+</entry>
+                            </row>
+                            <row>
+<entry>argc</entry><entry>
+<para>Number of command line arguments </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>Command type as an integer </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a39e216c81ffc8927d363bef11180ce49"/><section>
+    <title>is_ip()</title>
+<indexterm><primary>is_ip</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>is_ip</secondary></indexterm>
+<para><computeroutput>bool InputParametrs::is_ip (std::string ip)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Checks if the input string is a valid IP address. </para>
+</para>
+
+<para>This function takes a string representing an IP address and checks if it is in a valid format. A valid IP address consists of 4 octets separated by dots, where each octet is an integer between 0 and 255. If the input string is a valid IP address, the function returns true; otherwise, it returns false.</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>ip</entry><entry>
+<para>A string representing an IP address to be validated. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>Returns true if the input string is a valid IP address, false otherwise. </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a7e9242b9dde105009632e02232609abc"/><section>
+    <title>manual_connect_arguments()</title>
+<indexterm><primary>manual_connect_arguments</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>manual_connect_arguments</secondary></indexterm>
+<para><computeroutput>int InputParametrs::manual_connect_arguments (std::vector&lt; std::string &gt; &amp; args, std::string &amp; data)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Validates and processes manual connection arguments. </para>
+</para>
+
+<para>This function takes a vector of manual connection arguments and a reference to a string containing the raw data. It checks the validity of the input arguments and sets default values for missing or empty fields. If any of the input arguments are invalid, the function returns an appropriate error code from the <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2">WifiManager::ERROR</link> enum.</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>args</entry><entry>
+<para>A vector of manual connection arguments. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>data</entry><entry>
+<para>A reference to a string containing the raw data for the manual connection arguments. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>Returns 0 if all the manual connection arguments are valid, otherwise returns an error code from the <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2">WifiManager::ERROR</link> enum. </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1ae8801a48e08ae50b33aa315e63d3e235"/><section>
+    <title>print_errors()</title>
+<indexterm><primary>print_errors</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>print_errors</secondary></indexterm>
+<para><computeroutput>int InputParametrs::print_errors (int err_code)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Prints error messages based on the given error code. </para>
+</para>
+
+<para>This function takes an error code from the <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2">WifiManager::ERROR</link> enum and prints an appropriate error message to the console. If there is no error, nothing will be printed.</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>err_code</entry><entry>
+<para>An error code from the <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2">WifiManager::ERROR</link> enum. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>Returns the same error code that was passed as input. </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1aa4440fd7b625c3eab67087fef0126827"/><section>
+    <title>removeSpacesFromBack()</title>
+<indexterm><primary>removeSpacesFromBack</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>removeSpacesFromBack</secondary></indexterm>
+<para><computeroutput>void InputParametrs::removeSpacesFromBack (std::string &amp; data)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Removes trailing spaces from a string. </para>
+</para>
+
+<para>This function takes a reference to a string and removes all trailing spaces from it, modifying the original string. <note><title>Note</title>
+
+<para>This is a helper function used in the <link linkend="_class_input_parametrs_1a9d3ba1d07e069018fcaabbbb5d343b44">InputParametrs::find_words</link> method.</para>
+</note>
+
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>data</entry><entry>
+<para>A reference to the string from which trailing spaces will be removed. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                </para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a030cfa4c12827043ad55586423f1556f"/><section>
+    <title>subet_reformating()</title>
+<indexterm><primary>subet_reformating</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>subet_reformating</secondary></indexterm>
+<para><computeroutput>bool InputParametrs::subet_reformating (std::string &amp; subnet)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Reformats a subnet mask string into CIDR notation. </para>
+</para>
+
+<para>This function takes a reference to a subnet mask string and reformats it into CIDR notation (e.g., &quot;255.255.255.0&quot; becomes &quot;24&quot;). If the provided subnet mask string is invalid, it clears the input string and returns false. Otherwise, the function returns true after updating the input string with the CIDR notation.</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>subnet</entry><entry>
+<para>A reference to the subnet mask string to be reformatted. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>Returns true if the input subnet mask string was successfully reformatted into CIDR notation, false otherwise. </para>
+</formalpara>
+</para>
+</section>
+</section>
+<section>
+<title>Member Data Documentation</title>
+<anchor xml:id="_class_input_parametrs_1aa91548481f15eaeee623afdb483042bb"/><section>
+    <title>ip_argc</title>
+<indexterm><primary>ip_argc</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>ip_argc</secondary></indexterm>
+<para><computeroutput>int InputParametrs::ip_argc<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>The number of command-line arguments. </para>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a46b4d7e9baa63b6d55db4d76a972b7b6"/><section>
+    <title>ip_arguments</title>
+<indexterm><primary>ip_arguments</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>ip_arguments</secondary></indexterm>
+<para><computeroutput>std::vector&lt;std::string&gt; InputParametrs::ip_arguments<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Vector to store IP-related command-line arguments. </para>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a099c739a0b71c059a1ce57465f550488"/><section>
+    <title>ip_argv</title>
+<indexterm><primary>ip_argv</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>ip_argv</secondary></indexterm>
+<para><computeroutput>char** InputParametrs::ip_argv<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Pointer to the array of command-line arguments. </para>
+</para>
+</section>
+<anchor xml:id="_class_input_parametrs_1a7f4ca6a3e45a51dc4a259bd0f58791fa"/><section>
+    <title>wifi_function</title>
+<indexterm><primary>wifi_function</primary><secondary>InputParametrs</secondary></indexterm>
+<indexterm><primary>InputParametrs</primary><secondary>wifi_function</secondary></indexterm>
+<para><computeroutput><link linkend="_class_wifi_manager">WifiManager</link> InputParametrs::wifi_function<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Instance of <link linkend="_class_wifi_manager">WifiManager</link> class for handling Wi-Fi connections. </para>
+</para>
+</section>
+<para>
+The documentation for this class was generated from the following files:</para>
+<link linkend="__input_parametrs_8h">InputParametrs.h</link><link linkend="__input_parametrs_8cpp">InputParametrs.cpp</link></section>
+</section>

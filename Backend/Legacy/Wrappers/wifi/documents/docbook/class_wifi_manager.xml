@@ -1,0 +1,1022 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="_class_wifi_manager" xml:lang="en-US">
+<title>WifiManager Class Reference</title>
+<indexterm><primary>WifiManager</primary></indexterm>
+<para>
+
+<para>A class for managing WiFi connections using nmcli. </para>
+ 
+</para>
+<para>
+<computeroutput>#include &lt;WifiManager.h&gt;</computeroutput>
+</para>
+<simplesect>
+    <title>Public Types    </title>
+        <itemizedlist>
+            <listitem><para>enum <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2">ERROR</link> { <?linebreak?><link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2ad0c2672612cf635978a1ca1af06a3d53">ERROR_NO</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a573c5a56e0fb643b66eb9d005739b747">ERROR_UNKNOWN</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2ac3724ca761a551e219a6741f136ed7c3">ERROR_INPUT</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a31746db4adf6cf1e6c2bef77c05fdb22">ERROR_TIMEOUT</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2aeb2e94f826b2714cf1c19d06e5a3513e">ERROR_ConActFail</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a5dc507d122945b5374d6488fb8a67248">ERROR_ConDactFail</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2aeea659600608de8feee9609360ecde4d">ERROR_DiscDevFail</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a0859a6f2e21e31cae35d11a5b449993e">ERROR_ConDelFail</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a5fb427515d5908910c20fdbcd0729bbe">ERROR_NetMng</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a30c0afb8d2ea34e44d732fb8331b7a39">ERROR_NotExsist</link> =10
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2ae5b7a18718ca41a4998850fe71ca814f">ERROR_WRONG_BSSID</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a5c4d2e6dd3c3645998fb47263a16cff1">ERROR_WRONG_NAME</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a51f69506a8ee7d5a97b47063b79ef6f8">ERROR_WRONG_PASS</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2af26c18fa212a2a7f209d00371e23a619">ERROR_NO_ACTIVE_WIFI</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a5942e5a85ea9558670adf32211025d66">ERROR_WRONG_ARGUMENTS</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a04e48b051fbc93930d40d0c2d80a7e18">ERROR_CRITICAL_DELETE</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a0d00edaf2a28cb932191a32e6e158c44">ERROR_INTERNAL_ERROR</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a782d2521e6eb0e30afb0a0772bd1181f">ERROR_CONNECTION_ALREADY_EXISTS</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2afff600cc95e3158d44357d2d9acc7179">ERROR_INTERNAL_ERROR_PARSING</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2afb08987831dfa9af4e19b95c394952d1">ERROR_WRONG_SUBNET</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a7f082c4e19f31d1e60593c8310db3206">ERROR_WRONG_IP</link>
+, <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2ac73ddd21a8739ed28ac3afb4f40bf6c2">ERROR_WRONG_ESSID</link>
+ }</para>
+
+<para>Enumeration of error codes used by the <link linkend="_class_wifi_manager">WifiManager</link> class. </para>
+</listitem>
+            <listitem><para>enum <link linkend="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056">Manual_connection</link> { <?linebreak?><link linkend="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a31cf4dc4bb83a9dfca5cdbaa74c2f2ae">essid</link>
+, <link linkend="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a88e2917d8d569d668dcb657ab45a8bd0">ip</link>
+, <link linkend="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a7233d2647818a879d177cf750dd30441">subnet</link>
+, <link linkend="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056acef094b94eec361d9dc7ff82898282d0">gtw</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056abdb3bd4a2476895d15a8c32f5c2f4431">dns</link>
+, <link linkend="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a388355d0055d91c257bf08d399db8b3f">dns2</link>
+, <link linkend="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a3521042f8fea20d18dff8ea6345cd1fe">pass</link>
+ }</para>
+
+<para>Enumeration of manual connection parameter indices. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Public Member Functions    </title>
+        <itemizedlist>
+            <listitem><para>int <link linkend="_class_wifi_manager_1acf5921477f30bdbe8471b4f64c002b2e">get_wifi_list</link> ()</para>
+
+<para>Descritpion - Printing a list of available WiFi networks and their properties. This function uses the &quot;nmcli&quot; command to get a list of available WiFi networks and their properties. The properties include ESSID, unique name, connection status, security status, and signal strength. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1aa738fe9e3945e0b7dd4df9f13a9aad2a">get_wifi_state</link> (std::string <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df">name</link>)</para>
+
+<para>Retrieves the list of available Wi-Fi networks and prints it in <link linkend="_">test.json</link> format. This function uses the &apos;nmcli&apos; command to obtain the list of available Wi-Fi networks. It then formats and prints the Wi-Fi networks as a JSON object. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a352b0302b30e1977745ec33da20716e4">wifi_connect</link> (std::vector&lt; std::string &gt; &amp;wifi_params)</para>
+
+<para>Attempts to connect to a Wi-Fi network with the specified parameters. This function attempts to connect to a Wi-Fi network with the specified name and optional password. It first checks if a connection with the same name already exists, in which case it returns an error. If the network requires a password and a password is not provided or the wrong number of arguments are provided, it returns an error. If the connection is successful, it returns 0. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a7decdde89e6bd2dcc6aee7cf6a3d3bd0">wifi_disconnect</link> (std::string <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df">name</link>)</para>
+
+<para>Disconnects from the specified Wi-Fi network by name. This function searches for the specified Wi-Fi network name and disconnects from it if it&apos;s active. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a0a054ea8fc1fd4b2d2213e1f0df5bf6e">wifi_forget</link> (std::string <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df">name</link>)</para>
+
+<para>Forget a WiFi connection from the nmcli connection list. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a4d4b48ee7d7fc5e8da0da608f2350bee">wifi_con_up</link> (std::string <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df">name</link>)</para>
+
+<para>Helper method for connecting to a previously disconnected WiFi connection. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a066abd63052739888fbb9037cc80f012">get_active_wifi</link> ()</para>
+
+<para>Get the currently active WiFi connection/s. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a05280c77c4a505667a193b1503acdd66">get_wifi_connections</link> ()</para>
+
+<para>Get the list of WiFi connections. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a5d4bdb1032b12c944292c3b2e6319e52">delete_all_con</link> ()</para>
+
+<para>Delete all saved connections. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1ac0f6da08291108d80b372688f144a005">bssid_to_ssid</link> (std::string &amp;<link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea54d8cf8e5832d08805b2b828dd19ad54">bssid</link>)</para>
+
+<para>Convert a BSSID to an SSID. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a3ac184a0cbc1480eb648269316fdb9c9">write_wifi_signal</link> ()</para>
+
+<para>Write the WiFi signal level. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a3abcb45ca58dc3f44c42796d18c80baf">wifi_manual_connect</link> (std::vector&lt; std::string &gt; &amp;args)</para>
+
+<para>Manually connects to a Wi-Fi network using the provided network settings. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Private Types    </title>
+        <itemizedlist>
+            <listitem><para>enum <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553e">WifiSearchWord_e</link> { <?linebreak?><link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df">name</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eab94b43346fb55895677a0541141cf474">ssid</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eabe02eaddd261f190e1b07a9ef65dd07d">ssid_hex</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea54d8cf8e5832d08805b2b828dd19ad54">bssid</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea35f8e7a63d2b3fffbbe2a8f8e0d05fff">mode</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eac92f1f56dc9284ee2d155816d3493a56">chan</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eae3e349fd977e5ef0d50be1f7b98a39de">freq</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea33c8aae8465db9d072f73107ac88ce12">rate</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eabf76cace6c2a1e6bc0bfc4f8696f8d57">signal</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eaa392cf3d2f1665aba41df3df42729fb4">bars</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea80fc324c06b513231c4e90eff7c67417">security</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea9c95a132c391cfcd637adbe2391645c7">wpa_flags</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea3d6d92b655b460e781a67d60d717d031">rsn_flags</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ead847ecd4af8d0ec8433148bce1fc2d1d">device</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eaf193a35ee4531c9d763f71ae9a395f60">active</link>
+, <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eaaa9b0d75d03094bc0fa8f86c17b39e79">in_use</link>
+, <?linebreak?><link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eab76b0ec903ffff74c7f4ae55b605a59d">dbus_path</link>
+ }</para>
+
+<para>Enumeration of search words used for parsing WiFi data. </para>
+</listitem>
+            <listitem><para>typedef std::pair&lt; std::string, std::vector&lt; std::string &gt; &gt; <link linkend="_class_wifi_manager_1a7fc6fa986cd4b696f9c373ec7e0509a7">pair</link></para>
+
+<para>A pair containing a string and a vector of strings. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Private Member Functions    </title>
+        <itemizedlist>
+            <listitem><para>bool <link linkend="_class_wifi_manager_1a25ca3676d8b2f91982f9d1a3abfe9177">get_data</link> (std::vector&lt; std::string &gt; &amp;data, const char set_call[])</para>
+
+<para>Retrieves data from the output of a system command related to Wi-Fi settings and stores it in a vector of strings. This method executes the given system command (set_call) using popen and reads the output line by line. The output is then stored in the provided std::vector (data), with each line being a separate string. If the method is successful in retrieving the data, it returns true; otherwise, it returns false. </para>
+</listitem>
+            <listitem><para>void <link linkend="_class_wifi_manager_1acd9d3d36bf6cba464856a5853450ee7d">removeSpacesFromBack</link> (std::string &amp;data)</para>
+
+<para>Helper method to remove trailing spaces from a given string. This method iterates through the input string (data) from the end to the beginning. It stops at the first non-space character encountered and trims the string accordingly. The modified string is passed back by reference. </para>
+</listitem>
+            <listitem><para>void <link linkend="_class_wifi_manager_1a852971d21e0725b8739f1789f59c89e1">find_words</link> (std::vector&lt; std::string &gt; &amp;data, const std::vector&lt; std::string &gt; findable_words, std::vector&lt; size_t &gt; &amp;start_pos_vector, std::vector&lt; size_t &gt; &amp;end_pos_vector)</para>
+
+<para>Searches for specified words in the first line of the given data and records their start and end positions. </para>
+</listitem>
+            <listitem><para>int <link linkend="_class_wifi_manager_1a37305ca5f5439969206f8669737fbdd7">parser</link> (const char set_call[], const std::vector&lt; std::string &gt; findable_words, std::map&lt; std::string, std::vector&lt; std::string &gt; &gt; &amp;base_map, int key)</para>
+
+<para>Parses the output of a command, extracting specified words and populating a map with the results. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Private Attributes    </title>
+        <itemizedlist>
+            <listitem><para>const std::string <link linkend="_class_wifi_manager_1a235d82100b057a43a0bfdfb9fa52f6cf">m_dev_nul</link> = &quot; &gt; /dev/null 2&gt;&amp;1&quot;</para>
+
+<para>/// Redirects output to /dev/null to suppress any output or error messages. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<section>
+<title>Detailed Description</title>
+
+<para>A class for managing WiFi connections using nmcli. </para>
+
+
+
+<para>using nmcli commands for search/connect/disconnect/forget/manual connect wifi </para>
+</section>
+<section>
+<title>Member Typedef Documentation</title>
+<anchor xml:id="_class_wifi_manager_1a7fc6fa986cd4b696f9c373ec7e0509a7"/><section>
+    <title>pair</title>
+<indexterm><primary>pair</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>pair</secondary></indexterm>
+<para><computeroutput><link linkend="_class_wifi_manager_1a7fc6fa986cd4b696f9c373ec7e0509a7">WifiManager::pair</link><computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>A pair containing a string and a vector of strings. </para>
+</para>
+
+<para><note><title>Note</title>
+
+<para>only for insert safety </para>
+</note>
+</para>
+</section>
+</section>
+<section>
+<title>Member Enumeration Documentation</title>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2"/><section>
+    <title>ERROR</title>
+<indexterm><primary>ERROR</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR</secondary></indexterm>
+<para><computeroutput>enum <link linkend="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2">WifiManager::ERROR</link></computeroutput></para><para>
+
+<para>Enumeration of error codes used by the <link linkend="_class_wifi_manager">WifiManager</link> class. </para>
+</para>
+<informaltable frame="all">
+<title>Enumerator</title>
+    <tgroup cols="2" align="left" colsep="1" rowsep="1">
+      <colspec colname='c1'/>
+      <colspec colname='c2'/>
+<tbody>
+<row><entry><indexterm><primary>ERROR_NO</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_NO</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2ad0c2672612cf635978a1ca1af06a3d53"/>ERROR_NO</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_UNKNOWN</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_UNKNOWN</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a573c5a56e0fb643b66eb9d005739b747"/>ERROR_UNKNOWN</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_INPUT</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_INPUT</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2ac3724ca761a551e219a6741f136ed7c3"/>ERROR_INPUT</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_TIMEOUT</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_TIMEOUT</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a31746db4adf6cf1e6c2bef77c05fdb22"/>ERROR_TIMEOUT</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_ConActFail</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_ConActFail</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2aeb2e94f826b2714cf1c19d06e5a3513e"/>ERROR_ConActFail</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_ConDactFail</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_ConDactFail</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a5dc507d122945b5374d6488fb8a67248"/>ERROR_ConDactFail</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_DiscDevFail</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_DiscDevFail</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2aeea659600608de8feee9609360ecde4d"/>ERROR_DiscDevFail</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_ConDelFail</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_ConDelFail</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a0859a6f2e21e31cae35d11a5b449993e"/>ERROR_ConDelFail</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_NetMng</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_NetMng</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a5fb427515d5908910c20fdbcd0729bbe"/>ERROR_NetMng</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_NotExsist</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_NotExsist</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a30c0afb8d2ea34e44d732fb8331b7a39"/>ERROR_NotExsist</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_WRONG_BSSID</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_WRONG_BSSID</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2ae5b7a18718ca41a4998850fe71ca814f"/>ERROR_WRONG_BSSID</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_WRONG_NAME</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_WRONG_NAME</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a5c4d2e6dd3c3645998fb47263a16cff1"/>ERROR_WRONG_NAME</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_WRONG_PASS</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_WRONG_PASS</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a51f69506a8ee7d5a97b47063b79ef6f8"/>ERROR_WRONG_PASS</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_NO_ACTIVE_WIFI</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_NO_ACTIVE_WIFI</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2af26c18fa212a2a7f209d00371e23a619"/>ERROR_NO_ACTIVE_WIFI</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_WRONG_ARGUMENTS</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_WRONG_ARGUMENTS</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a5942e5a85ea9558670adf32211025d66"/>ERROR_WRONG_ARGUMENTS</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_CRITICAL_DELETE</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_CRITICAL_DELETE</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a04e48b051fbc93930d40d0c2d80a7e18"/>ERROR_CRITICAL_DELETE</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_INTERNAL_ERROR</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_INTERNAL_ERROR</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a0d00edaf2a28cb932191a32e6e158c44"/>ERROR_INTERNAL_ERROR</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_CONNECTION_ALREADY_EXISTS</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_CONNECTION_ALREADY_EXISTS</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a782d2521e6eb0e30afb0a0772bd1181f"/>ERROR_CONNECTION_ALREADY_EXISTS</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_INTERNAL_ERROR_PARSING</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_INTERNAL_ERROR_PARSING</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2afff600cc95e3158d44357d2d9acc7179"/>ERROR_INTERNAL_ERROR_PARSING</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_WRONG_SUBNET</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_WRONG_SUBNET</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2afb08987831dfa9af4e19b95c394952d1"/>ERROR_WRONG_SUBNET</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_WRONG_IP</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_WRONG_IP</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2a7f082c4e19f31d1e60593c8310db3206"/>ERROR_WRONG_IP</entry><entry></entry></row><row><entry><indexterm><primary>ERROR_WRONG_ESSID</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ERROR_WRONG_ESSID</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a605dd0a12241bf833af71229b59962b2ac73ddd21a8739ed28ac3afb4f40bf6c2"/>ERROR_WRONG_ESSID</entry><entry></entry></row>    </tbody>
+    </tgroup>
+</informaltable>
+</section>
+<anchor xml:id="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056"/><section>
+    <title>Manual_connection</title>
+<indexterm><primary>Manual_connection</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>Manual_connection</secondary></indexterm>
+<para><computeroutput>enum <link linkend="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056">WifiManager::Manual_connection</link></computeroutput></para><para>
+
+<para>Enumeration of manual connection parameter indices. </para>
+</para>
+<informaltable frame="all">
+<title>Enumerator</title>
+    <tgroup cols="2" align="left" colsep="1" rowsep="1">
+      <colspec colname='c1'/>
+      <colspec colname='c2'/>
+<tbody>
+<row><entry><indexterm><primary>essid</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>essid</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a31cf4dc4bb83a9dfca5cdbaa74c2f2ae"/>essid</entry><entry></entry></row><row><entry><indexterm><primary>ip</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ip</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a88e2917d8d569d668dcb657ab45a8bd0"/>ip</entry><entry></entry></row><row><entry><indexterm><primary>subnet</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>subnet</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a7233d2647818a879d177cf750dd30441"/>subnet</entry><entry></entry></row><row><entry><indexterm><primary>gtw</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>gtw</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056acef094b94eec361d9dc7ff82898282d0"/>gtw</entry><entry></entry></row><row><entry><indexterm><primary>dns</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>dns</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056abdb3bd4a2476895d15a8c32f5c2f4431"/>dns</entry><entry></entry></row><row><entry><indexterm><primary>dns2</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>dns2</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a388355d0055d91c257bf08d399db8b3f"/>dns2</entry><entry></entry></row><row><entry><indexterm><primary>pass</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>pass</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a5363e2cd9db2eafc01a595e41aa08056a3521042f8fea20d18dff8ea6345cd1fe"/>pass</entry><entry></entry></row>    </tbody>
+    </tgroup>
+</informaltable>
+</section>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553e"/><section>
+    <title>WifiSearchWord_e</title>
+<indexterm><primary>WifiSearchWord_e</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>WifiSearchWord_e</secondary></indexterm>
+<para><computeroutput>enum <link linkend="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553e">WifiManager::WifiSearchWord_e</link><computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Enumeration of search words used for parsing WiFi data. </para>
+</para>
+<informaltable frame="all">
+<title>Enumerator</title>
+    <tgroup cols="2" align="left" colsep="1" rowsep="1">
+      <colspec colname='c1'/>
+      <colspec colname='c2'/>
+<tbody>
+<row><entry><indexterm><primary>name</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>name</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df"/>name</entry><entry></entry></row><row><entry><indexterm><primary>ssid</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ssid</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eab94b43346fb55895677a0541141cf474"/>ssid</entry><entry></entry></row><row><entry><indexterm><primary>ssid_hex</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>ssid_hex</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eabe02eaddd261f190e1b07a9ef65dd07d"/>ssid_hex</entry><entry></entry></row><row><entry><indexterm><primary>bssid</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>bssid</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea54d8cf8e5832d08805b2b828dd19ad54"/>bssid</entry><entry></entry></row><row><entry><indexterm><primary>mode</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>mode</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea35f8e7a63d2b3fffbbe2a8f8e0d05fff"/>mode</entry><entry></entry></row><row><entry><indexterm><primary>chan</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>chan</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eac92f1f56dc9284ee2d155816d3493a56"/>chan</entry><entry></entry></row><row><entry><indexterm><primary>freq</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>freq</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eae3e349fd977e5ef0d50be1f7b98a39de"/>freq</entry><entry></entry></row><row><entry><indexterm><primary>rate</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>rate</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea33c8aae8465db9d072f73107ac88ce12"/>rate</entry><entry></entry></row><row><entry><indexterm><primary>signal</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>signal</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eabf76cace6c2a1e6bc0bfc4f8696f8d57"/>signal</entry><entry></entry></row><row><entry><indexterm><primary>bars</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>bars</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eaa392cf3d2f1665aba41df3df42729fb4"/>bars</entry><entry></entry></row><row><entry><indexterm><primary>security</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>security</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea80fc324c06b513231c4e90eff7c67417"/>security</entry><entry></entry></row><row><entry><indexterm><primary>wpa_flags</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>wpa_flags</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea9c95a132c391cfcd637adbe2391645c7"/>wpa_flags</entry><entry></entry></row><row><entry><indexterm><primary>rsn_flags</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>rsn_flags</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ea3d6d92b655b460e781a67d60d717d031"/>rsn_flags</entry><entry></entry></row><row><entry><indexterm><primary>device</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>device</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553ead847ecd4af8d0ec8433148bce1fc2d1d"/>device</entry><entry></entry></row><row><entry><indexterm><primary>active</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>active</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eaf193a35ee4531c9d763f71ae9a395f60"/>active</entry><entry></entry></row><row><entry><indexterm><primary>in_use</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>in_use</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eaaa9b0d75d03094bc0fa8f86c17b39e79"/>in_use</entry><entry></entry></row><row><entry><indexterm><primary>dbus_path</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>dbus_path</secondary></indexterm>
+<anchor xml:id="_class_wifi_manager_1a2449ec4a6581b56893d9896e6a12553eab76b0ec903ffff74c7f4ae55b605a59d"/>dbus_path</entry><entry></entry></row>    </tbody>
+    </tgroup>
+</informaltable>
+</section>
+</section>
+<section>
+<title>Member Function Documentation</title>
+<anchor xml:id="_class_wifi_manager_1ac0f6da08291108d80b372688f144a005"/><section>
+    <title>bssid_to_ssid()</title>
+<indexterm><primary>bssid_to_ssid</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>bssid_to_ssid</secondary></indexterm>
+<para><computeroutput>int WifiManager::bssid_to_ssid (std::string &amp; bssid)</computeroutput></para><para>
+
+<para>Convert a BSSID to an SSID. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>bssid</entry><entry>
+<para>The BSSID to be converted. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<note><title>Note</title>
+
+<para>bssid is referance </para>
+</note>
+<warning><title>Warning</title>
+
+<para>used pass by reference </para>
+</warning>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a5d4bdb1032b12c944292c3b2e6319e52"/><section>
+    <title>delete_all_con()</title>
+<indexterm><primary>delete_all_con</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>delete_all_con</secondary></indexterm>
+<para><computeroutput>int WifiManager::delete_all_con ( )</computeroutput></para><para>
+
+<para>Delete all saved connections. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>NO</entry><entry>
+<para></para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<note><title>Note</title>
+
+<para>nmcli connection show is not the available WiFi list, it is a list that saves your added connections. </para>
+
+<para>this function use <link linkend="_">wifi_forget(std::string name) </link> </para>
+</note>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a852971d21e0725b8739f1789f59c89e1"/><section>
+    <title>find_words()</title>
+<indexterm><primary>find_words</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>find_words</secondary></indexterm>
+<para><computeroutput>void WifiManager::find_words (std::vector&lt; std::string &gt; &amp; data, const std::vector&lt; std::string &gt; findable_words, std::vector&lt; size_t &gt; &amp; start_pos_vector, std::vector&lt; size_t &gt; &amp; end_pos_vector)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Searches for specified words in the first line of the given data and records their start and end positions. </para>
+</para>
+
+<para>This function iterates through a list of words to be found in the first line of the provided data. It then stores the start and end positions of each found word in separate vectors.</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>data</entry><entry>
+<para>A reference to a std::vector of std::string containing the data in which the words will be searched. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>findable_words</entry><entry>
+<para>A const std::vector of std::string containing the words to be searched in the data. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>start_pos_vector</entry><entry>
+<para>A reference to a std::vector of size_t that will be populated with the start positions of the found words. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>end_pos_vector</entry><entry>
+<para>A reference to a std::vector of size_t that will be populated with the end positions of the found words. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                </para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a066abd63052739888fbb9037cc80f012"/><section>
+    <title>get_active_wifi()</title>
+<indexterm><primary>get_active_wifi</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>get_active_wifi</secondary></indexterm>
+<para><computeroutput>int WifiManager::get_active_wifi ( )</computeroutput></para><para>
+
+<para>Get the currently active WiFi connection/s. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>NO</entry><entry>
+<para></para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<note><title>Note</title>
+
+<para>Debugging information </para>
+</note>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a25ca3676d8b2f91982f9d1a3abfe9177"/><section>
+    <title>get_data()</title>
+<indexterm><primary>get_data</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>get_data</secondary></indexterm>
+<para><computeroutput>bool WifiManager::get_data (std::vector&lt; std::string &gt; &amp; data, const char set_call[])<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Retrieves data from the output of a system command related to Wi-Fi settings and stores it in a vector of strings. This method executes the given system command (set_call) using popen and reads the output line by line. The output is then stored in the provided std::vector (data), with each line being a separate string. If the method is successful in retrieving the data, it returns true; otherwise, it returns false. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>data</entry><entry>
+<para>Reference to a std::vector of std::string objects, where the retrieved data will be stored. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>set_call</entry><entry>
+<para>A const char array representing the system command to be executed. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>Returns true if the data is successfully retrieved and stored in the data vector; otherwise, returns false. </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a05280c77c4a505667a193b1503acdd66"/><section>
+    <title>get_wifi_connections()</title>
+<indexterm><primary>get_wifi_connections</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>get_wifi_connections</secondary></indexterm>
+<para><computeroutput>int WifiManager::get_wifi_connections ( )</computeroutput></para><para>
+
+<para>Get the list of WiFi connections. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>NO</entry><entry>
+<para></para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1acf5921477f30bdbe8471b4f64c002b2e"/><section>
+    <title>get_wifi_list()</title>
+<indexterm><primary>get_wifi_list</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>get_wifi_list</secondary></indexterm>
+<para><computeroutput>int WifiManager::get_wifi_list ( )</computeroutput></para><para>
+
+<para>Descritpion - Printing a list of available WiFi networks and their properties. This function uses the &quot;nmcli&quot; command to get a list of available WiFi networks and their properties. The properties include ESSID, unique name, connection status, security status, and signal strength. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>NO</entry><entry>
+<para></para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<note><title>Note</title>
+
+<para>wifi parametrs are printing in json format <link linkend="_">test.json</link> </para>
+
+<para>nmcli command that used &quot;nmcli -f ALL dev wifi&quot; </para>
+</note>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1aa738fe9e3945e0b7dd4df9f13a9aad2a"/><section>
+    <title>get_wifi_state()</title>
+<indexterm><primary>get_wifi_state</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>get_wifi_state</secondary></indexterm>
+<para><computeroutput>int WifiManager::get_wifi_state (std::string name)</computeroutput></para><para>
+
+<para>Retrieves the list of available Wi-Fi networks and prints it in <link linkend="_">test.json</link> format. This function uses the &apos;nmcli&apos; command to obtain the list of available Wi-Fi networks. It then formats and prints the Wi-Fi networks as a JSON object. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>name</entry><entry>
+<para>The active WiFi SSID. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<note><title>Note</title>
+
+<para>This member is for debugging. </para>
+</note>
+<warning><title>Warning</title>
+
+<para>working only if connection is active </para>
+</warning>
+<note><title>Note</title>
+
+<para>nmcli command that used &quot;nmcli -f ALL dev wifi&quot; </para>
+</note>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a37305ca5f5439969206f8669737fbdd7"/><section>
+    <title>parser()</title>
+<indexterm><primary>parser</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>parser</secondary></indexterm>
+<para><computeroutput>int WifiManager::parser (const char set_call[], const std::vector&lt; std::string &gt; findable_words, std::map&lt; std::string, std::vector&lt; std::string &gt; &gt; &amp; base_map, int key)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Parses the output of a command, extracting specified words and populating a map with the results. </para>
+</para>
+
+<para>This function executes the given command, reads its output, and then searches for the specified words. It constructs a map where the key is a specified element from each line, and the value is a vector containing the extracted words from each line.</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>set_call</entry><entry>
+<para>A const char array containing the command to be executed. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>findable_words</entry><entry>
+<para>A std::vector of std::string containing the words to be searched in the command output. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>base_map</entry><entry>
+<para>A reference to a std::map that will be populated with the extracted words from the command output. The key is the &apos;key&apos;-th element from each line, and the value is a std::vector containing the extracted words from each line. </para>
+</entry>
+                            </row>
+                            <row>
+<entry>key</entry><entry>
+<para>An integer specifying which element from each line should be used as the key for the map.</para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>Returns true if the parsing was successful, and false otherwise. </para>
+</formalpara>
+</para>
+
+<para>after we get data from set_call and insert it in data_v every vector[] is line ended with/n</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1acd9d3d36bf6cba464856a5853450ee7d"/><section>
+    <title>removeSpacesFromBack()</title>
+<indexterm><primary>removeSpacesFromBack</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>removeSpacesFromBack</secondary></indexterm>
+<para><computeroutput>void WifiManager::removeSpacesFromBack (std::string &amp; data)<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>Helper method to remove trailing spaces from a given string. This method iterates through the input string (data) from the end to the beginning. It stops at the first non-space character encountered and trims the string accordingly. The modified string is passed back by reference. </para>
+</para>
+
+<para><note><title>Note</title>
+
+<para>This method is a helper function and may be used internally within the <link linkend="_class_wifi_manager">WifiManager</link> class. </para>
+</note>
+
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>data</entry><entry>
+<para>Reference to a std::string object, which will have its trailing spaces removed. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                </para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a4d4b48ee7d7fc5e8da0da608f2350bee"/><section>
+    <title>wifi_con_up()</title>
+<indexterm><primary>wifi_con_up</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>wifi_con_up</secondary></indexterm>
+<para><computeroutput>int WifiManager::wifi_con_up (std::string name)</computeroutput></para><para>
+
+<para>Helper method for connecting to a previously disconnected WiFi connection. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>name</entry><entry>
+<para>The WiFi SSID that is in the nmcli connection list. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<note><title>Note</title>
+
+<para>nmcli connection show is not the available WiFi list, it is a list that saves your added connections. </para>
+</note>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a352b0302b30e1977745ec33da20716e4"/><section>
+    <title>wifi_connect()</title>
+<indexterm><primary>wifi_connect</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>wifi_connect</secondary></indexterm>
+<para><computeroutput>int WifiManager::wifi_connect (std::vector&lt; std::string &gt; &amp; wifi_params)</computeroutput></para><para>
+
+<para>Attempts to connect to a Wi-Fi network with the specified parameters. This function attempts to connect to a Wi-Fi network with the specified name and optional password. It first checks if a connection with the same name already exists, in which case it returns an error. If the network requires a password and a password is not provided or the wrong number of arguments are provided, it returns an error. If the connection is successful, it returns 0. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>wifi_params</entry><entry>
+<para>A vector containing the name of the network to connect to and an optional password. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<note><title>Note</title>
+
+<para>for connecting use &quot; nmcli d wifi connect &apos;&quot; + name + &quot;&apos;&quot; + &quot; password &apos;&quot; + pass + &quot;&apos;&quot; </para>
+</note>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a7decdde89e6bd2dcc6aee7cf6a3d3bd0"/><section>
+    <title>wifi_disconnect()</title>
+<indexterm><primary>wifi_disconnect</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>wifi_disconnect</secondary></indexterm>
+<para><computeroutput>int WifiManager::wifi_disconnect (std::string name)</computeroutput></para><para>
+
+<para>Disconnects from the specified Wi-Fi network by name. This function searches for the specified Wi-Fi network name and disconnects from it if it&apos;s active. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>name</entry><entry>
+<para>A std::string containing the name of the Wi-Fi network to disconnect from. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<warning><title>Warning</title>
+
+<para>working only if connection is active </para>
+
+<para>disconnect and forget is differetn things </para>
+</warning>
+<note><title>Note</title>
+
+<para>for disconnecting use nmcli c down + name </para>
+</note>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a0a054ea8fc1fd4b2d2213e1f0df5bf6e"/><section>
+    <title>wifi_forget()</title>
+<indexterm><primary>wifi_forget</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>wifi_forget</secondary></indexterm>
+<para><computeroutput>int WifiManager::wifi_forget (std::string name)</computeroutput></para><para>
+
+<para>Forget a WiFi connection from the nmcli connection list. </para>
+</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>name</entry><entry>
+<para>The WiFi SSID. </para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<warning><title>Warning</title>
+
+<para>You may have big problem if these method have problem </para>
+</warning>
+<note><title>Note</title>
+
+<para>nmcli connection show is not the available WiFi list, it is a list that saves your added connections. </para>
+</note>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a3abcb45ca58dc3f44c42796d18c80baf"/><section>
+    <title>wifi_manual_connect()</title>
+<indexterm><primary>wifi_manual_connect</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>wifi_manual_connect</secondary></indexterm>
+<para><computeroutput>int WifiManager::wifi_manual_connect (std::vector&lt; std::string &gt; &amp; args)</computeroutput></para><para>
+
+<para>Manually connects to a Wi-Fi network using the provided network settings. </para>
+</para>
+
+<para>This function scans for available Wi-Fi networks, finds the one matching the input SSID, creates a new connection with the specified IP address, subnet, gateway, and DNS settings, and then connects to it.</para>
+
+<para>
+                <formalpara>
+                    <title>
+Parameters</title>
+                    <para>
+                    <table frame="all">
+                        <tgroup cols="2" align="left" colsep="1" rowsep="1">
+                        <colspec colwidth="1*"/>
+                        <colspec colwidth="4*"/>
+                        <tbody>
+                            <row>
+<entry>args</entry><entry>
+<para>A std::vector of std::string containing the following network settings:<itemizedlist>
+<listitem>
+<para>args[0]: SSID of the Wi-Fi network to connect to</para>
+</listitem><listitem>
+<para>args[1]: IP address for the connection</para>
+</listitem><listitem>
+<para>args[2]: Subnet mask for the connection</para>
+</listitem><listitem>
+<para>args[3]: Gateway address for the connection</para>
+</listitem><listitem>
+<para>args[4]: Primary DNS server for the connection</para>
+</listitem><listitem>
+<para>args[5]: Secondary DNS server for the connection</para>
+</listitem><listitem>
+<para>args[6]: Wi-Fi password for the connection</para>
+</listitem></itemizedlist>
+</para>
+</entry>
+                            </row>
+                        </tbody>
+                        </tgroup>
+                    </table>
+                    </para>
+                </formalpara>
+                <formalpara><title>Returns</title>
+
+<para>Returns 0 on successful connection, ERROR_INTERNAL_ERROR if the parser function fails, ERROR_CONNECTION_ALREADY_EXISTS if a connection with the specified SSID already exists, ERROR_WRONG_ARGUMENTS if the specified SSID is not found in the available networks, or the error code returned by the system() function when executing nmcli commands. </para>
+</formalpara>
+</para>
+</section>
+<anchor xml:id="_class_wifi_manager_1a3ac184a0cbc1480eb648269316fdb9c9"/><section>
+    <title>write_wifi_signal()</title>
+<indexterm><primary>write_wifi_signal</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>write_wifi_signal</secondary></indexterm>
+<para><computeroutput>int WifiManager::write_wifi_signal ( )</computeroutput></para><para>
+
+<para>Write the WiFi signal level. </para>
+</para>
+
+<para>using for load currenct wifi signal level to dtabase <formalpara><title>Returns</title>
+
+<para>An integer indicating the success or failure of the function return code is here <link linkend="_">ERROR </link> </para>
+</formalpara>
+<warning><title>Warning</title>
+
+<para>if .php file or destination will be changed change function </para>
+</warning>
+</para>
+</section>
+</section>
+<section>
+<title>Member Data Documentation</title>
+<anchor xml:id="_class_wifi_manager_1a235d82100b057a43a0bfdfb9fa52f6cf"/><section>
+    <title>m_dev_nul</title>
+<indexterm><primary>m_dev_nul</primary><secondary>WifiManager</secondary></indexterm>
+<indexterm><primary>WifiManager</primary><secondary>m_dev_nul</secondary></indexterm>
+<para><computeroutput>const std::string WifiManager::m_dev_nul = &quot; &gt; /dev/null 2&gt;&amp;1&quot;<computeroutput>[private]</computeroutput></computeroutput></para><para>
+
+<para>/// Redirects output to /dev/null to suppress any output or error messages. </para>
+</para>
+</section>
+<para>
+The documentation for this class was generated from the following files:</para>
+<link linkend="__wifi_manager_8h">WifiManager.h</link><link linkend="__wifi_manager_8cpp">WifiManager.cpp</link></section>
+</section>

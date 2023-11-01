@@ -1,0 +1,24 @@
+\chapter{Luminosity Report from TOF Sensor}
+\hypertarget{index}{}\label{index}\index{Luminosity Report from TOF Sensor@{Luminosity Report from TOF Sensor}}
+\hypertarget{index_intro_sec}{}\doxysection{\texorpdfstring{Introduction}{Introduction}}\label{index_intro_sec}
+This program is designed to extract the Luminosity value from a Time of Flight (TOF) sensor via UART communication with an n\+RF device. It provides a straightforward way to read and report the Luminosity value from the connected TOF sensor.\hypertarget{index_usage_sec}{}\doxysection{\texorpdfstring{Usage}{Usage}}\label{index_usage_sec}
+To use the program, follow these steps\+:
+\begin{DoxyEnumerate}
+\item Compile and build the program with appropriate dependencies, including the \"{}\+Peripheral.\+h\"{} header file. 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{g++\ crc.c\ Luminosity\_report.cpp\ \ Peripheral.cpp\ serial\_drv.c\ -\/o\ Luminosity.out}
+
+\end{DoxyCode}
+
+\item Run the executable to establish UART communication with the n\+RF device and retrieve Luminosity data. 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{./Luminosity.out}
+
+\end{DoxyCode}
+
+\item The program will send a command to read TOF data from the sensor and wait for the response.
+\item Upon receiving valid data, the program will extract the Luminosity value and output it to the console.
+\end{DoxyEnumerate}\hypertarget{index_dependencies_sec}{}\doxysection{\texorpdfstring{Dependencies}{Dependencies}}\label{index_dependencies_sec}
+The program depends on the \"{}\+Peripheral.\+h\"{} header file for peripheral configurations and functions related to UART communication and packet handling.\hypertarget{index_note_sec}{}\doxysection{\texorpdfstring{Note}{Note}}\label{index_note_sec}
+This program assumes proper hardware connections and configurations for UART communication with the n\+RF device and the connected TOF sensor. It is important to ensure accurate UART settings and data processing for correct results.\hypertarget{index_author_sec}{}\doxysection{\texorpdfstring{Author}{Author}}\label{index_author_sec}
+This program was authored by Gor Danielyan. 
