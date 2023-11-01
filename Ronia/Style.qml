@@ -35,7 +35,6 @@ QtObject {
 
     //! Number properties
     property int        delegateHeight:     64
-    property int        textFieldHeight:    72
     property int        touchTarget:        56
 
     //! Specific styles for some Controls
@@ -66,5 +65,13 @@ QtObject {
     //! Switch
     readonly property SwitchStyle switchStyle: SwitchStyle {
         switchCheckedTrackColor: _style.green
+    }
+
+    //! TextField
+    readonly property TextFieldStyle textField: TextFieldStyle {
+        width: 180
+        height: 72
+        horizontalPadding: 4
+        verticalPadding: 8
     }
 }

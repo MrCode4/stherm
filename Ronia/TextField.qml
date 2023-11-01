@@ -1,0 +1,57 @@
+import QtQuick
+import QtQuick.Templates as T
+import QtQuick.Controls.impl
+
+import Ronia
+import Ronia.impl
+
+T.TextField {
+    id: control
+
+    implicitWidth: implicitBackgroundWidth + leftInset + rightInset
+                   || Math.max(contentWidth, placeholder.implicitWidth) + leftPadding + rightPadding
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                             contentHeight + topPadding + bottomPadding,
+                             placeholder.implicitHeight + topPadding + bottomPadding)
+
+    leftPadding: Style.textField.horizontalPadding
+    rightPadding: leftPadding
+    topPadding: Style.textField.verticalPadding
+    bottomPadding: topPadding
+
+    color: enabled ? Material.foreground : Material.hintTextColor
+    selectionColor: Material.accentColor
+    selectedTextColor: Material.primaryHighlightedTextColor
+    placeholderTextColor: Material.hintTextColor
+    verticalAlignment: TextInput.AlignVCenter
+
+    cursorDelegate: CursorDelegate { }
+
+    PlaceholderText {
+        id: placeholder
+        x: control.leftPadding
+        y: control.topPadding
+        width: control.width - (control.leftPadding + control.rightPadding)
+        height: control.height - (control.topPadding + control.bottomPadding)
+        text: control.placeholderText
+        font: control.font
+        color: control.placeholderTextColor
+        verticalAlignment: control.verticalAlignment
+        elide: Text.ElideRight
+        renderType: control.renderType
+        visible: !control.length && !control.preeditText && (!control.activeFocus || control.horizontalAlignment !== Qt.AlignHCenter)
+    }
+
+    background: Item {
+        implicitWidth: Style.textField.width
+        implicitHeight: Style.textField.height
+
+        Rectangle {
+            y: control.height - height - control.bottomPadding
+            width: parent.width
+            height: control.activeFocus || (enabled && control.hovered) ? 2 : 1
+            color: control.activeFocus ? control.Material.accentColor
+                                       : ((enabled && control.hovered) ? control.Material.primaryTextColor : control.Material.hintTextColor)
+        }
+    }
+}
