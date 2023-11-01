@@ -55,6 +55,7 @@ ApplicationWindow {
 
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 20000;
+        ScreenSaverManager.autoRestartOnPress = false; //! To be able to handle press event in ScreenSaver
     }
 
     /* Fonts
@@ -116,8 +117,9 @@ ApplicationWindow {
     ScreenSaver {
         id: _screenSaver
         anchors.centerIn: parent
-        device: uiSession.appModel
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
+        deviceController: uiSession.deviceController
+        device: uiSession.appModel
     }
 
     //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1

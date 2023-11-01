@@ -93,6 +93,21 @@ void ScreenSaverManager::setActive()
     }
 }
 
+bool ScreenSaverManager::getAutoRestartOnPress() const
+{
+    return mAutoRestartOnPress;
+}
+
+void ScreenSaverManager::setAutoRestartOnPress(bool newAutoRestartOnPress)
+{
+    if (mAutoRestartOnPress == newAutoRestartOnPress) {
+        return;
+    }
+
+    mAutoRestartOnPress = newAutoRestartOnPress;
+    emit autoRestartOnPressChanged();
+}
+
 bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
 {
     switch(event->type()) {
@@ -102,7 +117,7 @@ bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
         if (mState == ScreenSaverManager::State::Running) {
             //! Set State to State::Paused if it's State::Running until a corresponding release
             setState(ScreenSaverManager::State::Paused);
-        } else if (mState == ScreenSaverManager::State::Timeout) {
+        } else if (mState == ScreenSaverManager::State::Timeout && mAutoRestartOnPress) {
             //! Set it to running again
             setState(ScreenSaverManager::State::Running);
         }

@@ -11,6 +11,7 @@ class ScreenSaverManager : public QObject
 
     Q_PROPERTY(State    state       READ getState NOTIFY stateChanged FINAL)
     Q_PROPERTY(int      screenSaverTimeout READ getScreenSaverTimeout WRITE setScreenSaverTimeout NOTIFY screenSaverTimeoutChanged FINAL)
+    Q_PROPERTY(bool     autoRestartOnPress READ getAutoRestartOnPress WRITE setAutoRestartOnPress NOTIFY autoRestartOnPressChanged FINAL)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -44,6 +45,9 @@ public:
     int                 getScreenSaverTimeout() const;
     void                setScreenSaverTimeout(int newScreenSaverTimeout);
 
+    bool                getAutoRestartOnPress() const;
+    void                setAutoRestartOnPress(bool newAutoRestartOnPress);
+
     Q_INVOKABLE void    setInactive();
     Q_INVOKABLE void    setActive();
 
@@ -56,6 +60,8 @@ signals:
     void applicationChanged();
     void stateChanged();
     void screenSaverTimeoutChanged();
+
+    void autoRestartOnPressChanged();
 
 private:
     /*!
@@ -72,4 +78,13 @@ private:
      * \brief mScreenSaverTmr Timer for screen saver
      */
     QTimer              mScreenSaverTimer;
+
+    /*!
+     * \brief mAutoRestartOnPress If \a true \ref ScreenSaverManager will set state to
+     * \ref State::Running automatically when a press event is received in \ref State::Timeout
+     * state. If false state should be set back to \ref State::Running when appropriate.
+     *
+     * \details This is useful when press events needs to be delivered to a screen saver view.
+     */
+    bool                mAutoRestartOnPress = true;
 };
