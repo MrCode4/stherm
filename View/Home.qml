@@ -101,13 +101,22 @@ Control {
             height: _airCondItem.implicitHeight + _dateTimeHolder.height + 40 * scaleFactor
 
             //! Humidity item
-            CurrentHumidityLabel {
+            CurrentHumidityButton {
                 id: _currHumidLbl
                 anchors {
                     left: parent.left
                     top: parent.top
+                    topMargin: -8
                 }
                 device: _root.uiSession.appModel
+
+                onClicked: {
+                    if (mainStackView) {
+                        mainStackView.push("qrc:/Stherm/View/HumidityPage.qml", {
+                                                      "uiSession": Qt.binding(() => uiSession)
+                                                  })
+                    }
+                }
             }
 
             //! Air condition item
