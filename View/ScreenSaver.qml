@@ -31,27 +31,34 @@ Popup {
 
     /* Children
      * ****************************************************************************************/
+    //! This MouseArea is used to hide ScreenSaver
+    MouseArea {
+        anchors.fill: parent
+
+        onPressed: {
+            ScreenSaverManager.setActive();
+        }
+    }
+
     ColumnLayout {
         id: _contentLay
         anchors.centerIn: parent
 
         //! Temprature Label
-        Label {
-            id: _tempratureLbl
-
+        Row {
             Layout.alignment: Qt.AlignCenter
-            font.pointSize: AppStyle.size / 6
-            text: Number(Utils.convertedTemperature(
-                             device?.currentTemp ?? 0,
-                             device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
 
             Label {
-                anchors {
-                    left: parent.right
-                    top: parent.top
-                    topMargin: AppStyle.size / 24
-                }
+                id: _tempratureLbl
 
+                font.pointSize: AppStyle.size / 6
+                text: Number(Utils.convertedTemperature(
+                                 device?.currentTemp ?? 0,
+                                 device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
+
+            }
+
+            Label {
                 opacity: 0.6
                 font {
                     pointSize: Qt.application.font.pointSize * 2.4
