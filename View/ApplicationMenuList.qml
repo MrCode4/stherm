@@ -74,7 +74,6 @@ ListView {
     ]
     delegate: ApplicationMenuDelegate {
         width: ListView.view.width
-        height: Material.delegateHeight
         text: delegateData?.text ?? ""
         delegateData: modelData
         delegateIndex: index
