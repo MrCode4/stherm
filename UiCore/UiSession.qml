@@ -52,6 +52,9 @@ QtObject {
     //! Ui Preferences (Units, etc)
     property UiPreferences      uiPreferences:  UiPreferences {}
 
+    //!
+    property PopUpLayout        popupLayout
+
     //! app core
     property I_Device           appModel
 
