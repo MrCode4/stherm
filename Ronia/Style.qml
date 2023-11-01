@@ -14,14 +14,15 @@ QtObject {
 
     property int        theme:                          Style.Theme.Light
 
-    property color      background:                     "#040404"
+    property color      background:                     "#000000"
     property color      foreground:                     "#FFFFFF"
     property color      accent:                         "#FFFFFF"
     property color      primary:                        "#E8EAF6"
 
+    property color      secondaryBackgroundColor:       "#202020"
     property color      secondaryTextColor:             "#BBBBBB"
     property color      frameColor:                     "#F1F1F1"
-    property color      backgroundDimColor:             "#F0363636"
+    property color      backgroundDimColor:             "#E8000000"
     property color      listHighlightColor:             "#1E626262"
     property color      disabledColor:                  "#404040"
     property color      dropShadowColor:                "#0F000000"

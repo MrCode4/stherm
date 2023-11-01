@@ -28,6 +28,9 @@ Popup {
     closePolicy: Popup.NoAutoClose
     modal: true
     dim: false
+    background: Rectangle {
+        color: Style.background
+    }
 
     /* Children
      * ****************************************************************************************/
