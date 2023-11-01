@@ -17,9 +17,11 @@ ApplicationWindow {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property UiSession uiSession: UiSession { }
+    property UiSession  uiSession: UiSession {
+        popupLayout: popUpLayoutId
+    }
 
-    property string    currentFile: uiSession.currentFile
+    property string     currentFile: uiSession.currentFile
 
     /* Object Properties
      * ****************************************************************************************/
@@ -102,10 +104,8 @@ ApplicationWindow {
 
     //! Popup layout
     PopUpLayout {
-        id: popUpLayout
-        uiSession: window.uiSession
+        id: popUpLayoutId
         anchors.fill: parent
-        z: 100
     }
 
     ShortcutManager {
@@ -192,6 +192,7 @@ ApplicationWindow {
 
     //! MessagePopupView
     MessagePopupView {
+        uiSession: window.uiSession
         messageController: uiSession?.messageController ?? null
     }
 
