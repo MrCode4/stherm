@@ -21,10 +21,10 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: AppStyle.size / 60
-    rightPadding: AppStyle.size / 60
-    topPadding: AppStyle.size / 60 / 2
-    bottomPadding: AppStyle.size / 60 / 2
+    leftPadding: 8 * scaleFactor
+    rightPadding: 8 * scaleFactor
+    topPadding: 8 * scaleFactor
+    bottomPadding: 8 * scaleFactor
     contentItem: GridLayout {
         columnSpacing: 0
         rowSpacing: 0
@@ -54,7 +54,7 @@ Control {
         //!
         Label {
             Layout.columnSpan: 2
-            font.pointSize: Application.font.pointSize * 0.85
+            font.pointSize: Application.font.pointSize * 0.7
             opacity: 0.6
             text: "Current"
         }
