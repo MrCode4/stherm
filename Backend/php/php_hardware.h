@@ -18,10 +18,10 @@ private:
     // TODO do tehy belong here
     typedef time_t timestamp_t;
 
-    timestampt_t current_timestamp(void) {
+    static timestamp_t current_timestamp(void) {
         return std::time(0);
     }
-    timestamp_t minuteToTimestamp(uint32_t mins) {
+    static timestamp_t minuteToTimestamp(uint32_t mins) {
         return mins *60;
     }
 
@@ -32,10 +32,10 @@ private:
     
 
     // TODO refactor these
-    const std::string TECHNIC_QR = "https://test.hvac.z-soft.am/#EN/USA/technician/view/";
-    const std::string TECHNIC_EDIT_QR = "https://test.hvac.z-soft.am/#EN/USA/technician/edit/";
-    const int EXEC_TIMEOUT_INTERVAL = 30;
-    const int DELETE_INFO_INTERVAL = 7; // 1 week
+    inline static const std::string TECHNIC_QR = "https://test.hvac.z-soft.am/#EN/USA/technician/view/";
+    inline static const std::string TECHNIC_EDIT_QR = "https://test.hvac.z-soft.am/#EN/USA/technician/edit/";
+    static const int EXEC_TIMEOUT_INTERVAL = 30;
+    static const int DELETE_INFO_INTERVAL = 7; // 1 week
 
     // TODO class, with limits and getters/setters?
     typedef struct rgbVal {
@@ -62,17 +62,17 @@ private:
         bool                backlight_status = false;
         timestamp_t         last_update = current_timestamp();
         timestamp_t         server_last_update = current_timestamp();
-        uint32_t            current_speed = null;
+        uint32_t            current_speed = 0;
         std::string         logo = "nexgen.png";
         std::string         phone = "";
         std::string         url = "";
         std::string         user_guide = "";
         bool                start_pairing = false;
         bool                wiring_check = true;
-        uint32_t            is_service_titan = null;
-        uint32_t            timezone_number = null;
+        bool                is_service_titan = false;
+        std::string         timezone_number = "";
         bool                qa_test = false;
-        uint32_t            forget_sensor = null;
+        bool                forget_sensor = false;
         std::string         contractor_name = "NextGen";
         uint32_t            ventilator = 0;
         uint32_t            start_mode = 0;
@@ -83,8 +83,8 @@ private:
         uint32_t            system_type = 1;
         uint32_t            emergency_heating = 0;
         std::string         ob_state = "cool";
-        uint32_t            technical_edit_link  = TECHNIC_EDIT_QR;
-    };
+        std::string         technical_edit_link  = TECHNIC_EDIT_QR;
+    }device_config;
 
     /// @brief timing table struct
     struct timing
