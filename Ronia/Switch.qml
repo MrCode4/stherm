@@ -28,7 +28,7 @@ T.Switch {
             height: parent.height
             width: height
             radius: width / 2
-            visible: control.hovered
+            visible: control.hovered && control.enabled
             color: control.checked ? Qt.alpha(Style.accent, 0.3) : Qt.alpha(Style.foreground, 0.2)
         }
     }
