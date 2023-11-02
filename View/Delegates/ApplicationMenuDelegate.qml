@@ -20,8 +20,9 @@ ItemDelegate {
 
     /* Object properties
      * ****************************************************************************************/
+    leftPadding: 4 * scaleFactor
     contentItem: RowLayout {
-        spacing: 4
+        spacing: 10 * scaleFactor
         //! Icon: this is supposed to be a unicode of Font Awesome
         RoniaTextIcon {
             Layout.preferredWidth: implicitHeight * 1.5
