@@ -55,7 +55,6 @@ ApplicationWindow {
 
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 20000;
-        ScreenSaverManager.autoRestartOnPress = false; //! To be able to handle press event in ScreenSaver
     }
 
     /* Fonts

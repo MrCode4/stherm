@@ -34,15 +34,6 @@ Popup {
 
     /* Children
      * ****************************************************************************************/
-    //! This MouseArea is used to hide ScreenSaver
-    MouseArea {
-        anchors.fill: parent
-
-        onPressed: {
-            ScreenSaverManager.setActive();
-        }
-    }
-
     ColumnLayout {
         id: _contentLay
         anchors.centerIn: parent
@@ -73,8 +64,12 @@ Popup {
 
         //! Mode button
         SystemModeButton {
-            Layout.leftMargin: 2 * _icon.width / 3 - width / 2
+            Layout.topMargin: -height / 2.5
+            Layout.leftMargin: 2 * _icon.width / 3 - width
+            background: null
             deviceController: _root.deviceController
+
+            TapHandler { } //! To ensure no button functionality
         }
 
         //! NEXGEN icon
