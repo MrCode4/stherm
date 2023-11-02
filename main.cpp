@@ -102,7 +102,7 @@ QString getCPUInfo() {
     return serialNumberHex;
 }
 
-//! setBrightness
+//! setBrightness, value is a number between 0 and 254
 //! todo: Move to daemon
 void setBrightness(int value) {
     QFile brightnessFile("/sys/class/backlight/backlight_display/brightness");
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     qDebug() << "CPU ID: " << cpuid;
 
     // Brightness example
-    setBrightness(80);
+    setBrightness(200);
 
     // Time zone example
     setTimeZone(8);
