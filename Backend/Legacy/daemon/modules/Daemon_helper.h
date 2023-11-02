@@ -24,3 +24,4 @@ void daemonize();
  * @return bool of status parsing 
  */
 bool parseLogLevelOpt(int argc, char* argv[], int& log_level_val);
+

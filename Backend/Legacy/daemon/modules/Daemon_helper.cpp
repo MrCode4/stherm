@@ -150,3 +150,4 @@ bool parseLogLevelOpt(int argc, char* argv[], int& log_level_val)
 
     return true;
 }
+

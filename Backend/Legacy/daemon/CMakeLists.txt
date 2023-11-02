@@ -7,7 +7,6 @@ add_subdirectory(modules)
 
 add_executable(hvac_daemon 
 	main.cpp
-	Daemon_helper.cpp
     DeltaCorrection.cpp
     InputParametrs.cpp
     WifiManager.cpp
