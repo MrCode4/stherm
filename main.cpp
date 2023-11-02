@@ -48,13 +48,13 @@ int main(int argc, char *argv[])
     const double dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch();
     const double scaleFactor = qMax(1., dpi / refDPI);
 
-    //! Load default font -> Roboto-Regular for now
-    int robotoId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Montserrat-Regular.ttf");
-    if (robotoId == -1) {
-        qWarning() << "Could not load Roboto-Regular font.";
+    //! Load default font -> Montserrat-Regular for now
+    int fontId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Montserrat-Regular.ttf");
+    if (fontId == -1) {
+        qWarning() << "Could not load Montserrat-Regular font.";
     } else {
-        QStringList roboto = QFontDatabase::applicationFontFamilies(robotoId);
-        QFont defaultFont(roboto[0], refFontPt * scaleFactor);
+        QStringList fonts = QFontDatabase::applicationFontFamilies(fontId);
+        QFont defaultFont(fonts[0], refFontPt * scaleFactor);
         defaultFont.setCapitalization(QFont::MixedCase);
         qDebug() << "Default font pt: " << defaultFont.pointSize();
 
