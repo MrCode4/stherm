@@ -29,18 +29,19 @@ RoundButton {
 
     /* Object properties
      * ****************************************************************************************/
-    y: enabled && checked ? -cellSize / 3.2 : 0
+    y: enabled && checked ? -cellSize / 2.5 : 0
     height: width
     checkable: true
     flat: !checked
     down: checked
     padding: 20
     background: Rectangle {
-        implicitWidth: cellSize * (enabled && checked ? 1 : 0.85)
+        implicitWidth: cellSize * (enabled && checked ? 1 : 0.8)
         implicitHeight: background.implicitWidth
         radius: _root.radius
         color: !_root.enabled ? _root.Material.buttonDisabledColor
-            : _root.checked || _root.highlighted ? _root.Material.accentColor : _root.Material.buttonColor
+                              : _root.checked || _root.highlighted ? Qt.alpha(Style.accent, 0.3)
+                                                                   : _root.Material.buttonColor
 
 
         Rectangle {
@@ -48,7 +49,7 @@ RoundButton {
             height: parent.height
             radius: _root.radius
             visible: _root.hovered
-            color: _root.Material.rippleColor
+            color: Style.rippleColor
         }
     }
 

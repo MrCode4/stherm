@@ -3,7 +3,6 @@ import QtQuick.Layouts
 
 import Ronia
 import Stherm
-
 /*! ***********************************************************************************************
  * SystemModeButton provides a ui for switching application operation (system) modes
  * ***********************************************************************************************/
@@ -21,7 +20,8 @@ ToolButton {
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: _coolingStateItem.implicitWidth + leftPadding + rightPadding
-    implicitHeight: _coolingStateItem.implicitHeight + topPadding + bottomPadding
+    implicitHeight: implicitWidth
+    padding: 10
 
     /* Children
      * ****************************************************************************************/
@@ -34,14 +34,16 @@ ToolButton {
             anchors.centerIn: parent
             visible: opacity > 0
             opacity: _control.state === "off" ? 1. : 0.
-            spacing: 0
+            spacing: 1
 
             //! Power off icon
             RoniaTextIcon {
+                y: (parent.height - height) / 2
                 text: "\uf011" //! power-off icon
             }
 
             Label {
+                y: (parent.height - height) / 2
                 text: "FF"
             }
 
@@ -63,6 +65,7 @@ ToolButton {
 
             Label {
                 Layout.alignment: Qt.AlignCenter
+                font.pointSize: Application.font.pointSize * 0.75
                 text: "Heating"
             }
 
@@ -84,6 +87,7 @@ ToolButton {
 
             Label {
                 Layout.alignment: Qt.AlignCenter
+                font.pointSize: Application.font.pointSize * 0.75
                 text: "Cooling"
             }
 
@@ -105,6 +109,7 @@ ToolButton {
 
             Label {
                 Layout.alignment: Qt.AlignCenter
+                font.pointSize: Application.font.pointSize * 0.75
                 text: "Auto"
             }
 
@@ -118,19 +123,19 @@ ToolButton {
 
     state: {
         switch(device?.systemMode) {
-        case I_Device.SystemMode.Off:
+        case AppSpec.SystemMode.Off:
             return "off";
-        case I_Device.SystemMode.Heating:
+        case AppSpec.SystemMode.Heating:
             return "heating";
-        case I_Device.SystemMode.Cooling:
+        case AppSpec.SystemMode.Cooling:
             return "cooling";
-        case I_Device.SystemMode.Vacation:
+        case AppSpec.SystemMode.Vacation:
             // there is no design for vacation, so we show it as auto
             // if design added the order should be specified as well as the next state in onClicked
-        case I_Device.SystemMode.Auto:
+        case AppSpec.SystemMode.Auto:
             return "auto";
         default:
-            return ""
+            return "off"
         }
     }
     states: [
@@ -156,18 +161,18 @@ ToolButton {
         var nextMode = -1;
 
         switch(device?.systemMode) {
-        case I_Device.SystemMode.Off:
-            nextMode = I_Device.SystemMode.Heating;
+        case AppSpec.SystemMode.Off:
+            nextMode = AppSpec.SystemMode.Heating;
             break;
-        case I_Device.SystemMode.Heating:
-            nextMode = I_Device.SystemMode.Cooling;
+        case AppSpec.SystemMode.Heating:
+            nextMode = AppSpec.SystemMode.Cooling;
             break;
-        case I_Device.SystemMode.Cooling:
-            nextMode = I_Device.SystemMode.Auto;
+        case AppSpec.SystemMode.Cooling:
+            nextMode = AppSpec.SystemMode.Auto;
             break;
-        case I_Device.SystemMode.Vacation:
-        case I_Device.SystemMode.Auto:
-            nextMode = I_Device.SystemMode.Off;
+        case AppSpec.SystemMode.Vacation:
+        case AppSpec.SystemMode.Auto:
+            nextMode = AppSpec.SystemMode.Off;
             break;
         }
 

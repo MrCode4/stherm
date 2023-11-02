@@ -12,8 +12,8 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! ScheduleController instance
-    property ScheduleController     scheduleController: uiSession?.scheduleController
+    //! schedulesModel: use to create new Schedule instance
+    property SchedulesController     schedulesController: uiSession?.schedulesController ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -36,7 +36,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Next/Confirm button
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
 
         RoniaTextIcon {
             anchors.centerIn: parent
@@ -53,8 +53,8 @@ BasePageView {
         onClicked: {
             if (!_newSchedulePages.currentItem.nextPage) {
                 //! It's done, save schedule and go back
-                if (scheduleController) {
-                    scheduleController.saveNewSchedule(_internal.newSchedule);
+                if (schedulesController) {
+                    schedulesController.saveNewSchedule(_internal.newSchedule);
                 }
 
                 if (_root.StackView.view) {
@@ -72,7 +72,7 @@ BasePageView {
         id: _newSchedulePages
         anchors.centerIn: parent
         implicitHeight: Math.min(parent.height, currentItem?.implicitHeight)
-        implicitWidth: Math.min(parent.width, currentItem?.implicitWidth)
+        width: _root.availableWidth
 
         initialItem: _sheduleNamePage
     }

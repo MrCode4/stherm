@@ -12,8 +12,8 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! ScheduleController instance
-    property ScheduleController     scheduleController: uiSession?.scheduleController
+    //! schedules instance: use to show and remove schedule objects
+    property SchedulesController     schedulesController: uiSession?.schedulesController
 
     /* Object properties
      * ****************************************************************************************/
@@ -23,7 +23,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Add schedule button -> add it to header
     ToolButton {
-        parent: _root.header //! Which is a RowLayout
+        parent: _root.header.contentItem //! Which is a RowLayout
         contentItem: RoniaTextIcon {
             text: "\ue197"
         }
@@ -42,7 +42,7 @@ BasePageView {
     ListView {
         anchors.fill: parent
         clip: true
-        model: scheduleController?.schedules
+        model: appModel?.schedules ?? []
         delegate: ScheduleDelegate {
             required property var modelData
             required property int index
@@ -53,8 +53,8 @@ BasePageView {
             delegateIndex: index
 
             onRemoved: {
-                if (scheduleController) {
-                    scheduleController.removeSchedule(schedule);
+                if (schedulesController) {
+                    schedulesController.removeSchedule(schedule);
                 }
             }
         }

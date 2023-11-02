@@ -1,4 +1,5 @@
 import QtQuick
+
 import QtQuickStream
 import Stherm
 
@@ -11,5 +12,5 @@ QSObject {
     property int mode:             AppSpec.FanMode.FMAuto
 
     //! Fan working period per each hour
-    property int working_per_hour: 30
+    property int workingPerHour: 30
 }

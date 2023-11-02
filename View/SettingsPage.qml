@@ -10,11 +10,6 @@ import Stherm
 BasePageView {
     id: _root
 
-    /* Property declaration
-     * ****************************************************************************************/
-    //! UiPreferences
-    property UiPreferences      uiPreferences: uiSession?.uiPreferences ?? null
-
     /* Object properties
      * ****************************************************************************************/
     title: "Settings"
@@ -23,47 +18,23 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c" //! check icon
         }
 
         onClicked: {
             //! Save settings
-            if (uiPreferences && deviceController) {
+            if (deviceController) {
                 //! Set setting using DeviceController
                 deviceController.setSettings(_brightnessSlider.value,
                                              _speakerSlider.value,
-                                             _tempFarenUnitBtn.checked ? UiPreferences.TempratureUnit.Fah
-                                                                       : UiPreferences.TempratureUnit.Cel,
-                                             _time24FormBtn.checked ? UiPreferences.TimeFormat.Hour24
-                                                                    : UiPreferences.TimeFormat.Hour12,
+                                             _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
+                                                                       : AppSpec.TempratureUnit.Cel,
+                                             _time24FormBtn.checked ? AppSpec.TimeFormat.Hour24
+                                                                    : AppSpec.TimeFormat.Hour12,
                                              false, //! Reset
                                              _adaptiveBrSw.checked);
-
-                if (uiPreferences.brightness !== _brightnessSlider.value) {
-                    uiPreferences.brightness = _brightnessSlider.value;
-                }
-
-                if (uiPreferences.volume !== _speakerSlider.value) {
-                    uiPreferences.volume = _speakerSlider.value;
-                }
-
-                if (uiPreferences.adaptiveBrightness !== _adaptiveBrSw.checked) {
-                    uiPreferences.adaptiveBrightness = _adaptiveBrSw.checked;
-                }
-
-                var timeFormat = _time24FormBtn.checked ? UiPreferences.TimeFormat.Hour24
-                                                        : UiPreferences.TimeFormat.Hour12;
-                if (uiPreferences.timeFormat !== timeFormat) {
-                    uiPreferences.timeFormat = timeFormat;
-                }
-
-                var tempUnit = _tempFarenUnitBtn.checked ? UiPreferences.TempratureUnit.Fah
-                                                         : UiPreferences.TempratureUnit.Cel
-                if (uiPreferences.tempratureUnit !== tempUnit) {
-                    uiPreferences.tempratureUnit = tempUnit;
-                }
             }
 
             if (_root.StackView.view) {
@@ -74,7 +45,7 @@ BasePageView {
 
     ColumnLayout {
         anchors.centerIn: parent
-        width: parent.width * 0.85
+        width: parent.width * 0.9
         height: Math.min(implicitHeight, parent.height)
         spacing: 8
 
@@ -103,7 +74,7 @@ BasePageView {
                 Layout.fillWidth: true
                 from: 0
                 to: 100
-                value: uiPreferences?.brightness ?? 0
+                value: appModel?.setting?.brightness ?? 0
             }
 
             Label {
@@ -139,7 +110,7 @@ BasePageView {
                 Layout.fillWidth: true
                 from: 0
                 to: 100
-                value: uiPreferences?.volume ?? 0
+                value: appModel?.setting?.volume ?? 0
             }
 
             Label {
@@ -161,7 +132,7 @@ BasePageView {
 
             Switch {
                 id: _adaptiveBrSw
-                checked: uiPreferences?.adaptiveBrightness ?? false
+                checked: appModel?.setting?.adaptiveBrightness ?? false
             }
         }
 
@@ -181,13 +152,13 @@ BasePageView {
             RadioButton {
                 id: _tempFarenUnitBtn
                 text: "\u00b0F"
-                checked: uiPreferences?.tempratureUnit === UiPreferences.TempratureUnit.Fah
+                checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
             }
 
             RadioButton {
                 id: _tempCelciUnitBtn
                 text: "\u00b0C"
-                checked: uiPreferences?.tempratureUnit === UiPreferences.TempratureUnit.Cel
+                checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
             }
 
             //! Time Format
@@ -208,14 +179,14 @@ BasePageView {
                 id: _time24FormBtn
                 autoExclusive: false
                 text: "24H"
-                checked: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour24
+                checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour24
             }
 
             RadioButton {
                 id: _time12FormBtn
                 autoExclusive: false
                 text: "12H"
-                checked: uiPreferences?.timeFormat === UiPreferences.TimeFormat.Hour12
+                checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
             }
         }
     }

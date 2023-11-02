@@ -13,10 +13,10 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Ref to Backlight model
-    property Backlight          backlight: uiSession?.appModel?.backlight ?? null
+    property Backlight          backlight: appModel?.backlight ?? null
 
     //! Selected backlight color from shade buttons
-    readonly property color     selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Material.background
+    readonly property color     selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Style.background
 
     /* Object properties
      * ****************************************************************************************/
@@ -27,19 +27,13 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     RowLayout {
-        parent: _root.header
+        parent: _root.header.contentItem
         spacing: 8
 
         //! Backlight on/off button
         Switch {
             id: _backlightOnOffSw
             checked: backlight?.on ?? false
-
-            onToggled: {
-                if (backlight && backlight.on !== checked) {
-                    backlight.on = checked;
-                }
-            }
         }
 
         //! Confirm button
@@ -52,9 +46,7 @@ BasePageView {
             onClicked: {
                 //! Update backlight
                 if (deviceController) {
-                    deviceController.updateBacklight(selectedColor.hsvHue,
-                                                     selectedColor.hsvSaturation,
-                                                     selectedColor.hsvValue);
+                    deviceController.updateBacklight(_backlightOnOffSw.checked, selectedColor);
                 }
             }
         }
@@ -108,9 +100,10 @@ BasePageView {
         Item {
             id: _buttonsRow
 
-            readonly property int cellSize: AppStyle.size / 8
+            readonly property int cellSize: 72 * scaleFactor
+            readonly property int spacing: 4
 
-            Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + 8)
+            Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + spacing)
             Layout.preferredHeight: cellSize
             Layout.alignment: Qt.AlignCenter
             opacity: enabled ? 1. : 0.4
@@ -119,31 +112,34 @@ BasePageView {
                 id: _shadeButtonsRepeater
                 model: 5
                 delegate: ShadeButtonDelegate {
-                    x: index * (_buttonsRow.cellSize + 8) + (cellSize - width) / 2
+                    x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
                     checked: index === 4
                     hoverEnabled: enabled
-
-                    saturation: index / 4.
                     cellSize: _buttonsRow.cellSize
-                    value: _brSlider.value
+
                     hue: _colorSlider.value
+                    saturation: index / 4.
+                    value: _brSlider.value
                 }
             }
         }
     }
 
-    function setCurrentColor(h, s, v)
+    function setCurrentColor(color)
     {
+        var h = color.hsvHue;
+        var s = color.hsvSaturation;
+        var v = color.hsvValue;
+
         _colorSlider.value = h;
         _brSlider.value = v;
-
         var shadeToSelect = Math.max(0, Math.ceil(s / 0.2) - 1);
         _shadeButtonsRepeater.itemAt(shadeToSelect).checked = true;
     }
 
     Component.onCompleted: {
         if (backlight) {
-            setCurrentColor(backlight.hue, backlight.saturation, backlight.value);
+            setCurrentColor(backlight._color);
         }
     }
 }

@@ -32,6 +32,8 @@ BasePageView {
     implicitWidth: Math.max(_contentLay.implicitWidth, implicitHeaderWidth) + leftPadding + rightPadding
     implicitHeight: _contentLay.implicitHeight + implicitHeaderHeight + implicitFooterHeight + topPadding + bottomPadding
     topPadding: 24
+    leftPadding: 24 * scaleFactor
+    rightPadding: 24 * scaleFactor
     font.bold: true
     title: "Repeat"
     backButtonVisible: false

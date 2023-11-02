@@ -19,6 +19,21 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button
+    ToolButton {
+        parent: _root.header.contentItem
+        contentItem: RoniaTextIcon {
+            text: "\uf00c"
+        }
+
+        onClicked: {
+            //! Do neccessary updates
+
+            //! Also move out of this Page
+            backButtonCallback();
+        }
+    }
+
     GridLayout {
         anchors.centerIn: parent
         columns: 4

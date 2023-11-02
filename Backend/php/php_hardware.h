@@ -9,7 +9,7 @@
 class php_hardware : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
+wq    QML_ELEMENT
 
 private:
 

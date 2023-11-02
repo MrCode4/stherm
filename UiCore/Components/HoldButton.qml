@@ -6,7 +6,7 @@ import Stherm
 /*! ***********************************************************************************************
  * HoldButton is an specialized button for setting hold property of device
  * ***********************************************************************************************/
-Button {
+TabButton {
     id: _root
 
     /* Property declaration
@@ -19,9 +19,8 @@ Button {
 
     /* Object properties
      * ****************************************************************************************/
-    flat: true
     opacity: isHoldEnabled ? 1. : 0.6
-    font.pointSize: Qt.application.font.pointSize * 1.4
+    font.pointSize: Qt.application.font.pointSize * 1.25
     text: "Hold"
 
     onClicked: {

@@ -29,8 +29,6 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: AppStyle.size / 1.2
-    implicitHeight: AppStyle.size / 2.4
     leftInset: 0
     rightInset: 0
     background: Item {
@@ -138,7 +136,7 @@ Control {
 
         Item {
             anchors.fill: _handleCircle
-            anchors.margins: -16
+            anchors.margins: -24
 
             DragHandler {
                 id: _handleDh

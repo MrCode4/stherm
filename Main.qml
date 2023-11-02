@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.VirtualKeyboard
 
 import Ronia
@@ -19,9 +17,11 @@ ApplicationWindow {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property UiSession uiSession: UiSession { }
+    property UiSession  uiSession: UiSession {
+        popupLayout: popUpLayoutId
+    }
 
-    property string    currentFile: uiSession.currentFile
+    property string     currentFile: uiSession.currentFile
 
     /* Object Properties
      * ****************************************************************************************/
@@ -29,18 +29,32 @@ ApplicationWindow {
     height: AppStyle.size
 
     visible: true
-    //    visibility: Window.FullScreen
-    title: qsTr("Template" + "               " + currentFile)
+    title: qsTr("STherm")
+
+    //! Save the app configuration when the app closed
+    onClosing: {
+        // Save to found path
+        AppCore.defaultRepo.saveToFile(window.uiSession.configFilePath);
+    }
 
     //! Create defualt repo and root object to save and load
     Component.onCompleted: {
-        AppCore.defaultRepo.initRootObject("QSObject");
+
+        // Create and prepare DefaultRepo and RootModel as root.
+        AppCore.defaultRepo = AppCore.createDefaultRepo(["QtQuickStream", "Stherm"]);
+
+        // Bind appModel to qsRootObject to capture loaded model from configuration.
+        window.uiSession.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
+
+        // Load the file
+        console.info("Load the config file: ", window.uiSession.configFilePath)
+        if (AppCore.defaultRepo.loadFromFile(window.uiSession.configFilePath))
+            console.info("Config file succesfully loaded.")
+        else
+            AppCore.defaultRepo.initRootObject("Device");
 
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 20000;
-
-        //! Refereh wifis.
-        NetworkInterface.refereshWifis();
     }
 
     /* Fonts
@@ -50,6 +64,7 @@ ApplicationWindow {
     FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Regular-400.otf" }
     FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Light-300.otf" }
     FontLoader { source: "qrc:/Stherm/Fonts/RobotoMono-Regular.ttf" }
+    FontLoader { source: "qrc:/Stherm/Fonts/Montserrat-Regular.ttf" }
 
 
     /* Style
@@ -63,7 +78,7 @@ ApplicationWindow {
 
     StackLayout {
         id: _normalAndVacationModeStV
-        currentIndex: uiSession?.appModel.systemMode === I_Device.SystemMode.Vacation ? 1 : 0
+        currentIndex: uiSession?.appModel.systemMode === AppSpec.SystemMode.Vacation ? 1 : 0
 
         Flickable {
             id: _mainViewFlick
@@ -90,10 +105,8 @@ ApplicationWindow {
 
     //! Popup layout
     PopUpLayout {
-        id: popUpLayout
-        uiSession: window.uiSession
+        id: popUpLayoutId
         anchors.fill: parent
-        z: 100
     }
 
     ShortcutManager {
@@ -103,18 +116,23 @@ ApplicationWindow {
     ScreenSaver {
         id: _screenSaver
         anchors.centerIn: parent
-        device: uiSession.appModel
-        uiPreference: uiSession?.uiPreferences
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
+        deviceController: uiSession.deviceController
+        device: uiSession.appModel
     }
 
-    //! A Timer to periodically refresh wifis (every 2 seconds)
+    //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1
+    //! seconds and then refresh every 20 seconds
     Timer {
         running: true
-        interval: 5000
+        interval: 1000
         repeat: true
         onTriggered: {
             NetworkInterface.refereshWifis();
+
+            if (interval < 20000) {
+                interval = 20000;
+            }
         }
     }
 
@@ -126,6 +144,12 @@ ApplicationWindow {
         y: window.height
         width: window.width
         implicitHeight: keyboard.height + _closeBtn.height
+
+        Component.onCompleted: {
+            //! Increase key height and keyboard height
+            keyboard.style.keyboardDesignHeight = keyboard.style.keyboardDesignHeight * 1.3
+            keyboard.style.keyboardHeight = keyboard.style.keyboardDesignHeight / 3.8;
+        }
 
         //! ToolButton to close keyboard.
         //! This SHOULD steal focus from other controls, otherwise an already focused TextField
@@ -170,6 +194,7 @@ ApplicationWindow {
 
     //! MessagePopupView
     MessagePopupView {
+        uiSession: window.uiSession
         messageController: uiSession?.messageController ?? null
     }
 
@@ -179,7 +204,7 @@ ApplicationWindow {
         repeat: true
         running: true
         onTriggered: {
-            if (Math.random() > 0.5) {
+            if (Math.random() > 0.98) {
                 //! Create an alert
                 var now = new Date();
                 if (Math.random() > 0.5) {

@@ -24,8 +24,8 @@ T.Popup {
     }
 
     background: Rectangle {
-        radius: 2
-        color: Style.background
+        radius: 4
+        color: Style.secondaryBackgroundColor
     }
 
     T.Overlay.modal: Rectangle {

@@ -21,14 +21,12 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Humidity Control"
-    leftPadding: AppStyle.size / 12
-    rightPadding: AppStyle.size / 12
 
     /* Children
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c"
         }
@@ -40,12 +38,18 @@ BasePageView {
 
                 //! Update requested humidity to device
             }
+
+            //! Also move out of this Page
+            if (_root.StackView.view && _root.StackView.view.depth > 1
+                    && _root.StackView.view.currentItem === _root) {
+                _root.StackView.view.pop();
+            }
         }
     }
 
     ColumnLayout {
         anchors.centerIn: parent
-        width: _root.availableWidth
+        width: parent.width * 0.85
 
         Label {
             Layout.alignment: Qt.AlignHCenter
@@ -57,6 +61,7 @@ BasePageView {
             Layout.fillWidth: true
             from: 20
             to: 70
+            value: device?.requestedHum ?? 0
             ticksCount: 50
             majorTickCount: 5
             stepSize: 1.

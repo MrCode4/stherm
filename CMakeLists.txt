@@ -35,8 +35,8 @@ add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
 set_source_files_properties(
     Core/AppCore.qml
     Core/AppSpec.qml
+    Core/Utils.qml
     UiCore/AppStyle.qml
-    UiCore/AppSettings.qml
     UiCore/FAIcons.qml
 
     PROPERTIES
@@ -64,54 +64,30 @@ qt6_add_qml_module(appStherm
         Core/I_Device.qml
         Core/Device.qml
         Core/SimDevice.qml
-        Core/Wifi.qml
-        Core/WifiController.qml
         Core/Fan.qml
         Core/Backlight.qml
-        Core/WifiDevice.qml
         Core/DeviceController.qml
         Core/SimDeviceController.qml
         Core/I_DeviceController.qml
         Core/Schedule.qml
-        Core/ScheduleController.qml
+        Core/SchedulesController.qml
         Core/Sensor.qml
         Core/SensorController.qml
         Core/Message.qml
         Core/MessageController.qml
         Core/Wiring.qml
+        Core/Vacation.qml
+        Core/Setting.qml
+        Core/Utils.qml
 
 
         # Primitive Components
-        UiCore/Components/RoniaFlatButton.qml
         UiCore/Components/RoniaTextIcon.qml
-        UiCore/Components/RoniaMenuItem.qml
-        UiCore/Components/RoniaThreeWaySwitch.qml
-        UiCore/Components/RoniaExpandableItem.qml
-        UiCore/Components/RoniaUserInputBase.qml
-        UiCore/Components/RoniaUserInputCombo.qml
-        UiCore/Components/RoniaUserInputNumberEditor.qml
-        UiCore/Components/RoniaUserInputTextField.qml
-        UiCore/Components/RoniaUserInputToggle.qml
-        UiCore/Components/RoniaToolTip.qml
-        UiCore/Components/RoniaNumberEditor.qml
-        UiCore/Components/RoniaComboBox.qml
-        UiCore/Components/RoniaColorButton.qml
-        UiCore/Components/RoniaContextMenu.qml
-        UiCore/Components/RoniaContextMenuItem.qml
-        UiCore/Components/RoniaRoundMouseArea.qml
-        UiCore/Components/Buttons/RoniaBaseButton.qml
-        UiCore/Components/Buttons/RoniaButton.qml
-        UiCore/Components/Buttons/RoniaIconButton.qml
-        UiCore/Components/Buttons/RoniaIconButtonRound.qml
-        UiCore/Components/Buttons/RoniaIconTextButton.qml
-        UiCore/Components/Buttons/RoniaSideMenuButton.qml
-        UiCore/Components/Buttons/RoniaControlToolButton.qml
 
 
         # UiSession+Popups
         UiCore/FAIcons.qml
         UiCore/AppStyle.qml
-        UiCore/AppSettings.qml
         UiCore/UiSession.qml
         UiCore/UiSessionPopups.qml
         UiCore/UiPreferences.qml
@@ -131,7 +107,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/DesiredTempratureItem.qml
         UiCore/Components/AirConditionItem.qml
         UiCore/Components/FanButton.qml
-        UiCore/Components/CurrentHumidityLabel.qml
+        UiCore/Components/CurrentHumidityButton.qml
         UiCore/Components/HoldButton.qml
         UiCore/Components/DeviceToggleButton.qml
         UiCore/Components/WifiButton.qml
@@ -199,19 +175,34 @@ qt6_add_qml_module(appStherm
     SOURCES
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
-        Backend/AppSettingsCPP.h
-        Backend/AppSettingsCPP.cpp
         Backend/NetworkInterface.h
         Backend/NetworkInterface.cpp
         Backend/NmcliInterface.h
         Backend/ScreenSaverManager.h
         Backend/ScreenSaverManager.cpp
 
+        # php
+        Backend/php_api.h
+        Backend/php_api.cpp
+        Backend/php/php_hardware.h
+        Backend/php/php_hardware.cpp
+        Backend/php/php_system.h
+        Backend/php/php_system.cpp
+        Backend/php/php_sensors.h
+        Backend/php/php_sensors.cpp
+        Backend/php/php_wifi.h
+        Backend/php/php_wifi.cpp
+        Backend/php/php_schedule.h
+        Backend/php/php_schedule.cpp
+        Backend/php/php_update.h
+        Backend/php/php_update.cpp
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
         Fonts/Font\ Awesome\ 6\ Pro-Regular-400.otf
         Fonts/Font\ Awesome\ 6\ Pro-Light-300.otf
+        Fonts/Montserrat-Regular.ttf
         Fonts/RobotoMono-Regular.ttf
         Fonts/Roboto-Regular.ttf
         Images/auto.png
@@ -225,13 +216,6 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
-        SOURCES Backend/php_api.h Backend/php_api.cpp
-        SOURCES Backend/php/php_hardware.h Backend/php/php_hardware.cpp
-        SOURCES Backend/php/php_system.h Backend/php/php_system.cpp
-        SOURCES Backend/php/php_sensors.h Backend/php/php_sensors.cpp
-        SOURCES Backend/php/php_wifi.h Backend/php/php_wifi.cpp
-        SOURCES Backend/php/php_schedule.h Backend/php/php_schedule.cpp
-        SOURCES Backend/php/php_update.h Backend/php/php_update.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

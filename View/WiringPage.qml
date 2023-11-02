@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Wiring model
-    property Wiring     wiring: uiSession?.appModel?.wiring ?? null
+    property Wiring     wiring: appModel?.wiring ?? null
 
     /* Object properties
      * ****************************************************************************************/

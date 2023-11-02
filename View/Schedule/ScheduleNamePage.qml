@@ -26,7 +26,7 @@ BasePageView {
     TextField {
         id: _nameTf
         anchors.centerIn: parent
-        implicitWidth: implicitHeaderWidth * 1.5
+        width: parent.width * 0.7
         placeholderText: "Enter Schedule Name"
     }
 }

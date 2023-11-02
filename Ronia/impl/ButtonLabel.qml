@@ -20,6 +20,8 @@ Item {
         width: button?.checkable && button?.checked ? parent.width - checkIconId.width
                                                     : parent.width
         horizontalAlignment: Text.AlignHCenter
+        clip: true
+        elide: Text.ElideRight
     }
 
     Rectangle {

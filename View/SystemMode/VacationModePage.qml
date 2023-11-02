@@ -32,7 +32,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm icon
     ToolButton {
-        parent: _root.header
+        parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c" //! check icon
         }
@@ -80,8 +80,8 @@ BasePageView {
             Layout.fillWidth: true
             from: 0
             to: 60
-            first.value: from
-            second.value: to
+            first.value: appModel?.vacation?.temp_min ?? from
+            second.value: appModel?.vacation?.temp_max ?? to
             labelSuffix: "\u00b0C"
         }
 
@@ -105,8 +105,8 @@ BasePageView {
             Layout.fillWidth: true
             from: 0
             to: 100
-            first.value: from
-            second.value: to
+            first.value: appModel?.vacation?.hum_min ?? from
+            second.value: appModel?.vacation?.hum_max ?? to
             labelSuffix: "%"
         }
     }

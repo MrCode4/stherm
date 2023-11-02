@@ -11,26 +11,40 @@ Item {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! UiSession
+    property UiSession          uiSession
+
     //! MessageController
-    required property  MessageController    messageController
+    property MessageController  messageController
 
     /* Children
      * ****************************************************************************************/
     Connections {
         target: messageController
+        enabled: Boolean(uiSession)
 
         function onNewMessageReceived(message)
         {
             //! \todo This will later be shown using PopUpLayout to be able to show multiple message
             //! popups on top of each other.
 
-            //! Display this message
-            _messagePopup.message = message;
-            _messagePopup.open();
+            //! Create an instance of AlertNotifPopup
+            var newAlertPopup = _messagePopupCompo.createObject(_root, {
+                                                                    "message": message
+                                                                });
+
+            //! Ask PopUpLayout to open popup
+            uiSession.popupLayout.displayPopUp(newAlertPopup, false);
         }
     }
 
-    AlertNotifPopup {
-        id: _messagePopup
+    Component {
+        id: _messagePopupCompo
+
+        AlertNotifPopup {
+            onClosed: {
+                destroy(this);
+            }
+        }
     }
 }

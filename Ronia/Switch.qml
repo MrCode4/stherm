@@ -25,10 +25,10 @@ T.Switch {
         Rectangle {
             x: parent.handle.x + parent.handle.width / 2 - width / 2
             y: parent.handle.y + parent.handle.height / 2 - height / 2
-            width: parent.width + 4
-            height: width
+            height: parent.height
+            width: height
             radius: width / 2
-            visible: control.hovered
+            visible: control.hovered && control.enabled
             color: control.checked ? Qt.alpha(Style.accent, 0.3) : Qt.alpha(Style.foreground, 0.2)
         }
     }

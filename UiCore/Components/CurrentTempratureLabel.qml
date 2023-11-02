@@ -12,10 +12,8 @@ Control {
 
     /* Property declaration
      * ****************************************************************************************/
-    property UiPreferences uiPreference
-
     //! Holds current unit of temprature (Fahrenheit or Celsius)
-    property string     unit: (uiPreference?.tempratureUnit === UiPreferences.TempratureUnit.Fah ? "F" : "C") ?? "F"
+    property string     unit: (device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! \todo: add a property to get a ref to a temprature model
     //! I_Device
@@ -23,10 +21,10 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: AppStyle.size / 60
-    rightPadding: AppStyle.size / 60
-    topPadding: AppStyle.size / 60 / 2
-    bottomPadding: AppStyle.size / 60 / 2
+    leftPadding: 8 * scaleFactor
+    rightPadding: 8 * scaleFactor
+    topPadding: 8 * scaleFactor
+    bottomPadding: 8 * scaleFactor
     contentItem: GridLayout {
         columnSpacing: 0
         rowSpacing: 0
@@ -34,10 +32,11 @@ Control {
         //! Current temprature
         Label {
             font {
-                family: "Roboto Mono"
-                pointSize: Qt.application.font.pointSize * 1.85
+                pointSize: Qt.application.font.pointSize * 1.5
             }
-            text: Number(uiPreference?.convertedTemperature(device?.currentTemp ?? 0) ?? 0).toLocaleString(locale, "f", 0)
+            text: Number(Utils.convertedTemperature(device?.currentTemp ?? 0,
+                                                      device?.setting?.tempratureUnit))
+                        .toLocaleString(locale, "f", 0)
         }
 
         //! Unit
@@ -55,6 +54,7 @@ Control {
         //!
         Label {
             Layout.columnSpan: 2
+            font.pointSize: Application.font.pointSize * 0.7
             opacity: 0.6
             text: "Current"
         }

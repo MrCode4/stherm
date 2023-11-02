@@ -15,7 +15,7 @@ BasePageView {
     //! Temprature value
     property alias      temprature: _tempSlider.value // conversion?
 
-    property bool isCelcius : _root.uiSession.uiPreferences.tempratureUnit !== UiPreferences.TempratureUnit.Fah
+    property bool isCelcius :  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     /* Object properties
      * ****************************************************************************************/
@@ -24,6 +24,8 @@ BasePageView {
                                                         + implicitFooterHeight + topPadding + bottomPadding
                                                       : 0
     topPadding: 24
+    leftPadding: 24 * scaleFactor
+    rightPadding: 24 * scaleFactor
     title: "Temprature (\u00b0" + (isCelcius ? "C" : "F") + ")"
     backButtonVisible: false
     titleHeadeingLevel: 3
@@ -34,8 +36,8 @@ BasePageView {
         id: _tempSlider
         readonly property int tickStepSize: 4
 
-        implicitWidth: implicitHeaderWidth * 3
         anchors.centerIn: parent
+        width: parent.width
         from: isCelcius ? 18 : 65
         to: isCelcius ? 30 : 85
         majorTickCount: isCelcius ? 3 : 5

@@ -1,95 +1,62 @@
-import QtQuick 2.0
+import QtQuick
 
+import Ronia
 import Stherm
+
 /*! ***********************************************************************************************
- * The PopUpLayout listens to the UiSession and shows any popups that might be pending. We use a
- * queued (first-in-first-out) approach.
+ * The PopUpLayout handles displaying popups as requested
  * ************************************************************************************************/
-Rectangle {
+Item {
     id: popUpLayout
-
-    /* Property Declarations
-     * ****************************************************************************************/
-    property UiSession  uiSession
-    property I_PopUp    currentPopUp: null
-
-    /* Object Properties
-     * ****************************************************************************************/
-    color: "#aa000000"
-    visible: false
-
-    /* Functions
-     * ****************************************************************************************/
-    //! Hides the popup and shows shows the first queued one from uiSession.popUpQueue
-    function closePopUp(popup) {
-        // Hide the current popup
-        currentPopUp.visible            = false;
-        currentPopUp                    = null;
-
-        // Show any pending popups
-        if (uiSession.popUpQueue.length !== 0) {
-            displayPopUp(uiSession.popUpQueue[0]);
-        }
-        // Otherwise hide the layout
-        else {
-            popUpLayout.visible = false;
-        }
-    }
-
-    //! Shows the first popup in the uiSession.popUpQueue
-    function displayPopUp(popup) {
-        // Sanity Check: show the first popup in the queue
-        if (uiSession.popUpQueue.indexOf(popup) !== 0) {
-            return;
-        }
-
-        // Show the new popup
-        currentPopUp                    = popup;
-        currentPopUp.parent             = popUpLayout;
-        currentPopUp.anchors.centerIn   = popUpLayout;
-        currentPopUp.visible            = true;
-
-        closeButton.anchors.horizontalCenter = currentPopUp.right;
-        closeButton.anchors.verticalCenter   = currentPopUp.top;
-
-        popUpLayout.visible  = true;
-    }
-
-    /* Connections
-     * ****************************************************************************************/
-    Connections {
-        target: uiSession
-        function onSigShowPopUp(popup) {
-            popUpLayout.displayPopUp(popup);
-        }
-    }
-
-    Connections {
-        target: uiSession
-        function onSigHidePopUp(popup) {
-            popUpLayout.closePopUp(popup);
-        }
-    }
 
     /* Children
      * ****************************************************************************************/
-    // Sink for all mouse events outside the popup
-    MouseArea {
-        anchors.fill: parent
-        enabled: currentPopUp !== null && currentPopUp.visible
+    QtObject {
+        id: _internal
+
+        property var    popupQueue: []
+
+        function onPopupClosedDestroyed(popup: I_PopUp)
+        {
+            var pIndx = popupQueue.findIndex(element => element === popup);
+            if (pIndx > -1) {
+                popup.hid.disconnect(onPopupClosedDestroyed);
+                popup.destructed.disconnect(onPopupClosedDestroyed);
+
+                popupQueue.splice(pIndx, 1);
+            }
+
+            //! Show next popup in the queue if any
+            if (popupQueue.length > 0) {
+                popupQueue[0].open();
+            }
+        }
     }
 
-    RoniaIconButtonRound {
-        id: closeButton
+    /* Functions
+     * ****************************************************************************************/
+    //! Shows the first popup in the uiSession.popUpQueue
+    //! \param hightPriority: if it's true popup will be shown immediately above all visible ones,
+    //! and if false, it is added in a queue to be shown after current popup is closed (if any)
+    function displayPopUp(popup: I_PopUp, hightPriority=true)
+    {
+        if (!(popup instanceof I_PopUp)) {
+            return;
+        }
 
-        size: 48
-        z: 100
+        popup.hid.connect(_internal.onPopupClosedDestroyed);
+        popup.destructed.connect(_internal.onPopupClosedDestroyed);
 
-        backColor: "darkred"
-        text: "\uf00d"
-
-        onClicked: {
-            uiSession.hidePopUp(currentPopUp);
+        if (hightPriority) {
+            //! Disply it right away
+            _internal.popupQueue.push(popup);
+            popup.open();
+        } else {
+            //! Push it back to the queue
+            _internal.popupQueue.push(popup);
+            if (_internal.popupQueue.length === 1) {
+                popup.open();
+            }
         }
     }
 }

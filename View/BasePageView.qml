@@ -15,6 +15,9 @@ Page {
     //! Reference to app UiSession since most pages need this
     property UiSession              uiSession
 
+    //! App model
+    property I_Device               appModel: uiSession?.appModel ?? null
+
     //! Ref to I_DeviceController
     property I_DeviceController     deviceController: uiSession?.deviceController ?? null
 
@@ -34,28 +37,33 @@ Page {
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
     implicitHeight: AppStyle.size
-    leftPadding: AppStyle.size / 60
-    rightPadding: AppStyle.size / 60
-    topPadding: AppStyle.size / 60
-    bottomPadding: AppStyle.size / 60
-    header: RowLayout {
-        ToolButton {
-            visible: backButtonVisible
-            contentItem: RoniaTextIcon {
-                text: backButtonTextIcon
+    leftPadding: 8 * scaleFactor
+    rightPadding: 8 * scaleFactor
+    topPadding: 16 * scaleFactor
+    bottomPadding: 8 * scaleFactor
+    header: Control {
+        horizontalPadding: 6 * scaleFactor
+        topPadding: 2 * scaleFactor
+        background: null
+        contentItem: RowLayout {
+            ToolButton {
+                visible: backButtonVisible
+                contentItem: RoniaTextIcon {
+                    text: backButtonTextIcon
+                }
+
+                onClicked: if (backButtonCallback instanceof Function) backButtonCallback();
             }
 
-            onClicked: if (backButtonCallback instanceof Function) backButtonCallback();
-        }
-
-        Label {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            textFormat: "MarkdownText"
-            verticalAlignment: "AlignVCenter"
-            horizontalAlignment: "AlignHCenter"
-            text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} ${title}`
-            elide: "ElideRight"
+            Label {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                textFormat: "MarkdownText"
+                verticalAlignment: "AlignVCenter"
+                horizontalAlignment: "AlignHCenter"
+                text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} ${title}`
+                elide: "ElideRight"
+            }
         }
     }
 

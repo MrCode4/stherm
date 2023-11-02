@@ -5,9 +5,9 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * HumidityLabel
+ * CurrentHumidityButton
  * ***********************************************************************************************/
-Control {
+ToolButton {
     id: _root
 
     /* Property declaration
@@ -17,11 +17,7 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: AppStyle.size / 60
-    rightPadding: AppStyle.size / 60
-    topPadding: AppStyle.size / 60 / 2
-    bottomPadding: AppStyle.size / 60 / 2
-    background: null
+    padding: 8
 
     /* Children
      * ****************************************************************************************/

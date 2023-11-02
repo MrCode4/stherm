@@ -13,17 +13,17 @@ Control {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! The maximum with that is required by DateTimeLabel
+    property real   maximumWidth: _fontMetric.boundingRect("00:00 AM").width + leftPadding + rightPadding
+
     //!
     property bool   is12Hour:   false
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth:  _dateTimeCol.implicitWidth + leftPadding + rightPadding
+    implicitWidth: _dateTimeCol.implicitWidth + leftPadding + rightPadding
     implicitHeight: _dateTimeCol.implicitHeight + topPadding + bottomPadding
-    leftPadding:   AppStyle.size / 30
-    rightPadding:  AppStyle.size / 30
-    topPadding:    AppStyle.size / 30
-    bottomPadding: AppStyle.size / 30
+    padding: 4
     background: null
 
     /* Childrent
@@ -31,17 +31,14 @@ Control {
     ColumnLayout {
         id: _dateTimeCol
 
-        anchors.fill: parent
-        spacing: 2
+        anchors.centerIn: parent
+        spacing: 4
 
         //! Time Label
         Label {
             id: _timeLbl
             Layout.alignment: Qt.AlignHCenter
-            font {
-                family: "monospace"
-                pointSize: Qt.application.font.pointSize * 1.4
-            }
+            font.pointSize: Qt.application.font.pointSize * 1.4
             text: "00:00"
         }
 
@@ -56,10 +53,8 @@ Control {
             id: _dateLbl
             Layout.fillWidth: true
             opacity: 0.75
+            font.pointSize: Application.font.pointSize * 0.8
             horizontalAlignment: "AlignHCenter"
-            font {
-                pointSize: Qt.application.font.pointSize * 1.4
-            }
         }
     }
 
@@ -74,5 +69,10 @@ Control {
             _timeLbl.text = now.toLocaleTimeString(locale, is12Hour ? "hh:mm AP" : "hh:mm")
             _dateLbl.text = now.toLocaleDateString(locale, "MMM dd ddd")
         }
+    }
+
+    FontMetrics {
+        id: _fontMetric
+        font: _timeLbl.font
     }
 }

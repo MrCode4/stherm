@@ -58,10 +58,10 @@ class NetworkInterface : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis NOTIFY wifisChanged)
-    Q_PROPERTY(bool isRunning        READ isRunning       NOTIFY isRunningChanged)
-    Q_PROPERTY(QString  connectedSsid   READ connectedSsid NOTIFY connectedSsidChanged)
-    Q_PROPERTY(bool deviceIsOn      READ deviceIsOn NOTIFY deviceIsOnChanged)
+    Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis           NOTIFY wifisChanged)
+    Q_PROPERTY(bool isRunning                   READ isRunning       NOTIFY isRunningChanged)
+    Q_PROPERTY(WifiInfo* connectedWifi          READ connectedWifi   NOTIFY connectedWifiChanged)
+    Q_PROPERTY(bool deviceIsOn                  READ deviceIsOn      NOTIFY deviceIsOnChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -77,7 +77,7 @@ public:
 
     bool                isRunning();
 
-    QString             connectedSsid() const;
+    WifiInfo*           connectedWifi() const;
 
     bool                deviceIsOn() const { return mDeviceIsOn; }
 
@@ -107,7 +107,7 @@ private slots:
 signals:
     void                wifisChanged();
     void                isRunningChanged();
-    void                connectedSsidChanged();
+    void                connectedWifiChanged();
     void                deviceIsOnChanged();
     //!
     //! \brief errorOccured This is a private signal and is emitted when an error occurs during an

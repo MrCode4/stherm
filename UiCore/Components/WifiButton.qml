@@ -7,27 +7,30 @@ import Stherm
 /*! ***********************************************************************************************
  * WifiButton provide a ui for connecting to a wifi network and show status of current connection
  * ***********************************************************************************************/
-RoundButton {
+ToolButton {
     id: _root
 
     /* Property declration
      * ****************************************************************************************/
-    //! Referenct to WifiController
-    property WifiController     wifiController
-
-    //! Reference to Wifi model
-    property Wifi               wifi
-
-    //! UiSessionPopups
-    property UiSessionPopups    popups
 
     /* Object properties
      * ****************************************************************************************/
-    flat: true
-    padding: 12
     contentItem: RoniaTextIcon {
-        font.pointSize: Qt.application.font.pointSize * 1.4
+        font.pointSize: Style.fontIconSize.largePt - 1
         color: _root.Material.foreground
-        text: wifi?.connectedSsid ? "\uf1eb" : "\uf6ac"
+        text: {
+            return NetworkInterface.connectedWifi
+                    ? (NetworkInterface.connectedWifi.strength > 80
+                       ? "\uf1eb" //! wifi icon
+                       : (NetworkInterface.connectedWifi.strength > 50
+                          ? "\uf6ab": //! wifi-fair icon
+                            (NetworkInterface.connectedWifi.strength > 25 ? "\uf6aa" //! wifi-weak icon
+                                                                          : "")
+                                )
+                             )
+                    : "\uf6ac";
+        }
     }
+
+    Component.onCompleted: background.square = true
 }
