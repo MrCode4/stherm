@@ -15,6 +15,8 @@ T.Button {
     padding: Style.button.horizontalPadding
     verticalPadding: Style.button.verticalPadding
     spacing: 8
+    topInset: 4
+    bottomInset: 4
 
     icon.width: 24
     icon.height: 24

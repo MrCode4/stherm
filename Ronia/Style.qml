@@ -23,12 +23,12 @@ QtObject {
     property color      secondaryTextColor:             "#BBBBBB"
     property color      frameColor:                     "#F1F1F1"
     property color      backgroundDimColor:             "#E8000000"
-    property color      listHighlightColor:             "#1E626262"
+    property color      listHighlightColor:             "#30ffffff"
     property color      disabledColor:                  "#404040"
     property color      dropShadowColor:                "#0F000000"
     property color      hintTextColor:                  "#60FFFFFF"
     property color      hoverColor:                     "#7F7F7F"
-    property color      rippleColor:                    Qt.alpha(foreground, 0.16)
+    property color      rippleColor:                    Qt.alpha(foreground, 0.125)
     property color      highlightedRippleColor:         Qt.alpha(accent, 0.24)
 
     //! App specific shades of main colors
@@ -50,10 +50,10 @@ QtObject {
         background: _style.background
         hoverColor: "#606060"
         disabledColor: "#242424"
-        buttonHeight: 48
+        buttonHeight: 44
         radius: -1 //! i.e Full radius (Math.min(height, width) / 2
         horizontalPadding: 20
-        verticalPadding: horizontalPadding - 10
+        verticalPadding: 8
         borderWidth: 1
     }
 
