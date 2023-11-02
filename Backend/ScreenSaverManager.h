@@ -11,7 +11,6 @@ class ScreenSaverManager : public QObject
 
     Q_PROPERTY(State    state       READ getState NOTIFY stateChanged FINAL)
     Q_PROPERTY(int      screenSaverTimeout READ getScreenSaverTimeout WRITE setScreenSaverTimeout NOTIFY screenSaverTimeoutChanged FINAL)
-    Q_PROPERTY(bool     autoRestartOnPress READ getAutoRestartOnPress WRITE setAutoRestartOnPress NOTIFY autoRestartOnPressChanged FINAL)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -45,9 +44,6 @@ public:
     int                 getScreenSaverTimeout() const;
     void                setScreenSaverTimeout(int newScreenSaverTimeout);
 
-    bool                getAutoRestartOnPress() const;
-    void                setAutoRestartOnPress(bool newAutoRestartOnPress);
-
     Q_INVOKABLE void    setInactive();
     Q_INVOKABLE void    setActive();
 
@@ -60,8 +56,6 @@ signals:
     void applicationChanged();
     void stateChanged();
     void screenSaverTimeoutChanged();
-
-    void autoRestartOnPressChanged();
 
 private:
     /*!

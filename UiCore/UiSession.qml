@@ -52,7 +52,7 @@ QtObject {
     //! Ui Preferences (Units, etc)
     property UiPreferences      uiPreferences:  UiPreferences {}
 
-    //!
+    //! managing popups
     property PopUpLayout        popupLayout
 
     //! app core

@@ -27,10 +27,10 @@ ListView {
             "icon": FAIcons.sunDust, //! From FontAwesome
             "text": "System Mode"
         },
-        {
+/*        {
             "icon": FAIcons.triangleExclamation,
             "text": "Alerts"
-        },
+        },*/
         {
             "icon": FAIcons.bolt,
             "text": "Backlight"
