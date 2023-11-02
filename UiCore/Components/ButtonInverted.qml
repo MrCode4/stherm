@@ -17,6 +17,8 @@ Button {
         text: control.text
         color: !control.enabled ? Style.hintTextColor
                                 : Style.background
+        verticalAlignment: "AlignVCenter"
+        horizontalAlignment: "AlignHCenter"
     }
 
     background: Rectangle {

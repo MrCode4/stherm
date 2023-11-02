@@ -30,9 +30,7 @@ Control {
     background: Rectangle {
         implicitHeight: Style.delegateHeight
 
-        color: _delegateButton.pressed ? Style.rippleColor
-                                       : (_root.highlighted ? Style.listHighlightColor
-                                                            : "transparent")
+        color: "transparent"
 
         Rectangle {
             anchors.fill: parent
