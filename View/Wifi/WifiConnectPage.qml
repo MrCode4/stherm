@@ -23,7 +23,7 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: `Password for`
+    title: ""
     titleHeadeingLevel: 6
 
     /* Children
@@ -34,11 +34,15 @@ BasePageView {
         //! wifi name
         Label {
             Layout.fillWidth: true
-            text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))}"${wifi.ssid}"`
+            textFormat: "MarkdownText"
+            text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} Password for "${wifi.ssid}"`
+            horizontalAlignment: "AlignHCenter"
         }
 
         //! Connect button
         ToolButton {
+            Layout.alignment: Qt.AlignRight
+
             enabled: _passwordTf.acceptableInput && !NetworkInterface.isRunning
             contentItem: RoniaTextIcon {
                 text: FAIcons.link
@@ -62,7 +66,6 @@ BasePageView {
 
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width * 0.65
-        enabled: !NetworkInterface.isRunning
 
         maximumLength: 256
         rightPadding: _passwordEchoBtn.width
@@ -80,6 +83,7 @@ BasePageView {
                 verticalCenterOffset: -6
             }
             checkable: true
+            focusPolicy: "NoFocus"
             contentItem: RoniaTextIcon {
                 font.pointSize: Style.fontIconSize.smallPt
                 text: _passwordEchoBtn.checked ? FAIcons.eyeSlash : FAIcons.eye
@@ -89,18 +93,14 @@ BasePageView {
 
     Connections {
         id: _connectCheckCon
-        target: NetworkInterface
+        target: wifi
         enabled: false
 
-        function onIsRunningChanged()
+        function onConnectedChanged()
         {
-            if (!NetworkInterface.isRunning) {
-                if (wifi.connected) {
-                    if (_root.StackView.view) {
-                        _root.StackView.view.pop();
-                    }
-                } else {
-                    //! Incorrect password show error
+            if (wifi.connected) {
+                if (_root.StackView.view) {
+                    _root.StackView.view.pop();
                 }
             }
 

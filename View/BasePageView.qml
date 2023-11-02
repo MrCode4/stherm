@@ -58,6 +58,7 @@ Page {
             Label {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
+                visible: title.length > 0
                 textFormat: "MarkdownText"
                 verticalAlignment: "AlignVCenter"
                 horizontalAlignment: "AlignHCenter"
