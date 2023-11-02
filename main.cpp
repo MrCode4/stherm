@@ -42,11 +42,12 @@ int main(int argc, char *argv[])
     deviceInfo["OS"] = QSysInfo::prettyProductName();
     deviceInfo["Nmcli"] = QProcess().execute("command", { "-v", "nmcli" }) == 0 ? "True" : "False";
 
-    //! Cacluate a font factor based on system specifications
+    //! Calculate a font factor based on system specifications
+    //! disabled for now! not needed as fonts are large enough
     const double refFontPt = 16;
     const double refDPI = 141;
     const double dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch();
-    const double scaleFactor = qMax(1., dpi / refDPI);
+    const double scaleFactor = 0.9; //qMax(1., dpi / refDPI);
 
     //! Load default font -> Montserrat-Regular for now
     int fontId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Montserrat-Regular.ttf");
