@@ -28,6 +28,7 @@ Control {
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
     implicitHeight: AppStyle.size
+    padding: 0
 
     /* Children
      * ****************************************************************************************/
@@ -36,7 +37,7 @@ Control {
         id: _desiredTempItem
         anchors.horizontalCenter: parent.horizontalCenter
         height: parent.height / 2.
-        width: parent.availableWidth - (_currentTempLbl.width + _wifiBtn.width) / 3
+        width: height * 2
         labelVisible: device?.systemMode !== AppSpec.SystemMode.Off
         uiSession: _root.uiSession
     }
@@ -90,74 +91,74 @@ Control {
             deviceController: uiSession?.deviceController ?? null
         }
 
-        //! Other items
         Item {
-            id: _otherItemsLay
             anchors {
-                verticalCenter: parent.verticalCenter
                 horizontalCenter: parent.horizontalCenter
+                bottom: _dateTimeHolder.bottom
+                horizontalCenterOffset: 8
             }
-            width: _fanButton.implicitWidth + _dateTimeHolder.width + _airCondHoldBtnLay.implicitWidth + 4
-            height: Math.max(_currHumFanBtnLay.implicitHeight,
-                             _dateTimeHolder.height,
-                             _airCondHoldBtnLay.implicitHeight)
+            width: _root.width - 140 * scaleFactor
+            height: _airCondItem.implicitHeight + _dateTimeHolder.height + 40 * scaleFactor
 
-            ColumnLayout {
-                id: _currHumFanBtnLay
+            //! Humidity item
+            CurrentHumidityButton {
+                id: _currHumidLbl
                 anchors {
                     left: parent.left
-                    verticalCenter: parent.verticalCenter
+                    top: parent.top
+                    topMargin: -8
                 }
-                spacing: 48 * scaleFactor
+                device: _root.uiSession.appModel
 
-                //! Humidity item
-                CurrentHumidityLabel {
-                    Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
-                    device: _root.uiSession.appModel
-                }
-
-
-                //! Fan
-                FanButton {
-                    id: _fanButton
-                    Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+                onClicked: {
+                    if (mainStackView) {
+                        mainStackView.push("qrc:/Stherm/View/HumidityPage.qml", {
+                                                      "uiSession": Qt.binding(() => uiSession)
+                                                  })
+                    }
                 }
             }
 
-            Item {
-                id: _dateTimeHolder
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                height: _dateTimeLbl.implicitHeight
-                width: _dateTimeLbl.maximumWidth
-
-                //! Date and Timer
-                DateTimeLabel {
-                    id: _dateTimeLbl
-                    anchors.centerIn: parent
-                    is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
-                }
-            }
-
-            ColumnLayout {
-                id: _airCondHoldBtnLay
+            //! Air condition item
+            AirConditionItem {
+                id: _airCondItem
                 anchors {
                     right: parent.right
-                    verticalCenter: parent.verticalCenter
-                    rightMargin: -16
+                    top: parent.top
                 }
-                spacing: 48 * scaleFactor
+            }
 
-                //! Air condition item
-                AirConditionItem {
-                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+            //! Fan
+            FanButton {
+                id: _fanButton
+                anchors {
+                    left: parent.left
+                    bottom: parent.bottom
                 }
+            }
 
-                //! Hold button
-                HoldButton {
-                    id: _holdBtn
-                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+            //! Hold button
+            HoldButton {
+                id: _holdBtn
+                anchors {
+                    right: parent.right
+                    bottom: parent.bottom
                 }
+            }
+        }
+
+        Item {
+            id: _dateTimeHolder
+            y: _desiredTempItem.height + 4 * scaleFactor
+            anchors.horizontalCenter: parent.horizontalCenter
+            height: _dateTimeLbl.implicitHeight
+            width: _dateTimeLbl.maximumWidth
+
+            //! Date and Timer
+            DateTimeLabel {
+                id: _dateTimeLbl
+                anchors.centerIn: parent
+                is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
             }
         }
 
@@ -167,19 +168,20 @@ Control {
             anchors {
                 bottom: parent.bottom
                 horizontalCenter: parent.horizontalCenter
-                bottomMargin: _menuButton.implicitHeight * 1.5
+                bottomMargin: _menuButton.implicitHeight * 1.3
             }
             width: parent.width * 0.5
             height: sourceSize.height * width / sourceSize.width
+            opacity:  (uiSession?.simulating ?? true) ? 0 : 1
         }
 
         //! Device Toggle Button
         DeviceToggleButton {
             anchors {
                 horizontalCenter: _logo.horizontalCenter
-                top: _logo.bottom
-                topMargin: AppStyle.size / 60
+                top: _logo.top
             }
+            width: parent.width * 0.75
 
             uiSession : _root.uiSession
         }

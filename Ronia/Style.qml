@@ -14,14 +14,15 @@ QtObject {
 
     property int        theme:                          Style.Theme.Light
 
-    property color      background:                     "#040404"
+    property color      background:                     "#000000"
     property color      foreground:                     "#FFFFFF"
     property color      accent:                         "#FFFFFF"
     property color      primary:                        "#E8EAF6"
 
+    property color      secondaryBackgroundColor:       "#202020"
     property color      secondaryTextColor:             "#BBBBBB"
     property color      frameColor:                     "#F1F1F1"
-    property color      backgroundDimColor:             "#F0363636"
+    property color      backgroundDimColor:             "#E8000000"
     property color      listHighlightColor:             "#1E626262"
     property color      disabledColor:                  "#404040"
     property color      dropShadowColor:                "#0F000000"
@@ -32,6 +33,10 @@ QtObject {
 
     //! App specific shades of main colors
     property color      green:      "#4EAC55"
+
+    //! Number properties
+    property int        delegateHeight:     64
+    property int        touchTarget:        56
 
     //! Specific styles for some Controls
     readonly property FontIconsSize fontIconSize: FontIconsSize {
@@ -45,7 +50,7 @@ QtObject {
         background: _style.background
         hoverColor: "#606060"
         disabledColor: "#242424"
-        buttonHeight: 32
+        buttonHeight: 48
         radius: -1 //! i.e Full radius (Math.min(height, width) / 2
         horizontalPadding: 20
         verticalPadding: horizontalPadding - 10
@@ -61,5 +66,13 @@ QtObject {
     //! Switch
     readonly property SwitchStyle switchStyle: SwitchStyle {
         switchCheckedTrackColor: _style.green
+    }
+
+    //! TextField
+    readonly property TextFieldStyle textField: TextFieldStyle {
+        width: 180
+        height: 72
+        horizontalPadding: 4
+        verticalPadding: 8
     }
 }

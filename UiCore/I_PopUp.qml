@@ -13,8 +13,11 @@ Popup {
 
     /* Signals
      * ****************************************************************************************/
-    signal clicked()
-    signal escPressed()
+    //! This signal is emitted when this I_PopUp is about to hide, carrying a ref to this instance
+    signal hid(I_PopUp popup)
+
+    //! This signal is emitted when this I_PopUp is destructed, carrying a ref to this instance
+    signal destructed(I_PopUp popup)
 
     /* Property Declarations
      * ****************************************************************************************/
@@ -50,6 +53,9 @@ Popup {
     dim: true
     modal: true
     closePolicy: Popup.CloseOnReleaseOutside | Popup.CloseOnEscape
+
+    onAboutToHide: hid(this)
+    Component.onDestruction: destructed(this)
 
     /* Children
      * ****************************************************************************************/

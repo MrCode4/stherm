@@ -12,8 +12,11 @@ Popup {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Reference to I_DeviceController
+    property I_DeviceController     deviceController
+
     //! Reference to I_Device
-    property I_Device   device
+    property I_Device               device: deviceController?.device ?? null
 
     //! Unit
     property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C" ?? "F"
@@ -25,29 +28,31 @@ Popup {
     closePolicy: Popup.NoAutoClose
     modal: true
     dim: false
+    background: Rectangle {
+        color: Style.background
+    }
 
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
+        id: _contentLay
         anchors.centerIn: parent
 
         //! Temprature Label
-        Label {
-            id: _tempratureLbl
-
+        Row {
             Layout.alignment: Qt.AlignCenter
-            font.pointSize: AppStyle.size / 6
-            text: Number(Utils.convertedTemperature(device?.currentTemp ?? 0,
-                                                      device?.setting?.tempratureUnit))
-                  .toLocaleString(locale, "f", 0)
 
             Label {
-                anchors {
-                    left: parent.right
-                    top: parent.top
-                    topMargin: AppStyle.size / 24
-                }
+                id: _tempratureLbl
 
+                font.pointSize: AppStyle.size / 6
+                text: Number(Utils.convertedTemperature(
+                                 device?.currentTemp ?? 0,
+                                 device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
+
+            }
+
+            Label {
                 opacity: 0.6
                 font {
                     pointSize: Qt.application.font.pointSize * 2.4
@@ -58,13 +63,18 @@ Popup {
         }
 
         //! Mode button
-        ToolButton {
-            //! Set icon.source: according to mode
+        SystemModeButton {
+            Layout.topMargin: -height / 2.5
+            Layout.leftMargin: 2 * _icon.width / 3 - width
+            background: null
+            deviceController: _root.deviceController
+
+            TapHandler { } //! To ensure no button functionality
         }
 
         //! NEXGEN icon
         NexgenIcon {
-            Layout.alignment: Qt.AlignHCenter
+            id: _icon
             Layout.preferredWidth: _root.width * 0.75
             Layout.preferredHeight: sourceSize.height * width / sourceSize.width
         }

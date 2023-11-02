@@ -33,7 +33,7 @@ Control {
     rightInset: 0
     background: Item {
         readonly property int pathWidth: AppStyle.size / 40
-        readonly property real shapeWidth: width
+        readonly property real shapeWidth: shapeHeight * 2
         readonly property real shapeHeight: height - AppStyle.size / 24
 
         layer.enabled: true
@@ -136,7 +136,7 @@ Control {
 
         Item {
             anchors.fill: _handleCircle
-            anchors.margins: -16
+            anchors.margins: -24
 
             DragHandler {
                 id: _handleDh

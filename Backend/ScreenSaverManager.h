@@ -72,4 +72,13 @@ private:
      * \brief mScreenSaverTmr Timer for screen saver
      */
     QTimer              mScreenSaverTimer;
+
+    /*!
+     * \brief mAutoRestartOnPress If \a true \ref ScreenSaverManager will set state to
+     * \ref State::Running automatically when a press event is received in \ref State::Timeout
+     * state. If false state should be set back to \ref State::Running when appropriate.
+     *
+     * \details This is useful when press events needs to be delivered to a screen saver view.
+     */
+    bool                mAutoRestartOnPress = true;
 };

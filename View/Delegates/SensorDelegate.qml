@@ -25,10 +25,14 @@ Button {
     text: sensor?.name ?? ""
     contentItem: RowLayout {
         Text {
+            Layout.fillWidth: true
             Layout.alignment: Qt.AlignCenter
             color: enabled ? _root.Material.foreground : _root.Material.hintTextColor
             font: _root.font
             text: _root.text
+            elide: Text.ElideRight
+            clip: true
+            horizontalAlignment: Text.AlignHCenter
         }
 
         //! Some other infos about sensor, like signals, etc

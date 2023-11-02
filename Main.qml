@@ -17,9 +17,11 @@ ApplicationWindow {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property UiSession uiSession: UiSession { }
+    property UiSession  uiSession: UiSession {
+        popupLayout: popUpLayoutId
+    }
 
-    property string    currentFile: uiSession.currentFile
+    property string     currentFile: uiSession.currentFile
 
     /* Object Properties
      * ****************************************************************************************/
@@ -62,6 +64,7 @@ ApplicationWindow {
     FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Regular-400.otf" }
     FontLoader { source: "qrc:/Stherm/Fonts/Font Awesome 6 Pro-Light-300.otf" }
     FontLoader { source: "qrc:/Stherm/Fonts/RobotoMono-Regular.ttf" }
+    FontLoader { source: "qrc:/Stherm/Fonts/Montserrat-Regular.ttf" }
 
 
     /* Style
@@ -102,10 +105,8 @@ ApplicationWindow {
 
     //! Popup layout
     PopUpLayout {
-        id: popUpLayout
-        uiSession: window.uiSession
+        id: popUpLayoutId
         anchors.fill: parent
-        z: 100
     }
 
     ShortcutManager {
@@ -115,8 +116,9 @@ ApplicationWindow {
     ScreenSaver {
         id: _screenSaver
         anchors.centerIn: parent
-        device: uiSession.appModel
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
+        deviceController: uiSession.deviceController
+        device: uiSession.appModel
     }
 
     //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1
@@ -192,6 +194,7 @@ ApplicationWindow {
 
     //! MessagePopupView
     MessagePopupView {
+        uiSession: window.uiSession
         messageController: uiSession?.messageController ?? null
     }
 
@@ -201,7 +204,7 @@ ApplicationWindow {
         repeat: true
         running: true
         onTriggered: {
-            if (Math.random() > 0.5) {
+            if (Math.random() > 0.98) {
                 //! Create an alert
                 var now = new Date();
                 if (Math.random() > 0.5) {

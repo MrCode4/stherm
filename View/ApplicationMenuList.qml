@@ -24,57 +24,56 @@ ListView {
     ScrollIndicator.vertical: ScrollIndicator {}
     model: [
         {
-            "icon": "", //! From FontAwesome
+            "icon": FAIcons.sunDust, //! From FontAwesome
             "text": "System Mode"
         },
-        {
-            "icon": "",
+/*        {
+            "icon": FAIcons.triangleExclamation,
             "text": "Alerts"
-        },
+        },*/
         {
-            "icon": "",
+            "icon": FAIcons.bolt,
             "text": "Backlight"
         },
         {
-            "icon": "",
+            "icon": FAIcons.bellExclamation,
             "text": "Alerts/Notifications"
         },
         {
-            "icon": "",
+            "icon": FAIcons.calendarDays,
             "text": "Schedule"
         },
         {
-            "icon": "",
+            "icon": FAIcons.gear,
             "text": "Settings"
         },
         {
-            "icon": "",
+            "icon": FAIcons.signalStream,
             "text": "Sensors"
         },
         {
-            "icon": "",
+            "icon": FAIcons.droplet,
             "text": "Humidity Control"
         },
         {
-            "icon": "",
+            "icon": FAIcons.fan,
             "text": "Fan Control"
         },
         {
-            "icon": "",
+            "icon": FAIcons.circleCheck,
             "text": "Wiring"
         },
         {
-            "icon": "",
+            "icon": FAIcons.wrench,
             "text": "System Setup"
         },
         {
-            "icon": "",
+            "icon": FAIcons.memoCircleInfo,
             "text": "System Info"
         }
     ]
     delegate: ApplicationMenuDelegate {
         width: ListView.view.width
-        height: Material.delegateHeight
         text: delegateData?.text ?? ""
         delegateData: modelData
         delegateIndex: index

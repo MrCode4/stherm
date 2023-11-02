@@ -33,6 +33,7 @@ qt_add_qml_module(RoniaStyle
         RadioButton.qml
         CheckBox.qml
         ApplicationWindow.qml
+        TextField.qml
 )
 
 qt_add_qml_module(RoniaStyleImpl
@@ -52,6 +53,8 @@ qt_add_qml_module(RoniaStyleImpl
         impl/RadioButtonStyle.qml
         impl/CheckIndicator.qml
         impl/SwitchStyle.qml
+        impl/CursorDelegate.qml
+        impl/TextFieldStyle.qml
 )
 
 target_link_libraries(RoniaStyleImpl PUBLIC

@@ -15,7 +15,6 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    padding: 8
     contentItem: RoniaTextIcon {
         font.pointSize: Style.fontIconSize.largePt - 1
         color: _root.Material.foreground

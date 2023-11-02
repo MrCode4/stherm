@@ -21,8 +21,6 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Humidity Control"
-    leftPadding: AppStyle.size / 12
-    rightPadding: AppStyle.size / 12
 
     /* Children
      * ****************************************************************************************/
@@ -51,7 +49,7 @@ BasePageView {
 
     ColumnLayout {
         anchors.centerIn: parent
-        width: _root.availableWidth
+        width: parent.width * 0.85
 
         Label {
             Layout.alignment: Qt.AlignHCenter
@@ -63,6 +61,7 @@ BasePageView {
             Layout.fillWidth: true
             from: 20
             to: 70
+            value: device?.requestedHum ?? 0
             ticksCount: 50
             majorTickCount: 5
             stepSize: 1.

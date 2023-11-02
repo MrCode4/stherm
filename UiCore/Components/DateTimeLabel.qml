@@ -38,10 +38,7 @@ Control {
         Label {
             id: _timeLbl
             Layout.alignment: Qt.AlignHCenter
-            font {
-                family: "monospace"
-                pointSize: Qt.application.font.pointSize * 1.4
-            }
+            font.pointSize: Qt.application.font.pointSize * 1.4
             text: "00:00"
         }
 
