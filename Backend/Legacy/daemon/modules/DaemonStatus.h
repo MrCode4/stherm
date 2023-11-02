@@ -5,6 +5,9 @@
 #define THREADS_NUMBER 3
 
 
+
+#include <QObject>
+
 /**
  * @brief enum class for define threads
  * 
@@ -21,8 +24,9 @@ enum class DaemonThreads
  * Check every CHECK_STATUS_INTERVAL sec saved times and logs it as LOG_DEBUG 
  * 
  */
-class DaemonStatus 
+class DaemonStatus : public QObject
 {
+    Q_OBJECT
 public: 
 /**
  * @brief Construct a new Daemon Status object. Don't use.
@@ -30,14 +34,7 @@ public:
  */
 	DaemonStatus() = delete;
 
-/**
- * @brief Construct a new Daemon Status object
- * 
- * @param intervalToReceiveData if data was received more then intervalToReceiveData seconds, device consider down 
- * @param intervalToCheck seconds for check last data receive
- */
-	DaemonStatus(int intervalToReceiveData, int intervalToCheck);
-
+    static DaemonStatus* instance();
 
 	/**
 	 * @brief Destroy the Daemon Status object
@@ -69,6 +66,14 @@ public:
 	void checkCurrentState();
 	
 private:
+    /**
+ * @brief Construct a new Daemon Status object
+ *
+ * @param intervalToReceiveData if data was received more then intervalToReceiveData seconds, device consider down
+ * @param intervalToCheck seconds for check last data receive
+ */
+    DaemonStatus(int intervalToReceiveData, int intervalToCheck);
+
 	const int	kSecondsToReceiveData;
 	const int	kSecondsToCheckDevices;
 	const char* kFormatStrStatusLog = "DaemonStatus: Dynamic: %s, TI: %s, NRF: %s";
@@ -92,4 +97,6 @@ private:
  * 
  */
 	void	isThreadsRunning();
+
+    static DaemonStatus *m_instance;
 };

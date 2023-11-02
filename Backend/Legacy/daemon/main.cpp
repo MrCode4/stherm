@@ -19,17 +19,19 @@
 #include <fstream>
 #include <algorithm>
 #include "DeltaCorrection.h"
-#include "DaemonStatus.h"
- // Definitions for constants used throughout the program
+#include "NRFThread.h"
+#include "Daemon_helper.h"
+#include "php_interface.h"
+#include "modules/DaemonStatus.h"
+// Definitions for constants used throughout the program
 #define WIRING_CHECK_TIME 600
 #define WIRING_BROKEN 1
 //#define TOF_IRQ_RANGE 1000 //mm
 #define FRONT_RESTART_TO 3000 //in ms
 #define DEV_RESTART_TO 10
-#define SENS_POLL_TIME 5 //sec
+
 #define MIN_BACKLIGHT_PERCENT_ON 5
-#define TIME_TO_RECEIVE_DATA 10
-#define CHECK_STATUS_INTERVAL 10
+
 constexpr char Daemon_Version[] = "01.01";
 int running = 1;
 int set_update_ti = 0;
@@ -47,7 +49,6 @@ std::string TI_SW;
 std::string TI_HW;
 int g_sec_counter = 0;
 DeltaCorrection delta_correction;
-DaemonStatus daemonStatus(TIME_TO_RECEIVE_DATA, CHECK_STATUS_INTERVAL);
 
 
 /**
@@ -124,7 +125,7 @@ void* dynamic_thrd(void* a)
     bool rest_php_pipe = true;
     FILE* fp;
     char getDynamic_php[] = "php getDynamic10.php\0";
-    daemonStatus.startThread(DaemonThreads::DYNAMIC);
+    DaemonStatus::instance()->startThread(DaemonThreads::DYNAMIC);
     while (running)
     {
         if (!(counter % 2))
@@ -166,7 +167,7 @@ void* dynamic_thrd(void* a)
             g_sec_counter++;
             // call for update temp correction class
             delta_correction.update_Time(g_sec_counter);
-            daemonStatus.dataWasReceive(DaemonThreads::DYNAMIC);
+            DaemonStatus::instance()->dataWasReceive(DaemonThreads::DYNAMIC);
         }
         if (call_check < 10)
         {
@@ -177,7 +178,7 @@ void* dynamic_thrd(void* a)
         counter++; 
     }
     close(dynamic.pipe_out);
-    daemonStatus.stopThread(DaemonThreads::DYNAMIC);
+    DaemonStatus::instance()->stopThread(DaemonThreads::DYNAMIC);
     return nullptr;
 }
 /**
@@ -190,202 +191,6 @@ void* dynamic_thrd(void* a)
  */
 void* nrf_uart_thrd(void* a)
 {
-    //initializing uart and gpios
-    thread_Data nrf = *(thread_Data*)a;
-    pollfd fds[4];
-    int num_open_fds = 4;
-    time_t last_polled_sens = time(NULL);
-    fds[0].fd = open(NRF_SERRIAL_PORT, O_RDWR | O_NOCTTY | O_NONBLOCK);
-    fds[0].events = POLLIN ;
-    termios tty;
-    if (tcgetattr(fds[0].fd, &tty) != 0) {
-        syslog(LOG_ERR, "{\"errno\": 12,\"data\":[{\"nrf_uart\": 0 }]}\n");
-        return nullptr;
-    }
-    set_tty(&tty);
-    // Set in/out baud rate to be 9600
-    cfsetispeed(&tty, B9600);
-    cfsetospeed(&tty, B9600);
-    // Save tty settings, also checking for error
-    if (tcsetattr(fds[0].fd, TCSANOW, &tty) != 0) {
-        syslog(LOG_ERR, "{\"errno\": 12,\"data\":[{\"nrf_uart\": 0 }]}\n");
-        return nullptr;
-    }
-    if (configure_pins(NRF_GPIO_4)) {
-        syslog(LOG_ERR, "{\"errno\": 12,\"data\":[{\"nrf_uart\": 0 }]}\n");
-        return nullptr;
-    }
-    if (configure_pins(NRF_GPIO_5)) {;
-        syslog(LOG_ERR, "{\"errno\": 12,\"data\":[{\"nrf_uart\": 0 }]}\n");
-        return nullptr;
-    }
-    //setup pipe fd
-    char str[36];
-    sprintf(str, SW_VAL_PATH, NRF_GPIO_4);
-    fds[1].fd = nrf.pipe_in;
-    fds[1].events = POLLIN;    
-    fds[2].fd = open(str, O_RDONLY | O_NONBLOCK);
-    fds[2].events = POLL_GPIO;
-    sprintf(str, SW_VAL_PATH, NRF_GPIO_5);
-    fds[3].fd = open(str, O_RDONLY| O_NONBLOCK);
-    fds[3].events = POLL_GPIO;
-    for (int p = 0; p < 4; p++)
-    {
-        fds[p].revents = 0;
-    }
-    uint8_t sens_tx_buff[32];
-    uint8_t tof_tx_buff[32];
-    uint8_t dev_info[32];
-    SIO_Packet_t tx_packet;
-    int sens_tx_buff_size;
-    int tof_tx_buff_size;
-    tx_packet.PacketSrc = UART_Packet;
-    tx_packet.CMD = GetInfo;
-    tx_packet.ACK = ERROR_NO;
-    tx_packet.SID = 0x01;
-    tx_packet.DataLen = 0;
-    int dev_buff_size;
-    dev_buff_size = Set_SIO_TxPacket(dev_info, tx_packet);
-    write(fds[0].fd, dev_info, dev_buff_size);
-    tx_packet.PacketSrc = UART_Packet;
-    tx_packet.CMD = GetSensors;
-    tx_packet.ACK = ERROR_NO;
-    tx_packet.SID = 0x01;
-    tx_packet.DataLen = 0;
-    sens_tx_buff_size = Set_SIO_TxPacket(sens_tx_buff, tx_packet);
-    tx_packet.PacketSrc = UART_Packet;
-    tx_packet.CMD = GetTOF;
-    tx_packet.ACK = ERROR_NO;
-    tx_packet.SID = 0x01;
-    tx_packet.DataLen = 0;
-    tof_tx_buff_size = Set_SIO_TxPacket(tof_tx_buff, tx_packet);
-    
-    ssize_t s;
-    int ready;
-    uint8_t buf[256];
-    bool wait_for_response = true;
-    //polls nrf for data every SENS_POLL_TIME seconds
-    //catches interups on NRF_GPIO_4 for sensonr data and NRF_GPIO_5 for tof or light data
-    //recived data is sent to main
-    //recives data from main and sends it to nrf
-    daemonStatus.startThread(DaemonThreads::NRF);
-    while (running)
-    {
-        ready = poll(fds, 4, SENS_POLL_TIME*1000+1500);
-        if (ready != -1) //
-        {
-            if (ready > 0)
-            {
-                
-                if (fds[0].revents & POLLIN) // from uart
-                {
-                    s = read(fds[0].fd, buf, sizeof(buf));
-                    write(nrf.pipe_out, buf, s);
-                    wait_for_response = false;
-                    daemonStatus.dataWasReceive(DaemonThreads::NRF);
-                }
-                else if (fds[0].revents & POLLERRVAL)
-                {
-                    fds[0].revents = 0;
-                    syslog(LOG_ERR, "{\"errno\": 12,\"data\":[{\"nrf_pipe\": 0 }]}\n");
-                    
-                    num_open_fds = 0;
-                    break;
-                }
-                if (fds[1].revents & POLLIN )
-                {
-                    if (!wait_for_response)
-                    {
-                        //data from main
-                        s = read(fds[1].fd, buf, sizeof(buf));
-                        write(fds[0].fd, buf, s);
-                        wait_for_response = true;
-                    }
-                }
-                else if (fds[1].revents & POLLERRVAL)
-                {
-                    syslog(LOG_ERR, "{\"errno\": 12,\"data\":[{\"nrf_pipe\": 1 }]}\n");
-
-                    fds[1].revents = 0;
-                    num_open_fds=0;
-                    break;
-                }
-                if (fds[2].revents & POLLPRI )
-                {
-                    if (!wait_for_response)
-                    {
-                        lseek(fds[2].fd, 0, SEEK_SET);
-                        s = read(fds[2].fd, buf, sizeof(buf));
-                        fds[2].revents = 0;
-                        if (s == 2)
-                        {
-                            if (buf[0] == '0')
-                            {
-                                write(fds[0].fd, sens_tx_buff, sens_tx_buff_size);
-                                wait_for_response = true;
-                            }
-
-                        }
-                    }
-                    
-                    
-
-                }
-                else if (fds[2].revents & POLLERR)
-                {
-                    fds[2].revents = 0;
-                    syslog(LOG_ERR, "{\"errno\": 12,\"data\":[{\"nrf_pipe\": 2 }]}\n");
-                    
-                    num_open_fds = 0;
-                    break;
-                }
-                if (fds[3].revents & POLLPRI )
-                {
-
-                    if (!wait_for_response)
-                    {
-                        lseek(fds[3].fd, 0, SEEK_SET);
-                        s = read(fds[3].fd, buf, sizeof(buf));
-                        fds[3].revents = 0;
-                        if (s == 2)
-                        {
-                            if (buf[0] == '0')
-                            {
-                                write(fds[0].fd, tof_tx_buff, tof_tx_buff_size);
-                                wait_for_response = true;
-                            }
-
-                        }
-                    }
-                }
-                else if (fds[3].revents & POLLERR)
-                {
-                    fds[3].revents = 0;
-                    syslog(LOG_ERR, "{\"errno\": 12,\"data\":[{\"nrf_pipe\": 3 }]}\n");
-                    num_open_fds = 0;
-                    break;
-                }
-                
-            }
-            if((ready==0 || difftime(time(NULL), last_polled_sens) >= SENS_POLL_TIME) && !wait_for_response)
-            {
-                write(fds[0].fd, sens_tx_buff, sens_tx_buff_size);
-                last_polled_sens = time(NULL);
-                wait_for_response = true;
-            }
-        }
-        else
-        {
-         syslog(LOG_ERR, "NRF thrd error -1\n");
-         syslog(LOG_ERR, "%s", strerror(errno));
-        }
-
-    }
-    close(fds[0].fd);//system needs to be restarted
-    close(fds[1].fd);//system needs to be restarted
-    close(fds[2].fd);//system needs to be restarted
-    close(fds[3].fd);//system needs to be restarted
-    daemonStatus.stopThread(DaemonThreads::NRF);
     return nullptr;
 }
 
@@ -452,7 +257,7 @@ void* ti_uart_thrd(void* a)
     //sets TI watchdog to LONG timeout when the daemon is stopped 
     //@note TI watchdog is fed every time TI recieves uart packet, Get_addr sets the watchdog to SHORT timeout
     //montiors for SIGUSR1 signal from system to set TI in UPDATE mode (not used)
-    daemonStatus.startThread(DaemonThreads::TI);
+    DaemonStatus::instance()->startThread(DaemonThreads::TI);
     while (running)
     {
         int ready;
@@ -481,7 +286,7 @@ void* ti_uart_thrd(void* a)
                 uint8_t buf[256];
                 if (fds[0].revents & POLLIN) // uart
                 {
-                    daemonStatus.dataWasReceive(DaemonThreads::TI);
+                    DaemonStatus::instance()->dataWasReceive(DaemonThreads::TI);
                     ssize_t s = read(fds[0].fd, buf, sizeof(buf));
                     for (int i = 0; i < s; i++)
                     {
@@ -810,13 +615,13 @@ void* ti_uart_thrd(void* a)
     syslog(LOG_ALERT, "TI WTD set to Long");
     close(fds[1].fd);
     close(fds[0].fd);//system needs to be restarted
-    daemonStatus.stopThread(DaemonThreads::TI);
+    DaemonStatus::instance()->stopThread(DaemonThreads::TI);
     return nullptr;
 }
 /**
-*@brief emits key event to display
+*@brief emit_events key event to display
 */
-void emit(int fd, int type, int code, int val)
+void emit_event(int fd, int type, int code, int val)
 {
     struct input_event ie;
 
@@ -881,10 +686,10 @@ void key_event()
     {
         system("export DISPLAY=:0");
         /* Key press, report the event, send key release, and report again */
-        emit(key_evt_file, EV_KEY, KEY_PAGEUP, 1);
-        emit(key_evt_file, EV_SYN, SYN_REPORT, 0);
-        emit(key_evt_file, EV_KEY, KEY_PAGEUP, 0);
-        emit(key_evt_file, EV_SYN, SYN_REPORT, 0);
+        emit_event(key_evt_file, EV_KEY, KEY_PAGEUP, 1);
+        emit_event(key_evt_file, EV_SYN, SYN_REPORT, 0);
+        emit_event(key_evt_file, EV_KEY, KEY_PAGEUP, 0);
+        emit_event(key_evt_file, EV_SYN, SYN_REPORT, 0);
         syslog(LOG_ERR, "KEY_PAGEUP");
         quick_exit(0);
     }
@@ -894,7 +699,7 @@ int main(int argc, char* argv[])
 {
     int log_level = LOG_INFO;
     //makes this application a daemon 
-    daemonize();
+//    daemonize();
     //sets cleanup as exit callback
     std::atexit(cleanup);
     //logging
@@ -1009,6 +814,10 @@ int main(int argc, char* argv[])
     pthread_create(&ti, nullptr, ti_uart_thrd, (void*)&ti_vals);
     pthread_create(&dynamic, nullptr, dynamic_thrd, (void*)&dynamic_vals);
     pthread_create(&nrf, nullptr, nrf_uart_thrd, (void*)&nrf_vals);
+
+    auto nrf_thread = new NRFThread((void*)&nrf_vals);
+    nrf_thread->start();
+
     syslog(LOG_INFO, "WEB OK\n");
     if (!get_paired_list(device_list))//send to ti
     {
@@ -1774,7 +1583,7 @@ int main(int argc, char* argv[])
 
             }
         }
-        daemonStatus.checkCurrentState();
+        DaemonStatus::instance()->checkCurrentState();
     }
     syslog(LOG_EMERG, "END");
     exit(0);

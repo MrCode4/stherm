@@ -29,8 +29,8 @@
 #include "RF_types.h"
 #include <fstream>
 #include <algorithm>
-#include "php_interface.h"
-#include "Daemon_helper.h"
+//#include "php_interface.h"
+//#include "Daemon_helper.h"
 #include <linux/uinput.h>
 #define NRF_SERRIAL_PORT "/dev/ttymxc1"
 #define TI_SERRIAL_PORT "/dev/ttymxc3"

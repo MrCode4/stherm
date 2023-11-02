@@ -1,5 +1,10 @@
 #include "DaemonStatus.h"
 
+#define TIME_TO_RECEIVE_DATA 10
+#define CHECK_STATUS_INTERVAL 10
+
+DaemonStatus* DaemonStatus::m_instance = nullptr;
+
 DaemonStatus::DaemonStatus(int intervalToReceiveData, int intervalToCheck) : kSecondsToReceiveData(intervalToReceiveData), kSecondsToCheckDevices(intervalToCheck)
 {
 
@@ -58,5 +63,13 @@ void DaemonStatus::checkCurrentState()
 		isThreadGetsData(DaemonThreads::TI) ? kStatusActive : kStatusDown,
 		isThreadGetsData(DaemonThreads::NRF) ? kStatusActive : kStatusDown
 		);
+}
+
+DaemonStatus *DaemonStatus::instance() {
+    if (!m_instance) {
+        m_instance = new DaemonStatus(TIME_TO_RECEIVE_DATA, CHECK_STATUS_INTERVAL);
+    }
+
+    return m_instance;
 }
 
