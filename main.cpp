@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
     // Brightness example
     setBrightness(50);
 
-    // Time zoon example
+    // Time zone example
     setTimeZone(8);
 
     //! Enable virtual keyboard
