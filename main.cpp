@@ -70,38 +70,36 @@ int getStartMode (int pinNumber) {
 
 //! Get CPU info
 //! todo: Move to daemon
-void getCPUInfo() {
+QString getCPUInfo() {
     QFile file("/proc/cpuinfo");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << Q_FUNC_INFO << __LINE__ <<"Failed to open the file.";
-        return;
+        return NULL;
     }
 
     QString cpuInfo;
-    QString serialNumber;
+    QString serialNumberHex;
     QString line = file.readLine();
 
     while (!line.isEmpty()) {
         cpuInfo.append(line).append('\n');
 
         if (line.startsWith("Serial")) {
-            QRegularExpression re("Serial:\\s*([A-Fa-f0-9]+)");
+            QRegularExpression re("Serial\\s*:\\s*([A-Fa-f0-9]+)");
             QRegularExpressionMatch match = re.match(line);
             if (match.hasMatch()) {
-                QString serialNumberHex = match.captured(1);
-                serialNumberHex = serialNumberHex.simplified();  // Remove extra spaces
-                QByteArray snByteArray = QByteArray(serialNumberHex.toLatin1());
-                serialNumber = QByteArray::fromHex(snByteArray);
+                serialNumberHex = match.captured(1).simplified();
+                break;
             }
         }
-
         line = file.readLine();
     }
 
     file.close();
 
-    qDebug() << Q_FUNC_INFO << __LINE__ << "cpuInfo: " << cpuInfo;
-    qDebug() << Q_FUNC_INFO << __LINE__ << "Serial Number: " << serialNumber;
+//    qDebug() << Q_FUNC_INFO << __LINE__ << "cpuInfo: " << cpuInfo;
+//    qDebug() << Q_FUNC_INFO << __LINE__ << "Serial Number: " << serialNumberHex;
+    return serialNumberHex;
 }
 
 //! setBrightness
@@ -114,7 +112,7 @@ void setBrightness(int value) {
     }
 
     QTextStream out(&brightnessFile);
-    out << value; // Write the desired brightness value
+    out << QString::number(value); // Write the desired brightness value
     brightnessFile.close();
 
     qDebug() << "Brightness set successfully!";
@@ -149,10 +147,11 @@ int main(int argc, char *argv[])
     qDebug() << Q_FUNC_INFO << __LINE__ << "getStartMode: " << getStartMode(90);
 
     // CPU info example
-    getCPUInfo();
+    QString cpuid = getCPUInfo();
+    qDebug() << "CPU ID: " << cpuid;
 
     // Brightness example
-    setBrightness(50);
+    setBrightness(80);
 
     // Time zone example
     setTimeZone(8);
