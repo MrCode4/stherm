@@ -4,7 +4,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * HoldButton is an specialized button for setting hold property of device
+ * DeviceToggleButton is an specialized button for setting hold property of device
  * ***********************************************************************************************/
 Button {
     id: _root
@@ -19,9 +19,9 @@ Button {
     /* Object properties
      * ****************************************************************************************/
     flat: true
-    opacity: uiSession ? 1. : 0.6
+    opacity: isSimulationMode ? 1 : 0
     font.pointSize: Qt.application.font.pointSize * 1.4
-    text: isSimulationMode ? "Simulation" : "Device"
+    text: "Simulation"
 
     onClicked: {
         if (uiSession)

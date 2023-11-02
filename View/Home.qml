@@ -168,19 +168,20 @@ Control {
             anchors {
                 bottom: parent.bottom
                 horizontalCenter: parent.horizontalCenter
-                bottomMargin: _menuButton.implicitHeight * 1.5
+                bottomMargin: _menuButton.implicitHeight * 1.3
             }
             width: parent.width * 0.5
             height: sourceSize.height * width / sourceSize.width
+            opacity:  (uiSession?.simulating ?? true) ? 0 : 1
         }
 
         //! Device Toggle Button
         DeviceToggleButton {
             anchors {
                 horizontalCenter: _logo.horizontalCenter
-                top: _logo.bottom
-                topMargin: AppStyle.size / 60
+                top: _logo.top
             }
+            width: parent.width * 0.75
 
             uiSession : _root.uiSession
         }
