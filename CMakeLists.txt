@@ -150,6 +150,8 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemRunDelayPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
+        View/Wifi/WifiConnectPage.qml
+        View/Wifi/WifiManualConnectPage.qml
         View/SystemModePage.qml
         View/SystemMode/VacationModePage.qml
         View/SettingsPage.qml
@@ -168,7 +170,6 @@ qt6_add_qml_module(appStherm
         View/Delegates/WifiDelegate.qml
         View/Delegates/SensorDelegate.qml
         View/Delegates/AlertNotificationDelegate.qml
-        View/Wifi/WifiConnectPage.qml
 
         # Popups
         UiCore/PopUps/AlertNotifPopup.qml

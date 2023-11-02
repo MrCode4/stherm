@@ -205,7 +205,9 @@ BasePageView {
                 text: _wifisRepeater.currentItem?.wifi.connected ? "Forget" : "Manual"
                 onClicked: {
                     if (text === "Manual") {
-
+                        if (_root.StackView.view) {
+                            _root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiManualConnectPage.qml");
+                        }
                     } else {
                         //! Forget connection
                         if (_wifisRepeater.currentItem?.wifi) {
