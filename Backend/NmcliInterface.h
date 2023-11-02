@@ -13,6 +13,7 @@
 #define NC_ARG_GENERAL      "general"
 #define NC_ARG_CONNECTION   "connection"
 
+#define NC_ARG_CON_ADD      "add"
 #define NC_ARG_WIFI         "wifi"
 #define NC_ARG_LIST         "list"
 #define NC_ARG_CONNECT      "connect"
@@ -130,6 +131,24 @@ public:
      * \brief turnWifiDeviceOff Turn on wifi device
      */
     void    turnWifiDeviceOff();
+
+    /*!
+     * \brief addConnection Add a custom connection
+     * \param name
+     * \param ssid
+     * \param ip4
+     * \param gw4
+     * \param dns
+     * \param security
+     * \param password
+     */
+    void    addConnection(const QString& name,
+                       const QString& ssid,
+                       const QString& ip4,
+                       const QString& gw4,
+                       const QString& dns,
+                       const QString& security,
+                       const QString& password);
 
 private:
     /*!
@@ -480,7 +499,58 @@ inline void NmcliInterface::turnWifiDeviceOff()
     mProcess->start(NC_COMMAND, args);
 }
 
-inline void NmcliInterface::onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitStatus exitStatus)
+inline void NmcliInterface::addConnection(const QString& name,
+                                          const QString& ssid,
+                                          const QString& ip4,
+                                          const QString& gw4,
+                                          const QString& dns,
+                                          const QString& security,
+                                          const QString& password)
+{
+    if (!mProcess || isRunning()) {
+        return;
+    }
+
+    //! Perform connection command
+    QStringList args({
+        NC_ARG_CONNECTION,
+        NC_ARG_CON_ADD,
+        "type",
+        NC_ARG_WIFI,
+        "con-name",
+        name,
+        "wifi.ssid",
+        ssid,
+        "ip4",
+        ip4,
+        "gw4",
+        gw4,
+    });
+
+
+    if (!security.isEmpty()) {
+        args += {
+            "802-11-wireless-security.key-mgmt",
+            security,
+            "802-11-wireless-security.psk",
+            password
+        };
+    }
+
+    if (!dns.isEmpty()) {
+        args += {
+            "ipv4.dns-options",
+            "0",
+            "ipv4.ignore-auto-dns",
+            "yes"
+        };
+    }
+
+    mProcess->start(NC_COMMAND, args);
+}
+
+inline void NmcliInterface::onGetWifiDeviceNameFinished(int exitCode,
+                                                        QProcess::ExitStatus exitStatus)
 {
     if (exitCode == 0) {
         QByteArray line = mProcess->readLine();

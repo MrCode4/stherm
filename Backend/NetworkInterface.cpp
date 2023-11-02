@@ -127,6 +127,21 @@ void NetworkInterface::turnOff()
     mNmcliInterface->turnWifiDeviceOff();
 }
 
+void NetworkInterface::addConnection(const QString& name,
+                                     const QString& ssid,
+                                     const QString& ip4,
+                                     const QString& gw4,
+                                     const QString& dns,
+                                     const QString& security,
+                                     const QString& password)
+{
+    if (isRunning() || !mDeviceIsOn) {
+        return;
+    }
+
+    mNmcliInterface->addConnection(name, ssid, ip4, gw4, dns, security, password);
+}
+
 WifiInfo* NetworkInterface::networkAt(WifiInfoList* list, qsizetype index)
 {
     if (NetworkInterface* ni = qobject_cast<NetworkInterface*>(list->object)) {
