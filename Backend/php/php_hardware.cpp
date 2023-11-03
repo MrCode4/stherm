@@ -20,13 +20,7 @@ php_hardware::php_hardware(QObject *parent)
  */
 void php_hardware::setDefaultValues(uid_t uid)
 {
-    // TODO we need to pull these values from file (version.ini) and extract SOFTWARE_VERSION and HARDWARE_VERSION
-    uint32_t swVer = 1;
-    uint32_t hwVer = 1;
-    // TODO implement this when current_stage is defined
-    // DELETE FROM current_stage WHERE 1=1; INSERT INTO current_stage(mode,stage,timestamp,blink_mode,s2offtime) VALUES(0,0,current_timestamp,0,current_timestamp - interval '5 minute')", true);
-    device_config.uid = uid;
-
+    // no code is added here, as the instantiation of the
 }
 
 

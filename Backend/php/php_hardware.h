@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QQmlEngine>
 
+
 #include <ctime>
 
 class php_hardware : public QObject
@@ -15,230 +16,19 @@ private:
 
     ////////////////////// class variables adopted straight from php
 
-    // TODO do tehy belong here
-    typedef time_t timestamp_t;
-
-    static timestamp_t current_timestamp(void) {
-        return std::time(0);
-    }
-    static timestamp_t minuteToTimestamp(uint32_t mins) {
-        return mins *60;
-    }
 
 
 
-    typedef uint64_t uid_t;
+
 
     
 
     // TODO refactor these
-    inline static const std::string TECHNIC_QR = "https://test.hvac.z-soft.am/#EN/USA/technician/view/";
-    inline static const std::string TECHNIC_EDIT_QR = "https://test.hvac.z-soft.am/#EN/USA/technician/edit/";
-    static const int EXEC_TIMEOUT_INTERVAL = 30;
-    static const int DELETE_INFO_INTERVAL = 7; // 1 week
-
-    // TODO class, with limits and getters/setters?
-    typedef struct rgbVal {
-        uint32_t red;
-        uint32_t green;
-        uint32_t blue;
-    } rgbVal_t;
 
 
-    class DeviceConfig
-    {
-    private:
-        /* data */
-    public:
-        uint32_t            soft_v;
-        uint32_t            hard_v;
-        uint32_t            mode;
-        uint32_t            brightness;
-        uint32_t            brightness_mode;
-        std::string         serial_number;
-        uid_t               uid;
-        std::string         timezone;
-        std::string         technical_access_link;
-        rgbVal_t            backlight_rgb;
-        uint32_t            backlight_type0;
-        bool                backlight_status;
-        timestamp_t         last_update;
-        timestamp_t         server_last_update;
-        uint32_t            current_speed;
-        std::string         logo;
-        std::string         phone;
-        std::string         url;
-        std::string         user_guide;
-        bool                start_pairing;
-        bool                wiring_check;
-        bool                is_service_titan;
-        std::string         timezone_number;
-        bool                qa_test;
-        bool                forget_sensor;
-        std::string         contractor_name;
-        uint32_t            ventilator;
-        uint32_t            start_mode;
-        bool                shut_down;
-        rgbVal_t            scheme_backlight_rgb;
-        uint32_t            humidifier_id;
-        std::string         hum_wiring;
-        uint32_t            system_type;
-        uint32_t            emergency_heating;
-        std::string         ob_state;
-        std::string         technical_edit_link;
 
-        // constructor and destructor
-        DeviceConfig(const std::string& uid);
-        ~DeviceConfig();
-    };
-    
-    DeviceConfig::DeviceConfig(const std::string& uid)
-    {
-        // TODO we need to pull these values from config file (version.ini) and extract SOFTWARE_VERSION and HARDWARE_VERSION
-        uint32_t swVer = 100;
-        uint32_t hwVer = 1;
-        // TODO implement this when current_stage is defined
-
-        // DELETE FROM current_stage WHERE 1=1; INSERT INTO current_stage(mode,stage,timestamp,blink_mode,s2offtime) VALUES(0,0,current_timestamp,0,current_timestamp - interval '5 minute')", true);
-        device_config.uid = uid;
-
-        soft_v = swVer;
-        hard_v = hwVer;
-        mode = 1;
-        brightness = 80;
-        brightness_mode = 0;
-        serial_number = "";
-        uid = -1;
-        timezone = "Pacific/Midway";
-        technical_access_link = TECHNIC_QR;
-        backlight_rgb = {0,0,0};
-        backlight_type = 0;
-        backlight_status = false;
-        last_update = current_timestamp();
-        server_last_update = current_timestamp();
-        current_speed = 0;
-        logo = "nexgen.png";
-        phone = "";
-        url = "";
-        user_guide = "";
-        start_pairing = false;
-        wiring_check = true;
-        is_service_titan = false;
-        timezone_number = "";
-        qa_test = false;
-        forget_sensor = false;
-        contractor_name = "NextGen";
-        ventilator = 0;
-        start_mode = 0;
-        shut_down = false;
-        scheme_backlight_rgb = {0,0,0};
-        humidifier_id = 3;
-        hum_wiring = "";
-        system_type = 1;
-        emergency_heating = 0;
-        ob_state = "cool";
-        technical_edit_link  = TECHNIC_EDIT_QR;
-    }
-    
-    DeviceConfig::~DeviceConfig()
-    {
-    }
     
 
-    /// @brief timing table struct
-    class Timing
-    {
-    private:
-
-    public:
-        timestamp_t         s1uptime;
-        timestamp_t         uptime;
-        timestamp_t         s2uptime;
-        bool                s2hold;
-        bool                s3hold;
-        bool                alerts;
-        timestamp_t         set_backlight_time;
-        uint32_t            wiring_check_interval;
-        timestamp_t         wiring_check_timestamp;
-        uint32_t            contractor_info_interval;
-        timestamp_t         contractor_info_timestamp;
-        uint32_t            info_update_interval;
-        timestamp_t         info_update_timestamp;
-        timestamp_t         soft_update_timestamp;
-        timestamp_t         fan_time;
-        uint32_t            start_fan_timing;
-        timestamp_t         delete_info_timestamp;
-        std::string         delete_info_interval;
-
-        Timing(/* args */);
-        ~Timing();
-    };
-    
-    #include <ctime>
-    #include <sstream>
-    
-    Timing::Timing(/* args */)
-    {
-        std::tm tm = {};
-        std::istringstream ss("2023-01-01 00:00:00");
-        ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-        timestamp_t tr = std::mktime(&tm);
-
-        uptime = current_timestamp();
-        s1uptime = current_timestamp();
-        s2uptime = current_timestamp();
-        s2hold = false;
-        s3hold = false;
-        alerts = false;
-        set_backlight_time = current_timestamp();
-        wiring_check_interval = 10;
-        wiring_check_timestamp = current_timestamp();
-        contractor_info_interval = 1;
-        contractor_info_timestamp = tr;
-        info_update_interval = 15;
-        info_update_timestamp = current_timestamp();
-        soft_update_timestamp = tr;
-        fan_time = current_timestamp() - minuteToTimestamp(5);
-        start_fan_timing = 0;
-        delete_info_timestamp = current_timestamp();
-        delete_info_interval = DELETE_INFO_INTERVAL;
-    }
-    
-    Timing::~Timing()
-    {
-    }
-    
-
-    class CurrentStage
-    {
-    private:
-        /* data */
-    public:
-        uint32_t            mode;
-        uint32_t            stage;
-        timestamp_t         timestamp;
-        uint32_t            blink_mode;
-        timestamp_t         s2offtime;
-
-
-        CurrentStage(/* args */);
-        ~CurrentStage();
-    };
-    
-    CurrentStage::CurrentStage()
-    {
-        mode = 0;
-        stage = 0;
-        timestamp = current_timestamp();
-        blink_mode = 0;
-        s2offtime = current_timestamp() - minuteToTimestamp(5);;
-    }
-    
-    CurrentStage::~CurrentStage()
-    {
-    }
-    
-    
 
 /**
  * Sets default values in various tables for device configuration.
