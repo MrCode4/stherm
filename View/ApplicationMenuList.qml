@@ -27,10 +27,6 @@ ListView {
             "icon": FAIcons.sunDust, //! From FontAwesome
             "text": "System Mode"
         },
-/*        {
-            "icon": FAIcons.triangleExclamation,
-            "text": "Alerts"
-        },*/
         {
             "icon": FAIcons.bolt,
             "text": "Backlight"
@@ -66,6 +62,14 @@ ListView {
         {
             "icon": FAIcons.wrench,
             "text": "System Setup"
+        },
+        {
+            "icon": FAIcons.arrowsRotate,
+            "text": "Update"
+        },
+        {
+            "icon": FAIcons.memoCircleInfo,
+            "text": "About Device"
         },
         {
             "icon": FAIcons.memoCircleInfo,

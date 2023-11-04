@@ -160,6 +160,7 @@ qt6_add_qml_module(appStherm
         View/WiringPage.qml
         View/MessagePopupView.qml
         View/VacationModeView.qml
+        View/AboutDevicePage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
