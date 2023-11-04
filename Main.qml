@@ -95,6 +95,10 @@ ApplicationWindow {
                 anchors.fill: parent
                 uiSession: window.uiSession
             }
+
+            Behavior on contentY {
+                NumberAnimation { }
+            }
         }
 
         VacationModeView {
@@ -145,6 +149,18 @@ ApplicationWindow {
         y: window.height
         width: window.width
         implicitHeight: keyboard.height + _closeBtn.height
+
+        onActiveChanged: {
+            if (window.activeFocusControl) {
+                var activeControlPos = window.activeFocusControl.mapToItem(window.contentItem, 0, 0);
+
+                //! Move active control to the center of area above keyboard
+                var targetY = (window.height
+                               - _virtualKb.implicitHeight
+                               - window.activeFocusControl.height) / 2
+                _mainViewFlick.contentY = activeControlPos.y - targetY;
+            }
+        }
 
         Component.onCompleted: {
             //! Increase key height and keyboard height
