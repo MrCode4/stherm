@@ -227,18 +227,24 @@ BasePageView {
                 onClicked: {
                     if (text === "Connect") {
                         var wifi = _wifisRepeater.currentItem.wifi;
-                        var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
-                        var isSaved = NetworkInterface.isWifiSaved(wifi);
 
-                        //! Open connect page
-                        if (_root.StackView.view) {
-                            //! Note: it's better to stop wifi refreshing to prevent any deleted
-                            //! object access issues
-                            _root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
-                                                          "wifi": _wifisRepeater.currentItem.wifi,
-                                                          "minPasswordLength": minPasswordLength,
-                                                          "isSaved": isSaved,
-                                                      })
+                        //! Check if password for this wifi is saved.
+                        if (NetworkInterface.isWifiSaved(wifi)) {
+                            NetworkInterface.connectSavedWifi(wifi);
+                        } else {
+                            var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
+                            var isSaved = NetworkInterface.isWifiSaved(wifi);
+
+                            //! Open connect page
+                            if (_root.StackView.view) {
+                                //! Note: it's better to stop wifi refreshing to prevent any deleted
+                                //! object access issues
+                                _root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
+                                                              "wifi": _wifisRepeater.currentItem.wifi,
+                                                              "minPasswordLength": minPasswordLength,
+                                                              "isSaved": isSaved,
+                                                          })
+                            }
                         }
                     } else {
                         //! Disconnect from this wifi
