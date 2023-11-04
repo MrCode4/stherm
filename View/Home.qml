@@ -21,6 +21,9 @@ Control {
     //! Reference to I_Device
     readonly property   I_Device    device: uiSession?.appModel ?? null
 
+    //! Whether DesiredTempratureItem is being dragged
+    readonly property   bool        isDragging: state === "dragging"
+
     //! Reference to main StackView
     required property   StackView   mainStackView
 

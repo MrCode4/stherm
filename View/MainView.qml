@@ -35,6 +35,7 @@ Item {
     SwipeView {
         id: _mainViewSw
         currentIndex: 1
+        interactive: !_homePage.isDragging
 
         //! This should be sync either with the model (I_Device) or with the FanPage used in
         //! ApplicationMenu to prevent further issues or use exactly this FanPage instance in
@@ -45,6 +46,7 @@ Item {
         }
 
         Home {
+            id: _homePage
             mainStackView: _mainStackView
             uiSession: mainView.uiSession
         }
