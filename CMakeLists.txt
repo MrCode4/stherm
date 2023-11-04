@@ -130,7 +130,6 @@ qt6_add_qml_module(appStherm
         View/MainView.qml
         View/NexgenIcon.qml
         View/ScreenSaver.qml
-        View/ColorTestPage.qml
         View/FanPage.qml
         View/SystemInfoPage.qml
         View/AddSchedulePage.qml
@@ -161,6 +160,8 @@ qt6_add_qml_module(appStherm
         View/MessagePopupView.qml
         View/VacationModeView.qml
         View/AboutDevicePage.qml
+        View/Test/TouchTestPage.qml
+        View/Test/ColorTestPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
