@@ -37,19 +37,31 @@ BasePageView {
         }
 
         //! Connect button
-        ToolButton {
-            id: _connectBtn
+        Item {
             Layout.alignment: Qt.AlignRight
+            implicitWidth: _connectBtn.implicitWidth
+            implicitHeight: _connectBtn.implicitHeight
 
-            enabled: _passwordTf.acceptableInput && !NetworkInterface.isRunning
-            contentItem: RoniaTextIcon {
-                text: FAIcons.link
+            ToolButton {
+                id: _connectBtn
+                anchors.fill: parent
+                visible: !NetworkInterface.isRunning
+                enabled: _passwordTf.acceptableInput && !NetworkInterface.isRunning
+                contentItem: RoniaTextIcon {
+                    text: FAIcons.link
+                }
+
+                onClicked: {
+                    //! Perform connection
+                    _connectCheckCon.enabled = true;
+                    NetworkInterface.connectWifi(wifi, _passwordTf.text);
+                }
             }
 
-            onClicked: {
-                //! Perform connection
-                _connectCheckCon.enabled = true;
-                NetworkInterface.connectWifi(wifi, _passwordTf.text);
+            BusyIndicator {
+                anchors.fill: parent
+                visible: NetworkInterface.isRunning
+                running: visible
             }
         }
     }
@@ -104,6 +116,21 @@ BasePageView {
             }
 
             _connectCheckCon.enabled = false;
+        }
+    }
+
+    Component.onCompleted: {
+        //! Disable wifi refresh
+        if (uiSession) {
+            uiSession.refreshWifiEnabled = false;
+        }
+    }
+
+    Component.onDestruction: {
+        //! Enable wifi refresh
+        if (uiSession) {
+            uiSession.refreshWifiEnabled = true;
+            NetworkInterface.refereshWifis();
         }
     }
 }
