@@ -15,9 +15,6 @@ BasePageView {
     //! Wifi
     property WifiInfo   wifi
 
-    //! Is this wifi saved
-    property bool       isSaved
-
     //! Minimus password length
     property int        minPasswordLength: 0
 
@@ -41,6 +38,7 @@ BasePageView {
 
         //! Connect button
         ToolButton {
+            id: _connectBtn
             Layout.alignment: Qt.AlignRight
 
             enabled: _passwordTf.acceptableInput && !NetworkInterface.isRunning
@@ -51,11 +49,7 @@ BasePageView {
             onClicked: {
                 //! Perform connection
                 _connectCheckCon.enabled = true;
-                if (isSaved) {
-                    NetworkInterface.connectSavedWifi(wifi);
-                } else {
-                    NetworkInterface.connectWifi(wifi, _passwordTf.text);
-                }
+                NetworkInterface.connectWifi(wifi, _passwordTf.text);
             }
         }
     }
@@ -73,6 +67,11 @@ BasePageView {
         echoMode: _passwordEchoBtn.checked ? TextField.Normal : TextField.Password
         validator: RegularExpressionValidator {
             regularExpression: new RegExp(`.{${minPasswordLength},${_passwordTf.maximumLength}}`)
+        }
+
+        onAccepted: {
+            //! Perform connection
+            _connectBtn.clicked();
         }
 
         ToolButton {

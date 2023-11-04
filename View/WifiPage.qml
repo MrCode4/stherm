@@ -242,7 +242,6 @@ BasePageView {
                                 _root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
                                                               "wifi": _wifisRepeater.currentItem.wifi,
                                                               "minPasswordLength": minPasswordLength,
-                                                              "isSaved": isSaved,
                                                           })
                             }
                         }
