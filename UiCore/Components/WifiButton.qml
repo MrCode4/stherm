@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 
 import Ronia
 import Stherm
@@ -15,22 +16,33 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    contentItem: RoniaTextIcon {
-        font.pointSize: Style.fontIconSize.largePt - 1
-        color: _root.Material.foreground
-        text: {
-            return NetworkInterface.connectedWifi
-                    ? (NetworkInterface.connectedWifi.strength > 80
-                       ? "\uf1eb" //! wifi icon
-                       : (NetworkInterface.connectedWifi.strength > 50
-                          ? "\uf6ab": //! wifi-fair icon
-                            (NetworkInterface.connectedWifi.strength > 25 ? "\uf6aa" //! wifi-weak icon
-                                                                          : "")
-                                )
+    Image {
+        id: _wifiIcon
+        anchors.centerIn: parent
+        width: _root.width - 8
+        height: width
+        visible: false
+
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        source: NetworkInterface.connectedWifi
+                ? (NetworkInterface.connectedWifi.strength > 75
+                   ? "qrc:/Stherm/Images/Wifi/wifi.png"
+                   : (NetworkInterface.connectedWifi.strength > 50
+                      ? "qrc:/Stherm/Images/Wifi/wifi-good.png"
+                      : (NetworkInterface.connectedWifi.strength > 25
+                         ? "qrc:/Stherm/Images/Wifi/wifi-fair.png"
+                         : "qrc:/Stherm/Images/Wifi/wifi-weak.png"
                              )
-                    : "\uf6ac";
-        }
+                      )
+                   )
+                : "qrc:/Stherm/Images/Wifi/wifi-off.png"
+
     }
 
-    Component.onCompleted: background.square = true
+    ColorOverlay {
+        anchors.fill: _wifiIcon
+        source: _wifiIcon
+        color: Style.foreground
+    }
 }
