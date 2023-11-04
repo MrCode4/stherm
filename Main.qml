@@ -84,8 +84,6 @@ ApplicationWindow {
         Flickable {
             id: _mainViewFlick
             width: window.width
-            height: window.height - (window.height - _virtualKb.y)
-            interactive: _virtualKb.active
             boundsBehavior: Flickable.StopAtBounds
             contentWidth: width
             contentHeight: window.width
@@ -151,7 +149,7 @@ ApplicationWindow {
         implicitHeight: keyboard.height + _closeBtn.height
 
         onActiveChanged: {
-            if (window.activeFocusControl) {
+            if (active && window.activeFocusControl) {
                 var activeControlPos = window.activeFocusControl.mapToItem(window.contentItem, 0, 0);
 
                 //! Move active control to the center of area above keyboard
@@ -159,6 +157,10 @@ ApplicationWindow {
                                - _virtualKb.implicitHeight
                                - window.activeFocusControl.height) / 2
                 _mainViewFlick.contentY = activeControlPos.y - targetY;
+                state = "visible";
+            } else {
+                _mainViewFlick.contentY = 0;
+                state = "invisible";
             }
         }
 
@@ -185,28 +187,92 @@ ApplicationWindow {
             }
         }
 
-        states: State {
-            name: "visible"
-            when: _virtualKb.active
-            PropertyChanges {
-                target: _virtualKb
-                y: window.height - _virtualKb.height
-            }
-        }
+        states: [
+            State {
+                name: "invisible"
 
-        transitions: Transition {
-            from: ""
-            to: "visible"
-            reversible: true
+                PropertyChanges {
+                    target: _virtualKb
+                    y: window.height
+                }
 
-            ParallelAnimation {
-                NumberAnimation {
-                    properties: "y"
-                    duration: 300
-                    easing.type: Easing.InOutQuad
+                PropertyChanges {
+                    target: _mainViewFlick
+                    interactive: false
+                    height: window.height
+                }
+            },
+
+            State {
+                name: "visible"
+
+                PropertyChanges {
+                    target: _virtualKb
+                    y: window.height - _virtualKb.height
+                }
+
+                PropertyChanges {
+                    target: _mainViewFlick
+                    interactive: true
+                    height: window.height - _virtualKb.implicitHeight
                 }
             }
-        }
+        ]
+
+        transitions: [
+            Transition {
+                from: "*"
+                to: "visible"
+
+                SequentialAnimation {
+                    PropertyAnimation {
+                        target: _mainViewFlick
+                        property: "interactive"
+                        duration: 0
+                    }
+
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: _mainViewFlick
+                            property: "height"
+                            duration: 300
+                        }
+
+                        NumberAnimation {
+                            properties: "y"
+                            duration: 300
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+                }
+            },
+            Transition {
+                from: "*"
+                to: "invisible"
+
+                SequentialAnimation {
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: _mainViewFlick
+                            property: "height"
+                            duration: 300
+                        }
+
+                        NumberAnimation {
+                            properties: "y"
+                            duration: 300
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+
+                    PropertyAnimation {
+                        target: _mainViewFlick
+                        property: "interactive"
+                        duration: 0
+                    }
+                }
+            }
+        ]
     }
 
     //! MessagePopupView
