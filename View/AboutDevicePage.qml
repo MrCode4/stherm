@@ -44,7 +44,7 @@ BasePageView {
             { "key": "Custom Name",         "value": "Living Room" },
             { "key": "URL",                 "value": '<a href="nuvehome.com" style="text-decoration:none;color:#44A0FF;">nuvehome.com</a>' },
             { "key": "E-mail",              "value": '<a href="support@nuvehome.com" style="text-decoration:none;color:#44A0FF;">support@nuvehome.com</link>' },
-            { "key": "Software version",    "value": "001" },
+            { "key": "Software version",    "value": PROJECT_VERSION },
             { "key": "Hardware version",    "value": "01" },
         ]
         delegate: RowLayout {

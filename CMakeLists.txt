@@ -230,6 +230,11 @@ set_target_properties(appStherm PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
+# Set a compile definition to be able to pass app version to cpp
+target_compile_definitions(appStherm PRIVATE
+    PROJECT_VERSION_STRING=${PROJECT_VERSION}
+)
+
 target_link_directories(appStherm PRIVATE
     ${QT_QML_OUTPUT_DIRECTORY}/Ronia
 )
