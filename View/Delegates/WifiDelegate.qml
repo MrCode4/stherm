@@ -69,7 +69,7 @@ Control {
                     anchors.fill: parent
                     font.pointSize: _root.font.pointSize * 1.2
                     color: wifi?.connected ? Style.accent : Style.foreground
-                    text: wifi ? ( wifi.strength > 80 ? "\uf1eb" //! wifi icon
+                    text: wifi ? ( wifi.strength > 75 ? "\uf1eb" //! wifi icon
                                                       : (wifi.strength > 50 ? "\uf6ab": //! wifi-fair icon
                                                                               (wifi.strength > 25 ?"\uf6aa" : "")//! wifi-weak icon
                                                          )) : ""
