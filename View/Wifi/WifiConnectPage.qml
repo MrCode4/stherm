@@ -64,7 +64,7 @@ BasePageView {
     TextField {
         id: _passwordTf
 
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.centerIn: parent
         width: parent.width * 0.65
 
         maximumLength: 256
