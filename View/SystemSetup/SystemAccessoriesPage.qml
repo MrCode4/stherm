@@ -37,16 +37,19 @@ BasePageView {
 
     GridLayout {
         anchors.centerIn: parent
-        columns: 4
-        columnSpacing: 8
-        rowSpacing: 24
+        width: parent.width * 0.9
+        columns: 3
+        columnSpacing: 4
+        rowSpacing: 4
 
         Label {
+            Layout.columnSpan: 3
             text: "Humidifier"
         }
 
         //! Humidifier CheckBox 1
         CheckBox {
+            Layout.leftMargin: 40 * scaleFactor
             checked: true
             text: "T1\npwrd"
 
@@ -68,12 +71,14 @@ BasePageView {
         }
 
         Label {
-            Layout.rightMargin: 24
+            Layout.columnSpan: 3
+            Layout.topMargin: 40
             text: "Dehumidifier"
         }
 
         //! Dehumidifier CheckBox 1
         CheckBox {
+            Layout.leftMargin: 40 * scaleFactor
             checked: true
             text: "T1\npwrd"
 
