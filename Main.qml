@@ -129,7 +129,7 @@ ApplicationWindow {
     //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1
     //! seconds and then refresh every 20 seconds
     Timer {
-        running: true
+        running: uiSession.refreshWifiEnabled
         interval: 1000
         repeat: true
         onTriggered: {
