@@ -7,6 +7,10 @@
 
 #include <ctime>
 
+#ifdef _WIN32
+#define uid_t uint8_t // for building in windows as test purpose
+#endif
+
 class php_hardware : public QObject
 {
     Q_OBJECT

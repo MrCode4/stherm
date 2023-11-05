@@ -196,6 +196,10 @@ qt6_add_qml_module(appStherm
         Backend/php/php_schedule.cpp
         Backend/php/php_update.h
         Backend/php/php_update.cpp
+        Backend/DeviceControllerCPP.h
+        Backend/DeviceControllerCPP.cpp
+        Backend/UARTConnection.h
+        Backend/UARTConnection.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
