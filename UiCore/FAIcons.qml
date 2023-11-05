@@ -26,4 +26,5 @@ QtObject {
     readonly property string eyeSlash:                          "\uf070"
     readonly property string eye:                               "\uf06e"
     readonly property string check:                             "\uf00c"
+    readonly property string arrowRight:                        "\uf061"
 }

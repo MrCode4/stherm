@@ -73,6 +73,9 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;
+                case "About Device":
+                    _root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml")
+                    break;
                 case "System Info":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
                     break;

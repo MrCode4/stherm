@@ -131,7 +131,6 @@ qt6_add_qml_module(appStherm
         View/MainView.qml
         View/NexgenIcon.qml
         View/ScreenSaver.qml
-        View/ColorTestPage.qml
         View/FanPage.qml
         View/SystemInfoPage.qml
         View/AddSchedulePage.qml
@@ -163,6 +162,10 @@ qt6_add_qml_module(appStherm
         View/WiringPage.qml
         View/MessagePopupView.qml
         View/VacationModeView.qml
+        View/AboutDevicePage.qml
+        View/Test/TouchTestPage.qml
+        View/Test/ColorTestPage.qml
+        View/Test/BacklightTestPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
@@ -235,6 +238,11 @@ set_target_properties(appStherm PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
+)
+
+# Set a compile definition to be able to pass app version to cpp
+target_compile_definitions(appStherm PRIVATE
+    PROJECT_VERSION_STRING=${PROJECT_VERSION}
 )
 
 target_link_directories(appStherm PRIVATE

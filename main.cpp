@@ -62,7 +62,12 @@ int main(int argc, char *argv[])
         qApp->setFont(defaultFont);
     }
 
-    engine.rootContext()->setContextProperty("scaleFactor", scaleFactor);
+
+    engine.rootContext()->setContextProperties({
+        { "scaleFactor", scaleFactor },
+        { "deviceInfo", deviceInfo },
+        { "PROJECT_VERSION", PROJECT_VERSION_STRING },
+    });
     engine.rootContext()->setContextProperty("deviceInfo", deviceInfo);
 
     engine.load(url);
