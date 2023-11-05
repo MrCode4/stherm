@@ -25,12 +25,29 @@ void DeviceControllerCPP::createSensor(QString name, QString id)
 
 void DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
 {
+    if (className == "system" && method == "getMainData") {
+        // to skip debugs
+        return;
+    }
 
+    qDebug() << "Request received: " << className << method << data;
+
+    if (className == "hardware") {
+        if (method == "setSettings") {
+            if (data.size() < 0) {
+                qWarning() << "data sent is empty";
+            } else {
+                if (data.size() != 6) {
+                    qWarning() << "data sent is not consistent";
+                }
+                setBrightness(std::clamp(qRound(data.first().toDouble()), 0, 254));
+            }
+        }
+    }
 }
 
-
-
-void DeviceControllerCPP::exportGPIOPin(int pinNumber) {
+void DeviceControllerCPP::exportGPIOPin(int pinNumber)
+{
     QFile exportFile("/sys/class/gpio/export");
     if (!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << Q_FUNC_INFO << __LINE__ << "Failed to open export file.";
@@ -58,11 +75,10 @@ void DeviceControllerCPP::exportGPIOPin(int pinNumber) {
     outIn << "in";
 
     directionFile.close();
-
 }
 
-
-int DeviceControllerCPP::getStartMode (int pinNumber) {
+int DeviceControllerCPP::getStartMode(int pinNumber)
+{
     exportGPIOPin(pinNumber);
 
     // Define the file path
@@ -84,7 +100,6 @@ int DeviceControllerCPP::getStartMode (int pinNumber) {
 
     int result = (value.trimmed() == "0") ? 1 : 0;
     return result;
-
 }
 
 //! Get CPU info
