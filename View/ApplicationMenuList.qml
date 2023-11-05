@@ -48,6 +48,10 @@ ListView {
             "text": "Sensors"
         },
         {
+            "icon": FAIcons.fileExclamation,
+            "text": "User Guides"
+        },
+        {
             "icon": FAIcons.droplet,
             "text": "Humidity Control"
         },

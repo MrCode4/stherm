@@ -28,4 +28,5 @@ QtObject {
     readonly property string check:                             "\uf00c"
     readonly property string arrowRight:                        "\uf061"
     readonly property string circlePlay:                        "\uf144"
+    readonly property string fileExclamation:                   "\uf31a"
 }
