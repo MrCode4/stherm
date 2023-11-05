@@ -1,32 +1,17 @@
 import QtQuick
-import QtQuick.Layouts
 
 import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * BacklightTestPage
+ * AudioTestPage
  * ***********************************************************************************************/
-BacklightPage {
+BasePageView {
     id: _root
 
     /* Object properties
      * ****************************************************************************************/
-    topPadding: 0
-    bottomPadding: 32 * scaleFactor
-    title: "Backlight Test"
-    hasShades: false
-
-    onUnshadedColorChanged: {
-        //! Apply selected color to device immediately
-    }
-
-    Component.onCompleted: {
-        //! Hide tick button and switch
-        _root.header.contentItem.children[2].visible = false;
-        //! Set switch to checked also
-        _root.header.contentItem.children[2].children[0].checked = true;
-    }
+    title: "Audio Test"
 
     /* Children
      * ****************************************************************************************/
@@ -40,10 +25,23 @@ BacklightPage {
         onClicked: {
             //! Next page
             if (_root.StackView.view) {
-                _root.StackView.view.push("qrc:/Stherm/View/Test/AudioTestPage.qml", {
+                _root.StackView.view.push("qrc:/Stherm/View/Test/InternalSensorTestPage.qml", {
                                               "uiSession": uiSession
                                           })
             }
+        }
+    }
+
+    //! Sound play button
+    ToolButton {
+        anchors.centerIn: parent
+        contentItem: RoniaTextIcon {
+            font.pointSize: Style.fontIconSize.largePt * 2
+            text: FAIcons.circlePlay
+        }
+
+        onClicked: {
+            //! Play a sound
         }
     }
 }

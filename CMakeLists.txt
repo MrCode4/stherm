@@ -167,6 +167,8 @@ qt6_add_qml_module(appStherm
         View/Test/TouchTestPage.qml
         View/Test/ColorTestPage.qml
         View/Test/BacklightTestPage.qml
+        View/Test/AudioTestPage.qml
+        View/Test/InternalSensorTestPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
