@@ -206,6 +206,10 @@ qt6_add_qml_module(appStherm
         Backend/php/php_update.h
         Backend/php/php_update.cpp
 
+        Backend/QrCode/qrcodegen.hpp
+        Backend/QrCode/qrcodegen.cpp
+        Backend/QRCodeGenerator.h
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
