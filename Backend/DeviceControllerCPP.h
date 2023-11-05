@@ -44,7 +44,7 @@ public:
 
     //! Send requests
     //! todo: transfer data with UARTConnection instance
-    Q_INVOKABLE void sendRequest(QString className, QString method, QVariantList data);
+    Q_INVOKABLE QVariantMap sendRequest(QString className, QString method, QVariantList data);
 
     /* Public Functions
      * Read and write data without any UART connection

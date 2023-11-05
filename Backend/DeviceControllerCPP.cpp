@@ -23,11 +23,12 @@ void DeviceControllerCPP::createSensor(QString name, QString id)
 
 }
 
-void DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
+QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
 {
-    if (className == "system" && method == "getMainData") {
-        // to skip debugs
-        return;
+    if (className == "system") {
+        if (method == "getMainData") {
+            return {{"temp", QVariant(32.56)}, {"hum", QVariant(30.24)}};
+        }
     }
 
     qDebug() << "Request received: " << className << method << data;
@@ -44,6 +45,8 @@ void DeviceControllerCPP::sendRequest(QString className, QString method, QVarian
             }
         }
     }
+
+    return {};
 }
 
 void DeviceControllerCPP::exportGPIOPin(int pinNumber)

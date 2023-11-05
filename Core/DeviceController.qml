@@ -24,7 +24,7 @@ I_DeviceController {
     {
         var data_msg = '{"request": {"class": "' + className + '", "method": "' + method + '", "params": ' + JSON.stringify(data) + '}}';
 
-        deviceControllerCPP.sendRequest(className, method, data)
+        return deviceControllerCPP.sendRequest(className, method, data)
     }
 
     function updateDeviceBacklight()
@@ -129,12 +129,11 @@ I_DeviceController {
     function updateInformation()
     {
         console.log("--------------- Start: updateInformation -------------------")
-        sendReceive('system', 'getMainData', []);
+        var result = sendReceive('system', 'getMainData', []);
 
         // should be catched later here
-
-        device.currentHum = 30.25
-        device.currentTemp = 32.6
+        device.currentHum = result?.sdas ?? 0
+        device.currentTemp = result?.temp ?? 0
 
         //        device.co2;
         //        device.fan.mode
