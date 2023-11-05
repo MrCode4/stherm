@@ -22,4 +22,8 @@ QtObject {
     readonly property string arrowsRotate:                      "\uf021"
     readonly property string circleInfo:                        "\uf05a"
     readonly property string memoCircleInfo:                    "\ue49a"
+    readonly property string link:                              "\uf0c1"
+    readonly property string eyeSlash:                          "\uf070"
+    readonly property string eye:                               "\uf06e"
+    readonly property string check:                             "\uf00c"
 }

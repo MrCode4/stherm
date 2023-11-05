@@ -83,8 +83,6 @@ ApplicationWindow {
         Flickable {
             id: _mainViewFlick
             width: window.width
-            height: window.height - (window.height - _virtualKb.y)
-            interactive: _virtualKb.active
             boundsBehavior: Flickable.StopAtBounds
             contentWidth: width
             contentHeight: window.width
@@ -93,6 +91,10 @@ ApplicationWindow {
                 id: mainView
                 anchors.fill: parent
                 uiSession: window.uiSession
+            }
+
+            Behavior on contentY {
+                NumberAnimation { }
             }
         }
 
@@ -124,7 +126,7 @@ ApplicationWindow {
     //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1
     //! seconds and then refresh every 20 seconds
     Timer {
-        running: true
+        running: uiSession.refreshWifiEnabled
         interval: 1000
         repeat: true
         onTriggered: {
@@ -144,6 +146,23 @@ ApplicationWindow {
         y: window.height
         width: window.width
         implicitHeight: keyboard.height + _closeBtn.height
+
+        onActiveChanged: {
+            if (active && (window.activeFocusControl instanceof TextInput
+                           || window.activeFocusControl instanceof TextEdit)) {
+                var activeControlPos = window.activeFocusControl.mapToItem(window.contentItem, 0, 0);
+
+                //! Move active control to the center of area above keyboard
+                var targetY = (window.height
+                               - _virtualKb.implicitHeight
+                               - window.activeFocusControl.height) / 2
+                _mainViewFlick.contentY = activeControlPos.y - targetY;
+                state = "visible";
+            } else {
+                _mainViewFlick.contentY = 0;
+                state = "invisible";
+            }
+        }
 
         Component.onCompleted: {
             //! Increase key height and keyboard height
@@ -168,28 +187,92 @@ ApplicationWindow {
             }
         }
 
-        states: State {
-            name: "visible"
-            when: _virtualKb.active
-            PropertyChanges {
-                target: _virtualKb
-                y: window.height - _virtualKb.height
-            }
-        }
+        states: [
+            State {
+                name: "invisible"
 
-        transitions: Transition {
-            from: ""
-            to: "visible"
-            reversible: true
+                PropertyChanges {
+                    target: _virtualKb
+                    y: window.height
+                }
 
-            ParallelAnimation {
-                NumberAnimation {
-                    properties: "y"
-                    duration: 300
-                    easing.type: Easing.InOutQuad
+                PropertyChanges {
+                    target: _mainViewFlick
+                    interactive: false
+                    height: window.height
+                }
+            },
+
+            State {
+                name: "visible"
+
+                PropertyChanges {
+                    target: _virtualKb
+                    y: window.height - _virtualKb.height
+                }
+
+                PropertyChanges {
+                    target: _mainViewFlick
+                    interactive: true
+                    height: window.height - _virtualKb.implicitHeight
                 }
             }
-        }
+        ]
+
+        transitions: [
+            Transition {
+                from: "*"
+                to: "visible"
+
+                SequentialAnimation {
+                    PropertyAnimation {
+                        target: _mainViewFlick
+                        property: "interactive"
+                        duration: 0
+                    }
+
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: _mainViewFlick
+                            property: "height"
+                            duration: 300
+                        }
+
+                        NumberAnimation {
+                            properties: "y"
+                            duration: 300
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+                }
+            },
+            Transition {
+                from: "*"
+                to: "invisible"
+
+                SequentialAnimation {
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: _mainViewFlick
+                            property: "height"
+                            duration: 300
+                        }
+
+                        NumberAnimation {
+                            properties: "y"
+                            duration: 300
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+
+                    PropertyAnimation {
+                        target: _mainViewFlick
+                        property: "interactive"
+                        duration: 0
+                    }
+                }
+            }
+        ]
     }
 
     //! MessagePopupView

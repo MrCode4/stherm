@@ -89,6 +89,13 @@ public:
     Q_INVOKABLE bool    isWifiSaved(WifiInfo* wifiInfo);
     Q_INVOKABLE void    turnOn();
     Q_INVOKABLE void    turnOff();
+    Q_INVOKABLE void    addConnection(const QString& name,
+                                   const QString& ssid,
+                                   const QString& ip4,
+                                   const QString& gw4,
+                                   const QString& dns,
+                                   const QString& security,
+                                   const QString& password);
 
 
     /* Private methods and slots

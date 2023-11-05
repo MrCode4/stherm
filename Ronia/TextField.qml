@@ -20,9 +20,9 @@ T.TextField {
     bottomPadding: topPadding
 
     color: enabled ? Material.foreground : Material.hintTextColor
-    selectionColor: Material.accentColor
-    selectedTextColor: Material.primaryHighlightedTextColor
-    placeholderTextColor: Material.hintTextColor
+    selectionColor: Style.accent
+    selectedTextColor: Style.background
+    placeholderTextColor: Style.hintTextColor
     verticalAlignment: TextInput.AlignVCenter
 
     cursorDelegate: CursorDelegate { }
@@ -50,8 +50,9 @@ T.TextField {
             y: control.height - height - control.bottomPadding
             width: parent.width
             height: control.activeFocus || (enabled && control.hovered) ? 2 : 1
-            color: control.activeFocus ? control.Material.accentColor
-                                       : ((enabled && control.hovered) ? control.Material.primaryTextColor : control.Material.hintTextColor)
+            color: control.activeFocus ? Style.accent
+                                       : ((enabled && control.hovered) ? Style.foreground
+                                                                       : Style.hintTextColor)
         }
     }
 }

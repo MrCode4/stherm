@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 
 import Ronia
 import Stherm
@@ -15,22 +16,13 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    contentItem: RoniaTextIcon {
-        font.pointSize: Style.fontIconSize.largePt - 1
-        color: _root.Material.foreground
-        text: {
-            return NetworkInterface.connectedWifi
-                    ? (NetworkInterface.connectedWifi.strength > 80
-                       ? "\uf1eb" //! wifi icon
-                       : (NetworkInterface.connectedWifi.strength > 50
-                          ? "\uf6ab": //! wifi-fair icon
-                            (NetworkInterface.connectedWifi.strength > 25 ? "\uf6aa" //! wifi-weak icon
-                                                                          : "")
-                                )
-                             )
-                    : "\uf6ac";
-        }
-    }
+    WifiIcon {
+        id: _wifiIcon
+        anchors.centerIn: parent
+        width: _root.width - 8
+        height: width
 
-    Component.onCompleted: background.square = true
+        isConnected: Boolean(NetworkInterface.connectedWifi)
+        strength: NetworkInterface.connectedWifi?.strength ?? 0
+    }
 }

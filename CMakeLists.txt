@@ -110,6 +110,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/CurrentHumidityButton.qml
         UiCore/Components/HoldButton.qml
         UiCore/Components/DeviceToggleButton.qml
+        UiCore/Components/WifiIcon.qml
         UiCore/Components/WifiButton.qml
         UiCore/Components/MenuButton.qml
         UiCore/Components/ScheduleButton.qml
@@ -150,6 +151,8 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemRunDelayPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
+        View/Wifi/WifiConnectPage.qml
+        View/Wifi/WifiManualConnectPage.qml
         View/SystemModePage.qml
         View/SystemMode/VacationModePage.qml
         View/SettingsPage.qml
@@ -216,6 +219,11 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
+        Images/Wifi/wifi.png
+        Images/Wifi/wifi-good.png
+        Images/Wifi/wifi-fair.png
+        Images/Wifi/wifi-weak.png
+        Images/Wifi/wifi-off.png
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

@@ -30,9 +30,7 @@ Control {
     background: Rectangle {
         implicitHeight: Style.delegateHeight
 
-        color: _delegateButton.pressed ? Style.rippleColor
-                                       : (_root.highlighted ? Style.listHighlightColor
-                                                            : "transparent")
+        color: "transparent"
 
         Rectangle {
             anchors.fill: parent
@@ -56,25 +54,16 @@ Control {
             spacing: 12
 
             Item {
-                Layout.preferredWidth: _wifiIcon.implicitWidth
-                Layout.preferredHeight: _wifiIcon.implicitHeight
+                Layout.fillHeight: true
+                Layout.topMargin: 12 * scaleFactor
+                Layout.bottomMargin: 12 * scaleFactor
+                Layout.preferredWidth: height
 
-                RoniaTextIcon {
-                    id: _wifiIcon
+                WifiIcon {
                     anchors.fill: parent
-                    font.pointSize: _root.font.pointSize * 1.2
-                    color: "gray"
-                    opacity: 0.2
-                    text: "\uf1eb"
-                }
-                RoniaTextIcon {
-                    anchors.fill: parent
-                    font.pointSize: _root.font.pointSize * 1.2
-                    color: wifi?.connected ? Style.accent : Style.foreground
-                    text: wifi ? ( wifi.strength > 80 ? "\uf1eb" //! wifi icon
-                                                      : (wifi.strength > 50 ? "\uf6ab": //! wifi-fair icon
-                                                                              (wifi.strength > 25 ?"\uf6aa" : "")//! wifi-weak icon
-                                                         )) : ""
+
+                    isConnected: true //! Disconnect icon is not desired
+                    strength: wifi?.strength ?? 0
                 }
             }
 

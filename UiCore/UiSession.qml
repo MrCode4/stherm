@@ -58,6 +58,8 @@ QtObject {
     //! app core
     property I_Device           appModel
 
+    //! This property can be used to disable wifi refreshing temporarily
+    property bool               refreshWifiEnabled: true
 
     //! Device controller
     property bool simulating:   true
