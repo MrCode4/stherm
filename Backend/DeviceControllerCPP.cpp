@@ -12,6 +12,21 @@
 DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
     _mainData = {{"temp", QVariant(32.56)}, {"hum", QVariant(30.24)}};
+
+    QTimer::singleShot(3000, this, [this]() {
+        auto future = QtConcurrent::run([this]() {
+            int test_count = 0;
+            // reads a data as an example 1000 times
+            while (test_count < 1000) {
+                test_count++;
+                double temp_random = 18;
+
+                _mainData = {{"temp", QVariant(temp_random)}, {"hum", QVariant(30.24)}};
+                qDebug() << "data fetch" << temp_random;
+                QThread::msleep(100);
+            }
+        });
+    });
 }
 
 DeviceControllerCPP::~DeviceControllerCPP()
