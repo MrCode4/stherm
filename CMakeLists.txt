@@ -123,6 +123,7 @@ qt6_add_qml_module(appStherm
 
         # Views and Widgets
         View/Home.qml
+        View/SplashScreen.qml
         View/ApplicationMenu.qml
         View/ApplicationMenuList.qml
         View/BasePageView.qml
