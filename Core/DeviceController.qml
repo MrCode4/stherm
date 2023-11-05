@@ -131,6 +131,15 @@ I_DeviceController {
         console.log("--------------- Start: updateInformation -------------------")
         sendReceive('system', 'getMainData', []);
 
+        // should be catched later here
+
+        device.currentHum = 30.25
+        device.currentTemp = 32.6
+
+        //        device.co2;
+        //        device.fan.mode
+        //        device.alert
+
         console.log("--------------- End: updateInformation -------------------")
     }
 }
