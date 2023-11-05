@@ -10,7 +10,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 Multimedia Concurrent Core5Compat)
+find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
+    QuickControls2 Multimedia Concurrent
+    Core5Compat SerialPort )
 
 #qt_standard_project_setup()
 
@@ -250,6 +252,8 @@ target_link_libraries(appStherm
     Qt6::QuickControls2
     Qt6::Multimedia
     Qt6::Concurrent
+    Qt6::SerialPort
+
     QtQuickStreamplugin
     RoniaStyle
     RoniaStyleplugin
