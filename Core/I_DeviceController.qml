@@ -55,4 +55,6 @@ QtObject {
     function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive) {}
 
     function setDesiredTemperature(temperature: real) {}
+
+    function updateInformation() {}
 }

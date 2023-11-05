@@ -58,6 +58,16 @@ QtObject {
     //! app core
     property I_Device           appModel
 
+    //! Retrieve device information at one-second intervals.
+    property Timer timer:   Timer {
+        running: true
+        repeat: true
+        interval: AppSpec.readInterval
+
+        onTriggered: {
+            deviceController.updateInformation();
+        }
+    }
 
     //! Device controller
     property bool simulating:   true

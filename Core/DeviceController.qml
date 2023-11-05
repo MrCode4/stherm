@@ -24,30 +24,7 @@ I_DeviceController {
     {
         var data_msg = '{"request": {"class": "' + className + '", "method": "' + method + '", "params": ' + JSON.stringify(data) + '}}';
 
-        let xhr = new XMLHttpRequest();
-
-        xhr.onreadystatechange = function() {
-            console.error("XMLHttpRequest onreadystatechange", xhr.readyState);
-
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                let response = {
-                    status : xhr.status,
-                    headers : xhr.getAllResponseHeaders(),
-                    contentType : xhr.responseType,
-                    content : xhr.response
-                };
-                console.error("XMLHttpRequest done", xhr.status, xhr.statusText, xhr.responseType);
-
-                if (xhr.status === 200) {
-                    console.error("XMLHttpRequest done", xhr.responseText, JSON.parse(xhr.responseText));
-                } else {
-                    console.error("Error in HTTP request:", xhr.status, xhr.statusText);
-                }
-            }
-        }
-        xhr.open("POST", "http://127.0.0.1/engine/index.php", true);
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.send(data_msg);
+        deviceControllerCPP.sendRequest(className, method, data)
     }
 
     function updateDeviceBacklight()
@@ -146,5 +123,14 @@ I_DeviceController {
 
         // Update device temperature when setTemperature is successful.
         device.requestedTemp = temperature;
+    }
+
+    //! Read data from system with getMainData method.
+    function updateInformation()
+    {
+        console.log("--------------- Start: updateInformation -------------------")
+        sendReceive('system', 'getMainData', []);
+
+        console.log("--------------- End: updateInformation -------------------")
     }
 }
