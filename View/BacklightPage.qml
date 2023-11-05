@@ -15,8 +15,14 @@ BasePageView {
     //! Ref to Backlight model
     property Backlight          backlight: appModel?.backlight ?? null
 
+    //! Saturated color
+    readonly property color     unshadedColor: Qt.hsva(_colorSlider.value, 1., _brSlider.value);
+
     //! Selected backlight color from shade buttons
     readonly property color     selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Style.background
+
+    //! Whether shade buttons should be shown
+    property bool               hasShades: true
 
     /* Object properties
      * ****************************************************************************************/
@@ -87,6 +93,7 @@ BasePageView {
         Label {
             Layout.topMargin: AppStyle.size / 48
             Layout.leftMargin: AppStyle.size / 120
+            visible: hasShades
             text: "Shades"
         }
 
@@ -107,6 +114,7 @@ BasePageView {
             Layout.preferredHeight: cellSize
             Layout.alignment: Qt.AlignCenter
             opacity: enabled ? 1. : 0.4
+            visible: hasShades
 
             Repeater {
                 id: _shadeButtonsRepeater
