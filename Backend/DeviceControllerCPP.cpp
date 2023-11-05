@@ -11,7 +11,7 @@
  * ************************************************************************************************/
 DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
-
+    _mainData = {{"temp", QVariant(32.56)}, {"hum", QVariant(30.24)}};
 }
 
 DeviceControllerCPP::~DeviceControllerCPP()
@@ -27,7 +27,7 @@ QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, 
 {
     if (className == "system") {
         if (method == "getMainData") {
-            return {{"temp", QVariant(32.56)}, {"hum", QVariant(30.24)}};
+            return getMainData();
         }
     }
 
@@ -174,4 +174,9 @@ void DeviceControllerCPP::setTimeZone(int offset) {
     if (exitCode >= 0) {
         qDebug() << Q_FUNC_INFO << __LINE__  << "Timezone set to" << timezoneFile;
     }
+}
+
+QVariantMap DeviceControllerCPP::getMainData()
+{
+    return _mainData;
 }

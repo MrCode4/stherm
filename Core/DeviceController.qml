@@ -132,7 +132,7 @@ I_DeviceController {
         var result = sendReceive('system', 'getMainData', []);
 
         // should be catched later here
-        device.currentHum = result?.sdas ?? 0
+        device.currentHum = result?.hum ?? 0
         device.currentTemp = result?.temp ?? 0
 
         //        device.co2;

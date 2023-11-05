@@ -81,10 +81,10 @@ private Q_SLOTS:
 private:
     /* Private Functions
      * ****************************************************************************************/
-
-
+    QVariantMap getMainData();
 
 private:
     /* Attributes
      * ****************************************************************************************/
+    QVariantMap _mainData;
 };
