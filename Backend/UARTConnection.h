@@ -23,7 +23,7 @@ public:
     QVariant connect(const QString &portName, qint32 baudRate);
 
     //! Configure and initalize UART connection
-    void initConnection();
+    void initConnection(const QString &portName, const qint32 &baundRate);
 
 
     //! Connect to device via serial port

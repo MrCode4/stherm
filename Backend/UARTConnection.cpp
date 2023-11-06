@@ -1,5 +1,6 @@
 #include "UARTConnection.h"
 
+
 UARTConnection::UARTConnection(QObject *parent) :
     QObject(parent),
     mSerial(new QSerialPort(this))
@@ -7,13 +8,25 @@ UARTConnection::UARTConnection(QObject *parent) :
 
 }
 
-void UARTConnection::initConnection()
+void UARTConnection::initConnection(const QString& portName, const qint32& baundRate)
 {
-    if (this->mSerial->isOpen()) {
-        this->mSerial->close();
+
+    if (mSerial->isOpen()) {
+        mSerial->close();
 
         return;
     }
+
+
+    mSerial->setPortName(portName);
+    bool issuccess = mSerial->setBaudRate(baundRate) && // Set bound rate in all directions
+                     mSerial->setDataBits(QSerialPort::Data8) &&
+                     mSerial->setParity(QSerialPort::NoParity) &&
+                     mSerial->setStopBits(QSerialPort::OneStop) &&
+                     mSerial->setFlowControl(QSerialPort::NoFlowControl); // Set non-blocking I/O
+
+    if (!issuccess)
+        qDebug() << Q_FUNC_INFO << __LINE__ << "Configuration failed, port name: " << portName;
 
     QObject::connect(mSerial, &QSerialPort::readyRead, this, &UARTConnection::onReadyRead);
 
@@ -29,20 +42,20 @@ void UARTConnection::initConnection()
 bool UARTConnection::connect()
 {
     // Open Serial port & send beacon, ping packets to bring device into connected state
-    if (!this->mSerial->isOpen()) {
-        this->mSerial->open(QIODevice::ReadWrite);
+    if (!mSerial->isOpen()) {
+        mSerial->open(QIODevice::ReadWrite);
     }
 
     // If open fails then return with an error
-    if (!this->mSerial->isOpen()) {
+    if (!mSerial->isOpen()) {
         qDebug() << (QString("Can't open %1,%2 error code %3")
-                         .arg(this->mSerial->portName())
-                         .arg(this->mSerial->baudRate())
-                         .arg(this->mSerial->error()));
+                         .arg(mSerial->portName())
+                         .arg(mSerial->baudRate())
+                         .arg(mSerial->error()));
         return false;
     }
 
-    return this->mSerial->isOpen();
+    return mSerial->isOpen();
 }
 
 

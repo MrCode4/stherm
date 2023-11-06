@@ -11,7 +11,7 @@ DataParser::DataParser(QObject *parent) :
 
 }
 
-bool DataParser::configure_pins(int gpio)
+bool DataParser::configurePins(int gpio)
 {
     // Update export file
     QFile exportFile("/sys/class/gpio/export");

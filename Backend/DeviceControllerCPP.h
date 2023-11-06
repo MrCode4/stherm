@@ -4,6 +4,7 @@
 #include <QString>
 #include <QtNetwork>
 
+#include "DataParser.h"
 #include "UARTConnection.h"
 
 /*! ***********************************************************************************************
@@ -67,6 +68,8 @@ public:
     //! Set time zone
     Q_INVOKABLE void setTimeZone(int offset);
 
+    void createNRF();
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -93,4 +96,5 @@ private:
     QThread mThread;
 
     UARTConnection * uartConnection;
+    DataParser *mDataParser;
 };

@@ -12,6 +12,8 @@ public:
     //! gpio The GPIO pin number to be configured.
     //! return Returns true if successful
     //!  or false if an error occurred.
-    bool configure_pins(int gpio);
+    bool configurePins(int gpio);
+
+
 };
 
