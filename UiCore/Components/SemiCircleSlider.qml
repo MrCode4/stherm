@@ -150,8 +150,9 @@ Control {
         DragHandler {
             id: _handleDh
             property bool dragging: false
-            property point handlePosInStart: Qt.point(_handle.x, _handle.y)
-            readonly property real radiusSquared: Math.pow(center.y - _control.background.pathWidth / 2, 2)
+
+            readonly property real maxThresholdRadiusSq: Math.pow(center.y - _control.background.pathWidth + 40, 2)
+            readonly property real minThresholdRadiusSq: Math.pow(center.y - _control.background.pathWidth - 40, 2)
             readonly property point center: Qt.point(parent.width / 2, parent.height)
 
             grabPermissions: dragging ? PointerHandler.CanTakeOverFromAnything
@@ -166,7 +167,7 @@ Control {
                                                     centroid.position.y - center.y)
                     var lenSquared = Math.pow(pressToCircle.x, 2) + Math.pow(pressToCircle.y, 2);
 
-                    if (Math.abs(lenSquared - radiusSquared) < 100 * 100) {
+                    if (lenSquared > minThresholdRadiusSq && lenSquared < maxThresholdRadiusSq) {
                         updateValue();
                         dragging = true;
                     }
