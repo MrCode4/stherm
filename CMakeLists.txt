@@ -205,6 +205,8 @@ qt6_add_qml_module(appStherm
 
         Backend/DataParser.h
         Backend/DataParser.cpp
+        Backend/UtilityHelper.h
+        Backend/UtilityHelper.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
