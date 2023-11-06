@@ -23,9 +23,15 @@ public:
     //! Open direction file and set pin
     static void exportGPIOPin(int pinNumber);
 
+    //! Get start mode
+    //! Read data from gpio%0/value in system
+    //! return 1 if value is "0"
+    //! or return 0 if has different  value
     static int getStartMode(int pinNumber);
 
     //! Get CPU info
+    //! return a string
+    //! todo: Adjust the format to meet the UI requirements
     static QString getCPUInfo();
 
     //! setBrightness, value is a number between 0 and 254

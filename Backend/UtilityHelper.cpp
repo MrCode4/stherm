@@ -3,6 +3,8 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
+#include <QRegularExpression>
+#include <QProcess>
 
 bool UtilityHelper::configurePins(int gpio)
 {
