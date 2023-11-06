@@ -34,7 +34,7 @@ Popup {
     property string                     icon:               ""
 
     //! Popup content item
-    default property list<QtObject>     contents: []
+    default property list<QtObject>     contents
 
     /* Object Properties
      * ****************************************************************************************/
