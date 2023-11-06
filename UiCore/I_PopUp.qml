@@ -108,11 +108,9 @@ Popup {
         }
 
         //! Content
-        Control {
+        Pane {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            implicitWidth: children.length > 0 ? children[0].implicitWidth ?? (AppStyle * 0.7) : AppStyle * 0.7
-            implicitHeight: children.length > 0 ? children[0].implicitHeight ?? (AppStyle * 0.7) : AppStyle * 0.7
             data: contents
             background: null
         }
