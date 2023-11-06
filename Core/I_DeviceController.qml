@@ -11,7 +11,7 @@ QtObject {
     required property I_Device device
 
 
-    property DeviceControllerCPP deviceControllerCPP: DeviceControllerCPP {}
+    property DeviceControllerCPP deviceControllerCPP: null
 
     /* Object Properties
      * ****************************************************************************************/

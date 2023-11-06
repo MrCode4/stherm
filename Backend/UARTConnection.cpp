@@ -2,6 +2,7 @@
 
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QTimer>
 
 
 UARTConnection::UARTConnection(QObject *parent) :
@@ -9,6 +10,8 @@ UARTConnection::UARTConnection(QObject *parent) :
     mSerial(new QSerialPort(this))
 {
 
+    // Just for test
+    start();
 }
 
 void UARTConnection::initConnection(const QString& portName, const qint32& baundRate)
@@ -99,13 +102,19 @@ void UARTConnection::run()
     m_mutex.lock();
 //    m_cond.wait(&m_mutex);
 
+    qDebug() << Q_FUNC_INFO << __LINE__;
+
     // As raw data
     // todo: change to serialize data
-    QVariantMap mainData = {{"temp", QVariant(18)}, {"hum", QVariant(30.24)}};
-    QJsonObject obj;
-    obj.insert("temp", 10);
-    obj.insert("hum", 30.24);
-    emit sendData(QJsonDocument(obj).toJson());
+    QTimer::singleShot(3000, this, [this]() {
+        QVariantMap mainData = {{"temp", QVariant(18)}, {"hum", QVariant(30.24)}};
+        QJsonObject obj;
+        obj.insert("temp", 10);
+        obj.insert("hum", 30.24);
+        qDebug() << Q_FUNC_INFO << __LINE__ << QJsonDocument(obj).toJson();
+        emit sendData(QJsonDocument(obj).toJson());
+    });
+
 
     m_mutex.unlock();
 }

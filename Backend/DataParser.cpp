@@ -24,7 +24,7 @@ void DataParser::createNRF()
     uartConnection = new UARTConnection();
 
     uartConnection->initConnection(NRF_SERRIAL_PORT, QSerialPort::Baud9600);
-    if (uartConnection->connect()) {
+    if (uartConnection->connect() || true) { // CHECK: Remove '|| True'
         connect(uartConnection, &UARTConnection::sendData, this, [=](QString data) {
             qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce:   " << data;
             QJsonObject obj = QJsonDocument::fromJson(data.toUtf8()).object();
