@@ -105,6 +105,12 @@ bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
         } else if (mState == ScreenSaverManager::State::Timeout) {
             //! Set it to running again
             setState(ScreenSaverManager::State::Running);
+
+            //! Also return true so it's not propagated to lower layers
+            //! Note that event itself should be accepted too, otherwise although press events won't
+            //! be delivered to lower levels, drag events will be.
+            event->setAccepted(true);
+            return true;
         }
         break;
     case QEvent::MouseButtonRelease:
@@ -128,6 +134,6 @@ bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
         break;
     }
 
-    //! Events should not be set as accepted.
+    //! Events should not be set as accepted (Except press event in State::Timeout)
     return false;
 }
