@@ -5,6 +5,7 @@
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 
+#include "UtilityHelper.h"
 
 /* ************************************************************************************************
  * Constructors & Destructor
@@ -58,6 +59,26 @@ QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, 
     }
 
     return {};
+}
+
+int DeviceControllerCPP::getStartMode(int pinNumber)
+{
+    return UtilityHelper::getStartMode(pinNumber);
+}
+
+QString DeviceControllerCPP::getCPUInfo()
+{
+    return UtilityHelper::getCPUInfo();
+}
+
+void DeviceControllerCPP::setBrightness(int value)
+{
+    UtilityHelper::setBrightness(value);
+}
+
+void DeviceControllerCPP::setTimeZone(int offset)
+{
+    UtilityHelper::setTimeZone(offset);
 }
 
 
