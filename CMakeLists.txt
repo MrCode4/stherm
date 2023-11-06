@@ -184,6 +184,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/AlertNotifPopup.qml
 
         # Dialogs
+        UiCore/Dialogs/ResetSettingsDialog.qml
         UiCore/Dialogs/ForgetWifiDialog.qml
 
     SOURCES
