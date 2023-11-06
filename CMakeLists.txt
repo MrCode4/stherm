@@ -95,6 +95,7 @@ qt6_add_qml_module(appStherm
         UiCore/PanelLayout.qml
         UiCore/I_PopUp.qml
         UiCore/I_Panel.qml
+        UiCore/I_Dialog.qml
         UiCore/PopUps/AboutPopUp.qml
         UiCore/PopUps/ConfirmPopup.qml
         UiCore/PopUps/SaveDialoge.qml
