@@ -1,76 +1,31 @@
-/**
- * @file main.cpp
- * @brief Main file for the Linux daemon.
- *
- * This file contains the main code for the Linux daemon, which manages the
- * communication between different peripheral devices and the system. It also handles
- * time-related system calls, Wi-Fi signal management, and running PHP scripts.
- */
-
-
 #include "Peripheral.h"
 #include <queue>
 #include <thread>
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
-#include"WifiManager.h"
-#include"InputParametrs.h"
-#include <fstream>
-#include <algorithm>
-#include "DeltaCorrection.h"
-#include "NRFThread.h"
-#include "Daemon_helper.h"
-#include "php_interface.h"
-#include "modules/DaemonStatus.h"
-#include "TIThread.h"
-// Definitions for constants used throughout the program
+#include "WifiManager.h"
+#include "InputParametrs.h"
 #define WIRING_CHECK_TIME 600
 #define WIRING_BROKEN 1
-//#define TOF_IRQ_RANGE 1000 //mm
-#define FRONT_RESTART_TO 3000 //in ms
+#define TOF_IRQ_RANGE 1000    // mm
+#define FRONT_RESTART_TO 3000 // in ms
 #define DEV_RESTART_TO 10
-
-#define MIN_BACKLIGHT_PERCENT_ON 5
-
+#define SENS_POLL_TIME 30 // sec
+constexpr char Daemon_Version[] = "01.00";
 int running = 1;
 int read_from_ti;
 int read_from_dynamic;
 int write_to_nrf;
 int read_from_nrf;
 int write_to_ti;
-int key_evt_file = 0;
 pthread_t nrf, ti, dynamic;
-
-int g_sec_counter = 0;
-DeltaCorrection delta_correction;
-
-
-/**
- * @brief count tempreture in celsius to fahrenheit
- * 
- * @param raw_val data in celsius
- * @return int16_t result
- */
-int16_t to_fahrenheit(int16_t raw_val)
-{
-    return 9 * raw_val / 5 + 320;
-}
-
-/**
- * @brief count tempreture in fahrenheit to celsius
- * 
- * @param raw_val data in fahrenheit
- * @return int16_t  result
- */
-int16_t to_celsius(int16_t raw_val)
-{
-    return (raw_val - 320) * 5 / 9;
-}
-/**
- * @brief Function responsible for joining threads and closing file descriptors.
- */
-
+extern char dev_id[16];
+std::string NRF_SW;
+std::string NRF_HW;
+std::string TI_SW;
+std::string TI_HW;
+// function responsible for joining threads and closing fds
 void cleanup()
 {
     running = 0;
@@ -80,42 +35,36 @@ void cleanup()
     close(read_from_ti);
     close(write_to_ti);
     pthread_join(ti, nullptr);
-    syslog(LOG_EMERG, "Stopped Hvac\0");
-    closelog();
-    ioctl(key_evt_file, UI_DEV_DESTROY);
-    close(key_evt_file);
-    kill(0, SIGKILL);
     close(read_from_dynamic);
     pthread_join(dynamic, nullptr);
 
-
+    syslog(LOG_INFO, "Stopped Hvac\0");
+    closelog();
 }
-
-/**
- * @brief Thread for time-related system calls.
- *
- * @param a File descriptor of the pipe that is connected to the main.
- * @returns At exit.
- */
-void* dynamic_thrd(void* a)
+/// <summary>
+/// thread for time related system calls
+/// </summary>
+/// <param name="a">-file descriptor of pipe that is connected to main</param>
+/// <returns>at exit</returns>
+void *dynamic_thrd(void *a)
 {
-    thread_Data dynamic = *(thread_Data*)a;
+    thread_Data dynamic = *(thread_Data *)a;
     uint8_t dummy = 1;
-    uint8_t counter = 0;
+    uint8_t counter{};
     char line[256];
     bool rest_php_pipe = true;
-    FILE* fp;
+    FILE *fp;
     char getDynamic_php[] = "php getDynamic10.php\0";
-    DaemonStatus::instance()->startThread(DaemonThreads::DYNAMIC);
+
     while (running)
     {
         if (!(counter % 2))
         {
-            int pid = fork();
-            if (pid == 0)// fork off to set wifi signal
+            if (fork() == 0) // fork off to set wifi signal
             {
                 int fd;
-                for (fd = static_cast<int>(sysconf(_SC_OPEN_MAX)); fd > 0; fd--) {
+                for (fd = static_cast<int>(sysconf(_SC_OPEN_MAX)); fd > 0; fd--)
+                {
                     close(fd);
                 }
 
@@ -128,95 +77,758 @@ void* dynamic_thrd(void* a)
                 quick_exit(0);
             }
         }
-        // calling php getDynamic10.php, to get the data for get_dynamic function
-        // getDynamic10.php outputs 10 times 
-        // this is done to reduce the system load that php call produces
-        // in case of error feeds the pipe to main with dummy byte which generates error in get_dynamic function to
-        // 
         if (running)
             fp = popen(getDynamic_php, "r");
         if (fp == nullptr)
-        {
-            syslog(LOG_ERR, "dynamic error can not make php call \n");
             continue;
-        }
-        int call_check = 0;
         while (fgets(line, 256, fp) != NULL && running)
         {
             write(dynamic.pipe_out, &line, 256);
-            call_check++;
-            g_sec_counter++;
-            // call for update temp correction class
-            delta_correction.update_Time(g_sec_counter);
-            DaemonStatus::instance()->dataWasReceive(DaemonThreads::DYNAMIC);
-        }
-        if (call_check < 10)
-        {
-            syslog(LOG_ERR, "dynamic error call_check\n");
         }
         if (running)
             pclose(fp);
-        counter++; 
+        counter++;
     }
     close(dynamic.pipe_out);
-    DaemonStatus::instance()->stopThread(DaemonThreads::DYNAMIC);
     return nullptr;
 }
-/**
- * @brief Thread that handles UART data from NRF and sends it to main, as well as sends data from main to NRF via UART.
- *
- * @param a A pointer to a structure containing:
- *          - file descriptor of the pipe end that is connected to main
- *          - file descriptor of the pipe end that is connected from main
- * @returns At exit.
- */
-void* nrf_uart_thrd(void* a)
+/// <summary>
+///< para> thread that handles uart data from nrf and sends it to main</para>
+///  as well as sends data from main to nrf via uart
+/// </summary>
+/// <param name="a">
+/// <para>file descriptor of pipe end that is connected to main</para>
+/// <para>file descriptor of pipe end that is connected from main</para>
+/// </param>
+/// <returns>at exit</returns>
+void *nrf_uart_thrd(void *a)
 {
-    return nullptr;
-}
+    // initializing uart
 
-/**
-* @brief Thread that handles uart data from ti and sends it to main,sends data from main to ti via uart and handles rf commuincation with external sensors
-* @param a A pointer to a structure containing :
-* -file descriptor of the pipe end that is connected to main
-* -file descriptor of the pipe end that is connected from main
-* @returns At exit.
-*/
-void* ti_uart_thrd(void* a)
-{
-    return nullptr;
-}
+    // This line is dereferencing the void pointer a and casting it to a thread_Data structure.
+    // It's assumed that a is a pointer to a thread_Data object, and this line is making a local copy of that data.
+    thread_Data nrf = *(thread_Data *)a;
 
-int main(int argc, char* argv[])
-{
-    int log_level = LOG_INFO;
-    //makes this application a daemon 
-    daemonize();
-    //sets cleanup as exit callback
-    std::atexit(cleanup);
-    //logging
+    // An array of four pollfd structures is declared. pollfd is used for monitoring file descriptors for events.
+    //       struct pollfd {
+    //        int   fd;         /* file descriptor */
+    //        short events;     /* requested events */
+    //        short revents;    /* returned events */
+    //    };
+    pollfd fds[4];
+    int num_open_fds = 4;
 
-    bool isArgValid = parseLogLevelOpt(argc, argv, log_level);
-    openlog(argv[0], LOG_PID | LOG_CONS, LOG_DAEMON);
-    if (isArgValid == false)
-        syslog(LOG_ERR, "Log level argument invalid. Start with log level LOG_ERR\n");
-    setlogmask(LOG_UPTO(log_level));
-    
-    syslog(LOG_INFO, "Started %s Version %s", argv[0], Daemon_Version);
-    //change working directory to WEB_DIR
-    chdir(WEB_DIR);
+    // This line initializes a time_t variable with the current time.
+    // It's used for tracking the last time the sensors were polled.
+    time_t last_polled_sens = time(NULL);
 
-    if (!get_device_id())//init device id from linux
+    // It attempts to open a serial port specified by the NRF_SERRIAL_PORT
+    // constant with read and write permissions and sets the file descriptor for
+    // fds[0] to the returned value. The O_NOCTTY and O_NONBLOCK flags
+    // are used in opening the serial port.
+    fds[0].fd = open(NRF_SERRIAL_PORT, O_RDWR | O_NOCTTY | O_NONBLOCK);
+
+    // This line sets the events field of fds[0] to POLLIN,
+    //  indicating that it will be monitored for incoming data.
+    fds[0].events = POLLIN;
+
+    // A termios structure called tty is declared.
+    // It will be used to configure the serial port settings.
+    termios tty;
+
+    // This line attempts to get the current terminal I/O settings for the file
+    //  descriptor of the opened serial port. If it fails (returns non-zero),
+    //  an error message is logged via syslog, and nullptr is returned from the function.
+    if (tcgetattr(fds[0].fd, &tty) != 0)
     {
-        syslog(LOG_ERR, "Error: get_device_id \n");
+        syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"nrf_uart\": 0 }]}\n");
+        return nullptr;
+    }
+
+    // This function is used to configure the tty structure for the serial
+    //  port communication.
+    set_tty(&tty);
+
+    // Set in/out baud rate to be 9600
+    cfsetispeed(&tty, B9600);
+    cfsetospeed(&tty, B9600);
+
+    // Save tty settings, also checking for error
+    // This line attempts to apply the updated terminal I/O settings to the serial port.
+    //  If it fails, an error message is logged, and nullptr is returned.
+    if (tcsetattr(fds[0].fd, TCSANOW, &tty) != 0)
+    {
+        syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"nrf_uart\": 0 }]}\n");
+        return nullptr;
+    }
+
+    // It calls a function configure_pins with the argument NRF_GPIO_4.
+    //  If the function returns an error code, an error message is logged,
+    //  and nullptr is returned. This likely configures some GPIO pins associated with the nRF device.
+    if (configure_pins(NRF_GPIO_4))
+    {
+        syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"nrf_uart\": 0 }]}\n");
+        return nullptr;
+    }
+    if (configure_pins(NRF_GPIO_5))
+    {
+        ;
+        syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"nrf_uart\": 0 }]}\n");
+        return nullptr;
+    }
+
+    // setup pipe fd
+    //  A character array str with a size of 36 characters is declared. It's used to store strings, likely file paths.
+    char str[36];
+
+    // This line uses the sprintf function to format a string and store it in the
+    //  str array. It appears to be constructing a file path using a format string
+    //  specified by SW_VAL_PATH and the value of NRF_GPIO_4.
+    //  The resulting string is stored in str.
+    sprintf(str, SW_VAL_PATH, NRF_GPIO_4);
+
+    // This line sets the fd field of the fds[1] structure to the value of
+    // nrf.pipe_in. This indicates that fds[1] will be monitoring the file
+    //  descriptor nrf.pipe_in
+    //! where is the nrf.pipe_in defined!?
+    fds[1].fd = nrf.pipe_in;
+
+    // The events field of fds[1] is set to POLLIN,
+    // indicating that it will be monitored for incoming data.
+    fds[1].events = POLLIN;
+
+    // It attempts to open a file specified by the string str in read-only
+    //  mode and with non-blocking behavior. The resulting file descriptor is set in fds[2].
+    fds[2].fd = open(str, O_RDONLY | O_NONBLOCK);
+
+    // The events field of fds[2] is set to POLL_GPIO, suggesting that it will be monitored for GPIO-related events.
+    fds[2].events = POLL_GPIO;
+
+    // Similar to the first sprintf call, this line constructs a file path based
+    // on NRF_GPIO_5 and stores it in the str array.
+    sprintf(str, SW_VAL_PATH, NRF_GPIO_5);
+
+    // by the updated str in read-only mode and with non-blocking behavior.
+    //  The resulting file descriptor is set in fds[3].
+    fds[3].fd = open(str, O_RDONLY | O_NONBLOCK);
+
+    //  The events field of fds[3] is set to POLL_GPIO.
+    fds[3].events = POLL_GPIO;
+
+    // This loop iterates through the fds array and sets the revents field
+    //  of each fds structure to 0. This initializes the revents field
+    //  for each file descriptor to zero before monitoring for events.
+    for (int p = 0; p < 4; p++)
+    {
+        fds[p].revents = 0;
+    }
+
+    // Three arrays of uint8_t (8-bit unsigned integers) are declared,
+    //  each with a size of 32 bytes. These arrays will be used
+    //  to store data to be sent to the nRF device.
+    uint8_t sens_tx_buff[32];
+    uint8_t tof_tx_buff[32];
+    uint8_t dev_info[32];
+
+    // A structure SIO_Packet_t named tx_packet is declared.
+    //  It appears to be used for packaging data to be transmitted via UART.
+    SIO_Packet_t tx_packet;
+
+    // Two integer variables are declared to store the sizes of
+    // the data to be transmitted for sensors and TOF (Time of Flight) devices.
+    int sens_tx_buff_size;
+    int tof_tx_buff_size;
+
+    // This line sets the PacketSrc field of tx_packet to UART_Packet,
+    // indicating that the data will be sent via UART.
+    tx_packet.PacketSrc = UART_Packet; // 0x01
+    tx_packet.CMD = GetInfo;
+    tx_packet.ACK = ERROR_NO;
+    tx_packet.SID = 0x01;
+    tx_packet.DataLen = 0;
+
+    // An integer variable dev_buff_size is declared.
+    int dev_buff_size;
+
+    // It calls a function Set_SIO_TxPacket with the dev_info array and the
+    // tx_packet structure. This function likely packages the data and the
+    //  packet information into the dev_info array and returns the size
+    //  of the data in dev_buff_size.
+    dev_buff_size = Set_SIO_TxPacket(dev_info, tx_packet);
+
+    // The write function is used to send the data in the dev_info array to the UART port specified by fds[0].fd.
+    write(fds[0].fd, dev_info, dev_buff_size);
+
+    // Get Sensors
+    tx_packet.PacketSrc = UART_Packet;
+    tx_packet.CMD = GetSensors;
+    tx_packet.ACK = ERROR_NO;
+    tx_packet.SID = 0x01;
+    tx_packet.DataLen = 0;
+    sens_tx_buff_size = Set_SIO_TxPacket(sens_tx_buff, tx_packet);
+
+    // Get TOF
+    tx_packet.PacketSrc = UART_Packet;
+    tx_packet.CMD = GetTOF;
+    tx_packet.ACK = ERROR_NO;
+    tx_packet.SID = 0x01;
+    tx_packet.DataLen = 0;
+    tof_tx_buff_size = Set_SIO_TxPacket(tof_tx_buff, tx_packet);
+
+    //  These lines declare variables for reading and storing data from file
+    //  descriptors and for storing the result of the poll function.
+    // s is used for the size of read data,
+    // ready is used to store the result of the poll call, and
+    // buf is a buffer for reading data.
+    ssize_t s;
+    int ready;
+    uint8_t buf[256];
+
+    // A boolean variable wait_for_response is initialized to true.
+    // It is used to control whether the system is expecting a response from the nRF device.
+    bool wait_for_response = true;
+
+    // The code enters a while loop that continues while the num_open_fds is non-zero.
+    //  This loop appears to manage the monitoring and handling of multiple file descriptors.
+    while (num_open_fds)
+    {
+        // The poll function is called to monitor the file descriptors specified in the fds array.
+        //  It waits for events on these file descriptors for a duration determined by SENS_POLL_TIME
+        //  (possibly in seconds) multiplied by 1000 (to convert to milliseconds)
+        //  and then adding 1500 milliseconds. The result is stored in the ready variable.
+        ready = poll(fds, 4, SENS_POLL_TIME * 1000 + 1500); // SENS_POLL_TIME: 30 sec
+
+        // This condition checks if the poll function did not encounter an error.
+        if (ready != -1)
+        {
+            if (ready > 0)
+            {
+
+                //  it checks if there is data available to read (POLLIN event)
+                // and reads the data from this file descriptor,
+                //  writing it to nrf.pipe_out. It then sets
+                if (fds[0].revents & POLLIN)
+                {
+                    s = read(fds[0].fd, buf, sizeof(buf));
+                    write(nrf.pipe_out, buf, s);
+                    wait_for_response = false;
+                }
+
+                // If an error event occurs on fds[0] (POLLERRVAL),
+                // it logs an error message and closes the file descriptor.
+                // The function also reduces the count of open file descriptors,
+                // and nullptr is returned (possibly indicating an error).
+                else if (fds[0].revents & POLLERRVAL)
+                {
+                    fds[0].revents = 0;
+                    syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"nrf_pipe\": 0 }]}\n");
+                    close(fds[0].fd); // system needs to be restarted
+                    num_open_fds--;
+                    return nullptr;
+                }
+
+                if (fds[1].revents & POLLIN)
+                {
+                    if (!wait_for_response)
+                    {
+                        // data from main to nrf device
+                        s = read(fds[1].fd, buf, sizeof(buf));
+                        write(fds[0].fd, buf, s);
+                        wait_for_response = true;
+                    }
+                }
+                else if (fds[1].revents & POLLERRVAL)
+                {
+                    syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"nrf_pipe\": 1 }]}\n");
+                    close(fds[1].fd); // system needs to be restarted
+                    fds[1].revents = 0;
+                    num_open_fds--;
+                    return nullptr;
+                }
+                if (fds[2].revents & POLLPRI)
+                {
+                    if (!wait_for_response)
+                    {
+                        lseek(fds[2].fd, 0, SEEK_SET);
+                        s = read(fds[2].fd, buf, sizeof(buf));
+                        fds[2].revents = 0;
+                        if (s == 2)
+                        {
+                            if (buf[0] == '0')
+                            {
+                                write(fds[0].fd, sens_tx_buff, sens_tx_buff_size);
+                                wait_for_response = true;
+                            }
+                        }
+                    }
+                }
+                else if (fds[2].revents & POLLERR)
+                {
+                    fds[2].revents = 0;
+                    syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"nrf_pipe\": 2 }]}\n");
+                    close(fds[2].fd); // system needs to be restarted
+                    num_open_fds--;
+                    return nullptr;
+                }
+                if (fds[3].revents & POLLPRI)
+                {
+                    if (!wait_for_response)
+                    {
+                        lseek(fds[3].fd, 0, SEEK_SET);
+                        s = read(fds[3].fd, buf, sizeof(buf));
+                        fds[3].revents = 0;
+                        if (s == 2)
+                        {
+                            if (buf[0] == '0')
+                            {
+                                write(fds[0].fd, tof_tx_buff, tof_tx_buff_size);
+                                wait_for_response = true;
+                            }
+                        }
+                    }
+                }
+                else if (fds[3].revents & POLLERR)
+                {
+                    fds[3].revents = 0;
+                    syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"nrf_pipe\": 3 }]}\n");
+                    close(fds[3].fd); // system needs to be restarted
+                    num_open_fds--;
+                    return nullptr;
+                }
+            }
+
+            // If ready is zero or the time since the last sensor polling exceeds
+            //  SENS_POLL_TIME (in seconds), and wait_for_response is false,
+            //  it sends a data packet (sens_tx_buff) to fds[0] to request sensor information.
+            //  The time of the last sensor poll is updated, and wait_for_response is set to true.
+            if ((ready == 0 || difftime(time(NULL), last_polled_sens) >= SENS_POLL_TIME) && !wait_for_response)
+            {
+                write(fds[0].fd, sens_tx_buff, sens_tx_buff_size);
+                last_polled_sens = time(NULL);
+                wait_for_response = true;
+            }
+        }
+        else
+        {
+            // Finally, if there is an error (ready is -1) when calling poll,
+            //  error messages are logged using syslog, possibly indicating issues with file descriptor monitoring.
+            syslog(LOG_INFO, "NRF thrd error -1\n");
+            syslog(LOG_INFO, "%s", strerror(errno));
+        }
+    }
+
+    return nullptr;
+}
+/// <summary>
+/// <para>thread that handles uart data from ti and sends it to main,</para>
+/// <para> sends data from main to ti via uart,</para>
+/// as well as handles rf commuincation with external sensors
+/// </summary>
+/// <param name="a">
+/// <para>file descriptor of pipe end that is connected to main</para>
+/// <para>file descriptor of pipe end that is connected from main</para>
+/// </param>
+/// <returns>at exit</returns>
+void *ti_uart_thrd(void *a)
+{
+    thread_Data ti = *(thread_Data *)a;
+    pollfd fds[3];
+    int num_open_fds = 3;
+    fds[0].fd = open(TI_SERRIAL_PORT, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    fds[0].events = POLLIN;
+    termios tty;
+    if (tcgetattr(fds[0].fd, &tty) != 0)
+    {
+
+        return nullptr;
+    }
+    set_tty(&tty);
+    // Set in/out baud rate to be 9600
+    cfsetispeed(&tty, B9600);
+    cfsetospeed(&tty, B9600);
+    Serial_RxData_t rx_data;
+    SIO_Packet_t tx_packet, rx_packet_ti;
+    // Save tty settings, also checking for error
+    if (tcsetattr(fds[0].fd, TCSANOW, &tty) != 0)
+    {
+
+        return nullptr;
+    }
+
+    // setup pipe
+    fds[1].fd = ti.pipe_in;
+    fds[1].events = POLLIN;
+    AQ_TH_PR_thld throlds_aq;
+    Response_Time Rtv;
+    uint8_t cpIndex = 0;
+    uint8_t rf_tx_buff[256];
+    uint8_t rf_packet[128];
+    std::vector<uint32_t> paired_list;
+    std::vector<uint8_t> paired_list_rep_counter;
+    uint8_t seq_num;
+    uint8_t dev_type;
+    tx_packet.PacketSrc = UART_Packet;
+    tx_packet.CMD = GetInfo;
+    tx_packet.ACK = ERROR_NO;
+    tx_packet.SID = 0x01;
+    tx_packet.DataLen = 0;
+    int rf_tx_buff_size;
+    uint8_t rf_len;
+    uint32_t brdcst_addr = 0xffffffff;
+    bool aquired_addr = false;
+    rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+    write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+    int indx_rev = 0;
+    while (num_open_fds)
+    {
+        int ready;
+        ready = poll(fds, 2, 10500);
+        if (ready != -1) //
+        {
+            if (ready > 0)
+            {
+
+                uint8_t buf[256];
+                if (fds[0].revents & POLLIN)
+                {
+                    ssize_t s = read(fds[0].fd, buf, sizeof(buf));
+                    for (int i = 0; i < s; i++)
+                    {
+                        if (SerialDataRx(buf[i], &rx_data))
+                        {
+                            break;
+                        }
+                    }
+                    rx_packet_ti.CMD = (SIO_Cmd_t)rx_data.RxDataArray[CMD_Offset];
+                    rx_packet_ti.ACK = rx_data.RxDataArray[ACK_Offset];
+                    rx_packet_ti.SID = rx_data.RxDataArray[SID_Offset];
+                    uint8_t PayloadLen = rx_data.RxDataLen - PacketMinLength;
+                    rx_packet_ti.DataLen = PayloadLen;
+                    if (PayloadLen > 0)
+                    {
+                        memcpy(&rx_packet_ti.DataArray[0], &rx_data.RxDataArray[DATA_Offset], PayloadLen);
+                    }
+                    rx_packet_ti.CRC = (uint16_t)rx_data.RxDataArray[DATA_Offset + PayloadLen];
+                    rx_packet_ti.CRC |= (uint16_t)(rx_data.RxDataArray[DATA_Offset + PayloadLen + 1] << 8);
+                    uint16_t inc_crc_ti = crc16(rx_packet_ti.DataArray, rx_packet_ti.DataLen);
+                    rx_packet_ti.PacketSrc = UART_Packet;
+                    memset(&rx_data, 0, sizeof(rx_data));
+                    if (inc_crc_ti == rx_packet_ti.CRC)
+                    {
+                        switch (rx_packet_ti.CMD)
+                        {
+                        case Get_packets:
+                            if (!aquired_addr)
+                                break;
+                            tx_packet.PacketSrc = UART_Packet;
+                            tx_packet.CMD = Send_packet;
+                            tx_packet.ACK = ERROR_NO;
+                            tx_packet.SID = 0x01;
+                            tx_packet.DataLen = 0;
+                            if (std::find(paired_list.begin(), paired_list.end(), *(uint32_t *)(rx_packet_ti.DataArray + 4)) != paired_list.end())
+                            {
+                                memcpy(rf_packet, &rx_packet_ti.DataArray[4], 4);
+                                seq_num = rx_packet_ti.DataArray[8];
+                                seq_num++;
+                                memcpy(rf_packet + 8, &seq_num, 1);
+                                dev_type = Main_dev;
+                                memcpy(rf_packet + 9, &dev_type, 1); // Dev_type main
+                                buf[0] = rx_packet_ti.CMD;
+                                buf[1] = rx_packet_ti.ACK;
+                                buf[3] = rx_packet_ti.DataArray[9];
+                                buf[4] = 1;
+                                memcpy(buf + 5, (rx_packet_ti.DataArray + 4), 4);
+                                switch (rx_packet_ti.DataArray[9])
+                                {
+                                case AQ_TH_PR:
+                                    memcpy(rf_packet + 10, &Rtv, sizeof(Rtv));
+                                    rf_len = 10 + sizeof(Rtv);
+                                    memcpy(rf_packet + rf_len, &throlds_aq, AQS_THRSHLD_SIZE);
+
+                                    memcpy(buf + 9, &rx_packet_ti.DataArray[10], AQS_DATA_SIZE);
+                                    buf[2] = AQS_DATA_SIZE + 6;
+                                    rf_len += AQS_THRSHLD_SIZE;
+                                default:
+                                    break;
+                                }
+                                memcpy(tx_packet.DataArray, rf_packet, rf_len);
+                                cpIndex = rf_len;
+                                tx_packet.DataLen = cpIndex;
+
+                                rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                                write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+
+                                if (memcmp(rx_packet_ti.DataArray, &brdcst_addr, 4))
+                                    write(ti.pipe_out, buf, buf[2] + 3);
+                            }
+                            else if (!memcmp(rx_packet_ti.DataArray, rf_packet + 4, 4))
+                            {
+                                memcpy(rf_packet, &rx_packet_ti.DataArray[4], 4);
+                                seq_num = rx_packet_ti.DataArray[8];
+                                seq_num++;
+                                memcpy(rf_packet + 8, &seq_num, 1);
+                                dev_type = NO_TYPE;                  // indicate to unpair
+                                memcpy(rf_packet + 9, &dev_type, 1); // Dev_type main
+                                rf_len = 10;
+                                memcpy(tx_packet.DataArray, rf_packet, rf_len);
+                                cpIndex = rf_len;
+                                tx_packet.DataLen = cpIndex;
+                                rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                                write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+                            }
+                            else if (!memcmp(rx_packet_ti.DataArray, &brdcst_addr, 4))
+                            {
+
+                                buf[0] = rx_packet_ti.CMD;
+                                buf[1] = rx_packet_ti.ACK;
+                                buf[2] = 6;
+                                buf[3] = rx_packet_ti.DataArray[9];
+                                buf[4] = 0;
+                                memcpy(buf + 5, &rx_packet_ti.DataArray[4], 4);
+                                write(ti.pipe_out, buf, 9);
+                            }
+                            break;
+                        case GetRelaySensor:
+                        case Check_Wiring:
+                        case SetRelay:
+                        case Send_packet:
+                            buf[0] = rx_packet_ti.CMD;
+                            buf[1] = rx_packet_ti.ACK;
+                            buf[2] = rx_packet_ti.DataLen;
+                            memcpy(buf + 3, &rx_packet_ti.DataArray[0], rx_packet_ti.DataLen);
+                            write(ti.pipe_out, buf, rx_packet_ti.DataLen + 3);
+                            break;
+                        case GetInfo:
+                            tx_packet.PacketSrc = UART_Packet;
+                            tx_packet.CMD = Get_addr;
+                            tx_packet.ACK = ERROR_NO;
+                            tx_packet.SID = 0x01;
+                            tx_packet.DataLen = 0;
+                            indx_rev = 0;
+                            for (; rx_packet_ti.DataArray[indx_rev] != 0 && indx_rev < sizeof(rx_packet_ti.DataArray); indx_rev++)
+                            {
+                                TI_HW.push_back(static_cast<char>(rx_packet_ti.DataArray[indx_rev]));
+                            }
+                            ++indx_rev;
+                            for (; rx_packet_ti.DataArray[indx_rev] != 0 && indx_rev < sizeof(rx_packet_ti.DataArray); indx_rev++)
+                            {
+                                TI_SW.push_back(static_cast<char>(rx_packet_ti.DataArray[indx_rev]));
+                            }
+                            syslog(LOG_INFO, "TI:: HW:%s SW:%s\n", TI_HW.c_str(), TI_SW.c_str());
+                            rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                            write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+                            break;
+                        case Get_addr:
+                            memcpy(rf_packet + 4, &rx_packet_ti.DataArray[0], 4);
+                            aquired_addr = true;
+                            buf[0] = rx_packet_ti.CMD;
+                            buf[1] = rx_packet_ti.ACK;
+                            buf[2] = rx_packet_ti.DataLen;
+                            memcpy(buf + 3, &rx_packet_ti.DataArray[0], rx_packet_ti.DataLen);
+                            write(ti.pipe_out, buf, rx_packet_ti.DataLen + 3);
+                            break;
+                        case GET_DEV_ID:
+                            syslog(LOG_INFO, "GET_DEV_ID\n");
+                            tx_packet.PacketSrc = UART_Packet;
+                            tx_packet.CMD = GET_DEV_ID;
+                            tx_packet.ACK = ERROR_NO;
+                            tx_packet.SID = 0x01;
+                            tx_packet.DataLen = 0;
+
+                            if ((sizeof(dev_id) + TI_HW.length() + 1 + TI_SW.length() + 1 + NRF_HW.length() + 1 + NRF_SW.length() + 1 + sizeof(Daemon_Version)) > sizeof(tx_packet.DataArray))
+                            {
+                                syslog(LOG_INFO, "ERROR VERSION LENGTH\n");
+                                break;
+                            }
+
+                            memcpy(tx_packet.DataArray, dev_id, sizeof(dev_id));
+                            tx_packet.DataLen += sizeof(dev_id);
+                            memcpy(tx_packet.DataArray + tx_packet.DataLen, NRF_HW.c_str(), NRF_HW.length() + 1);
+                            tx_packet.DataLen += NRF_HW.length() + 1;
+                            memcpy(tx_packet.DataArray + tx_packet.DataLen, NRF_SW.c_str(), NRF_SW.length() + 1);
+                            tx_packet.DataLen += NRF_SW.length() + 1;
+                            memcpy(tx_packet.DataArray + tx_packet.DataLen, Daemon_Version, sizeof(Daemon_Version));
+                            tx_packet.DataLen += sizeof(Daemon_Version);
+                            rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                            write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+                            tx_packet.DataLen = 0;
+                            break;
+                        case feed_wtd:
+
+                            break;
+                        default:
+                            syslog(LOG_INFO, "ERROR_CMD %d\n", rx_packet_ti.CMD);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        tx_packet.PacketSrc = UART_Packet;
+                        tx_packet.CMD = rx_packet_ti.CMD;
+                        tx_packet.ACK = ERROR_CRC;
+                        tx_packet.SID = 0x01;
+                        tx_packet.DataLen = 0;
+                        rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                        write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+                    }
+                    // thread to main pipe
+                }
+                else if (fds[0].revents & POLLERRVAL)
+                {
+                    syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"ti_pipe\": 0 }]}\n");
+                    close(fds[0].fd); // system needs to be restarted
+                    num_open_fds--;
+                }
+                if (fds[1].revents & POLLIN)
+                {
+                    ssize_t s = read(fds[1].fd, buf, sizeof(buf)); // main to thread pipe
+                    int indx_cm = 0;
+                    // init
+                    while (indx_cm < s)
+                    {
+                        switch (buf[indx_cm])
+                        {
+                        case Set_limits:
+                            switch (buf[indx_cm + 1])
+                            {
+                            case AQ_TH_PR:
+                                memcpy(&throlds_aq, buf + indx_cm + 2, AQS_THRSHLD_SIZE);
+                                indx_cm += (2 + AQS_THRSHLD_SIZE);
+                            default:
+                                break;
+                            }
+                            break;
+                        case Set_time:
+                            switch (buf[indx_cm + 1])
+                            {
+                            case AQ_TH_PR:
+                                memcpy(&Rtv, buf + indx_cm + 2, sizeof(Rtv));
+                                indx_cm += 2 + sizeof(Rtv);
+                            default:
+                                break;
+                            }
+                            break;
+                        case Set_paired:
+                            paired_list.clear();
+                            paired_list_rep_counter.clear();
+                            for (int i = 0; i < buf[indx_cm + 1]; i++)
+                            {
+                                paired_list.push_back(*(uint32_t *)(buf + indx_cm + 2 + 4 * i));
+                                paired_list_rep_counter.push_back(0);
+                            }
+                            indx_cm += (2 + buf[indx_cm + 1] * 4);
+                            tx_packet.PacketSrc = UART_Packet;
+                            tx_packet.CMD = StartPairing;
+                            tx_packet.ACK = ERROR_NO;
+                            tx_packet.SID = 0x01;
+                            tx_packet.DataLen = 0;
+                            rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                            write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+                            break;
+                        case Get_wiring: // guaranteed to be the only wiring related cmd in a packet from main
+                            tx_packet.PacketSrc = UART_Packet;
+                            tx_packet.CMD = GetRelaySensor;
+                            tx_packet.ACK = ERROR_NO;
+                            tx_packet.SID = 0x01;
+                            tx_packet.DataLen = 0;
+                            rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                            write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+                            indx_cm += 1;
+                            break;
+                        case Wiring_check: // guaranteed to be the only wiring related cmd in a packet from main
+                            tx_packet.PacketSrc = UART_Packet;
+                            syslog(LOG_INFO, "DO: Wiring_check \n");
+                            tx_packet.CMD = Check_Wiring;
+                            tx_packet.ACK = ERROR_NO;
+                            tx_packet.SID = 0x01;
+                            tx_packet.DataLen = 0;
+                            rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                            write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+                            indx_cm += 1;
+                            break;
+                        case Set_relays: // guaranteed to be the only wiring related cmd in a packet from main
+                            tx_packet.PacketSrc = UART_Packet;
+                            tx_packet.CMD = SetRelay;
+                            tx_packet.ACK = ERROR_NO;
+                            tx_packet.SID = 0x01;
+                            if ((static_cast<long>(indx_cm) + 1 + RELAY_OUT_CNT > s) || ((static_cast<unsigned long>(indx_cm) + 1 + RELAY_OUT_CNT) > sizeof(buf)))
+                            {
+                                syslog(LOG_INFO, "ERROR: SetRelay pipe_data read_size: %d, buf_size %d, index: %d\n", s, sizeof(buf), (static_cast<unsigned long>(indx_cm) + 1 + RELAY_OUT_CNT));
+                                indx_cm += (1 + RELAY_OUT_CNT);
+                                break;
+                            }
+                            memcpy(tx_packet.DataArray, buf + indx_cm + 1, RELAY_OUT_CNT);
+                            tx_packet.DataLen = RELAY_OUT_CNT;
+                            rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                            syslog(LOG_INFO, "DO: SetRelay [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d] \n", buf[indx_cm + 1], buf[indx_cm + 2], buf[indx_cm + 3], buf[indx_cm + 4], buf[indx_cm + 5], buf[indx_cm + 6], buf[indx_cm + 7], buf[indx_cm + 8], buf[indx_cm + 9], buf[indx_cm + 10]);
+                            write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+                            indx_cm += (1 + RELAY_OUT_CNT);
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }
+                else if ((fds[1].revents & POLLERRVAL))
+                {
+                    syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"ti_pipe\": 1 }]}\n");
+                    close(fds[1].fd); // system needs to be restarted
+                    fds[1].revents = 0;
+                    num_open_fds--;
+                    return nullptr;
+                }
+            }
+            else
+            {
+                tx_packet.PacketSrc = UART_Packet;
+                tx_packet.CMD = feed_wtd;
+                tx_packet.ACK = ERROR_NO;
+                tx_packet.SID = 0x01;
+                tx_packet.DataLen = 0;
+                rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+                // write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+            }
+        }
+    }
+
+    return nullptr;
+}
+/// <summary>
+/// send key event to display
+/// </summary>
+/// <param name="a">
+/// -character of the key for which event is to be sent
+/// </param>
+/// <returns></returns>
+void key_event(char a)
+{
+    if (fork() == 0)
+    {
+        char str[36];
+        sprintf(str, SYS_KEY_EVNT, a);
+        system("export DISPLAY=:0");
+        system(str);
+        quick_exit(0);
+    }
+}
+int main(int argc, char *argv[])
+{
+    daemonize();
+    std::atexit(cleanup);
+    openlog(argv[0], LOG_PID | LOG_CONS, LOG_DAEMON);
+    syslog(LOG_INFO, "Started %s Version %s", argv[0], Daemon_Version);
+    chdir(WEB_DIR);
+    if (!get_device_id()) // init device id from linux
+    {
+        syslog(LOG_INFO, "Error: get_device_id \n");
     }
     device_t main_dev;
-    main_dev.address = 0xffffffff; //this address is used in rf comms
+    main_dev.address = 0xffffffff; // this address is used in rf comms
     main_dev.paired = true;
     main_dev.type = Main_dev;
     Response_Time Rtv;
-    Rtv.TP_internal_sesn_poll = 200;//2sec
-    Rtv.TT_if_ack = 40;//10 min
+    Rtv.TP_internal_sesn_poll = 200; // 2sec
+    Rtv.TT_if_ack = 40;              // 10 min
     Rtv.TT_if_nack = 25;
     AQ_TH_PR_thld throlds_aq;
     AQ_TH_PR_vals aqthpr_dum_val;
@@ -227,96 +839,30 @@ int main(int argc, char* argv[])
     std::vector<device_t> device_list;
     std::vector<config_time> time_configs;
     std::vector<config_thresholds> throlds;
-    std::vector<uint8_t> relays_in_l, relays_in;
-    //std::vector<uint8_t> wiring_state; //  not use. 
-    bool shutdownFromDynamic = false; // for backend data parse
-    // if shutdownFromDynamic true need to save cmd in case can't send it to ti on same iteration
-    bool shutdown = false;
-
-
-    uint8_t Thread_buff[256];
-    SIO_Packet_t tx_packet,rx_packet;
-    Serial_RxData_t packet_rx_settings;
-    int Thread_send_size;
-    int16_t nrf_Temp;
-    int16_t nrf_Temp_far;
-    uint8_t nrf_Hum;
-    uint16_t nrf_aqs_CO2eq;
-    uint16_t nrf_aqs_etoh;
-    uint16_t nrf_aqs_TVOC;
-    uint8_t  nrf_aqs_iaq;
-    uint16_t  nrf_pressure;
-    uint8_t brighness_mode=0;
-    /// <summary>
-    /// threading 
-    /// create 2 threads with 2 pipes each 
-    /// use poll for handling read write
-    /// </summary>
-    thread_Data nrf_vals, ti_vals,dynamic_vals;
-    //bool wait_for_wiring_check = true;;
-    int pipe_nrf_write_fd[2];
-    pipe2(pipe_nrf_write_fd, O_NONBLOCK);
-    int pipe_nrf_read_fd[2];
-    pipe2(pipe_nrf_read_fd, O_NONBLOCK);
-    int pipe_dynamic_fd[2];
-    pipe2(pipe_dynamic_fd, O_NONBLOCK);
-    dynamic_vals.pipe_out = pipe_dynamic_fd[1];
-    nrf_vals.pipe_out = pipe_nrf_read_fd[1];
-    nrf_vals.pipe_in = pipe_nrf_write_fd[0];
-    read_from_nrf = pipe_nrf_read_fd[0];
-    write_to_nrf = pipe_nrf_write_fd[1];
-    read_from_dynamic = pipe_dynamic_fd[0];
-    int pipe_ti_write_fd[2];
-    pipe2(pipe_ti_write_fd, O_NONBLOCK);
-    int pipe_ti_read_fd[2];
-    pipe2(pipe_ti_read_fd, O_NONBLOCK);
-    ti_vals.pipe_out = pipe_ti_read_fd[1];
-    ti_vals.pipe_in = pipe_ti_write_fd[0];
-    read_from_ti = pipe_ti_read_fd[0];
-    write_to_ti = pipe_ti_write_fd[1];
-    
-    pollfd pipe_fds[3];
-    pipe_fds[0].fd = read_from_nrf;
-    pipe_fds[0].events = POLLIN;
-    pipe_fds[1].fd = read_from_ti;
-    pipe_fds[1].events = POLLIN;
-    pipe_fds[2].fd = read_from_dynamic;
-    pipe_fds[2].events = POLLIN;
-    int num_open_fds = 3;
-    //wait for web to be ready
-    //Init the configs and necessary data from web
-    while (running && !get_Config_list(time_configs))
+    std::vector<uint8_t> relays_in_l, relays_in, wiring_state;
+    if (get_Config_list(time_configs))
     {
-        sleep(1);
-        syslog(LOG_INFO, "Waiting web for config list\n");
-    };
-    for (auto i : time_configs)
-    {
-        switch (i.ext_sens_type)
+        for (auto i : time_configs)
         {
-        case AQ_TH_PR:
-            Rtv.TP_internal_sesn_poll = i.TP_internal_sesn_poll;
-            Rtv.TT_if_ack = i.TT_if_ack;
-            Rtv.TT_if_nack = i.TT_if_nack;
-            break;
-        default:
-            break;
+            switch (i.ext_sens_type)
+            {
+            case AQ_TH_PR:
+                Rtv.TP_internal_sesn_poll = i.TP_internal_sesn_poll;
+                Rtv.TT_if_ack = i.TT_if_ack;
+                Rtv.TT_if_nack = i.TT_if_nack;
+                break;
+            default:
+                break;
+            }
         }
     }
-    pthread_create(&ti, nullptr, ti_uart_thrd, (void*)&ti_vals);
-    pthread_create(&dynamic, nullptr, dynamic_thrd, (void*)&dynamic_vals);
-    pthread_create(&nrf, nullptr, nrf_uart_thrd, (void*)&nrf_vals);
-
-    auto nrf_thread = new NRFThread((void*)&nrf_vals);
-    nrf_thread->start();
-
-    auto ti_thread = new TIThread((void*)&ti_vals);
-    ti_thread->start();
-
-    syslog(LOG_INFO, "WEB OK\n");
-    if (!get_paired_list(device_list))//send to ti
+    else
     {
-        syslog(LOG_ERR, "Error: get_paired \n");
+        syslog(LOG_INFO, "Error: get_Config_list \n");
+    }
+    if (!get_paired_list(device_list)) // send to ti
+    {
+        syslog(LOG_INFO, "Error: get_paired \n");
     }
     if (get_thresholds_list(throlds))
     {
@@ -365,17 +911,69 @@ int main(int argc, char* argv[])
                 break;
             }
         }
-
     }
     else
     {
-        syslog(LOG_ERR, "Error: get_thresholds_list \n");
+        syslog(LOG_INFO, "Error: get_thresholds_list \n");
     }
+    uint8_t Thread_buff[256];
+    SIO_Packet_t tx_packet, rx_packet;
+    Serial_RxData_t packet_rx_settings;
+    int Thread_send_size;
+    int16_t nrf_Temp;
+    uint8_t nrf_Hum;
+    uint16_t nrf_aqs_CO2eq;
+    uint16_t nrf_aqs_etoh;
+    uint16_t nrf_aqs_TVOC;
+    uint8_t nrf_aqs_iaq;
+    uint16_t nrf_pressure;
+    uint8_t brighness_mode = 1;
+    /// <summary>
+    /// threading
+    /// create 2 threads with 2 pipes each
+    /// use poll for handling read write
+    /// </summary>
+    thread_Data nrf_vals, ti_vals, dynamic_vals;
+    bool wait_for_wiring_check = true;
+    ;
+    int pipe_nrf_write_fd[2];
+    pipe2(pipe_nrf_write_fd, O_NONBLOCK);
+    int pipe_nrf_read_fd[2];
+    pipe2(pipe_nrf_read_fd, O_NONBLOCK);
+
+    int pipe_dynamic_fd[2];
+    pipe2(pipe_dynamic_fd, O_NONBLOCK);
+    dynamic_vals.pipe_out = pipe_dynamic_fd[1];
+    read_from_dynamic = pipe_dynamic_fd[0];
+    pthread_create(&dynamic, nullptr, dynamic_thrd, (void *)&dynamic_vals);
+
+    nrf_vals.pipe_out = pipe_nrf_read_fd[1];
+    nrf_vals.pipe_in = pipe_nrf_write_fd[0];
+    read_from_nrf = pipe_nrf_read_fd[0];
+    write_to_nrf = pipe_nrf_write_fd[1];
+    pthread_create(&nrf, nullptr, nrf_uart_thrd, (void *)&nrf_vals);
+
+    int pipe_ti_write_fd[2];
+    pipe2(pipe_ti_write_fd, O_NONBLOCK);
+    int pipe_ti_read_fd[2];
+    pipe2(pipe_ti_read_fd, O_NONBLOCK);
+    ti_vals.pipe_out = pipe_ti_read_fd[1];
+    ti_vals.pipe_in = pipe_ti_write_fd[0];
+    read_from_ti = pipe_ti_read_fd[0];
+    write_to_ti = pipe_ti_write_fd[1];
+    pthread_create(&ti, nullptr, ti_uart_thrd, (void *)&ti_vals);
+    pollfd pipe_fds[3];
+    pipe_fds[0].fd = read_from_nrf;
+    pipe_fds[0].events = POLLIN;
+    pipe_fds[1].fd = read_from_ti;
+    pipe_fds[1].events = POLLIN;
+    pipe_fds[2].fd = read_from_dynamic;
+    pipe_fds[2].events = POLLIN;
+    int num_open_fds = 3;
     RGBm.red = 255;
     RGBm.blue = 255;
     RGBm.green = 255;
     RGBm.mode = LED_FADE;
-    double delta;
     uint16_t RangeMilliMeter;
     uint16_t fan_speed;
     uint32_t Luminosity;
@@ -383,10 +981,10 @@ int main(int argc, char* argv[])
     bool last_pairing = false;
     bool wiring_check_f = false;
     int tmr_cntr = WIRING_CHECK_TIME;
-    bool last_update_bool=true;
-    bool last_update_bool_l=true;
+    uint64_t last_update_tick{};
+    uint64_t last_update_tick_l{};
     int error_dynamic_counter{};
-    //set initial configs
+    // set initial configs
     tx_packet.PacketSrc = UART_Packet;
     tx_packet.CMD = InitMcus;
     tx_packet.ACK = ERROR_NO;
@@ -421,7 +1019,7 @@ int main(int argc, char* argv[])
     tx_packet.DataLen = cpIndex;
     Thread_send_size = Set_SIO_TxPacket(Thread_buff, tx_packet);
     write(write_to_nrf, Thread_buff, Thread_send_size);
-    //AQ_TH_PR
+    // AQ_TH_PR
     buf[0] = Set_limits;
     buf[1] = AQ_TH_PR;
     memcpy(buf + 2, &throlds_aq, AQS_THRSHLD_SIZE);
@@ -454,21 +1052,6 @@ int main(int argc, char* argv[])
     bool wait_resp = false;
     bool check_paired_list = false;
     write(write_to_ti, buf, cpIndex);
-    std::vector<std::string>::iterator pos;
-    std::string const HWStr = VERSION_HW;
-    std::string const VershStr = VERSION_HEAD;
-    std::ofstream Wversion_fd;
-    std::string line;
-    std::vector<std::string> file_content;
-    int haltCode;
-
-    std::ifstream Rversion_fd;
-    //hadles data from nrf and sets to web
-    //handles data from ti and sets to web
-    //handles data form web and sets to MCUs 
-    //resrtarts the device or browser if necessary 
-    //writes Hardware Version from nrf in the version file (web) 
-    setBrightness(100);
     while (num_open_fds && running)
     {
         int result;
@@ -487,7 +1070,6 @@ int main(int argc, char* argv[])
                     {
                         if (SerialDataRx(buf[i], &packet_rx_settings))
                         {
-                            // TODO?  more then one packet
                             break;
                         }
                     }
@@ -496,7 +1078,8 @@ int main(int argc, char* argv[])
                     rx_packet.SID = packet_rx_settings.RxDataArray[SID_Offset];
                     uint8_t PayloadLen = packet_rx_settings.RxDataLen - PacketMinLength;
                     rx_packet.DataLen = PayloadLen;
-                    if (PayloadLen > 0) {
+                    if (PayloadLen > 0)
+                    {
                         memcpy(&rx_packet.DataArray[0], &packet_rx_settings.RxDataArray[DATA_Offset], PayloadLen);
                     }
                     rx_packet.CRC = (uint16_t)packet_rx_settings.RxDataArray[DATA_Offset + PayloadLen];
@@ -510,11 +1093,10 @@ int main(int argc, char* argv[])
                     {
                         if (rx_packet.ACK != ERROR_NO)
                         {
-                            syslog(LOG_ERR, "cmd:%d ack:%d\n", rx_packet.CMD, rx_packet.ACK);
+                            syslog(LOG_INFO, "cmd:%d ack:%d\n", rx_packet.CMD, rx_packet.ACK);
                         }
                         else
                         {
-                            
                             switch (rx_packet.CMD)
                             {
                             case InitMcus:
@@ -523,100 +1105,34 @@ int main(int argc, char* argv[])
                                 indx_rev = 0;
                                 for (; rx_packet.DataArray[indx_rev] != 0 && indx_rev < sizeof(rx_packet.DataArray); indx_rev++)
                                 {
-                                    ti_thread->NRF_HW.push_back(static_cast<char>(rx_packet.DataArray[indx_rev]));
+                                    NRF_HW.push_back(static_cast<char>(rx_packet.DataArray[indx_rev]));
                                 }
                                 ++indx_rev;
                                 for (; rx_packet.DataArray[indx_rev] != 0 && indx_rev < sizeof(rx_packet.DataArray); indx_rev++)
                                 {
-                                    ti_thread->NRF_SW.push_back(static_cast<char>(rx_packet.DataArray[indx_rev]));
+                                    NRF_SW.push_back(static_cast<char>(rx_packet.DataArray[indx_rev]));
                                 }
-                                syslog(LOG_INFO, "NRF:: HW:%s SW:%s\n", ti_thread->NRF_HW.c_str(), ti_thread->NRF_SW.c_str());
-                                //write 
-                                Rversion_fd.open(VERSION_FILE);
-                                if (Rversion_fd.is_open())
-                                {
-                                    while (getline(Rversion_fd, line))
-                                    {
-                                        file_content.push_back(line);
-                                    }
-                                    Rversion_fd.close();
-                                }
-                                else
-                                {
-                                    syslog(LOG_ERR, "COULD NOT OPEN VERSION FILE FOR READING\n");
-                                }
-
-                                 pos = std::find(file_content.begin(), file_content.end(), VershStr);
-                                if (pos != file_content.end())
-                                {
-                                    pos+=2;
-                                    if (pos->substr(0, HWStr.length()) == HWStr)
-                                    {
-                                        pos->erase(HWStr.length());
-                                        pos->append(" "+ti_thread->NRF_HW);
-                                        Wversion_fd.open(VERSION_FILE);
-                                        if (Wversion_fd.is_open())
-                                        {
-                                            for (int i = 0; i < file_content.size(); i++)
-                                            {
-                                                Wversion_fd << file_content[i];
-                                                if (i != file_content.size() - 1)
-                                                {
-                                                    Wversion_fd << '\n';
-                                                }
-                                            }
-                                            Wversion_fd.close();
-                                        }
-                                        else
-                                            syslog(LOG_ERR, "VERSION FILE ERROR WRITE\n");
-                                    }
-                                    else
-                                        syslog(LOG_ERR, "VERSION FILE FORMAT ERROR HARDWARE \n");
-                                }
-                                else
-                                {
-                                    syslog(LOG_ERR, "VERSION FILE FORMAT ERROR HEADER\n");
-                                }
-                                    
-
+                                syslog(LOG_INFO, "NRF:: HW:%s SW:%s\n", NRF_HW.c_str(), NRF_SW.c_str());
                                 break;
-                            case   GetTOF:
-
+                            case GetTOF:
                                 memcpy(&RangeMilliMeter, rx_packet.DataArray, sizeof(RangeMilliMeter));
                                 memcpy(&Luminosity, rx_packet.DataArray + sizeof(RangeMilliMeter), sizeof(Luminosity));
-                                //syslog(LOG_INFO, "TOF works range: %d lum: %d\n", RangeMilliMeter, Luminosity);
-                                //if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE)
-                                //{
-                                //    key_event();
-                                //}
-                                //if (brighness_mode == 1)
-                                //{
-                                //    if (!setBrightness(Luminosity))
-                                //    {
-                                //        syslog(LOG_INFO, "Error: setBrightness \n");
-                                //    }
-                                //}
-                                saveBrTofTofile(RangeMilliMeter, Luminosity);
+                                if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE)
+                                {
+                                    key_event('n');
+                                }
+                                if (brighness_mode == 1)
+                                {
+                                    if (!setBrightness(Luminosity))
+                                    {
+                                        syslog(LOG_INFO, "Error: setBrightness \n");
+                                    }
+                                }
+
                                 break;
                             case GetSensors:
                                 cpIndex = 0;
                                 memcpy(&nrf_Temp, rx_packet.DataArray + cpIndex, sizeof(nrf_Temp));
-
-                                // correction temp. correction delta from 0.5 to 3.7 max.
-                                delta = delta_correction.getDeltaTemp();
-                                nrf_Temp_far = to_fahrenheit(nrf_Temp);
-                                syslog(LOG_DEBUG, "DELTA: %f, temp raw fahr: %d \n", delta, nrf_Temp_far);
-                                if (delta < 0.5 || delta > 3.7)
-                                {
-                                    syslog(LOG_ERR, "DELTA ERROR: %f\n", delta);
-                                }
-                                else
-                                {
-                                    nrf_Temp_far -= (delta * 10); // raw val in int * 10
-                                    nrf_Temp = to_celsius(nrf_Temp_far); // back to cel for check alerts
-                                }
-
-                                memcpy(rx_packet.DataArray + cpIndex, &nrf_Temp_far, sizeof(nrf_Temp)); // far only for send. check alerts ib cel
                                 cpIndex += sizeof(nrf_Temp);
 
                                 memcpy(&nrf_Hum, rx_packet.DataArray + cpIndex, sizeof(nrf_Hum));
@@ -646,33 +1162,26 @@ int main(int argc, char* argv[])
                                 cpIndex += sizeof(fan_speed);
                                 if (!set_fan_speed_INFO(fan_speed))
                                 {
-                                    syslog(LOG_ERR, "Error: setFanSpeed\n");
+                                    syslog(LOG_INFO, "Error: setFanSpeed\n");
                                 }
-                                //syslog(LOG_INFO, "GetSensors works range: %d lum: %d\n", RangeMilliMeter, Luminosity);
-
-                                saveBrTofTofile(RangeMilliMeter, Luminosity);
-
-
-
-                                //if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE)
-                                //{
-                                //    key_event();
-                                //}
-
-                                //if (brighness_mode == 1)
-                                //{
-                                //    if (!setBrightness(Luminosity))
-                                //    {
-                                //        syslog(LOG_INFO, "Error: setBrightness\n");
-                                //    }
-                                //}
-
-                                //alert
+                                if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE)
                                 {
-                                    bool ret_cb=true;
+                                    key_event('n');
+                                }
+
+                                if (brighness_mode == 1)
+                                {
+                                    if (!setBrightness(Luminosity))
+                                    {
+                                        syslog(LOG_INFO, "Error: setBrightness\n");
+                                    }
+                                }
+                                // alert
+                                {
+                                    bool ret_cb = true;
                                     if (nrf_Temp > throlds_aq.temp_high * 10)
                                     {
-                                        ret_cb=setAlert(0, Alert_temp_high, LVL_Emergency);
+                                        ret_cb = setAlert(0, Alert_temp_high, LVL_Emergency);
                                     }
                                     else if (nrf_Temp < throlds_aq.temp_low * 10)
                                     {
@@ -708,14 +1217,13 @@ int main(int argc, char* argv[])
                                     }
                                     if (!ret_cb)
                                     {
-                                        syslog(LOG_ERR, "Error: setAlert \n");
+                                        syslog(LOG_INFO, "Error: setAlert \n");
                                     }
                                 }
                                 if (!setSensorData(main_dev, rx_packet.DataArray, rx_packet.DataLen))
                                 {
-                                    syslog(LOG_ERR, "Error: setSensorData \n");
+                                    syslog(LOG_INFO, "Error: setSensorData \n");
                                 }
-
                                 break;
                             case SetColorRGB:
                                 break;
@@ -724,11 +1232,10 @@ int main(int argc, char* argv[])
                             }
                         }
                     }
-
                 }
                 else if (pipe_fds[0].revents & POLLERRVAL)
                 {
-                    syslog(LOG_EMERG, "{\"errno\": 12,\"data\":[{\"pipe\": 0 }]}\n");
+                    syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"pipe\": 0 }]}\n");
                     return 0;
                     close(pipe_fds[0].fd);
                     num_open_fds--;
@@ -748,35 +1255,35 @@ int main(int argc, char* argv[])
                             switch (Thread_buff[1])
                             {
                             case ERROR_WIRING_NOT_CONNECTED:
-                                //wait_for_wiring_check = true;
+                                wait_for_wiring_check = true;
                                 setAlert(0, Alert_wiring_not_connected, LVL_Emergency);
-                                syslog(LOG_ERR, "ERROR_WIRING_NOT_CONNECTED\n");
-                                syslog(LOG_ERR, "~%d ", Thread_buff[2]);
-                                //buf[0] = Wiring_check;
-                                //wait_resp = true;
-                                //write(write_to_ti, buf, 1);//check wiring
+                                syslog(LOG_INFO, "ERROR_WIRING_NOT_CONNECTED\n");
+                                syslog(LOG_INFO, "~%d ", Thread_buff[2]);
+                                buf[0] = Wiring_check;
+                                wait_resp = true;
+                                write(write_to_ti, buf, 1); // check wiring
                                 break;
                             case ERROR_COULD_NOT_SET_RELAY:
-                                syslog(LOG_ERR, "ERROR_COULD_NOT_SET_RELAY\n");
+                                syslog(LOG_INFO, "ERROR_COULD_NOT_SET_RELAY\n");
                                 if (Thread_buff[2])
                                 {
-                                    syslog(LOG_ERR, "%d\n relay indx ", Thread_buff[2]);
+                                    syslog(LOG_INFO, "%d\n relay indx ", Thread_buff[2]);
                                     for (int k = 0; k < Thread_buff[2]; k++)
                                     {
-                                        syslog(LOG_ERR, "%d ", Thread_buff[3+k]);
+                                        syslog(LOG_INFO, "%d ", Thread_buff[3 + k]);
                                     }
-                                    syslog(LOG_ERR, "\n");
+                                    syslog(LOG_INFO, "\n");
                                 }
-                                
+
                                 break;
                             }
                             break;
-                            
+
                             syslog(LOG_INFO, "\n");
                         default:
                             break;
                         }
-                        syslog(LOG_ERR, "cmd:%d ack:%d\n", Thread_buff[0], Thread_buff[1]);
+                        syslog(LOG_INFO, "cmd:%d ack:%d\n", Thread_buff[0], Thread_buff[1]);
                     }
                     else
                     {
@@ -785,53 +1292,52 @@ int main(int argc, char* argv[])
                         {
                         case GetRelaySensor:
                             break;
-                        //case Check_Wiring:
-                        //    syslog(LOG_INFO, "Ret: Check_Wiring\n");
-                        //    wait_for_wiring_check = false;
-                        //    if (Thread_buff[2] == WIRING_IN_CNT)
-                        //    {
-                        //       
-                        //        wait_for_wiring_check = false;
-                        //        wiring_state.clear();
-                        //        for (int i = 0; i < WIRING_IN_CNT; i++)
-                        //        {
-                        //            wiring_state.push_back(Thread_buff[3 + i]);
-                        //        }
-                        //        if (!setWiring(wiring_state))
-                        //        {
-                        //            syslog(LOG_INFO, "Error: setWiring \n");
-                        //        }
-                        //        syslog(LOG_INFO, "W:[%d, %d, %d, %d, %d, %d, %d, %d, %d, %d]\n", wiring_state[0], wiring_state[1], wiring_state[2], wiring_state[3], wiring_state[4], wiring_state[5], wiring_state[6], wiring_state[7], wiring_state[8], wiring_state[9]);
-                        //        buf[0] = Set_relays;
-                        //        for (int i = 0; i < RELAY_OUT_CNT; i++)
-                        //        {
-                        //            if (wiring_state[i] == WIRING_BROKEN && relays_in[i] == 1)
-                        //            {
-                        //                setAlert(0, Alert_wiring_not_connected, LVL_Emergency);
-                        //                syslog(LOG_INFO, "wiring indx %d ", i);
-                        //                buf[0] = NO_CMD;
-                        //                relays_in_l = relays_in;
-                        //                break;
-                        //            }
-                        //            buf[1 + i] = relays_in[i];
-                        //        }
-                        //        if(buf[0] != NO_CMD)
-                        //        {
-                        //            wait_resp = true;
-                        //            write(write_to_ti, buf, 1 + RELAY_OUT_CNT);
-                        //        }
-                        //        
-                        //        
-                        //    }
-                        //    break;
-                        case  SetRelay:
+                        case Check_Wiring:
+                            syslog(LOG_INFO, "Ret: Check_Wiring\n");
+                            wait_for_wiring_check = false;
+                            if (Thread_buff[2] == WIRING_IN_CNT)
+                            {
+
+                                wait_for_wiring_check = false;
+                                wiring_state.clear();
+                                for (int i = 0; i < WIRING_IN_CNT; i++)
+                                {
+                                    wiring_state.push_back(Thread_buff[3 + i]);
+                                }
+                                if (!setWiring(wiring_state))
+                                {
+                                    syslog(LOG_INFO, "Error: setWiring \n");
+                                }
+                                syslog(LOG_INFO, "W:[%d, %d, %d, %d, %d, %d, %d, %d, %d, %d]\n", wiring_state[0], wiring_state[1], wiring_state[2], wiring_state[3], wiring_state[4], wiring_state[5], wiring_state[6], wiring_state[7], wiring_state[8], wiring_state[9]);
+                                buf[0] = Set_relays;
+                                for (int i = 0; i < RELAY_OUT_CNT; i++)
+                                {
+                                    if (wiring_state[i] == WIRING_BROKEN && relays_in[i] == 1)
+                                    {
+                                        setAlert(0, Alert_wiring_not_connected, LVL_Emergency);
+                                        syslog(LOG_INFO, "wiring indx %d ", i);
+                                        buf[0] = NO_CMD;
+                                        relays_in_l = relays_in;
+                                        break;
+                                    }
+                                    buf[1 + i] = relays_in[i];
+                                }
+                                if (buf[0] != NO_CMD)
+                                {
+                                    wait_resp = true;
+                                    write(write_to_ti, buf, 1 + RELAY_OUT_CNT);
+                                }
+                            }
+                            break;
+                        case SetRelay:
                             syslog(LOG_INFO, "RET: SetRelay \n");
                             relays_in_l = relays_in;
                             break;
-                        case  Send_packet:
+                        case Send_packet:
                             break;
                         case Get_packets:
-                            inc.address = *((uint32_t*)(Thread_buff + 5));
+
+                            inc.address = *((uint32_t *)(Thread_buff + 5));
                             inc.paired = Thread_buff[4];
                             inc.type = Thread_buff[3];
                             if (inc.paired == pair)
@@ -847,13 +1353,13 @@ int main(int argc, char* argv[])
                                     aqthpr_dum_val.humidity = Thread_buff[14];
                                     aqthpr_dum_val.c02 = static_cast<uint16_t>((Thread_buff[16] << 8) | Thread_buff[15]);
                                     aqthpr_dum_val.pressure = static_cast<uint16_t>((Thread_buff[18] << 8) | Thread_buff[17]);
-                                    
-                                    //alert
+
+                                    // alert
                                     {
-                                        bool ret_cb=true;
+                                        bool ret_cb = true;
                                         if (aqthpr_dum_val.temp / 10.0 > throlds_aq.temp_high)
                                         {
-                                            ret_cb=setAlert(inc.address, Alert_temp_high, LVL_Emergency);
+                                            ret_cb = setAlert(inc.address, Alert_temp_high, LVL_Emergency);
                                         }
                                         else if (aqthpr_dum_val.temp / 10.0 < throlds_aq.temp_low)
                                         {
@@ -873,31 +1379,28 @@ int main(int argc, char* argv[])
                                         }
                                         else if (aqthpr_dum_val.c02 > throlds_aq.c02_high)
                                         {
-                                            ret_cb = setAlert(inc.address, Alert_c02_high, LVL_Emergency);//here
+                                            ret_cb = setAlert(inc.address, Alert_c02_high, LVL_Emergency); // here
                                         }
                                         else if (aqthpr_dum_val.Tvoc > throlds_aq.Tvoc_high)
                                         {
-                                            ret_cb = setAlert(inc.address, Alert_Tvoc_high, LVL_Emergency);//here
+                                            ret_cb = setAlert(inc.address, Alert_Tvoc_high, LVL_Emergency); // here
                                         }
                                         else if (aqthpr_dum_val.etoh > throlds_aq.etoh_high)
                                         {
                                             ret_cb = setAlert(inc.address, Alert_etoh_high, LVL_Emergency);
                                         }
                                         else if (aqthpr_dum_val.iaq / 10.0 > throlds_aq.iaq_high)
-                                        {  
-                                            ret_cb = setAlert(inc.address, Alert_iaq_high, LVL_Emergency);//here
+                                        {
+                                            ret_cb = setAlert(inc.address, Alert_iaq_high, LVL_Emergency); // here
                                         }
                                         else if (!ret_cb)
                                         {
-                                            syslog(LOG_ERR, "Error: setAlert \n");
+                                            syslog(LOG_INFO, "Error: setAlert \n");
                                         }
                                     }
-                                    aqthpr_dum_val.temp = to_fahrenheit(aqthpr_dum_val.temp);
-                                    Thread_buff[13] = (aqthpr_dum_val.temp >> 8);
-                                    Thread_buff[12] = static_cast<uint8_t>(aqthpr_dum_val.temp);
                                     if (!setSensorData(inc, &Thread_buff[9], AQS_DATA_SIZE))
                                     {
-                                        syslog(LOG_ERR, "Error: setSensorData \n");
+                                        syslog(LOG_INFO, "Error: setSensorData \n");
                                     }
                                 default:
                                     break;
@@ -905,28 +1408,18 @@ int main(int argc, char* argv[])
                             }
                             else if (pairing)
                             {
+
                                 if (addPendingSensor(inc))
                                 {
                                     syslog(LOG_INFO, "AddPending: %x\n", inc.address);
                                 }
-                                else  
+                                else
                                     syslog(LOG_INFO, "Error: addPendingSensor \n");
                             }
                             break;
                         case Get_addr:
-                                main_dev.address = *(uint32_t*)(Thread_buff + 3);
+                            main_dev.address = *(uint32_t *)(Thread_buff + 3);
 
-                            break;
-                        case Shut_down:
-                            //syslog(LOG_INFO, "DO: shutdown by backend cmd\n");
-                            //haltCode = system("halt");
-                            //if (haltCode != 0)
-                            //{
-                            //    openlog(argv[0], LOG_PID | LOG_CONS, LOG_DAEMON);
-                            //    syslog(LOG_INFO, "Shutdown error. Halt return code: %d\n", haltCode);
-                            //}
-                            //while (1) 
-                            //{ }
                             break;
                         default:
                             break;
@@ -935,32 +1428,34 @@ int main(int argc, char* argv[])
                 }
                 else if (pipe_fds[1].revents & POLLERRVAL)
                 {
-                    syslog(LOG_EMERG, "{\"errno\": 12,\"data\":[{\"pipe\": 1 }]}\n");
+                    syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"pipe\": 1 }]}\n");
                     close(pipe_fds[1].fd);
                     num_open_fds--;
-
                 }
-                //pipe event to get data from backend 
-                if(pipe_fds[2].revents & POLLIN)
+                // pipe event to get data from backend
+                if (pipe_fds[2].revents & POLLIN)
                 {
-                     ssize_t s = read(pipe_fds[2].fd, Thread_buff, sizeof(Thread_buff));
-                    if (!get_dynamic(relays_in, pairing, check_paired_list, wiring_check_f, RGBm, brighness_mode, last_update_bool, Thread_buff, s, shutdownFromDynamic))
+                    [[maybe_unused]] ssize_t s = read(pipe_fds[2].fd, Thread_buff, sizeof(Thread_buff));
+
+                    if (!get_dynamic1(relays_in, pairing, check_paired_list, wiring_check_f, RGBm, brighness_mode, last_update_tick, Thread_buff, sizeof(Thread_buff)))
                     {
-                        syslog(LOG_ERR, "Error: get_dynamic \n");
+                        // syslog(LOG_INFO, "Error: get_dynamic \n");
                         error_dynamic_counter++;
-                        if (error_dynamic_counter == DEV_RESTART_TO)
+                        if (error_dynamic_counter > DEV_RESTART_TO)
                         {
-                            syslog(LOG_EMERG, "Error: RESTARTING DEVICE NOW!!!\n");
-                            //system("reboot&");
+                            // syslog(LOG_EMERG, "Error: RESTARTING DEVICE NOW!!!\n");
+                            // restart dev
                         }
                         continue;
                     }
                     error_dynamic_counter = 0;
-                    if (!last_update_bool)
+                    if (last_update_tick > last_update_tick_l)
                     {
-                            syslog(LOG_INFO, "ERROR: Restarting browser and clearing chache\n");
-                            system("rm - rf ~/.cache/QtExamples/quicknanobrowser/QtWebEngine/Profile/Cache/*");
-                            system("systemctl restart xserver-nodm&");   
+                        if ((last_update_tick - last_update_tick_l) > FRONT_RESTART_TO)
+                        {
+                            // restart browser
+                        }
+                        last_update_tick_l = last_update_tick;
                     }
                     cpIndex = 0;
                     if (pairing != last_pairing || check_paired_list)
@@ -984,53 +1479,42 @@ int main(int argc, char* argv[])
                         }
                         else
                         {
-                            syslog(LOG_ERR, "Error: get_paired \n");
+                            syslog(LOG_INFO, "Error: get_paired \n");
                         }
                         last_pairing = pairing;
                     }
 
-                    
-                    //if wiring_check needs to be performed delay Set_relays until after wiring_check returnes
-                    //if ( wiring_check_f)
-                    //{
-                    //    
-                    //    //
-                    //    buf[cpIndex++] = Wiring_check;
-                    //    
-                    //}
-                    // else if (relays_in != relays_in_l && !wait_for_wiring_check) // prev version
-                    if (relays_in != relays_in_l) // cur version
+                    tmr_cntr++;
+                    if (tmr_cntr > WIRING_CHECK_TIME || wiring_check_f)
+                    {
+                        tmr_cntr = 0;
+                        //
+                        buf[cpIndex++] = Wiring_check;
+                    }
+                    else if (relays_in != relays_in_l && !wait_for_wiring_check)
                     {
                         uint8_t last_indx = cpIndex;
                         buf[cpIndex] = Set_relays;
                         for (int i = 0; i < RELAY_OUT_CNT; i++)
                         {
-                            //if (wiring_state[i] == WIRING_BROKEN && relays_in[i] == 1)
-                            //{
-                            //    syslog(LOG_INFO, "ERROR_WIRING_NOT_CONNECTED\n");
-                            //    syslog(LOG_INFO, "%d ", i);
-                            //    buf[last_indx] = Wiring_check;//unset cmd
-                            //    cpIndex = last_indx;
-                            //    break;
-                            //}
+                            if (wiring_state[i] == WIRING_BROKEN && relays_in[i] == 1)
+                            {
+                                syslog(LOG_INFO, "ERROR_WIRING_NOT_CONNECTED\n");
+                                syslog(LOG_INFO, "%d ", i);
+                                buf[last_indx] = Wiring_check; // unset cmd
+                                cpIndex = last_indx;
+                                break;
+                            }
                             buf[++cpIndex] = relays_in[i];
                         }
                         cpIndex += 1;
-                    }
-                    // if one of prevs getDynamic call or current return shutdown. need to send it to ti. 
-                    if (shutdown || shutdownFromDynamic)
-                    {
-                        //syslog(LOG_INFO, "SHUTDOWN START in main\n");
-                        //
-                        //shutdown = true; // just in case, if on current iteration couldn't send data. 
-                        //buf[cpIndex++] = Shut_down;
                     }
                     if (!wait_resp && cpIndex)
                     {
                         wait_resp = true;
                         write(write_to_ti, buf, cpIndex);
                     }
-                   
+
                     if (!(RGBm_last == RGBm))
                     {
                         tx_packet.PacketSrc = UART_Packet;
@@ -1044,43 +1528,22 @@ int main(int argc, char* argv[])
                         tx_packet.DataArray[3] = 255;
                         tx_packet.DataArray[4] = RGBm.mode;
                         Thread_send_size = Set_SIO_TxPacket(Thread_buff, tx_packet);
-                        syslog(LOG_INFO,"DO::RGB\n (%d,%d,%d) mode:%d\n", RGBm.red, RGBm.green, RGBm.blue, RGBm.mode);
+                        syslog(LOG_INFO, "DO::RGB\n (%d,%d,%d) mode:%d\n", RGBm.red, RGBm.green, RGBm.blue, RGBm.mode);
                         write(write_to_nrf, Thread_buff, Thread_send_size);
                         RGBm_last.red = RGBm.red;
                         RGBm_last.green = RGBm.green;
                         RGBm_last.blue = RGBm.blue;
                         RGBm_last.mode = RGBm.mode;
-                        double backlight_factor = (RGBm.red + RGBm.green + RGBm.blue) / 2.55 / 3.0;
-                        if (backlight_factor >= MIN_BACKLIGHT_PERCENT_ON)
-                        { // TODO any min val for ON?? 
-                            syslog(LOG_DEBUG, "update_ON\n");
-                            delta_correction.update_ON(g_sec_counter, backlight_factor / 100); // need 0.01 val
-                        }
-                        else
-                        {
-                            syslog(LOG_DEBUG, "update_OFF\n");
-                            delta_correction.update_OFF(g_sec_counter);
-                        }
-                        //  update backlight
-                        // if all 0 to off
-                        // else to on
-                           
-                            
                     }
                 }
                 else if (pipe_fds[2].revents & POLLERRVAL)
                 {
-                    syslog(LOG_EMERG, "{\"errno\": 12,\"data\":[{\"pipe\": 2 }]}\n");
+                    syslog(LOG_INFO, "{\"errno\": 12,\"data\":[{\"pipe\": 2 }]}\n");
                     close(pipe_fds[2].fd);
                     num_open_fds--;
-
                 }
-
             }
         }
-        DaemonStatus::instance()->checkCurrentState();
     }
-    syslog(LOG_EMERG, "END");
     exit(0);
 }
-

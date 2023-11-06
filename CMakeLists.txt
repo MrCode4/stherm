@@ -203,6 +203,9 @@ qt6_add_qml_module(appStherm
         Backend/UARTConnection.h
         Backend/UARTConnection.cpp
 
+        Backend/DataParser.h
+        Backend/DataParser.cpp
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf

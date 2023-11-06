@@ -13,6 +13,20 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
     _mainData = {{"temp", QVariant(32.56)}, {"hum", QVariant(30.24)}};
 
+    uartConnection = new UARTConnection();
+    uartConnection->moveToThread(&mThread);
+
+    uartConnection->initConnection();
+    if (uartConnection->connect()) {
+        mThread.start();
+
+    }
+
+    connect(uartConnection, &UARTConnection::sendData, this, [=](QString data) {
+        qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce:   " << data;
+    });
+
+
     QTimer::singleShot(3000, this, [this]() {
         auto future = QtConcurrent::run([this]() {
             int test_count = 0;
@@ -37,6 +51,7 @@ void DeviceControllerCPP::createSensor(QString name, QString id)
 {
 
 }
+
 
 QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
 {

@@ -1,6 +1,8 @@
 #include "UARTConnection.h"
 
-UARTConnection::UARTConnection()
+UARTConnection::UARTConnection(QObject *parent) :
+    QObject(parent),
+    mSerial(new QSerialPort(this))
 {
 
 }
@@ -61,10 +63,13 @@ bool UARTConnection::isConnected()
 }
 
 bool UARTConnection::writeData(QByteArray data) {
-    mSerial->write(data);
+    return mSerial->write(data);
 }
 
 void UARTConnection::onReadyRead()
 {
+    // Handle data
+    QByteArray dataBA = mSerial->readAll();
 
+    sendData(dataBA);
 }

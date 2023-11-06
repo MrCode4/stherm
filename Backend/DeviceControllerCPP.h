@@ -4,6 +4,7 @@
 #include <QString>
 #include <QtNetwork>
 
+#include "UARTConnection.h"
 
 /*! ***********************************************************************************************
  * This class manages send requests from app to device and and process the received response.
@@ -87,4 +88,9 @@ private:
     /* Attributes
      * ****************************************************************************************/
     QVariantMap _mainData;
+
+    //! Worker thread
+    QThread mThread;
+
+    UARTConnection * uartConnection;
 };

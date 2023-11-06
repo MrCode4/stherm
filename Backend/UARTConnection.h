@@ -2,19 +2,18 @@
 
 #include <QVariant>
 #include <QSerialPort>
-#include <QThread>
 
 /*! ***********************************************************************************************
  * Propagte a connection with UART port and read data
  * ************************************************************************************************/
 
-class UARTConnection
+class UARTConnection : public QObject
 {
 public:
     /* public Constractor
      * ****************************************************************************************/
 
-    explicit UARTConnection();
+    explicit UARTConnection(QObject *parent = nullptr);
 
     /* public functions
      * ****************************************************************************************/
@@ -48,6 +47,10 @@ public:
 
 signals:
     void connectionError(QString error);
+
+    //! Transform the data into a meaningful format
+    //! and then transmit it to the intended destination.
+    void sendData(QString data);
 
 private slots:
 
