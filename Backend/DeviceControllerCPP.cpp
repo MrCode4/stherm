@@ -5,10 +5,6 @@
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 
-#define NRF_GPIO_4		21
-#define NRF_GPIO_5		22
-
-#define NRF_SERRIAL_PORT "/dev/ttymxc1"
 
 /* ************************************************************************************************
  * Constructors & Destructor
@@ -19,34 +15,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     mDataParser = new DataParser(this);
 
-    uartConnection = new UARTConnection();
-    uartConnection->moveToThread(&mThread);
 
-    uartConnection->initConnection();
-    if (uartConnection->connect()) {
-        mThread.start();
-
-    }
-
-    connect(uartConnection, &UARTConnection::sendData, this, [=](QString data) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce:   " << data;
-    });
-
-
-    QTimer::singleShot(3000, this, [this]() {
-        auto future = QtConcurrent::run([this]() {
-            int test_count = 0;
-            // reads a data as an example 1000 times
-            while (test_count < 1000) {
-                test_count++;
-                double temp_random = 18;
-
-                _mainData = {{"temp", QVariant(temp_random)}, {"hum", QVariant(30.24)}};
-                qDebug() << "data fetch" << temp_random;
-                QThread::msleep(100);
-            }
-        });
-    });
 }
 
 DeviceControllerCPP::~DeviceControllerCPP()
@@ -210,21 +179,6 @@ void DeviceControllerCPP::setTimeZone(int offset) {
     if (exitCode >= 0) {
         qDebug() << Q_FUNC_INFO << __LINE__  << "Timezone set to" << timezoneFile;
     }
-}
-
-void DeviceControllerCPP::createNRF()
-{
-    bool isSuccess =  mDataParser->configurePins(NRF_GPIO_4);
-    if (!isSuccess) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" <<NRF_GPIO_4;
-    }
-
-    isSuccess =  mDataParser->configurePins(NRF_GPIO_5);
-    if (!isSuccess) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" <<NRF_GPIO_5;
-    }
-    uartConnection->initConnection(NRF_SERRIAL_PORT, QSerialPort::Baud9600);
-
 }
 
 QVariantMap DeviceControllerCPP::getMainData()

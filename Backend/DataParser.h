@@ -2,7 +2,14 @@
 
 #include <QThread>
 
-class DataParser : QThread
+#include "UARTConnection.h"
+
+/*! ***********************************************************************************************
+ * This class oversees the management of the TI and UART threads and
+ * handles the processing of associated signals.
+ * ************************************************************************************************/
+
+class DataParser : QObject
 {
 public:
     DataParser(QObject *parent = nullptr);
@@ -14,6 +21,15 @@ public:
     //!  or false if an error occurred.
     bool configurePins(int gpio);
 
+signals:
+    void dataReay(QVariantMap data);
+
+private:
+    //! Create NRF connection
+    void createNRF();
+
+private:
+        UARTConnection * uartConnection;
 
 };
 

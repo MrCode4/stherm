@@ -1,8 +1,11 @@
 #include "UARTConnection.h"
 
+#include <QJsonObject>
+#include <QJsonDocument>
+
 
 UARTConnection::UARTConnection(QObject *parent) :
-    QObject(parent),
+    QThread(parent),
     mSerial(new QSerialPort(this))
 {
 
@@ -55,7 +58,11 @@ bool UARTConnection::connect()
         return false;
     }
 
-    return mSerial->isOpen();
+    bool isOpen = mSerial->isOpen();
+    if (isOpen)
+        run();
+
+    return isOpen;
 }
 
 
@@ -85,4 +92,20 @@ void UARTConnection::onReadyRead()
     QByteArray dataBA = mSerial->readAll();
 
     sendData(dataBA);
+}
+
+void UARTConnection::run()
+{
+    m_mutex.lock();
+//    m_cond.wait(&m_mutex);
+
+    // As raw data
+    // todo: change to serialize data
+    QVariantMap mainData = {{"temp", QVariant(18)}, {"hum", QVariant(30.24)}};
+    QJsonObject obj;
+    obj.insert("temp", 10);
+    obj.insert("hum", 30.24);
+    emit sendData(QJsonDocument(obj).toJson());
+
+    m_mutex.unlock();
 }

@@ -71,6 +71,7 @@ void NRFThread::run() {
     tx_packet.ACK = ERROR_NO;
     tx_packet.SID = 0x01;
     tx_packet.DataLen = 0;
+
     int dev_buff_size;
     dev_buff_size = Set_SIO_TxPacket(dev_info, tx_packet);
     write(fds[0].fd, dev_info, dev_buff_size);

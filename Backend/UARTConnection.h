@@ -2,12 +2,15 @@
 
 #include <QVariant>
 #include <QSerialPort>
+#include <QThread>
+#include <QMutex>
+#include <QWaitCondition>
 
 /*! ***********************************************************************************************
  * Propagte a connection with UART port and read data
  * ************************************************************************************************/
 
-class UARTConnection : public QObject
+class UARTConnection : public QThread
 {
 public:
     /* public Constractor
@@ -19,8 +22,6 @@ public:
      * ****************************************************************************************/
 
     QByteArray sendCommand(QByteArray command);
-
-    QVariant connect(const QString &portName, qint32 baudRate);
 
     //! Configure and initalize UART connection
     void initConnection(const QString &portName, const qint32 &baundRate);
@@ -46,11 +47,11 @@ public:
     bool writeData(QByteArray data);
 
 signals:
-    void connectionError(QString error);
+    void connectionError(const QString &error);
 
     //! Transform the data into a meaningful format
     //! and then transmit it to the intended destination.
-    void sendData(QString data);
+    void sendData(const QString &data);
 
 private slots:
 
@@ -59,7 +60,13 @@ private slots:
 
 
 private:
+    void run() override;
+
+private:
 
     QSerialPort *mSerial;
+
+    QMutex m_mutex;
+    QWaitCondition m_cond;
 };
 

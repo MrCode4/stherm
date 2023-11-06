@@ -5,7 +5,6 @@
 #include <QtNetwork>
 
 #include "DataParser.h"
-#include "UARTConnection.h"
 
 /*! ***********************************************************************************************
  * This class manages send requests from app to device and and process the received response.
@@ -68,8 +67,6 @@ public:
     //! Set time zone
     Q_INVOKABLE void setTimeZone(int offset);
 
-    void createNRF();
-
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -95,6 +92,5 @@ private:
     //! Worker thread
     QThread mThread;
 
-    UARTConnection * uartConnection;
     DataParser *mDataParser;
 };
