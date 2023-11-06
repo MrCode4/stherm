@@ -29,12 +29,16 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
+    implicitWidth: 400
+    implicitHeight: 200
     leftInset: 0
     rightInset: 0
+    topInset: 0
+    bottomInset: 0
     background: Item {
-        readonly property int pathWidth: AppStyle.size / 40
+        readonly property int pathWidth: 14 * scaleFactor
         readonly property real shapeWidth: shapeHeight * 2
-        readonly property real shapeHeight: height - AppStyle.size / 24
+        readonly property real shapeHeight: height - pathWidth * 2
 
         layer.enabled: true
         layer.samples: 8
@@ -114,10 +118,12 @@ Control {
 
     Item {
         id: _handle
+
         readonly property int angleRange: 180
 
-        x: _control.width / 2
-        y: _control.height - _handleCircle.height / 2
+        parent: _control.background
+        x: parent.width / 2
+        y: parent.height - (_control.height - _control.background.shapeHeight) / 2 + 2
         rotation: {
             var valueRange = Math.abs(to - from);
             return ((value - from)/ (valueRange > 0 ? valueRange : 1)) * angleRange
@@ -133,52 +139,71 @@ Control {
             color: enabled ? _control.Material.foreground
                            : (Qt.darker(_control.Material.foreground, _control.darkerShade))
         }
+    }
 
-        Item {
-            anchors.fill: _handleCircle
-            anchors.margins: -24
+    Item {
+        x: (_control.background.width - width) / 2
+        y: (_control.background.height - height) / 2
+        width: _control.background.shapeWidth
+        height: _control.background.shapeHeight + 4
 
-            DragHandler {
-                id: _handleDh
-                property bool dragging: false
-                property point handlePosInStart: Qt.point(_handle.x, _handle.y)
+        DragHandler {
+            id: _handleDh
+            property bool dragging: false
+            property point handlePosInStart: Qt.point(_handle.x, _handle.y)
+            readonly property real radiusSquared: Math.pow(center.y - _control.background.pathWidth / 2, 2)
+            readonly property point center: Qt.point(parent.width / 2, parent.height)
 
-                target: null //! To handle dragging arbitrarily
-                dragThreshold: 2
-                onGrabChanged: function(grabState, point){
-                    //! See enum QPointingDevice::GrabTransition
-                    if (grabState === 1) {
-                        handlePosInStart = _handleCircle.mapToItem(
-                                    _control,
-                                    _handleCircle.width / 2,
-                                    _handleCircle.height / 2)
-                        handlePosInStart.x -= _handle.x;
-                        handlePosInStart.y -= _handle.y;
+            grabPermissions: dragging ? PointerHandler.CanTakeOverFromAnything
+                                      : PointerHandler.ApprovesTakeOverByAnything
+            target: null //! To handle dragging arbitrarily
+            dragThreshold: 2
+            onGrabChanged: function(grabState, point){
+                //! See enum QPointingDevice::GrabTransition
+                if (grabState === 1) {
+                    //! Get press distance to center of semi circle
+                    var pressToCircle = Qt.vector2d(centroid.position.x - center.x,
+                                                    centroid.position.y - center.y)
+                    var lenSquared = Math.pow(pressToCircle.x, 2) + Math.pow(pressToCircle.y, 2);
+
+                    if (Math.abs(lenSquared - radiusSquared) < 100 * 100) {
+                        updateValue();
                         dragging = true;
-                    } else if (grabState === 2 || grabState === 0x30 || grabState === 0x20) {
-                        dragging = false;
                     }
-                }
-
-                onActiveTranslationChanged: {
-                    var point = Qt.point(activeTranslation.x, activeTranslation.y);
-
-                    var newHandlePos = Qt.point(0, 0);
-                    newHandlePos.x = handlePosInStart.x + point.x + _handleCircle.width / 2;
-                    newHandlePos.y = handlePosInStart.y + point.y + _handleCircle.height / 2;
-
-                    var angle = Math.atan2(-newHandlePos.y, -newHandlePos.x) * 57.2958;
-
-                    //! Allow angle a little more beyond 0 and 180 to make sure 'to' and 'from' are
-                    //! always easily reached. This won't effect on value since it's always clamped
-                    //! between 'to' and 'from'
-                    if (angle > -8 || angle < -172) {
-                        //! Set value based on angle
-                        angle = angle < -170 ? angle + 360 : angle;
-                        value = from + Math.min(to - from, Math.max(0, angle / (_handle.angleRange)) * Math.abs(to - from));
-                    }
+                } else if (grabState === 2 || grabState === 0x30 || grabState === 0x20) {
+                    dragging = false;
                 }
             }
+
+            onActiveTranslationChanged: if (dragging) updateValue()
+
+            function updateValue()
+            {
+                var newHandlePos = Qt.point(0, 0);
+                newHandlePos.x = centroid.position.x;
+                newHandlePos.y = centroid.position.y;
+
+                var angle = Math.atan2(center.y - newHandlePos.y, center.x - newHandlePos.x) * 57.2958;
+
+                //! Allow angle a little more beyond 0 and 180 to make sure 'to' and 'from' are
+                //! always easily reached. This won't effect on value since it's always clamped
+                //! between 'to' and 'from'
+                if (angle > -8 || angle < -172) {
+                    //! Set value based on angle
+                    angle = angle < -170 ? angle + 360 : angle;
+                    value = from + Math.min(to - from, Math.max(0, angle / (_handle.angleRange)) * Math.abs(to - from));
+                }
+            }
+        }
+
+        //! This MouseArea is added so touch/press events that won't start dragging in DragHandler
+        //! can be passed to other Items like SwipeView or Flickable
+        MouseArea {
+            enabled: !_handleDh.dragging
+            width: _handleDh.dragging ? 0 : parent.width
+            height: _handleDh.dragging ? 0 : parent.height
+            anchors.centerIn: parent
+            propagateComposedEvents: true
         }
     }
 }
