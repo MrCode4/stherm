@@ -25,10 +25,9 @@ void DataParser::createNRF()
 
     uartConnection->initConnection(NRF_SERRIAL_PORT, QSerialPort::Baud9600);
     if (uartConnection->connect() || true) { // CHECK: Remove '|| True'
-        connect(uartConnection, &UARTConnection::sendData, this, [=](QString data) {
+        connect(uartConnection, &UARTConnection::sendData, this, [=](const QByteArray& data) {
             qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce:   " << data;
-            QJsonObject obj = QJsonDocument::fromJson(data.toUtf8()).object();
-            QVariantMap mainData = obj.toVariantMap();
+            QVariantMap mainData = deserializeMainData(data);
             qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce (Converted data):   " << mainData;
             emit dataReay(mainData);
 
@@ -45,3 +44,12 @@ void DataParser::createNRF()
         qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" <<NRF_GPIO_5;
     }
 }
+
+QVariantMap DataParser::deserializeMainData(const QByteArray& serializeData)
+{
+    QJsonObject obj = QJsonDocument::fromJson(serializeData).object();
+    QVariantMap mainData = obj.toVariantMap();
+
+    return mainData;
+}
+

@@ -6,7 +6,7 @@ Timing::Timing(QObject *parent)
     : QObject{parent}
 {
     int year = 2023 - 1900, month = 0, day = 1, hour = 0, minute = 0, second = 0;
-    std::tm tm ;//= {.tm_sec = 0, .tm_min = 0, .tm_hour = 0, .tm_mday = 1, .tm_mon = 0, .tm_year = 2023-1900, .tm_isdst = LOCALE_USE_DST };
+    std::tm tm = {.tm_sec = 0, .tm_min = 0, .tm_hour = 0, .tm_mday = 1, .tm_mon = 0, .tm_year = 2023-1900, .tm_isdst = LOCALE_USE_DST };
     timestamp_t tr = std::mktime(&tm);
 
     uptime = current_timestamp();

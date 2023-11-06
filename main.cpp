@@ -10,23 +10,22 @@
 #include <QScreen>
 #include <QSysInfo>
 
-#include "DeviceControllerCPP.h"
+#include "UtilityHelper.h"
 
 int main(int argc, char *argv[])
 {
-    DeviceControllerCPP controller;
 
-    qDebug() << Q_FUNC_INFO << __LINE__ << "getStartMode: " << controller.getStartMode(90);
+    qDebug() << Q_FUNC_INFO << __LINE__ << "getStartMode: " << UtilityHelper::getStartMode(90);
 
     // CPU info example
-    QString cpuid = controller.getCPUInfo();
+    QString cpuid = UtilityHelper::getCPUInfo();
     qDebug() << "CPU ID: " << cpuid;
 
     // Brightness example
-    controller.setBrightness(200);
+    UtilityHelper::setBrightness(200);
 
     // Time zone example
-    controller.setTimeZone(8);
+    UtilityHelper::setTimeZone(8);
 
     //! Enable virtual keyboard
     qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));

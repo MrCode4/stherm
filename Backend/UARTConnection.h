@@ -53,7 +53,7 @@ signals:
 
     //! Transform the data into a meaningful format
     //! and then transmit it to the intended destination.
-    void sendData(const QString &data);
+    void sendData(const QByteArray& data);
 
 private slots:
 
