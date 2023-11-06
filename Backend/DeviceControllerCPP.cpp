@@ -11,9 +11,16 @@
  * ************************************************************************************************/
 DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
-    _mainData = {{"temp", QVariant(32.56)}, {"hum", QVariant(30.24)}};
+    _mainData = {{"temp", QVariant(0)}, {"hum", QVariant(0)}};
 
-    mDataParser = new DataParser(this);
+    mDataParser = new DataParser();
+
+    // Get data from parser and pass to UI
+    connect(mDataParser, &DataParser::dataReay, this, [=](QVariantMap data) {
+        qDebug() << Q_FUNC_INFO << __LINE__ << "DataParser:   " << data;
+        _mainData = data;
+
+    });
 
 
 }

@@ -9,8 +9,10 @@
  * handles the processing of associated signals.
  * ************************************************************************************************/
 
-class DataParser : QObject
+class DataParser : public QObject
 {
+    Q_OBJECT
+
 public:
     DataParser(QObject *parent = nullptr);
 

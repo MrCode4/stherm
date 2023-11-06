@@ -12,6 +12,8 @@
 
 class UARTConnection : public QThread
 {
+    Q_OBJECT
+
 public:
     /* public Constractor
      * ****************************************************************************************/
