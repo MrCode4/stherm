@@ -123,7 +123,7 @@ Control {
 
         parent: _control.background
         x: parent.width / 2
-        y: parent.height - (_control.height - _control.background.shapeHeight) / 2 + 2
+        y: parent.height - (_control.height - _control.background.shapeHeight) / 2
         rotation: {
             var valueRange = Math.abs(to - from);
             return ((value - from)/ (valueRange > 0 ? valueRange : 1)) * angleRange
