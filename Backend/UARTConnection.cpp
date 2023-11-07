@@ -18,10 +18,7 @@ void UARTConnection::initConnection(const QString& portName, const qint32& baund
 
     if (mSerial->isOpen()) {
         mSerial->close();
-
-        return;
     }
-
 
     mSerial->setPortName(portName);
     bool issuccess = mSerial->setBaudRate(baundRate) && // Set bound rate in all directions
@@ -39,7 +36,8 @@ void UARTConnection::initConnection(const QString& portName, const qint32& baund
     QObject::connect(mSerial, &QSerialPort::errorOccurred, [this](QSerialPort::SerialPortError error) {
 
         QString errorMessage = mSerial->errorString();
-        qDebug() << Q_FUNC_INFO << __LINE__ << error << errorMessage;
+        qDebug() << Q_FUNC_INFO << __LINE__ <<"Port name:   "<<mSerial->portName() <<
+                 "Error:   "<< error << errorMessage;
         emit connectionError(errorMessage);
     });
 }
@@ -50,16 +48,19 @@ bool UARTConnection::connect()
 
     // Open Serial port & send beacon, ping packets to bring device into connected state
     if (!mSerial->isOpen()) {
+        qDebug() << Q_FUNC_INFO << __LINE__ << "Serial port is not open, Port name:   " << mSerial->portName();
+        qDebug() << Q_FUNC_INFO << __LINE__ << "Try to open, Port name:   " << mSerial->portName();
         mSerial->open(QIODevice::ReadWrite);
-    }
-
-    // If open fails then return with an error
-    if (!mSerial->isOpen()) {
-        qDebug() << (QString("Can't open %1,%2 error code %3")
-                         .arg(mSerial->portName())
-                         .arg(mSerial->baudRate())
-                         .arg(mSerial->error()));
-        return false;
+        if (!mSerial->isOpen()) {
+            // If open fails then return with an error
+            qDebug() << (QString("Can't open %1,%2 error code %3")
+                             .arg(mSerial->portName())
+                             .arg(mSerial->baudRate())
+                             .arg(mSerial->error()));
+            return false;
+        } else {
+            qDebug() << Q_FUNC_INFO << __LINE__ << "Opened, Port name:   " << mSerial->portName();
+        }
     }
 
     bool isOpen = mSerial->isOpen();
@@ -123,7 +124,7 @@ void UARTConnection::run()
 
     // As raw data
     // todo: change to serialize data
-        while (true) {
+        while (!true) {
             QVariantMap mainData = {{"temp", QVariant(18)}, {"hum", QVariant(30.24)}};
             QJsonObject obj;
             obj.insert("temp", 10);

@@ -52,7 +52,7 @@ void DeviceControllerCPP::createTIConnection()
     tiConnection->initConnection(TI_SERRIAL_PORT, QSerialPort::Baud9600);
     if (tiConnection->connect() || true) { // CHECK: Remove '|| True'
         connect(tiConnection, &UARTConnection::sendData, this, [=](const QVariantMap& data) {
-            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce:   " << data;
+            qDebug() << Q_FUNC_INFO << __LINE__ << "TI Responce:   " << data;
         });
 
         tiConnection->start();
@@ -89,8 +89,17 @@ void DeviceControllerCPP::createNRF()
 QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
 {
     uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
-    uartConnection->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
-    uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+
+    // Uncomment to test
+    //    uartConnection->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
+
+    // Uncomment to test
+    //    uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+
+
+    // Uncomment to test
+    tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+
 
     if (className == "system") {
         if (method == "getMainData") {
