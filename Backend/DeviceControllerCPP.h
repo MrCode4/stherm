@@ -67,6 +67,8 @@ public:
     //! Set time zone
     Q_INVOKABLE void setTimeZone(int offset);
 
+    //! Create connections
+    Q_INVOKABLE void createConnections();
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -87,9 +89,6 @@ private:
     //! Create NRF connection
     void createNRF();
 
-    //! Create TI connection
-    void createTIConnection();
-
 private:
     /* Attributes
      * ****************************************************************************************/
@@ -101,4 +100,5 @@ private:
     UARTConnection * uartConnection;
     UARTConnection * tiConnection;
 
+    void createTIConnection();
 };

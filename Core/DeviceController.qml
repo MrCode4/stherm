@@ -15,6 +15,17 @@ I_DeviceController {
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {}
 
+    /* Signals
+     * ****************************************************************************************/
+
+    //! Emit when need to connect to device.
+    signal createConnection();
+
+    onCreateConnection: {
+        console.log("************** Initialize and create connections **************")
+        deviceControllerCPP.createConnections();
+    }
+
     /* Children
      * ****************************************************************************************/
 

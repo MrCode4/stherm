@@ -27,10 +27,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mThread.start();
 
     _mainData = {{"temp", QVariant(0)}, {"hum", QVariant(0)}};
-
-    createNRF();
-    createTIConnection();
 }
+
 
 DeviceControllerCPP::~DeviceControllerCPP()
 {
@@ -39,6 +37,12 @@ DeviceControllerCPP::~DeviceControllerCPP()
 void DeviceControllerCPP::createSensor(QString name, QString id)
 {
 
+}
+
+void DeviceControllerCPP::createConnections()
+{
+    createNRF();
+    createTIConnection();
 }
 
 void DeviceControllerCPP::createTIConnection()

@@ -75,6 +75,10 @@ QtObject {
     onSimulatingChanged: {
         if (!simulating) {
             Style.background = "#000000";
+
+            // Create connections
+            realDeviceController.createConnection();
+
             // start real device
             realDeviceController.updateDeviceBacklight();
         }
