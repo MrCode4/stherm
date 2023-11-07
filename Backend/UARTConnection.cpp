@@ -91,6 +91,11 @@ bool UARTConnection::writeData(QByteArray data) {
     return mSerial->write(data);
 }
 
+bool UARTConnection::writeData(const char *data, qint64 len)
+{
+    return mSerial->write(data, len);
+}
+
 void UARTConnection::onReadyRead()
 {
     // Handle data

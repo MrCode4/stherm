@@ -47,6 +47,9 @@ public:
 
     //! Write Data
     bool writeData(QByteArray data);
+    bool writeData(const char *data, qint64 len);
+
+    bool sendRequest();
 
 signals:
     void connectionError(const QString &error);

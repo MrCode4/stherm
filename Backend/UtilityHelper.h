@@ -2,6 +2,12 @@
 
 #include <QString>
 
+// Packet types
+#define NONE_Packet     0x00
+#define UART_Packet     0x01
+#define NUS_Packet      0x02
+
+namespace STHERM {
 /**
  * @brief Enumeration of serial input-output commands.
  */
@@ -41,6 +47,34 @@ enum SIOCommand {
 };
 
 /**
+ * @brief Enumeration of serial input-output errors.
+ */
+enum SIOErrors {
+    ERROR_NO = 0x00,
+    ERROR_01,         // Error: I2C_BUS
+    ERROR_02,          // Error: Temperature/Humidity is not updated
+    ERROR_GPIO_INIT,
+    ERROR_UNKNOWN_COMMAND,
+    ERROR_CRC,
+    ERROR_TX,
+    ERROR_DATA_LEN,
+    ERROR_RELAY_NOT_FOUND,
+    USAGE_ERROR,//programm call argument count error
+    ARGUMENT_ERROR,//programm call argument expression error
+    RESOURCE_BUSY_ERROR,//can not open recource associated with the programm
+    INTERNAL_ERROR,//error on the side of microcontrollers
+    ERROR_WIRING_NOT_CONNECTED,
+    ERROR_COULD_NOT_SET_RELAY
+
+} ;
+
+enum PacketType {
+    NONEPacket = 0,
+    UARTPacket,
+    NUSPacket
+};
+
+/**
  * @brief Structure for serial input-output packets.
  */
 struct SIOPacket {
@@ -52,6 +86,7 @@ struct SIOPacket {
     uint8_t DataArray[250];
     uint16_t CRC;
 };
+}
 
 /*! ***********************************************************************************************
  * The UtilityHelper class is a container that encapsulates
@@ -100,7 +135,7 @@ public:
     //! transmitted.
     //! @param TxPacket The SIO_Packet_t struct containing the original packet data.
     //! @return The length of the processed packet in bytes.
-    static uint16_t SetSIOTxPacket(uint8_t* TxDataBuf, SIOPacket TxPacket);
+    static uint16_t setSIOTxPacket(uint8_t* TxDataBuf, STHERM::SIOPacket TxPacket);
 
 
     //! Calculates the CRC-16 checksum for the given data.
@@ -110,5 +145,8 @@ public:
     //! @param length The size of the data buffer in bytes.
     //! @return The CRC-16 checksum for the given data.
     static unsigned short crc16(unsigned char* data_p, unsigned short length);
+
+    //! Return Packet Type with packetType enum
+    static uint8_t packetType(STHERM::PacketType packetType);
 };
 

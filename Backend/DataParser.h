@@ -3,6 +3,7 @@
 #include <QThread>
 
 #include "UARTConnection.h"
+#include "UtilityHelper.h"
 
 /*! ***********************************************************************************************
  * This class oversees the management of the TI and UART threads and
@@ -17,6 +18,10 @@ class DataParser : public QObject
 
 public:
     DataParser(QObject *parent = nullptr);
+
+    //! Prepare packet to write and sed request to write in connectin.
+    void sendRequest(STHERM::SIOCommand cmd,
+                     STHERM::PacketType packetType = STHERM::PacketType::UARTPacket);
 
 signals:
     void dataReay(QVariantMap data);

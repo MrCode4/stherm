@@ -7,6 +7,7 @@
 
 #include "UtilityHelper.h"
 
+
 /* ************************************************************************************************
  * Constructors & Destructor
  * ************************************************************************************************/
@@ -37,6 +38,10 @@ void DeviceControllerCPP::createSensor(QString name, QString id)
 
 QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
 {
+    mDataParser->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+    mDataParser->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
+    mDataParser->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+
     if (className == "system") {
         if (method == "getMainData") {
             return getMainData();

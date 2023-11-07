@@ -186,7 +186,7 @@ void UtilityHelper::setTimeZone(int offset) {
     }
 }
 
-uint16_t UtilityHelper::SetSIOTxPacket(uint8_t *TxDataBuf, SIOPacket TxPacket) {
+uint16_t UtilityHelper::setSIOTxPacket(uint8_t *TxDataBuf, STHERM::SIOPacket TxPacket) {
     uint8_t tmpTxBuffer[256];
     uint16_t index = 0;
     uint16_t packetLen = 0;
@@ -246,4 +246,22 @@ unsigned short UtilityHelper::crc16(unsigned char *data_p, unsigned short length
     crc = (crc << 8) | (data >> 8 & 0xff);
 
     return (crc);
+}
+
+uint8_t UtilityHelper::packetType(STHERM::PacketType packetType) {
+    switch (packetType) {
+    case STHERM::PacketType::NONEPacket:
+        return NONE_Packet;
+
+    case STHERM::PacketType::UARTPacket:
+        return UART_Packet;
+
+    case STHERM::PacketType::NUSPacket:
+        return NUS_Packet;
+
+    default:
+        return NONE_Packet;
+    }
+
+    return NONE_Packet;
 }
