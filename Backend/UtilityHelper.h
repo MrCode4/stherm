@@ -2,6 +2,57 @@
 
 #include <QString>
 
+/**
+ * @brief Enumeration of serial input-output commands.
+ */
+enum SIOCommand {
+    SetConfig = 0x01,
+    SetColorRGB,
+    InitMcus = 0x21,
+    SetChildStatus,
+    StartPairing,
+    StopPairing,
+    GetSensorData,
+    GetNewChild,
+    Get_packets,
+    Send_packet,
+    SetRelay = 0x31,
+    GetRelaySensor,
+    Check_Wiring,
+    feed_wtd,
+    Get_addr,
+    set_wtd,
+    set_update,
+    GetConfig = 0x41,
+    GetStatus,
+    GetInfo,
+    GetTemperature,
+    GetHumidity,
+    GetAQsData,
+    GetBarometer,
+    GetAmbientLight,
+    GetTOF,
+    GetSensors,
+    GetIntoDFU,
+    GET_DEV_ID,
+    ShutDown,
+    CommandNotSupported=0xfe,
+    NoCommand
+};
+
+/**
+ * @brief Structure for serial input-output packets.
+ */
+struct SIOPacket {
+    uint8_t PacketSrc;
+    SIOCommand CMD;
+    uint8_t ACK;
+    uint8_t SID;
+    uint8_t DataLen;
+    uint8_t DataArray[250];
+    uint16_t CRC;
+};
+
 /*! ***********************************************************************************************
  * The UtilityHelper class is a container that encapsulates
  *  a collection of static methods providing a range of general-purpose functionalities.
@@ -39,5 +90,25 @@ public:
 
     //! Set time zone
     static void setTimeZone(int offset);
+
+
+    //! Prepares a serial packet for transmission.
+    //! This function takes a packet of data and processes it for transmission,
+    //! including calculating the CRC and adding escape sequences for special
+    //! characters.
+    //! @param[out] TxDataBuf The buffer containing the processed packet to be
+    //! transmitted.
+    //! @param TxPacket The SIO_Packet_t struct containing the original packet data.
+    //! @return The length of the processed packet in bytes.
+    static uint16_t SetSIOTxPacket(uint8_t* TxDataBuf, SIOPacket TxPacket);
+
+
+    //! Calculates the CRC-16 checksum for the given data.
+    //! This function calculates the CRC-16 checksum for the given data buffer
+    //! and size using the specified polynomial.
+    //! @param data_p A pointer to the data buffer to be checksummed.
+    //! @param length The size of the data buffer in bytes.
+    //! @return The CRC-16 checksum for the given data.
+    static unsigned short crc16(unsigned char* data_p, unsigned short length);
 };
 

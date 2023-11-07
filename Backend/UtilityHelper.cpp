@@ -6,6 +6,13 @@
 #include <QRegularExpression>
 #include <QProcess>
 
+// Definitions of special characters used in serial communication
+#define phyStart        0xF0
+#define phyStop         0xF1
+#define phyCtrlEsc      0xF2
+#define phyXorByte      0xFF
+#define POLY 0x8408
+
 bool UtilityHelper::configurePins(int gpio)
 {
     // Update export file
@@ -177,4 +184,66 @@ void UtilityHelper::setTimeZone(int offset) {
     if (exitCode >= 0) {
         qDebug() << Q_FUNC_INFO << __LINE__  << "Timezone set to" << timezoneFile;
     }
+}
+
+uint16_t UtilityHelper::SetSIOTxPacket(uint8_t *TxDataBuf, SIOPacket TxPacket) {
+    uint8_t tmpTxBuffer[256];
+    uint16_t index = 0;
+    uint16_t packetLen = 0;
+
+    tmpTxBuffer[0] = TxPacket.CMD;
+    tmpTxBuffer[1] = TxPacket.ACK;
+    tmpTxBuffer[2] = TxPacket.SID;
+    index += 3;
+    memcpy(&tmpTxBuffer[index], &TxPacket.DataArray[0], TxPacket.DataLen);
+    index += TxPacket.DataLen;
+    TxPacket.CRC = crc16(&TxPacket.DataArray[0], TxPacket.DataLen);
+    memcpy(&tmpTxBuffer[index], &TxPacket.CRC, 2);
+    index += 2;
+
+    TxDataBuf[packetLen++] = phyStart;
+
+    int a = 0;
+    for(; a < index; a++)
+    {
+        if ( (tmpTxBuffer[a] == phyStart) || (tmpTxBuffer[a] == phyStop) || (tmpTxBuffer[a] == phyCtrlEsc) )
+        {
+            TxDataBuf[packetLen++] = phyCtrlEsc;
+            TxDataBuf[packetLen++] = tmpTxBuffer[a] ^ phyXorByte;
+        }
+        else {
+            TxDataBuf[packetLen++] = tmpTxBuffer[a];
+        }
+    }
+    TxDataBuf[packetLen++] = phyStop;
+
+    return packetLen;
+}
+
+unsigned short UtilityHelper::crc16(unsigned char *data_p, unsigned short length)
+{
+    unsigned char i;
+    unsigned int data;
+    unsigned int crc = 0xffff;
+
+    if (length == 0)
+        return (~crc);
+
+    do
+    {
+        for (i = 0, data = (unsigned int)0xff & *data_p++;
+             i < 8;
+             i++, data >>= 1)
+        {
+            if ((crc & 0x0001) ^ (data & 0x0001))
+                crc = (crc >> 1) ^ POLY;
+            else  crc >>= 1;
+        }
+    } while (--length);
+
+    crc = ~crc;
+    data = crc;
+    crc = (crc << 8) | (data >> 8 & 0xff);
+
+    return (crc);
 }

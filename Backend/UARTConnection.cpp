@@ -47,6 +47,8 @@ void UARTConnection::initConnection(const QString& portName, const qint32& baund
 
 bool UARTConnection::connect()
 {
+    // Check:  Use QSocketNotifier to monitor activity on a file descriptor
+
     // Open Serial port & send beacon, ping packets to bring device into connected state
     if (!mSerial->isOpen()) {
         mSerial->open(QIODevice::ReadWrite);
