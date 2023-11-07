@@ -7,6 +7,9 @@
 
 #include "UtilityHelper.h"
 
+/* ************************************************************************************************
+ * Device specifications
+ * ************************************************************************************************/
 
 #define NRF_GPIO_4		21
 #define NRF_GPIO_5		22
@@ -18,6 +21,10 @@
  * ************************************************************************************************/
 DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
+
+    this->moveToThread(&mThread);
+    mThread.start();
+
     _mainData = {{"temp", QVariant(0)}, {"hum", QVariant(0)}};
 
     createNRF();
@@ -46,6 +53,8 @@ void DeviceControllerCPP::createNRF()
             // Set data to ui (Update ui varables).
             _mainData = data;
         });
+
+        uartConnection->start();
     }
 
     bool isSuccess =  UtilityHelper::configurePins(NRF_GPIO_4);
