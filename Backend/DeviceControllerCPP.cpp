@@ -28,8 +28,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     _mainData = {{"temp", QVariant(0)}, {"hum", QVariant(0)}};
 
     createNRF();
-
-
 }
 
 DeviceControllerCPP::~DeviceControllerCPP()

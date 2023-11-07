@@ -100,7 +100,6 @@ bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::Pa
     QByteArray packet = mDataParser->preparePacket(cmd, packetType);
 
     return sendRequest(packet);
-
 }
 
 void UARTConnection::onReadyRead()
