@@ -40,7 +40,13 @@ QVariantMap DataParser::deserializeMainData(const QByteArray& serializeData)
 {
     QJsonObject obj = QJsonDocument::fromJson(serializeData).object();
     QVariantMap mainData = obj.toVariantMap();
+    STHERM::SerialRxData SerialData;
 
+    foreach (auto var, serializeData) {
+        bool isValid = UtilityHelper::SerialDataRx(static_cast<uint8_t>(var), &SerialData);
+        if (!isValid)
+            break;
+    }
     return mainData;
 }
 

@@ -157,7 +157,7 @@ public:
     //!                       the current state of the received packet.
     //! @return True if the packet is successfully received and has a valid length,
     //!         false otherwise.
-    bool SerialDataRx(uint8_t RxData, STHERM::SerialRxData* RxDataCfg);
+    static bool SerialDataRx(uint8_t RxData, STHERM::SerialRxData* RxDataCfg);
 
     //! Calculates the CRC-16 checksum for the given data.
     //! This function calculates the CRC-16 checksum for the given data buffer
