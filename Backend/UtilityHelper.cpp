@@ -13,6 +13,9 @@
 #define phyXorByte      0xFF
 #define POLY 0x8408
 
+// Minimum packet length
+#define PacketMinLength 5
+
 bool UtilityHelper::configurePins(int gpio)
 {
     // Update export file
@@ -186,6 +189,7 @@ void UtilityHelper::setTimeZone(int offset) {
     }
 }
 
+
 uint16_t UtilityHelper::setSIOTxPacket(uint8_t *TxDataBuf, STHERM::SIOPacket TxPacket) {
     uint8_t tmpTxBuffer[256];
     uint16_t index = 0;
@@ -218,6 +222,46 @@ uint16_t UtilityHelper::setSIOTxPacket(uint8_t *TxDataBuf, STHERM::SIOPacket TxP
     TxDataBuf[packetLen++] = phyStop;
 
     return packetLen;
+}
+
+bool UtilityHelper::SerialDataRx(uint8_t RxData, STHERM::SerialRxData *RxDataCfg) {
+    switch (RxData) {
+    case phyStart: {
+        RxDataCfg->RxDataLen = 0;
+        RxDataCfg->RxActive = true;
+        RxDataCfg->RxPacketDone = false;
+        RxDataCfg->RxCtrlEsc = false;
+    } break;
+    case phyStop: {
+        RxDataCfg->RxActive = false;
+        RxDataCfg->RxPacketDone = true;
+        RxDataCfg->RxCtrlEsc = false;
+    } break;
+    case phyCtrlEsc: {
+        RxDataCfg->RxCtrlEsc = true;
+    } break;
+    default: {
+        if (RxDataCfg->RxActive == true) {
+            if (RxDataCfg->RxCtrlEsc == true) {
+                RxDataCfg->RxCtrlEsc = false;
+                RxDataCfg->RxDataArray[RxDataCfg->RxDataLen] = phyXorByte ^ RxData;
+            } else {
+                RxDataCfg->RxDataArray[RxDataCfg->RxDataLen] = RxData;
+            }
+            RxDataCfg->RxDataLen++;
+        }
+    } break;
+    }
+    if (RxDataCfg->RxPacketDone == true) {
+        RxDataCfg->RxPacketDone = false;
+        if (RxDataCfg->RxDataLen >= PacketMinLength) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
 }
 
 unsigned short UtilityHelper::crc16(unsigned char *data_p, unsigned short length)

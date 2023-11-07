@@ -86,6 +86,17 @@ struct SIOPacket {
     uint8_t DataArray[250];
     uint16_t CRC;
 };
+
+/**
+ * @brief Structure for storing received serial data.
+ */
+struct SerialRxData {
+    uint8_t RxDataLen;
+    bool RxActive;
+    bool RxPacketDone;
+    bool RxCtrlEsc;
+    uint8_t RxDataArray[256];
+};
 }
 
 /*! ***********************************************************************************************
@@ -137,6 +148,16 @@ public:
     //! @return The length of the processed packet in bytes.
     static uint16_t setSIOTxPacket(uint8_t* TxDataBuf, STHERM::SIOPacket TxPacket);
 
+    //! brief Processes a received byte of serial data.
+    //! This function handles the received serial data, managing the escape
+    //! sequences and constructing the received packet.
+    //!
+    //! @param RxData The received data byte.
+    //! @param[out] RxDataCfg The Serial_RxData_t configuration struct containing
+    //!                       the current state of the received packet.
+    //! @return True if the packet is successfully received and has a valid length,
+    //!         false otherwise.
+    bool SerialDataRx(uint8_t RxData, STHERM::SerialRxData* RxDataCfg);
 
     //! Calculates the CRC-16 checksum for the given data.
     //! This function calculates the CRC-16 checksum for the given data buffer
