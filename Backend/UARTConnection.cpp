@@ -107,6 +107,8 @@ void UARTConnection::onReadyRead()
     // Handle data
     QByteArray dataBA = mSerial->readAll();
 
+    qDebug() << Q_FUNC_INFO << __LINE__ << dataBA;
+
     QVariantMap deserializeData = mDataParser->deserializeMainData(dataBA);
 
     emit sendData(deserializeData);

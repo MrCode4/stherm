@@ -15,6 +15,7 @@
 #define NRF_GPIO_5		22
 
 #define NRF_SERRIAL_PORT "/dev/ttymxc1"
+#define TI_SERRIAL_PORT  "/dev/ttymxc3"
 
 /* ************************************************************************************************
  * Constructors & Destructor
@@ -28,6 +29,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     _mainData = {{"temp", QVariant(0)}, {"hum", QVariant(0)}};
 
     createNRF();
+    createTIConnection();
 }
 
 DeviceControllerCPP::~DeviceControllerCPP()
@@ -37,6 +39,20 @@ DeviceControllerCPP::~DeviceControllerCPP()
 void DeviceControllerCPP::createSensor(QString name, QString id)
 {
 
+}
+
+void DeviceControllerCPP::createTIConnection()
+{
+    tiConnection = new UARTConnection();
+
+    tiConnection->initConnection(TI_SERRIAL_PORT, QSerialPort::Baud9600);
+    if (tiConnection->connect() || true) { // CHECK: Remove '|| True'
+        connect(tiConnection, &UARTConnection::sendData, this, [=](const QVariantMap& data) {
+            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce:   " << data;
+        });
+
+        tiConnection->start();
+    }
 }
 
 void DeviceControllerCPP::createNRF()

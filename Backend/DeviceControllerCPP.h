@@ -87,6 +87,9 @@ private:
     //! Create NRF connection
     void createNRF();
 
+    //! Create TI connection
+    void createTIConnection();
+
 private:
     /* Attributes
      * ****************************************************************************************/
@@ -96,5 +99,6 @@ private:
     QThread mThread;
 
     UARTConnection * uartConnection;
+    UARTConnection * tiConnection;
 
 };
