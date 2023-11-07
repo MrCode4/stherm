@@ -5,46 +5,12 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-#define NRF_GPIO_4		21
-#define NRF_GPIO_5		22
-
-
-#define NRF_SERRIAL_PORT "/dev/ttymxc1"
-
 DataParser::DataParser(QObject *parent) :
     QObject(parent)
 {
-
-    createNRF();
 }
 
-void DataParser::createNRF()
-{
-    uartConnection = new UARTConnection();
-
-    uartConnection->initConnection(NRF_SERRIAL_PORT, QSerialPort::Baud9600);
-    if (uartConnection->connect() || true) { // CHECK: Remove '|| True'
-        connect(uartConnection, &UARTConnection::sendData, this, [=](const QByteArray& data) {
-            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce:   " << data;
-            QVariantMap mainData = deserializeMainData(data);
-            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce (Converted data):   " << mainData;
-            emit dataReay(mainData);
-
-        });
-    }
-
-    bool isSuccess =  UtilityHelper::configurePins(NRF_GPIO_4);
-    if (!isSuccess) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" <<NRF_GPIO_4;
-    }
-
-    isSuccess =  UtilityHelper::configurePins(NRF_GPIO_5);
-    if (!isSuccess) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" <<NRF_GPIO_5;
-    }
-}
-
-void DataParser::sendRequest(STHERM::SIOCommand cmd, STHERM::PacketType packetType)
+QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType)
 {
     // Prepare packet to write
     STHERM::SIOPacket txPacket;
@@ -64,7 +30,10 @@ void DataParser::sendRequest(STHERM::SIOCommand cmd, STHERM::PacketType packetTy
     //  of the data in dev_buff_size.
     dev_buff_size = UtilityHelper::setSIOTxPacket(dev_info, txPacket);
 
-    uartConnection->writeData(reinterpret_cast<char*>(dev_info), dev_buff_size);
+    QByteArray result = QByteArray::fromRawData(reinterpret_cast<char *>(dev_info),
+                                                dev_buff_size);
+
+    return result;
 }
 
 QVariantMap DataParser::deserializeMainData(const QByteArray& serializeData)

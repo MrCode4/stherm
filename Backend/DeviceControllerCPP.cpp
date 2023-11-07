@@ -8,6 +8,11 @@
 #include "UtilityHelper.h"
 
 
+#define NRF_GPIO_4		21
+#define NRF_GPIO_5		22
+
+#define NRF_SERRIAL_PORT "/dev/ttymxc1"
+
 /* ************************************************************************************************
  * Constructors & Destructor
  * ************************************************************************************************/
@@ -15,14 +20,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
     _mainData = {{"temp", QVariant(0)}, {"hum", QVariant(0)}};
 
-    mDataParser = new DataParser();
-
-    // Get data from parser and pass to UI
-    connect(mDataParser, &DataParser::dataReay, this, [=](QVariantMap data) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "DataParser:   " << data;
-        _mainData = data;
-
-    });
+    createNRF();
 
 
 }
@@ -36,11 +34,36 @@ void DeviceControllerCPP::createSensor(QString name, QString id)
 
 }
 
+void DeviceControllerCPP::createNRF()
+{
+    uartConnection = new UARTConnection();
+
+    uartConnection->initConnection(NRF_SERRIAL_PORT, QSerialPort::Baud9600);
+    if (uartConnection->connect() || true) { // CHECK: Remove '|| True'
+        connect(uartConnection, &UARTConnection::sendData, this, [=](const QVariantMap& data) {
+            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce:   " << data;
+
+            // Set data to ui (Update ui varables).
+            _mainData = data;
+        });
+    }
+
+    bool isSuccess =  UtilityHelper::configurePins(NRF_GPIO_4);
+    if (!isSuccess) {
+        qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" <<NRF_GPIO_4;
+    }
+
+    isSuccess =  UtilityHelper::configurePins(NRF_GPIO_5);
+    if (!isSuccess) {
+        qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" <<NRF_GPIO_5;
+    }
+}
+
 QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
 {
-    mDataParser->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
-    mDataParser->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
-    mDataParser->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+    uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+    uartConnection->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
+    uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
 
     if (className == "system") {
         if (method == "getMainData") {

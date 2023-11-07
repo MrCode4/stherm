@@ -10,8 +10,11 @@ UARTConnection::UARTConnection(QObject *parent) :
     mSerial(new QSerialPort(this))
 {
 
+    mDataParser = new DataParser();
+
     // Just for test
     start();
+
 }
 
 void UARTConnection::initConnection(const QString& portName, const qint32& baundRate)
@@ -87,13 +90,21 @@ bool UARTConnection::isConnected()
     return this->mSerial->isOpen();
 }
 
-bool UARTConnection::writeData(QByteArray data) {
+bool UARTConnection::sendRequest(QByteArray data) {
     return mSerial->write(data);
 }
 
-bool UARTConnection::writeData(const char *data, qint64 len)
+bool UARTConnection::sendRequest(const char *data, qint64 len)
 {
-    return mSerial->write(data, len);
+        return mSerial->write(data, len);
+}
+
+bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::PacketType &packetType)
+{
+    QByteArray packet = mDataParser->preparePacket(cmd, packetType);
+
+    return sendRequest(packet);
+
 }
 
 void UARTConnection::onReadyRead()
@@ -101,7 +112,9 @@ void UARTConnection::onReadyRead()
     // Handle data
     QByteArray dataBA = mSerial->readAll();
 
-    sendData(dataBA);
+    QVariantMap deserializeData = mDataParser->deserializeMainData(dataBA);
+
+    emit sendData(deserializeData);
 }
 
 void UARTConnection::run()
@@ -119,7 +132,8 @@ void UARTConnection::run()
         obj.insert("temp", 10);
         obj.insert("hum", 30.24);
         qDebug() << Q_FUNC_INFO << __LINE__ << QJsonDocument(obj).toJson();
-        emit sendData(QJsonDocument(obj).toJson());
+        emit sendData(obj.toVariantMap());
+
     });
 
 

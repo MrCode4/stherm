@@ -2,7 +2,6 @@
 
 #include <QThread>
 
-#include "UARTConnection.h"
 #include "UtilityHelper.h"
 
 /*! ***********************************************************************************************
@@ -19,22 +18,12 @@ class DataParser : public QObject
 public:
     DataParser(QObject *parent = nullptr);
 
-    //! Prepare packet to write and sed request to write in connectin.
-    void sendRequest(STHERM::SIOCommand cmd,
+    //! Prepare packet
+    QByteArray preparePacket(STHERM::SIOCommand cmd,
                      STHERM::PacketType packetType = STHERM::PacketType::UARTPacket);
-
-signals:
-    void dataReay(QVariantMap data);
-
-private:
-    //! Create NRF connection
-    void createNRF();
 
     //! Deserialize main data and send dataReay signal
     QVariantMap deserializeMainData(const QByteArray &serializeData);
-
-private:
-        UARTConnection * uartConnection;
 
 };
 

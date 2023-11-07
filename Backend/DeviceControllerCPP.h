@@ -4,7 +4,7 @@
 #include <QString>
 #include <QtNetwork>
 
-#include "DataParser.h"
+#include "UARTConnection.h"
 
 /*! ***********************************************************************************************
  * This class manages send requests from app to device and and process the received response.
@@ -84,6 +84,9 @@ private:
      * ****************************************************************************************/
     QVariantMap getMainData();
 
+    //! Create NRF connection
+    void createNRF();
+
 private:
     /* Attributes
      * ****************************************************************************************/
@@ -92,5 +95,6 @@ private:
     //! Worker thread
     QThread mThread;
 
-    DataParser *mDataParser;
+    UARTConnection * uartConnection;
+
 };
