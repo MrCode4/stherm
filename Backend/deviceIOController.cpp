@@ -22,6 +22,17 @@ DeviceIOController::DeviceIOController(QObject *parent)
 {
 }
 
+DeviceIOController::~DeviceIOController()
+{
+    mStopReading = false;
+
+    if (uartConnection)
+        delete uartConnection;
+
+    if (tiConnection)
+        delete tiConnection;
+}
+
 bool DeviceIOController::sendRequest(QString className, QString method, QVariantList data)
 {
     if (className == "hardware") {
@@ -71,6 +82,8 @@ void DeviceIOController::createConnections()
     createNRF();
     createTIConnection();
 
+    mStopReading = false;
+
     this->start();
 }
 
@@ -78,14 +91,17 @@ void DeviceIOController::createSensor(QString name, QString id) {}
 
 void DeviceIOController::run()
 {
+    while (!mStopReading) {
+
     if (uartConnection && uartConnection->isConnected()) {
         uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
-        uartConnection->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
-        uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+//        uartConnection->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
+//        uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
     }
 
     if (tiConnection && tiConnection->isConnected())
         tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+    }
 
 }
 
@@ -127,4 +143,9 @@ void DeviceIOController::createNRF()
     if (!isSuccess) {
         qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" << NRF_GPIO_5;
     }
+}
+
+void DeviceIOController::setStopReading(bool stopReading)
+{
+    mStopReading = stopReading;
 }

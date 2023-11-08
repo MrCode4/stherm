@@ -20,7 +20,6 @@ QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, 
 {
     _deviceController->sendRequest(className, method, data);
 
-    qDebug() << Q_FUNC_INFO << __LINE__ << _deviceController->getStartMode(90);
     if (className == "system") {
         if (method == "getMainData") {
             return getMainData();
@@ -32,7 +31,16 @@ QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, 
 
 void DeviceControllerCPP::startDevice()
 {
+    //! todo: move to constructor later
     _deviceController->createConnections();
+
+
+    _deviceController->setStopReading(true);
+}
+
+void DeviceControllerCPP::stopDevice()
+{
+    _deviceController->setStopReading(false);
 }
 
 QVariantMap DeviceControllerCPP::getMainData()

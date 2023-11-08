@@ -78,6 +78,10 @@ QtObject {
 
             // start real device
             realDeviceController.startDeviceRequested();
+
+        } else {
+            realDeviceController.stopDeviceRequested();
+
         }
     }
 

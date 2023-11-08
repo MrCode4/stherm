@@ -15,7 +15,7 @@ public:
     /* Public Constructors & Destructor
      * ****************************************************************************************/
     explicit DeviceIOController(QObject *parent = nullptr);
-    ~DeviceIOController() = default;
+    ~DeviceIOController();
 
     //! Send requests
     //! transfer data with UARTConnection instance
@@ -42,6 +42,9 @@ public:
     //! Create new sensor
     void createSensor(QString name, QString id);
 
+    //! Stop reading data from device
+    void setStopReading(bool stopReading);
+
 signals:
     void dataReady(QVariantMap data);
 
@@ -51,14 +54,17 @@ signals:
 private:
     void run() override;
 
-private:
-
-    UARTConnection *uartConnection;
-    UARTConnection *tiConnection;
-
     //! Create TI connection
     void createTIConnection();
 
     //! Create NRF connection
     void createNRF();
+
+private:
+
+    UARTConnection *uartConnection;
+    UARTConnection *tiConnection;
+
+    bool mStopReading;
+
 };

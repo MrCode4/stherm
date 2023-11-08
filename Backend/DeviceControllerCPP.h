@@ -53,6 +53,9 @@ public:
     //! todo: move to constructor later
     Q_INVOKABLE void startDevice();
 
+    //! Stop device
+    Q_INVOKABLE void stopDevice();
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/

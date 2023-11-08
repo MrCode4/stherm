@@ -21,12 +21,19 @@ I_DeviceController {
     //! Emit when need to connect to device.
     signal startDeviceRequested();
 
+    //! Emit when need to stop device.
+    signal stopDeviceRequested();
+
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************")
         deviceControllerCPP.startDevice();
 
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight();
+    }
+
+    onStopDeviceRequested: {
+        deviceControllerCPP.stopDevice();
     }
 
     /* Children
