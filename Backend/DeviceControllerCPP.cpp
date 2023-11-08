@@ -20,6 +20,7 @@ QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, 
 {
     _deviceController->sendRequest(className, method, data);
 
+    qDebug() << Q_FUNC_INFO << __LINE__ << _deviceController->getStartMode(90);
     if (className == "system") {
         if (method == "getMainData") {
             return getMainData();

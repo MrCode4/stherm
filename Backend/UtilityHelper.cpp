@@ -153,11 +153,11 @@ QString UtilityHelper::getCPUInfo() {
     return serialNumberHex;
 }
 
-void UtilityHelper::setBrightness(int value) {
+bool UtilityHelper::setBrightness(int value) {
     QFile brightnessFile("/sys/class/backlight/backlight_display/brightness");
     if (!brightnessFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << Q_FUNC_INFO << __LINE__  << "Failed to open brightness file.";
-        return;
+        return false;
     }
 
     QTextStream out(&brightnessFile);
@@ -165,6 +165,7 @@ void UtilityHelper::setBrightness(int value) {
     brightnessFile.close();
 
     qDebug() << "Brightness set successfully!";
+    return true;
 }
 
 void UtilityHelper::setTimeZone(int offset) {

@@ -1,4 +1,5 @@
 #include "UARTConnection.h"
+#include "qeventloop.h"
 
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -37,7 +38,7 @@ void UARTConnection::initConnection(const QString& portName, const qint32& baund
 
         QString errorMessage = mSerial->errorString();
         qDebug() << Q_FUNC_INFO << __LINE__ <<"Port name:   "<<mSerial->portName() <<
-                 "Error:   "<< error << errorMessage;
+            "Error:   "<< error << errorMessage;
         emit connectionError(errorMessage);
     });
 }
@@ -93,14 +94,56 @@ bool UARTConnection::sendRequest(QByteArray data) {
 
 bool UARTConnection::sendRequest(const char *data, qint64 len)
 {
-        return mSerial->write(data, len);
+    return mSerial->write(data, len);
 }
 
 bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::PacketType &packetType)
 {
+    // write request
     QByteArray packet = mDataParser->preparePacket(cmd, packetType);
+    sendRequest(packet);
 
-    return sendRequest(packet);
+//        QEventLoop loop;
+//        QTimer timer;
+//        timer.setSingleShot(true);
+//        QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+//        QObject::connect(this, &UARTConnection::responseReceived, &loop, &QEventLoop::quit);
+//        QObject::connect(this, &UARTConnection::connectionError, &loop, &QEventLoop::quit);
+
+//        timer.start(30000);
+//        loop.exec();
+
+//        if (timer.isActive()) {
+//            timer.stop();
+//        }  else {
+//            qDebug() << "Response timeout";
+//        }
+
+    if (mSerial->waitForBytesWritten()) {
+
+        // read response
+        if (mSerial->waitForReadyRead()) {
+            QByteArray responseData = mSerial->readAll();
+            while (mSerial->waitForReadyRead())
+                responseData += mSerial->readAll();
+
+            const QString response = QString::fromUtf8(responseData);
+            qDebug() << Q_FUNC_INFO << __LINE__ << response;
+            return true;
+
+        } else {
+            qDebug() << Q_FUNC_INFO << __LINE__ << QString("Wait read response timeout %1")
+                                                       .arg(QTime::currentTime().toString());
+            return false;
+
+        }
+    } else {
+        qDebug() << Q_FUNC_INFO << __LINE__ << QString("Wait write request timeout %1")
+                                                   .arg(QTime::currentTime().toString());
+        return false;
+    }
+
+    return true;
 }
 
 void UARTConnection::onReadyRead()
@@ -118,20 +161,20 @@ void UARTConnection::onReadyRead()
 void UARTConnection::run()
 {
     m_mutex.lock();
-//    m_cond.wait(&m_mutex);
+    //    m_cond.wait(&m_mutex);
 
     qDebug() << Q_FUNC_INFO << __LINE__;
 
     // As raw data
     // todo: change to serialize data
-        while (!true) {
-            QVariantMap mainData = {{"temp", QVariant(18)}, {"hum", QVariant(30.24)}};
-            QJsonObject obj;
-            obj.insert("temp", 10);
-            obj.insert("hum", 30.24);
-            qDebug() << Q_FUNC_INFO << __LINE__ << QJsonDocument(obj).toJson();
-            emit sendData(obj.toVariantMap());
-        }
+    while (!true) {
+        QVariantMap mainData = {{"temp", QVariant(18)}, {"hum", QVariant(30.24)}};
+        QJsonObject obj;
+        obj.insert("temp", 10);
+        obj.insert("hum", 30.24);
+        qDebug() << Q_FUNC_INFO << __LINE__ << QJsonDocument(obj).toJson();
+        emit sendData(obj.toVariantMap());
+    }
 
     m_mutex.unlock();
 }

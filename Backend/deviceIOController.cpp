@@ -24,7 +24,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
     mThread.start();
 }
 
-QVariantMap DeviceIOController::sendRequest(QString className, QString method, QVariantList data)
+bool DeviceIOController::sendRequest(QString className, QString method, QVariantList data)
 {
     uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
 
@@ -37,6 +37,7 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
     // Uncomment to test
     tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
 
+
     if (className == "hardware") {
 
         qDebug() << "Request received: " << className << method << data;
@@ -48,7 +49,7 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
                 if (data.size() != 6) {
                     qWarning() << "data sent is not consistent";
                 }
-                setBrightness(std::clamp(qRound(data.first().toDouble()), 0, 254));
+                return setBrightness(std::clamp(qRound(data.first().toDouble()), 0, 254));
             }
         }
     }
@@ -66,9 +67,9 @@ QString DeviceIOController::getCPUInfo()
     return UtilityHelper::getCPUInfo();
 }
 
-void DeviceIOController::setBrightness(int value)
+bool DeviceIOController::setBrightness(int value)
 {
-    UtilityHelper::setBrightness(value);
+    return UtilityHelper::setBrightness(value);
 }
 
 void DeviceIOController::setTimeZone(int offset)

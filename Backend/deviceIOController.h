@@ -19,28 +19,28 @@ public:
 
     //! Send requests
     //! transfer data with UARTConnection instance
-    Q_INVOKABLE QVariantMap sendRequest(QString className, QString method, QVariantList data);
+    bool sendRequest(QString className, QString method, QVariantList data);
 
     //! Set gpio
     void exportGPIOPin(int pinNumber);
 
     //! Get start mode
-    Q_INVOKABLE int getStartMode(int pinNumber);
+    int getStartMode(int pinNumber);
 
     //! CPU information
-    Q_INVOKABLE QString getCPUInfo();
+    QString getCPUInfo();
 
     //! Set Brightness
-    Q_INVOKABLE void setBrightness(int value);
+    bool setBrightness(int value);
 
     //! Set time zone
-    Q_INVOKABLE void setTimeZone(int offset);
+    void setTimeZone(int offset);
 
     //! Create connections
-    Q_INVOKABLE void createConnections();
+    void createConnections();
 
     //! Create new sensor
-    Q_INVOKABLE void createSensor(QString name, QString id);
+    void createSensor(QString name, QString id);
 
 signals:
     void dataReady(QVariantMap data);

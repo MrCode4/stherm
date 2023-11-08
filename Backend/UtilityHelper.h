@@ -163,7 +163,7 @@ public:
     static QString getCPUInfo();
 
     //! setBrightness, value is a number between 0 and 254
-    static void setBrightness(int value);
+    static bool setBrightness(int value);
 
     //! Set time zone
     static void setTimeZone(int offset);
