@@ -18,26 +18,12 @@
 #define TI_SERRIAL_PORT "/dev/ttymxc3"
 
 DeviceIOController::DeviceIOController(QObject *parent)
-    : QObject{parent}
+    : QThread{parent}
 {
-    this->moveToThread(&mThread);
-    mThread.start();
 }
 
 bool DeviceIOController::sendRequest(QString className, QString method, QVariantList data)
 {
-    uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
-
-    // Uncomment to test
-    //    uartConnection->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
-
-    // Uncomment to test
-    //    uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
-
-    // Uncomment to test
-    tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
-
-
     if (className == "hardware") {
 
         qDebug() << "Request received: " << className << method << data;
@@ -52,6 +38,9 @@ bool DeviceIOController::sendRequest(QString className, QString method, QVariant
                 return setBrightness(std::clamp(qRound(data.first().toDouble()), 0, 254));
             }
         }
+    } else {
+        tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+
     }
 
     return {};
@@ -81,9 +70,24 @@ void DeviceIOController::createConnections()
 {
     createNRF();
     createTIConnection();
+
+    this->start();
 }
 
 void DeviceIOController::createSensor(QString name, QString id) {}
+
+void DeviceIOController::run()
+{
+    if (uartConnection && uartConnection->isConnected()) {
+        uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+        uartConnection->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
+        uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+    }
+
+    if (tiConnection && tiConnection->isConnected())
+        tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+
+}
 
 void DeviceIOController::createTIConnection()
 {

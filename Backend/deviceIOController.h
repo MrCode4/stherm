@@ -8,7 +8,7 @@
  * This class manages read and write from device using UART
  * ************************************************************************************************/
 
-class DeviceIOController : public QObject
+class DeviceIOController : public QThread
 {
     Q_OBJECT
 public:
@@ -49,8 +49,9 @@ signals:
     void responseReady(int requestType, QVariant response);
 
 private:
-    //! Worker thread
-    QThread mThread;
+    void run() override;
+
+private:
 
     UARTConnection *uartConnection;
     UARTConnection *tiConnection;
