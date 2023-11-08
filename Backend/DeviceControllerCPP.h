@@ -4,11 +4,12 @@
 #include <QString>
 #include <QtNetwork>
 
-#include "UARTConnection.h"
+#include "deviceIOController.h"
 
 /*! ***********************************************************************************************
  * This class manages send requests from app to device and and process the received response.
  * ************************************************************************************************/
+
 class DeviceControllerCPP  : public QObject
 {
     Q_OBJECT
@@ -39,10 +40,6 @@ public:
 
     /* Public Functions
      * ****************************************************************************************/
-    //! Create new sensor
-    Q_INVOKABLE void createSensor(QString name, QString id);
-
-
     //! Send requests
     //! todo: transfer data with UARTConnection instance
     Q_INVOKABLE QVariantMap sendRequest(QString className, QString method, QVariantList data);
@@ -52,53 +49,26 @@ public:
      * Read and write data directly
      * ****************************************************************************************/
 
-    //! Set gpio
-    void exportGPIOPin(int pinNumber);
+    //! starts device
+    //! todo: move to constructor later
+    Q_INVOKABLE void startDevice();
 
-    //! Get start mode
-    Q_INVOKABLE int getStartMode(int pinNumber);
-
-    //! CPU information
-    Q_INVOKABLE QString getCPUInfo();
-
-    //! Set Brightness
-    Q_INVOKABLE void setBrightness(int value);
-
-    //! Set time zone
-    Q_INVOKABLE void setTimeZone(int offset);
-
-    //! Create connections
-    Q_INVOKABLE void createConnections();
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
 
-    //! Send responce with requestType
-    void responseReady(int requestType, QVariant response);
-
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
-
 
 private:
     /* Private Functions
      * ****************************************************************************************/
     QVariantMap getMainData();
 
-    //! Create NRF connection
-    void createNRF();
-
-private:
     /* Attributes
      * ****************************************************************************************/
     QVariantMap _mainData;
 
-    //! Worker thread
-    QThread mThread;
-
-    UARTConnection * uartConnection;
-    UARTConnection * tiConnection;
-
-    void createTIConnection();
+    DeviceIOController *_deviceController;
 };

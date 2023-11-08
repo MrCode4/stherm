@@ -19,11 +19,14 @@ I_DeviceController {
      * ****************************************************************************************/
 
     //! Emit when need to connect to device.
-    signal createConnection();
+    signal startDeviceRequested();
 
-    onCreateConnection: {
+    onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************")
-        deviceControllerCPP.createConnections();
+        deviceControllerCPP.startDevice();
+
+        console.log("************** set the backlight on initialization **************")
+        updateDeviceBacklight();
     }
 
     /* Children
