@@ -7,7 +7,7 @@
 class php_schedule : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
+//    QML_ELEMENT
 private:
 /**
  * Retrieves schedules that have a time overlap with the provided schedule details.
