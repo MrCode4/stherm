@@ -20,7 +20,7 @@ public:
     /* public Constractor
      * ****************************************************************************************/
 
-    explicit UARTConnection(QObject *parent = nullptr);
+    explicit UARTConnection(QObject *parent = nullptr, bool mIsTi = false);
 
     /* public functions
      * ****************************************************************************************/
@@ -71,11 +71,14 @@ private:
 
 private:
 
+    bool mIsTi;
+
     QSerialPort *mSerial;
 
     QMutex m_mutex;
     QWaitCondition m_cond;
 
     DataParser *mDataParser;
+
 };
 

@@ -47,7 +47,7 @@ void DeviceControllerCPP::createConnections()
 
 void DeviceControllerCPP::createTIConnection()
 {
-    tiConnection = new UARTConnection();
+    tiConnection = new UARTConnection(this, true);
 
     tiConnection->initConnection(TI_SERRIAL_PORT, QSerialPort::Baud9600);
     if (tiConnection->connect() || true) { // CHECK: Remove '|| True'
@@ -61,7 +61,7 @@ void DeviceControllerCPP::createTIConnection()
 
 void DeviceControllerCPP::createNRF()
 {
-    uartConnection = new UARTConnection();
+    uartConnection = new UARTConnection(this, false);
 
     uartConnection->initConnection(NRF_SERRIAL_PORT, QSerialPort::Baud9600);
     if (uartConnection->connect() || true) { // CHECK: Remove '|| True'

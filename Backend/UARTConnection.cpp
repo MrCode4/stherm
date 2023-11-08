@@ -5,8 +5,8 @@
 #include <QTimer>
 
 
-UARTConnection::UARTConnection(QObject *parent) :
-    QThread(parent),
+UARTConnection::UARTConnection(QObject *parent, bool isTi) :
+    QThread(parent), mIsTi(isTi),
     mSerial(new QSerialPort(this))
 {
 
@@ -110,7 +110,7 @@ void UARTConnection::onReadyRead()
 
     qDebug() << Q_FUNC_INFO << __LINE__ << dataBA;
 
-    QVariantMap deserializeData = mDataParser->deserializeMainData(dataBA);
+    QVariantMap deserializeData = mDataParser->deserializeData(dataBA, mIsTi);
 
     emit sendData(deserializeData);
 }
