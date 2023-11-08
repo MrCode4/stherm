@@ -64,6 +64,10 @@ ListView {
             "text": "System Setup"
         },
         {
+            "icon": FAIcons.fileExclamation,
+            "text": "User Guides"
+        },
+        {
             "icon": FAIcons.arrowsRotate,
             "text": "Update"
         },

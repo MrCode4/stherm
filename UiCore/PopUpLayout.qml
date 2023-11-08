@@ -9,6 +9,11 @@ import Stherm
 Item {
     id: popUpLayout
 
+    /* Property declaration
+     * ****************************************************************************************/
+    //! Is there any popup
+    readonly property bool isTherePopup: _internal.popupQueue.length > 0
+
     /* Children
      * ****************************************************************************************/
     QtObject {
@@ -24,6 +29,7 @@ Item {
                 popup.destructed.disconnect(onPopupClosedDestroyed);
 
                 popupQueue.splice(pIndx, 1);
+                popupQueueChanged();
             }
 
             //! Show next popup in the queue if any
@@ -50,10 +56,12 @@ Item {
         if (hightPriority) {
             //! Disply it right away
             _internal.popupQueue.push(popup);
+            _internal.popupQueueChanged();
             popup.open();
         } else {
             //! Push it back to the queue
             _internal.popupQueue.push(popup);
+            _internal.popupQueueChanged();
             if (_internal.popupQueue.length === 1) {
                 popup.open();
             }

@@ -95,6 +95,7 @@ qt6_add_qml_module(appStherm
         UiCore/PanelLayout.qml
         UiCore/I_PopUp.qml
         UiCore/I_Panel.qml
+        UiCore/I_Dialog.qml
         UiCore/PopUps/AboutPopUp.qml
         UiCore/PopUps/ConfirmPopup.qml
         UiCore/PopUps/SaveDialoge.qml
@@ -123,6 +124,7 @@ qt6_add_qml_module(appStherm
 
         # Views and Widgets
         View/Home.qml
+        View/SplashScreen.qml
         View/ApplicationMenu.qml
         View/ApplicationMenuList.qml
         View/BasePageView.qml
@@ -163,9 +165,12 @@ qt6_add_qml_module(appStherm
         View/MessagePopupView.qml
         View/VacationModeView.qml
         View/AboutDevicePage.qml
+        View/UserGuidePage.qml
         View/Test/TouchTestPage.qml
         View/Test/ColorTestPage.qml
         View/Test/BacklightTestPage.qml
+        View/Test/AudioTestPage.qml
+        View/Test/InternalSensorTestPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
@@ -177,6 +182,10 @@ qt6_add_qml_module(appStherm
 
         # Popups
         UiCore/PopUps/AlertNotifPopup.qml
+
+        # Dialogs
+        UiCore/Dialogs/ResetSettingsDialog.qml
+        UiCore/Dialogs/ForgetWifiDialog.qml
 
     SOURCES
         Backend/AppSpecCPP.h
@@ -202,6 +211,10 @@ qt6_add_qml_module(appStherm
         Backend/php/php_schedule.cpp
         Backend/php/php_update.h
         Backend/php/php_update.cpp
+
+        Backend/QrCode/qrcodegen.hpp
+        Backend/QrCode/qrcodegen.cpp
+        Backend/QRCodeGenerator.h
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf

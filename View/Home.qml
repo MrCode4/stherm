@@ -38,6 +38,8 @@ Control {
     //! Desired temprature slider and value
     DesiredTempratureItem {
         id: _desiredTempItem
+        //! This is to fix a bug with slider working when there is a popup
+        enabled: !uiSession?.popupLayout?.isTherePopup
         anchors.horizontalCenter: parent.horizontalCenter
         height: parent.height / 2.
         width: height * 2

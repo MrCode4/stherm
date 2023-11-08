@@ -22,30 +22,27 @@ Popup {
     /* Property Declarations
      * ****************************************************************************************/
     //! Whether header bar is visible or not
-    property bool       titleBar:           true
+    property bool                       titleBar:           true
 
     //! Title of popup
-    property string     title:              "Popup"
+    property string                     title:              "Popup"
 
     //! H level of Popup title
-    property int        titleHeadingLevel:  3
+    property int                        titleHeadingLevel:  3
 
     //! Icon of popup: this should be a font-awesome icon
-    property string     icon:               ""
-
-    //! Content pane
-    property alias      contentControl:     _contentControl
+    property string                     icon:               ""
 
     //! Popup content item
-    default property alias contents:        _contentControl.data
+    default property list<QtObject>     contents
 
     /* Object Properties
      * ****************************************************************************************/
     anchors.centerIn: T.Overlay.overlay ?? parent
-    implicitWidth: Math.min(_mainCol.implicitWidth + leftPadding + rightPadding,
-                            (T.Overlay.overlay?.width ?? AppStyle.size) * 0.80)
-    implicitHeight: Math.min(_mainCol.implicitHeight + bottomPadding + topPadding,
-                             (T.Overlay.overlay?.height ?? AppStyle.size) * 0.80)
+    implicitWidth: Math.min(implicitContentWidth + leftPadding + rightPadding,
+                            (T.Overlay.overlay?.width ?? AppStyle.size) * 0.85)
+    implicitHeight: Math.min(implicitContentHeight + bottomPadding + topPadding,
+                             (T.Overlay.overlay?.height ?? AppStyle.size) * 0.85)
     spacing: 24
     horizontalPadding: 16
     topPadding: 4
@@ -59,14 +56,14 @@ Popup {
 
     /* Children
      * ****************************************************************************************/
-    ColumnLayout {
-        id: _mainCol
-        anchors.fill: parent
+    //! There should be no id in contentItem's children so deferred binding execution is properly done
+    contentItem: ColumnLayout {
         spacing: _popup.spacing
 
         //! Header
         RowLayout {
-            id: _header
+            property int labelMargin: 0
+
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             Layout.fillHeight: false
 
@@ -75,15 +72,16 @@ Popup {
 
             Label {
                 Layout.fillWidth: true
-                Layout.leftMargin: _closeBtn.width
+                Layout.leftMargin: parent.labelMargin
                 horizontalAlignment: "AlignHCenter"
                 textFormat: "MarkdownText"
                 text: `${"#".repeat(titleHeadingLevel)} ${title}`
                 elide: "ElideRight"
+                color: enabled ? Style.foreground : Style.hintTextColor
+                linkColor: Style.linkColor
             }
 
             ToolButton {
-                id: _closeBtn
                 Layout.rightMargin: -_popup.rightPadding + 4
                 highlighted: true
                 contentItem: RoniaTextIcon {
@@ -93,6 +91,10 @@ Popup {
 
                 onClicked: {
                     _popup.close();
+                }
+
+                Component.onCompleted: {
+                    parent.labelMargin = Qt.binding(() => width);
                 }
             }
         }
@@ -106,12 +108,10 @@ Popup {
         }
 
         //! Content
-        Control {
-            id: _contentControl
+        Pane {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            implicitWidth: children.length > 0 ? children[0].implicitWidth ?? (AppStyle * 0.7) : AppStyle * 0.7
-            implicitHeight: children.length > 0 ? children[0].implicitHeight ?? (AppStyle * 0.7) : AppStyle * 0.7
+            data: contents
             background: null
         }
     }

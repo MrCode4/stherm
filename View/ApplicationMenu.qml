@@ -76,6 +76,9 @@ BasePageView {
                 case "About Device":
                     _root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml")
                     break;
+                case "User Guides":
+                    _root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml")
+                    break;
                 case "System Info":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
                     break;

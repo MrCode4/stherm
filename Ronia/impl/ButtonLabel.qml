@@ -11,7 +11,7 @@ Item {
     property int spacing: 4
     property T.Button button
 
-    implicitWidth: textId.implicitWidth + (button?.checkable ? checkIconId.width : 0)
+    implicitWidth: textId.implicitWidth + (button?.checkable ? checkIconId.width + spacing : 0)
     implicitHeight: textId.implicitHeight
 
     Text {

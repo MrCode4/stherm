@@ -84,6 +84,7 @@ BasePageView {
         onAccepted: {
             //! Perform connection
             _connectBtn.clicked();
+            _connectBtn.forceActiveFocus();
         }
 
         ToolButton {

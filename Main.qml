@@ -25,16 +25,24 @@ ApplicationWindow {
 
     /* Object Properties
      * ****************************************************************************************/
+    x: 0
+    y: 0
     width: AppStyle.size
     height: AppStyle.size
 
-    visible: true
+    visible: false
     title: qsTr("STherm")
 
     //! Save the app configuration when the app closed
     onClosing: {
         // Save to found path
         AppCore.defaultRepo.saveToFile(window.uiSession.configFilePath);
+    }
+
+    onVisibleChanged: {
+        if (visible) {
+            _splashLoader.sourceComponent = null;
+        }
     }
 
     //! Create defualt repo and root object to save and load
@@ -115,6 +123,7 @@ ApplicationWindow {
         uiSession: window.uiSession
     }
 
+    //! ScreenSaver
     ScreenSaver {
         id: _screenSaver
         anchors.centerIn: parent
@@ -273,6 +282,33 @@ ApplicationWindow {
                 }
             }
         ]
+    }
+
+    //! SplashScreen Loader
+    Loader {
+        id: _splashLoader
+        sourceComponent: _splashCompo
+        onLoaded: {
+            item.visible = true;
+        }
+    }
+
+    Component {
+        id: _splashCompo
+
+        SplashScreen {
+            Material.theme: window.Material.theme
+            Material.foreground: window.Material.foreground
+            x: 0
+            y: 0
+            width: window.width
+            height: window.height
+            visible: true
+
+            onReady: {
+                window.visible = true;
+            }
+        }
     }
 
     //! MessagePopupView

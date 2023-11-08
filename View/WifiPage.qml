@@ -209,9 +209,10 @@ BasePageView {
                             _root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiManualConnectPage.qml");
                         }
                     } else {
-                        //! Forget connection
-                        if (_wifisRepeater.currentItem?.wifi) {
-                            NetworkInterface.forgetWifi(_wifisRepeater.currentItem.wifi);
+                        if (uiSession) {
+                            //! Ask for forgeting this wifi
+                            _forgetDlg.wifiToForget = _wifisRepeater.currentItem?.wifi;
+                            uiSession.popupLayout.displayPopUp(_forgetDlg, true);
                         }
                     }
                 }
@@ -251,6 +252,21 @@ BasePageView {
                         NetworkInterface.disconnectWifi(_wifisRepeater.currentItem.wifi);
                     }
                 }
+            }
+        }
+    }
+
+    //! Forget wifi dialog
+    ForgetWifiDialog {
+        property WifiInfo   wifiToForget
+
+        id: _forgetDlg
+        wifiSsid: wifiToForget?.ssid ?? ""
+        onAccepted: {
+            if (wifiToForget) {
+                //! Forget requested wifi
+                NetworkInterface.forgetWifi(wifiToForget);
+                wifiToForget = null;
             }
         }
     }
