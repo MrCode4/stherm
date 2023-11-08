@@ -25,6 +25,11 @@ public:
     //! Deserialize TI data and send dataReay signal
     QVariantMap deserializeData(const QByteArray &serializeData, const bool &isTi = false);
 
+signals:
+    void alert(STHERM::AlertLevel alertLevel,
+               STHERM::AlertTypes alertType,
+               QString alertMessage);
+
 private:
     //! Deserialize TI data and send dataReay signal
     QVariantMap deserializeUARTData(const QByteArray &serializeData);

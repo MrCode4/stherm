@@ -83,6 +83,8 @@ struct SIOPacket {
     uint8_t ACK;
     uint8_t SID;
     uint8_t DataLen;
+
+    //! Use QByteArray
     uint8_t DataArray[250];
     uint16_t CRC;
 };
@@ -96,6 +98,35 @@ struct SerialRxData {
     bool RxPacketDone;
     bool RxCtrlEsc;
     uint8_t RxDataArray[256];
+};
+
+/**
+ * @brief Enumeration for alert types.
+ */
+enum AlertTypes
+{
+    Alert_temp_high = 1,// +127 max
+    Alert_temp_low, // -128 low
+    Alert_Tvoc_high, // 255 max (tvoc value range 0.1 to 10+ mg/m^3 value is divided by 10.0)
+    Alert_etoh_high, //up to 20ppm
+    Alert_iaq_high, //1 to 5
+    Alert_humidity_high,// up to 100%
+    Alert_humidity_low,//as low as 0%
+    Alert_pressure_high, //up to 1200 hPa
+    Alert_c02_high,//400 to 5000ppm
+    Alert_wiring_not_connected,
+    Alert_could_not_set_relay,
+    NO_ALlert
+};
+
+/**
+ * @brief Enumeration for alert levels.
+ */
+enum AlertLevel
+{
+    LVL_Emergency = 1,
+    LVL_Warning,
+    LVL_UNIMPORTANT
 };
 }
 

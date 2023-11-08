@@ -94,7 +94,13 @@ QVariantMap DataParser::deserializeTiData(const QByteArray& serializeData)
     rxPacketTi.PacketSrc = UART_Packet;
     memset(&serialData, 0, sizeof(serialData));
 
+    qDebug() << Q_FUNC_INFO << __LINE__ << inc_crc_ti << rxPacketTi.CRC;
     qDebug() << Q_FUNC_INFO << __LINE__ << rxPacketTi.CMD;
+
+    if (inc_crc_ti == rxPacketTi.CRC)
+    {
+
+    }
 
     return mainData;
 }
