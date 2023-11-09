@@ -15,14 +15,14 @@
 #define PacketMinLength 5
 
 const uint16_t pressure_high_value {1200};  ///< Pressure threshold high (up to 1200 hPa)
-const uint16_t c02_high_value      {2000};       ///< CO2 threshold high (400 to 5000 ppm)
-const uint8_t  Tvoc_high_value     {50};         ///< TVOC threshold high (0.1 to 10+ mg/m^3)
-const uint8_t  etoh_high_value     {70};         ///< ETOH threshold high (up to 20 ppm)
-const uint8_t  iaq_high_value      {40};          ///< IAQ threshold high (1 to 5)
-const int8_t   temp_high_value     {60};          ///< Temperature threshold high (up to +127�C)
-const int8_t   temp_low_value      {-40};          ///< Temperature threshold low (as low as -128�C)
-const uint8_t  humidity_high_value {80};     ///< Humidity threshold high (up to 100%)
-const uint8_t  humidity_low_value  {10};      ///< Humidity threshold low (as low as 0%)
+const uint16_t c02_high_value      {2000};  ///< CO2 threshold high (400 to 5000 ppm)
+const uint8_t  Tvoc_high_value     {50};    ///< TVOC threshold high (0.1 to 10+ mg/m^3)
+const uint8_t  etoh_high_value     {70};    ///< ETOH threshold high (up to 20 ppm)
+const uint8_t  iaq_high_value      {40};    ///< IAQ threshold high (1 to 5)
+const int8_t   temp_high_value     {60};    ///< Temperature threshold high (up to +127�C)
+const int8_t   temp_low_value      {-40};   ///< Temperature threshold low (as low as -128�C)
+const uint8_t  humidity_high_value {80};    ///< Humidity threshold high (up to 100%)
+const uint8_t  humidity_low_value  {10};    ///< Humidity threshold low (as low as 0%)
 
 DataParser::DataParser(QObject *parent) :
     QObject(parent)
@@ -179,5 +179,20 @@ QVariantMap DataParser::deserializeTiData(const QByteArray& serializeData)
     }
 
     return mainData;
+}
+
+STHERM::AQ_TH_PR_vals DataParser::AQTHPRFromBytes(const QByteArray &bytes)
+{
+    STHERM::AQ_TH_PR_vals aqthpr_dum_val;
+
+    aqthpr_dum_val.Tvoc = bytes[9];
+    aqthpr_dum_val.etoh = bytes[10];
+    aqthpr_dum_val.iaq = bytes[11];
+    aqthpr_dum_val.temp = static_cast<uint16_t>((bytes[13] << 8) | bytes[12]);
+    aqthpr_dum_val.humidity = bytes[14];
+    aqthpr_dum_val.c02 = static_cast<uint16_t>((bytes[16] << 8) | bytes[15]);
+    aqthpr_dum_val.pressure = static_cast<uint16_t>((bytes[18] << 8) | bytes[17]);
+
+    return aqthpr_dum_val;
 }
 

@@ -40,5 +40,7 @@ private:
     //! Deserialize TI data and send dataReay signal
     QVariantMap deserializeTiData(const QByteArray &serializeData);
 
+    STHERM::AQ_TH_PR_vals AQTHPRFromBytes(const QByteArray &bytes);
+
 };
 
