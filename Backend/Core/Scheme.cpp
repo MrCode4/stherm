@@ -24,7 +24,7 @@ Scheme::Scheme(QObject *parent) :
 
 }
 
-STHERM::SystemMode Scheme::updateVacation(const struct STHERM::Vacation &vacation,
+STHERM::SystemMode Scheme::updateVacationState(const struct STHERM::Vacation &vacation,
                                           const double &setTemperature,
                                           const double &currentTemperature,
                                           const double &currentHumidity)
@@ -62,25 +62,38 @@ STHERM::SystemMode Scheme::updateVacation(const struct STHERM::Vacation &vacatio
         //        range = temperature - current_state['max_temp'];
     }
 
-    // todo: Add humidifier id.
-    // todo: find sth and stl
-//    if (humidifier === 1) {
-//        if (currentHumidity < stl) {
-//            setHumidifierState(true);
-//        } else {
-//            setHumidifierState(false);
-//            $this->relay->humidifierOff();
-//        }
-//    } else if (humidifier === 2) {
-//        if ($currentHumidity > sth) {
-//            setDehumidifierState(true);
-//            if ($currentHumidity <= stl) {
-//                setDehumidifierState(false);
-//            }
-//        }
-//    }
+    if (mHumidifierId == 1) {
+        if (currentHumidity < vacation.minimumHumidity) {
+            setHumidifierState(true);
+        } else {
+            setHumidifierState(false);
+        }
+    } else if (mHumidifierId == 2) {
+        if (currentHumidity > vacation.maximumHumidity) {
+            setDehumidifierState(true);
+            if (currentHumidity <= vacation.minimumHumidity) {
+                setDehumidifierState(false);
+            }
+        }
+    }
 
     return realSetMode;
+}
+
+STHERM::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
+{
+
+}
+
+void Scheme::startHumidifierWork(int humidifier, QString device_state, int humidity, int current_humidity, int sth, int stl)
+{
+
+}
+
+void Scheme::setCurrentState(const int &humidifierId)
+{
+    mHumidifierId = humidifierId;
+
 }
 
 STHERM::SystemMode Scheme::getSysMode() const
