@@ -14,6 +14,16 @@
 // Minimum packet length
 #define PacketMinLength 5
 
+const uint16_t pressure_high_value {1200};  ///< Pressure threshold high (up to 1200 hPa)
+const uint16_t c02_high_value      {2000};       ///< CO2 threshold high (400 to 5000 ppm)
+const uint8_t  Tvoc_high_value     {50};         ///< TVOC threshold high (0.1 to 10+ mg/m^3)
+const uint8_t  etoh_high_value     {70};         ///< ETOH threshold high (up to 20 ppm)
+const uint8_t  iaq_high_value      {40};          ///< IAQ threshold high (1 to 5)
+const int8_t   temp_high_value     {60};          ///< Temperature threshold high (up to +127�C)
+const int8_t   temp_low_value      {-40};          ///< Temperature threshold low (as low as -128�C)
+const uint8_t  humidity_high_value {80};     ///< Humidity threshold high (up to 100%)
+const uint8_t  humidity_low_value  {10};      ///< Humidity threshold low (as low as 0%)
+
 DataParser::DataParser(QObject *parent) :
     QObject(parent)
 {
@@ -51,6 +61,37 @@ QVariantMap DataParser::deserializeData(const QByteArray &serializeData, const b
         return deserializeTiData(serializeData);
     } else {
         return deserializeUARTData(serializeData);
+    }
+}
+
+void DataParser::checkAlert(const STHERM::AQ_TH_PR_vals &values)
+{
+    if (values.temp / 10.0 > temp_high_value) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_high);
+
+    }  else if (values.temp / 10.0 < temp_low_value) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_low);
+
+    } else if (values.humidity > humidity_high_value) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_high);
+
+    } else if (values.humidity < humidity_low_value) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_low);
+
+    } else if (values.pressure > pressure_high_value) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_pressure_high);
+
+    } else if (values.c02 > c02_high_value) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_c02_high);
+
+    } else if (values.Tvoc > Tvoc_high_value) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_Tvoc_high);
+
+    } else if (values.etoh > etoh_high_value) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_etoh_high);
+
+    } else if (values.iaq / 10.0 > iaq_high_value) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_iaq_high);
     }
 }
 

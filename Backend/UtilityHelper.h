@@ -101,22 +101,6 @@ struct SerialRxData {
 };
 
 /**
- * @brief Struct containing threshold values for air quality, temperature, humidity, and pressure sensors.
- */
-struct AQ_TH_PR_thld {
-    uint16_t pressure_high{ 1200 };  ///< Pressure threshold high (up to 1200 hPa)
-    uint16_t c02_high{ 2000 };       ///< CO2 threshold high (400 to 5000 ppm)
-    uint8_t Tvoc_high{ 50 };         ///< TVOC threshold high (0.1 to 10+ mg/m^3)
-    uint8_t etoh_high{ 70 };         ///< ETOH threshold high (up to 20 ppm)
-    uint8_t iaq_high{ 40 };          ///< IAQ threshold high (1 to 5)
-    int8_t temp_high{ 60 };          ///< Temperature threshold high (up to +127�C)
-    int8_t temp_low{ -40 };          ///< Temperature threshold low (as low as -128�C)
-    uint8_t humidity_high{ 80 };     ///< Humidity threshold high (up to 100%)
-    uint8_t humidity_low{ 10 };      ///< Humidity threshold low (as low as 0%)
-};
-
-#define AQS_THRSHLD_SIZE 11
-/**
  * @brief Struct containing the values for air quality, temperature, humidity, and pressure sensors.
  */
 struct AQ_TH_PR_vals {
