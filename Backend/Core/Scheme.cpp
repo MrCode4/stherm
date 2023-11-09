@@ -24,13 +24,40 @@ Scheme::Scheme(QObject *parent) :
 
 }
 
+void Scheme::updateRealState(const struct STHERM::Vacation &vacation, const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
+{
+    if (mRealSysMode == STHERM::SystemMode::Cooling) {
+       mRealSysMode = updateNormalState(setTemperature, currentTemperature, currentHumidity);
+
+    } else if (mRealSysMode == STHERM::SystemMode::Vacation) {
+       mRealSysMode = updateVacationState(vacation, setTemperature, currentTemperature, currentHumidity);
+
+    }
+
+    if (mRealSysMode == STHERM::SystemMode::Heating) {
+       if (currentTemperature < ET) {
+           mRealSysMode = STHERM::SystemMode::Emergency;
+//           set_stage = 1;
+           if (currentTemperature < ET - ET_STAGE2) {
+//               set_stage = 2;
+           }
+       }
+    }
+
+    if (mRealSysMode != mCurentSysMode) { // mode changes
+//       current_stage = 0;
+    }
+
+
+}
+
 STHERM::SystemMode Scheme::updateVacationState(const struct STHERM::Vacation &vacation,
                                           const double &setTemperature,
                                           const double &currentTemperature,
                                           const double &currentHumidity)
 {
     STHERM::SystemMode realSetMode;
-    if (sysMode == STHERM::SystemMode::Cooling) {
+    if (mCurentSysMode == STHERM::SystemMode::Cooling) {
         if (currentTemperature > setTemperature - STAGE1_OFF_RANGE) { // before stage 1 off
             realSetMode = STHERM::SystemMode::Cooling;
         } else if (currentTemperature > setTemperature - STAGE1_ON_RANGE) { // before stage 1 on
@@ -38,7 +65,7 @@ STHERM::SystemMode Scheme::updateVacationState(const struct STHERM::Vacation &va
         } else {  // stage 1 on
             realSetMode = STHERM::SystemMode::Heating;
         }
-    } else if (sysMode == STHERM::SystemMode::Heating) {
+    } else if (mCurentSysMode == STHERM::SystemMode::Heating) {
         if (currentTemperature < setTemperature + STAGE1_OFF_RANGE) { // before stage 1 off
             realSetMode = STHERM::SystemMode::Heating;
         } else if (currentTemperature < setTemperature + STAGE1_ON_RANGE) { // before stage 1 on
@@ -82,7 +109,33 @@ STHERM::SystemMode Scheme::updateVacationState(const struct STHERM::Vacation &va
 
 STHERM::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
 {
+    STHERM::SystemMode realSetMode;
 
+    if (mCurentSysMode == STHERM::SystemMode::Cooling) {
+        if (currentTemperature > setTemperature - STAGE1_OFF_RANGE) { // before stage 1 off
+            realSetMode = STHERM::SystemMode::Cooling;
+        } else if (currentTemperature > setTemperature - STAGE1_ON_RANGE) { // before stage 1 on
+            realSetMode = STHERM::SystemMode::Off;
+        } else {  // stage 1 on
+            realSetMode = STHERM::SystemMode::Heating;
+        }
+    } else if (mCurentSysMode == STHERM::SystemMode::Heating) {
+        if (currentTemperature < setTemperature + STAGE1_OFF_RANGE) { // before stage 1 off
+            realSetMode = STHERM::SystemMode::Heating;
+        } else if (currentTemperature < setTemperature + STAGE1_ON_RANGE) { // before stage 1 on
+            realSetMode = STHERM::SystemMode::Off;
+        } else {  // stage 1 on
+            realSetMode = STHERM::SystemMode::Cooling;
+        }
+    } else { // OFF
+        if (currentTemperature < setTemperature - STAGE1_ON_RANGE) {
+            realSetMode = STHERM::SystemMode::Heating;
+        } else if (currentTemperature > setTemperature + STAGE1_ON_RANGE) {
+            realSetMode = STHERM::SystemMode::Cooling;
+        }
+    }
+
+    return realSetMode;
 }
 
 void Scheme::startHumidifierWork(int humidifier, QString device_state, int humidity, int current_humidity, int sth, int stl)
@@ -96,17 +149,17 @@ void Scheme::setCurrentState(const int &humidifierId)
 
 }
 
-STHERM::SystemMode Scheme::getSysMode() const
+STHERM::SystemMode Scheme::getCurrentSysMode() const
 {
-    return sysMode;
+    return mCurentSysMode;
 }
 
-void Scheme::setSysMode(STHERM::SystemMode newSysMode)
+void Scheme::setCurrentSysMode(STHERM::SystemMode newSysMode)
 {
-    if (sysMode == newSysMode)
+    if (mCurentSysMode == newSysMode)
         return;
 
-    sysMode = newSysMode;
+    mCurentSysMode = newSysMode;
 }
 
 void Scheme::setHumidifierState(bool on) {
@@ -116,4 +169,14 @@ void Scheme::setHumidifierState(bool on) {
 void Scheme::setDehumidifierState(bool on)
 {
 
+}
+
+STHERM::SystemMode Scheme::realSysMode() const
+{
+    return mRealSysMode;
+}
+
+void Scheme::setRealSysMode(STHERM::SystemMode newRealSysMode)
+{
+    mRealSysMode = newRealSysMode;
 }

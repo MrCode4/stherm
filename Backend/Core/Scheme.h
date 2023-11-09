@@ -16,15 +16,10 @@ class Scheme : public QObject
 public:
     Scheme(QObject *parent = nullptr);
 
-    //! Update vacation mode
-    STHERM::SystemMode updateVacationState(const struct STHERM::Vacation &vacation,
-                                           const double &setTemperature,
-                                           const double &currentTemperature,
-                                           const double &currentHumidity);
-
-    STHERM::SystemMode updateNormalState(const double &setTemperature,
-                                         const double &currentTemperature,
-                                         const double &currentHumidity);
+    void updateRealState(const struct STHERM::Vacation &vacation,
+                         const double &setTemperature,
+                         const double &currentTemperature,
+                         const double &currentHumidity);
 
     //! Start humidifier work
     void startHumidifierWork(int humidifier, QString device_state,
@@ -34,15 +29,29 @@ public:
     //! Update current system state
     void setCurrentState(const int &humidifierId);
 
-    STHERM::SystemMode getSysMode() const;
-    void setSysMode(STHERM::SystemMode newSysMode);
+    STHERM::SystemMode getCurrentSysMode() const;
+    void setCurrentSysMode(STHERM::SystemMode newSysMode);
 
     void setHumidifierState(bool on);
     void setDehumidifierState(bool on);
 
+    STHERM::SystemMode realSysMode() const;
+    void setRealSysMode(STHERM::SystemMode newRealSysMode);
+
+private:
+    //! Update vacation mode
+    STHERM::SystemMode updateVacationState(const struct STHERM::Vacation &vacation,
+                                           const double &setTemperature,
+                                           const double &currentTemperature,
+                                           const double &currentHumidity);
+
+    STHERM::SystemMode updateNormalState(const double &setTemperature,
+                                         const double &currentTemperature,
+                                         const double &currentHumidity);
 private:
 
-    STHERM::SystemMode sysMode;
+    STHERM::SystemMode mCurentSysMode;
+    STHERM::SystemMode mRealSysMode;
 
     int mHumidifierId;
 
