@@ -220,6 +220,9 @@ qt6_add_qml_module(appStherm
         Backend/UtilityHelper.h
         Backend/UtilityHelper.cpp
 
+        Backend/Core/Scheme.h
+        Backend/Core/Scheme.cpp
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
