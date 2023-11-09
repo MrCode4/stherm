@@ -99,7 +99,42 @@ QVariantMap DataParser::deserializeTiData(const QByteArray& serializeData)
 
     if (inc_crc_ti == rxPacketTi.CRC)
     {
+        switch (rxPacketTi.CMD)
+        {
+        case STHERM::Get_packets:
+            tx_packet.PacketSrc = UART_Packet;
+            tx_packet.CMD = STHERM::Send_packet;
+            tx_packet.ACK = STHERM::ERROR_NO;
+            tx_packet.SID = 0x01;
+            tx_packet.DataLen = 0;
+            break;
+        case STHERM::GetRelaySensor:
+        case STHERM::Check_Wiring:
+        case STHERM::SetRelay:
+        case STHERM::Send_packet:
+            break;
+        case STHERM::GetInfo:
+            tx_packet.PacketSrc = UART_Packet;
+            tx_packet.CMD = STHERM::Get_addr;
+            tx_packet.ACK = STHERM::ERROR_NO;
+            tx_packet.SID = 0x01;
+            tx_packet.DataLen = 0;
+            break;
+        case STHERM::Get_addr:
+            break;
+        case STHERM::GET_DEV_ID:
+            tx_packet.PacketSrc = UART_Packet;
+            tx_packet.CMD = STHERM::GET_DEV_ID;
+            tx_packet.ACK = STHERM::ERROR_NO;
+            tx_packet.SID = 0x01;
+            tx_packet.DataLen = 0;
+            break;
+        case STHERM::feed_wtd:
 
+            break;
+        default:
+            break;
+        }
     }
 
     return mainData;
