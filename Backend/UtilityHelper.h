@@ -101,6 +101,17 @@ struct SerialRxData {
 };
 
 /**
+ * @brief Structure Vacation data.
+ */
+struct Vacation {
+    double minimumTemperature;
+    double maximumTemperature;
+    double minimumHumidity;
+    double maximumHumidity;
+    bool   isEnable;
+};
+
+/**
  * @brief Struct containing the values for air quality, temperature, humidity, and pressure sensors.
  */
 struct AQ_TH_PR_vals {
@@ -141,6 +152,18 @@ enum AlertLevel
     LVL_Emergency = 1,
     LVL_Warning,
     LVL_UNIMPORTANT
+};
+
+/**
+ * @brief Enumeration for system modes.
+ */
+enum SystemMode
+{
+    Cooling = 0,
+    Heating,
+    Auto,
+    Vacation,
+    Off
 };
 }
 

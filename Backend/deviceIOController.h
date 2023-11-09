@@ -36,6 +36,9 @@ public:
     //! Set time zone
     void setTimeZone(int offset);
 
+    bool setVacation(const int &minTemp, const int &maxTemp,
+                     const int &minHumidity, const int &maxHumidity);
+
     //! Create connections
     void createConnections();
 

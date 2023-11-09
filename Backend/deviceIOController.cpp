@@ -77,6 +77,11 @@ void DeviceIOController::setTimeZone(int offset)
     UtilityHelper::setTimeZone(offset);
 }
 
+bool DeviceIOController::setVacation(const int &minTemp, const int &maxTemp, const int &minHumidity, const int &maxHumidity)
+{
+    return true;
+}
+
 void DeviceIOController::createConnections()
 {
     createNRF();
