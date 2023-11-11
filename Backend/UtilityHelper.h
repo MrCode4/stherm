@@ -75,6 +75,15 @@ enum PacketType {
 };
 
 /**
+ * @brief Enum representing the different types of RF devices.
+ */
+enum RFDevTypes {
+    Main_dev = 0x01,   ///< Main device type
+    AQ_TH_PR,          ///< Air Quality, Temperature, Humidity, Pressure sensors
+    NO_TYPE = 0xFF     ///< No device type
+};
+
+/**
  * @brief Structure for serial input-output packets.
  */
 struct SIOPacket {
@@ -124,6 +133,22 @@ struct AQ_TH_PR_vals {
     uint16_t pressure{};      ///< Pressure value (up to 1200 hPa)
 };
 #define AQS_DATA_SIZE 10
+
+/**
+  * @brief Identifies RF Device types.
+  */
+struct deviceTypes
+{
+    deviceTypes() {
+        address = {};
+        type = RFDevTypes::NO_TYPE;
+        paired = false;
+    }
+
+    uint32_t address;
+    uint8_t type;
+    bool paired;
+};
 
 /**
  * @brief Enumeration for alert types.
