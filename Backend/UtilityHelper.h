@@ -163,7 +163,8 @@ enum SystemMode
     Heating,
     Auto,
     Vacation,
-    Off
+    Off,
+    Emergency
 };
 }
 
