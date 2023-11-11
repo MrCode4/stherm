@@ -5,8 +5,6 @@
 #include <QNetworkReply>
 #include <QtConcurrent/QtConcurrent>
 
-#include "UtilityHelper.h"
-
 /* ************************************************************************************************
  * Device specifications
  * ************************************************************************************************/
@@ -20,6 +18,10 @@
 DeviceIOController::DeviceIOController(QObject *parent)
     : QThread{parent}
 {
+    // Prepare main device
+    mMainDevice.address = 0xffffffff; // this address is used in rf comms
+    mMainDevice.paired = true;
+    mMainDevice.type = STHERM::Main_dev;
 }
 
 DeviceIOController::~DeviceIOController()
@@ -153,4 +155,9 @@ void DeviceIOController::createNRF()
 void DeviceIOController::setStopReading(bool stopReading)
 {
     mStopReading = stopReading;
+}
+
+void DeviceIOController::updateTiDevices()
+{
+
 }

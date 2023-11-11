@@ -8,6 +8,9 @@
 #define NUS_Packet      0x02
 
 namespace STHERM {
+
+#define AQS_DATA_SIZE 10
+
 /**
  * @brief Enumeration of serial input-output commands.
  */
@@ -132,14 +135,13 @@ struct AQ_TH_PR_vals {
     int16_t temp{};           ///< Temperature value (up to +127�C)
     uint16_t pressure{};      ///< Pressure value (up to 1200 hPa)
 };
-#define AQS_DATA_SIZE 10
 
 /**
   * @brief Identifies RF Device types.
   */
-struct deviceTypes
+struct DeviceType
 {
-    deviceTypes() {
+    DeviceType() {
         address = {};
         type = RFDevTypes::NO_TYPE;
         paired = false;

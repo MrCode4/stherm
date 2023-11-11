@@ -3,6 +3,7 @@
 #include <QObject>
 
 #include "UARTConnection.h"
+#include "UtilityHelper.h"
 
 /*! ***********************************************************************************************
  * This class manages read and write from device using UART
@@ -48,6 +49,9 @@ public:
     //! Stop reading data from device
     void setStopReading(bool stopReading);
 
+    //! Update paired sensors in TI
+    void updateTiDevices();
+
 signals:
     void dataReady(QVariantMap data);
 
@@ -69,5 +73,9 @@ private:
     UARTConnection *tiConnection;
 
     bool mStopReading;
+
+    //! Paired devices
+    QList<STHERM::DeviceType> mDevices;
+    STHERM::DeviceType mMainDevice;
 
 };

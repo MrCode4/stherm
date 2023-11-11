@@ -2,9 +2,9 @@
 
 #include <QObject>
 
-class Schedule
+class Schedule : public QObject
 {
     Q_OBJECT
 public:
-    Schedule();
+    Schedule(QObject *parent = nullptr);
 };
