@@ -5,8 +5,7 @@
 #include <QMutex>
 #include <QWaitCondition>
 
-#include "DataParser.h"
-
+#include "UtilityHelper.h"
 /*! ***********************************************************************************************
  * Propagte a connection with UART port and read data
  * ************************************************************************************************/
@@ -47,7 +46,6 @@ public:
     bool sendRequest(const char *data, qint64 len);
     bool sendRequest(const STHERM::SIOCommand &cmd, const STHERM::PacketType &packetType);
 
-
 signals:
     void connectionError(const QString &error);
 
@@ -67,8 +65,5 @@ private:
 
     QMutex m_mutex;
     QWaitCondition m_cond;
-
-    DataParser *mDataParser;
-
 };
 

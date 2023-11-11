@@ -1,7 +1,8 @@
 #pragma once
 
-#include <QObject>
+#include <QThread>
 
+#include "DataParser.h"
 #include "UARTConnection.h"
 #include "UtilityHelper.h"
 

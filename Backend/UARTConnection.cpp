@@ -1,13 +1,12 @@
 #include "UARTConnection.h"
 
 #include <QDateTime>
+#include "DataParser.h"
 
 UARTConnection::UARTConnection(const QString &portName, const qint32 &baundRate, QObject *parent)
     : QObject(parent)
     , mSerial(new QSerialPort(this))
 {
-    mDataParser = new DataParser();
-
     if (mSerial->isOpen())
         mSerial->close();
 
@@ -84,8 +83,10 @@ bool UARTConnection::sendRequest(const char *data, qint64 len)
 
 bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::PacketType &packetType)
 {
+    DataParser parser;
+
     // prepare request
-    QByteArray packet = mDataParser->preparePacket(cmd, packetType);
+    QByteArray packet = parser.preparePacket(cmd, packetType);
 
     // write request
     sendRequest(packet);
@@ -100,13 +101,14 @@ bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::Pa
 
             const QString response = QString::fromUtf8(responseData);
             qDebug() << Q_FUNC_INFO << __LINE__ << response;
+
+            QVariantMap deserializeData = parser.deserializeData(responseData);
             return true;
 
         } else {
             qDebug() << Q_FUNC_INFO << __LINE__ << QString("Wait read response timeout %1")
                                                        .arg(QTime::currentTime().toString());
             return false;
-
         }
     } else {
         qDebug() << Q_FUNC_INFO << __LINE__ << QString("Wait write request timeout %1")
@@ -121,9 +123,7 @@ void UARTConnection::onReadyRead()
 {
     // Handle data
     QByteArray dataBA = mSerial->readAll();
-
-    QVariantMap deserializeData = mDataParser->deserializeData(dataBA, false);
-    qDebug() << Q_FUNC_INFO << __LINE__ << dataBA << deserializeData;
+    qDebug() << Q_FUNC_INFO << __LINE__ << dataBA;
 
     emit sendData(dataBA);
 }

@@ -59,10 +59,9 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
         QEventLoop loop;
         QTimer timer;
         timer.setSingleShot(true);
-        QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
         //        QObject::connect(tiConnection, &UARTConnection::responseReceived, &loop, &QEventLoop::quit);
         //        QObject::connect(tiConnection, &UARTConnection::connectionError, &loop, &QEventLoop::quit);
-
         timer.start(10);
 
         QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
@@ -155,6 +154,7 @@ void DeviceIOController::createNRF()
         connect(nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
             qDebug() << Q_FUNC_INFO << __LINE__ << "UART Response:   " << data;
             auto deserialized = mDataParser.deserializeNRFData(data);
+            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Response:   " << deserialized;
 
             // Set data to ui (Update ui varables).
             Q_EMIT dataReady(deserialized);
