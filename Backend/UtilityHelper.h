@@ -159,6 +159,7 @@ struct Relay
     RelayMode o_b;
     RelayMode acc1p;
     RelayMode acc1n;
+    RelayMode hum_wiring;
 
 };
 
