@@ -124,6 +124,45 @@ struct Vacation {
 };
 
 /**
+ * @brief Enumeration for system modes.
+ */
+enum RelayMode
+{
+    NoWire = 0,
+    ON,
+    OFF
+};
+struct Relay
+{
+    Relay() {
+        g     = RelayMode::NoWire;
+        y1    = RelayMode::NoWire;
+        y2    = RelayMode::NoWire;
+        y3    = RelayMode::NoWire;
+        acc2  = RelayMode::NoWire;
+        w1    = RelayMode::NoWire;
+        w2    = RelayMode::NoWire;
+        w3    = RelayMode::NoWire;
+        o_b   = RelayMode::NoWire;
+        acc1p = RelayMode::NoWire;
+        acc1n = RelayMode::NoWire;
+    }
+
+    RelayMode g;
+    RelayMode y1;
+    RelayMode y2;
+    RelayMode y3;
+    RelayMode acc2;
+    RelayMode w1;
+    RelayMode w2;
+    RelayMode w3;
+    RelayMode o_b;
+    RelayMode acc1p;
+    RelayMode acc1n;
+
+};
+
+/**
  * @brief Struct containing the values for air quality, temperature, humidity, and pressure sensors.
  */
 struct AQ_TH_PR_vals {
