@@ -159,5 +159,15 @@ void DeviceIOController::setStopReading(bool stopReading)
 
 void DeviceIOController::updateTiDevices()
 {
+    // Temperature sensor
 
+    // humidity sensor
+
+    // Tof sensor
+
+    // Ambiend sensor
+
+    // CO2 sensor
+
+    qDebug() << Q_FUNC_INFO << __LINE__ << "Device count:   " << mDevices.count();
 }
