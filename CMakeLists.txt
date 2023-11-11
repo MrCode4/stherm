@@ -222,6 +222,8 @@ qt6_add_qml_module(appStherm
 
         Backend/Core/Scheme.h
         Backend/Core/Scheme.cpp
+        Backend/Core/Schedule.h
+        Backend/Core/Schedule.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
