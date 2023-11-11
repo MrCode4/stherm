@@ -421,4 +421,5 @@ bool Relay::fanWorkTime()
 //        }
 //        getRelayState();
 //    }
+    return true;
 }
