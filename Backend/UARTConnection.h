@@ -2,7 +2,6 @@
 
 #include <QVariant>
 #include <QSerialPort>
-#include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
 
@@ -12,35 +11,31 @@
  * Propagte a connection with UART port and read data
  * ************************************************************************************************/
 
-class UARTConnection : public QThread
+class UARTConnection : public QObject
 {
     Q_OBJECT
 
 public:
-    /* public Constractor
+    /* public Constructor
      * ****************************************************************************************/
-
-    explicit UARTConnection(QObject *parent = nullptr, bool mIsTi = false);
+    //! Configure and initalize UART connection
+    explicit UARTConnection(const QString &portName,
+                            const qint32 &baundRate,
+                            QObject *parent = nullptr);
 
     /* public functions
      * ****************************************************************************************/
-
     QByteArray sendCommand(QByteArray command);
-
-    //! Configure and initalize UART connection
-    void initConnection(const QString &portName, const qint32 &baundRate);
-
 
     //! Connect to device via serial port
     //! return true connection success
     //! return false connection failure
-    bool connect();
+    bool startConnection();
 
     //! Disconnect from device
     //! return false device still connected
     //! return true device disconnected
-    bool disconnect();
-
+    bool disconnectDevice();
 
     //! Check if the serial port is still connected
     //! return true connected
@@ -58,21 +53,16 @@ signals:
 
     //! Transform the data into a meaningful format
     //! and then transmit it to the intended destination.
-    void sendData(const QVariantMap& deserializeData);
+    void sendData(QByteArray data);
 
 private slots:
 
     //! Call when new data is available for reading from the device's current read channel.
     void onReadyRead();
 
+    void onError(QSerialPort::SerialPortError error);
 
 private:
-    void run() override;
-
-private:
-
-    bool mIsTi;
-
     QSerialPort *mSerial;
 
     QMutex m_mutex;

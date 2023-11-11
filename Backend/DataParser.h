@@ -25,7 +25,13 @@ public:
     //! Deserialize TI data and send dataReay signal
     QVariantMap deserializeData(const QByteArray &serializeData, const bool &isTi = false);
 
-	//! Check AQ_TH_PR_vals values to detect related alerts
+    //! Deserialize TI data and send dataReay signal
+    QVariantMap deserializeNRFData(const QByteArray &serializeData);
+
+    //! Deserialize TI data and send dataReay signal
+    QVariantMap deserializeTiData(const QByteArray &serializeData);
+
+    //! Check AQ_TH_PR_vals values to detect related alerts
     void checkAlert(const STHERM::AQ_TH_PR_vals &values);
 
 signals:
@@ -34,13 +40,6 @@ signals:
                QString alertMessage = QString());
 
 private:
-    //! Deserialize TI data and send dataReay signal
-    QVariantMap deserializeUARTData(const QByteArray &serializeData);
-
-    //! Deserialize TI data and send dataReay signal
-    QVariantMap deserializeTiData(const QByteArray &serializeData);
-
     STHERM::AQ_TH_PR_vals AQTHPRFromBytes(const QByteArray &bytes);
-
 };
 

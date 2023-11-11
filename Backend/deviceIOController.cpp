@@ -29,19 +29,17 @@ DeviceIOController::~DeviceIOController()
     mStopReading = true;
     terminate();
     wait();
-    if (uartConnection)
-        delete uartConnection;
+    if (nRfConnection)
+        delete nRfConnection;
 
     if (tiConnection)
         delete tiConnection;
 }
 
-bool DeviceIOController::sendRequest(QString className, QString method, QVariantList data)
+QVariantMap DeviceIOController::sendRequest(QString className, QString method, QVariantList data)
 {
+    qDebug() << "Request received: " << className << method << data;
     if (className == "hardware") {
-
-        qDebug() << "Request received: " << className << method << data;
-
         if (method == "setSettings") {
             if (data.size() < 0) {
                 qWarning() << "data sent is empty";
@@ -49,12 +47,29 @@ bool DeviceIOController::sendRequest(QString className, QString method, QVariant
                 if (data.size() != 6) {
                     qWarning() << "data sent is not consistent";
                 }
-                return setBrightness(std::clamp(qRound(data.first().toDouble()), 0, 254));
+                if (setBrightness(std::clamp(qRound(data.first().toDouble()), 0, 254)))
+                    return {};
+                else
+                    return {{"error", true}};
             }
         }
-    } else {
-        tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+    }
 
+    {
+        QEventLoop loop;
+        QTimer timer;
+        timer.setSingleShot(true);
+        QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+        //        QObject::connect(tiConnection, &UARTConnection::responseReceived, &loop, &QEventLoop::quit);
+        //        QObject::connect(tiConnection, &UARTConnection::connectionError, &loop, &QEventLoop::quit);
+
+        timer.start(10);
+
+        QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
+                                                      STHERM::PacketType::UARTPacket);
+        tiConnection->sendRequest(packet);
+        loop.exec();
+        qDebug() << "request timeout";
     }
 
     return {};
@@ -92,7 +107,7 @@ void DeviceIOController::createConnections()
 
     mStopReading = false;
 
-    this->start();
+    start();
 }
 
 void DeviceIOController::createSensor(QString name, QString id) {}
@@ -102,49 +117,48 @@ void DeviceIOController::run()
     QElapsedTimer timer;
     timer.start();
     while (!mStopReading) {
+        qDebug() << "sending request for main data" << nRfConnection->isConnected();
+        if (nRfConnection && nRfConnection->isConnected()) {
+            //        uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetSensors,
+                                                          STHERM::PacketType::UARTPacket);
+            nRfConnection->sendRequest(packet);
+            //        uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+        }
 
-    if (uartConnection && uartConnection->isConnected()) {
-        uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
-//        uartConnection->sendRequest(STHERM::SIOCommand::GetSensors, STHERM::PacketType::UARTPacket);
-//        uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+        //        if (tiConnection && tiConnection->isConnected())
+        //            tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+        auto remainingTime = 3000 - timer.elapsed();
+        if (remainingTime > 0)
+            QThread::msleep(remainingTime);
+
+        timer.restart();
     }
-
-    if (tiConnection && tiConnection->isConnected())
-        tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
-    }
-
-    auto remainingTime = 10000 - timer.elapsed();
-    if (false && remainingTime > 0)
-    QThread::msleep(remainingTime);
 }
 
 void DeviceIOController::createTIConnection()
 {
-    tiConnection = new UARTConnection(nullptr, true);
-
-    tiConnection->initConnection(TI_SERRIAL_PORT, QSerialPort::Baud9600);
-    if (tiConnection->connect() || true) { // CHECK: Remove '|| True'
-        connect(tiConnection, &UARTConnection::sendData, this, [=](const QVariantMap &data) {
-            qDebug() << Q_FUNC_INFO << __LINE__ << "TI Responce:   " << data;
+    tiConnection = new UARTConnection(TI_SERRIAL_PORT, QSerialPort::Baud9600);
+    if (tiConnection->startConnection()) {
+        connect(tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
+            qDebug() << Q_FUNC_INFO << __LINE__ << "TI Response:   " << data;
+            auto deserialized = mDataParser.deserializeTiData(data);
+            qDebug() << Q_FUNC_INFO << __LINE__ << "TI Response:   " << deserialized;
         });
-
-        tiConnection->start();
     }
 }
 
 void DeviceIOController::createNRF()
 {
-    uartConnection = new UARTConnection(nullptr, false);
+    nRfConnection = new UARTConnection(NRF_SERRIAL_PORT, QSerialPort::Baud9600);
+    if (nRfConnection->startConnection()) {
+        connect(nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
+            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Response:   " << data;
+            auto deserialized = mDataParser.deserializeNRFData(data);
 
-    uartConnection->initConnection(NRF_SERRIAL_PORT, QSerialPort::Baud9600);
-    if (uartConnection->connect() || true) { // CHECK: Remove '|| True'
-        connect(uartConnection, &UARTConnection::sendData, this, [=](const QVariantMap &data) {
-            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Responce:   " << data;
             // Set data to ui (Update ui varables).
-            Q_EMIT dataReady(data);
+            Q_EMIT dataReady(deserialized);
         });
-
-        uartConnection->start();
     }
 
     bool isSuccess = UtilityHelper::configurePins(NRF_GPIO_4);

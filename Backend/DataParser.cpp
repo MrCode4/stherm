@@ -60,7 +60,7 @@ QVariantMap DataParser::deserializeData(const QByteArray &serializeData, const b
     if (isTi) {
         return deserializeTiData(serializeData);
     } else {
-        return deserializeUARTData(serializeData);
+        return deserializeNRFData(serializeData);
     }
 }
 
@@ -95,13 +95,21 @@ void DataParser::checkAlert(const STHERM::AQ_TH_PR_vals &values)
     }
 }
 
-QVariantMap DataParser::deserializeUARTData(const QByteArray &serializeData)
+QVariantMap DataParser::deserializeNRFData(const QByteArray &serializeData)
 {
     qDebug() << Q_FUNC_INFO << __LINE__ << serializeData;
     QJsonObject obj = QJsonDocument::fromJson(serializeData).object();
-    QVariantMap mainData = obj.toVariantMap();
 
-    return mainData;
+    qDebug() << Q_FUNC_INFO << __LINE__ << obj.toVariantMap();
+    {
+        QJsonObject obj;
+        obj.insert("temp", 10);
+        obj.insert("hum", 30.24);
+        qDebug() << Q_FUNC_INFO << __LINE__ << obj.toVariantMap();
+        return obj.toVariantMap();
+    }
+
+    return obj.toVariantMap();
 }
 
 QVariantMap DataParser::deserializeTiData(const QByteArray& serializeData)

@@ -1,91 +1,76 @@
 #include "UARTConnection.h"
-#include "qeventloop.h"
 
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QTimer>
+#include <QDateTime>
 
-
-UARTConnection::UARTConnection(QObject *parent, bool isTi) :
-    QThread(parent), mIsTi(isTi),
-    mSerial(new QSerialPort(this))
+UARTConnection::UARTConnection(const QString &portName, const qint32 &baundRate, QObject *parent)
+    : QObject(parent)
+    , mSerial(new QSerialPort(this))
 {
-
     mDataParser = new DataParser();
-}
 
-void UARTConnection::initConnection(const QString& portName, const qint32& baundRate)
-{
-
-    if (mSerial->isOpen()) {
+    if (mSerial->isOpen())
         mSerial->close();
-    }
 
     mSerial->setPortName(portName);
-    bool issuccess = mSerial->setBaudRate(baundRate) && // Set bound rate in all directions
-                     mSerial->setDataBits(QSerialPort::Data8) &&
-                     mSerial->setParity(QSerialPort::NoParity) &&
-                     mSerial->setStopBits(QSerialPort::OneStop) &&
-                     mSerial->setFlowControl(QSerialPort::NoFlowControl); // Set non-blocking I/O
+    bool isSuccess = mSerial->setBaudRate(baundRate) && // Set baud rate in all directions
+                     mSerial->setDataBits(QSerialPort::Data8)
+                     && mSerial->setParity(QSerialPort::NoParity)
+                     && mSerial->setStopBits(QSerialPort::OneStop)
+                     && mSerial->setFlowControl(QSerialPort::NoFlowControl); // Set non-blocking I/O
 
-    if (!issuccess)
+    if (!isSuccess) {
         qDebug() << Q_FUNC_INFO << __LINE__ << "Configuration failed, port name: " << portName;
-
-    QObject::connect(mSerial, &QSerialPort::readyRead, this, &UARTConnection::onReadyRead);
-
-    // Handle errors
-    QObject::connect(mSerial, &QSerialPort::errorOccurred, [this](QSerialPort::SerialPortError error) {
-
-        QString errorMessage = mSerial->errorString();
-        qDebug() << Q_FUNC_INFO << __LINE__ <<"Port name:   "<<mSerial->portName() <<
-            "Error:   "<< error << errorMessage;
-        emit connectionError(errorMessage);
-    });
+    }
 }
 
-bool UARTConnection::connect()
+bool UARTConnection::startConnection()
 {
     // Check:  Use QSocketNotifier to monitor activity on a file descriptor
 
+    bool isOpen = mSerial->isOpen();
+
     // Open Serial port & send beacon, ping packets to bring device into connected state
-    if (!mSerial->isOpen()) {
+    if (!isOpen) {
         qDebug() << Q_FUNC_INFO << __LINE__ << "Serial port is not open, Port name:   " << mSerial->portName();
         qDebug() << Q_FUNC_INFO << __LINE__ << "Try to open, Port name:   " << mSerial->portName();
-        mSerial->open(QIODevice::ReadWrite);
-        if (!mSerial->isOpen()) {
+        isOpen = mSerial->open(QIODevice::ReadWrite);
+        if (isOpen) {
+            qDebug() << Q_FUNC_INFO << __LINE__ << "Opened, Port name:   " << mSerial->portName();
+
+            connect(mSerial, &QSerialPort::readyRead, this, &UARTConnection::onReadyRead);
+            connect(mSerial, &QSerialPort::errorOccurred, this, &UARTConnection::onError);
+
+        } else {
             // If open fails then return with an error
             qDebug() << (QString("Can't open %1,%2 error code %3")
                              .arg(mSerial->portName())
                              .arg(mSerial->baudRate())
                              .arg(mSerial->error()));
-            return false;
-        } else {
-            qDebug() << Q_FUNC_INFO << __LINE__ << "Opened, Port name:   " << mSerial->portName();
         }
+    } else {
+        qDebug() << (QString("Already open, Port name: %1, baud rate: %2")
+                         .arg(mSerial->portName())
+                         .arg(mSerial->baudRate()));
     }
-
-    bool isOpen = mSerial->isOpen();
-    if (isOpen)
-        run();
 
     return isOpen;
 }
 
-
-bool UARTConnection::disconnect()
+bool UARTConnection::disconnectDevice()
 {
     // Close Serial port if open
-    if (this->mSerial->isOpen())
-    {
-        this->mSerial->close();
+    if (mSerial->isOpen()) {
+        mSerial->close();
     }
+    disconnect(mSerial, &QSerialPort::readyRead, this, &UARTConnection::onReadyRead);
+    disconnect(mSerial, &QSerialPort::errorOccurred, this, &UARTConnection::onError);
 
-    return !this->mSerial->isOpen();
+    return !mSerial->isOpen();
 }
 
 bool UARTConnection::isConnected()
 {
-    return this->mSerial->isOpen();
+    return mSerial->isOpen();
 }
 
 bool UARTConnection::sendRequest(QByteArray data) {
@@ -99,28 +84,14 @@ bool UARTConnection::sendRequest(const char *data, qint64 len)
 
 bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::PacketType &packetType)
 {
-    // write request
+    // prepare request
     QByteArray packet = mDataParser->preparePacket(cmd, packetType);
+
+    // write request
     sendRequest(packet);
 
-//        QEventLoop loop;
-//        QTimer timer;
-//        timer.setSingleShot(true);
-//        QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-//        QObject::connect(this, &UARTConnection::responseReceived, &loop, &QEventLoop::quit);
-//        QObject::connect(this, &UARTConnection::connectionError, &loop, &QEventLoop::quit);
-
-//        timer.start(30000);
-//        loop.exec();
-
-//        if (timer.isActive()) {
-//            timer.stop();
-//        }  else {
-//            qDebug() << "Response timeout";
-//        }
-
+    // wait for response to be ready
     if (mSerial->waitForBytesWritten()) {
-
         // read response
         if (mSerial->waitForReadyRead()) {
             QByteArray responseData = mSerial->readAll();
@@ -151,30 +122,16 @@ void UARTConnection::onReadyRead()
     // Handle data
     QByteArray dataBA = mSerial->readAll();
 
-    qDebug() << Q_FUNC_INFO << __LINE__ << dataBA;
+    QVariantMap deserializeData = mDataParser->deserializeData(dataBA, false);
+    qDebug() << Q_FUNC_INFO << __LINE__ << dataBA << deserializeData;
 
-    QVariantMap deserializeData = mDataParser->deserializeData(dataBA, mIsTi);
-
-    emit sendData(deserializeData);
+    emit sendData(dataBA);
 }
 
-void UARTConnection::run()
+void UARTConnection::onError(QSerialPort::SerialPortError error)
 {
-    m_mutex.lock();
-    //    m_cond.wait(&m_mutex);
-
-    qDebug() << Q_FUNC_INFO << __LINE__;
-
-    // As raw data
-    // todo: change to serialize data
-    while (!true) {
-        QVariantMap mainData = {{"temp", QVariant(18)}, {"hum", QVariant(30.24)}};
-        QJsonObject obj;
-        obj.insert("temp", 10);
-        obj.insert("hum", 30.24);
-        qDebug() << Q_FUNC_INFO << __LINE__ << QJsonDocument(obj).toJson();
-        emit sendData(obj.toVariantMap());
-    }
-
-    m_mutex.unlock();
+    QString errorMessage = mSerial->errorString();
+    qDebug() << Q_FUNC_INFO << __LINE__ << "Port name:   " << mSerial->portName()
+             << "Error:   " << error << errorMessage;
+    emit connectionError(errorMessage);
 }

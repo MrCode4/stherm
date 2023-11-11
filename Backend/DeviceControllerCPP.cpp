@@ -18,13 +18,13 @@ DeviceControllerCPP::~DeviceControllerCPP() {}
 
 QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
 {
-    _deviceController->sendRequest(className, method, data);
-
     if (className == "system") {
         if (method == "getMainData") {
             return getMainData();
         }
     }
+
+    _deviceController->sendRequest(className, method, data);
 
     return {};
 }

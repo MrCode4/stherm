@@ -20,7 +20,7 @@ public:
 
     //! Send requests
     //! transfer data with UARTConnection instance
-    bool sendRequest(QString className, QString method, QVariantList data);
+    QVariantMap sendRequest(QString className, QString method, QVariantList data);
 
     //! Set gpio
     void exportGPIOPin(int pinNumber);
@@ -55,7 +55,7 @@ public:
 signals:
     void dataReady(QVariantMap data);
 
-    //! Send responce with requestType
+    //! Send response with requestType
     void responseReady(int requestType, QVariant response);
 
 private:
@@ -68,8 +68,9 @@ private:
     void createNRF();
 
 private:
+    DataParser mDataParser;
 
-    UARTConnection *uartConnection;
+    UARTConnection *nRfConnection;
     UARTConnection *tiConnection;
 
     bool mStopReading;
