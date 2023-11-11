@@ -26,8 +26,9 @@ DeviceIOController::DeviceIOController(QObject *parent)
 
 DeviceIOController::~DeviceIOController()
 {
-    mStopReading = false;
-
+    mStopReading = true;
+    terminate();
+    wait();
     if (uartConnection)
         delete uartConnection;
 
@@ -98,6 +99,8 @@ void DeviceIOController::createSensor(QString name, QString id) {}
 
 void DeviceIOController::run()
 {
+    QElapsedTimer timer;
+    timer.start();
     while (!mStopReading) {
 
     if (uartConnection && uartConnection->isConnected()) {
@@ -110,6 +113,9 @@ void DeviceIOController::run()
         tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
     }
 
+    auto remainingTime = 10000 - timer.elapsed();
+    if (false && remainingTime > 0)
+    QThread::msleep(remainingTime);
 }
 
 void DeviceIOController::createTIConnection()
@@ -165,7 +171,7 @@ void DeviceIOController::updateTiDevices()
 
     // Tof sensor
 
-    // Ambiend sensor
+    // Ambient sensor
 
     // CO2 sensor
 

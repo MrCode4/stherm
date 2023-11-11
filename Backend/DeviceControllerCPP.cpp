@@ -34,13 +34,12 @@ void DeviceControllerCPP::startDevice()
     //! todo: move to constructor later
     _deviceController->createConnections();
 
-
-    _deviceController->setStopReading(true);
+    _deviceController->setStopReading(false);
 }
 
 void DeviceControllerCPP::stopDevice()
 {
-    _deviceController->setStopReading(false);
+    _deviceController->setStopReading(true);
 }
 
 QVariantMap DeviceControllerCPP::getMainData()

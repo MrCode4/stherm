@@ -61,10 +61,10 @@ signals:
 private:
     void run() override;
 
-    //! Create TI connection
+    //! Create TI connection, called each 10 seconds, getInfo (mainData,temp, hum, aq, pressure), manage requests, wiring check
     void createTIConnection();
 
-    //! Create NRF connection
+    //! Create NRF connection, called each 30 seconds, tof, sensors, getInfo (?)
     void createNRF();
 
 private:
