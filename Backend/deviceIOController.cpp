@@ -60,15 +60,16 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
         QTimer timer;
         timer.setSingleShot(true);
         connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        //        QObject::connect(tiConnection, &UARTConnection::responseReceived, &loop, &QEventLoop::quit);
-        //        QObject::connect(tiConnection, &UARTConnection::connectionError, &loop, &QEventLoop::quit);
+        //        connect(tiConnection, &UARTConnection::responseReceived, &loop, &QEventLoop::quit, Qt::SingleShotConnection);
+        //        connect(tiConnection, &UARTConnection::connectionError, &loop, &QEventLoop::quit, Qt::SingleShotConnection);
         timer.start(10);
 
         QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
                                                       STHERM::PacketType::UARTPacket);
-        tiConnection->sendRequest(packet);
-        loop.exec();
-        qDebug() << "request timeout";
+        if (tiConnection->sendRequest(packet)) {
+            loop.exec();
+        }
+        qDebug() << "request finished";
     }
 
     return {};

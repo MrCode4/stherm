@@ -38,7 +38,6 @@ bool UARTConnection::startConnection()
 
             connect(mSerial, &QSerialPort::readyRead, this, &UARTConnection::onReadyRead);
             connect(mSerial, &QSerialPort::errorOccurred, this, &UARTConnection::onError);
-
         } else {
             // If open fails then return with an error
             qDebug() << (QString("Can't open %1,%2 error code %3")
@@ -73,12 +72,12 @@ bool UARTConnection::isConnected()
 }
 
 bool UARTConnection::sendRequest(QByteArray data) {
-    return mSerial->write(data);
+    return mSerial->write(data) != -1;
 }
 
 bool UARTConnection::sendRequest(const char *data, qint64 len)
 {
-    return mSerial->write(data, len);
+    return mSerial->write(data, len) != 1;
 }
 
 bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::PacketType &packetType)
