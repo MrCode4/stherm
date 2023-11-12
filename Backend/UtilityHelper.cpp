@@ -49,7 +49,7 @@ bool UtilityHelper::configurePins(int gpio)
     directionFile.close();
 
     // Update edge file
-    QString edgeFilePath = QString("/sys/class/gpio/gpio%d/edge").arg(gpio);
+    QString edgeFilePath = QString("/sys/class/gpio/gpio%0/edge").arg(gpio);
     QFile edgeFile(directionFilePath);
 
     if (!edgeFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
