@@ -1,5 +1,7 @@
 #include "DeviceControllerCPP.h"
 
+#include "LogHelper.h"
+
 /* ************************************************************************************************
  * Constructors & Destructor
  * ************************************************************************************************/
@@ -9,6 +11,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
     _mainData = {{"temp", QVariant(0)}, {"hum", QVariant(0)}};
 
+    LOG_DEBUG("TEST");
     connect(_deviceController, &DeviceIOController::dataReady, this, [this](QVariantMap data) {
         _mainData = data;
     });
