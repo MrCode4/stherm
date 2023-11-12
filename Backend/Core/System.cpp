@@ -5,12 +5,11 @@
 #include <QUrl>
 
 /* ************************************************************************************************
- * Authentication information
+ * Network information
  * ************************************************************************************************/
-
 const QUrl m_domainUrl        = QUrl("http://test.hvac.z-soft.am"); // base domain
 const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
-const QUrl m_updateUrl         = QUrl("/update/");                   // update
+const QUrl m_updateUrl        = QUrl("/update/");                   // update
 
 
 System::System(QObject *parent) :
@@ -23,24 +22,11 @@ System::System(QObject *parent) :
 
 void System::getQR(QString accessUid)
 {
-    QJsonObject requestData;
-    requestData["request"] = QJsonObject{
-        {"class", "sync"},
-        {"method", "getSN"},
-        {"params", accessUid}
-    };
+    QJsonArray paramsArray;
+    paramsArray.append(accessUid);
 
-    requestData["user"] = QJsonObject{
-        {"lang_id", 0},
-        {"user_id", 0},
-        {"type_id", 0},
-        {"host_id", 0},
-        {"region_id", 0},
-        {"token", ""}
-    };
-
-    QJsonDocument jsonDocument(requestData);
-    sendPostRequest(m_engineUrl, jsonDocument.toJson());
+    QByteArray requestData = preparePacket("sync", "getSN", paramsArray);
+    sendPostRequest(m_engineUrl, requestData);
 }
 
 void System::getUpdate(QString softwareVersion)
@@ -49,11 +35,28 @@ void System::getUpdate(QString softwareVersion)
     paramsArray.append(mSerialNumber);
     paramsArray.append(softwareVersion);
 
+    QByteArray requestData = preparePacket("sync", "getSystemUpdate", paramsArray);
+    sendPostRequest(m_engineUrl, requestData);
+}
+
+void System::requestJob(QString type)
+{
+    QJsonArray paramsArray;
+    paramsArray.append(mSerialNumber);
+    paramsArray.append(type);
+
+    QByteArray requestData = preparePacket("sync", "requestJob", paramsArray);
+    sendPostRequest(m_engineUrl, requestData);
+}
+
+QByteArray System::preparePacket(QString className, QString method, QJsonArray params) {
+
+
     QJsonObject requestData;
     requestData["request"] = QJsonObject{
-        {"class", "sync"},
-        {"method", "getSystemUpdate"},
-        {"params", paramsArray}
+        {"class", className},
+        {"method", method},
+        {"params", params}
     };
 
     requestData["user"] = QJsonObject{
@@ -66,7 +69,8 @@ void System::getUpdate(QString softwareVersion)
     };
 
     QJsonDocument jsonDocument(requestData);
-    sendPostRequest(m_engineUrl, jsonDocument.toJson());
+
+    return jsonDocument.toJson();
 }
 
 void System::processNetworkReply (QNetworkReply * netReply) {
