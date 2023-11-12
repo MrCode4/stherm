@@ -14,8 +14,8 @@
 #define NRF_GPIO_4 21
 #define NRF_GPIO_5 22
 
-#define NRF_SERRIAL_PORT "/dev/ttymxc1"
-#define TI_SERRIAL_PORT "/dev/ttymxc3"
+#define NRF_SERIAL_PORT "/dev/ttymxc1"
+#define TI_SERIAL_PORT "/dev/ttymxc3"
 
 DeviceIOController::DeviceIOController(QObject *parent)
     : QThread{parent}
@@ -167,7 +167,7 @@ void DeviceIOController::run()
 
 void DeviceIOController::createTIConnection()
 {
-    tiConnection = new UARTConnection(TI_SERRIAL_PORT, QSerialPort::Baud9600);
+    tiConnection = new UARTConnection(TI_SERIAL_PORT, QSerialPort::Baud9600);
     if (tiConnection->startConnection()) {
         connect(tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
             qDebug() << Q_FUNC_INFO << __LINE__ << "TI Response:   " << data;
@@ -179,7 +179,7 @@ void DeviceIOController::createTIConnection()
 
 void DeviceIOController::createNRF()
 {
-    nRfConnection = new UARTConnection(NRF_SERRIAL_PORT, QSerialPort::Baud9600);
+    nRfConnection = new UARTConnection(NRF_SERIAL_PORT, QSerialPort::Baud9600);
     if (nRfConnection->startConnection()) {
         connect(nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
             qDebug() << Q_FUNC_INFO << __LINE__ << "UART Response:   " << data;
