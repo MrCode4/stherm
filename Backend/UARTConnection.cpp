@@ -91,6 +91,7 @@ bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::Pa
     sendRequest(packet);
 
     // wait for response to be ready
+// TODO this is blocking, does it sleep?  Worst case push this off to a low priority thread and come back when there is a response (note 10 bytes will take 10ms)
     if (mSerial->waitForBytesWritten()) {
         // read response
         if (mSerial->waitForReadyRead()) {

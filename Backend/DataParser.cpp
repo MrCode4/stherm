@@ -56,10 +56,8 @@ QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType 
         break;
     }
 
-    // It calls a function Set_SIO_TxPacket with the dev_info array and the
-    // tx_packet structure. This function likely packages the data and the
-    //  packet information into the dev_info array and returns the size
-    //  of the data in dev_buff_size.
+    // call Set_SIO_TxPacket with the output and input structures
+    // return the size of the dev_info output packet
     dev_buff_size = UtilityHelper::setSIOTxPacket(dev_info, txPacket);
 
     QByteArray result = QByteArray::fromRawData(reinterpret_cast<char *>(dev_info),

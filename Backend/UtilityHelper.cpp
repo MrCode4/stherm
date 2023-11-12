@@ -190,6 +190,7 @@ void UtilityHelper::setTimeZone(int offset) {
     }
 }
 
+// TODO this takes an input packet and creates an escaped UART frame for sending
 uint16_t UtilityHelper::setSIOTxPacket(uint8_t *TxDataBuf, STHERM::SIOPacket TxPacket) {
     uint8_t tmpTxBuffer[256];
     uint16_t index = 0;
