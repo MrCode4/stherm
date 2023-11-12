@@ -155,7 +155,10 @@ void DeviceIOController::run()
         {
             //            tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
 //            QByteArray rsp = tiConnection->sendCommand(STHERM::SIOCommand::feed_wtd);
-            QByteArray rsp = tiConnection->sendRequest(STHERM::SIOCommand::feed_wtd, STHERM::PacketType::UARTPacket);
+            bool rsp = tiConnection->sendRequest(STHERM::SIOCommand::feed_wtd, STHERM::PacketType::UARTPacket);
+            if (rsp == false) {
+                qDebug() << "Ti heartbeat message failed";
+            }
         }
         auto remainingTime = 3000 - timer.elapsed();
         if (remainingTime > 0)
