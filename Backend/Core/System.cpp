@@ -43,6 +43,32 @@ void System::getQR(QString accessUid)
     sendPostRequest(m_engineUrl, jsonDocument.toJson());
 }
 
+void System::getUpdate(QString softwareVersion)
+{
+    QJsonArray paramsArray;
+    paramsArray.append(mSerialNumber);
+    paramsArray.append(softwareVersion);
+
+    QJsonObject requestData;
+    requestData["request"] = QJsonObject{
+        {"class", "sync"},
+        {"method", "getSystemUpdate"},
+        {"params", paramsArray}
+    };
+
+    requestData["user"] = QJsonObject{
+        {"lang_id", 0},
+        {"user_id", 0},
+        {"type_id", 0},
+        {"host_id", 0},
+        {"region_id", 0},
+        {"token", ""}
+    };
+
+    QJsonDocument jsonDocument(requestData);
+    sendPostRequest(m_engineUrl, jsonDocument.toJson());
+}
+
 void System::processNetworkReply (QNetworkReply * netReply) {
 
     // Handle Errors
@@ -70,7 +96,7 @@ void System::processNetworkReply (QNetworkReply * netReply) {
             QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
 
             if (resultArray.count() > 0)
-                serialNumber = resultArray.first().toString();
+                mSerialNumber = resultArray.first().toString();
         }
 
     } break;

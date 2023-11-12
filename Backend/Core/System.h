@@ -21,6 +21,11 @@ public:
     //! Get technic's url and serial number
     void getQR(QString accessUid);
 
+    //! Get update
+    //! todo: process response packet
+    //! TEMP: "022"
+    void getUpdate(QString softwareVersion = "022");
+
 private slots:
     void processNetworkReply(QNetworkReply *netReply);
 
@@ -31,5 +36,5 @@ private:
      * ****************************************************************************************/
     QNetworkAccessManager *mNetManager;
 
-    QString serialNumber;
+    QString mSerialNumber;
 };
