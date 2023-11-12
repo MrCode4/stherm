@@ -196,10 +196,9 @@ uint16_t UtilityHelper::setSIOTxPacket(uint8_t *TxDataBuf, STHERM::SIOPacket TxP
     uint16_t index = 0;
     uint16_t packetLen = 0;
 
-    tmpTxBuffer[0] = TxPacket.CMD;
-    tmpTxBuffer[1] = TxPacket.ACK;
-    tmpTxBuffer[2] = TxPacket.SID;
-    index += 3;
+    tmpTxBuffer[index++] = TxPacket.CMD;
+    tmpTxBuffer[index++] = TxPacket.ACK;
+    tmpTxBuffer[index++] = TxPacket.SID;
     memcpy(&tmpTxBuffer[index], &TxPacket.DataArray[0], TxPacket.DataLen);
     index += TxPacket.DataLen;
     TxPacket.CRC = crc16(&TxPacket.DataArray[0], TxPacket.DataLen);

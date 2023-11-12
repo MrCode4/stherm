@@ -151,8 +151,12 @@ void DeviceIOController::run()
             //        uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
         }
 
-        //        if (tiConnection && tiConnection->isConnected())
-        //            tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+        if (tiConnection && tiConnection->isConnected())
+        {
+            //            tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+//            QByteArray rsp = tiConnection->sendCommand(STHERM::SIOCommand::feed_wtd);
+            QByteArray rsp = tiConnection->sendRequest(STHERM::SIOCommand::feed_wtd, STHERM::PacketType::UARTPacket);
+        }
         auto remainingTime = 3000 - timer.elapsed();
         if (remainingTime > 0)
             QThread::msleep(remainingTime);
