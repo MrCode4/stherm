@@ -11,6 +11,7 @@ namespace STHERM {
 
 #define AQS_DATA_SIZE 10
 
+// TODO these should be split between ti and nrf controllers to improve readability
 /**
  * @brief Enumeration of serial input-output commands.
  */
@@ -28,7 +29,7 @@ enum SIOCommand {
     SetRelay = 0x31,
     GetRelaySensor,
     Check_Wiring,
-    feed_wtd,
+    feed_wtd,                   //!< TI only: Feed the watchdog timer on the ti controller
     Get_addr,
     set_wtd,
     set_update,
