@@ -20,7 +20,8 @@ public:
 
     //! Prepare packet
     QByteArray preparePacket(STHERM::SIOCommand cmd,
-                     STHERM::PacketType packetType = STHERM::PacketType::UARTPacket);
+                             STHERM::PacketType packetType = STHERM::PacketType::UARTPacket,
+                             QVariantList data = QVariantList());
 
     //! Deserialize TI data and send dataReay signal
     QVariantMap deserializeData(const QByteArray &serializeData, const bool &isTi = false);

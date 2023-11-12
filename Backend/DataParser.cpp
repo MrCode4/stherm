@@ -29,12 +29,12 @@ DataParser::DataParser(QObject *parent) :
 {
 }
 
-QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType)
+QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType, QVariantList data)
 {
     // Prepare packet to write
     STHERM::SIOPacket txPacket;
-    txPacket.PacketSrc = UtilityHelper::packetType(packetType);
     txPacket.CMD = cmd;
+    txPacket.PacketSrc = UtilityHelper::packetType(packetType);
     txPacket.ACK = STHERM::ERROR_NO;
     txPacket.SID = 0x01;
     txPacket.DataLen = 0;
@@ -42,6 +42,19 @@ QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType 
     // An integer variable dev_buff_size is declared.
     int dev_buff_size;
     uint8_t dev_info[32];
+
+    switch (cmd) {
+    case STHERM::SetColorRGB:
+        txPacket.DataLen = 5;
+        txPacket.DataArray[0] = std::clamp(data[0].toInt(), 0, 254);
+        txPacket.DataArray[1] = std::clamp(data[1].toInt(), 0, 254);
+        txPacket.DataArray[2] = std::clamp(data[2].toInt(), 0, 254);
+        txPacket.DataArray[3] = 255;
+        txPacket.DataArray[4] = data[3].toInt();
+        break;
+    default:
+        break;
+    }
 
     // It calls a function Set_SIO_TxPacket with the dev_info array and the
     // tx_packet structure. This function likely packages the data and the

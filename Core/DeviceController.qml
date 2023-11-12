@@ -60,7 +60,12 @@ I_DeviceController {
 
         console.log("colors: ", r, ",", g, ",", b)
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
-        var send_data = [r, g, b, 0, device.backlight.on ? "true" : "false"];
+        //! 1: mode
+        //!    LED_STABLE = 0,
+        //!    LED_FADE   = 1,
+        //!    LED_BLINK  = 2,
+        //!    LED_NO_MODE= 3
+        var send_data = [r, g, b, 1, device.backlight.on ? "true" : "false"];
 
         console.log("send data: ", send_data)
         sendReceive('hardware', 'setBacklight', send_data);

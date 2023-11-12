@@ -233,6 +233,17 @@ enum SystemMode
     Off,
     Emergency
 };
+
+/**
+ * @brief Enumeration for LED behavior.
+ */
+enum LedEffect
+{
+    LED_STABLE = 0,
+    LED_FADE,
+    LED_BLINK,
+    LED_NO_MODE
+};
 }
 
 /*! ***********************************************************************************************

@@ -64,12 +64,33 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
         //        connect(tiConnection, &UARTConnection::connectionError, &loop, &QEventLoop::quit, Qt::SingleShotConnection);
         timer.start(10);
 
-        QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
-                                                      STHERM::PacketType::UARTPacket);
-        if (tiConnection->sendRequest(packet)) {
+        QByteArray packet;
+
+        bool isRequestSent = false;
+
+        // todo: Add a function to check data
+        if (className == "hardware" && method == "setBacklight") {
+
+            if (data.size() == 5) {
+                packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
+                                                   STHERM::PacketType::UARTPacket,
+                                                   data);
+                isRequestSent = nRfConnection->sendRequest(packet);
+            } else {
+                qWarning() << "data is empty or not consistent";
+            }
+
+        } else {
+            packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
+                                               STHERM::PacketType::UARTPacket);
+            isRequestSent = tiConnection->sendRequest(packet);
+        }
+
+        if (isRequestSent) {
             loop.exec();
         }
-        qDebug() << "request finished";
+
+        qDebug() << "request timeout";
     }
 
     return {};
