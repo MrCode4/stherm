@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QtNetwork>
 
-#include "NetWorkWorker.h"
+#include "NetworkWorker.h"
 
 /*! ***********************************************************************************************
  * This class manage sync requests.
