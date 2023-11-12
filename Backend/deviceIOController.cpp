@@ -5,6 +5,8 @@
 #include <QNetworkReply>
 #include <QtConcurrent/QtConcurrent>
 
+#include "LogHelper.h"
+
 /* ************************************************************************************************
  * Device specifications
  * ************************************************************************************************/
@@ -76,6 +78,8 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
                                                    STHERM::PacketType::UARTPacket,
                                                    data);
                 isRequestSent = nRfConnection->sendRequest(packet);
+                LOG_DEBUG(QString("send setBacklight request: %0").arg(isRequestSent));
+
             } else {
                 qWarning() << "data is empty or not consistent";
             }
