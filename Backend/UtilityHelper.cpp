@@ -50,7 +50,7 @@ bool UtilityHelper::configurePins(int gpio)
 
     // Update edge file
     QString edgeFilePath = QString("/sys/class/gpio/gpio%0/edge").arg(gpio);
-    QFile edgeFile(directionFilePath);
+    QFile edgeFile(edgeFilePath);
 
     if (!edgeFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << Q_FUNC_INFO << __LINE__ << "Failed to open eadge file for pin " << gpio;
@@ -189,7 +189,6 @@ void UtilityHelper::setTimeZone(int offset) {
         qDebug() << Q_FUNC_INFO << __LINE__  << "Timezone set to" << timezoneFile;
     }
 }
-
 
 uint16_t UtilityHelper::setSIOTxPacket(uint8_t *TxDataBuf, STHERM::SIOPacket TxPacket) {
     uint8_t tmpTxBuffer[256];
