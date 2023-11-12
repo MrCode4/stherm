@@ -18,13 +18,18 @@ public:
     //! Reboot device
     void rebootDevice();
 
-    void getQR();
+    //! Get technic's url and serial number
+    void getQR(QString accessUid);
+
 private slots:
     void processNetworkReply(QNetworkReply *netReply);
+
 private:
     void sendPostRequest(const QUrl &relativeUrl, const QByteArray &postData);
 
     /* Attributes
      * ****************************************************************************************/
     QNetworkAccessManager *mNetManager;
+
+    QString serialNumber;
 };

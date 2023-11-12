@@ -18,7 +18,29 @@ System::System(QObject *parent) :
 {
     mNetManager = new QNetworkAccessManager();
 
-    connect(mNetManager, &QNetworkAccessManager::finished, this,  &AuthenticationCPP::processNetworkReply);
+    connect(mNetManager, &QNetworkAccessManager::finished, this,  &System::processNetworkReply);
+}
+
+void System::getQR(QString accessUid)
+{
+    QJsonObject requestData;
+    requestData["request"] = QJsonObject{
+        {"class", "sync"},
+        {"method", "getSN"},
+        {"params", accessUid}
+    };
+
+    requestData["user"] = QJsonObject{
+        {"lang_id", 0},
+        {"user_id", 0},
+        {"type_id", 0},
+        {"host_id", 0},
+        {"region_id", 0},
+        {"token", ""}
+    };
+
+    QJsonDocument jsonDocument(requestData);
+    sendPostRequest(m_engineUrl, jsonDocument.toJson());
 }
 
 void System::processNetworkReply (QNetworkReply * netReply) {
@@ -43,6 +65,14 @@ void System::processNetworkReply (QNetworkReply * netReply) {
     switch (netReply->operation()) {
     case QNetworkAccessManager::PostOperation: {
 
+        if (netReply->url().toString().endsWith(m_engineUrl.toString())) {
+            qDebug() << Q_FUNC_INFO << __LINE__ << obj;
+            QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
+
+            if (resultArray.count() > 0)
+                serialNumber = resultArray.first().toString();
+        }
+
     } break;
     case QNetworkAccessManager::GetOperation: {
 
@@ -62,8 +92,9 @@ void System::sendPostRequest(const QUrl& relativeUrl, const QByteArray& postData
 
     // Post a request
     QNetworkReply *netReply = mNetManager->post(netRequest, postData);
-    netReply->ignoreSslErrors();
+//    netReply->ignoreSslErrors();
 }
+
 void System::rebootDevice()
 {
         QProcess process;
