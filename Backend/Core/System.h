@@ -3,11 +3,13 @@
 #include <QObject>
 #include <QtNetwork>
 
+#include "NetworkWorker.h"
+
 /*! ***********************************************************************************************
  * This class manage system requests.
  * ************************************************************************************************/
 
-class System : public QObject
+class System : public NetworkWorker
 {
     Q_OBJECT
 
@@ -34,20 +36,11 @@ public:
     //! Send request job to web server
     void requestJob(QString type);
 
-private slots:
+protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
 
+
 private:
-    //! Prepare post request data
-    QByteArray preparePacket(QString className, QString method, QJsonArray params);
-
-    //! Send post request
-    void sendPostRequest(const QUrl &relativeUrl, const QByteArray &postData);
-
-    /* Attributes
-     * ****************************************************************************************/
-    QNetworkAccessManager *mNetManager;
-
     QString mSerialNumber;
 };

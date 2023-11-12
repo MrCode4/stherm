@@ -12,8 +12,7 @@ const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
 const QUrl m_updateUrl        = QUrl("/update/");                   // update
 
 
-System::System(QObject *parent) :
-    QObject(parent)
+System::System(QObject *parent)
 {
     mNetManager = new QNetworkAccessManager();
 
@@ -26,7 +25,7 @@ void System::getQR(QString accessUid)
     paramsArray.append(accessUid);
 
     QByteArray requestData = preparePacket("sync", "getSN", paramsArray);
-    sendPostRequest(m_engineUrl, requestData);
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData);
 }
 
 void System::getUpdate(QString softwareVersion)
@@ -36,7 +35,7 @@ void System::getUpdate(QString softwareVersion)
     paramsArray.append(softwareVersion);
 
     QByteArray requestData = preparePacket("sync", "getSystemUpdate", paramsArray);
-    sendPostRequest(m_engineUrl, requestData);
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData);
 }
 
 void System::requestJob(QString type)
@@ -46,47 +45,15 @@ void System::requestJob(QString type)
     paramsArray.append(type);
 
     QByteArray requestData = preparePacket("sync", "requestJob", paramsArray);
-    sendPostRequest(m_engineUrl, requestData);
-}
-
-QByteArray System::preparePacket(QString className, QString method, QJsonArray params) {
-
-
-    QJsonObject requestData;
-    requestData["request"] = QJsonObject{
-        {"class", className},
-        {"method", method},
-        {"params", params}
-    };
-
-    requestData["user"] = QJsonObject{
-        {"lang_id", 0},
-        {"user_id", 0},
-        {"type_id", 0},
-        {"host_id", 0},
-        {"region_id", 0},
-        {"token", ""}
-    };
-
-    QJsonDocument jsonDocument(requestData);
-
-    return jsonDocument.toJson();
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData);
 }
 
 void System::processNetworkReply (QNetworkReply * netReply) {
 
-    // Handle Errors
-    if (netReply->error() != QNetworkReply::NoError) {
-        qDebug() << Q_FUNC_INFO <<__LINE__<< netReply->error()<<netReply->errorString();
-        const QJsonObject errObj = QJsonDocument::fromJson(netReply->readAll()).object();
-        QStringList errMsg = errObj.value("non_field_errors").toVariant().toStringList();
+    NetworkWorker::processNetworkReply(netReply);
 
-        // Remove url from error.
-        QString error = netReply->errorString().remove(netReply->request().url().toString());
-//        emit logInError(errMsg.isEmpty() ? error : errMsg.join("\n"));
-
+    if (netReply->error() != QNetworkReply::NoError)
         return;
-    }
 
     QByteArray data = netReply->readAll();
     const QJsonDocument doc = QJsonDocument::fromJson(data);
@@ -112,17 +79,6 @@ void System::processNetworkReply (QNetworkReply * netReply) {
 
         break;
     }
-}
-
-void System::sendPostRequest(const QUrl& relativeUrl, const QByteArray& postData)
-{
-    // Prepare request
-    QNetworkRequest netRequest(m_domainUrl.resolved(relativeUrl));
-    netRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    // Post a request
-    QNetworkReply *netReply = mNetManager->post(netRequest, postData);
-//    netReply->ignoreSslErrors();
 }
 
 void System::rebootDevice()
