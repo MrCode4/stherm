@@ -68,6 +68,9 @@ private:
     //! Create NRF connection, called each 30 seconds, tof, sensors, getInfo (?)
     void createNRF();
 
+    //! Configure NRF
+    void nrfConfiguration();
+
 private:
     DataParser mDataParser;
 

@@ -24,6 +24,15 @@ DeviceIOController::DeviceIOController(QObject *parent)
     mMainDevice.address = 0xffffffff; // this address is used in rf comms
     mMainDevice.paired = true;
     mMainDevice.type = STHERM::Main_dev;
+
+    // Time configuration
+    STHERM::ResponseTime Rtv;
+    Rtv.TP_internal_sesn_poll = 200; // 2sec
+    Rtv.TT_if_ack = 40;              // 10 min
+    Rtv.TT_if_nack = 25;
+
+
+
 }
 
 DeviceIOController::~DeviceIOController()
@@ -36,6 +45,59 @@ DeviceIOController::~DeviceIOController()
 
     if (tiConnection)
         delete tiConnection;
+}
+
+void DeviceIOController::nrfConfiguration()
+{
+    // set initial configs
+
+    // Send GetInfo request
+    QByteArray packetBA = DataParser::preparePacket(STHERM::GetInfo);
+    nRfConnection->sendRequest(packetBA);
+
+
+    // Send InitMcus request
+    STHERM::SIOPacket txPacket;
+    txPacket.PacketSrc = UART_Packet;
+    txPacket.CMD = STHERM::InitMcus;
+    txPacket.ACK = STHERM::ERROR_NO;
+    txPacket.SID = 0x01;
+
+    STHERM::AQ_TH_PR_thld throldsAQ;
+    uint8_t cpIndex = 0;
+
+    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.temp_high, sizeof(throldsAQ.temp_high));
+    cpIndex += sizeof(throldsAQ.temp_high);
+
+    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.temp_low, sizeof(throldsAQ.temp_low));
+    cpIndex += sizeof(throldsAQ.temp_low);
+
+    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.humidity_high, sizeof(throldsAQ.humidity_high));
+    cpIndex += sizeof(throldsAQ.humidity_high);
+
+    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.humidity_low, sizeof(throldsAQ.humidity_low));
+    cpIndex += sizeof(throldsAQ.humidity_low);
+
+    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.pressure_high, sizeof(throldsAQ.pressure_high));
+    cpIndex += sizeof(throldsAQ.pressure_high);
+
+    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.c02_high, sizeof(throldsAQ.c02_high));
+    cpIndex += sizeof(throldsAQ.c02_high);
+
+    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.Tvoc_high, sizeof(throldsAQ.Tvoc_high));
+    cpIndex += sizeof(throldsAQ.Tvoc_high);
+
+    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.etoh_high, sizeof(throldsAQ.etoh_high));
+    cpIndex += sizeof(throldsAQ.etoh_high);
+    txPacket.DataLen = cpIndex;
+
+    uint8_t ThreadBuff[256];
+    int ThreadSendSize = UtilityHelper::setSIOTxPacket(ThreadBuff, txPacket);
+
+
+    packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff),
+                                       ThreadSendSize);
+    nRfConnection->sendRequest(packetBA);
 }
 
 QVariantMap DeviceIOController::sendRequest(QString className, QString method, QVariantList data)
@@ -192,6 +254,8 @@ void DeviceIOController::createNRF()
             // Set data to ui (Update ui varables).
             Q_EMIT dataReady(deserialized);
         });
+
+        nrfConfiguration();
     }
 
     bool isSuccess = UtilityHelper::configurePins(NRF_GPIO_4);
