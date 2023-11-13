@@ -168,13 +168,45 @@ struct Relay
  * @brief Struct containing the values for air quality, temperature, humidity, and pressure sensors.
  */
 struct AQ_TH_PR_vals {
-    uint8_t humidity{};       ///< Humidity value (up to 100%)
-    uint8_t etoh{};           ///< ETOH value (up to 20 ppm)
-    uint8_t Tvoc{};           ///< TVOC value (0.1 to 10+ mg/m^3)
-    uint8_t iaq{};            ///< IAQ value (1 to 5+)
-    uint16_t c02{};           ///< CO2 value (400 to 5000 ppm)
-    int16_t temp{};           ///< Temperature value (up to +127�C)
-    uint16_t pressure{};      ///< Pressure value (up to 1200 hPa)
+
+    AQ_TH_PR_vals () {
+
+    }
+    uint8_t humidity;       ///< Humidity value (up to 100%)
+    uint8_t etoh;           ///< ETOH value (up to 20 ppm)
+    uint8_t Tvoc;           ///< TVOC value (0.1 to 10+ mg/m^3)
+    uint8_t iaq;            ///< IAQ value (1 to 5+)
+    uint16_t c02;           ///< CO2 value (400 to 5000 ppm)
+    int16_t temp;           ///< Temperature value (up to +127�C)
+    uint16_t pressure;      ///< Pressure value (up to 1200 hPa)
+};
+
+/**
+ * @brief Struct containing threshold values for air quality, temperature, humidity, and pressure sensors.
+ */
+struct AQ_TH_PR_thld {
+
+    AQ_TH_PR_thld() {
+        pressure_high = 1200;
+        c02_high      = 2000;
+        Tvoc_high     = 50;
+        etoh_high     = 70;
+        iaq_high      = 40;
+        temp_high     = 60;
+        temp_low      = -40;
+        humidity_high = 80;
+        humidity_low  = 10;
+    }
+
+    uint16_t pressure_high;  ///< Pressure threshold high (up to 1200 hPa)
+    uint16_t c02_high;       ///< CO2 threshold high (400 to 5000 ppm)
+    uint8_t Tvoc_high;       ///< TVOC threshold high (0.1 to 10+ mg/m^3)
+    uint8_t etoh_high;       ///< ETOH threshold high (up to 20 ppm)
+    uint8_t iaq_high;        ///< IAQ threshold high (1 to 5)
+    int8_t temp_high;        ///< Temperature threshold high (up to +127�C)
+    int8_t temp_low;         ///< Temperature threshold low (as low as -128�C)
+    uint8_t humidity_high;   ///< Humidity threshold high (up to 100%)
+    uint8_t humidity_low;    ///< Humidity threshold low (as low as 0%)
 };
 
 /**
