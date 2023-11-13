@@ -46,6 +46,8 @@ public:
     bool sendRequest(const char *data, qint64 len);
     bool sendRequest(const STHERM::SIOCommand &cmd, const STHERM::PacketType &packetType);
 
+    bool seek(qint64 pos = 0);
+
 signals:
     void connectionError(const QString &error);
 

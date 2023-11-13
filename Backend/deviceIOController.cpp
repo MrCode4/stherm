@@ -15,7 +15,7 @@
 #define NRF_GPIO_5 22
 
 #define NRF_SERIAL_PORT "/dev/ttymxc1"
-#define TI_SERIAL_PORT "/dev/ttymxc3"
+#define TI_SERIAL_PORT  "/dev/ttymxc3"
 
 DeviceIOController::DeviceIOController(QObject *parent)
     : QThread{parent}
@@ -24,6 +24,8 @@ DeviceIOController::DeviceIOController(QObject *parent)
     mMainDevice.address = 0xffffffff; // this address is used in rf comms
     mMainDevice.paired = true;
     mMainDevice.type = STHERM::Main_dev;
+
+    nrfWaitForResponse = false;
 
     // Time configuration
     STHERM::ResponseTime Rtv;
@@ -49,6 +51,8 @@ DeviceIOController::~DeviceIOController()
 
 void DeviceIOController::nrfConfiguration()
 {
+    mSensorPacketBA = DataParser::preparePacket(STHERM::GetSensors);
+    mTOFPacketBA    = DataParser::preparePacket(STHERM::GetTOF);
     // set initial configs
 
     // Send GetInfo request
@@ -244,6 +248,25 @@ void DeviceIOController::createTIConnection()
 
 void DeviceIOController::createNRF()
 {
+    QString gpioValuePath = "/sys/class/gpio/gpio%1/value\0";
+
+    bool isSuccess = UtilityHelper::configurePins(NRF_GPIO_4);
+    if (isSuccess) {
+        gpio4Connection = new UARTConnection(gpioValuePath.arg(NRF_GPIO_4), QSerialPort::Baud9600);
+    } else {
+        LOG_DEBUG(QString("Pin configuration failed: pin = %0").arg(NRF_GPIO_4));
+        return;
+    }
+
+    isSuccess = UtilityHelper::configurePins(NRF_GPIO_5);
+    if (isSuccess) {
+        gpio5Connection = new UARTConnection(gpioValuePath.arg(NRF_GPIO_5), QSerialPort::Baud9600);
+
+    } else {
+        LOG_DEBUG(QString("Pin configuration failed: pin = %0").arg(NRF_GPIO_5));
+        return;
+    }
+
     nRfConnection = new UARTConnection(NRF_SERIAL_PORT, QSerialPort::Baud9600);
     if (nRfConnection->startConnection()) {
         connect(nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
@@ -258,15 +281,32 @@ void DeviceIOController::createNRF()
         nrfConfiguration();
     }
 
-    bool isSuccess = UtilityHelper::configurePins(NRF_GPIO_4);
-    if (!isSuccess) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" << NRF_GPIO_4;
+    if (gpio4Connection->startConnection()) {
+        connect(gpio4Connection, &UARTConnection::sendData, this, [=](QByteArray data) {
+            LOG_DEBUG(QString("gpio4Connection Response:   %0").arg(data));
+
+            // Check (Read data after seek or ...)
+            gpio4Connection->seek(SEEK_SET);
+
+            if (data.length() == 2 && data.at(2) == '0') {
+                nRfConnection->sendRequest(mSensorPacketBA);
+            }
+        });
     }
 
-    isSuccess = UtilityHelper::configurePins(NRF_GPIO_5);
-    if (!isSuccess) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "Pin configuration failed: pin =" << NRF_GPIO_5;
+    if (gpio5Connection->startConnection()) {
+        connect(gpio5Connection, &UARTConnection::sendData, this, [=](QByteArray data) {
+            LOG_DEBUG(QString("gpio4Connection Response:   %0").arg(data));
+
+            // Check (Read data after seek or ...)
+            gpio5Connection->seek(SEEK_SET);
+
+            if (data.length() == 2 && data.at(2) == '0') {
+                nRfConnection->sendRequest(mTOFPacketBA);
+            }
+        });
     }
+
 }
 
 void DeviceIOController::setStopReading(bool stopReading)

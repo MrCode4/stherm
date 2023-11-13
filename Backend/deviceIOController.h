@@ -8,6 +8,7 @@
 
 /*! ***********************************************************************************************
  * This class manages read and write from device using UART
+ * todo: Add a request manager (queue)
  * ************************************************************************************************/
 
 class DeviceIOController : public QThread
@@ -77,10 +78,18 @@ private:
     UARTConnection *nRfConnection;
     UARTConnection *tiConnection;
 
+    UARTConnection *gpio4Connection;
+    UARTConnection *gpio5Connection;
+
     bool mStopReading;
 
     //! Paired devices
     QList<STHERM::DeviceType> mDevices;
     STHERM::DeviceType mMainDevice;
+
+    bool nrfWaitForResponse;
+
+    QByteArray mSensorPacketBA;
+    QByteArray mTOFPacketBA;
 
 };

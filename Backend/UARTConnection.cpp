@@ -119,6 +119,11 @@ bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::Pa
     return true;
 }
 
+bool UARTConnection::seek(qint64 pos)
+{
+    return mSerial->seek(0);
+}
+
 void UARTConnection::onReadyRead()
 {
     // Handle data
