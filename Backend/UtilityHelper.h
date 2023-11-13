@@ -194,6 +194,15 @@ struct DeviceType
 };
 
 /**
+ * @brief Struct containing response times for different sensor communications.
+ */
+struct ResponseTime {
+    uint8_t TT_if_ack{};            ///< Response time if ACK received (in 15s increments)
+    uint8_t TT_if_nack{};           ///< Response time if NACK received (in 100ms increments)
+    uint16_t TP_internal_sesn_poll{};///< Internal sensor polling time (in 10 ms increments)
+};
+
+/**
  * @brief Enumeration for alert types.
  */
 enum AlertTypes
