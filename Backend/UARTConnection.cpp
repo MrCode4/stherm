@@ -7,9 +7,6 @@ UARTConnection::UARTConnection(const QString &portName, const qint32 &baundRate,
     : QObject(parent)
     , mSerial(new QSerialPort(this))
 {
-    if (mSerial->isOpen())
-        mSerial->close();
-
     mSerial->setPortName(portName);
     bool isSuccess = mSerial->setBaudRate(baundRate) && // Set baud rate in all directions
                      mSerial->setDataBits(QSerialPort::Data8)
