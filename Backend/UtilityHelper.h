@@ -91,6 +91,20 @@ enum RFDevTypes {
 };
 
 /**
+ * @brief Enum representing the different types of Sensors.
+ */
+enum Sns_type {
+    SNS_temperature = 1,
+    SNS_humidity,
+    SNS_co2,
+    SNS_etoh,
+    SNS_Tvoc,
+    SNS_iaq,
+    SNS_pressure,
+    SNS_NO_TYPE
+};
+
+/**
  * @brief Structure for serial input-output packets.
  */
 struct SIOPacket {
@@ -232,9 +246,23 @@ struct DeviceType
  * @brief Struct containing response times for different sensor communications.
  */
 struct ResponseTime {
-    uint8_t TT_if_ack{};            ///< Response time if ACK received (in 15s increments)
-    uint8_t TT_if_nack{};           ///< Response time if NACK received (in 100ms increments)
-    uint16_t TP_internal_sesn_poll{};///< Internal sensor polling time (in 10 ms increments)
+
+    ResponseTime() {
+        TT_if_ack             = 200;
+        TT_if_nack            = 40;
+        TP_internal_sesn_poll = 25;
+    }
+
+    uint8_t    TT_if_ack;              ///< Response time if ACK received (in 15s increments) - poll_if_responded
+    uint8_t    TT_if_nack;             ///< Response time if NACK received (in 100ms increments) - poll_if_not_responded
+    uint16_t   TP_internal_sesn_poll;  ///< Internal sensor polling time (in 10 ms increments) - internal_poll_time
+};
+
+struct config_time {
+    uint8_t ext_sens_type;
+    uint8_t TT_if_ack;//in 15s increments
+    uint8_t TT_if_nack;//in 100ms increments
+    uint16_t TP_internal_sesn_poll;// 10 ms increments
 };
 
 /**
