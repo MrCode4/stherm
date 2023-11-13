@@ -258,11 +258,20 @@ struct ResponseTime {
     uint16_t   TP_internal_sesn_poll;  ///< Internal sensor polling time (in 10 ms increments) - internal_poll_time
 };
 
-struct config_time {
+struct SensorTimeConfig {
     uint8_t ext_sens_type;
     uint8_t TT_if_ack;//in 15s increments
     uint8_t TT_if_nack;//in 100ms increments
     uint16_t TP_internal_sesn_poll;// 10 ms increments
+};
+
+/**
+ * @brief Thresholds for each sensor.
+ */
+struct SensorConfigThresholds {
+    uint8_t  sens_type;
+    uint16_t min_alert_value;//in 15s increments
+    uint16_t max_alert_value;//in 100ms increments
 };
 
 /**

@@ -28,16 +28,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
     mMainDevice.type = STHERM::Main_dev;
 
     nrfWaitForResponse = false;
-    brighness_mode= 1;
-
-    // Time configuration
-    STHERM::ResponseTime Rtv;
-    Rtv.TP_internal_sesn_poll = 200; // 2sec
-    Rtv.TT_if_ack = 40;              // 10 min
-    Rtv.TT_if_nack = 25;
-
-
-
+    brighness_mode = 1;
 }
 
 DeviceIOController::~DeviceIOController()
@@ -560,4 +551,33 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
     } else if (values.iaq / 10.0 > AQ_TH_PR_thld.iaq_high) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_iaq_high);
     }
+}
+
+
+STHERM::ResponseTime DeviceIOController::getTimeConfig()
+{
+    // Time configuration
+    STHERM::ResponseTime rtv;
+    rtv.TP_internal_sesn_poll = 200; // 2sec
+    rtv.TT_if_ack  = 40;              // 10 min
+    rtv.TT_if_nack = 25;
+
+    return rtv;
+}
+
+QList<STHERM::SensorTimeConfig> DeviceIOController::getSensorTimeConfig()
+{
+    QList<STHERM::SensorTimeConfig> configs;
+
+    // Read from config file
+
+    return configs;
+}
+
+QList<STHERM::SensorConfigThresholds> DeviceIOController::getSensorThresholds()
+{
+    QList<STHERM::SensorConfigThresholds> sensorsThresholds;
+
+
+    return sensorsThresholds;
 }

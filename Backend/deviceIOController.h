@@ -77,7 +77,20 @@ private:
     //! Configure NRF
     void nrfConfiguration();
 
+    //! Check alerts with AQ_TH_PR_vals
+    void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values);
+
+    //! Process NRF response
     void processNRFResponse(STHERM::SIOPacket rxPacket);
+
+    //! Get time configs from saved configs file.
+    STHERM::ResponseTime getTimeConfig();
+
+    //! Get sensors time configs from saved configs file.
+    QList<STHERM::SensorTimeConfig> getSensorTimeConfig();
+
+    //! Get sensors from sensor_config file
+    QList<STHERM::SensorConfigThresholds> getSensorThresholds();
 
 private:
     DataParser mDataParser;
@@ -103,7 +116,6 @@ private:
 
     STHERM::AQ_TH_PR_thld AQ_TH_PR_thld;
 
-    void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values);
 
     QTimer wtd_timer;
 };
