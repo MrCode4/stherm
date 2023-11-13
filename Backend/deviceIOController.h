@@ -92,6 +92,9 @@ private:
     //! Get sensors from sensor_config file
     QList<STHERM::SensorConfigThresholds> getSensorThresholds();
 
+    //! Check sensor thresholds
+    void checkSensorThreshold(STHERM::SensorConfigThresholds &threshold);
+
 private:
     DataParser mDataParser;
 

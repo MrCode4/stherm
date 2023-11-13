@@ -581,3 +581,50 @@ QList<STHERM::SensorConfigThresholds> DeviceIOController::getSensorThresholds()
 
     return sensorsThresholds;
 }
+
+void DeviceIOController::checkSensorThreshold(STHERM::SensorConfigThresholds &threshold)
+{
+    // The commented lines must be check,
+    switch (threshold.sens_type)
+    {
+    case STHERM::SNS_temperature:
+        if (threshold.max_alert_value > 127)
+            threshold.max_alert_value = 127;
+        //        throlds_aq.temp_high = static_cast<uint8_t>(i.max_alert_value);
+        if (threshold.min_alert_value < -128)
+            threshold.min_alert_value = -128;
+        //        throlds_aq.temp_low = static_cast<uint8_t>(i.min_alert_value);
+        break;
+    case STHERM::SNS_humidity:
+        if (threshold.max_alert_value > 100)
+            threshold.max_alert_value = 100;
+        //        throlds_aq.humidity_high = static_cast<uint8_t>(i.max_alert_value);
+        if (threshold.min_alert_value < 0)
+            threshold.min_alert_value = 0;
+        //        throlds_aq.humidity_low = static_cast<uint8_t>(i.min_alert_value);
+        break;
+    case STHERM::SNS_co2:
+        //        throlds_aq.c02_high = i.max_alert_value;
+        break;
+    case STHERM::SNS_etoh:
+        if (threshold.max_alert_value > 127)
+            threshold.max_alert_value = 127;
+        //        throlds_aq.etoh_high = static_cast<uint8_t>(i.max_alert_value);
+        break;
+    case STHERM::SNS_iaq:
+        if (threshold.max_alert_value > 5)
+            threshold.max_alert_value = 5;
+        //        throlds_aq.iaq_high = static_cast<uint8_t>(i.max_alert_value);
+        break;
+    case STHERM::SNS_Tvoc:
+        if (threshold.max_alert_value > 127)
+            threshold.max_alert_value = 127;
+        //        throlds_aq.Tvoc_high = static_cast<uint8_t>(i.max_alert_value);
+        break;
+    case STHERM::SNS_pressure:
+        //        throlds_aq.pressure_high = i.max_alert_value;
+        break;
+    default:
+        break;
+    }
+}

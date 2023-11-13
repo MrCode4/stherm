@@ -270,8 +270,8 @@ struct SensorTimeConfig {
  */
 struct SensorConfigThresholds {
     uint8_t  sens_type;
-    uint16_t min_alert_value;//in 15s increments
-    uint16_t max_alert_value;//in 100ms increments
+    int min_alert_value;//in 15s increments
+    int max_alert_value;//in 100ms increments
 };
 
 /**
