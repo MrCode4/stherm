@@ -17,6 +17,8 @@
 #define NRF_SERIAL_PORT "/dev/ttymxc1"
 #define TI_SERIAL_PORT  "/dev/ttymxc3"
 
+#define TOF_IRQ_RANGE 1000    // mm
+
 DeviceIOController::DeviceIOController(QObject *parent)
     : QThread{parent}
 {
@@ -26,6 +28,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
     mMainDevice.type = STHERM::Main_dev;
 
     nrfWaitForResponse = false;
+    brighness_mode= 1;
 
     // Time configuration
     STHERM::ResponseTime Rtv;
@@ -333,11 +336,13 @@ void DeviceIOController::createNRF()
     if (nRfConnection->startConnection()) {
         connect(nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
             TRACE << "NRF Response:   " << data;
-            auto deserialized = mDataParser.deserializeNRFData(data);
-            TRACE << "NRF Response:   " << deserialized;
+            auto rxPacket = mDataParser.deserializeNRFData(data);
+            LOG_DEBUG(QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+            processNRFResponse(rxPacket);
 
-            // Set data to ui (Update ui varables).
-            Q_EMIT dataReady(deserialized);
+
+            // Set data to ui (Update ui variables).
+//            Q_EMIT responseReady(rxPacket.CMD, );
         });
 
         nrfConfiguration();
@@ -391,4 +396,168 @@ void DeviceIOController::updateTiDevices()
     // CO2 sensor
 
     qDebug() << Q_FUNC_INFO << __LINE__ << "Device count:   " << mDevices.count();
+}
+
+void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
+{
+
+//    QVariantMap resultMap;
+    uint16_t inc_crc_nrf = UtilityHelper::crc16(rxPacket.DataArray, rxPacket.DataLen);
+    int indx_rev = 0;
+
+    uint16_t RangeMilliMeter;
+    uint16_t fanSpeed;
+    uint32_t Luminosity;
+
+    // check data integridy
+    if (inc_crc_nrf == rxPacket.CRC) {
+        if (rxPacket.ACK == STHERM::ERROR_NO) {
+
+            switch (rxPacket.CMD)
+            {
+            case STHERM::GetInfo: {
+                indx_rev = 0;
+                for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
+                {
+                    //                    NRF_HW.push_back(static_cast<char>(rx_packet.DataArray[indx_rev]));
+                }
+                ++indx_rev;
+                for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
+                {
+                    //                    NRF_SW.push_back(static_cast<char>(rx_packet.DataArray[indx_rev]));
+                }
+                //                syslog(LOG_INFO, "NRF:: HW:%s SW:%s\n", NRF_HW.c_str(), NRF_SW.c_str());
+            } break;
+
+            case STHERM::GetTOF: {
+                memcpy(&RangeMilliMeter, rxPacket.DataArray, sizeof(RangeMilliMeter));
+                memcpy(&Luminosity, rxPacket.DataArray + sizeof(RangeMilliMeter), sizeof(Luminosity));
+
+//                resultMap.insert("RangeMilliMeter", RangeMilliMeter);
+//                resultMap.insert("Luminosity", Luminosity);
+
+                LOG_DEBUG(QString("RangeMilliMeter (%0), Luminosity (%1)").arg(RangeMilliMeter).arg(Luminosity));
+                if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE) {
+                    // key_event('n');
+                    LOG_DEBUG(QString("RangeMilliMeter (%0):  60 < RangeMilliMeter <= 1000 mm").arg(RangeMilliMeter));
+                }
+
+                if (brighness_mode == 1) {
+                    if (!UtilityHelper::setBrightness(Luminosity)) {
+                        LOG_DEBUG(QString("Error: setBrightness (Brightness: %0)").arg(Luminosity));
+                    }
+                }
+
+            } break;
+
+            case STHERM::GetSensors: {
+                int cpIndex = 0;
+
+                STHERM::AQ_TH_PR_vals mainDataValues;
+                memcpy(&mainDataValues.temp, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.temp));
+                cpIndex += sizeof(mainDataValues.temp);
+                LOG_DEBUG(QString("mainDataValues.temp: %0").arg(mainDataValues.temp));
+
+                memcpy(&mainDataValues.humidity, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.humidity));
+                cpIndex += sizeof(mainDataValues.humidity);
+                LOG_DEBUG(QString("mainDataValues.humidity: %0").arg(mainDataValues.humidity));
+
+                memcpy(&mainDataValues.c02, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.c02));
+                cpIndex += sizeof(mainDataValues.c02);
+                LOG_DEBUG(QString("mainDataValues.c02: %0").arg(mainDataValues.c02));
+
+                memcpy(&mainDataValues.etoh, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.etoh));
+                cpIndex += sizeof(mainDataValues.etoh);
+                LOG_DEBUG(QString("mainDataValues.etoh: %0").arg(mainDataValues.etoh));
+
+                memcpy(&mainDataValues.Tvoc, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.Tvoc));
+                cpIndex += sizeof(mainDataValues.Tvoc);
+                LOG_DEBUG(QString("mainDataValues.Tvoc: %0").arg(mainDataValues.Tvoc));
+
+                memcpy(&mainDataValues.iaq, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.iaq));
+                cpIndex += sizeof(mainDataValues.iaq);
+                LOG_DEBUG(QString("mainDataValues.iaq: %0").arg(mainDataValues.iaq));
+
+                memcpy(&mainDataValues.pressure, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.pressure));
+                cpIndex += sizeof(mainDataValues.pressure);
+                LOG_DEBUG(QString("mainDataValues.pressure: %0").arg(mainDataValues.pressure));
+
+                memcpy(&RangeMilliMeter, rxPacket.DataArray + cpIndex, sizeof(RangeMilliMeter));
+                cpIndex += sizeof(RangeMilliMeter);
+                LOG_DEBUG(QString("RangeMilliMeter: %0").arg(RangeMilliMeter));
+
+                memcpy(&Luminosity, rxPacket.DataArray + cpIndex, sizeof(Luminosity));
+                cpIndex += sizeof(Luminosity);
+                LOG_DEBUG(QString("Luminosity: %0").arg(Luminosity));
+
+                memcpy(&fanSpeed, rxPacket.DataArray + cpIndex, sizeof(fanSpeed));
+                cpIndex += sizeof(fanSpeed);
+                LOG_DEBUG(QString("fan_speed: %0").arg(fanSpeed));
+
+                // todo
+                //                if (!set_fan_speed_INFO(fan_speed)) {
+                //                    LOG_DEBUG(QString("Error: setFanSpeed: (fan speed: %0)").arg(fan_speed));
+                //                }
+                // todo
+                //                if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE) {
+                //                    key_event('n');
+                //                }
+
+                if (brighness_mode == 1) {
+                    if (!setBrightness(Luminosity)) {
+                        LOG_DEBUG(QString("Error: setBrightness (Brightness: %0)").arg(Luminosity));
+                    }
+                }
+
+                checkMainDataAlert(mainDataValues);
+
+                // todo
+                //                if (!setSensorData(main_dev, rx_packet.DataArray, rx_packet.DataLen)) {
+                //                    LOG_DEBUG(QString("Error: setSensorData"));
+                //                }
+            } break;
+
+            default:
+                break;
+            }
+
+        } else {
+            // Log error
+            LOG_DEBUG(QString("cmd:%0 ACK:%1").arg(rxPacket.CMD).arg(rxPacket.ACK));
+        }
+    } else {
+        // Log error
+        LOG_DEBUG(QString("ACK and CRC are distinct. ACK:%0 CRC:%1").arg(rxPacket.ACK).arg(rxPacket.CRC));
+    }
+}
+
+void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
+{
+    if (values.temp / 10.0 > AQ_TH_PR_thld.temp_high) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_high);
+
+    }  else if (values.temp / 10.0 < AQ_TH_PR_thld.temp_low) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_low);
+
+    } else if (values.humidity > AQ_TH_PR_thld.humidity_high) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_high);
+
+    } else if (values.humidity < AQ_TH_PR_thld.humidity_low) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_low);
+
+    } else if (values.pressure > AQ_TH_PR_thld.pressure_high) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_pressure_high);
+
+    } else if (values.c02 > AQ_TH_PR_thld.c02_high) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_c02_high);
+
+    } else if (values.Tvoc > AQ_TH_PR_thld.Tvoc_high) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_Tvoc_high);
+
+    } else if (values.etoh > AQ_TH_PR_thld.etoh_high) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_etoh_high);
+
+    } else if (values.iaq / 10.0 > AQ_TH_PR_thld.iaq_high) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_iaq_high);
+    }
 }

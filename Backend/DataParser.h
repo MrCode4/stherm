@@ -27,7 +27,7 @@ public:
     QVariantMap deserializeData(const QByteArray &serializeData, const bool &isTi = false);
 
     //! Deserialize TI data and send dataReay signal
-    QVariantMap deserializeNRFData(const QByteArray &serializeData);
+    STHERM::SIOPacket deserializeNRFData(const QByteArray &serializeData);
 
     //! Deserialize TI data and send dataReay signal
     QVariantMap deserializeTiData(const QByteArray &serializeData);

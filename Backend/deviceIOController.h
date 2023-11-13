@@ -61,6 +61,10 @@ signals:
     //! Send response with requestType
     void responseReady(int requestType, QVariant response);
 
+    void alert(STHERM::AlertLevel alertLevel,
+               STHERM::AlertTypes alertType,
+               QString alertMessage = QString());
+
 private:
     void run() override;
 
@@ -72,6 +76,8 @@ private:
 
     //! Configure NRF
     void nrfConfiguration();
+
+    void processNRFResponse(STHERM::SIOPacket rxPacket);
 
 private:
     DataParser mDataParser;
@@ -92,6 +98,12 @@ private:
 
     QByteArray mSensorPacketBA;
     QByteArray mTOFPacketBA;
+
+    int brighness_mode;
+
+    STHERM::AQ_TH_PR_thld AQ_TH_PR_thld;
+
+    void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values);
 
     QTimer wtd_timer;
 };

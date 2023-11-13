@@ -1,4 +1,5 @@
 #include "DataParser.h"
+#include "LogHelper.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -14,6 +15,7 @@
 
 // Minimum packet length
 #define PacketMinLength 5
+
 
 const uint16_t pressure_high_value {1200};  ///< Pressure threshold high (up to 1200 hPa)
 const uint16_t c02_high_value      {2000};  ///< CO2 threshold high (400 to 5000 ppm)
@@ -73,8 +75,8 @@ QVariantMap DataParser::deserializeData(const QByteArray &serializeData, const b
 {
     if (isTi) {
         return deserializeTiData(serializeData);
-    } else {
-        return deserializeNRFData(serializeData);
+//    } else {
+//        return deserializeNRFData(serializeData);
     }
 }
 
@@ -109,21 +111,36 @@ void DataParser::checkAlert(const STHERM::AQ_TH_PR_vals &values)
     }
 }
 
-QVariantMap DataParser::deserializeNRFData(const QByteArray &serializeData)
+STHERM::SIOPacket DataParser::deserializeNRFData(const QByteArray &serializeData)
 {
     TRACE << serializeData;
-    QJsonObject obj = QJsonDocument::fromJson(serializeData).object();
 
-    {
-        QJsonObject obj;
-        obj.insert("temp", 10);
-        obj.insert("hum", 30.24);
-        qDebug() << Q_FUNC_INFO << __LINE__ << obj.toVariantMap();
-        return obj.toVariantMap();
+    STHERM::SerialRxData packetRxSettings;
+    STHERM::SIOPacket  rxPacket;
+
+    for (int i = 0; i < serializeData.length(); i++) {
+        if (UtilityHelper::SerialDataRx(serializeData.at(i), &packetRxSettings)) {
+            break;
+        }
     }
 
-    TRACE << obj.toVariantMap();
-    return obj.toVariantMap();
+    rxPacket.CMD = (STHERM::SIOCommand)packetRxSettings.RxDataArray[CMD_Offset];
+    rxPacket.ACK = packetRxSettings.RxDataArray[ACK_Offset];
+    rxPacket.SID = packetRxSettings.RxDataArray[SID_Offset];
+    uint8_t PayloadLen = packetRxSettings.RxDataLen - PacketMinLength;
+    rxPacket.DataLen = PayloadLen;
+    if (PayloadLen > 0)
+    {
+        memcpy(&rxPacket.DataArray[0], &packetRxSettings.RxDataArray[DATA_Offset], PayloadLen);
+    }
+    rxPacket.CRC = (uint16_t)packetRxSettings.RxDataArray[DATA_Offset + PayloadLen];
+    rxPacket.CRC |= (uint16_t)(packetRxSettings.RxDataArray[DATA_Offset + PayloadLen + 1] << 8);
+
+    rxPacket.PacketSrc = UART_Packet;
+    memset(&packetRxSettings, 0, sizeof(packetRxSettings));
+
+
+    return rxPacket;
 }
 
 QVariantMap DataParser::deserializeTiData(const QByteArray& serializeData)
