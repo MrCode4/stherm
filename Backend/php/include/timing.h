@@ -33,6 +33,9 @@ public:
 
     explicit Timing(QObject *parent = nullptr);
 
+    void setDefaultValues(void);
+
+    void refreshTimestamps(void);
 
 
 signals:

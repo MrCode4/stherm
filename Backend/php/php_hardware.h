@@ -8,6 +8,9 @@
 #include <ctime>
 
 #include "php/include/deviceconfig.h"
+#include "php/include/timing.h"
+#include "php/include/currentstage.h"
+#include "php/include/sensors.h"
 
 #ifdef _WIN32
 #define uid_t uint8_t // for building in windows as test purpose
@@ -21,6 +24,10 @@ class php_hardware : public QObject
 private:
 
     DeviceConfig &deviceConfig;
+    Timing &timing;
+    CurrentStage &currentStage;
+    Sensors &sensors;
+
 
     ////////////////////// class variables adopted straight from php
 
@@ -48,7 +55,7 @@ private:
  *
  * @param string $uid The unique identifier used to initialize the `device_config` table.
  */
-    void setDefaultValues(uid_t uid);
+    void setDefaultValues(cpuid_t uid);
 
 /**
  * Sets the system's timezone based on the `timezone_number` from the `device_config` table.
@@ -72,7 +79,7 @@ private:
  *
  * @return string Returns the UID of the device.
  */
-    int runDevice();
+    int runDevice(cpuid_t);
 /**
  * Requests the serial number (SN) of a device using its UID (Unique Identifier).
  *
@@ -90,6 +97,7 @@ public:
 //    explicit php_hardware(QObject *parent = nullptr);
 // TODO as the device config is used heavily here, we will pass a reference to this, so it can be managed externally
     explicit php_hardware(DeviceConfig &config, QObject *parent = nullptr);
+    explicit php_hardware(DeviceConfig &config, Timing &tim, CurrentStage &stage, Sensors &sens, QObject *parent);
 
 /**
  * Determines the starting mode of a device and performs initialization as necessary.
@@ -105,7 +113,7 @@ public:
  *
  * @return int Returns 0 for PRODUCTION mode, 1 for NORMAL mode, or 2 for FIRST RUN mode.
  */
-    int getStartMode(void);
+    int getStartMode(cpuid_t uid);
 
 
     // TODO move backlight to its own class?

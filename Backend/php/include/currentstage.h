@@ -18,6 +18,8 @@ public:
 
     explicit CurrentStage(QObject *parent = nullptr);
 
+    void setDefaultValues(void);
+
 signals:
 
 };

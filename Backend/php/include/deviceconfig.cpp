@@ -1,7 +1,12 @@
 #include "deviceconfig.h"
 
-DeviceConfig::DeviceConfig(const std::string &hex_uid, QObject *parent)
+DeviceConfig::DeviceConfig(QObject *parent)
     : QObject{parent}
+{
+
+}
+
+void DeviceConfig::initialise(const cpuid_t cpuid)
 {
     // TODO we need to pull these values from config file (version.ini) and extract SOFTWARE_VERSION and HARDWARE_VERSION
     uint32_t swVer = 100;
@@ -16,7 +21,7 @@ DeviceConfig::DeviceConfig(const std::string &hex_uid, QObject *parent)
     brightness = 80;
     brightness_mode = 0;
     serial_number = "";
-    uid = strtoll(hex_uid.c_str(), NULL, 16);
+    uid = cpuid;
     timezone = "Pacific/Midway";
     technical_access_link = TECHNIC_QR;
     backlight_rgb = {0,0,0};

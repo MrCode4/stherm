@@ -49,7 +49,8 @@ public:
 
     // constructor and destructor
 
-    explicit DeviceConfig(const std::string& uid, QObject *parent = nullptr);
+    explicit DeviceConfig(QObject *parent = nullptr);
+    void initialise(const cpuid_t cpuid);
 
 signals:
 
