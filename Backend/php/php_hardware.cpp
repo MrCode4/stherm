@@ -1,10 +1,16 @@
 #include "php_hardware.h"
 
+// php_hardware::php_hardware(QObject *parent)
+//     : QObject{parent}
+// {
 
-php_hardware::php_hardware(QObject *parent)
+// }
+
+
+php_hardware::php_hardware(DeviceConfig &config, QObject *parent)
     : QObject{parent}
 {
-
+    deviceConfig = config;
 }
 
 

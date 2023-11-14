@@ -7,6 +7,8 @@
 
 #include <ctime>
 
+#include "deviceconfig.h"
+
 #ifdef _WIN32
 #define uid_t uint8_t // for building in windows as test purpose
 #endif
@@ -17,6 +19,8 @@ class php_hardware : public QObject
 //    QML_ELEMENT
 
 private:
+
+    DeviceConfig &deviceConfig;
 
     ////////////////////// class variables adopted straight from php
 
@@ -83,7 +87,9 @@ private:
 
 
 public:
-    explicit php_hardware(QObject *parent = nullptr);
+//    explicit php_hardware(QObject *parent = nullptr);
+// TODO as the device config is used heavily here, we will pass a reference to this, so it can be managed externally
+    explicit php_hardware(DeviceConfig &config, QObject *parent = nullptr);
 
 /**
  * Determines the starting mode of a device and performs initialization as necessary.
