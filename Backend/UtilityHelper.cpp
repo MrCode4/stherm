@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QRegularExpression>
 #include <QProcess>
+#include <QEventLoop>
+#include <QTimer>
 
 // Definitions of special characters used in serial communication
 #define phyStart        0xF0
@@ -33,6 +35,12 @@ bool UtilityHelper::configurePins(int gpio)
     out << pinString;
     exportFile.close();
 
+    // Sleep for 1000 ms
+    QEventLoop loop;
+    QTimer timer;
+    timer.connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(1000);
+    loop.exec();
 
     // Update direction file
     QString directionFilePath = QString("/sys/class/gpio/gpio%0/direction").arg(gpio);
