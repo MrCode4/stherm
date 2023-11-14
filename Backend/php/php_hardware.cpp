@@ -65,6 +65,16 @@ int php_hardware::runDevice(cpuid_t uid)
     return 0;
 }
 
+/** Send a CURL request to the remote server to look up the UID and return the
+ *  serial number associated with it */
+bool php_hardware::getSN(int uid, std::string & sn)
+{
+    // TODO curl send will give the serial nubmer and a bool representing if hte client_id is >0
+    // TODO send the http request
+    sn = "TEST SN";
+    return true;
+}
+
 // TODO refactor, this does MUCH more than just get the start mode
 // TODO we recieve and propagate the uid here, but this is really just becuase I dont want to introduce the getter here
 int php_hardware::getStartMode(cpuid_t uid)
@@ -85,9 +95,41 @@ int php_hardware::getStartMode(cpuid_t uid)
     deviceConfig.start_mode = 1;
 
     // Check if device is newly updated: call system->getIsDeviceUpdated()
+    if (true == UtilityHelper::tempIsUpdated())
+    {
+        getWiringsFromServer(uid);
+        UtilityHelper::tempClearUpdatedFlag();
+    }
 
+    // Check serial number
+    if (deviceConfig.serial_number != "")
+    {
+        // serial number already set, starting normally
+// TODO what do these return values mean?
+        return 1;
+    }
+    std::string sn;
+    if (true == getSN(uid, sn))
+    {
+        // staring normally, but defaults not set
+        timing.setDefaultValues();
+        currentStage.timestamp = current_timestamp();
+        deviceConfig.serial_number = sn;
+        deviceConfig.start_mode = 1;
+        return 1;
+    }
+    // Staring first time setup
+    setDefaultValues(uid);
+    deviceConfig.start_mode = 2;
 
+    return 2;
+}
 
+void php_hardware::getWiringsFromServer(int uid)
+{
+    // TODO first send the request (sync, getWirings)
+    // TODO Then update the wirings variable
+    //  note that here may be multiple
 }
 
 

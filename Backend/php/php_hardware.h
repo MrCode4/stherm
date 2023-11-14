@@ -16,6 +16,7 @@
 #include "php/include/sensors.h"
 
 #include "UtilityHelper.h"
+#include "Backend/Core/NetworkWorker.h"
 
 
 #ifdef _WIN32
@@ -96,7 +97,7 @@ private:
  * @param string $uid The UID of the device for which the SN is requested.
  * @return mixed Returns the result received from the remote server after sending the request.
  */
-    int getSN(int uid);
+    bool getSN(int uid, std::string &sn);
 
 
 public:

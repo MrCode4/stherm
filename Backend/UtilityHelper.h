@@ -301,6 +301,12 @@ class UtilityHelper
 {
 public:
 
+    // TODO these are place holders and need to be replaced later
+    static bool tempIsUpdated() {return FAKE_PARAM_IS_UPDATED;};
+    static void tempClearUpdatedFlag() {};
+
+    // end place holders
+
 
     //! This function exports the specified SW GPIO, configures it as input, and sets the edge detection to
     //! falling.
