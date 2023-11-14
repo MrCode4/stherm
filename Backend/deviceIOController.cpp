@@ -27,6 +27,11 @@ DeviceIOController::DeviceIOController(QObject *parent)
     // Get device id
     getDeviceID();
 
+    nRfConnection   = nullptr;
+    tiConnection    = nullptr;
+    gpio4Connection = nullptr;
+    gpio5Connection = nullptr;
+
     // Prepare main device
     mMainDevice.address = 0xffffffff; // this address is used in rf comms
     mMainDevice.paired = STHERM::pair;
@@ -151,7 +156,7 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
         // todo: Add a function to check data
         if (className == "hardware" && method == "setBacklight") {
             TRACE << "sending setBacklight request with data:" << data;
-            if (data.size() == 5) {
+            if (nRfConnection && nRfConnection->isConnected() && data.size() == 5) {
                 packet = mDataParser.preparePacket(STHERM::SIOCommand::SetColorRGB,
                                                    STHERM::PacketType::UARTPacket,
                                                    data);
@@ -162,7 +167,7 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
                 qWarning() << "data is empty or not consistent";
             }
 
-        } else {
+        } else if (tiConnection && tiConnection->isConnected()) {
             qWarning() << "No class/method processor defined";
 //            packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
 //                                               STHERM::PacketType::UARTPacket);
@@ -284,13 +289,19 @@ void DeviceIOController::run()
     int wiringCheckTimer = WIRING_CHECK_TIME;
 
     while (!mStopReading) {
-        qDebug() << "sending request for main data" << nRfConnection->isConnected();
-        if (nRfConnection && nRfConnection->isConnected()) {
-            //        uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
-            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetSensors,
-                                                          STHERM::PacketType::UARTPacket);
-            nRfConnection->sendRequest(packet);
-            //        uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+
+        if (nRfConnection) {
+            qDebug() << "sending request for main data" << nRfConnection->isConnected();
+            if (nRfConnection->isConnected()) {
+                //        uartConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+                QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetSensors,
+                                                              STHERM::PacketType::UARTPacket);
+                nRfConnection->sendRequest(packet);
+                //        uartConnection->sendRequest(STHERM::SIOCommand::GetTOF, STHERM::PacketType::UARTPacket);
+            }
+        } else {
+            qDebug() << Q_FUNC_INFO << __LINE__ ;
+            LOG_DEBUG("nRfConnection cannot established");
         }
 
         if (tiConnection && tiConnection->isConnected())
@@ -311,6 +322,8 @@ void DeviceIOController::run()
                 }
             }
         }
+
+        qDebug() << Q_FUNC_INFO << __LINE__ ;
         auto remainingTime = 3000 - timer.elapsed();
         if (remainingTime > 0)
             QThread::msleep(remainingTime);
