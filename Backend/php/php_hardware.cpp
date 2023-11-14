@@ -45,7 +45,21 @@ int php_hardware::runDevice(cpuid_t uid)
     }
     // TODO I'm not sure if there is just one sensor reading or multiple, we assume one but its most likely this is an array
     // TODO need to convert UID to text and put he UID in here....
-    sensors.setDefaultValues("UID TEST");
+    std::ostringstream oss;
+    oss << std::hex << deviceConfig.uid;
+    sensors.setDefaultValues(oss.str());
+
+
+    // TODO the wifi code below will check if there is a backup ini file in update partition, then load and delete it.  This may not work in all cases for restore
+    // TODO
+    // Check if wifi.ini is saved in backup partition, if so, then read it, store in database, delete
+
+    // TODO Clean the backup partition completely (rm /mnt/.../*)
+
+    // TODO Check if each of these files exists and delete them:
+    // /usr/share/apache2/default-site/htdocs/update.zip    -- partial update file?
+    //  /usr/share/apache2/default-site/htdocs/update       -- partial update file?
+    // need_recover.txt                                     -- ??
 
 
     return 0;

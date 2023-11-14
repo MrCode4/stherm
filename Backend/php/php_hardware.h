@@ -6,11 +6,17 @@
 
 
 #include <ctime>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #include "php/include/deviceconfig.h"
 #include "php/include/timing.h"
 #include "php/include/currentstage.h"
 #include "php/include/sensors.h"
+
+#include "UtilityHelper.h"
+
 
 #ifdef _WIN32
 #define uid_t uint8_t // for building in windows as test purpose
