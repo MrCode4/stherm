@@ -19,12 +19,17 @@
 
 #define TOF_IRQ_RANGE 1000    // mm
 
+#define WIRING_CHECK_TIME 600 // ms
+
 DeviceIOController::DeviceIOController(QObject *parent)
     : QThread{parent}
 {
+    // Get device id
+    getDeviceID();
+
     // Prepare main device
     mMainDevice.address = 0xffffffff; // this address is used in rf comms
-    mMainDevice.paired = true;
+    mMainDevice.paired = STHERM::pair;
     mMainDevice.type = STHERM::Main_dev;
 
     nrfWaitForResponse = false;
@@ -97,6 +102,18 @@ void DeviceIOController::nrfConfiguration()
     packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff),
                                        ThreadSendSize);
     nRfConnection->sendRequest(packetBA);
+}
+
+void DeviceIOController::tiConfiguration()
+{
+    // Send GetInfo request
+    QByteArray packetBA = DataParser::preparePacket(STHERM::GetInfo);
+    tiConnection->sendRequest(packetBA);
+
+    STHERM::AQ_TH_PR_thld throldsAQ;
+
+    packetBA = DataParser::preparePacket(STHERM::StartPairing);
+    tiConnection->sendRequest(packetBA);
 }
 
 QVariantMap DeviceIOController::sendRequest(QString className, QString method, QVariantList data)
@@ -263,6 +280,9 @@ void DeviceIOController::run()
 {
     QElapsedTimer timer;
     timer.start();
+
+    int wiringCheckTimer = WIRING_CHECK_TIME;
+
     while (!mStopReading) {
         qDebug() << "sending request for main data" << nRfConnection->isConnected();
         if (nRfConnection && nRfConnection->isConnected()) {
@@ -275,11 +295,20 @@ void DeviceIOController::run()
 
         if (tiConnection && tiConnection->isConnected())
         {
-            //            tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
-//            QByteArray rsp = tiConnection->sendCommand(STHERM::SIOCommand::feed_wtd);
-            bool rsp = tiConnection->sendRequest(STHERM::SIOCommand::feed_wtd, STHERM::PacketType::UARTPacket);
-            if (rsp == false) {
-                qDebug() << "Ti heartbeat message failed";
+            wiringCheckTimer++;
+            if (wiringCheckTimer > WIRING_CHECK_TIME) {
+                bool rsp = tiConnection->sendRequest(STHERM::SIOCommand::Check_Wiring, STHERM::PacketType::UARTPacket);
+
+                LOG_DEBUG(QString("Wiring check sent: ") + QString(rsp ? "true" : "false"));
+                wiringCheckTimer = 0;
+
+            } else {
+                //            tiConnection->sendRequest(STHERM::SIOCommand::GetInfo, STHERM::PacketType::UARTPacket);
+                //            QByteArray rsp = tiConnection->sendCommand(STHERM::SIOCommand::feed_wtd);
+                bool rsp = tiConnection->sendRequest(STHERM::SIOCommand::feed_wtd, STHERM::PacketType::UARTPacket);
+                if (rsp == false) {
+                    qDebug() << "Ti heartbeat message failed";
+                }
             }
         }
         auto remainingTime = 3000 - timer.elapsed();
@@ -295,9 +324,12 @@ void DeviceIOController::createTIConnection()
     tiConnection = new UARTConnection(TI_SERIAL_PORT, QSerialPort::Baud9600);
     if (tiConnection->startConnection()) {
         connect(tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
-            qDebug() << Q_FUNC_INFO << __LINE__ << "TI Response:   " << data;
-            auto deserialized = mDataParser.deserializeTiData(data);
-            qDebug() << Q_FUNC_INFO << __LINE__ << "TI Response:   " << deserialized;
+            LOG_DEBUG(QString("Ti Response: %0").arg(data));
+
+            auto rxPacket = mDataParser.deserializeNRFData(data);
+
+            LOG_DEBUG(QString("TI Response - CMD: %0").arg(rxPacket.CMD));
+            processTIResponse(rxPacket);
         });
     }
 }
@@ -522,6 +554,279 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
     }
 }
 
+void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
+{
+    uint16_t inc_crc_ti = UtilityHelper::crc16(rxPacket.DataArray, rxPacket.DataLen);
+    int indx_rev = 0;
+
+    // Check to fill
+    QList<quint32> paired_list;
+
+    STHERM::SIOPacket tx_packet;
+
+    // Use default values
+    STHERM::ResponseTime Rtv = getTimeConfig();
+
+    // Use default values
+    STHERM::AQ_TH_PR_thld throlds_aq;
+    uint8_t seq_num;
+    uint8_t dev_type;
+    uint8_t buf[256];
+    uint8_t rf_len;
+    uint8_t cpIndex = 0;
+    uint32_t brdcst_addr = 0xffffffff;
+
+    bool aquired_addr = false;
+
+    if (inc_crc_ti == rxPacket.CRC)
+    {
+        switch (rxPacket.CMD)
+        {
+        case STHERM::Get_packets: {
+            uint8_t rf_packet[128];
+            if (!aquired_addr)
+                break;
+            tx_packet.PacketSrc = UART_Packet;
+            tx_packet.CMD = STHERM::Send_packet;
+            tx_packet.ACK = STHERM::ERROR_NO;
+            tx_packet.SID = 0x01;
+            tx_packet.DataLen = 0;
+            if (std::find(paired_list.begin(), paired_list.end(), *(uint32_t *)(rxPacket.DataArray + 4)) != paired_list.end())
+            {
+                memcpy(rf_packet, &rxPacket.DataArray[4], 4);
+                seq_num = rxPacket.DataArray[8];
+                seq_num++;
+                memcpy(rf_packet + 8, &seq_num, 1);
+                dev_type = STHERM::Main_dev;
+                memcpy(rf_packet + 9, &dev_type, 1); // Dev_type main
+                switch (rxPacket.DataArray[9])
+                {
+                case STHERM::AQ_TH_PR: {
+                    memcpy(rf_packet + 10, &Rtv, sizeof(Rtv));
+                    rf_len = 10 + sizeof(Rtv);
+                    memcpy(rf_packet + rf_len, &throlds_aq, AQS_THRSHLD_SIZE);
+
+                    STHERM::AQ_TH_PR_vals aqthpr_dum_val;
+                    aqthpr_dum_val.Tvoc = rxPacket.DataArray[10];
+                    aqthpr_dum_val.etoh = rxPacket.DataArray[11];
+                    aqthpr_dum_val.iaq = rxPacket.DataArray[12];
+                    aqthpr_dum_val.temp = static_cast<uint16_t>((rxPacket.DataArray[14] << 8) | rxPacket.DataArray[13]);
+                    aqthpr_dum_val.humidity = rxPacket.DataArray[15];
+                    aqthpr_dum_val.c02 = static_cast<uint16_t>((rxPacket.DataArray[17] << 8) | rxPacket.DataArray[16]);
+                    aqthpr_dum_val.pressure = static_cast<uint16_t>((rxPacket.DataArray[19] << 8) | rxPacket.DataArray[20]);
+
+                    // CHECK ALERT
+                    checkMainDataAlert(aqthpr_dum_val);
+                    // Update model with aqthpr_dum_val
+//                    setSensorData(inc, &Thread_buff[9], AQS_DATA_SIZE)
+
+                } break;
+
+                default:
+                    break;
+                }
+                memcpy(tx_packet.DataArray, rf_packet, rf_len);
+                cpIndex = rf_len;
+                tx_packet.DataLen = cpIndex;
+
+                uint8_t rf_tx_buff[256];
+                uint16_t size = UtilityHelper::setSIOTxPacket(rf_tx_buff, tx_packet);
+
+                QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(rf_tx_buff),
+                                                            size);
+                tiConnection->sendRequest(packet);
+
+            } else if (!memcmp(rxPacket.DataArray, rf_packet + 4, 4)) {
+                memcpy(rf_packet, &rxPacket.DataArray[4], 4);
+                seq_num = rxPacket.DataArray[8];
+                seq_num++;
+                memcpy(rf_packet + 8, &seq_num, 1);
+                dev_type = STHERM::NO_TYPE;          // indicate to unpair
+                memcpy(rf_packet + 9, &dev_type, 1); // Dev_type main
+                rf_len = 10;
+                memcpy(tx_packet.DataArray, rf_packet, rf_len);
+                cpIndex = rf_len;
+                tx_packet.DataLen = cpIndex;
+
+                uint8_t tx_buff[256];
+                uint16_t size = UtilityHelper::setSIOTxPacket(tx_buff, tx_packet);
+
+                QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tx_buff),
+                                                            size);
+                tiConnection->sendRequest(packet);
+            } else if (!memcmp(rxPacket.DataArray, &brdcst_addr, 4)) {
+                STHERM::DeviceType inc;
+                // Check
+                inc.address = *((uint32_t *)(rxPacket.DataArray + 5));
+                inc.paired = STHERM::DevicePairStatus::pending;
+                inc.type = rxPacket.DataArray[9];
+
+                addPendingSensor(inc);
+            }
+        } break;
+        case STHERM::SetRelay: {
+            LOG_DEBUG("***** Ti  - Start SetRelay *****");
+            relays_in_l = relays_in;
+            LOG_DEBUG("***** Ti  - SetRelay finished *****");
+
+        } break;
+
+        case STHERM::Send_packet: {
+            LOG_DEBUG("***** Ti  - Start Send_packet *****");
+            LOG_DEBUG("***** Ti  - Send_packet finished *****");
+
+        } break;
+
+        case STHERM::GetRelaySensor:
+        case STHERM::Check_Wiring: {
+            LOG_DEBUG("***** Ti  - Start Check_Wiring *****");
+
+//            wait_for_wiring_check = false;
+            if (rxPacket.DataLen == WIRING_IN_CNT) {
+
+                // Check: Update model
+                for (int var = 0; var < WIRING_IN_CNT; ++var) {
+                    mWiringState.append(rxPacket.DataArray[var]);
+                }
+
+                if (mWiringState.contains(WIRING_BROKEN)) {
+                    emit alert(STHERM::LVL_Emergency, STHERM::Alert_wiring_not_connected);
+                    LOG_DEBUG("Check_Wiring : Wiring is disrupted");
+                } else {
+
+                    // Pepare SetRelay command when all wires not broke
+                    tx_packet.PacketSrc = UART_Packet;
+                    tx_packet.CMD = STHERM::SetRelay;
+                    tx_packet.ACK = STHERM::ERROR_NO;
+                    tx_packet.SID = 0x01;
+                    tx_packet.DataLen = qMin(RELAY_OUT_CNT, relays_in.count());
+
+                    // Add relays_in elements into DataArray of packet
+                    for (int i = 0; i < RELAY_OUT_CNT && i < relays_in.count(); i++) {
+                        tx_packet.DataArray[i] = relays_in[i];
+                    }
+
+                    // Prepaare packet to send request.
+                    uint8_t tx_buff[256];
+                    uint16_t size = UtilityHelper::setSIOTxPacket(tx_buff, tx_packet);
+
+                    QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tx_buff),
+                                                                size);
+
+                    LOG_DEBUG("***** Ti  - Check_Wiring: Send SetRelay command *****");
+                    tiConnection->sendRequest(packet);
+                }
+
+            } else {
+                LOG_DEBUG("***** Ti  - Check_Wiring Error *****");
+            }
+            LOG_DEBUG("***** Ti  - Finished: Check_Wiring *****");
+
+        } break;
+        case STHERM::GetInfo: {
+            LOG_DEBUG("***** Ti  - Start GetInfo *****");
+
+            STHERM::SIOPacket tp;
+            tp.PacketSrc = UART_Packet;
+            tp.CMD = STHERM::Get_addr;
+            tp.ACK = STHERM::ERROR_NO;
+            tp.SID = 0x01;
+            tp.DataLen = 0;
+            indx_rev = 0;
+
+            // Check: uncomment later
+            /* for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
+            {
+                TI_HW.push_back(static_cast<char>(rxPacket.DataArray[indx_rev]));
+            }
+            ++indx_rev;
+            for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
+            {
+                TI_SW.push_back(static_cast<char>(rxPacket.DataArray[indx_rev]));
+            }
+            */
+
+            // Prepare to send txPacket
+            uint8_t tpBuff[256];
+            uint16_t size = UtilityHelper::setSIOTxPacket(tpBuff, tp);
+
+            QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tpBuff),
+                                                        size);
+            LOG_DEBUG("***** Ti  - Get_addr packet sent to ti *****");
+            tiConnection->sendRequest(packet);
+
+            LOG_DEBUG("***** Ti  - Finished: GetInfo *****");
+
+        } break;
+        case STHERM::Get_addr: {
+            LOG_DEBUG("***** Ti  - Start Get_addr *****");
+            mMainDevice.address = *(uint32_t *)(rxPacket.DataArray);
+            LOG_DEBUG("***** Ti  - Finished: Get_addr *****");
+
+        } break;
+        case STHERM::GET_DEV_ID: {
+            // Check: loop detected in send GET_DEV_ID request.
+            LOG_DEBUG("***** Ti  - Start GET_DEV_ID *****");
+            tx_packet.PacketSrc = UART_Packet;
+            tx_packet.CMD = STHERM::GET_DEV_ID;
+            tx_packet.ACK = STHERM::ERROR_NO;
+            tx_packet.SID = 0x01;
+            tx_packet.DataLen = 0;
+            // uncomment later
+            /*
+            if ((sizeof(dev_id) + TI_HW.length() + 1 + TI_SW.length() + 1 + NRF_HW.length() + 1 + NRF_SW.length() + 1 + sizeof(Daemon_Version)) > sizeof(tx_packet.DataArray))
+            {
+                syslog(LOG_INFO, "ERROR VERSION LENGTH\n");
+                break;
+            } */
+
+            memcpy(tx_packet.DataArray, mDeviceID.toUtf8(), sizeof(mDeviceID.toUtf8()));
+            tx_packet.DataLen = sizeof(mDeviceID.toUtf8());
+
+            // uncomment later
+            /*
+            memcpy(tx_packet.DataArray + tx_packet.DataLen, NRF_HW.c_str(), NRF_HW.length() + 1);
+            tx_packet.DataLen += NRF_HW.length() + 1;
+            memcpy(tx_packet.DataArray + tx_packet.DataLen, NRF_SW.c_str(), NRF_SW.length() + 1);
+            tx_packet.DataLen += NRF_SW.length() + 1;
+            memcpy(tx_packet.DataArray + tx_packet.DataLen, Daemon_Version, sizeof(Daemon_Version));
+            tx_packet.DataLen += sizeof(Daemon_Version);
+            rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
+            write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
+            tx_packet.DataLen = 0;
+            */
+
+            LOG_DEBUG("***** Ti  - Finished: GET_DEV_ID *****");
+        } break;
+        case STHERM::feed_wtd:
+
+            break;
+        default:
+            LOG_DEBUG(QString("ERROR_CMD %0").arg(rxPacket.CMD));
+            break;
+        }
+    } else {
+        LOG_DEBUG(QString("Ti - ACK and CRC are distinct. ACK:%0 CRC:%1").arg(rxPacket.ACK).arg(rxPacket.CRC));
+
+        STHERM::SIOPacket tp;
+        tp.PacketSrc = UART_Packet;
+        tp.CMD = rxPacket.CMD;
+        tp.ACK = STHERM::ERROR_CRC;
+        tp.SID = 0x01;
+        tp.DataLen = 0;
+
+        // Prepare to send ERROR_CRC packet
+        uint8_t tpBuff[256];
+        uint16_t size = UtilityHelper::setSIOTxPacket(tpBuff, tp);
+
+        QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tpBuff),
+                                                    size);
+        LOG_DEBUG("***** Ti  - ERROR_CRC packet sent to ti *****");
+        tiConnection->sendRequest(packet);
+    }
+
+}
+
 void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
 {
     if (values.temp / 10.0 > AQ_TH_PR_thld.temp_high) {
@@ -553,7 +858,6 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
     }
 }
 
-
 STHERM::ResponseTime DeviceIOController::getTimeConfig()
 {
     // Time configuration
@@ -577,6 +881,10 @@ QList<STHERM::SensorTimeConfig> DeviceIOController::getSensorTimeConfig()
 QList<STHERM::SensorConfigThresholds> DeviceIOController::getSensorThresholds()
 {
     QList<STHERM::SensorConfigThresholds> sensorsThresholds;
+
+    STHERM::SensorConfigThresholds th;
+    checkSensorThreshold(th);
+    sensorsThresholds.append(th);
 
 
     return sensorsThresholds;
@@ -627,4 +935,28 @@ void DeviceIOController::checkSensorThreshold(STHERM::SensorConfigThresholds &th
     default:
         break;
     }
+}
+
+
+QList<STHERM::DeviceType> DeviceIOController::getPairedSensors()
+{
+    QList<STHERM::DeviceType> sensors;
+
+    STHERM::DeviceType deviceType;
+//    deviceType.address = get external_sensor_id from sensors
+//    deviceType.type = get external_sensor_type from sensors
+//    deviceType.paired = true;
+
+
+    return sensors;
+}
+
+bool DeviceIOController::addPendingSensor(STHERM::DeviceType inc)
+{
+    return true;
+}
+
+void DeviceIOController::getDeviceID()
+{
+    mDeviceID = QString();
 }

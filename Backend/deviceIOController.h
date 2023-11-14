@@ -83,6 +83,9 @@ private:
     //! Process NRF response
     void processNRFResponse(STHERM::SIOPacket rxPacket);
 
+    //! Process TI response
+    void processTIResponse(STHERM::SIOPacket rxPacket);
+
     //! Get time configs from saved configs file.
     STHERM::ResponseTime getTimeConfig();
 
@@ -95,7 +98,19 @@ private:
     //! Check sensor thresholds
     void checkSensorThreshold(STHERM::SensorConfigThresholds &threshold);
 
+    //! Get paired sensors from sensor file.
+    QList<STHERM::DeviceType> getPairedSensors();
+
+    void tiConfiguration();
+    bool addPendingSensor(STHERM::DeviceType inc);
+
+    //! Get device id
+    void getDeviceID();
+
 private:
+    //! Device id
+    QString mDeviceID;
+
     DataParser mDataParser;
 
     UARTConnection *nRfConnection;
@@ -119,6 +134,15 @@ private:
 
     STHERM::AQ_TH_PR_thld AQ_TH_PR_thld;
 
+    QList<STHERM::DeviceType> pairedSensors;
+
+    QList<uint8_t> mWiringState;
+
+    //! Fill from get_dynamic1
+    QList<uint8_t> relays_in;
+
+    //! Fill in set relay command
+    QList<uint8_t> relays_in_l;
 
     QTimer wtd_timer;
 };

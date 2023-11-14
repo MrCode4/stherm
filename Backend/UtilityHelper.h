@@ -10,9 +10,16 @@
 #define UART_Packet     0x01
 #define NUS_Packet      0x02
 
-namespace STHERM {
+#define RELAY_OUT_CNT 10
+#define WIRING_IN_CNT 10
+#define MAX_PAIED_CNT 16
+
+#define WIRING_BROKEN 1
 
 #define AQS_DATA_SIZE 10
+#define AQS_THRSHLD_SIZE 11
+
+namespace STHERM {
 
 // TODO these should be split between ti and nrf controllers to improve readability
 /**
@@ -227,6 +234,14 @@ struct AQ_TH_PR_thld {
 };
 
 /**
+ * @brief Enum representing the child device status.
+ */
+enum DevicePairStatus {
+    pending,  ///< Device status pending
+    pair      ///< Device status paired
+};
+
+/**
   * @brief Identifies RF Device types.
   */
 struct DeviceType
@@ -234,12 +249,12 @@ struct DeviceType
     DeviceType() {
         address = {};
         type = RFDevTypes::NO_TYPE;
-        paired = false;
+        paired = DevicePairStatus::pending;
     }
 
     uint32_t address;
     uint8_t type;
-    bool paired;
+    DevicePairStatus paired;
 };
 
 /**
