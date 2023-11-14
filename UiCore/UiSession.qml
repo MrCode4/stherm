@@ -78,8 +78,10 @@ QtObject {
         if (!simulating) {
             Style.background = "#000000";
 
+            console.log("start mode is: ", php_api.getStartMode());
+
             // start real device
-            realDeviceController.startDeviceRequested();
+//            realDeviceController.startDeviceRequested();
 
         } else {
             realDeviceController.stopDeviceRequested();
