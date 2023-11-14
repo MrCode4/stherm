@@ -8,9 +8,8 @@
 
 
 php_hardware::php_hardware(DeviceConfig &config, QObject *parent)
-    : QObject{parent}
+    : deviceConfig(config), QObject{parent}
 {
-    deviceConfig = config;
 }
 
 
