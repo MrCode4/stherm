@@ -168,7 +168,7 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
 
 int DeviceIOController::getStartMode(int pinNumber)
 {
-    return UtilityHelper::getStartMode(pinNumber);
+    return UtilityHelper::getGpioValue(pinNumber);
 }
 
 QString DeviceIOController::getCPUInfo()

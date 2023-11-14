@@ -2,6 +2,8 @@
 
 #include <QString>
 
+#include "php/include/parameter_definitions.h"
+
 // Packet types
 #define NONE_Packet     0x00
 #define UART_Packet     0x01
@@ -299,6 +301,7 @@ class UtilityHelper
 {
 public:
 
+
     //! This function exports the specified SW GPIO, configures it as input, and sets the edge detection to
     //! falling.
     //! gpio The GPIO pin number to be configured.
@@ -309,11 +312,14 @@ public:
     //! Open direction file and set pin
     static void exportGPIOPin(int pinNumber);
 
+    // TODO documetn
+    static int getGpioValue(int pinNumber);
+
     //! Get start mode
     //! Read data from gpio%0/value in system
     //! return 1 if value is "0"
     //! or return 0 if has different  value
-    static int getStartMode(int pinNumber);
+    static int getStartMode() { return getGpioValue(START_MODE_GPIO);};
 
     //! Get CPU info
     //! return a string

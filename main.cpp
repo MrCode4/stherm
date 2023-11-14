@@ -15,7 +15,7 @@
 int main(int argc, char *argv[])
 {
 
-    qDebug() << Q_FUNC_INFO << __LINE__ << "getStartMode: " << UtilityHelper::getStartMode(90);
+    qDebug() << Q_FUNC_INFO << __LINE__ << "getStartMode: " << UtilityHelper::getStartMode();
 
     // CPU info example
     QString cpuid = UtilityHelper::getCPUInfo();

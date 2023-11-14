@@ -252,6 +252,7 @@ qt6_add_qml_module(appStherm
         Images/Wifi/disconnected.svg
         Images/nexgen.png
         SOURCES Backend/php/include/sensors.h Backend/php/include/sensors.cpp
+        SOURCES Backend/php/include/parameter_definitions.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

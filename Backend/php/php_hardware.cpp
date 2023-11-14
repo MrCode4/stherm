@@ -47,6 +47,7 @@ int php_hardware::runDevice(cpuid_t uid)
     // TODO need to convert UID to text and put he UID in here....
     sensors.setDefaultValues("UID TEST");
 
+
     return 0;
 }
 
@@ -57,9 +58,22 @@ int php_hardware::getStartMode(cpuid_t uid)
     // Start by calling runDevice, which will load and populate the device config
     runDevice(uid);
     // then check the start mode of the device, to see if this is the first run
+    // TODO the getstartmode exe would read export, then read GPIO90, and return 0 if high, and 1 if low
     // if == 0, set in device config, then return
+    uint32_t sm = UtilityHelper::getStartMode();
+    if (sm < 0) {
+        // TODO this is a critical error.... how to handle it
+    }
+    if (sm == 0) {
+        deviceConfig.start_mode = 0;
+        return 0;
+    }
+    deviceConfig.start_mode = 1;
 
-    // esle configure/run etc.
+    // Check if device is newly updated: call system->getIsDeviceUpdated()
+
+
+
 }
 
 

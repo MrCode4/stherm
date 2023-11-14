@@ -96,7 +96,7 @@ void UtilityHelper::exportGPIOPin(int pinNumber)
     directionFile.close();
 }
 
-int UtilityHelper::getStartMode(int pinNumber)
+int UtilityHelper::getGpioValue(int pinNumber)
 {
     exportGPIOPin(pinNumber);
 
