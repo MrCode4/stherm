@@ -19,13 +19,22 @@ System::System(QObject *parent)
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &System::processNetworkReply);
 }
 
-void System::getQR(QString accessUid)
+std::string System::getSN(cpuid_t accessUid)
 {
     QJsonArray paramsArray;
-    paramsArray.append(accessUid);
+    paramsArray.append(QString::fromStdString(accessUid));
 
     QByteArray requestData = preparePacket("sync", "getSN", paramsArray);
     sendPostRequest(m_domainUrl, m_engineUrl, requestData);
+
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    connect(this, &System::snReady, &loop, &QEventLoop::quit);
+    timer.start(1000);
+    loop.exec();
+
+    return mSerialNumber.toStdString();
 }
 
 void System::getUpdate(QString softwareVersion)
@@ -66,8 +75,10 @@ void System::processNetworkReply (QNetworkReply * netReply) {
             qDebug() << Q_FUNC_INFO << __LINE__ << obj;
             QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
 
-            if (resultArray.count() > 0)
+            if (resultArray.count() > 0) {
                 mSerialNumber = resultArray.first().toString();
+                Q_EMIT snReady();
+            }
         }
 
     } break;

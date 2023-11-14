@@ -39,6 +39,7 @@ void NetworkWorker::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl
 
     // Post a request
     QNetworkReply *netReply = mNetManager->post(netRequest, postData);
+    //    connect(netReply, &QNetworkReply::finished, )
     //    netReply->ignoreSslErrors();
 }
 

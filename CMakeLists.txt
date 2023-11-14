@@ -184,8 +184,8 @@ qt6_add_qml_module(appStherm
         Backend/ScreenSaverManager.cpp
 
         # php
-        Backend/php_api.h
-        Backend/php_api.cpp
+        Backend/PhpApi.h
+        Backend/PhpApi.cpp
         Backend/php/php_hardware.h
         Backend/php/php_hardware.cpp
         Backend/php/php_system.h
@@ -206,6 +206,9 @@ qt6_add_qml_module(appStherm
         Backend/php/include/currentstage.h
         Backend/php/include/currentstage.cpp
         Backend/php/include/nuveTypes.h
+        Backend/php/include/sensors.h
+        Backend/php/include/sensors.cpp
+        Backend/php/include/parameter_definitions.h
 
         Backend/DeviceControllerCPP.h
         Backend/DeviceControllerCPP.cpp
@@ -251,8 +254,6 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
-        SOURCES Backend/php/include/sensors.h Backend/php/include/sensors.cpp
-        SOURCES Backend/php/include/parameter_definitions.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

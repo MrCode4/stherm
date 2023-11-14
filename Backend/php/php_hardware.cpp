@@ -1,15 +1,22 @@
 #include "php_hardware.h"
+#include "LogHelper.h"
 
+#include <Backend/Core/System.h>
 // php_hardware::php_hardware(QObject *parent)
 //     : QObject{parent}
 // {
 
 // }
 
-
-php_hardware::php_hardware(DeviceConfig &config, Timing &tim, CurrentStage &stage, Sensors &sens, QObject *parent)
-    : deviceConfig(config), timing(tim), currentStage(stage), sensors(sens), QObject{parent}
+php_hardware::php_hardware(
+    DeviceConfig &config, Timing &tim, CurrentStage &stage, Sensors &sens, QObject *parent)
+    : QObject(parent)
+    , deviceConfig(config)
+    , timing(tim)
+    , currentStage(stage)
+    , sensors(sens)
 {
+    m_system = new System(this);
 }
 
 
@@ -34,11 +41,10 @@ void php_hardware::setDefaultValues(cpuid_t uid)
 // TODO refactor this code actually peforms an initial configuration
 int php_hardware::runDevice(cpuid_t uid)
 {
-    if (deviceConfig.uid != 0) {
-//        qDebug << Q_FUNC_INFO << "device config not initialised";
+    if (deviceConfig.uid.empty()) {
+        //        qDebug << Q_FUNC_INFO << "device config not initialised";
         setDefaultValues(uid);
-    }
-    else {
+    } else {
         // Configuration exists, so just update timing
         timing.refreshTimestamps();
         currentStage.timestamp = current_timestamp();
@@ -67,11 +73,11 @@ int php_hardware::runDevice(cpuid_t uid)
 
 /** Send a CURL request to the remote server to look up the UID and return the
  *  serial number associated with it */
-bool php_hardware::getSN(int uid, std::string & sn)
+bool php_hardware::getSN(cpuid_t uid, std::string &sn)
 {
     // TODO curl send will give the serial nubmer and a bool representing if hte client_id is >0
     // TODO send the http request
-    sn = "TEST SN";
+    sn = m_system->getSN(uid);
     return true;
 }
 
@@ -85,6 +91,9 @@ int php_hardware::getStartMode(cpuid_t uid)
     // TODO the getstartmode exe would read export, then read GPIO90, and return 0 if high, and 1 if low
     // if == 0, set in device config, then return
     uint32_t sm = UtilityHelper::getStartMode();
+
+    LOG_DEBUG(QString("start mode started : %0").arg(sm));
+
     if (sm < 0) {
         // TODO this is a critical error.... how to handle it
     }
@@ -109,8 +118,8 @@ int php_hardware::getStartMode(cpuid_t uid)
         return 1;
     }
     std::string sn;
-    if (true == getSN(uid, sn))
-    {
+    if (getSN(uid, sn)) {
+        LOG_DEBUG(QString("serial number : ") + QString::fromStdString(sn));
         // staring normally, but defaults not set
         timing.setDefaultValues();
         currentStage.timestamp = current_timestamp();
@@ -125,7 +134,7 @@ int php_hardware::getStartMode(cpuid_t uid)
     return 2;
 }
 
-void php_hardware::getWiringsFromServer(int uid)
+void php_hardware::getWiringsFromServer(cpuid_t uid)
 {
     // TODO first send the request (sync, getWirings)
     // TODO Then update the wirings variable

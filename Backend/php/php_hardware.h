@@ -23,6 +23,7 @@
 #define uid_t uint8_t // for building in windows as test purpose
 #endif
 
+class System;
 class php_hardware : public QObject
 {
     Q_OBJECT
@@ -35,6 +36,7 @@ private:
     CurrentStage &currentStage;
     Sensors &sensors;
 
+    System *m_system;
 
     ////////////////////// class variables adopted straight from php
 
@@ -97,16 +99,18 @@ private:
  * @param string $uid The UID of the device for which the SN is requested.
  * @return mixed Returns the result received from the remote server after sending the request.
  */
-    bool getSN(int uid, std::string &sn);
-
+    bool getSN(cpuid_t uid, std::string &sn);
 
 public:
 //    explicit php_hardware(QObject *parent = nullptr);
 // TODO as the device config is used heavily here, we will pass a reference to this, so it can be managed externally
-    explicit php_hardware(DeviceConfig &config, QObject *parent = nullptr);
-    explicit php_hardware(DeviceConfig &config, Timing &tim, CurrentStage &stage, Sensors &sens, QObject *parent);
+    explicit php_hardware(DeviceConfig &config,
+                          Timing &tim,
+                          CurrentStage &stage,
+                          Sensors &sens,
+                          QObject *parent = nullptr);
 
-/**
+    /**
  * Determines the starting mode of a device and performs initialization as necessary.
  *
  * This method performs several operations to establish the start mode of the device:
@@ -370,9 +374,9 @@ public:
  * 
  * @param string $uid The unique identifier for the device to fetch wiring settings for.
  */
-    void getWiringsFromServer(int uid);
+    void getWiringsFromServer(cpuid_t uid);
 
-/**
+    /**
  * Sets an alert in the system based on the provided parameters.
  *
  * This method handles different types of alerts, including those from contractors and system-related issues.

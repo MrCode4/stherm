@@ -1,5 +1,4 @@
-#ifndef DEVICECONFIG_H
-#define DEVICECONFIG_H
+#pragma once
 
 #include <QObject>
 
@@ -55,5 +54,3 @@ public:
 signals:
 
 };
-
-#endif // DEVICECONFIG_H

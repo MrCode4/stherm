@@ -1,6 +1,4 @@
-#ifndef NUVETYPES_H
-#define NUVETYPES_H
-
+#pragma once
 
 /////////////// Configurations
 
@@ -33,8 +31,7 @@ inline static const std::string TECHNIC_EDIT_QR = "https://test.hvac.z-soft.am/#
 // Common types
 
 /** @brief the type for the system unique ID */
-typedef uint64_t cpuid_t;
-
+typedef std::string cpuid_t;
 
 // TODO class, with limits and getters/setters?
 typedef struct rgbVal {
@@ -60,7 +57,3 @@ static timestamp_t current_timestamp(void) {
 static timestamp_t minuteToTimestamp(uint32_t mins) {
     return mins *60;
 }
-
-
-
-#endif // NUVETYPES_H

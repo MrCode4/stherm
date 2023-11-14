@@ -58,6 +58,8 @@ QtObject {
     //! app core
     property I_Device           appModel
 
+    property PhpAPI             php_api: PhpAPI {}
+
     //! Retrieve device information at one-second intervals.
     property Timer timer:   Timer {
         running: true

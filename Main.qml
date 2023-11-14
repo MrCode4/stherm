@@ -46,6 +46,8 @@ ApplicationWindow {
         // Bind appModel to qsRootObject to capture loaded model from configuration.
         window.uiSession.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
 
+        console.log("start mode is: ", window.uiSession.php_api.getStartMode());
+
         // Load the file
         console.info("Load the config file: ", window.uiSession.configFilePath)
         if (AppCore.defaultRepo.loadFromFile(window.uiSession.configFilePath))

@@ -4,6 +4,7 @@
 #include <QtNetwork>
 
 #include "NetworkWorker.h"
+#include "include/nuveTypes.h"
 
 /*! ***********************************************************************************************
  * This class manage system requests.
@@ -26,7 +27,9 @@ public:
     void rebootDevice();
 
     //! Get technic's url and serial number
-    void getQR(QString accessUid);
+    void getQR(QString accessUid) { getSN(accessUid.toStdString()); }
+
+    std::string getSN(cpuid_t accessUid);
 
     //! Get update
     //! todo: process response packet
@@ -40,6 +43,8 @@ protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
 
+signals:
+    void snReady();
 
 private:
     QString mSerialNumber;
