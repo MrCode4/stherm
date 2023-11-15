@@ -140,7 +140,7 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
         if (className == "hardware" && method == "setBacklight") {
 
             if (data.size() == 5) {
-                packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
+                packet = mDataParser.preparePacket(STHERM::SIOCommand::SetColorRGB,
                                                    STHERM::PacketType::UARTPacket,
                                                    data);
                 isRequestSent = nRfConnection->sendRequest(packet);
