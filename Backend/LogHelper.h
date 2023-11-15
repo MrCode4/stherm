@@ -28,7 +28,9 @@ public:
                     .arg(QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss"), \
                          __FILE__, \
                          __METHOD__) \
-                    .arg(__LINE__)
+                    .arg(__LINE__) \
+                    .toStdString() \
+                    .c_str()
 
 #define LOG_DEBUG(message) Logger::logDebug(message, __FILE__, __LINE__)
 

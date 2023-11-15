@@ -249,7 +249,7 @@ void DeviceIOController::createTIConnection()
 
 void DeviceIOController::createNRF()
 {
-    QString gpioValuePath = "/sys/class/gpio/gpio%1/value\0";
+    QString gpioValuePath = "/sys/class/gpio/gpio%1/value";
 
     bool isSuccess = UtilityHelper::configurePins(NRF_GPIO_4);
     if (isSuccess) {
@@ -282,7 +282,7 @@ void DeviceIOController::createNRF()
         nrfConfiguration();
     }
 
-// TODO why are we trying to open a GPIO as a UART
+    // TODO why are we trying to open a GPIO as a UART, we are testing! if not working should use a linux lowlevel code
     if (gpio4Connection->startConnection()) {
         connect(gpio4Connection, &UARTConnection::sendData, this, [=](QByteArray data) {
             LOG_DEBUG(QString("gpio4Connection Response:   %0").arg(data));
