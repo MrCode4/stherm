@@ -65,7 +65,7 @@ I_DeviceController {
         //!    LED_FADE   = 1,
         //!    LED_BLINK  = 2,
         //!    LED_NO_MODE= 3
-        var send_data = [r, g, b, 1, device.backlight.on ? "true" : "false"];
+        var send_data = [r, g, b, 0, device.backlight.on ? "true" : "false"];
 
         console.log("send data: ", send_data)
         sendReceive('hardware', 'setBacklight', send_data);
