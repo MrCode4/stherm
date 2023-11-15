@@ -75,6 +75,8 @@ int php_hardware::runDevice(cpuid_t uid)
  *  serial number associated with it */
 bool php_hardware::getSN(cpuid_t uid, std::string &sn)
 {
+    // TODO this function should probably cache the serial number to avoid duplicated look ups?  QUESTION: should we retrieve once only for the device, once every boot, or only after update?
+
     // TODO curl send will give the serial nubmer and a bool representing if hte client_id is >0
     // TODO send the http request
     sn = m_system->getSN(uid);

@@ -29,6 +29,7 @@ public:
     //! Get technic's url and serial number
     void getQR(QString accessUid) { getSN(accessUid.toStdString()); }
 
+    // TODO review if this, and others below, should be static
     std::string getSN(cpuid_t accessUid);
 
     //! Get update

@@ -24,6 +24,7 @@ std::string System::getSN(cpuid_t accessUid)
     QJsonArray paramsArray;
     paramsArray.append(QString::fromStdString(accessUid));
 
+// TODO parameter retrieval from cloud, can we utilise a value/isSet tuple and push the processing to a background function?  Or are we happy with a firing off a whole bunch of requests and waiting for them to complete?
     QByteArray requestData = preparePacket("sync", "getSN", paramsArray);
     sendPostRequest(m_domainUrl, m_engineUrl, requestData);
 
@@ -31,8 +32,12 @@ std::string System::getSN(cpuid_t accessUid)
     QTimer timer;
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &System::snReady, &loop, &QEventLoop::quit);
+// TODO this timeout is enough for a post request?
+// TODO the timeout needs to be defined in a paramter somewhere
     timer.start(1000);
     loop.exec();
+
+    qDebug() << Q_FUNC_INFO << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
 
     return mSerialNumber.toStdString();
 }

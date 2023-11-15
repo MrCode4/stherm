@@ -282,6 +282,7 @@ void DeviceIOController::createNRF()
         nrfConfiguration();
     }
 
+// TODO why are we trying to open a GPIO as a UART
     if (gpio4Connection->startConnection()) {
         connect(gpio4Connection, &UARTConnection::sendData, this, [=](QByteArray data) {
             LOG_DEBUG(QString("gpio4Connection Response:   %0").arg(data));
@@ -295,6 +296,7 @@ void DeviceIOController::createNRF()
         });
     }
 
+// TODO why are we trying to open a GPIO as a UART
     if (gpio5Connection->startConnection()) {
         connect(gpio5Connection, &UARTConnection::sendData, this, [=](QByteArray data) {
             LOG_DEBUG(QString("gpio4Connection Response:   %0").arg(data));
