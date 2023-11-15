@@ -201,16 +201,48 @@ void DeviceIOController::createConnections()
     mStopReading = false;
 
     connect(&wtd_timer, &QTimer::timeout, this, [this]() {
+        static bool inProgress = false;
+        if (inProgress) {
+            return;
+        }
+        inProgress = true;
         TRACE << "start wtd" << (tiConnection && tiConnection->isConnected());
 
         if (tiConnection && tiConnection->isConnected()) {
-            bool rsp = tiConnection->sendRequest(STHERM::SIOCommand::feed_wtd,
-                                                 STHERM::PacketType::UARTPacket);
+            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::feed_wtd,
+                                                          STHERM::PacketType::UARTPacket);
+            bool success = false;
+            QEventLoop loop;
+            connect(tiConnection,
+                    &UARTConnection::sendData,
+                    this,
+                    [&loop, &success](QByteArray data) {
+                        success = true;
+                        TRACE << "Ti heartbeat message success";
+                        loop.quit();
+                    });
+            connect(tiConnection,
+                    &UARTConnection::connectionError,
+                    this,
+                    [&loop, &success](QByteArray data) {
+                        success = false;
+                        TRACE << "Ti heartbeat message failure";
+                        loop.quit();
+                    });
+
+            bool rsp = tiConnection->sendRequest(packet);
             if (rsp == false) {
-                TRACE << "Ti heartbeat message failed";
+                TRACE << "Ti heartbeat message send failed";
             } else {
                 TRACE << "Ti heartbeat message sent";
             }
+
+            QTimer timer;
+            timer.setSingleShot(true);
+            connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+            timer.start(3000);
+            loop.exec();
+            TRACE << "Ti heartbeat message finished";
         }
 
         TRACE << "start GetSensors" << (nRfConnection && nRfConnection->isConnected());
@@ -221,6 +253,7 @@ void DeviceIOController::createConnections()
 
             TRACE << "nrf GetSensors message sent" << sent;
         }
+        inProgress = false;
     });
 
     wtd_timer.setInterval(3000);
