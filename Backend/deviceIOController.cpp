@@ -224,7 +224,7 @@ void DeviceIOController::createConnections()
             connect(tiConnection,
                     &UARTConnection::connectionError,
                     this,
-                    [&loop, &success](QByteArray data) {
+                    [&loop, &success](QString error) {
                         success = false;
                         TRACE << "Ti heartbeat message failure";
                         loop.quit();
