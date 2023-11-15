@@ -316,7 +316,7 @@ public:
     static bool configurePins(int gpio);
 
     //! Open direction file and set pin
-    static void exportGPIOPin(int pinNumber);
+    static void exportGPIOPin(int pinNumber, bool isOutput);
 
     // TODO documetn
     static int getGpioValue(int pinNumber);

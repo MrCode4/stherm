@@ -73,7 +73,7 @@ bool UtilityHelper::configurePins(int gpio)
     return true;
 }
 
-void UtilityHelper::exportGPIOPin(int pinNumber)
+void UtilityHelper::exportGPIOPin(int pinNumber, bool isOutput)
 {
     QFile exportFile("/sys/class/gpio/export");
     if (!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -89,7 +89,6 @@ void UtilityHelper::exportGPIOPin(int pinNumber)
     out << pinString;
     exportFile.close();
 
-
     QString directionFilePath = QString("/sys/class/gpio/gpio%0/direction").arg(pinNumber);
     QFile directionFile(directionFilePath);
 
@@ -99,14 +98,19 @@ void UtilityHelper::exportGPIOPin(int pinNumber)
     }
 
     QTextStream outIn(&directionFile);
-    outIn << "in";
+    if (isOutput) {
+        outIn << "out";
+    }
+    else {
+        outIn << "in";
+    }
 
     directionFile.close();
 }
 
 int UtilityHelper::getGpioValue(int pinNumber)
 {
-    exportGPIOPin(pinNumber);
+    exportGPIOPin(pinNumber, false);
 
     // Define the file path
     QString filePath = QString("/sys/class/gpio/gpio%0/value").arg(QString::number(pinNumber));
