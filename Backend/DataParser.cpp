@@ -1,9 +1,10 @@
 #include "DataParser.h"
 
-
-#include <QTimer>
-#include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonObject>
+#include <QTimer>
+
+#include "LogHelper.h"
 
 // Offsets for various fields in serial packets
 #define CMD_Offset      0
@@ -46,11 +47,13 @@ QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType 
     switch (cmd) {
     case STHERM::SetColorRGB:
         txPacket.DataLen = 5;
-        txPacket.DataArray[0] = std::clamp(data[0].toInt(), 0, 254);
-        txPacket.DataArray[1] = std::clamp(data[1].toInt(), 0, 254);
-        txPacket.DataArray[2] = std::clamp(data[2].toInt(), 0, 254);
+        txPacket.DataArray[0] = std::clamp(data[0].toInt(), 0, 255);
+        txPacket.DataArray[1] = std::clamp(data[1].toInt(), 0, 255);
+        txPacket.DataArray[2] = std::clamp(data[2].toInt(), 0, 255);
         txPacket.DataArray[3] = 255;
         txPacket.DataArray[4] = data[3].toInt();
+        TRACE << txPacket.DataArray[0] << txPacket.DataArray[1] << txPacket.DataArray[2]
+              << txPacket.DataArray[3] << txPacket.DataArray[4];
         break;
     default:
         break;
