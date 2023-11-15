@@ -24,10 +24,10 @@ public:
 #endif
 
 #define TRACE \
-    qDebug() << QString("%0 - %1  Method: %2 Line: %3  Message: %4") \
-                    .arg(QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss")) \
-                    .arg(__FILE__) \
-                    .arg(__METHOD__) \
+    qDebug() << QString("%0 - %1  Method: %2 Line: %3 Log: ") \
+                    .arg(QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss"), \
+                         __FILE__, \
+                         __METHOD__) \
                     .arg(__LINE__)
 
 #define LOG_DEBUG(message) Logger::logDebug(message, __FILE__, __LINE__)

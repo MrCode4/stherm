@@ -8,6 +8,8 @@
 #include <QEventLoop>
 #include <QTimer>
 
+#include "LogHelper.h"
+
 // Definitions of special characters used in serial communication
 #define phyStart        0xF0
 #define phyStop         0xF1
@@ -20,6 +22,8 @@
 
 bool UtilityHelper::configurePins(int gpio)
 {
+    TRACE << gpio;
+
     // Update export file
     QFile exportFile("/sys/class/gpio/export");
     if (!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -35,12 +39,10 @@ bool UtilityHelper::configurePins(int gpio)
     out << pinString;
     exportFile.close();
 
-    // Sleep for 1000 ms
+    // Sleep for 1100 ms
     QEventLoop loop;
     QTimer timer;
     timer.connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(1000);
-    loop.exec();
 
     // Update direction file
     QString directionFilePath = QString("/sys/class/gpio/gpio%0/direction").arg(gpio);
@@ -50,6 +52,9 @@ bool UtilityHelper::configurePins(int gpio)
         qDebug() << Q_FUNC_INFO << __LINE__ << "Failed to open direction file for pin " << gpio;
         return false;
     }
+
+    timer.start(1100);
+    loop.exec();
 
     QTextStream outIn(&directionFile);
     outIn << "in";
@@ -66,7 +71,7 @@ bool UtilityHelper::configurePins(int gpio)
     }
 
     QTextStream outInEdge(&edgeFile);
-    outIn << "falling";
+    outInEdge << "falling";
 
     edgeFile.close();
 
@@ -75,6 +80,8 @@ bool UtilityHelper::configurePins(int gpio)
 
 void UtilityHelper::exportGPIOPin(int pinNumber, bool isOutput)
 {
+    TRACE << pinNumber;
+
     QFile exportFile("/sys/class/gpio/export");
     if (!exportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << Q_FUNC_INFO << __LINE__ << "Failed to open export file.";
