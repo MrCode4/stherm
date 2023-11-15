@@ -45,16 +45,17 @@ QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType 
     uint8_t dev_info[32];
 
     switch (cmd) {
-    case STHERM::SetColorRGB:
+    case STHERM::SetColorRGB: {
         txPacket.DataLen = 5;
-        txPacket.DataArray[0] = std::clamp(data[0].toInt(), 0, 255);
-        txPacket.DataArray[1] = std::clamp(data[1].toInt(), 0, 255);
-        txPacket.DataArray[2] = std::clamp(data[2].toInt(), 0, 255);
+        bool on = data[4].toBool();
+        txPacket.DataArray[0] = on ? std::clamp(data[0].toInt(), 0, 255) : 0;
+        txPacket.DataArray[1] = on ? std::clamp(data[1].toInt(), 0, 255) : 0;
+        txPacket.DataArray[2] = on ? std::clamp(data[2].toInt(), 0, 255) : 0;
         txPacket.DataArray[3] = 255;
         txPacket.DataArray[4] = data[3].toInt();
         TRACE << txPacket.DataArray[0] << txPacket.DataArray[1] << txPacket.DataArray[2]
               << txPacket.DataArray[3] << txPacket.DataArray[4];
-        break;
+    } break;
     default:
         break;
     }
