@@ -1,5 +1,4 @@
 #include "DataParser.h"
-#include "LogHelper.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -15,7 +14,6 @@
 
 // Minimum packet length
 #define PacketMinLength 5
-
 
 const uint16_t pressure_high_value {1200};  ///< Pressure threshold high (up to 1200 hPa)
 const uint16_t c02_high_value      {2000};  ///< CO2 threshold high (400 to 5000 ppm)

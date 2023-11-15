@@ -218,6 +218,7 @@ void DeviceIOController::createConnections()
 
     connect(&wtd_timer, &QTimer::timeout, this, [this]() {
         static bool inProgress = false;
+        static int wiringCheckTimer = WIRING_CHECK_TIME;
         if (inProgress) {
             return;
         }
@@ -227,6 +228,13 @@ void DeviceIOController::createConnections()
         if (tiConnection && tiConnection->isConnected()) {
             QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::feed_wtd,
                                                           STHERM::PacketType::UARTPacket);
+            wiringCheckTimer++;
+            if (wiringCheckTimer > WIRING_CHECK_TIME) {
+            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::Check_Wiring,
+                                                          STHERM::PacketType::UARTPacket);
+                wiringCheckTimer = 0;
+            }
+
             bool success = false;
             QEventLoop loop;
             connect(tiConnection,
@@ -258,7 +266,7 @@ void DeviceIOController::createConnections()
             connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
             timer.start(3000);
             loop.exec();
-            TRACE << "Ti heartbeat message finished";
+            TRACE << "Ti heartbeat message finished" << success;
         }
 
         TRACE << "start GetSensors" << (nRfConnection && nRfConnection->isConnected());
@@ -272,7 +280,7 @@ void DeviceIOController::createConnections()
         inProgress = false;
     });
 
-    wtd_timer.setInterval(3000);
+    wtd_timer.setInterval(30000);
     wtd_timer.setSingleShot(false);
     wtd_timer.start();
 
