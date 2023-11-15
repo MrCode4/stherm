@@ -445,6 +445,7 @@ public:
  * @return string Returns the full technical access QR link combined with the device's serial number.
  *                If the serial number cannot be determined, an empty string is returned.
  */
+// TODO note that getQR is incredibly similar to hte hardware getSN function, and shoudl at least use this
     void getQR(void);
 
     void getQRAnswer(void);

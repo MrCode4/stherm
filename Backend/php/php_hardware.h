@@ -99,6 +99,7 @@ private:
  * @param string $uid The UID of the device for which the SN is requested.
  * @return mixed Returns the result received from the remote server after sending the request.
  */
+// TODO this is moved to UtilityHelper
     bool getSN(cpuid_t uid, std::string &sn);
 
 public:
