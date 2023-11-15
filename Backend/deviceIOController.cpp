@@ -39,6 +39,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
 
 DeviceIOController::~DeviceIOController()
 {
+    wtd_timer.stop();
     mStopReading = true;
     terminate();
     wait();
@@ -138,13 +139,13 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
 
         // todo: Add a function to check data
         if (className == "hardware" && method == "setBacklight") {
-
+            TRACE << "sending setBacklight request with data:" << data;
             if (data.size() == 5) {
                 packet = mDataParser.preparePacket(STHERM::SIOCommand::SetColorRGB,
                                                    STHERM::PacketType::UARTPacket,
                                                    data);
                 isRequestSent = nRfConnection->sendRequest(packet);
-                LOG_DEBUG(QString("send setBacklight request: %0").arg(isRequestSent));
+                TRACE << (QString("send setBacklight request: %0").arg(isRequestSent));
 
             } else {
                 qWarning() << "data is empty or not consistent";
@@ -199,7 +200,34 @@ void DeviceIOController::createConnections()
 
     mStopReading = false;
 
-    start();
+    connect(&wtd_timer, &QTimer::timeout, this, [this]() {
+        TRACE << "start wtd" << (tiConnection && tiConnection->isConnected());
+
+        if (tiConnection && tiConnection->isConnected()) {
+            bool rsp = tiConnection->sendRequest(STHERM::SIOCommand::feed_wtd,
+                                                 STHERM::PacketType::UARTPacket);
+            if (rsp == false) {
+                TRACE << "Ti heartbeat message failed";
+            } else {
+                TRACE << "Ti heartbeat message sent";
+            }
+        }
+
+        TRACE << "start GetSensors" << (nRfConnection && nRfConnection->isConnected());
+        if (nRfConnection && nRfConnection->isConnected()) {
+            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetSensors,
+                                                          STHERM::PacketType::UARTPacket);
+            auto sent = nRfConnection->sendRequest(packet);
+
+            TRACE << "nrf GetSensors message sent" << sent;
+        }
+    });
+
+    wtd_timer.setInterval(3000);
+    wtd_timer.setSingleShot(false);
+    wtd_timer.start();
+
+    //    start();
 }
 
 void DeviceIOController::createSensor(QString name, QString id) {}
@@ -271,9 +299,9 @@ void DeviceIOController::createNRF()
     nRfConnection = new UARTConnection(NRF_SERIAL_PORT, QSerialPort::Baud9600);
     if (nRfConnection->startConnection()) {
         connect(nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
-            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Response:   " << data;
+            TRACE << "NRF Response:   " << data;
             auto deserialized = mDataParser.deserializeNRFData(data);
-            qDebug() << Q_FUNC_INFO << __LINE__ << "UART Response:   " << deserialized;
+            TRACE << "NRF Response:   " << deserialized;
 
             // Set data to ui (Update ui varables).
             Q_EMIT dataReady(deserialized);
@@ -285,7 +313,7 @@ void DeviceIOController::createNRF()
     // TODO why are we trying to open a GPIO as a UART, we are testing! if not working should use a linux lowlevel code
     if (gpio4Connection->startConnection()) {
         connect(gpio4Connection, &UARTConnection::sendData, this, [=](QByteArray data) {
-            LOG_DEBUG(QString("gpio4Connection Response:   %0").arg(data));
+            TRACE << QString("gpio4Connection Response:   %0").arg(data);
 
             // Check (Read data after seek or ...)
             gpio4Connection->seek(SEEK_SET);
@@ -299,7 +327,7 @@ void DeviceIOController::createNRF()
 // TODO why are we trying to open a GPIO as a UART
     if (gpio5Connection->startConnection()) {
         connect(gpio5Connection, &UARTConnection::sendData, this, [=](QByteArray data) {
-            LOG_DEBUG(QString("gpio4Connection Response:   %0").arg(data));
+            TRACE << QString("gpio4Connection Response:   %0").arg(data);
 
             // Check (Read data after seek or ...)
             gpio5Connection->seek(SEEK_SET);

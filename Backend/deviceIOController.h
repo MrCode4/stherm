@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QThread>
+#include <QTimer>
 
 #include "DataParser.h"
 #include "UARTConnection.h"
@@ -92,4 +93,5 @@ private:
     QByteArray mSensorPacketBA;
     QByteArray mTOFPacketBA;
 
+    QTimer wtd_timer;
 };

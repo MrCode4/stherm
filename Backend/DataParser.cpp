@@ -111,10 +111,9 @@ void DataParser::checkAlert(const STHERM::AQ_TH_PR_vals &values)
 
 QVariantMap DataParser::deserializeNRFData(const QByteArray &serializeData)
 {
-    qDebug() << Q_FUNC_INFO << __LINE__ << serializeData;
+    TRACE << serializeData;
     QJsonObject obj = QJsonDocument::fromJson(serializeData).object();
 
-    qDebug() << Q_FUNC_INFO << __LINE__ << obj.toVariantMap();
     {
         QJsonObject obj;
         obj.insert("temp", 10);
@@ -123,6 +122,7 @@ QVariantMap DataParser::deserializeNRFData(const QByteArray &serializeData)
         return obj.toVariantMap();
     }
 
+    TRACE << obj.toVariantMap();
     return obj.toVariantMap();
 }
 
