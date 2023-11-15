@@ -237,22 +237,26 @@ void DeviceIOController::createConnections()
 
             bool success = false;
             QEventLoop loop;
-            connect(tiConnection,
-                    &UARTConnection::sendData,
-                    this,
-                    [&loop, &success](QByteArray data) {
-                        success = true;
-                        TRACE << "Ti heartbeat message success";
-                        loop.quit();
-                    });
-            connect(tiConnection,
-                    &UARTConnection::connectionError,
-                    this,
-                    [&loop, &success](QString error) {
-                        success = false;
-                        TRACE << "Ti heartbeat message failure";
-                        loop.quit();
-                    });
+            connect(
+                tiConnection,
+                &UARTConnection::sendData,
+                &loop,
+                [&loop, &success](QByteArray data) {
+                    success = true;
+                    TRACE << "Ti heartbeat message success";
+                    loop.quit();
+                },
+                Qt::SingleShotConnection);
+            connect(
+                tiConnection,
+                &UARTConnection::connectionError,
+                &loop,
+                [&loop, &success](QString error) {
+                    success = false;
+                    TRACE << "Ti heartbeat message failure";
+                    loop.quit();
+                },
+                Qt::SingleShotConnection);
 
             bool rsp = tiConnection->sendRequest(packet);
             if (rsp == false) {
