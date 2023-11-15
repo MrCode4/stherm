@@ -151,9 +151,10 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
             }
 
         } else {
-            packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
-                                               STHERM::PacketType::UARTPacket);
-            isRequestSent = tiConnection->sendRequest(packet);
+            qWarning() << "No class/method processor defined";
+//            packet = mDataParser.preparePacket(STHERM::SIOCommand::GetInfo,
+//                                               STHERM::PacketType::UARTPacket);
+//            isRequestSent = tiConnection->sendRequest(packet);
         }
 
         if (isRequestSent) {

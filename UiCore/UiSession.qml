@@ -81,7 +81,7 @@ QtObject {
             console.log("start mode is: ", php_api.getStartMode());
 
             // start real device
-//            realDeviceController.startDeviceRequested();
+            realDeviceController.startDeviceRequested();
 
         } else {
             realDeviceController.stopDeviceRequested();
