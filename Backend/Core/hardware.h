@@ -1,61 +1,37 @@
-#ifndef PHP_HARDWARE_H
-#define PHP_HARDWARE_H
+#pragma once
 
 #include <QObject>
-#include <QQmlEngine>
 
+#include "Backend/Device/nuve_types.h"
 
-#include <ctime>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-
-#include "php/include/deviceconfig.h"
-#include "php/include/timing.h"
-#include "php/include/currentstage.h"
-#include "php/include/sensors.h"
-
-#include "UtilityHelper.h"
-#include "Backend/Core/NetworkWorker.h"
-
+namespace NUVE {
 
 #ifdef _WIN32
 #define uid_t uint8_t // for building in windows as test purpose
 #endif
-namespace NUVE {
+
 class System;
-}
-class php_hardware : public QObject
+class DeviceConfig;
+class Timing;
+class CurrentStage;
+class Sensors;
+class Hardware : public QObject
 {
     Q_OBJECT
-//    QML_ELEMENT
+    //    QML_ELEMENT
 
 private:
-
     DeviceConfig &deviceConfig;
     Timing &timing;
     CurrentStage &currentStage;
     Sensors &sensors;
-
-    NUVE::System *m_system;
+    System &system;
 
     ////////////////////// class variables adopted straight from php
 
-
-
-
-
-
-    
-
     // TODO refactor these
 
-
-
-    
-
-
-/**
+    /**
  * Sets default values in various tables for device configuration.
  *
  * This method initializes the database tables for device configuration by setting default values.
@@ -67,7 +43,7 @@ private:
  */
     void setDefaultValues(cpuid_t uid);
 
-/**
+    /**
  * Sets the system's timezone based on the `timezone_number` from the `device_config` table.
  *
  * This method fetches the `timezone_number` from the `device_config` table. If found, it attempts to set the
@@ -76,7 +52,7 @@ private:
  */
     void setTimezone(void);
 
-/**
+    /**
  * Initializes the device settings and ensures the device is in a ready state.
  *
  * This method performs several tasks to set up the device for regular operation:
@@ -90,7 +66,7 @@ private:
  * @return string Returns the UID of the device.
  */
     int runDevice(cpuid_t);
-/**
+    /**
  * Requests the serial number (SN) of a device using its UID (Unique Identifier).
  *
  * This method constructs a JSON payload to request the serial number (SN) for a device
@@ -100,17 +76,18 @@ private:
  * @param string $uid The UID of the device for which the SN is requested.
  * @return mixed Returns the result received from the remote server after sending the request.
  */
-// TODO this is moved to UtilityHelper
+    // TODO this is moved to UtilityHelper
     bool getSN(cpuid_t uid, std::string &sn);
 
 public:
-//    explicit php_hardware(QObject *parent = nullptr);
-// TODO as the device config is used heavily here, we will pass a reference to this, so it can be managed externally
-    explicit php_hardware(DeviceConfig &config,
-                          Timing &tim,
-                          CurrentStage &stage,
-                          Sensors &sens,
-                          QObject *parent = nullptr);
+    //    explicit php_hardware(QObject *parent = nullptr);
+    // TODO as the device config is used heavily here, we will pass a reference to this, so it can be managed externally
+    explicit Hardware(DeviceConfig &config,
+                      Timing &tim,
+                      CurrentStage &stage,
+                      Sensors &sens,
+                      System &sys,
+                      QObject *parent = nullptr);
 
     /**
  * Determines the starting mode of a device and performs initialization as necessary.
@@ -128,7 +105,6 @@ public:
  */
     int getStartMode(cpuid_t uid);
 
-
     // TODO move backlight to its own class?
 
     enum BacklightMode { on, slowBlink, fastBlink };
@@ -136,14 +112,14 @@ public:
     /// @brief the state of the/a backlight
     struct Backlight
     {
-        int             red;
-        int             green;
-        int             blue;
-        BacklightMode   type;
-        bool            onOff;
+        int red;
+        int green;
+        int blue;
+        BacklightMode type;
+        bool onOff;
     };
-    
-/**
+
+    /**
  * Updates the device's backlight configuration.
  *
  * This method performs the following operations:
@@ -184,7 +160,7 @@ public:
      */
     bool setBacklight(Backlight backlight);
 
-/**
+    /**
  * Retrieves the device's backlight configuration.
  *
  * This method performs the following operations:
@@ -208,25 +184,23 @@ public:
      */
     Backlight getBacklight(void);
 
-
-
     struct Wiring
     {
-        bool    R;
-        bool    C;
-        bool    G;
-        bool    Y1;
-        bool    Y2;
-        bool    ACC2;
-        bool    ACC1P;
-        bool    ACC1N;
-        bool    W1;
-        bool    W2;
-        bool    W3;
-        bool    OB;
+        bool R;
+        bool C;
+        bool G;
+        bool Y1;
+        bool Y2;
+        bool ACC2;
+        bool ACC1P;
+        bool ACC1N;
+        bool W1;
+        bool W2;
+        bool W3;
+        bool OB;
     };
 
-/**
+    /**
  * Retrieves and checks the current wiring configurations.
  *
  * This method:
@@ -244,8 +218,8 @@ public:
     // [R,C,G,Y1,Y2,ACC2,ACC1P,ACC1N,W1,W2,W3,OB]
     // The difference between this and below, is a bunch of data manipulations and database upadtes
     Wiring getWiring(void);
-    
-/**
+
+    /**
  * Retrieves the actual wiring configurations from the system.
  *
  * This method fetches all wiring configurations from the database and returns them as an array of boolean values.
@@ -264,8 +238,7 @@ public:
      */
     Wiring getActualWiring(void);
 
-
-/**
+    /**
  * Checks the client's configuration based on the UID.
  *
  * This method:
@@ -287,22 +260,20 @@ public:
      */
     bool checkClient(void);
 
-
     /// @brief device configuration settings
     struct Settings
     {
-        int     brightness;
-        int     speaker;
-        int     measure_id;
-        int     time;
-        bool    reset;
-        bool    adaptive_brightness;    //!< true = adaptive, false = manual
-        int     system_delay;
-        int     measure;
+        int brightness;
+        int speaker;
+        int measure_id;
+        int time;
+        bool reset;
+        bool adaptive_brightness; //!< true = adaptive, false = manual
+        int system_delay;
+        int measure;
     };
-    
 
-/**
+    /**
  * Fetches and returns the device settings.
  *
  * This method retrieves device settings including:
@@ -318,7 +289,7 @@ public:
  */
     Settings getSettings(void);
 
-/**
+    /**
  * Updates the device's settings.
  *
  * This method allows the user to configure various device settings including screen brightness, speaker volume, 
@@ -336,8 +307,7 @@ public:
  */
     bool setSettings(Settings);
 
-
-/**
+    /**
  * Sets the device's screen brightness level and adaptive brightness mode.
  *
  * This method allows the user to set the desired brightness level for the device's screen.
@@ -364,7 +334,7 @@ public:
      */
     bool setBrightness(int brightness, bool adaptive);
 
-/**
+    /**
  * Fetches the wiring settings from a remote server based on a given UID and updates the local database.
  *
  * TODO what type is uid
@@ -398,7 +368,7 @@ public:
  */
     void setAlert(void);
 
-/**
+    /**
  * Retrieves the device's luminosity after setting the brightness and adaptive brightness mode.
  *
  * This method first sets the device's brightness and adaptive brightness mode based on the provided parameters. 
@@ -412,7 +382,6 @@ public:
     void getLuminosity(void);
 
 signals:
-
 };
 
-#endif // PHP_HARDWARE_H
+} // namespace NUVE

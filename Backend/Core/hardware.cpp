@@ -1,26 +1,34 @@
-#include "php_hardware.h"
+#include "hardware.h"
+
+#include <ctime>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+
 #include "LogHelper.h"
+#include "UtilityHelper.h"
 
-#include <Backend/Core/System.h>
-// php_hardware::php_hardware(QObject *parent)
-//     : QObject{parent}
-// {
+#include "Device/current_stage.h"
+#include "Device/device_config.h"
+#include "Device/sensors.h"
+#include "Device/timing.h"
 
-// }
+#include "System.h"
 
-php_hardware::php_hardware(
-    DeviceConfig &config, Timing &tim, CurrentStage &stage, Sensors &sens, QObject *parent)
+NUVE::Hardware::Hardware(DeviceConfig &config,
+                         Timing &tim,
+                         CurrentStage &stage,
+                         Sensors &sens,
+                         System &sys,
+                         QObject *parent)
     : QObject(parent)
     , deviceConfig(config)
     , timing(tim)
     , currentStage(stage)
     , sensors(sens)
+    , system(sys)
 {
-    m_system = new NUVE::System(this);
 }
-
-
-
 
 /**
  * @brief initialise the device to default values
@@ -30,7 +38,7 @@ php_hardware::php_hardware(
  * 
  * @param uid its UID
  */
-void php_hardware::setDefaultValues(cpuid_t uid)
+void NUVE::Hardware::setDefaultValues(cpuid_t uid)
 {
     // no code is added here, as the instantiation of the
     deviceConfig.initialise(uid);
@@ -39,7 +47,7 @@ void php_hardware::setDefaultValues(cpuid_t uid)
 }
 
 // TODO refactor this code actually peforms an initial configuration
-int php_hardware::runDevice(cpuid_t uid)
+int NUVE::Hardware::runDevice(cpuid_t uid)
 {
     if (deviceConfig.uid.empty()) {
         //        qDebug << Q_FUNC_INFO << "device config not initialised";
@@ -55,7 +63,6 @@ int php_hardware::runDevice(cpuid_t uid)
     oss << std::hex << deviceConfig.uid;
     sensors.setDefaultValues(oss.str());
 
-
     // TODO the wifi code below will check if there is a backup ini file in update partition, then load and delete it.  This may not work in all cases for restore
     // TODO
     // Check if wifi.ini is saved in backup partition, if so, then read it, store in database, delete
@@ -67,25 +74,24 @@ int php_hardware::runDevice(cpuid_t uid)
     //  /usr/share/apache2/default-site/htdocs/update       -- partial update file?
     // need_recover.txt                                     -- ??
 
-
     return 0;
 }
 
 /** Send a CURL request to the remote server to look up the UID and return the
  *  serial number associated with it */
-bool php_hardware::getSN(cpuid_t uid, std::string &sn)
+bool NUVE::Hardware::getSN(cpuid_t uid, std::string &sn)
 {
     // TODO this function should probably cache the serial number to avoid duplicated look ups?  QUESTION: should we retrieve once only for the device, once every boot, or only after update?
 
     // TODO curl send will give the serial nubmer and a bool representing if hte client_id is >0
     // TODO send the http request
-    sn = m_system->getSN(uid);
+    sn = system.getSN(uid);
     return true;
 }
 
 // TODO refactor, this does MUCH more than just get the start mode
 // TODO we recieve and propagate the uid here, but this is really just becuase I dont want to introduce the getter here
-int php_hardware::getStartMode(cpuid_t uid)
+int NUVE::Hardware::getStartMode(cpuid_t uid)
 {
     // Start by calling runDevice, which will load and populate the device config
     runDevice(uid);
@@ -106,17 +112,15 @@ int php_hardware::getStartMode(cpuid_t uid)
     deviceConfig.start_mode = 1;
 
     // Check if device is newly updated: call system->getIsDeviceUpdated()
-    if (true == UtilityHelper::tempIsUpdated())
-    {
+    if (true == UtilityHelper::tempIsUpdated()) {
         getWiringsFromServer(uid);
         UtilityHelper::tempClearUpdatedFlag();
     }
 
     // Check serial number
-    if (deviceConfig.serial_number != "")
-    {
+    if (deviceConfig.serial_number != "") {
         // serial number already set, starting normally
-// TODO what do these return values mean?
+        // TODO what do these return values mean?
         return 1;
     }
     std::string sn;
@@ -136,12 +140,9 @@ int php_hardware::getStartMode(cpuid_t uid)
     return 2;
 }
 
-void php_hardware::getWiringsFromServer(cpuid_t uid)
+void NUVE::Hardware::getWiringsFromServer(cpuid_t uid)
 {
     // TODO first send the request (sync, getWirings)
     // TODO Then update the wirings variable
     //  note that here may be multiple
 }
-
-
-

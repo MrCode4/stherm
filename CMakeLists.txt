@@ -208,6 +208,8 @@ qt6_add_qml_module(appStherm
         Backend/php/include/nuveTypes.h
         Backend/php/include/sensors.h
         Backend/php/include/sensors.cpp
+        Backend/php/include/wirings.h
+        Backend/php/include/wirings.cpp
         Backend/php/include/parameter_definitions.h
 
         Backend/DeviceControllerCPP.h
@@ -235,6 +237,21 @@ qt6_add_qml_module(appStherm
         Backend/Core/NetworkWorker.cpp
         Backend/LogHelper.h
 
+        Backend/DeviceAPI.h
+        Backend/DeviceAPI.cpp
+        Backend/Device/nuve_types.h
+        Backend/Device/device_config.h
+        Backend/Device/device_config.cpp
+        Backend/Device/timing.h
+        Backend/Device/timing.cpp
+        Backend/Device/current_stage.h
+        Backend/Device/current_stage.cpp
+        Backend/Device/sensors.h
+        Backend/Device/sensors.cpp
+        Backend/Core/hardware.h
+        Backend/Core/hardware.cpp
+
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
@@ -254,7 +271,6 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
-        SOURCES Backend/php/include/wirings.h Backend/php/include/wirings.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

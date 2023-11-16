@@ -11,29 +11,28 @@ const QUrl m_domainUrl        = QUrl("http://test.hvac.z-soft.am"); // base doma
 const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
 const QUrl m_updateUrl        = QUrl("/update/");                   // update
 
-
-System::System(QObject *parent)
+NUVE::System::System(QObject *parent)
 {
     mNetManager = new QNetworkAccessManager();
 
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &System::processNetworkReply);
 }
 
-std::string System::getSN(cpuid_t accessUid)
+std::string NUVE::System::getSN(cpuid_t accessUid)
 {
     QJsonArray paramsArray;
     paramsArray.append(QString::fromStdString(accessUid));
 
-// TODO parameter retrieval from cloud, can we utilise a value/isSet tuple and push the processing to a background function?  Or are we happy with a firing off a whole bunch of requests and waiting for them to complete?
+    // TODO parameter retrieval from cloud, can we utilise a value/isSet tuple and push the processing to a background function?  Or are we happy with a firing off a whole bunch of requests and waiting for them to complete?
     QByteArray requestData = preparePacket("sync", "getSN", paramsArray);
     sendPostRequest(m_domainUrl, m_engineUrl, requestData);
 
     QEventLoop loop;
     QTimer timer;
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    connect(this, &System::snReady, &loop, &QEventLoop::quit);
-// TODO this timeout is enough for a post request?
-// TODO the timeout needs to be defined in a paramter somewhere
+    connect(this, &NUVE::System::snReady, &loop, &QEventLoop::quit);
+    // TODO this timeout is enough for a post request?
+    // TODO the timeout needs to be defined in a paramter somewhere
     timer.start(1000);
     loop.exec();
 
@@ -42,7 +41,7 @@ std::string System::getSN(cpuid_t accessUid)
     return mSerialNumber.toStdString();
 }
 
-void System::getUpdate(QString softwareVersion)
+void NUVE::System::getUpdate(QString softwareVersion)
 {
     QJsonArray paramsArray;
     paramsArray.append(mSerialNumber);
@@ -52,7 +51,7 @@ void System::getUpdate(QString softwareVersion)
     sendPostRequest(m_domainUrl, m_engineUrl, requestData);
 }
 
-void System::requestJob(QString type)
+void NUVE::System::requestJob(QString type)
 {
     QJsonArray paramsArray;
     paramsArray.append(mSerialNumber);
@@ -62,8 +61,8 @@ void System::requestJob(QString type)
     sendPostRequest(m_domainUrl, m_engineUrl, requestData);
 }
 
-void System::processNetworkReply (QNetworkReply * netReply) {
-
+void NUVE::System::processNetworkReply(QNetworkReply *netReply)
+{
     NetworkWorker::processNetworkReply(netReply);
 
     if (netReply->error() != QNetworkReply::NoError)
@@ -97,7 +96,7 @@ void System::processNetworkReply (QNetworkReply * netReply) {
     }
 }
 
-void System::rebootDevice()
+void NUVE::System::rebootDevice()
 {
         QProcess process;
         QString command = "sudo reboot";

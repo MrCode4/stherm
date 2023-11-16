@@ -58,7 +58,7 @@ QtObject {
     //! app core
     property I_Device           appModel
 
-    property PhpAPI             php_api: PhpAPI {}
+    property DeviceAPI          device_api: DeviceAPI {}
 
     //! Retrieve device information at one-second intervals.
     property Timer timer:   Timer {
@@ -78,7 +78,7 @@ QtObject {
         if (!simulating) {
             Style.background = "#000000";
 
-            console.log("start mode is: ", php_api.getStartMode());
+            console.log("start mode is: ", device_api.getStartMode());
 
             // start real device
             realDeviceController.startDeviceRequested();

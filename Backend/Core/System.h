@@ -3,13 +3,13 @@
 #include <QObject>
 #include <QtNetwork>
 
+#include "Backend/Device/nuve_types.h"
 #include "NetworkWorker.h"
-#include "include/nuveTypes.h"
 
 /*! ***********************************************************************************************
  * This class manage system requests.
  * ************************************************************************************************/
-
+namespace NUVE {
 class System : public NetworkWorker
 {
     Q_OBJECT
@@ -50,3 +50,5 @@ signals:
 private:
     QString mSerialNumber;
 };
+
+} // namespace NUVE
