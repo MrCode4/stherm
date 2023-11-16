@@ -542,6 +542,21 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 cpIndex += sizeof(fanSpeed);
                 LOG_DEBUG(QString("fan_speed: %0").arg(fanSpeed));
 
+                // Prepare data and send to ui
+                QVariantMap mainDataMap;
+                mainDataMap.insert("temperature",     mainDataValues.temp);
+                mainDataMap.insert("humidity",        mainDataValues.humidity);
+                mainDataMap.insert("co2",             mainDataValues.c02);
+                mainDataMap.insert("etoh",            mainDataValues.etoh);
+                mainDataMap.insert("Tvoc",            mainDataValues.Tvoc);
+                mainDataMap.insert("iaq",             mainDataValues.iaq);
+                mainDataMap.insert("pressure",        mainDataValues.pressure);
+                mainDataMap.insert("RangeMilliMeter", RangeMilliMeter);
+                mainDataMap.insert("brighness",       Luminosity);
+                mainDataMap.insert("fanSpeed",        fanSpeed);
+
+                emit mainDataReady(mainDataMap);
+
                 // todo
                 //                if (!set_fan_speed_INFO(fan_speed)) {
                 //                    LOG_DEBUG(QString("Error: setFanSpeed: (fan speed: %0)").arg(fan_speed));
@@ -575,7 +590,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
         }
     } else {
         // Log error
-        LOG_DEBUG(QString("ACK and CRC are distinct. ACK:%0 CRC:%1").arg(rxPacket.ACK).arg(rxPacket.CRC));
+        LOG_DEBUG(QString("Calculated CRC and CRC are distinct. Calculated CRC:%0 CRC:%1").arg(inc_crc_nrf).arg(rxPacket.CRC));
     }
 }
 
@@ -831,7 +846,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
             break;
         }
     } else {
-        LOG_DEBUG(QString("Ti - ACK and CRC are distinct. ACK:%0 CRC:%1").arg(rxPacket.ACK).arg(rxPacket.CRC));
+        LOG_DEBUG(QString("Ti - Calculated CRC and CRC are distinct. Calculated CRC:%0 CRC:%1").arg(inc_crc_ti).arg(rxPacket.CRC));
 
         STHERM::SIOPacket tp;
         tp.PacketSrc = UART_Packet;

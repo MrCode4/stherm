@@ -9,10 +9,21 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     : QObject(parent)
     , _deviceController(new DeviceIOController)
 {
-    _mainData = {{"temp", QVariant(0)}, {"hum", QVariant(0)}};
+    QVariantMap mainDataMap;
+    mainDataMap.insert("temperature",     0);
+    mainDataMap.insert("humidity",        0);
+    mainDataMap.insert("co2",             0);
+    mainDataMap.insert("etoh",            0);
+    mainDataMap.insert("Tvoc",            0);
+    mainDataMap.insert("iaq",             0);
+    mainDataMap.insert("pressure",        0);
+    mainDataMap.insert("RangeMilliMeter", 0);
+    mainDataMap.insert("brighness",       0);
+    mainDataMap.insert("fanSpeed",        0);
+    _mainData = mainDataMap;
 
     LOG_DEBUG("TEST");
-    connect(_deviceController, &DeviceIOController::dataReady, this, [this](QVariantMap data) {
+    connect(_deviceController, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         _mainData = data;
     });
 }

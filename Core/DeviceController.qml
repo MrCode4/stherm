@@ -159,8 +159,10 @@ I_DeviceController {
         var result = sendReceive('system', 'getMainData', []);
 
         // should be catched later here
-        device.currentHum = result?.hum ?? 0
-        device.currentTemp = result?.temp ?? 0
+        device.currentHum = result?.humidity ?? 0
+        device.currentTemp = result?.temperature ?? 0
+        device.co2 = result?.co2 ?? 0
+        device.setting.brightness = result?.brighness ?? 0
 
         //        device.co2;
         //        device.fan.mode
