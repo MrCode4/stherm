@@ -11,6 +11,18 @@ I_DeviceController {
     /* Property Declarations
      * ****************************************************************************************/
 
+    property Connections  deviceControllerConnection: Connections {
+        target: deviceControllerCPP
+
+        function onAlert(alertLevel : int,
+                         alertType : int,
+                         alertMessage : string) {
+
+            console.log("Alert: ", alertLevel, alertType, alertMessage);
+
+        }
+    }
+
     /* Object Properties
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {}

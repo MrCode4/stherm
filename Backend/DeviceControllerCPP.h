@@ -60,6 +60,11 @@ Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
 
+    //! Send alert to ui
+    void alert(STHERM::AlertLevel alertLevel,
+               STHERM::AlertTypes alertType,
+               QString alertMessage = QString());
+
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/

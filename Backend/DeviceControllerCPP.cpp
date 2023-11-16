@@ -26,6 +26,13 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceController, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         _mainData = data;
     });
+
+    connect(_deviceController, &DeviceIOController::alert, this, [this](STHERM::AlertLevel alertLevel,
+                                                                        STHERM::AlertTypes alertType,
+                                                                        QString alertMessage) {
+        TRACE << alertLevel << alertType << alertMessage;
+        emit alert(alertLevel, alertType,  alertMessage);
+    });
 }
 
 DeviceControllerCPP::~DeviceControllerCPP() {}

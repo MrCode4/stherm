@@ -61,7 +61,7 @@ signals:
     //! Send response with requestType
     void responseReady(int requestType, QVariant response);
 
-    //! Send alert to ui
+    //! Send alert to controller
     void alert(STHERM::AlertLevel alertLevel,
                STHERM::AlertTypes alertType,
                QString alertMessage = QString());
