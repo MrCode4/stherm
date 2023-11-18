@@ -392,7 +392,7 @@ void DeviceIOController::createNRF()
         nrfConfiguration();
     }
 
-    if (!gpioHandler4->hasError()) {
+    if (!gpioHandler4->hasError() && false) {
         connect(gpioHandler4, &GpioHandler::readyRead, this, [=](QByteArray data) {
             TRACE << QString("gpio4Connection Response:   %0").arg(data) << data.length();
 
@@ -403,7 +403,7 @@ void DeviceIOController::createNRF()
         });
     }
 
-    if (!gpioHandler5->hasError()) {
+    if (!gpioHandler5->hasError() && false) {
         connect(gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             TRACE << QString("gpio5Connection Response:   %0").arg(data) << data.length();
 
