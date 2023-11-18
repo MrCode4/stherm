@@ -67,8 +67,6 @@ void GpioHandler::handleGpioEvent()
         return;
     }
 
-    auto data = file.readAll();
-
     this->seek(SEEK_SET);
 
     char buffer[256];
@@ -77,7 +75,6 @@ void GpioHandler::handleGpioEvent()
     if (bytesRead > 0) {
         QByteArray bufferBA = buffer;
         if (bufferBA != Data) {
-            qDebug() << "GPIO Value: " << buffer << data;
             Data = bufferBA;
             emit readyRead(QByteArray(buffer));
         }
