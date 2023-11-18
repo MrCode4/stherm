@@ -6,6 +6,7 @@
 #include "DataParser.h"
 #include "UARTConnection.h"
 #include "UtilityHelper.h"
+#include "GPIO/GpioHandler.h"
 
 /*! ***********************************************************************************************
  * This class manages read and write from device using UART

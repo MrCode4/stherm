@@ -250,6 +250,8 @@ qt6_add_qml_module(appStherm
         Backend/Device/sensors.cpp
         Backend/Core/hardware.h
         Backend/Core/hardware.cpp
+        Backend/GPIO/GpioHandler.h
+        Backend/GPIO/GpioHandler.cpp
 
 
     RESOURCES
