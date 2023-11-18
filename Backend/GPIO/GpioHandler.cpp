@@ -63,6 +63,10 @@ void GpioHandler::handleGpioEvent()
 {
     static QByteArray Data = "";
 
+    if (file.bytesAvailable() == 0) {
+        return;
+    }
+
     auto data = file.readAll();
 
     this->seek(SEEK_SET);
