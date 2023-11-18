@@ -62,11 +62,6 @@ void GpioHandler::handleGpioEvent()
     char buffer[256];
     qint64 bytesRead = readFile(buffer, sizeof(buffer));
 
-    if (bytesRead > 0) {
-        qDebug() << "GPIO Value: " << buffer;
-        // Add your GPIO event handling logic here
-    }
-
     emit readyRead(QByteArray(buffer));
 }
 
