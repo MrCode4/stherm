@@ -273,13 +273,13 @@ void DeviceIOController::createConnections()
             TRACE << "Ti heartbeat message finished" << success;
         }
 
-        TRACE << "start GetSensors" << (nRfConnection && nRfConnection->isConnected());
+        TRACE << "start GetTOF" << (nRfConnection && nRfConnection->isConnected());
         if (nRfConnection && nRfConnection->isConnected()) {
-            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetSensors,
+            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetTOF,
                                                           STHERM::PacketType::UARTPacket);
             auto sent = nRfConnection->sendRequest(packet);
 
-            TRACE << "nrf GetSensors message sent" << sent;
+            TRACE << "nrf GetTOF message sent" << sent;
         }
         inProgress = false;
     });
@@ -408,7 +408,7 @@ void DeviceIOController::createNRF()
             TRACE << QString("gpio5Connection Response:   %0").arg(data) << data.length();
 
             if (data.length() == 2 && data.at(0) == '0') {
-                TRACE << "request for gpio 5" << nRfConnection->sendRequest(mTOFPacketBA);
+                TRACE << "request for gpio 5" << nRfConnection->sendRequest(mSensorPacketBA);
             }
         });
     }
