@@ -398,7 +398,7 @@ void DeviceIOController::createNRF()
 
             TRACE << QString("gpio4Connection Response:   %0").arg(data);
 
-            if (data.length() == 2 && data.at(2) == '0') {
+            if (data.length() == 2 && data.at(0) == '0') {
                 nRfConnection->sendRequest(mSensorPacketBA);
             }
         });
@@ -409,7 +409,7 @@ void DeviceIOController::createNRF()
 
             TRACE << QString("gpio5Connection Response:   %0").arg(data);
 
-            if (data.length() == 2 && data.at(2) == '0') {
+            if (data.length() == 2 && data.at(0) == '0') {
                 nRfConnection->sendRequest(mTOFPacketBA);
             }
         });
