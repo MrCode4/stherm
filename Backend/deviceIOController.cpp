@@ -284,9 +284,8 @@ void DeviceIOController::createConnections()
         inProgress = false;
     });
 
-    wtd_timer.setInterval(30000);
     wtd_timer.setSingleShot(false);
-    wtd_timer.start();
+    wtd_timer.start(3000);
 
     //    start();
 }
@@ -398,7 +397,8 @@ void DeviceIOController::createNRF()
             TRACE << QString("gpio4Connection Response:   %0").arg(data) << data.length();
 
             if (data.length() == 2 && data.at(0) == '0') {
-                TRACE << "request for gpio 4" << nRfConnection->sendRequest(mSensorPacketBA);
+                TRACE << "request for gpio 4";
+                //<< nRfConnection->sendRequest(mSensorPacketBA);
             }
         });
     }
@@ -408,7 +408,7 @@ void DeviceIOController::createNRF()
             TRACE << QString("gpio5Connection Response:   %0").arg(data) << data.length();
 
             if (data.length() == 2 && data.at(0) == '0') {
-                TRACE << "request for gpio 5" << nRfConnection->sendRequest(mSensorPacketBA);
+                TRACE << "request for gpio 5" << nRfConnection->sendRequest(mTOFPacketBA);
             }
         });
     }
