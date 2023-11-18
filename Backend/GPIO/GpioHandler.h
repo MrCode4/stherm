@@ -36,7 +36,7 @@ public:
 
 public slots:
     // Slot to handle GPIO events
-    void handleGpioEvent(QSocketDescriptor socket, QSocketNotifier::Type activationEvent);
+    void handleGpioEvent();
 
 signals:
     void readyRead(QByteArray buffer);

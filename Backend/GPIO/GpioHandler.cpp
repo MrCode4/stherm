@@ -16,6 +16,10 @@ GpioHandler::GpioHandler(int gpio_pin, QObject *parent)
 
         // Connect the signal/slot for file descriptor events
         connect(notifier, &QSocketNotifier::activated, this, &GpioHandler::handleGpioEvent);
+
+        // Start monitoring for events
+        notifier->setEnabled(true);
+
     } else {
         mError = file.errorString();
         qDebug() << "Failed to open file:" << mError;
@@ -55,21 +59,24 @@ void GpioHandler::seek(int position)
     file.seek(position);
 }
 
-void GpioHandler::handleGpioEvent(QSocketDescriptor socket, QSocketNotifier::Type activationEvent)
+void GpioHandler::handleGpioEvent()
 {
-    if (activationEvent == QSocketNotifier::Write) {
-        this->seek(SEEK_SET);
+    static QByteArray Data = "";
 
-        char buffer[256];
-        qint64 bytesRead = readFile(buffer, sizeof(buffer));
+    auto data = file.readAll();
 
-        if (bytesRead > 0) {
-            qDebug() << "GPIO Value: " << buffer;
-            // Add your GPIO event handling logic here
+    this->seek(SEEK_SET);
+
+    char buffer[256];
+    qint64 bytesRead = readFile(buffer, sizeof(buffer));
+
+    if (bytesRead > 0) {
+        QByteArray bufferBA = buffer;
+        if (bufferBA != Data) {
+            qDebug() << "GPIO Value: " << buffer << data;
+            Data = bufferBA;
+            emit readyRead(QByteArray(buffer));
         }
-        emit readyRead(QByteArray(buffer));
-    } else {
-        qDebug() << "GPIO read event " << activationEvent;
     }
 }
 
