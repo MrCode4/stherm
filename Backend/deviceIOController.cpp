@@ -273,6 +273,15 @@ void DeviceIOController::createConnections()
             TRACE << "Ti heartbeat message finished" << success;
         }
 
+        TRACE << "start GetSensors" << (nRfConnection && nRfConnection->isConnected());
+        if (nRfConnection && nRfConnection->isConnected()) {
+            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetSensors,
+                                                          STHERM::PacketType::UARTPacket);
+            auto sent = nRfConnection->sendRequest(packet);
+
+            TRACE << "nrf GetSensors message sent" << sent;
+        }
+
         TRACE << "start GetTOF" << (nRfConnection && nRfConnection->isConnected());
         if (nRfConnection && nRfConnection->isConnected()) {
             QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetTOF,
@@ -281,11 +290,12 @@ void DeviceIOController::createConnections()
 
             TRACE << "nrf GetTOF message sent" << sent;
         }
+
         inProgress = false;
     });
 
     wtd_timer.setSingleShot(false);
-    wtd_timer.start(3000);
+    wtd_timer.start(10000);
 
     //    start();
 }
