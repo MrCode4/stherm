@@ -55,14 +55,16 @@ void GpioHandler::seek(int position)
     file.seek(position);
 }
 
-void GpioHandler::handleGpioEvent()
+void GpioHandler::handleGpioEvent(QSocketDescriptor socket, QSocketNotifier::Type activationEvent)
 {
-    this->seek(SEEK_SET);
+    if (activationEvent == QSocketNotifier::Write) {
+        this->seek(SEEK_SET);
 
-    char buffer[256];
-    qint64 bytesRead = readFile(buffer, sizeof(buffer));
+        char buffer[256];
+        qint64 bytesRead = readFile(buffer, sizeof(buffer));
 
-    emit readyRead(QByteArray(buffer));
+        emit readyRead(QByteArray(buffer));
+    }
 }
 
 QString GpioHandler::error() const
