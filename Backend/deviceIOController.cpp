@@ -273,6 +273,29 @@ void DeviceIOController::createConnections()
             TRACE << "Ti heartbeat message finished" << success;
         }
 
+        bool success = false;
+        QEventLoop loop;
+        connect(
+            tiConnection,
+            &UARTConnection::sendData,
+            &loop,
+            [&loop, &success](QByteArray data) {
+                success = true;
+                TRACE << "Ti heartbeat message success";
+                loop.quit();
+            },
+            Qt::SingleShotConnection);
+        connect(
+            tiConnection,
+            &UARTConnection::connectionError,
+            &loop,
+            [&loop, &success](QString error) {
+                success = false;
+                TRACE << "Ti heartbeat message failure";
+                loop.quit();
+            },
+            Qt::SingleShotConnection);
+
         TRACE << "start GetSensors" << (nRfConnection && nRfConnection->isConnected());
         if (nRfConnection && nRfConnection->isConnected()) {
             QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetSensors,
@@ -281,6 +304,11 @@ void DeviceIOController::createConnections()
 
             TRACE << "nrf GetSensors message sent" << sent;
         }
+        QTimer timer;
+        timer.setSingleShot(true);
+        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+        timer.start(3000);
+        loop.exec();
 
         TRACE << "start GetTOF" << (nRfConnection && nRfConnection->isConnected());
         if (nRfConnection && nRfConnection->isConnected()) {
