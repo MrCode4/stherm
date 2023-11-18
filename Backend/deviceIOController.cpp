@@ -268,53 +268,54 @@ void DeviceIOController::createConnections()
             QTimer timer;
             timer.setSingleShot(true);
             connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-            timer.start(3000);
+            timer.start(30000);
             loop.exec();
             TRACE << "Ti heartbeat message finished" << success;
         }
 
-        bool success = false;
-        QEventLoop loop;
-        connect(
-            tiConnection,
-            &UARTConnection::sendData,
-            &loop,
-            [&loop, &success](QByteArray data) {
-                success = true;
-                TRACE << "Ti heartbeat message success";
-                loop.quit();
-            },
-            Qt::SingleShotConnection);
-        connect(
-            tiConnection,
-            &UARTConnection::connectionError,
-            &loop,
-            [&loop, &success](QString error) {
-                success = false;
-                TRACE << "Ti heartbeat message failure";
-                loop.quit();
-            },
-            Qt::SingleShotConnection);
-
-        TRACE << "start GetSensors" << (nRfConnection && nRfConnection->isConnected());
+        TRACE << "start NRF" << (nRfConnection && nRfConnection->isConnected());
         if (nRfConnection && nRfConnection->isConnected()) {
+            bool success = false;
+            QEventLoop loop;
+            connect(
+                tiConnection,
+                &UARTConnection::sendData,
+                &loop,
+                [&loop, &success](QByteArray data) {
+                    success = true;
+                    TRACE << "GetSensors message success";
+                    loop.quit();
+                },
+                Qt::SingleShotConnection);
+            connect(
+                tiConnection,
+                &UARTConnection::connectionError,
+                &loop,
+                [&loop, &success](QString error) {
+                    success = false;
+                    TRACE << "GetSensors message failure";
+                    loop.quit();
+                },
+                Qt::SingleShotConnection);
+
+            TRACE << "start GetSensors";
             QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetSensors,
                                                           STHERM::PacketType::UARTPacket);
             auto sent = nRfConnection->sendRequest(packet);
 
             TRACE << "nrf GetSensors message sent" << sent;
-        }
-        QTimer timer;
-        timer.setSingleShot(true);
-        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        timer.start(3000);
-        loop.exec();
 
-        TRACE << "start GetTOF" << (nRfConnection && nRfConnection->isConnected());
-        if (nRfConnection && nRfConnection->isConnected()) {
-            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetTOF,
-                                                          STHERM::PacketType::UARTPacket);
-            auto sent = nRfConnection->sendRequest(packet);
+            QTimer timer;
+            timer.setSingleShot(true);
+            connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+            timer.start(30000);
+            loop.exec();
+            TRACE << "GetSensors message finished" << success;
+
+            TRACE << "start GetTOF";
+            packet = mDataParser.preparePacket(STHERM::SIOCommand::GetTOF,
+                                               STHERM::PacketType::UARTPacket);
+            sent = nRfConnection->sendRequest(packet);
 
             TRACE << "nrf GetTOF message sent" << sent;
         }
