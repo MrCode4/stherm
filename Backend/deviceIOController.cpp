@@ -268,7 +268,7 @@ void DeviceIOController::createConnections()
             QTimer timer;
             timer.setSingleShot(true);
             connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-            timer.start(30000);
+            timer.start(10000);
             loop.exec();
             TRACE << "Ti heartbeat message finished" << success;
         }
@@ -278,7 +278,7 @@ void DeviceIOController::createConnections()
             bool success = false;
             QEventLoop loop;
             connect(
-                tiConnection,
+                nRfConnection,
                 &UARTConnection::sendData,
                 &loop,
                 [&loop, &success](QByteArray data) {
@@ -288,7 +288,7 @@ void DeviceIOController::createConnections()
                 },
                 Qt::SingleShotConnection);
             connect(
-                tiConnection,
+                nRfConnection,
                 &UARTConnection::connectionError,
                 &loop,
                 [&loop, &success](QString error) {
@@ -308,7 +308,7 @@ void DeviceIOController::createConnections()
             QTimer timer;
             timer.setSingleShot(true);
             connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-            timer.start(30000);
+            timer.start(10000);
             loop.exec();
             TRACE << "GetSensors message finished" << success;
 
