@@ -1,12 +1,11 @@
-#ifndef GPIOMANAGER_H
-#define GPIOMANAGER_H
+#pragma once
 
 #include <QCoreApplication>
 #include <QFile>
 #include <QSocketNotifier>
 #include <QDebug>
 
-#define SW_VAL_PATH "/sys/class/gpio/gpio%d/value\0"
+#define SW_VAL_PATH "/sys/class/gpio/gpio%0/value"
 
 class GpioHandler : public QObject
 {
@@ -51,4 +50,3 @@ private:
     QString mError;
 };
 
-#endif // GPIOMANAGER_H

@@ -361,21 +361,15 @@ void DeviceIOController::createTIConnection()
 
 void DeviceIOController::createNRF()
 {
-//    QString gpioValuePath = "/sys/class/gpio/gpio%1/value";
 
     bool isSuccess = UtilityHelper::configurePins(NRF_GPIO_4);
-    if (isSuccess) {
-//        gpio4Connection = new UARTConnection(gpioValuePath.arg(NRF_GPIO_4), QSerialPort::Baud9600);
-    } else {
+    if (!isSuccess) {
         LOG_DEBUG(QString("Pin configuration failed: pin = %0").arg(NRF_GPIO_4));
         return;
     }
 
     isSuccess = UtilityHelper::configurePins(NRF_GPIO_5);
-    if (isSuccess) {
-//        gpio5Connection = new UARTConnection(gpioValuePath.arg(NRF_GPIO_5), QSerialPort::Baud9600);
-
-    } else {
+    if (!isSuccess) {
         LOG_DEBUG(QString("Pin configuration failed: pin = %0").arg(NRF_GPIO_5));
         return;
     }
@@ -399,20 +393,6 @@ void DeviceIOController::createNRF()
         nrfConfiguration();
     }
 
-    // TODO why are we trying to open a GPIO as a UART, we are testing! if not working should use a linux lowlevel code
-//    if (gpio4Connection->startConnection()) {
-//        connect(gpio4Connection, &UARTConnection::sendData, this, [=](QByteArray data) {
-//            TRACE << QString("gpio4Connection Response:   %0").arg(data);
-
-//            // Check (Read data after seek or ...)
-//            gpio4Connection->seek(SEEK_SET);
-
-//            if (data.length() == 2 && data.at(2) == '0') {
-//                nRfConnection->sendRequest(mSensorPacketBA);
-//            }
-//        });
-//    }
-
     if (!gpioHandler4->hasError()) {
         connect(gpioHandler4, &GpioHandler::readyRead, this, [=](QByteArray data) {
 
@@ -423,20 +403,6 @@ void DeviceIOController::createNRF()
             }
         });
     }
-
-// TODO why are we trying to open a GPIO as a UART
-//    if (gpio5Connection->startConnection()) {
-//        connect(gpio5Connection, &UARTConnection::sendData, this, [=](QByteArray data) {
-//            TRACE << QString("gpio4Connection Response:   %0").arg(data);
-
-//            // Check (Read data after seek or ...)
-//            gpio5Connection->seek(SEEK_SET);
-
-//            if (data.length() == 2 && data.at(2) == '0') {
-//                nRfConnection->sendRequest(mTOFPacketBA);
-//            }
-//        });
-//    }
 
     if (!gpioHandler5->hasError()) {
         connect(gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
