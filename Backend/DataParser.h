@@ -24,6 +24,7 @@ public:
                              QVariantList data = QVariantList());
 
     //! Deserialize TI and NRF data and send dataReay signal
+    //! In OLD Code: ti: Line 494-515 / NRF: Line 1068-1089
     STHERM::SIOPacket deserializeData(const QByteArray &serializeData);
 
 signals:

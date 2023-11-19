@@ -77,22 +77,35 @@ STHERM::SIOPacket DataParser::deserializeData(const QByteArray &serializeData)
     STHERM::SerialRxData rxData;
     STHERM::SIOPacket  rxPacket;
 
+    // Line = L
+    // This function handles the received serial data, managing the escape
+    // sequences and constructing the received packet
+    // L 495-501 in ti / L 1069-1075 in NRF
     foreach (auto var, serializeData) {
         bool isValid = UtilityHelper::SerialDataRx(static_cast<uint8_t>(var), &rxData);
         if (!isValid)
             break;
     }
 
+    // Prepare SIOPacket packet with offsets
     rxPacket.CMD = (STHERM::SIOCommand)rxData.RxDataArray[CMD_Offset];
     rxPacket.ACK = rxData.RxDataArray[ACK_Offset];
     rxPacket.SID = rxData.RxDataArray[SID_Offset];
     uint8_t PayloadLen = rxData.RxDataLen - PacketMinLength;
     rxPacket.DataLen = PayloadLen;
     if (PayloadLen > 0) {
+        // Copy response data to rxPacket
+        // The DataArray contains the data to be processed.
+        // position 0 to PayloadLen
+        // ti: L 509 / NRF: L 1083
         memcpy(&rxPacket.DataArray[0], &rxData.RxDataArray[DATA_Offset], PayloadLen);
     }
-    rxPacket.CRC = (uint16_t)rxData.RxDataArray[DATA_Offset + PayloadLen];
-    rxPacket.CRC |= (uint16_t)(rxData.RxDataArray[DATA_Offset + PayloadLen + 1] << 8);
+
+    int crcOffset = DATA_Offset + PayloadLen;
+    rxPacket.CRC = (uint16_t)rxData.RxDataArray[crcOffset];
+
+    // 8 bits shift
+    rxPacket.CRC |= (uint16_t)(rxData.RxDataArray[crcOffset + 1] << 8);
 
     rxPacket.PacketSrc = UART_Packet;
     memset(&rxData, 0, sizeof(rxData));
