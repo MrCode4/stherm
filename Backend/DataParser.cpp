@@ -83,7 +83,7 @@ STHERM::SIOPacket DataParser::deserializeData(const QByteArray &serializeData)
     // L 495-501 in ti / L 1069-1075 in NRF
     foreach (auto var, serializeData) {
         bool isValid = UtilityHelper::SerialDataRx(var, &rxData);
-        if (!isValid)
+        if (isValid)
             break;
     }
 
