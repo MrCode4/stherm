@@ -201,7 +201,7 @@ struct AQ_TH_PR_vals {
     uint16_t Tvoc;           ///< TVOC value (0.1 to 10+ mg/m^3)
     uint8_t iaq;            ///< IAQ value (1 to 5+)
     uint16_t c02;           ///< CO2 value (400 to 5000 ppm)
-    int16_t temp;           ///< Temperature value (up to +127�C)
+    double   temp;           ///< Temperature value (up to +127�C)
     uint16_t pressure;      ///< Pressure value (up to 1200 hPa)
 };
 

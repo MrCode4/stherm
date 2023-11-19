@@ -533,8 +533,10 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
 
                 int cpIndex = 0;
                 STHERM::AQ_TH_PR_vals mainDataValues;
-                memcpy(&mainDataValues.temp, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.temp));
-                cpIndex += sizeof(mainDataValues.temp);
+                int16_t tempValue;
+                memcpy(&tempValue, rxPacket.DataArray + cpIndex, sizeof(tempValue));
+                cpIndex += sizeof(tempValue);
+                mainDataValues.temp =  tempValue / 10.0; // in celsius
                 LOG_DEBUG(QString("mainDataValues.temp: %0").arg(mainDataValues.temp));
 
                 memcpy(&mainDataValues.humidity, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.humidity));
