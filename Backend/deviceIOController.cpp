@@ -391,7 +391,7 @@ void DeviceIOController::createTIConnection()
         connect(tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
             LOG_DEBUG(QString("Ti Response: %0").arg(data));
 
-            auto rxPacket = mDataParser.deserializeNRFData(data);
+            auto rxPacket = mDataParser.deserializeData(data);
 
             LOG_DEBUG(QString("TI Response - CMD: %0").arg(rxPacket.CMD));
             processTIResponse(rxPacket);
@@ -421,7 +421,7 @@ void DeviceIOController::createNRF()
     if (nRfConnection->startConnection()) {
         connect(nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
             TRACE << "NRF Response:   " << data;
-            auto rxPacket = mDataParser.deserializeNRFData(data);
+            auto rxPacket = mDataParser.deserializeData(data);
             LOG_DEBUG(QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
             processNRFResponse(rxPacket);
 

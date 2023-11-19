@@ -23,17 +23,8 @@ public:
                              STHERM::PacketType packetType = STHERM::PacketType::UARTPacket,
                              QVariantList data = QVariantList());
 
-    //! Deserialize TI data and send dataReay signal
-    QVariantMap deserializeData(const QByteArray &serializeData, const bool &isTi = false);
-
-    //! Deserialize TI data and send dataReay signal
-    STHERM::SIOPacket deserializeNRFData(const QByteArray &serializeData);
-
-    //! Deserialize TI data and send dataReay signal
-    QVariantMap deserializeTiData(const QByteArray &serializeData);
-
-    //! Check AQ_TH_PR_vals values to detect related alerts
-    void checkAlert(const STHERM::AQ_TH_PR_vals &values);
+    //! Deserialize TI and NRF data and send dataReay signal
+    STHERM::SIOPacket deserializeData(const QByteArray &serializeData);
 
 signals:
     void alert(STHERM::AlertLevel alertLevel,
