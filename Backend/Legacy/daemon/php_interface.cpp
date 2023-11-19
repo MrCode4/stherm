@@ -251,13 +251,47 @@ bool setSensorData(device_t& dev, uint8_t* data, uint16_t size)
 	char set_call[512];
 	FILE* fp;
 	char line[256];
-	char setSensorData_Aqs_php[] = "php /usr/share/apache2/default-site/htdocs/engine/setSensorData.php '{\"external_sensor_type\":%d, \"external_sensor_id\":\"%4x\",\"data\":{\"temperature\":%d, \"humidity\":%d, \"co2\":%d, \"etoh\":%d, \"tvoc\":%d, \"aiq\":%d, \"pressure\":%d}}'\0";
-	char setSensorData_main_php[] = "php /usr/share/apache2/default-site/htdocs/engine/setSensorData.php '{\"external_sensor_type\":%d, \"external_sensor_id\":\"%s\",\"data\":{\"temperature\":%d, \"humidity\":%d, \"co2\":%d, \"etoh\":%d, \"tvoc\":%d, \"aiq\":%d, \"pressure\":%d, \"tof\":%d, \"ambiend\":%d}}'\0";
+    char setSensorData_Aqs_php[] = "php /usr/share/apache2/default-site/htdocs/engine/setSensorData.php"
+                                   " '{"
+                                   "\"external_sensor_type\":%d,"
+                                   " \"external_sensor_id\":\"%4x\","
+                                   "\"data\":{\"temperature\":%d,"
+                                   " \"humidity\":%d, \"co2\":%d,"
+                                   " \"etoh\":%d,"
+                                   " \"tvoc\":%d,"
+                                   " \"aiq\":%d,"
+                                   " \"pressure\":%d}"
+                                   "}'\0";
+
+    char setSensorData_main_php[] = "php /usr/share/apache2/default-site/htdocs/engine/setSensorData.php "
+                                    "'{\"external_sensor_type\":%d,"
+                                    " \"external_sensor_id\":\"%s\","
+                                    "\"data\":{\"temperature\":%d,"
+                                    " \"humidity\":%d, "
+                                    "\"co2\":%d, "
+                                    "\"etoh\":%d,"
+                                    " \"tvoc\":%d,"
+                                    " \"aiq\":%d,"
+                                    " \"pressure\":%d,"
+                                    " \"tof\":%d,"
+                                    " \"ambiend\":%d}}'\0";
 	switch (dev.type)
 	{
 	case Main_dev:
-		sprintf(set_call, setSensorData_main_php,dev.type, dev_id, ((int16_t*)data)[0], ((uint8_t*)(data+2))[0], ((uint16_t*)(data + 3))[0], ((uint16_t*)(data + 5))[0]/100, ((uint16_t*)(data + 7))[0]/1000, ((uint8_t*)(data + 9))[0]/10, ((uint16_t*)(data + 10))[0], ((uint16_t*)(data + 12))[0], ((uint32_t*)(data + 14))[0]);
-		syslog(LOG_INFO, "'{\"external_sensor_type\":%d, \"external_sensor_id\":\"%s\",\"data\":{\"temperature\":%d, \"humidity\":%d, \"co2\":%d, \"etoh\":%d, \"tvoc\":%d, \"aiq\":%d, \"pressure\":%d, \"tof\":%d, \"ambiend\":%d}}'\n"
+        sprintf(set_call, setSensorData_main_php,
+                dev.type,
+                dev_id,
+                ((int16_t*)data)[0],             //temperature /2 bytes
+                ((uint8_t*)(data+2))[0],         // humidity   /1 byte
+                 ((uint16_t*)(data + 3))[0],     // co2        /2 bytes
+                ((uint16_t*)(data + 5))[0]/100,  // etoh       /2 bytes
+                ((uint16_t*)(data + 7))[0]/1000, // tvoc       /2 bytes
+                ((uint8_t*)(data + 9))[0]/10,    // aiq        /1 byte
+                ((uint16_t*)(data + 10))[0],     // pressure   /2 bytes
+                ((uint16_t*)(data + 12))[0],     // tof        /2 bytes
+                ((uint32_t*)(data + 14))[0]);    // ambiend
+        syslog(LOG_INFO,
+               "'{\"external_sensor_type\":%d, \"external_sensor_id\":\"%s\",\"data\":{\"temperature\":%d, \"humidity\":%d, \"co2\":%d, \"etoh\":%d, \"tvoc\":%d, \"aiq\":%d, \"pressure\":%d, \"tof\":%d, \"ambiend\":%d}}'\n"
 			, dev.type, dev_id, ((int16_t*)data)[0], ((uint8_t*)(data + 2))[0], ((uint16_t*)(data + 3))[0], ((uint16_t*)(data + 5))[0] / 100, ((uint16_t*)(data + 7))[0] / 1000, ((uint8_t*)(data + 9))[0] / 10, ((uint16_t*)(data + 10))[0], ((uint16_t*)(data + 12))[0], ((uint32_t*)(data + 14))[0]);
 		break;
 	case AQ_TH_PR:
