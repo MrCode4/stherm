@@ -125,7 +125,7 @@ void UARTConnection::onReadyRead()
 {
     // Handle data
     QByteArray dataBA = mSerial->readAll();
-    qDebug() << Q_FUNC_INFO << __LINE__ << dataBA;
+    qDebug() << Q_FUNC_INFO << __LINE__ << dataBA.toHex(' ').toUpper();;
 
     emit sendData(dataBA);
 }
