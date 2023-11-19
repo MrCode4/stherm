@@ -283,28 +283,37 @@ bool UtilityHelper::SerialDataRx(uint8_t RxData, STHERM::SerialRxData *RxDataCfg
     }
 }
 
+//! the calculated CRC-16 checksum
 unsigned short UtilityHelper::crc16(unsigned char *data_p, unsigned short length)
 {
     unsigned char i;
     unsigned int data;
     unsigned int crc = 0xffff;
 
+    // If the length is zero, return the complement of the initial CRC value
     if (length == 0)
         return (~crc);
 
+    // Loop through each byte of the data array
     do {
+        // Process each bit of the current byte
         for (i = 0, data = (unsigned int)0xff & *data_p++;
              i < 8;
              i++, data >>= 1) {
+
+            // XOR the least significant bits of CRC and data if necessary
             if ((crc & 0x0001) ^ (data & 0x0001))
                 crc = (crc >> 1) ^ POLY;
             else
                 crc >>= 1;
         }
-    } while (--length);
+    } while (--length); // Continue until all bytes are processed
 
-    crc = ~crc;
+    // Invert the bits of the final CRC value
+    crc = ~crc; 
     data = crc;
+
+    // Swap the bytes of the CRC
     crc = (crc << 8) | (data >> 8 & 0xff);
 
     return (crc);
