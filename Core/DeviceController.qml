@@ -81,7 +81,7 @@ I_DeviceController {
 
         console.log("send data: ", send_data)
 
-        return deviceControllerCPP.setBacklight(data);
+        return deviceControllerCPP.setBacklight(send_data);
     }
 
     function updateFan(mode: int, workingPerHour: int)
