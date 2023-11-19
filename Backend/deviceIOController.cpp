@@ -479,6 +479,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
 {
 
 //    QVariantMap resultMap;
+    // checksum the response data
     uint16_t inc_crc_nrf = UtilityHelper::crc16(rxPacket.DataArray, rxPacket.DataLen);
     int indx_rev = 0;
 
@@ -490,8 +491,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
     if (inc_crc_nrf == rxPacket.CRC) {
         if (rxPacket.ACK == STHERM::ERROR_NO) {
 
-            switch (rxPacket.CMD)
-            {
+            switch (rxPacket.CMD) {
             case STHERM::GetInfo: {
                 indx_rev = 0;
                 for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
@@ -507,6 +507,8 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
             } break;
 
             case STHERM::GetTOF: {
+                // Read RangeMilliMeter and Luminosity
+                // In OLD code: 1118-1132
                 memcpy(&RangeMilliMeter, rxPacket.DataArray, sizeof(RangeMilliMeter));
                 memcpy(&Luminosity, rxPacket.DataArray + sizeof(RangeMilliMeter), sizeof(Luminosity));
 
@@ -528,8 +530,10 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
             } break;
 
             case STHERM::GetSensors: {
-                int cpIndex = 0;
+                // Read data from DataArray
+                // in ODL code: 1134-1227
 
+                int cpIndex = 0;
                 STHERM::AQ_TH_PR_vals mainDataValues;
                 memcpy(&mainDataValues.temp, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.temp));
                 cpIndex += sizeof(mainDataValues.temp);
@@ -568,7 +572,6 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 LOG_DEBUG(QString("Luminosity: %0").arg(Luminosity));
 
                 memcpy(&fanSpeed, rxPacket.DataArray + cpIndex, sizeof(fanSpeed));
-                cpIndex += sizeof(fanSpeed);
                 LOG_DEBUG(QString("fan_speed: %0").arg(fanSpeed));
 
                 // Prepare data and send to ui

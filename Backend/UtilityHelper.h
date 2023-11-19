@@ -420,6 +420,7 @@ public:
     //! @param data_p A pointer to the data buffer to be checksummed.
     //! @param length The size of the data buffer in bytes.
     //! @return The CRC-16 checksum for the given data.
+    //! In OLD codes: Legacy\daemon\lowlevellib\crc.c
     static unsigned short crc16(unsigned char* data_p, unsigned short length);
 
     //! Return Packet Type with packetType enum
