@@ -226,12 +226,13 @@ void DeviceIOController::createConnections()
         TRACE << "start wtd" << (tiConnection && tiConnection->isConnected());
 
         if (tiConnection && tiConnection->isConnected()) {
+// TODO please dont duplex the timer like this as you're making independent tasks dependent on each other.  Please have 2 timers or checks instead
             QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::feed_wtd,
                                                           STHERM::PacketType::UARTPacket);
             wiringCheckTimer++;
             if (wiringCheckTimer > WIRING_CHECK_TIME) {
-            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::Check_Wiring,
-                                                          STHERM::PacketType::UARTPacket);
+                QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::Check_Wiring,
+                                                              STHERM::PacketType::UARTPacket);
                 wiringCheckTimer = 0;
             }
 
@@ -336,7 +337,7 @@ void DeviceIOController::run()
     QElapsedTimer timer;
     timer.start();
 
-    int wiringCheckTimer = WIRING_CHECK_TIME;
+    static int wiringCheckTimer = WIRING_CHECK_TIME;
 
     while (!mStopReading) {
 
@@ -356,6 +357,7 @@ void DeviceIOController::run()
 
         if (tiConnection && tiConnection->isConnected())
         {
+// TODO please dont duplex the timer like this as you're making independent tasks dependent on each other.  Please have 2 timers or checks instead
             wiringCheckTimer++;
             if (wiringCheckTimer > WIRING_CHECK_TIME) {
                 bool rsp = tiConnection->sendRequest(STHERM::SIOCommand::Check_Wiring, STHERM::PacketType::UARTPacket);
