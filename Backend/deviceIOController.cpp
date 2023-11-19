@@ -555,8 +555,10 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 cpIndex += sizeof(mainDataValues.Tvoc);
                 LOG_DEBUG(QString("mainDataValues.Tvoc: %0").arg(mainDataValues.Tvoc));
 
-                memcpy(&mainDataValues.iaq, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.iaq));
-                cpIndex += sizeof(mainDataValues.iaq);
+                uint8_t iaq;
+                memcpy(&iaq, rxPacket.DataArray + cpIndex, sizeof(iaq));
+                cpIndex += sizeof(iaq);
+                mainDataValues.iaq = iaq / 10.0;
                 LOG_DEBUG(QString("mainDataValues.iaq: %0").arg(mainDataValues.iaq));
 
                 memcpy(&mainDataValues.pressure, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.pressure));
@@ -900,10 +902,10 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
 void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
 {
-    if (values.temp / 10.0 > AQ_TH_PR_thld.temp_high) {
+    if (values.temp > AQ_TH_PR_thld.temp_high) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_high);
 
-    }  else if (values.temp / 10.0 < AQ_TH_PR_thld.temp_low) {
+    }  else if (values.temp < AQ_TH_PR_thld.temp_low) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_low);
 
     } else if (values.humidity > AQ_TH_PR_thld.humidity_high) {
@@ -924,7 +926,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
     } else if (values.etoh > AQ_TH_PR_thld.etoh_high) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_etoh_high);
 
-    } else if (values.iaq / 10.0 > AQ_TH_PR_thld.iaq_high) {
+    } else if (values.iaq > AQ_TH_PR_thld.iaq_high) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_iaq_high);
     }
 }
