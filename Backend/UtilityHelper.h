@@ -411,6 +411,7 @@ public:
     //!                       the current state of the received packet.
     //! @return True if the packet is successfully received and has a valid length,
     //!         false otherwise.
+    //! Processes incoming serial data based on predefined special characters
     //! In OLD codes: Legacy\daemon\lowlevellib\serial_drv.c
     static bool SerialDataRx(uint8_t RxData, STHERM::SerialRxData* RxDataCfg);
 

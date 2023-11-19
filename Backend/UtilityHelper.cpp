@@ -244,41 +244,51 @@ uint16_t UtilityHelper::setSIOTxPacket(uint8_t *TxDataBuf, STHERM::SIOPacket TxP
 }
 
 bool UtilityHelper::SerialDataRx(uint8_t RxData, STHERM::SerialRxData *RxDataCfg) {
+
+    // Check the received byte:
     switch (RxData) {
-    case phyStart: {
+    case phyStart: { // Initialize data reception for a new packet.
         RxDataCfg->RxDataLen = 0;
         RxDataCfg->RxActive = true;
         RxDataCfg->RxPacketDone = false;
         RxDataCfg->RxCtrlEsc = false;
     } break;
-    case phyStop: {
+
+    case phyStop: {  // Mark the end of data for the current packet.
         RxDataCfg->RxActive = false;
         RxDataCfg->RxPacketDone = true;
         RxDataCfg->RxCtrlEsc = false;
     } break;
-    case phyCtrlEsc: {
+
+    case phyCtrlEsc: { // Handle control escape character, if needed for packet processing.
         RxDataCfg->RxCtrlEsc = true;
     } break;
-    default: {
+
+    default: { // Process regular data byte received
         if (RxDataCfg->RxActive == true) {
-            if (RxDataCfg->RxCtrlEsc == true) {
+            if (RxDataCfg->RxCtrlEsc == true) { // Handle escaped character.
                 RxDataCfg->RxCtrlEsc = false;
                 RxDataCfg->RxDataArray[RxDataCfg->RxDataLen] = phyXorByte ^ RxData;
-            } else {
+            } else { // Store the received data byte in the packet data array.
                 RxDataCfg->RxDataArray[RxDataCfg->RxDataLen] = RxData;
             }
             RxDataCfg->RxDataLen++;
         }
     } break;
+
     }
+
+    // Check if the complete packet has been received and processed.
     if (RxDataCfg->RxPacketDone == true) {
         RxDataCfg->RxPacketDone = false;
+
+        // Check if the received packet meets the minimum length of packet criteria.
         if (RxDataCfg->RxDataLen >= PacketMinLength) {
             return true;
         } else {
             return false;
         }
-    } else {
+    } else { // Return false if the packet is not yet complete.
         return false;
     }
 }
