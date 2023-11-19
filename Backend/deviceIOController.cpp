@@ -115,8 +115,6 @@ void DeviceIOController::tiConfiguration()
     QByteArray packetBA = DataParser::preparePacket(STHERM::GetInfo);
     tiConnection->sendRequest(packetBA);
 
-    STHERM::AQ_TH_PR_thld throldsAQ;
-
     packetBA = DataParser::preparePacket(STHERM::StartPairing);
     tiConnection->sendRequest(packetBA);
 }
@@ -618,7 +616,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
 
         } else {
             // Log error
-            LOG_DEBUG(QString("cmd:%0 ACK:%1").arg(rxPacket.CMD).arg(rxPacket.ACK));
+            LOG_DEBUG(QString("ERROR: ACK shows an error in cmd:%0 (ACK:%1)").arg(rxPacket.CMD).arg(rxPacket.ACK));
         }
     } else {
         // Log error
@@ -650,10 +648,8 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
     bool aquired_addr = false;
 
-    if (inc_crc_ti == rxPacket.CRC)
-    {
-        switch (rxPacket.CMD)
-        {
+    if (inc_crc_ti == rxPacket.CRC) {
+        switch (rxPacket.CMD) {
         case STHERM::Get_packets: {
             uint8_t rf_packet[128];
             if (!aquired_addr)
@@ -852,6 +848,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                 break;
             } */
 
+            // CHECK
             memcpy(tx_packet.DataArray, mDeviceID.toUtf8(), sizeof(mDeviceID.toUtf8()));
             tx_packet.DataLen = sizeof(mDeviceID.toUtf8());
 
