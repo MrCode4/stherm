@@ -119,6 +119,46 @@ void DeviceIOController::tiConfiguration()
     tiConnection->sendRequest(packetBA);
 }
 
+inline bool sendRequestWithReply(UARTConnection *connection,
+                                 STHERM::SIOCommand command,
+                                 QVariantList data,
+                                 int timeout_msec = 10)
+{
+    QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
+    loop.connect(&timer, &QTimer::timeout, &loop, [&loop]() {
+        loop.setProperty("error", "timeout");
+        loop.quit();
+    });
+    loop.connect(connection, &UARTConnection::sendData, &loop, &QEventLoop::quit);
+    loop.connect(connection,
+                 &UARTConnection::connectionError,
+                 &loop,
+                 [&loop](QString error_connection) {
+                     loop.setProperty("error", error_connection);
+                     loop.quit();
+                 });
+
+    timer.start(timeout_msec);
+
+    auto packet = DataParser::preparePacket(STHERM::SIOCommand::SetColorRGB,
+                                            STHERM::PacketType::UARTPacket,
+                                            data);
+    if (connection->sendRequest(packet)) {
+        loop.exec();
+    } else {
+        loop.setProperty("error", "request not sent, aborting");
+    }
+
+    auto error = loop.property("error").toString();
+    if (!error.isEmpty()) {
+        qWarning() << "request failed:" << error << ", command: " << command << data;
+    }
+
+    return error.isEmpty();
+}
+
 QVariantMap DeviceIOController::sendRequest(QString className, QString method, QVariantList data)
 {
     qDebug() << "Request received: " << className << method << data;
@@ -471,6 +511,24 @@ void DeviceIOController::updateTiDevices()
     // CO2 sensor
 
     qDebug() << Q_FUNC_INFO << __LINE__ << "Device count:   " << mDevices.count();
+}
+
+bool DeviceIOController::setBacklight(QVariantList data)
+{
+    TRACE << "sending setBacklight request with data:" << data
+          << (nRfConnection && nRfConnection->isConnected());
+    if (nRfConnection && nRfConnection->isConnected() && data.size() == 5) {
+        auto result = sendRequestWithReply(nRfConnection,
+                                           STHERM::SIOCommand::SetColorRGB,
+                                           data,
+                                           100);
+        TRACE << "send setBacklight request" << result;
+        return result;
+    } else {
+        qWarning() << "backlight not sent: data is empty or not consistent or nRF not connected";
+    }
+
+    return false;
 }
 
 void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)

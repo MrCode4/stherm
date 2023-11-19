@@ -31,11 +31,12 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
     //! Override I_DeviceController's methods
-    function updateDeviceBacklight()
+    function updateDeviceBacklight(isOn, color) : bool
     {
         console.log("settign sim background color")
 
-        Style.background = device.backlight.on ?  device.backlight._color : "#000000";
+        Style.background = isOn ?  color : "#000000";
+        return true;
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)

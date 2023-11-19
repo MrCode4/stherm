@@ -58,8 +58,6 @@ QtObject {
     //! app core
     property I_Device           appModel
 
-    property DeviceAPI          device_api: DeviceAPI {}
-
     //! Retrieve device information at one-second intervals.
     property Timer timer:   Timer {
         running: true
@@ -77,8 +75,6 @@ QtObject {
     onSimulatingChanged: {
         if (!simulating) {
             Style.background = "#000000";
-
-            console.log("start mode is: ", device_api.getStartMode());
 
             // start real device
             realDeviceController.startDeviceRequested();

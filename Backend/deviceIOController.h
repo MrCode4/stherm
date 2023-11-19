@@ -56,6 +56,11 @@ public:
     //! Update paired sensors in TI
     void updateTiDevices();
 
+    /* Public Methods
+     * ****************************************************************************************/
+public:
+    bool setBacklight(QVariantList data);
+
 signals:
     void mainDataReady(QVariantMap data);
 

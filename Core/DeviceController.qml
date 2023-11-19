@@ -41,7 +41,7 @@ I_DeviceController {
         deviceControllerCPP.startDevice();
 
         console.log("************** set the backlight on initialization **************")
-        updateDeviceBacklight();
+        updateDeviceBacklight(device.backlight.on, device.backlight._color);
     }
 
     onStopDeviceRequested: {
@@ -61,14 +61,14 @@ I_DeviceController {
         return deviceControllerCPP.sendRequest(className, method, data)
     }
 
-    function updateDeviceBacklight()
+    function updateDeviceBacklight(isOn, color) : bool
     {
-        console.log("starting rest for updateBacklight, color: ", device.backlight.color)
+        console.log("starting updateBacklight, color: ", device.backlight.color)
 
         //! Use a REST request to update device backlight
-        var r = Math.round(device.backlight._color.r * 255)
-        var g = Math.round(device.backlight._color.g * 255)
-        var b = Math.round(device.backlight._color.b * 255)
+        var r = Math.round(color.r * 255)
+        var g = Math.round(color.g * 255)
+        var b = Math.round(color.b * 255)
 
         console.log("colors: ", r, ",", g, ",", b)
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
@@ -77,10 +77,11 @@ I_DeviceController {
         //!    LED_FADE   = 1,
         //!    LED_BLINK  = 2,
         //!    LED_NO_MODE= 3
-        var send_data = [r, g, b, 0, device.backlight.on ? "true" : "false"];
+        var send_data = [r, g, b, 0, isOn ? "true" : "false"];
 
         console.log("send data: ", send_data)
-        sendReceive('hardware', 'setBacklight', send_data);
+
+        return deviceControllerCPP.setBacklight(data);
     }
 
     function updateFan(mode: int, workingPerHour: int)

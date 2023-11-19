@@ -4,6 +4,7 @@
 #include <QString>
 #include <QtNetwork>
 
+#include "DeviceAPI.h"
 #include "deviceIOController.h"
 
 /*! ***********************************************************************************************
@@ -44,6 +45,9 @@ public:
     //! todo: transfer data with UARTConnection instance
     Q_INVOKABLE QVariantMap sendRequest(QString className, QString method, QVariantList data);
 
+    //! set backlight using uart and respod the success
+    Q_INVOKABLE bool setBacklight(QVariantList data);
+
     /* Public Functions
      * Read and write data without any UART connection
      * Read and write data directly
@@ -78,5 +82,6 @@ private:
      * ****************************************************************************************/
     QVariantMap _mainData;
 
-    DeviceIOController *_deviceController;
+    DeviceIOController *_deviceIO;
+    DeviceAPI *_deviceAPI;
 };

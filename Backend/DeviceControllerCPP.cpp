@@ -7,7 +7,8 @@
  * ************************************************************************************************/
 DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     : QObject(parent)
-    , _deviceController(new DeviceIOController)
+    , _deviceIO(new DeviceIOController(this))
+    , _deviceAPI(new DeviceAPI(this))
 {
     QVariantMap mainDataMap;
     mainDataMap.insert("temperature",     0);
@@ -23,16 +24,19 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     _mainData = mainDataMap;
 
     LOG_DEBUG("TEST");
-    connect(_deviceController, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
+    connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         _mainData = data;
     });
 
-    connect(_deviceController, &DeviceIOController::alert, this, [this](STHERM::AlertLevel alertLevel,
-                                                                        STHERM::AlertTypes alertType,
-                                                                        QString alertMessage) {
-        TRACE << alertLevel << alertType << alertMessage;
-        emit alert(alertLevel, alertType,  alertMessage);
-    });
+    connect(_deviceIO,
+            &DeviceIOController::alert,
+            this,
+            [this](STHERM::AlertLevel alertLevel,
+                   STHERM::AlertTypes alertType,
+                   QString alertMessage) {
+                TRACE << alertLevel << alertType << alertMessage;
+                emit alert(alertLevel, alertType, alertMessage);
+            });
 }
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
@@ -45,22 +49,27 @@ QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, 
         }
     }
 
-    _deviceController->sendRequest(className, method, data);
-
     return {};
+}
+
+bool DeviceControllerCPP::setBacklight(QVariantList data)
+{
+    return _deviceIO->setBacklight(data);
 }
 
 void DeviceControllerCPP::startDevice()
 {
     //! todo: move to constructor later
-    _deviceController->createConnections();
+    _deviceIO->createConnections();
 
-    _deviceController->setStopReading(false);
+    _deviceIO->setStopReading(false);
+
+    TRACE << "start mode is: " << _deviceAPI->getStartMode();
 }
 
 void DeviceControllerCPP::stopDevice()
 {
-    _deviceController->setStopReading(true);
+    _deviceIO->setStopReading(true);
 }
 
 QVariantMap DeviceControllerCPP::getMainData()
