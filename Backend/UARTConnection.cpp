@@ -99,7 +99,7 @@ bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::Pa
             const QString response = QString::fromUtf8(responseData);
             qDebug() << Q_FUNC_INFO << __LINE__ << response;
 
-            QVariantMap deserializeData = parser.deserializeData(responseData);
+//            QVariantMap deserializeData = parser.deserializeData(responseData);
             return true;
 
         } else {
