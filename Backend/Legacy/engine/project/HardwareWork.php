@@ -91,7 +91,12 @@ class HardwareWork
      * @throws Exception
      */
     public function getDynamic() {
+        // In startWork function:
+        //     Update real_set_mode, set_stage and updateRelayState
+        //     updateRelayState update backlight
+        //     backlight update scheme_backlight_rgb and backlight_type
         (new Scheme)->startWork();
+
         $relays = $this->conn->getTable("SELECT type
                                                FROM relays
                                                ORDER BY order_id");
