@@ -120,7 +120,7 @@ void DeviceIOController::tiConfiguration()
 }
 
 inline bool sendRequestWithReply(UARTConnection *connection,
-                                 STHERM::SIOCommand command,
+                                 STHERM::SIOCommand commandd,
                                  QVariantList data,
                                  int timeout_msec = 10)
 {
@@ -142,7 +142,8 @@ inline bool sendRequestWithReply(UARTConnection *connection,
 
     timer.start(timeout_msec);
 
-    auto packet = DataParser::preparePacket(STHERM::SIOCommand::SetColorRGB,
+    TRACE << STHERM::SIOCommand::SetColorRGB << commandd;
+    auto packet = DataParser::preparePacket(commandd,
                                             STHERM::PacketType::UARTPacket,
                                             data);
     if (connection->sendRequest(packet)) {
@@ -153,7 +154,7 @@ inline bool sendRequestWithReply(UARTConnection *connection,
 
     auto error = loop.property("error").toString();
     if (!error.isEmpty()) {
-        qWarning() << "request failed:" << error << ", command: " << command << data;
+        qWarning() << "request failed:" << error << ", command: " << commandd << data;
     }
 
     return error.isEmpty();
@@ -436,97 +437,30 @@ void DeviceIOController::wtdExec()
     TRACE << "start wtd" << (tiConnection && tiConnection->isConnected());
 
     if (tiConnection && tiConnection->isConnected()) {
-        // TODO please dont duplex the timer like this as you're making independent tasks dependent on each other.  Please have 2 timers or checks instead
-        QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::feed_wtd,
-                                                      STHERM::PacketType::UARTPacket);
-        wiringCheckTimer++;
-        if (wiringCheckTimer > WIRING_CHECK_TIME) {
-            QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::Check_Wiring,
-                                                          STHERM::PacketType::UARTPacket);
-            wiringCheckTimer = 0;
-        }
+        auto rsp = sendRequestWithReply(tiConnection, STHERM::SIOCommand::feed_wtd,{}, 10000);
 
-        bool success = false;
-        QEventLoop loop;
-        connect(
-            tiConnection,
-            &UARTConnection::sendData,
-            &loop,
-            [&loop, &success](QByteArray data) {
-                success = true;
-                TRACE << "Ti heartbeat message success";
-                loop.quit();
-            },
-            Qt::SingleShotConnection);
-        connect(
-            tiConnection,
-            &UARTConnection::connectionError,
-            &loop,
-            [&loop, &success](QString error) {
-                success = false;
-                TRACE << "Ti heartbeat message failure";
-                loop.quit();
-            },
-            Qt::SingleShotConnection);
-
-        bool rsp = tiConnection->sendRequest(packet);
         if (rsp == false) {
             TRACE << "Ti heartbeat message send failed";
         } else {
             TRACE << "Ti heartbeat message sent";
         }
 
-        QTimer timer;
-        timer.setSingleShot(true);
-        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        timer.start(10000);
-        loop.exec();
-        TRACE << "Ti heartbeat message finished" << success;
+        TRACE << "Ti heartbeat message finished" << rsp;
     }
 
     TRACE << "start NRF" << (nRfConnection && nRfConnection->isConnected());
     if (nRfConnection && nRfConnection->isConnected()) {
-        bool success = false;
-        QEventLoop loop;
-        connect(
-            nRfConnection,
-            &UARTConnection::sendData,
-            &loop,
-            [&loop, &success](QByteArray data) {
-                success = true;
-                TRACE << "GetSensors message success";
-                loop.quit();
-            },
-            Qt::SingleShotConnection);
-        connect(
-            nRfConnection,
-            &UARTConnection::connectionError,
-            &loop,
-            [&loop, &success](QString error) {
-                success = false;
-                TRACE << "GetSensors message failure";
-                loop.quit();
-            },
-            Qt::SingleShotConnection);
 
         TRACE << "start GetSensors";
-        QByteArray packet = mDataParser.preparePacket(STHERM::SIOCommand::GetSensors,
-                                                      STHERM::PacketType::UARTPacket);
-        auto sent = nRfConnection->sendRequest(packet);
 
-        TRACE << "nrf GetSensors message sent" << sent;
+        auto rsp = sendRequestWithReply(nRfConnection, STHERM::SIOCommand::GetSensors,{}, 10000);
 
-        QTimer timer;
-        timer.setSingleShot(true);
-        connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        timer.start(10000);
-        loop.exec();
-        TRACE << "GetSensors message finished" << success;
+        TRACE << "GetSensors message finished" << rsp;
 
         TRACE << "start GetTOF";
-        packet = mDataParser.preparePacket(STHERM::SIOCommand::GetTOF,
+        auto packet = mDataParser.preparePacket(STHERM::SIOCommand::GetTOF,
                                            STHERM::PacketType::UARTPacket);
-        sent = nRfConnection->sendRequest(packet);
+        auto sent = nRfConnection->sendRequest(packet);
 
         TRACE << "nrf GetTOF message sent" << sent;
     }
