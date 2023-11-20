@@ -260,6 +260,12 @@ void DeviceIOController::createConnections()
     wtd_timer.setSingleShot(false);
     wtd_timer.start(10000);
 
+    connect(&nRF_timer, &QTimer::timeout, this, &DeviceIOController::nRFExec);
+
+
+    nRF_timer.setSingleShot(false);
+    nRF_timer.start(11000);
+
     //    start();
 }
 
@@ -448,6 +454,18 @@ void DeviceIOController::wtdExec()
         TRACE << "Ti heartbeat message finished" << rsp;
     }
 
+
+    inProgress = false;
+}
+
+void DeviceIOController::nRFExec()
+{
+    static bool inProgress = false;
+    if (inProgress) {
+        return;
+    }
+    inProgress = true;
+
     TRACE << "start NRF" << (nRfConnection && nRfConnection->isConnected());
     if (nRfConnection && nRfConnection->isConnected()) {
 
@@ -459,7 +477,7 @@ void DeviceIOController::wtdExec()
 
         TRACE << "start GetTOF";
         auto packet = mDataParser.preparePacket(STHERM::SIOCommand::GetTOF,
-                                           STHERM::PacketType::UARTPacket);
+                                                STHERM::PacketType::UARTPacket);
         auto sent = nRfConnection->sendRequest(packet);
 
         TRACE << "nrf GetTOF message sent" << sent;
