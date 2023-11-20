@@ -271,7 +271,10 @@ class Relay
         $old_mode = $this->current_state;
         $old_stage = $this->current_stage;
         $this->updateStates();
-        if (($old_mode !== $this->current_state && !($old_mode=='off' && $this->current_stage==0)) || $old_stage != $this->current_stage) {
+        if (($old_mode !== $this->current_state &&
+                !($old_mode=='off' && $this->current_stage==0)) ||
+            $old_stage != $this->current_stage) {
+
             $this->conn->setQuery("UPDATE timing SET set_backlight_time = current_timestamp");
         }
         $this->backlight();
@@ -763,9 +766,12 @@ class Relay
         return $relay_str;
     }
 
+    // Called from updateRelayState function
+    //
     private function backlight()
     {
-        $backlight = $this->conn->getRow("SELECT ((SELECT set_backlight_time FROM timing) + interval '5 second') AS backlight_interval, current_timestamp FROM device_config");
+        $backlight = $this->conn->getRow("SELECT ((SELECT set_backlight_time FROM timing) + interval '5 second') AS backlight_interval,
+                                          current_timestamp FROM device_config");
 
         if ($backlight['backlight_interval'] <= $backlight['current_timestamp'] && $this->current_state !== 'emergency') { // >5s and not emergency user selected
             $this->conn->setQuery("UPDATE device_config SET scheme_backlight_rgb = ARRAY[0,0,0],backlight_type = 0;");
@@ -775,14 +781,14 @@ class Relay
             switch ($this->current_state) {
                 case 'off':
                     //$color = self::OFF_RGBM;
-                    $color = [0,0,0,0];
+                    $color = [0,0,0,0]; // [r,g,b, backlight_type]
                     break;
                 case 'cooling':
                     $color = self::COOLING_RGBM;
                     break;
                 case 'emergency':
                     $color = self::EMERGENCY_RGBM;
-                    $color_st = self::EMERGENCY_ST_RGBM;
+                    $color_st = self::EMERGENCY_ST_RGBM; // Why use two variables? the color is enoght
                     break;
                 case 'heating':
                     $color = self::HEATING_RGBM;
@@ -791,11 +797,11 @@ class Relay
             if ($backlight['backlight_interval'] > $backlight['current_timestamp']) {      //< 5s
                 $st_array = 'ARRAY[' . $color[0] . ',' . $color[1] . ',' . $color[2] . ']';
                 $this->conn->setQuery("UPDATE device_config SET scheme_backlight_rgb = {$st_array},
-                                                                      backlight_type = '{$color[3]}'");
+                                        backlight_type = '{$color[3]}'");
             } elseif ($this->current_state === 'emergency') {                                                                            // Emergency
                 $st_array = 'ARRAY[' . $color_st[0] . ',' . $color_st[1] . ',' . $color_st[2] . ']';
                 $this->conn->setQuery("UPDATE device_config SET scheme_backlight_rgb = {$st_array},
-                                                                      backlight_type = '{$color_st[3]}'");
+                                        backlight_type = '{$color_st[3]}'");
             }
         }
 

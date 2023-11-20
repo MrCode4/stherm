@@ -105,9 +105,9 @@ class HardwareWork
         //$relay_state = [0,0,0,0,0,0,0,0,0,0];
         $config = $this->conn->getRow("SELECT start_pairing,
                                                     wiring_check,
-                                                    backlight_status,
-                                                    backlight_rgb,
-                                                    backlight_type,
+                                                    backlight_status, // Updated in setBacklight (Hardware class) (bool)
+                                                    backlight_rgb,    // Updated in setBacklight (Hardware class) (ARRAY[{R},{G},{B}])
+                                                    backlight_type,   // Updated in setBacklight (Hardware class) (int)
                                                     brightness_mode,
                                                     (SELECT 
                                                          CASE 
@@ -116,7 +116,7 @@ class HardwareWork
                                                              ELSE true
                                                          END AS browser_ok),
                                                     last_update,
-                                                    scheme_backlight_rgb,
+                                                    scheme_backlight_rgb, // changed based on relay_state, updated in Relay.php and backlight() function
                                                     forget_sensor,
                                                     shut_down
                                              FROM device_config");
@@ -147,24 +147,43 @@ class HardwareWork
                 $config['wiring_check'] = false;
             }
 
+            // When the scheme_backlight_result is not black ([0, 0, 0]),
+            // employ the scheme_backlight_rgb as the backlight_result.
             $scheme_backlight_rgb = explode(",", $config['scheme_backlight_rgb']);
-            $scheme_backlight_result[] = (int)trim($scheme_backlight_rgb[0], '{');
-            $scheme_backlight_result[] = (int)$scheme_backlight_rgb[1];
-            $scheme_backlight_result[] = (int)rtrim($scheme_backlight_rgb[2], '}');
-            if ($scheme_backlight_result[0] === 0 && $scheme_backlight_result[1] === 0 && $scheme_backlight_result[2] === 0) {
-                if ($config['backlight_status'] === 't') {
+            $scheme_backlight_result[] = (int)trim($scheme_backlight_rgb[0], '{'); // Color: R
+            $scheme_backlight_result[] = (int)$scheme_backlight_rgb[1]; // Color: G
+            $scheme_backlight_result[] = (int)rtrim($scheme_backlight_rgb[2], '}'); // Color: B
+
+            if ($scheme_backlight_result[0] === 0 &&
+            $scheme_backlight_result[1] === 0 &&
+            $scheme_backlight_result[2] === 0) {
+
+                if ($config['backlight_status'] === 't') { // backlight_status is true
+
+                    // Splits the string stored in $config['backlight_rgb'] into an array using the comma (,)
+                    // as the delimiter and assigns it to the $backlight_rgb array.
+                    // backlight_rgb data: {"r", "g", "b"}
                     $backlight_rgb = explode(",", $config['backlight_rgb']);
+
+                    // Removes any leading opening brace {, converts the first element of the $backlight_rgb array
+                    // (after trimming) to an integer, and adds it as a new element to the $backlight_result array.
                     $backlight_result[] = (int)trim($backlight_rgb[0], '{');
                     $backlight_result[] = (int)$backlight_rgb[1];
                     $backlight_result[] = (int)rtrim($backlight_rgb[2], '}');
-                } else {
+
+                } else { // backlight_status is false
                     $backlight_result = [0, 0, 0];
                 }
+
             } else {
                 $backlight_result = $scheme_backlight_result;
             }
+
+            // backlight_type Appended to the end of the array.
             $backlight_result[] = (int)$config['backlight_type'];
+
             $brightness_mode = (int)$config['brightness_mode'];
+
             if ($config['browser_ok'] === 't') {
                 $browser_ok = true;
             } else {
@@ -184,7 +203,7 @@ class HardwareWork
             $data = ['relay_state' => $relay_state,
                 'pairing_mode' => false,
                 'wiring_check' => false,
-                'backlight' => [0, 0, 0, 0],
+                'backlight' => [0, 0, 0, 0], //["R", "G", "G", "backlight_type"]
                 'brightness_mode' => 0,
                 'browser_ok' => true,
                 'forget_sensor' => false,
