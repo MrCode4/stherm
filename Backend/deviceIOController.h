@@ -72,6 +72,9 @@ signals:
                STHERM::AlertTypes alertType,
                QString alertMessage = QString());
 
+private slots:
+    void wtdExec();
+
 private:
     void run() override;
 
