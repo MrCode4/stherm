@@ -181,7 +181,7 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
                 if (data.size() != 6) {
                     qWarning() << "data sent is not consistent";
                 }
-                if (setBrightness(std::clamp(qRound(data.first().toDouble()), 0, 254)))
+                if (setBrightness(std::clamp(qRound(data.first().toDouble()), 5, 255)))
                     return {};
                 else
                     return {{"error", true}};
@@ -457,7 +457,7 @@ bool DeviceIOController::setSettings(QVariantList data)
             qWarning() << "data sent is not consistent";
             return false;
         }
-        if (setBrightness(std::clamp(qRound(data.first().toDouble()), 0, 254)))
+        if (setBrightness(std::clamp(qRound(data.first().toDouble()), 5, 255)))
             return true;
         else
             return false;
@@ -566,8 +566,8 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                     LOG_DEBUG(QString("RangeMilliMeter (%0):  60 < RangeMilliMeter <= 1000 mm").arg(RangeMilliMeter));
                 }
 
-                if (brighness_mode == 1) {
-                    if (!UtilityHelper::setBrightness(Luminosity)) {
+                if (false && brighness_mode == 1) {
+                    if (!setBrightness(Luminosity)) {
                         LOG_DEBUG(QString("Error: setBrightness (Brightness: %0)").arg(Luminosity));
                     }
                 }
@@ -647,7 +647,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 //                    key_event('n');
                 //                }
 
-                if (brighness_mode == 1) {
+                if (false && brighness_mode == 1) {
                     if (!setBrightness(Luminosity)) {
                         LOG_DEBUG(QString("Error: setBrightness (Brightness: %0)").arg(Luminosity));
                     }

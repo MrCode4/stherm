@@ -179,7 +179,7 @@ I_DeviceController {
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = result?.co2 ?? 0
-        device.setting.brightness = result?.brighness ?? 0
+        //        device.setting.brightness = result?.brighness ?? 0
 
         //        device.co2;
         //        device.fan.mode
