@@ -60,6 +60,8 @@ public:
      * ****************************************************************************************/
 public:
     bool setBacklight(QVariantList data);
+    //! TODO handles only the brighness for now
+    bool setSettings(QVariantList data);
 
 signals:
     void mainDataReady(QVariantMap data);

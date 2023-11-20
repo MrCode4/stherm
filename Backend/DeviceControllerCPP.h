@@ -45,8 +45,12 @@ public:
     //! todo: transfer data with UARTConnection instance
     Q_INVOKABLE QVariantMap sendRequest(QString className, QString method, QVariantList data);
 
-    //! set backlight using uart and respod the success
+    //! set backlight using uart and respond the success, data should have 5 items
+    //! including r, g, b, mode (0 for ui, 1 will be send internally), on/off
     Q_INVOKABLE bool setBacklight(QVariantList data);
+
+    //! set setttings using uart and file and respond the success
+    Q_INVOKABLE bool setSettings(QVariantList data);
 
     /* Public Functions
      * Read and write data without any UART connection

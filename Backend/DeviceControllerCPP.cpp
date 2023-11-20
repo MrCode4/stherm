@@ -57,6 +57,11 @@ bool DeviceControllerCPP::setBacklight(QVariantList data)
     return _deviceIO->setBacklight(data);
 }
 
+bool DeviceControllerCPP::setSettings(QVariantList data)
+{
+    return _deviceIO->setSettings(data);
+}
+
 void DeviceControllerCPP::startDevice()
 {
     //! todo: move to constructor later

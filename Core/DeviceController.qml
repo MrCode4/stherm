@@ -132,7 +132,11 @@ I_DeviceController {
                     "adaptive: ",       adaptive,       "\n    "
                     );
 
-        sendReceive('hardware', 'setSettings', [brightness, volume, temperatureUnit, timeFormat, reset, adaptive]);
+        var send_data = [brightness, volume, temperatureUnit, timeFormat, reset, adaptive];
+       if (!deviceControllerCPP.setSettings(send_data)){
+           console.warn("setting failed");
+           return;
+       }
 
         // Update setting when sendReceive is successful.
         if (device.setting.brightness !== brightness) {

@@ -43,7 +43,9 @@ DeviceIOController::DeviceIOController(QObject *parent)
 
 DeviceIOController::~DeviceIOController()
 {
+    wiring_timer.stop();
     wtd_timer.stop();
+    nRF_timer.stop();
     mStopReading = true;
     terminate();
     wait();
@@ -443,6 +445,23 @@ bool DeviceIOController::setBacklight(QVariantList data)
     }
 
     return false;
+}
+
+bool DeviceIOController::setSettings(QVariantList data)
+{
+    if (data.size() <= 0) {
+        qWarning() << "data sent is empty";
+        return false;
+    } else {
+        if (data.size() != 6) {
+            qWarning() << "data sent is not consistent";
+            return false;
+        }
+        if (setBrightness(std::clamp(qRound(data.first().toDouble()), 0, 254)))
+            return true;
+        else
+            return false;
+    }
 }
 
 void DeviceIOController::wtdExec()
