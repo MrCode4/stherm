@@ -260,6 +260,11 @@ void DeviceIOController::createConnections()
     wtd_timer.setSingleShot(false);
     wtd_timer.start(10000);
 
+    connect(&wiring_timer, &QTimer::timeout, this, &DeviceIOController::wiringExec);
+
+    wiring_timer.setSingleShot(false);
+    wiring_timer.start(12000);
+
     connect(&nRF_timer, &QTimer::timeout, this, &DeviceIOController::nRFExec);
 
 
@@ -435,7 +440,6 @@ bool DeviceIOController::setBacklight(QVariantList data)
 void DeviceIOController::wtdExec()
 {
     static bool inProgress = false;
-    static int wiringCheckTimer = WIRING_CHECK_TIME;
     if (inProgress) {
         return;
     }
@@ -456,6 +460,32 @@ void DeviceIOController::wtdExec()
 
 
     inProgress = false;
+}
+
+void DeviceIOController::wiringExec()
+{
+    static bool inProgress = false;
+    if (inProgress) {
+        return;
+    }
+    inProgress = true;
+    TRACE << "start Check_Wiring" << (tiConnection && tiConnection->isConnected());
+
+    if (tiConnection && tiConnection->isConnected()) {
+        auto rsp = sendRequestWithReply(tiConnection, STHERM::SIOCommand::Check_Wiring,{}, 10000);
+
+        if (rsp == false) {
+            TRACE << "Ti Check_Wiring message send failed";
+        } else {
+            TRACE << "Ti Check_Wiring message sent";
+        }
+
+        TRACE << "Ti Check_Wiring message finished" << rsp;
+    }
+
+
+    inProgress = false;
+
 }
 
 void DeviceIOController::nRFExec()

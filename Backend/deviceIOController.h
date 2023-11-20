@@ -74,6 +74,7 @@ signals:
 
 private slots:
     void wtdExec();
+    void wiringExec();
     void nRFExec();
 
 private:
@@ -156,5 +157,6 @@ private:
     QList<uint8_t> relays_in_l;
 
     QTimer wtd_timer;
+    QTimer wiring_timer;
     QTimer nRF_timer;
 };
