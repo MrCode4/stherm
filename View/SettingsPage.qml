@@ -10,6 +10,18 @@ import Stherm
 BasePageView {
     id: _root
 
+    property Timer onlineTimer: Timer {
+        repeat: false
+        running: false
+        interval: 50
+        onTriggered: applyToModel()
+        function startTimer() {
+            if (!onlineTimer.running) {
+                start();
+            }
+        }
+    }
+
     /* Object properties
      * ****************************************************************************************/
     title: "Settings"
@@ -24,18 +36,8 @@ BasePageView {
         }
 
         onClicked: {
-            //! Save settings
-            if (deviceController) {
-                //! Set setting using DeviceController
-                deviceController.setSettings(_brightnessSlider.value,
-                                             _speakerSlider.value,
-                                             _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
-                                                                       : AppSpec.TempratureUnit.Cel,
-                                             _time24FormBtn.checked ? AppSpec.TimeFormat.Hour24
-                                                                    : AppSpec.TimeFormat.Hour12,
-                                             false, //! Reset
-                                             _adaptiveBrSw.checked);
-            }
+
+            applyToModel();
 
             if (_root.StackView.view) {
                 _root.StackView.view.pop();
@@ -75,6 +77,8 @@ BasePageView {
                 from: 0
                 to: 100
                 value: appModel?.setting?.brightness ?? 0
+
+                onValueChanged: onlineTimer.startTimer();
             }
 
             Label {
@@ -188,6 +192,20 @@ BasePageView {
                 text: "12H"
                 checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
             }
+        }
+    }
+
+    //! Save settings
+    function applyToModel() {
+        if (deviceController) {
+            deviceController.setSettings(_brightnessSlider.value,
+                                         _speakerSlider.value,
+                                         _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
+                                                                   : AppSpec.TempratureUnit.Cel,
+                                         _time24FormBtn.checked ? AppSpec.TimeFormat.Hour24
+                                                                : AppSpec.TimeFormat.Hour12,
+                                         false, //! Reset
+                                         _adaptiveBrSw.checked);
         }
     }
 }
