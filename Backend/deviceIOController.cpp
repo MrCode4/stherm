@@ -124,6 +124,13 @@ inline bool sendRequestWithReply(UARTConnection *connection,
                                  QVariantList data,
                                  int timeout_msec = 10)
 {
+    if (connection->property("busy").toBool()){
+        TRACE << "Connection is busy";
+        return false;
+    }
+
+    connection->setProperty("busy", true);
+
     QEventLoop loop;
     QTimer timer;
     timer.setSingleShot(true);
@@ -157,6 +164,7 @@ inline bool sendRequestWithReply(UARTConnection *connection,
         qWarning() << "request failed:" << error << ", command: " << commandd << data;
     }
 
+    connection->setProperty("busy", false);
     return error.isEmpty();
 }
 
@@ -439,11 +447,6 @@ bool DeviceIOController::setBacklight(QVariantList data)
 
 void DeviceIOController::wtdExec()
 {
-    static bool inProgress = false;
-    if (inProgress) {
-        return;
-    }
-    inProgress = true;
     TRACE << "start wtd" << (tiConnection && tiConnection->isConnected());
 
     if (tiConnection && tiConnection->isConnected()) {
@@ -457,18 +460,10 @@ void DeviceIOController::wtdExec()
 
         TRACE << "Ti heartbeat message finished" << rsp;
     }
-
-
-    inProgress = false;
 }
 
 void DeviceIOController::wiringExec()
 {
-    static bool inProgress = false;
-    if (inProgress) {
-        return;
-    }
-    inProgress = true;
     TRACE << "start Check_Wiring" << (tiConnection && tiConnection->isConnected());
 
     if (tiConnection && tiConnection->isConnected()) {
@@ -483,18 +478,10 @@ void DeviceIOController::wiringExec()
         TRACE << "Ti Check_Wiring message finished" << rsp;
     }
 
-
-    inProgress = false;
-
 }
 
 void DeviceIOController::nRFExec()
 {
-    static bool inProgress = false;
-    if (inProgress) {
-        return;
-    }
-    inProgress = true;
 
     TRACE << "start NRF" << (nRfConnection && nRfConnection->isConnected());
     if (nRfConnection && nRfConnection->isConnected()) {
@@ -512,8 +499,6 @@ void DeviceIOController::nRFExec()
 
         TRACE << "nrf GetTOF message sent" << sent;
     }
-
-    inProgress = false;
 }
 
 void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
