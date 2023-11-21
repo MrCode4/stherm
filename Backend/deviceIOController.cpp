@@ -122,7 +122,7 @@ void DeviceIOController::tiConfiguration()
 }
 
 inline bool sendRequestWithReply(UARTConnection *connection,
-                                 STHERM::SIOCommand commandd,
+                                 STHERM::SIOCommand CMD,
                                  QVariantList data,
                                  int timeout_msec = 10)
 {
@@ -151,7 +151,7 @@ inline bool sendRequestWithReply(UARTConnection *connection,
 
     timer.start(timeout_msec);
 
-    auto packet = DataParser::preparePacket(commandd,
+    auto packet = DataParser::preparePacket(CMD,
                                             STHERM::PacketType::UARTPacket,
                                             data);
     if (connection->sendRequest(packet)) {
@@ -162,7 +162,7 @@ inline bool sendRequestWithReply(UARTConnection *connection,
 
     auto error = loop.property("error").toString();
     if (!error.isEmpty()) {
-        qWarning() << "request failed:" << error << ", command: " << commandd << data;
+        qWarning() << "request failed:" << error << ", command: " << CMD << data;
     }
 
     connection->setProperty("busy", false);
@@ -562,6 +562,8 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 TRACE_CHECK(false) <<(QString("RangeMilliMeter (%0), Luminosity (%1)").arg(RangeMilliMeter).arg(Luminosity));
                 if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE) {
                     // key_event('n'); // send screen saver event
+                    auto wake = new QEvent(QEvent::User);
+                    QCoreApplication::instance()->sendEvent(QCoreApplication::instance(), wake);
                     TRACE_CHECK(false) <<(QString("RangeMilliMeter (%0):  60 < RangeMilliMeter <= 1000 mm").arg(RangeMilliMeter));
                 }
 
