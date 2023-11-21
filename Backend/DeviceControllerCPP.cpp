@@ -34,7 +34,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             [this](STHERM::AlertLevel alertLevel,
                    STHERM::AlertTypes alertType,
                    QString alertMessage) {
-                TRACE << alertLevel << alertType << alertMessage;
                 emit alert(alertLevel, alertType, alertMessage);
             });
 }

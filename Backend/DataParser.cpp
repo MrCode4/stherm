@@ -53,8 +53,6 @@ QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType 
         txPacket.DataArray[2] = on ? std::clamp(data[2].toInt(), 0, 255) : 0;
         txPacket.DataArray[3] = 255;
         txPacket.DataArray[4] = data[3].toInt();
-        TRACE << txPacket.DataArray[0] << txPacket.DataArray[1] << txPacket.DataArray[2]
-              << txPacket.DataArray[3] << txPacket.DataArray[4];
     } break;
     default:
         break;
@@ -72,7 +70,7 @@ QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType 
 
 STHERM::SIOPacket DataParser::deserializeData(const QByteArray &serializeData)
 {
-    TRACE << serializeData;
+    TRACE_CHECK(false) << serializeData;
 
     STHERM::SerialRxData rxData;
     STHERM::SIOPacket  rxPacket;

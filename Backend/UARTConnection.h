@@ -19,7 +19,7 @@ public:
      * ****************************************************************************************/
     //! Configure and initalize UART connection
     explicit UARTConnection(const QString &portName,
-                            const qint32 &baundRate,
+                            const qint32 &baundRate, bool debug = false,
                             QObject *parent = nullptr);
 
     /* public functions
@@ -64,6 +64,7 @@ private slots:
 
 private:
     QSerialPort *mSerial;
+    bool m_debug = false;
 
     QMutex m_mutex;
     QWaitCondition m_cond;

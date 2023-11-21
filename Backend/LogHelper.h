@@ -32,6 +32,9 @@ public:
                     .toStdString() \
                     .c_str()
 
+
+#define TRACE_CHECK(check) if (check) TRACE
+
 #define LOG_DEBUG(message) Logger::logDebug(message, __FILE__, __LINE__)
 
 // Example usage:

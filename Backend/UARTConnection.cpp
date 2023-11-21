@@ -2,10 +2,12 @@
 
 #include <QDateTime>
 #include "DataParser.h"
+#include "LogHelper.h"
 
-UARTConnection::UARTConnection(const QString &portName, const qint32 &baundRate, QObject *parent)
+UARTConnection::UARTConnection(const QString &portName, const qint32 &baundRate, bool debug, QObject *parent)
     : QObject(parent)
     , mSerial(new QSerialPort(this))
+    ,m_debug(debug)
 {
     mSerial->setPortName(portName);
     bool isSuccess = mSerial->setBaudRate(baundRate) && // Set baud rate in all directions
@@ -15,7 +17,7 @@ UARTConnection::UARTConnection(const QString &portName, const qint32 &baundRate,
                      && mSerial->setFlowControl(QSerialPort::NoFlowControl); // Set non-blocking I/O
 
     if (!isSuccess) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "Configuration failed, port name: " << portName;
+        TRACE_CHECK(m_debug) << "Configuration failed, port name: " << portName;
     }
 }
 
@@ -27,23 +29,23 @@ bool UARTConnection::startConnection()
 
     // Open Serial port & send beacon, ping packets to bring device into connected state
     if (!isOpen) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << "Serial port is not open, Port name:   " << mSerial->portName();
-        qDebug() << Q_FUNC_INFO << __LINE__ << "Try to open, Port name:   " << mSerial->portName();
+        TRACE_CHECK(m_debug) << "Serial port is not open, Port name:   " << mSerial->portName();
+        TRACE_CHECK(m_debug) << "Try to open, Port name:   " << mSerial->portName();
         isOpen = mSerial->open(QIODevice::ReadWrite);
         if (isOpen) {
-            qDebug() << Q_FUNC_INFO << __LINE__ << "Opened, Port name:   " << mSerial->portName();
+            TRACE_CHECK(m_debug) << "Opened, Port name:   " << mSerial->portName();
 
             connect(mSerial, &QSerialPort::readyRead, this, &UARTConnection::onReadyRead);
             connect(mSerial, &QSerialPort::errorOccurred, this, &UARTConnection::onError);
         } else {
             // If open fails then return with an error
-            qDebug() << (QString("Can't open %1,%2 error code %3")
+            TRACE_CHECK(m_debug) << (QString("Can't open %1,%2 error code %3")
                              .arg(mSerial->portName())
                              .arg(mSerial->baudRate())
                              .arg(mSerial->error()));
         }
     } else {
-        qDebug() << (QString("Already open, Port name: %1, baud rate: %2")
+        TRACE_CHECK(m_debug) << (QString("Already open, Port name: %1, baud rate: %2")
                          .arg(mSerial->portName())
                          .arg(mSerial->baudRate()));
     }
@@ -97,18 +99,18 @@ bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::Pa
                 responseData += mSerial->readAll();
 
             const QString response = QString::fromUtf8(responseData);
-            qDebug() << Q_FUNC_INFO << __LINE__ << response;
+            TRACE_CHECK(m_debug)<< response;
 
 //            QVariantMap deserializeData = parser.deserializeData(responseData);
             return true;
 
         } else {
-            qDebug() << Q_FUNC_INFO << __LINE__ << QString("Wait read response timeout %1")
+            TRACE_CHECK(m_debug) << QString("Wait read response timeout %1")
                                                        .arg(QTime::currentTime().toString());
             return false;
         }
     } else {
-        qDebug() << Q_FUNC_INFO << __LINE__ << QString("Wait write request timeout %1")
+        TRACE_CHECK(m_debug) << QString("Wait write request timeout %1")
                                                    .arg(QTime::currentTime().toString());
         return false;
     }
@@ -125,7 +127,7 @@ void UARTConnection::onReadyRead()
 {
     // Handle data
     QByteArray dataBA = mSerial->readAll();
-    qDebug() << Q_FUNC_INFO << __LINE__ << dataBA.toHex(' ').toUpper();;
+    TRACE_CHECK(m_debug) << dataBA.toHex(' ').toUpper();
 
     emit sendData(dataBA);
 }
@@ -133,7 +135,7 @@ void UARTConnection::onReadyRead()
 void UARTConnection::onError(QSerialPort::SerialPortError error)
 {
     QString errorMessage = mSerial->errorString();
-    qDebug() << Q_FUNC_INFO << __LINE__ << "Port name:   " << mSerial->portName()
+    TRACE_CHECK(m_debug) << "Port name:   " << mSerial->portName()
              << "Error:   " << error << errorMessage;
     emit connectionError(errorMessage);
 }

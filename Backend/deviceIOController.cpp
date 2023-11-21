@@ -151,7 +151,6 @@ inline bool sendRequestWithReply(UARTConnection *connection,
 
     timer.start(timeout_msec);
 
-    TRACE << STHERM::SIOCommand::SetColorRGB << commandd;
     auto packet = DataParser::preparePacket(commandd,
                                             STHERM::PacketType::UARTPacket,
                                             data);
@@ -204,13 +203,13 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
 
         // todo: Add a function to check data
         if (className == "hardware" && method == "setBacklight") {
-            TRACE << "sending setBacklight request with data:" << data;
+            TRACE_CHECK(false) << "sending setBacklight request with data:" << data;
             if (nRfConnection && nRfConnection->isConnected() && data.size() == 5) {
                 packet = mDataParser.preparePacket(STHERM::SIOCommand::SetColorRGB,
                                                    STHERM::PacketType::UARTPacket,
                                                    data);
                 isRequestSent = nRfConnection->sendRequest(packet);
-                TRACE << (QString("send setBacklight request: %0").arg(isRequestSent));
+                TRACE_CHECK(false) << (QString("send setBacklight request: %0").arg(isRequestSent));
 
             } else {
                 qWarning() << "data is empty or not consistent";
@@ -279,7 +278,7 @@ void DeviceIOController::createConnections()
 
 
     nRF_timer.setSingleShot(false);
-    nRF_timer.start(11000);
+    nRF_timer.start(1000);
 
     //    start();
 }
@@ -340,7 +339,7 @@ void DeviceIOController::run()
 
 void DeviceIOController::createTIConnection()
 {
-    tiConnection = new UARTConnection(TI_SERIAL_PORT, QSerialPort::Baud9600);
+    tiConnection = new UARTConnection(TI_SERIAL_PORT, QSerialPort::Baud9600, true);
     if (tiConnection->startConnection()) {
         connect(tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
             LOG_DEBUG(QString("Ti Response: %0").arg(data));
@@ -374,9 +373,9 @@ void DeviceIOController::createNRF()
     nRfConnection = new UARTConnection(NRF_SERIAL_PORT, QSerialPort::Baud9600);
     if (nRfConnection->startConnection()) {
         connect(nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
-            TRACE << "NRF Response:   " << data;
+            TRACE_CHECK(false) << "NRF Response:   " << data;
             auto rxPacket = mDataParser.deserializeData(data);
-            LOG_DEBUG(QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+            TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
             processNRFResponse(rxPacket);
 
 
@@ -431,14 +430,14 @@ void DeviceIOController::updateTiDevices()
 
 bool DeviceIOController::setBacklight(QVariantList data)
 {
-    TRACE << "sending setBacklight request with data:" << data
-          << (nRfConnection && nRfConnection->isConnected());
+    TRACE_CHECK(false) << "sending setBacklight request with data:" << data
+                       << (nRfConnection && nRfConnection->isConnected());
     if (nRfConnection && nRfConnection->isConnected() && data.size() == 5) {
         auto result = sendRequestWithReply(nRfConnection,
                                            STHERM::SIOCommand::SetColorRGB,
                                            data,
                                            100);
-        TRACE << "send setBacklight request" << result;
+        TRACE_CHECK(false) << "send setBacklight request" << result;
         return result;
     } else {
         qWarning() << "backlight not sent: data is empty or not consistent or nRF not connected";
@@ -502,21 +501,21 @@ void DeviceIOController::wiringExec()
 void DeviceIOController::nRFExec()
 {
 
-    TRACE << "start NRF" << (nRfConnection && nRfConnection->isConnected());
+    TRACE_CHECK(false) << "start NRF" << (nRfConnection && nRfConnection->isConnected());
     if (nRfConnection && nRfConnection->isConnected()) {
 
-        TRACE << "start GetSensors";
+        TRACE_CHECK(false) << "start GetSensors";
 
         auto rsp = sendRequestWithReply(nRfConnection, STHERM::SIOCommand::GetSensors,{}, 10000);
 
-        TRACE << "GetSensors message finished" << rsp;
+        TRACE_CHECK(false) << "GetSensors message finished" << rsp;
 
-        TRACE << "start GetTOF";
+        TRACE_CHECK(false) << "start GetTOF";
         auto packet = mDataParser.preparePacket(STHERM::SIOCommand::GetTOF,
                                                 STHERM::PacketType::UARTPacket);
         auto sent = nRfConnection->sendRequest(packet);
 
-        TRACE << "nrf GetTOF message sent" << sent;
+        TRACE_CHECK(false) << "nrf GetTOF message sent" << sent;
     }
 }
 
@@ -560,15 +559,15 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
 //                resultMap.insert("RangeMilliMeter", RangeMilliMeter);
 //                resultMap.insert("Luminosity", Luminosity);
 
-                LOG_DEBUG(QString("RangeMilliMeter (%0), Luminosity (%1)").arg(RangeMilliMeter).arg(Luminosity));
+                TRACE_CHECK(false) <<(QString("RangeMilliMeter (%0), Luminosity (%1)").arg(RangeMilliMeter).arg(Luminosity));
                 if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE) {
-                    // key_event('n');
-                    LOG_DEBUG(QString("RangeMilliMeter (%0):  60 < RangeMilliMeter <= 1000 mm").arg(RangeMilliMeter));
+                    // key_event('n'); // send screen saver event
+                    TRACE_CHECK(false) <<(QString("RangeMilliMeter (%0):  60 < RangeMilliMeter <= 1000 mm").arg(RangeMilliMeter));
                 }
 
                 if (false && brighness_mode == 1) {
                     if (!setBrightness(Luminosity)) {
-                        LOG_DEBUG(QString("Error: setBrightness (Brightness: %0)").arg(Luminosity));
+                        TRACE_CHECK(false) <<(QString("Error: setBrightness (Brightness: %0)").arg(Luminosity));
                     }
                 }
 
@@ -584,44 +583,44 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 memcpy(&tempValue, rxPacket.DataArray + cpIndex, sizeof(tempValue));
                 cpIndex += sizeof(tempValue);
                 mainDataValues.temp =  tempValue / 10.0; // in celsius
-                LOG_DEBUG(QString("mainDataValues.temp: %0").arg(mainDataValues.temp));
+                TRACE_CHECK(false) << (QString("mainDataValues.temp: %0").arg(mainDataValues.temp));
 
                 memcpy(&mainDataValues.humidity, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.humidity));
                 cpIndex += sizeof(mainDataValues.humidity);
-                LOG_DEBUG(QString("mainDataValues.humidity: %0").arg(mainDataValues.humidity));
+                TRACE_CHECK(false) <<(QString("mainDataValues.humidity: %0").arg(mainDataValues.humidity));
 
                 memcpy(&mainDataValues.c02, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.c02));
                 cpIndex += sizeof(mainDataValues.c02);
-                LOG_DEBUG(QString("mainDataValues.c02: %0").arg(mainDataValues.c02));
+                TRACE_CHECK(false) <<(QString("mainDataValues.c02: %0").arg(mainDataValues.c02));
 
                 memcpy(&mainDataValues.etoh, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.etoh));
                 cpIndex += sizeof(mainDataValues.etoh);
-                LOG_DEBUG(QString("mainDataValues.etoh: %0").arg(mainDataValues.etoh));
+                TRACE_CHECK(false) <<(QString("mainDataValues.etoh: %0").arg(mainDataValues.etoh));
 
                 memcpy(&mainDataValues.Tvoc, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.Tvoc));
                 cpIndex += sizeof(mainDataValues.Tvoc);
-                LOG_DEBUG(QString("mainDataValues.Tvoc: %0").arg(mainDataValues.Tvoc));
+                TRACE_CHECK(false) <<(QString("mainDataValues.Tvoc: %0").arg(mainDataValues.Tvoc));
 
                 uint8_t iaq;
                 memcpy(&iaq, rxPacket.DataArray + cpIndex, sizeof(iaq));
                 cpIndex += sizeof(iaq);
                 mainDataValues.iaq = iaq / 10.0;
-                LOG_DEBUG(QString("mainDataValues.iaq: %0").arg(mainDataValues.iaq));
+                TRACE_CHECK(false) <<(QString("mainDataValues.iaq: %0").arg(mainDataValues.iaq));
 
                 memcpy(&mainDataValues.pressure, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.pressure));
                 cpIndex += sizeof(mainDataValues.pressure);
-                LOG_DEBUG(QString("mainDataValues.pressure: %0").arg(mainDataValues.pressure));
+                TRACE_CHECK(false) <<(QString("mainDataValues.pressure: %0").arg(mainDataValues.pressure));
 
                 memcpy(&RangeMilliMeter, rxPacket.DataArray + cpIndex, sizeof(RangeMilliMeter));
                 cpIndex += sizeof(RangeMilliMeter);
-                LOG_DEBUG(QString("RangeMilliMeter: %0").arg(RangeMilliMeter));
+                TRACE_CHECK(false) <<(QString("RangeMilliMeter: %0").arg(RangeMilliMeter));
 
                 memcpy(&Luminosity, rxPacket.DataArray + cpIndex, sizeof(Luminosity));
                 cpIndex += sizeof(Luminosity);
-                LOG_DEBUG(QString("Luminosity: %0").arg(Luminosity));
+                TRACE_CHECK(false) <<(QString("Luminosity: %0").arg(Luminosity));
 
                 memcpy(&fanSpeed, rxPacket.DataArray + cpIndex, sizeof(fanSpeed));
-                LOG_DEBUG(QString("fan_speed: %0").arg(fanSpeed));
+                TRACE_CHECK(false) <<(QString("fan_speed: %0").arg(fanSpeed));
 
                 // Prepare data and send to ui
                 QVariantMap mainDataMap;

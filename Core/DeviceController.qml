@@ -63,14 +63,15 @@ I_DeviceController {
 
     function updateDeviceBacklight(isOn, color) : bool
     {
-        console.log("starting updateBacklight, color: ", device.backlight.color)
+        console.log("starting updateBacklight, color: ", color)
 
         //! Use a REST request to update device backlight
         var r = Math.round(color.r * 255)
         var g = Math.round(color.g * 255)
         var b = Math.round(color.b * 255)
 
-        console.log("colors: ", r, ",", g, ",", b)
+//        console.log("colors: ", r, ",", g, ",", b)
+
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
         //! 1: mode
         //!    LED_STABLE = 0,
@@ -79,7 +80,7 @@ I_DeviceController {
         //!    LED_NO_MODE= 3
         var send_data = [r, g, b, 0, isOn ? "true" : "false"];
 
-        console.log("send data: ", send_data)
+//        console.log("send data: ", send_data)
 
         return deviceControllerCPP.setBacklight(send_data);
     }
@@ -172,7 +173,7 @@ I_DeviceController {
     //! Read data from system with getMainData method.
     function updateInformation()
     {
-        console.log("--------------- Start: updateInformation -------------------")
+//        console.log("--------------- Start: updateInformation -------------------")
         var result = sendReceive('system', 'getMainData', []);
 
         // should be catched later here
@@ -185,6 +186,6 @@ I_DeviceController {
         //        device.fan.mode
         //        device.alert
 
-        console.log("--------------- End: updateInformation -------------------")
+        //        console.log("--------------- End: updateInformation -------------------")
     }
 }
