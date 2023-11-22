@@ -80,8 +80,8 @@ STHERM::SIOPacket DataParser::deserializeData(const QByteArray &serializeData)
     // sequences and constructing the received packet
     // L 495-501 in ti / L 1069-1075 in NRF
     foreach (auto var, serializeData) {
-        bool isValid = UtilityHelper::SerialDataRx(var, &rxData);
-        if (isValid)
+        bool isFinished = UtilityHelper::SerialDataRx(var, &rxData);
+        if (isFinished)
             break;
     }
 

@@ -58,23 +58,28 @@ DeviceIOController::~DeviceIOController()
 
 void DeviceIOController::nrfConfiguration()
 {
-    mSensorPacketBA = DataParser::preparePacket(STHERM::GetSensors);
-    mTOFPacketBA    = DataParser::preparePacket(STHERM::GetTOF);
-    // set initial configs
+    ///! initialize some structures
 
-    // Send GetInfo request
+    STHERM::AQ_TH_PR_thld throldsAQ; // TODO getValues from settings?!
+
+    mSensorPacketBA = DataParser::preparePacket(STHERM::GetSensors);
+    mTOFPacketBA = DataParser::preparePacket(STHERM::GetTOF);
+
+    ///! set initial configs
+
+    ///! Send GetInfo request to initialize communication, TODO reply?
+
     QByteArray packetBA = DataParser::preparePacket(STHERM::GetInfo);
     nRfConnection->sendRequest(packetBA);
 
-
-    // Send InitMcus request
+    ///! Send InitMcus request after GetInfo, TODO should we wait for reply?
+    /// we can add this to a queue in constructor later and process the queue here
     STHERM::SIOPacket txPacket;
     txPacket.PacketSrc = UART_Packet;
     txPacket.CMD = STHERM::InitMcus;
     txPacket.ACK = STHERM::ERROR_NO;
     txPacket.SID = 0x01;
 
-    STHERM::AQ_TH_PR_thld throldsAQ;
     uint8_t cpIndex = 0;
 
     memcpy(txPacket.DataArray + cpIndex, &throldsAQ.temp_high, sizeof(throldsAQ.temp_high));
@@ -101,6 +106,7 @@ void DeviceIOController::nrfConfiguration()
     memcpy(txPacket.DataArray + cpIndex, &throldsAQ.etoh_high, sizeof(throldsAQ.etoh_high));
     cpIndex += sizeof(throldsAQ.etoh_high);
     txPacket.DataLen = cpIndex;
+    //    TODO update CRC
 
     uint8_t ThreadBuff[256];
     int ThreadSendSize = UtilityHelper::setSIOTxPacket(ThreadBuff, txPacket);
@@ -117,8 +123,12 @@ void DeviceIOController::tiConfiguration()
     QByteArray packetBA = DataParser::preparePacket(STHERM::GetInfo);
     tiConnection->sendRequest(packetBA);
 
-    packetBA = DataParser::preparePacket(STHERM::StartPairing);
-    tiConnection->sendRequest(packetBA);
+    ///! Send StartPairing request after GetInfo, TODO should we wait for reply?
+    /// we can add this to a queue in constructor later and process the queue here
+    /// this section is done different in daemon and passes multiple data to thread! which we do not need
+    /// Set_limits and Set_time
+    //    packetBA = DataParser::preparePacket(STHERM::StartPairing);
+    //    tiConnection->sendRequest(packetBA);
 }
 
 inline bool sendRequestWithReply(UARTConnection *connection,
@@ -274,6 +284,7 @@ void DeviceIOController::createConnections()
     wiring_timer.setSingleShot(false);
     wiring_timer.start(12000);
 
+    ///! TODO we need o fix the scenario using GPIO later
     connect(&nRF_timer, &QTimer::timeout, this, &DeviceIOController::nRFExec);
 
 
@@ -349,6 +360,8 @@ void DeviceIOController::createTIConnection()
             LOG_DEBUG(QString("TI Response - CMD: %0").arg(rxPacket.CMD));
             processTIResponse(rxPacket);
         });
+
+        tiConfiguration();
     }
 }
 
@@ -467,6 +480,7 @@ void DeviceIOController::wtdExec()
 {
     TRACE << "start wtd" << (tiConnection && tiConnection->isConnected());
 
+    // TODO: timer should be restart on every request and no reply waiting needed
     if (tiConnection && tiConnection->isConnected()) {
         auto rsp = sendRequestWithReply(tiConnection, STHERM::SIOCommand::feed_wtd,{}, 10000);
 
@@ -785,9 +799,51 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
             }
         } break;
         case STHERM::SetRelay: {
-            LOG_DEBUG("***** Ti  - Start SetRelay *****");
-            relays_in_l = relays_in;
-            LOG_DEBUG("***** Ti  - SetRelay finished *****");
+            if (rxPacket.ACK == STHERM::ERROR_NO) {
+                LOG_DEBUG("***** Ti  - Start SetRelay *****");
+                relays_in_l = relays_in;
+                LOG_DEBUG("***** Ti  - SetRelay finished *****");
+            } else {
+                switch (rxPacket.ACK) {
+                case STHERM::ERROR_WIRING_NOT_CONNECTED: {
+                    //                    wait_for_wiring_check = true;
+                    emit alert(STHERM::LVL_Emergency, STHERM::Alert_wiring_not_connected);
+                    LOG_DEBUG("ERROR_WIRING_NOT_CONNECTED");
+                    LOG_DEBUG("~" + QString::number(rxPacket.DataLen));
+                    //                    wait_resp = true; prevent dynamic thread before response
+                    // Pepare Wiring_check command when all wires not broke
+                    tx_packet.PacketSrc = UART_Packet;
+                    tx_packet.CMD = STHERM::Check_Wiring;
+                    tx_packet.ACK = STHERM::ERROR_NO;
+                    tx_packet.SID = 0x01;
+                    tx_packet.DataLen = 0;
+
+                    // Prepare packet to send request.
+                    uint8_t tx_buff[256];
+                    uint16_t size = UtilityHelper::setSIOTxPacket(tx_buff, tx_packet);
+
+                    QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tx_buff),
+                                                                size);
+
+                    LOG_DEBUG(
+                        "***** Ti  - ERROR_WIRING_NOT_CONNECTED: Send Check_Wiring command *****");
+                    tiConnection->sendRequest(packet);
+                }
+
+                break;
+                case STHERM::ERROR_COULD_NOT_SET_RELAY:
+                    LOG_DEBUG("ERROR_COULD_NOT_SET_RELAY");
+                    if (rxPacket.DataLen) {
+                        LOG_DEBUG(QString("%0\n relay indx ").arg(rxPacket.DataLen));
+                        for (int k = 0; k < rxPacket.DataLen; k++) {
+                            LOG_DEBUG(QString("%0").arg(rxPacket.DataArray[k]));
+                        }
+                    }
+
+                    break;
+                }
+                break;
+            }
 
         } break;
 
@@ -797,7 +853,11 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
         } break;
 
-        case STHERM::GetRelaySensor:
+        case STHERM::GetRelaySensor: {
+            LOG_DEBUG("***** Ti  - Start GetRelaySensor *****");
+            LOG_DEBUG("***** Ti  - GetRelaySensor finished *****");
+
+        } break;
         case STHERM::Check_Wiring: {
             LOG_DEBUG("***** Ti  - Start Check_Wiring *****");
 
@@ -854,7 +914,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
             tp.DataLen = 0;
             indx_rev = 0;
 
-            // Check: uncomment later
+            // TODO: uncomment later
             /* for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
             {
                 TI_HW.push_back(static_cast<char>(rxPacket.DataArray[indx_rev]));
