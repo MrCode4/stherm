@@ -60,6 +60,16 @@ QtObject {
 
     //! This property can be used to disable wifi refreshing temporarily
     property bool               refreshWifiEnabled: true
+    //! Retrieve device information at one-second intervals.
+    property Timer timer:   Timer {
+        running: true
+        repeat: true
+        interval: AppSpec.readInterval
+
+        onTriggered: {
+            deviceController.updateInformation();
+        }
+    }
 
     //! Device controller
     property bool simulating:   true
@@ -67,8 +77,13 @@ QtObject {
     onSimulatingChanged: {
         if (!simulating) {
             Style.background = "#000000";
+
             // start real device
-            realDeviceController.updateDeviceBacklight();
+            realDeviceController.startDeviceRequested();
+
+        } else {
+            realDeviceController.stopDeviceRequested();
+
         }
     }
 

@@ -1,0 +1,96 @@
+\chapter{Wi-\/\+Fi Management Program}
+\hypertarget{index}{}\label{index}\index{Wi-\/Fi Management Program@{Wi-\/Fi Management Program}}
+
+\begin{DoxyItemize}
+\item 
+\item 
+\end{DoxyItemize}\hypertarget{index_intro}{}\doxysection{\texorpdfstring{Introduction}{Introduction}}\label{index_intro}
+
+\begin{DoxyItemize}
+\item 
+\item This program allows users to manage Wi-\/\+Fi connections using the nmcli command-\/line tool.
+\item It provides a simple command-\/line interface for searching, connecting, disconnecting,
+\item and forgetting Wi-\/\+Fi networks, as well as managing saved connections and retrieving
+\item information about the current Wi-\/\+Fi connection.
+\item 
+\item The program consists of 2 classes\+:
+\item -\/ \doxylink{class_input_parametrs}{Input\+Parametrs}\+: Handles the command-\/line arguments and calls the appropriate Wi-\/\+Fi management method.
+\item -\/ \doxylink{class_wifi_manager}{Wifi\+Manager}\+: Implements the Wi-\/\+Fi management methods using the nmcli tool.
+\item -\/ def\+\_\+values\+: Contains constants and default values used in the \doxylink{class_input_parametrs}{Input\+Parametrs} class for managing Wi-\/\+Fi connections.
+\item -\/ main\+: The entry point for the program, which initializes an \doxylink{class_input_parametrs}{Input\+Parametrs} object and calls the execute\+Command() method.
+\item 
+\item 
+\end{DoxyItemize}\hypertarget{index_usage}{}\doxysection{\texorpdfstring{Usage}{Usage}}\label{index_usage}
+
+\begin{DoxyItemize}
+\item 
+\item The program can be run from the command line with the following syntax\+:
+\item 
+\item wifi\+\_\+manager $<$command$>$ \mbox{[}options\mbox{]}
+\item 
+\item Where {\ttfamily \texorpdfstring{$<$}{<}command\texorpdfstring{$>$}{>}} is one of the following\+:
+\item -\/ {\ttfamily search}\+: Search for available Wi-\/\+Fi networks.
+\item -\/ {\ttfamily manual}\+: Manually connect to a Wi-\/\+Fi network using specified parameters.
+\item -\/ {\ttfamily connect}\+: Connect to a Wi-\/\+Fi network.
+\item -\/ {\ttfamily disconnect}\+: Disconnect from a Wi-\/\+Fi network.
+\item -\/ {\ttfamily forget}\+: Remove a saved Wi-\/\+Fi network.
+\item -\/ {\ttfamily active}\+: Get MAC of the active Wi-\/\+Fi connection
+\item -\/ {\ttfamily connections}\+: Get a list of saved Wi-\/\+Fi connections.
+\item -\/ {\ttfamily secret\+\_\+delete\+\_\+all}\+: Remove all saved Wi-\/\+Fi connections.
+\item 
+\item The {\ttfamily search} command can be run with no options to get a list of available Wi-\/\+Fi networks.
+\item The {\ttfamily connect} command requires the SSID and password of the network to connect to.
+\item The {\ttfamily manual} command requires the following parameters\+: ESSID, IP address, subnet mask, default gateway, DNS server, DNS server 2, and password.
+\item The {\ttfamily disconnect} and {\ttfamily forget} commands require the SSID of the network to disconnect or forget.
+\item 
+\item 
+\end{DoxyItemize}\hypertarget{index_install_sec}{}\doxysection{\texorpdfstring{Installation}{Installation}}\label{index_install_sec}
+
+\begin{DoxyItemize}
+\item 
+\item To build and install the project, follow these steps\+:
+\item 1. Install the required dependencies\+: nmcli, g++
+\item 2. Clone the project repository from Git\+Hub.
+\item 3. Navigate to the project directory.
+\item 4. Run the following command to build the project\+:
+\item 
+\item g++ \doxylink{main_8cpp}{main.\+cpp} \doxylink{_input_parametrs_8cpp}{Input\+Parametrs.\+cpp} \doxylink{_wifi_manager_8cpp}{Wifi\+Manager.\+cpp} -\/o wifi
+\item 
+\item 
+\end{DoxyItemize}\hypertarget{index_exmaples}{}\doxysection{\texorpdfstring{Examples}{Examples}}\label{index_exmaples}
+
+\begin{DoxyItemize}
+\item 
+\item The {\ttfamily search} ./wifi search
+\item The {\ttfamily connect} ./wifi connect SSID PASSWORSD\mbox{[}optional\mbox{]} ~\newline
+
+\item The {\ttfamily manual} ./wifi manual essid\+:Lan\+Tek\+IV ip\+:172.\+16.\+0.\+227 subnet\+:255.\+255.\+255.\+0 gtw\+:172.\+16.\+0.\+1 dns\+:8.\+8.\+8.\+8 dns2\+:4.\+4.\+4.\+4 pass\+:Ideal\+Networks123\texorpdfstring{$\ast$}{*}
+\item The {\ttfamily disconnect} ./wifi disconnect SSID\mbox{[}active\mbox{]}
+\item The {\ttfamily forget} ./wifi forget SSID
+\item The {\ttfamily active} ./wifi active ~\newline
+
+\item The {\ttfamily connections} ./wifi connections
+\item The {\ttfamily secret\+\_\+delete\+\_\+all} ./wifi secret\+\_\+delete\+\_\+all
+\item 
+\item 
+\end{DoxyItemize}\hypertarget{index_dependencies}{}\doxysection{\texorpdfstring{Dependencies}{Dependencies}}\label{index_dependencies}
+
+\begin{DoxyItemize}
+\item 
+\item The program depends on the nmcli tool, which should be pre-\/installed on most Linux distributions.
+\item Exercise caution when using sudo.
+\item 
+\item 
+\item 
+\end{DoxyItemize}\hypertarget{index_authors}{}\doxysection{\texorpdfstring{Authors}{Authors}}\label{index_authors}
+
+\begin{DoxyItemize}
+\item 
+\item -\/ Gor Danielyan
+\item -\/ Contact\+: \href{https://t.me/Gorynych_DuO}{\texttt{ https\+://t.\+me/\+Gorynych\+\_\+\+DuO}} 
+\end{DoxyItemize}\hypertarget{index_links_sec}{}\doxysection{\texorpdfstring{Links}{Links}}\label{index_links_sec}
+
+\begin{DoxyItemize}
+\item 
+\item -\/ Git\+Hub repository\+: \href{https://github.com/DuO-cmd/newHvAc_wifi_search.git}{\texttt{ https\+://github.\+com/\+Du\+O-\/cmd/new\+Hv\+Ac\+\_\+wifi\+\_\+search.\+git}} \texorpdfstring{$\ast$}{*}/ 
+\end{DoxyItemize}

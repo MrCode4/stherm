@@ -28,58 +28,15 @@ I_DeviceController {
      * ****************************************************************************************/
 
 
-    /* Children
-     * ****************************************************************************************/
-    //! Read sensor data (simulation)
-    //! todo: move this to the interface class
-    property Timer _timer: Timer {
-        interval: AppSpec.simReadInterval
-        running: true
-        repeat: true
-        onTriggered: {
-            //! Move simulation temprature to desired one
-            if (_tempChangeDirection > 0) {
-                device.currentTemp += Math.random() * 3
-
-                if (device.currentTemp > (device.requestedTemp + _currentTempError)) {
-                    _tempChangeDirection = -1 //! Make it decrease
-                }
-            } else {
-                device.currentTemp -= Math.random() * 3
-
-                if (device.currentTemp < (device.requestedTemp - _currentTempError)) {
-                    _tempChangeDirection = 1 //! Make it increase
-                }
-            }
-
-            //! Randomly change humidity towards requested one
-            if (_humChangeDirection > 0) {
-                device.currentHum += Math.random() * 3
-
-                if (device.currentHum > (device.requestedHum + _currentHumError)) {
-                    _humChangeDirection = -1 //! Make it decrease
-                }
-            } else {
-                device.currentHum -= Math.random() * 3
-
-                if (device.currentHum < (device.requestedHum - _currentHumError)) {
-                    _humChangeDirection = 1 //! Make it increase
-                }
-            }
-
-//            device.co2 = Math.random() * 5 + 60
-//            device.tof = Math.random() * 5 + 60
-        }
-    }
-
     /* Methods
      * ****************************************************************************************/
     //! Override I_DeviceController's methods
-    function updateDeviceBacklight()
+    function updateDeviceBacklight(isOn, color) : bool
     {
         console.log("settign sim background color")
 
-        Style.background = device.backlight.on ?  device.backlight._color : "#000000";
+        Style.background = isOn ?  color : "#000000";
+        return true;
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
@@ -140,5 +97,43 @@ I_DeviceController {
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
         device.requestedTemp = temperature;
+    }
+
+
+
+    function updateInformation()
+    {
+        //! Move simulation temprature to desired one
+        if (_tempChangeDirection > 0) {
+            device.currentTemp += Math.random() * 3
+
+            if (device.currentTemp > (device.requestedTemp + _currentTempError)) {
+                _tempChangeDirection = -1 //! Make it decrease
+            }
+        } else {
+            device.currentTemp -= Math.random() * 3
+
+            if (device.currentTemp < (device.requestedTemp - _currentTempError)) {
+                _tempChangeDirection = 1 //! Make it increase
+            }
+        }
+
+        //! Randomly change humidity towards requested one
+        if (_humChangeDirection > 0) {
+            device.currentHum += Math.random() * 3
+
+            if (device.currentHum > (device.requestedHum + _currentHumError)) {
+                _humChangeDirection = -1 //! Make it decrease
+            }
+        } else {
+            device.currentHum -= Math.random() * 3
+
+            if (device.currentHum < (device.requestedHum - _currentHumError)) {
+                _humChangeDirection = 1 //! Make it increase
+            }
+        }
+
+        //            device.co2 = Math.random() * 5 + 60
+        //            device.tof = Math.random() * 5 + 60
     }
 }

@@ -11,8 +11,42 @@ I_DeviceController {
     /* Property Declarations
      * ****************************************************************************************/
 
+    property Connections  deviceControllerConnection: Connections {
+        target: deviceControllerCPP
+
+        function onAlert(alertLevel : int,
+                         alertType : int,
+                         alertMessage : string) {
+
+            console.log("Alert: ", alertLevel, alertType, alertMessage);
+
+        }
+    }
+
     /* Object Properties
      * ****************************************************************************************/
+    deviceControllerCPP: DeviceControllerCPP {}
+
+    /* Signals
+     * ****************************************************************************************/
+
+    //! Emit when need to connect to device.
+    signal startDeviceRequested();
+
+    //! Emit when need to stop device.
+    signal stopDeviceRequested();
+
+    onStartDeviceRequested: {
+        console.log("************** Initialize and create connections **************")
+        deviceControllerCPP.startDevice();
+
+        console.log("************** set the backlight on initialization **************")
+        updateDeviceBacklight(device.backlight.on, device.backlight._color);
+    }
+
+    onStopDeviceRequested: {
+        deviceControllerCPP.stopDevice();
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -24,47 +58,31 @@ I_DeviceController {
     {
         var data_msg = '{"request": {"class": "' + className + '", "method": "' + method + '", "params": ' + JSON.stringify(data) + '}}';
 
-        let xhr = new XMLHttpRequest();
-
-        xhr.onreadystatechange = function() {
-            console.error("XMLHttpRequest onreadystatechange", xhr.readyState);
-
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                let response = {
-                    status : xhr.status,
-                    headers : xhr.getAllResponseHeaders(),
-                    contentType : xhr.responseType,
-                    content : xhr.response
-                };
-                console.error("XMLHttpRequest done", xhr.status, xhr.statusText, xhr.responseType);
-
-                if (xhr.status === 200) {
-                    console.error("XMLHttpRequest done", xhr.responseText, JSON.parse(xhr.responseText));
-                } else {
-                    console.error("Error in HTTP request:", xhr.status, xhr.statusText);
-                }
-            }
-        }
-        xhr.open("POST", "http://127.0.0.1/engine/index.php", true);
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.send(data_msg);
+        return deviceControllerCPP.sendRequest(className, method, data)
     }
 
-    function updateDeviceBacklight()
+    function updateDeviceBacklight(isOn, color) : bool
     {
-        console.log("starting rest for updateBacklight, color: ", device.backlight.color)
+        console.log("starting updateBacklight, color: ", color)
 
         //! Use a REST request to update device backlight
-        var r = Math.round(device.backlight._color.r * 255)
-        var g = Math.round(device.backlight._color.g * 255)
-        var b = Math.round(device.backlight._color.b * 255)
+        var r = Math.round(color.r * 255)
+        var g = Math.round(color.g * 255)
+        var b = Math.round(color.b * 255)
 
-        console.log("colors: ", r, ",", g, ",", b)
+//        console.log("colors: ", r, ",", g, ",", b)
+
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
-        var send_data = [r, g, b, 0, device.backlight.on ? "true" : "false"];
+        //! 1: mode
+        //!    LED_STABLE = 0,
+        //!    LED_FADE   = 1,
+        //!    LED_BLINK  = 2,
+        //!    LED_NO_MODE= 3
+        var send_data = [r, g, b, 0, isOn ? "true" : "false"];
 
-        console.log("send data: ", send_data)
-        sendReceive('hardware', 'setBacklight', send_data);
+//        console.log("send data: ", send_data)
+
+        return deviceControllerCPP.setBacklight(send_data);
     }
 
     function updateFan(mode: int, workingPerHour: int)
@@ -115,7 +133,11 @@ I_DeviceController {
                     "adaptive: ",       adaptive,       "\n    "
                     );
 
-        sendReceive('hardware', 'setSettings', [brightness, volume, temperatureUnit, timeFormat, reset, adaptive]);
+        var send_data = [brightness, volume, temperatureUnit, timeFormat, reset, adaptive];
+       if (!deviceControllerCPP.setSettings(send_data)){
+           console.warn("setting failed");
+           return;
+       }
 
         // Update setting when sendReceive is successful.
         if (device.setting.brightness !== brightness) {
@@ -146,5 +168,24 @@ I_DeviceController {
 
         // Update device temperature when setTemperature is successful.
         device.requestedTemp = temperature;
+    }
+
+    //! Read data from system with getMainData method.
+    function updateInformation()
+    {
+//        console.log("--------------- Start: updateInformation -------------------")
+        var result = sendReceive('system', 'getMainData', []);
+
+        // should be catched later here
+        device.currentHum = result?.humidity ?? 0
+        device.currentTemp = result?.temperature ?? 0
+        device.co2 = result?.co2 ?? 0
+        //        device.setting.brightness = result?.brighness ?? 0
+
+        //        device.co2;
+        //        device.fan.mode
+        //        device.alert
+
+        //        console.log("--------------- End: updateInformation -------------------")
     }
 }

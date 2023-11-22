@@ -1,0 +1,49 @@
+\doxysection{main.\+cpp File Reference}
+\hypertarget{main_8cpp}{}\label{main_8cpp}\index{main.cpp@{main.cpp}}
+{\ttfamily \#include $<$cstdio$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{main_8cpp_ae9148b4857edf753b16506d7d8c1e128}{get\+\_\+data}} (std\+::vector$<$ std\+::string $>$ \&data, const char set\+\_\+call\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Retrieve data from the command output and store it in a vector of strings. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{main_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
+\begin{DoxyCompactList}\small\item\em Main function for extracting and printing the serial number from the /proc/cpuinfo file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{main_8cpp_ae9148b4857edf753b16506d7d8c1e128}\label{main_8cpp_ae9148b4857edf753b16506d7d8c1e128} 
+\index{main.cpp@{main.cpp}!get\_data@{get\_data}}
+\index{get\_data@{get\_data}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{get\_data()}{get\_data()}}
+{\footnotesize\ttfamily bool get\+\_\+data (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::string $>$ \&}]{data,  }\item[{const char}]{set\+\_\+call\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Retrieve data from the command output and store it in a vector of strings. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ out}}  & {\em data} & A reference to a vector of strings to store the retrieved data. \\
+\hline
+\mbox{\texttt{ in}}  & {\em set\+\_\+call} & A C-\/style string containing the command to execute. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+bool Returns true if the operation is successful, false otherwise. 
+\end{DoxyReturn}
+\Hypertarget{main_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}\label{main_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4} 
+\index{main.cpp@{main.cpp}!main@{main}}
+\index{main@{main}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Main function for extracting and printing the serial number from the /proc/cpuinfo file. 
+
+\begin{DoxyReturn}{Returns}
+int Returns true (1) on successful execution, false (0) otherwise. 
+\end{DoxyReturn}

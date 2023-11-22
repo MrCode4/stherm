@@ -24,6 +24,20 @@ BasePageView {
     //! Whether shade buttons should be shown
     property bool               hasShades: true
 
+    property bool          completed: false
+
+    property Timer onlineTimer: Timer {
+        repeat: false
+        running: false
+        interval: 50
+        onTriggered: applyOnline()
+        function startTimer() {
+            if (!onlineTimer.running) {
+                start();
+            }
+        }
+    }
+
     /* Object properties
      * ****************************************************************************************/
     leftPadding: AppStyle.size / 12
@@ -40,6 +54,7 @@ BasePageView {
         Switch {
             id: _backlightOnOffSw
             checked: backlight?.on ?? false
+            onCheckedChanged: onlineTimer.startTimer()
         }
 
         //! Confirm button
@@ -49,12 +64,7 @@ BasePageView {
                 text: "\uf00c"
             }
 
-            onClicked: {
-                //! Update backlight
-                if (deviceController) {
-                    deviceController.updateBacklight(_backlightOnOffSw.checked, selectedColor);
-                }
-            }
+            onClicked: applyToModel()
         }
     }
 
@@ -74,6 +84,7 @@ BasePageView {
             id: _colorSlider
             Layout.fillWidth: true
             opacity: enabled ? 1. : 0.4
+            onValueChanged: onlineTimer.startTimer()
         }
 
         Label {
@@ -88,6 +99,7 @@ BasePageView {
             Material.accent: _colorSlider.currentColor
             Layout.fillWidth: true
             opacity: enabled ? 1. : 0.4
+            onValueChanged: onlineTimer.startTimer()
         }
 
         Label {
@@ -101,6 +113,8 @@ BasePageView {
         ButtonGroup {
             id: _shadeButtonsGrp
             buttons: _buttonsRow.children
+
+            onCheckedButtonChanged: onlineTimer.startTimer()
         }
 
         //! Shades of selected color
@@ -145,9 +159,31 @@ BasePageView {
         _shadeButtonsRepeater.itemAt(shadeToSelect).checked = true;
     }
 
+    //! Update backlight for test
+    function applyOnline(){
+        if (deviceController && completed) {
+            deviceController.updateDeviceBacklight(_backlightOnOffSw.checked, selectedColor);
+        }
+    }
+
+    //! Update backlight and set to model
+    function applyToModel() {
+        if (deviceController) {
+            deviceController.updateBacklight(_backlightOnOffSw.checked, selectedColor);
+        }
+    }
+
+    //! reset backlight to model on cancel
+    function revertToModel() {
+        if (deviceController) {
+            deviceController.updateBacklight(backlight?.on ?? false, backlight?._color ?? selectedColor);
+        }
+    }
+
     Component.onCompleted: {
         if (backlight) {
             setCurrentColor(backlight._color);
         }
+        completed = true;
     }
 }

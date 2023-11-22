@@ -5,7 +5,7 @@ import Stherm
 
 AppSpecCPP {
 
-    property int simReadInterval: 1000
+    property int readInterval: 1000
 
     enum FanMode {
         FMAuto = 0,

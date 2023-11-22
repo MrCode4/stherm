@@ -1,0 +1,21 @@
+\chapter{HVAC Brightness Control}
+\hypertarget{index}{}\label{index}\index{HVAC Brightness Control@{HVAC Brightness Control}}
+\hypertarget{index_intro_sec}{}\doxysection{\texorpdfstring{Introduction}{Introduction}}\label{index_intro_sec}
+This program allows you to set the brightness level of an HVAC system. It reads the input brightness level provided as a command-\/line argument and adjusts the system configuration accordingly. The program ensures that the minimum brightness level is 1 and the maximum brightness level is 254.\hypertarget{index_usage_sec}{}\doxysection{\texorpdfstring{Usage}{Usage}}\label{index_usage_sec}
+
+\begin{DoxyItemize}
+\item Compile 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{g++\ HvAc\_Brightness.cpp\ -\/o\ setBrightness}
+
+\end{DoxyCode}
+
+\item Run the compiled executable. 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{./setBrightness\ 50\ }
+
+\end{DoxyCode}
+ To use this program, provide the desired brightness level as a command-\/line argument when executing the program. The program will then set the brightness level of the HVAC system accordingly.
+\end{DoxyItemize}\hypertarget{index_error_codes_sec}{}\doxysection{\texorpdfstring{Error Codes}{Error Codes}}\label{index_error_codes_sec}
+The program uses a set of error codes to indicate different types of errors that may occur during execution. These error codes are defined in the SIO\+\_\+\+Errors enumeration in the source code.\hypertarget{index_author_sec}{}\doxysection{\texorpdfstring{Author}{Author}}\label{index_author_sec}
+This program was developed by Gor Danielyan. 

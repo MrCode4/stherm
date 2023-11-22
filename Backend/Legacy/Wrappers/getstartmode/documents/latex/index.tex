@@ -1,0 +1,26 @@
+\chapter{GPIO Pin Configuration and Reading}
+\hypertarget{index}{}\label{index}\index{GPIO Pin Configuration and Reading@{GPIO Pin Configuration and Reading}}
+\hypertarget{index_intro_sec}{}\doxysection{\texorpdfstring{Introduction}{Introduction}}\label{index_intro_sec}
+This documentation provides an overview of the \"{}\+GPIO Pin Configuration and Reading\"{} program. The program is designed to configure a GPIO pin as an input, read its value, and print the inverted value to the console.
+
+This program reads the status of a GPIO pin on a Linux-\/based system to determine whether the device is connected to the power board or is floating. If the GPIO pin is high (up), it indicates that the device is on the power board and is in working mode. If the GPIO pin is low (down), it indicates that the device is floating and is in testing mode.\hypertarget{index_usage_sec}{}\doxysection{\texorpdfstring{Usage}{Usage}}\label{index_usage_sec}
+To use the program, follow these steps\+:
+\begin{DoxyEnumerate}
+\item Compile 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{g++\ Test\_mode.cpp\ -\/o\ getStartMode}
+
+\end{DoxyCode}
+
+\item Run the executable to configure and read the specified GPIO pin (GPIO 90 in this case). 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{./getStartMode}
+
+\end{DoxyCode}
+
+\item The program will configure the GPIO pin as an input, read its value, and print the inverted value (1 as 0, and 0 as 1) to the console.
+\item The program will handle any errors during the GPIO configuration and reading processes.
+\end{DoxyEnumerate}\hypertarget{index_dependencies_sec}{}\doxysection{\texorpdfstring{Dependencies}{Dependencies}}\label{index_dependencies_sec}
+The program depends on several standard C and C++ libraries for file I/O, string manipulation, and system calls. Additionally, it relies on the sysfs interface for interacting with GPIO pins on a Linux system.\hypertarget{index_note}{}\doxysection{\texorpdfstring{Note}{Note}}\label{index_note}
+Please ensure that the designated pin is properly configured in the Linux Device Tree at the Kernel Level. \hypertarget{index_author_sec}{}\doxysection{\texorpdfstring{Author}{Author}}\label{index_author_sec}
+This program was authored by Gor Danielyan. 

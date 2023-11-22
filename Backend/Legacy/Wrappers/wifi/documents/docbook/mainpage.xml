@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="_mainpage" xml:lang="en-US">
+
+<para><itemizedlist>
+<listitem></listitem><listitem></listitem></itemizedlist>
+</para>
+<section xml:id="_index_1intro">
+<title>Introduction</title>
+
+<para><itemizedlist>
+<listitem></listitem><listitem>
+<para>This program allows users to manage Wi-Fi connections using the nmcli command-line tool.</para>
+</listitem><listitem>
+<para>It provides a simple command-line interface for searching, connecting, disconnecting,</para>
+</listitem><listitem>
+<para>and forgetting Wi-Fi networks, as well as managing saved connections and retrieving</para>
+</listitem><listitem>
+<para>information about the current Wi-Fi connection.</para>
+</listitem><listitem></listitem><listitem>
+<para>The program consists of 2 classes:</para>
+</listitem><listitem>
+<para>- <link linkend="_class_input_parametrs">InputParametrs</link>: Handles the command-line arguments and calls the appropriate Wi-Fi management method.</para>
+</listitem><listitem>
+<para>- <link linkend="_class_wifi_manager">WifiManager</link>: Implements the Wi-Fi management methods using the nmcli tool.</para>
+</listitem><listitem>
+<para>- def_values: Contains constants and default values used in the <link linkend="_class_input_parametrs">InputParametrs</link> class for managing Wi-Fi connections.</para>
+</listitem><listitem>
+<para>- main: The entry point for the program, which initializes an <link linkend="_class_input_parametrs">InputParametrs</link> object and calls the executeCommand() method.</para>
+</listitem><listitem></listitem><listitem></listitem></itemizedlist>
+</para>
+</section>
+<section xml:id="_index_1usage">
+<title>Usage</title>
+
+<para><itemizedlist>
+<listitem></listitem><listitem>
+<para>The program can be run from the command line with the following syntax:</para>
+</listitem><listitem></listitem><listitem>
+<para>wifi_manager &lt;command&gt; [options]</para>
+</listitem><listitem></listitem><listitem>
+<para>Where <computeroutput>&lt;command&gt;</computeroutput> is one of the following:</para>
+</listitem><listitem>
+<para>- <computeroutput>search</computeroutput>: Search for available Wi-Fi networks.</para>
+</listitem><listitem>
+<para>- <computeroutput>manual</computeroutput>: Manually connect to a Wi-Fi network using specified parameters.</para>
+</listitem><listitem>
+<para>- <computeroutput>connect</computeroutput>: Connect to a Wi-Fi network.</para>
+</listitem><listitem>
+<para>- <computeroutput>disconnect</computeroutput>: Disconnect from a Wi-Fi network.</para>
+</listitem><listitem>
+<para>- <computeroutput>forget</computeroutput>: Remove a saved Wi-Fi network.</para>
+</listitem><listitem>
+<para>- <computeroutput>active</computeroutput>: Get MAC of the active Wi-Fi connection</para>
+</listitem><listitem>
+<para>- <computeroutput>connections</computeroutput>: Get a list of saved Wi-Fi connections.</para>
+</listitem><listitem>
+<para>- <computeroutput>secret_delete_all</computeroutput>: Remove all saved Wi-Fi connections.</para>
+</listitem><listitem></listitem><listitem>
+<para>The <computeroutput>search</computeroutput> command can be run with no options to get a list of available Wi-Fi networks.</para>
+</listitem><listitem>
+<para>The <computeroutput>connect</computeroutput> command requires the SSID and password of the network to connect to.</para>
+</listitem><listitem>
+<para>The <computeroutput>manual</computeroutput> command requires the following parameters: ESSID, IP address, subnet mask, default gateway, DNS server, DNS server 2, and password.</para>
+</listitem><listitem>
+<para>The <computeroutput>disconnect</computeroutput> and <computeroutput>forget</computeroutput> commands require the SSID of the network to disconnect or forget.</para>
+</listitem><listitem></listitem><listitem></listitem></itemizedlist>
+</para>
+</section>
+<section xml:id="_index_1install_sec">
+<title>Installation</title>
+
+<para><itemizedlist>
+<listitem></listitem><listitem>
+<para>To build and install the project, follow these steps:</para>
+</listitem><listitem>
+<para>1. Install the required dependencies: nmcli, g++</para>
+</listitem><listitem>
+<para>2. Clone the project repository from GitHub.</para>
+</listitem><listitem>
+<para>3. Navigate to the project directory.</para>
+</listitem><listitem>
+<para>4. Run the following command to build the project:</para>
+</listitem><listitem></listitem><listitem>
+<para>g++ <link linkend="_main_8cpp">main.cpp</link> <link linkend="__input_parametrs_8cpp">InputParametrs.cpp</link> <link linkend="__wifi_manager_8cpp">WifiManager.cpp</link> -o wifi</para>
+</listitem><listitem></listitem><listitem></listitem></itemizedlist>
+</para>
+</section>
+<section xml:id="_index_1exmaples">
+<title>Examples</title>
+
+<para><itemizedlist>
+<listitem></listitem><listitem>
+<para>The <computeroutput>search</computeroutput> ./wifi search</para>
+</listitem><listitem>
+<para>The <computeroutput>connect</computeroutput> ./wifi connect SSID PASSWORSD[optional] <?linebreak?></para>
+</listitem><listitem>
+<para>The <computeroutput>manual</computeroutput> ./wifi manual essid:LanTekIV ip:172.16.0.227 subnet:255.255.255.0 gtw:172.16.0.1 dns:8.8.8.8 dns2:4.4.4.4 pass:IdealNetworks123*</para>
+</listitem><listitem>
+<para>The <computeroutput>disconnect</computeroutput> ./wifi disconnect SSID[active]</para>
+</listitem><listitem>
+<para>The <computeroutput>forget</computeroutput> ./wifi forget SSID</para>
+</listitem><listitem>
+<para>The <computeroutput>active</computeroutput> ./wifi active <?linebreak?></para>
+</listitem><listitem>
+<para>The <computeroutput>connections</computeroutput> ./wifi connections</para>
+</listitem><listitem>
+<para>The <computeroutput>secret_delete_all</computeroutput> ./wifi secret_delete_all</para>
+</listitem><listitem></listitem><listitem></listitem></itemizedlist>
+</para>
+</section>
+<section xml:id="_index_1dependencies">
+<title>Dependencies</title>
+
+<para><itemizedlist>
+<listitem></listitem><listitem>
+<para>The program depends on the nmcli tool, which should be pre-installed on most Linux distributions.</para>
+</listitem><listitem>
+<para>Exercise caution when using sudo.</para>
+</listitem><listitem></listitem><listitem></listitem><listitem></listitem></itemizedlist>
+</para>
+</section>
+<section xml:id="_index_1authors">
+<title>Authors</title>
+
+<para><itemizedlist>
+<listitem></listitem><listitem>
+<para>- Gor Danielyan</para>
+</listitem><listitem>
+<para>- Contact: <link xlink:href="https://t.me/Gorynych_DuO">https://t.me/Gorynych_DuO</link> </para>
+</listitem></itemizedlist>
+</para>
+</section>
+<section xml:id="_index_1links_sec">
+<title>Links</title>
+
+<para><itemizedlist>
+<listitem></listitem><listitem>
+<para>- GitHub repository: <link xlink:href="https://github.com/DuO-cmd/newHvAc_wifi_search.git">https://github.com/DuO-cmd/newHvAc_wifi_search.git</link> */ </para>
+</listitem></itemizedlist>
+</para>
+</section>
+</chapter>

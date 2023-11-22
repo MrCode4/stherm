@@ -1,15 +1,31 @@
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QQuickStyle>
-#include <QScreen>
-#include <QQmlContext>
+#include <QDebug>
+#include <QFile>
 #include <QFontDatabase>
-#include <QSysInfo>
+#include <QGuiApplication>
 #include <QProcess>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include <QQuickStyle>
+#include <QRegularExpression>
+#include <QScreen>
+#include <QSysInfo>
 
+#include "UtilityHelper.h"
 
 int main(int argc, char *argv[])
 {
+    qDebug() << Q_FUNC_INFO << __LINE__ << "getStartMode: " << UtilityHelper::getStartMode();
+
+    // CPU info example
+    QString cpuid = UtilityHelper::getCPUInfo();
+    qDebug() << "CPU ID: " << cpuid;
+
+    // Brightness example
+    UtilityHelper::setBrightness(200);
+
+    // Time zone example
+    UtilityHelper::setTimeZone(8);
+
     //! Enable virtual keyboard
     qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));
 

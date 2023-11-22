@@ -1,5 +1,6 @@
 import QtQuick
 
+import Stherm
 /*! ***********************************************************************************************
  * Device Controller
  * ************************************************************************************************/
@@ -9,6 +10,8 @@ QtObject {
      * ****************************************************************************************/
     required property I_Device device
 
+
+    property DeviceControllerCPP deviceControllerCPP: null
 
     /* Object Properties
      * ****************************************************************************************/
@@ -31,17 +34,21 @@ QtObject {
 
     function updateBacklight(isOn, color)
     {
-        device.backlight.on = isOn;
-        device.backlight.hue = color.hsvHue;
-        device.backlight.saturation = color.hsvSaturation,
-        device.backlight.value = color.hsvValue
+        if (updateDeviceBacklight(isOn, color))
+        {
+            device.backlight.on = isOn;
+            device.backlight.hue = color.hsvHue;
+            device.backlight.saturation = color.hsvSaturation;
+            device.backlight.value = color.hsvValue;
+        } else {
+            console.log("revert the backlight in model: ")
+        }
 
-        updateDeviceBacklight();
     }
 
     //! These methods should be overriden by subclasses to provide implementation
 
-    function updateDeviceBacklight() {}
+    function updateDeviceBacklight(isOn, color):bool {}
 
     function updateFan(mode: int, workingPerHour: int) {}
 
@@ -52,4 +59,6 @@ QtObject {
     function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive) {}
 
     function setDesiredTemperature(temperature: real) {}
+
+    function updateInformation() {}
 }

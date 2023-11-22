@@ -1,0 +1,21 @@
+\chapter{HVAC Timezone Configuration}
+\hypertarget{index}{}\label{index}\index{HVAC Timezone Configuration@{HVAC Timezone Configuration}}
+\hypertarget{index_intro_sec}{}\doxysection{\texorpdfstring{Introduction}{Introduction}}\label{index_intro_sec}
+This program allows you to set the timezone for an HVAC (Heating, Ventilation, and Air Conditioning) system. By providing a valid timezone offset as a command-\/line argument, the program updates the system configuration to reflect the specified timezone.\hypertarget{index_usage_sec}{}\doxysection{\texorpdfstring{Usage}{Usage}}\label{index_usage_sec}
+To use this program, provide a valid timezone offset as a command-\/line argument when executing the program. The program will then adjust the system configuration to use the specified timezone offset.
+\begin{DoxyItemize}
+\item Compile 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{g++\ HvAcTimezone.cpp\ -\/o\ setTimezone}
+
+\end{DoxyCode}
+
+\item Run the compiled executable. 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{./setTimezone\ 10}
+
+\end{DoxyCode}
+ The valid timezone offset range is from -\/12 to 13, representing different time zones.
+\end{DoxyItemize}\hypertarget{index_error_codes_sec}{}\doxysection{\texorpdfstring{Error Codes}{Error Codes}}\label{index_error_codes_sec}
+The program uses a set of error codes to indicate different types of errors that may occur during execution. These error codes are defined in the SIO\+\_\+\+Errors enumeration in the source code.\hypertarget{index_author_sec}{}\doxysection{\texorpdfstring{Author}{Author}}\label{index_author_sec}
+This program was developed by Gor Danielyan. 

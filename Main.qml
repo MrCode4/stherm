@@ -319,11 +319,11 @@ ApplicationWindow {
 
     //! This Timer is used to generate arbitrary Messages (alert or notification)
     Timer {
-        interval: 8000
+        interval: 10000
         repeat: true
-        running: true
+        running: uiSession?.simulating ?? false
         onTriggered: {
-            if (Math.random() > 0.98) {
+            if (Math.random() > 0.99) {
                 //! Create an alert
                 var now = new Date();
                 if (Math.random() > 0.5) {

@@ -10,7 +10,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml QuickControls2 Multimedia Concurrent Core5Compat)
+find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
+    QuickControls2 Multimedia Concurrent
+    Core5Compat SerialPort )
 
 #qt_standard_project_setup()
 
@@ -197,8 +199,8 @@ qt6_add_qml_module(appStherm
         Backend/ScreenSaverManager.cpp
 
         # php
-        Backend/php_api.h
-        Backend/php_api.cpp
+        Backend/PhpApi.h
+        Backend/PhpApi.cpp
         Backend/php/php_hardware.h
         Backend/php/php_hardware.cpp
         Backend/php/php_system.h
@@ -211,6 +213,61 @@ qt6_add_qml_module(appStherm
         Backend/php/php_schedule.cpp
         Backend/php/php_update.h
         Backend/php/php_update.cpp
+
+        Backend/php/include/timing.h
+        Backend/php/include/timing.cpp
+        Backend/php/include/deviceconfig.h
+        Backend/php/include/deviceconfig.cpp
+        Backend/php/include/currentstage.h
+        Backend/php/include/currentstage.cpp
+        Backend/php/include/nuveTypes.h
+        Backend/php/include/sensors.h
+        Backend/php/include/sensors.cpp
+        Backend/php/include/wirings.h
+        Backend/php/include/wirings.cpp
+        Backend/php/include/parameter_definitions.h
+
+        Backend/DeviceControllerCPP.h
+        Backend/DeviceControllerCPP.cpp
+        Backend/UARTConnection.h
+        Backend/UARTConnection.cpp
+
+        Backend/deviceIOController.h
+        Backend/deviceIOController.cpp
+
+        Backend/DataParser.h
+        Backend/DataParser.cpp
+        Backend/UtilityHelper.h
+        Backend/UtilityHelper.cpp
+
+        Backend/Core/Scheme.h
+        Backend/Core/Scheme.cpp
+        Backend/Core/Schedule.h
+        Backend/Core/Schedule.cpp
+        Backend/Core/System.h
+        Backend/Core/System.cpp
+        Backend/Core/Sync.h
+        Backend/Core/Sync.cpp
+        Backend/Core/NetworkWorker.h
+        Backend/Core/NetworkWorker.cpp
+        Backend/LogHelper.h
+
+        Backend/DeviceAPI.h
+        Backend/DeviceAPI.cpp
+        Backend/Device/nuve_types.h
+        Backend/Device/device_config.h
+        Backend/Device/device_config.cpp
+        Backend/Device/timing.h
+        Backend/Device/timing.cpp
+        Backend/Device/current_stage.h
+        Backend/Device/current_stage.cpp
+        Backend/Device/sensors.h
+        Backend/Device/sensors.cpp
+        Backend/Core/hardware.h
+        Backend/Core/hardware.cpp
+        Backend/GPIO/GpioHandler.h
+        Backend/GPIO/GpioHandler.cpp
+
 
         Backend/QrCode/qrcodegen.hpp
         Backend/QrCode/qrcodegen.cpp
@@ -271,6 +328,8 @@ target_link_libraries(appStherm
     Qt6::QuickControls2
     Qt6::Multimedia
     Qt6::Concurrent
+    Qt6::SerialPort
+
     QtQuickStreamplugin
     RoniaStyle
     RoniaStyleplugin

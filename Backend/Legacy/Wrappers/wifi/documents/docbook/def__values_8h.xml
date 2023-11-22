@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="_def__values_8h" xml:lang="en-US">
+<title>def_values.h File Reference</title>
+<indexterm><primary>def_values.h</primary></indexterm>
+<para>
+
+<para>Contains constants and default values used in the <link linkend="_class_input_parametrs">InputParametrs</link> class for managing Wi-Fi connections. </para>
+ 
+</para>
+<programlisting linenumbering="unnumbered">#include &lt;iostream&gt;<?linebreak?></programlisting><simplesect>
+    <title>Macros    </title>
+        <itemizedlist>
+            <listitem><para>#define <link linkend="_def__values_8h_1a5cbc436b285bbd660ec2c151c22947e0">ARGUMENT_MIN_COUNT</link>&#160;&#160;&#160;2</para>
+</listitem>
+            <listitem><para>#define <link linkend="_def__values_8h_1ae870535f2fbaf026d63caf07c6d3e09c">ARGUMENT_MAX_COUNT</link>&#160;&#160;&#160;10</para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Enumerations    </title>
+        <itemizedlist>
+            <listitem><para>enum <link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aa">COMMANDS</link> { <?linebreak?><link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaae632e034f0e0f24df29cb4502326f905">COMMAND_SEARCH</link> =100
+, <link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa32c65618324e254bde22218da6789ad3">COMMAND_MANUAL</link>
+, <link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa5dc59f40ce77d4d2de3323e5167f8dbf">COMMAND_CONNECT</link>
+, <link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa0c32be477bcfbdc0dd6f6cc108474105">COMMAND_DISCONNECT</link>
+, <?linebreak?><link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa7724e2f443b45bfef9160b23733a0e7b">COMMAND_FORGET</link>
+, <link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa2e93d85f9245e6c3d027c0ed441ca88b">COMMAND_SHOW_ACTIVE_CONNECTIONS</link>
+, <link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaaa70755d4d95e9fc0011da162908f696f">COMMAND_SHOW_CONNECTIONS</link>
+, <link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaaa66a94b953985435949834d0ec98224e">COMMAND_DELETE_ALL</link>
+ }</para>
+
+<para>The available Wi-Fi management commands as enumerated values. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Variables    </title>
+        <itemizedlist>
+            <listitem><para>std::string <link linkend="_def__values_8h_1a5c0ab853e6a30eddea2d99170d3c6235">my_cmd_array</link> [] = { &quot;search&quot;,&quot;manual&quot;,&quot;connect&quot;,&quot;disconnect&quot;,&quot;forget&quot;,&quot;active&quot;,&quot;connections&quot;,&quot;secret_delete_all&quot;}</para>
+</listitem>
+            <listitem><para>int <link linkend="_def__values_8h_1aa48092da58e408f7c494391206a06953">my_arr_size</link> = 8</para>
+</listitem>
+            <listitem><para>std::string <link linkend="_def__values_8h_1ad1f977e33f17a8666d02657032a6be40">wifi_manual</link> = &quot;essid:LanTekIV ip:172.16.0.227 subnet:255.255.255.0 gtw:172.16.0.1 dns:8.8.8.8 dns2:4.4.4.4 pass:IdealNetworks123*&quot;</para>
+
+<para>The default values for Wi-Fi manual connection parameters. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<section>
+<title>Detailed Description</title>
+
+<para>Contains constants and default values used in the <link linkend="_class_input_parametrs">InputParametrs</link> class for managing Wi-Fi connections. </para>
+
+<para>This file defines constants such as the minimum and maximum number of command-line arguments accepted, the available Wi-Fi management commands, and default values for Wi-Fi manual connection parameters. <formalpara><title>Author</title>
+
+<para>Gor Danielyan </para>
+
+<para>Contact <link xlink:href="https://t.me/Gorynych_DuO">https://t.me/Gorynych_DuO</link> </para>
+</formalpara>
+</para>
+</section>
+<section>
+<title>Macro Definition Documentation</title>
+<anchor xml:id="_def__values_8h_1ae870535f2fbaf026d63caf07c6d3e09c"/><section>
+    <title>ARGUMENT_MAX_COUNT</title>
+<indexterm><primary>ARGUMENT_MAX_COUNT</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>ARGUMENT_MAX_COUNT</secondary></indexterm>
+<para><computeroutput>#define ARGUMENT_MAX_COUNT&#160;&#160;&#160;10</computeroutput></para>
+<para>The maximum number of command-line arguments accepted for a command </para>
+</section>
+<anchor xml:id="_def__values_8h_1a5cbc436b285bbd660ec2c151c22947e0"/><section>
+    <title>ARGUMENT_MIN_COUNT</title>
+<indexterm><primary>ARGUMENT_MIN_COUNT</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>ARGUMENT_MIN_COUNT</secondary></indexterm>
+<para><computeroutput>#define ARGUMENT_MIN_COUNT&#160;&#160;&#160;2</computeroutput></para>
+<para>The minimum number of command-line arguments required for a valid command </para>
+</section>
+</section>
+<section>
+<title>Enumeration Type Documentation</title>
+<anchor xml:id="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aa"/><section>
+    <title>COMMANDS</title>
+<indexterm><primary>COMMANDS</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>COMMANDS</secondary></indexterm>
+<para><computeroutput>enum <link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aa">COMMANDS</link></computeroutput></para><para>
+
+<para>The available Wi-Fi management commands as enumerated values. </para>
+</para>
+<informaltable frame="all">
+<title>Enumerator</title>
+    <tgroup cols="2" align="left" colsep="1" rowsep="1">
+      <colspec colname='c1'/>
+      <colspec colname='c2'/>
+<tbody>
+<row><entry><indexterm><primary>COMMAND_SEARCH</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>COMMAND_SEARCH</secondary></indexterm>
+<anchor xml:id="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaae632e034f0e0f24df29cb4502326f905"/>COMMAND_SEARCH</entry><entry></entry></row><row><entry><indexterm><primary>COMMAND_MANUAL</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>COMMAND_MANUAL</secondary></indexterm>
+<anchor xml:id="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa32c65618324e254bde22218da6789ad3"/>COMMAND_MANUAL</entry><entry></entry></row><row><entry><indexterm><primary>COMMAND_CONNECT</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>COMMAND_CONNECT</secondary></indexterm>
+<anchor xml:id="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa5dc59f40ce77d4d2de3323e5167f8dbf"/>COMMAND_CONNECT</entry><entry></entry></row><row><entry><indexterm><primary>COMMAND_DISCONNECT</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>COMMAND_DISCONNECT</secondary></indexterm>
+<anchor xml:id="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa0c32be477bcfbdc0dd6f6cc108474105"/>COMMAND_DISCONNECT</entry><entry></entry></row><row><entry><indexterm><primary>COMMAND_FORGET</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>COMMAND_FORGET</secondary></indexterm>
+<anchor xml:id="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa7724e2f443b45bfef9160b23733a0e7b"/>COMMAND_FORGET</entry><entry></entry></row><row><entry><indexterm><primary>COMMAND_SHOW_ACTIVE_CONNECTIONS</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>COMMAND_SHOW_ACTIVE_CONNECTIONS</secondary></indexterm>
+<anchor xml:id="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa2e93d85f9245e6c3d027c0ed441ca88b"/>COMMAND_SHOW_ACTIVE_CONNECTIONS</entry><entry></entry></row><row><entry><indexterm><primary>COMMAND_SHOW_CONNECTIONS</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>COMMAND_SHOW_CONNECTIONS</secondary></indexterm>
+<anchor xml:id="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaaa70755d4d95e9fc0011da162908f696f"/>COMMAND_SHOW_CONNECTIONS</entry><entry></entry></row><row><entry><indexterm><primary>COMMAND_DELETE_ALL</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>COMMAND_DELETE_ALL</secondary></indexterm>
+<anchor xml:id="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaaa66a94b953985435949834d0ec98224e"/>COMMAND_DELETE_ALL</entry><entry></entry></row>    </tbody>
+    </tgroup>
+</informaltable>
+</section>
+</section>
+<section>
+<title>Variable Documentation</title>
+<anchor xml:id="_def__values_8h_1aa48092da58e408f7c494391206a06953"/><section>
+    <title>my_arr_size</title>
+<indexterm><primary>my_arr_size</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>my_arr_size</secondary></indexterm>
+<para><computeroutput>int my_arr_size = 8</computeroutput></para></section>
+<anchor xml:id="_def__values_8h_1a5c0ab853e6a30eddea2d99170d3c6235"/><section>
+    <title>my_cmd_array</title>
+<indexterm><primary>my_cmd_array</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>my_cmd_array</secondary></indexterm>
+<para><computeroutput>std::string my_cmd_array[] = { &quot;search&quot;,&quot;manual&quot;,&quot;connect&quot;,&quot;disconnect&quot;,&quot;forget&quot;,&quot;active&quot;,&quot;connections&quot;,&quot;secret_delete_all&quot;}</computeroutput></para>
+<para>The aviable list of command that <link linkend="_">InputParametrs </link> can wotk with </para>
+</section>
+<anchor xml:id="_def__values_8h_1ad1f977e33f17a8666d02657032a6be40"/><section>
+    <title>wifi_manual</title>
+<indexterm><primary>wifi_manual</primary><secondary>def_values.h</secondary></indexterm>
+<indexterm><primary>def_values.h</primary><secondary>wifi_manual</secondary></indexterm>
+<para><computeroutput>std::string wifi_manual = &quot;essid:LanTekIV ip:172.16.0.227 subnet:255.255.255.0 gtw:172.16.0.1 dns:8.8.8.8 dns2:4.4.4.4 pass:IdealNetworks123*&quot;</computeroutput></para><para>
+
+<para>The default values for Wi-Fi manual connection parameters. </para>
+</para>
+</section>
+</section>
+</section>

@@ -1,0 +1,21 @@
+image: atlassian/default-image:3
+
+pipelines:
+  branches:
+    master:
+      - step: 
+          name: Install software
+          script:
+            - apt update && apt install -y g++-arm-linux-gnueabihf
+            - cd src
+            - arm-linux-gnueabihf-g++ HvAcTimezone.cpp -o setTimezone
+          artifacts:
+            - src/setTimezone
+      - step:
+          name: Artifactory connection
+          script:
+            - pipe: jfrog/jfrog-setup-cli:2.0.0
+            - source ./jfrog-setup-cli.sh
+            - jf rt ping
+            - jf rt u src/setTimezone nuve1-setTimezone/v${BITBUCKET_BUILD_NUMBER}/setTimezone
+            - jf rt u src/setTimezone nuve1-setTimezone/latest/setTimezone

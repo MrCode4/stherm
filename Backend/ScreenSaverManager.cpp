@@ -96,6 +96,13 @@ void ScreenSaverManager::setActive()
 bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
 {
     switch(event->type()) {
+        //! sent from controller when someone rapproaches to device
+    case QEvent::User:
+        if (mState == ScreenSaverManager::State::Timeout) {
+            //! Set it to running again
+            setState(ScreenSaverManager::State::Running);
+        }
+        break;
     case QEvent::TouchBegin:
     case QEvent::MouseButtonPress:
     case QEvent::KeyPress:

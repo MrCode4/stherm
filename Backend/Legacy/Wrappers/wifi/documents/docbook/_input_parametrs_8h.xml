@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__input_parametrs_8h" xml:lang="en-US">
+<title>InputParametrs.h File Reference</title>
+<indexterm><primary>InputParametrs.h</primary></indexterm>
+<programlisting linenumbering="unnumbered">#include &lt;vector&gt;<?linebreak?>#include &lt;string&gt;<?linebreak?>#include &quot;WifiManager.h&quot;<?linebreak?>#include &lt;assert.h&gt;<?linebreak?></programlisting><simplesect>
+    <title>Classes    </title>
+        <itemizedlist>
+            <listitem><para>class <link linkend="_class_input_parametrs">InputParametrs</link></para>
+
+<para>The class for processing command-line arguments This class is responsible for parsing and processing command-line arguments related to Wi-Fi management tasks. It works in conjunction with the <link linkend="_class_wifi_manager">WifiManager</link> class to handle tasks such as wifi connect disconnect forget manual connection, IP address validation, and subnet reformatting. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+</section>

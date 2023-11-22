@@ -1,0 +1,81 @@
+\doxysection{crc.\+c File Reference}
+\hypertarget{crc_8c}{}\label{crc_8c}\index{crc.c@{crc.c}}
+{\ttfamily \#include \"{}crc.\+h\"{}}\newline
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{crc_8c_aa55bbb692b1c5e89d3a5c3bee1ce8399}{POLY}}~0x8408
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+unsigned short \mbox{\hyperlink{crc_8c_aa7d00560a17f0f98e410ec03a9e63b75}{crc16}} (unsigned char \texorpdfstring{$\ast$}{*}data\+\_\+p, unsigned short length)
+\begin{DoxyCompactList}\small\item\em Calculates the CRC-\/16 checksum for the given data. This function calculates the CRC-\/16 checksum for the given data buffer and size using the specified polynomial. \end{DoxyCompactList}\item 
+uint32\+\_\+t \mbox{\hyperlink{crc_8c_a32aac20108ccd02316c3b36faed9cfa7}{crc32}} (const void \texorpdfstring{$\ast$}{*}buf, uint8\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em Calculates the CRC-\/32 checksum for the given data. This function calculates the CRC-\/32 checksum based on the precomputed crc32\+\_\+tab\mbox{[}\mbox{]} array, for the given data buffer and size. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const uint32\+\_\+t \mbox{\hyperlink{crc_8c_a7c721e38ec2a9be581f718dc5405ace8}{crc32\+\_\+tab}} \mbox{[}$\,$\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{crc_8c_aa55bbb692b1c5e89d3a5c3bee1ce8399}\label{crc_8c_aa55bbb692b1c5e89d3a5c3bee1ce8399} 
+\index{crc.c@{crc.c}!POLY@{POLY}}
+\index{POLY@{POLY}!crc.c@{crc.c}}
+\doxysubsubsection{\texorpdfstring{POLY}{POLY}}
+{\footnotesize\ttfamily \#define POLY~0x8408}
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{crc_8c_aa7d00560a17f0f98e410ec03a9e63b75}\label{crc_8c_aa7d00560a17f0f98e410ec03a9e63b75} 
+\index{crc.c@{crc.c}!crc16@{crc16}}
+\index{crc16@{crc16}!crc.c@{crc.c}}
+\doxysubsubsection{\texorpdfstring{crc16()}{crc16()}}
+{\footnotesize\ttfamily unsigned short crc16 (\begin{DoxyParamCaption}\item[{unsigned char \texorpdfstring{$\ast$}{*}}]{data\+\_\+p,  }\item[{unsigned short}]{length }\end{DoxyParamCaption})}
+
+
+
+Calculates the CRC-\/16 checksum for the given data. This function calculates the CRC-\/16 checksum for the given data buffer and size using the specified polynomial. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data\+\_\+p} & A pointer to the data buffer to be checksummed. \\
+\hline
+{\em length} & The size of the data buffer in bytes. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The CRC-\/16 checksum for the given data. 
+\end{DoxyReturn}
+\Hypertarget{crc_8c_a32aac20108ccd02316c3b36faed9cfa7}\label{crc_8c_a32aac20108ccd02316c3b36faed9cfa7} 
+\index{crc.c@{crc.c}!crc32@{crc32}}
+\index{crc32@{crc32}!crc.c@{crc.c}}
+\doxysubsubsection{\texorpdfstring{crc32()}{crc32()}}
+{\footnotesize\ttfamily uint32\+\_\+t crc32 (\begin{DoxyParamCaption}\item[{const void \texorpdfstring{$\ast$}{*}}]{buf,  }\item[{uint8\+\_\+t}]{size }\end{DoxyParamCaption})}
+
+
+
+Calculates the CRC-\/32 checksum for the given data. This function calculates the CRC-\/32 checksum based on the precomputed crc32\+\_\+tab\mbox{[}\mbox{]} array, for the given data buffer and size. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em buf} & A pointer to the data buffer to be checksummed. \\
+\hline
+{\em size} & The size of the data buffer in bytes. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The CRC-\/32 checksum for the given data. 
+\end{DoxyReturn}
+
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{crc_8c_a7c721e38ec2a9be581f718dc5405ace8}\label{crc_8c_a7c721e38ec2a9be581f718dc5405ace8} 
+\index{crc.c@{crc.c}!crc32\_tab@{crc32\_tab}}
+\index{crc32\_tab@{crc32\_tab}!crc.c@{crc.c}}
+\doxysubsubsection{\texorpdfstring{crc32\_tab}{crc32\_tab}}
+{\footnotesize\ttfamily const uint32\+\_\+t crc32\+\_\+tab\mbox{[}$\,$\mbox{]}}
+

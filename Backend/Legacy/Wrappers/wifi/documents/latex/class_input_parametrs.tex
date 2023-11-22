@@ -1,0 +1,440 @@
+\doxysection{Input\+Parametrs Class Reference}
+\hypertarget{class_input_parametrs}{}\label{class_input_parametrs}\index{InputParametrs@{InputParametrs}}
+
+
+The class for processing command-\/line arguments This class is responsible for parsing and processing command-\/line arguments related to Wi-\/\+Fi management tasks. It works in conjunction with the \doxylink{class_wifi_manager}{Wifi\+Manager} class to handle tasks such as wifi connect disconnect forget manual connection, IP address validation, and subnet reformatting.  
+
+
+
+
+{\ttfamily \#include $<$Input\+Parametrs.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_input_parametrs_ad69894f7986b7adf80c1dc3d2dba3688}{Input\+Parametrs}} (char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}argv, int argc)
+\begin{DoxyCompactList}\small\item\em \doxylink{class_input_parametrs}{Input\+Parametrs} constructor that initializes the ip\+\_\+argv and ip\+\_\+argc member variables. This constructor takes command-\/line arguments as input and initializes the ip\+\_\+argv and ip\+\_\+argc member variables, which will be used to store the command-\/line arguments for processing by the \doxylink{class_input_parametrs}{Input\+Parametrs} class. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_input_parametrs_a756b798df75030eef5f159b88900e9ba}{execute\+Command}} ()
+\begin{DoxyCompactList}\small\item\em Executes the appropriate command based on the input parameters. This function checks if the arguments are valid and then calls the appropriate function to execute the desired command. It handles command execution for searching Wi-\/\+Fi networks, manually connecting to a network, connecting, disconnecting, forgetting a network, showing active connections, showing all connections, and deleting all connections. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Types}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9}{Manual\+\_\+connection}} \{ \newline
+\mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a005a3af08773c7fc15fb0792cf184dad}{essid}}
+, \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9ac4872bbcc68002400a08320bfbe09734}{ip}}
+, \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9aab289660335c687680292888e037cd84}{subnet}}
+, \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9adc87e1b94ef6cbea98ced8137277ddfb}{gtw}}
+, \newline
+\mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a5159d5de2ae328a292dfbe3982ba341f}{dns}}
+, \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a18709b455fdfebbea0dbd1209514c35e}{dns2}}
+, \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a4953979681e6c099c905962af8af274e}{pass}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enum for indexing the wifi-\/\+IP-\/related command-\/line arguments. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eb}{Subnet}} \{ \newline
+\mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba2ec77594bd0a2cd322d23078d4e9c84d}{SUBNET\+\_\+0}}
+, \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebac7aaf54c7d51e8089f135ec020c529c0}{SUBNET\+\_\+128}}
+, \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaacacf513053871fafb5938f772bafa7e}{SUBNET\+\_\+192}}
+, \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaaf52c97fecb010c06c1ea83fedbb17c6}{SUBNET\+\_\+224}}
+, \newline
+\mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba0e438f7539ed47f97ad051640c3c4abf}{SUBNET\+\_\+240}}
+, \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba3afc75d3828a5b4e093005eb542bb6e0}{SUBNET\+\_\+248}}
+, \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaf927d532f76ed7a7137d1e03bc262990}{SUBNET\+\_\+252}}
+, \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba699bf1abb6b13d47b83965fcb01b32ca}{SUBNET\+\_\+254}}
+, \newline
+\mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba45c0503ce0f816784ae6b5c0a637959a}{SUBNET\+\_\+255}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enum for representing valid subnet mask values. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{class_input_parametrs_a9d3ba1d07e069018fcaabbbb5d343b44}{find\+\_\+words}} (std\+::vector$<$ std\+::string $>$ \&args, std\+::string \&data, const std\+::vector$<$ std\+::string $>$ findable\+\_\+words)
+\begin{DoxyCompactList}\small\item\em Searches for specific words in a string and populates a vector with them. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_input_parametrs_a3e5e2f95b79a8a2d0700b426864da812}{get\+\_\+arguments}} (char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}argv, int argc, std\+::vector$<$ std\+::string $>$ \&all\+\_\+argunments)
+\begin{DoxyCompactList}\small\item\em Extracts arguments from the command line input. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_input_parametrs_a9e96458cdc5ab59bd8b1348bc2561a8d}{get\+\_\+command}} (char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}argv, int argc)
+\begin{DoxyCompactList}\small\item\em Determines the command type based on the command line input. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_input_parametrs_adbb5ff2b695f1df8608af058ae8be1cd}{check\+\_\+arg\+\_\+count}} (char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}argv, int argc)
+\begin{DoxyCompactList}\small\item\em Checks if the number of command-\/line arguments is valid for the given command. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_input_parametrs_ae8801a48e08ae50b33aa315e63d3e235}{print\+\_\+errors}} (int err\+\_\+code)
+\begin{DoxyCompactList}\small\item\em Prints error messages based on the given error code. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_input_parametrs_a7e9242b9dde105009632e02232609abc}{manual\+\_\+connect\+\_\+arguments}} (std\+::vector$<$ std\+::string $>$ \&args, std\+::string \&data)
+\begin{DoxyCompactList}\small\item\em Validates and processes manual connection arguments. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_input_parametrs_a39e216c81ffc8927d363bef11180ce49}{is\+\_\+ip}} (std\+::string \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9ac4872bbcc68002400a08320bfbe09734}{ip}})
+\begin{DoxyCompactList}\small\item\em Checks if the input string is a valid IP address. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_input_parametrs_a030cfa4c12827043ad55586423f1556f}{subet\+\_\+reformating}} (std\+::string \&\mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9aab289660335c687680292888e037cd84}{subnet}})
+\begin{DoxyCompactList}\small\item\em Reformats a subnet mask string into CIDR notation. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_input_parametrs_aa4440fd7b625c3eab67087fef0126827}{remove\+Spaces\+From\+Back}} (std\+::string \&data)
+\begin{DoxyCompactList}\small\item\em Removes trailing spaces from a string. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::string $>$ \mbox{\hyperlink{class_input_parametrs_a46b4d7e9baa63b6d55db4d76a972b7b6}{ip\+\_\+arguments}}
+\begin{DoxyCompactList}\small\item\em Vector to store IP-\/related command-\/line arguments. \end{DoxyCompactList}\item 
+char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_input_parametrs_a099c739a0b71c059a1ce57465f550488}{ip\+\_\+argv}}
+\begin{DoxyCompactList}\small\item\em Pointer to the array of command-\/line arguments. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_input_parametrs_aa91548481f15eaeee623afdb483042bb}{ip\+\_\+argc}}
+\begin{DoxyCompactList}\small\item\em The number of command-\/line arguments. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{class_wifi_manager}{Wifi\+Manager}} \mbox{\hyperlink{class_input_parametrs_a7f4ca6a3e45a51dc4a259bd0f58791fa}{wifi\+\_\+function}}
+\begin{DoxyCompactList}\small\item\em Instance of \doxylink{class_wifi_manager}{Wifi\+Manager} class for handling Wi-\/\+Fi connections. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+The class for processing command-\/line arguments This class is responsible for parsing and processing command-\/line arguments related to Wi-\/\+Fi management tasks. It works in conjunction with the \doxylink{class_wifi_manager}{Wifi\+Manager} class to handle tasks such as wifi connect disconnect forget manual connection, IP address validation, and subnet reformatting. 
+
+\doxysubsection{Member Enumeration Documentation}
+\Hypertarget{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9}\label{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9} 
+\index{InputParametrs@{InputParametrs}!Manual\_connection@{Manual\_connection}}
+\index{Manual\_connection@{Manual\_connection}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{Manual\_connection}{Manual\_connection}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9}{Input\+Parametrs\+::\+Manual\+\_\+connection}}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Enum for indexing the wifi-\/\+IP-\/related command-\/line arguments. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{essid@{essid}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!essid@{essid}}}\Hypertarget{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a005a3af08773c7fc15fb0792cf184dad}\label{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a005a3af08773c7fc15fb0792cf184dad} 
+essid&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ip@{ip}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!ip@{ip}}}\Hypertarget{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9ac4872bbcc68002400a08320bfbe09734}\label{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9ac4872bbcc68002400a08320bfbe09734} 
+ip&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{subnet@{subnet}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!subnet@{subnet}}}\Hypertarget{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9aab289660335c687680292888e037cd84}\label{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9aab289660335c687680292888e037cd84} 
+subnet&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{gtw@{gtw}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!gtw@{gtw}}}\Hypertarget{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9adc87e1b94ef6cbea98ced8137277ddfb}\label{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9adc87e1b94ef6cbea98ced8137277ddfb} 
+gtw&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{dns@{dns}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!dns@{dns}}}\Hypertarget{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a5159d5de2ae328a292dfbe3982ba341f}\label{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a5159d5de2ae328a292dfbe3982ba341f} 
+dns&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{dns2@{dns2}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!dns2@{dns2}}}\Hypertarget{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a18709b455fdfebbea0dbd1209514c35e}\label{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a18709b455fdfebbea0dbd1209514c35e} 
+dns2&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{pass@{pass}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!pass@{pass}}}\Hypertarget{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a4953979681e6c099c905962af8af274e}\label{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a4953979681e6c099c905962af8af274e} 
+pass&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eb}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eb} 
+\index{InputParametrs@{InputParametrs}!Subnet@{Subnet}}
+\index{Subnet@{Subnet}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{Subnet}{Subnet}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eb}{Input\+Parametrs\+::\+Subnet}}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Enum for representing valid subnet mask values. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SUBNET\_0@{SUBNET\_0}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!SUBNET\_0@{SUBNET\_0}}}\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba2ec77594bd0a2cd322d23078d4e9c84d}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba2ec77594bd0a2cd322d23078d4e9c84d} 
+SUBNET\+\_\+0&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SUBNET\_128@{SUBNET\_128}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!SUBNET\_128@{SUBNET\_128}}}\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebac7aaf54c7d51e8089f135ec020c529c0}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebac7aaf54c7d51e8089f135ec020c529c0} 
+SUBNET\+\_\+128&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SUBNET\_192@{SUBNET\_192}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!SUBNET\_192@{SUBNET\_192}}}\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaacacf513053871fafb5938f772bafa7e}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaacacf513053871fafb5938f772bafa7e} 
+SUBNET\+\_\+192&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SUBNET\_224@{SUBNET\_224}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!SUBNET\_224@{SUBNET\_224}}}\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaaf52c97fecb010c06c1ea83fedbb17c6}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaaf52c97fecb010c06c1ea83fedbb17c6} 
+SUBNET\+\_\+224&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SUBNET\_240@{SUBNET\_240}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!SUBNET\_240@{SUBNET\_240}}}\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba0e438f7539ed47f97ad051640c3c4abf}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba0e438f7539ed47f97ad051640c3c4abf} 
+SUBNET\+\_\+240&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SUBNET\_248@{SUBNET\_248}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!SUBNET\_248@{SUBNET\_248}}}\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba3afc75d3828a5b4e093005eb542bb6e0}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba3afc75d3828a5b4e093005eb542bb6e0} 
+SUBNET\+\_\+248&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SUBNET\_252@{SUBNET\_252}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!SUBNET\_252@{SUBNET\_252}}}\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaf927d532f76ed7a7137d1e03bc262990}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaf927d532f76ed7a7137d1e03bc262990} 
+SUBNET\+\_\+252&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SUBNET\_254@{SUBNET\_254}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!SUBNET\_254@{SUBNET\_254}}}\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba699bf1abb6b13d47b83965fcb01b32ca}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba699bf1abb6b13d47b83965fcb01b32ca} 
+SUBNET\+\_\+254&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SUBNET\_255@{SUBNET\_255}!InputParametrs@{InputParametrs}}\index{InputParametrs@{InputParametrs}!SUBNET\_255@{SUBNET\_255}}}\Hypertarget{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba45c0503ce0f816784ae6b5c0a637959a}\label{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba45c0503ce0f816784ae6b5c0a637959a} 
+SUBNET\+\_\+255&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_input_parametrs_ad69894f7986b7adf80c1dc3d2dba3688}\label{class_input_parametrs_ad69894f7986b7adf80c1dc3d2dba3688} 
+\index{InputParametrs@{InputParametrs}!InputParametrs@{InputParametrs}}
+\index{InputParametrs@{InputParametrs}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{InputParametrs()}{InputParametrs()}}
+{\footnotesize\ttfamily Input\+Parametrs\+::\+Input\+Parametrs (\begin{DoxyParamCaption}\item[{char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}}]{argv,  }\item[{int}]{argc }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\doxylink{class_input_parametrs}{Input\+Parametrs} constructor that initializes the ip\+\_\+argv and ip\+\_\+argc member variables. This constructor takes command-\/line arguments as input and initializes the ip\+\_\+argv and ip\+\_\+argc member variables, which will be used to store the command-\/line arguments for processing by the \doxylink{class_input_parametrs}{Input\+Parametrs} class. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em argv} & Pointer to an array of character pointers, containing the command-\/line arguments. \\
+\hline
+{\em argc} & Integer representing the number of command-\/line arguments. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_input_parametrs_adbb5ff2b695f1df8608af058ae8be1cd}\label{class_input_parametrs_adbb5ff2b695f1df8608af058ae8be1cd} 
+\index{InputParametrs@{InputParametrs}!check\_arg\_count@{check\_arg\_count}}
+\index{check\_arg\_count@{check\_arg\_count}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{check\_arg\_count()}{check\_arg\_count()}}
+{\footnotesize\ttfamily bool Input\+Parametrs\+::check\+\_\+arg\+\_\+count (\begin{DoxyParamCaption}\item[{char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}}]{argv,  }\item[{int}]{argc }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Checks if the number of command-\/line arguments is valid for the given command. 
+
+This function takes the command-\/line arguments and their count as input and checks if the number of arguments is valid for the command specified by the user. It returns true if the argument count is valid, otherwise returns false.
+
+
+\begin{DoxyParams}{Parameters}
+{\em argv} & The command-\/line arguments. \\
+\hline
+{\em argc} & The count of command-\/line arguments. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns true if the argument count is valid for the given command, false otherwise. 
+\end{DoxyReturn}
+\Hypertarget{class_input_parametrs_a756b798df75030eef5f159b88900e9ba}\label{class_input_parametrs_a756b798df75030eef5f159b88900e9ba} 
+\index{InputParametrs@{InputParametrs}!executeCommand@{executeCommand}}
+\index{executeCommand@{executeCommand}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{executeCommand()}{executeCommand()}}
+{\footnotesize\ttfamily int Input\+Parametrs\+::execute\+Command (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Executes the appropriate command based on the input parameters. This function checks if the arguments are valid and then calls the appropriate function to execute the desired command. It handles command execution for searching Wi-\/\+Fi networks, manually connecting to a network, connecting, disconnecting, forgetting a network, showing active connections, showing all connections, and deleting all connections. 
+
+\begin{DoxyReturn}{Returns}
+int 0 if the operation is successful, otherwise returns the corresponding error code. 
+\end{DoxyReturn}
+\Hypertarget{class_input_parametrs_a9d3ba1d07e069018fcaabbbb5d343b44}\label{class_input_parametrs_a9d3ba1d07e069018fcaabbbb5d343b44} 
+\index{InputParametrs@{InputParametrs}!find\_words@{find\_words}}
+\index{find\_words@{find\_words}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{find\_words()}{find\_words()}}
+{\footnotesize\ttfamily bool Input\+Parametrs\+::find\+\_\+words (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::string $>$ \&}]{args,  }\item[{std\+::string \&}]{data,  }\item[{const std\+::vector$<$ std\+::string $>$}]{findable\+\_\+words }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Searches for specific words in a string and populates a vector with them. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & Vector to store found words \\
+\hline
+{\em data} & String to search in \\
+\hline
+{\em findable\+\_\+words} & Vector of words to search for \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if all findable words were found, false otherwise 
+\end{DoxyReturn}
+\Hypertarget{class_input_parametrs_a3e5e2f95b79a8a2d0700b426864da812}\label{class_input_parametrs_a3e5e2f95b79a8a2d0700b426864da812} 
+\index{InputParametrs@{InputParametrs}!get\_arguments@{get\_arguments}}
+\index{get\_arguments@{get\_arguments}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{get\_arguments()}{get\_arguments()}}
+{\footnotesize\ttfamily bool Input\+Parametrs\+::get\+\_\+arguments (\begin{DoxyParamCaption}\item[{char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}}]{argv,  }\item[{int}]{argc,  }\item[{std\+::vector$<$ std\+::string $>$ \&}]{all\+\_\+argunments }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Extracts arguments from the command line input. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em argv} & Array of command line argument strings \\
+\hline
+{\em argc} & Number of command line arguments \\
+\hline
+{\em all\+\_\+arguments} & Vector to store extracted arguments \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_input_parametrs_a9e96458cdc5ab59bd8b1348bc2561a8d}\label{class_input_parametrs_a9e96458cdc5ab59bd8b1348bc2561a8d} 
+\index{InputParametrs@{InputParametrs}!get\_command@{get\_command}}
+\index{get\_command@{get\_command}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{get\_command()}{get\_command()}}
+{\footnotesize\ttfamily int Input\+Parametrs\+::get\+\_\+command (\begin{DoxyParamCaption}\item[{char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}}]{argv,  }\item[{int}]{argc }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Determines the command type based on the command line input. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em argv} & Array of command line argument strings \\
+\hline
+{\em argc} & Number of command line arguments \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Command type as an integer 
+\end{DoxyReturn}
+\Hypertarget{class_input_parametrs_a39e216c81ffc8927d363bef11180ce49}\label{class_input_parametrs_a39e216c81ffc8927d363bef11180ce49} 
+\index{InputParametrs@{InputParametrs}!is\_ip@{is\_ip}}
+\index{is\_ip@{is\_ip}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{is\_ip()}{is\_ip()}}
+{\footnotesize\ttfamily bool Input\+Parametrs\+::is\+\_\+ip (\begin{DoxyParamCaption}\item[{std\+::string}]{ip }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Checks if the input string is a valid IP address. 
+
+This function takes a string representing an IP address and checks if it is in a valid format. A valid IP address consists of 4 octets separated by dots, where each octet is an integer between 0 and 255. If the input string is a valid IP address, the function returns true; otherwise, it returns false.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ip} & A string representing an IP address to be validated. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns true if the input string is a valid IP address, false otherwise. 
+\end{DoxyReturn}
+\Hypertarget{class_input_parametrs_a7e9242b9dde105009632e02232609abc}\label{class_input_parametrs_a7e9242b9dde105009632e02232609abc} 
+\index{InputParametrs@{InputParametrs}!manual\_connect\_arguments@{manual\_connect\_arguments}}
+\index{manual\_connect\_arguments@{manual\_connect\_arguments}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{manual\_connect\_arguments()}{manual\_connect\_arguments()}}
+{\footnotesize\ttfamily int Input\+Parametrs\+::manual\+\_\+connect\+\_\+arguments (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::string $>$ \&}]{args,  }\item[{std\+::string \&}]{data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Validates and processes manual connection arguments. 
+
+This function takes a vector of manual connection arguments and a reference to a string containing the raw data. It checks the validity of the input arguments and sets default values for missing or empty fields. If any of the input arguments are invalid, the function returns an appropriate error code from the \doxylink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2}{Wifi\+Manager\+::\+ERROR} enum.
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & A vector of manual connection arguments. \\
+\hline
+{\em data} & A reference to a string containing the raw data for the manual connection arguments. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns 0 if all the manual connection arguments are valid, otherwise returns an error code from the \doxylink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2}{Wifi\+Manager\+::\+ERROR} enum. 
+\end{DoxyReturn}
+\Hypertarget{class_input_parametrs_ae8801a48e08ae50b33aa315e63d3e235}\label{class_input_parametrs_ae8801a48e08ae50b33aa315e63d3e235} 
+\index{InputParametrs@{InputParametrs}!print\_errors@{print\_errors}}
+\index{print\_errors@{print\_errors}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{print\_errors()}{print\_errors()}}
+{\footnotesize\ttfamily int Input\+Parametrs\+::print\+\_\+errors (\begin{DoxyParamCaption}\item[{int}]{err\+\_\+code }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Prints error messages based on the given error code. 
+
+This function takes an error code from the \doxylink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2}{Wifi\+Manager\+::\+ERROR} enum and prints an appropriate error message to the console. If there is no error, nothing will be printed.
+
+
+\begin{DoxyParams}{Parameters}
+{\em err\+\_\+code} & An error code from the \doxylink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2}{Wifi\+Manager\+::\+ERROR} enum. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns the same error code that was passed as input. 
+\end{DoxyReturn}
+\Hypertarget{class_input_parametrs_aa4440fd7b625c3eab67087fef0126827}\label{class_input_parametrs_aa4440fd7b625c3eab67087fef0126827} 
+\index{InputParametrs@{InputParametrs}!removeSpacesFromBack@{removeSpacesFromBack}}
+\index{removeSpacesFromBack@{removeSpacesFromBack}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{removeSpacesFromBack()}{removeSpacesFromBack()}}
+{\footnotesize\ttfamily void Input\+Parametrs\+::remove\+Spaces\+From\+Back (\begin{DoxyParamCaption}\item[{std\+::string \&}]{data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Removes trailing spaces from a string. 
+
+This function takes a reference to a string and removes all trailing spaces from it, modifying the original string. \begin{DoxyNote}{Note}
+This is a helper function used in the \doxylink{class_input_parametrs_a9d3ba1d07e069018fcaabbbb5d343b44}{Input\+Parametrs\+::find\+\_\+words} method.
+\end{DoxyNote}
+
+\begin{DoxyParams}{Parameters}
+{\em data} & A reference to the string from which trailing spaces will be removed. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_input_parametrs_a030cfa4c12827043ad55586423f1556f}\label{class_input_parametrs_a030cfa4c12827043ad55586423f1556f} 
+\index{InputParametrs@{InputParametrs}!subet\_reformating@{subet\_reformating}}
+\index{subet\_reformating@{subet\_reformating}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{subet\_reformating()}{subet\_reformating()}}
+{\footnotesize\ttfamily bool Input\+Parametrs\+::subet\+\_\+reformating (\begin{DoxyParamCaption}\item[{std\+::string \&}]{subnet }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Reformats a subnet mask string into CIDR notation. 
+
+This function takes a reference to a subnet mask string and reformats it into CIDR notation (e.\+g., \"{}255.\+255.\+255.\+0\"{} becomes \"{}24\"{}). If the provided subnet mask string is invalid, it clears the input string and returns false. Otherwise, the function returns true after updating the input string with the CIDR notation.
+
+
+\begin{DoxyParams}{Parameters}
+{\em subnet} & A reference to the subnet mask string to be reformatted. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns true if the input subnet mask string was successfully reformatted into CIDR notation, false otherwise. 
+\end{DoxyReturn}
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_input_parametrs_aa91548481f15eaeee623afdb483042bb}\label{class_input_parametrs_aa91548481f15eaeee623afdb483042bb} 
+\index{InputParametrs@{InputParametrs}!ip\_argc@{ip\_argc}}
+\index{ip\_argc@{ip\_argc}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{ip\_argc}{ip\_argc}}
+{\footnotesize\ttfamily int Input\+Parametrs\+::ip\+\_\+argc\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The number of command-\/line arguments. 
+
+\Hypertarget{class_input_parametrs_a46b4d7e9baa63b6d55db4d76a972b7b6}\label{class_input_parametrs_a46b4d7e9baa63b6d55db4d76a972b7b6} 
+\index{InputParametrs@{InputParametrs}!ip\_arguments@{ip\_arguments}}
+\index{ip\_arguments@{ip\_arguments}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{ip\_arguments}{ip\_arguments}}
+{\footnotesize\ttfamily std\+::vector$<$std\+::string$>$ Input\+Parametrs\+::ip\+\_\+arguments\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Vector to store IP-\/related command-\/line arguments. 
+
+\Hypertarget{class_input_parametrs_a099c739a0b71c059a1ce57465f550488}\label{class_input_parametrs_a099c739a0b71c059a1ce57465f550488} 
+\index{InputParametrs@{InputParametrs}!ip\_argv@{ip\_argv}}
+\index{ip\_argv@{ip\_argv}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{ip\_argv}{ip\_argv}}
+{\footnotesize\ttfamily char\texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*} Input\+Parametrs\+::ip\+\_\+argv\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Pointer to the array of command-\/line arguments. 
+
+\Hypertarget{class_input_parametrs_a7f4ca6a3e45a51dc4a259bd0f58791fa}\label{class_input_parametrs_a7f4ca6a3e45a51dc4a259bd0f58791fa} 
+\index{InputParametrs@{InputParametrs}!wifi\_function@{wifi\_function}}
+\index{wifi\_function@{wifi\_function}!InputParametrs@{InputParametrs}}
+\doxysubsubsection{\texorpdfstring{wifi\_function}{wifi\_function}}
+{\footnotesize\ttfamily \mbox{\hyperlink{class_wifi_manager}{Wifi\+Manager}} Input\+Parametrs\+::wifi\+\_\+function\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Instance of \doxylink{class_wifi_manager}{Wifi\+Manager} class for handling Wi-\/\+Fi connections. 
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{_input_parametrs_8h}{Input\+Parametrs.\+h}}\item 
+\mbox{\hyperlink{_input_parametrs_8cpp}{Input\+Parametrs.\+cpp}}\end{DoxyCompactItemize}

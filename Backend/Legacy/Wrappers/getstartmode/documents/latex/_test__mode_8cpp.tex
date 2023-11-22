@@ -1,0 +1,113 @@
+\doxysection{Test\+\_\+mode.\+cpp File Reference}
+\hypertarget{_test__mode_8cpp}{}\label{_test__mode_8cpp}\index{Test\_mode.cpp@{Test\_mode.cpp}}
+
+
+This file contains the main function for configuring and reading GPIO pins.  
+
+
+{\ttfamily \#include $<$sys/ioctl.\+h$>$}\newline
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$errno.\+h$>$}\newline
+{\ttfamily \#include $<$termios.\+h$>$}\newline
+{\ttfamily \#include $<$fcntl.\+h$>$}\newline
+{\ttfamily \#include $<$sys/stat.\+h$>$}\newline
+{\ttfamily \#include $<$sys/types.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{_test__mode_8cpp_ac3d144aa01e765a1fae62ab5491c7cc1}{\+\_\+\+POSIX\+\_\+\+SOURCE}}
+\item 
+\#define \mbox{\hyperlink{_test__mode_8cpp_a627f4c6e2b3a40a122f4303affea486b}{EXPORT\+\_\+\+PATH}}~\"{}/sys/class/gpio/export\textbackslash{}0\"{}
+\item 
+\#define \mbox{\hyperlink{_test__mode_8cpp_aa1a49ac2d72ab0d9451ca6f2dde7cb8c}{SW\+\_\+\+DIR\+\_\+\+PATH}}~\"{}/sys/class/gpio/gpio\%d/direction\textbackslash{}0\"{}
+\item 
+\#define \mbox{\hyperlink{_test__mode_8cpp_a374f1ac434d7e80e2b7a5e95f5169bbb}{SW\+\_\+\+INT\+\_\+\+PATH}}~\"{}/sys/class/gpio/gpio\%d/edge\textbackslash{}0\"{}
+\item 
+\#define \mbox{\hyperlink{_test__mode_8cpp_ab7be1e95ae664461a33d3447179b9b74}{SW\+\_\+\+VAL\+\_\+\+PATH}}~\"{}/sys/class/gpio/gpio\%d/value\textbackslash{}0\"{}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{_test__mode_8cpp_ab69a1e305b76fce28a08b78fb2ddce50}{configure\+\_\+pins}} (int gpio)
+\begin{DoxyCompactList}\small\item\em Configure the specified GPIO pin. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{_test__mode_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
+\begin{DoxyCompactList}\small\item\em Main function for configuring and reading GPIO pins. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This file contains the main function for configuring and reading GPIO pins. 
+
+The program configures the GPIO pin as an input, reads its value, and prints the value to the console. 
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{_test__mode_8cpp_ac3d144aa01e765a1fae62ab5491c7cc1}\label{_test__mode_8cpp_ac3d144aa01e765a1fae62ab5491c7cc1} 
+\index{Test\_mode.cpp@{Test\_mode.cpp}!\_POSIX\_SOURCE@{\_POSIX\_SOURCE}}
+\index{\_POSIX\_SOURCE@{\_POSIX\_SOURCE}!Test\_mode.cpp@{Test\_mode.cpp}}
+\doxysubsubsection{\texorpdfstring{\_POSIX\_SOURCE}{\_POSIX\_SOURCE}}
+{\footnotesize\ttfamily \#define \+\_\+\+POSIX\+\_\+\+SOURCE}
+
+\Hypertarget{_test__mode_8cpp_a627f4c6e2b3a40a122f4303affea486b}\label{_test__mode_8cpp_a627f4c6e2b3a40a122f4303affea486b} 
+\index{Test\_mode.cpp@{Test\_mode.cpp}!EXPORT\_PATH@{EXPORT\_PATH}}
+\index{EXPORT\_PATH@{EXPORT\_PATH}!Test\_mode.cpp@{Test\_mode.cpp}}
+\doxysubsubsection{\texorpdfstring{EXPORT\_PATH}{EXPORT\_PATH}}
+{\footnotesize\ttfamily \#define EXPORT\+\_\+\+PATH~\"{}/sys/class/gpio/export\textbackslash{}0\"{}}
+
+\Hypertarget{_test__mode_8cpp_aa1a49ac2d72ab0d9451ca6f2dde7cb8c}\label{_test__mode_8cpp_aa1a49ac2d72ab0d9451ca6f2dde7cb8c} 
+\index{Test\_mode.cpp@{Test\_mode.cpp}!SW\_DIR\_PATH@{SW\_DIR\_PATH}}
+\index{SW\_DIR\_PATH@{SW\_DIR\_PATH}!Test\_mode.cpp@{Test\_mode.cpp}}
+\doxysubsubsection{\texorpdfstring{SW\_DIR\_PATH}{SW\_DIR\_PATH}}
+{\footnotesize\ttfamily \#define SW\+\_\+\+DIR\+\_\+\+PATH~\"{}/sys/class/gpio/gpio\%d/direction\textbackslash{}0\"{}}
+
+\Hypertarget{_test__mode_8cpp_a374f1ac434d7e80e2b7a5e95f5169bbb}\label{_test__mode_8cpp_a374f1ac434d7e80e2b7a5e95f5169bbb} 
+\index{Test\_mode.cpp@{Test\_mode.cpp}!SW\_INT\_PATH@{SW\_INT\_PATH}}
+\index{SW\_INT\_PATH@{SW\_INT\_PATH}!Test\_mode.cpp@{Test\_mode.cpp}}
+\doxysubsubsection{\texorpdfstring{SW\_INT\_PATH}{SW\_INT\_PATH}}
+{\footnotesize\ttfamily \#define SW\+\_\+\+INT\+\_\+\+PATH~\"{}/sys/class/gpio/gpio\%d/edge\textbackslash{}0\"{}}
+
+\Hypertarget{_test__mode_8cpp_ab7be1e95ae664461a33d3447179b9b74}\label{_test__mode_8cpp_ab7be1e95ae664461a33d3447179b9b74} 
+\index{Test\_mode.cpp@{Test\_mode.cpp}!SW\_VAL\_PATH@{SW\_VAL\_PATH}}
+\index{SW\_VAL\_PATH@{SW\_VAL\_PATH}!Test\_mode.cpp@{Test\_mode.cpp}}
+\doxysubsubsection{\texorpdfstring{SW\_VAL\_PATH}{SW\_VAL\_PATH}}
+{\footnotesize\ttfamily \#define SW\+\_\+\+VAL\+\_\+\+PATH~\"{}/sys/class/gpio/gpio\%d/value\textbackslash{}0\"{}}
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{_test__mode_8cpp_ab69a1e305b76fce28a08b78fb2ddce50}\label{_test__mode_8cpp_ab69a1e305b76fce28a08b78fb2ddce50} 
+\index{Test\_mode.cpp@{Test\_mode.cpp}!configure\_pins@{configure\_pins}}
+\index{configure\_pins@{configure\_pins}!Test\_mode.cpp@{Test\_mode.cpp}}
+\doxysubsubsection{\texorpdfstring{configure\_pins()}{configure\_pins()}}
+{\footnotesize\ttfamily int configure\+\_\+pins (\begin{DoxyParamCaption}\item[{int}]{gpio }\end{DoxyParamCaption})}
+
+
+
+Configure the specified GPIO pin. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em gpio} & The GPIO pin to be configured. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int Returns EXIT\+\_\+\+SUCCESS if the pin is successfully configured, EXIT\+\_\+\+FAILURE otherwise. 
+\end{DoxyReturn}
+\Hypertarget{_test__mode_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}\label{_test__mode_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4} 
+\index{Test\_mode.cpp@{Test\_mode.cpp}!main@{main}}
+\index{main@{main}!Test\_mode.cpp@{Test\_mode.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Main function for configuring and reading GPIO pins. 
+
+\begin{DoxyReturn}{Returns}
+int Returns 0 on successful execution, non-\/zero error code on failure. 
+\end{DoxyReturn}

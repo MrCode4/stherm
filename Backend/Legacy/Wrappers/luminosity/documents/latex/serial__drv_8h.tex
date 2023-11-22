@@ -1,0 +1,564 @@
+\doxysection{serial\+\_\+drv.\+h File Reference}
+\hypertarget{serial__drv_8h}{}\label{serial__drv_8h}\index{serial\_drv.h@{serial\_drv.h}}
+
+
+Serial driver header file.  
+
+
+{\ttfamily \#include $<$stdint.\+h$>$}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_serial___rx_data}{Serial\+\_\+\+Rx\+Data}}
+\begin{DoxyCompactList}\small\item\em Structure for storing received serial data. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{struct_s_i_o___packet}{SIO\+\_\+\+Packet}}
+\begin{DoxyCompactList}\small\item\em Structure for serial input-\/output packets. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_ae414f6873c3251e64bd9d246f397e874}{ACK\+\_\+\+Offset}}~1
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a7739ed085bf0c7d6317e86bcaa1c4952}{CMD\+\_\+\+ACK}}~0x00
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_afadcbe33225bd4df3b3f033a11408785}{CMD\+\_\+\+ERR}}~0x01
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a5fff3fbb9f6aa8a859f0e9c58c20bba9}{CMD\+\_\+\+ERR\+\_\+\+ACT\+\_\+\+SCH\+\_\+\+EXIST}}~0x02
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a67c0d749c923c8f2ae8816919f8f0d0c}{CMD\+\_\+\+ERR\+\_\+\+BUS\+\_\+\+RGB}}~0x03
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_aa8d9667234170c717706499d3ab40273}{CMD\+\_\+\+ERR\+\_\+\+BUS\+\_\+\+TMR}}~0x04
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_adea9005fb4c90bebb81811e614d6f610}{CMD\+\_\+\+ERR\+\_\+\+LICENSE}}~0x\+FF
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_af024a5d0d5f9ac860d0567cb993d9b11}{CMD\+\_\+\+Offset}}~0
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_ac5d3886b5599df33fe94c3de785811d0}{Cmd\+ACK\+\_\+\+Mask}}~0x80
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a70f5b53693b757cd7b47e0c48dbb1674}{DATA\+\_\+\+Offset}}~3
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a699aebd978a07c5132481e5670cdb71e}{NONE\+\_\+\+Packet}}~0x00
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a5678a48af32172f76a07eb11a5d8d6af}{NUS\+\_\+\+Packet}}~0x02
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a3145ab094ea45984247881e3edaa71ab}{Packet\+Min\+Length}}~5
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a8551a9cea7ff0d7ec033252bba33ee95}{phy\+Ctrl\+Esc}}~0x\+F2
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_aca74e54df726a58c60cf4f98795dc3b1}{phy\+Start}}~0x\+F0
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a4d16f0f99d29873603b5ead264d49d2e}{phy\+Stop}}~0x\+F1
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a91f9ba196aee37946a8dfea63c87f2fc}{phy\+Xor\+Byte}}~0x\+FF
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_af9c435fed0685401e6e41f142bc00ec2}{SID\+\_\+\+Offset}}~2
+\item 
+\#define \mbox{\hyperlink{serial__drv_8h_a3941463f47de8f5295c88b75c34a946a}{UART\+\_\+\+Packet}}~0x01
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{struct_serial___rx_data}{Serial\+\_\+\+Rx\+Data}} \mbox{\hyperlink{serial__drv_8h_a7735b7fdf5c771a06f6848a7907022b2}{Serial\+\_\+\+Rx\+Data\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em Structure for storing received serial data. \end{DoxyCompactList}\item 
+typedef enum \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3}{SIO\+\_\+\+Command}} \mbox{\hyperlink{serial__drv_8h_a0c6562613d90d718ce0763065627c86d}{SIO\+\_\+\+Cmd\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em Enumeration of serial input-\/output commands. \end{DoxyCompactList}\item 
+typedef enum \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dc}{SIO\+\_\+\+Errors}} \mbox{\hyperlink{serial__drv_8h_ad5b7a96255a990ccbef7f7b2065b1897}{SIO\+\_\+\+Errors\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em Enumeration of serial input-\/output errors. \end{DoxyCompactList}\item 
+typedef struct \mbox{\hyperlink{struct_s_i_o___packet}{SIO\+\_\+\+Packet}} \mbox{\hyperlink{serial__drv_8h_a8c497a22014c5c6a04ec9f810c28b861}{SIO\+\_\+\+Packet\+\_\+t}}
+\begin{DoxyCompactList}\small\item\em Structure for serial input-\/output packets. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3}{SIO\+\_\+\+Command}} \{ \newline
+\mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a66f0cf724fb07d15e82c972aae41e0be}{Set\+Config}} = 0x01
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3af93fc864bb7ad037b42d280f1255e2f0}{Set\+Color\+RGB}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a96118933a612e34d6a197f261459714e}{Init\+Mcus}} = 0x21
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3afe0e036a7a63dbc9e86878b37b03fa75}{Set\+Child\+Status}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ad1f9f8a9d0daf709d114dad5ed045472}{Start\+Pairing}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a52e93bd781bea06c9ec2f3a7ef6a6915}{Stop\+Pairing}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a834543bec9f0df51e96be14fccb27c41}{Get\+Sensor\+Data}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ac1a69c381e5831d9525f0417d0c1db12}{Get\+New\+Child}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a31d73eb53a2cbac5aadfd3f2f821d921}{Get\+\_\+packets}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a6f9e9df127d10ca23858991ce3dea94f}{Send\+\_\+packet}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a28b565d3fd28e825d7ff5344f171c857}{Set\+Relay}} = 0x31
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a786b48f564ec02e3f5f5021d7ed1cdc1}{Get\+Relay\+Sensor}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a9c4de0664775a93d9c037cc600a0b156}{Check\+\_\+\+Wiring}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a2d047b541abac1fccba522171f6958a7}{feed\+\_\+wtd}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a432e47419ac087101368e1d3181b03a3}{Get\+\_\+addr}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a0ce9600eb2370128a15a91e2b0ea0ac1}{set\+\_\+wtd}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3aa30b4b0cf5f0e777ffada069307c45f8}{set\+\_\+update}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a4ee75c52c21eaf88848a1be50f6fdfdd}{Get\+Config}} = 0x41
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a050d7c8b46c7296173d8c6f565695cb0}{Get\+Status}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a35d26106279965e650b06e636e980515}{Get\+Info}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a19de9c37793093d5c344e87a4a07bc7d}{Get\+Temperature}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a7266a59252b5c9587664d6c7c66d08e1}{Get\+Humidity}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a1c01256e672a93c4d292421ba7a0af1f}{Get\+AQs\+Data}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3abe0034a881a907da370b95f82dd80112}{Get\+Barometer}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3adcaf2525154f464bd5d234bd1e80f93f}{Get\+Ambient\+Light}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ae1daa70f55450bef9777a7e7bc53880f}{Get\+TOF}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ac58daba4eec7a51484851edae3a4caa9}{Get\+Sensors}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a6da2bdc9fa6f92e89eb5909ae0698c8b}{Get\+Into\+DFU}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a5a440eb2305fad120d18d26c8f505159}{GET\+\_\+\+DEV\+\_\+\+ID}}
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ad31a4d84626250454a18e18088475417}{Command\+Not\+Supported}} =0xfe
+, \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a8c96fcf0eaf23cf43bc0fa98bb616be2}{No\+Command}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration of serial input-\/output commands. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dc}{SIO\+\_\+\+Errors}} \{ \newline
+\mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca18bbd975653ed24f2333c30c9f7f7386}{ERROR\+\_\+\+NO}} = 0x00
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcad72fa90dba5570304cd5b3a84f50c1ae}{ERROR\+\_\+01}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca22d6c6941824c64153e763d87c3dfab1}{ERROR\+\_\+02}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcacccb923bfec6f6cc4ba96f00d4183eea}{ERROR\+\_\+\+GPIO\+\_\+\+INIT}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca42498341943a91e1ca862ed65d90eb3a}{ERROR\+\_\+\+UNKNOWN\+\_\+\+COMMAND}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca47a6be599d7b86d6078e5e150674a206}{ERROR\+\_\+\+CRC}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca4325114a5d55f2c89e86dfab47d67ede}{ERROR\+\_\+\+TX}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcaaa278998b070f1f9dac34c72fafffae4}{ERROR\+\_\+\+DATA\+\_\+\+LEN}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca9d17c253865c9710657678184c797906}{ERROR\+\_\+\+RELAY\+\_\+\+NOT\+\_\+\+FOUND}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcac0cc91a9cc383c6ff98e9b311b8acf8f}{USAGE\+\_\+\+ERROR}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca49ccf277a69dd938c591928aa27c66cc}{ARGUMENT\+\_\+\+ERROR}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcac3958e7f70de9a0bfb39499d8edbd376}{RESOURCE\+\_\+\+BUSY\+\_\+\+ERROR}}
+, \newline
+\mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcaa6160da3d147c897d800efe3a69c941e}{INTERNAL\+\_\+\+ERROR}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca52ab3b4eea34bc5e6b0d0e66ed69b232}{ERROR\+\_\+\+WIRING\+\_\+\+NOT\+\_\+\+CONNECTED}}
+, \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcad27d4fdb21354544077aa87470515c1a}{ERROR\+\_\+\+COULD\+\_\+\+NOT\+\_\+\+SET\+\_\+\+RELAY}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration of serial input-\/output errors. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{serial__drv_8h_acd6e20d4d40add5d0e9eda541c5b5c28}{Serial\+Data\+Rx}} (uint8\+\_\+t Rx\+Data, \mbox{\hyperlink{serial__drv_8h_a7735b7fdf5c771a06f6848a7907022b2}{Serial\+\_\+\+Rx\+Data\+\_\+t}} \texorpdfstring{$\ast$}{*}Rx\+Data\+Cfg)
+\begin{DoxyCompactList}\small\item\em Processes a received byte of serial data. \end{DoxyCompactList}\item 
+uint16\+\_\+t \mbox{\hyperlink{serial__drv_8h_aa7bf253ba533d87ef4c4eeeea14430a9}{Set\+\_\+\+SIO\+\_\+\+Tx\+Packet}} (uint8\+\_\+t \texorpdfstring{$\ast$}{*}Tx\+Data\+Buf, \mbox{\hyperlink{serial__drv_8h_a8c497a22014c5c6a04ec9f810c28b861}{SIO\+\_\+\+Packet\+\_\+t}} Tx\+Packet)
+\begin{DoxyCompactList}\small\item\em Prepares a serial packet for transmission. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Serial driver header file. 
+
+This file contains the definitions and structures required for the serial driver. 
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{serial__drv_8h_ae414f6873c3251e64bd9d246f397e874}\label{serial__drv_8h_ae414f6873c3251e64bd9d246f397e874} 
+\index{serial\_drv.h@{serial\_drv.h}!ACK\_Offset@{ACK\_Offset}}
+\index{ACK\_Offset@{ACK\_Offset}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{ACK\_Offset}{ACK\_Offset}}
+{\footnotesize\ttfamily \#define ACK\+\_\+\+Offset~1}
+
+\Hypertarget{serial__drv_8h_a7739ed085bf0c7d6317e86bcaa1c4952}\label{serial__drv_8h_a7739ed085bf0c7d6317e86bcaa1c4952} 
+\index{serial\_drv.h@{serial\_drv.h}!CMD\_ACK@{CMD\_ACK}}
+\index{CMD\_ACK@{CMD\_ACK}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{CMD\_ACK}{CMD\_ACK}}
+{\footnotesize\ttfamily \#define CMD\+\_\+\+ACK~0x00}
+
+\Hypertarget{serial__drv_8h_afadcbe33225bd4df3b3f033a11408785}\label{serial__drv_8h_afadcbe33225bd4df3b3f033a11408785} 
+\index{serial\_drv.h@{serial\_drv.h}!CMD\_ERR@{CMD\_ERR}}
+\index{CMD\_ERR@{CMD\_ERR}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{CMD\_ERR}{CMD\_ERR}}
+{\footnotesize\ttfamily \#define CMD\+\_\+\+ERR~0x01}
+
+\Hypertarget{serial__drv_8h_a5fff3fbb9f6aa8a859f0e9c58c20bba9}\label{serial__drv_8h_a5fff3fbb9f6aa8a859f0e9c58c20bba9} 
+\index{serial\_drv.h@{serial\_drv.h}!CMD\_ERR\_ACT\_SCH\_EXIST@{CMD\_ERR\_ACT\_SCH\_EXIST}}
+\index{CMD\_ERR\_ACT\_SCH\_EXIST@{CMD\_ERR\_ACT\_SCH\_EXIST}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{CMD\_ERR\_ACT\_SCH\_EXIST}{CMD\_ERR\_ACT\_SCH\_EXIST}}
+{\footnotesize\ttfamily \#define CMD\+\_\+\+ERR\+\_\+\+ACT\+\_\+\+SCH\+\_\+\+EXIST~0x02}
+
+\Hypertarget{serial__drv_8h_a67c0d749c923c8f2ae8816919f8f0d0c}\label{serial__drv_8h_a67c0d749c923c8f2ae8816919f8f0d0c} 
+\index{serial\_drv.h@{serial\_drv.h}!CMD\_ERR\_BUS\_RGB@{CMD\_ERR\_BUS\_RGB}}
+\index{CMD\_ERR\_BUS\_RGB@{CMD\_ERR\_BUS\_RGB}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{CMD\_ERR\_BUS\_RGB}{CMD\_ERR\_BUS\_RGB}}
+{\footnotesize\ttfamily \#define CMD\+\_\+\+ERR\+\_\+\+BUS\+\_\+\+RGB~0x03}
+
+\Hypertarget{serial__drv_8h_aa8d9667234170c717706499d3ab40273}\label{serial__drv_8h_aa8d9667234170c717706499d3ab40273} 
+\index{serial\_drv.h@{serial\_drv.h}!CMD\_ERR\_BUS\_TMR@{CMD\_ERR\_BUS\_TMR}}
+\index{CMD\_ERR\_BUS\_TMR@{CMD\_ERR\_BUS\_TMR}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{CMD\_ERR\_BUS\_TMR}{CMD\_ERR\_BUS\_TMR}}
+{\footnotesize\ttfamily \#define CMD\+\_\+\+ERR\+\_\+\+BUS\+\_\+\+TMR~0x04}
+
+\Hypertarget{serial__drv_8h_adea9005fb4c90bebb81811e614d6f610}\label{serial__drv_8h_adea9005fb4c90bebb81811e614d6f610} 
+\index{serial\_drv.h@{serial\_drv.h}!CMD\_ERR\_LICENSE@{CMD\_ERR\_LICENSE}}
+\index{CMD\_ERR\_LICENSE@{CMD\_ERR\_LICENSE}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{CMD\_ERR\_LICENSE}{CMD\_ERR\_LICENSE}}
+{\footnotesize\ttfamily \#define CMD\+\_\+\+ERR\+\_\+\+LICENSE~0x\+FF}
+
+\Hypertarget{serial__drv_8h_af024a5d0d5f9ac860d0567cb993d9b11}\label{serial__drv_8h_af024a5d0d5f9ac860d0567cb993d9b11} 
+\index{serial\_drv.h@{serial\_drv.h}!CMD\_Offset@{CMD\_Offset}}
+\index{CMD\_Offset@{CMD\_Offset}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{CMD\_Offset}{CMD\_Offset}}
+{\footnotesize\ttfamily \#define CMD\+\_\+\+Offset~0}
+
+\Hypertarget{serial__drv_8h_ac5d3886b5599df33fe94c3de785811d0}\label{serial__drv_8h_ac5d3886b5599df33fe94c3de785811d0} 
+\index{serial\_drv.h@{serial\_drv.h}!CmdACK\_Mask@{CmdACK\_Mask}}
+\index{CmdACK\_Mask@{CmdACK\_Mask}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{CmdACK\_Mask}{CmdACK\_Mask}}
+{\footnotesize\ttfamily \#define Cmd\+ACK\+\_\+\+Mask~0x80}
+
+\Hypertarget{serial__drv_8h_a70f5b53693b757cd7b47e0c48dbb1674}\label{serial__drv_8h_a70f5b53693b757cd7b47e0c48dbb1674} 
+\index{serial\_drv.h@{serial\_drv.h}!DATA\_Offset@{DATA\_Offset}}
+\index{DATA\_Offset@{DATA\_Offset}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{DATA\_Offset}{DATA\_Offset}}
+{\footnotesize\ttfamily \#define DATA\+\_\+\+Offset~3}
+
+\Hypertarget{serial__drv_8h_a699aebd978a07c5132481e5670cdb71e}\label{serial__drv_8h_a699aebd978a07c5132481e5670cdb71e} 
+\index{serial\_drv.h@{serial\_drv.h}!NONE\_Packet@{NONE\_Packet}}
+\index{NONE\_Packet@{NONE\_Packet}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{NONE\_Packet}{NONE\_Packet}}
+{\footnotesize\ttfamily \#define NONE\+\_\+\+Packet~0x00}
+
+\Hypertarget{serial__drv_8h_a5678a48af32172f76a07eb11a5d8d6af}\label{serial__drv_8h_a5678a48af32172f76a07eb11a5d8d6af} 
+\index{serial\_drv.h@{serial\_drv.h}!NUS\_Packet@{NUS\_Packet}}
+\index{NUS\_Packet@{NUS\_Packet}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{NUS\_Packet}{NUS\_Packet}}
+{\footnotesize\ttfamily \#define NUS\+\_\+\+Packet~0x02}
+
+\Hypertarget{serial__drv_8h_a3145ab094ea45984247881e3edaa71ab}\label{serial__drv_8h_a3145ab094ea45984247881e3edaa71ab} 
+\index{serial\_drv.h@{serial\_drv.h}!PacketMinLength@{PacketMinLength}}
+\index{PacketMinLength@{PacketMinLength}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{PacketMinLength}{PacketMinLength}}
+{\footnotesize\ttfamily \#define Packet\+Min\+Length~5}
+
+\Hypertarget{serial__drv_8h_a8551a9cea7ff0d7ec033252bba33ee95}\label{serial__drv_8h_a8551a9cea7ff0d7ec033252bba33ee95} 
+\index{serial\_drv.h@{serial\_drv.h}!phyCtrlEsc@{phyCtrlEsc}}
+\index{phyCtrlEsc@{phyCtrlEsc}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{phyCtrlEsc}{phyCtrlEsc}}
+{\footnotesize\ttfamily \#define phy\+Ctrl\+Esc~0x\+F2}
+
+\Hypertarget{serial__drv_8h_aca74e54df726a58c60cf4f98795dc3b1}\label{serial__drv_8h_aca74e54df726a58c60cf4f98795dc3b1} 
+\index{serial\_drv.h@{serial\_drv.h}!phyStart@{phyStart}}
+\index{phyStart@{phyStart}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{phyStart}{phyStart}}
+{\footnotesize\ttfamily \#define phy\+Start~0x\+F0}
+
+\Hypertarget{serial__drv_8h_a4d16f0f99d29873603b5ead264d49d2e}\label{serial__drv_8h_a4d16f0f99d29873603b5ead264d49d2e} 
+\index{serial\_drv.h@{serial\_drv.h}!phyStop@{phyStop}}
+\index{phyStop@{phyStop}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{phyStop}{phyStop}}
+{\footnotesize\ttfamily \#define phy\+Stop~0x\+F1}
+
+\Hypertarget{serial__drv_8h_a91f9ba196aee37946a8dfea63c87f2fc}\label{serial__drv_8h_a91f9ba196aee37946a8dfea63c87f2fc} 
+\index{serial\_drv.h@{serial\_drv.h}!phyXorByte@{phyXorByte}}
+\index{phyXorByte@{phyXorByte}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{phyXorByte}{phyXorByte}}
+{\footnotesize\ttfamily \#define phy\+Xor\+Byte~0x\+FF}
+
+\Hypertarget{serial__drv_8h_af9c435fed0685401e6e41f142bc00ec2}\label{serial__drv_8h_af9c435fed0685401e6e41f142bc00ec2} 
+\index{serial\_drv.h@{serial\_drv.h}!SID\_Offset@{SID\_Offset}}
+\index{SID\_Offset@{SID\_Offset}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{SID\_Offset}{SID\_Offset}}
+{\footnotesize\ttfamily \#define SID\+\_\+\+Offset~2}
+
+\Hypertarget{serial__drv_8h_a3941463f47de8f5295c88b75c34a946a}\label{serial__drv_8h_a3941463f47de8f5295c88b75c34a946a} 
+\index{serial\_drv.h@{serial\_drv.h}!UART\_Packet@{UART\_Packet}}
+\index{UART\_Packet@{UART\_Packet}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{UART\_Packet}{UART\_Packet}}
+{\footnotesize\ttfamily \#define UART\+\_\+\+Packet~0x01}
+
+
+
+\doxysubsection{Typedef Documentation}
+\Hypertarget{serial__drv_8h_a7735b7fdf5c771a06f6848a7907022b2}\label{serial__drv_8h_a7735b7fdf5c771a06f6848a7907022b2} 
+\index{serial\_drv.h@{serial\_drv.h}!Serial\_RxData\_t@{Serial\_RxData\_t}}
+\index{Serial\_RxData\_t@{Serial\_RxData\_t}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{Serial\_RxData\_t}{Serial\_RxData\_t}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{struct_serial___rx_data}{Serial\+\_\+\+Rx\+Data}} \mbox{\hyperlink{serial__drv_8h_a7735b7fdf5c771a06f6848a7907022b2}{Serial\+\_\+\+Rx\+Data\+\_\+t}}}
+
+
+
+Structure for storing received serial data. 
+
+\Hypertarget{serial__drv_8h_a0c6562613d90d718ce0763065627c86d}\label{serial__drv_8h_a0c6562613d90d718ce0763065627c86d} 
+\index{serial\_drv.h@{serial\_drv.h}!SIO\_Cmd\_t@{SIO\_Cmd\_t}}
+\index{SIO\_Cmd\_t@{SIO\_Cmd\_t}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{SIO\_Cmd\_t}{SIO\_Cmd\_t}}
+{\footnotesize\ttfamily typedef enum \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3}{SIO\+\_\+\+Command}} \mbox{\hyperlink{serial__drv_8h_a0c6562613d90d718ce0763065627c86d}{SIO\+\_\+\+Cmd\+\_\+t}}}
+
+
+
+Enumeration of serial input-\/output commands. 
+
+\Hypertarget{serial__drv_8h_ad5b7a96255a990ccbef7f7b2065b1897}\label{serial__drv_8h_ad5b7a96255a990ccbef7f7b2065b1897} 
+\index{serial\_drv.h@{serial\_drv.h}!SIO\_Errors\_t@{SIO\_Errors\_t}}
+\index{SIO\_Errors\_t@{SIO\_Errors\_t}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{SIO\_Errors\_t}{SIO\_Errors\_t}}
+{\footnotesize\ttfamily typedef enum \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dc}{SIO\+\_\+\+Errors}} \mbox{\hyperlink{serial__drv_8h_ad5b7a96255a990ccbef7f7b2065b1897}{SIO\+\_\+\+Errors\+\_\+t}}}
+
+
+
+Enumeration of serial input-\/output errors. 
+
+\Hypertarget{serial__drv_8h_a8c497a22014c5c6a04ec9f810c28b861}\label{serial__drv_8h_a8c497a22014c5c6a04ec9f810c28b861} 
+\index{serial\_drv.h@{serial\_drv.h}!SIO\_Packet\_t@{SIO\_Packet\_t}}
+\index{SIO\_Packet\_t@{SIO\_Packet\_t}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{SIO\_Packet\_t}{SIO\_Packet\_t}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{struct_s_i_o___packet}{SIO\+\_\+\+Packet}} \mbox{\hyperlink{serial__drv_8h_a8c497a22014c5c6a04ec9f810c28b861}{SIO\+\_\+\+Packet\+\_\+t}}}
+
+
+
+Structure for serial input-\/output packets. 
+
+
+
+\doxysubsection{Enumeration Type Documentation}
+\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3} 
+\index{serial\_drv.h@{serial\_drv.h}!SIO\_Command@{SIO\_Command}}
+\index{SIO\_Command@{SIO\_Command}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{SIO\_Command}{SIO\_Command}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3}{SIO\+\_\+\+Command}}}
+
+
+
+Enumeration of serial input-\/output commands. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SetConfig@{SetConfig}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!SetConfig@{SetConfig}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a66f0cf724fb07d15e82c972aae41e0be}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a66f0cf724fb07d15e82c972aae41e0be} 
+Set\+Config&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SetColorRGB@{SetColorRGB}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!SetColorRGB@{SetColorRGB}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3af93fc864bb7ad037b42d280f1255e2f0}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3af93fc864bb7ad037b42d280f1255e2f0} 
+Set\+Color\+RGB&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{InitMcus@{InitMcus}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!InitMcus@{InitMcus}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a96118933a612e34d6a197f261459714e}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a96118933a612e34d6a197f261459714e} 
+Init\+Mcus&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SetChildStatus@{SetChildStatus}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!SetChildStatus@{SetChildStatus}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3afe0e036a7a63dbc9e86878b37b03fa75}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3afe0e036a7a63dbc9e86878b37b03fa75} 
+Set\+Child\+Status&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{StartPairing@{StartPairing}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!StartPairing@{StartPairing}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ad1f9f8a9d0daf709d114dad5ed045472}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ad1f9f8a9d0daf709d114dad5ed045472} 
+Start\+Pairing&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{StopPairing@{StopPairing}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!StopPairing@{StopPairing}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a52e93bd781bea06c9ec2f3a7ef6a6915}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a52e93bd781bea06c9ec2f3a7ef6a6915} 
+Stop\+Pairing&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetSensorData@{GetSensorData}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetSensorData@{GetSensorData}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a834543bec9f0df51e96be14fccb27c41}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a834543bec9f0df51e96be14fccb27c41} 
+Get\+Sensor\+Data&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetNewChild@{GetNewChild}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetNewChild@{GetNewChild}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ac1a69c381e5831d9525f0417d0c1db12}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ac1a69c381e5831d9525f0417d0c1db12} 
+Get\+New\+Child&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Get\_packets@{Get\_packets}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!Get\_packets@{Get\_packets}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a31d73eb53a2cbac5aadfd3f2f821d921}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a31d73eb53a2cbac5aadfd3f2f821d921} 
+Get\+\_\+packets&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Send\_packet@{Send\_packet}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!Send\_packet@{Send\_packet}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a6f9e9df127d10ca23858991ce3dea94f}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a6f9e9df127d10ca23858991ce3dea94f} 
+Send\+\_\+packet&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SetRelay@{SetRelay}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!SetRelay@{SetRelay}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a28b565d3fd28e825d7ff5344f171c857}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a28b565d3fd28e825d7ff5344f171c857} 
+Set\+Relay&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetRelaySensor@{GetRelaySensor}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetRelaySensor@{GetRelaySensor}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a786b48f564ec02e3f5f5021d7ed1cdc1}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a786b48f564ec02e3f5f5021d7ed1cdc1} 
+Get\+Relay\+Sensor&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Check\_Wiring@{Check\_Wiring}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!Check\_Wiring@{Check\_Wiring}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a9c4de0664775a93d9c037cc600a0b156}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a9c4de0664775a93d9c037cc600a0b156} 
+Check\+\_\+\+Wiring&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{feed\_wtd@{feed\_wtd}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!feed\_wtd@{feed\_wtd}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a2d047b541abac1fccba522171f6958a7}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a2d047b541abac1fccba522171f6958a7} 
+feed\+\_\+wtd&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Get\_addr@{Get\_addr}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!Get\_addr@{Get\_addr}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a432e47419ac087101368e1d3181b03a3}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a432e47419ac087101368e1d3181b03a3} 
+Get\+\_\+addr&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{set\_wtd@{set\_wtd}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!set\_wtd@{set\_wtd}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a0ce9600eb2370128a15a91e2b0ea0ac1}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a0ce9600eb2370128a15a91e2b0ea0ac1} 
+set\+\_\+wtd&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{set\_update@{set\_update}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!set\_update@{set\_update}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3aa30b4b0cf5f0e777ffada069307c45f8}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3aa30b4b0cf5f0e777ffada069307c45f8} 
+set\+\_\+update&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetConfig@{GetConfig}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetConfig@{GetConfig}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a4ee75c52c21eaf88848a1be50f6fdfdd}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a4ee75c52c21eaf88848a1be50f6fdfdd} 
+Get\+Config&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetStatus@{GetStatus}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetStatus@{GetStatus}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a050d7c8b46c7296173d8c6f565695cb0}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a050d7c8b46c7296173d8c6f565695cb0} 
+Get\+Status&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetInfo@{GetInfo}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetInfo@{GetInfo}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a35d26106279965e650b06e636e980515}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a35d26106279965e650b06e636e980515} 
+Get\+Info&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetTemperature@{GetTemperature}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetTemperature@{GetTemperature}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a19de9c37793093d5c344e87a4a07bc7d}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a19de9c37793093d5c344e87a4a07bc7d} 
+Get\+Temperature&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetHumidity@{GetHumidity}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetHumidity@{GetHumidity}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a7266a59252b5c9587664d6c7c66d08e1}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a7266a59252b5c9587664d6c7c66d08e1} 
+Get\+Humidity&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetAQsData@{GetAQsData}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetAQsData@{GetAQsData}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a1c01256e672a93c4d292421ba7a0af1f}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a1c01256e672a93c4d292421ba7a0af1f} 
+Get\+AQs\+Data&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetBarometer@{GetBarometer}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetBarometer@{GetBarometer}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3abe0034a881a907da370b95f82dd80112}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3abe0034a881a907da370b95f82dd80112} 
+Get\+Barometer&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetAmbientLight@{GetAmbientLight}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetAmbientLight@{GetAmbientLight}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3adcaf2525154f464bd5d234bd1e80f93f}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3adcaf2525154f464bd5d234bd1e80f93f} 
+Get\+Ambient\+Light&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetTOF@{GetTOF}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetTOF@{GetTOF}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ae1daa70f55450bef9777a7e7bc53880f}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ae1daa70f55450bef9777a7e7bc53880f} 
+Get\+TOF&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetSensors@{GetSensors}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetSensors@{GetSensors}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ac58daba4eec7a51484851edae3a4caa9}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ac58daba4eec7a51484851edae3a4caa9} 
+Get\+Sensors&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GetIntoDFU@{GetIntoDFU}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GetIntoDFU@{GetIntoDFU}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a6da2bdc9fa6f92e89eb5909ae0698c8b}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a6da2bdc9fa6f92e89eb5909ae0698c8b} 
+Get\+Into\+DFU&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GET\_DEV\_ID@{GET\_DEV\_ID}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!GET\_DEV\_ID@{GET\_DEV\_ID}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a5a440eb2305fad120d18d26c8f505159}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a5a440eb2305fad120d18d26c8f505159} 
+GET\+\_\+\+DEV\+\_\+\+ID&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CommandNotSupported@{CommandNotSupported}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!CommandNotSupported@{CommandNotSupported}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ad31a4d84626250454a18e18088475417}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3ad31a4d84626250454a18e18088475417} 
+Command\+Not\+Supported&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NoCommand@{NoCommand}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!NoCommand@{NoCommand}}}\Hypertarget{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a8c96fcf0eaf23cf43bc0fa98bb616be2}\label{serial__drv_8h_abc99e501b09bba32e0de97d26c97c8f3a8c96fcf0eaf23cf43bc0fa98bb616be2} 
+No\+Command&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dc}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dc} 
+\index{serial\_drv.h@{serial\_drv.h}!SIO\_Errors@{SIO\_Errors}}
+\index{SIO\_Errors@{SIO\_Errors}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{SIO\_Errors}{SIO\_Errors}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dc}{SIO\+\_\+\+Errors}}}
+
+
+
+Enumeration of serial input-\/output errors. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_NO@{ERROR\_NO}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_NO@{ERROR\_NO}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca18bbd975653ed24f2333c30c9f7f7386}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca18bbd975653ed24f2333c30c9f7f7386} 
+ERROR\+\_\+\+NO&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_01@{ERROR\_01}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_01@{ERROR\_01}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcad72fa90dba5570304cd5b3a84f50c1ae}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcad72fa90dba5570304cd5b3a84f50c1ae} 
+ERROR\+\_\+01&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_02@{ERROR\_02}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_02@{ERROR\_02}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca22d6c6941824c64153e763d87c3dfab1}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca22d6c6941824c64153e763d87c3dfab1} 
+ERROR\+\_\+02&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_GPIO\_INIT@{ERROR\_GPIO\_INIT}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_GPIO\_INIT@{ERROR\_GPIO\_INIT}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcacccb923bfec6f6cc4ba96f00d4183eea}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcacccb923bfec6f6cc4ba96f00d4183eea} 
+ERROR\+\_\+\+GPIO\+\_\+\+INIT&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_UNKNOWN\_COMMAND@{ERROR\_UNKNOWN\_COMMAND}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_UNKNOWN\_COMMAND@{ERROR\_UNKNOWN\_COMMAND}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca42498341943a91e1ca862ed65d90eb3a}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca42498341943a91e1ca862ed65d90eb3a} 
+ERROR\+\_\+\+UNKNOWN\+\_\+\+COMMAND&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_CRC@{ERROR\_CRC}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_CRC@{ERROR\_CRC}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca47a6be599d7b86d6078e5e150674a206}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca47a6be599d7b86d6078e5e150674a206} 
+ERROR\+\_\+\+CRC&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_TX@{ERROR\_TX}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_TX@{ERROR\_TX}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca4325114a5d55f2c89e86dfab47d67ede}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca4325114a5d55f2c89e86dfab47d67ede} 
+ERROR\+\_\+\+TX&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_DATA\_LEN@{ERROR\_DATA\_LEN}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_DATA\_LEN@{ERROR\_DATA\_LEN}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcaaa278998b070f1f9dac34c72fafffae4}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcaaa278998b070f1f9dac34c72fafffae4} 
+ERROR\+\_\+\+DATA\+\_\+\+LEN&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_RELAY\_NOT\_FOUND@{ERROR\_RELAY\_NOT\_FOUND}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_RELAY\_NOT\_FOUND@{ERROR\_RELAY\_NOT\_FOUND}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca9d17c253865c9710657678184c797906}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca9d17c253865c9710657678184c797906} 
+ERROR\+\_\+\+RELAY\+\_\+\+NOT\+\_\+\+FOUND&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{USAGE\_ERROR@{USAGE\_ERROR}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!USAGE\_ERROR@{USAGE\_ERROR}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcac0cc91a9cc383c6ff98e9b311b8acf8f}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcac0cc91a9cc383c6ff98e9b311b8acf8f} 
+USAGE\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ARGUMENT\_ERROR@{ARGUMENT\_ERROR}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ARGUMENT\_ERROR@{ARGUMENT\_ERROR}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca49ccf277a69dd938c591928aa27c66cc}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca49ccf277a69dd938c591928aa27c66cc} 
+ARGUMENT\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RESOURCE\_BUSY\_ERROR@{RESOURCE\_BUSY\_ERROR}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!RESOURCE\_BUSY\_ERROR@{RESOURCE\_BUSY\_ERROR}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcac3958e7f70de9a0bfb39499d8edbd376}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcac3958e7f70de9a0bfb39499d8edbd376} 
+RESOURCE\+\_\+\+BUSY\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INTERNAL\_ERROR@{INTERNAL\_ERROR}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!INTERNAL\_ERROR@{INTERNAL\_ERROR}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcaa6160da3d147c897d800efe3a69c941e}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcaa6160da3d147c897d800efe3a69c941e} 
+INTERNAL\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_WIRING\_NOT\_CONNECTED@{ERROR\_WIRING\_NOT\_CONNECTED}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_WIRING\_NOT\_CONNECTED@{ERROR\_WIRING\_NOT\_CONNECTED}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca52ab3b4eea34bc5e6b0d0e66ed69b232}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dca52ab3b4eea34bc5e6b0d0e66ed69b232} 
+ERROR\+\_\+\+WIRING\+\_\+\+NOT\+\_\+\+CONNECTED&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_COULD\_NOT\_SET\_RELAY@{ERROR\_COULD\_NOT\_SET\_RELAY}!serial\_drv.h@{serial\_drv.h}}\index{serial\_drv.h@{serial\_drv.h}!ERROR\_COULD\_NOT\_SET\_RELAY@{ERROR\_COULD\_NOT\_SET\_RELAY}}}\Hypertarget{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcad27d4fdb21354544077aa87470515c1a}\label{serial__drv_8h_ac5fbadb68891ea7ccc621054e1ee58dcad27d4fdb21354544077aa87470515c1a} 
+ERROR\+\_\+\+COULD\+\_\+\+NOT\+\_\+\+SET\+\_\+\+RELAY&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{serial__drv_8h_acd6e20d4d40add5d0e9eda541c5b5c28}\label{serial__drv_8h_acd6e20d4d40add5d0e9eda541c5b5c28} 
+\index{serial\_drv.h@{serial\_drv.h}!SerialDataRx@{SerialDataRx}}
+\index{SerialDataRx@{SerialDataRx}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{SerialDataRx()}{SerialDataRx()}}
+{\footnotesize\ttfamily bool Serial\+Data\+Rx (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{Rx\+Data,  }\item[{\mbox{\hyperlink{serial__drv_8h_a7735b7fdf5c771a06f6848a7907022b2}{Serial\+\_\+\+Rx\+Data\+\_\+t}} \texorpdfstring{$\ast$}{*}}]{Rx\+Data\+Cfg }\end{DoxyParamCaption})}
+
+
+
+Processes a received byte of serial data. 
+
+This function handles the received serial data, managing the escape sequences and constructing the received packet.
+
+
+\begin{DoxyParams}[1]{Parameters}
+ & {\em Rx\+Data} & The received data byte. \\
+\hline
+\mbox{\texttt{ out}}  & {\em Rx\+Data\+Cfg} & The Serial\+\_\+\+Rx\+Data\+\_\+t configuration struct containing the current state of the received packet. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if the packet is successfully received and has a valid length, false otherwise. 
+\end{DoxyReturn}
+\Hypertarget{serial__drv_8h_aa7bf253ba533d87ef4c4eeeea14430a9}\label{serial__drv_8h_aa7bf253ba533d87ef4c4eeeea14430a9} 
+\index{serial\_drv.h@{serial\_drv.h}!Set\_SIO\_TxPacket@{Set\_SIO\_TxPacket}}
+\index{Set\_SIO\_TxPacket@{Set\_SIO\_TxPacket}!serial\_drv.h@{serial\_drv.h}}
+\doxysubsubsection{\texorpdfstring{Set\_SIO\_TxPacket()}{Set\_SIO\_TxPacket()}}
+{\footnotesize\ttfamily uint16\+\_\+t Set\+\_\+\+SIO\+\_\+\+Tx\+Packet (\begin{DoxyParamCaption}\item[{uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{Tx\+Data\+Buf,  }\item[{\mbox{\hyperlink{serial__drv_8h_a8c497a22014c5c6a04ec9f810c28b861}{SIO\+\_\+\+Packet\+\_\+t}}}]{Tx\+Packet }\end{DoxyParamCaption})}
+
+
+
+Prepares a serial packet for transmission. 
+
+This function takes a packet of data and processes it for transmission, including calculating the CRC and adding escape sequences for special characters.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ out}}  & {\em Tx\+Data\+Buf} & The buffer containing the processed packet to be transmitted. \\
+\hline
+ & {\em Tx\+Packet} & The SIO\+\_\+\+Packet\+\_\+t struct containing the original packet data. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The length of the processed packet in bytes. 
+\end{DoxyReturn}
