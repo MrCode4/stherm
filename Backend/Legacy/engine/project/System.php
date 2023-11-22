@@ -294,6 +294,7 @@ class System
 
     /**
      * Get dynamic main data
+     * Call from script.js
      * @throws Exception
      */
     public function getMainData()
@@ -560,6 +561,7 @@ class System
      * @return bool
      * @throws Exception
      */
+     // call from script.js
     public function setTemperature(int $temp)
     {
         $settings = $this->conn->getRow("SELECT measure_id,
@@ -904,6 +906,7 @@ class System
      * @return array[]                            // type: 1 - alert, 2 - reminder, 3 - notification
      * @throws Exception
      */
+     // * call from script.js
     public function getAlerts()
     {
         $alerts = $this->conn->getTable("SELECT id,

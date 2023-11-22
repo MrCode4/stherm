@@ -613,13 +613,15 @@ class Relay
     /**
      * @throws Exception
      */
+
+    // call from startWork in Shceme
     public function fanWorkTime()
     {
         //$fan_settings = $this->conn->getRow("SELECT fan_time AS user_set_time, start_fan_timing AS work_in_hour,(SELECT fan FROM current_state) AS user_set_interval, EXTRACT(MINUTE from (current_timestamp))-EXTRACT(MINUTE from (fan_time)) AS interval_minute, EXTRACT(MINUTE from (current_timestamp))-EXTRACT(MINUTE from (fan_time)) AS other FROM timing");
         $interval = $this->conn->getItem("SELECT fan FROM current_state");
         if((int)$interval > 0) {
             $fan_settings = $this->conn->getRow("SELECT EXTRACT(MINUTE from ((current_timestamp - fan_time)- interval '{$interval} minute'))-1 AS work FROM timing");
-            $this->getRelayState();
+            $this->getRelayState(); // Update relay
             if ($this->relay['y1'] === 'on' || $this->relay['w1'] === 'on') {
                 $this->fanOn();
             } else {

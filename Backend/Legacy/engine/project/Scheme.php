@@ -58,6 +58,7 @@ class Scheme
      * @return void
      * @throws Exception
      */
+     // Not used
     private function startHumidifierWork(int $humidifier, string $device_state, int $humidity, int $current_humidity, int $sth, int $stl)
     {
 
@@ -70,6 +71,8 @@ class Scheme
      */
     private static function getCurrentState(): array
     {
+        // What is the diffrence between current_temp (ct) and temp (sp)
+
         $current_state = (new Scheme)->conn->getRow("SELECT current_temp                                          AS ct,
                                                                   mode.alias                                            AS mode,
                                                                   state_id,
@@ -95,12 +98,15 @@ class Scheme
                                                                    --EXTRACT(MINUTE FROM current_timestamp)               AS cur_minutes
                                                            FROM current_state
                                                                 LEFT JOIN mode ON current_state.mode_id = mode.mode_id");
-        $current_state['humidifier_id'] = (int)$current_state['humidifier_id'];
+        $current_state['humidifier_id'] = (int)$current_state['humidifier_id']; // convert to int
         if ($current_state['hold_status'] === 't') {
-            $current_state['hold_status'] = true;
+            $current_state['hold_status'] = true; // convert to bool
         } else {
             $current_state['hold_status'] = false;
-            if ($current_state['mode'] !== 'off' && $current_state['state_next_check'] <= $current_state['date'] && $current_state['state_next_check'] !== '') {                                               // if is schedule
+            if ($current_state['mode'] !== 'off' &&
+            $current_state['state_next_check'] <= $current_state['date'] &&
+            $current_state['state_next_check'] !== '') {                                               // if is schedule
+
                 //$schedule = (new System)->checkCurrentSchedule($current_state['state_next_check']);
                 $schedule = (new System)->checkCurrentSchedule('');
                 if (!empty($schedule)) {
@@ -119,6 +125,7 @@ class Scheme
      * Get s2hold
      * @return bool
      */
+     // Not Used
     public function getS2Hold()
     {
         return ($this->conn->getItem("SELECT s2hold FROM timing") === 't');
@@ -128,11 +135,13 @@ class Scheme
      * Get s3hold
      * @return bool
      */
+     // Not Used
     public function getS3Hold()
     {
         return ($this->conn->getItem("SELECT s3hold FROM timing") === 't');
     }
 
+    // Not Used
     public function setS2Hold(bool $type)
     {
         $type = (int)$type;
@@ -144,6 +153,7 @@ class Scheme
      * @return bool
      * @throws Exception
      */
+     // Not Used
     public function setS3Hold(bool $type)
     {
         $type = (int)$type;
@@ -152,7 +162,12 @@ class Scheme
 
     public function getS2OffTime()
     {
-        $s2offtime = self::S2OFF_TIME;
+        $s2offtime = self::S2OFF_TIME; // 2
+        // If the time difference in minutes is greater than the value in $s2offtime, it returns 1.
+        // Otherwise, it returns 0.
+
+        //INSERT INTO current_stage(mode,stage,timestamp,blink_mode,s2offtime)
+        //VALUES(0, 0, current_timestamp, 0, current_timestamp - interval '5 minute');
         return (int)$this->conn->getItem("SELECT 
                                                         CASE 
                                                             WHEN EXTRACT(epoch FROM current_timestamp - s2offtime)/60 > {$s2offtime} THEN 1
@@ -166,27 +181,33 @@ class Scheme
         return (bool)$this->conn->setQuery("UPDATE current_stage SET s2offtime = current_timestamp");
     }
 
+    // Not use
     public function setS2UpTime()
     {
+        // s1uptime: update in runDevice and getStartMode (hardware class) - startTempTimer in Relay and used, update setMode in System
         return (bool)$this->conn->setQuery("UPDATE timing SET s2uptime = current_timestamp");
     }
 
+    // Not use
     public function setS1UpTime()
     {
         return (bool)$this->conn->setQuery("UPDATE timing SET s1uptime = current_timestamp");
     }
 
+    // Not used
     public function getAlerts()
     {
         return ($this->conn->getItem("SELECT alerts FROM timing") === 't');
     }
 
+    // Not used
     public function setAlerts(bool $type)
     {
         $type = (int)$type;
         return $this->conn->setQuery("UPDATE timing SET alerts = '{$type}'");
     }
 
+    // update timestamp
     public function setDelayTime()
     {
         return (bool)$this->conn->setQuery("UPDATE current_stage SET timestamp = current_timestamp")['result'];
@@ -203,12 +224,14 @@ class Scheme
                                                 FROM current_stage");
     }
 
+    // Use for each mode
     public function setModeBlink(bool $type)
     {
         $type = (int)$type;
         return (bool)$this->conn->setQuery("UPDATE current_stage SET blink_mode = '{$type}'")['result'];
     }
 
+    // Not used
     public function setBacklightTime()
     {
         return (bool)$this->conn->setQuery("UPDATE timing SET set_backlight_time = current_timestamp")['result'];
@@ -220,25 +243,27 @@ class Scheme
      */
     public function startWork()
     {
+        // Relay usage:  getCoolingMaxStage, getHeatingMaxStage, ...
         $this->relay = new Relay();
+
         $current_state = self::getCurrentState();
         $current_temp = $current_state['ct'] * 9 / 5 + 32;
-        $current_mode = $this->relay->getModeName();
-        $current_stage = $this->relay->getCurrentStage();
+        $current_mode = $this->relay->getModeName(); // off, cooling, emergency, heating
+        $current_stage = $this->relay->getCurrentStage(); // stage, 0, 1, 2,3 / update in updateStates()
 
         $set_temp = $current_state['sp'] * 9 / 5 + 32;
         $set_mode = $current_state['mode'];
         $set_stage = 0;
 
-        $s2hold = $this->getS2Hold();
-        $s3hold = $this->getS3Hold();
+        $s2hold = $this->getS2Hold(); // Not Used
+        $s3hold = $this->getS3Hold(); // Not Used
 
-        $stage_1_off_time = (int)$this->getDelayTime();
+        $stage_1_off_time = (int)$this->getDelayTime(); // set at the end of this function and then use at the next iteration
         $stage_2_off_time = (int)$this->getS2OffTime();
 
         $real_set_mode = $set_mode;
 
-        $range = $current_temp - $set_temp;
+        $range = $current_temp - $set_temp; // current_temp (average temperature) - temp (sp)
         if ($real_set_mode === 'auto') {
             if ($current_mode === 'cooling') {
                 if ($current_temp > $set_temp - self::STAGE1_OFF_RANGE) { // before stage 1 off
@@ -310,9 +335,11 @@ class Scheme
         if ($real_set_mode !== $current_mode) { // mode changes
             $current_stage = 0;
         }
+
         if ($real_set_mode === 'heating') {
             if ($current_stage === 0) {
-                if ($range < 0 && abs($range)>self::STAGE1_ON_RANGE && $this->relay->getHeatingMaxStage() >= 1) {
+                if ($range < 0 && abs($range)>self::STAGE1_ON_RANGE &&
+                $this->relay->getHeatingMaxStage() >= 1) { // calculate based on o/b, y1 , y2, w1, w2 and w3 in relay
                     $set_stage = 1;
                     if (abs($range) > self::STAGE2_ON_RANGE && $this->relay->getHeatingMaxStage() >= 2) {
                         $set_stage = 2;
@@ -421,7 +448,7 @@ class Scheme
             $real_set_stage = $set_stage;
         }
         if ($real_set_stage >= 1) {
-            $this->setDelayTime();
+            $this->setDelayTime(); // return bool but not catched
             if ($real_set_stage > 1) {
                 $this->setS2OffTime();
             }
@@ -547,6 +574,7 @@ class Scheme
      * @return void
      * @throws Exception
      */
+     // Not used
     private function generateAlert(string $name, string $text, int $error_code)
     {
         (new Scheme)->conn->setQuery("INSERT INTO alerts(type_id, sensor_id, error_code, level, name, text, from_id, status,timestamp,is_sent) 
