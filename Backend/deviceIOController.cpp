@@ -1028,10 +1028,10 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
     } else if (values.c02 > AQ_TH_PR_thld.c02_high) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_c02_high);
 
-    } else if (values.Tvoc > AQ_TH_PR_thld.Tvoc_high) {
+    } else if (values.Tvoc > AQ_TH_PR_thld.Tvoc_high * 1000) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_Tvoc_high);
 
-    } else if (values.etoh > AQ_TH_PR_thld.etoh_high) {
+    } else if (values.etoh > AQ_TH_PR_thld.etoh_high * 100) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_etoh_high);
 
     } else if (values.iaq > AQ_TH_PR_thld.iaq_high) {
