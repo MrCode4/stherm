@@ -12,7 +12,7 @@
  * This class manages read and write from device using UART
  * todo: Add a request manager (queue)
  * ************************************************************************************************/
-
+class DeviceIOPrivate;
 class DeviceIOController : public QThread
 {
     Q_OBJECT
@@ -80,6 +80,8 @@ private slots:
     void nRFExec();
 
 private:
+    void initialize();
+
     void run() override;
 
     //! Create TI connection, called each 10 seconds, getInfo (mainData,temp, hum, aq, pressure), manage requests, wiring check
@@ -122,43 +124,16 @@ private:
     void getDeviceID();
 
 private:
-    //! Device id
-    QString mDeviceID;
+    DeviceIOPrivate *m_p;
 
-    DataParser mDataParser;
+    UARTConnection *m_nRfConnection;
+    UARTConnection *m_tiConnection;
+    GpioHandler *m_gpioHandler4;
+    GpioHandler *m_gpioHandler5;
 
-    UARTConnection *nRfConnection;
-    UARTConnection *tiConnection;
+    DataParser m_dataParser;
 
-    UARTConnection *gpio4Connection;
-    UARTConnection *gpio5Connection;
-
-    bool mStopReading;
-
-    //! Paired devices
-    QList<STHERM::DeviceType> mDevices;
-    STHERM::DeviceType mMainDevice;
-
-    bool nrfWaitForResponse;
-
-    QByteArray mSensorPacketBA;
-    QByteArray mTOFPacketBA;
-
-    int brighness_mode;
-
-    STHERM::AQ_TH_PR_thld AQ_TH_PR_thld;
-
-    QList<STHERM::DeviceType> pairedSensors;
-
-    QList<uint8_t> mWiringState;
-
-    //! Fill from get_dynamic1
-    QList<uint8_t> relays_in;
-
-    //! Fill in set relay command
-    QList<uint8_t> relays_in_l;
-
-    QTimer wtd_timer;
-    QTimer wiring_timer;
-    QTimer nRF_timer;
+    QTimer m_wtd_timer;
+    QTimer m_wiring_timer;
+    QTimer m_nRF_timer;
 };
