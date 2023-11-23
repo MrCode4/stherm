@@ -140,5 +140,5 @@ private:
     QTimer m_wiring_timer;
     QTimer m_nRF_timer;
 
-    std::queue<QByteArray> m_nRF_queue;
+    std::queue<STHERM::SIOPacket> m_nRF_queue;
 };

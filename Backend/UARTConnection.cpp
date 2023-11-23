@@ -22,6 +22,7 @@ bool UARTConnection::startConnection(const qint32 &baudRate)
 
     if (!isSuccess) {
         TRACE_CHECK(m_debug) << "Configuration failed, port name: " << mSerial->portName();
+        return false;
     }
 
     // Check:  Use QSocketNotifier to monitor activity on a file descriptor
