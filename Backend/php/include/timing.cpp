@@ -9,8 +9,19 @@ Timing::Timing(QObject *parent)
 
 void Timing::setDefaultValues(void)
 {
+// C++20 (and later) code
+#if __cplusplus >= 202002L
+    std::tm tm = {.tm_sec = 0,
+                  .tm_min = 0,
+                  .tm_hour = 0,
+                  .tm_mday = 1,
+                  .tm_mon = 0,
+                  .tm_year = 2023 - 1900,
+                  .tm_isdst = LOCALE_USE_DST};
+#else
     int year = 2023 - 1900, month = 0, day = 1, hour = 0, minute = 0, second = 0;
-    std::tm tm = {.tm_sec = 0, .tm_min = 0, .tm_hour = 0, .tm_mday = 1, .tm_mon = 0, .tm_year = 2023-1900, .tm_isdst = LOCALE_USE_DST };
+    std::tm tm = {second, minute, hour, day, month, year, LOCALE_USE_DST};
+#endif
     timestamp_t tr = std::mktime(&tm);
 
     uptime = current_timestamp();
@@ -35,8 +46,19 @@ void Timing::setDefaultValues(void)
 
 void Timing::refreshTimestamps(void)
 {
+// C++20 (and later) code
+#if __cplusplus >= 202002L
+    std::tm tm = {.tm_sec = 0,
+                  .tm_min = 0,
+                  .tm_hour = 0,
+                  .tm_mday = 1,
+                  .tm_mon = 0,
+                  .tm_year = 2023 - 1900,
+                  .tm_isdst = LOCALE_USE_DST};
+#else
     int year = 2023 - 1900, month = 0, day = 1, hour = 0, minute = 0, second = 0;
-    std::tm tm = {.tm_sec = 0, .tm_min = 0, .tm_hour = 0, .tm_mday = 1, .tm_mon = 0, .tm_year = 2023-1900, .tm_isdst = LOCALE_USE_DST };
+    std::tm tm = {second, minute, hour, day, month, year, LOCALE_USE_DST};
+#endif
     timestamp_t tr = std::mktime(&tm);
 
     uptime = current_timestamp();
