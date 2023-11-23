@@ -17,6 +17,8 @@ public:
 
     ~GpioHandler();
 
+    bool startConnection();
+
     bool openFile();
 
     void closeFile();

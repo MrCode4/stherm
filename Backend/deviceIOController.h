@@ -2,6 +2,7 @@
 
 #include <QThread>
 #include <QTimer>
+#include <queue>
 
 #include "DataParser.h"
 #include "UARTConnection.h"
@@ -96,6 +97,8 @@ private:
     //! Check alerts with AQ_TH_PR_vals
     void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values);
 
+    bool processNRFQueue();
+
     //! Process NRF response
     void processNRFResponse(STHERM::SIOPacket rxPacket);
 
@@ -136,4 +139,6 @@ private:
     QTimer m_wtd_timer;
     QTimer m_wiring_timer;
     QTimer m_nRF_timer;
+
+    std::queue<QByteArray> m_nRF_queue;
 };

@@ -5,7 +5,15 @@ GpioHandler::GpioHandler(int gpio_pin, QObject *parent)
 {
     // Construct the file path using QString
     filePath = QString(SW_VAL_PATH).arg(gpio_pin);
+}
 
+GpioHandler::~GpioHandler()
+{
+    closeFile();
+}
+
+bool GpioHandler::startConnection()
+{
     // Open the file in non-blocking mode
     if (openFile()) {
         mError = QString();
@@ -24,11 +32,8 @@ GpioHandler::GpioHandler(int gpio_pin, QObject *parent)
         mError = file.errorString();
         qDebug() << "Failed to open file:" << mError;
     }
-}
 
-GpioHandler::~GpioHandler()
-{
-    closeFile();
+    return !hasError();
 }
 
 bool GpioHandler::openFile()

@@ -57,7 +57,7 @@ public:
     std::vector<STHERM::SensorTimeConfig> time_configs;
     std::vector<STHERM::SensorConfigThresholds> throlds;
 
-    //! unknowns
+    //! unknowns // TODO find unused ones and remove later
     int16_t nrf_Temp;
     uint8_t nrf_Hum;
     uint16_t nrf_aqs_CO2eq;
@@ -85,10 +85,10 @@ DeviceIOController::DeviceIOController(QObject *parent)
     , m_p(new DeviceIOPrivate)
 {
     // TODO move creating objects here
-    m_nRfConnection = nullptr;
-    m_tiConnection = nullptr;
-    m_gpioHandler4 = nullptr;
-    m_gpioHandler5 = nullptr;
+    m_tiConnection = new UARTConnection(TI_SERIAL_PORT, true, this);
+    m_nRfConnection = new UARTConnection(NRF_SERIAL_PORT, false, this);
+    m_gpioHandler4 = new GpioHandler(NRF_GPIO_4, this);
+    m_gpioHandler5 = new GpioHandler(NRF_GPIO_5, this);
 
     initialize();
 }
@@ -102,12 +102,6 @@ DeviceIOController::~DeviceIOController()
     m_p->StopReading = true;
     terminate();
     wait();
-
-    if (m_nRfConnection)
-        delete m_nRfConnection;
-
-    if (m_tiConnection)
-        delete m_tiConnection;
 
     qWarning() << "Stopped Hvac";
 
@@ -213,7 +207,8 @@ void DeviceIOController::initialize()
     //    m_p->RGBm.green = 255;
     //    m_p->RGBm.mode = LED_FADE;
 
-    // TODO move adding initialization requests to queue here nrfConfiguration tiConfiguration
+    nrfConfiguration();
+    tiConfiguration();
 }
 
 void DeviceIOController::nrfConfiguration()
@@ -230,9 +225,10 @@ void DeviceIOController::nrfConfiguration()
     ///! Send GetInfo request to initialize communication, TODO reply?
 
     QByteArray packetBA = DataParser::preparePacket(STHERM::GetInfo);
-    m_nRfConnection->sendRequest(packetBA);
+    m_nRF_queue.push(packetBA);
 
     ///! Send InitMcus request after GetInfo, TODO should we wait for reply?
+    /// TODOrefactor and move to preparePacket
     /// we can add this to a queue in constructor later and process the queue here
     STHERM::SIOPacket txPacket;
     txPacket.PacketSrc = UART_Packet;
@@ -272,7 +268,7 @@ void DeviceIOController::nrfConfiguration()
     int ThreadSendSize = UtilityHelper::setSIOTxPacket(ThreadBuff, txPacket);
 
     packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff), ThreadSendSize);
-    m_nRfConnection->sendRequest(packetBA);
+    m_nRF_queue.push(packetBA);
 }
 
 void DeviceIOController::tiConfiguration()
@@ -459,6 +455,29 @@ void DeviceIOController::createConnections()
     //    start();
 }
 
+bool DeviceIOController::processNRFQueue()
+{
+    if (m_nRfConnection->property("busy").toBool()) {
+        return false;
+    }
+
+    if (m_nRF_queue.empty()) {
+        return false;
+    }
+
+    auto packetBA = m_nRF_queue.front();
+    m_nRfConnection->setProperty("busy", true);
+    if (m_nRfConnection->sendRequest(packetBA)) {
+        m_nRF_queue.pop();
+        return true;
+    } else {
+        qWarning() << "nRF request packet not sent" << packetBA
+                   << "queue size: " << m_nRF_queue.size();
+    }
+
+    return false;
+}
+
 void DeviceIOController::createSensor(QString name, QString id) {}
 
 //! OBSOLETE, TODO remove
@@ -516,23 +535,27 @@ void DeviceIOController::run()
 
 void DeviceIOController::createTIConnection()
 {
-    m_tiConnection = new UARTConnection(TI_SERIAL_PORT, QSerialPort::Baud9600, true);
-    if (m_tiConnection->startConnection()) {
-        connect(m_tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
-            LOG_DEBUG(QString("Ti Response: %0").arg(data));
-
-            auto rxPacket = DataParser::deserializeData(data);
-
-            LOG_DEBUG(QString("TI Response - CMD: %0").arg(rxPacket.CMD));
-            processTIResponse(rxPacket);
-        });
-
-        tiConfiguration();
+    if (!m_tiConnection->startConnection(QSerialPort::Baud9600)) {
+        LOG_DEBUG(QString("m_tiConnection startConnection failed"));
+        return;
     }
+
+    connect(m_tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
+        LOG_DEBUG(QString("Ti Response: %0").arg(data));
+
+        auto rxPacket = DataParser::deserializeData(data);
+
+        LOG_DEBUG(QString("TI Response - CMD: %0").arg(rxPacket.CMD));
+        processTIResponse(rxPacket);
+    });
 }
 
 void DeviceIOController::createNRF()
 {
+    if (!m_nRfConnection->startConnection(QSerialPort::Baud9600)) {
+        LOG_DEBUG(QString("m_nRfConnection startConnection failed"));
+        return;
+    }
 
     bool isSuccess = UtilityHelper::configurePins(NRF_GPIO_4);
     if (!isSuccess) {
@@ -546,44 +569,42 @@ void DeviceIOController::createNRF()
         return;
     }
 
-    m_gpioHandler4 = new GpioHandler(NRF_GPIO_4, this);
-    m_gpioHandler5 = new GpioHandler(NRF_GPIO_5, this);
+    connect(m_nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
+        TRACE_CHECK(false) << "NRF Response:   " << data;
+        auto rxPacket = DataParser::deserializeData(data);
+        TRACE_CHECK(true) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+        processNRFResponse(rxPacket);
 
-    m_nRfConnection = new UARTConnection(NRF_SERIAL_PORT, QSerialPort::Baud9600);
-    if (m_nRfConnection->startConnection()) {
-        connect(m_nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
-            TRACE_CHECK(false) << "NRF Response:   " << data;
-            auto rxPacket = DataParser::deserializeData(data);
-            TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
-            processNRFResponse(rxPacket);
+        m_nRfConnection->setProperty("busy", false);
+        processNRFQueue();
+    });
 
-            // Set data to ui (Update ui variables).
-            //            Q_EMIT responseReady(rxPacket.CMD, );
-        });
-
-        nrfConfiguration();
-    }
-
-    if (!m_gpioHandler4->hasError() && false) {
+    if (m_gpioHandler4->startConnection() && false) {
         connect(m_gpioHandler4, &GpioHandler::readyRead, this, [=](QByteArray data) {
             TRACE << QString("gpio4Connection Response:   %0").arg(data) << data.length();
 
             if (data.length() == 2 && data.at(0) == '0') {
-                TRACE << "request for gpio 4";
-                //<< nRfConnection->sendRequest(mSensorPacketBA);
+                m_nRF_queue.push(m_p->SensorPacketBA);
+                TRACE << "request for gpio 4" << processNRFQueue();
+                // check after tiemout if no other request sent
+                m_nRF_timer.start();
             }
         });
     }
 
-    if (!m_gpioHandler5->hasError() && false) {
+    if (m_gpioHandler5->startConnection() && false) {
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             TRACE << QString("gpio5Connection Response:   %0").arg(data) << data.length();
 
             if (data.length() == 2 && data.at(0) == '0') {
-                TRACE << "request for gpio 5" << m_nRfConnection->sendRequest(m_p->TOFPacketBA);
+                m_nRF_queue.push(m_p->TOFPacketBA);
+                TRACE << "request for gpio 5" << processNRFQueue();
             }
         });
     }
+
+    m_nRfConnection->setProperty("busy", false);
+    processNRFQueue();
 }
 
 void DeviceIOController::setStopReading(bool stopReading)
@@ -610,11 +631,14 @@ bool DeviceIOController::setBacklight(QVariantList data)
 {
     TRACE_CHECK(false) << "sending setBacklight request with data:" << data
                        << (m_nRfConnection && m_nRfConnection->isConnected());
+
     if (m_nRfConnection && m_nRfConnection->isConnected() && data.size() == 5) {
-        auto result = sendRequestWithReply(m_nRfConnection,
-                                           STHERM::SIOCommand::SetColorRGB,
-                                           data,
-                                           100);
+        auto packet = DataParser::preparePacket(STHERM::SIOCommand::SetColorRGB,
+                                                STHERM::PacketType::UARTPacket,
+                                                data);
+
+        m_nRF_queue.push(packet);
+        auto result = processNRFQueue();
         TRACE_CHECK(false) << "send setBacklight request" << result;
         return result;
     } else {
@@ -682,38 +706,27 @@ void DeviceIOController::nRFExec()
     if (m_nRfConnection && m_nRfConnection->isConnected()) {
         TRACE_CHECK(false) << "start GetSensors";
 
-        auto rsp = sendRequestWithReply(m_nRfConnection, STHERM::SIOCommand::GetSensors, {}, 10000);
-
-        TRACE_CHECK(false) << "GetSensors message finished" << rsp;
-
-        TRACE_CHECK(false) << "start GetTOF";
-        auto packet = DataParser::preparePacket(STHERM::SIOCommand::GetTOF,
+        auto packet = DataParser::preparePacket(STHERM::SIOCommand::GetSensors,
                                                 STHERM::PacketType::UARTPacket);
-        auto sent = m_nRfConnection->sendRequest(packet);
+        m_nRF_queue.push(packet);
+        auto result = processNRFQueue();
 
-        TRACE_CHECK(false) << "nrf GetTOF message sent" << sent;
+        TRACE_CHECK(true) << "GetSensors message finished" << result;
     }
 }
 
 void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
 {
-
-//    QVariantMap resultMap;
     // checksum the response data
     uint16_t inc_crc_nrf = UtilityHelper::crc16(rxPacket.DataArray, rxPacket.DataLen);
-    int indx_rev = 0;
-
-    uint16_t RangeMilliMeter;
-    uint16_t fanSpeed;
-    uint32_t Luminosity;
 
     // check data integridy
     if (inc_crc_nrf == rxPacket.CRC) {
         if (rxPacket.ACK == STHERM::ERROR_NO) {
 
             switch (rxPacket.CMD) {
-            case STHERM::GetInfo: {
-                indx_rev = 0;
+            case STHERM::GetInfo: { // TODO
+                int indx_rev = 0;
                 for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
                 {
                     //                    NRF_HW.push_back(static_cast<char>(rx_packet.DataArray[indx_rev]));
@@ -727,6 +740,8 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
             } break;
 
             case STHERM::GetTOF: {
+                uint16_t RangeMilliMeter;
+                uint32_t Luminosity;
                 // Read RangeMilliMeter and Luminosity
                 // In OLD code: 1118-1132
                 memcpy(&RangeMilliMeter, rxPacket.DataArray, sizeof(RangeMilliMeter));
@@ -752,6 +767,9 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
             } break;
 
             case STHERM::GetSensors: {
+                uint16_t RangeMilliMeter;
+                uint16_t fanSpeed;
+                uint32_t Luminosity;
                 // Read data from DataArray
                 // in ODL code: 1134-1227
 
