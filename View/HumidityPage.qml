@@ -49,23 +49,34 @@ BasePageView {
 
     ColumnLayout {
         anchors.centerIn: parent
-        width: parent.width * 0.85
+        width: parent.width
 
         Label {
             Layout.alignment: Qt.AlignHCenter
             text: "Please select value for the humidity"
         }
 
-        TickedSlider {
-            id: _humSlider
-            Layout.fillWidth: true
-            from: 20
-            to: 70
-            value: device?.requestedHum ?? 0
-            ticksCount: 50
-            majorTickCount: 5
-            stepSize: 1.
-            valueChangeAnimation: true
+        RowLayout {
+            spacing: 0
+
+            Label {
+                Layout.alignment: Qt.AlignTop
+                Layout.topMargin: height / 2
+                font.pointSize: _root.font.pointSize * 0.9
+                text: "%"
+            }
+
+            TickedSlider {
+                id: _humSlider
+                Layout.fillWidth: true
+                from: 20
+                to: 70
+                value: device?.requestedHum ?? 0
+                ticksCount: 50
+                majorTickCount: 5
+                stepSize: 1.
+                valueChangeAnimation: true
+            }
         }
 
         ToolTip {
