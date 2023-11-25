@@ -18,6 +18,7 @@ T.TextField {
     rightPadding: leftPadding
     topPadding: Style.textField.verticalPadding
     bottomPadding: topPadding
+    bottomInset: 16
 
     color: enabled ? Material.foreground : Material.hintTextColor
     selectionColor: Style.accent
@@ -47,7 +48,7 @@ T.TextField {
         implicitHeight: Style.textField.height
 
         Rectangle {
-            y: control.height - height - control.bottomPadding
+            y: parent.height - height
             width: parent.width
             height: control.activeFocus || (enabled && control.hovered) ? 2 : 1
             color: control.activeFocus ? Style.accent
