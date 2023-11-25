@@ -43,6 +43,7 @@ qt_add_qml_module(RoniaStyleImpl
 
     RESOURCES
         res/check.png
+        res/check-dark.png
 
     QML_FILES
         impl/ButtonStyle.qml

@@ -38,8 +38,10 @@ Rectangle {
         y: (parent.height - height) / 2
         width: 16
         height: 16
-        source: "qrc:/Ronia/impl/res/check.png"
+        source: "qrc:/Ronia/impl/res/check-dark.png"
         fillMode: Image.PreserveAspectFit
+        sourceSize.width: 16
+        sourceSize.height: 16
 
         scale: indicatorItem.checkState === Qt.Checked ? 1 : 0
         Behavior on scale { NumberAnimation { duration: 100 } }
