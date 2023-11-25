@@ -287,7 +287,6 @@ ApplicationWindow {
     //! SplashScreen Loader
     Loader {
         id: _splashLoader
-        active: false
         sourceComponent: _splashCompo
         onLoaded: {
             item.visible = true;
