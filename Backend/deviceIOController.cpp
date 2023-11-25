@@ -235,39 +235,9 @@ void DeviceIOController::nrfConfiguration()
     ///! Send InitMcus request after GetInfo, TODO should we wait for reply?
     /// TODOrefactor and move to preparePacketSIO
     /// we can add this to a queue in constructor later and process the queue here
-    STHERM::SIOPacket txPacket;
-    txPacket.PacketSrc = UART_Packet;
-    txPacket.CMD = STHERM::InitMcus;
-    txPacket.ACK = STHERM::ERROR_NO;
-    txPacket.SID = 0x01;
-
-    uint8_t cpIndex = 0;
-
-    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.temp_high, sizeof(throldsAQ.temp_high));
-    cpIndex += sizeof(throldsAQ.temp_high);
-
-    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.temp_low, sizeof(throldsAQ.temp_low));
-    cpIndex += sizeof(throldsAQ.temp_low);
-
-    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.humidity_high, sizeof(throldsAQ.humidity_high));
-    cpIndex += sizeof(throldsAQ.humidity_high);
-
-    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.humidity_low, sizeof(throldsAQ.humidity_low));
-    cpIndex += sizeof(throldsAQ.humidity_low);
-
-    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.pressure_high, sizeof(throldsAQ.pressure_high));
-    cpIndex += sizeof(throldsAQ.pressure_high);
-
-    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.c02_high, sizeof(throldsAQ.c02_high));
-    cpIndex += sizeof(throldsAQ.c02_high);
-
-    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.Tvoc_high, sizeof(throldsAQ.Tvoc_high));
-    cpIndex += sizeof(throldsAQ.Tvoc_high);
-
-    memcpy(txPacket.DataArray + cpIndex, &throldsAQ.etoh_high, sizeof(throldsAQ.etoh_high));
-    cpIndex += sizeof(throldsAQ.etoh_high);
-    txPacket.DataLen = cpIndex;
-    //    TODO update CRC
+    STHERM::SIOPacket txPacket = DataParser::prepareSIOPacket(STHERM::InitMcus,
+                                                              STHERM::UARTPacket,
+                                                              {QVariant::fromValue(throldsAQ)});
 
     m_nRF_queue.push(txPacket);
     m_nRF_queue.push(m_p->SensorPacketBA);
