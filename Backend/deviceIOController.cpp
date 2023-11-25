@@ -1,5 +1,6 @@
 #include "deviceIOController.h"
 
+#include <QDateTime>
 #include <QFutureWatcher>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -78,6 +79,10 @@ public:
     uint64_t last_update_tick{};
     uint64_t last_update_tick_l{};
     int error_dynamic_counter{};
+
+    qint64 lastTimeSensors = 0;
+    qint64 lastTimeTOF = 0;
+
 };
 
 DeviceIOController::DeviceIOController(QObject *parent)
@@ -476,7 +481,12 @@ bool DeviceIOController::processNRFQueue()
     auto packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff), ThreadSendSize);
 
     if (m_nRfConnection->sendRequest(packetBA)) {
-        m_nRF_queue.pop();
+        if (packet.CMD == STHERM::SIOCommand::GetTOF) {
+            m_p->lastTimeTOF = QDateTime::currentMSecsSinceEpoch();
+        } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
+            m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
+        }
+        //        m_nRF_queue.pop(); // we pop it when the result reciever so we can confirm
         return true;
     } else {
         qWarning() << "nRF request packet not sent" << packet.CMD
@@ -583,6 +593,10 @@ void DeviceIOController::createNRF()
         TRACE_CHECK(false) << "NRF Response:   " << data;
         auto rxPacket = DataParser::deserializeData(data);
         TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+        auto sent = m_nRF_queue.front();
+        if (sent.CMD != rxPacket.CMD)
+            qWarning() << "RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD;
+        m_nRF_queue.pop();
         processNRFResponse(rxPacket);
 
         m_nRfConnection->setProperty("busy", false);
@@ -592,11 +606,13 @@ void DeviceIOController::createNRF()
     m_nRfConnection->setProperty("busy", false);
     processNRFQueue();
 
-    if (m_gpioHandler4->startConnection() && false) {
+    if (m_gpioHandler4->startConnection() ) {
         connect(m_gpioHandler4, &GpioHandler::readyRead, this, [=](QByteArray data) {
-            TRACE << QString("gpio4Connection Response:   %0").arg(data) << data.length();
-
+            auto time = QDateTime::currentMSecsSinceEpoch();
+            if (time - m_p->lastTimeSensors < 1000)
+                return;
             if (data.length() == 2 && data.at(0) == '0') {
+                m_p->lastTimeSensors = time;
                 m_nRF_queue.push(m_p->SensorPacketBA);
                 TRACE << "request for gpio 4" << processNRFQueue();
                 // check after tiemout if no other request sent
@@ -605,11 +621,13 @@ void DeviceIOController::createNRF()
         });
     }
 
-    if (m_gpioHandler5->startConnection() && false) {
+    if (m_gpioHandler5->startConnection()) {
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
-            TRACE << QString("gpio5Connection Response:   %0").arg(data) << data.length();
-
+            auto time = QDateTime::currentMSecsSinceEpoch();
+            if (time - m_p->lastTimeSensors < 100 || time - m_p->lastTimeTOF < 100)
+                return;
             if (data.length() == 2 && data.at(0) == '0') {
+                m_p->lastTimeTOF = QDateTime::currentMSecsSinceEpoch();
                 m_nRF_queue.push(m_p->TOFPacketBA);
                 TRACE << "request for gpio 5" << processNRFQueue();
             }
@@ -716,6 +734,8 @@ void DeviceIOController::nRFExec()
     if (m_nRfConnection && m_nRfConnection->isConnected()) {
         TRACE_CHECK(false) << "start GetSensors";
 
+        m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
+
         m_nRF_queue.push(m_p->SensorPacketBA);
         auto result = processNRFQueue();
 
@@ -748,6 +768,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
             } break;
 
             case STHERM::GetTOF: {
+                m_p->lastTimeTOF = QDateTime::currentMSecsSinceEpoch();
                 uint16_t RangeMilliMeter;
                 uint32_t Luminosity;
                 // Read RangeMilliMeter and Luminosity
@@ -775,6 +796,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
             } break;
 
             case STHERM::GetSensors: {
+                m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
                 uint16_t RangeMilliMeter;
                 uint16_t fanSpeed;
                 uint32_t Luminosity;
@@ -845,10 +867,12 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 //                if (!set_fan_speed_INFO(fan_speed)) {
                 //                    LOG_DEBUG(QString("Error: setFanSpeed: (fan speed: %0)").arg(fan_speed));
                 //                }
-                // todo
-                //                if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE) {
-                //                    key_event('n');
-                //                }
+                if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE) {
+                    // key_event('n'); // send screen saver event
+                    auto wake = new QEvent(QEvent::User);
+                    QCoreApplication::instance()->sendEvent(QCoreApplication::instance(), wake);
+                    TRACE_CHECK(false) <<(QString("RangeMilliMeter (%0):  60 < RangeMilliMeter <= 1000 mm").arg(RangeMilliMeter));
+                }
 
                 if (false && m_p->brighness_mode == 1) {
                     if (!setBrightness(Luminosity)) {
