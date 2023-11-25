@@ -106,6 +106,7 @@ BasePageView {
 
             Column {
                 Layout.alignment: Qt.AlignTop
+                Layout.topMargin: _hourSliders.topPadding
 
                 RoniaTextIcon {
                     x: (parent.width - width) / 2
@@ -146,7 +147,7 @@ BasePageView {
 
                 Label {
                     anchors.top: parent.bottom
-                    x: parent.visualPosition * (parent.width - width)
+                    x: 8 + parent.visualPosition * (parent.width - width - 16)
                     font.pointSize: _root.font.pointSize * 0.8
                     text: "min"
                 }
