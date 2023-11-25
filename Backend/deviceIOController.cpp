@@ -33,6 +33,8 @@ public:
 
     bool nRFWaitForResponse = false;
     bool wait_for_wiring_check = true;
+    bool wiring_check_f = false;
+    bool wait_relay_response = false;
 
     STHERM::SIOPacket SensorPacketBA;
     STHERM::SIOPacket TOFPacketBA;
@@ -69,12 +71,8 @@ public:
     //! 0 normal, 1 adaptive
     uint8_t brighness_mode = 1;
     //! unknowns
-    uint16_t RangeMilliMeter;
-    uint16_t fan_speed;
-    uint32_t Luminosity;
     bool pairing = false;
     bool last_pairing = false;
-    bool wiring_check_f = false;
     int tmr_cntr = WIRING_CHECK_TIME;
     uint64_t last_update_tick{};
     uint64_t last_update_tick_l{};
@@ -82,7 +80,6 @@ public:
 
     qint64 lastTimeSensors = 0;
     qint64 lastTimeTOF = 0;
-
 };
 
 DeviceIOController::DeviceIOController(QObject *parent)
@@ -213,7 +210,7 @@ void DeviceIOController::initialize()
     //    m_p->RGBm.mode = LED_FADE;
 
     nrfConfiguration();
-//    tiConfiguration(); TODO
+    tiConfiguration();
 }
 
 void DeviceIOController::nrfConfiguration()
@@ -247,8 +244,8 @@ void DeviceIOController::nrfConfiguration()
 void DeviceIOController::tiConfiguration()
 {
     // Send GetInfo request
-    QByteArray packetBA = DataParser::preparePacket(STHERM::GetInfo);
-    m_tiConnection->sendRequest(packetBA); // TODO queue
+    auto packet = DataParser::prepareSIOPacket(STHERM::GetInfo);
+    m_TI_queue.push(packet);
 
     //!TODO moving some data structures seems unnecessary
     qInfo() << QString("tack: %0 tnack : %1 senspt : %2")
@@ -260,8 +257,10 @@ void DeviceIOController::tiConfiguration()
     /// we can add this to a queue in constructor later and process the queue here
     /// this section is done different in daemon and passes multiple data to thread! which we do not need
     /// Set_limits and Set_time
-    //    packetBA = DataParser::preparePacket(STHERM::StartPairing);
-    //    tiConnection->sendRequest(packetBA);
+    auto pairPacket = DataParser::prepareSIOPacket(STHERM::StartPairing);
+    if (false) { // todo if there is anyrhing to pair
+        m_TI_queue.push(pairPacket);
+    }
 }
 
 inline bool sendRequestWithReply(UARTConnection *connection,
@@ -411,8 +410,9 @@ void DeviceIOController::createConnections()
 
     connect(&m_wtd_timer, &QTimer::timeout, this, &DeviceIOController::wtdExec);
 
+    m_wtd_timer.setInterval(10000);
     m_wtd_timer.setSingleShot(false);
-    m_wtd_timer.start(10000);
+    m_wtd_timer.start();
 
     connect(&m_wiring_timer, &QTimer::timeout, this, &DeviceIOController::wiringExec);
 
@@ -426,45 +426,6 @@ void DeviceIOController::createConnections()
     m_nRF_timer.start();
 
     //    start();
-}
-
-bool DeviceIOController::processNRFQueue()
-{
-    if (!m_nRfConnection || !m_nRfConnection->isConnected())
-        return false;
-
-    if (m_nRF_queue.empty()) {
-        return false;
-    }
-
-    auto packet = m_nRF_queue.front();
-
-    if (m_nRfConnection->property("busy").toBool()) {
-        TRACE << "busy with previous one" << packet.CMD;
-        return false;
-    }
-
-    m_nRfConnection->setProperty("busy", true);
-
-    //! prepare for request
-    uint8_t ThreadBuff[256];
-    int ThreadSendSize = UtilityHelper::setSIOTxPacket(ThreadBuff, packet);
-    auto packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff), ThreadSendSize);
-
-    if (m_nRfConnection->sendRequest(packetBA)) {
-        if (packet.CMD == STHERM::SIOCommand::GetTOF) {
-            m_p->lastTimeTOF = QDateTime::currentMSecsSinceEpoch();
-        } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
-            m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
-        }
-        //        m_nRF_queue.pop(); // we pop it when the result reciever so we can confirm
-        return true;
-    } else {
-        qWarning() << "nRF request packet not sent" << packet.CMD
-                   << "queue size: " << m_nRF_queue.size();
-    }
-
-    return false;
 }
 
 void DeviceIOController::createSensor(QString name, QString id) {}
@@ -531,14 +492,25 @@ void DeviceIOController::createTIConnection()
 
     connect(m_tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
         LOG_DEBUG(QString("Ti Response: %0").arg(data));
+        m_wtd_timer.start();
 
         auto rxPacket = DataParser::deserializeData(data);
 
         LOG_DEBUG(QString("TI Response - CMD: %0").arg(rxPacket.CMD));
         processTIResponse(rxPacket);
+
+        auto sent = m_TI_queue.front();
+        // this may fail! so better to add pop inside of else conditions?
+        if (sent.CMD != rxPacket.CMD)
+            qWarning() << "TI RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD;
+        else {
+            m_TI_queue.pop();
+
+            processTIQueue();
+        }
     });
 
-    tiConfiguration();
+    processTIQueue();
 }
 
 void DeviceIOController::createNRF()
@@ -566,7 +538,7 @@ void DeviceIOController::createNRF()
         TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
-            qWarning() << "RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD;
+            qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD;
         m_nRF_queue.pop();
         processNRFResponse(rxPacket);
 
@@ -668,9 +640,9 @@ void DeviceIOController::wtdExec()
 {
     TRACE << "start wtd" << (m_tiConnection && m_tiConnection->isConnected());
 
-    // TODO: timer should be restart on every request and no reply waiting needed
     if (m_tiConnection && m_tiConnection->isConnected()) {
-        auto rsp = sendRequestWithReply(m_tiConnection, STHERM::SIOCommand::feed_wtd, {}, 10000);
+        auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::feed_wtd);
+        auto rsp = sendTIRequest(packet);
 
         if (rsp == false) {
             TRACE << "Ti heartbeat message send failed";
@@ -687,7 +659,9 @@ void DeviceIOController::wiringExec()
     TRACE << "start Check_Wiring" << (m_tiConnection && m_tiConnection->isConnected());
 
     if (m_tiConnection && m_tiConnection->isConnected()) {
-        auto rsp = sendRequestWithReply(m_tiConnection, STHERM::SIOCommand::Check_Wiring, {}, 10000);
+        auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::Check_Wiring);
+        m_TI_queue.push(packet);
+        auto rsp = processTIQueue();
 
         if (rsp == false) {
             TRACE << "Ti Check_Wiring message send failed";
@@ -873,6 +847,45 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
     }
 }
 
+bool DeviceIOController::processNRFQueue()
+{
+    if (!m_nRfConnection || !m_nRfConnection->isConnected())
+        return false;
+
+    if (m_nRF_queue.empty()) {
+        return false;
+    }
+
+    auto packet = m_nRF_queue.front();
+
+    if (m_nRfConnection->property("busy").toBool()) {
+        TRACE << "busy with previous one" << packet.CMD;
+        return false;
+    }
+
+    m_nRfConnection->setProperty("busy", true);
+
+    //! prepare for request
+    uint8_t ThreadBuff[256];
+    int ThreadSendSize = UtilityHelper::setSIOTxPacket(ThreadBuff, packet);
+    auto packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff), ThreadSendSize);
+
+    if (m_nRfConnection->sendRequest(packetBA)) {
+        if (packet.CMD == STHERM::SIOCommand::GetTOF) {
+            m_p->lastTimeTOF = QDateTime::currentMSecsSinceEpoch();
+        } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
+            m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
+        }
+        //        m_nRF_queue.pop(); // we pop it when the result reciever so we can confirm
+        return true;
+    } else {
+        qWarning() << "nRF request packet not sent" << packet.CMD
+                   << "queue size: " << m_nRF_queue.size();
+    }
+
+    return false;
+}
+
 void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 {
     uint16_t inc_crc_ti = UtilityHelper::crc16(rxPacket.DataArray, rxPacket.DataLen);
@@ -896,7 +909,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
     uint32_t brdcst_addr = 0xffffffff;
 
     bool aquired_addr = false;
-
+    m_p->wait_relay_response = false;
     if (inc_crc_ti == rxPacket.CRC) {
         switch (rxPacket.CMD) {
         case STHERM::Get_packets: {
@@ -946,12 +959,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                 cpIndex = rf_len;
                 tx_packet.DataLen = cpIndex;
 
-                uint8_t rf_tx_buff[256];
-                uint16_t size = UtilityHelper::setSIOTxPacket(rf_tx_buff, tx_packet);
-
-                QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(rf_tx_buff),
-                                                            size);
-                m_tiConnection->sendRequest(packet);
+                sendTIRequest(tx_packet);
 
             } else if (!memcmp(rxPacket.DataArray, rf_packet + 4, 4)) {
                 memcpy(rf_packet, &rxPacket.DataArray[4], 4);
@@ -965,12 +973,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                 cpIndex = rf_len;
                 tx_packet.DataLen = cpIndex;
 
-                uint8_t tx_buff[256];
-                uint16_t size = UtilityHelper::setSIOTxPacket(tx_buff, tx_packet);
-
-                QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tx_buff),
-                                                            size);
-                m_tiConnection->sendRequest(packet);
+                sendTIRequest(tx_packet);
             } else if (!memcmp(rxPacket.DataArray, &brdcst_addr, 4)) {
                 STHERM::DeviceType inc;
                 // Check
@@ -989,11 +992,10 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
             } else {
                 switch (rxPacket.ACK) {
                 case STHERM::ERROR_WIRING_NOT_CONNECTED: {
-                    //                    wait_for_wiring_check = true;
+                    m_p->wait_for_wiring_check = true;
                     emit alert(STHERM::LVL_Emergency, STHERM::Alert_wiring_not_connected);
                     LOG_DEBUG("ERROR_WIRING_NOT_CONNECTED");
                     LOG_DEBUG("~" + QString::number(rxPacket.DataLen));
-                    //                    wait_resp = true; prevent dynamic thread before response
                     // Pepare Wiring_check command when all wires not broke
                     tx_packet.PacketSrc = UART_Packet;
                     tx_packet.CMD = STHERM::Check_Wiring;
@@ -1001,16 +1003,10 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                     tx_packet.SID = 0x01;
                     tx_packet.DataLen = 0;
 
-                    // Prepare packet to send request.
-                    uint8_t tx_buff[256];
-                    uint16_t size = UtilityHelper::setSIOTxPacket(tx_buff, tx_packet);
-
-                    QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tx_buff),
-                                                                size);
-
                     LOG_DEBUG(
                         "***** Ti  - ERROR_WIRING_NOT_CONNECTED: Send Check_Wiring command *****");
-                    m_tiConnection->sendRequest(packet);
+
+                    sendTIRequest(tx_packet);
                 }
 
                 break;
@@ -1044,7 +1040,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
         case STHERM::Check_Wiring: {
             LOG_DEBUG("***** Ti  - Start Check_Wiring *****");
 
-//            wait_for_wiring_check = false;
+            m_p->wait_for_wiring_check = false;
             if (rxPacket.DataLen == WIRING_IN_CNT) {
 
                 // Check: Update model
@@ -1054,6 +1050,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
                 if (m_p->WiringState.contains(WIRING_BROKEN)) {
                     emit alert(STHERM::LVL_Emergency, STHERM::Alert_wiring_not_connected);
+                    // TODO relays_in_l = relays_in;
                     LOG_DEBUG("Check_Wiring : Wiring is disrupted");
                 } else {
                     // Pepare SetRelay command when all wires not broke
@@ -1068,15 +1065,9 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                         tx_packet.DataArray[i] = m_p->relays_in[i];
                     }
 
-                    // Prepaare packet to send request.
-                    uint8_t tx_buff[256];
-                    uint16_t size = UtilityHelper::setSIOTxPacket(tx_buff, tx_packet);
-
-                    QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tx_buff),
-                                                                size);
-
                     LOG_DEBUG("***** Ti  - Check_Wiring: Send SetRelay command *****");
-                    m_tiConnection->sendRequest(packet);
+
+                    sendTIRequest(tx_packet);
                 }
 
             } else {
@@ -1108,14 +1099,9 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
             }
             */
 
-            // Prepare to send txPacket
-            uint8_t tpBuff[256];
-            uint16_t size = UtilityHelper::setSIOTxPacket(tpBuff, tp);
-
-            QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tpBuff),
-                                                        size);
             LOG_DEBUG("***** Ti  - Get_addr packet sent to ti *****");
-            m_tiConnection->sendRequest(packet);
+
+            sendTIRequest(tp);
 
             LOG_DEBUG("***** Ti  - Finished: GetInfo *****");
 
@@ -1178,16 +1164,51 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
         tp.SID = 0x01;
         tp.DataLen = 0;
 
-        // Prepare to send ERROR_CRC packet
-        uint8_t tpBuff[256];
-        uint16_t size = UtilityHelper::setSIOTxPacket(tpBuff, tp);
-
-        QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tpBuff),
-                                                    size);
         LOG_DEBUG("***** Ti  - ERROR_CRC packet sent to ti *****");
-        m_tiConnection->sendRequest(packet);
+        sendTIRequest(tp);
+    }
+}
+
+bool DeviceIOController::processTIQueue()
+{
+    if (!m_tiConnection || !m_tiConnection->isConnected())
+        return false;
+
+    if (m_TI_queue.empty()) {
+        return false;
     }
 
+    auto packet = m_TI_queue.front();
+
+    if ((packet.CMD == STHERM::SetRelay || packet.CMD == STHERM::Check_Wiring)
+        && m_p->wait_relay_response) {
+        return false;
+    }
+
+    if (sendTIRequest(packet)) {
+        //        m_TI_queue.pop(); // we pop it when the result reciever so we can confirm
+        return true;
+    } else {
+        qWarning() << "ti request packet not sent" << packet.CMD
+                   << "queue size: " << m_TI_queue.size();
+    }
+
+    return false;
+}
+
+bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
+{
+    m_wtd_timer.start();
+
+    if (txPacket.CMD == STHERM::SetRelay || txPacket.CMD == STHERM::Check_Wiring) {
+        m_p->wait_relay_response = true;
+    }
+
+    //! prepare for request
+    uint8_t ThreadBuff[256];
+    int ThreadSendSize = UtilityHelper::setSIOTxPacket(ThreadBuff, txPacket);
+    auto packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff), ThreadSendSize);
+    return m_tiConnection->sendRequest(packetBA);
 }
 
 void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)

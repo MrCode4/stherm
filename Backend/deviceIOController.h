@@ -97,13 +97,14 @@ private:
     //! Check alerts with AQ_TH_PR_vals
     void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values);
 
-    bool processNRFQueue();
-
     //! Process NRF response
     void processNRFResponse(STHERM::SIOPacket rxPacket);
+    bool processNRFQueue();
 
     //! Process TI response
     void processTIResponse(STHERM::SIOPacket rxPacket);
+    bool processTIQueue();
+    bool sendTIRequest(STHERM::SIOPacket txPacket);
 
     //! Get time configs from saved configs file.
     STHERM::ResponseTime getTimeConfig();
@@ -141,4 +142,5 @@ private:
     QTimer m_nRF_timer;
 
     std::queue<STHERM::SIOPacket> m_nRF_queue;
+    std::queue<STHERM::SIOPacket> m_TI_queue;
 };
