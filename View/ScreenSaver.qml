@@ -72,6 +72,15 @@ Popup {
             TapHandler { } //! To ensure no button functionality
         }
 
+        //! Current time
+        DateTimeLabel {
+            Layout.alignment: Qt.AlignCenter
+            Layout.bottomMargin: 24
+            font.pointSize: Application.font.pointSize * 1.5
+            is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+            showDate: false
+        }
+
         //! NEXGEN icon
         NexgenIcon {
             id: _icon
