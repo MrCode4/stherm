@@ -65,11 +65,11 @@ ListView {
         },
         {
             "icon": FAIcons.arrowsRotate,
-            "text": "Update"
+            "text": "System Update"
         },
         {
             "icon": FAIcons.memoCircleInfo,
-            "text": "About Device"
+            "text": "Device Information"
         },
         {
             "icon": FAIcons.memoCircleInfo,
