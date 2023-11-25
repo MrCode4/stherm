@@ -30,4 +30,8 @@ QtObject {
     readonly property string circlePlay:                        "\uf144"
     readonly property string fileExclamation:                   "\uf31a"
     readonly property string clockThree:                        "\ue356"
+    readonly property string circlePhone:                       "\ue11b"
+    readonly property string globePointer:                      "\ue60e"
+    readonly property string globe:                             "\uf0ac"
+    readonly property string briefcase:                         "\uf0b1"
 }
