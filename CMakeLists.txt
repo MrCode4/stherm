@@ -293,6 +293,7 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
+        Images/nuve-icon.png
         Images/Wifi/wifi.png
         Images/Wifi/wifi-good.png
         Images/Wifi/wifi-fair.png

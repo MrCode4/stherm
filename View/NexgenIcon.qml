@@ -13,5 +13,7 @@ Image {
     /* Object properties
      * ****************************************************************************************/
     fillMode: Image.PreserveAspectFit
-    source: "qrc:/Stherm/Images/nexgen.png"
+    source: "qrc:/Stherm/Images/nuve-icon.png"
+    sourceSize.width: width
+    sourceSize.height: height
 }
