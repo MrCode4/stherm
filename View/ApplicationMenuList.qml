@@ -56,10 +56,6 @@ ListView {
             "text": "Fan Control"
         },
         {
-            "icon": FAIcons.circleCheck,
-            "text": "Wiring"
-        },
-        {
             "icon": FAIcons.wrench,
             "text": "System Setup"
         },
