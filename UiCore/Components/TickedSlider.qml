@@ -3,6 +3,7 @@ import QtQuick.Controls.Material.impl
 import QtQuick.Layouts
 
 import Ronia
+import Ronia.impl
 
 /*! ***********************************************************************************************
  * TickedSlider is an special slider with value ticks
@@ -35,7 +36,7 @@ Slider {
 
     handle: SliderHandle {
         x: _control.leftPadding + (_control.horizontal ? _control.visualPosition * (_control.availableWidth - width): (_control.availableWidth - width) / 2)
-        y: _control.topPadding + (_control.horizontal ? 6 : _control.visualPosition * (_control.availableHeight - height))
+        y: _control.topPadding + (_control.horizontal ? (parent.availableHeight - height) / 2 : _control.visualPosition * (_control.availableHeight - height))
         value: _control.value
         handleHasFocus: _control.visualFocus
         handlePressed: _control.pressed
@@ -44,7 +45,7 @@ Slider {
 
     background: Rectangle {
         x: _control.leftPadding + (_control.horizontal ? 0 : (_control.availableWidth - width) / 2)
-        y: _control.topPadding + (_control.horizontal ? height + 6 : 0)
+        y: _control.topPadding + (_control.horizontal ? (parent.availableHeight - height) / 2 : 0)
         implicitWidth: _control.horizontal ? 200 : 40
         implicitHeight: _control.horizontal ? 40 : 200
         width: _control.horizontal ? _control.availableWidth : 4
