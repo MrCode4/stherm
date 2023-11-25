@@ -240,6 +240,7 @@ void DeviceIOController::nrfConfiguration()
                                                               {QVariant::fromValue(throldsAQ)});
 
     m_nRF_queue.push(txPacket);
+    ///! to get the sensors value ASAP
     m_nRF_queue.push(m_p->SensorPacketBA);
 }
 
