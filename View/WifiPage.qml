@@ -145,7 +145,7 @@ BasePageView {
                 function updatePos()
                 {
                     if (wifiDelegate) {
-                        var newPos = wifiDelegate.mapToItem(_wifisFlick, 0, 0);
+                        var newPos = wifiDelegate.mapToItem(_wifisCol, 0, 0);
                         x = newPos.x;
                         y = newPos.y;
                     }
