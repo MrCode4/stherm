@@ -61,7 +61,7 @@ ListView {
         },
         {
             "icon": FAIcons.fileExclamation,
-            "text": "User Guides"
+            "text": "Technician Access"
         },
         {
             "icon": FAIcons.arrowsRotate,
@@ -70,6 +70,10 @@ ListView {
         {
             "icon": FAIcons.memoCircleInfo,
             "text": "Device Information"
+        },
+        {
+            "icon": FAIcons.headSet,
+            "text": "Contact Contractor"
         },
         {
             "icon": FAIcons.memoCircleInfo,

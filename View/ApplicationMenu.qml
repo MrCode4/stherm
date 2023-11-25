@@ -63,11 +63,6 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;
-                case "Wiring":
-                    _root.StackView.view.push("qrc:/Stherm/View/WiringPage.qml", {
-                                                  "uiSession": Qt.binding(() => uiSession)
-                                              });
-                    break;
                 case "System Setup":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
@@ -76,11 +71,14 @@ BasePageView {
                 case "About Device":
                     _root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml")
                     break;
-                case "User Guides":
+                case "Technician Access":
                     _root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml")
                     break;
                 case "System Info":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
+                    break;
+                case "Contact Contractor":
+                    _root.StackView.view.push("qrc:/Stherm/View/ContactContractorPage.qml");
                     break;
                 }
             }

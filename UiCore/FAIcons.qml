@@ -34,4 +34,5 @@ QtObject {
     readonly property string globePointer:                      "\ue60e"
     readonly property string globe:                             "\uf0ac"
     readonly property string briefcase:                         "\uf0b1"
+    readonly property string headSet:                           "\uf590"
 }
