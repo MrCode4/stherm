@@ -36,4 +36,51 @@ AppSpecCPP {
         Hour12,
         Hour24
     }
+
+    //! Type of a Sensor
+    enum SensorType {
+        OnBoard,
+        Wireless
+    }
+
+    //! Sensor locations
+    enum SensorLocation {
+        Unknown,
+        Other,
+        Bedroom,
+        LivingRoom,
+        KidsRoom,
+        Bathroom,
+        Kitchen,
+        Basement,
+        MainFloor,
+        Office,
+        Upstairs,
+        Downstairs,
+        DinningRoom,
+        GuestHouse
+    }
+    //! Sensor location names
+    //! \note: we use map (js object) instead of array to avoid bugs in case of moving
+    //! SensorLocation enum values
+    readonly property var sensorLocationNames: {
+        var names = {};
+        console.log('updating sensor location names');
+        names[`${AppSpec.SensorLocation.Unknown}`]      = "Unknown";
+        names[`${AppSpec.SensorLocation.Other}`]        = "Other";
+        names[`${AppSpec.SensorLocation.Bedroom}`]      = "Bedroom";
+        names[`${AppSpec.SensorLocation.LivingRoom}`]   = "LivingRoom";
+        names[`${AppSpec.SensorLocation.KidsRoom}`]     = "KidsRoom";
+        names[`${AppSpec.SensorLocation.Bathroom}`]     = "Bathroom";
+        names[`${AppSpec.SensorLocation.Kitchen}`]      = "Kitchen";
+        names[`${AppSpec.SensorLocation.Basement}`]     = "Basement";
+        names[`${AppSpec.SensorLocation.MainFloor}`]    = "MainFloor";
+        names[`${AppSpec.SensorLocation.Office}`]       = "Office";
+        names[`${AppSpec.SensorLocation.Upstairs}`]     = "Upstairs";
+        names[`${AppSpec.SensorLocation.Downstairs}`]   = "Downstairs";
+        names[`${AppSpec.SensorLocation.DinningRoom}`]  = "DinningRoom";
+        names[`${AppSpec.SensorLocation.GuestHouse}`]   = "GuestHouse";
+
+        return names
+    }
 }
