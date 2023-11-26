@@ -47,9 +47,11 @@ Popup {
                 id: _tempratureLbl
 
                 Layout.fillWidth: true
+                padding: 0
                 font.pointSize: Application.font.pointSize * 6.5
                 minimumPointSize: Application.font.pointSize
                 fontSizeMode: "HorizontalFit"
+                verticalAlignment: "AlignVCenter"
                 horizontalAlignment: "AlignHCenter"
                 text: Number(Utils.convertedTemperature(
                                  device?.currentTemp ?? 0,
@@ -74,6 +76,7 @@ Popup {
             SystemModeButton {
                 Layout.alignment: Qt.AlignCenter
                 Layout.leftMargin: dateTimeLbl.width + width / 2
+                Layout.topMargin: -height / 2
                 background: null
                 deviceController: _root.deviceController
 
