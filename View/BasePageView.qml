@@ -58,6 +58,7 @@ Page {
             Label {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
+                Layout.rightMargin: parent.children.length === 2 ? parent.children[0].implicitWidth + parent.spacing : 0
                 visible: title.length > 0
                 textFormat: "MarkdownText"
                 verticalAlignment: "AlignVCenter"
