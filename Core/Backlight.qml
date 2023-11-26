@@ -23,4 +23,7 @@ QSObject {
 
     //! Value of color
     property real               value:          1.
+
+    //! Index of shade button in BacklightPage that backlight color is set based on it
+    property int                shadeIndex:     0
 }
