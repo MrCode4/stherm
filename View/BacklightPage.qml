@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 import Ronia
 import Stherm
-
+import "./Delegates"
 /*! ***********************************************************************************************
  * BacklightPage is for tweaking back light
  * ***********************************************************************************************/
@@ -19,7 +19,10 @@ BasePageView {
     readonly property color     unshadedColor: Qt.hsva(_colorSlider.value, 1., _brSlider.value);
 
     //! Selected backlight color from shade buttons
-    readonly property color     selectedColor: _shadeButtonsGrp.checkedButton?.shadeColor ?? Style.background
+    readonly property color     selectedColor: {
+        var clr = _shadeButtonsGrp.checkedButton?.shadeColor ?? Style.background;
+        return Qt.hsva(clr.hsvHue, clr.hsvSaturation, _brSlider.value);
+    }
 
     //! Whether shade buttons should be shown
     property bool               hasShades: true
@@ -53,7 +56,7 @@ BasePageView {
         //! Backlight on/off button
         Switch {
             id: _backlightOnOffSw
-            checked: backlight?.on ?? false
+            checked: backlight ? backlight.on : true
             onCheckedChanged: onlineTimer.startTimer()
         }
 
@@ -85,6 +88,7 @@ BasePageView {
             Layout.fillWidth: true
             opacity: enabled ? 1. : 0.4
             onValueChanged: onlineTimer.startTimer()
+            onMoved: dummyShadeDelegate.checked = true
         }
 
         Label {
@@ -96,17 +100,23 @@ BasePageView {
         //! Brightness slider
         BrightnessSlider {
             id: _brSlider
-            Material.accent: _colorSlider.currentColor
             Layout.fillWidth: true
             opacity: enabled ? 1. : 0.4
             onValueChanged: onlineTimer.startTimer()
+
+            Component.onCompleted: {
+                handle.color = Qt.binding(function() {
+                            var clr = unshadedColor;
+                            return Qt.rgba(clr.r * brightness, clr.g * brightness, clr.b * brightness, 1.);
+                        });
+            }
         }
 
         Label {
             Layout.topMargin: AppStyle.size / 48
             Layout.leftMargin: AppStyle.size / 120
             visible: hasShades
-            text: "Shades"
+            text: "Shades Of White"
         }
 
         //! Group for shade buttons
@@ -121,7 +131,8 @@ BasePageView {
         Item {
             id: _buttonsRow
 
-            readonly property int cellSize: 72 * scaleFactor
+            readonly property color shadesColor: "#FF8200"
+            readonly property int cellSize: 82 * scaleFactor
             readonly property int spacing: 4
 
             Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + spacing)
@@ -139,10 +150,26 @@ BasePageView {
                     hoverEnabled: enabled
                     cellSize: _buttonsRow.cellSize
 
-                    hue: _colorSlider.value
+                    hue: _buttonsRow.shadesColor.hsvHue
                     saturation: index / 4.
-                    value: _brSlider.value
+                    value: _buttonsRow.shadesColor.hsvValue
                 }
+            }
+
+            ShadeButtonDelegate {
+                id: dummyShadeDelegate
+
+                property int index: 5
+
+                visible: false
+                x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
+                checked: false
+                hoverEnabled: enabled
+                cellSize: _buttonsRow.cellSize
+
+                hue: unshadedColor.hsvHue
+                saturation: 1
+                value: unshadedColor.hsvValue
             }
         }
     }
@@ -169,7 +196,7 @@ BasePageView {
     //! Update backlight and set to model
     function applyToModel() {
         if (deviceController) {
-            deviceController.updateBacklight(_backlightOnOffSw.checked, selectedColor);
+            deviceController.updateBacklight(_backlightOnOffSw.checked, selectedColor, up);
         }
     }
 
