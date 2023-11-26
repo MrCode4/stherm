@@ -43,12 +43,14 @@ BasePageView {
         rowSpacing: 4
 
         Label {
+            enabled: !noneChbox.checked
             Layout.columnSpan: 3
             text: "Humidifier"
         }
 
         //! Humidifier CheckBox 1
         CheckBox {
+            enabled: !noneChbox.checked
             Layout.leftMargin: 40 * scaleFactor
             checked: true
             text: "T1\npwrd"
@@ -58,6 +60,7 @@ BasePageView {
 
         //! Humidifier CheckBox 2
         CheckBox {
+            enabled: !noneChbox.checked
             text: "T1\nshort"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
@@ -65,12 +68,14 @@ BasePageView {
 
         //! Humidifier CheckBox 3
         CheckBox {
+            enabled: !noneChbox.checked
             text: "T2\npwrd"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
 
         Label {
+            enabled: !noneChbox.checked
             Layout.columnSpan: 3
             Layout.topMargin: 40 * scaleFactor
             text: "Dehumidifier"
@@ -78,6 +83,7 @@ BasePageView {
 
         //! Dehumidifier CheckBox 1
         CheckBox {
+            enabled: !noneChbox.checked
             Layout.leftMargin: 40 * scaleFactor
             checked: true
             text: "T1\npwrd"
@@ -87,6 +93,7 @@ BasePageView {
 
         //! Dehumidifier CheckBox 2
         CheckBox {
+            enabled: !noneChbox.checked
             text: "T1\nshort"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
@@ -94,9 +101,21 @@ BasePageView {
 
         //! Dehumidifier CheckBox 3
         CheckBox {
+            enabled: !noneChbox.checked
             text: "T2\npwrd"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
+        }
+
+        //! None
+        Label {
+            Layout.columnSpan: 3
+            text: "None"
+        }
+
+        CheckBox {
+            id: noneChbox
+            Layout.leftMargin: 40 * scaleFactor
         }
     }
 }

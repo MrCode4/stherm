@@ -19,8 +19,12 @@ Control {
     //!
     property bool   is12Hour:   false
 
+    //! Display date or not
+    property bool   showDate: true
+
     /* Object properties
      * ****************************************************************************************/
+    width: 200
     implicitWidth: _dateTimeCol.implicitWidth + leftPadding + rightPadding
     implicitHeight: _dateTimeCol.implicitHeight + topPadding + bottomPadding
     padding: 4
@@ -35,15 +39,26 @@ Control {
         spacing: 4
 
         //! Time Label
-        Label {
-            id: _timeLbl
-            Layout.alignment: Qt.AlignHCenter
-            font.pointSize: Qt.application.font.pointSize * 1.4
-            text: "00:00"
+        Row {
+            Layout.alignment: Qt.AlignCenter
+
+            Label {
+                id: _timeLbl
+                font.pointSize: _root.font.pointSize * 1.4
+                text: "00:00"
+            }
+
+            Label {
+                id: amPmLbl
+                y: parent.height - height
+                visible: is12Hour
+                font.pointSize: _root.font.pointSize * 0.8
+            }
         }
 
         Rectangle {
             Layout.fillWidth: true
+            visible: showDate
             implicitHeight: 1
             color: "grey"
         }
@@ -52,6 +67,7 @@ Control {
         Label {
             id: _dateLbl
             Layout.fillWidth: true
+            visible: showDate
             opacity: 0.75
             font.pointSize: Application.font.pointSize * 0.8
             horizontalAlignment: "AlignHCenter"
@@ -66,8 +82,17 @@ Control {
         triggeredOnStart: true
         onTriggered: {
             var now = new Date();
-            _timeLbl.text = now.toLocaleTimeString(locale, is12Hour ? "hh:mm AP" : "hh:mm")
-            _dateLbl.text = now.toLocaleDateString(locale, "MMM dd ddd")
+            var currentTime = now.toLocaleTimeString(locale, is12Hour ? "hh:mm AP" : "hh:mm");
+            if (is12Hour) {
+                _timeLbl.text = currentTime.slice(0, currentTime.length - 3);
+                amPmLbl.text = currentTime.slice(currentTime.length - 3, currentTime.length);
+            } else {
+                _timeLbl.text = currentTime;
+            }
+
+            if (showDate) {
+                _dateLbl.text = now.toLocaleDateString(locale, "MMM dd ddd");
+            }
         }
     }
 

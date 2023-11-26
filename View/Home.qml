@@ -168,16 +168,15 @@ Control {
         }
 
         //! NEXGEN icon
-        NexgenIcon {
+        OrganizationIcon {
             id: _logo
             anchors {
                 bottom: parent.bottom
                 horizontalCenter: parent.horizontalCenter
-                bottomMargin: _menuButton.implicitHeight * 1.3
+                bottomMargin: _menuButton.implicitHeight
             }
-            width: parent.width * 0.5
-            height: sourceSize.height * width / sourceSize.width
-            opacity:  (uiSession?.simulating ?? true) ? 0 : 1
+            height: _menuButton.height * 1.2
+            opacity: (uiSession?.simulating ?? true) ? 0 : 1
         }
 
         //! Device Toggle Button

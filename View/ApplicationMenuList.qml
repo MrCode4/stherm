@@ -56,24 +56,24 @@ ListView {
             "text": "Fan Control"
         },
         {
-            "icon": FAIcons.circleCheck,
-            "text": "Wiring"
-        },
-        {
             "icon": FAIcons.wrench,
             "text": "System Setup"
         },
         {
             "icon": FAIcons.fileExclamation,
-            "text": "User Guides"
+            "text": "Technician Access"
         },
         {
             "icon": FAIcons.arrowsRotate,
-            "text": "Update"
+            "text": "System Update"
         },
         {
             "icon": FAIcons.memoCircleInfo,
-            "text": "About Device"
+            "text": "Device Information"
+        },
+        {
+            "icon": FAIcons.headSet,
+            "text": "Contact Contractor"
         },
         {
             "icon": FAIcons.memoCircleInfo,

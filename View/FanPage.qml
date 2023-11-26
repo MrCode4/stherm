@@ -59,6 +59,7 @@ BasePageView {
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
             spacing: 12
+
             Button {
                 id: _autoButton
 
@@ -100,30 +101,56 @@ BasePageView {
             horizontalAlignment: "AlignHCenter"
         }
 
-        TickedSlider {
-            id: _hourSliders
-            readonly property int tickStepSize: 2
+        RowLayout {
+            spacing: 0
 
-            Layout.alignment: Qt.AlignHCenter
-            Layout.fillWidth: true
-            Layout.leftMargin: 24 * scaleFactor
-            Layout.rightMargin: 24 * scaleFactor
-            majorTickCount: ticksCount / 5
-            ticksCount: to / tickStepSize
-            from: 0
-            to: 50
-            stepSize: 1
-            value: fan?.workingPerHour ?? 0
-            valueChangeAnimation: true
+            Column {
+                Layout.alignment: Qt.AlignTop
+                Layout.topMargin: _hourSliders.topPadding
 
-            ToolTip {
-                parent: _hourSliders.handle
-                y: -height - 16
-                x: (parent.width - width) / 2
-                visible: _hourSliders.pressed
-                timeout: Number.MAX_VALUE
-                delay: 0
-                text: _hourSliders.value
+                RoniaTextIcon {
+                    x: (parent.width - width) / 2
+                    font.pointSize: _root.font.pointSize * 0.8
+                    text: FAIcons.clockThree
+                }
+
+                Label {
+                    font.pointSize: _root.font.pointSize * 0.8
+                    text: "min"
+                }
+            }
+
+            TickedSlider {
+                id: _hourSliders
+                readonly property int tickStepSize: 2
+
+                Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true
+                Layout.rightMargin: 24 * scaleFactor
+                majorTickCount: ticksCount / 5
+                ticksCount: to / tickStepSize
+                from: 0
+                to: 50
+                stepSize: 1
+                value: fan?.workingPerHour ?? 0
+                valueChangeAnimation: true
+
+                ToolTip {
+                    parent: _hourSliders.handle
+                    y: -height - 16
+                    x: (parent.width - width) / 2
+                    visible: _hourSliders.pressed
+                    timeout: Number.MAX_VALUE
+                    delay: 0
+                    text: _hourSliders.value
+                }
+
+                Label {
+                    anchors.top: parent.bottom
+                    x: 8 + parent.visualPosition * (parent.width - width - 16)
+                    font.pointSize: _root.font.pointSize * 0.8
+                    text: "min"
+                }
             }
         }
     }

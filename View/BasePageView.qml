@@ -37,8 +37,8 @@ Page {
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
     implicitHeight: AppStyle.size
-    leftPadding: 8 * scaleFactor
-    rightPadding: 8 * scaleFactor
+    leftPadding: 12 * scaleFactor
+    rightPadding: 12 * scaleFactor
     topPadding: 16 * scaleFactor
     bottomPadding: 8 * scaleFactor
     header: Control {

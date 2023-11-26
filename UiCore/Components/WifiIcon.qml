@@ -22,7 +22,6 @@ Item {
     Image {
         id: _wifiImage
         anchors.fill: parent
-        visible: false
 
         fillMode: Image.PreserveAspectFit
         smooth: true
@@ -38,11 +37,7 @@ Item {
                       )
                    )
                 : "qrc:/Stherm/Images/Wifi/wifi-off.png"
-    }
-
-    ColorOverlay {
-        anchors.fill: _wifiImage
-        source: _wifiImage
-        color: Style.foreground
+        sourceSize.width: width
+        sourceSize.height: height
     }
 }

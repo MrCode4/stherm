@@ -32,7 +32,6 @@ T.Button {
                                    )
         spacing: control.spacing
         button: control
-        checkColor: control.checkable && control.checked ? Style.foreground : "transparent"
         checkBackground: Style.background
     }
 
