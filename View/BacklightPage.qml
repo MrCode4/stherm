@@ -145,8 +145,10 @@ BasePageView {
                 id: _shadeButtonsRepeater
                 model: 5
                 delegate: ShadeButtonDelegate {
+                    required property int index
+                    required property var modelData
+
                     x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
-                    checked: index === 4
                     hoverEnabled: enabled
                     cellSize: _buttonsRow.cellSize
 
@@ -174,16 +176,21 @@ BasePageView {
         }
     }
 
-    function setCurrentColor(color)
+    function setCurrentColor(color, shadeIndex)
     {
         var h = color.hsvHue;
         var s = color.hsvSaturation;
         var v = color.hsvValue;
 
-        _colorSlider.value = h;
         _brSlider.value = v;
-        var shadeToSelect = Math.max(0, Math.ceil(s / 0.2) - 1);
-        _shadeButtonsRepeater.itemAt(shadeToSelect).checked = true;
+
+        if (shadeIndex === dummyShadeDelegate.index) {
+            //! Restore color to hue slider
+            _colorSlider.value = h;
+            dummyShadeDelegate.checked = true;
+        } else {
+            _shadeButtonsRepeater.itemAt(shadeIndex).checked = true;
+        }
     }
 
     //! Update backlight for test
@@ -196,20 +203,22 @@ BasePageView {
     //! Update backlight and set to model
     function applyToModel() {
         if (deviceController) {
-            deviceController.updateBacklight(_backlightOnOffSw.checked, selectedColor, up);
+            deviceController.updateBacklight(_backlightOnOffSw.checked, selectedColor,
+                                             (_shadeButtonsGrp.checkedButton?.index ?? 0));
         }
     }
 
     //! reset backlight to model on cancel
     function revertToModel() {
         if (deviceController) {
-            deviceController.updateBacklight(backlight?.on ?? false, backlight?._color ?? selectedColor);
+            deviceController.updateBacklight(backlight?.on ?? false, backlight?._color ?? selectedColor,
+                                             backlight?.shadeIndex ?? dummyShadeDelegate.index);
         }
     }
 
     Component.onCompleted: {
         if (backlight) {
-            setCurrentColor(backlight._color);
+            setCurrentColor(backlight._color, backlight.shadeIndex);
         }
         completed = true;
     }
