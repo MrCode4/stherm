@@ -20,18 +20,20 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     GridLayout {
+        height: Math.min(root.availableHeight, implicitHeight)
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         columns: 2
         rowSpacing: 16
         columnSpacing: 32
 
-        NexgenIcon {
+        OrganizationIcon {
             Layout.columnSpan: 2
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: root.availableWidth * 0.5
-            Layout.preferredHeight: sourceSize.height * width / sourceSize.width + 16
             Layout.bottomMargin: 48
+            Layout.preferredHeight: root.height / 8
+            Layout.fillWidth: true
+            Layout.preferredWidth: 0
         }
 
         //! Phone
@@ -51,14 +53,10 @@ BasePageView {
 
         Image {
             Layout.alignment: Qt.AlignCenter
-            Layout.fillWidth: true
-            Layout.preferredHeight: width
-            Layout.leftMargin: 32
-            Layout.rightMargin: 32
 
             source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg("https://www.nuvehome.com/", Style.foreground)}`
-            sourceSize.width: width
-            sourceSize.height: height
+            sourceSize.height: 130
+            sourceSize.width: 130
         }
 
         //! Request a job
@@ -67,6 +65,7 @@ BasePageView {
         }
 
         ButtonInverted {
+            id: requestJobBtn
             Layout.alignment: Qt.AlignCenter
             font.bold: true
             text: "Request a Job"

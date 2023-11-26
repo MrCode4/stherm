@@ -38,38 +38,44 @@ Popup {
         id: _contentLay
         anchors.centerIn: parent
 
-        //! Temprature Label
-        Row {
-            Layout.alignment: Qt.AlignCenter
+        ColumnLayout {
+            Layout.rightMargin: 48
+            Layout.leftMargin: Layout.rightMargin
 
-            Label {
-                id: _tempratureLbl
+            //! Temprature Label
+            Row {
+                id: tempratureLabel
+                Layout.alignment: Qt.AlignCenter
 
-                font.pointSize: AppStyle.size / 6
-                text: Number(Utils.convertedTemperature(
-                                 device?.currentTemp ?? 0,
-                                 device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
+                Label {
+                    id: _tempratureLbl
 
-            }
+                    font.pointSize: Application.font.pointSize * 6.5
+                    text: Number(Utils.convertedTemperature(
+                                     device?.currentTemp ?? 0,
+                                     device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
 
-            Label {
-                opacity: 0.6
-                font {
-                    pointSize: Qt.application.font.pointSize * 2.4
-                    capitalization: "AllUppercase"
                 }
-                text: `\u00b0${unit}`
+
+                Label {
+                    opacity: 0.6
+                    font {
+                        pointSize: Qt.application.font.pointSize * 2.4
+                        capitalization: "AllUppercase"
+                    }
+                    text: `\u00b0${unit}`
+                }
             }
-        }
 
-        //! Mode button
-        SystemModeButton {
-            Layout.topMargin: -height / 2.5
-            Layout.leftMargin: 2 * _icon.width / 3 - width
-            background: null
-            deviceController: _root.deviceController
+            //! Mode button
+            SystemModeButton {
+                Layout.alignment: Qt.AlignRight
+                Layout.rightMargin: -16
+                background: null
+                deviceController: _root.deviceController
 
-            TapHandler { } //! To ensure no button functionality
+                TapHandler { } //! To ensure no button functionality
+            }
         }
 
         //! Current time
@@ -82,10 +88,11 @@ Popup {
         }
 
         //! NEXGEN icon
-        NexgenIcon {
+        OrganizationIcon {
             id: _icon
-            Layout.preferredWidth: _root.width * 0.75
-            Layout.preferredHeight: sourceSize.height * width / sourceSize.width
+            Layout.fillWidth: true
+            Layout.preferredHeight: _root.height / 5
+            Layout.preferredWidth: 0
         }
     }
 }

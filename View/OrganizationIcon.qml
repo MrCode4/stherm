@@ -15,5 +15,5 @@ Image {
     fillMode: Image.PreserveAspectFit
     source: "qrc:/Stherm/Images/nuve-icon.png"
     sourceSize.width: width
-    sourceSize.height: height
+    cache: true
 }

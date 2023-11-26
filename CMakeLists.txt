@@ -133,7 +133,7 @@ qt6_add_qml_module(appStherm
         View/ScheduleView.qml
         View/BacklightPage.qml
         View/MainView.qml
-        View/NexgenIcon.qml
+        View/OrganizationIcon.qml
         View/ScreenSaver.qml
         View/FanPage.qml
         View/SystemInfoPage.qml
