@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Templates as T
 
 import Ronia
 import Stherm
@@ -11,11 +12,11 @@ TabButton {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! UiSessionPopups
-    property UiSessionPopups    popups
+    //! UiSession
+    property UiSession  uiSession
 
     //! Determines whether 'hold' is enabled or not
-    property bool               isHoldEnabled: false
+    property bool       isHoldEnabled: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -25,5 +26,12 @@ TabButton {
 
     onClicked: {
         //! Ask openning a Popup for changing hold value
+        holdPopup.open();
+    }
+
+    HoldPopup {
+        id: holdPopup
+        anchors.centerIn: T.Overlay.overlay
+        uiSession: _root.uiSession
     }
 }
