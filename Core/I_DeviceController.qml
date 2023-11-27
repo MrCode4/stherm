@@ -32,17 +32,19 @@ QtObject {
     /* Functions
      * ****************************************************************************************/
 
-    function updateBacklight(isOn, shadeIndex)
+    function updateBacklight(isOn, hue, brightness, shadeIndex)
     {
-        var color = Qt.hsva(shadeIndex < 5 ? device.backlight._whiteShades[shadeIndex].hsvHue
-                                           : device.backlight.hue,
-                            shadeIndex < 5 ? device.backlight._whiteShades[shadeIndex].hsvSaturation
-                                           : device.backlight.saturation,
-                            device.backlight.value)
+        var back = device.backlight;
+        back.on = isOn;
+        back.hue = hue;
+        back.value = brightness;
+        back.shadeIndex = shadeIndex;
 
-        if (updateDeviceBacklight(isOn, color))
+        if (updateDeviceBacklight(isOn, back._color))
         {
             device.backlight.on = isOn;
+            device.backlight.hue = hue;
+            device.backlight.value = brightness;
             device.backlight.shadeIndex = shadeIndex;
         } else {
             console.log("revert the backlight in model: ")

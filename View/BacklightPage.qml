@@ -47,17 +47,6 @@ BasePageView {
     leftPadding: AppStyle.size / 12
     rightPadding: AppStyle.size / 12
     title: "Backlight"
-    backButtonCallback: function() {
-        //! Call revertToModel() so if confirm button was never pressed previous color is reverted
-        revertToModel();
-
-        if (_root.StackView.view) {
-            //! Then Page is inside an StackView
-            if (_root.StackView.view.currentItem == _root) {
-                _root.StackView.view.pop();
-            }
-        }
-    }
 
     /* Children
      * ****************************************************************************************/
@@ -100,12 +89,7 @@ BasePageView {
             Layout.fillWidth: true
             opacity: enabled ? 1. : 0.4
             onValueChanged: onlineTimer.startTimer()
-            onMoved: {
-                if (backlight && backlight.hue !== value) {
-                    backlight.hue = value;
-                }
-                dummyShadeDelegate.checked = true
-            }
+            onMoved: dummyShadeDelegate.checked = true
         }
 
         Label {
@@ -122,12 +106,6 @@ BasePageView {
             from: 0
             to: 1.
             onValueChanged: onlineTimer.startTimer()
-
-            onMoved: {
-                if (backlight && backlight.value !== value) {
-                    backlight.value = value;
-                }
-            }
 
             Component.onCompleted: {
                 handle.color = Qt.binding(() => Style.background);
@@ -153,7 +131,7 @@ BasePageView {
         Item {
             id: _buttonsRow
 
-            readonly property color shadesColor: "#FF8200"
+            readonly property color shadesColor: backlight._whiteShade
             readonly property int cellSize: 82 * scaleFactor
             readonly property int spacing: 4
 
@@ -221,14 +199,16 @@ BasePageView {
     //! Update backlight and set to model
     function applyToModel() {
         if (deviceController) {
-            deviceController.updateBacklight(_backlightOnOffSw.checked, _shadeButtonsGrp.checkedButton?.index ?? 5);
+            deviceController.updateBacklight(_backlightOnOffSw.checked, _colorSlider.value, _brSlider.value,
+                                             (_shadeButtonsGrp.checkedButton?.index ?? dummyShadeDelegate.index));
         }
     }
 
     //! reset backlight to model on cancel
     function revertToModel() {
         if (deviceController) {
-            deviceController.updateBacklight(backlight?.on ?? false, backlight?.shadeIndex ?? dummyShadeDelegate.index);
+            deviceController.updateBacklight(backlight?.on ?? false, backlight?.hue ?? selectedColor.hsvHue, backlight?.value ?? selectedColor.hsvValue,
+                                             backlight?.shadeIndex ?? dummyShadeDelegate.index);
         }
     }
 
