@@ -499,15 +499,7 @@ void DeviceIOController::createTIConnection()
         LOG_DEBUG(QString("TI Response - CMD: %0").arg(rxPacket.CMD));
         processTIResponse(rxPacket);
 
-        auto sent = m_TI_queue.front();
-        // this may fail! so better to add pop inside of else conditions?
-        if (sent.CMD != rxPacket.CMD)
-            qWarning() << "TI RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD;
-        else {
-            m_TI_queue.pop();
-
-            processTIQueue();
-        }
+        processTIQueue();
     });
 
     processTIQueue();
@@ -1186,7 +1178,7 @@ bool DeviceIOController::processTIQueue()
     }
 
     if (sendTIRequest(packet)) {
-        //        m_TI_queue.pop(); // we pop it when the result reciever so we can confirm
+        m_TI_queue.pop();
         return true;
     } else {
         qWarning() << "ti request packet not sent" << packet.CMD
