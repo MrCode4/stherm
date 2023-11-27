@@ -160,7 +160,7 @@ qt6_add_qml_module(appStherm
         View/SystemMode/VacationModePage.qml
         View/SettingsPage.qml
         View/Sensor/AddSensorPage.qml
-        View/Sensor/AddSensorLocationPage.qml
+        View/Sensor/SensorLocationPage.qml
         View/Sensor/SensorPairPage.qml
         View/Sensor/SensorNamePage.qml
         View/SensorsPage.qml
@@ -184,6 +184,7 @@ qt6_add_qml_module(appStherm
         View/Delegates/WifiDelegate.qml
         View/Delegates/SensorDelegate.qml
         View/Delegates/AlertNotificationDelegate.qml
+        View/Delegates/SensorLocationDelegate.qml
 
         # Popups
         UiCore/PopUps/AlertNotifPopup.qml
@@ -301,6 +302,20 @@ qt6_add_qml_module(appStherm
         Images/Wifi/wifi-fair.png
         Images/Wifi/wifi-weak.png
         Images/Wifi/wifi-off.png
+        Images/Locations/basement.svg
+        Images/Locations/bathroom.svg
+        Images/Locations/bedroom.svg
+        Images/Locations/dining_room.svg
+        Images/Locations/downstairs.svg
+        Images/Locations/guesthouse.svg
+        Images/Locations/kids_room.svg
+        Images/Locations/kitchen.svg
+        Images/Locations/living_room.svg
+        Images/Locations/main_floor.svg
+        Images/Locations/master_bedroom.svg
+        Images/Locations/office.svg
+        Images/Locations/other.svg
+        Images/Locations/upstairs.svg
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
