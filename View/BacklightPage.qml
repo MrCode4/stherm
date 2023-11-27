@@ -15,17 +15,12 @@ BasePageView {
     //! Ref to Backlight model
     property Backlight          backlight: appModel?.backlight ?? null
 
-    //! Saturated color
-    readonly property color     unshadedColor: Qt.hsva(_colorSlider.value, 1., _brSlider.value);
-
-    //! Selected backlight color from shade buttons
-    readonly property color     selectedColor: {
-        var clr = _shadeButtonsGrp.checkedButton?.shadeColor ?? Style.background;
-        return Qt.hsva(clr.hsvHue, clr.hsvSaturation, _brSlider.value);
+    property Backlight          liveColor : Backlight {
+        on: _backlightOnOffSw.checked
+        hue: _colorSlider.value
+        value: _brSlider.value
+        shadeIndex: _shadeButtonsGrp.checkedButton?.index ?? dummyShadeDelegate.index
     }
-
-    //! Whether shade buttons should be shown
-    property bool               hasShades: true
 
     property bool               completed: false
 
@@ -68,7 +63,13 @@ BasePageView {
                 text: "\uf00c"
             }
 
-            onClicked: applyToModel()
+            onClicked: {
+                applyToModel()
+
+                if (_root.StackView.view) {
+                    _root.StackView.view.pop();
+                }
+            }
         }
     }
 
@@ -108,14 +109,14 @@ BasePageView {
             onValueChanged: onlineTimer.startTimer()
 
             Component.onCompleted: {
-                handle.color = Qt.binding(() => Style.background);
+                handle.color = Qt.binding(() => liveColor._color);
             }
         }
 
         Label {
             Layout.topMargin: AppStyle.size / 48
             Layout.leftMargin: AppStyle.size / 120
-            visible: hasShades
+            visible: true
             text: "Shades Of White"
         }
 
@@ -131,7 +132,6 @@ BasePageView {
         Item {
             id: _buttonsRow
 
-            readonly property color shadesColor: backlight._whiteShade
             readonly property int cellSize: 82 * scaleFactor
             readonly property int spacing: 4
 
@@ -139,7 +139,7 @@ BasePageView {
             Layout.preferredHeight: cellSize
             Layout.alignment: Qt.AlignCenter
             opacity: enabled ? 1. : 0.4
-            visible: hasShades
+            visible: true
 
             Repeater {
                 id: _shadeButtonsRepeater
@@ -152,9 +152,9 @@ BasePageView {
                     hoverEnabled: enabled
                     cellSize: _buttonsRow.cellSize
 
-                    hue: _buttonsRow.shadesColor.hsvHue
+                    hue: backlight._whiteShade.hsvHue
                     saturation: index / 4.
-                    value: _buttonsRow.shadesColor.hsvValue
+                    value: backlight._whiteShade.hsvValue
                 }
             }
 
@@ -169,9 +169,9 @@ BasePageView {
                 hoverEnabled: enabled
                 cellSize: _buttonsRow.cellSize
 
-                hue: unshadedColor.hsvHue
+                hue: _colorSlider.value
                 saturation: 1
-                value: unshadedColor.hsvValue
+                value: _brSlider.value
             }
         }
     }
@@ -192,7 +192,7 @@ BasePageView {
     //! Update backlight for test
     function applyOnline(){
         if (deviceController && completed) {
-            deviceController.updateDeviceBacklight(_backlightOnOffSw.checked, selectedColor);
+            deviceController.updateDeviceBacklight(_backlightOnOffSw.checked, liveColor._color);
         }
     }
 
@@ -207,7 +207,7 @@ BasePageView {
     //! reset backlight to model on cancel
     function revertToModel() {
         if (deviceController) {
-            deviceController.updateBacklight(backlight?.on ?? false, backlight?.hue ?? selectedColor.hsvHue, backlight?.value ?? selectedColor.hsvValue,
+            deviceController.updateBacklight(backlight?.on ?? false, backlight?.hue ?? 0., backlight?.value ?? 1.,
                                              backlight?.shadeIndex ?? dummyShadeDelegate.index);
         }
     }
