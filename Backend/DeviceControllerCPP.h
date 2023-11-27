@@ -48,7 +48,8 @@ public:
 
     //! set backlight using uart and respond the success, data should have 5 items
     //! including r, g, b, mode (0 for ui, 1 will be send internally), on/off
-    Q_INVOKABLE bool setBacklight(QVariantList data);
+    //! isScheme: is true when the backlight set from scheme and false for model
+    Q_INVOKABLE bool setBacklight(QVariantList data, bool isScheme = false);
 
     //! set setttings using uart and file and respond the success
     Q_INVOKABLE bool setSettings(QVariantList data);
@@ -87,6 +88,7 @@ private:
      * ****************************************************************************************/
     QVariantMap getMainData();
 
+private:
     /* Attributes
      * ****************************************************************************************/
     QVariantMap _mainData;
@@ -95,4 +97,6 @@ private:
     DeviceAPI *_deviceAPI;
 
     Scheme *m_scheme;
+
+    QVariantList mBacklightModelData;
 };

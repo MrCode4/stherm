@@ -55,7 +55,7 @@ public:
     void setMainData(QVariantMap mainData);
 
 signals:
-    void changeBacklight(QVariantList colorData);
+    void changeBacklight(QVariantList colorData, int secs = 5);
 
     void alert();
 

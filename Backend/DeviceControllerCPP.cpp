@@ -30,8 +30,20 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setMainData(data);
     });
 
-    connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList data) {
-        setBacklight(data);
+    connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList data, int secs) {
+        setBacklight(data, true);
+
+        if (secs < 0)
+            return;
+
+        // Back to last backlight after secs seconds
+        QTimer timer;
+
+        timer.connect(&timer, &QTimer::timeout, this, [this]() {
+            setBacklight(mBacklightModelData, true);
+        });
+
+        timer.start(secs * 1000);
     });
 
     connect(_deviceIO,
@@ -57,8 +69,12 @@ QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, 
     return {};
 }
 
-bool DeviceControllerCPP::setBacklight(QVariantList data)
+bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {
+    if (!isScheme) {
+        mBacklightModelData = data;
+    }
+
     return _deviceIO->setBacklight(data);
 }
 

@@ -339,7 +339,7 @@ void Scheme::heatingEmergencyHeatPumpRole1()
    mCurentSysMode = mRelay->currentState();
 
    // untile the end of emergency mode.
-   emit changeBacklight(emergencyColor);
+   emit changeBacklight(emergencyColor, -1);
 
    heatingEmergencyHeatPumpRole2();
 }
