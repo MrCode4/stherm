@@ -1,7 +1,7 @@
-#ifndef TIMING_H
-#define TIMING_H
+#pragma once
 
 #include <QObject>
+#include <QElapsedTimer>
 
 #include "nuveTypes.h"
 
@@ -12,9 +12,11 @@ class Timing : public QObject
 private:
 
 public:
-    timestamp_t         s1uptime;
-    timestamp_t         uptime;
-    timestamp_t         s2uptime;
+    QElapsedTimer       s1uptime;
+    QElapsedTimer       uptime;
+    QElapsedTimer       s2uptime;
+    QElapsedTimer       s2Offtime;
+
     bool                s2hold;
     bool                s3hold;
     bool                alerts;
@@ -37,9 +39,6 @@ public:
 
     void refreshTimestamps(void);
 
-
 signals:
 
 };
-
-#endif // TIMING_H
