@@ -3,7 +3,9 @@
 #include <QThread>
 #include <QVariantMap>
 
+#include "Core/Relay.h"
 #include "UtilityHelper.h"
+#include "include/timing.h"
 
 /*! ***********************************************************************************************
  * THis class manage Vacation data.
@@ -42,8 +44,6 @@ public:
     void startWork();
 
     void setMainData(QVariantMap mainData);
-
-    void startWork2();
 
 signals:
     void changeBacklight(QVariantList colorData);
@@ -91,9 +91,13 @@ private:
 
     STHERM::CoolingType mDeviceType;
 
+    Timing* mTiming;
+    Relay*  mRelay;
+
     int mHumidifierId;
 
     double mCurrentTemperature;
+    double mSetPointTemperature;
 
     bool stopWork;
 };

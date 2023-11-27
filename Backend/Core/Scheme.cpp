@@ -3,8 +3,6 @@
 #include <QColor>
 
 #include "PhpApi.h"
-#include "Relay.h"
-#include "include/timing.h"
 
 const double ET                      = 40;                 // 4.5 C
 const double ET_STAGE2               = 3.5;
@@ -28,17 +26,15 @@ Scheme::Scheme(QObject *parent) :
     QThread (parent)
 {
     stopWork = false;
-}
 
-void Scheme::startWork2()
-{
-
+    mTiming = PhpAPI::instance()->timing();
+    mRelay  = Relay::instance();
 }
 
 void Scheme::run()
 {
     while (!stopWork) {
-
+        startWork();
     }
 
 }
@@ -46,56 +42,49 @@ void Scheme::run()
 
 void Scheme::startWork()
 {
-    double sp = 0.0; // Set point temperature
-    double ct = mCurrentTemperature;
-
-    auto timing = PhpAPI::instance()->timing();
-    auto relay  = Relay::instance();
-    auto relaysConfig = relay->relays();
-
    switch (mRealSysMode) {
    case STHERM::SystemMode::Cooling: {
 
        switch (mDeviceType) { // Device type
        case STHERM::CoolingType::Conventional:
        case STHERM::CoolingType::CoolingOnly: {
-           if (ct - sp >= 1.9) {
-               relay->setOb_state(STHERM::Heating);
+           if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
+               mRelay->setOb_state(STHERM::Heating);
 
                // sysDelay
-               relay->coolingStage1();
+               mRelay->coolingStage1();
 
                // 5 Sec
                emit changeBacklight(QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE});
-               timing->s1uptime.restart();
-               timing->s1uptime.restart();
-               timing->s2hold = false;
-               timing->alerts = false;
+               mTiming->s1uptime.restart();
+               mTiming->s1uptime.restart();
+               mTiming->s2hold = false;
+               mTiming->alerts = false;
 
            } else {
                // turn off Y1, Y2 and G = 0
-               relay->setAllOff();
+               mRelay->setAllOff();
                startWork();
            }
        }
 
        case STHERM::CoolingType::HeatPump: {
-           if (ct - sp >= 1.9) {
-               relay->setOb_state(STHERM::Cooling);
+           if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
+               mRelay->setOb_state(STHERM::Cooling);
 
                // sysDelay
-               relay->coolingStage1();
+               mRelay->coolingStage1();
 
                // 5 Sec
                emit changeBacklight(QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE});
-               timing->s1uptime.restart();
-               timing->s1uptime.restart();
-               timing->s2hold = false;
-               timing->alerts = false;
+               mTiming->s1uptime.restart();
+               mTiming->s1uptime.restart();
+               mTiming->s2hold = false;
+               mTiming->alerts = false;
 
            } else {
                // turn off Y1, Y2 and G = 0
-               relay->setAllOff();
+               mRelay->setAllOff();
                startWork();
            }
 
@@ -109,9 +98,9 @@ void Scheme::startWork()
    } break;
 
    case STHERM::SystemMode::Auto: {
-       if (ct > sp ) {
+       if (mCurrentTemperature > mSetPointTemperature ) {
            mRealSysMode = STHERM::SystemMode::Cooling;
-       } else if (ct < sp) {
+       } else if (mCurrentTemperature < mSetPointTemperature) {
            mRealSysMode = STHERM::SystemMode::Heating;
        }
 
@@ -123,40 +112,40 @@ void Scheme::startWork()
    case STHERM::SystemMode::Heating: {
        switch (mDeviceType) {
        case STHERM::CoolingType::HeatPump: {
-           if(ct < sp) {
-               if (ct < ET) {
+           if(mCurrentTemperature < mSetPointTemperature) {
+               if (mCurrentTemperature < ET) {
                    heatingEmergencyHeatPumpRole1();
                } else {
                    heatingHeatPumpRole1();
                }
            } else {
                // Turn off system (Y1, Y2, W1, W2,W3, G = 0)
-               relay->setAllOff();
+               mRelay->setAllOff();
                startWork();
                return;
            }
        }
        case STHERM::CoolingType::Conventional:
        case STHERM::CoolingType::HeatingOnly: {
-           if (sp - ct >= 1.9) {
+           if (mSetPointTemperature - mCurrentTemperature >= 1.9) {
                // Sys delay
-               relay->heatingStage1();
+               mRelay->heatingStage1();
 
-               mCurentSysMode = relay->currentState();
+               mCurentSysMode = mRelay->currentState();
                // 5 secs
                emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
 
-               timing->s1uptime.restart();
-               timing->uptime.restart();
-               timing->s2hold = false;
-               timing->s3hold = false;
-               timing->alerts = false;
+               mTiming->s1uptime.restart();
+               mTiming->uptime.restart();
+               mTiming->s2hold = false;
+               mTiming->s3hold = false;
+               mTiming->alerts = false;
 
                heatingConventionalRole1();
                return;
 
            } else {
-               relay-> setAllOff();
+               mRelay-> setAllOff();
                startWork();
            }
        }
@@ -184,30 +173,23 @@ void Scheme::heatingConventionalRole1(bool needToWait)
        loop.exec();
    }
 
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
-   if (ct - sp >= 1) {
+   if (mCurrentTemperature - mSetPointTemperature >= 1) {
        // turn of system (w1, w2, w3 = 0)
-       relay->setAllOff();
+       mRelay->setAllOff();
        startWork();
 
        return;
 
    } else {
-       if (relaysConfig.w2 == STHERM::RelayMode::ON) {
+       if (mRelay->relays().w2 == STHERM::RelayMode::ON) {
 
-           if (sp - ct >= 2.9 || (timing->s2uptime.isValid() && timing->s1uptime.elapsed() / 60000 >= 10)) {
-               relay->heatingStage2();
-               mCurentSysMode = relay->currentState();
+           if (mSetPointTemperature - mCurrentTemperature >= 2.9 || (mTiming->s2uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 10)) {
+               mRelay->heatingStage2();
+               mCurentSysMode = mRelay->currentState();
                // 5 secs
                emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
 
-               timing->s1uptime.invalidate();
+               mTiming->s1uptime.invalidate();
                heatingConventionalRole2();
 
            } else {
@@ -218,9 +200,9 @@ void Scheme::heatingConventionalRole1(bool needToWait)
        }
 
        // Generate Alert
-       if (!timing->alerts && (timing->uptime.isValid() && timing->uptime.elapsed() / 60000 >= 120)) {
+       if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
            emit alert();
-           timing->alerts = true;
+           mTiming->alerts = true;
        }
 
        heatingConventionalRole1();
@@ -237,56 +219,49 @@ void Scheme::heatingConventionalRole2()
        }, Qt::SingleShotConnection);
    loop.exec();
 
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
-   if (timing->s2hold) {
-       if (ct - sp >= 1) {
-           relay->setAllOff();
+   if (mTiming->s2hold) {
+       if (mCurrentTemperature - mSetPointTemperature >= 1) {
+           mRelay->setAllOff();
            startWork();
            return;
-       } else if (relaysConfig.w3 == STHERM::RelayMode::ON) {
-           if ((timing->s2uptime.isValid() && timing->s2uptime.elapsed() / 60000 >= 10)) {
-               relay->heatingStage3();
-               mCurentSysMode = relay->currentState();
+       } else if (mRelay->relays().w3 == STHERM::RelayMode::ON) {
+           if ((mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() / 60000 >= 10)) {
+               mRelay->heatingStage3();
+               mCurentSysMode = mRelay->currentState();
                // 5 secs
                emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
 
-               timing->s2hold = false;
+               mTiming->s2hold = false;
                heatingConventionalRole3();
                return;
            }
        }
 
    } else {
-       if (sp - ct < 8 || relaysConfig.w3 != STHERM::RelayMode::ON) {
-           if (sp - ct < 1.9) {
-               relay-> setAllOff();
-               relay->heatingStage1();
-               mCurentSysMode = relay->currentState();
+       if (mSetPointTemperature - mCurrentTemperature < 8 || mRelay->relays().w3 != STHERM::RelayMode::ON) {
+           if (mSetPointTemperature - mCurrentTemperature < 1.9) {
+               mRelay->setAllOff();
+               mRelay->heatingStage1();
+               mCurentSysMode = mRelay->currentState();
                // 5 secs
                emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
 
-               timing->s2hold = true;
-               timing->s1uptime.invalidate();
+               mTiming->s2hold = true;
+               mTiming->s1uptime.invalidate();
 
                heatingConventionalRole1(false);
                return;
 
            }
        } else {
-           if (relaysConfig.w3 == STHERM::RelayMode::ON) {
-               if (sp - ct >= 5.9 || (timing->s2uptime.isValid() && timing->s2uptime.elapsed() / 60000 >= 10)) {
-                   relay->heatingStage3();
-                   mCurentSysMode = relay->currentState();
+           if (mRelay->relays().w3 == STHERM::RelayMode::ON) {
+               if (mSetPointTemperature - mCurrentTemperature >= 5.9 || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() / 60000 >= 10)) {
+                   mRelay->heatingStage3();
+                   mCurentSysMode = mRelay->currentState();
                    // 5 secs
                    emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
 
-                   timing->s2hold = false;
+                   mTiming->s2hold = false;
                    heatingConventionalRole3();
 
                    return;
@@ -295,9 +270,9 @@ void Scheme::heatingConventionalRole2()
        }
    }
 
-   if (!timing->alerts && (timing->uptime.isValid() && timing->uptime.elapsed() / 60000 >= 120)) {
+   if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
        emit alert();
-       timing->alerts = true;
+       mTiming->alerts = true;
    }
 
    heatingConventionalRole2();
@@ -313,40 +288,33 @@ void Scheme::heatingConventionalRole3()
        }, Qt::SingleShotConnection);
    loop.exec();
 
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
-   if (timing->s3hold) {
-       if (ct - sp>= 1) {
-           relay->setAllOff();
+   if (mTiming->s3hold) {
+       if (mCurrentTemperature - mSetPointTemperature>= 1) {
+           mRelay->setAllOff();
            startWork();
            return;
        }
-   } else if (sp - ct < 4.9) {
+   } else if (mSetPointTemperature - mCurrentTemperature < 4.9) {
        // Turn off stage 3 keep stage 3 run (w3 = 0, W1, W2, G = 1)
-       relay->setAllOff();
-       relay->heatingStage2();
+       mRelay->setAllOff();
+       mRelay->heatingStage2();
 
-       mCurentSysMode = relay->currentState();
+       mCurentSysMode = mRelay->currentState();
        // 5 secs
        emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
 
-       timing->s1uptime.invalidate();
-       timing->s2uptime.invalidate();
-       timing->s3hold = false;
+       mTiming->s1uptime.invalidate();
+       mTiming->s2uptime.invalidate();
+       mTiming->s3hold = false;
 
        heatingConventionalRole2();
        return;
    }
 
    // Generate Alert
-   if (!timing->alerts && (timing->uptime.isValid() && timing->uptime.elapsed() / 60000 >= 120)) {
+   if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
        emit alert();
-       timing->alerts = true;
+       mTiming->alerts = true;
    }
 
    heatingConventionalRole3();
@@ -354,17 +322,10 @@ void Scheme::heatingConventionalRole3()
 
 void Scheme::heatingEmergencyHeatPumpRole1()
 {
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
    // Y1, Y2, G = 0
-   relay->setAllOff();
-   relay->emergencyHeating1();
-   mCurentSysMode = relay->currentState();
+   mRelay->setAllOff();
+   mRelay->emergencyHeating1();
+   mCurentSysMode = mRelay->currentState();
 
    // untile the end of emergency mode.
    emit changeBacklight(QVariantList{255, 0, 0, STHERM::LedEffect::LED_BLINK});
@@ -385,19 +346,16 @@ void Scheme::heatingEmergencyHeatPumpRole2()
    double sp = 0.0; // Set point temperature
    double ct = mCurrentTemperature;
 
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
 
    if (ct < ET - 3.5) {
-       relay->emergencyHeating2();
-       mCurentSysMode = relay->currentState();
+       mRelay->emergencyHeating2();
+       mCurentSysMode = mRelay->currentState();
        heatingEmergencyHeatPumpRole3();
    } else if (ct < HPT) {
        heatingEmergencyHeatPumpRole2();
        return;
    } else {
-       relay->setAllOff();
+       mRelay->setAllOff();
        heatingHeatPumpRole1();
        return;
 
@@ -414,17 +372,10 @@ void Scheme::heatingEmergencyHeatPumpRole3()
        }, Qt::SingleShotConnection);
    loop.exec();
 
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
-   if (ct < HPT) {
+   if (mCurrentTemperature < HPT) {
        heatingEmergencyHeatPumpRole3();
    } else {
-       relay->setAllOff();
+       mRelay->setAllOff();
        heatingHeatPumpRole1();
    }
 }
@@ -439,31 +390,24 @@ void Scheme::heatingHeatPumpRole1()
        }, Qt::SingleShotConnection);
    loop.exec();
 
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
-   if (sp - ct >= 3) {
-       relay->setOb_state(STHERM::Heating);
+   if (mSetPointTemperature - mCurrentTemperature >= 3) {
+       mRelay->setOb_state(STHERM::Heating);
 
        //SysDelay
-       relay->heatingStage1();
-       mCurentSysMode = relay->currentState();
+       mRelay->heatingStage1();
+       mCurentSysMode = mRelay->currentState();
 
        // 5 secs
        emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
 
-       timing->s1uptime.restart();
-       timing->uptime.restart();
-       timing->s2hold = false;
-       timing->alerts = false;
+       mTiming->s1uptime.restart();
+       mTiming->uptime.restart();
+       mTiming->s2hold = false;
+       mTiming->alerts = false;
 
        heatingHeatPumpRole2();
    } else {
-       relay->setAllOff();
+       mRelay->setAllOff();
        startWork();
        return;
    }
@@ -481,23 +425,16 @@ void Scheme::heatingHeatPumpRole2(bool needToWait)
        loop.exec();
    }
 
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
-   if (ct - sp >= 1.9) {
-       relay->setAllOff();
+   if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
+       mRelay->setAllOff();
        startWork();
        return;
    } else {
-       if (relaysConfig.y2 == STHERM::RelayMode::ON) {
-           if (sp - ct >= 2.9 || (timing->uptime.isValid() && timing->s1uptime.elapsed() / 60000 >= 40)) {
-               if ((timing->s2Offtime.isValid() && timing->s2Offtime.elapsed() / 60000 >= 2)) {
-                   relay->heatingStage2();
-                   mCurentSysMode = relay->currentState();
+       if (mRelay->relays().y2 == STHERM::RelayMode::ON) {
+           if (mSetPointTemperature - mCurrentTemperature >= 2.9 || (mTiming->uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 40)) {
+               if ((mTiming->s2Offtime.isValid() && mTiming->s2Offtime.elapsed() / 60000 >= 2)) {
+                   mRelay->heatingStage2();
+                   mCurentSysMode = mRelay->currentState();
 
                    // 5 secs
                    emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
@@ -512,9 +449,9 @@ void Scheme::heatingHeatPumpRole2(bool needToWait)
                return;
            }
 
-       } else if (!timing->alerts && (timing->uptime.isValid() && timing->uptime.elapsed() / 60000 >= 120)) {
+       } else if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
            emit alert();
-           timing->alerts = true;
+           mTiming->alerts = true;
            heatingHeatPumpRole2();
            return;
        }
@@ -531,21 +468,14 @@ void Scheme::heatingHeatPumpRole3()
        }, Qt::SingleShotConnection);
    loop.exec();
 
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
-   if (timing->s2hold) {
-       if (ct - sp >= 1) {
-           relay->setAllOff();
+   if (mTiming->s2hold) {
+       if (mCurrentTemperature - mSetPointTemperature >= 1) {
+           mRelay->setAllOff();
            startWork();
            return;
-       } else if (!timing->alerts && (timing->uptime.isValid() && timing->uptime.elapsed() / 60000 >= 120)) {
+       } else if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
            emit alert();
-           timing->alerts = true;
+           mTiming->alerts = true;
            heatingHeatPumpRole3();
            return;
 
@@ -554,26 +484,26 @@ void Scheme::heatingHeatPumpRole3()
        }
 
    } else {
-       if (sp - ct <= 1.9) {
+       if (mSetPointTemperature - mCurrentTemperature <= 1.9) {
            // Y2 = 0, Y1 and G = 1
-           relay->setAllOff();
-           relay->heatingStage1();
-           mCurentSysMode = relay->currentState();
+           mRelay->setAllOff();
+           mRelay->heatingStage1();
+           mCurentSysMode = mRelay->currentState();
 
            // 5 secs
            emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
 
-           timing->s1uptime.restart();
-           timing->s2Offtime.restart();
-           timing->s2hold = true;
+           mTiming->s1uptime.restart();
+           mTiming->s2Offtime.restart();
+           mTiming->s2hold = true;
 
            heatingHeatPumpRole2(false);
 
            return;
 
-       } else if (!timing->alerts && (timing->uptime.isValid() && timing->uptime.elapsed() / 60000 >= 120)) {
+       } else if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
            emit alert();
-           timing->alerts = true;
+           mTiming->alerts = true;
            heatingHeatPumpRole3();
            return;
        } else {
@@ -593,24 +523,17 @@ void Scheme::coolingHeatPumpRole1(bool needToWait)
        loop.exec();
    }
 
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
-   if (sp - ct >= 1) {
+   if (mSetPointTemperature - mCurrentTemperature >= 1) {
        // turn off Y1, Y2 and G = 0
-       relay->setAllOff();
+       mRelay->setAllOff();
        startWork();
 
    } else {
-       if (relaysConfig.y2 == STHERM::RelayMode::ON) {
-           if (ct - sp >= 2.9 || (timing->s1uptime.isValid() && timing->s1uptime.elapsed() / 60000 >= 40)) {
-               if (timing->s2Offtime.isValid() && timing->s2Offtime.elapsed() / 60000 >= 2) {
+       if (mRelay->relays().y2 == STHERM::RelayMode::ON) {
+           if (mCurrentTemperature - mSetPointTemperature >= 2.9 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 40)) {
+               if (mTiming->s2Offtime.isValid() && mTiming->s2Offtime.elapsed() / 60000 >= 2) {
                    // turn on stage 2
-                   relay->coolingStage2();
+                   mRelay->coolingStage2();
                    // 5 Sec
                    emit changeBacklight(QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE});
 
@@ -625,9 +548,9 @@ void Scheme::coolingHeatPumpRole1(bool needToWait)
                coolingHeatPumpRole1();
                return;
            }
-       } else if (!timing->alerts && timing->uptime.elapsed() / 60000 >= 120) {
+       } else if (!mTiming->alerts && mTiming->uptime.elapsed() / 60000 >= 120) {
            emit alert();
-           timing->alerts = true;
+           mTiming->alerts = true;
 
            coolingHeatPumpRole1();
            return;
@@ -650,35 +573,28 @@ void Scheme::coolingHeatPumpRole2()
        }, Qt::SingleShotConnection);
    loop.exec();
 
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-   auto timing = PhpAPI::instance()->timing();
-   auto relay  = Relay::instance();
-   auto relaysConfig = relay->relays();
-
-   if (timing->s2hold) {
-       if (sp - ct >= 1) {
-           relay->setAllOff();
+   if (mTiming->s2hold) {
+       if (mSetPointTemperature - mCurrentTemperature >= 1) {
+           mRelay->setAllOff();
            startWork();
        } else {
-           if (!timing->alerts && timing->uptime.elapsed() / 60000 >= 120) {
+           if (!mTiming->alerts && mTiming->uptime.elapsed() / 60000 >= 120) {
                emit alert();
-               timing->alerts = true;
+               mTiming->alerts = true;
            }
            coolingHeatPumpRole2();
        }
    } else {
-       if (ct - sp <= 1.9) {
-//           relaysConfig.y2 = STHERM::OFF;
-           relay->coolingStage1();
+       if (mCurrentTemperature - mSetPointTemperature <= 1.9) {
+//           mRelay->relays().y2 = STHERM::OFF;
+           mRelay->coolingStage1();
 
            // 5 secs
            emit changeBacklight(QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE});
-           timing->s1uptime.invalidate();// = 0;
-           timing->s2hold = true;
+           mTiming->s1uptime.invalidate();// = 0;
+           mTiming->s2hold = true;
            // Start to count s2 off time
-           timing->s2Offtime.restart();
+           mTiming->s2Offtime.restart();
 
            // may be incorrect, must be call coolingHeatPumpRole1 with true
            coolingHeatPumpRole1(false);
