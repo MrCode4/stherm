@@ -157,9 +157,9 @@ enum RelayMode
     ON,
     OFF
 };
-struct Relay
+struct RelayConfigs
 {
-    Relay() {
+    RelayConfigs() {
         g     = RelayMode::NoWire;
         y1    = RelayMode::NoWire;
         y2    = RelayMode::NoWire;

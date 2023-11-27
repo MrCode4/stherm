@@ -418,6 +418,8 @@ bool Relay::turnOffEmergencyHeating()
     mRelay.w2  = STHERM::RelayMode::OFF;
 
     // update current_state
+
+    return true;
 }
 
 bool Relay::fanWorkTime()
@@ -456,6 +458,6 @@ bool Relay::fanWorkTime()
     return true;
 }
 
-STHERM::Relay Relay::relays() {
+STHERM::RelayConfigs Relay::relays() {
     return mRelay;
 }

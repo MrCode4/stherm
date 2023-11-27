@@ -69,10 +69,7 @@ protected:
 
 private:
     //! Update vacation mode
-    STHERM::SystemMode updateVacationState(const struct STHERM::Vacation &vacation,
-                                           const double &setTemperature,
-                                           const double &currentTemperature,
-                                           const double &currentHumidity);
+    void updateVacationState();
 
     STHERM::SystemMode updateNormalState(const double &setTemperature,
                                          const double &currentTemperature,
@@ -98,15 +95,19 @@ private:
      * ****************************************************************************************/
     QVariantMap _mainData;
 
-    STHERM::SystemMode mCurentSysMode;
+    STHERM::SystemMode mCurrentSysMode;
     STHERM::SystemMode mRealSysMode;
 
     STHERM::CoolingType mDeviceType;
+
+    struct STHERM::Vacation mVacation;
 
     Timing* mTiming;
     Relay*  mRelay;
 
     int mHumidifierId;
+
+    double mCurrentHumidity;
 
     double mCurrentTemperature;
     double mSetPointTemperature;

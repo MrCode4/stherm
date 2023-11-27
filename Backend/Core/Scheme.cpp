@@ -56,7 +56,7 @@ void Scheme::run()
 
 void Scheme::startWork()
 {
-   switch (mRealSysMode) {
+    switch (mCurrentSysMode) {
    case STHERM::SystemMode::Cooling: {
 
        switch (mDeviceType) { // Device type
@@ -145,7 +145,7 @@ void Scheme::startWork()
                // Sys delay
                mRelay->heatingStage1();
 
-               mCurentSysMode = mRelay->currentState();
+               mCurrentSysMode = mRelay->currentState();
                // 5 secs
                emit changeBacklight(heatingColor);
 
@@ -168,6 +168,10 @@ void Scheme::startWork()
            break;
        }
 
+   } break;
+
+   case STHERM::SystemMode::Vacation: {
+       updateVacationState();
    } break;
 
    default:
@@ -198,7 +202,7 @@ void Scheme::heatingConventionalRole1(bool needToWait)
 
            if (mSetPointTemperature - mCurrentTemperature >= 2.9 || (mTiming->s2uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 10)) {
                mRelay->heatingStage2();
-               mCurentSysMode = mRelay->currentState();
+               mCurrentSysMode = mRelay->currentState();
                // 5 secs
                emit changeBacklight(heatingColor);
 
@@ -239,7 +243,7 @@ void Scheme::heatingConventionalRole2()
        } else if (mRelay->relays().w3 == STHERM::RelayMode::ON) {
            if ((mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() / 60000 >= 10)) {
                mRelay->heatingStage3();
-               mCurentSysMode = mRelay->currentState();
+               mCurrentSysMode = mRelay->currentState();
                // 5 secs
                emit changeBacklight(heatingColor);
 
@@ -254,7 +258,7 @@ void Scheme::heatingConventionalRole2()
            if (mSetPointTemperature - mCurrentTemperature < 1.9) {
                mRelay->setAllOff();
                mRelay->heatingStage1();
-               mCurentSysMode = mRelay->currentState();
+               mCurrentSysMode = mRelay->currentState();
                // 5 secs
                emit changeBacklight(heatingColor);
 
@@ -269,7 +273,7 @@ void Scheme::heatingConventionalRole2()
            if (mRelay->relays().w3 == STHERM::RelayMode::ON) {
                if (mSetPointTemperature - mCurrentTemperature >= 5.9 || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() / 60000 >= 10)) {
                    mRelay->heatingStage3();
-                   mCurentSysMode = mRelay->currentState();
+                   mCurrentSysMode = mRelay->currentState();
                    // 5 secs
                    emit changeBacklight(heatingColor);
 
@@ -310,7 +314,7 @@ void Scheme::heatingConventionalRole3()
        mRelay->setAllOff();
        mRelay->heatingStage2();
 
-       mCurentSysMode = mRelay->currentState();
+       mCurrentSysMode = mRelay->currentState();
        // 5 secs
        emit changeBacklight(heatingColor);
 
@@ -336,7 +340,7 @@ void Scheme::heatingEmergencyHeatPumpRole1()
    // Y1, Y2, G = 0
    mRelay->setAllOff();
    mRelay->emergencyHeating1();
-   mCurentSysMode = mRelay->currentState();
+   mCurrentSysMode = mRelay->currentState();
 
    // untile the end of emergency mode.
    emit changeBacklight(emergencyColor, -1);
@@ -359,7 +363,7 @@ void Scheme::heatingEmergencyHeatPumpRole2()
 
    if (ct < ET - 3.5) {
        mRelay->emergencyHeating2();
-       mCurentSysMode = mRelay->currentState();
+       mCurrentSysMode = mRelay->currentState();
        heatingEmergencyHeatPumpRole3();
    } else if (ct < HPT) {
        heatingEmergencyHeatPumpRole2();
@@ -384,7 +388,7 @@ void Scheme::heatingEmergencyHeatPumpRole3()
    if (mCurrentTemperature < HPT) {
        heatingEmergencyHeatPumpRole3();
    } else {
-       mRelay->setAllOff();
+       mRelay->turnOffEmergencyHeating();
        heatingHeatPumpRole1();
    }
 }
@@ -403,7 +407,7 @@ void Scheme::heatingHeatPumpRole1()
 
        //SysDelay
        mRelay->heatingStage1();
-       mCurentSysMode = mRelay->currentState();
+       mCurrentSysMode = mRelay->currentState();
 
        // 5 secs
        emit changeBacklight(heatingColor);
@@ -441,7 +445,7 @@ void Scheme::heatingHeatPumpRole2(bool needToWait)
            if (mSetPointTemperature - mCurrentTemperature >= 2.9 || (mTiming->uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 40)) {
                if ((mTiming->s2Offtime.isValid() && mTiming->s2Offtime.elapsed() / 60000 >= 2)) {
                    mRelay->heatingStage2();
-                   mCurentSysMode = mRelay->currentState();
+                   mCurrentSysMode = mRelay->currentState();
 
                    // 5 secs
                    emit changeBacklight(heatingColor);
@@ -495,7 +499,7 @@ void Scheme::heatingHeatPumpRole3()
            // Y2 = 0, Y1 and G = 1
            mRelay->setAllOff();
            mRelay->heatingStage1();
-           mCurentSysMode = mRelay->currentState();
+           mCurrentSysMode = mRelay->currentState();
 
            // 5 secs
            emit changeBacklight(heatingColor);
@@ -610,7 +614,7 @@ void Scheme::coolingHeatPumpRole2()
 
 int Scheme::waitLoop() {
    QEventLoop loop;
-   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
+   connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
            loop.exit(ChangeType::CurrentTemperature);
 
        }, Qt::SingleShotConnection);
@@ -633,6 +637,12 @@ void Scheme::setMainData(QVariantMap mainData)
 
         emit currentTemperatureChanged();
     }
+
+    double currentHumidity =mainData.value("humidity").toDouble(&isOk);
+
+    if (isOk && mCurrentHumidity != currentHumidity) {
+        mCurrentHumidity = currentHumidity;
+    }
 }
 
 void Scheme::updateRealState(const struct STHERM::Vacation &vacation, const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
@@ -641,7 +651,7 @@ void Scheme::updateRealState(const struct STHERM::Vacation &vacation, const doub
        mRealSysMode = updateNormalState(setTemperature, currentTemperature, currentHumidity);
 
     } else if (mRealSysMode == STHERM::SystemMode::Vacation) {
-       mRealSysMode = updateVacationState(vacation, setTemperature, currentTemperature, currentHumidity);
+//       mRealSysMode = updateVacationState(vacation, setTemperature, currentTemperature, currentHumidity);
 
     }
 
@@ -655,74 +665,66 @@ void Scheme::updateRealState(const struct STHERM::Vacation &vacation, const doub
        }
     }
 
-    if (mRealSysMode != mCurentSysMode) { // mode changes
+    if (mRealSysMode != mCurrentSysMode) { // mode changes
 //       current_stage = 0;
     }
 
 
 }
 
-STHERM::SystemMode Scheme::updateVacationState(const struct STHERM::Vacation &vacation,
-                                          const double &setTemperature,
-                                          const double &currentTemperature,
-                                          const double &currentHumidity)
+void Scheme::updateVacationState()
 {
-    STHERM::SystemMode realSetMode;
-    if (mCurentSysMode == STHERM::SystemMode::Cooling) {
-        if (currentTemperature > setTemperature - STAGE1_OFF_RANGE) { // before stage 1 off
-            realSetMode = STHERM::SystemMode::Cooling;
-        } else if (currentTemperature > setTemperature - STAGE1_ON_RANGE) { // before stage 1 on
-            realSetMode = STHERM::SystemMode::Off;
+    if (mCurrentSysMode == STHERM::SystemMode::Cooling) {
+        if (mCurrentTemperature > mSetPointTemperature - STAGE1_OFF_RANGE) { // before stage 1 off
+           mRealSysMode = STHERM::SystemMode::Cooling;
+        } else if (mCurrentTemperature > mSetPointTemperature - STAGE1_ON_RANGE) { // before stage 1 on
+           mRealSysMode = STHERM::SystemMode::Off;
         } else {  // stage 1 on
-            realSetMode = STHERM::SystemMode::Heating;
+           mRealSysMode = STHERM::SystemMode::Heating;
         }
-    } else if (mCurentSysMode == STHERM::SystemMode::Heating) {
-        if (currentTemperature < setTemperature + STAGE1_OFF_RANGE) { // before stage 1 off
-            realSetMode = STHERM::SystemMode::Heating;
-        } else if (currentTemperature < setTemperature + STAGE1_ON_RANGE) { // before stage 1 on
-            realSetMode = STHERM::SystemMode::Off;
+    } else if (mCurrentSysMode == STHERM::SystemMode::Heating) {
+        if (mCurrentTemperature < mSetPointTemperature + STAGE1_OFF_RANGE) { // before stage 1 off
+           mRealSysMode = STHERM::SystemMode::Heating;
+        } else if (mCurrentTemperature < mSetPointTemperature + STAGE1_ON_RANGE) { // before stage 1 on
+           mRealSysMode = STHERM::SystemMode::Off;
         } else {  // stage 1 on
-            realSetMode = STHERM::SystemMode::Cooling;
+            mRealSysMode = STHERM::SystemMode::Cooling;
         }
     } else { // OFF
-        if (currentTemperature < setTemperature - STAGE1_ON_RANGE) {
-            realSetMode = STHERM::SystemMode::Heating;
-        } else if (currentTemperature > setTemperature + STAGE1_ON_RANGE) {
-            realSetMode = STHERM::SystemMode::Cooling;
+        if (mCurrentTemperature < mSetPointTemperature - STAGE1_ON_RANGE) {
+            mRealSysMode = STHERM::SystemMode::Heating;
+        } else if (mCurrentTemperature > mSetPointTemperature + STAGE1_ON_RANGE) {
+            mRealSysMode = STHERM::SystemMode::Cooling;
         }
     }
 
-    if (vacation.minimumTemperature > currentTemperature) {
-        realSetMode = STHERM::SystemMode::Heating;
+    if (mVacation.minimumTemperature > mCurrentTemperature) {
+        mRealSysMode = STHERM::SystemMode::Heating;
         //        range = temperature - $current_state['min_temp'];
-    } else if (vacation.maximumTemperature < currentTemperature) {
-        realSetMode = STHERM::SystemMode::Cooling;
+    } else if (mVacation.maximumTemperature < mCurrentTemperature) {
+        mRealSysMode = STHERM::SystemMode::Cooling;
         //        range = temperature - current_state['max_temp'];
     }
 
     if (mHumidifierId == 1) {
-        if (currentHumidity < vacation.minimumHumidity) {
-            setHumidifierState(true);
-        } else {
-            setHumidifierState(false);
-        }
+        setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
+
     } else if (mHumidifierId == 2) {
-        if (currentHumidity > vacation.maximumHumidity) {
-            setDehumidifierState(true);
-            if (currentHumidity <= vacation.minimumHumidity) {
-                setDehumidifierState(false);
-            }
-        }
+        setDehumidifierState(mCurrentHumidity > mVacation.maximumHumidity);
     }
 
-    return realSetMode;
+    // Update current system mode
+    mCurrentSysMode = mRealSysMode;
+
+    // Start work
+    startWork();
 }
 
 STHERM::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
 {
     STHERM::SystemMode realSetMode;
 
-    if (mCurentSysMode == STHERM::SystemMode::Cooling) {
+    if (mCurrentSysMode == STHERM::SystemMode::Cooling) {
         if (currentTemperature > setTemperature - STAGE1_OFF_RANGE) { // before stage 1 off
             realSetMode = STHERM::SystemMode::Cooling;
         } else if (currentTemperature > setTemperature - STAGE1_ON_RANGE) { // before stage 1 on
@@ -730,7 +732,7 @@ STHERM::SystemMode Scheme::updateNormalState(const double &setTemperature, const
         } else {  // stage 1 on
             realSetMode = STHERM::SystemMode::Heating;
         }
-    } else if (mCurentSysMode == STHERM::SystemMode::Heating) {
+    } else if (mCurrentSysMode == STHERM::SystemMode::Heating) {
         if (currentTemperature < setTemperature + STAGE1_OFF_RANGE) { // before stage 1 off
             realSetMode = STHERM::SystemMode::Heating;
         } else if (currentTemperature < setTemperature + STAGE1_ON_RANGE) { // before stage 1 on
@@ -762,15 +764,15 @@ void Scheme::setCurrentState(const int &humidifierId)
 
 STHERM::SystemMode Scheme::getCurrentSysMode() const
 {
-    return mCurentSysMode;
+    return mCurrentSysMode;
 }
 
 void Scheme::setCurrentSysMode(STHERM::SystemMode newSysMode)
 {
-    if (mCurentSysMode == newSysMode)
+    if (mCurrentSysMode == newSysMode)
         return;
 
-    mCurentSysMode = newSysMode;
+    mCurrentSysMode = newSysMode;
 }
 
 void Scheme::setHumidifierState(bool on) {

@@ -24,6 +24,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mainDataMap.insert("fanSpeed",        0);
     setMainData(mainDataMap);
 
+    // todo: initialize with proper value
+    mBacklightModelData = QVariantList();
+
 
     LOG_DEBUG("TEST");
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {

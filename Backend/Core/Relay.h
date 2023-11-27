@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QObject>
+
 #include "UtilityHelper.h"
 
 
@@ -7,8 +9,10 @@
  * Relay: Check and update relay factors.
  * ************************************************************************************************/
 
-class Relay
+class Relay : public QObject
 {
+    Q_OBJECT
+
 public:
 
     static Relay* instance();
@@ -39,7 +43,7 @@ public:
 
     bool fanWorkTime();
 
-    STHERM::Relay relays();
+    STHERM::RelayConfigs relays();
 
     bool turnOffEmergencyHeating();
 
@@ -56,7 +60,7 @@ private:
 private:
     static Relay* mInstance;
 
-    STHERM::Relay mRelay;
+    STHERM::RelayConfigs mRelay;
 
     STHERM::SystemMode before_state;
     STHERM::SystemMode  current_state;

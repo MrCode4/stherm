@@ -24,9 +24,9 @@ void Timing::setDefaultValues(void)
 #endif
     timestamp_t tr = std::mktime(&tm);
 
-    uptime = current_timestamp();
-    s1uptime = current_timestamp();
-    s2uptime = current_timestamp();
+//    uptime   = current_timestamp();
+//    s1uptime = current_timestamp();
+//    s2uptime = current_timestamp();
     s2hold = false;
     s3hold = false;
     alerts = false;
@@ -61,8 +61,9 @@ void Timing::refreshTimestamps(void)
 #endif
     timestamp_t tr = std::mktime(&tm);
 
-    uptime = current_timestamp();
-    s2uptime = current_timestamp();
+    uptime.restart();
+    s2uptime.restart();
+
     set_backlight_time = current_timestamp();
     wiring_check_timestamp = current_timestamp();
     contractor_info_timestamp = tr;
