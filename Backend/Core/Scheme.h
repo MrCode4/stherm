@@ -33,14 +33,6 @@ public:
                          const double &currentTemperature,
                          const double &currentHumidity);
 
-    //! Start humidifier work
-    void startHumidifierWork(int humidifier, QString device_state,
-                             int humidity, int current_humidity,
-                             int sth, int stl);
-
-    //! Update current system state
-    void setCurrentState(const int &humidifierId);
-
     STHERM::SystemMode getCurrentSysMode() const;
     void setCurrentSysMode(STHERM::SystemMode newSysMode);
 
@@ -53,6 +45,19 @@ public:
     void startWork();
 
     void setMainData(QVariantMap mainData);
+
+    //! Update Humidifier Id
+    void setHumidifierId(const int &humidifierId);
+
+
+    //! Setter and getter for set point humidity.
+    double setPointHimidity() const;
+    void setSetPointHimidity(double newSetPointHimidity);
+
+    //! Setter and getter for set current humidity.
+    //! Update from setMainData.
+    double currentHumidity() const;
+    void setCurrentHumidity(double newCurrentHumidity);
 
 signals:
     void changeBacklight(QVariantList colorData, int secs = 5);
@@ -75,20 +80,27 @@ private:
                                          const double &currentTemperature,
                                          const double &currentHumidity);
 
+    //! Cooling and heating roles.
     void coolingHeatPumpRole1(bool needToWait = true);
     void coolingHeatPumpRole2();
-    void heatingEmergencyHeatPumpRole1();
-    void heatingEmergencyHeatPumpRole2();
     void heatingHeatPumpRole1();
-    void heatingEmergencyHeatPumpRole3();
     void heatingHeatPumpRole2(bool needToWait = true);
     void heatingHeatPumpRole3();
     void heatingConventionalRole1(bool needToWait = true);
     void heatingConventionalRole2();
     void heatingConventionalRole3();
 
-    // To monitor data change: current temperature, set temperature, mode
+    //! Emergency heating roles
+    void heatingEmergencyHeatPumpRole1();
+    void heatingEmergencyHeatPumpRole2();
+    void heatingEmergencyHeatPumpRole3();
+
+    //! To monitor data change: current temperature, set temperature, mode
     int waitLoop();
+
+    //! Update humidifire and dehumidifire after changes: mode, set point humidity,
+    //! current humidity, and humidifier Id
+    void updateHumifiresState();
 
 private:
     /* Attributes
@@ -107,8 +119,11 @@ private:
 
     int mHumidifierId;
 
+    //! Humidity parameters
     double mCurrentHumidity;
+    double mSetPointHimidity;
 
+    //! Temperature parameters
     double mCurrentTemperature;
     double mSetPointTemperature;
 

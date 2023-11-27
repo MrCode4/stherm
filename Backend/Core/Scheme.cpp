@@ -34,6 +34,16 @@ Scheme::Scheme(QObject *parent) :
 
     mTiming = PhpAPI::instance()->timing();
     mRelay  = Relay::instance();
+
+    connect(this, &Scheme::modeChanged, this, [this] {
+        // todo: use a safe method
+        if (this->isRunning()) {
+            terminate();
+            wait();
+        }
+
+        this->start();
+    });
 }
 
 Scheme::~Scheme()
@@ -622,6 +632,31 @@ int Scheme::waitLoop() {
    return loop.exec();
 }
 
+double Scheme::currentHumidity() const
+{
+   return mCurrentHumidity;
+}
+
+void Scheme::setCurrentHumidity(double newCurrentHumidity)
+{
+   if (mCurrentHumidity != newCurrentHumidity)
+       return;
+
+   mCurrentHumidity = newCurrentHumidity;
+
+   updateHumifiresState();
+}
+
+double Scheme::setPointHimidity() const
+{
+   return mSetPointHimidity;
+}
+
+void Scheme::setSetPointHimidity(double newSetPointHimidity)
+{
+   mSetPointHimidity = newSetPointHimidity;
+}
+
 void Scheme::setMainData(QVariantMap mainData)
 {
     if (_mainData == mainData)
@@ -640,8 +675,8 @@ void Scheme::setMainData(QVariantMap mainData)
 
     double currentHumidity =mainData.value("humidity").toDouble(&isOk);
 
-    if (isOk && mCurrentHumidity != currentHumidity) {
-        mCurrentHumidity = currentHumidity;
+    if (isOk) {
+        setCurrentHumidity(currentHumidity);
     }
 }
 
@@ -706,18 +741,53 @@ void Scheme::updateVacationState()
         //        range = temperature - current_state['max_temp'];
     }
 
-    if (mHumidifierId == 1) {
-        setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
-
-    } else if (mHumidifierId == 2) {
-        setDehumidifierState(mCurrentHumidity > mVacation.maximumHumidity);
-    }
+    updateHumifiresState();
 
     // Update current system mode
     mCurrentSysMode = mRealSysMode;
 
+
     // Start work
     startWork();
+}
+
+void Scheme::updateHumifiresState()
+{
+    if (mHumidifierId == 3)
+        return;
+
+    if (mCurrentSysMode == STHERM::Vacation) {
+        if (mHumidifierId == 1) {
+            setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
+
+        } else if (mHumidifierId == 2) {
+            setDehumidifierState(mCurrentHumidity > mVacation.maximumHumidity);
+        }
+
+    } else {
+        double max_hum = HUM_MAX;
+        double min_hum = HUM_MIN;
+
+        if (mSetPointHimidity + HUM_STEP < max_hum)
+            max_hum = mSetPointHimidity + HUM_STEP;
+
+        if (mSetPointHimidity - HUM_STEP > min_hum)
+            min_hum = mSetPointHimidity - HUM_STEP;
+
+        if (mHumidifierId == 1) {
+            if (mCurrentHumidity < mSetPointHimidity) // on
+               setHumidifierState(true);
+
+            else if (mCurrentHumidity >= max_hum)    // off
+               setHumidifierState(false);
+
+        } else if (mHumidifierId == 2) { // dehumidifier
+            if (mCurrentHumidity > mSetPointHimidity)
+               setDehumidifierState(true);
+            else if (mCurrentHumidity <= min_hum)
+               setDehumidifierState(false);
+        }
+    }
 }
 
 STHERM::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
@@ -751,14 +821,13 @@ STHERM::SystemMode Scheme::updateNormalState(const double &setTemperature, const
     return realSetMode;
 }
 
-void Scheme::startHumidifierWork(int humidifier, QString device_state, int humidity, int current_humidity, int sth, int stl)
+void Scheme::setHumidifierId(const int &humidifierId)
 {
+    if (mHumidifierId != humidifierId)
+        return;
 
-}
-
-void Scheme::setCurrentState(const int &humidifierId)
-{
     mHumidifierId = humidifierId;
+    updateHumifiresState();
 
 }
 
@@ -775,7 +844,8 @@ void Scheme::setCurrentSysMode(STHERM::SystemMode newSysMode)
     mCurrentSysMode = newSysMode;
 }
 
-void Scheme::setHumidifierState(bool on) {
+void Scheme::setHumidifierState(bool on)
+{
 
 }
 
