@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 import Ronia
 import Stherm
-import "./Delegates"
+
 /*! ***********************************************************************************************
  * BacklightPage is for tweaking back light
  * ***********************************************************************************************/
@@ -27,13 +27,14 @@ BasePageView {
     //! Whether shade buttons should be shown
     property bool               hasShades: true
 
-    property bool          completed: false
+    property bool               completed: false
 
     property Timer onlineTimer: Timer {
         repeat: false
         running: false
         interval: 50
         onTriggered: applyOnline()
+
         function startTimer() {
             if (!onlineTimer.running) {
                 start();
@@ -46,6 +47,17 @@ BasePageView {
     leftPadding: AppStyle.size / 12
     rightPadding: AppStyle.size / 12
     title: "Backlight"
+    backButtonCallback: function() {
+        //! Call revertToModel() so if confirm button was never pressed previous color is reverted
+        revertToModel();
+
+        if (_root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (_root.StackView.view.currentItem == _root) {
+                _root.StackView.view.pop();
+            }
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -88,7 +100,12 @@ BasePageView {
             Layout.fillWidth: true
             opacity: enabled ? 1. : 0.4
             onValueChanged: onlineTimer.startTimer()
-            onMoved: dummyShadeDelegate.checked = true
+            onMoved: {
+                if (backlight && backlight.hue !== value) {
+                    backlight.hue = value;
+                }
+                dummyShadeDelegate.checked = true
+            }
         }
 
         Label {
@@ -102,13 +119,18 @@ BasePageView {
             id: _brSlider
             Layout.fillWidth: true
             opacity: enabled ? 1. : 0.4
+            from: 0
+            to: 1.
             onValueChanged: onlineTimer.startTimer()
 
+            onMoved: {
+                if (backlight && backlight.value !== value) {
+                    backlight.value = value;
+                }
+            }
+
             Component.onCompleted: {
-                handle.color = Qt.binding(function() {
-                            var clr = unshadedColor;
-                            return Qt.rgba(clr.r * brightness, clr.g * brightness, clr.b * brightness, 1.);
-                        });
+                handle.color = Qt.binding(() => Style.background);
             }
         }
 
@@ -176,17 +198,13 @@ BasePageView {
         }
     }
 
-    function setCurrentColor(color, shadeIndex)
+    function setCurrentColor(shadeIndex)
     {
-        var h = color.hsvHue;
-        var s = color.hsvSaturation;
-        var v = color.hsvValue;
-
-        _brSlider.value = v;
+        _brSlider.value = backlight.value;
+        _colorSlider.value = backlight.hue;
 
         if (shadeIndex === dummyShadeDelegate.index) {
             //! Restore color to hue slider
-            _colorSlider.value = h;
             dummyShadeDelegate.checked = true;
         } else {
             _shadeButtonsRepeater.itemAt(shadeIndex).checked = true;
@@ -203,22 +221,20 @@ BasePageView {
     //! Update backlight and set to model
     function applyToModel() {
         if (deviceController) {
-            deviceController.updateBacklight(_backlightOnOffSw.checked, selectedColor,
-                                             (_shadeButtonsGrp.checkedButton?.index ?? 0));
+            deviceController.updateBacklight(_backlightOnOffSw.checked, _shadeButtonsGrp.checkedButton?.index ?? 5);
         }
     }
 
     //! reset backlight to model on cancel
     function revertToModel() {
         if (deviceController) {
-            deviceController.updateBacklight(backlight?.on ?? false, backlight?._color ?? selectedColor,
-                                             backlight?.shadeIndex ?? dummyShadeDelegate.index);
+            deviceController.updateBacklight(backlight?.on ?? false, backlight?.shadeIndex ?? dummyShadeDelegate.index);
         }
     }
 
     Component.onCompleted: {
         if (backlight) {
-            setCurrentColor(backlight._color, backlight.shadeIndex);
+            setCurrentColor(backlight.shadeIndex);
         }
         completed = true;
     }
