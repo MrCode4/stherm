@@ -10,7 +10,8 @@
 class Relay
 {
 public:
-    Relay();
+
+    static Relay* instance();
 
     int getCoolingMaxStage();
     int getHeatingMaxStage();
@@ -38,17 +39,30 @@ public:
 
     bool fanWorkTime();
 
+    STHERM::Relay relays();
+
+    bool turnOffEmergencyHeating();
+
+    STHERM::SystemMode getOb_state() const;
+    void setOb_state(STHERM::SystemMode newOb_state);
+
+    STHERM::SystemMode currentState() const;
+
 private:
+    explicit Relay();
+
     void backlight();
 
 private:
+    static Relay* mInstance;
+
     STHERM::Relay mRelay;
 
     STHERM::SystemMode before_state;
     STHERM::SystemMode  current_state;
+    STHERM::SystemMode ob_state; // can be Cooling or Heating
 
     int current_stage;
 
-    QString ob_state;
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <QObject>
+#include <QThread>
+#include <QVariantMap>
 
 #include "UtilityHelper.h"
 
@@ -9,7 +10,7 @@
  * todo: Add another properties.
  * ************************************************************************************************/
 
-class Scheme : public QObject
+class Scheme : public QThread
 {
     Q_OBJECT
 
@@ -38,6 +39,25 @@ public:
     STHERM::SystemMode realSysMode() const;
     void setRealSysMode(STHERM::SystemMode newRealSysMode);
 
+    void startWork();
+
+    void setMainData(QVariantMap mainData);
+
+    void startWork2();
+
+signals:
+    void changeBacklight(QVariantList colorData);
+
+    void alert();
+
+    void currentTemperatureChanged();
+    void setTemperatureChanged();
+
+    void modeChanged();
+
+protected:
+    virtual void run();
+
 private:
     //! Update vacation mode
     STHERM::SystemMode updateVacationState(const struct STHERM::Vacation &vacation,
@@ -49,11 +69,28 @@ private:
                                          const double &currentTemperature,
                                          const double &currentHumidity);
 private:
+    /* Attributes
+     * ****************************************************************************************/
+    QVariantMap _mainData;
 
     STHERM::SystemMode mCurentSysMode;
     STHERM::SystemMode mRealSysMode;
 
+    STHERM::CoolingType mDeviceType;
+
     int mHumidifierId;
 
+    double mCurrentTemperature;
+
+    bool stopWork;
+    void startWork3();
+    void coolingHeatPumpRole1(bool needToWait = true);
+    void coolingHeatPumpRole2();
+    void heatingEmergencyHeatPumpRole1();
+    void heatingEmergencyHeatPumpRole2();
+    void heatingHeatPumpRole1();
+    void heatingEmergencyHeatPumpRole3();
+    void heatingHeatPumpRole2();
+    void heatingHeatPumpRole3();
 };
 

@@ -2,6 +2,16 @@
 
 #include <QDebug>
 
+Relay *Relay::mInstance = nullptr;
+Relay *Relay::instance()
+{
+    if (!mInstance)
+        mInstance = new Relay();
+
+    return mInstance;
+}
+
+
 Relay::Relay()
 {
     before_state  = STHERM::SystemMode::Off;
@@ -35,13 +45,13 @@ void Relay::updateStates()
         }
     } else {
         //echo '-----------'.current_state.'|||||||'. before_state.'---------------';
-        if (ob_state == "cool" && mRelay.o_b == STHERM::RelayMode::ON) {
+        if (ob_state == STHERM::SystemMode::Cooling && mRelay.o_b == STHERM::RelayMode::ON) {
             before_state = STHERM::SystemMode::Cooling;
-        } else if(ob_state == "cool" && mRelay.o_b == STHERM::RelayMode::OFF) {
+        } else if(ob_state == STHERM::SystemMode::Cooling && mRelay.o_b == STHERM::RelayMode::OFF) {
             before_state = STHERM::SystemMode::Heating;
-        } else if (ob_state == "heat" && mRelay.o_b == STHERM::RelayMode::ON) {
+        } else if (ob_state == STHERM::SystemMode::Heating && mRelay.o_b == STHERM::RelayMode::ON) {
             before_state = STHERM::SystemMode::Heating;
-        }else if (ob_state == "heat" && mRelay.o_b == STHERM::RelayMode::OFF) {
+        }else if (ob_state == STHERM::SystemMode::Heating && mRelay.o_b == STHERM::RelayMode::OFF) {
             before_state = STHERM::SystemMode::Cooling;
         }
 
@@ -57,7 +67,6 @@ void Relay::updateStates()
     }
     current_state = before_state;
 }
-
 
 int Relay::getCoolingMaxStage()
 {
@@ -111,7 +120,7 @@ int Relay::getHeatingMaxStage()
 bool Relay::coolingStage1()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == "cool") {
+        if (ob_state == STHERM::SystemMode::Cooling) {
             mRelay.o_b = STHERM::RelayMode::ON;
         } else {
             mRelay.o_b = STHERM::RelayMode::OFF;
@@ -161,7 +170,22 @@ void Relay::backlight()
 //    case STHERM::SystemMode::Heating:
 //        color = self::HEATING_RGBM;
 //        break;
-//    }
+    //    }
+}
+
+STHERM::SystemMode Relay::currentState() const
+{
+    return current_state;
+}
+
+STHERM::SystemMode Relay::getOb_state() const
+{
+    return ob_state;
+}
+
+void Relay::setOb_state(STHERM::SystemMode newOb_state)
+{
+    ob_state = newOb_state;
 }
 
 /**
@@ -185,7 +209,7 @@ void Relay::setAllOff()
 
 bool Relay::heatingStage0()
 {
-    if (ob_state == "heat") {
+    if (ob_state == STHERM::SystemMode::Heating) {
         mRelay.o_b   = STHERM::RelayMode::ON;
     } else {
         mRelay.o_b   = STHERM::RelayMode::OFF;
@@ -207,7 +231,7 @@ bool Relay::heatingStage0()
 bool Relay::coolingStage0()
 {
     mRelay.o_b   = STHERM::RelayMode::OFF;
-    if (ob_state == "cool") {
+    if (ob_state == STHERM::SystemMode::Cooling) {
         mRelay.o_b   = STHERM::RelayMode::ON;
     } else {
         mRelay.o_b   = STHERM::RelayMode::OFF;
@@ -229,7 +253,7 @@ bool Relay::coolingStage0()
 bool Relay:: heatingStage1()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == "heat") {
+        if (ob_state == STHERM::SystemMode::Heating) {
             mRelay.o_b   = STHERM::RelayMode::ON;
         } else {
             mRelay.o_b   = STHERM::RelayMode::OFF;
@@ -254,7 +278,7 @@ bool Relay:: heatingStage1()
 bool Relay:: heatingStage2()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == "heat") {
+        if (ob_state == STHERM::SystemMode::Heating) {
             mRelay.o_b   = STHERM::RelayMode::ON;
         } else {
             mRelay.o_b   = STHERM::RelayMode::OFF;
@@ -280,7 +304,7 @@ bool Relay:: heatingStage2()
 bool Relay::coolingStage2()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == "cool") {
+        if (ob_state == STHERM::SystemMode::Cooling) {
             mRelay.o_b   = STHERM::RelayMode::ON;
         } else {
             mRelay.o_b   = STHERM::RelayMode::OFF;
@@ -304,7 +328,7 @@ bool Relay::coolingStage2()
 bool Relay::heatingStage3()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == "heat") {
+        if (ob_state == STHERM::SystemMode::Heating) {
             mRelay.o_b   = STHERM::RelayMode::ON;
         } else {
             mRelay.o_b   = STHERM::RelayMode::OFF;
@@ -330,7 +354,7 @@ bool Relay::heatingStage3()
 bool Relay::coolingStage3()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == "cool") {
+        if (ob_state == STHERM::SystemMode::Cooling) {
             mRelay.o_b   = STHERM::RelayMode::ON;
         } else {
             mRelay.o_b   = STHERM::RelayMode::OFF;
@@ -388,6 +412,14 @@ bool Relay::emergencyHeating2()
     return false;
 }
 
+bool Relay::turnOffEmergencyHeating()
+{
+    mRelay.w1  = STHERM::RelayMode::OFF;
+    mRelay.w2  = STHERM::RelayMode::OFF;
+
+    // update current_state
+}
+
 bool Relay::fanWorkTime()
 {
     qDebug() << Q_FUNC_INFO << __LINE__ ;
@@ -422,4 +454,8 @@ bool Relay::fanWorkTime()
 //        getRelayState();
 //    }
     return true;
+}
+
+STHERM::Relay Relay::relays() {
+    return mRelay;
 }
