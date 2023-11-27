@@ -8,7 +8,7 @@ import Stherm
  * SensorsPage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Object properties
      * ****************************************************************************************/
@@ -35,9 +35,9 @@ BasePageView {
 
             onClicked: {
                 //! Open AddSensorPage
-                if (_root.StackView.view) {
-                    _root.StackView.view.push("qrc:/Stherm/View/Sensor/AddSensorPage.qml", {
-                                                  "uiSession": _root.uiSession
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/Sensor/AddSensorPage.qml", {
+                                                  "uiSession": root.uiSession
                                               });
                 }
             }
@@ -88,6 +88,15 @@ BasePageView {
                 height: implicitHeight
                 sensor: modelData instanceof Sensor ? modelData : null
                 delegateIndex: index
+
+                onClicked: {
+                    //! Open SensorInfoPage for this sensor
+                    if (root.StackView.view) {
+                        root.StackView.view.push("qrc:/Stherm/View/Sensor/SensorInfoPage.qml", {
+                                                     "sensor": sensor
+                                                 });
+                    }
+                }
             }
         }
     }
