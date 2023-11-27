@@ -8,26 +8,45 @@ import Stherm
  * AddSensorPage provides the ability to add a new sensor
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
+    //!
 
     /* Object properties
      * ****************************************************************************************/
     title: "Add Sensor"
+    backButtonCallback: function() {
+        if (pageStack.depth > 1) {
+            pageStack.pop();
+        } else {
+            //! Adding sensor is canceled, delete created instance
+            sensorPairPage.newSensor.destroy();
+
+            if (root.StackView.view) {
+                //! Then Page is inside an StackView
+                if (root.StackView.view.currentItem == root) {
+                    root.StackView.view.pop();
+                }
+            }
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
     StackView {
-        id: _pageStack
+        id: pageStack
         anchors.fill: parent
 
-        initialItem: _sensorPairPage
+        initialItem: sensorPairPage
     }
 
     SensorPairPage {
-        id: _sensorPairPage
+        id: sensorPairPage
+
+        property Sensor newSensor
+
         visible: false
 
         //! For test: to add an arbitrary Sensor after two seconds
@@ -35,19 +54,20 @@ BasePageView {
             interval: 2000
             running: true
             onTriggered: {
-                _sensorPairPage.sensorPaired(Qt.createQmlObject(
-                                                 `
-                                                 import Stherm
+                sensorPairPage.newSensor = Qt.createQmlObject(
+                            `
+                            import Stherm
 
-                                                 Sensor { }
-                                                 `, AppCore.defaultRepo));
+                            Sensor { }
+                            `, AppCore.defaultRepo);
+                sensorPairPage.sensorPaired(sensorPairPage.newSensor);
             }
         }
 
         onSensorPaired: function(sensor) {
             if (sensor instanceof Sensor) {
                 //! Push selecting sensor name and location pages
-                _pageStack.push(sensorNamePageCompo, {
+                pageStack.push(sensorNamePageCompo, {
                                     "sensor": sensor
                                 });
             }
@@ -61,18 +81,19 @@ BasePageView {
             id: namePage
 
             ToolButton {
+                id: backbutton
+                visible: pageStack.depth === 2
                 enabled: namePage.sensorName.length > 0
-                parent: _root.header.contentItem
+                parent: root.header.contentItem
                 contentItem: RoniaTextIcon {
                     text: FAIcons.arrowRight
                 }
 
                 onClicked: {
-                    visible = false;
                     //! Set sensor name and go to selecting sensor loacation
                     namePage.sensor.name = namePage.sensorName;
 
-                    _pageStack.push(sensorLocationPageCompo, {
+                    pageStack.push(sensorLocationPageCompo, {
                                         "sensor": sensor
                                     });
                 }
@@ -88,8 +109,8 @@ BasePageView {
 
             ToolButton {
                 enabled: locationPage.location !== AppSpec.SensorLocation.Unknown
-                visible: locationPage.visible
-                parent: _root.header.contentItem
+                visible: pageStack.depth === 3
+                parent: root.header.contentItem
                 contentItem: RoniaTextIcon {
                     text: FAIcons.check
                 }
@@ -102,8 +123,9 @@ BasePageView {
                     uiSession.sensorController.addSensor(locationPage.sensor);
 
                     //! Pop AddSensorPage from its StackView
-                    if (_root.StackView.view) {
-                        _root.StackView.view.pop();
+                    sensorPairPage.newSensor = null;
+                    if (root.StackView.view) {
+                        root.StackView.view.pop();
                     }
                 }
             }
