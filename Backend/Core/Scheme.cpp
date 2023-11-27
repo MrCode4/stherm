@@ -173,13 +173,12 @@ void Scheme::startWork()
 void Scheme::heatingConventionalRole1(bool needToWait)
 {
    if (needToWait) {
-       //! wait to change temperatre
-       QEventLoop loop;
-       loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-               qDebug() << Q_FUNC_INFO << __LINE__ ;
-               loop.quit();
-           }, Qt::SingleShotConnection);
-       loop.exec();
+       auto loopResult = waitLoop();
+
+       if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+           startWork();
+           return;
+       }
    }
 
    if (mCurrentTemperature - mSetPointTemperature >= 1) {
@@ -220,13 +219,12 @@ void Scheme::heatingConventionalRole1(bool needToWait)
 
 void Scheme::heatingConventionalRole2()
 {
-   //! wait to change temperatre
-   QEventLoop loop;
-   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-           qDebug() << Q_FUNC_INFO << __LINE__ ;
-           loop.quit();
-       }, Qt::SingleShotConnection);
-   loop.exec();
+   auto loopResult = waitLoop();
+
+   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+       startWork();
+       return;
+   }
 
    if (mTiming->s2hold) {
        if (mCurrentTemperature - mSetPointTemperature >= 1) {
@@ -289,13 +287,12 @@ void Scheme::heatingConventionalRole2()
 
 void Scheme::heatingConventionalRole3()
 {
-   //! wait to change temperatre
-   QEventLoop loop;
-   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-           qDebug() << Q_FUNC_INFO << __LINE__ ;
-           loop.quit();
-       }, Qt::SingleShotConnection);
-   loop.exec();
+   auto loopResult = waitLoop();
+
+   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+       startWork();
+       return;
+   }
 
    if (mTiming->s3hold) {
        if (mCurrentTemperature - mSetPointTemperature>= 1) {
@@ -344,13 +341,12 @@ void Scheme::heatingEmergencyHeatPumpRole1()
 
 void Scheme::heatingEmergencyHeatPumpRole2()
 {
-   //! wait to change temperatre
-   QEventLoop loop;
-   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-           qDebug() << Q_FUNC_INFO << __LINE__ ;
-           loop.quit();
-       }, Qt::SingleShotConnection);
-   loop.exec();
+   auto loopResult = waitLoop();
+
+   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+       startWork();
+       return;
+   }
 
    double sp = 0.0; // Set point temperature
    double ct = mCurrentTemperature;
@@ -373,13 +369,12 @@ void Scheme::heatingEmergencyHeatPumpRole2()
 
 void Scheme::heatingEmergencyHeatPumpRole3()
 {
-   //! wait to change temperatre
-   QEventLoop loop;
-   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-           qDebug() << Q_FUNC_INFO << __LINE__ ;
-           loop.quit();
-       }, Qt::SingleShotConnection);
-   loop.exec();
+   auto loopResult = waitLoop();
+
+   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+       startWork();
+       return;
+   }
 
    if (mCurrentTemperature < HPT) {
        heatingEmergencyHeatPumpRole3();
@@ -391,13 +386,12 @@ void Scheme::heatingEmergencyHeatPumpRole3()
 
 void Scheme::heatingHeatPumpRole1()
 {
-   //! wait to change temperatre
-   QEventLoop loop;
-   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-           qDebug() << Q_FUNC_INFO << __LINE__ ;
-           loop.quit();
-       }, Qt::SingleShotConnection);
-   loop.exec();
+   auto loopResult = waitLoop();
+
+   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+       startWork();
+       return;
+   }
 
    if (mSetPointTemperature - mCurrentTemperature >= 3) {
        mRelay->setOb_state(STHERM::Heating);
@@ -425,13 +419,12 @@ void Scheme::heatingHeatPumpRole1()
 void Scheme::heatingHeatPumpRole2(bool needToWait)
 {
    if (needToWait) {
-       //! wait to change temperatre
-       QEventLoop loop;
-       loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-               qDebug() << Q_FUNC_INFO << __LINE__ ;
-               loop.quit();
-           }, Qt::SingleShotConnection);
-       loop.exec();
+       auto loopResult = waitLoop();
+
+       if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+           startWork();
+           return;
+       }
    }
 
    if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
@@ -469,13 +462,13 @@ void Scheme::heatingHeatPumpRole2(bool needToWait)
 
 void Scheme::heatingHeatPumpRole3()
 {
-   //! wait to change temperatre
-   QEventLoop loop;
-   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-           qDebug() << Q_FUNC_INFO << __LINE__ ;
-           loop.quit();
-       }, Qt::SingleShotConnection);
-   loop.exec();
+
+   auto loopResult = waitLoop();
+
+   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+       startWork();
+       return;
+   }
 
    if (mTiming->s2hold) {
        if (mCurrentTemperature - mSetPointTemperature >= 1) {
@@ -524,12 +517,12 @@ void Scheme::heatingHeatPumpRole3()
 void Scheme::coolingHeatPumpRole1(bool needToWait)
 {
    if (needToWait) {
-       QEventLoop loop;
-       loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-               qDebug() << Q_FUNC_INFO << __LINE__ ;
-               loop.quit();
-           }, Qt::SingleShotConnection);
-       loop.exec();
+       auto loopResult = waitLoop();
+
+       if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+           startWork();
+           return;
+       }
    }
 
    if (mSetPointTemperature - mCurrentTemperature >= 1) {
@@ -574,13 +567,12 @@ void Scheme::coolingHeatPumpRole1(bool needToWait)
 
 void Scheme::coolingHeatPumpRole2()
 {
-   // To monitor temperature
-   QEventLoop loop;
-   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-           qDebug() << Q_FUNC_INFO << __LINE__ ;
-           loop.quit();
-       }, Qt::SingleShotConnection);
-   loop.exec();
+   auto loopResult = waitLoop();
+
+   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
+       startWork();
+       return;
+   }
 
    if (mTiming->s2hold) {
        if (mSetPointTemperature - mCurrentTemperature >= 1) {
@@ -609,6 +601,16 @@ void Scheme::coolingHeatPumpRole2()
            coolingHeatPumpRole1(false);
        }
    }
+}
+
+int Scheme::waitLoop() {
+   QEventLoop loop;
+   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
+           loop.exit(ChangeType::CurrentTemperature);
+
+       }, Qt::SingleShotConnection);
+
+   return loop.exec();
 }
 
 void Scheme::setMainData(QVariantMap mainData)

@@ -12,6 +12,13 @@
  * todo: Add another properties.
  * ************************************************************************************************/
 
+enum ChangeType {
+    CurrentTemperature = 0,
+    SetTemperature,
+    Mode,
+
+};
+
 class Scheme : public QThread
 {
     Q_OBJECT
@@ -82,6 +89,9 @@ private:
     void heatingConventionalRole1(bool needToWait = true);
     void heatingConventionalRole2();
     void heatingConventionalRole3();
+
+    // To monitor data change: current temperature, set temperature, mode
+    int waitLoop();
 
 private:
     /* Attributes
