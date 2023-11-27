@@ -178,6 +178,14 @@ STHERM::SystemMode Relay::currentState() const
     return current_state;
 }
 
+void Relay::setHumidifierState(const bool on) {
+    mRelay.hum_wiring = on ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+}
+
+void Relay::setDehumidifierState(const bool on) {
+    mRelay.hum_wiring = on ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+}
+
 STHERM::SystemMode Relay::getOb_state() const
 {
     return ob_state;

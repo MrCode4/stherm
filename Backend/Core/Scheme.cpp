@@ -758,10 +758,10 @@ void Scheme::updateHumifiresState()
 
     if (mCurrentSysMode == STHERM::Vacation) {
         if (mHumidifierId == 1) {
-            setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
+            mRelay->setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
 
         } else if (mHumidifierId == 2) {
-            setDehumidifierState(mCurrentHumidity > mVacation.maximumHumidity);
+            mRelay->setDehumidifierState(mCurrentHumidity > mVacation.maximumHumidity);
         }
 
     } else {
@@ -776,16 +776,16 @@ void Scheme::updateHumifiresState()
 
         if (mHumidifierId == 1) {
             if (mCurrentHumidity < mSetPointHimidity) // on
-               setHumidifierState(true);
+               mRelay->setHumidifierState(true);
 
             else if (mCurrentHumidity >= max_hum)    // off
-               setHumidifierState(false);
+               mRelay->setHumidifierState(false);
 
         } else if (mHumidifierId == 2) { // dehumidifier
             if (mCurrentHumidity > mSetPointHimidity)
-               setDehumidifierState(true);
+               mRelay->setDehumidifierState(true);
             else if (mCurrentHumidity <= min_hum)
-               setDehumidifierState(false);
+               mRelay->setDehumidifierState(false);
         }
     }
 }
@@ -842,16 +842,6 @@ void Scheme::setCurrentSysMode(STHERM::SystemMode newSysMode)
         return;
 
     mCurrentSysMode = newSysMode;
-}
-
-void Scheme::setHumidifierState(bool on)
-{
-
-}
-
-void Scheme::setDehumidifierState(bool on)
-{
-
 }
 
 STHERM::SystemMode Scheme::realSysMode() const

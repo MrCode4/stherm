@@ -52,6 +52,12 @@ public:
 
     STHERM::SystemMode currentState() const;
 
+    //! Update Humidifier state
+    void setHumidifierState(const bool on);
+
+    //! Update Dehumidifier state
+    void setDehumidifierState(const bool on);
+
 private:
     explicit Relay();
 

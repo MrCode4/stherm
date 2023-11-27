@@ -36,9 +36,6 @@ public:
     STHERM::SystemMode getCurrentSysMode() const;
     void setCurrentSysMode(STHERM::SystemMode newSysMode);
 
-    void setHumidifierState(bool on);
-    void setDehumidifierState(bool on);
-
     STHERM::SystemMode realSysMode() const;
     void setRealSysMode(STHERM::SystemMode newRealSysMode);
 
