@@ -68,6 +68,19 @@ private:
     STHERM::SystemMode updateNormalState(const double &setTemperature,
                                          const double &currentTemperature,
                                          const double &currentHumidity);
+
+    void coolingHeatPumpRole1(bool needToWait = true);
+    void coolingHeatPumpRole2();
+    void heatingEmergencyHeatPumpRole1();
+    void heatingEmergencyHeatPumpRole2();
+    void heatingHeatPumpRole1();
+    void heatingEmergencyHeatPumpRole3();
+    void heatingHeatPumpRole2(bool needToWait = true);
+    void heatingHeatPumpRole3();
+    void heatingConventionalRole1(bool needToWait = true);
+    void heatingConventionalRole2();
+    void heatingConventionalRole3();
+
 private:
     /* Attributes
      * ****************************************************************************************/
@@ -83,17 +96,5 @@ private:
     double mCurrentTemperature;
 
     bool stopWork;
-    void startWork3();
-    void coolingHeatPumpRole1(bool needToWait = true);
-    void coolingHeatPumpRole2();
-    void heatingEmergencyHeatPumpRole1();
-    void heatingEmergencyHeatPumpRole2();
-    void heatingHeatPumpRole1();
-    void heatingEmergencyHeatPumpRole3();
-    void heatingHeatPumpRole2(bool needToWait = true);
-    void heatingHeatPumpRole3();
-    void heatingConventionalRole1(bool needToWait = true);
-    void heatingConventionalRole2();
-    void heatingConventionalRole3();
 };
 
