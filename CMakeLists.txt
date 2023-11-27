@@ -162,6 +162,7 @@ qt6_add_qml_module(appStherm
         View/Sensor/AddSensorPage.qml
         View/Sensor/AddSensorLocationPage.qml
         View/Sensor/SensorPairPage.qml
+        View/Sensor/SensorNamePage.qml
         View/SensorsPage.qml
         View/AlertsNotificationsPage.qml
         View/WiringPage.qml
