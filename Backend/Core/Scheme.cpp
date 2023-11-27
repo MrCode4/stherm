@@ -136,6 +136,31 @@ void Scheme::startWork()
                return;
            }
        }
+       case STHERM::CoolingType::Conventional:
+       case STHERM::CoolingType::HeatingOnly: {
+           if (sp - ct >= 1.9) {
+               // Sys delay
+               relay->heatingStage1();
+
+               mCurentSysMode = relay->currentState();
+               // 5 secs
+               emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+
+               timing->s1uptime.restart();
+               timing->uptime.restart();
+               timing->s2hold = false;
+               timing->s3hold = false;
+               timing->alerts = false;
+
+               heatingConventionalRole1();
+               return;
+
+           } else {
+               relay-> setAllOff();
+               startWork();
+           }
+       }
+
        default:
            break;
        }
@@ -145,6 +170,186 @@ void Scheme::startWork()
    default:
        break;
    }
+}
+
+void Scheme::heatingConventionalRole1(bool needToWait)
+{
+   if (needToWait) {
+       //! wait to change temperatre
+       QEventLoop loop;
+       loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
+               qDebug() << Q_FUNC_INFO << __LINE__ ;
+               loop.quit();
+           }, Qt::SingleShotConnection);
+       loop.exec();
+   }
+
+   double sp = 0.0; // Set point temperature
+   double ct = mCurrentTemperature;
+
+   auto timing = PhpAPI::instance()->timing();
+   auto relay  = Relay::instance();
+   auto relaysConfig = relay->relays();
+
+   if (ct - sp >= 1) {
+       // turn of system (w1, w2, w3 = 0)
+       relay->setAllOff();
+       startWork();
+
+       return;
+
+   } else {
+       if (relaysConfig.w2 == STHERM::RelayMode::ON) {
+
+           if (sp - ct >= 2.9 || (timing->s2uptime.isValid() && timing->s1uptime.elapsed() / 60000 >= 10)) {
+               relay->heatingStage2();
+               mCurentSysMode = relay->currentState();
+               // 5 secs
+               emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+
+               timing->s1uptime.invalidate();
+               heatingConventionalRole2();
+
+           } else {
+               heatingConventionalRole1();
+           }
+
+           return;
+       }
+
+       // Generate Alert
+       if (!timing->alerts && (timing->uptime.isValid() && timing->uptime.elapsed() / 60000 >= 120)) {
+           emit alert();
+           timing->alerts = true;
+       }
+
+       heatingConventionalRole1();
+   }
+}
+
+void Scheme::heatingConventionalRole2()
+{
+   //! wait to change temperatre
+   QEventLoop loop;
+   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
+           qDebug() << Q_FUNC_INFO << __LINE__ ;
+           loop.quit();
+       }, Qt::SingleShotConnection);
+   loop.exec();
+
+   double sp = 0.0; // Set point temperature
+   double ct = mCurrentTemperature;
+
+   auto timing = PhpAPI::instance()->timing();
+   auto relay  = Relay::instance();
+   auto relaysConfig = relay->relays();
+
+   if (timing->s2hold) {
+       if (ct - sp >= 1) {
+           relay->setAllOff();
+           startWork();
+           return;
+       } else if (relaysConfig.w3 == STHERM::RelayMode::ON) {
+           if ((timing->s2uptime.isValid() && timing->s2uptime.elapsed() / 60000 >= 10)) {
+               relay->heatingStage3();
+               mCurentSysMode = relay->currentState();
+               // 5 secs
+               emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+
+               timing->s2hold = false;
+               heatingConventionalRole3();
+               return;
+           }
+       }
+
+   } else {
+       if (sp - ct < 8 || relaysConfig.w3 != STHERM::RelayMode::ON) {
+           if (sp - ct < 1.9) {
+               relay-> setAllOff();
+               relay->heatingStage1();
+               mCurentSysMode = relay->currentState();
+               // 5 secs
+               emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+
+               timing->s2hold = true;
+               timing->s1uptime.invalidate();
+
+               heatingConventionalRole1(false);
+               return;
+
+           }
+       } else {
+           if (relaysConfig.w3 == STHERM::RelayMode::ON) {
+               if (sp - ct >= 5.9 || (timing->s2uptime.isValid() && timing->s2uptime.elapsed() / 60000 >= 10)) {
+                   relay->heatingStage3();
+                   mCurentSysMode = relay->currentState();
+                   // 5 secs
+                   emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+
+                   timing->s2hold = false;
+                   heatingConventionalRole3();
+
+                   return;
+               }
+           }
+       }
+   }
+
+   if (!timing->alerts && (timing->uptime.isValid() && timing->uptime.elapsed() / 60000 >= 120)) {
+       emit alert();
+       timing->alerts = true;
+   }
+
+   heatingConventionalRole2();
+}
+
+void Scheme::heatingConventionalRole3()
+{
+   //! wait to change temperatre
+   QEventLoop loop;
+   loop.connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
+           qDebug() << Q_FUNC_INFO << __LINE__ ;
+           loop.quit();
+       }, Qt::SingleShotConnection);
+   loop.exec();
+
+   double sp = 0.0; // Set point temperature
+   double ct = mCurrentTemperature;
+
+   auto timing = PhpAPI::instance()->timing();
+   auto relay  = Relay::instance();
+   auto relaysConfig = relay->relays();
+
+   if (timing->s3hold) {
+       if (ct - sp>= 1) {
+           relay->setAllOff();
+           startWork();
+           return;
+       }
+   } else if (sp - ct < 4.9) {
+       // Turn off stage 3 keep stage 3 run (w3 = 0, W1, W2, G = 1)
+       relay->setAllOff();
+       relay->heatingStage2();
+
+       mCurentSysMode = relay->currentState();
+       // 5 secs
+       emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+
+       timing->s1uptime.invalidate();
+       timing->s2uptime.invalidate();
+       timing->s3hold = false;
+
+       heatingConventionalRole2();
+       return;
+   }
+
+   // Generate Alert
+   if (!timing->alerts && (timing->uptime.isValid() && timing->uptime.elapsed() / 60000 >= 120)) {
+       emit alert();
+       timing->alerts = true;
+   }
+
+   heatingConventionalRole3();
 }
 
 void Scheme::heatingEmergencyHeatPumpRole1()
@@ -164,7 +369,7 @@ void Scheme::heatingEmergencyHeatPumpRole1()
    // untile the end of emergency mode.
    emit changeBacklight(QVariantList{255, 0, 0, STHERM::LedEffect::LED_BLINK});
 
-
+   heatingEmergencyHeatPumpRole2();
 }
 
 void Scheme::heatingEmergencyHeatPumpRole2()

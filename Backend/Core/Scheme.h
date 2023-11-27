@@ -90,7 +90,10 @@ private:
     void heatingEmergencyHeatPumpRole2();
     void heatingHeatPumpRole1();
     void heatingEmergencyHeatPumpRole3();
-    void heatingHeatPumpRole2();
+    void heatingHeatPumpRole2(bool needToWait = true);
     void heatingHeatPumpRole3();
+    void heatingConventionalRole1(bool needToWait = true);
+    void heatingConventionalRole2();
+    void heatingConventionalRole3();
 };
 
