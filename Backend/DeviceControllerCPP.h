@@ -6,6 +6,7 @@
 
 #include "DeviceAPI.h"
 #include "deviceIOController.h"
+#include "Core/Scheme.h"
 
 /*! ***********************************************************************************************
  * This class manages send requests from app to device and and process the received response.
