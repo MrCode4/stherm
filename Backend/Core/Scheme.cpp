@@ -31,12 +31,21 @@ Scheme::Scheme(QObject *parent) :
     mRelay  = Relay::instance();
 }
 
+Scheme::~Scheme()
+{
+    stopWork = true;
+
+    // Stop worker.
+    terminate();
+    wait();
+
+}
+
 void Scheme::run()
 {
     while (!stopWork) {
         startWork();
     }
-
 }
 
 

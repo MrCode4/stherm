@@ -17,7 +17,9 @@ class Scheme : public QThread
     Q_OBJECT
 
 public:
-    Scheme(QObject *parent = nullptr);
+    explicit Scheme(QObject *parent = nullptr);
+
+    ~Scheme();
 
     void updateRealState(const struct STHERM::Vacation &vacation,
                          const double &setTemperature,
