@@ -22,6 +22,11 @@ const double CHANGE_STAGE_TIME       = 40;
 const double CHANGE_STAGE_TIME_WO_OB = 10;
 const double S2OFF_TIME              = 2;
 
+// Status backlight color
+const QVariantList coolingColor      = QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE, "true"};
+const QVariantList heatingColor      = QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE,  "true"};
+const QVariantList emergencyColor    = QVariantList{255, 0, 0, STHERM::LedEffect::LED_BLINK,  "true"};
+
 Scheme::Scheme(QObject *parent) :
     QThread (parent)
 {
@@ -64,7 +69,7 @@ void Scheme::startWork()
                mRelay->coolingStage1();
 
                // 5 Sec
-               emit changeBacklight(QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE});
+               emit changeBacklight(coolingColor);
                mTiming->s1uptime.restart();
                mTiming->s1uptime.restart();
                mTiming->s2hold = false;
@@ -85,7 +90,7 @@ void Scheme::startWork()
                mRelay->coolingStage1();
 
                // 5 Sec
-               emit changeBacklight(QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE});
+               emit changeBacklight(coolingColor);
                mTiming->s1uptime.restart();
                mTiming->s1uptime.restart();
                mTiming->s2hold = false;
@@ -142,7 +147,7 @@ void Scheme::startWork()
 
                mCurentSysMode = mRelay->currentState();
                // 5 secs
-               emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+               emit changeBacklight(heatingColor);
 
                mTiming->s1uptime.restart();
                mTiming->uptime.restart();
@@ -195,7 +200,7 @@ void Scheme::heatingConventionalRole1(bool needToWait)
                mRelay->heatingStage2();
                mCurentSysMode = mRelay->currentState();
                // 5 secs
-               emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+               emit changeBacklight(heatingColor);
 
                mTiming->s1uptime.invalidate();
                heatingConventionalRole2();
@@ -236,7 +241,7 @@ void Scheme::heatingConventionalRole2()
                mRelay->heatingStage3();
                mCurentSysMode = mRelay->currentState();
                // 5 secs
-               emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+               emit changeBacklight(heatingColor);
 
                mTiming->s2hold = false;
                heatingConventionalRole3();
@@ -251,7 +256,7 @@ void Scheme::heatingConventionalRole2()
                mRelay->heatingStage1();
                mCurentSysMode = mRelay->currentState();
                // 5 secs
-               emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+               emit changeBacklight(heatingColor);
 
                mTiming->s2hold = true;
                mTiming->s1uptime.invalidate();
@@ -266,7 +271,7 @@ void Scheme::heatingConventionalRole2()
                    mRelay->heatingStage3();
                    mCurentSysMode = mRelay->currentState();
                    // 5 secs
-                   emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+                   emit changeBacklight(heatingColor);
 
                    mTiming->s2hold = false;
                    heatingConventionalRole3();
@@ -307,7 +312,7 @@ void Scheme::heatingConventionalRole3()
 
        mCurentSysMode = mRelay->currentState();
        // 5 secs
-       emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+       emit changeBacklight(heatingColor);
 
        mTiming->s1uptime.invalidate();
        mTiming->s2uptime.invalidate();
@@ -334,7 +339,7 @@ void Scheme::heatingEmergencyHeatPumpRole1()
    mCurentSysMode = mRelay->currentState();
 
    // untile the end of emergency mode.
-   emit changeBacklight(QVariantList{255, 0, 0, STHERM::LedEffect::LED_BLINK});
+   emit changeBacklight(emergencyColor);
 
    heatingEmergencyHeatPumpRole2();
 }
@@ -401,7 +406,7 @@ void Scheme::heatingHeatPumpRole1()
        mCurentSysMode = mRelay->currentState();
 
        // 5 secs
-       emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+       emit changeBacklight(heatingColor);
 
        mTiming->s1uptime.restart();
        mTiming->uptime.restart();
@@ -439,7 +444,7 @@ void Scheme::heatingHeatPumpRole2(bool needToWait)
                    mCurentSysMode = mRelay->currentState();
 
                    // 5 secs
-                   emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+                   emit changeBacklight(heatingColor);
 
                    return;
                } else {
@@ -493,7 +498,7 @@ void Scheme::heatingHeatPumpRole3()
            mCurentSysMode = mRelay->currentState();
 
            // 5 secs
-           emit changeBacklight(QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE});
+           emit changeBacklight(heatingColor);
 
            mTiming->s1uptime.restart();
            mTiming->s2Offtime.restart();
@@ -537,7 +542,7 @@ void Scheme::coolingHeatPumpRole1(bool needToWait)
                    // turn on stage 2
                    mRelay->coolingStage2();
                    // 5 Sec
-                   emit changeBacklight(QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE});
+                   emit changeBacklight(coolingColor);
 
                    coolingHeatPumpRole2();
 
@@ -591,7 +596,7 @@ void Scheme::coolingHeatPumpRole2()
            mRelay->coolingStage1();
 
            // 5 secs
-           emit changeBacklight(QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE});
+           emit changeBacklight(coolingColor);
            mTiming->s1uptime.invalidate();// = 0;
            mTiming->s2hold = true;
            // Start to count s2 off time

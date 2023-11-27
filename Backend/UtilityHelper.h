@@ -331,6 +331,15 @@ enum SystemMode
     Emergency
 };
 
+enum CoolingType
+{
+    Conventional,
+    CoolingOnly,
+    HeatPump,
+    HeatingOnly,
+    GasFuel
+};
+
 /**
  * @brief Enumeration for LED behavior.
  */

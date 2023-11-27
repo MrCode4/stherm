@@ -73,6 +73,10 @@ Q_SIGNALS:
                STHERM::AlertTypes alertType,
                QString alertMessage = QString());
 
+private:
+    // update main data and send data to scheme.
+    void setMainData(QVariantMap mainData);
+
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
@@ -88,4 +92,6 @@ private:
 
     DeviceIOController *_deviceIO;
     DeviceAPI *_deviceAPI;
+
+    Scheme *m_scheme;
 };
