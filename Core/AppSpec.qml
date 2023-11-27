@@ -65,7 +65,6 @@ AppSpecCPP {
     //! SensorLocation enum values
     readonly property var sensorLocationNames: {
         var names = {};
-        console.log('updating sensor location names');
         names[`${AppSpec.SensorLocation.Unknown}`]      = "Unknown";
         names[`${AppSpec.SensorLocation.Other}`]        = "Other";
         names[`${AppSpec.SensorLocation.Bedroom}`]      = "Bedroom";

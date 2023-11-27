@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Ronia
 import Stherm
 
-import "."
 /*! ***********************************************************************************************
  * SensorsPage
  * ***********************************************************************************************/
@@ -13,7 +12,37 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
+    verticalPadding: 12
     title: "Sensors"
+    footer: RowLayout {
+        //! Add sensor button
+        ToolButton {
+            Layout.alignment: Qt.AlignRight
+            horizontalPadding: 20
+            contentItem: Row {
+                spacing: parent.spacing
+
+                RoniaTextIcon {
+                    y: (parent.height - height) / 2
+                    text: FAIcons.grid2Plus
+                }
+
+                Label {
+                    y: (parent.height - height) / 2
+                    text: "Add Sensor"
+                }
+            }
+
+            onClicked: {
+                //! Open AddSensorPage
+                if (_root.StackView.view) {
+                    _root.StackView.view.push("qrc:/Stherm/View/Sensor/AddSensorPage.qml", {
+                                                  "uiSession": _root.uiSession
+                                              });
+                }
+            }
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -21,10 +50,10 @@ BasePageView {
         anchors {
             horizontalCenter: parent.horizontalCenter
             top: parent.top
-            topMargin: 48
         }
         width: parent.width * 0.65
-        height: Math.min(implicitHeight, _root.availableHeight)
+        height: Math.min(implicitHeight, parent.height)
+        spacing: 16
 
         Button {
             Layout.alignment: Qt.AlignCenter
@@ -35,7 +64,7 @@ BasePageView {
 
         Label {
             Layout.alignment: Qt.AlignCenter
-            Layout.topMargin: 32
+            Layout.topMargin: 16
             opacity: 0.8
             text: "Wireless Sensors"
         }
@@ -45,7 +74,9 @@ BasePageView {
             id: _sensorsLv
 
             ScrollIndicator.vertical: ScrollIndicator { }
+            Layout.fillWidth: true
             Layout.fillHeight: true
+            clip: true
             implicitHeight: contentHeight
             model: appModel?.sensors ?? []
             spacing: 12
