@@ -25,11 +25,11 @@ ItemDelegate {
     /* Object properties
      * ****************************************************************************************/
 
-
     /* Children
      * ****************************************************************************************/
     RowLayout {
         id: _delegateContent
+        parent: _root.contentItem
         anchors.fill: parent
         spacing: 4
 

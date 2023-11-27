@@ -48,7 +48,7 @@ BasePageView {
             required property int index
 
             width: ListView.view.width
-            height: Material.delegateHeight
+            height: Style.delegateHeight
             schedule: (modelData instanceof Schedule) ? modelData : null
             delegateIndex: index
 
