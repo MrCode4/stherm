@@ -34,6 +34,13 @@ public:
     Q_ENUM(State);
 
 public:
+    /*!
+     * \brief instance Use this method to get the single instance that is created from Qml instead
+     * of createing an instance of the class.
+     * \return A pointer \ref ScreenSaverManter instance or null if not has been created yet.
+     */
+    static ScreenSaverManager* instance();
+
     explicit ScreenSaverManager(QObject *parent = nullptr);
 
     /* Public methods
@@ -46,6 +53,7 @@ public:
 
     Q_INVOKABLE void    setInactive();
     Q_INVOKABLE void    setActive();
+    Q_INVOKABLE void    restart();
 
     /* Protected/private methods
      * ****************************************************************************************/
@@ -59,9 +67,14 @@ signals:
 
 private:
     /*!
+     * \brief sInstance Holds single instance created by QML Engine
+     */
+    static ScreenSaverManager* sInstance;
+
+    /*!
      * \brief mApplication Reference to the \a\b QCoreApplication instance of this application
      */
-    QCoreApplication*    mApplication;
+    QCoreApplication*   mApplication;
 
     /*!
      * \brief mVisible Whether screen saver should be visible or not
