@@ -84,6 +84,7 @@ Page {
                     implicitWidth: 0 // ! So all items have same width
                     location: modelData
                     delegateIndex: index
+                    checked: sensor?.location === modelData.location
                 }
             }
         }

@@ -68,17 +68,17 @@ AppSpecCPP {
         names[`${AppSpec.SensorLocation.Unknown}`]      = "Unknown";
         names[`${AppSpec.SensorLocation.Other}`]        = "Other";
         names[`${AppSpec.SensorLocation.Bedroom}`]      = "Bedroom";
-        names[`${AppSpec.SensorLocation.LivingRoom}`]   = "LivingRoom";
-        names[`${AppSpec.SensorLocation.KidsRoom}`]     = "KidsRoom";
+        names[`${AppSpec.SensorLocation.LivingRoom}`]   = "Living Room";
+        names[`${AppSpec.SensorLocation.KidsRoom}`]     = "Kids Room";
         names[`${AppSpec.SensorLocation.Bathroom}`]     = "Bathroom";
         names[`${AppSpec.SensorLocation.Kitchen}`]      = "Kitchen";
         names[`${AppSpec.SensorLocation.Basement}`]     = "Basement";
-        names[`${AppSpec.SensorLocation.MainFloor}`]    = "MainFloor";
+        names[`${AppSpec.SensorLocation.MainFloor}`]    = "Main Floor";
         names[`${AppSpec.SensorLocation.Office}`]       = "Office";
         names[`${AppSpec.SensorLocation.Upstairs}`]     = "Upstairs";
         names[`${AppSpec.SensorLocation.Downstairs}`]   = "Downstairs";
-        names[`${AppSpec.SensorLocation.DinningRoom}`]  = "DinningRoom";
-        names[`${AppSpec.SensorLocation.GuestHouse}`]   = "GuestHouse";
+        names[`${AppSpec.SensorLocation.DinningRoom}`]  = "Dinning Room";
+        names[`${AppSpec.SensorLocation.GuestHouse}`]   = "Guesthouse";
 
         return names
     }
