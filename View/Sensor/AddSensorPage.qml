@@ -23,26 +23,89 @@ BasePageView {
         id: _pageStack
         anchors.fill: parent
 
-        initialItem: _sensorMessageItem
+        initialItem: _sensorPairPage
     }
 
-    Item {
-        id: _sensorMessageItem
+    SensorPairPage {
+        id: _sensorPairPage
         visible: false
 
-        Label {
-            anchors.centerIn: parent
-            width: parent.width * 0.85
-            padding: 32
-            text: "Please remove battery tab from the sensor or push reset button for 2 "
-                  + "seconds to start pairing."
-            wrapMode: "WordWrap"
+        //! For test: to add an arbitrary Sensor after two seconds
+        Timer {
+            interval: 2000
+            running: true
+            onTriggered: {
+                _sensorPairPage.sensorPaired(Qt.createQmlObject(
+                                                 `
+                                                 import Stherm
 
-            background: Rectangle {
-                color: "transparent"
-                radius: 32
-                border.width: 2
-                border.color: _root.Material.foreground
+                                                 Sensor { }
+                                                 `, AppCore.defaultRepo));
+            }
+        }
+
+        onSensorPaired: function(sensor) {
+            if (sensor instanceof Sensor) {
+                //! Push selecting sensor name and location pages
+                _pageStack.push(sensorNamePageCompo, {
+                                    "sensor": sensor
+                                });
+            }
+        }
+    }
+
+    Component {
+        id: sensorNamePageCompo
+
+        SensorNamePage {
+            id: namePage
+
+            ToolButton {
+                enabled: namePage.sensorName.length > 0
+                parent: _root.header.contentItem
+                contentItem: RoniaTextIcon {
+                    text: FAIcons.arrowRight
+                }
+
+                onClicked: {
+                    visible = false;
+                    //! Set sensor name and go to selecting sensor loacation
+                    namePage.sensor.name = namePage.sensorName;
+
+                    _pageStack.push(sensorLocationPageCompo, {
+                                        "sensor": sensor
+                                    });
+                }
+            }
+        }
+    }
+
+    Component {
+        id: sensorLocationPageCompo
+
+        SensorLocationPage {
+            id: locationPage
+
+            ToolButton {
+                enabled: locationPage.location !== AppSpec.SensorLocation.Unknown
+                visible: locationPage.visible
+                parent: _root.header.contentItem
+                contentItem: RoniaTextIcon {
+                    text: FAIcons.check
+                }
+
+                onClicked: {
+                    //! Save sensor location
+                    locationPage.sensor.location = locationPage.location;
+                    //! Set sensor repo and parent
+                    locationPage.sensor._qsRepo = AppCore.defaultRepo;
+                    uiSession.sensorController.addSensor(locationPage.sensor);
+
+                    //! Pop AddSensorPage from its StackView
+                    if (_root.StackView.view) {
+                        _root.StackView.view.pop();
+                    }
+                }
             }
         }
     }

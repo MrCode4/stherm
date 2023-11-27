@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 import Ronia
 import Stherm
-import "../Delegates"
+
 /*! ***********************************************************************************************
  * AddSensorLocationPage to select new sensor local
  * ***********************************************************************************************/
@@ -14,6 +14,9 @@ Page {
      * ****************************************************************************************/
     //! Sensor
     required property Sensor sensor
+
+    //! Selected location for sensor
+    readonly property int    location: locationsBtnGroup.checkedButton?.modelData.location ?? AppSpec.SensorLocation.Unknown
 
     /* Object properties
      * ****************************************************************************************/
@@ -30,20 +33,20 @@ Page {
 
         property bool   showOthers: false
         property var    locations: [
-            { "title": "Bedroom",           "icon": "qrc:/Stherm/Images/Locations/bedroom.svg" },
-            { "title": "Living room",       "icon": "qrc:/Stherm/Images/Locations/living_room.svg" },
-            { "title": "Kids room",         "icon": "qrc:/Stherm/Images/Locations/kids_room.svg" },
-            { "title": "Bathroom",          "icon": "qrc:/Stherm/Images/Locations/bathroom.svg" },
-            { "title": "Kitchen",           "icon": "qrc:/Stherm/Images/Locations/kitchen.svg" },
-            { "title": "Basement",          "icon": "qrc:/Stherm/Images/Locations/basement.svg" },
-            { "title": "Main floor",        "icon": "qrc:/Stherm/Images/Locations/main_floor.svg" },
-            { "title": "Office",            "icon": "qrc:/Stherm/Images/Locations/office.svg" },
-            { "title": "Upstairs",          "icon": "qrc:/Stherm/Images/Locations/upstairs.svg" },
-            { "title": "Downstairs",        "icon": "qrc:/Stherm/Images/Locations/downstairs.svg" },
+            { "title": "Bedroom",       "location": AppSpec.SensorLocation.Bedroom,     "icon": "qrc:/Stherm/Images/Locations/bedroom.svg"      },
+            { "title": "Living room",   "location": AppSpec.SensorLocation.LivingRoom,  "icon": "qrc:/Stherm/Images/Locations/living_room.svg"  },
+            { "title": "Kids room",     "location": AppSpec.SensorLocation.KidsRoom,    "icon": "qrc:/Stherm/Images/Locations/kids_room.svg"    },
+            { "title": "Bathroom",      "location": AppSpec.SensorLocation.Bathroom,    "icon": "qrc:/Stherm/Images/Locations/bathroom.svg"     },
+            { "title": "Kitchen",       "location": AppSpec.SensorLocation.Kitchen,     "icon": "qrc:/Stherm/Images/Locations/kitchen.svg"      },
+            { "title": "Basement",      "location": AppSpec.SensorLocation.Basement,    "icon": "qrc:/Stherm/Images/Locations/basement.svg"     },
+            { "title": "Main floor",    "location": AppSpec.SensorLocation.MainFloor,   "icon": "qrc:/Stherm/Images/Locations/main_floor.svg"   },
+            { "title": "Office",        "location": AppSpec.SensorLocation.Office,      "icon": "qrc:/Stherm/Images/Locations/office.svg"       },
+            { "title": "Upstairs",      "location": AppSpec.SensorLocation.Upstairs,    "icon": "qrc:/Stherm/Images/Locations/upstairs.svg"     },
+            { "title": "Downstairs",    "location": AppSpec.SensorLocation.Downstairs,  "icon": "qrc:/Stherm/Images/Locations/downstairs.svg"   },
             //! From here items should be shown as others
-            { "title": "Dinning room",      "icon": "qrc:/Stherm/Images/Locations/dining_room.svg" },
-            { "title": "Guesthouse",        "icon": "qrc:/Stherm/Images/Locations/guesthouse.svg" },
-            { "title": "Other",             "icon": "qrc:/Stherm/Images/Locations/other.svg" },
+            { "title": "Dinning room",  "location": AppSpec.SensorLocation.DinningRoom, "icon": "qrc:/Stherm/Images/Locations/dining_room.svg"  },
+            { "title": "Guesthouse",    "location": AppSpec.SensorLocation.Guesthouse,  "icon": "qrc:/Stherm/Images/Locations/guesthouse.svg"   },
+            { "title": "Other",         "location": AppSpec.SensorLocation.Other,       "icon": "qrc:/Stherm/Images/Locations/other.svg"        },
         ]
 
         ScrollIndicator.vertical: ScrollIndicator {
@@ -59,6 +62,7 @@ Page {
         boundsBehavior: Flickable.StopAtBounds
 
         ButtonGroup {
+            id: locationsBtnGroup
             buttons: locationsGrid.children
         }
 
@@ -72,6 +76,9 @@ Page {
             Repeater {
                 model: locationsFlick.locations
                 delegate: SensorLocationDelegate {
+                    required property var modelData
+                    required property int index
+
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     implicitWidth: 0 // ! So all items have same width

@@ -12,7 +12,10 @@ Control {
     /* Property declaration
      * ****************************************************************************************/
     //! Instance to the Sensor
-    required property Sensor sensor
+    required property   Sensor sensor
+
+    //! Selected name
+    property alias      sensorName:     sensorNameTf.text
 
     /* object properties
      * ****************************************************************************************/
