@@ -56,8 +56,11 @@ public:
     double currentHumidity() const;
     void setCurrentHumidity(double newCurrentHumidity);
 
+    void setFanWorkPerHour(int newFanWPH);
+
 signals:
     void changeBacklight(QVariantList colorData, int secs = 5);
+    void updateRelays(STHERM::RelayConfigs);
 
     void alert();
 
@@ -123,6 +126,9 @@ private:
     //! Temperature parameters
     double mCurrentTemperature;
     double mSetPointTemperature;
+
+    // Fan work per hour (minutes per hour) Range: 0 - 60
+    int mFanWPH;
 
     bool stopWork;
 };

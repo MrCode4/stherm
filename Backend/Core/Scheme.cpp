@@ -85,10 +85,12 @@ void Scheme::startWork()
                mTiming->s2hold = false;
                mTiming->alerts = false;
 
+               coolingHeatPumpRole1();
+
            } else {
                // turn off Y1, Y2 and G = 0
                mRelay->setAllOff();
-               startWork();
+//               startWork();
            }
        }
 
@@ -109,7 +111,6 @@ void Scheme::startWork()
            } else {
                // turn off Y1, Y2 and G = 0
                mRelay->setAllOff();
-               startWork();
            }
 
 
@@ -127,9 +128,6 @@ void Scheme::startWork()
        } else if (mCurrentTemperature < mSetPointTemperature) {
            mRealSysMode = STHERM::SystemMode::Heating;
        }
-
-       // start work with new mode;
-       startWork();
    } break;
 
 
@@ -142,11 +140,10 @@ void Scheme::startWork()
                } else {
                    heatingHeatPumpRole1();
                }
+
            } else {
                // Turn off system (Y1, Y2, W1, W2,W3, G = 0)
                mRelay->setAllOff();
-               startWork();
-               return;
            }
        }
        case STHERM::CoolingType::Conventional:
@@ -166,11 +163,9 @@ void Scheme::startWork()
                mTiming->alerts = false;
 
                heatingConventionalRole1();
-               return;
 
            } else {
                mRelay-> setAllOff();
-               startWork();
            }
        }
 
@@ -182,11 +177,23 @@ void Scheme::startWork()
 
    case STHERM::SystemMode::Vacation: {
        updateVacationState();
+       return;
    } break;
 
    default:
        break;
    }
+
+   int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
+   mRelay->fanWorkTime(mFanWPH, fanWork);
+
+   // Update relays
+   emit updateRelays(mRelay->relays());
+
+   // Wait for 1 second
+   wait(1000);
+
+//   startWork();
 }
 
 void Scheme::heatingConventionalRole1(bool needToWait)
@@ -195,7 +202,7 @@ void Scheme::heatingConventionalRole1(bool needToWait)
        auto loopResult = waitLoop();
 
        if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-           startWork();
+//           startWork();
            return;
        }
    }
@@ -203,7 +210,7 @@ void Scheme::heatingConventionalRole1(bool needToWait)
    if (mCurrentTemperature - mSetPointTemperature >= 1) {
        // turn of system (w1, w2, w3 = 0)
        mRelay->setAllOff();
-       startWork();
+//       startWork();
 
        return;
 
@@ -241,14 +248,14 @@ void Scheme::heatingConventionalRole2()
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-       startWork();
+//       startWork();
        return;
    }
 
    if (mTiming->s2hold) {
        if (mCurrentTemperature - mSetPointTemperature >= 1) {
            mRelay->setAllOff();
-           startWork();
+//           startWork();
            return;
        } else if (mRelay->relays().w3 == STHERM::RelayMode::ON) {
            if ((mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() / 60000 >= 10)) {
@@ -309,14 +316,14 @@ void Scheme::heatingConventionalRole3()
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-       startWork();
+//       startWork();
        return;
    }
 
    if (mTiming->s3hold) {
        if (mCurrentTemperature - mSetPointTemperature>= 1) {
            mRelay->setAllOff();
-           startWork();
+//           startWork();
            return;
        }
    } else if (mSetPointTemperature - mCurrentTemperature < 4.9) {
@@ -408,7 +415,7 @@ void Scheme::heatingHeatPumpRole1()
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-       startWork();
+//       startWork();
        return;
    }
 
@@ -430,7 +437,7 @@ void Scheme::heatingHeatPumpRole1()
        heatingHeatPumpRole2();
    } else {
        mRelay->setAllOff();
-       startWork();
+//       startWork();
        return;
    }
 }
@@ -441,14 +448,14 @@ void Scheme::heatingHeatPumpRole2(bool needToWait)
        auto loopResult = waitLoop();
 
        if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-           startWork();
+//           startWork();
            return;
        }
    }
 
    if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
        mRelay->setAllOff();
-       startWork();
+//       startWork();
        return;
    } else {
        if (mRelay->relays().y2 == STHERM::RelayMode::ON) {
@@ -485,14 +492,14 @@ void Scheme::heatingHeatPumpRole3()
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-       startWork();
+//       startWork();
        return;
    }
 
    if (mTiming->s2hold) {
        if (mCurrentTemperature - mSetPointTemperature >= 1) {
            mRelay->setAllOff();
-           startWork();
+//           startWork();
            return;
        } else if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
            emit alert();
@@ -539,7 +546,7 @@ void Scheme::coolingHeatPumpRole1(bool needToWait)
        auto loopResult = waitLoop();
 
        if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-           startWork();
+//           startWork();
            return;
        }
    }
@@ -547,7 +554,7 @@ void Scheme::coolingHeatPumpRole1(bool needToWait)
    if (mSetPointTemperature - mCurrentTemperature >= 1) {
        // turn off Y1, Y2 and G = 0
        mRelay->setAllOff();
-       startWork();
+//       startWork();
 
    } else {
        if (mRelay->relays().y2 == STHERM::RelayMode::ON) {
@@ -589,14 +596,14 @@ void Scheme::coolingHeatPumpRole2()
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-       startWork();
+//       startWork();
        return;
    }
 
    if (mTiming->s2hold) {
        if (mSetPointTemperature - mCurrentTemperature >= 1) {
            mRelay->setAllOff();
-           startWork();
+//           startWork();
        } else {
            if (!mTiming->alerts && mTiming->uptime.elapsed() / 60000 >= 120) {
                emit alert();
@@ -788,6 +795,17 @@ void Scheme::updateHumifiresState()
                mRelay->setDehumidifierState(false);
         }
     }
+}
+
+void Scheme::setFanWorkPerHour(int newFanWPH)
+{
+    if (mFanWPH == newFanWPH)
+        return;
+
+    mFanWPH = newFanWPH;
+
+    int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
+    mRelay->fanWorkTime(mFanWPH, fanWork);
 }
 
 STHERM::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
