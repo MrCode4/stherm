@@ -30,6 +30,38 @@ DataParser::DataParser(QObject *parent) :
 {
 }
 
+QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType, STHERM::RelayConfigs relayConfig)
+{
+    // Prepare packet to write
+    STHERM::SIOPacket txPacket = prepareSIOPacket(cmd, packetType);
+    txPacket.DataLen = RELAY_OUT_CNT;
+
+    int i = 0;
+    txPacket.DataArray[i++] = (relayConfig.g == STHERM::ON ? 1 : 0);
+    txPacket.DataArray[i++] = (relayConfig.y1 == STHERM::ON ? 1 : 0);
+    txPacket.DataArray[i++] = (relayConfig.y2 == STHERM::ON ? 1 : 0);
+    txPacket.DataArray[i++] = (relayConfig.y3 == STHERM::ON ? 1 : 0);
+    txPacket.DataArray[i++] = (relayConfig.acc2 == STHERM::ON ? 1 : 0);
+    txPacket.DataArray[i++] = (relayConfig.w1 == STHERM::ON ? 1 : 0);
+    txPacket.DataArray[i++] = (relayConfig.w2 == STHERM::ON ? 1 : 0);
+    txPacket.DataArray[i++] = (relayConfig.w3 == STHERM::ON ? 1 : 0);
+    txPacket.DataArray[i++] = (relayConfig.o_b == STHERM::ON ? 1 : 0);
+    txPacket.DataArray[i] = (relayConfig.acc1n == STHERM::ON ? 1 : 0);
+
+    // An integer variable dev_buff_size is declared.
+    int dev_buff_size;
+    uint8_t dev_info[32];
+
+    // call Set_SIO_TxPacket with the output and input structures
+    // return the size of the dev_info output packet
+    dev_buff_size = UtilityHelper::setSIOTxPacket(dev_info, txPacket);
+
+    QByteArray result = QByteArray::fromRawData(reinterpret_cast<char *>(dev_info),
+                                                dev_buff_size);
+
+    return result;
+}
+
 QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType, QVariantList data)
 {
     // Prepare packet to write

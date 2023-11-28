@@ -19,6 +19,9 @@ public:
     DataParser(QObject *parent = nullptr);
 
     //! Prepare packet
+    QByteArray preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType,
+                             STHERM::RelayConfigs relayConfig);
+
     static QByteArray preparePacket(STHERM::SIOCommand cmd,
                              STHERM::PacketType packetType = STHERM::PacketType::UARTPacket,
                              QVariantList data = QVariantList());
