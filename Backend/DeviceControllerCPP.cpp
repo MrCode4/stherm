@@ -49,6 +49,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         timer.start(secs * 1000);
     });
 
+    connect(m_scheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
+        _deviceIO->updateRelays(relays);
+    });
+
     connect(_deviceIO,
             &DeviceIOController::alert,
             this,

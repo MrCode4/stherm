@@ -44,7 +44,8 @@ public:
     //    rgb_vals RGBm, RGBm_last;
 
     //! wirings and relays
-    QList<uint8_t> relays_in;   // Fill from get_dynamic1
+    QList<uint8_t> relays_in;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
+    STHERM::RelayConfigs mRelaysIn;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
     QList<uint8_t> relays_in_l; // Fill in set relay command
     QList<uint8_t> WiringState;
 
@@ -637,6 +638,31 @@ void DeviceIOController::updateTiDevices()
     qDebug() << Q_FUNC_INFO << __LINE__ << "Device count:   " << m_p->DeviceID.count();
 }
 
+void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)
+{
+    //! In daemon: main.cpp: Line 1495 to 1518
+
+    // check
+    if (m_p->mRelaysIn == relays)
+        return;
+
+    m_p->mRelaysIn = relays;
+
+    QByteArray packet;
+
+    if (!checkRelayVaidation()) {
+        // Prepare Check_Wiring packet
+        packet = DataParser::preparePacket(STHERM::Check_Wiring);
+
+    } else {
+        // Prepare Set relay packet
+        packet = DataParser::preparePacket(STHERM::SetRelay, STHERM::UARTPacket, relays);
+    }
+
+    m_tiConnection->sendRequest(packet);
+
+}
+
 bool DeviceIOController::setBacklight(QVariantList data)
 {
     TRACE_CHECK(false) << "sending setBacklight request with data:" << data
@@ -1000,18 +1026,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                     LOG_DEBUG("~" + QString::number(rxPacket.DataLen));
                     //                    wait_resp = true; prevent dynamic thread before response
                     // Pepare Wiring_check command when all wires not broke
-                    tx_packet.PacketSrc = UART_Packet;
-                    tx_packet.CMD = STHERM::Check_Wiring;
-                    tx_packet.ACK = STHERM::ERROR_NO;
-                    tx_packet.SID = 0x01;
-                    tx_packet.DataLen = 0;
-
-                    // Prepare packet to send request.
-                    uint8_t tx_buff[256];
-                    uint16_t size = UtilityHelper::setSIOTxPacket(tx_buff, tx_packet);
-
-                    QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tx_buff),
-                                                                size);
+                    QByteArray packet = DataParser::preparePacket(STHERM::Check_Wiring);
 
                     LOG_DEBUG(
                         "***** Ti  - ERROR_WIRING_NOT_CONNECTED: Send Check_Wiring command *****");
@@ -1057,28 +1072,11 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                     m_p->WiringState.append(rxPacket.DataArray[var]);
                 }
 
-                if (m_p->WiringState.contains(WIRING_BROKEN)) {
+                if (!checkRelayVaidation()) { // Broken a wire
                     emit alert(STHERM::LVL_Emergency, STHERM::Alert_wiring_not_connected);
                     LOG_DEBUG("Check_Wiring : Wiring is disrupted");
                 } else {
-                    // Pepare SetRelay command when all wires not broke
-                    tx_packet.PacketSrc = UART_Packet;
-                    tx_packet.CMD = STHERM::SetRelay;
-                    tx_packet.ACK = STHERM::ERROR_NO;
-                    tx_packet.SID = 0x01;
-                    tx_packet.DataLen = qMin(RELAY_OUT_CNT, m_p->relays_in.count());
-
-                    // Add relays_in elements into DataArray of packet
-                    for (int i = 0; i < RELAY_OUT_CNT && i < m_p->relays_in.count(); i++) {
-                        tx_packet.DataArray[i] = m_p->relays_in[i];
-                    }
-
-                    // Prepaare packet to send request.
-                    uint8_t tx_buff[256];
-                    uint16_t size = UtilityHelper::setSIOTxPacket(tx_buff, tx_packet);
-
-                    QByteArray packet = QByteArray::fromRawData(reinterpret_cast<char *>(tx_buff),
-                                                                size);
+                    QByteArray packet = DataParser::preparePacket(STHERM::SetRelay, STHERM::UARTPacket, m_p->mRelaysIn);
 
                     LOG_DEBUG("***** Ti  - Check_Wiring: Send SetRelay command *****");
                     m_tiConnection->sendRequest(packet);
@@ -1328,4 +1326,21 @@ void DeviceIOController::getDeviceID()
 {
     //    TODO get and if not successful out warning
     m_p->DeviceID = QString();
+}
+
+bool DeviceIOController::checkRelayVaidation()
+{
+    int i = 0;
+    bool isNotValid = (m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.g     == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.y1    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.y2    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.y3    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.acc2  == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.w1    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.w2    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.w3    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.o_b   == STHERM::ON ||
+                       m_p->WiringState.at(i)   == STHERM::Broken && m_p->mRelaysIn.acc1n == STHERM::ON);
+
+    return !isNotValid;
 }
