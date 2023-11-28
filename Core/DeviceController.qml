@@ -191,6 +191,7 @@ I_DeviceController {
 
     function updateHold(isHold)
     {
+        // should be updated to inform the logics
         var result = sendReceive('system', 'setHold', [isHold]);
 
         device.isHold = isHold;
