@@ -136,4 +136,10 @@ I_DeviceController {
         //            device.co2 = Math.random() * 5 + 60
         //            device.tof = Math.random() * 5 + 60
     }
+
+    function updateHold(isHold)
+    {
+        //! Apply isHold to Device
+        device.isHold = isHold;
+    }
 }

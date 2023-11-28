@@ -13,7 +13,10 @@ Popup {
     /* Property declaration
      * ****************************************************************************************/
     //! UiSession
-    property UiSession  uiSession
+    property UiSession          uiSession
+
+    //! Device controller
+    property I_DeviceController deviceController:   uiSession?.deviceController ?? null
 
     //! App model
     property I_Device   device: uiSession.appModel
@@ -45,11 +48,12 @@ Popup {
             autoExclusive: true
             checkable: true
             text: "Off"
-            checked: device?.isHold
+            checked: device?.isHold ?? false
 
-            onToggled: {
-                if (device && device.isHold !== checked) {
-                    device.isHold = checked;
+            //! Using onCheckedChanged instead on onToggled to cover onBtn being checked too and avoid redundancy
+            onCheckedChanged: {
+                if (device && deviceController && device.isHold !== checked) {
+                    deviceController.updateHold(checked)
                 }
             }
         }
@@ -61,12 +65,6 @@ Popup {
             checkable: true
             text: "On"
             checked: device?.isHold === false
-
-            onToggled: {
-                if (device && device.isHold === checked) {
-                    device.isHold = !checked;
-                }
-            }
         }
     }
 }

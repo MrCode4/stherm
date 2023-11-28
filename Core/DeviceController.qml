@@ -188,4 +188,11 @@ I_DeviceController {
 
         //        console.log("--------------- End: updateInformation -------------------")
     }
+
+    function updateHold(isHold)
+    {
+        var result = sendReceive('system', 'setHold', [isHold]);
+
+        device.isHold = isHold;
+    }
 }

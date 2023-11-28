@@ -61,4 +61,6 @@ QtObject {
     function setDesiredTemperature(temperature: real) {}
 
     function updateInformation() {}
+
+    function updateHold(isHold) {}
 }
