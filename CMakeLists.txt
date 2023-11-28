@@ -144,6 +144,7 @@ qt6_add_qml_module(appStherm
         View/Schedule/ScheduleRepeatPage.qml
         View/Schedule/SchedulePreviewPage.qml
         View/Schedule/ScheduleNamePage.qml
+        View/Schedule/ScheduleDataSourcePage.qml
         View/SystemSetupPage.qml
         View/SystemSetup/SystemTypePage.qml
         View/SystemSetup/SystemTypeTraditionPage.qml

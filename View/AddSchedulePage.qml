@@ -41,13 +41,13 @@ BasePageView {
         RoniaTextIcon {
             anchors.centerIn: parent
             opacity: _newSchedulePages.currentItem?.nextPage ? 1. : 0.
-            text: "\uf061"
+            text: FAIcons.arrowRight
         }
 
         RoniaTextIcon {
             opacity: _newSchedulePages.currentItem?.nextPage ? 0. : 1.
             anchors.centerIn: parent
-            text: "\uf00c"
+            text: FAIcons.check
         }
 
         onClicked: {
@@ -162,12 +162,25 @@ BasePageView {
         id: _repeatPage
 
         ScheduleRepeatPage {
-            readonly property Component nextPage: _preivewPage
+            readonly property Component nextPage: dataSourcePageCompo
 
             onRepeatsChanged: {
                 if (repeats.toString() !== _internal.newSchedule.repeats.toString()) {
                     _internal.newSchedule.repeats = repeats;
                 }
+            }
+        }
+    }
+
+    Component {
+        id: dataSourcePageCompo
+
+        ScheduleDataSourcePage {
+            readonly property Component nextPage: _preivewPage
+
+            uiSession: _root.uiSession
+            onSensorChanged: {
+                _internal.newSchedule.dataSource = (sensor?.name ?? "");
             }
         }
     }
