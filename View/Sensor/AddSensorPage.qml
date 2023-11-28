@@ -8,41 +8,126 @@ import Stherm
  * AddSensorPage provides the ability to add a new sensor
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
+    //!
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Add Sensor"
+    title: pageStack.currentItem instanceof SensorLocationPage ? "Select Sensor Location" : "Add Sensor"
+    backButtonCallback: function() {
+        if (pageStack.depth > 1) {
+            pageStack.pop();
+        } else {
+            //! Adding sensor is canceled, delete created instance
+            sensorPairPage.newSensor.destroy();
+
+            if (root.StackView.view) {
+                //! Then Page is inside an StackView
+                if (root.StackView.view.currentItem == root) {
+                    root.StackView.view.pop();
+                }
+            }
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
     StackView {
-        id: _pageStack
+        id: pageStack
         anchors.fill: parent
 
-        initialItem: _sensorMessageItem
+        initialItem: sensorPairPage
     }
 
-    Item {
-        id: _sensorMessageItem
+    SensorPairPage {
+        id: sensorPairPage
+
+        property Sensor newSensor
+
         visible: false
 
-        Label {
-            anchors.centerIn: parent
-            width: parent.width * 0.85
-            padding: 32
-            text: "Please remove battery tab from the sensor or push reset button for 2 "
-                  + "seconds to start pairing."
-            wrapMode: "WordWrap"
+        //! For test: to add an arbitrary Sensor after two seconds
+        Timer {
+            interval: 2000
+            running: true
+            onTriggered: {
+                sensorPairPage.newSensor = Qt.createQmlObject(
+                            `
+                            import Stherm
 
-            background: Rectangle {
-                color: "transparent"
-                radius: 32
-                border.width: 2
-                border.color: _root.Material.foreground
+                            Sensor { }
+                            `, AppCore.defaultRepo);
+                sensorPairPage.sensorPaired(sensorPairPage.newSensor);
+            }
+        }
+
+        onSensorPaired: function(sensor) {
+            if (sensor instanceof Sensor) {
+                //! Push selecting sensor name and location pages
+                pageStack.push(sensorNamePageCompo, {
+                                    "sensor": sensor
+                                });
+            }
+        }
+    }
+
+    Component {
+        id: sensorNamePageCompo
+
+        SensorNamePage {
+            id: namePage
+
+            ToolButton {
+                id: backbutton
+                visible: pageStack.depth === 2
+                enabled: namePage.sensorName.length > 0
+                parent: root.header.contentItem
+                contentItem: RoniaTextIcon {
+                    text: FAIcons.arrowRight
+                }
+
+                onClicked: {
+                    //! Set sensor name and go to selecting sensor loacation
+                    namePage.sensor.name = namePage.sensorName;
+
+                    pageStack.push(sensorLocationPageCompo, {
+                                        "sensor": sensor
+                                    });
+                }
+            }
+        }
+    }
+
+    Component {
+        id: sensorLocationPageCompo
+
+        SensorLocationPage {
+            id: locationPage
+
+            ToolButton {
+                enabled: locationPage.location !== AppSpec.SensorLocation.Unknown
+                visible: pageStack.depth === 3
+                parent: root.header.contentItem
+                contentItem: RoniaTextIcon {
+                    text: FAIcons.check
+                }
+
+                onClicked: {
+                    //! Save sensor location
+                    locationPage.sensor.location = locationPage.location;
+                    //! Set sensor repo and parent
+                    locationPage.sensor._qsRepo = AppCore.defaultRepo;
+                    uiSession.sensorController.addSensor(locationPage.sensor);
+
+                    //! Pop AddSensorPage from its StackView
+                    sensorPairPage.newSensor = null;
+                    if (root.StackView.view) {
+                        root.StackView.view.pop();
+                    }
+                }
             }
         }
     }
