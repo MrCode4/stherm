@@ -149,6 +149,7 @@ Control {
                     right: parent.right
                     bottom: parent.bottom
                 }
+                uiSession: _root.uiSession
             }
         }
 
