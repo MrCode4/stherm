@@ -430,40 +430,32 @@ bool Relay::turnOffEmergencyHeating()
     return true;
 }
 
-bool Relay::fanWorkTime()
-{
-    qDebug() << Q_FUNC_INFO << __LINE__ ;
-//    //$fan_settings = conn->getRow("SELECT fan_time AS user_set_time, start_fan_timing AS work_in_hour,(SELECT fan FROM current_state) AS user_set_interval, EXTRACT(MINUTE from (current_timestamp))-EXTRACT(MINUTE from (fan_time)) AS interval_minute, EXTRACT(MINUTE from (current_timestamp))-EXTRACT(MINUTE from (fan_time)) AS other FROM timing");
-//    $interval = conn->getItem("SELECT fan FROM current_state");
-//    if((int)$interval > 0) {
-//        $fan_settings = conn->getRow("SELECT EXTRACT(MINUTE from ((current_timestamp - fan_time)- interval '{$interval} minute'))-1 AS work FROM timing");
-//        getRelayState();
-//        if (mRelay.y1 == 'on' || mRelay.w1 == 'on') {
-//            fanOn();
-//        } else {
-//            if ((int)$interval > 0 && (int)$fan_settings['work'] < 0 && (int)$fan_settings['work'] >= (-1) * (int)$interval) {
-//                fanOn();
-//            } else { // fan auto mode
-//                fanOff();
-//            }
-//        }
-//    } else {
-//        if (mRelay.y1 == 'on' || mRelay.w1 == 'on') {
-//            fanOn();
-//        }else{
-//            fanOff();
-//        }
-//    }
+void Relay::fanOn() {
+    if (mRelay.g != STHERM::NoWire) {
+        mRelay.g = STHERM::ON;
+    }
+}
 
-//    if (mRelay['g'] != STHERM::RelayMode::NoWire) {
-//        if (mRelay['g'] == 'on') {
-//            conn->setQuery("UPDATE relays SET type = true WHERE alias = 'g';");
-//        } else {
-//            conn->setQuery("UPDATE relays SET type = false WHERE alias = 'g';");
-//        }
-//        getRelayState();
-//    }
-    return true;
+void Relay::fanOFF() {
+    if (mRelay.g != STHERM::NoWire) {
+        mRelay.g = STHERM::OFF;
+    }
+}
+
+bool Relay::fanWorkTime(int fanWPH, int interval)
+{
+    if (mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON) {
+        fanOn();
+        return true;
+    }
+
+    if (fanWPH > 0 && interval < 0 && interval >= -1 * fanWPH) {
+        fanOn();
+        return true;
+    }
+
+    fanOFF();
+    return false;
 }
 
 STHERM::RelayConfigs Relay::relays() {

@@ -41,7 +41,7 @@ public:
     bool emergencyHeating1();
     bool emergencyHeating2();
 
-    bool fanWorkTime();
+    bool fanWorkTime(int fanWPH, int interval);
 
     STHERM::RelayConfigs relays();
 
@@ -62,6 +62,9 @@ private:
     explicit Relay();
 
     void backlight();
+    
+    void fanOn();
+    void fanOFF();
 
 private:
     static Relay* mInstance;
@@ -69,7 +72,7 @@ private:
     STHERM::RelayConfigs mRelay;
 
     STHERM::SystemMode before_state;
-    STHERM::SystemMode  current_state;
+    STHERM::SystemMode current_state;
     STHERM::SystemMode ob_state; // can be Cooling or Heating
 
     int current_stage;
