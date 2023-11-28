@@ -62,7 +62,7 @@ ApplicationWindow {
             AppCore.defaultRepo.initRootObject("Device");
 
         //! set screen saver timeout here. default is 20000
-        ScreenSaverManager.screenSaverTimeout = 20000;
+        ScreenSaverManager.screenSaverTimeout = 30000;
     }
 
     /* Fonts
