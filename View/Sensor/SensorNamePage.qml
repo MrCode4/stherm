@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 
 import Ronia
 import Stherm
@@ -22,12 +23,22 @@ Control {
 
     /* Children
      * ****************************************************************************************/
-    TextField {
-        id: sensorNameTf
-
-        width: 200
-        height: 80
+    ColumnLayout {
+        width: parent.width * 0.6
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 60
+        y: 40
+
+        Label {
+            Layout.alignment: Qt.AlignCenter
+            font.bold: true
+            text: "New Name"
+        }
+
+        TextField {
+            id: sensorNameTf
+
+            Layout.fillWidth: true
+            y: 60
+        }
     }
 }
