@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QElapsedTimer>
+#include <QDateTime>
 
 #include "nuveTypes.h"
 
@@ -16,6 +17,7 @@ public:
     QElapsedTimer       uptime;
     QElapsedTimer       s2uptime;
     QElapsedTimer       s2Offtime;
+    QElapsedTimer       fanTime;
 
     bool                s2hold;
     bool                s3hold;
@@ -28,7 +30,9 @@ public:
     uint32_t            info_update_interval;
     timestamp_t         info_update_timestamp;
     timestamp_t         soft_update_timestamp;
-    timestamp_t         fan_time;
+
+    QDateTime            fan_time;
+
     uint32_t            start_fan_timing;
     timestamp_t         delete_info_timestamp;
     std::string         delete_info_interval;

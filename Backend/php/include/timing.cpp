@@ -38,7 +38,9 @@ void Timing::setDefaultValues(void)
     info_update_interval = 15;
     info_update_timestamp = current_timestamp();
     soft_update_timestamp = tr;
-    fan_time = current_timestamp() - minuteToTimestamp(5);
+
+    fan_time = QDateTime::currentDateTime();
+
     start_fan_timing = 0;
     delete_info_timestamp = current_timestamp();
     delete_info_interval = DELETE_INFO_INTERVAL;
@@ -69,5 +71,5 @@ void Timing::refreshTimestamps(void)
     contractor_info_timestamp = tr;
     info_update_timestamp = current_timestamp();
     soft_update_timestamp = tr;
-    fan_time = current_timestamp() - minuteToTimestamp(5);
+    fan_time = QDateTime::currentDateTime().addSecs(-5 * 1000);//current_timestamp() - minuteToTimestamp(5);
 }
