@@ -31,7 +31,7 @@ Control {
         Label {
             Layout.alignment: Qt.AlignCenter
             font.bold: true
-            text: "New Name"
+            text: "Sensor Name"
         }
 
         TextField {

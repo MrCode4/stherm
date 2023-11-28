@@ -16,7 +16,7 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Add Sensor"
+    title: pageStack.currentItem instanceof SensorLocationPage ? "Select Sensor Location" : "Add Sensor"
     backButtonCallback: function() {
         if (pageStack.depth > 1) {
             pageStack.pop();

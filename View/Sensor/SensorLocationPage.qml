@@ -45,7 +45,7 @@ Page {
             { "title": "Downstairs",    "location": AppSpec.SensorLocation.Downstairs,  "icon": "qrc:/Stherm/Images/Locations/downstairs.svg"   },
             //! From here items should be shown as others
             { "title": "Dinning room",  "location": AppSpec.SensorLocation.DinningRoom, "icon": "qrc:/Stherm/Images/Locations/dining_room.svg"  },
-            { "title": "Guesthouse",    "location": AppSpec.SensorLocation.Guesthouse,  "icon": "qrc:/Stherm/Images/Locations/guesthouse.svg"   },
+            { "title": "Guesthouse",    "location": AppSpec.SensorLocation.GuestHouse,  "icon": "qrc:/Stherm/Images/Locations/guesthouse.svg"   },
             { "title": "Other",         "location": AppSpec.SensorLocation.Other,       "icon": "qrc:/Stherm/Images/Locations/other.svg"        },
         ]
 
