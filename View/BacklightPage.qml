@@ -15,15 +15,15 @@ BasePageView {
     //! Ref to Backlight model
     property Backlight          backlight: appModel?.backlight ?? null
 
-    property Backlight          liveColor : Backlight {
-        on: _backlightOnOffSw.checked
-        hue: _colorSlider.value
-        value: _brSlider.value
-        shadeIndex: _shadeButtonsGrp.checkedButton?.index ?? dummyShadeDelegate.index
-    }
+    //! The final color to apply to model and device
+    readonly property color     liveColor: backlight?.backlightFinalColor(_shadeButtonsGrp.checkedButton?.index ?? dummyShadeDelegate.index,
+                                                                          _colorSlider.value,
+                                                                          _brSlider.value)
 
+    //!
     property bool               completed: false
 
+    //!
     property Timer onlineTimer: Timer {
         repeat: false
         running: false
@@ -109,7 +109,7 @@ BasePageView {
             onValueChanged: onlineTimer.startTimer()
 
             Component.onCompleted: {
-                handle.color = Qt.binding(() => liveColor._color);
+                handle.color = Style.background;
             }
         }
 
@@ -192,7 +192,7 @@ BasePageView {
     //! Update backlight for test
     function applyOnline(){
         if (deviceController && completed) {
-            deviceController.updateDeviceBacklight(_backlightOnOffSw.checked, liveColor._color);
+            deviceController.updateDeviceBacklight(_backlightOnOffSw.checked, liveColor);
         }
     }
 
@@ -217,5 +217,12 @@ BasePageView {
             setCurrentColor(backlight.shadeIndex);
         }
         completed = true;
+    }
+
+    Component.onDestruction: {
+        //! Revert to the color in model if last liveColor is not confirmed
+        if (!Qt.colorEqual(backlight._color, liveColor)) {
+            revertToModel();
+        }
     }
 }

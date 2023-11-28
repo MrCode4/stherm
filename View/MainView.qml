@@ -56,4 +56,13 @@ Item {
             backButtonVisible: false
         }
     }
+
+    Connections {
+        target: uiSession
+
+        function onScreenSaverActivated()
+        {
+            _mainStackView.pop(null) //! Pop all items except the first one which is _mainViewSw
+        }
+    }
 }

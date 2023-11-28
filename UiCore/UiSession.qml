@@ -60,6 +60,7 @@ QtObject {
 
     //! This property can be used to disable wifi refreshing temporarily
     property bool               refreshWifiEnabled: true
+
     //! Retrieve device information at one-second intervals.
     property Timer timer:   Timer {
         running: true
@@ -128,6 +129,7 @@ QtObject {
     signal sigHidePanel (I_Panel panel);
     signal sigShowPopUp (I_PopUp popUp);
     signal sigHidePopUp (I_PopUp popUp);
+    signal screenSaverActivated(); //! This signal is emitted when ScreenSaver gets activated
 
     /* Signal Handlers
      * ****************************************************************************************/

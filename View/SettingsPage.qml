@@ -10,12 +10,20 @@ import Stherm
 BasePageView {
     id: _root
 
+    /* Property declaration
+     * ****************************************************************************************/
+    //! Setting
+    property Setting    setting: uiSession?.appModel?.setting ?? null
+
+    //!‌ This timer is used to apply settings to device lively
     property Timer onlineTimer: Timer {
         repeat: false
         running: false
         interval: 50
         onTriggered: applyToModel()
-        function startTimer() {
+
+        function startTimer()
+        {
             if (!onlineTimer.running) {
                 start();
             }
@@ -36,13 +44,22 @@ BasePageView {
         }
 
         onClicked: {
-
             applyToModel();
+
+            //! Make a copy of last applied data to Setting
+            makeCopyOfSettings();
 
             if (_root.StackView.view) {
                 _root.StackView.view.pop();
             }
         }
+    }
+
+    QtObject {
+        id: internal
+
+        //! This property will hold last applied data to Setting
+        property var copyOfSettings: ({})
     }
 
     Flickable {
@@ -238,6 +255,17 @@ BasePageView {
         }
     }
 
+    function makeCopyOfSettings()
+    {
+        if (setting) {
+            internal.copyOfSettings["brightness"]           = setting.brightness;
+            internal.copyOfSettings["adaptiveBrightness"]   = setting.adaptiveBrightness;
+            internal.copyOfSettings["volume"]               = setting.volume;
+            internal.copyOfSettings["tempratureUnit"]       = setting.tempratureUnit;
+            internal.copyOfSettings["timeFormat"]           = setting.timeFormat;
+        }
+    }
+
     //! Reset settings pop
     ResetSettingsDialog {
         id: _resetSettings
@@ -251,6 +279,30 @@ BasePageView {
                                              AppSpec.TimeFormat.Hour24,
                                              true, //! Reset
                                              true);
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        makeCopyOfSettings();
+    }
+
+    Component.onDestruction: {
+        if (setting) {
+            if (setting.brightness !== internal.copyOfSettings.brightness
+                || setting.adaptiveBrightness !== internal.copyOfSettings.adaptiveBrightness
+                || setting.volume !== internal.copyOfSettings.volume
+                || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit
+                || setting.timeFormat !== internal.copyOfSettings.timeFormat) {
+                //! Reset to last saved setting
+                deviceController.setSettings(
+                            internal.copyOfSettings.brightness,
+                            internal.copyOfSettings.volume,
+                            internal.copyOfSettings.tempratureUnit,
+                            internal.copyOfSettings.timeFormat,
+                            false,
+                            internal.copyOfSettings.adaptiveBrightness
+                            );
             }
         }
     }

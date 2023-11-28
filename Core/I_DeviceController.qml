@@ -34,13 +34,9 @@ QtObject {
 
     function updateBacklight(isOn, hue, brightness, shadeIndex)
     {
-        var back = device.backlight;
-        back.on = isOn;
-        back.hue = hue;
-        back.value = brightness;
-        back.shadeIndex = shadeIndex;
+        var color = device.backlight.backlightFinalColor(shadeIndex, hue, brightness);
 
-        if (updateDeviceBacklight(isOn, back._color))
+        if (updateDeviceBacklight(isOn, color))
         {
             device.backlight.on = isOn;
             device.backlight.hue = hue;
