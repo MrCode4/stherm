@@ -613,10 +613,11 @@ void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)
 
     } else {
         // Prepare Set relay packet
-        packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, relays);
+        packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, {QVariant::fromValue(relays)});
     }
 
-    sendTIRequest(packet);
+    m_TI_queue.push(packet);
+    processTIQueue();
 }
 
 bool DeviceIOController::setBacklight(QVariantList data)
@@ -1023,7 +1024,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                     LOG_DEBUG(
                         "***** Ti  - ERROR_WIRING_NOT_CONNECTED: Send Check_Wiring command *****");
 
-                    sendTIRequest(tx_packet);
+                    sendTIRequest(packet);
                 }
 
                 break;
@@ -1070,7 +1071,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                     // TODO relays_in_l = relays_in;
                     LOG_DEBUG("Check_Wiring : Wiring is disrupted");
                 } else {
-                    auto packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, m_p->mRelaysIn);
+                    auto packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, {QVariant::fromValue(m_p->mRelaysIn)});
 
 
                     LOG_DEBUG("***** Ti  - Check_Wiring: Send SetRelay command *****");

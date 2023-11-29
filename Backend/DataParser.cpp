@@ -30,27 +30,6 @@ DataParser::DataParser(QObject *parent) :
 {
 }
 
-STHERM::SIOPacket DataParser::prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType, STHERM::RelayConfigs relayConfig)
-{
-    // Prepare packet to write
-    STHERM::SIOPacket txPacket = prepareSIOPacket(cmd, packetType);
-    txPacket.DataLen = RELAY_OUT_CNT;
-
-    int i = 0;
-    txPacket.DataArray[i++] = (relayConfig.g == STHERM::ON ? 1 : 0);
-    txPacket.DataArray[i++] = (relayConfig.y1 == STHERM::ON ? 1 : 0);
-    txPacket.DataArray[i++] = (relayConfig.y2 == STHERM::ON ? 1 : 0);
-    txPacket.DataArray[i++] = (relayConfig.y3 == STHERM::ON ? 1 : 0);
-    txPacket.DataArray[i++] = (relayConfig.acc2 == STHERM::ON ? 1 : 0);
-    txPacket.DataArray[i++] = (relayConfig.w1 == STHERM::ON ? 1 : 0);
-    txPacket.DataArray[i++] = (relayConfig.w2 == STHERM::ON ? 1 : 0);
-    txPacket.DataArray[i++] = (relayConfig.w3 == STHERM::ON ? 1 : 0);
-    txPacket.DataArray[i++] = (relayConfig.o_b == STHERM::ON ? 1 : 0);
-    txPacket.DataArray[i] = (relayConfig.acc1n == STHERM::ON ? 1 : 0);
-
-    return txPacket;
-}
-
 QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType, QVariantList data)
 {
     // Prepare packet to write
@@ -148,6 +127,26 @@ STHERM::SIOPacket DataParser::prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::P
         txPacket.DataLen = cpIndex;
         //    TODO update CRC
     }
+
+    case   STHERM::SetRelay: {
+        auto relayConfig = data[0].value<STHERM::RelayConfigs>();
+
+        int i = 0;
+        txPacket.DataArray[i++] = (relayConfig.g == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.y1 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.y2 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.y3 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.acc2 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.w1 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.w2 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.w3 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.o_b == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i]   = (relayConfig.acc1n == STHERM::ON ? 1 : 0);
+
+        txPacket.DataLen = RELAY_OUT_CNT;
+
+    } break;
+
     default:
         break;
     }

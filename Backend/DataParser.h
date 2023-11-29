@@ -23,9 +23,6 @@ public:
                              STHERM::PacketType packetType = STHERM::PacketType::UARTPacket,
                              QVariantList data = QVariantList());
 
-    static STHERM::SIOPacket prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType,
-                                              STHERM::RelayConfigs relayConfig);
-
     static STHERM::SIOPacket prepareSIOPacket(STHERM::SIOCommand cmd,
                                     STHERM::PacketType packetType = STHERM::PacketType::UARTPacket,
                                     QVariantList data = QVariantList());
