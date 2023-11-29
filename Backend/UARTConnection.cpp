@@ -4,25 +4,27 @@
 #include "DataParser.h"
 #include "LogHelper.h"
 
-UARTConnection::UARTConnection(const QString &portName, const qint32 &baundRate, bool debug, QObject *parent)
+UARTConnection::UARTConnection(const QString &portName, bool debug, QObject *parent)
     : QObject(parent)
     , mSerial(new QSerialPort(this))
-    ,m_debug(debug)
+    , m_debug(debug)
 {
     mSerial->setPortName(portName);
-    bool isSuccess = mSerial->setBaudRate(baundRate) && // Set baud rate in all directions
+}
+
+bool UARTConnection::startConnection(const qint32 &baudRate)
+{
+    bool isSuccess = mSerial->setBaudRate(baudRate) && // Set baud rate in all directions
                      mSerial->setDataBits(QSerialPort::Data8)
                      && mSerial->setParity(QSerialPort::NoParity)
                      && mSerial->setStopBits(QSerialPort::OneStop)
                      && mSerial->setFlowControl(QSerialPort::NoFlowControl); // Set non-blocking I/O
 
     if (!isSuccess) {
-        TRACE_CHECK(m_debug) << "Configuration failed, port name: " << portName;
+        TRACE_CHECK(m_debug) << "Configuration failed, port name: " << mSerial->portName();
+        return false;
     }
-}
 
-bool UARTConnection::startConnection()
-{
     // Check:  Use QSocketNotifier to monitor activity on a file descriptor
 
     bool isOpen = mSerial->isOpen();

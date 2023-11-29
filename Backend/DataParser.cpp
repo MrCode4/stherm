@@ -68,6 +68,92 @@ QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType 
     return result;
 }
 
+STHERM::SIOPacket DataParser::prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType, QVariantList data)
+{
+    // Prepare packet to write
+    STHERM::SIOPacket txPacket;
+    txPacket.CMD = cmd;
+    txPacket.PacketSrc = UtilityHelper::packetType(packetType);
+    txPacket.ACK = STHERM::ERROR_NO;
+    txPacket.SID = 0x01;
+    txPacket.DataLen = 0;
+
+    uint8_t dev_info[32];
+
+    switch (cmd) {
+    case STHERM::SetColorRGB: {
+        txPacket.DataLen = 5;
+        bool on = data[4].toBool();
+        txPacket.DataArray[0] = on ? std::clamp(data[0].toInt(), 0, 255) : 0;
+        txPacket.DataArray[1] = on ? std::clamp(data[1].toInt(), 0, 255) : 0;
+        txPacket.DataArray[2] = on ? std::clamp(data[2].toInt(), 0, 255) : 0;
+        txPacket.DataArray[3] = 255;
+        txPacket.DataArray[4] = data[3].toInt();
+    } break;
+    case STHERM::InitMcus: {
+        auto thresholds = data[0].value<STHERM::AQ_TH_PR_thld>();
+
+        uint8_t cpIndex = 0;
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.temp_high, sizeof(thresholds.temp_high));
+        cpIndex += sizeof(thresholds.temp_high);
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.temp_low, sizeof(thresholds.temp_low));
+        cpIndex += sizeof(thresholds.temp_low);
+
+        memcpy(txPacket.DataArray + cpIndex,
+               &thresholds.humidity_high,
+               sizeof(thresholds.humidity_high));
+        cpIndex += sizeof(thresholds.humidity_high);
+
+        memcpy(txPacket.DataArray + cpIndex,
+               &thresholds.humidity_low,
+               sizeof(thresholds.humidity_low));
+        cpIndex += sizeof(thresholds.humidity_low);
+
+        memcpy(txPacket.DataArray + cpIndex,
+               &thresholds.pressure_high,
+               sizeof(thresholds.pressure_high));
+        cpIndex += sizeof(thresholds.pressure_high);
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.c02_high, sizeof(thresholds.c02_high));
+        cpIndex += sizeof(thresholds.c02_high);
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.Tvoc_high, sizeof(thresholds.Tvoc_high));
+        cpIndex += sizeof(thresholds.Tvoc_high);
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.etoh_high, sizeof(thresholds.etoh_high));
+        cpIndex += sizeof(thresholds.etoh_high);
+        txPacket.DataLen = cpIndex;
+        //    TODO update CRC
+    }
+
+    case   STHERM::SetRelay: {
+        auto relayConfig = data[0].value<STHERM::RelayConfigs>();
+
+        int i = 0;
+        txPacket.DataArray[i++] = (relayConfig.g == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.y1 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.y2 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.y3 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.acc2 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.w1 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.w2 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.w3 == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i++] = (relayConfig.o_b == STHERM::ON ? 1 : 0);
+        txPacket.DataArray[i]   = (relayConfig.acc1n == STHERM::ON ? 1 : 0);
+
+        txPacket.DataLen = RELAY_OUT_CNT;
+
+    } break;
+
+    default:
+        break;
+    }
+
+    return txPacket;
+}
+
 STHERM::SIOPacket DataParser::deserializeData(const QByteArray &serializeData)
 {
     TRACE_CHECK(false) << serializeData;

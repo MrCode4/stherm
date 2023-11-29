@@ -748,10 +748,11 @@ void *ti_uart_thrd(void *a)
                             break;
                         case Set_relays: // guaranteed to be the only wiring related cmd in a packet from main
                             tx_packet.PacketSrc = UART_Packet;
-                            tx_packet.CMD = SetRelay;
+                            tx_packet.CMD = SetRelay; //ToFind
                             tx_packet.ACK = ERROR_NO;
                             tx_packet.SID = 0x01;
-                            if ((static_cast<long>(indx_cm) + 1 + RELAY_OUT_CNT > s) || ((static_cast<unsigned long>(indx_cm) + 1 + RELAY_OUT_CNT) > sizeof(buf)))
+                            if ((static_cast<long>(indx_cm) + 1 + RELAY_OUT_CNT > s) ||
+                                ((static_cast<unsigned long>(indx_cm) + 1 + RELAY_OUT_CNT) > sizeof(buf)))
                             {
                                 syslog(LOG_INFO, "ERROR: SetRelay pipe_data read_size: %d, buf_size %d, index: %d\n", s, sizeof(buf), (static_cast<unsigned long>(indx_cm) + 1 + RELAY_OUT_CNT));
                                 indx_cm += (1 + RELAY_OUT_CNT);
@@ -1160,7 +1161,7 @@ int main(int argc, char *argv[])
                                 cpIndex += sizeof(Luminosity);
                                 memcpy(&fan_speed, rx_packet.DataArray + cpIndex, sizeof(fan_speed));
                                 cpIndex += sizeof(fan_speed);
-                                if (!set_fan_speed_INFO(fan_speed))
+                                if (!set_fan_speed_INFO(fan_speed)) // in SetVentilator.php class
                                 {
                                     syslog(LOG_INFO, "Error: setFanSpeed\n");
                                 }
@@ -1302,9 +1303,9 @@ int main(int argc, char *argv[])
                                 wiring_state.clear();
                                 for (int i = 0; i < WIRING_IN_CNT; i++)
                                 {
-                                    wiring_state.push_back(Thread_buff[3 + i]);
+                                    wiring_state.push_back(Thread_buff[3 + i]); // Fill wiring status/ important
                                 }
-                                if (!setWiring(wiring_state))
+                                if (!setWiring(wiring_state)) // It does nothing  and return true always.
                                 {
                                     syslog(LOG_INFO, "Error: setWiring \n");
                                 }
@@ -1314,10 +1315,10 @@ int main(int argc, char *argv[])
                                 {
                                     if (wiring_state[i] == WIRING_BROKEN && relays_in[i] == 1)
                                     {
-                                        setAlert(0, Alert_wiring_not_connected, LVL_Emergency);
+                                        setAlert(0, Alert_wiring_not_connected, LVL_Emergency); // Send Alert
                                         syslog(LOG_INFO, "wiring indx %d ", i);
                                         buf[0] = NO_CMD;
-                                        relays_in_l = relays_in;
+                                        relays_in_l = relays_in; // update last relay
                                         break;
                                     }
                                     buf[1 + i] = relays_in[i];
@@ -1485,7 +1486,7 @@ int main(int argc, char *argv[])
                     }
 
                     tmr_cntr++;
-                    if (tmr_cntr > WIRING_CHECK_TIME || wiring_check_f)
+                    if (tmr_cntr > WIRING_CHECK_TIME || wiring_check_f) // wiring_check_f call from UI
                     {
                         tmr_cntr = 0;
                         //

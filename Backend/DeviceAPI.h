@@ -30,6 +30,8 @@ public:
 
     Q_INVOKABLE int getStartMode();
 
+    NUVE::Timing *timing();
+
 signals:
 
 private:

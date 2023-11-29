@@ -2,6 +2,7 @@
 
 #include <QThread>
 #include <QTimer>
+#include <queue>
 
 #include "DataParser.h"
 #include "UARTConnection.h"
@@ -12,7 +13,7 @@
  * This class manages read and write from device using UART
  * todo: Add a request manager (queue)
  * ************************************************************************************************/
-
+class DeviceIOPrivate;
 class DeviceIOController : public QThread
 {
     Q_OBJECT
@@ -56,6 +57,8 @@ public:
     //! Update paired sensors in TI
     void updateTiDevices();
 
+    void updateRelays(STHERM::RelayConfigs relays);
+
     /* Public Methods
      * ****************************************************************************************/
 public:
@@ -80,6 +83,8 @@ private slots:
     void nRFExec();
 
 private:
+    void initialize();
+
     void run() override;
 
     //! Create TI connection, called each 10 seconds, getInfo (mainData,temp, hum, aq, pressure), manage requests, wiring check
@@ -96,9 +101,12 @@ private:
 
     //! Process NRF response
     void processNRFResponse(STHERM::SIOPacket rxPacket);
+    bool processNRFQueue();
 
     //! Process TI response
     void processTIResponse(STHERM::SIOPacket rxPacket);
+    bool processTIQueue();
+    bool sendTIRequest(STHERM::SIOPacket txPacket);
 
     //! Get time configs from saved configs file.
     STHERM::ResponseTime getTimeConfig();
@@ -121,44 +129,27 @@ private:
     //! Get device id
     void getDeviceID();
 
+    //! Check relay with wiring states
+    bool checkRelayVaidation();
+
+    void checkTOFRangeValue(uint16_t range_mm);
+    void checkTOFLuminosity(uint32_t luminosity);
+
 private:
-    //! Device id
-    QString mDeviceID;
+    DeviceIOPrivate *m_p;
 
-    DataParser mDataParser;
+    UARTConnection *m_nRfConnection;
+    UARTConnection *m_tiConnection;
+    GpioHandler *m_gpioHandler4;
+    GpioHandler *m_gpioHandler5;
 
-    UARTConnection *nRfConnection;
-    UARTConnection *tiConnection;
+    DataParser m_dataParser;
 
-    UARTConnection *gpio4Connection;
-    UARTConnection *gpio5Connection;
+    QTimer m_wtd_timer;
+    QTimer m_wiring_timer;
+    QTimer m_nRF_timer;
 
-    bool mStopReading;
+    std::queue<STHERM::SIOPacket> m_nRF_queue;
 
-    //! Paired devices
-    QList<STHERM::DeviceType> mDevices;
-    STHERM::DeviceType mMainDevice;
-
-    bool nrfWaitForResponse;
-
-    QByteArray mSensorPacketBA;
-    QByteArray mTOFPacketBA;
-
-    int brighness_mode;
-
-    STHERM::AQ_TH_PR_thld AQ_TH_PR_thld;
-
-    QList<STHERM::DeviceType> pairedSensors;
-
-    QList<uint8_t> mWiringState;
-
-    //! Fill from get_dynamic1
-    QList<uint8_t> relays_in;
-
-    //! Fill in set relay command
-    QList<uint8_t> relays_in_l;
-
-    QTimer wtd_timer;
-    QTimer wiring_timer;
-    QTimer nRF_timer;
+    std::queue<STHERM::SIOPacket> m_TI_queue;
 };

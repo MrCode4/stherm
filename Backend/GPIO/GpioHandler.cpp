@@ -1,29 +1,12 @@
 #include "GpioHandler.h"
 
+#include <QTimer>
+
 GpioHandler::GpioHandler(int gpio_pin, QObject *parent)
     : QObject{parent}
 {
     // Construct the file path using QString
     filePath = QString(SW_VAL_PATH).arg(gpio_pin);
-
-    // Open the file in non-blocking mode
-    if (openFile()) {
-        mError = QString();
-        qDebug() << "File opened successfully";
-
-        // Create a notifier to monitor file descriptor for readability
-        notifier = new QSocketNotifier(file.handle(), QSocketNotifier::Read, this);
-
-        // Connect the signal/slot for file descriptor events
-        connect(notifier, &QSocketNotifier::activated, this, &GpioHandler::handleGpioEvent);
-
-        // Start monitoring for events
-        notifier->setEnabled(true);
-
-    } else {
-        mError = file.errorString();
-        qDebug() << "Failed to open file:" << mError;
-    }
 }
 
 GpioHandler::~GpioHandler()
@@ -31,10 +14,35 @@ GpioHandler::~GpioHandler()
     closeFile();
 }
 
+bool GpioHandler::startConnection()
+{
+    // Open the file in non-blocking mode
+    if (openFile()) {
+        mError = QString();
+        qDebug() << "File opened successfully";
+
+        // Create a notifier to monitor file descriptor for readability
+        notifier = new QSocketNotifier(QSocketNotifier::Read, this);
+
+        // Connect the signal/slot for file descriptor events
+        connect(notifier, &QSocketNotifier::activated, this, &GpioHandler::handleGpioEvent);
+
+        // Start monitoring for events
+        notifier->setSocket(file.handle());
+        notifier->setEnabled(true);
+
+    } else {
+        mError = file.errorString();
+        qDebug() << "Failed to open file:" << mError;
+    }
+
+    return !hasError();
+}
+
 bool GpioHandler::openFile()
 {
     file.setFileName(filePath);
-    return file.open(QIODevice::ReadWrite | QIODevice::Unbuffered);
+    return file.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
 }
 
 void GpioHandler::closeFile()
@@ -59,24 +67,26 @@ void GpioHandler::seek(int position)
     file.seek(position);
 }
 
-void GpioHandler::handleGpioEvent()
+void GpioHandler::handleGpioEvent(QSocketDescriptor socket, QSocketNotifier::Type activationEvent)
 {
     static QByteArray Data = "";
 
-    if (file.bytesAvailable() == 0) {
+    char buffer[256];
+
+    auto ba = file.bytesAvailable();
+    if (ba == 0) {
         return;
     }
 
     this->seek(SEEK_SET);
 
-    char buffer[256];
     qint64 bytesRead = readFile(buffer, sizeof(buffer));
 
     if (bytesRead > 0) {
         QByteArray bufferBA = buffer;
         if (bufferBA != Data) {
             Data = bufferBA;
-            emit readyRead(QByteArray(buffer));
+            emit readyRead(bufferBA);
         }
     }
 }

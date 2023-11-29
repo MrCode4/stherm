@@ -18,18 +18,16 @@ public:
     /* public Constructor
      * ****************************************************************************************/
     //! Configure and initalize UART connection
-    explicit UARTConnection(const QString &portName,
-                            const qint32 &baundRate, bool debug = false,
-                            QObject *parent = nullptr);
+    explicit UARTConnection(const QString &portName, bool debug = false, QObject *parent = nullptr);
 
     /* public functions
      * ****************************************************************************************/
     QByteArray sendCommand(QByteArray command);
 
-    //! Connect to device via serial port
+    //! Connect to device via serial port using baudRate
     //! return true connection success
     //! return false connection failure
-    bool startConnection();
+    bool startConnection(const qint32 &baudRate);
 
     //! Disconnect from device
     //! return false device still connected
