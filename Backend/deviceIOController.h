@@ -57,6 +57,8 @@ public:
     //! Update paired sensors in TI
     void updateTiDevices();
 
+    void updateRelays(STHERM::RelayConfigs relays);
+
     /* Public Methods
      * ****************************************************************************************/
 public:
@@ -127,6 +129,9 @@ private:
     //! Get device id
     void getDeviceID();
 
+    //! Check relay with wiring states
+    bool checkRelayVaidation();
+
     void checkTOFRangeValue(uint16_t range_mm);
     void checkTOFLuminosity(uint32_t luminosity);
 
@@ -145,5 +150,6 @@ private:
     QTimer m_nRF_timer;
 
     std::queue<STHERM::SIOPacket> m_nRF_queue;
+
     std::queue<STHERM::SIOPacket> m_TI_queue;
 };

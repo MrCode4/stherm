@@ -17,9 +17,9 @@ void NUVE::Timing::setDefaultValues(void)
 #endif
     timestamp_t tr = std::mktime(&tm);
 
-    uptime = current_timestamp();
-    s1uptime = current_timestamp();
-    s2uptime = current_timestamp();
+//    uptime = current_timestamp();
+//    s1uptime = current_timestamp();
+//    s2uptime = current_timestamp();
     s2hold = false;
     s3hold = false;
     alerts = false;
@@ -31,7 +31,9 @@ void NUVE::Timing::setDefaultValues(void)
     info_update_interval = 15;
     info_update_timestamp = current_timestamp();
     soft_update_timestamp = tr;
-    fan_time = current_timestamp() - minuteToTimestamp(5);
+
+    fan_time = QDateTime::currentDateTime().addSecs(-5 * 1000);//current_timestamp() - minuteToTimestamp(5);
+
     start_fan_timing = 0;
     delete_info_timestamp = current_timestamp();
     delete_info_interval = DELETE_INFO_INTERVAL;
@@ -54,12 +56,14 @@ void NUVE::Timing::refreshTimestamps(void)
 #endif
     timestamp_t tr = std::mktime(&tm);
 
-    uptime = current_timestamp();
-    s2uptime = current_timestamp();
+    uptime.restart();
+    s2uptime.restart();
+
     set_backlight_time = current_timestamp();
     wiring_check_timestamp = current_timestamp();
     contractor_info_timestamp = tr;
     info_update_timestamp = current_timestamp();
     soft_update_timestamp = tr;
-    fan_time = current_timestamp() - minuteToTimestamp(5);
+
+    fan_time = QDateTime::currentDateTime().addSecs(-5 * 1000);//current_timestamp() - minuteToTimestamp(5);
 }

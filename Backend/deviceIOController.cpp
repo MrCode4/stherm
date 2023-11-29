@@ -48,7 +48,8 @@ public:
     //    rgb_vals RGBm, RGBm_last;
 
     //! wirings and relays
-    QList<uint8_t> relays_in;   // Fill from get_dynamic1
+    QList<uint8_t> relays_in;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
+    STHERM::RelayConfigs mRelaysIn;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
     QList<uint8_t> relays_in_l; // Fill in set relay command
     QList<uint8_t> WiringState;
 
@@ -415,6 +416,10 @@ void DeviceIOController::createConnections()
     m_wtd_timer.setSingleShot(false);
     m_wtd_timer.start();
 
+    // The daemon regularly sends a "Check_Wiring" request every 600 seconds using a timer.
+    // Inside the daemon, a thread waits for one second and counts up to 600. When the timer reaches 600,
+    // the daemon sends the "Check_Wiring" request to Ti.
+    // Note: Wait in getDynamic10 function in php, timer with tmr_cntr controls the "Check_Wiring" request.
     connect(&m_wiring_timer, &QTimer::timeout, this, &DeviceIOController::wiringExec);
 
     m_wiring_timer.setSingleShot(false);
@@ -589,6 +594,31 @@ void DeviceIOController::updateTiDevices()
     // CO2 sensor
 
     qDebug() << Q_FUNC_INFO << __LINE__ << "Device count:   " << m_p->DeviceID.count();
+}
+
+void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)
+{
+    //! In daemon: main.cpp: Line 1495 to 1518
+
+    // check
+    if (m_p->mRelaysIn == relays)
+        return;
+
+    m_p->mRelaysIn = relays;
+
+    STHERM::SIOPacket packet;
+
+    if (!checkRelayVaidation()) {
+        // Prepare Check_Wiring packet
+        packet = DataParser::prepareSIOPacket(STHERM::Check_Wiring);
+
+    } else {
+        // Prepare Set relay packet
+        packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, {QVariant::fromValue(relays)});
+    }
+
+    m_TI_queue.push(packet);
+    processTIQueue();
 }
 
 bool DeviceIOController::setBacklight(QVariantList data)
@@ -972,16 +1002,12 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                     LOG_DEBUG("ERROR_WIRING_NOT_CONNECTED");
                     LOG_DEBUG("~" + QString::number(rxPacket.DataLen));
                     // Pepare Wiring_check command when all wires not broke
-                    tx_packet.PacketSrc = UART_Packet;
-                    tx_packet.CMD = STHERM::Check_Wiring;
-                    tx_packet.ACK = STHERM::ERROR_NO;
-                    tx_packet.SID = 0x01;
-                    tx_packet.DataLen = 0;
+                    auto packet = DataParser::prepareSIOPacket(STHERM::Check_Wiring);
 
                     LOG_DEBUG(
                         "***** Ti  - ERROR_WIRING_NOT_CONNECTED: Send Check_Wiring command *****");
 
-                    sendTIRequest(tx_packet);
+                    sendTIRequest(packet);
                 }
 
                 break;
@@ -1023,25 +1049,15 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                     m_p->WiringState.append(rxPacket.DataArray[var]);
                 }
 
-                if (m_p->WiringState.contains(WIRING_BROKEN)) {
+                if (!checkRelayVaidation()) { // Broken a wire
                     emit alert(STHERM::LVL_Emergency, STHERM::Alert_wiring_not_connected);
                     // TODO relays_in_l = relays_in;
                     LOG_DEBUG("Check_Wiring : Wiring is disrupted");
                 } else {
-                    // Pepare SetRelay command when all wires not broke
-                    tx_packet.PacketSrc = UART_Packet;
-                    tx_packet.CMD = STHERM::SetRelay;
-                    tx_packet.ACK = STHERM::ERROR_NO;
-                    tx_packet.SID = 0x01;
-                    tx_packet.DataLen = qMin(RELAY_OUT_CNT, m_p->relays_in.count());
+                    auto packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, {QVariant::fromValue(m_p->mRelaysIn)});
 
-                    // Add relays_in elements into DataArray of packet
-                    for (int i = 0; i < RELAY_OUT_CNT && i < m_p->relays_in.count(); i++) {
-                        tx_packet.DataArray[i] = m_p->relays_in[i];
-                    }
 
                     LOG_DEBUG("***** Ti  - Check_Wiring: Send SetRelay command *****");
-
                     sendTIRequest(tx_packet);
                 }
 
@@ -1319,6 +1335,23 @@ void DeviceIOController::getDeviceID()
 {
     //    TODO get and if not successful out warning
     m_p->DeviceID = QString();
+}
+
+bool DeviceIOController::checkRelayVaidation()
+{
+    int i = 0;
+    bool isNotValid = (m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.g     == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.y1    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.y2    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.y3    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.acc2  == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.w1    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.w2    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.w3    == STHERM::ON ||
+                       m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.o_b   == STHERM::ON ||
+                       m_p->WiringState.at(i)   == STHERM::Broken && m_p->mRelaysIn.acc1n == STHERM::ON);
+
+    return !isNotValid;
 }
 
 void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)

@@ -18,3 +18,7 @@ int DeviceAPI::getStartMode()
 {
     return m_hardware->getStartMode(_uid);
 }
+
+NUVE::Timing* DeviceAPI::timing() {
+    return &m_timing;
+}

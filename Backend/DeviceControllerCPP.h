@@ -6,6 +6,7 @@
 
 #include "DeviceAPI.h"
 #include "deviceIOController.h"
+#include "Core/Scheme.h"
 
 /*! ***********************************************************************************************
  * This class manages send requests from app to device and and process the received response.
@@ -47,7 +48,8 @@ public:
 
     //! set backlight using uart and respond the success, data should have 5 items
     //! including r, g, b, mode (0 for ui, 1 will be send internally), on/off
-    Q_INVOKABLE bool setBacklight(QVariantList data);
+    //! isScheme: is true when the backlight set from scheme and false for model
+    Q_INVOKABLE bool setBacklight(QVariantList data, bool isScheme = false);
 
     //! set setttings using uart and file and respond the success
     Q_INVOKABLE bool setSettings(QVariantList data);
@@ -73,6 +75,10 @@ Q_SIGNALS:
                STHERM::AlertTypes alertType,
                QString alertMessage = QString());
 
+private:
+    // update main data and send data to scheme.
+    void setMainData(QVariantMap mainData);
+
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
@@ -82,10 +88,15 @@ private:
      * ****************************************************************************************/
     QVariantMap getMainData();
 
+private:
     /* Attributes
      * ****************************************************************************************/
     QVariantMap _mainData;
 
     DeviceIOController *_deviceIO;
     DeviceAPI *_deviceAPI;
+
+    Scheme *m_scheme;
+
+    QVariantList mBacklightModelData;
 };

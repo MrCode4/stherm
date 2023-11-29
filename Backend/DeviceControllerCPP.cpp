@@ -9,6 +9,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     : QObject(parent)
     , _deviceIO(new DeviceIOController(this))
     , _deviceAPI(new DeviceAPI(this))
+    , m_scheme(new Scheme(_deviceAPI, this))
 {
     QVariantMap mainDataMap;
     mainDataMap.insert("temperature",     0);
@@ -21,11 +22,35 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mainDataMap.insert("RangeMilliMeter", 0);
     mainDataMap.insert("brighness",       0);
     mainDataMap.insert("fanSpeed",        0);
-    _mainData = mainDataMap;
+    setMainData(mainDataMap);
+
+    // todo: initialize with proper value
+    mBacklightModelData = QVariantList();
+
 
     LOG_DEBUG("TEST");
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
-        _mainData = data;
+        setMainData(data);
+    });
+
+    connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList data, int secs) {
+        setBacklight(data, true);
+
+        if (secs < 0)
+            return;
+
+        // Back to last backlight after secs seconds
+        QTimer timer;
+
+        timer.connect(&timer, &QTimer::timeout, this, [this]() {
+            setBacklight(mBacklightModelData, true);
+        });
+
+        timer.start(secs * 1000);
+    });
+
+    connect(m_scheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
+        _deviceIO->updateRelays(relays);
     });
 
     connect(_deviceIO,
@@ -51,8 +76,12 @@ QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, 
     return {};
 }
 
-bool DeviceControllerCPP::setBacklight(QVariantList data)
+bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {
+    if (!isScheme) {
+        mBacklightModelData = data;
+    }
+
     return _deviceIO->setBacklight(data);
 }
 
@@ -69,11 +98,25 @@ void DeviceControllerCPP::startDevice()
     _deviceIO->setStopReading(false);
 
     TRACE << "start mode is: " << _deviceAPI->getStartMode();
+
+    m_scheme->start();
 }
 
 void DeviceControllerCPP::stopDevice()
 {
     _deviceIO->setStopReading(true);
+}
+
+void DeviceControllerCPP::setMainData(QVariantMap mainData)
+{
+    if (_mainData == mainData)
+        return;
+
+    _mainData = mainData;
+
+    if (m_scheme)
+        m_scheme->setMainData(mainData);
+
 }
 
 QVariantMap DeviceControllerCPP::getMainData()

@@ -149,6 +149,15 @@ struct Vacation {
 };
 
 /**
+ * @brief Enumeration for wire states.
+ */
+enum WireState
+{
+    Connected = 0,
+    Broken
+};
+
+/**
  * @brief Enumeration for system modes.
  */
 enum RelayMode
@@ -157,9 +166,10 @@ enum RelayMode
     ON,
     OFF
 };
-struct Relay
+
+struct RelayConfigs
 {
-    Relay() {
+    RelayConfigs() {
         g     = RelayMode::NoWire;
         y1    = RelayMode::NoWire;
         y2    = RelayMode::NoWire;
@@ -186,6 +196,20 @@ struct Relay
     RelayMode acc1n;
     RelayMode hum_wiring;
 
+    bool operator == (const RelayConfigs& rc)
+    {
+        // Only the first 10 parameters are important.
+        return (g == rc.g &&
+                y1 == rc.y1 &&
+                y2 == rc.y2 &&
+                y3 == rc.y3 &&
+                acc2 == rc.acc2 &&
+                w1 == rc.w1 &&
+                w2 == rc.w2 &&
+                w3 == rc.w3 &&
+                o_b == rc.o_b &&
+                acc1n == rc.acc1n);
+    }
 };
 
 /**
@@ -329,6 +353,14 @@ enum SystemMode
     Vacation,
     Off,
     Emergency
+};
+
+enum SystemType
+{
+    Conventional,
+    CoolingOnly,
+    HeatPump,
+    HeatingOnly
 };
 
 /**

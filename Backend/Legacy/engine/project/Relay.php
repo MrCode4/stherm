@@ -723,6 +723,8 @@ class Relay
      */
     public function getTempStageTimer(): int
     {
+     // It calculates the difference in minutes between the current timestamp
+     // and a column s1uptime in a table named timing.
         return intval($this->conn->getItem("SELECT EXTRACT(minute FROM (current_timestamp - s1uptime)) FROM timing"));
     }
 
