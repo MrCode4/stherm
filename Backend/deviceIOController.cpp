@@ -439,6 +439,10 @@ void DeviceIOController::createConnections()
     m_wtd_timer.setSingleShot(false);
     m_wtd_timer.start(10000);
 
+    // The daemon regularly sends a "Check_Wiring" request every 600 seconds using a timer.
+    // Inside the daemon, a thread waits for one second and counts up to 600. When the timer reaches 600,
+    // the daemon sends the "Check_Wiring" request to Ti.
+    // Note: Wait in getDynamic10 function in php, timer with tmr_cntr controls the "Check_Wiring" request.
     connect(&m_wiring_timer, &QTimer::timeout, this, &DeviceIOController::wiringExec);
 
     m_wiring_timer.setSingleShot(false);
