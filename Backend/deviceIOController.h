@@ -127,6 +127,9 @@ private:
     //! Get device id
     void getDeviceID();
 
+    void checkTOFRangeValue(uint16_t range_mm);
+    void checkTOFLuminosity(uint32_t luminosity);
+
 private:
     DeviceIOPrivate *m_p;
 

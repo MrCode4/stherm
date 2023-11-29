@@ -5,6 +5,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QtConcurrent/QtConcurrent>
+#include <ScreenSaverManager.h>
 
 #include "LogHelper.h"
 
@@ -711,24 +712,15 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 // Read RangeMilliMeter and Luminosity
                 // In OLD code: 1118-1132
                 memcpy(&RangeMilliMeter, rxPacket.DataArray, sizeof(RangeMilliMeter));
-                memcpy(&Luminosity, rxPacket.DataArray + sizeof(RangeMilliMeter), sizeof(Luminosity));
+                memcpy(&Luminosity,
+                       rxPacket.DataArray + sizeof(RangeMilliMeter),
+                       sizeof(Luminosity));
 
-//                resultMap.insert("RangeMilliMeter", RangeMilliMeter);
-//                resultMap.insert("Luminosity", Luminosity);
+                //                resultMap.insert("RangeMilliMeter", RangeMilliMeter);
+                //                resultMap.insert("Luminosity", Luminosity);
 
-                TRACE_CHECK(false) <<(QString("RangeMilliMeter (%0), Luminosity (%1)").arg(RangeMilliMeter).arg(Luminosity));
-                if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE) {
-                    // key_event('n'); // send screen saver event
-                    auto wake = new QEvent(QEvent::User);
-                    QCoreApplication::instance()->sendEvent(QCoreApplication::instance(), wake);
-                    TRACE_CHECK(false) <<(QString("RangeMilliMeter (%0):  60 < RangeMilliMeter <= 1000 mm").arg(RangeMilliMeter));
-                }
-
-                if (false && m_p->brighness_mode == 1) {
-                    if (!setBrightness(Luminosity)) {
-                        TRACE_CHECK(false) <<(QString("Error: setBrightness (Brightness: %0)").arg(Luminosity));
-                    }
-                }
+                checkTOFRangeValue(RangeMilliMeter);
+                checkTOFLuminosity(Luminosity);
 
             } break;
 
@@ -804,18 +796,9 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 //                if (!set_fan_speed_INFO(fan_speed)) {
                 //                    LOG_DEBUG(QString("Error: setFanSpeed: (fan speed: %0)").arg(fan_speed));
                 //                }
-                if (RangeMilliMeter > 60 && RangeMilliMeter <= TOF_IRQ_RANGE) {
-                    // key_event('n'); // send screen saver event
-                    auto wake = new QEvent(QEvent::User);
-                    QCoreApplication::instance()->sendEvent(QCoreApplication::instance(), wake);
-                    TRACE_CHECK(false) <<(QString("RangeMilliMeter (%0):  60 < RangeMilliMeter <= 1000 mm").arg(RangeMilliMeter));
-                }
 
-                if (false && m_p->brighness_mode == 1) {
-                    if (!setBrightness(Luminosity)) {
-                        LOG_DEBUG(QString("Error: setBrightness (Brightness: %0)").arg(Luminosity));
-                    }
-                }
+                checkTOFRangeValue(RangeMilliMeter);
+                checkTOFLuminosity(Luminosity);
 
                 checkMainDataAlert(mainDataValues);
 
@@ -1336,4 +1319,24 @@ void DeviceIOController::getDeviceID()
 {
     //    TODO get and if not successful out warning
     m_p->DeviceID = QString();
+}
+
+void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
+{
+    TRACE_CHECK(false) << (QString("RangeMilliMeter (%0)").arg(range_mm));
+    if (range_mm > 60 && range_mm <= TOF_IRQ_RANGE) {
+        if (auto manager = ScreenSaverManager::instance()) {
+            manager->restart();
+        }
+    }
+}
+
+void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
+{
+    TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity));
+    if (false && m_p->brighness_mode == 1) {
+        if (!setBrightness(luminosity)) {
+            TRACE_CHECK(false) << (QString("Error: setBrightness (Brightness: %0)").arg(luminosity));
+        }
+    }
 }

@@ -120,11 +120,7 @@ void ScreenSaverManager::restart()
 
 bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
 {
-    switch(event->type()) {
-        //! sent from controller when someone rapproaches to device
-    case QEvent::User:
-        restart();
-        break;
+    switch (event->type()) {
     case QEvent::TouchBegin:
     case QEvent::MouseButtonPress:
     case QEvent::KeyPress:
