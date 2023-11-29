@@ -58,6 +58,9 @@ public:
 
     void setFanWorkPerHour(int newFanWPH);
 
+    STHERM::SystemType systemType() const;
+    void setSystemType(STHERM::SystemType newSystemType);
+
 signals:
     void changeBacklight(QVariantList colorData, int secs = 5);
     void updateRelays(STHERM::RelayConfigs);
@@ -110,7 +113,7 @@ private:
     STHERM::SystemMode mCurrentSysMode;
     STHERM::SystemMode mRealSysMode;
 
-    STHERM::SystemType mDeviceType;
+    STHERM::SystemType mSystemType;
 
     struct STHERM::Vacation mVacation;
 

@@ -2,6 +2,7 @@
 
 #include <QColor>
 
+#include "LogHelper.h"
 #include "PhpApi.h"
 
 const double ET                      = 40;                 // 4.5 C
@@ -35,11 +36,14 @@ Scheme::Scheme(QObject *parent) :
     mTiming = PhpAPI::instance()->timing();
     mRelay  = Relay::instance();
 
+    mCurrentSysMode = STHERM::Auto;
+    mSystemType = STHERM::SystemType::Conventional;
+
     connect(this, &Scheme::modeChanged, this, [this] {
         // todo: use a safe method
         if (this->isRunning()) {
-            terminate();
-            wait();
+            this->terminate();
+            this->wait(100);
         }
 
         this->start();
@@ -58,9 +62,14 @@ Scheme::~Scheme()
 
 void Scheme::run()
 {
+    TRACE << "-- startWork is running.";
+
+    QElapsedTimer timer;
     while (!stopWork) {
         startWork();
     }
+
+    TRACE << "-- startWork Stopped.";
 }
 
 
@@ -69,7 +78,7 @@ void Scheme::startWork()
     switch (mCurrentSysMode) {
    case STHERM::SystemMode::Cooling: {
 
-       switch (mDeviceType) { // Device type
+        switch (mSystemType) { // Device type
         case STHERM::SystemType::Conventional:
        case STHERM::SystemType::CoolingOnly: {
            if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
@@ -132,7 +141,7 @@ void Scheme::startWork()
 
 
    case STHERM::SystemMode::Heating: {
-       switch (mDeviceType) {
+       switch (mSystemType) {
        case STHERM::SystemType::HeatPump: {
            if(mCurrentTemperature < mSetPointTemperature) {
                if (mCurrentTemperature < ET) {
@@ -795,6 +804,27 @@ void Scheme::updateHumifiresState()
                mRelay->setDehumidifierState(false);
         }
     }
+}
+
+STHERM::SystemType Scheme::systemType() const
+{
+    return mSystemType;
+}
+
+void Scheme::setSystemType(STHERM::SystemType newSystemType)
+{
+    if (mSystemType == newSystemType)
+        return;
+
+    mSystemType = newSystemType;
+
+    // Restart thread
+    if (this->isRunning()) {
+        this->terminate();
+        this->wait(100);
+    }
+
+    this->start();
 }
 
 void Scheme::setFanWorkPerHour(int newFanWPH)
