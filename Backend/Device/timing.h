@@ -2,15 +2,21 @@
 
 #include "nuve_types.h"
 
+#include <QElapsedTimer>
+#include <QDateTime>
+
 namespace NUVE {
 
 struct Timing
 {
     Timing() = default;
 
-    timestamp_t s1uptime;
-    timestamp_t uptime;
-    timestamp_t s2uptime;
+    QElapsedTimer       s1uptime;
+    QElapsedTimer       uptime;
+    QElapsedTimer       s2uptime;
+    QElapsedTimer       s2Offtime;
+    QElapsedTimer       fanTime;
+
     bool s2hold;
     bool s3hold;
     bool alerts;
@@ -22,7 +28,9 @@ struct Timing
     uint32_t info_update_interval;
     timestamp_t info_update_timestamp;
     timestamp_t soft_update_timestamp;
-    timestamp_t fan_time;
+
+    QDateTime            fan_time;
+
     uint32_t start_fan_timing;
     timestamp_t delete_info_timestamp;
     std::string delete_info_interval;

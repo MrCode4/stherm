@@ -1019,7 +1019,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                     LOG_DEBUG("ERROR_WIRING_NOT_CONNECTED");
                     LOG_DEBUG("~" + QString::number(rxPacket.DataLen));
                     // Pepare Wiring_check command when all wires not broke
-                    QByteArray packet = DataParser::preparePacket(STHERM::Check_Wiring);
+                    auto packet = DataParser::prepareSIOPacket(STHERM::Check_Wiring);
 
                     LOG_DEBUG(
                         "***** Ti  - ERROR_WIRING_NOT_CONNECTED: Send Check_Wiring command *****");

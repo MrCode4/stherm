@@ -3,7 +3,6 @@
 #include <QColor>
 
 #include "LogHelper.h"
-#include "PhpApi.h"
 
 const double ET                      = 40;                 // 4.5 C
 const double ET_STAGE2               = 3.5;
@@ -28,12 +27,13 @@ const QVariantList coolingColor      = QVariantList{0, 128, 255, STHERM::LedEffe
 const QVariantList heatingColor      = QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE,  "true"};
 const QVariantList emergencyColor    = QVariantList{255, 0, 0, STHERM::LedEffect::LED_BLINK,  "true"};
 
-Scheme::Scheme(QObject *parent) :
+Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
+    mDeviceAPI(deviceAPI),
     QThread (parent)
 {
     stopWork = false;
 
-    mTiming = PhpAPI::instance()->timing();
+    mTiming = mDeviceAPI->timing();
     mRelay  = Relay::instance();
 
     mCurrentSysMode = STHERM::Auto;

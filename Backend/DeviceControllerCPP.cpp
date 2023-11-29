@@ -9,7 +9,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     : QObject(parent)
     , _deviceIO(new DeviceIOController(this))
     , _deviceAPI(new DeviceAPI(this))
-    , m_scheme(new Scheme(this))
+    , m_scheme(new Scheme(_deviceAPI, this))
 {
     QVariantMap mainDataMap;
     mainDataMap.insert("temperature",     0);
