@@ -325,7 +325,7 @@ QVariantMap DeviceIOController::sendRequest(QString className, QString method, Q
                 if (data.size() != 6) {
                     qWarning() << "data sent is not consistent";
                 }
-                if (setBrightness(std::clamp(qRound(data.first().toDouble()), 5, 255)))
+                if (setBrightness(qRound(data.first().toDouble())))
                     return {};
                 else
                     return {{"error", true}};
@@ -389,7 +389,7 @@ QString DeviceIOController::getCPUInfo()
 
 bool DeviceIOController::setBrightness(int value)
 {
-    return UtilityHelper::setBrightness(value);
+    return UtilityHelper::setBrightness(std::clamp(value, 5, 255));
 }
 
 void DeviceIOController::setTimeZone(int offset)
@@ -652,7 +652,10 @@ bool DeviceIOController::setSettings(QVariantList data)
             qWarning() << "data sent is not consistent";
             return false;
         }
-        if (setBrightness(std::clamp(qRound(data.first().toDouble()), 5, 255)))
+
+        m_p->brighness_mode = data.last().toBool() ? 1 : 0;
+
+        if (setBrightness(qRound(data.first().toDouble())))
             return true;
         else
             return false;
@@ -1367,7 +1370,7 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
 void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
 {
     TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity));
-    if (false && m_p->brighness_mode == 1) {
+    if (m_p->brighness_mode == 1) {
         if (!setBrightness(luminosity)) {
             TRACE_CHECK(false) << (QString("Error: setBrightness (Brightness: %0)").arg(luminosity));
         }
