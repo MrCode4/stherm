@@ -70,8 +70,8 @@ void Scheme::startWork()
    case STHERM::SystemMode::Cooling: {
 
        switch (mDeviceType) { // Device type
-       case STHERM::CoolingType::Conventional:
-       case STHERM::CoolingType::CoolingOnly: {
+        case STHERM::SystemType::Conventional:
+       case STHERM::SystemType::CoolingOnly: {
            if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
                mRelay->setOb_state(STHERM::Heating);
 
@@ -94,7 +94,7 @@ void Scheme::startWork()
            }
        }
 
-       case STHERM::CoolingType::HeatPump: {
+       case STHERM::SystemType::HeatPump: {
            if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
                mRelay->setOb_state(STHERM::Cooling);
 
@@ -133,7 +133,7 @@ void Scheme::startWork()
 
    case STHERM::SystemMode::Heating: {
        switch (mDeviceType) {
-       case STHERM::CoolingType::HeatPump: {
+       case STHERM::SystemType::HeatPump: {
            if(mCurrentTemperature < mSetPointTemperature) {
                if (mCurrentTemperature < ET) {
                    heatingEmergencyHeatPumpRole1();
@@ -146,8 +146,8 @@ void Scheme::startWork()
                mRelay->setAllOff();
            }
        }
-       case STHERM::CoolingType::Conventional:
-       case STHERM::CoolingType::HeatingOnly: {
+       case STHERM::SystemType::Conventional:
+       case STHERM::SystemType::HeatingOnly: {
            if (mSetPointTemperature - mCurrentTemperature >= 1.9) {
                // Sys delay
                mRelay->heatingStage1();
@@ -190,8 +190,8 @@ void Scheme::startWork()
    // Update relays
    emit updateRelays(mRelay->relays());
 
-   // Wait for 1 second
-   wait(1000);
+   // Wait for 1200 miliseconds
+   msleep(1200);
 
 //   startWork();
 }

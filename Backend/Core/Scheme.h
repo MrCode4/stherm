@@ -110,7 +110,7 @@ private:
     STHERM::SystemMode mCurrentSysMode;
     STHERM::SystemMode mRealSysMode;
 
-    STHERM::CoolingType mDeviceType;
+    STHERM::SystemType mDeviceType;
 
     struct STHERM::Vacation mVacation;
 

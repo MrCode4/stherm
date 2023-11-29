@@ -98,6 +98,8 @@ void DeviceControllerCPP::startDevice()
     _deviceIO->setStopReading(false);
 
     TRACE << "start mode is: " << _deviceAPI->getStartMode();
+
+    m_scheme->start();
 }
 
 void DeviceControllerCPP::stopDevice()

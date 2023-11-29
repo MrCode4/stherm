@@ -355,13 +355,12 @@ enum SystemMode
     Emergency
 };
 
-enum CoolingType
+enum SystemType
 {
     Conventional,
     CoolingOnly,
     HeatPump,
-    HeatingOnly,
-    GasFuel
+    HeatingOnly
 };
 
 /**
