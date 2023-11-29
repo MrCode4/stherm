@@ -1,6 +1,7 @@
 #include "Scheme.h"
 
 #include <QColor>
+#include <QEventLoop>
 
 #include "LogHelper.h"
 
@@ -640,10 +641,9 @@ void Scheme::coolingHeatPumpRole2()
 
 int Scheme::waitLoop() {
    QEventLoop loop;
-   connect(this, &Scheme::currentTemperatureChanged, this, [&loop]() {
-           loop.exit(ChangeType::CurrentTemperature);
-
-       }, Qt::SingleShotConnection);
+   connect(this, &Scheme::currentTemperatureChanged, &loop, [&loop]() {
+       loop.exit(ChangeType::CurrentTemperature);
+   });
 
    return loop.exec();
 }
