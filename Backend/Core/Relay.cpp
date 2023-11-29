@@ -217,11 +217,9 @@ void Relay::setAllOff()
 
 bool Relay::heatingStage0()
 {
-    if (ob_state == STHERM::SystemMode::Heating) {
-        mRelay.o_b   = STHERM::RelayMode::ON;
-    } else {
-        mRelay.o_b   = STHERM::RelayMode::OFF;
-    }
+    mRelay.o_b = (ob_state == STHERM::SystemMode::Heating) ?
+                     STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+
     mRelay.y1 = STHERM::RelayMode::OFF;
     mRelay.y2 = STHERM::RelayMode::OFF;
     mRelay.y3 = STHERM::RelayMode::OFF;
@@ -239,11 +237,10 @@ bool Relay::heatingStage0()
 bool Relay::coolingStage0()
 {
     mRelay.o_b   = STHERM::RelayMode::OFF;
-    if (ob_state == STHERM::SystemMode::Cooling) {
-        mRelay.o_b   = STHERM::RelayMode::ON;
-    } else {
-        mRelay.o_b   = STHERM::RelayMode::OFF;
-    }
+
+    mRelay.o_b = (ob_state == STHERM::SystemMode::Cooling) ?
+                     STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+
     mRelay.y1  = STHERM::RelayMode::OFF;
     mRelay.y2  = STHERM::RelayMode::OFF;
     mRelay.y3 = STHERM::RelayMode::OFF;
@@ -261,22 +258,20 @@ bool Relay::coolingStage0()
 bool Relay:: heatingStage1()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == STHERM::SystemMode::Heating) {
-            mRelay.o_b   = STHERM::RelayMode::ON;
-        } else {
-            mRelay.o_b   = STHERM::RelayMode::OFF;
-        }
+            mRelay.o_b = (ob_state == STHERM::SystemMode::Heating) ?
+                         STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+
         mRelay.y1  = STHERM::RelayMode::ON;
-        mRelay.y2  = STHERM::RelayMode::OFF;
-        mRelay.y3 = STHERM::RelayMode::OFF;
     } else {
         mRelay.y1  = STHERM::RelayMode::OFF;
-        mRelay.y2  = STHERM::RelayMode::OFF;
-        mRelay.y3 = STHERM::RelayMode::OFF;
         mRelay.w1  = STHERM::RelayMode::ON;
         mRelay.w2 = STHERM::RelayMode::OFF;
         mRelay.w3 = STHERM::RelayMode::OFF;
     }
+
+    mRelay.y2  = STHERM::RelayMode::OFF;
+    mRelay.y3 = STHERM::RelayMode::OFF;
+
     startTempTimer(STHERM::SystemMode::Heating);
     current_state = STHERM::SystemMode::Heating;
 
@@ -286,15 +281,13 @@ bool Relay:: heatingStage1()
 bool Relay:: heatingStage2()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == STHERM::SystemMode::Heating) {
-            mRelay.o_b   = STHERM::RelayMode::ON;
-        } else {
-            mRelay.o_b   = STHERM::RelayMode::OFF;
-        }
+        mRelay.o_b = (ob_state == STHERM::SystemMode::Heating) ?
+                         STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
 
         mRelay.y1 = STHERM::RelayMode::ON;
         mRelay.y2  = STHERM::RelayMode::ON;
         mRelay.y3= STHERM::RelayMode::OFF;
+
     } else {
         mRelay.y1  = STHERM::RelayMode::OFF;
         mRelay.y2  = STHERM::RelayMode::OFF;
@@ -312,39 +305,35 @@ bool Relay:: heatingStage2()
 bool Relay::coolingStage2()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == STHERM::SystemMode::Cooling) {
-            mRelay.o_b   = STHERM::RelayMode::ON;
-        } else {
-            mRelay.o_b   = STHERM::RelayMode::OFF;
-        }
-        mRelay.y1  = STHERM::RelayMode::ON;
-        mRelay.y2  = STHERM::RelayMode::ON;
-        mRelay.y3 = STHERM::RelayMode::OFF;
+        mRelay.o_b = (ob_state == STHERM::SystemMode::Cooling) ?
+                         STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+
     } else {
-        mRelay.y1  = STHERM::RelayMode::ON;
-        mRelay.y2  = STHERM::RelayMode::ON;
-        mRelay.y3 = STHERM::RelayMode::OFF;
         mRelay.w1 = STHERM::RelayMode::OFF;
         mRelay.w2 = STHERM::RelayMode::OFF;
         mRelay.w3 = STHERM::RelayMode::OFF;
     }
+
+    mRelay.y1  = STHERM::RelayMode::ON;
+    mRelay.y2  = STHERM::RelayMode::ON;
+    mRelay.y3 = STHERM::RelayMode::OFF;
+
     startTempTimer(STHERM::SystemMode::Cooling);
     current_state = STHERM::SystemMode::Cooling;
+
     return true;
 }
 
 bool Relay::heatingStage3()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == STHERM::SystemMode::Heating) {
-            mRelay.o_b   = STHERM::RelayMode::ON;
-        } else {
-            mRelay.o_b   = STHERM::RelayMode::OFF;
-        }
+        mRelay.o_b = (ob_state == STHERM::SystemMode::Heating) ?
+                         STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
 
         mRelay.y1  = STHERM::RelayMode::ON;
         mRelay.y2  = STHERM::RelayMode::ON;
         mRelay.y3  = STHERM::RelayMode::ON;
+
     } else {
         mRelay.w1  = STHERM::RelayMode::ON;
         mRelay.w2  = STHERM::RelayMode::ON;
@@ -352,8 +341,9 @@ bool Relay::heatingStage3()
 
         mRelay.y1  = STHERM::RelayMode::OFF;
         mRelay.y2  = STHERM::RelayMode::OFF;
-        mRelay.y3 = STHERM::RelayMode::OFF;
+        mRelay.y3  = STHERM::RelayMode::OFF;
     }
+
     startTempTimer(STHERM::SystemMode::Heating);
     current_state = STHERM::SystemMode::Heating;
     return true;
@@ -362,23 +352,20 @@ bool Relay::heatingStage3()
 bool Relay::coolingStage3()
 {
     if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == STHERM::SystemMode::Cooling) {
-            mRelay.o_b   = STHERM::RelayMode::ON;
-        } else {
-            mRelay.o_b   = STHERM::RelayMode::OFF;
-        }
 
-        mRelay.y1  = STHERM::RelayMode::ON;
-        mRelay.y2  = STHERM::RelayMode::ON;
-        mRelay.y3  = STHERM::RelayMode::ON;
+        mRelay.o_b = (ob_state == STHERM::SystemMode::Cooling) ?
+                         STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+
     } else {
-        mRelay.y1  = STHERM::RelayMode::ON;
-        mRelay.y2  = STHERM::RelayMode::ON;
-        mRelay.y3  = STHERM::RelayMode::ON;
         mRelay.w1 = STHERM::RelayMode::OFF;
         mRelay.w2 = STHERM::RelayMode::OFF;
         mRelay.w3 = STHERM::RelayMode::OFF;
     }
+
+    mRelay.y1  = STHERM::RelayMode::ON;
+    mRelay.y2  = STHERM::RelayMode::ON;
+    mRelay.y3  = STHERM::RelayMode::ON;
+
     startTempTimer(STHERM::SystemMode::Cooling);
     current_state = STHERM::SystemMode::Cooling;
 
@@ -399,6 +386,7 @@ bool Relay::emergencyHeating1()
 
         return true;
     }
+
     return false;
 }
 
