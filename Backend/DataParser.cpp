@@ -30,7 +30,7 @@ DataParser::DataParser(QObject *parent) :
 {
 }
 
-QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType, STHERM::RelayConfigs relayConfig)
+STHERM::SIOPacket DataParser::prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType, STHERM::RelayConfigs relayConfig)
 {
     // Prepare packet to write
     STHERM::SIOPacket txPacket = prepareSIOPacket(cmd, packetType);
@@ -48,18 +48,7 @@ QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType 
     txPacket.DataArray[i++] = (relayConfig.o_b == STHERM::ON ? 1 : 0);
     txPacket.DataArray[i] = (relayConfig.acc1n == STHERM::ON ? 1 : 0);
 
-    // An integer variable dev_buff_size is declared.
-    int dev_buff_size;
-    uint8_t dev_info[32];
-
-    // call Set_SIO_TxPacket with the output and input structures
-    // return the size of the dev_info output packet
-    dev_buff_size = UtilityHelper::setSIOTxPacket(dev_info, txPacket);
-
-    QByteArray result = QByteArray::fromRawData(reinterpret_cast<char *>(dev_info),
-                                                dev_buff_size);
-
-    return result;
+    return txPacket;
 }
 
 QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType, QVariantList data)
@@ -122,6 +111,43 @@ STHERM::SIOPacket DataParser::prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::P
         txPacket.DataArray[3] = 255;
         txPacket.DataArray[4] = data[3].toInt();
     } break;
+    case STHERM::InitMcus: {
+        auto thresholds = data[0].value<STHERM::AQ_TH_PR_thld>();
+
+        uint8_t cpIndex = 0;
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.temp_high, sizeof(thresholds.temp_high));
+        cpIndex += sizeof(thresholds.temp_high);
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.temp_low, sizeof(thresholds.temp_low));
+        cpIndex += sizeof(thresholds.temp_low);
+
+        memcpy(txPacket.DataArray + cpIndex,
+               &thresholds.humidity_high,
+               sizeof(thresholds.humidity_high));
+        cpIndex += sizeof(thresholds.humidity_high);
+
+        memcpy(txPacket.DataArray + cpIndex,
+               &thresholds.humidity_low,
+               sizeof(thresholds.humidity_low));
+        cpIndex += sizeof(thresholds.humidity_low);
+
+        memcpy(txPacket.DataArray + cpIndex,
+               &thresholds.pressure_high,
+               sizeof(thresholds.pressure_high));
+        cpIndex += sizeof(thresholds.pressure_high);
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.c02_high, sizeof(thresholds.c02_high));
+        cpIndex += sizeof(thresholds.c02_high);
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.Tvoc_high, sizeof(thresholds.Tvoc_high));
+        cpIndex += sizeof(thresholds.Tvoc_high);
+
+        memcpy(txPacket.DataArray + cpIndex, &thresholds.etoh_high, sizeof(thresholds.etoh_high));
+        cpIndex += sizeof(thresholds.etoh_high);
+        txPacket.DataLen = cpIndex;
+        //    TODO update CRC
+    }
     default:
         break;
     }

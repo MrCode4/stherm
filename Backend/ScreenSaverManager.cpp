@@ -2,11 +2,26 @@
 
 #include <QMouseEvent>
 
+/*!
+ * \brief ScreenSaverManager::sInstance Initialize it to null
+ */
+ScreenSaverManager* ScreenSaverManager::sInstance = nullptr;
+
+ScreenSaverManager* ScreenSaverManager::instance()
+{
+    return sInstance;
+}
+
 ScreenSaverManager::ScreenSaverManager(QObject *parent)
     : QObject{parent}
     , mApplication { QCoreApplication::instance() }
     , mState { ScreenSaverManager::State::Disabled }
 {
+    //! Set sInstance to this
+    if (!sInstance) {
+        sInstance = this;
+    }
+
     //! By default screen saver timeout is 20000
     mScreenSaverTimer.setInterval(20000);
     setActive();
@@ -93,15 +108,22 @@ void ScreenSaverManager::setActive()
     }
 }
 
+void ScreenSaverManager::restart()
+{
+    if (mState == State::Running) {
+        mScreenSaverTimer.stop();
+        mScreenSaverTimer.start();
+    } else {
+        setActive();
+    }
+}
+
 bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
 {
     switch(event->type()) {
         //! sent from controller when someone rapproaches to device
     case QEvent::User:
-        if (mState == ScreenSaverManager::State::Timeout) {
-            //! Set it to running again
-            setState(ScreenSaverManager::State::Running);
-        }
+        restart();
         break;
     case QEvent::TouchBegin:
     case QEvent::MouseButtonPress:

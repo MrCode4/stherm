@@ -29,14 +29,14 @@ RoundButton {
 
     /* Object properties
      * ****************************************************************************************/
-    y: enabled && checked ? -cellSize / 2.5 : 0
+    y: enabled && checked ? -cellSize / 3 : 0
     height: width
     checkable: true
     flat: !checked
     down: checked
     padding: 20
     background: Rectangle {
-        implicitWidth: cellSize * (enabled && checked ? 1 : 0.8)
+        implicitWidth: cellSize * (enabled && checked ? 1 : 0.85)
         implicitHeight: background.implicitWidth
         radius: _root.radius
         color: !_root.enabled ? _root.Material.buttonDisabledColor

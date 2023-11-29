@@ -34,6 +34,7 @@ qt_add_qml_module(RoniaStyle
         CheckBox.qml
         ApplicationWindow.qml
         TextField.qml
+        Slider.qml
 )
 
 qt_add_qml_module(RoniaStyleImpl
@@ -43,18 +44,21 @@ qt_add_qml_module(RoniaStyleImpl
 
     RESOURCES
         res/check.png
+        res/check-dark.png
 
     QML_FILES
         impl/ButtonStyle.qml
+        impl/RadioButtonStyle.qml
+        impl/SwitchStyle.qml
+        impl/TextFieldStyle.qml
+
         impl/ButtonLabel.qml
         impl/SwitchIndicator.qml
         impl/FontIconsSize.qml
         impl/RadioIndicator.qml
-        impl/RadioButtonStyle.qml
         impl/CheckIndicator.qml
-        impl/SwitchStyle.qml
         impl/CursorDelegate.qml
-        impl/TextFieldStyle.qml
+        impl/SliderHandle.qml
 )
 
 target_link_libraries(RoniaStyleImpl PUBLIC

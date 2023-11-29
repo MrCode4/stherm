@@ -19,12 +19,12 @@ public:
     DataParser(QObject *parent = nullptr);
 
     //! Prepare packet
-    static QByteArray preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType,
-                             STHERM::RelayConfigs relayConfig);
-
     static QByteArray preparePacket(STHERM::SIOCommand cmd,
                              STHERM::PacketType packetType = STHERM::PacketType::UARTPacket,
                              QVariantList data = QVariantList());
+
+    static STHERM::SIOPacket prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::PacketType packetType,
+                                              STHERM::RelayConfigs relayConfig);
 
     static STHERM::SIOPacket prepareSIOPacket(STHERM::SIOCommand cmd,
                                     STHERM::PacketType packetType = STHERM::PacketType::UARTPacket,

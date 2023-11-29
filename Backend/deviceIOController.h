@@ -99,13 +99,14 @@ private:
     //! Check alerts with AQ_TH_PR_vals
     void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values);
 
-    bool processNRFQueue();
-
     //! Process NRF response
     void processNRFResponse(STHERM::SIOPacket rxPacket);
+    bool processNRFQueue();
 
     //! Process TI response
     void processTIResponse(STHERM::SIOPacket rxPacket);
+    bool processTIQueue();
+    bool sendTIRequest(STHERM::SIOPacket txPacket);
 
     //! Get time configs from saved configs file.
     STHERM::ResponseTime getTimeConfig();
@@ -128,6 +129,9 @@ private:
     //! Get device id
     void getDeviceID();
 
+    //! Check relay with wiring states
+    bool checkRelayVaidation();
+
 private:
     DeviceIOPrivate *m_p;
 
@@ -143,5 +147,6 @@ private:
     QTimer m_nRF_timer;
 
     std::queue<STHERM::SIOPacket> m_nRF_queue;
-    bool checkRelayVaidation();
+
+    std::queue<STHERM::SIOPacket> m_TI_queue;
 };

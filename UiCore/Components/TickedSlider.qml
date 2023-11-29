@@ -3,6 +3,7 @@ import QtQuick.Controls.Material.impl
 import QtQuick.Layouts
 
 import Ronia
+import Ronia.impl
 
 /*! ***********************************************************************************************
  * TickedSlider is an special slider with value ticks
@@ -29,13 +30,15 @@ Slider {
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
                              implicitHandleHeight + topPadding + bottomPadding)
                     + _ticksLay.implicitHeight * _ticksLay.visible
+    topPadding: 16
+    bottomPadding: 12
     leftPadding: 12
     rightPadding: 12
     snapMode: Slider.SnapAlways
 
     handle: SliderHandle {
         x: _control.leftPadding + (_control.horizontal ? _control.visualPosition * (_control.availableWidth - width): (_control.availableWidth - width) / 2)
-        y: _control.topPadding + (_control.horizontal ? 6 : _control.visualPosition * (_control.availableHeight - height))
+        y: _control.topPadding + (_control.horizontal ? 0 : _control.visualPosition * (_control.availableHeight - height))
         value: _control.value
         handleHasFocus: _control.visualFocus
         handlePressed: _control.pressed
@@ -44,7 +47,7 @@ Slider {
 
     background: Rectangle {
         x: _control.leftPadding + (_control.horizontal ? 0 : (_control.availableWidth - width) / 2)
-        y: _control.topPadding + (_control.horizontal ? height + 6 : 0)
+        y: _control.topPadding + (_control.horizontal ? (_control.handle.height - height) / 2 : 0)
         implicitWidth: _control.horizontal ? 200 : 40
         implicitHeight: _control.horizontal ? 40 : 200
         width: _control.horizontal ? _control.availableWidth : 4
@@ -83,7 +86,7 @@ Slider {
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            implicitHeight: 18
+            Layout.preferredHeight: 18
 
             Repeater {
                 id: _ticksRepeater
@@ -109,7 +112,8 @@ Slider {
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            implicitHeight: 16
+            Layout.preferredHeight: _control.font.pointSize * 1.34 + 8
+
             Repeater {
                 model: Math.floor(ticksCount / majorTickCount) + 1
                 delegate: Label {

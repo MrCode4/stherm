@@ -6,7 +6,6 @@ Item {
     property alias text: textId.text
     property alias font: textId.font
     property alias color: textId.color
-    property alias checkColor: colorOverlayId.color
     property alias checkBackground: checkIconId.color
     property int spacing: 4
     property T.Button button
@@ -38,17 +37,11 @@ Item {
             id: iconImg
             anchors.fill: parent
             anchors.margins: 3
-            visible: false
+            opacity: enabled ? 1. : 0.5
             source: "qrc:/Ronia/impl/res/check.png"
             sourceSize.width: width
             sourceSize.height: height
             fillMode: Image.PreserveAspectFit
-        }
-
-        ColorOverlay {
-            id: colorOverlayId
-            anchors.fill: iconImg
-            source: iconImg
         }
     }
 }

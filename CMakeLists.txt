@@ -133,7 +133,7 @@ qt6_add_qml_module(appStherm
         View/ScheduleView.qml
         View/BacklightPage.qml
         View/MainView.qml
-        View/NexgenIcon.qml
+        View/OrganizationIcon.qml
         View/ScreenSaver.qml
         View/FanPage.qml
         View/SystemInfoPage.qml
@@ -173,6 +173,7 @@ qt6_add_qml_module(appStherm
         View/Test/BacklightTestPage.qml
         View/Test/AudioTestPage.qml
         View/Test/InternalSensorTestPage.qml
+        View/ContactContractorPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
@@ -294,6 +295,7 @@ qt6_add_qml_module(appStherm
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
+        Images/nuve-icon.png
         Images/Wifi/wifi.png
         Images/Wifi/wifi-good.png
         Images/Wifi/wifi-fair.png

@@ -98,7 +98,7 @@ BasePageView {
                                                                                : sortedWifis.length > 0)
         opacity: 0.7
         font.pointSize: Application.font.pointSize * 0.8
-        text: "Available Network"
+        text: "Available Networks"
     }
 
     ColumnLayout {
@@ -145,7 +145,7 @@ BasePageView {
                 function updatePos()
                 {
                     if (wifiDelegate) {
-                        var newPos = wifiDelegate.mapToItem(_wifisFlick, 0, 0);
+                        var newPos = wifiDelegate.mapToItem(_wifisCol, 0, 0);
                         x = newPos.x;
                         y = newPos.y;
                     }
