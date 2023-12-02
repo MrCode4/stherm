@@ -42,6 +42,7 @@ ApplicationWindow {
     onVisibleChanged: {
         if (visible) {
             _splashLoader.sourceComponent = null;
+            window.uiSession.simulating = false;
         }
     }
 

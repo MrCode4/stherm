@@ -24,6 +24,7 @@ Button {
     text: "Simulation"
 
     onClicked: {
+        return;
         if (uiSession)
             uiSession.simulating = !uiSession.simulating;
     }
