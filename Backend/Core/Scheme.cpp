@@ -208,7 +208,6 @@ void Scheme::startWork()
 
    case AppSpecCPP::SystemMode::Vacation: {
        updateVacationState();
-       return;
    } break;
 
    default:
@@ -789,10 +788,6 @@ void Scheme::updateVacationState()
     // Update current system mode
     mCurrentSysMode = realSysMode;
     mSystemSetup->systemMode = realSysMode;
-
-
-    // Start work
-    startWork();
 }
 
 void Scheme::updateHumifiresState()
