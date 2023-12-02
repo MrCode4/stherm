@@ -76,8 +76,14 @@ void GpioHandler::handleGpioEvent(QSocketDescriptor socket, QSocketNotifier::Typ
         return;
     }
 
-    this->seek(SEEK_SET);
+    //! disabling notifier for 5 millisecondsto lower cpu usage
+    notifier->setEnabled(false);
+    QTimer::singleShot(5, this, [=] () {
+        notifier->setSocket(file.handle());
+        notifier->setEnabled(true);
+    });
 
+    this->seek(SEEK_SET);
     qint64 bytesRead = readFile(buffer, sizeof(buffer));
 
     if (bytesRead > 0) {
