@@ -65,6 +65,11 @@ QSObject {
     //! Vacation
     property Vacation       vacation:       Vacation {}
 
+    // System setup
+    property SystemSetup    systemSetup:    SystemSetup {
+        _qsRepo: appModel._qsRepo
+    }
+
     /* Functions
      * ****************************************************************************************/
 }

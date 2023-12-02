@@ -25,7 +25,9 @@ I_DeviceController {
 
     /* Object Properties
      * ****************************************************************************************/
-    deviceControllerCPP: DeviceControllerCPP {}
+    deviceControllerCPP: DeviceControllerCPP {
+        systemSetup: device.systemSetup
+    }
 
     /* Signals
      * ****************************************************************************************/

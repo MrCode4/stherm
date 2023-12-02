@@ -4,6 +4,7 @@
 #include <QVariantMap>
 
 #include "Core/Relay.h"
+#include "Device/SystemSetup.h"
 #include "DeviceAPI.h"
 #include "UtilityHelper.h"
 #include "include/timing.h"
@@ -25,7 +26,7 @@ class Scheme : public QThread
     Q_OBJECT
 
 public:
-    explicit Scheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
+    explicit Scheme(DeviceAPI *deviceAPI, SystemSetup* systemSetup, QObject *parent = nullptr);
 
     ~Scheme();
 
@@ -119,6 +120,8 @@ private:
     STHERM::SystemType mSystemType;
 
     struct STHERM::Vacation mVacation;
+
+    SystemSetup* mSystemSetup;
 
     NUVE::Timing* mTiming;
     Relay*  mRelay;

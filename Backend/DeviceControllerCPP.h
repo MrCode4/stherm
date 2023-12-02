@@ -7,6 +7,7 @@
 #include "DeviceAPI.h"
 #include "deviceIOController.h"
 #include "Core/Scheme.h"
+#include "Device/SystemSetup.h"
 
 /*! ***********************************************************************************************
  * This class manages send requests from app to device and and process the received response.
@@ -15,6 +16,8 @@
 class DeviceControllerCPP  : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
     QML_ELEMENT
 
@@ -66,6 +69,19 @@ public:
     //! Stop device
     Q_INVOKABLE void stopDevice();
 
+    SystemSetup* systemSetup() const {
+        return mSystemSetup;
+    }
+
+    void setSystemSetup (SystemSetup* systemSetup) {
+        if (mSystemSetup == systemSetup)
+            return;
+
+        mSystemSetup = systemSetup;
+
+        emit systemSetupChanged();
+    }
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -74,6 +90,8 @@ Q_SIGNALS:
     void alert(STHERM::AlertLevel alertLevel,
                STHERM::AlertTypes alertType,
                QString alertMessage = QString());
+
+    void systemSetupChanged();
 
 private:
     // update main data and send data to scheme.
@@ -96,7 +114,9 @@ private:
     DeviceIOController *_deviceIO;
     DeviceAPI *_deviceAPI;
 
-    Scheme *m_scheme;
+    SystemSetup *mSystemSetup;
+    Scheme      *m_scheme;
 
     QVariantList mBacklightModelData;
+
 };
