@@ -24,6 +24,7 @@ set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
 
 # Add any include directories
 #include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)

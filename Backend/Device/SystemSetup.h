@@ -28,7 +28,8 @@ public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
 
 public:
-    STHERM::SystemType systemType;
+    //STHERM::SystemType
+    int systemType;
 
     int traditionalHeatStage;
     int traditionalCoolStage;

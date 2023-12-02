@@ -1,6 +1,6 @@
 #include "SystemSetup.h"
 
-SystemSetup::SystemType(QSObjectCpp *parent)
+SystemSetup::SystemSetup(QSObjectCpp *parent)
     : QSObjectCpp{parent}
 {
 
