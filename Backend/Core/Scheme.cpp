@@ -84,7 +84,7 @@ void Scheme::startWork()
         case STHERM::SystemType::Conventional:
        case STHERM::SystemType::CoolingOnly: {
            if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
-               mRelay->setOb_state(STHERM::Heating);
+               mRelay->setOb_state(AppSpecCPP::Heating);
 
                // sysDelay
                mRelay->coolingStage1();
@@ -107,7 +107,7 @@ void Scheme::startWork()
 
        case STHERM::SystemType::HeatPump: {
            if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
-               mRelay->setOb_state(STHERM::Cooling);
+               mRelay->setOb_state(AppSpecCPP::Cooling);
 
                // sysDelay
                mRelay->coolingStage1();
@@ -431,7 +431,7 @@ void Scheme::heatingHeatPumpRole1()
    }
 
    if (mSetPointTemperature - mCurrentTemperature >= 3) {
-       mRelay->setOb_state(STHERM::Heating);
+       mRelay->setOb_state(AppSpecCPP::Heating);
 
        //SysDelay
        mRelay->heatingStage1();
@@ -774,7 +774,7 @@ void Scheme::updateHumifiresState()
     if (mHumidifierId == 3)
         return;
 
-    if (mCurrentSysMode == STHERM::Vacation) {
+    if (mCurrentSysMode == AppSpecCPP::Vacation) {
         if (mHumidifierId == 1) {
             mRelay->setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
 

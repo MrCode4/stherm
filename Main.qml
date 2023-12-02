@@ -86,7 +86,7 @@ ApplicationWindow {
 
     StackLayout {
         id: _normalAndVacationModeStV
-        currentIndex: uiSession?.appModel.systemMode === AppSpecCPP.Vacation ? 1 : 0
+        currentIndex: uiSession?.appModel.systemSetup.systemMode === AppSpecCPP.Vacation ? 1 : 0
 
         Flickable {
             id: _mainViewFlick

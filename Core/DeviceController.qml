@@ -112,11 +112,11 @@ I_DeviceController {
 
     function setSystemModeTo(systemMode: int)
     {
-        if (systemMode >= 0 && systemMode <= AppSpec.SystemMode.Off) {
+        if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
             //! Do required actions if any
             sendReceive('system', 'setMode', [ systemMode ]);
 
-            device.systemMode = systemMode;
+            device.systemSetup.systemMode = systemMode;
         }
     }
 

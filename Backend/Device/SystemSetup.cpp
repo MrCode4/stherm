@@ -17,5 +17,7 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
 
     systemRunDelay = 1;
 
+    systemMode = AppSpecCPP::SystemMode::Auto;
+
     heatPumpEmergency = false;
 }

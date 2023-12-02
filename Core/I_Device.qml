@@ -32,9 +32,6 @@ QSObject {
     //! TOF: Time of flight (distance sensor)
     property real           tof:            0.0
 
-    //! System mode
-    property int            systemMode:     AppSpecCPP.Auto
-
     //!‌ Device is in hold state or not
     property bool           isHold:         false
 

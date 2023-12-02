@@ -122,7 +122,7 @@ ToolButton {
     }
 
     state: {
-        switch(device?.systemMode) {
+        switch(device?.systemSetup?.systemMode) {
         case AppSpecCPP.Off:
             return "off";
         case AppSpecCPP.Heating:
@@ -160,19 +160,19 @@ ToolButton {
         //! Find next state
         var nextMode = -1;
 
-        switch(device?.systemMode) {
-        case AppSpec.SystemMode.Off:
-            nextMode = AppSpec.SystemMode.Heating;
+        switch(device?.systemSetup.systemMode) {
+        case AppSpecCPP.Off:
+            nextMode = AppSpecCPP.Heating;
             break;
-        case AppSpec.SystemMode.Heating:
-            nextMode = AppSpec.SystemMode.Cooling;
+        case AppSpecCPP.Heating:
+            nextMode = AppSpecCPP.Cooling;
             break;
-        case AppSpec.SystemMode.Cooling:
-            nextMode = AppSpec.SystemMode.Auto;
+        case AppSpecCPP.Cooling:
+            nextMode = AppSpecCPP.Auto;
             break;
-        case AppSpec.SystemMode.Vacation:
-        case AppSpec.SystemMode.Auto:
-            nextMode = AppSpec.SystemMode.Off;
+        case AppSpecCPP.Vacation:
+        case AppSpecCPP.Auto:
+            nextMode = AppSpecCPP.Off;
             break;
         }
 

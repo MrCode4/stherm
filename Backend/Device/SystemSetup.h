@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QQmlEngine>
 
+#include "AppSpecCPP.h"
 #include "UtilityHelper.h"
 #include "QtQuickStream/Core/QSObjectCpp.h"
 
@@ -22,7 +23,7 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(int systemRunDelay     MEMBER systemRunDelay  NOTIFY systemRunDelayChanged FINAL)
 
-    Q_PROPERTY(int systemMode     MEMBER systemMode  NOTIFY systemModeChanged FINAL)
+    Q_PROPERTY(AppSpecCPP::SystemMode systemMode     MEMBER systemMode  NOTIFY systemModeChanged FINAL)
 
     Q_PROPERTY(bool heatPumpEmergency MEMBER heatPumpEmergency NOTIFY heatPumpEmergencyChanged FINAL)
 
@@ -48,7 +49,7 @@ public:
     // System run delay
     int systemRunDelay;
 
-    int systemMode;
+    AppSpecCPP::SystemMode systemMode;
 
     bool heatPumpEmergency;
 
