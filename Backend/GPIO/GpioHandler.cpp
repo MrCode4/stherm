@@ -69,8 +69,6 @@ void GpioHandler::seek(int position)
 
 void GpioHandler::handleGpioEvent(QSocketDescriptor socket, QSocketNotifier::Type activationEvent)
 {
-    static QByteArray Data = "";
-
     char buffer[256];
 
     auto ba = file.bytesAvailable();
@@ -84,8 +82,8 @@ void GpioHandler::handleGpioEvent(QSocketDescriptor socket, QSocketNotifier::Typ
 
     if (bytesRead > 0) {
         QByteArray bufferBA = buffer;
-        if (bufferBA != Data) {
-            Data = bufferBA;
+        if (bufferBA != dataLastRead) {
+            dataLastRead = bufferBA;
             emit readyRead(bufferBA);
         }
     }

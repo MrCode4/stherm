@@ -568,7 +568,7 @@ void DeviceIOController::createNRF()
             if (time - m_p->lastTimeSensors < 100 || time - m_p->lastTimeTOF < 100)
                 return;
             if (data.length() == 2 && data.at(0) == '0') {
-                m_p->lastTimeTOF = QDateTime::currentMSecsSinceEpoch();
+                m_p->lastTimeTOF = time;
                 m_nRF_queue.push(m_p->TOFPacketBA);
                 TRACE << "request for gpio 5" << processNRFQueue();
             }

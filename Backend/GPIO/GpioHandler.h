@@ -50,5 +50,6 @@ private:
     QSocketNotifier *notifier;
     QString filePath;
     QString mError;
+    QByteArray dataLastRead;
 };
 
