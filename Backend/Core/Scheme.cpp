@@ -218,11 +218,10 @@ void Scheme::startWork()
    int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
    mRelay->fanWorkTime(mFanWPH, fanWork);
 
-   TRACE;
    // Update relays
    emit updateRelays(mRelay->relays());
-   TRACE;
 
+   TRACE;
    // Wait for 1200 miliseconds
    msleep(1200);
    TRACE;
