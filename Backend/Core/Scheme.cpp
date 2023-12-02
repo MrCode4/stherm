@@ -41,7 +41,9 @@ Scheme::Scheme(DeviceAPI* deviceAPI, SystemSetup *systemSetup, QObject *parent) 
     mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
     mSystemType = STHERM::SystemType::Conventional;
 
-    connect(this, &Scheme::modeChanged, this, [this] {
+    connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
+        TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
+
         // todo: use a safe method
         if (this->isRunning()) {
             this->terminate();
@@ -77,7 +79,8 @@ void Scheme::run()
 
 void Scheme::startWork()
 {
-    switch (mCurrentSysMode) {
+    TRACE << mSystemSetup->systemMode;
+    switch (mSystemSetup->systemMode) {
     case AppSpecCPP::SystemMode::Cooling: {
 
         switch (mSystemType) { // Device type
@@ -727,35 +730,38 @@ void Scheme::updateRealState(const struct STHERM::Vacation &vacation, const doub
 
 void Scheme::updateVacationState()
 {
+    TRACE << "mCurrentSysMode " << mCurrentSysMode;
+    AppSpecCPP::SystemMode realSysMode;
+
     if (mCurrentSysMode == AppSpecCPP::SystemMode::Cooling) {
         if (mCurrentTemperature > mSetPointTemperature - STAGE1_OFF_RANGE) { // before stage 1 off
-           mRealSysMode = AppSpecCPP::SystemMode::Cooling;
+           realSysMode = AppSpecCPP::SystemMode::Cooling;
         } else if (mCurrentTemperature > mSetPointTemperature - STAGE1_ON_RANGE) { // before stage 1 on
-           mRealSysMode = AppSpecCPP::SystemMode::Off;
+           realSysMode = AppSpecCPP::SystemMode::Off;
         } else {  // stage 1 on
-           mRealSysMode = AppSpecCPP::SystemMode::Heating;
+           realSysMode = AppSpecCPP::SystemMode::Heating;
         }
     } else if (mCurrentSysMode == AppSpecCPP::SystemMode::Heating) {
         if (mCurrentTemperature < mSetPointTemperature + STAGE1_OFF_RANGE) { // before stage 1 off
-           mRealSysMode = AppSpecCPP::SystemMode::Heating;
+           realSysMode = AppSpecCPP::SystemMode::Heating;
         } else if (mCurrentTemperature < mSetPointTemperature + STAGE1_ON_RANGE) { // before stage 1 on
-           mRealSysMode = AppSpecCPP::SystemMode::Off;
+           realSysMode = AppSpecCPP::SystemMode::Off;
         } else {  // stage 1 on
-            mRealSysMode = AppSpecCPP::SystemMode::Cooling;
+            realSysMode = AppSpecCPP::SystemMode::Cooling;
         }
     } else { // OFF
         if (mCurrentTemperature < mSetPointTemperature - STAGE1_ON_RANGE) {
-            mRealSysMode = AppSpecCPP::SystemMode::Heating;
+            realSysMode = AppSpecCPP::SystemMode::Heating;
         } else if (mCurrentTemperature > mSetPointTemperature + STAGE1_ON_RANGE) {
-            mRealSysMode = AppSpecCPP::SystemMode::Cooling;
+            realSysMode = AppSpecCPP::SystemMode::Cooling;
         }
     }
 
     if (mVacation.minimumTemperature > mCurrentTemperature) {
-        mRealSysMode = AppSpecCPP::SystemMode::Heating;
+        realSysMode = AppSpecCPP::SystemMode::Heating;
         //        range = temperature - $current_state['min_temp'];
     } else if (mVacation.maximumTemperature < mCurrentTemperature) {
-        mRealSysMode = AppSpecCPP::SystemMode::Cooling;
+        realSysMode = AppSpecCPP::SystemMode::Cooling;
         //        range = temperature - current_state['max_temp'];
     }
 
@@ -763,6 +769,7 @@ void Scheme::updateVacationState()
 
     // Update current system mode
     mCurrentSysMode = mRealSysMode;
+    mSystemSetup->systemMode = mRealSysMode;
 
 
     // Start work

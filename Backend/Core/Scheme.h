@@ -73,8 +73,6 @@ signals:
     void currentTemperatureChanged();
     void setTemperatureChanged();
 
-    void modeChanged();
-
 protected:
     virtual void run();
 
