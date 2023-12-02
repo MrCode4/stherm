@@ -1063,7 +1063,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
 
                     LOG_DEBUG("***** Ti  - Check_Wiring: Send SetRelay command *****");
-                    sendTIRequest(tx_packet);
+                    sendTIRequest(packet);
                 }
 
             } else {
