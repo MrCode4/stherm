@@ -30,6 +30,7 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 
 # Dependencies
 add_subdirectory(QtQuickStream)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/QtQuickStream/include)
 
 add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
 
@@ -281,6 +282,8 @@ qt6_add_qml_module(appStherm
         Backend/QrCode/qrcodegen.hpp
         Backend/QrCode/qrcodegen.cpp
         Backend/QRCodeGenerator.h
+        Backend/Device/SystemSetup.h
+        Backend/Device/SystemSetup.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
