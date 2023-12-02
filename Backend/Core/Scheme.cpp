@@ -138,9 +138,9 @@ void Scheme::startWork()
 
    case AppSpecCPP::SystemMode::Auto: {
        if (mCurrentTemperature > mSetPointTemperature ) {
-           mRealSysMode = AppSpecCPP::SystemMode::Cooling;
+           mSystemSetup->systemMode = AppSpecCPP::SystemMode::Cooling;
        } else if (mCurrentTemperature < mSetPointTemperature) {
-           mRealSysMode = AppSpecCPP::SystemMode::Heating;
+           mSystemSetup->systemMode = AppSpecCPP::SystemMode::Heating;
        }
    } break;
 
@@ -768,8 +768,8 @@ void Scheme::updateVacationState()
     updateHumifiresState();
 
     // Update current system mode
-    mCurrentSysMode = mRealSysMode;
-    mSystemSetup->systemMode = mRealSysMode;
+    mCurrentSysMode = realSysMode;
+    mSystemSetup->systemMode = realSysMode;
 
 
     // Start work
