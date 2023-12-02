@@ -28,9 +28,8 @@ const QVariantList coolingColor      = QVariantList{0, 128, 255, STHERM::LedEffe
 const QVariantList heatingColor      = QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE,  "true"};
 const QVariantList emergencyColor    = QVariantList{255, 0, 0, STHERM::LedEffect::LED_BLINK,  "true"};
 
-Scheme::Scheme(DeviceAPI* deviceAPI, SystemSetup *systemSetup, QObject *parent) :
+Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
-    mSystemSetup(systemSetup),
     QThread (parent)
 {
     stopWork = false;
@@ -39,30 +38,6 @@ Scheme::Scheme(DeviceAPI* deviceAPI, SystemSetup *systemSetup, QObject *parent) 
     mRelay  = Relay::instance();
 
     mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
-
-    connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
-        TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
-
-        // todo: use a safe method
-        if (this->isRunning()) {
-            this->terminate();
-            this->wait(100);
-        }
-
-        this->start();
-    });
-
-    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [this] {
-        TRACE<< "systemTypeChanged: "<< mSystemSetup->systemType;
-
-        // todo: use a safe method
-        if (this->isRunning()) {
-            this->terminate();
-            this->wait(100);
-        }
-
-        this->start();
-    });
 }
 
 Scheme::~Scheme()
@@ -75,28 +50,49 @@ Scheme::~Scheme()
 
 }
 
+void Scheme::restartWork()
+{
+    // todo: use a safe method
+    if (this->isRunning()) {
+        this->terminate();
+        this->wait(1200);
+    }
+
+    this->start();
+}
+
+void Scheme::setSetPointTemperature(double newSetPointTemperature)
+{
+    if (qAbs(mSetPointTemperature - newSetPointTemperature) < 0.001)
+        return;
+
+    mSetPointTemperature = newSetPointTemperature;
+    restartWork();
+}
+
 void Scheme::run()
 {
     TRACE << "-- startWork is running.";
 
     QElapsedTimer timer;
-    while (!stopWork) {
+    while (!stopWork && mSystemSetup) {
         startWork();
     }
 
-    TRACE << "-- startWork Stopped.";
+    TRACE << "-- startWork Stopped. working time(ms): " << timer.elapsed();
 }
 
 
 void Scheme::startWork()
 {
-    TRACE << mSystemSetup->systemMode;
+    TRACE << mSystemSetup->systemMode << mSystemSetup->systemType << mCurrentTemperature << mSetPointTemperature;
     switch (mSystemSetup->systemMode) {
     case AppSpecCPP::SystemMode::Cooling: {
 
         switch (mSystemSetup->systemType) { // Device type
-        case STHERM::SystemType::Conventional:
-       case STHERM::SystemType::CoolingOnly: {
+        case AppSpecCPP::SystemType::Conventional:
+       case AppSpecCPP::SystemType::CoolingOnly: {
+            TRACE << "mCurrentTemperature:  " <<mCurrentTemperature;
            if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
                mRelay->setOb_state(AppSpecCPP::Heating);
 
@@ -119,7 +115,7 @@ void Scheme::startWork()
            }
        }
 
-       case STHERM::SystemType::HeatPump: {
+       case AppSpecCPP::SystemType::HeatPump: {
            if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
                mRelay->setOb_state(AppSpecCPP::Cooling);
 
@@ -158,7 +154,7 @@ void Scheme::startWork()
 
    case AppSpecCPP::SystemMode::Heating: {
        switch (mSystemSetup->systemType) {
-       case STHERM::SystemType::HeatPump: {
+       case AppSpecCPP::SystemType::HeatPump: {
            if(mCurrentTemperature < mSetPointTemperature) {
                if (mCurrentTemperature < ET) {
                    heatingEmergencyHeatPumpRole1();
@@ -171,8 +167,8 @@ void Scheme::startWork()
                mRelay->setAllOff();
            }
        }
-       case STHERM::SystemType::Conventional:
-       case STHERM::SystemType::HeatingOnly: {
+       case AppSpecCPP::SystemType::Conventional:
+       case AppSpecCPP::SystemType::HeatingOnly: {
            if (mSetPointTemperature - mCurrentTemperature >= 1.9) {
                // Sys delay
                mRelay->heatingStage1();
@@ -209,14 +205,18 @@ void Scheme::startWork()
        break;
    }
 
+   TRACE;
    int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
    mRelay->fanWorkTime(mFanWPH, fanWork);
 
+   TRACE;
    // Update relays
    emit updateRelays(mRelay->relays());
+   TRACE;
 
    // Wait for 1200 miliseconds
    msleep(1200);
+   TRACE;
 
 //   startWork();
 }
@@ -735,8 +735,6 @@ void Scheme::updateRealState(const struct STHERM::Vacation &vacation, const doub
     if (mRealSysMode != mCurrentSysMode) { // mode changes
 //       current_stage = 0;
     }
-
-
 }
 
 void Scheme::updateVacationState()
@@ -835,6 +833,29 @@ void Scheme::setFanWorkPerHour(int newFanWPH)
 
     int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
     mRelay->fanWorkTime(mFanWPH, fanWork);
+}
+
+void Scheme::setSystemSetup(SystemSetup *systemSetup)
+{
+    qDebug() << Q_FUNC_INFO << __LINE__ << systemSetup;
+    if (systemSetup && mSystemSetup == systemSetup)
+        return;
+
+    mSystemSetup = systemSetup;
+    qDebug() << Q_FUNC_INFO << __LINE__ << mSystemSetup;
+    connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
+        TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
+
+        restartWork();
+    });
+
+    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [this] {
+        TRACE<< "systemTypeChanged: "<< mSystemSetup->systemType;
+
+        restartWork();
+    });
+
+    this->start();
 }
 
 AppSpecCPP::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)

@@ -28,7 +28,7 @@ BasePageView {
 
         onClicked: {
             //! Do neccessary updates
-            appModel.systemSetup.systemType = 3; // 3: Heating Only
+            appModel.systemSetup.systemType = AppSpecCPP.HeatingOnly;
             appModel.systemSetup.heatStage = heatStageLayout.heatStage;
 
             //! Also move out of this Page

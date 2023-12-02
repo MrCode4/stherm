@@ -31,7 +31,7 @@ BasePageView {
         onClicked: {
             //! Do neccessary updates
 
-            appModel.systemSetup.systemType = 1; // HeatPump: 1
+            appModel.systemSetup.systemType = AppSpecCPP.HeatPump;
             appModel.systemSetup.heatPumpEmergency = _emergencyHeatingSwh.checked;
             appModel.systemSetup.heatPumpStage     = heatPumpStageLayout.heatPumpStage;
             appModel.systemSetup.heatPumpOBState   = heatPumpOBStateLayout.heatPumpOBState;

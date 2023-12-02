@@ -57,6 +57,8 @@ public:
     //! set setttings using uart and file and respond the success
     Q_INVOKABLE bool setSettings(QVariantList data);
 
+    Q_INVOKABLE void setRequestedTemperature(const double temperature);
+
     /* Public Functions
      * Read and write data without any UART connection
      * Read and write data directly

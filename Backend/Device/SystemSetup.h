@@ -11,7 +11,8 @@ class SystemSetup : public QSObjectCpp
 {
     Q_OBJECT
 
-    Q_PROPERTY(int systemType            MEMBER  systemType          NOTIFY systemTypeChanged FINAL)
+    Q_PROPERTY(AppSpecCPP::SystemType systemType            MEMBER  systemType          NOTIFY systemTypeChanged FINAL)
+
     Q_PROPERTY(int traditionalHeatStage  MEMBER traditionalHeatStage NOTIFY traditionalHeatStageChanged FINAL)
     Q_PROPERTY(int traditionalCoolStage  MEMBER traditionalCoolStage NOTIFY traditionalCoolStageChanged FINAL)
 
@@ -33,8 +34,7 @@ public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
 
 public:
-    //STHERM::SystemType
-    int systemType;
+    AppSpecCPP::SystemType systemType;
 
     int traditionalHeatStage;
     int traditionalCoolStage;

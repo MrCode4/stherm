@@ -609,10 +609,12 @@ void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)
     STHERM::SIOPacket packet;
 
     if (!checkRelayVaidation()) {
+        TRACE << "Send Check_Wiring request.";
         // Prepare Check_Wiring packet
         packet = DataParser::prepareSIOPacket(STHERM::Check_Wiring);
 
     } else {
+        TRACE << "Send SetRelay request.";
         // Prepare Set relay packet
         packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, {QVariant::fromValue(relays)});
     }
@@ -1342,7 +1344,11 @@ void DeviceIOController::getDeviceID()
 
 bool DeviceIOController::checkRelayVaidation()
 {
+    if (m_p->WiringState.count() < WIRING_IN_CNT)
+        return false;
+
     int i = 0;
+
     bool isNotValid = (m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.g     == STHERM::ON ||
                        m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.y1    == STHERM::ON ||
                        m_p->WiringState.at(i++) == STHERM::Broken && m_p->mRelaysIn.y2    == STHERM::ON ||

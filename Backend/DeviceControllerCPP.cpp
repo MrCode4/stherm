@@ -9,8 +9,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     : QObject(parent)
     , _deviceIO(new DeviceIOController(this))
     , _deviceAPI(new DeviceAPI(this))
-    , mSystemSetup {nullptr}
-    , m_scheme(new Scheme(_deviceAPI, mSystemSetup, this))
+    , mSystemSetup(nullptr)
+    , m_scheme(new Scheme(_deviceAPI, this))
 {
     QVariantMap mainDataMap;
     mainDataMap.insert("temperature",     0);
@@ -91,6 +91,11 @@ bool DeviceControllerCPP::setSettings(QVariantList data)
     return _deviceIO->setSettings(data);
 }
 
+void DeviceControllerCPP::setRequestedTemperature(const double temperature)
+{
+    m_scheme->setSetPointTemperature(temperature);
+}
+
 void DeviceControllerCPP::startDevice()
 {
     //! todo: move to constructor later
@@ -117,6 +122,10 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
         return;
 
     mSystemSetup = systemSetup;
+
+    qDebug() << Q_FUNC_INFO << __LINE__ <<m_scheme;
+    // Set system setp
+    m_scheme->setSystemSetup(mSystemSetup);
 
     emit systemSetupChanged();
 }

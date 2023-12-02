@@ -355,13 +355,13 @@ enum AlertLevel
 //     Emergency
 // };
 
-enum SystemType
-{
-    Conventional = 0,
-    HeatPump,
-    CoolingOnly,
-    HeatingOnly
-};
+// enum SystemType
+// {
+//     Conventional = 0,
+//     HeatPump,
+//     CoolingOnly,
+//     HeatingOnly
+// };
 
 
 /**

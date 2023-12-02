@@ -50,8 +50,27 @@ I_DeviceController {
         deviceControllerCPP.stopDevice();
     }
 
+    Component.onCompleted: {
+
+        console.log(device.requestedTemp);
+        deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
+    }
+
     /* Children
      * ****************************************************************************************/
+
+    property Connections syncController: Connections {
+        target: device
+
+        function onRequestedTempChanged() {
+            console.log(device.requestedTemp);
+            deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
+        }
+
+        function onRequestedHumChanged() {
+            // deviceControllerCPP.setRequestedTemperature(device.requestedHum);
+        }
+    }
 
     /* Methods
      * ****************************************************************************************/

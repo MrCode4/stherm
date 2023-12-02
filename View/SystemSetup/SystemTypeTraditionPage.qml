@@ -29,7 +29,7 @@ BasePageView {
         onClicked: {
             //! Do neccessary updates
 
-            appModel.systemSetup.systemType = 0;
+            appModel.systemSetup.systemType = AppSpecCPP.Conventional;
             appModel.systemSetup.traditionalCoolStage = traditionalCoolStageLayout.traditionalCoolStage;
             appModel.systemSetup.traditionalHeatStage = traditionalHeatStageLayout.traditionalHeatStage;
 

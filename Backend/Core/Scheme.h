@@ -27,7 +27,7 @@ class Scheme : public QThread
     Q_OBJECT
 
 public:
-    explicit Scheme(DeviceAPI *deviceAPI, SystemSetup* systemSetup, QObject *parent = nullptr);
+    explicit Scheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
 
     ~Scheme();
 
@@ -39,7 +39,6 @@ public:
     AppSpecCPP::SystemMode getCurrentSysMode() const;
     void setCurrentSysMode(AppSpecCPP::SystemMode newSysMode);
 
-    void startWork();
 
     void setMainData(QVariantMap mainData);
 
@@ -58,8 +57,9 @@ public:
 
     void setFanWorkPerHour(int newFanWPH);
 
-    STHERM::SystemType systemType() const;
-    void setSystemType(STHERM::SystemType newSystemType);
+    void setSystemSetup(SystemSetup* systemSetup);
+
+    void setSetPointTemperature(double newSetPointTemperature);
 
 signals:
     void changeBacklight(QVariantList colorData, int secs = 5);
@@ -74,6 +74,8 @@ protected:
     virtual void run();
 
 private:
+    void startWork();
+
     //! Update vacation mode
     void updateVacationState();
 
@@ -103,6 +105,9 @@ private:
     //! current humidity, and humidifier Id
     void updateHumifiresState();
 
+    //! Restart the worker thread
+    void restartWork();
+
 private:
     /* Attributes
      * ****************************************************************************************/
@@ -111,6 +116,8 @@ private:
     QVariantMap _mainData;
 
     AppSpecCPP::SystemMode mCurrentSysMode;
+
+    // todo: Remove
     AppSpecCPP::SystemMode mRealSysMode;
 
     struct STHERM::Vacation mVacation;

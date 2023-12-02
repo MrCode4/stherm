@@ -4,7 +4,8 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     : QSObjectCpp{parent}
 {
     // defaults
-    systemType = 0;
+    systemType = AppSpecCPP::SystemType::Conventional;
+
     traditionalHeatStage = 1;
     traditionalCoolStage = 1;
 

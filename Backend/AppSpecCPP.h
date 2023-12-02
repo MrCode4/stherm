@@ -28,8 +28,16 @@ public:
         Off,
         Emergency
     };
-
     Q_ENUM(SystemMode)
+
+    enum SystemType
+    {
+        Conventional = 0,
+        HeatPump,
+        CoolingOnly,
+        HeatingOnly
+    };
+    Q_ENUM(SystemType)
 
 signals:
 
