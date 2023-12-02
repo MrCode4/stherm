@@ -39,10 +39,21 @@ Scheme::Scheme(DeviceAPI* deviceAPI, SystemSetup *systemSetup, QObject *parent) 
     mRelay  = Relay::instance();
 
     mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
-    mSystemType = STHERM::SystemType::Conventional;
 
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
+
+        // todo: use a safe method
+        if (this->isRunning()) {
+            this->terminate();
+            this->wait(100);
+        }
+
+        this->start();
+    });
+
+    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [this] {
+        TRACE<< "systemTypeChanged: "<< mSystemSetup->systemType;
 
         // todo: use a safe method
         if (this->isRunning()) {
@@ -83,7 +94,7 @@ void Scheme::startWork()
     switch (mSystemSetup->systemMode) {
     case AppSpecCPP::SystemMode::Cooling: {
 
-        switch (mSystemType) { // Device type
+        switch (mSystemSetup->systemType) { // Device type
         case STHERM::SystemType::Conventional:
        case STHERM::SystemType::CoolingOnly: {
            if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
@@ -146,7 +157,7 @@ void Scheme::startWork()
 
 
    case AppSpecCPP::SystemMode::Heating: {
-       switch (mSystemType) {
+       switch (mSystemSetup->systemType) {
        case STHERM::SystemType::HeatPump: {
            if(mCurrentTemperature < mSetPointTemperature) {
                if (mCurrentTemperature < ET) {
@@ -815,27 +826,6 @@ void Scheme::updateHumifiresState()
     }
 }
 
-STHERM::SystemType Scheme::systemType() const
-{
-    return mSystemType;
-}
-
-void Scheme::setSystemType(STHERM::SystemType newSystemType)
-{
-    if (mSystemType == newSystemType)
-        return;
-
-    mSystemType = newSystemType;
-
-    // Restart thread
-    if (this->isRunning()) {
-        this->terminate();
-        this->wait(100);
-    }
-
-    this->start();
-}
-
 void Scheme::setFanWorkPerHour(int newFanWPH)
 {
     if (mFanWPH == newFanWPH)
@@ -899,14 +889,4 @@ void Scheme::setCurrentSysMode(AppSpecCPP::SystemMode newSysMode)
         return;
 
     mCurrentSysMode = newSysMode;
-}
-
-AppSpecCPP::SystemMode Scheme::realSysMode() const
-{
-    return mRealSysMode;
-}
-
-void Scheme::setRealSysMode(AppSpecCPP::SystemMode newRealSysMode)
-{
-    mRealSysMode = newRealSysMode;
 }

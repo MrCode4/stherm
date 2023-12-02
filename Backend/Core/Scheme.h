@@ -39,9 +39,6 @@ public:
     AppSpecCPP::SystemMode getCurrentSysMode() const;
     void setCurrentSysMode(AppSpecCPP::SystemMode newSysMode);
 
-    AppSpecCPP::SystemMode realSysMode() const;
-    void setRealSysMode(AppSpecCPP::SystemMode newRealSysMode);
-
     void startWork();
 
     void setMainData(QVariantMap mainData);
@@ -115,8 +112,6 @@ private:
 
     AppSpecCPP::SystemMode mCurrentSysMode;
     AppSpecCPP::SystemMode mRealSysMode;
-
-    STHERM::SystemType mSystemType;
 
     struct STHERM::Vacation mVacation;
 
