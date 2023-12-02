@@ -565,10 +565,10 @@ void DeviceIOController::createNRF()
     if (m_gpioHandler5->startConnection()) {
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             auto time = QDateTime::currentMSecsSinceEpoch();
-            if (time - m_p->lastTimeSensors < 100 || time - m_p->lastTimeTOF < 100)
+            if (time - m_p->lastTimeSensors < 10 || time - m_p->lastTimeTOF < 10)
                 return;
             if (data.length() == 2 && data.at(0) == '0') {
-                m_p->lastTimeTOF = QDateTime::currentMSecsSinceEpoch();
+                m_p->lastTimeTOF = time;
                 m_nRF_queue.push(m_p->TOFPacketBA);
                 TRACE << "request for gpio 5" << processNRFQueue();
             }
