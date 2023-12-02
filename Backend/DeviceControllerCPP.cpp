@@ -96,6 +96,11 @@ void DeviceControllerCPP::setRequestedTemperature(const double temperature)
     m_scheme->setSetPointTemperature(temperature);
 }
 
+void DeviceControllerCPP::setRequestedHumidity(const double humidity)
+{
+    m_scheme->setRequestedHumidity(humidity);
+}
+
 void DeviceControllerCPP::startDevice()
 {
     //! todo: move to constructor later
@@ -123,7 +128,6 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
     mSystemSetup = systemSetup;
 
-    qDebug() << Q_FUNC_INFO << __LINE__ <<m_scheme;
     // Set system setp
     m_scheme->setSystemSetup(mSystemSetup);
 

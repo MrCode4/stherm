@@ -23,6 +23,19 @@ I_DeviceController {
         }
     }
 
+    //! Connection to send requested temperature and humidity to ui
+    property Connections deviceConnection: Connections {
+        target: device
+
+        function onRequestedTempChanged() {
+            sendRequestedTemperature()
+        }
+
+        function onRequestedHumChanged() {
+           sendRequestedHumidity();
+        }
+    }
+
     /* Object Properties
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {
@@ -51,29 +64,30 @@ I_DeviceController {
     }
 
     Component.onCompleted: {
-
-        console.log(device.requestedTemp);
-        deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
+        sendRequestedTemperature();
+        sendRequestedHumidity();
     }
 
     /* Children
      * ****************************************************************************************/
 
-    property Connections syncController: Connections {
-        target: device
-
-        function onRequestedTempChanged() {
-            console.log(device.requestedTemp);
-            deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
-        }
-
-        function onRequestedHumChanged() {
-            // deviceControllerCPP.setRequestedTemperature(device.requestedHum);
-        }
-    }
-
     /* Methods
      * ****************************************************************************************/
+
+    //! Send Requested temperature to controller
+    function sendRequestedTemperature()
+    {
+        console.log("* requestedTemp: ", device.requestedTemp);
+        deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
+    }
+
+    //! Send Requested humidity to controller
+    function sendRequestedHumidity()
+    {
+        console.log("* requestedHum: ", device.requestedHum);
+        deviceControllerCPP.setRequestedHumidity(device.requestedHum);
+    }
+
 
     function sendReceive(className, method, data)
     {

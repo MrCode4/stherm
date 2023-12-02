@@ -58,6 +58,7 @@ public:
     Q_INVOKABLE bool setSettings(QVariantList data);
 
     Q_INVOKABLE void setRequestedTemperature(const double temperature);
+    Q_INVOKABLE void setRequestedHumidity(const double humidity);
 
     /* Public Functions
      * Read and write data without any UART connection

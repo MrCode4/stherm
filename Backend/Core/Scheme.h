@@ -59,7 +59,11 @@ public:
 
     void setSystemSetup(SystemSetup* systemSetup);
 
+    //! Set requested Temperature
     void setSetPointTemperature(double newSetPointTemperature);
+
+    //! Set requested Humidity
+    void setRequestedHumidity(double newHumidity);
 
 signals:
     void changeBacklight(QVariantList colorData, int secs = 5);

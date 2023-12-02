@@ -55,7 +55,7 @@ void Scheme::restartWork()
     // todo: use a safe method
     if (this->isRunning()) {
         this->terminate();
-        this->wait(1200);
+        this->wait(100);
     }
 
     this->start();
@@ -68,6 +68,16 @@ void Scheme::setSetPointTemperature(double newSetPointTemperature)
 
     mSetPointTemperature = newSetPointTemperature;
     restartWork();
+}
+
+void Scheme::setRequestedHumidity(double newHumidity)
+{
+    if (qAbs(mSetPointHimidity - newHumidity) < 0.001)
+        return;
+
+    mSetPointHimidity = newHumidity;
+
+    // Restart is not necessary
 }
 
 void Scheme::run()
@@ -787,9 +797,9 @@ void Scheme::updateVacationState()
 
 void Scheme::updateHumifiresState()
 {
-    TRACE << "HumidifierId " << mHumidifierId;
+    TRACE << "HumidifierId " << mHumidifierId << mSystemSetup;
 
-    if (!mSystemSetup && mHumidifierId == 3)
+    if (!mSystemSetup || mHumidifierId == 3)
         return;
 
     if (mSystemSetup->systemMode == AppSpecCPP::Vacation) {
