@@ -226,7 +226,7 @@ void Scheme::heatingConventionalRole1(bool needToWait)
        return;
 
    } else {
-       if (mRelay->relays().w2 == STHERM::RelayMode::ON) {
+       if (mRelay->relays().w2 != STHERM::RelayMode::NoWire) {
 
            if (mSetPointTemperature - mCurrentTemperature >= 2.9 || (mTiming->s2uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 10)) {
                mRelay->heatingStage2();
@@ -268,7 +268,7 @@ void Scheme::heatingConventionalRole2()
            mRelay->setAllOff();
 //           startWork();
            return;
-       } else if (mRelay->relays().w3 == STHERM::RelayMode::ON) {
+       } else if (mRelay->relays().w3 != STHERM::RelayMode::NoWire) {
            if ((mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() / 60000 >= 10)) {
                mRelay->heatingStage3();
                mCurrentSysMode = mRelay->currentState();
@@ -298,7 +298,7 @@ void Scheme::heatingConventionalRole2()
 
            }
        } else {
-           if (mRelay->relays().w3 == STHERM::RelayMode::ON) {
+           if (mRelay->relays().w3 != STHERM::RelayMode::NoWire) {
                if (mSetPointTemperature - mCurrentTemperature >= 5.9 || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() / 60000 >= 10)) {
                    mRelay->heatingStage3();
                    mCurrentSysMode = mRelay->currentState();
@@ -469,7 +469,7 @@ void Scheme::heatingHeatPumpRole2(bool needToWait)
 //       startWork();
        return;
    } else {
-       if (mRelay->relays().y2 == STHERM::RelayMode::ON) {
+       if (mRelay->relays().y2 != STHERM::RelayMode::NoWire) {
            if (mSetPointTemperature - mCurrentTemperature >= 2.9 || (mTiming->uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 40)) {
                if ((mTiming->s2Offtime.isValid() && mTiming->s2Offtime.elapsed() / 60000 >= 2)) {
                    mRelay->heatingStage2();
@@ -568,7 +568,7 @@ void Scheme::coolingHeatPumpRole1(bool needToWait)
 //       startWork();
 
    } else {
-       if (mRelay->relays().y2 == STHERM::RelayMode::ON) {
+       if (mRelay->relays().y2 != STHERM::RelayMode::NoWire) {
            if (mCurrentTemperature - mSetPointTemperature >= 2.9 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 40)) {
                if (mTiming->s2Offtime.isValid() && mTiming->s2Offtime.elapsed() / 60000 >= 2) {
                    // turn on stage 2
