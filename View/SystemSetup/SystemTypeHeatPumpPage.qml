@@ -31,6 +31,11 @@ BasePageView {
         onClicked: {
             //! Do neccessary updates
 
+            appModel.systemSetup.systemType = 1; // HeatPump: 1
+            appModel.systemSetup.heatPumpEmergency = _emergencyHeatingSwh.checked;
+            appModel.systemSetup.heatPumpStage     = heatPumpStageLayout.heatPumpStage;
+            appModel.systemSetup.heatPumpOBState   = heatPumpOBStateLayout.heatPumpOBState;
+
             //! Also move out of this Page
             backButtonCallback();
         }
@@ -62,21 +67,34 @@ BasePageView {
             }
 
             RowLayout {
+                id: heatPumpStageLayout
+
                 Layout.fillWidth: false
 
+                property int heatPumpStage: 1
+
+
                 RadioButton {
-                    checked: true
+                    checked: appModel.systemSetup.heatPumpStage === Number(text)
+                    onCheckedChanged: heatPumpStageLayout.heatPumpStage = Number(text);
+
                     text: "1"
                 }
 
                 RadioButton {
+                    checked: appModel.systemSetup.heatPumpStage === Number(text)
+                    onCheckedChanged: heatPumpStageLayout.heatPumpStagetage = Number(text);
                     text: "2"
                 }
             }
         }
 
         RowLayout {
+            id: heatPumpOBStateLayout
+
             spacing: 24
+
+            property int heatPumpOBState: 1
 
             Label {
                 Layout.fillWidth: true
@@ -87,11 +105,15 @@ BasePageView {
                 Layout.fillWidth: false
 
                 RadioButton {
-                    checked: true
+                    checked: appModel.systemSetup.heatPumpOBState === 0
+                    onCheckedChanged: heatPumpOBStateLayout.heatPumpOBState = 0;
                     text: "Cool"
                 }
 
                 RadioButton {
+                    checked: appModel.systemSetup.heatPumpOBState === 1
+                    onCheckedChanged: heatPumpOBStateLayout.heatPumpOBState = 1;
+
                     text: "Heat"
                 }
             }
