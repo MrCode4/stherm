@@ -33,7 +33,7 @@ QSObject {
     property real           tof:            0.0
 
     //! System mode
-    property int            systemMode:     AppSpec.SystemMode.Auto
+    property int            systemMode:     AppSpecCPP.Auto
 
     //!‌ Device is in hold state or not
     property bool           isHold:         false
@@ -69,7 +69,6 @@ QSObject {
     property SystemSetup    systemSetup:    SystemSetup {
         _qsRepo: appModel._qsRepo
     }
-
     /* Functions
      * ****************************************************************************************/
 }

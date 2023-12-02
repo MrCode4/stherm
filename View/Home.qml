@@ -43,7 +43,7 @@ Control {
         anchors.horizontalCenter: parent.horizontalCenter
         height: parent.height / 2.
         width: height * 2
-        labelVisible: device?.systemMode !== AppSpec.SystemMode.Off
+        labelVisible: device?.systemMode !== AppSpecCPP.Off
         uiSession: _root.uiSession
     }
 

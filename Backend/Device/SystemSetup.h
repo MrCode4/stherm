@@ -22,6 +22,8 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(int systemRunDelay     MEMBER systemRunDelay  NOTIFY systemRunDelayChanged FINAL)
 
+    Q_PROPERTY(int systemMode     MEMBER systemMode  NOTIFY systemModeChanged FINAL)
+
     Q_PROPERTY(bool heatPumpEmergency MEMBER heatPumpEmergency NOTIFY heatPumpEmergencyChanged FINAL)
 
     QML_ELEMENT
@@ -46,6 +48,8 @@ public:
     // System run delay
     int systemRunDelay;
 
+    int systemMode;
+
     bool heatPumpEmergency;
 
 signals:
@@ -57,6 +61,7 @@ signals:
     void coolStageChanged();
     void heatStageChanged();
     void systemRunDelayChanged();
+    void systemModeChanged();
     void heatPumpEmergencyChanged();
 
 private:

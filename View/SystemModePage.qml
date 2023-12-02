@@ -88,7 +88,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Cooling
+            checked: device?.systemMode === AppSpecCPP.Cooling
             text: "Cooling"
         }
 
@@ -98,7 +98,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Heating
+            checked: device?.systemMode === AppSpecCPP.Heating
             text: "Heating"
         }
 
@@ -108,7 +108,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Auto
+            checked: device?.systemMode === AppSpecCPP.Auto
             text: "Auto"
         }
 
@@ -119,7 +119,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Vacation
+            checked: device?.systemMode === AppSpecCPP.Vacation
             text: "Vacation"
 
             onClicked: {
@@ -136,7 +136,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Off
+            checked: device?.systemMode === AppSpec.Off
             text: "OFF"
         }
     }

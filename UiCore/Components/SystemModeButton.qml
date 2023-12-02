@@ -123,16 +123,16 @@ ToolButton {
 
     state: {
         switch(device?.systemMode) {
-        case AppSpec.SystemMode.Off:
+        case AppSpecCPP.Off:
             return "off";
-        case AppSpec.SystemMode.Heating:
+        case AppSpecCPP.Heating:
             return "heating";
-        case AppSpec.SystemMode.Cooling:
+        case AppSpecCPP.Cooling:
             return "cooling";
-        case AppSpec.SystemMode.Vacation:
+        case AppSpecCPP.Vacation:
             // there is no design for vacation, so we show it as auto
             // if design added the order should be specified as well as the next state in onClicked
-        case AppSpec.SystemMode.Auto:
+        case AppSpecCPP.Auto:
             return "auto";
         default:
             return "off"

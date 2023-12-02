@@ -19,13 +19,13 @@ AppSpecCPP {
         DT_Unknown
     }
 
-    enum SystemMode {
-        Cooling,
-        Heating,
-        Auto,
-        Vacation,
-        Off
-    }
+    // enum SystemMode {
+    //     Cooling,
+    //     Heating,
+    //     Auto,
+    //     Vacation,
+    //     Off
+    // }
 
     enum TempratureUnit {
         Cel,    //! Celsius

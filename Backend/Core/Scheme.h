@@ -7,6 +7,7 @@
 #include "Device/SystemSetup.h"
 #include "DeviceAPI.h"
 #include "UtilityHelper.h"
+#include "AppSpecCPP.h"
 #include "include/timing.h"
 
 /*! ***********************************************************************************************
@@ -35,11 +36,11 @@ public:
                          const double &currentTemperature,
                          const double &currentHumidity);
 
-    STHERM::SystemMode getCurrentSysMode() const;
-    void setCurrentSysMode(STHERM::SystemMode newSysMode);
+    AppSpecCPP::SystemMode getCurrentSysMode() const;
+    void setCurrentSysMode(AppSpecCPP::SystemMode newSysMode);
 
-    STHERM::SystemMode realSysMode() const;
-    void setRealSysMode(STHERM::SystemMode newRealSysMode);
+    AppSpecCPP::SystemMode realSysMode() const;
+    void setRealSysMode(AppSpecCPP::SystemMode newRealSysMode);
 
     void startWork();
 
@@ -81,7 +82,7 @@ private:
     //! Update vacation mode
     void updateVacationState();
 
-    STHERM::SystemMode updateNormalState(const double &setTemperature,
+    AppSpecCPP::SystemMode updateNormalState(const double &setTemperature,
                                          const double &currentTemperature,
                                          const double &currentHumidity);
 
@@ -114,8 +115,8 @@ private:
 
     QVariantMap _mainData;
 
-    STHERM::SystemMode mCurrentSysMode;
-    STHERM::SystemMode mRealSysMode;
+    AppSpecCPP::SystemMode mCurrentSysMode;
+    AppSpecCPP::SystemMode mRealSysMode;
 
     STHERM::SystemType mSystemType;
 

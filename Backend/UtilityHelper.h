@@ -345,15 +345,15 @@ enum AlertLevel
 /**
  * @brief Enumeration for system modes.
  */
-enum SystemMode
-{
-    Cooling = 0,
-    Heating,
-    Auto,
-    Vacation,
-    Off,
-    Emergency
-};
+// enum SystemMode
+// {
+//     Cooling = 0,
+//     Heating,
+//     Auto,
+//     Vacation,
+//     Off,
+//     Emergency
+// };
 
 enum SystemType
 {
