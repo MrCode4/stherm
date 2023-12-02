@@ -95,8 +95,8 @@ void Scheme::run()
 
 void Scheme::startWork()
 {
-    TRACE << mSystemSetup->systemMode << mSystemSetup->systemType << mCurrentTemperature << mSetPointTemperature;
-    switch (mSystemSetup->systemMode) {
+    TRACE << mRealSysMode << mSystemSetup->systemType << mCurrentTemperature << mSetPointTemperature;
+    switch (mRealSysMode) {
     case AppSpecCPP::SystemMode::Cooling: {
 
         switch (mSystemSetup->systemType) { // Device type
@@ -155,9 +155,9 @@ void Scheme::startWork()
 
    case AppSpecCPP::SystemMode::Auto: {
        if (mCurrentTemperature > mSetPointTemperature ) {
-           mSystemSetup->systemMode = AppSpecCPP::SystemMode::Cooling;
+           mRealSysMode= AppSpecCPP::SystemMode::Cooling;
        } else if (mCurrentTemperature < mSetPointTemperature) {
-           mSystemSetup->systemMode = AppSpecCPP::SystemMode::Heating;
+           mRealSysMode = AppSpecCPP::SystemMode::Heating;
        }
    } break;
 
@@ -404,7 +404,7 @@ void Scheme::heatingEmergencyHeatPumpRole2()
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-       startWork();
+       // startWork();
        return;
    }
 
@@ -416,14 +416,13 @@ void Scheme::heatingEmergencyHeatPumpRole2()
        mRelay->emergencyHeating2();
        mCurrentSysMode = mRelay->currentState();
        heatingEmergencyHeatPumpRole3();
+
    } else if (ct < HPT) {
        heatingEmergencyHeatPumpRole2();
-       return;
+
    } else {
        mRelay->setAllOff();
        heatingHeatPumpRole1();
-       return;
-
    }
 }
 
@@ -432,7 +431,7 @@ void Scheme::heatingEmergencyHeatPumpRole3()
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-       startWork();
+       // startWork();
        return;
    }
 
@@ -787,7 +786,7 @@ void Scheme::updateVacationState()
 
     // Update current system mode
     mCurrentSysMode = realSysMode;
-    mSystemSetup->systemMode = realSysMode;
+    mRealSysMode = realSysMode;
 }
 
 void Scheme::updateHumifiresState()
@@ -797,8 +796,8 @@ void Scheme::updateHumifiresState()
     if (!mSystemSetup || mHumidifierId == 3)
         return;
 
-    if (mSystemSetup->systemMode == AppSpecCPP::Vacation) {
-        qDebug() << Q_FUNC_INFO << __LINE__ <<mSystemSetup->systemMode;
+    if (mRealSysMode == AppSpecCPP::Vacation) {
+        qDebug() << Q_FUNC_INFO << __LINE__ <<mRealSysMode;
         if (mHumidifierId == 1) {
             mRelay->setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
 
@@ -854,6 +853,8 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
 
+        mRealSysMode = mSystemSetup->systemMode;
+
         restartWork();
     });
 
@@ -862,8 +863,6 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
 
         restartWork();
     });
-
-    this->start();
 }
 
 AppSpecCPP::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)

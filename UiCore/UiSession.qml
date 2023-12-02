@@ -101,6 +101,8 @@ QtObject {
         }
     }
 
+    Component.onCompleted: realDeviceController.startDeviceRequested();
+
     /* Controllers
      * ****************************************************************************************/
 

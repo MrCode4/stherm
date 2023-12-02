@@ -121,7 +121,6 @@ private:
 
     AppSpecCPP::SystemMode mCurrentSysMode;
 
-    // todo: Remove
     AppSpecCPP::SystemMode mRealSysMode;
 
     struct STHERM::Vacation mVacation;
