@@ -69,18 +69,8 @@ public:
     //! Stop device
     Q_INVOKABLE void stopDevice();
 
-    SystemSetup* systemSetup() const {
-        return mSystemSetup;
-    }
-
-    void setSystemSetup (SystemSetup* systemSetup) {
-        if (mSystemSetup == systemSetup)
-            return;
-
-        mSystemSetup = systemSetup;
-
-        emit systemSetupChanged();
-    }
+    SystemSetup* systemSetup() const;
+    void setSystemSetup (SystemSetup* systemSetup);
 
 Q_SIGNALS:
     /* Public Signals

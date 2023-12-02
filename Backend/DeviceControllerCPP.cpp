@@ -108,6 +108,19 @@ void DeviceControllerCPP::stopDevice()
     _deviceIO->setStopReading(true);
 }
 
+SystemSetup *DeviceControllerCPP::systemSetup() const {
+    return mSystemSetup;
+}
+
+void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
+    if (mSystemSetup == systemSetup)
+        return;
+
+    mSystemSetup = systemSetup;
+
+    emit systemSetupChanged();
+}
+
 void DeviceControllerCPP::setMainData(QVariantMap mainData)
 {
     if (_mainData == mainData)
