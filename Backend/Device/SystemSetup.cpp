@@ -15,5 +15,7 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     coolStage = 1;
     heatStage = 1;
 
+    systemRunDelay = 1;
+
     heatPumpEmergency = false;
 }

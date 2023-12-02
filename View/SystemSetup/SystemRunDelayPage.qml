@@ -8,10 +8,12 @@ import Stherm
  * SystemRunDelayPage provides ui for selecting run delay of system
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
+
+    property int systemRunDelay: 1
 
     /* Object properties
      * ****************************************************************************************/
@@ -19,9 +21,9 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Confirm button
+    //! Confirm rootn
     ToolButton {
-        parent: _root.header.contentItem
+        parent: root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c" //! check icon
         }
@@ -30,8 +32,10 @@ BasePageView {
             //! Apply settings and pop this from StackView
             //! Apply settings here
 
-            if (_root.StackView.view) {
-                _root.StackView.view.pop()
+            appModel.systemSetup.systemRunDelay = root.systemRunDelay
+
+            if (root.StackView.view) {
+                root.StackView.view.pop()
             }
         }
     }
@@ -48,17 +52,31 @@ BasePageView {
 
         RowLayout {
             RadioButton {
-                id: _1minBtn
                 text: "1 min"
-                checked: true
+                checked: appModel.systemSetup.systemRunDelay === 1
+
+                onCheckedChanged: {
+                    if (checked)
+                        systemRunDelay = 1;
+                }
             }
             RadioButton {
-                id: _2minBtn
                 text: "2 min"
+                checked: appModel.systemSetup.systemRunDelay === 2
+
+                onCheckedChanged: {
+                    if (checked)
+                        systemRunDelay = 2;
+                }
             }
             RadioButton {
-                id: _5minBtn
                 text: "5 min"
+                checked: appModel.systemSetup.systemRunDelay === 5
+
+                onCheckedChanged: {
+                    if (checked)
+                        systemRunDelay = 5;
+                }
             }
         }
     }

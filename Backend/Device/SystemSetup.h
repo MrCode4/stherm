@@ -20,6 +20,8 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(int coolStage     MEMBER coolStage  NOTIFY coolStageChanged FINAL)
     Q_PROPERTY(int heatStage     MEMBER heatStage  NOTIFY heatStageChanged FINAL)
 
+    Q_PROPERTY(int systemRunDelay     MEMBER systemRunDelay  NOTIFY systemRunDelayChanged FINAL)
+
     Q_PROPERTY(bool heatPumpEmergency MEMBER heatPumpEmergency NOTIFY heatPumpEmergencyChanged FINAL)
 
     QML_ELEMENT
@@ -40,6 +42,10 @@ public:
 
     int coolStage;
     int heatStage;
+
+    // System run delay
+    int systemRunDelay;
+
     bool heatPumpEmergency;
 
 signals:
@@ -50,6 +56,7 @@ signals:
     void heatPumpOBStateChanged();
     void coolStageChanged();
     void heatStageChanged();
+    void systemRunDelayChanged();
     void heatPumpEmergencyChanged();
 
 private:
