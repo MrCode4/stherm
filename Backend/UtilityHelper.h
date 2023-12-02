@@ -357,11 +357,12 @@ enum SystemMode
 
 enum SystemType
 {
-    Conventional,
+    Conventional = 0,
     CoolingOnly,
     HeatPump,
     HeatingOnly
 };
+
 
 /**
  * @brief Enumeration for LED behavior.
