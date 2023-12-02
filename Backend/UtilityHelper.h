@@ -358,8 +358,8 @@ enum SystemMode
 enum SystemType
 {
     Conventional = 0,
-    CoolingOnly,
     HeatPump,
+    CoolingOnly,
     HeatingOnly
 };
 

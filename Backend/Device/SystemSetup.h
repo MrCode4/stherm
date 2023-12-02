@@ -34,10 +34,13 @@ public:
     int traditionalHeatStage;
     int traditionalCoolStage;
     int heatPumpStage;
+
+    // 0: cooling, 1: heating
     int heatPumpOBState;
+
     int coolStage;
     int heatStage;
-    int heatPumpEmergency;
+    bool heatPumpEmergency;
 
 signals:
     void systemTypeChanged();
