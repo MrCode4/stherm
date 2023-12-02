@@ -787,10 +787,13 @@ void Scheme::updateVacationState()
 
 void Scheme::updateHumifiresState()
 {
-    if (mHumidifierId == 3)
+    TRACE << "HumidifierId " << mHumidifierId;
+
+    if (!mSystemSetup && mHumidifierId == 3)
         return;
 
     if (mSystemSetup->systemMode == AppSpecCPP::Vacation) {
+        qDebug() << Q_FUNC_INFO << __LINE__ <<mSystemSetup->systemMode;
         if (mHumidifierId == 1) {
             mRelay->setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
 
