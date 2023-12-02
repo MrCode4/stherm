@@ -781,7 +781,7 @@ void Scheme::updateHumifiresState()
     if (mHumidifierId == 3)
         return;
 
-    if (mCurrentSysMode == AppSpecCPP::Vacation) {
+    if (mSystemSetup->systemMode == AppSpecCPP::Vacation) {
         if (mHumidifierId == 1) {
             mRelay->setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
 
