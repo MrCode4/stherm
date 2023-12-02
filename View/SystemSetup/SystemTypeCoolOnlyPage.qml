@@ -55,14 +55,20 @@ BasePageView {
 
             RadioButton {
                 checked: appModel.systemSetup.coolStage === Number(text)
-                onCheckedChanged: coolStageLayout.coolStage = Number(text);
+                onCheckedChanged: {
+                    if (checked)
+                        coolStageLayout.coolStage = Number(text);
+                }
 
                 text: "1"
             }
 
             RadioButton {
                 checked: appModel.systemSetup.coolStage === Number(text)
-                onCheckedChanged: coolStageLayout.coolStage = Number(text);
+                onCheckedChanged: {
+                    if (checked)
+                        coolStageLayout.coolStage = Number(text);
+                }
 
                 text: "2"
             }

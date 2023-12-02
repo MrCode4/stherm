@@ -55,6 +55,8 @@ BasePageView {
 
             Switch {
                 id: _emergencyHeatingSwh
+
+                checked: appModel.systemSetup.heatPumpEmergency
             }
         }
 
@@ -76,14 +78,21 @@ BasePageView {
 
                 RadioButton {
                     checked: appModel.systemSetup.heatPumpStage === Number(text)
-                    onCheckedChanged: heatPumpStageLayout.heatPumpStage = Number(text);
+                    onCheckedChanged: {
+                        if (checked)
+                            heatPumpStageLayout.heatPumpStage = Number(text);
+                    }
 
                     text: "1"
                 }
 
                 RadioButton {
                     checked: appModel.systemSetup.heatPumpStage === Number(text)
-                    onCheckedChanged: heatPumpStageLayout.heatPumpStagetage = Number(text);
+                    onCheckedChanged: {
+                        if (checked)
+                            heatPumpStageLayout.heatPumpStage = Number(text);
+                    }
+
                     text: "2"
                 }
             }
@@ -106,13 +115,19 @@ BasePageView {
 
                 RadioButton {
                     checked: appModel.systemSetup.heatPumpOBState === 0
-                    onCheckedChanged: heatPumpOBStateLayout.heatPumpOBState = 0;
+                    onCheckedChanged: {
+                        if (checked)
+                            heatPumpOBStateLayout.heatPumpOBState = 0;
+                    }
                     text: "Cool"
                 }
 
                 RadioButton {
                     checked: appModel.systemSetup.heatPumpOBState === 1
-                    onCheckedChanged: heatPumpOBStateLayout.heatPumpOBState = 1;
+                    onCheckedChanged: {
+                        if (checked)
+                            heatPumpOBStateLayout.heatPumpOBState = 1;
+                    }
 
                     text: "Heat"
                 }

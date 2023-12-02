@@ -84,21 +84,30 @@ BasePageView {
 
             RadioButton {
                 checked: appModel.systemSetup.traditionalHeatStage === Number(text)
-                onCheckedChanged: traditionalHeatStageLayout.traditionalHeatStage = Number(text);
+                onCheckedChanged:  {
+                    if (checked)
+                        traditionalHeatStageLayout.traditionalHeatStage = Number(text);
+                }
 
                 text: "1"
             }
 
             RadioButton {
                 checked: appModel.systemSetup.traditionalHeatStage === Number(text)
-                onCheckedChanged: traditionalHeatStageLayout.traditionalHeatStage = Number(text);
+                onCheckedChanged: {
+                    if (checked)
+                        traditionalHeatStageLayout.traditionalHeatStage = Number(text);
+                }
 
                 text: "2"
             }
 
             RadioButton {
                 checked: appModel.systemSetup.traditionalHeatStage === Number(text)
-                onCheckedChanged: traditionalHeatStageLayout.traditionalHeatStage = Number(text);
+                onCheckedChanged: {
+                    if (checked)
+                        traditionalHeatStageLayout.traditionalHeatStage = Number(text);
+                }
 
                 text: "3"
             }
