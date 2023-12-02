@@ -8,7 +8,7 @@ import Stherm
  * SystemTypePage provides ui for choosing system type in SystemSetupPage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -30,8 +30,8 @@ BasePageView {
 
             onClicked: {
                 //! Move to corresponding page
-                if (_root.StackView.view) {
-                    _root.StackView.view.push(_traditionalPageCompo);
+                if (root.StackView.view) {
+                    root.StackView.view.push(_traditionalPageCompo);
                 }
             }
         }
@@ -42,8 +42,8 @@ BasePageView {
 
             onClicked: {
                 //! Move to corresponding page
-                if (_root.StackView.view) {
-                    _root.StackView.view.push(_heatPumpPageCompo);
+                if (root.StackView.view) {
+                    root.StackView.view.push(_heatPumpPageCompo);
                 }
             }
         }
@@ -54,8 +54,8 @@ BasePageView {
 
             onClicked: {
                 //! Move to corresponding page
-                if (_root.StackView.view) {
-                    _root.StackView.view.push(_coolonlyPageCompo);
+                if (root.StackView.view) {
+                    root.StackView.view.push(_coolonlyPageCompo);
                 }
             }
         }
@@ -66,8 +66,8 @@ BasePageView {
 
             onClicked: {
                 //! Move to corresponding page
-                if (_root.StackView.view) {
-                    _root.StackView.view.push(_heatonlyPageCompo);
+                if (root.StackView.view) {
+                    root.StackView.view.push(_heatonlyPageCompo);
                 }
             }
         }
@@ -78,24 +78,32 @@ BasePageView {
     Component {
         id: _traditionalPageCompo
 
-        SystemTypeTraditionPage { }
+        SystemTypeTraditionPage {
+            uiSession: root.uiSession
+        }
     }
 
     Component {
         id: _heatPumpPageCompo
 
-        SystemTypeHeatPumpPage { }
+        SystemTypeHeatPumpPage {
+            uiSession: root.uiSession
+        }
     }
 
     Component {
         id: _coolonlyPageCompo
 
-        SystemTypeCoolOnlyPage { }
+        SystemTypeCoolOnlyPage {
+            uiSession: root.uiSession
+        }
     }
 
     Component {
         id: _heatonlyPageCompo
 
-        SystemTypeHeatOnlyPage { }
+        SystemTypeHeatOnlyPage {
+            uiSession: root.uiSession
+        }
     }
 }
