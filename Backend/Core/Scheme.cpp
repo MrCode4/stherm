@@ -113,7 +113,7 @@ void Scheme::startWork()
        case AppSpecCPP::SystemType::CoolingOnly: {
             TRACE << "mCurrentTemperature:  " <<mCurrentTemperature;
            if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
-               mRelay->setOb_state(AppSpecCPP::Heating);
+               mRelay->setOb_state(AppSpecCPP::Cooling);
 
                // sysDelay
                mRelay->coolingStage1();
