@@ -91,6 +91,8 @@ void Scheme::run()
     TRACE << "-- startWork is running." << QThread::currentThreadId();
 
     QElapsedTimer timer;
+    timer.start();
+
     while (!stopWork && mSystemSetup) {
         startWork();
     }
