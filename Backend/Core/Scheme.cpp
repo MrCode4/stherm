@@ -125,8 +125,10 @@ void Scheme::startWork()
                 mTiming->s2hold = false;
                 mTiming->alerts = false;
 
+                TRACE;
                 sendRelays();
 
+                TRACE;
                 coolingHeatPumpRole1();
 
             } else {
@@ -662,6 +664,7 @@ void Scheme::coolingHeatPumpRole1(bool needToWait)
         }
     }
 
+    TRACE << mSetPointTemperature << mCurrentTemperature << mRelay->relays().y2;
     if (mSetPointTemperature - mCurrentTemperature >= 1) {
         // turn off Y1, Y2 and G = 0
         mRelay->setAllOff();
