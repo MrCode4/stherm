@@ -412,7 +412,7 @@ void DeviceIOController::createConnections()
 
     connect(&m_wtd_timer, &QTimer::timeout, this, &DeviceIOController::wtdExec);
 
-    m_wtd_timer.setInterval(10000);
+    m_wtd_timer.setInterval(5000);
     m_wtd_timer.setSingleShot(false);
     m_wtd_timer.start();
 
@@ -498,7 +498,7 @@ void DeviceIOController::createTIConnection()
 
     connect(m_tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
         LOG_DEBUG(QString("Ti Response: %0").arg(data));
-        m_wtd_timer.start();
+        //        m_wtd_timer.start();
 
         auto rxPacket = DataParser::deserializeData(data);
 
@@ -1192,7 +1192,7 @@ bool DeviceIOController::processTIQueue()
 
 bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 {
-    m_wtd_timer.start();
+    //    m_wtd_timer.start();
 
     if (txPacket.CMD == STHERM::SetRelay || txPacket.CMD == STHERM::Check_Wiring) {
         m_p->wait_relay_response = true;
