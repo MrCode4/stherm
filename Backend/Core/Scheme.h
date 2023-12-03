@@ -66,7 +66,10 @@ public:
     void setRequestedHumidity(double newHumidity);
 
 signals:
+    //! Change backlight with the mode
     void changeBacklight(QVariantList colorData, int secs = 5);
+
+    //! Send relay to DeviceIOController and update relays into ti board.
     void updateRelays(STHERM::RelayConfigs);
 
     void alert();

@@ -1167,28 +1167,37 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
 bool DeviceIOController::processTIQueue()
 {
-    if (!m_tiConnection || !m_tiConnection->isConnected())
-        return false;
-
-    if (m_TI_queue.empty()) {
+    TRACE;
+    if (!m_tiConnection || !m_tiConnection->isConnected()) {
+        TRACE;
         return false;
     }
 
+    if (m_TI_queue.empty()) {
+        TRACE;
+        return false;
+    }
+
+
     auto packet = m_TI_queue.front();
+    TRACE << packet.CMD;
 
     if ((packet.CMD == STHERM::SetRelay || packet.CMD == STHERM::Check_Wiring)
         && m_p->wait_relay_response) {
+        TRACE;
         return false;
     }
 
     if (sendTIRequest(packet)) {
         m_TI_queue.pop();
+        TRACE;
         return true;
     } else {
         qWarning() << "ti request packet not sent" << packet.CMD
                    << "queue size: " << m_TI_queue.size();
     }
 
+    TRACE;
     return false;
 }
 
