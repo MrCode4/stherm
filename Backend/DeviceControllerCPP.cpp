@@ -28,26 +28,34 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // todo: initialize with proper value
     mBacklightModelData = QVariantList();
 
+    // Update backlight
+    mBacklightTimer.setTimerType(Qt::PreciseTimer);
+    mBacklightTimer.setSingleShot(true);
+    connect(&mBacklightTimer, &QTimer::timeout, this, [this]() {
+        setBacklight(mBacklightModelData, true);
+    });
 
-    LOG_DEBUG("TEST");
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         setMainData(data);
     });
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList data, int secs) {
+
+        TRACE << "Update backlight.";
+
+        if (mBacklightTimer.isActive())
+            mBacklightTimer.stop();
+
+        if (data.isEmpty()) {
+            setBacklight(mBacklightModelData, true);
+            return;
+        }
+
         setBacklight(data, true);
 
-        if (secs < 0)
-            return;
-
         // Back to last backlight after secs seconds
-        QTimer timer;
-
-        timer.connect(&timer, &QTimer::timeout, this, [this]() {
-            setBacklight(mBacklightModelData, true);
-        });
-
-        timer.start(secs * 1000);
+        if (secs >= 0)
+            mBacklightTimer.start(secs * 1000);
     });
 
     connect(m_scheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
@@ -112,7 +120,7 @@ void DeviceControllerCPP::startDevice()
 
     // Satart with delay to ensure the model loaded.
     QTimer::singleShot(1000, this, [this]() {
-        m_scheme->start();
+        m_scheme->restartWork();
     });
 }
 

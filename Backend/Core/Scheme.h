@@ -65,9 +65,13 @@ public:
     //! Set requested Humidity
     void setRequestedHumidity(double newHumidity);
 
+    //! Restart the worker thread
+    void restartWork();
+
 signals:
     //! Change backlight with the mode
-    void changeBacklight(QVariantList colorData, int secs = 5);
+    //!changeBacklight() without any parameters resets the backlight to its original value
+    void changeBacklight(QVariantList colorData = QVariantList(), int secs = 5);
 
     //! Send relay to DeviceIOController and update relays into ti board.
     void updateRelays(STHERM::RelayConfigs);
@@ -114,9 +118,6 @@ private:
     //! Update humidifire and dehumidifire after changes: mode, set point humidity,
     //! current humidity, and humidifier Id
     void updateHumifiresState();
-
-    //! Restart the worker thread
-    void restartWork();
 
 private:
     /* Attributes

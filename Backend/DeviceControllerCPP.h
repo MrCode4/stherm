@@ -110,6 +110,8 @@ private:
     SystemSetup *mSystemSetup;
     Scheme      *m_scheme;
 
+    QTimer mBacklightTimer;
+
     QVariantList mBacklightModelData;
 
 };

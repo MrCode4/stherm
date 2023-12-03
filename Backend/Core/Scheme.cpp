@@ -32,7 +32,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
     QThread (parent)
 {
-    stopWork = false;
+    stopWork = true;
 
     mTiming = mDeviceAPI->timing();
     mRelay  = Relay::instance();
@@ -52,6 +52,16 @@ Scheme::~Scheme()
 
 void Scheme::restartWork()
 {
+    if (mSystemSetup->systemMode == AppSpecCPP::Off) {
+        // Stop worker thread
+        stopWork = true;
+
+        // change backlight to original value
+        emit changeBacklight();
+
+        return;
+    }
+
     if (this->isRunning()) {
         // Any finished signal should not start the worker.
         connect(this, &Scheme::finished, this, [=]() {
@@ -63,6 +73,7 @@ void Scheme::restartWork()
         this->wait(QDeadlineTimer(100, Qt::PreciseTimer));
 
     } else {
+        stopWork = false;
         this->start();
     }
 }
@@ -945,9 +956,9 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
         return;
 
     mSystemSetup = systemSetup;
+
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
-        TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode <<
-            QThread::currentThreadId() <<QThread::idealThreadCount();
+        TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
 
         mRealSysMode = mSystemSetup->systemMode;
 
