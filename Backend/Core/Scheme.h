@@ -80,6 +80,9 @@ protected:
 private:
     void startWork();
 
+    //! Send relays into ti
+    void sendRelays();
+
     //! Update vacation mode
     void updateVacationState();
 
