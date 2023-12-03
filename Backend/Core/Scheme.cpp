@@ -52,13 +52,19 @@ Scheme::~Scheme()
 
 void Scheme::restartWork()
 {
-    // todo: use a safe method
     if (this->isRunning()) {
-        this->terminate();
-        this->wait(100);
-    }
+        // Any finished signal should not start the worker.
+        connect(this, &Scheme::finished, this, [=]() {
+                stopWork = false;
+                this->start();
+            }, Qt::SingleShotConnection);
 
-    this->start();
+        stopWork = true;
+        this->wait(QDeadlineTimer(100, Qt::PreciseTimer));
+
+    } else {
+        this->start();
+    }
 }
 
 void Scheme::setSetPointTemperature(double newSetPointTemperature)
@@ -82,7 +88,7 @@ void Scheme::setRequestedHumidity(double newHumidity)
 
 void Scheme::run()
 {
-    TRACE << "-- startWork is running.";
+    TRACE << "-- startWork is running." << QThread::currentThreadId();
 
     QElapsedTimer timer;
     while (!stopWork && mSystemSetup) {
@@ -95,7 +101,10 @@ void Scheme::run()
 
 void Scheme::startWork()
 {
-    TRACE << mRealSysMode << mSystemSetup->systemType << mCurrentTemperature << mSetPointTemperature;
+    if (stopWork)
+        return;
+
+    TRACE << "mRealSysMode" << mRealSysMode << mSystemSetup->systemType << mCurrentTemperature << mSetPointTemperature;
     switch (mRealSysMode) {
     case AppSpecCPP::SystemMode::Cooling: {
 
@@ -185,7 +194,9 @@ void Scheme::startWork()
 
                mCurrentSysMode = mRelay->currentState();
                // 5 secs
+               TRACE;
                emit changeBacklight(heatingColor);
+               TRACE;
 
                mTiming->s1uptime.restart();
                mTiming->uptime.restart();
@@ -193,7 +204,9 @@ void Scheme::startWork()
                mTiming->s3hold = false;
                mTiming->alerts = false;
 
+               TRACE;
                heatingConventionalRole1();
+               TRACE;
 
            } else {
                mRelay-> setAllOff();
@@ -214,7 +227,10 @@ void Scheme::startWork()
        break;
    }
 
-   TRACE;
+   // Stop work
+   if (stopWork)
+       return;
+
    int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
    mRelay->fanWorkTime(mFanWPH, fanWork);
 
@@ -231,6 +247,10 @@ void Scheme::startWork()
 
 void Scheme::heatingConventionalRole1(bool needToWait)
 {
+    if (stopWork)
+        return;
+
+    TRACE;
    if (needToWait) {
        auto loopResult = waitLoop();
 
@@ -240,6 +260,7 @@ void Scheme::heatingConventionalRole1(bool needToWait)
        }
    }
 
+   TRACE << mCurrentTemperature - mSetPointTemperature;
    if (mCurrentTemperature - mSetPointTemperature >= 1) {
        // turn of system (w1, w2, w3 = 0)
        mRelay->setAllOff();
@@ -248,6 +269,7 @@ void Scheme::heatingConventionalRole1(bool needToWait)
        return;
 
    } else {
+       TRACE << mRelay->relays().w2 << mTiming->s2uptime.isValid();
        if (mRelay->relays().w2 != STHERM::RelayMode::NoWire) {
 
            if (mSetPointTemperature - mCurrentTemperature >= 2.9 || (mTiming->s2uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 10)) {
@@ -278,6 +300,9 @@ void Scheme::heatingConventionalRole1(bool needToWait)
 
 void Scheme::heatingConventionalRole2()
 {
+    if (stopWork)
+        return;
+
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
@@ -346,6 +371,9 @@ void Scheme::heatingConventionalRole2()
 
 void Scheme::heatingConventionalRole3()
 {
+    if (stopWork)
+        return;
+
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
@@ -387,6 +415,9 @@ void Scheme::heatingConventionalRole3()
 
 void Scheme::heatingEmergencyHeatPumpRole1()
 {
+    if (stopWork)
+        return;
+
    // Y1, Y2, G = 0
    mRelay->setAllOff();
    mRelay->emergencyHeating1();
@@ -400,6 +431,9 @@ void Scheme::heatingEmergencyHeatPumpRole1()
 
 void Scheme::heatingEmergencyHeatPumpRole2()
 {
+    if (stopWork)
+        return;
+
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
@@ -427,6 +461,9 @@ void Scheme::heatingEmergencyHeatPumpRole2()
 
 void Scheme::heatingEmergencyHeatPumpRole3()
 {
+    if (stopWork)
+        return;
+
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
@@ -444,6 +481,9 @@ void Scheme::heatingEmergencyHeatPumpRole3()
 
 void Scheme::heatingHeatPumpRole1()
 {
+    if (stopWork)
+        return;
+
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
@@ -476,6 +516,9 @@ void Scheme::heatingHeatPumpRole1()
 
 void Scheme::heatingHeatPumpRole2(bool needToWait)
 {
+    if (stopWork)
+        return;
+
    if (needToWait) {
        auto loopResult = waitLoop();
 
@@ -520,6 +563,8 @@ void Scheme::heatingHeatPumpRole2(bool needToWait)
 
 void Scheme::heatingHeatPumpRole3()
 {
+    if (stopWork)
+        return;
 
    auto loopResult = waitLoop();
 
@@ -574,6 +619,9 @@ void Scheme::heatingHeatPumpRole3()
 
 void Scheme::coolingHeatPumpRole1(bool needToWait)
 {
+    if (stopWork)
+        return;
+
    if (needToWait) {
        auto loopResult = waitLoop();
 
@@ -625,6 +673,9 @@ void Scheme::coolingHeatPumpRole1(bool needToWait)
 
 void Scheme::coolingHeatPumpRole2()
 {
+    if (stopWork)
+        return;
+
    auto loopResult = waitLoop();
 
    if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
@@ -746,6 +797,9 @@ void Scheme::updateRealState(const struct STHERM::Vacation &vacation, const doub
 
 void Scheme::updateVacationState()
 {
+    if (stopWork)
+        return;
+
     TRACE << "mCurrentSysMode " << mCurrentSysMode;
     AppSpecCPP::SystemMode realSysMode;
 
@@ -790,6 +844,9 @@ void Scheme::updateVacationState()
 
 void Scheme::updateHumifiresState()
 {
+    if (stopWork)
+        return;
+
     TRACE << "HumidifierId " << mHumidifierId << mSystemSetup;
 
     if (!mSystemSetup || mHumidifierId == 3)
@@ -850,7 +907,8 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
     mSystemSetup = systemSetup;
     qDebug() << Q_FUNC_INFO << __LINE__ << mSystemSetup;
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
-        TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
+        TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode <<
+            QThread::currentThreadId() <<QThread::idealThreadCount();
 
         mRealSysMode = mSystemSetup->systemMode;
 
@@ -862,6 +920,8 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
 
         restartWork();
     });
+
+    mRealSysMode = mSystemSetup->systemMode;
 }
 
 AppSpecCPP::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
