@@ -938,6 +938,11 @@ void Scheme::updateHumifiresState()
     }
 }
 
+void Scheme::setVacation(const STHERM::Vacation &newVacation)
+{
+    mVacation = newVacation;
+}
+
 void Scheme::setFanWorkPerHour(int newFanWPH)
 {
     if (mFanWPH == newFanWPH)

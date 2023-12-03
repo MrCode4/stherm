@@ -99,6 +99,21 @@ bool DeviceControllerCPP::setSettings(QVariantList data)
     return _deviceIO->setSettings(data);
 }
 
+void DeviceControllerCPP::setVacation(const double min_Temperature, const double max_Temperature,
+                                      const double min_Humidity, const double max_Humidity)
+{
+    // Prepare vacation struct
+    STHERM::Vacation vacation;
+    vacation.minimumTemperature = min_Temperature;
+    vacation.maximumTemperature = max_Temperature;
+    vacation.minimumHumidity    = min_Humidity;
+    vacation.maximumHumidity    = max_Humidity;
+
+    // Update vacations in scheme
+    if (m_scheme)
+        m_scheme->setVacation(vacation);
+}
+
 void DeviceControllerCPP::setRequestedTemperature(const double temperature)
 {
     m_scheme->setSetPointTemperature(temperature);

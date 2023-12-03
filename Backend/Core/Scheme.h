@@ -68,6 +68,8 @@ public:
     //! Restart the worker thread
     void restartWork();
 
+    void setVacation(const STHERM::Vacation &newVacation);
+
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value

@@ -57,6 +57,10 @@ public:
     //! set setttings using uart and file and respond the success
     Q_INVOKABLE bool setSettings(QVariantList data);
 
+    //! update vacation
+    Q_INVOKABLE void setVacation(const double min_Temperature, const double max_Temperature,
+                                 const double min_Humidity,    const double max_Humidity);
+
     Q_INVOKABLE void setRequestedTemperature(const double temperature);
     Q_INVOKABLE void setRequestedHumidity(const double humidity);
 
