@@ -81,7 +81,6 @@ public:
     int error_dynamic_counter{};
 
     qint64 lastTimeSensors = 0;
-    qint64 lastTimeTOF = 0;
 };
 
 DeviceIOController::DeviceIOController(QObject *parent)
@@ -389,7 +388,7 @@ QString DeviceIOController::getCPUInfo()
 
 bool DeviceIOController::setBrightness(int value)
 {
-    return UtilityHelper::setBrightness(std::clamp(value, 5, 255));
+    return UtilityHelper::setBrightness(std::clamp(value, 5, 254));
 }
 
 void DeviceIOController::setTimeZone(int offset)
@@ -564,11 +563,7 @@ void DeviceIOController::createNRF()
 
     if (m_gpioHandler5->startConnection()) {
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
-            auto time = QDateTime::currentMSecsSinceEpoch();
-            if (time - m_p->lastTimeSensors < 10 || time - m_p->lastTimeTOF < 10)
-                return;
             if (data.length() == 2 && data.at(0) == '0') {
-                m_p->lastTimeTOF = time;
                 m_nRF_queue.push(m_p->TOFPacketBA);
                 TRACE << "request for gpio 5" << processNRFQueue();
             }
@@ -655,7 +650,7 @@ bool DeviceIOController::setSettings(QVariantList data)
 
         m_p->brighness_mode = data.last().toBool() ? 1 : 0;
 
-        if (setBrightness(qRound(data.first().toDouble())))
+        if (setBrightness(qRound(data.first().toDouble() * 2.55)))
             return true;
         else
             return false;
@@ -739,7 +734,6 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
             } break;
 
             case STHERM::GetTOF: {
-                m_p->lastTimeTOF = QDateTime::currentMSecsSinceEpoch();
                 uint16_t RangeMilliMeter;
                 uint32_t Luminosity;
                 // Read RangeMilliMeter and Luminosity
@@ -880,7 +874,6 @@ bool DeviceIOController::processNRFQueue()
 
     if (m_nRfConnection->sendRequest(packetBA)) {
         if (packet.CMD == STHERM::SIOCommand::GetTOF) {
-            m_p->lastTimeTOF = QDateTime::currentMSecsSinceEpoch();
         } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
             m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
         }
