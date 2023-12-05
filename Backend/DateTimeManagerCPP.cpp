@@ -4,7 +4,11 @@
 
 DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
     : QObject{parent}
-{}
+    , mAutoUpdateTime { false }
+{
+    //! Check auto-update time
+    checkAutoUpdateTime();
+}
 
 bool DateTimeManagerCPP::isRunning() const
 {
@@ -13,15 +17,27 @@ bool DateTimeManagerCPP::isRunning() const
 
 void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
 {
-    if (isRunning()) {
+    if (isRunning() || mAutoUpdateTime == autoUpdate) {
         return;
     }
 
-    connect(&mProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus) {
+    connect(&mProcess, &QProcess::finished, this,
+        [this, autoUpdate](int exitCode, QProcess::ExitStatus) {
+            if (exitCode == 0) {
+                mAutoUpdateTime = autoUpdate;
+                autoUpdateTimeChanged();
+            }
+
+            //! Call onfinished callback
             callProcessFinished({ exitCode });
         }, Qt::SingleShotConnection);
 
-    mProcess.start("timedatectl", { "set-ntp", autoUpdate ? "true" : "false" });
+    mProcess.start(TDC_COMMAND, { TDC_SET_NTP, autoUpdate ? "true" : "false" });
+}
+
+bool DateTimeManagerCPP::autoUpdateTime() const
+{
+    return mAutoUpdateTime;
 }
 
 QVariantList DateTimeManagerCPP::timezones() const
@@ -60,6 +76,22 @@ QVariantList DateTimeManagerCPP::timezones() const
     return timezones;
 }
 
+void DateTimeManagerCPP::checkAutoUpdateTime()
+{
+    mProcess.setReadChannel(QProcess::StandardOutput);
+    mProcess.start(TDC_COMMAND, {
+                                    TDC_SHOW,
+                                    TDC_NTP_PROPERTY,
+                                });
+    mProcess.waitForFinished(40);
+
+    if (mProcess.exitCode() == 0) {
+        mAutoUpdateTime = (mProcess.readLine() == "NPT=yes\n");
+    } else {
+        qDebug() << Q_FUNC_INFO << __LINE__ << mProcess.readLine();
+    }
+}
+
 void DateTimeManagerCPP::callProcessFinished(const QJSValueList& args)
 {
     if (mProcessFinishCb.isCallable()) {
@@ -75,4 +107,9 @@ void DateTimeManagerCPP::callProcessFinished(const QJSValueList& args)
         //! Make it null.
         mProcessFinishCb = QJSValue(QJSValue::NullValue);
     }
+}
+
+bool operator!=(const QJSValue& left, const QJSValue& right)
+{
+    return !left.equals(right);
 }

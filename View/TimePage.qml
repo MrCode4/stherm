@@ -37,7 +37,19 @@ BasePageView {
 
             Switch {
                 id: autoTimeSwh
-                checked: true
+                checked: DateTimeManager.autoUpdateTime
+
+                onToggled: {
+                    if (checked !== DateTimeManager.autoUpdateTime) {
+                        //! Disable switch
+                        autoTimeSwh.enabled = false;
+                        //! Set onfinished of DateTimeManager
+                        DateTimeManager.onfinish = () => { autoTimeSwh.enabled = true; };
+
+                        //! Ask for changing auto update time
+                        DateTimeManager.autoUpdateTime = checked;
+                    }
+                }
             }
         }
 
