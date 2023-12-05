@@ -1108,6 +1108,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
         case STHERM::Get_addr: {
             LOG_DEBUG("***** Ti  - Start Get_addr *****");
             m_p->MainDevice.address = *(uint32_t *) (rxPacket.DataArray);
+            TRACE << "address: " << m_p->MainDevice.address ;
             LOG_DEBUG("***** Ti  - Finished: Get_addr *****");
 
         } break;
