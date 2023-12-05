@@ -9,30 +9,25 @@ import Stherm
  * ***********************************************************************************************/
 BasePageView {
     id: root
-
+    
     /* Property declaration
      * ****************************************************************************************/
     //! Setting
     property Setting    setting: uiSession?.appModel?.setting ?? null
-
+    
     /* Object properties
      * ****************************************************************************************/
     leftPadding: 16 * scaleFactor
     rightPadding: 16 * scaleFactor
     title: "Time"
-
+    
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
         id: mainLay
 
         anchors.fill: parent
-        spacing: 16
-
-        Label {
-            font.pointSize: root.font.pointSize * 0.8
-            text: "Time"
-        }
+        spacing: 6
 
         RowLayout {
             Label {
@@ -46,28 +41,63 @@ BasePageView {
             }
         }
 
-        RowLayout {
-            id: timeLay
-            Layout.topMargin: 4
-            Layout.rightMargin: autoTimeSwh.rightPadding * 2
-            enabled: !autoTimeSwh.checked
+        ItemDelegate {
+            Layout.fillWidth: true
+            horizontalPadding: 2
+            contentItem: RowLayout {
+                enabled: !autoTimeSwh.checked
 
+                Label {
+                    Layout.fillWidth: true
+                    text: "Time"
+                }
+
+                Label {
+                    readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+
+                    Layout.rightMargin: autoTimeSwh.rightPadding * 2
+                    font.letterSpacing: 1.5
+                    text: (new Date).toLocaleTimeString(Qt.locale(), "hh:mm" + (is12Hour ? " AP" : ""))
+                }
+            }
+        }
+
+        RowLayout {
             Label {
                 Layout.fillWidth: true
-                text: "Time"
+                text: "Set time zone automatically"
             }
 
-            Label {
-                readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+            Switch {
+                id: autoTimezoneSwh
+                checked: true
+            }
+        }
 
-                font.letterSpacing: 1.5
-                text: (new Date).toLocaleTimeString(Qt.locale(), "hh:mm" + (is12Hour ? " AP" : ""))
+        ItemDelegate {
+            Layout.fillWidth: true
+            horizontalPadding: 2
+            contentItem: RowLayout {
+                Layout.topMargin: 4
+                enabled: !autoTimezoneSwh.checked
+
+                Label {
+                    Layout.fillWidth: true
+                    text: "Time zone"
+                }
+
+                Label {
+                    readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+
+                    Layout.rightMargin: autoTimezoneSwh.rightPadding * 2
+                    font.letterSpacing: 1.5
+                    text: (new Date).toLocaleTimeString(Qt.locale(), "hh:mm" + (is12Hour ? " AP" : ""))
+                }
             }
         }
 
         //! Daylight Saving Time
         RowLayout {
-            Layout.topMargin: 24
 
             Label {
                 Layout.fillWidth: true
@@ -77,6 +107,19 @@ BasePageView {
             Switch {
                 id: dstSwh
                 checked: false
+            }
+        }
+
+        //! Daylight Saving Time
+        RowLayout {
+            Label {
+                Layout.fillWidth: true
+                text: "Use 12 Hour Format"
+            }
+
+            Switch {
+                id: hourFortmatSwh
+                checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
             }
         }
 
