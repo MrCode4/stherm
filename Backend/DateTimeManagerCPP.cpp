@@ -40,6 +40,23 @@ bool DateTimeManagerCPP::autoUpdateTime() const
     return mAutoUpdateTime;
 }
 
+void DateTimeManagerCPP::setTime(const QDateTime& time)
+{
+    if (isRunning() || QDateTime::currentDateTime().time() == time.time()) {
+        return;
+    }
+
+    connect(&mProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus) {
+            //! Call onfinished callback
+            callProcessFinished({ exitCode });
+        }, Qt::SingleShotConnection);
+
+    mProcess.start(TDC_COMMAND, {
+                                    TDC_SET_TIME,
+                                    time.time().toString("hh:mm:ss"),
+                                });
+}
+
 QVariantList DateTimeManagerCPP::timezones() const
 {
     QVariantList timezones;

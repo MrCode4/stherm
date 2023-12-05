@@ -8,6 +8,7 @@
 #define TDC_COMMAND         "timedatectl"
 #define TDC_SHOW            "show"
 #define TDC_SET_NTP         "set-ntp"
+#define TDC_SET_TIME        "set-time"
 #define TDC_NTP_PROPERTY    "--property=NTP"
 
 /*!
@@ -37,6 +38,14 @@ public:
      */
     void            setAutoUpdateTime(bool autoUpdate);
     bool            autoUpdateTime() const;
+
+
+    /*!
+     * \brief setTime Set system time to given time.
+     * \param time
+     * \return
+     */
+    Q_INVOKABLE void            setTime(const QDateTime& time);
 
     /*!
      * \brief timeZones Returns a list of all the timezones avaialable in the system.

@@ -72,6 +72,17 @@ BasePageView {
                     text: (new Date).toLocaleTimeString(Qt.locale(), "hh:mm" + (is12Hour ? " AP" : ""))
                 }
             }
+
+            onClicked: {
+                //! Open SelectTimePage
+                if (root.StackView.view) {
+                    root.StackView.view.push(selectTimeCompo);
+                } else {
+                    selectTimeCompo.createObject(root.contentItem, {
+                                                     "anchors.fill": root.contentItem
+                                                 })
+                }
+            }
         }
 
         RowLayout {
@@ -136,5 +147,15 @@ BasePageView {
         }
 
         Item { Layout.fillHeight: true }
+    }
+
+    Component {
+        id: selectTimeCompo
+
+        SelectTimePage {
+            onTimeSelected: function(time) {
+                DateTimeManager.setTime(Date.fromLocaleTimeString(Qt.locale(), time, "hh:mm:ss"));
+            }
+        }
     }
 }
