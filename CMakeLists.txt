@@ -178,6 +178,7 @@ qt6_add_qml_module(appStherm
         View/Test/AudioTestPage.qml
         View/Test/InternalSensorTestPage.qml
         View/ContactContractorPage.qml
+        View/TimePage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
