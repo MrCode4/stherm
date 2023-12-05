@@ -4,11 +4,13 @@
 #include <QObject>
 #include <QQmlEngine>
 #include <QProcess>
+#include <QTimeZone>
 
 #define TDC_COMMAND         "timedatectl"
 #define TDC_SHOW            "show"
 #define TDC_SET_NTP         "set-ntp"
 #define TDC_SET_TIME        "set-time"
+#define TDC_SET_TIMEZONE    "set-timezone"
 #define TDC_NTP_PROPERTY    "--property=NTP"
 
 /*!
@@ -19,6 +21,7 @@ class DateTimeManagerCPP : public QObject
 {
     Q_OBJECT
 
+    Q_PROPERTY(QVariant currentTimeZone READ currentTimeZone WRITE setCurrentTimeZone NOTIFY currentTimeZoneChanged FINAL)
     Q_PROPERTY(bool autoUpdateTime READ autoUpdateTime WRITE setAutoUpdateTime NOTIFY autoUpdateTimeChanged)
     Q_PROPERTY(QJSValue onfinish  MEMBER  mProcessFinishCb)
 
@@ -39,6 +42,8 @@ public:
     void            setAutoUpdateTime(bool autoUpdate);
     bool            autoUpdateTime() const;
 
+    QVariant        currentTimeZone() const;
+    void            setCurrentTimeZone(const QVariant& timezoneId);
 
     /*!
      * \brief setTime Set system time to given time.
@@ -68,6 +73,8 @@ private:
 signals:
     void autoUpdateTimeChanged();
 
+    void currentTimeZoneChanged();
+
 private:
     //!
     //! \brief mProcess The process that is used to call timedatectl
@@ -84,6 +91,11 @@ private:
     //! callable
     //!
     QJSValue            mProcessFinishCb;
+
+    //!
+    //! \brief mCurrentTimeZone Holds system current timezone
+    //!
+    QTimeZone           mCurrentTimeZone;
 };
 
 /*!

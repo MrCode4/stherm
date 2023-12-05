@@ -5,6 +5,7 @@
 DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
     : QObject{parent}
     , mAutoUpdateTime { false }
+    , mCurrentTimeZone { QTimeZone::systemTimeZone() }
 {
     //! Check auto-update time
     checkAutoUpdateTime();
@@ -38,6 +39,58 @@ void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
 bool DateTimeManagerCPP::autoUpdateTime() const
 {
     return mAutoUpdateTime;
+}
+
+QVariant DateTimeManagerCPP::currentTimeZone() const
+{
+    const QString tzId = mCurrentTimeZone.id();
+    int minutesOffset = mCurrentTimeZone.offsetFromUtc(QDateTime::currentDateTime()) / 60;
+
+    QString sign = "-";
+    if (minutesOffset >= 0) {
+        sign = "+";
+    } else {
+        minutesOffset *= -1;
+    }
+
+    QString hourStr = QString::number(int(minutesOffset / 60));
+    if (hourStr.size() < 2) hourStr.prepend('0');
+
+    QString minStr = QString::number(minutesOffset % 60);
+    if (minStr.size() < 2) minStr.prepend('0');
+
+    return QVariantMap({
+                        { "id", tzId },
+                        { "city", tzId.sliced(tzId.indexOf('/') + 1) },
+                        { "offset", QString("UTC") + sign + hourStr + ":" + minStr },
+                        });
+}
+
+void DateTimeManagerCPP::setCurrentTimeZone(const QVariant& timezoneId)
+{
+    QTimeZone newCurrentTimezone(timezoneId.toByteArray());
+
+    if (isRunning() || !newCurrentTimezone.isValid() || mCurrentTimeZone == newCurrentTimezone) {
+        return;
+    }
+
+    connect(&mProcess, &QProcess::finished, this,
+        [this, newCurrentTimezone](int exitCode, QProcess::ExitStatus) {
+            if (exitCode == 0) {
+                mCurrentTimeZone = newCurrentTimezone;
+                emit currentTimeZoneChanged();
+            }
+
+            //! Call onfinished callback
+            callProcessFinished({ exitCode });
+        }, Qt::SingleShotConnection);
+
+    //! Set system time zone
+    mProcess.start(TDC_COMMAND, {
+                                    TDC_SET_TIMEZONE,
+                                    newCurrentTimezone.id(),
+                                });
+
 }
 
 void DateTimeManagerCPP::setTime(const QDateTime& time)

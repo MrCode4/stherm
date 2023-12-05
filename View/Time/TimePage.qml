@@ -85,24 +85,12 @@ BasePageView {
             }
         }
 
-        RowLayout {
-            Label {
-                Layout.fillWidth: true
-                text: "Set time zone automatically"
-            }
-
-            Switch {
-                id: autoTimezoneSwh
-                checked: true
-            }
-        }
-
         ItemDelegate {
             Layout.fillWidth: true
             horizontalPadding: 2
             contentItem: RowLayout {
                 Layout.topMargin: 4
-                enabled: !autoTimezoneSwh.checked
+                spacing: 24
 
                 Label {
                     Layout.fillWidth: true
@@ -112,10 +100,16 @@ BasePageView {
                 Label {
                     readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
-                    Layout.rightMargin: autoTimezoneSwh.rightPadding * 2
-                    font.letterSpacing: 1.5
-                    text: (new Date).toLocaleTimeString(Qt.locale(), "hh:mm" + (is12Hour ? " AP" : ""))
+                    Layout.rightMargin: autoTimeSwh.rightPadding * 2
+                    Layout.fillWidth: true
+                    text: `${DateTimeManager.currentTimeZone.id} ${DateTimeManager.currentTimeZone.offset}`
+                    horizontalAlignment: "AlignRight"
+                    elide: Qt.ElideRight
                 }
+            }
+
+            onClicked: {
+                //! Open SelectTimeZonePage
             }
         }
 
