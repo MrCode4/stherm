@@ -28,10 +28,10 @@ BasePageView {
 
         onClicked: {
             //! Do neccessary updates
-
-            appModel.systemSetup.systemType = AppSpecCPP.Conventional;
-            appModel.systemSetup.traditionalCoolStage = traditionalCoolStageLayout.traditionalCoolStage;
-            appModel.systemSetup.traditionalHeatStage = traditionalHeatStageLayout.traditionalHeatStage;
+            if (deviceController) {
+                deviceController.setSystemTraditional(traditionalCoolStageLayout.traditionalCoolStage,
+                                                      traditionalHeatStageLayout.traditionalHeatStage)
+            }
 
             //! Also move out of this Page
             backButtonCallback();

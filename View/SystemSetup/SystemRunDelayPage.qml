@@ -29,11 +29,12 @@ BasePageView {
         }
 
         onClicked: {
-            //! Apply settings and pop this from StackView
-            //! Apply settings here
+            //! Apply settings
+            if (deviceController) {
+                deviceController.setSystemRunDelay(root.systemRunDelay)
+            }
 
-            appModel.systemSetup.systemRunDelay = root.systemRunDelay
-
+            //! pop this from StackView
             if (root.StackView.view) {
                 root.StackView.view.pop()
             }

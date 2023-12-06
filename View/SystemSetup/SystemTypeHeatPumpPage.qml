@@ -30,11 +30,11 @@ BasePageView {
 
         onClicked: {
             //! Do neccessary updates
-
-            appModel.systemSetup.systemType = AppSpecCPP.HeatPump;
-            appModel.systemSetup.heatPumpEmergency = _emergencyHeatingSwh.checked;
-            appModel.systemSetup.heatPumpStage     = heatPumpStageLayout.heatPumpStage;
-            appModel.systemSetup.heatPumpOBState   = heatPumpOBStateLayout.heatPumpOBState;
+            if (deviceController) {
+                deviceController.setSystemHeatPump(_emergencyHeatingSwh.checked,
+                                                   heatPumpStageLayout.heatPumpStage,
+                                                   heatPumpOBStateLayout.heatPumpOBState)
+            }
 
             //! Also move out of this Page
             backButtonCallback();

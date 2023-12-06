@@ -16,19 +16,6 @@ QtObject {
     /* Object Properties
      * ****************************************************************************************/
 
-    property Connections connections: Connections {
-        target: device
-
-        function onRequestedTempChanged() {
-            // send request (in this case it's simulation only)
-        }
-
-        function onRequestedHumChanged() {
-            // send request (in this case it's simulation only)
-        }
-    }
-
-
     /* Functions
      * ****************************************************************************************/
 
@@ -61,6 +48,14 @@ QtObject {
     function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive) {}
 
     function setDesiredTemperature(temperature: real) {}
+
+    function setRequestedHumidity(hum: real) {}
+
+    function setSystemRunDelay(delay: int) {}
+    function setSystemCoolingOnly(stage: int) {}
+    function setSystemHeatOnly(stage: int) {}
+    function setSystemHeatPump(emergency: bool, stage: int, obState: int) {}
+    function setSystemTraditional(coolStage: int, heatStage: int) {}
 
     function updateInformation() {}
 

@@ -23,19 +23,6 @@ I_DeviceController {
         }
     }
 
-    //! Connection to send requested temperature and humidity to ui
-    property Connections deviceConnection: Connections {
-        target: device
-
-        function onRequestedTempChanged() {
-            sendRequestedTemperature()
-        }
-
-        function onRequestedHumChanged() {
-           sendRequestedHumidity();
-        }
-    }
-
     /* Object Properties
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {
@@ -64,8 +51,10 @@ I_DeviceController {
     }
 
     Component.onCompleted: {
-        sendRequestedTemperature();
-        sendRequestedHumidity();
+        console.log("* requestedTemp initial: ", device.requestedTemp);
+        console.log("* requestedHum initial: ", device.requestedHum);
+        deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
+        deviceControllerCPP.setRequestedHumidity(device.requestedHum);
     }
 
     /* Children
@@ -73,21 +62,6 @@ I_DeviceController {
 
     /* Methods
      * ****************************************************************************************/
-
-    //! Send Requested temperature to controller
-    function sendRequestedTemperature()
-    {
-        console.log("* requestedTemp: ", device.requestedTemp);
-        deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
-    }
-
-    //! Send Requested humidity to controller
-    function sendRequestedHumidity()
-    {
-        console.log("* requestedHum: ", device.requestedHum);
-        deviceControllerCPP.setRequestedHumidity(device.requestedHum);
-    }
-
 
     function sendReceive(className, method, data)
     {
@@ -202,10 +176,46 @@ I_DeviceController {
 
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
-        sendReceive('system', 'setTemperature', [temperature]);
+        //! Apply temperature in backend
+        deviceControllerCPP.setRequestedTemperature(temperature);
 
         // Update device temperature when setTemperature is successful.
         device.requestedTemp = temperature;
+    }
+
+    function setRequestedHumidity(humidity: real) {
+        //! Apply humidity in backend
+        deviceControllerCPP.setRequestedHumidity(humidity);
+
+        //! Update requested humidity to device
+        device.requestedHum = humidity;
+    }
+
+    function setSystemRunDelay(delay: int) {
+        device.systemSetup.systemRunDelay = delay
+    }
+
+    function setSystemCoolingOnly(stage: int) {
+        device.systemSetup.systemType = AppSpecCPP.CoolingOnly;
+        device.systemSetup.coolStage  = stage;
+    }
+
+    function setSystemHeatOnly(stage: int) {
+        device.systemSetup.systemType = AppSpecCPP.HeatingOnly;
+        device.systemSetup.heatStage  = stage;
+    }
+
+    function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
+        device.systemSetup.systemType = AppSpecCPP.HeatPump;
+        device.systemSetup.heatPumpEmergency = emergency;
+        device.systemSetup.heatPumpStage     = stage;
+        device.systemSetup.heatPumpOBState   = obState;
+    }
+
+    function setSystemTraditional(coolStage: int, heatStage: int) {
+        device.systemSetup.systemType = AppSpecCPP.Conventional;
+        device.systemSetup.traditionalCoolStage = coolStage;
+        device.systemSetup.traditionalHeatStage = heatStage;
     }
 
     //! Read data from system with getMainData method.

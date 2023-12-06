@@ -28,8 +28,9 @@ BasePageView {
 
         onClicked: {
             //! Do neccessary updates
-            appModel.systemSetup.systemType = AppSpecCPP.HeatingOnly;
-            appModel.systemSetup.heatStage = heatStageLayout.heatStage;
+            if (deviceController) {
+                deviceController.setSystemHeatOnly(heatStageLayout.heatStage)
+            }
 
             //! Also move out of this Page
             backButtonCallback();
