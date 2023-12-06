@@ -21,46 +21,6 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Confirm button
-    ToolButton {
-        parent: _root.header.contentItem
-        contentItem: RoniaTextIcon {
-            text: "\uf00c" //! check icon
-        }
-
-        onClicked: {
-            if (deviceController) {
-                //! Save system mode and exit
-                switch(_buttonsGrp.checkedButton) {
-                    case _coolingButton:
-                        deviceController.setSystemModeTo(AppSpec.SystemMode.Cooling);
-                        break;
-                    case _heatingButton:
-                        deviceController.setSystemModeTo(AppSpec.SystemMode.Heating);
-                        break;
-                    case _autoButton:
-                        deviceController.setSystemModeTo(AppSpec.SystemMode.Auto);
-                        break;
-                    case _vacationButton:
-                        deviceController.setSystemModeTo(AppSpec.SystemMode.Vacation);
-                        break;
-                    case _offButton:
-                        deviceController.setSystemModeTo(AppSpec.SystemMode.Off);
-                        break;
-                }
-            }
-
-            //! Go back to previous page
-            if (_root.StackView.view) {
-                _root.StackView.view.pop();
-
-                if (_buttonsGrp.checkedButton === _vacationButton) {
-                    _root.StackView.view.pop(); //! To pop ApplicationMenu
-                }
-            }
-        }
-    }
-
     //! Make buttons mutually-exclusive
     ButtonGroup {
         property Button previousButton: null
@@ -90,6 +50,11 @@ BasePageView {
             checkable: true
             checked: device?.systemMode === AppSpec.SystemMode.Cooling
             text: "Cooling"
+
+            onClicked: {
+                deviceController.setSystemModeTo(AppSpec.SystemMode.Cooling);
+                uiSession.showHome(); //! Go back to Home
+            }
         }
 
         Button {
@@ -100,6 +65,11 @@ BasePageView {
             checkable: true
             checked: device?.systemMode === AppSpec.SystemMode.Heating
             text: "Heating"
+
+            onClicked: {
+                deviceController.setSystemModeTo(AppSpec.SystemMode.Heating);
+                uiSession.showHome(); //! Go back to Home
+            }
         }
 
         Button {
@@ -110,6 +80,11 @@ BasePageView {
             checkable: true
             checked: device?.systemMode === AppSpec.SystemMode.Auto
             text: "Auto"
+
+            onClicked: {
+                deviceController.setSystemModeTo(AppSpec.SystemMode.Auto);
+                uiSession.showHome(); //! Go back to Home
+            }
         }
 
         Button {
@@ -138,6 +113,11 @@ BasePageView {
             checkable: true
             checked: device?.systemMode === AppSpec.SystemMode.Off
             text: "OFF"
+
+            onClicked: {
+                deviceController.setSystemModeTo(AppSpec.SystemMode.Off);
+                uiSession.showHome(); //! Go back to Home
+            }
         }
     }
 
@@ -147,7 +127,10 @@ BasePageView {
         VacationModePage {
             uiSession: _root.uiSession
 
-            onSaved: _buttonsGrp.previousButton = null
+            onSaved: {
+                _buttonsGrp.previousButton = null
+                _root.uiSession.showHome(); //! Go back to Home
+            }
             onCanceled: {
                 //! Restore previous mode
                 if (_buttonsGrp.previousButton) {
