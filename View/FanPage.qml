@@ -38,8 +38,7 @@ BasePageView {
             }
 
             //! Also move out of this Page
-            if (_root.StackView.view && _root.StackView.view.depth > 1
-                    && _root.StackView.view.currentItem === _root) {
+            if (_root.StackView.view) {
                 _root.StackView.view.pop();
             }
         }

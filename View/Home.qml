@@ -102,6 +102,12 @@ Control {
             }
             y: (_desiredTempItem.height - height) / 2 - 4
             deviceController: uiSession?.deviceController ?? null
+
+            onClicked: {
+                _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
+                                              "uiSession": Qt.binding(() => uiSession)
+                                          });
+            }
         }
 
         Item {
@@ -147,6 +153,13 @@ Control {
                 anchors {
                     left: parent.left
                     bottom: parent.bottom
+                }
+
+                onClicked: {
+                    _root.StackView.view.push("qrc:/Stherm/View/FanPage.qml",
+                                              {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
                 }
             }
 

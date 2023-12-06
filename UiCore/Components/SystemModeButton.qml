@@ -155,29 +155,4 @@ ToolButton {
             name: "auto"
         }
     ]
-
-    onClicked: {
-        //! Find next state
-        var nextMode = -1;
-
-        switch(device?.systemMode) {
-        case AppSpec.SystemMode.Off:
-            nextMode = AppSpec.SystemMode.Heating;
-            break;
-        case AppSpec.SystemMode.Heating:
-            nextMode = AppSpec.SystemMode.Cooling;
-            break;
-        case AppSpec.SystemMode.Cooling:
-            nextMode = AppSpec.SystemMode.Auto;
-            break;
-        case AppSpec.SystemMode.Vacation:
-        case AppSpec.SystemMode.Auto:
-            nextMode = AppSpec.SystemMode.Off;
-            break;
-        }
-
-        if (nextMode > -1) {
-            deviceController.setSystemModeTo(nextMode);
-        }
-    }
 }
