@@ -21,7 +21,7 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Confirm rootn
+    //! Confirm button
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {

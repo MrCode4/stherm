@@ -345,28 +345,6 @@ enum AlertLevel
 };
 
 /**
- * @brief Enumeration for system modes.
- */
-// enum SystemMode
-// {
-//     Cooling = 0,
-//     Heating,
-//     Auto,
-//     Vacation,
-//     Off,
-//     Emergency
-// };
-
-// enum SystemType
-// {
-//     Conventional = 0,
-//     HeatPump,
-//     CoolingOnly,
-//     HeatingOnly
-// };
-
-
-/**
  * @brief Enumeration for LED behavior.
  */
 enum LedEffect
