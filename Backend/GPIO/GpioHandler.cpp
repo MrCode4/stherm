@@ -1,6 +1,17 @@
 #include "GpioHandler.h"
 
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <poll.h>
+#include <signal.h>
+#include <unistd.h>
+
+#include <QElapsedTimer>
 #include <QTimer>
+
+#include "LogHelper.h"
 
 GpioHandler::GpioHandler(int gpio_pin, QObject *parent)
     : QObject{parent}
@@ -14,26 +25,49 @@ GpioHandler::~GpioHandler()
     closeFile();
 }
 
+void *nrf_uart_thrd(void *a) {
+    auto parent = static_cast<GpioHandler *>(a);
+
+    struct pollfd *fds = new pollfd();
+
+    fds->fd = parent->fd();
+    fds->events = POLLPRI | POLLERR;
+
+    char buffer[256];
+    while (parent->fd() != -1) {
+        int ready = poll(fds, 1, -1);  // wait indefinitely for events
+
+        if (ready > 0) {
+            if (fds->revents & POLLPRI) {
+                lseek(fds->fd, 0, SEEK_SET);
+                qint64 bytesRead = read(fds->fd, buffer, sizeof(buffer));
+                fds->revents  = 0;
+
+                if (bytesRead > 0) {
+                    QByteArray bufferBA(buffer, bytesRead);
+
+                    emit parent->readyRead(bufferBA);
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 bool GpioHandler::startConnection()
 {
     // Open the file in non-blocking mode
     if (openFile()) {
         mError = QString();
-        qDebug() << "File opened successfully";
+        qInfo() << "File opened successfully";
 
         // Create a notifier to monitor file descriptor for readability
-        notifier = new QSocketNotifier(QSocketNotifier::Read, this);
-
-        // Connect the signal/slot for file descriptor events
-        connect(notifier, &QSocketNotifier::activated, this, &GpioHandler::handleGpioEvent);
-
-        // Start monitoring for events
-        notifier->setSocket(file.handle());
-        notifier->setEnabled(true);
+        pthread_create(&poll_thread, nullptr, &nrf_uart_thrd, this);
 
     } else {
-        mError = file.errorString();
-        qDebug() << "Failed to open file:" << mError;
+        mError = "Failed to open file";
+        qWarning() << "Failed to open file:" << mError;
     }
 
     return !hasError();
@@ -41,58 +75,24 @@ bool GpioHandler::startConnection()
 
 bool GpioHandler::openFile()
 {
-    file.setFileName(filePath);
-    return file.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+    _fd = open(filePath.toStdString().c_str(), O_RDONLY | O_NONBLOCK);;
+
+    return _fd != -1;
 }
 
 void GpioHandler::closeFile()
 {
-    if (file.isOpen()) {
-        file.close();
+    if (_fd != -1) {
+        close(_fd);
+        _fd = -1;
     }
+    pthread_join(poll_thread, nullptr);
 }
 
-qint64 GpioHandler::readFile(char *data, qint64 maxSize)
+
+int GpioHandler::fd() const
 {
-    return file.read(data, maxSize);
-}
-
-qint64 GpioHandler::writeFile(const char *data, qint64 maxSize)
-{
-    return file.write(data, maxSize);
-}
-
-void GpioHandler::seek(int position)
-{
-    file.seek(position);
-}
-
-void GpioHandler::handleGpioEvent(QSocketDescriptor socket, QSocketNotifier::Type activationEvent)
-{
-    char buffer[256];
-
-    auto ba = file.bytesAvailable();
-    if (ba == 0) {
-        return;
-    }
-
-    //! disabling notifier for 5 millisecondsto lower cpu usage
-    notifier->setEnabled(false);
-    QTimer::singleShot(5, this, [=] () {
-        notifier->setSocket(file.handle());
-        notifier->setEnabled(true);
-    });
-
-    this->seek(SEEK_SET);
-    qint64 bytesRead = readFile(buffer, sizeof(buffer));
-
-    if (bytesRead > 0) {
-        QByteArray bufferBA = buffer;
-        if (bufferBA != dataLastRead) {
-            dataLastRead = bufferBA;
-            emit readyRead(bufferBA);
-        }
-    }
+    return _fd;
 }
 
 QString GpioHandler::error() const

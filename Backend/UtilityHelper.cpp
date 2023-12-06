@@ -183,7 +183,7 @@ bool UtilityHelper::setBrightness(int value) {
     out << QString::number(value); // Write the desired brightness value
     brightnessFile.close();
 
-    TRACE << "Brightness set successfully!";
+    TRACE << "Brightness set successfully!" << value;
     return true;
 }
 

@@ -1,8 +1,6 @@
 #pragma once
 
 #include <QCoreApplication>
-#include <QFile>
-#include <QSocketNotifier>
 #include <QDebug>
 
 #define SW_VAL_PATH "/sys/class/gpio/gpio%0/value"
@@ -23,12 +21,6 @@ public:
 
     void closeFile();
 
-    qint64 readFile(char *data, qint64 maxSize);
-
-    qint64 writeFile(const char *data, qint64 maxSize);
-
-    void seek(int position);
-
     QString error() const;
     void setError(const QString &newError);
 
@@ -36,9 +28,7 @@ public:
         return !mError.isEmpty();
     }
 
-public slots:
-    // Slot to handle GPIO events
-    void handleGpioEvent(QSocketDescriptor socket, QSocketNotifier::Type activationEvent);
+    int fd() const;
 
 signals:
     void readyRead(QByteArray buffer);
@@ -46,10 +36,11 @@ signals:
     void errorChanged();
 
 private:
-    QFile file;
-    QSocketNotifier *notifier;
     QString filePath;
     QString mError;
-    QByteArray dataLastRead;
+
+    int _fd;
+    pthread_t poll_thread;
+
 };
 
