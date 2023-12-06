@@ -28,27 +28,13 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Wifi Settings"
+    title: "Wi-Fi Settings"
     topPadding: bottomPadding + 12
 
     /* Children
      * ****************************************************************************************/
     RowLayout {
         parent: _root.header.contentItem
-
-        Switch {
-            id: _wifiOnOffSw
-
-            enabled: !NetworkInterface.isRunning
-            checked: NetworkInterface.deviceIsOn
-            onToggled: {
-                if (checked) {
-                    NetworkInterface.turnOn();
-                } else {
-                    NetworkInterface.turnOff();
-                }
-            }
-        }
 
         //! Referesh button and running BusyIndicator
         Item {

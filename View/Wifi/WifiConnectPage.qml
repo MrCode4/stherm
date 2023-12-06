@@ -21,7 +21,7 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: ""
-    titleHeadeingLevel: 6
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/
@@ -75,7 +75,7 @@ BasePageView {
 
         maximumLength: 256
         rightPadding: _passwordEchoBtn.width
-        placeholderText: "Enter Wifi password"
+        placeholderText: "Enter Wi-Fi password"
         echoMode: _passwordEchoBtn.checked ? TextField.Normal : TextField.Password
         validator: RegularExpressionValidator {
             regularExpression: new RegExp(`.{${minPasswordLength},${_passwordTf.maximumLength}}`)
