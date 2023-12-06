@@ -23,6 +23,7 @@ class DateTimeManagerCPP : public QObject
     Q_OBJECT
 
     Q_PROPERTY(QVariant currentTimeZone READ currentTimeZone WRITE setCurrentTimeZone NOTIFY currentTimeZoneChanged FINAL)
+    Q_PROPERTY(bool hasDST READ hasDST NOTIFY currentTimeZoneChanged)
     Q_PROPERTY(bool autoUpdateTime READ autoUpdateTime WRITE setAutoUpdateTime NOTIFY autoUpdateTimeChanged)
     Q_PROPERTY(QJSValue onfinish  MEMBER  mProcessFinishCb)
     Q_PROPERTY(QDateTime now READ now NOTIFY nowChanged)
@@ -46,6 +47,8 @@ public:
 
     QVariant        currentTimeZone() const;
     void            setCurrentTimeZone(const QVariant& timezoneId);
+
+    bool            hasDST() const;
 
     QDateTime       now() const;
 

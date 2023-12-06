@@ -116,6 +116,7 @@ BasePageView {
 
         //! Daylight Saving Time
         RowLayout {
+            enabled: DateTimeManager.hasDST
 
             Label {
                 Layout.fillWidth: true

@@ -17,6 +17,11 @@ DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
     connect(&mNowTimer, &QTimer::timeout, this, [&]() {
         //! Update now
         mNow = QDateTime::currentDateTime();
+
+        if (hasDST()) {
+            mNow = mNow.addSecs(mCurrentTimeZone.daylightTimeOffset(mNow));
+        }
+
         emit nowChanged();
     });
 }
@@ -101,6 +106,11 @@ void DateTimeManagerCPP::setCurrentTimeZone(const QVariant& timezoneId)
                                     newCurrentTimezone.id(),
                                 });
 
+}
+
+bool DateTimeManagerCPP::hasDST() const
+{
+    return mCurrentTimeZone.hasDaylightTime();
 }
 
 QDateTime DateTimeManagerCPP::now() const
