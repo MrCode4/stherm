@@ -172,7 +172,7 @@ void DateTimeManagerCPP::checkAutoUpdateTime()
     mProcess.waitForFinished(40);
 
     if (mProcess.exitCode() == 0) {
-        mAutoUpdateTime = (mProcess.readLine() == "NPT=yes\n");
+        mAutoUpdateTime = (mProcess.readLine() == "NTP=yes\n");
     } else {
         qDebug() << Q_FUNC_INFO << __LINE__ << mProcess.readLine();
     }
