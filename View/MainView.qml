@@ -23,16 +23,23 @@ Item {
     StackView {
         id: _mainStackView
         anchors.fill: parent
+        initialItem: _homePage
 
-        Component.onCompleted: {
+        /*Component.onCompleted: {
             //! Push _mainViewSw to stack here, to make sure Home is current item without SwipeView
             //! animating at window showing up.
             _mainStackView.push(_mainViewSw);
-        }
+        }*/
     }
 
-    //! Home, FanPage and HumidityPage SwipeView
-    SwipeView {
+    //! Home
+    Home {
+        id: _homePage
+        mainStackView: _mainStackView
+        uiSession: mainView.uiSession
+    }
+
+    /*SwipeView {
         id: _mainViewSw
         currentIndex: 1
         interactive: !_homePage.isDragging
@@ -55,7 +62,7 @@ Item {
             uiSession: mainView.uiSession
             backButtonVisible: false
         }
-    }
+    }*/
 
     Connections {
         target: uiSession
