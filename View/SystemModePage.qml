@@ -53,7 +53,7 @@ BasePageView {
 
             onClicked: {
                 deviceController.setSystemModeTo(AppSpec.SystemMode.Cooling);
-                uiSession.showHome(); //! Go back to Home
+                backButtonCallback();
             }
         }
 
@@ -68,7 +68,7 @@ BasePageView {
 
             onClicked: {
                 deviceController.setSystemModeTo(AppSpec.SystemMode.Heating);
-                uiSession.showHome(); //! Go back to Home
+                backButtonCallback();
             }
         }
 
@@ -83,7 +83,7 @@ BasePageView {
 
             onClicked: {
                 deviceController.setSystemModeTo(AppSpec.SystemMode.Auto);
-                uiSession.showHome(); //! Go back to Home
+                backButtonCallback();
             }
         }
 
@@ -116,7 +116,7 @@ BasePageView {
 
             onClicked: {
                 deviceController.setSystemModeTo(AppSpec.SystemMode.Off);
-                uiSession.showHome(); //! Go back to Home
+                backButtonCallback();
             }
         }
     }
@@ -129,7 +129,12 @@ BasePageView {
 
             onSaved: {
                 _buttonsGrp.previousButton = null
-                _root.uiSession.showHome(); //! Go back to Home
+
+                //! Go back twice
+                if (_root.StackView.view) {
+                    _root.StackView.view.pop();
+                    _root.StackView.view.pop();
+                }
             }
             onCanceled: {
                 //! Restore previous mode
