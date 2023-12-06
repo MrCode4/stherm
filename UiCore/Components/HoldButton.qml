@@ -16,7 +16,7 @@ TabButton {
     property UiSession      uiSession
 
     //! Determines whether 'hold' is enabled or not
-    readonly property bool  isHoldEnabled: (uiSession?.appModel?.isHold === false) ?? false
+    readonly property bool  isHoldEnabled: uiSession?.appModel?._isHold === true
 
     /* Object properties
      * ****************************************************************************************/

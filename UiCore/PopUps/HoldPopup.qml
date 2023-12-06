@@ -48,14 +48,7 @@ Popup {
             autoExclusive: true
             checkable: true
             text: "Off"
-            checked: device?.isHold ?? false
-
-            //! Using onCheckedChanged instead on onToggled to cover onBtn being checked too and avoid redundancy
-            onCheckedChanged: {
-                if (device && deviceController && device.isHold !== checked) {
-                    deviceController.updateHold(checked)
-                }
-            }
+            checked: !(device?._isHold ?? false)
         }
 
         Button {
@@ -64,7 +57,21 @@ Popup {
             autoExclusive: true
             checkable: true
             text: "On"
-            checked: device?.isHold === false
+            checked: device?._isHold ?? false
+
+            //! Using onCheckedChanged instead on onToggled to cover offBtn being checked too and avoid redundancy
+            onCheckedChanged: {
+                if (device && deviceController && device._isHold !== checked) {
+                    deviceController.updateHold(checked)
+                    delayedCloseTmr.running = true;
+                }
+            }
         }
+    }
+
+    Timer {
+        id: delayedCloseTmr
+        interval: 250
+        onTriggered: root.close();
     }
 }

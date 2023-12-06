@@ -36,7 +36,7 @@ QSObject {
     property int            systemMode:     AppSpec.SystemMode.Auto
 
     //!‌ Device is in hold state or not
-    property bool           isHold:         false
+    property bool           _isHold:         false
 
     //! List of all the Messages
     //! List <Message>

@@ -140,6 +140,6 @@ I_DeviceController {
     function updateHold(isHold)
     {
         //! Apply isHold to Device
-        device.isHold = isHold;
+        device._isHold = isHold;
     }
 }
