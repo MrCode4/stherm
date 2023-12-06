@@ -19,6 +19,8 @@
 #define AQS_DATA_SIZE 10
 #define AQS_THRSHLD_SIZE 11
 
+constexpr char Daemon_Version[] = "01.00";
+
 namespace STHERM {
 
 // TODO these should be split between ti and nrf controllers to improve readability

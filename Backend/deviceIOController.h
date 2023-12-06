@@ -149,6 +149,11 @@ private:
     QTimer m_wiring_timer;
     QTimer m_nRF_timer;
 
+    QString NRF_HW;
+    QString NRF_SW;
+    QString TI_HW;
+    QString TI_SW;
+
     std::queue<STHERM::SIOPacket> m_nRF_queue;
 
     std::queue<STHERM::SIOPacket> m_TI_queue;

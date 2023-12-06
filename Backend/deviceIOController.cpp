@@ -719,18 +719,21 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
         if (rxPacket.ACK == STHERM::ERROR_NO) {
 
             switch (rxPacket.CMD) {
-            case STHERM::GetInfo: { // TODO
+            case STHERM::GetInfo: {
                 int indx_rev = 0;
-                for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
-                {
-                    //                    NRF_HW.push_back(static_cast<char>(rx_packet.DataArray[indx_rev]));
+
+                // TODO: When NRF_HW.clear() called?
+                for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++) {
+                    NRF_HW.push_back(static_cast<char>(rxPacket.DataArray[indx_rev]));
                 }
+
                 ++indx_rev;
-                for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
-                {
-                    //                    NRF_SW.push_back(static_cast<char>(rx_packet.DataArray[indx_rev]));
+                for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++) {
+                    NRF_SW.push_back(static_cast<char>(rxPacket.DataArray[indx_rev]));
                 }
-                //                syslog(LOG_INFO, "NRF:: HW:%s SW:%s\n", NRF_HW.c_str(), NRF_SW.c_str());
+
+                TRACE << " NRF_HW :" << NRF_HW << " NRF_SW :" << NRF_SW;
+
             } break;
 
             case STHERM::GetTOF: {
@@ -1064,7 +1067,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
         } break;
         case STHERM::GetInfo: {
-            LOG_DEBUG("***** Ti  - Start GetInfo *****");
+            TRACE << "***** Ti  - Start GetInfo *****";
 
             STHERM::SIOPacket tp;
             tp.PacketSrc = UART_Packet;
@@ -1074,19 +1077,21 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
             tp.DataLen = 0;
             indx_rev = 0;
 
+
+
             // TODO: uncomment later
-            /* for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
-            {
+            for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++) {
                 TI_HW.push_back(static_cast<char>(rxPacket.DataArray[indx_rev]));
             }
+
             ++indx_rev;
-            for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++)
-            {
+            for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++) {
                 TI_SW.push_back(static_cast<char>(rxPacket.DataArray[indx_rev]));
             }
-            */
 
-            LOG_DEBUG("***** Ti  - Get_addr packet sent to ti *****");
+            TRACE << "TI_HW: " << TI_HW << " TI_SW: " << TI_SW;
+
+            TRACE << "***** Ti  - Get_addr packet sent to ti *****";
 
             sendTIRequest(tp);
 
@@ -1096,6 +1101,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
         case STHERM::Get_addr: {
             LOG_DEBUG("***** Ti  - Start Get_addr *****");
             m_p->MainDevice.address = *(uint32_t *) (rxPacket.DataArray);
+            TRACE << "address: " << m_p->MainDevice.address ;
             LOG_DEBUG("***** Ti  - Finished: Get_addr *****");
 
         } break;
@@ -1108,29 +1114,26 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
             tx_packet.SID = 0x01;
             tx_packet.DataLen = 0;
             // uncomment later
-            /*
-            if ((sizeof(dev_id) + TI_HW.length() + 1 + TI_SW.length() + 1 + NRF_HW.length() + 1 + NRF_SW.length() + 1 + sizeof(Daemon_Version)) > sizeof(tx_packet.DataArray))
-            {
-                syslog(LOG_INFO, "ERROR VERSION LENGTH\n");
+            char dev_id[16]{0}; // TODO
+            if ((sizeof(dev_id) + TI_HW.length() + 1 + TI_SW.length() + 1 + NRF_HW.length() + 1 + NRF_SW.length() + 1 + sizeof(Daemon_Version)) > sizeof(tx_packet.DataArray))  {
+                TRACE << "ERROR VERSION LENGTH";
                 break;
-            } */
+            }
 
             // CHECK
             memcpy(tx_packet.DataArray, m_p->DeviceID.toUtf8(), sizeof(m_p->DeviceID.toUtf8()));
             tx_packet.DataLen = sizeof(m_p->DeviceID.toUtf8());
 
             // uncomment later
-            /*
-            memcpy(tx_packet.DataArray + tx_packet.DataLen, NRF_HW.c_str(), NRF_HW.length() + 1);
+            memcpy(tx_packet.DataArray + tx_packet.DataLen, NRF_HW.toStdString().c_str(), NRF_HW.length() + 1);
             tx_packet.DataLen += NRF_HW.length() + 1;
-            memcpy(tx_packet.DataArray + tx_packet.DataLen, NRF_SW.c_str(), NRF_SW.length() + 1);
+            memcpy(tx_packet.DataArray + tx_packet.DataLen, NRF_SW.toStdString().c_str(), NRF_SW.length() + 1);
             tx_packet.DataLen += NRF_SW.length() + 1;
             memcpy(tx_packet.DataArray + tx_packet.DataLen, Daemon_Version, sizeof(Daemon_Version));
             tx_packet.DataLen += sizeof(Daemon_Version);
-            rf_tx_buff_size = Set_SIO_TxPacket(rf_tx_buff, tx_packet);
-            write(fds[0].fd, rf_tx_buff, rf_tx_buff_size);
-            tx_packet.DataLen = 0;
-            */
+
+            m_TI_queue.push(tx_packet);
+            processTIQueue();
 
             LOG_DEBUG("***** Ti  - Finished: GET_DEV_ID *****");
         } break;
