@@ -212,7 +212,7 @@ I_DeviceController {
     function updateInformation()
     {
 //        console.log("--------------- Start: updateInformation -------------------")
-        var result = sendReceive('system', 'getMainData', []);
+        var result = deviceControllerCPP.getMainData();
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
@@ -220,9 +220,7 @@ I_DeviceController {
         device.co2 = result?.co2 ?? 0
         //        device.setting.brightness = result?.brighness ?? 0
 
-        //        device.co2;
-        //        device.fan.mode
-        //        device.alert
+        //        device.fan.mode?
 
         //        console.log("--------------- End: updateInformation -------------------")
     }

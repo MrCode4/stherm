@@ -131,6 +131,7 @@ Control {
                     right: parent.right
                     top: parent.top
                 }
+                condition: device.co2 < 2.9 ? 0 : device.co2 > 4 ? 2 : 1
             }
 
             //! Fan

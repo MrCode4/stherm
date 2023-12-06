@@ -49,6 +49,8 @@ public:
     //! todo: transfer data with UARTConnection instance
     Q_INVOKABLE QVariantMap sendRequest(QString className, QString method, QVariantList data);
 
+    Q_INVOKABLE QVariantMap getMainData();
+
     //! set backlight using uart and respond the success, data should have 5 items
     //! including r, g, b, mode (0 for ui, 1 will be send internally), on/off
     //! isScheme: is true when the backlight set from scheme and false for model
@@ -101,7 +103,6 @@ private Q_SLOTS:
 private:
     /* Private Functions
      * ****************************************************************************************/
-    QVariantMap getMainData();
 
 private:
     /* Attributes
