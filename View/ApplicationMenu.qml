@@ -63,6 +63,11 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;
+                case "Time Settings":
+                    _root.StackView.view.push("qrc:/Stherm/View/Time/TimePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
                 case "System Setup":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)

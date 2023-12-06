@@ -44,6 +44,10 @@ ListView {
             "text": "Settings"
         },
         {
+            "icon": FAIcons.calendarClock,
+            "text": "Time Settings"
+        },
+        {
             "icon": FAIcons.signalStream,
             "text": "Sensors"
         },
