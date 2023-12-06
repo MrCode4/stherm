@@ -119,28 +119,29 @@ QVariantList DateTimeManagerCPP::timezones() const
     for (const QByteArray& tzId: timezoneIds) {
         QTimeZone timezone(tzId);
 
+        if (timezone.isValid() && timezone.territory() != QLocale::AnyTerritory) {
+            int minutesOffset = timezone.offsetFromUtc(now) / 60;
 
-        int minutesOffset = timezone.offsetFromUtc(now) / 60;
+            QString sign = "-";
+            if (minutesOffset >= 0) {
+                sign = "+";
+            } else {
+                minutesOffset *= -1;
+            }
 
-        QString sign = "-";
-        if (minutesOffset >= 0) {
-            sign = "+";
-        } else {
-            minutesOffset *= -1;
+            QString hourStr = QString::number(int(minutesOffset / 60));
+            if (hourStr.size() < 2) hourStr.prepend('0');
+
+            QString minStr = QString::number(minutesOffset % 60);
+            if (minStr.size() < 2) minStr.prepend('0');
+
+            QVariantMap timezoneMap;
+            timezoneMap["id"] = timezone.id();
+            timezoneMap["city"] = timezone.id().sliced(timezone.id().indexOf('/') + 1);
+            timezoneMap["offset"] = "UTC" + sign + hourStr + ":" + minStr;
+
+            timezones.push_back(timezoneMap);
         }
-
-        QString hourStr = QString::number(int(minutesOffset / 60));
-        if (hourStr.size() < 2) hourStr.prepend('0');
-
-        QString minStr = QString::number(minutesOffset % 60);
-        if (minStr.size() < 2) minStr.prepend('0');
-
-        QVariantMap timezoneMap;
-        timezoneMap["name"] = timezone.id();
-        timezoneMap["city"] = timezone.id().sliced(timezone.id().indexOf('/') + 1);
-        timezoneMap["offset"] = "UTC" + sign + hourStr + ":" + minStr;
-
-        timezones.push_back(timezoneMap);
     }
 
     return timezones;

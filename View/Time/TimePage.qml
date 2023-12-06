@@ -55,7 +55,8 @@ BasePageView {
 
         ItemDelegate {
             Layout.fillWidth: true
-            horizontalPadding: 2
+            rightPadding: 4
+            leftPadding: 8
             contentItem: RowLayout {
                 enabled: !autoTimeSwh.checked
 
@@ -67,7 +68,7 @@ BasePageView {
                 Label {
                     readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
-                    Layout.rightMargin: autoTimeSwh.rightPadding * 2
+                    Layout.rightMargin: autoTimeSwh.rightPadding
                     font.letterSpacing: 1.5
                     text: (new Date).toLocaleTimeString(Qt.locale(), "hh:mm" + (is12Hour ? " AP" : ""))
                 }
@@ -77,17 +78,14 @@ BasePageView {
                 //! Open SelectTimePage
                 if (root.StackView.view) {
                     root.StackView.view.push(selectTimeCompo);
-                } else {
-                    selectTimeCompo.createObject(root.contentItem, {
-                                                     "anchors.fill": root.contentItem
-                                                 })
                 }
             }
         }
 
         ItemDelegate {
             Layout.fillWidth: true
-            horizontalPadding: 2
+            rightPadding: 4
+            leftPadding: 8
             contentItem: RowLayout {
                 Layout.topMargin: 4
                 spacing: 24
@@ -100,7 +98,7 @@ BasePageView {
                 Label {
                     readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
-                    Layout.rightMargin: autoTimeSwh.rightPadding * 2
+                    Layout.rightMargin: autoTimeSwh.rightPadding
                     Layout.fillWidth: true
                     text: `${DateTimeManager.currentTimeZone.id} ${DateTimeManager.currentTimeZone.offset}`
                     horizontalAlignment: "AlignRight"
@@ -110,6 +108,9 @@ BasePageView {
 
             onClicked: {
                 //! Open SelectTimeZonePage
+                if (root.StackView.view) {
+                    root.StackView.view.push(selectTimezoneCompo);
+                }
             }
         }
 
@@ -149,6 +150,16 @@ BasePageView {
         SelectTimePage {
             onTimeSelected: function(time) {
                 DateTimeManager.setTime(Date.fromLocaleTimeString(Qt.locale(), time, "hh:mm:ss"));
+            }
+        }
+    }
+
+    Component {
+        id: selectTimezoneCompo
+
+        SelectTimezonePage {
+            onTimezoneSelected: function(timezone) {
+                DateTimeManager.currentTimeZone = timezone;
             }
         }
     }

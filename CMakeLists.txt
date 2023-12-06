@@ -182,6 +182,7 @@ qt6_add_qml_module(appStherm
         View/ContactContractorPage.qml
         View/Time/TimePage.qml
         View/Time/SelectTimePage.qml
+        View/Time/SelectTimezonePage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
