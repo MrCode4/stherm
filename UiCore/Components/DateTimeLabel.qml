@@ -74,14 +74,12 @@ Control {
         }
     }
 
-    //! Timer to update date and time
-    Timer {
-        interval: 100
-        repeat: true
-        running: true
-        triggeredOnStart: true
-        onTriggered: {
-            var now = new Date();
+    Connections {
+        target: DateTimeManager
+
+        function onNowChanged()
+        {
+            var now = DateTimeManager.now;
             var currentTime = now.toLocaleTimeString(locale, is12Hour ? "hh:mm AP" : "hh:mm");
             if (is12Hour) {
                 _timeLbl.text = currentTime.slice(0, currentTime.length - 3);

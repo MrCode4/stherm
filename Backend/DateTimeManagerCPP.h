@@ -5,6 +5,7 @@
 #include <QQmlEngine>
 #include <QProcess>
 #include <QTimeZone>
+#include <QTimer>
 
 #define TDC_COMMAND         "timedatectl"
 #define TDC_SHOW            "show"
@@ -24,6 +25,7 @@ class DateTimeManagerCPP : public QObject
     Q_PROPERTY(QVariant currentTimeZone READ currentTimeZone WRITE setCurrentTimeZone NOTIFY currentTimeZoneChanged FINAL)
     Q_PROPERTY(bool autoUpdateTime READ autoUpdateTime WRITE setAutoUpdateTime NOTIFY autoUpdateTimeChanged)
     Q_PROPERTY(QJSValue onfinish  MEMBER  mProcessFinishCb)
+    Q_PROPERTY(QDateTime now READ now NOTIFY nowChanged)
 
     QML_ELEMENT
 public:
@@ -44,6 +46,8 @@ public:
 
     QVariant        currentTimeZone() const;
     void            setCurrentTimeZone(const QVariant& timezoneId);
+
+    QDateTime       now() const;
 
     /*!
      * \brief setTime Set system time to given time.
@@ -72,8 +76,8 @@ private:
 
 signals:
     void autoUpdateTimeChanged();
-
     void currentTimeZoneChanged();
+    void nowChanged();
 
 private:
     //!
@@ -96,6 +100,16 @@ private:
     //! \brief mCurrentTimeZone Holds system current timezone
     //!
     QTimeZone           mCurrentTimeZone;
+
+    //!
+    //! \brief mNow Holds current date time
+    //!
+    QDateTime           mNow;
+
+    //!
+    //! \brief mNowTimer This timer is used to update current date time
+    //!
+    QTimer              mNowTimer;
 };
 
 /*!

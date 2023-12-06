@@ -6,9 +6,19 @@ DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
     : QObject{parent}
     , mAutoUpdateTime { false }
     , mCurrentTimeZone { QTimeZone::systemTimeZone() }
+    , mNow { QDateTime::currentDateTime() }
 {
     //! Check auto-update time
     checkAutoUpdateTime();
+
+    //! Set up current date time timer
+    mNowTimer.setInterval(100);
+    mNowTimer.start();
+    connect(&mNowTimer, &QTimer::timeout, this, [&]() {
+        //! Update now
+        mNow = QDateTime::currentDateTime();
+        emit nowChanged();
+    });
 }
 
 bool DateTimeManagerCPP::isRunning() const
@@ -91,6 +101,11 @@ void DateTimeManagerCPP::setCurrentTimeZone(const QVariant& timezoneId)
                                     newCurrentTimezone.id(),
                                 });
 
+}
+
+QDateTime DateTimeManagerCPP::now() const
+{
+    return mNow;
 }
 
 void DateTimeManagerCPP::setTime(const QDateTime& time)

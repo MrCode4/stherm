@@ -70,7 +70,7 @@ BasePageView {
 
                     Layout.rightMargin: autoTimeSwh.rightPadding
                     font.letterSpacing: 1.5
-                    text: (new Date).toLocaleTimeString(Qt.locale(), "hh:mm" + (is12Hour ? " AP" : ""))
+                    text: DateTimeManager.now.toLocaleTimeString(locale, is12Hour ? "hh:mm AP" : "hh:mm");
                 }
             }
 
@@ -137,7 +137,16 @@ BasePageView {
 
             Switch {
                 id: hourFortmatSwh
+                enabled: appModel
                 checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+
+                onToggled: {
+                    if (checked && appModel.setting.timeFormat !== AppSpec.TimeFormat.Hour12) {
+                        appModel.setting.timeFormat = AppSpec.TimeFormat.Hour12;
+                    } else if (!checked && appModel.setting.timeFormat !== AppSpec.TimeFormat.Hour24) {
+                        appModel.setting.timeFormat = AppSpec.TimeFormat.Hour24;
+                    }
+                }
             }
         }
 
