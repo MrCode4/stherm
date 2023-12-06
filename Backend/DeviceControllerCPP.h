@@ -45,10 +45,8 @@ public:
 
     /* Public Functions
      * ****************************************************************************************/
-    //! Send requests
-    //! todo: transfer data with UARTConnection instance
-    Q_INVOKABLE QVariantMap sendRequest(QString className, QString method, QVariantList data);
 
+    //!
     Q_INVOKABLE QVariantMap getMainData();
 
     //! set backlight using uart and respond the success, data should have 5 items

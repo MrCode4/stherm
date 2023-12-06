@@ -74,17 +74,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
 
-QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
-{
-    if (className == "system") {
-        if (method == "getMainData") {
-            return getMainData();
-        }
-    }
-
-    return {};
-}
-
 bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {
     if (!isScheme) {

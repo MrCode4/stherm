@@ -63,13 +63,6 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
 
-    function sendReceive(className, method, data)
-    {
-        var data_msg = '{"request": {"class": "' + className + '", "method": "' + method + '", "params": ' + JSON.stringify(data) + '}}';
-
-        return deviceControllerCPP.sendRequest(className, method, data)
-    }
-
     function updateDeviceBacklight(isOn, color) : bool
     {
         console.log("starting updateBacklight, color: ", color)
@@ -97,7 +90,7 @@ I_DeviceController {
     function updateFan(mode: int, workingPerHour: int)
     {
         console.log("starting rest for updateFan :", workingPerHour)
-        sendReceive('system', 'setFan', workingPerHour);
+        //! TODo required actions if any
 
         // Updatew model
         device.fan.mode = mode
@@ -109,22 +102,20 @@ I_DeviceController {
         if (!device)
             return;
 
-        // sendReceive('system', 'setVacation', [temp_min, temp_max, hum_min, hum_max]);
+        deviceControllerCPP.setVacation(temp_min, temp_max, hum_min, hum_max);
 
         device.vacation.temp_min = temp_min;
         device.vacation.temp_max = temp_max;
         device.vacation.hum_min  = hum_min;
         device.vacation.hum_max  = hum_max ;
 
-        deviceControllerCPP.setVacation(temp_min, temp_max, hum_min, hum_max);
 
     }
 
     function setSystemModeTo(systemMode: int)
     {
         if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
-            //! Do required actions if any
-            sendReceive('system', 'setMode', [ systemMode ]);
+            //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
         }
@@ -151,7 +142,7 @@ I_DeviceController {
            return;
        }
 
-        // Update setting when sendReceive is successful.
+        // Update setting when setSettings is successful.
         if (device.setting.brightness !== brightness) {
             device.setting.brightness = brightness;
         }
@@ -237,8 +228,7 @@ I_DeviceController {
 
     function updateHold(isHold)
     {
-        // should be updated to inform the logics
-        var result = sendReceive('system', 'setHold', [isHold]);
+        // TODO should be updated to inform the logics
 
         device.isHold = isHold;
     }
