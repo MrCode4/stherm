@@ -48,7 +48,11 @@ BasePageView {
 
             property string hour: (currentIndex + 1 < 10 ? "0" : "") + (currentIndex + 1)
 
-            model: Array.from({ length: 23 }, (elem, indx) => indx + 1)
+            Layout.preferredWidth: 96
+            model: Array.from({ length: 24 }, (elem, indx) => indx)
+            font.pointSize: metrics.font.pointSize
+
+            Component.onCompleted: contentItem.delegateHeight = metrics.height * 1.8
         }
 
         Tumbler {
@@ -56,7 +60,23 @@ BasePageView {
 
             property string minute: (currentIndex + 1 < 10 ? "0" : "") + (currentIndex + 1)
 
-            model: Array.from({ length: 59 }, (elem, indx) => indx + 1)
+            Layout.preferredWidth: 96
+            model: Array.from({ length: 60 }, (elem, indx) => indx)
+            font.pointSize: metrics.font.pointSize
+
+            Component.onCompleted: contentItem.delegateHeight = metrics.height * 1.8
         }
+    }
+
+    TextMetrics {
+        id: metrics
+        font.pointSize: root.font.pointSize * 1.4
+        text: "99"
+    }
+
+    Component.onCompleted: {
+        var now = DateTimeManager.now;
+        hourTumbler.currentIndex = now.getHours();
+        minuteTumbler.currentIndex = now.getMinutes();
     }
 }
