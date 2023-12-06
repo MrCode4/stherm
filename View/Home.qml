@@ -63,6 +63,14 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
+
+            TapHandler {
+                onTapped: {
+                    _root.StackView.view.push("qrc:/Stherm/View/SensorsPage.qml", {
+                                                                      "uiSession": Qt.binding(() => uiSession)
+                                                                  })
+                }
+            }
         }
 
         //! Wifi status
