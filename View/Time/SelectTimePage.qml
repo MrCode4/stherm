@@ -40,16 +40,17 @@ BasePageView {
 
     RowLayout {
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: -48
+        anchors.verticalCenterOffset: -16
         spacing: 32
 
         Tumbler {
             id: hourTumbler
 
-            property string hour: (currentIndex + 1 < 10 ? "0" : "") + (currentIndex + 1)
+            property string hour: (currentIndex < 10 ? "0" : "") + currentIndex
 
+            Layout.preferredHeight: 6 * contentItem.delegateHeight
             Layout.preferredWidth: 96
-            model: Array.from({ length: 24 }, (elem, indx) => indx)
+            model: 24
             font.pointSize: metrics.font.pointSize
 
             Component.onCompleted: contentItem.delegateHeight = metrics.height * 1.8
@@ -58,10 +59,11 @@ BasePageView {
         Tumbler {
             id: minuteTumbler
 
-            property string minute: (currentIndex + 1 < 10 ? "0" : "") + (currentIndex + 1)
+            property string minute: (currentIndex < 10 ? "0" : "") + currentIndex
 
+            Layout.preferredHeight: 6 * contentItem.delegateHeight
             Layout.preferredWidth: 96
-            model: Array.from({ length: 60 }, (elem, indx) => indx)
+            model: 60
             font.pointSize: metrics.font.pointSize
 
             Component.onCompleted: contentItem.delegateHeight = metrics.height * 1.8
