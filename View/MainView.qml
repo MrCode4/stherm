@@ -67,7 +67,7 @@ Item {
     Connections {
         target: uiSession
 
-        function onScreenSaverActivated()
+        function onShowHome()
         {
             _mainStackView.pop(null) //! Pop all items except the first one which is _mainViewSw
         }

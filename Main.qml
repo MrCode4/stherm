@@ -131,7 +131,7 @@ ApplicationWindow {
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
         deviceController: uiSession.deviceController
         device: uiSession.appModel
-        onOpened: uiSession.screenSaverActivated()
+        onOpened: uiSession.showHome();
     }
 
     //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1

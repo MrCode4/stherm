@@ -129,7 +129,7 @@ QtObject {
     signal sigHidePanel (I_Panel panel);
     signal sigShowPopUp (I_PopUp popUp);
     signal sigHidePopUp (I_PopUp popUp);
-    signal screenSaverActivated(); //! This signal is emitted when ScreenSaver gets activated
+    signal showHome(); //! This signal can be emitted to request going back to Home
 
     /* Signal Handlers
      * ****************************************************************************************/
