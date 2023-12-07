@@ -108,13 +108,185 @@ void Scheme::run()
     QElapsedTimer timer;
     timer.start();
 
+    //! get wires config type modes ...
+    updateParameters();
+
+    //! reset delays
+    resetDelays();
+
     while (!stopWork && mSystemSetup) {
-        startWork();
+        mainControllerLoop();
     }
 
     TRACE << "-- startWork Stopped. working time(ms): " << timer.elapsed();
 }
 
+void Scheme::updateParameters() {}
+
+void Scheme::resetDelays() {}
+
+void Scheme::mainControllerLoop()
+{
+    if (stopWork)
+        return;
+
+    // where should schedule be handled
+
+    switch (mRealSysMode) {
+    case AppSpecCPP::SystemMode::Auto:
+        AutoModeLoop();
+        break;
+    case AppSpecCPP::SystemMode::Cooling:
+        CoolingLoop();
+        break;
+    case AppSpecCPP::SystemMode::Heating:
+        HeatingLoop();
+        break;
+    case AppSpecCPP::SystemMode::Vacation:
+        VacationLoop();
+        break;
+    case AppSpecCPP::SystemMode::Off:
+        OffLoop();
+        break;
+    case AppSpecCPP::SystemMode::Emergency:
+        EmergencyLoop();
+        break;
+    default:
+        qWarning() << "Unsupported Mode in controller loop" << mRealSysMode;
+        break;
+    }
+
+    // all should be off! we can assert here
+}
+
+void Scheme::AutoModeLoop()
+{
+    // should we update temperatures
+
+    if (mCurrentTemperature > mSetPointTemperature) {
+        CoolingLoop();
+    } else if (mCurrentTemperature < mSetPointTemperature) {
+        HeatingLoop();
+    }
+}
+
+void Scheme::CoolingLoop()
+{
+    TRACE_CHECK(true) << "Cooling started " << mSystemSetup->systemType;
+
+    bool heatPump = false;
+    // s1 time threshold
+    // Y1, Y2, O/B G config
+
+    switch (mSystemSetup->systemType) { // Device type
+    case AppSpecCPP::SystemType::HeatPump:
+        heatPump = true;
+    case AppSpecCPP::SystemType::Conventional:
+    case AppSpecCPP::SystemType::CoolingOnly: {
+        TRACE << heatPump << mCurrentTemperature << mSetPointTemperature;
+        if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
+            // s2 off time should be high value? or invalid?
+            internalCoolingLoopStage1(heatPump);
+        }
+
+        // turn off Y1, Y2 and G = 0
+        mRelay->setAllOff();
+    } break;
+    default:
+        qWarning() << "Unsupported system type in Cooling loop" << mSystemSetup->systemType;
+        break;
+    }
+}
+
+void Scheme::HeatingLoop()
+{
+    // update configs and ...
+    switch (mSystemSetup->systemType) {
+    case AppSpecCPP::SystemType::HeatPump: // emergency as well?
+        break;
+    case AppSpecCPP::SystemType::Conventional:
+    case AppSpecCPP::SystemType::HeatingOnly:
+        break;
+    default:
+        qWarning() << "Unsupported system type in Heating loop" << mSystemSetup->systemType;
+        break;
+    }
+}
+
+void Scheme::VacationLoop() {}
+
+void Scheme::EmergencyLoop() {}
+
+void Scheme::OffLoop() {}
+
+void Scheme::internalCoolingLoopStage1(bool pumpHeat)
+{
+    if (pumpHeat) // how the system type setup get OB Orientatin
+        mRelay->setOb_state(AppSpecCPP::Cooling);
+
+    // sysDelay
+    mRelay->coolingStage1();
+
+    // 5 Sec
+    emit changeBacklight(coolingColor);
+    mTiming->s1uptime.restart();
+    mTiming->s2hold = false;
+    mTiming->alerts = false;
+    sendRelays();
+
+    while (mSetPointTemperature - mCurrentTemperature < 1) {
+        if (mRelay->relays().y2 != STHERM::RelayMode::NoWire /*&& true user specified stage 2*/) {  // TODO: we need to check the system setup
+            if (mCurrentTemperature - mSetPointTemperature >= 2.9
+                || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
+                if (mTiming->s2Offtime.isValid() && mTiming->s2Offtime.elapsed() >= 2 * 60000) {
+                    if (!internalCoolingLoopStage2()) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            if (!mTiming->alerts && mTiming->uptime.elapsed() >= 120 * 60000) {
+                emit alert();
+                mTiming->alerts = true;
+            }
+            // wait for temperature update?
+        }
+    }
+}
+
+bool Scheme::internalCoolingLoopStage2()
+{ // turn on stage 2
+    mRelay->coolingStage2();
+    // 5 Sec
+    emit changeBacklight(coolingColor);
+
+    sendRelays();
+
+    while ((mTiming->s2hold && mSetPointTemperature - mCurrentTemperature < 1)
+           || (!mTiming->s2hold && mCurrentTemperature - mSetPointTemperature > 1.9)) {
+        if (!mTiming->alerts && mTiming->uptime.elapsed() >= 120 * 60000) {
+            emit alert();
+            mTiming->alerts = true;
+        }
+    }
+
+    if (mTiming->s2hold && mSetPointTemperature - mCurrentTemperature >= 1) {
+        return false;
+    }
+
+    //    if (!mTiming->s2hold && mCurrentTemperature - mSetPointTemperature <= 1.9)
+
+    // to turn off stage 2
+    mRelay->coolingStage1();
+    // 5 secs
+    emit changeBacklight(coolingColor);
+    mTiming->s1uptime.restart(); // why invalidate?
+    mTiming->s2hold = true;
+    mTiming->s2Offtime.restart();
+    sendRelays();
+
+    return true;
+}
 
 void Scheme::startWork()
 {
@@ -853,10 +1025,13 @@ void Scheme::updateRealState(const struct STHERM::Vacation &vacation, const doub
 void Scheme::updateVacationState()
 {
     if (stopWork)
-        return;
+       return;
+
+    if (mRealSysMode != AppSpecCPP::SystemMode::Vacation)
+       return; // we can also assert as this should not happen
 
     TRACE << "mCurrentSysMode " << mCurrentSysMode;
-    AppSpecCPP::SystemMode realSysMode;
+    AppSpecCPP::SystemMode realSysMode = AppSpecCPP::SystemMode::Off;
 
     if (mCurrentSysMode == AppSpecCPP::SystemMode::Cooling) {
         if (mCurrentTemperature > mSetPointTemperature - STAGE1_OFF_RANGE) { // before stage 1 off
@@ -879,6 +1054,8 @@ void Scheme::updateVacationState()
             realSysMode = AppSpecCPP::SystemMode::Heating;
         } else if (mCurrentTemperature > mSetPointTemperature + STAGE1_ON_RANGE) {
             realSysMode = AppSpecCPP::SystemMode::Cooling;
+        } else {
+            // what should we do here?
         }
     }
 
@@ -960,7 +1137,7 @@ void Scheme::setFanWorkPerHour(int newFanWPH)
 
 void Scheme::setSystemSetup(SystemSetup *systemSetup)
 {
-    TRACE;
+    TRACE << systemSetup << mSystemSetup;
     if (!systemSetup || mSystemSetup == systemSetup)
         return;
 
@@ -1024,7 +1201,7 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
 
 AppSpecCPP::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
 {
-    AppSpecCPP::SystemMode realSetMode;
+    AppSpecCPP::SystemMode realSetMode = AppSpecCPP::SystemMode::Off;
 
     if (mCurrentSysMode == AppSpecCPP::SystemMode::Cooling) {
         if (currentTemperature > setTemperature - STAGE1_OFF_RANGE) { // before stage 1 off

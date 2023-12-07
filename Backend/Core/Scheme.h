@@ -84,9 +84,23 @@ signals:
     void setTemperatureChanged();
 
 protected:
-    virtual void run();
+    void run() override;
 
 private:
+    void updateParameters();
+    void resetDelays();
+    void mainControllerLoop();
+
+    void AutoModeLoop();
+    void CoolingLoop();
+    void HeatingLoop();
+    void VacationLoop();
+    void EmergencyLoop();
+    void OffLoop();
+
+    void internalCoolingLoopStage1(bool pumpHeat);
+    bool internalCoolingLoopStage2();
+
     void startWork();
 
     //! Send relays into ti
