@@ -204,7 +204,15 @@ Control {
                 bottomMargin: _menuButton.implicitHeight
             }
             height: _menuButton.height * 1.2
-            opacity: (uiSession?.simulating ?? true) ? 0 : 1
+            visible: !uiSession.simulating
+
+            TapHandler {
+                onTapped: {
+                    mainStackView.push("qrc:/Stherm/View/ContactContractorPage.qml", {
+                                           "uiSession": _root.uiSession
+                                       });
+                }
+            }
         }
 
         //! Device Toggle Button
@@ -215,7 +223,7 @@ Control {
             }
             width: parent.width * 0.75
 
-            uiSession : _root.uiSession
+            uiSession: _root.uiSession
         }
 
         //! Menu button
