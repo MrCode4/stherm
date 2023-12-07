@@ -81,6 +81,14 @@ Control {
                 }
                 text: `\u00b0${unit}`
             }
+
+            TapHandler {
+                onTapped: {
+                    if (uiSession) {
+                        uiSession.popupLayout.displayPopUp(tempUnitPop, true);
+                    }
+                }
+            }
         }
 
         //! Connections to sync slider with device.
@@ -93,5 +101,10 @@ Control {
                 _tempSlider.value = device.requestedTemp;
             }
         }
+    }
+
+    TempratureUnitPopup {
+        id: tempUnitPop
+        uiSession: _root.uiSession
     }
 }

@@ -111,6 +111,9 @@ Popup {
         Pane {
             Layout.fillHeight: true
             Layout.fillWidth: true
+            implicitHeight: children.length === 1 ? children[0].implicitHeight : 0
+            implicitWidth: children.length === 1 ? children[0].implicitWidth : 0
+            padding: 0
             data: contents
             background: null
         }

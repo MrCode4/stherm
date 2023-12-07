@@ -196,6 +196,7 @@ qt6_add_qml_module(appStherm
         # Popups
         UiCore/PopUps/AlertNotifPopup.qml
         UiCore/PopUps/HoldPopup.qml
+        UiCore/PopUps/TempratureUnitPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
