@@ -186,6 +186,12 @@ Control {
                 id: _dateTimeLbl
                 anchors.centerIn: parent
                 is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+
+                TapHandler {
+                    onTapped: {
+                        uiSession.popupLayout.displayPopUp(timeFormatPop, true);
+                    }
+                }
             }
         }
 
@@ -246,6 +252,11 @@ Control {
                 }
             }
         }
+    }
+
+    TimeFormatPopup {
+        id: timeFormatPop
+        uiSession: _root.uiSession
     }
 
 
