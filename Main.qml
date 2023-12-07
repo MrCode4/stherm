@@ -15,13 +15,7 @@ import Stherm
 ApplicationWindow {
     id: window
 
-    /* Property Declarations
-     * ****************************************************************************************/
-    property UiSession  uiSession: UiSession {
-        popupLayout: popUpLayoutId
-    }
-
-    property string     currentFile: uiSession.currentFile
+    property string     currentFile: uiSessionId.currentFile
 
     /* Object Properties
      * ****************************************************************************************/
@@ -36,13 +30,13 @@ ApplicationWindow {
     //! Save the app configuration when the app closed
     onClosing: {
         // Save to found path
-        AppCore.defaultRepo.saveToFile(window.uiSession.configFilePath);
+        AppCore.defaultRepo.saveToFile(uiSessionId.configFilePath);
     }
 
     onVisibleChanged: {
         if (visible) {
             _splashLoader.sourceComponent = null;
-            window.uiSession.simulating = false;
+            uiSessionId.simulating = false;
         }
     }
 
@@ -53,11 +47,11 @@ ApplicationWindow {
         AppCore.defaultRepo = AppCore.createDefaultRepo(["QtQuickStream", "Stherm"]);
 
         // Bind appModel to qsRootObject to capture loaded model from configuration.
-        window.uiSession.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
+        uiSessionId.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
 
         // Load the file
-        console.info("Load the config file: ", window.uiSession.configFilePath)
-        if (AppCore.defaultRepo.loadFromFile(window.uiSession.configFilePath))
+        console.info("Load the config file: ", uiSessionId.configFilePath)
+        if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath))
             console.info("Config file succesfully loaded.")
         else
             AppCore.defaultRepo.initRootObject("Device");
@@ -84,10 +78,15 @@ ApplicationWindow {
 
     /* Children
      * ****************************************************************************************/
+    UiSession {
+        id: uiSessionId
+        parent: window
+        popupLayout: popUpLayoutId
+    }
 
     StackLayout {
         id: _normalAndVacationModeStV
-        currentIndex: uiSession?.appModel.systemMode === AppSpec.SystemMode.Vacation ? 1 : 0
+        currentIndex: uiSessionId?.appModel.systemMode === AppSpec.SystemMode.Vacation ? 1 : 0
 
         Flickable {
             id: _mainViewFlick
@@ -99,7 +98,7 @@ ApplicationWindow {
             MainView {
                 id: mainView
                 anchors.fill: parent
-                uiSession: window.uiSession
+                uiSession: uiSessionId
             }
 
             Behavior on contentY {
@@ -109,7 +108,7 @@ ApplicationWindow {
 
         VacationModeView {
             id: _vacationModeView
-            uiSession: window.uiSession
+            uiSession: uiSessionId
             visible: parent.currentIndex === 1
         }
     }
@@ -121,7 +120,7 @@ ApplicationWindow {
     }
 
     ShortcutManager {
-        uiSession: window.uiSession
+        uiSession: uiSessionId
     }
 
     //! ScreenSaver
@@ -129,15 +128,15 @@ ApplicationWindow {
         id: _screenSaver
         anchors.centerIn: parent
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
-        deviceController: uiSession.deviceController
-        device: uiSession.appModel
-        onOpened: uiSession.showHome();
+        deviceController: uiSessionId.deviceController
+        device: uiSessionId.appModel
+        onOpened: uiSessionId.showHome();
     }
 
     //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1
     //! seconds and then refresh every 20 seconds
     Timer {
-        running: uiSession.refreshWifiEnabled
+        running: uiSessionId.refreshWifiEnabled
         interval: 1000
         repeat: true
         onTriggered: {
@@ -315,7 +314,7 @@ ApplicationWindow {
 
     //! MessagePopupView
     MessagePopupView {
-        uiSession: window.uiSession
+        uiSession: uiSessionId
         messageController: uiSession?.messageController ?? null
     }
 
@@ -323,20 +322,20 @@ ApplicationWindow {
     Timer {
         interval: 10000
         repeat: true
-        running: uiSession?.simulating ?? false
+        running: uiSessionId?.simulating ?? false
         onTriggered: {
             if (Math.random() > 0.99) {
                 //! Create an alert
                 var now = new Date();
                 if (Math.random() > 0.5) {
                     //! Create an Alert
-                    uiSession.messageController.addNewMessageFromData(
+                    uiSessionId.messageController.addNewMessageFromData(
                                 Message.Type.Alert,
                                 "Arbitrary Alert Number " + Math.floor(Math.random() * 100),
                                 now.toLocaleTimeString("MMMM dd ddd - hh:mm:ss"))
                 } else {
                     //! Create a Notification
-                    uiSession.messageController.addNewMessageFromData(
+                    uiSessionId.messageController.addNewMessageFromData(
                                 Message.Type.Notification,
                                 "Arbitrary Notification Number " + Math.floor(Math.random() * 100),
                                 now.toLocaleTimeString("MMMM dd ddd - hh:mm:ss"))

@@ -9,7 +9,9 @@ import Ronia
  * mechanism to enable (generic/high-level) communication between components, e.g., to display
  * popups.
  * ************************************************************************************************/
-QtObject {
+Item {
+    id: root
+
     /* Property Declarations
      * ****************************************************************************************/
     enum UserLevel {
@@ -47,7 +49,7 @@ QtObject {
     readonly property var       popUpQueue:     []
 
     // Popups that can be called for this UiSession
-    readonly property UiSessionPopups popUps:   UiSessionPopups {}
+    readonly property UiSessionPopups popUps:   UiSessionPopups { parent: root}
 
     //! Ui Preferences (Units, etc)
     property UiPreferences      uiPreferences:  UiPreferences {}
