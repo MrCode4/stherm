@@ -12,6 +12,9 @@ QSObject {
     //! Schedule name
     property string     name: ""
 
+    //! Whether this Schedule is active or not
+    property bool       active: true
+
     //! Schedule type
     property string     type: ""
 

@@ -59,8 +59,4 @@ BasePageView {
             }
         }
     }
-
-    FontMetrics {
-        id: _fontMetric
-    }
 }
