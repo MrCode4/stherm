@@ -187,26 +187,26 @@ I_DeviceController {
     }
 
     function setSystemCoolingOnly(stage: int) {
-        device.systemSetup.systemType = AppSpecCPP.CoolingOnly;
         device.systemSetup.coolStage  = stage;
+        device.systemSetup.systemType = AppSpecCPP.CoolingOnly;
     }
 
     function setSystemHeatOnly(stage: int) {
-        device.systemSetup.systemType = AppSpecCPP.HeatingOnly;
         device.systemSetup.heatStage  = stage;
+        device.systemSetup.systemType = AppSpecCPP.HeatingOnly;
     }
 
     function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
-        device.systemSetup.systemType = AppSpecCPP.HeatPump;
         device.systemSetup.heatPumpEmergency = emergency;
         device.systemSetup.heatPumpStage     = stage;
         device.systemSetup.heatPumpOBState   = obState;
+        device.systemSetup.systemType = AppSpecCPP.HeatPump;
     }
 
     function setSystemTraditional(coolStage: int, heatStage: int) {
-        device.systemSetup.systemType = AppSpecCPP.Conventional;
         device.systemSetup.traditionalCoolStage = coolStage;
         device.systemSetup.traditionalHeatStage = heatStage;
+        device.systemSetup.systemType = AppSpecCPP.Conventional;
     }
 
     //! Read data from system with getMainData method.

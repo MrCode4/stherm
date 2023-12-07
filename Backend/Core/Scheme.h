@@ -134,7 +134,7 @@ private:
 
     struct STHERM::Vacation mVacation;
 
-    SystemSetup* mSystemSetup;
+    SystemSetup *mSystemSetup = nullptr;
 
     NUVE::Timing* mTiming;
     Relay*  mRelay;

@@ -62,7 +62,11 @@ void Scheme::restartWork()
         return;
     }
 
-    if (this->isRunning()) {
+    TRACE << isRunning() << stopWork;
+
+    if (isRunning()) {
+        if (stopWork) // restart is already in progress
+            return;
         // Any finished signal should not start the worker.
         connect(this, &Scheme::finished, this, [=]() {
                 stopWork = false;
@@ -957,8 +961,12 @@ void Scheme::setFanWorkPerHour(int newFanWPH)
 void Scheme::setSystemSetup(SystemSetup *systemSetup)
 {
     TRACE;
-    if (systemSetup && mSystemSetup == systemSetup)
+    if (!systemSetup || mSystemSetup == systemSetup)
         return;
+
+    if (mSystemSetup) {
+        mSystemSetup->disconnect(this);
+    }
 
     mSystemSetup = systemSetup;
 
@@ -976,6 +984,41 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
         restartWork();
     });
 
+    // these parameters will be used in control loop, if any condition locked to these update here
+    connect(mSystemSetup, &SystemSetup::traditionalHeatStageChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::Conventional)
+            TRACE << "traditionalHeatStageChanged: " << mSystemSetup->traditionalHeatStage;
+    });
+    connect(mSystemSetup, &SystemSetup::traditionalCoolStageChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::Conventional)
+            TRACE << "traditionalCoolStageChanged: " << mSystemSetup->traditionalCoolStage;
+    });
+    connect(mSystemSetup, &SystemSetup::heatPumpStageChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
+            TRACE << "heatPumpStageChanged: " << mSystemSetup->heatPumpStage;
+    });
+    connect(mSystemSetup, &SystemSetup::heatPumpOBStateChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
+            TRACE << "heatPumpOBStateChanged: " << mSystemSetup->heatPumpOBState
+                  << mSystemSetup->systemType;
+    });
+    connect(mSystemSetup, &SystemSetup::coolStageChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::CoolingOnly)
+            TRACE << "coolStageChanged: " << mSystemSetup->coolStage;
+    });
+    connect(mSystemSetup, &SystemSetup::heatStageChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatingOnly)
+            TRACE << "heatStageChanged: " << mSystemSetup->heatStage;
+    });
+    connect(mSystemSetup, &SystemSetup::systemRunDelayChanged, this, [this] {
+        TRACE << "systemRunDelayChanged: " << mSystemSetup->systemRunDelay
+              << mSystemSetup->systemType;
+    });
+    connect(mSystemSetup, &SystemSetup::heatPumpEmergencyChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
+            TRACE << "heatPumpEmergencyChanged: " << mSystemSetup->heatPumpEmergency;
+    });
+
     mRealSysMode = mSystemSetup->systemMode;
 }
 
@@ -988,7 +1031,7 @@ AppSpecCPP::SystemMode Scheme::updateNormalState(const double &setTemperature, c
             realSetMode = AppSpecCPP::SystemMode::Cooling;
         } else if (currentTemperature > setTemperature - STAGE1_ON_RANGE) { // before stage 1 on
             realSetMode = AppSpecCPP::SystemMode::Off;
-        } else {  // stage 1 on
+        } else { // stage 1 on
             realSetMode = AppSpecCPP::SystemMode::Heating;
         }
     } else if (mCurrentSysMode == AppSpecCPP::SystemMode::Heating) {
@@ -996,7 +1039,7 @@ AppSpecCPP::SystemMode Scheme::updateNormalState(const double &setTemperature, c
             realSetMode = AppSpecCPP::SystemMode::Heating;
         } else if (currentTemperature < setTemperature + STAGE1_ON_RANGE) { // before stage 1 on
             realSetMode = AppSpecCPP::SystemMode::Off;
-        } else {  // stage 1 on
+        } else { // stage 1 on
             realSetMode = AppSpecCPP::SystemMode::Cooling;
         }
     } else { // OFF
