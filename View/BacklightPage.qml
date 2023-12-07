@@ -43,6 +43,18 @@ BasePageView {
     rightPadding: AppStyle.size / 12
     title: "Backlight"
 
+    backButtonCallback: function() {
+        //! Check if color is modified
+        if (backlight && (backlight.on !== _backlightOnOffSw.checked
+                          || !Qt.colorEqual(backlight._color, liveColor))) {
+            //! This means that changes are occured that are not saved into model
+            uiSession.popUps.exitConfirmPopup.accepted.connect(goBack);
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.exitConfirmPopup);
+        } else {
+            goBack();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     RowLayout {
@@ -220,6 +232,19 @@ BasePageView {
         if (deviceController) {
             deviceController.updateBacklight(backlight?.on ?? false, backlight?.hue ?? 0., backlight?.value ?? 1.,
                                              backlight?.shadeIndex ?? dummyShadeDelegate.index);
+        }
+    }
+
+    //! This method is used to go back
+    function goBack()
+    {
+        uiSession.popUps.exitConfirmPopup.accepted.disconnect(goBack);
+
+        if (_root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (_root.StackView.view.currentItem == _root) {
+                _root.StackView.view.pop();
+            }
         }
     }
 

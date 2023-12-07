@@ -33,6 +33,23 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Settings"
+    backButtonCallback: function() {
+        //! Check if color is modified
+        var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
+        var selectedTimeFormat = _time24FormBtn.checked ? AppSpec.TimeFormat.Hour24 : AppSpec.TimeFormat.Hour12;
+
+        if (setting && (setting.brightness !== _brightnessSlider.value
+                        || setting.adaptiveBrightness !== _adaptiveBrSw.checked
+                        || setting.volume !== _speakerSlider.value
+                        || setting.tempratureUnit !== selectedTempUnit
+                        || setting.timeFormat !== selectedTimeFormat)) {
+            //! This means that changes are occured that are not saved into model
+            uiSession.popUps.exitConfirmPopup.accepted.connect(goBack);
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.exitConfirmPopup);
+        } else {
+            goBack();
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -266,6 +283,19 @@ BasePageView {
         }
     }
 
+    //! This method is used to go back
+    function goBack()
+    {
+        uiSession.popUps.exitConfirmPopup.accepted.disconnect(goBack);
+
+        if (_root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (_root.StackView.view.currentItem == _root) {
+                _root.StackView.view.pop();
+            }
+        }
+    }
+
     //! Reset settings pop
     ResetSettingsDialog {
         id: _resetSettings
@@ -290,10 +320,10 @@ BasePageView {
     Component.onDestruction: {
         if (setting) {
             if (setting.brightness !== internal.copyOfSettings.brightness
-                || setting.adaptiveBrightness !== internal.copyOfSettings.adaptiveBrightness
-                || setting.volume !== internal.copyOfSettings.volume
-                || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit
-                || setting.timeFormat !== internal.copyOfSettings.timeFormat) {
+                    || setting.adaptiveBrightness !== internal.copyOfSettings.adaptiveBrightness
+                    || setting.volume !== internal.copyOfSettings.volume
+                    || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit
+                    || setting.timeFormat !== internal.copyOfSettings.timeFormat) {
                 //! Reset to last saved setting
                 deviceController.setSettings(
                             internal.copyOfSettings.brightness,
