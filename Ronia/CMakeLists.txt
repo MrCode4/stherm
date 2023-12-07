@@ -35,6 +35,7 @@ qt_add_qml_module(RoniaStyle
         ApplicationWindow.qml
         TextField.qml
         Slider.qml
+        ScrollIndicator.qml
 )
 
 qt_add_qml_module(RoniaStyleImpl
