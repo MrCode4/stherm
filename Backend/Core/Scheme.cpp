@@ -185,32 +185,42 @@ void Scheme::CoolingLoop()
     case AppSpecCPP::SystemType::CoolingOnly: {
         TRACE << heatPump << mCurrentTemperature << mSetPointTemperature;
         if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
-            // s2 off time should be high value? or invalid?
             internalCoolingLoopStage1(heatPump);
         }
-
-        // turn off Y1, Y2 and G = 0
-        mRelay->setAllOff();
     } break;
     default:
         qWarning() << "Unsupported system type in Cooling loop" << mSystemSetup->systemType;
         break;
     }
+
+    // turn off Y1, Y2 and G = 0
+    mRelay->setAllOff();
 }
 
 void Scheme::HeatingLoop()
 {
+    TRACE_CHECK(true) << "Heating started " << mSystemSetup->systemType;
+
     // update configs and ...
+    // s1 & s2 time threshold
+    //    Y1, Y2, O/B G W1 W2 W3
     switch (mSystemSetup->systemType) {
     case AppSpecCPP::SystemType::HeatPump: // emergency as well?
         break;
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::HeatingOnly:
+        TRACE << mCurrentTemperature << mSetPointTemperature;
+        if (mSetPointTemperature - mCurrentTemperature >= 1.9) {
+            internalHeatingLoopStage1();
+        }
         break;
     default:
         qWarning() << "Unsupported system type in Heating loop" << mSystemSetup->systemType;
         break;
     }
+
+    // Turn off system (Y1, Y2, W1, W2,W3, G = 0)
+    mRelay->setAllOff();
 }
 
 void Scheme::VacationLoop() {}
@@ -230,6 +240,7 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
     // 5 Sec
     emit changeBacklight(coolingColor);
     mTiming->s1uptime.restart();
+    mTiming->s2Offtime.invalidate(); // s2 off time should be high value? or invalid?
     mTiming->s2hold = false;
     mTiming->alerts = false;
     sendRelays();
@@ -238,7 +249,7 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
         if (mRelay->relays().y2 != STHERM::RelayMode::NoWire /*&& true user specified stage 2*/) {  // TODO: we need to check the system setup
             if (mCurrentTemperature - mSetPointTemperature >= 2.9
                 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
-                if (mTiming->s2Offtime.isValid() && mTiming->s2Offtime.elapsed() >= 2 * 60000) {
+                if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
                     if (!internalCoolingLoopStage2()) {
                         break;
                     }
@@ -286,6 +297,141 @@ bool Scheme::internalCoolingLoopStage2()
     sendRelays();
 
     return true;
+}
+
+void Scheme::internalHeatingLoopStage1()
+{
+    // Sys delay
+    mRelay->heatingStage1();
+    // 5 secs
+    emit changeBacklight(heatingColor);
+
+    mTiming->s1uptime.restart();
+    mTiming->uptime.restart();
+    mTiming->s2hold = false;
+    mTiming->s3hold = false;
+    mTiming->alerts = false;
+    // not sending?
+    sendRelays();
+
+    while (mCurrentTemperature - mSetPointTemperature < 1) {
+        TRACE << mRelay->relays().w2 << mTiming->s2uptime.isValid();
+        // TODO: we need to check the system setup
+        if (mRelay->relays().w2 != STHERM::RelayMode::NoWire /*&& true user specified stage 2*/) {
+            if (mSetPointTemperature - mCurrentTemperature >= 2.9
+                || (mTiming->s2uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
+                if (!internalHeatingLoopStage2())
+                    break;
+
+                heatingConventionalRole2();
+            }
+        } else {
+            sendAlertIfNeeded();
+        }
+    }
+
+    // will turn off all outside
+}
+
+bool Scheme::internalHeatingLoopStage2()
+{
+    mRelay->heatingStage2();
+    // 5 secs
+    emit changeBacklight(heatingColor);
+    mTiming->s2uptime.restart(); // why invalidate?
+    sendRelays();
+
+    while (true) {
+        if (mTiming->s2hold) {
+            if (mCurrentTemperature - mSetPointTemperature < 1) {
+                // TODO
+                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || false) || //
+                    (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
+                    sendAlertIfNeeded();
+                } else {
+                    // stage 3
+                    if (!internalHeatingLoopStage3())
+                        return false;
+                }
+            } else {
+                // all will be turned off outside
+                return false;
+            }
+        } else {
+            if (mSetPointTemperature - mCurrentTemperature < 8
+                || (mRelay->relays().w3 == STHERM::RelayMode::NoWire || false)) {
+                if (mSetPointTemperature - mCurrentTemperature < 1.9) {
+                    break;
+                } else {
+                    sendAlertIfNeeded();
+                }
+            } else {
+                if (mSetPointTemperature - mCurrentTemperature < 5.9
+                    && (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
+                    sendAlertIfNeeded();
+                } else {
+                    //stage 3
+                    if (!internalHeatingLoopStage3())
+                        return false;
+                }
+            }
+        }
+    }
+
+    //turn of stage 2
+    mRelay->heatingStage1();
+    // 5 secs
+    emit changeBacklight(heatingColor);
+    mTiming->s1uptime.restart(); // why invalidate?
+    mTiming->s2hold = true;
+    sendRelays();
+
+    return true;
+}
+
+bool Scheme::internalHeatingLoopStage3()
+{
+    mRelay->heatingStage3();
+    // 5 secs
+    emit changeBacklight(heatingColor);
+    mTiming->s2hold = false;
+    sendRelays();
+
+    while (true) {
+        if (mTiming->s3hold) {
+            if (mCurrentTemperature - mSetPointTemperature < 1) {
+                sendAlertIfNeeded();
+            } else {
+                return false;
+            }
+        } else {
+            if (mSetPointTemperature - mCurrentTemperature < 4.9) {
+                break;
+            } else {
+                sendAlertIfNeeded();
+            }
+        }
+    }
+
+    //turn of stage 3
+    mRelay->heatingStage2();
+    // 5 secs
+    emit changeBacklight(heatingColor);
+    mTiming->s1uptime.restart(); // why invalidate?
+    mTiming->s2uptime.restart(); // why invalidate?
+    mTiming->s3hold = true;
+    sendRelays();
+    return true;
+}
+
+void Scheme::sendAlertIfNeeded()
+{
+    // Generate Alert
+    if (!mTiming->alerts
+        && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() >= 120 * 60000)) {
+        emit alert();
+        mTiming->alerts = true;
+    }
 }
 
 void Scheme::startWork()

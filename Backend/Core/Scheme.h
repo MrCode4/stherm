@@ -101,6 +101,12 @@ private:
     void internalCoolingLoopStage1(bool pumpHeat);
     bool internalCoolingLoopStage2();
 
+    void internalHeatingLoopStage1();
+    bool internalHeatingLoopStage2();
+    bool internalHeatingLoopStage3();
+
+    void sendAlertIfNeeded();
+
     void startWork();
 
     //! Send relays into ti
@@ -168,4 +174,3 @@ private:
 
     bool stopWork;
 };
-
