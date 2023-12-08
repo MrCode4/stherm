@@ -27,6 +27,7 @@ const double S2OFF_TIME              = 2;
 const QVariantList coolingColor      = QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE, "true"};
 const QVariantList heatingColor      = QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE,  "true"};
 const QVariantList emergencyColor    = QVariantList{255, 0, 0, STHERM::LedEffect::LED_BLINK,  "true"};
+const QVariantList emergencyColorS   = QVariantList{255, 0, 0, STHERM::LedEffect::LED_STABLE, "true"};
 
 Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
@@ -206,10 +207,22 @@ void Scheme::HeatingLoop()
     //    Y1, Y2, O/B G W1 W2 W3
     switch (mSystemSetup->systemType) {
     case AppSpecCPP::SystemType::HeatPump: // emergency as well?
-        break;
+    {
+        TRACE << "HeatPump" << mCurrentTemperature << mSetPointTemperature;
+        // get time threshold ETime
+        if (mCurrentTemperature < mSetPointTemperature) {
+            if (mCurrentTemperature < ET) { // TODO: check if emergency is on
+                TRACE << "Emergency";
+                EmergencyHeating();
+            } else {
+                TRACE << "Normal";
+                internalPumpHeatingLoopStage1();
+            }
+        }
+    } break;
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::HeatingOnly:
-        TRACE << mCurrentTemperature << mSetPointTemperature;
+        TRACE << "Conventional" << mCurrentTemperature << mSetPointTemperature;
         if (mSetPointTemperature - mCurrentTemperature >= 1.9) {
             internalHeatingLoopStage1();
         }
@@ -241,6 +254,7 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
     emit changeBacklight(coolingColor);
     mTiming->s1uptime.restart();
     mTiming->s2Offtime.invalidate(); // s2 off time should be high value? or invalid?
+    mTiming->uptime.restart();
     mTiming->s2hold = false;
     mTiming->alerts = false;
     sendRelays();
@@ -256,36 +270,36 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
                 }
             }
         } else {
-            if (!mTiming->alerts && mTiming->uptime.elapsed() >= 120 * 60000) {
-                emit alert();
-                mTiming->alerts = true;
-            }
+            sendAlertIfNeeded();
             // wait for temperature update?
         }
     }
 }
 
 bool Scheme::internalCoolingLoopStage2()
-{ // turn on stage 2
+{
+    // turn on stage 2
     mRelay->coolingStage2();
     // 5 Sec
     emit changeBacklight(coolingColor);
 
     sendRelays();
 
-    while ((mTiming->s2hold && mSetPointTemperature - mCurrentTemperature < 1)
-           || (!mTiming->s2hold && mCurrentTemperature - mSetPointTemperature > 1.9)) {
-        if (!mTiming->alerts && mTiming->uptime.elapsed() >= 120 * 60000) {
-            emit alert();
-            mTiming->alerts = true;
+    while (true) {
+        if (mTiming->s2hold) {
+            if (mSetPointTemperature - mCurrentTemperature < 1) {
+                sendAlertIfNeeded();
+            } else {
+                return false;
+            }
+        } else {
+            if (mCurrentTemperature - mSetPointTemperature > 1.9) {
+                sendAlertIfNeeded();
+            } else {
+                break;
+            }
         }
     }
-
-    if (mTiming->s2hold && mSetPointTemperature - mCurrentTemperature >= 1) {
-        return false;
-    }
-
-    //    if (!mTiming->s2hold && mCurrentTemperature - mSetPointTemperature <= 1.9)
 
     // to turn off stage 2
     mRelay->coolingStage1();
@@ -422,6 +436,103 @@ bool Scheme::internalHeatingLoopStage3()
     mTiming->s3hold = true;
     sendRelays();
     return true;
+}
+
+void Scheme::internalPumpHeatingLoopStage1()
+{
+    if (mSetPointTemperature - mCurrentTemperature >= 3) {
+        mRelay->setOb_state(AppSpecCPP::Heating);
+
+        // sysDelay
+        mRelay->heatingStage1();
+
+        // 5 Sec
+        emit changeBacklight(heatingColor);
+        mTiming->s1uptime.restart();
+        mTiming->s2Offtime.invalidate(); // s2 off time should be high value? or invalid?
+        mTiming->uptime.restart();
+        mTiming->s2hold = false;
+        mTiming->alerts = false;
+        sendRelays();
+
+        while (mCurrentTemperature - mSetPointTemperature < 1.9) {
+            // TODO: we need to check the system setup/*&& true user specified stage 2*/
+            if (mRelay->relays().y2 != STHERM::RelayMode::NoWire) {
+                if (mSetPointTemperature - mCurrentTemperature >= 2.9
+                    || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
+                    if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
+                        if (!internalPumpHeatingLoopStage2()) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                sendAlertIfNeeded();
+                // wait for temperature update?
+            }
+        }
+    }
+}
+
+bool Scheme::internalPumpHeatingLoopStage2()
+{
+    // turn on stage 2
+    mRelay->heatingStage2();
+    // 5 Sec
+    emit changeBacklight(coolingColor);
+    sendRelays();
+
+    while (true) {
+        if (mTiming->s2hold) {
+            if (mCurrentTemperature - mSetPointTemperature < 1) {
+                sendAlertIfNeeded();
+            } else {
+                return false;
+            }
+        } else {
+            if (mSetPointTemperature - mCurrentTemperature > 1.9) {
+                sendAlertIfNeeded();
+            } else {
+                break;
+            }
+        }
+    }
+
+    // to turn off stage 2
+    mRelay->heatingStage1();
+    // 5 secs
+    emit changeBacklight(coolingColor);
+    mTiming->s1uptime.restart(); // why invalidate?
+    mTiming->s2hold = true;
+    mTiming->s2Offtime.restart();
+    sendRelays();
+
+    return true;
+}
+
+void Scheme::EmergencyHeating()
+{
+    mRelay->setAllOff();
+    mRelay->emergencyHeating1();
+
+    // 5 Sec
+    emit changeBacklight(emergencyColor, emergencyColorS);
+    sendRelays();
+
+    bool stage2 = false;
+    while (mCurrentTemperature < HPT) {
+        if (!stage2 && mCurrentTemperature < ET - ET_STAGE2) {
+            mRelay->emergencyHeating2();
+            sendRelays();
+            stage2 = true;
+        }
+    }
+
+    emit changeBacklight();
+    mRelay->turnOffEmergencyHeating();
+    sendRelays();
+
+    internalPumpHeatingLoopStage1();
 }
 
 void Scheme::sendAlertIfNeeded()
@@ -781,8 +892,8 @@ void Scheme::heatingEmergencyHeatPumpRole1()
     mRelay->emergencyHeating1();
     mCurrentSysMode = mRelay->currentState();
 
-    // untile the end of emergency mode.
-    emit changeBacklight(emergencyColor, -1);
+    // until the end of emergency mode.
+    emit changeBacklight(emergencyColor, emergencyColorS);
 
     sendRelays();
 

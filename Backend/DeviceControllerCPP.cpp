@@ -32,30 +32,37 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mBacklightTimer.setTimerType(Qt::PreciseTimer);
     mBacklightTimer.setSingleShot(true);
     connect(&mBacklightTimer, &QTimer::timeout, this, [this]() {
-        setBacklight(mBacklightModelData, true);
+        auto colorData = mBacklightTimer.property("color").value<QVariantList>();
+        TRACE << "restoring color with timer " << colorData;
+        setBacklight(colorData, true);
     });
 
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         setMainData(data);
     });
 
-    connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList data, int secs) {
+    connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
         TRACE << "Update backlight.";
 
         if (mBacklightTimer.isActive())
             mBacklightTimer.stop();
 
-        if (data.isEmpty()) {
+        if (color.isEmpty()) {
+            TRACE << "restoring color with force " << mBacklightModelData;
             setBacklight(mBacklightModelData, true);
             return;
         }
 
-        setBacklight(data, true);
+        setBacklight(color, true);
+
+        if (afterColor.isEmpty()) {
+            afterColor = mBacklightModelData;
+        }
 
         // Back to last backlight after secs seconds
-        if (secs >= 0)
-            mBacklightTimer.start(secs * 1000);
+        mBacklightTimer.start(5 * 1000);
+        mBacklightTimer.setProperty("color", afterColor);
     });
 
     connect(m_scheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {

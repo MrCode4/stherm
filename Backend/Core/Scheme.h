@@ -73,7 +73,8 @@ public:
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
-    void changeBacklight(QVariantList colorData = QVariantList(), int secs = 5);
+    void changeBacklight(QVariantList colorData = QVariantList(),
+                         QVariantList colorDataAfter = QVariantList());
 
     //! Send relay to DeviceIOController and update relays into ti board.
     void updateRelays(STHERM::RelayConfigs);
@@ -105,6 +106,9 @@ private:
     bool internalHeatingLoopStage2();
     bool internalHeatingLoopStage3();
 
+    void internalPumpHeatingLoopStage1();
+    bool internalPumpHeatingLoopStage2();
+    void EmergencyHeating();
     void sendAlertIfNeeded();
 
     void startWork();
