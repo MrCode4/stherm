@@ -223,8 +223,8 @@ struct AQ_TH_PR_vals {
 
     }
     uint8_t humidity;        ///< Humidity value (up to 100%)
-    uint16_t etoh;           ///< ETOH value (up to 20 ppm)
-    uint16_t Tvoc;           ///< TVOC value (0.1 to 10+ mg/m^3)
+    double   etoh;           ///< ETOH value (up to 20 ppm)
+    double   Tvoc;           ///< TVOC value (0.1 to 10+ mg/m^3)
     double   iaq;            ///< IAQ value (1 to 5+)
     uint16_t c02;            ///< CO2 value (400 to 5000 ppm)
     double   temp;           ///< Temperature value (up to +127�C)

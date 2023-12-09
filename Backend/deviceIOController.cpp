@@ -643,12 +643,16 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 cpIndex += sizeof(mainDataValues.c02);
                 TRACE_CHECK(false) <<(QString("mainDataValues.c02: %0").arg(mainDataValues.c02));
 
-                memcpy(&mainDataValues.etoh, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.etoh));
-                cpIndex += sizeof(mainDataValues.etoh);
+                uint16_t etoh_temp;
+                memcpy(&etoh_temp, rxPacket.DataArray + cpIndex, sizeof(etoh_temp));
+                cpIndex += sizeof(etoh_temp);
+                mainDataValues.etoh = etoh_temp / 100.0;
                 TRACE_CHECK(false) <<(QString("mainDataValues.etoh: %0").arg(mainDataValues.etoh));
 
-                memcpy(&mainDataValues.Tvoc, rxPacket.DataArray + cpIndex, sizeof(mainDataValues.Tvoc));
-                cpIndex += sizeof(mainDataValues.Tvoc);
+                uint16_t tvoc_temp;
+                memcpy(&tvoc_temp, rxPacket.DataArray + cpIndex, sizeof(tvoc_temp));
+                cpIndex += sizeof(tvoc_temp);
+                mainDataValues.Tvoc = tvoc_temp / 1000.0;
                 TRACE_CHECK(false) <<(QString("mainDataValues.Tvoc: %0").arg(mainDataValues.Tvoc));
 
                 uint8_t iaq;
