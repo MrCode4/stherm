@@ -32,7 +32,6 @@ public:
 public:
     AppSpecCPP::SystemType systemType;
 
-
     // 0: cooling, 1: heating
     int heatPumpOBState;
 

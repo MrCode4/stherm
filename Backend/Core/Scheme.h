@@ -31,11 +31,6 @@ public:
 
     ~Scheme();
 
-    void updateRealState(const struct STHERM::Vacation &vacation,
-                         const double &setTemperature,
-                         const double &currentTemperature,
-                         const double &currentHumidity);
-
     AppSpecCPP::SystemMode getCurrentSysMode() const;
     void setCurrentSysMode(AppSpecCPP::SystemMode newSysMode);
 
@@ -111,32 +106,11 @@ private:
     void EmergencyHeating();
     void sendAlertIfNeeded();
 
-    void startWork();
-
     //! Send relays into ti
     void sendRelays();
 
     //! Update vacation mode
     void updateVacationState();
-
-    AppSpecCPP::SystemMode updateNormalState(const double &setTemperature,
-                                         const double &currentTemperature,
-                                         const double &currentHumidity);
-
-    //! Cooling and heating roles.
-    void coolingHeatPumpRole1(bool needToWait = true);
-    void coolingHeatPumpRole2();
-    void heatingHeatPumpRole1();
-    void heatingHeatPumpRole2(bool needToWait = true);
-    void heatingHeatPumpRole3();
-    void heatingConventionalRole1(bool needToWait = true);
-    void heatingConventionalRole2();
-    void heatingConventionalRole3();
-
-    //! Emergency heating roles
-    void heatingEmergencyHeatPumpRole1();
-    void heatingEmergencyHeatPumpRole2();
-    void heatingEmergencyHeatPumpRole3();
 
     //! To monitor data change: current temperature, set temperature, mode
     int waitLoop(int timeout = 10000);
