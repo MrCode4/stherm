@@ -198,14 +198,15 @@ I_DeviceController {
 
     function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
         device.systemSetup.heatPumpEmergency = emergency;
-        device.systemSetup.heatPumpStage     = stage;
-        device.systemSetup.heatPumpOBState   = obState;
+        device.systemSetup.heatStage = stage;
+        device.systemSetup.coolStage = stage;
+        device.systemSetup.heatPumpOBState = obState;
         device.systemSetup.systemType = AppSpecCPP.HeatPump;
     }
 
     function setSystemTraditional(coolStage: int, heatStage: int) {
-        device.systemSetup.traditionalCoolStage = coolStage;
-        device.systemSetup.traditionalHeatStage = heatStage;
+        device.systemSetup.coolStage = coolStage;
+        device.systemSetup.heatStage = heatStage;
         device.systemSetup.systemType = AppSpecCPP.Conventional;
     }
 

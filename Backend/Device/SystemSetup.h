@@ -13,10 +13,6 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(AppSpecCPP::SystemType systemType            MEMBER  systemType          NOTIFY systemTypeChanged FINAL)
 
-    Q_PROPERTY(int traditionalHeatStage  MEMBER traditionalHeatStage NOTIFY traditionalHeatStageChanged FINAL)
-    Q_PROPERTY(int traditionalCoolStage  MEMBER traditionalCoolStage NOTIFY traditionalCoolStageChanged FINAL)
-
-    Q_PROPERTY(int heatPumpStage     MEMBER heatPumpStage   NOTIFY heatPumpStageChanged FINAL)
     Q_PROPERTY(int heatPumpOBState   MEMBER heatPumpOBState NOTIFY heatPumpOBStateChanged FINAL)
 
     Q_PROPERTY(int coolStage     MEMBER coolStage  NOTIFY coolStageChanged FINAL)
@@ -36,9 +32,6 @@ public:
 public:
     AppSpecCPP::SystemType systemType;
 
-    int traditionalHeatStage;
-    int traditionalCoolStage;
-    int heatPumpStage;
 
     // 0: cooling, 1: heating
     int heatPumpOBState;
@@ -55,9 +48,6 @@ public:
 
 signals:
     void systemTypeChanged();
-    void traditionalHeatStageChanged();
-    void traditionalCoolStageChanged();
-    void heatPumpStageChanged();
     void heatPumpOBStateChanged();
     void coolStageChanged();
     void heatStageChanged();

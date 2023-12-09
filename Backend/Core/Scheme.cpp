@@ -211,7 +211,7 @@ void Scheme::HeatingLoop()
         TRACE << "HeatPump" << mCurrentTemperature << mSetPointTemperature;
         // get time threshold ETime
         if (mCurrentTemperature < mSetPointTemperature) {
-            if (mCurrentTemperature < ET) { // TODO: check if emergency is on
+            if (mCurrentTemperature < ET && mSystemSetup->heatPumpEmergency) {
                 TRACE << "Emergency";
                 EmergencyHeating();
             } else {
@@ -260,7 +260,7 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
     sendRelays();
 
     while (mSetPointTemperature - mCurrentTemperature < 1) {
-        if (mRelay->relays().y2 != STHERM::RelayMode::NoWire /*&& true user specified stage 2*/) {  // TODO: we need to check the system setup
+        if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mSystemSetup->coolStage == 2) {
             if (mCurrentTemperature - mSetPointTemperature >= 2.9
                 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
                 if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
@@ -329,9 +329,8 @@ void Scheme::internalHeatingLoopStage1()
     sendRelays();
 
     while (mCurrentTemperature - mSetPointTemperature < 1) {
-        TRACE << mRelay->relays().w2 << mTiming->s2uptime.isValid();
-        // TODO: we need to check the system setup
-        if (mRelay->relays().w2 != STHERM::RelayMode::NoWire /*&& true user specified stage 2*/) {
+        TRACE_CHECK(false) << mRelay->relays().w2 << mTiming->s2uptime.isValid();
+        if (mRelay->relays().w2 != STHERM::RelayMode::NoWire && mSystemSetup->heatStage >= 2) {
             if (mSetPointTemperature - mCurrentTemperature >= 2.9
                 || (mTiming->s2uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
                 if (!internalHeatingLoopStage2())
@@ -342,6 +341,7 @@ void Scheme::internalHeatingLoopStage1()
         } else {
             sendAlertIfNeeded();
         }
+        // TODO should we wait for temp update before new loop?
     }
 
     // will turn off all outside
@@ -358,9 +358,8 @@ bool Scheme::internalHeatingLoopStage2()
     while (true) {
         if (mTiming->s2hold) {
             if (mCurrentTemperature - mSetPointTemperature < 1) {
-                // TODO
-                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || false) || //
-                    (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
+                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)
+                    || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
                     sendAlertIfNeeded();
                 } else {
                     // stage 3
@@ -373,7 +372,7 @@ bool Scheme::internalHeatingLoopStage2()
             }
         } else {
             if (mSetPointTemperature - mCurrentTemperature < 8
-                || (mRelay->relays().w3 == STHERM::RelayMode::NoWire || false)) {
+                || (mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)) {
                 if (mSetPointTemperature - mCurrentTemperature < 1.9) {
                     break;
                 } else {
@@ -456,8 +455,7 @@ void Scheme::internalPumpHeatingLoopStage1()
         sendRelays();
 
         while (mCurrentTemperature - mSetPointTemperature < 1.9) {
-            // TODO: we need to check the system setup/*&& true user specified stage 2*/
-            if (mRelay->relays().y2 != STHERM::RelayMode::NoWire) {
+            if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mSystemSetup->heatStage >= 2) {
                 if (mSetPointTemperature - mCurrentTemperature >= 2.9
                     || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
                     if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
@@ -1419,18 +1417,6 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
     });
 
     // these parameters will be used in control loop, if any condition locked to these update here
-    connect(mSystemSetup, &SystemSetup::traditionalHeatStageChanged, this, [this] {
-        if (mSystemSetup->systemType == AppSpecCPP::SystemType::Conventional)
-            TRACE << "traditionalHeatStageChanged: " << mSystemSetup->traditionalHeatStage;
-    });
-    connect(mSystemSetup, &SystemSetup::traditionalCoolStageChanged, this, [this] {
-        if (mSystemSetup->systemType == AppSpecCPP::SystemType::Conventional)
-            TRACE << "traditionalCoolStageChanged: " << mSystemSetup->traditionalCoolStage;
-    });
-    connect(mSystemSetup, &SystemSetup::heatPumpStageChanged, this, [this] {
-        if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
-            TRACE << "heatPumpStageChanged: " << mSystemSetup->heatPumpStage;
-    });
     connect(mSystemSetup, &SystemSetup::heatPumpOBStateChanged, this, [this] {
         if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
             TRACE << "heatPumpOBStateChanged: " << mSystemSetup->heatPumpOBState

@@ -59,14 +59,14 @@ BasePageView {
             RadioButton {
                 id: traditionalCoolStage_1_RB
 
-                checked: appModel.systemSetup.traditionalCoolStage === Number(text)
+                checked: appModel.systemSetup.coolStage === Number(text)
                 text: "1"
             }
 
             RadioButton {
                 id: traditionalCoolStage_2_RB
 
-                checked: appModel.systemSetup.traditionalCoolStage === Number(text)
+                checked: appModel.systemSetup.coolStage === Number(text)
                 text: "2"
             }
         }
@@ -83,7 +83,7 @@ BasePageView {
             property int traditionalHeatStage: 1
 
             RadioButton {
-                checked: appModel.systemSetup.traditionalHeatStage === Number(text)
+                checked: appModel.systemSetup.heatStage === Number(text)
                 onCheckedChanged:  {
                     if (checked)
                         traditionalHeatStageLayout.traditionalHeatStage = Number(text);
@@ -93,7 +93,7 @@ BasePageView {
             }
 
             RadioButton {
-                checked: appModel.systemSetup.traditionalHeatStage === Number(text)
+                checked: appModel.systemSetup.heatStage === Number(text)
                 onCheckedChanged: {
                     if (checked)
                         traditionalHeatStageLayout.traditionalHeatStage = Number(text);
@@ -103,7 +103,7 @@ BasePageView {
             }
 
             RadioButton {
-                checked: appModel.systemSetup.traditionalHeatStage === Number(text)
+                checked: appModel.systemSetup.heatStage === Number(text)
                 onCheckedChanged: {
                     if (checked)
                         traditionalHeatStageLayout.traditionalHeatStage = Number(text);

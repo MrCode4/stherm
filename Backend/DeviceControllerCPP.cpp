@@ -125,8 +125,6 @@ void DeviceControllerCPP::startDevice()
     //! todo: move to constructor later
     _deviceIO->createConnections();
 
-    _deviceIO->setStopReading(false);
-
     TRACE << "start mode is: " << _deviceAPI->getStartMode();
 
     // Satart with delay to ensure the model loaded.
@@ -137,7 +135,7 @@ void DeviceControllerCPP::startDevice()
 
 void DeviceControllerCPP::stopDevice()
 {
-    _deviceIO->setStopReading(true);
+    _deviceIO->stopReading();
 }
 
 SystemSetup *DeviceControllerCPP::systemSetup() const {
