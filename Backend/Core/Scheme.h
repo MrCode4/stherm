@@ -83,6 +83,7 @@ signals:
 
     void currentTemperatureChanged();
     void setTemperatureChanged();
+    void stopWorkRequested();
 
 protected:
     void run() override;

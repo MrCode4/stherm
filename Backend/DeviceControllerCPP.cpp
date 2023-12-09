@@ -43,7 +43,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
-        TRACE << "Update backlight.";
+        TRACE << "Update backlight." << color << afterColor << mBacklightModelData;
 
         if (mBacklightTimer.isActive())
             mBacklightTimer.stop();

@@ -71,6 +71,7 @@ void Scheme::restartWork()
             Qt::SingleShotConnection);
 
         stopWork = true;
+        emit stopWorkRequested();
         this->wait(QDeadlineTimer(1000, Qt::PreciseTimer));
 
     } else {
@@ -82,6 +83,7 @@ void Scheme::restartWork()
 
 void Scheme::setSetPointTemperature(double newSetPointTemperature)
 {
+     newSetPointTemperature = 32.0 + newSetPointTemperature * 9 / 5;
     if (qAbs(mSetPointTemperature - newSetPointTemperature) < 0.001)
         return;
 
@@ -317,6 +319,7 @@ bool Scheme::internalCoolingLoopStage2()
     sendRelays();
 
     while (!stopWork) {
+        TRACE << mTiming->s2hold << mSetPointTemperature << mCurrentTemperature;
         if (mTiming->s2hold) {
             if (mSetPointTemperature - mCurrentTemperature < 1) {
                 sendAlertIfNeeded();
@@ -797,7 +800,7 @@ void Scheme::sendRelays()
 
     // Update relays
     emit updateRelays(mRelay->relays());
-    this->msleep(1200);
+    this->msleep(5000);
 
     TRACE;
 }
@@ -1305,6 +1308,14 @@ int Scheme::waitLoop(int timeout)
         loop.exit(ChangeType::CurrentTemperature);
     });
 
+    connect(this, &Scheme::setTemperatureChanged, &loop, [&loop]() {
+        loop.exit(ChangeType::SetTemperature);
+    });
+
+    connect(this, &Scheme::stopWorkRequested, &loop, [&loop]() {
+        loop.exit(ChangeType::Mode);
+    });
+
     if (timeout == 0) {
         return 0;
     } else if (timeout > 0) {
@@ -1347,10 +1358,10 @@ void Scheme::setMainData(QVariantMap mainData)
     _mainData = mainData;
 
     bool isOk;
-    double currentTemp = mainData.value("temperature").toDouble(&isOk);
+    double currentTemp = 32.0 + mainData.value("temperature").toDouble(&isOk) * 9 / 5;
 
     if (isOk && currentTemp != mCurrentTemperature) {
-        mCurrentTemperature = currentTemp;
+        mCurrentTemperature =currentTemp;
 
         emit currentTemperatureChanged();
     }
