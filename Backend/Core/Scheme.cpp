@@ -351,6 +351,7 @@ bool Scheme::internalCoolingLoopStage2()
         return false;
 
     // to turn off stage 2
+    mRelay->setAllOff();
     mRelay->coolingStage1();
     // 5 secs
     emit changeBacklight(coolingColor);
@@ -465,6 +466,7 @@ bool Scheme::internalHeatingLoopStage2()
         return false;
 
     //turn of stage 2
+    mRelay->setAllOff();
     mRelay->heatingStage1();
     // 5 secs
     emit changeBacklight(heatingColor);
@@ -511,6 +513,7 @@ bool Scheme::internalHeatingLoopStage3()
         return false;
 
     //turn of stage 3
+    mRelay->setAllOff();
     mRelay->heatingStage2();
     // 5 secs
     emit changeBacklight(heatingColor);
@@ -607,6 +610,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
         return false;
 
     // to turn off stage 2
+    mRelay->setAllOff();
     mRelay->heatingStage1();
     // 5 secs
     emit changeBacklight(coolingColor);
