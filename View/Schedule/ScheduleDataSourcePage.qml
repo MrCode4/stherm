@@ -12,6 +12,9 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
+    property Schedule   schedule
+
     //! Device reference
     property I_Device device: uiSession?.appModel ?? null
 
@@ -66,6 +69,12 @@ BasePageView {
                     sensor: modelData instanceof Sensor ? modelData : null
                 }
             }
+        }
+    }
+
+    onSensorChanged: {
+        if (schedule) {
+            schedule.dataSource = sensor.name;
         }
     }
 }

@@ -12,7 +12,11 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property alias  scheduleName: _nameTf.text
+    //! Schedule: If set changes are applied to Schedule. This is can be used to edit a Schedule
+    property Schedule   schedule
+
+    //!
+    property alias      scheduleName: _nameTf.text
 
     /* Object properties
      * ****************************************************************************************/
@@ -28,5 +32,12 @@ BasePageView {
         anchors.centerIn: parent
         width: parent.width * 0.7
         placeholderText: "Enter Schedule Name"
+        text: schedule?.name ?? ""
+
+        onEditingFinished: {
+            if (schedule) {
+                schedule.name = _nameTf.text;
+            }
+        }
     }
 }

@@ -12,6 +12,9 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
+    property Schedule   schedule
+
     //! Selected days for repeating
     readonly property var repeats: {
         var rps = [];
@@ -62,5 +65,23 @@ BasePageView {
         RadioButton {id: _frBtn; autoExclusive: false }
         RadioButton {id: _saBtn; autoExclusive: false }
         RadioButton {id: _suBtn; autoExclusive: false }
+    }
+
+    onRepeatsChanged: {
+        if (schedule && schedule.repeats.toString() !== repeats.toString()) {
+            schedule.repeats = repeats;
+        }
+    }
+
+    onScheduleChanged: {
+        if (schedule) {
+            _muBtn.checked = Boolean(schedule.repeats.find(element => element === "Mu"));
+            _tuBtn.checked = Boolean(schedule.repeats.find(element => element === "Tu"));
+            _weBtn.checked = Boolean(schedule.repeats.find(element => element === "We"));
+            _thBtn.checked = Boolean(schedule.repeats.find(element => element === "Th"));
+            _frBtn.checked = Boolean(schedule.repeats.find(element => element === "Fr"));
+            _saBtn.checked = Boolean(schedule.repeats.find(element => element === "Sa"));
+            _suBtn.checked = Boolean(schedule.repeats.find(element => element === "Su"));
+        }
     }
 }
