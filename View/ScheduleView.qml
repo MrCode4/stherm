@@ -57,6 +57,37 @@ BasePageView {
                     schedulesController.removeSchedule(schedule);
                 }
             }
+
+            onClicked: {
+                if (_root.StackView.view) {
+                    _root.StackView.view.push(schedulePreview, {
+                                                  "schedule": schedule
+                                              });
+                }
+            }
+        }
+    }
+
+    Component {
+        id: schedulePreview
+
+        SchedulePreviewPage {
+            id: schPrevPage
+            uiSession: _root.uiSession
+            backButtonVisible: true
+
+            //! Edit button
+            ToolButton {
+                parent: schPrevPage.header.contentItem
+                contentItem: RoniaTextIcon {
+                    text: FAIcons.penCircle
+                }
+
+                onClicked: {
+                    //! Open EditSchedulePage
+
+                }
+            }
         }
     }
 }

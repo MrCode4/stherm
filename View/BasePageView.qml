@@ -60,7 +60,8 @@ Page {
                 Layout.fillWidth: true
                 //! If there is only the back button and the title in the header, right-margin is
                 //! to make the header title look centered
-                Layout.rightMargin: parent.children.length === 2 ? parent.children[0].implicitWidth + parent.spacing : 0
+                Layout.rightMargin: parent.children.length === 2 && backButtonVisible
+                                    ? parent.children[0].implicitWidth + parent.spacing : 0
 
                 visible: title.length > 0
                 textFormat: "MarkdownText"

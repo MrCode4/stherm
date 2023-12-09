@@ -12,139 +12,330 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property Schedule   schedule
-    property bool isCelcius : appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
+    //! Schedule
+    property Schedule   schedule: Schedule {
+        name: "Test Name"
+        type: "Night"
+        temprature: 72
+        humidity: 30
+        startTime: "04:30 PM"
+        endTime: "07:30 PM"
+        repeats: ["Mu", "We", "Th"]
+        dataSource: "On Board Sensor"
+    }
+
+    //! Whether temprature unit is Celsius
+    property bool       isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
+
+    //! Can schedule fields be editabled
+    property bool       isEditable: true
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 16
+    leftPadding: 8
     rightPadding: 4
-    topPadding: 32
+    topPadding: 24
     title: "Schedule Preview"
     backButtonVisible: false
     titleHeadeingLevel: 3
 
+    //! Back button is invisible in AddSchedulePage and only visible when editing an existing Schedule
+    backButtonCallback: function() {
+        if (pageStack.depth > 1) {
+            pageStack.pop();
+        } else if (_root.StackView.view) {
+            _root.StackView.view.pop();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
-    Flickable {
+    ToolButton {
+        parent: isEditable ? _root.header.contentItem : _root
+        visible: isEditable && pageStack.depth > 1
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            pageStack.pop();
+        }
+    }
+
+    StackView {
+        id: pageStack
         anchors.fill: parent
+
+        initialItem: itemsFlickable
+    }
+
+    Flickable {
+        id: itemsFlickable
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         contentHeight: _previewContentLay.implicitHeight
         contentWidth: width
         ScrollIndicator.vertical: ScrollIndicator { }
 
-        RowLayout {
+        ColumnLayout {
             id: _previewContentLay
             anchors {
                 fill: parent
                 rightMargin: 12
             }
 
-            //! Schedule labels
-            Pane {
-                background: null
-                padding: 0
-                font.bold: true
+            ItemDelegate {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Material.delegateHeight
 
-                ColumnLayout {
-                    Repeater {
-                        model: [
-                            "Name",
-                            "Type",
-                            "Temprature (\u00b0" + (isCelcius ? "C" : "F") + ")",
-                            "Humidity",
-                            "Start Time",
-                            "End Time",
-                            "Repeat",
-                            "Data Source"
-                        ]
+                verticalPadding: 0
+                horizontalPadding: 8
+                contentItem: RowLayout {
+                    spacing: 16
 
-                        delegate: Label {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: Material.delegateHeight
-                            horizontalAlignment: "AlignJustify"
-                            text: modelData
-                        }
+                    Label {
+                        Layout.fillWidth: true
+                        font.bold: true
+                        text: "Name"
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: "AlignRight"
+                        text: schedule?.name ?? ""
+                        elide: "ElideRight"
+                    }
+                }
+
+                onClicked: {
+                    //! Open ScheduleNamePage for editing
+                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleNamePage.qml", {
+                                       "uiSession": uiSession,
+                                       "schedule": _root.schedule
+                                   });
+                }
+            }
+
+            ItemDelegate {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Material.delegateHeight
+
+                verticalPadding: 0
+                horizontalPadding: 8
+                contentItem: RowLayout {
+                    spacing: 16
+
+                    Label {
+                        Layout.fillWidth: true
+                        font.bold: true
+                        text: "Type"
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: "AlignRight"
+                        text: schedule?.type ?? ""
+                        elide: "ElideRight"
+                    }
+                }
+
+                onClicked: {
+                    //! Open ScheduleNamePage for editing
+                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleTypePage.qml", {
+                                       "uiSession": uiSession,
+                                       "schedule": _root.schedule
+                                   });
+                }
+            }
+
+            ItemDelegate {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Material.delegateHeight
+
+                verticalPadding: 0
+                horizontalPadding: 8
+                contentItem: RowLayout {
+                    spacing: 16
+
+                    Label {
+                        Layout.fillWidth: true
+                        font.bold: true
+                        text: "Temprature"
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: "AlignRight"
+                        text: schedule?.temprature ?? 0
+                    }
+                }
+
+                onClicked: {
+                    //! Open ScheduleNamePage for editing
+                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleTempraturePage.qml", {
+                                       "uiSession": uiSession,
+                                       "schedule": _root.schedule
+                                   });
+                }
+            }
+
+            ItemDelegate {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Material.delegateHeight
+
+                verticalPadding: 0
+                horizontalPadding: 8
+                contentItem: RowLayout {
+                    spacing: 16
+
+                    Label {
+                        Layout.fillWidth: true
+                        font.bold: true
+                        text: "Humidity"
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: "AlignRight"
+                        text: schedule?.humidity ?? 0
                     }
                 }
             }
 
-            //! Schedule values
-            ColumnLayout {
-                opacity: 0.7
-                Label {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Material.delegateHeight
-                    horizontalAlignment: "AlignRight"
-                    text: schedule?.name ?? ""
+            ItemDelegate {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Material.delegateHeight
+
+                verticalPadding: 0
+                horizontalPadding: 8
+                contentItem: RowLayout {
+                    spacing: 16
+
+                    Label {
+                        Layout.fillWidth: true
+                        font.bold: true
+                        text: "Start Time"
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: "AlignRight"
+                        text: schedule?.startTime ?? ""
+                    }
                 }
 
-                Label {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Material.delegateHeight
-                    horizontalAlignment: "AlignRight"
-                    text: schedule?.type ?? ""
+                onClicked: {
+                    //! Open ScheduleNamePage for editing
+                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
+                                       "uiSession": uiSession,
+                                       "timeProperty": "start-time",
+                                       "schedule": _root.schedule
+                                   });
+                }
+            }
+
+            ItemDelegate {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Material.delegateHeight
+
+                verticalPadding: 0
+                horizontalPadding: 8
+                contentItem: RowLayout {
+                    spacing: 16
+
+                    Label {
+                        Layout.fillWidth: true
+                        font.bold: true
+                        text: "End Time"
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: "AlignRight"
+                        text: schedule?.endTime ?? ""
+                    }
                 }
 
-                Label {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Material.delegateHeight
-                    horizontalAlignment: "AlignRight"
-                    text: schedule?.temprature ?? 0
+                onClicked: {
+                    //! Open ScheduleNamePage for editing
+                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
+                                       "uiSession": uiSession,
+                                       "timeProperty": "end-time",
+                                       "schedule": _root.schedule
+                                   });
                 }
+            }
 
-                Label {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Material.delegateHeight
-                    horizontalAlignment: "AlignRight"
-                    text: schedule?.humidity ?? 0
-                }
+            ItemDelegate {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Material.delegateHeight
 
-                Label {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Material.delegateHeight
-                    horizontalAlignment: "AlignRight"
-                    text: schedule?.startTime ?? ""
-                }
+                verticalPadding: 0
+                horizontalPadding: 8
+                contentItem: RowLayout {
+                    spacing: 16
 
-                Label {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Material.delegateHeight
-                    horizontalAlignment: "AlignRight"
-                    text: schedule?.endTime ?? ""
-                }
+                    Label {
+                        Layout.fillWidth: true
+                        font.bold: true
+                        text: "Repeats"
+                    }
 
-                //! Schedule
-                RowLayout {
-                    Layout.fillWidth: false
-                    Layout.fillHeight: false
-                    Layout.preferredHeight: Material.delegateHeight
-                    Layout.alignment: Qt.AlignRight
-                    Repeater {
-                        model: schedule?.repeats
-                        delegate: Label {
-                            Layout.alignment: Qt.AlignTop
-                            text: modelData
+                    RowLayout {
+                        Layout.fillWidth: false
+                        Layout.fillHeight: true
+                        Layout.alignment: Qt.AlignRight
 
-                            Rectangle {
-                                anchors {
-                                    top: parent.bottom
-                                    horizontalCenter: parent.horizontalCenter
+                        Repeater {
+                            model: schedule?.repeats
+                            delegate: Label {
+                                Layout.alignment: Qt.AlignTop
+                                text: modelData
+
+                                Rectangle {
+                                    anchors {
+                                        top: parent.bottom
+                                        horizontalCenter: parent.horizontalCenter
+                                    }
+                                    width: 4
+                                    height: 4
+                                    radius: 2
                                 }
-                                width: 4
-                                height: 4
-                                radius: 2
                             }
                         }
                     }
                 }
 
-                Label {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Material.delegateHeight
-                    horizontalAlignment: "AlignRight"
-                    text: schedule?.dataSource ?? ""
+                onClicked: {
+                    //! Open ScheduleNamePage for editing
+                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleRepeatsPage.qml", {
+                                       "uiSession": uiSession,
+                                       "schedule": _root.schedule
+                                   });
+                }
+            }
+
+            ItemDelegate {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Material.delegateHeight
+
+                verticalPadding: 0
+                horizontalPadding: 8
+                contentItem: RowLayout {
+                    spacing: 16
+
+                    Label {
+                        Layout.fillWidth: true
+                        font.bold: true
+                        text: "Data Source"
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: "AlignRight"
+                        text: schedule?.dataSource ?? ""
+                        elide: "ElideRight"
+                    }
                 }
             }
         }

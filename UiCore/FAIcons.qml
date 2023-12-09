@@ -37,4 +37,5 @@ QtObject {
     readonly property string headSet:                           "\uf590"
     readonly property string grid2Plus:                         "\ue197"
     readonly property string calendarClock:                     "\ue0d2"
+    readonly property string penCircle:                         "\ue20e"
 }
