@@ -45,11 +45,6 @@ BasePageView {
             }
 
             saved();
-
-            //! Go back
-            if (_root.StackView.view) {
-                _root.StackView.view.pop();
-            }
         }
     }
 

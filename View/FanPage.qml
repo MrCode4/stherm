@@ -38,8 +38,7 @@ BasePageView {
             }
 
             //! Also move out of this Page
-            if (_root.StackView.view && _root.StackView.view.depth > 1
-                    && _root.StackView.view.currentItem === _root) {
+            if (_root.StackView.view) {
                 _root.StackView.view.pop();
             }
         }
@@ -92,64 +91,92 @@ BasePageView {
             }
         }
 
-        Label {
-            id: _sliderDescLbl
-            Layout.topMargin: 40 * scaleFactor
-            Layout.fillWidth: true
-            text: "Fan working period during each hour"
-            wrapMode: "WrapAtWordBoundaryOrAnywhere"
-            horizontalAlignment: "AlignHCenter"
-        }
+        ColumnLayout {
+            id: manualFanColumn
+            opacity: 0
+            enabled: false
 
-        RowLayout {
-            spacing: 0
+            Label {
+                id: _sliderDescLbl
+                Layout.topMargin: 40 * scaleFactor
+                Layout.fillWidth: true
+                text: "Fan working period during each hour"
+                wrapMode: "WrapAtWordBoundaryOrAnywhere"
+                horizontalAlignment: "AlignHCenter"
+            }
 
-            Column {
-                Layout.alignment: Qt.AlignTop
-                Layout.topMargin: _hourSliders.topPadding
+            RowLayout {
+                id: sliderLay
+                spacing: 0
 
-                RoniaTextIcon {
-                    x: (parent.width - width) / 2
-                    font.pointSize: _root.font.pointSize * 0.8
-                    text: FAIcons.clockThree
+                Column {
+                    Layout.alignment: Qt.AlignTop
+                    Layout.topMargin: _hourSliders.topPadding
+
+                    RoniaTextIcon {
+                        x: (parent.width - width) / 2
+                        font.pointSize: _root.font.pointSize * 0.8
+                        text: FAIcons.clockThree
+                    }
+
+                    Label {
+                        font.pointSize: _root.font.pointSize * 0.8
+                        text: "min"
+                    }
                 }
 
-                Label {
-                    font.pointSize: _root.font.pointSize * 0.8
-                    text: "min"
+                TickedSlider {
+                    id: _hourSliders
+                    readonly property int tickStepSize: 2
+
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.fillWidth: true
+                    Layout.rightMargin: 24 * scaleFactor
+                    majorTickCount: ticksCount / 5
+                    ticksCount: to / tickStepSize
+                    from: 0
+                    to: 50
+                    stepSize: 1
+                    value: fan?.workingPerHour ?? 0
+                    valueChangeAnimation: true
+
+                    ToolTip {
+                        parent: _hourSliders.handle
+                        y: -height - 16
+                        x: (parent.width - width) / 2
+                        visible: _hourSliders.pressed
+                        timeout: Number.MAX_VALUE
+                        delay: 0
+                        text: _hourSliders.value
+                    }
+
+                    Label {
+                        anchors.top: parent.bottom
+                        x: 8 + parent.visualPosition * (parent.width - width - 16)
+                        font.pointSize: _root.font.pointSize * 0.8
+                        text: "min"
+                    }
                 }
             }
 
-            TickedSlider {
-                id: _hourSliders
-                readonly property int tickStepSize: 2
+            states: State {
+                when: _onButton.checked
+                name: "visible"
 
-                Layout.alignment: Qt.AlignHCenter
-                Layout.fillWidth: true
-                Layout.rightMargin: 24 * scaleFactor
-                majorTickCount: ticksCount / 5
-                ticksCount: to / tickStepSize
-                from: 0
-                to: 50
-                stepSize: 1
-                value: fan?.workingPerHour ?? 0
-                valueChangeAnimation: true
-
-                ToolTip {
-                    parent: _hourSliders.handle
-                    y: -height - 16
-                    x: (parent.width - width) / 2
-                    visible: _hourSliders.pressed
-                    timeout: Number.MAX_VALUE
-                    delay: 0
-                    text: _hourSliders.value
+                PropertyChanges {
+                    target: manualFanColumn
+                    opacity: 1
+                    enabled: true
                 }
+            }
 
-                Label {
-                    anchors.top: parent.bottom
-                    x: 8 + parent.visualPosition * (parent.width - width - 16)
-                    font.pointSize: _root.font.pointSize * 0.8
-                    text: "min"
+            transitions: Transition {
+                to: "visible"
+                reversible: true
+
+                SequentialAnimation {
+                    PropertyAnimation { target: manualFanColumn; property: "enabled"; duration: 0 }
+                    NumberAnimation { property: "opacity" }
                 }
             }
         }

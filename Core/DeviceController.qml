@@ -194,6 +194,6 @@ I_DeviceController {
         // should be updated to inform the logics
         var result = sendReceive('system', 'setHold', [isHold]);
 
-        device.isHold = isHold;
+        device._isHold = isHold;
     }
 }

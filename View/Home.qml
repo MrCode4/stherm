@@ -63,6 +63,14 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
+
+            TapHandler {
+                onTapped: {
+                    _root.StackView.view.push("qrc:/Stherm/View/SensorsPage.qml", {
+                                                                      "uiSession": Qt.binding(() => uiSession)
+                                                                  })
+                }
+            }
         }
 
         //! Wifi status
@@ -94,6 +102,12 @@ Control {
             }
             y: (_desiredTempItem.height - height) / 2 - 4
             deviceController: uiSession?.deviceController ?? null
+
+            onClicked: {
+                _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
+                                              "uiSession": Qt.binding(() => uiSession)
+                                          });
+            }
         }
 
         Item {
@@ -140,6 +154,13 @@ Control {
                     left: parent.left
                     bottom: parent.bottom
                 }
+
+                onClicked: {
+                    _root.StackView.view.push("qrc:/Stherm/View/FanPage.qml",
+                                              {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                }
             }
 
             //! Hold button
@@ -165,6 +186,12 @@ Control {
                 id: _dateTimeLbl
                 anchors.centerIn: parent
                 is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+
+                TapHandler {
+                    onTapped: {
+                        uiSession.popupLayout.displayPopUp(timeFormatPop, true);
+                    }
+                }
             }
         }
 
@@ -177,7 +204,15 @@ Control {
                 bottomMargin: _menuButton.implicitHeight
             }
             height: _menuButton.height * 1.2
-            opacity: (uiSession?.simulating ?? true) ? 0 : 1
+            visible: !uiSession.simulating
+
+            TapHandler {
+                onTapped: {
+                    mainStackView.push("qrc:/Stherm/View/ContactContractorPage.qml", {
+                                           "uiSession": _root.uiSession
+                                       });
+                }
+            }
         }
 
         //! Device Toggle Button
@@ -188,7 +223,7 @@ Control {
             }
             width: parent.width * 0.75
 
-            uiSession : _root.uiSession
+            uiSession: _root.uiSession
         }
 
         //! Menu button
@@ -225,6 +260,11 @@ Control {
                 }
             }
         }
+    }
+
+    TimeFormatPopup {
+        id: timeFormatPop
+        uiSession: _root.uiSession
     }
 
 

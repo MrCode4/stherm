@@ -12,10 +12,13 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
+    property Schedule   schedule
+
     //! Temprature value
     property alias      temprature: _tempSlider.value // conversion?
 
-    property bool isCelcius :  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
+    property bool       isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     /* Object properties
      * ****************************************************************************************/
@@ -40,6 +43,7 @@ BasePageView {
         width: parent.width
         from: isCelcius ? 18 : 65
         to: isCelcius ? 30 : 85
+        value: schedule?.temprature ?? 0
         majorTickCount: isCelcius ? 3 : 5
         ticksCount: to - from
         stepSize: 1
@@ -52,6 +56,12 @@ BasePageView {
             timeout: Number.MAX_VALUE
             delay: 0
             text: _tempSlider.value
+        }
+
+        onMoved: {
+            if (schedule && schedule.temprature !== temprature) {
+                schedule.temprature = value;
+            }
         }
     }
 }

@@ -16,7 +16,7 @@ TabButton {
     property UiSession      uiSession
 
     //! Determines whether 'hold' is enabled or not
-    readonly property bool  isHoldEnabled: (uiSession?.appModel?.isHold === false) ?? false
+    readonly property bool  isHoldEnabled: uiSession?.appModel?._isHold === true
 
     /* Object properties
      * ****************************************************************************************/
@@ -27,6 +27,16 @@ TabButton {
     onClicked: {
         //! Ask openning a Popup for changing hold value
         holdPopup.open();
+    }
+
+    Rectangle {
+        anchors.centerIn: parent
+        visible: !isHoldEnabled
+        transformOrigin: Item.Center
+        rotation: -30
+        width: parent.width * 0.75
+        height: 2
+        color: Style.foreground
     }
 
     HoldPopup {

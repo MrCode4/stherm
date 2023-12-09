@@ -40,6 +40,7 @@ set_source_files_properties(
     Core/Utils.qml
     UiCore/AppStyle.qml
     UiCore/FAIcons.qml
+    Core/DateTimeManager.qml
 
     PROPERTIES
         QT_QML_SINGLETON_TYPE True
@@ -81,6 +82,7 @@ qt6_add_qml_module(appStherm
         Core/Vacation.qml
         Core/Setting.qml
         Core/Utils.qml
+        Core/DateTimeManager.qml
 
 
         # Primitive Components
@@ -178,6 +180,9 @@ qt6_add_qml_module(appStherm
         View/Test/AudioTestPage.qml
         View/Test/InternalSensorTestPage.qml
         View/ContactContractorPage.qml
+        View/Time/TimePage.qml
+        View/Time/SelectTimePage.qml
+        View/Time/SelectTimezonePage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
@@ -191,6 +196,9 @@ qt6_add_qml_module(appStherm
         # Popups
         UiCore/PopUps/AlertNotifPopup.qml
         UiCore/PopUps/HoldPopup.qml
+        UiCore/PopUps/TempratureUnitPopup.qml
+        UiCore/PopUps/TimeFormatPopup.qml
+        UiCore/PopUps/ExitConfirmPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
@@ -204,6 +212,8 @@ qt6_add_qml_module(appStherm
         Backend/NmcliInterface.h
         Backend/ScreenSaverManager.h
         Backend/ScreenSaverManager.cpp
+        Backend/DateTimeManagerCPP.h
+        Backend/DateTimeManagerCPP.cpp
 
         # php
         Backend/PhpApi.h

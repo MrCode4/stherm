@@ -12,6 +12,10 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
+    property Schedule   schedule
+
+    //!
     readonly property string type: _buttonsGroup.checkedButton?.text ?? ""
 
     /* Object properties
@@ -30,6 +34,12 @@ BasePageView {
     ButtonGroup {
         id: _buttonsGroup
         buttons: _buttonsLay.children
+
+        onCheckedButtonChanged: {
+            if (schedule && schedule.type !== checkedButton.text) {
+                schedule.type = checkedButton.text;
+            }
+        }
     }
 
     ColumnLayout {
@@ -41,25 +51,28 @@ BasePageView {
         Button {
             Layout.fillWidth: true
             checkable: true
-            checked: true
+            checked: schedule ? schedule.type === text : true
             text: "Away"
         }
 
         Button {
             Layout.fillWidth: true
             checkable: true
+            checked: schedule?.type === text
             text: "Night"
         }
 
         Button {
             Layout.fillWidth: true
             checkable: true
+            checked: schedule?.type === text
             text: "Home"
         }
 
         Button {
             Layout.fillWidth: true
             checkable: true
+            checked: schedule?.type === text
             text: "Custom"
         }
     }

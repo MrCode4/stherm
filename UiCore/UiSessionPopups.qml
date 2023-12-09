@@ -19,17 +19,14 @@ import Stherm
  *       that to the parent class.
  * ************************************************************************************************/
 Item {
-    /* Popup Functions
+    /* Property declartion
      * ****************************************************************************************/
-    function popupAbout()
-    {
-        showPopUp(aboutPopup);
-    }
+    //!
+    property alias exitConfirmPopup: exitConfPop
 
     /* Children
      * ****************************************************************************************/
-    AboutPopUp {
-        id: aboutPopup
+    ExitConfirmPopup {
+        id: exitConfPop
     }
-
 }

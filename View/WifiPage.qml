@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * WifiPage provides a ui to connect to a Wifi network
+ * WifiPage provides a ui to connect to a Wi-Fi network
  * ***********************************************************************************************/
 BasePageView {
     id: _root
@@ -28,7 +28,7 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Wifi Settings"
+    title: "Wi-Fi Settings"
     topPadding: bottomPadding + 12
 
     /* Children
@@ -39,7 +39,8 @@ BasePageView {
         Switch {
             id: _wifiOnOffSw
 
-            enabled: !NetworkInterface.isRunning
+            enabled: false && !NetworkInterface.isRunning
+            visible: false
             checked: NetworkInterface.deviceIsOn
             onToggled: {
                 if (checked) {

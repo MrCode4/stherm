@@ -43,6 +43,18 @@ BasePageView {
     rightPadding: AppStyle.size / 12
     title: "Backlight"
 
+    backButtonCallback: function() {
+        //! Check if color is modified
+        if (backlight && (backlight.on !== _backlightOnOffSw.checked
+                          || !Qt.colorEqual(backlight._color, liveColor))) {
+            //! This means that changes are occured that are not saved into model
+            uiSession.popUps.exitConfirmPopup.accepted.connect(goBack);
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.exitConfirmPopup);
+        } else {
+            goBack();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     RowLayout {
@@ -77,10 +89,10 @@ BasePageView {
         anchors.centerIn: parent
         width: _root.availableWidth
         spacing: AppStyle.size / 18
-        enabled: _backlightOnOffSw.checked
 
         Label {
             Layout.leftMargin: 4
+            enabled: _backlightOnOffSw.checked
             text: "Color"
         }
 
@@ -88,90 +100,101 @@ BasePageView {
         ColorSlider {
             id: _colorSlider
             Layout.fillWidth: true
-            opacity: enabled ? 1. : 0.4
+            opacity: _backlightOnOffSw.checked ? 1. : 0.4
             onValueChanged: onlineTimer.startTimer()
             onMoved: dummyShadeDelegate.checked = true
-        }
-
-        Label {
-            Layout.topMargin: AppStyle.size / 48
-            Layout.leftMargin: AppStyle.size / 120
-            text: "Brightness"
-        }
-
-        //! Brightness slider
-        BrightnessSlider {
-            id: _brSlider
-            Layout.fillWidth: true
-            opacity: enabled ? 1. : 0.4
-            from: 0
-            to: 1.
-            onValueChanged: onlineTimer.startTimer()
-
-            Component.onCompleted: {
-                handle.color = Style.background;
+            onPressedChanged: {
+                if (pressed && !_backlightOnOffSw.checked) { {
+                        _backlightOnOffSw.toggle();
+                    }
+                }
             }
         }
 
-        Label {
-            Layout.topMargin: AppStyle.size / 48
-            Layout.leftMargin: AppStyle.size / 120
-            visible: true
-            text: "Shades Of White"
-        }
+        ColumnLayout {
+            enabled: _backlightOnOffSw.checked
+            spacing: parent.spacing
 
-        //! Group for shade buttons
-        ButtonGroup {
-            id: _shadeButtonsGrp
-            buttons: _buttonsRow.children
+            Label {
+                Layout.topMargin: AppStyle.size / 48
+                Layout.leftMargin: AppStyle.size / 120
+                text: "Brightness"
+            }
 
-            onCheckedButtonChanged: onlineTimer.startTimer()
-        }
+            //! Brightness slider
+            BrightnessSlider {
+                id: _brSlider
+                Layout.fillWidth: true
+                opacity: enabled ? 1. : 0.4
+                from: 0
+                to: 1.
+                onValueChanged: onlineTimer.startTimer()
 
-        //! Shades of selected color
-        Item {
-            id: _buttonsRow
-
-            readonly property int cellSize: 82 * scaleFactor
-            readonly property int spacing: 4
-
-            Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + spacing)
-            Layout.preferredHeight: cellSize
-            Layout.alignment: Qt.AlignCenter
-            opacity: enabled ? 1. : 0.4
-            visible: true
-
-            Repeater {
-                id: _shadeButtonsRepeater
-                model: 5
-                delegate: ShadeButtonDelegate {
-                    required property int index
-                    required property var modelData
-
-                    x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
-                    hoverEnabled: enabled
-                    cellSize: _buttonsRow.cellSize
-
-                    hue: backlight._whiteShade.hsvHue
-                    saturation: index / 4.
-                    value: backlight._whiteShade.hsvValue
+                Component.onCompleted: {
+                    handle.color = Style.background;
                 }
             }
 
-            ShadeButtonDelegate {
-                id: dummyShadeDelegate
+            Label {
+                Layout.topMargin: AppStyle.size / 48
+                Layout.leftMargin: AppStyle.size / 120
+                visible: true
+                text: "Shades Of White"
+            }
 
-                property int index: 5
+            //! Group for shade buttons
+            ButtonGroup {
+                id: _shadeButtonsGrp
+                buttons: _buttonsRow.children
 
-                visible: false
-                x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
-                checked: false
-                hoverEnabled: enabled
-                cellSize: _buttonsRow.cellSize
+                onCheckedButtonChanged: onlineTimer.startTimer()
+            }
 
-                hue: _colorSlider.value
-                saturation: 1
-                value: _brSlider.value
+            //! Shades of selected color
+            Item {
+                id: _buttonsRow
+
+                readonly property int cellSize: 82 * scaleFactor
+                readonly property int spacing: 4
+
+                Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + spacing)
+                Layout.preferredHeight: cellSize
+                Layout.alignment: Qt.AlignCenter
+                opacity: enabled ? 1. : 0.4
+                visible: true
+
+                Repeater {
+                    id: _shadeButtonsRepeater
+                    model: 5
+                    delegate: ShadeButtonDelegate {
+                        required property int index
+                        required property var modelData
+
+                        x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
+                        hoverEnabled: enabled
+                        cellSize: _buttonsRow.cellSize
+
+                        hue: backlight._whiteShade.hsvHue
+                        saturation: index / 4.
+                        value: backlight._whiteShade.hsvValue
+                    }
+                }
+
+                ShadeButtonDelegate {
+                    id: dummyShadeDelegate
+
+                    property int index: 5
+
+                    visible: false
+                    x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
+                    checked: false
+                    hoverEnabled: enabled
+                    cellSize: _buttonsRow.cellSize
+
+                    hue: _colorSlider.value
+                    saturation: 1
+                    value: _brSlider.value
+                }
             }
         }
     }
@@ -209,6 +232,19 @@ BasePageView {
         if (deviceController) {
             deviceController.updateBacklight(backlight?.on ?? false, backlight?.hue ?? 0., backlight?.value ?? 1.,
                                              backlight?.shadeIndex ?? dummyShadeDelegate.index);
+        }
+    }
+
+    //! This method is used to go back
+    function goBack()
+    {
+        uiSession.popUps.exitConfirmPopup.accepted.disconnect(goBack);
+
+        if (_root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (_root.StackView.view.currentItem == _root) {
+                _root.StackView.view.pop();
+            }
         }
     }
 

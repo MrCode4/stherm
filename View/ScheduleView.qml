@@ -57,10 +57,24 @@ BasePageView {
                     schedulesController.removeSchedule(schedule);
                 }
             }
+
+            onClicked: {
+                if (_root.StackView.view) {
+                    _root.StackView.view.push(schedulePreview, {
+                                                  "schedule": schedule
+                                              });
+                }
+            }
         }
     }
 
-    FontMetrics {
-        id: _fontMetric
+    Component {
+        id: schedulePreview
+
+        SchedulePreviewPage {
+            uiSession: _root.uiSession
+            backButtonVisible: true
+            isEditable: true
+        }
     }
 }

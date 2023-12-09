@@ -19,7 +19,7 @@ Button {
     /* Object properties
      * ****************************************************************************************/
     flat: true
-    opacity: isSimulationMode ? 1 : 0
+    visible: isSimulationMode
     font.pointSize: Qt.application.font.pointSize * 1.4
     text: "Simulation"
 

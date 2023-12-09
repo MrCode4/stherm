@@ -30,7 +30,8 @@ ItemDelegate {
     RowLayout {
         id: _delegateContent
         parent: _root.contentItem
-        anchors.fill: parent
+        width: parent.width
+        anchors.centerIn: parent
         spacing: 4
 
         //! Schedule icon
@@ -92,6 +93,13 @@ ItemDelegate {
         //! Enable switch
         Switch {
             id: _scheduleEnableSw
+            checked: schedule?.active ?? false
+
+            onToggled: {
+                if (schedule && schedule.active !== checked) {
+                    schedule.active = checked;
+                }
+            }
         }
 
         //! Delete button
@@ -105,6 +113,10 @@ ItemDelegate {
                 _removeAnima.running = true;
             }
         }
+    }
+
+    FontMetrics {
+        id: _fontMetric
     }
 
     ParallelAnimation {
