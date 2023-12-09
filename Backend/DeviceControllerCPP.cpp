@@ -128,7 +128,8 @@ void DeviceControllerCPP::startDevice()
     TRACE << "start mode is: " << _deviceAPI->getStartMode();
 
     // Satart with delay to ensure the model loaded.
-    QTimer::singleShot(1000, this, [this]() {
+    QTimer::singleShot(5000, this, [this]() {
+        TRACE << "starting scheme";
         m_scheme->restartWork();
     });
 }

@@ -90,7 +90,6 @@ protected:
 private:
     void updateParameters();
     void resetDelays();
-    void mainControllerLoop();
 
     void AutoModeLoop();
     void CoolingLoop();
@@ -139,7 +138,7 @@ private:
     void heatingEmergencyHeatPumpRole3();
 
     //! To monitor data change: current temperature, set temperature, mode
-    int waitLoop();
+    int waitLoop(int timeout = 10000);
 
     //! Update humidifire and dehumidifire after changes: mode, set point humidity,
     //! current humidity, and humidifier Id

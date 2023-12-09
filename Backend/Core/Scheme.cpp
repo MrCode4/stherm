@@ -2,6 +2,7 @@
 
 #include <QColor>
 #include <QEventLoop>
+#include <QTimer>
 
 #include "LogHelper.h"
 
@@ -53,31 +54,27 @@ Scheme::~Scheme()
 
 void Scheme::restartWork()
 {
-    if (mSystemSetup->systemMode == AppSpecCPP::Off) {
-        // Stop worker thread
-        stopWork = true;
-
-        // change backlight to original value
-        emit changeBacklight();
-
-        return;
-    }
-
-    TRACE << isRunning() << stopWork;
-
     if (isRunning()) {
+        TRACE << "restarting HVAC" << stopWork;
         if (stopWork) // restart is already in progress
             return;
         // Any finished signal should not start the worker.
-        connect(this, &Scheme::finished, this, [=]() {
+        connect(
+            this,
+            &Scheme::finished,
+            this,
+            [=]() {
+                TRACE << "restarted HVAC";
                 stopWork = false;
                 this->start();
-            }, Qt::SingleShotConnection);
+            },
+            Qt::SingleShotConnection);
 
         stopWork = true;
-        this->wait(QDeadlineTimer(100, Qt::PreciseTimer));
+        this->wait(QDeadlineTimer(1000, Qt::PreciseTimer));
 
     } else {
+        TRACE << "started HVAC";
         stopWork = false;
         this->start();
     }
@@ -89,7 +86,8 @@ void Scheme::setSetPointTemperature(double newSetPointTemperature)
         return;
 
     mSetPointTemperature = newSetPointTemperature;
-    restartWork();
+
+    TRACE << "mSetPointTemperature changed";
 }
 
 void Scheme::setRequestedHumidity(double newHumidity)
@@ -109,60 +107,67 @@ void Scheme::run()
     QElapsedTimer timer;
     timer.start();
 
+    if (!mSystemSetup) {
+        TRACE << "-- mSystemSetup is not ready.";
+        return;
+    }
+
     //! get wires config type modes ...
     updateParameters();
 
     //! reset delays
     resetDelays();
 
-    while (!stopWork && mSystemSetup) {
-        mainControllerLoop();
+    while (!stopWork) {
+        // where should schedule be handled
+
+        switch (mRealSysMode) {
+        case AppSpecCPP::SystemMode::Auto:
+            AutoModeLoop();
+            break;
+        case AppSpecCPP::SystemMode::Cooling:
+            CoolingLoop();
+            break;
+        case AppSpecCPP::SystemMode::Heating:
+            HeatingLoop();
+            break;
+        case AppSpecCPP::SystemMode::Vacation:
+            VacationLoop();
+            break;
+        case AppSpecCPP::SystemMode::Off:
+            OffLoop();
+            break;
+        case AppSpecCPP::SystemMode::Emergency:
+            EmergencyLoop();
+            break;
+        default:
+            qWarning() << "Unsupported Mode in controller loop" << mRealSysMode;
+            break;
+        }
+
+        if (stopWork)
+            break;
+
+        // all should be off! we can assert here
+        waitLoop();
     }
 
     TRACE << "-- startWork Stopped. working time(ms): " << timer.elapsed();
 }
 
-void Scheme::updateParameters() {}
-
-void Scheme::resetDelays() {}
-
-void Scheme::mainControllerLoop()
+void Scheme::updateParameters()
 {
-    if (stopWork)
-        return;
+    //TODO
+}
 
-    // where should schedule be handled
-
-    switch (mRealSysMode) {
-    case AppSpecCPP::SystemMode::Auto:
-        AutoModeLoop();
-        break;
-    case AppSpecCPP::SystemMode::Cooling:
-        CoolingLoop();
-        break;
-    case AppSpecCPP::SystemMode::Heating:
-        HeatingLoop();
-        break;
-    case AppSpecCPP::SystemMode::Vacation:
-        VacationLoop();
-        break;
-    case AppSpecCPP::SystemMode::Off:
-        OffLoop();
-        break;
-    case AppSpecCPP::SystemMode::Emergency:
-        EmergencyLoop();
-        break;
-    default:
-        qWarning() << "Unsupported Mode in controller loop" << mRealSysMode;
-        break;
-    }
-
-    // all should be off! we can assert here
+void Scheme::resetDelays()
+{
+    //TODO
 }
 
 void Scheme::AutoModeLoop()
 {
-    // should we update temperatures
+    // should we update temperatures TODO
 
     if (mCurrentTemperature > mSetPointTemperature) {
         CoolingLoop();
@@ -236,11 +241,23 @@ void Scheme::HeatingLoop()
     mRelay->setAllOff();
 }
 
-void Scheme::VacationLoop() {}
+void Scheme::VacationLoop()
+{
+    //TODO
+    waitLoop();
+}
 
-void Scheme::EmergencyLoop() {}
+void Scheme::EmergencyLoop()
+{
+    //TODO
+    waitLoop();
+}
 
-void Scheme::OffLoop() {}
+void Scheme::OffLoop()
+{
+    //TODO
+    waitLoop();
+}
 
 void Scheme::internalCoolingLoopStage1(bool pumpHeat)
 {
@@ -260,6 +277,9 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
     sendRelays();
 
     while (mSetPointTemperature - mCurrentTemperature < 1) {
+        TRACE << mCurrentTemperature << mSetPointTemperature << mRelay->relays().y2
+              << mSystemSetup->coolStage << mTiming->s1uptime.elapsed()
+              << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
         if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mSystemSetup->coolStage == 2) {
             if (mCurrentTemperature - mSetPointTemperature >= 2.9
                 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
@@ -271,13 +291,24 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
             }
         } else {
             sendAlertIfNeeded();
-            // wait for temperature update?
         }
+
+        if (stopWork)
+            break;
+
+        waitLoop();
+
+        if (stopWork)
+            break;
     }
+
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished cooling" << stopWork;
 }
 
 bool Scheme::internalCoolingLoopStage2()
 {
+    TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
+
     // turn on stage 2
     mRelay->coolingStage2();
     // 5 Sec
@@ -285,7 +316,7 @@ bool Scheme::internalCoolingLoopStage2()
 
     sendRelays();
 
-    while (true) {
+    while (!stopWork) {
         if (mTiming->s2hold) {
             if (mSetPointTemperature - mCurrentTemperature < 1) {
                 sendAlertIfNeeded();
@@ -299,7 +330,17 @@ bool Scheme::internalCoolingLoopStage2()
                 break;
             }
         }
+
+        if (stopWork)
+            break;
+
+        waitLoop();
     }
+
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished stage 2" << stopWork;
+
+    if (stopWork)
+        return false;
 
     // to turn off stage 2
     mRelay->coolingStage1();
@@ -329,33 +370,47 @@ void Scheme::internalHeatingLoopStage1()
     sendRelays();
 
     while (mCurrentTemperature - mSetPointTemperature < 1) {
-        TRACE_CHECK(false) << mRelay->relays().w2 << mTiming->s2uptime.isValid();
+        TRACE_CHECK(true) << mRelay->relays().w2 << mSystemSetup->heatStage
+                          << mTiming->s1uptime.isValid() << mTiming->s1uptime.elapsed();
         if (mRelay->relays().w2 != STHERM::RelayMode::NoWire && mSystemSetup->heatStage >= 2) {
             if (mSetPointTemperature - mCurrentTemperature >= 2.9
-                || (mTiming->s2uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
+                || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
                 if (!internalHeatingLoopStage2())
                     break;
-
-                heatingConventionalRole2();
             }
         } else {
             sendAlertIfNeeded();
         }
+
+        if (stopWork)
+            break;
+
         // TODO should we wait for temp update before new loop?
+        waitLoop();
+
+        if (stopWork)
+            break;
     }
+
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished heating conventional"
+          << stopWork;
 
     // will turn off all outside
 }
 
 bool Scheme::internalHeatingLoopStage2()
 {
+    TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
+
     mRelay->heatingStage2();
     // 5 secs
     emit changeBacklight(heatingColor);
     mTiming->s2uptime.restart(); // why invalidate?
     sendRelays();
 
-    while (true) {
+    while (!stopWork) {
+        TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
+
         if (mTiming->s2hold) {
             if (mCurrentTemperature - mSetPointTemperature < 1) {
                 if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)
@@ -389,7 +444,17 @@ bool Scheme::internalHeatingLoopStage2()
                 }
             }
         }
+
+        if (stopWork)
+            break;
+
+        waitLoop();
     }
+
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished stage 2 heat" << stopWork;
+
+    if (stopWork)
+        return false;
 
     //turn of stage 2
     mRelay->heatingStage1();
@@ -404,13 +469,16 @@ bool Scheme::internalHeatingLoopStage2()
 
 bool Scheme::internalHeatingLoopStage3()
 {
+    TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s3hold;
+
     mRelay->heatingStage3();
     // 5 secs
     emit changeBacklight(heatingColor);
     mTiming->s2hold = false;
     sendRelays();
 
-    while (true) {
+    while (!stopWork) {
+        TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s3hold;
         if (mTiming->s3hold) {
             if (mCurrentTemperature - mSetPointTemperature < 1) {
                 sendAlertIfNeeded();
@@ -424,7 +492,15 @@ bool Scheme::internalHeatingLoopStage3()
                 sendAlertIfNeeded();
             }
         }
+        if (stopWork)
+            break;
+
+        waitLoop();
     }
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished stage 3" << stopWork;
+
+    if (stopWork)
+        return false;
 
     //turn of stage 3
     mRelay->heatingStage2();
@@ -455,6 +531,10 @@ void Scheme::internalPumpHeatingLoopStage1()
         sendRelays();
 
         while (mCurrentTemperature - mSetPointTemperature < 1.9) {
+            TRACE << mCurrentTemperature << mSetPointTemperature << mRelay->relays().y2
+                  << mSystemSetup->heatStage << mTiming->s1uptime.elapsed()
+                  << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
+
             if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mSystemSetup->heatStage >= 2) {
                 if (mSetPointTemperature - mCurrentTemperature >= 2.9
                     || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
@@ -468,19 +548,32 @@ void Scheme::internalPumpHeatingLoopStage1()
                 sendAlertIfNeeded();
                 // wait for temperature update?
             }
+
+            if (stopWork)
+                break;
+
+            waitLoop();
+
+            if (stopWork)
+                break;
         }
     }
+
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished pump heat" << stopWork;
 }
 
 bool Scheme::internalPumpHeatingLoopStage2()
 {
+    TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
     // turn on stage 2
     mRelay->heatingStage2();
     // 5 Sec
     emit changeBacklight(coolingColor);
     sendRelays();
 
-    while (true) {
+    while (!stopWork) {
+        TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
+
         if (mTiming->s2hold) {
             if (mCurrentTemperature - mSetPointTemperature < 1) {
                 sendAlertIfNeeded();
@@ -494,7 +587,16 @@ bool Scheme::internalPumpHeatingLoopStage2()
                 break;
             }
         }
+
+        if (stopWork)
+            break;
+
+        waitLoop();
     }
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished stage 2 pump" << stopWork;
+
+    if (stopWork)
+        return false;
 
     // to turn off stage 2
     mRelay->heatingStage1();
@@ -538,6 +640,7 @@ void Scheme::sendAlertIfNeeded()
     // Generate Alert
     if (!mTiming->alerts
         && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() >= 120 * 60000)) {
+        TRACE;
         emit alert();
         mTiming->alerts = true;
     }
@@ -1194,14 +1297,21 @@ void Scheme::coolingHeatPumpRole2()
     }
 }
 
-int Scheme::waitLoop() {
+int Scheme::waitLoop(int timeout)
+{
     QEventLoop loop;
+    // connect signal for handling stopWork
     connect(this, &Scheme::currentTemperatureChanged, &loop, [&loop]() {
         loop.exit(ChangeType::CurrentTemperature);
     });
 
-    return 0;
-    // return loop.exec();
+    if (timeout == 0) {
+        return 0;
+    } else if (timeout > 0) {
+        QTimer::singleShot(timeout, &loop, &QEventLoop::quit);
+    }
+
+    return loop.exec();
 }
 
 double Scheme::currentHumidity() const
