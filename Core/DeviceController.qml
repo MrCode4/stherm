@@ -219,7 +219,7 @@ I_DeviceController {
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
-        device.co2 = result?.co2 ?? 0
+        device.co2 = result?.iaq ?? 0 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brighness ?? 0
 
         //        device.fan.mode?
