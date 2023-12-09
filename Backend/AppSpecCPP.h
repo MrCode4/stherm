@@ -1,5 +1,4 @@
-#ifndef APPSPECCPP_H
-#define APPSPECCPP_H
+#pragma once
 
 #include <QObject>
 #include <QQuickItem>
@@ -20,6 +19,26 @@ public:
     explicit AppSpecCPP(QObject *parent = nullptr);
     static AppSpecCPP *instance();
 
+    // Useage in QML: ex. AppSpecCPP.Cooling
+    enum SystemMode {
+        Cooling = 0,
+        Heating,
+        Auto,
+        Vacation,
+        Off,
+        Emergency
+    };
+    Q_ENUM(SystemMode)
+
+    enum SystemType
+    {
+        Conventional = 0,
+        HeatPump,
+        CoolingOnly,
+        HeatingOnly
+    };
+    Q_ENUM(SystemType)
+
 signals:
 
 private:
@@ -27,5 +46,3 @@ private:
     static AppSpecCPP *mInstance;
 
 };
-
-#endif // APPSPECCPP_H

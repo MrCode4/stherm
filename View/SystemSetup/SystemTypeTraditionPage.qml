@@ -28,6 +28,10 @@ BasePageView {
 
         onClicked: {
             //! Do neccessary updates
+            if (deviceController) {
+                deviceController.setSystemTraditional(traditionalCoolStageLayout.traditionalCoolStage,
+                                                      traditionalHeatStageLayout.traditionalHeatStage)
+            }
 
             //! Also move out of this Page
             backButtonCallback();
@@ -45,14 +49,24 @@ BasePageView {
         }
 
         RowLayout {
+            id: traditionalCoolStageLayout
+
             Layout.columnSpan: 3
 
+            property int traditionalCoolStage: traditionalCoolStage_1_RB.checked ? Number(traditionalCoolStage_1_RB.text) :
+                                                                                   Number(traditionalCoolStage_2_RB.text);
+
             RadioButton {
-                checked: true
+                id: traditionalCoolStage_1_RB
+
+                checked: appModel.systemSetup.coolStage === Number(text)
                 text: "1"
             }
 
             RadioButton {
+                id: traditionalCoolStage_2_RB
+
+                checked: appModel.systemSetup.coolStage === Number(text)
                 text: "2"
             }
         }
@@ -62,18 +76,39 @@ BasePageView {
         }
 
         RowLayout {
+            id: traditionalHeatStageLayout
+
             Layout.columnSpan: 3
 
+            property int traditionalHeatStage: 1
+
             RadioButton {
-                checked: true
+                checked: appModel.systemSetup.heatStage === Number(text)
+                onCheckedChanged:  {
+                    if (checked)
+                        traditionalHeatStageLayout.traditionalHeatStage = Number(text);
+                }
+
                 text: "1"
             }
 
             RadioButton {
+                checked: appModel.systemSetup.heatStage === Number(text)
+                onCheckedChanged: {
+                    if (checked)
+                        traditionalHeatStageLayout.traditionalHeatStage = Number(text);
+                }
+
                 text: "2"
             }
 
             RadioButton {
+                checked: appModel.systemSetup.heatStage === Number(text)
+                onCheckedChanged: {
+                    if (checked)
+                        traditionalHeatStageLayout.traditionalHeatStage = Number(text);
+                }
+
                 text: "3"
             }
         }

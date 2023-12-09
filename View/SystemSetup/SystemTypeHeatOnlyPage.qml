@@ -28,6 +28,9 @@ BasePageView {
 
         onClicked: {
             //! Do neccessary updates
+            if (deviceController) {
+                deviceController.setSystemHeatOnly(heatStageLayout.heatStage)
+            }
 
             //! Also move out of this Page
             backButtonCallback();
@@ -35,6 +38,10 @@ BasePageView {
     }
 
     RowLayout {
+        id: heatStageLayout
+
+        property int heatStage: 1
+
         anchors.centerIn: parent
         spacing: 48
 
@@ -47,15 +54,32 @@ BasePageView {
             Layout.fillWidth: false
 
             RadioButton {
-                checked: true
+                checked: appModel.systemSetup.heatStage === Number(text)
+                onCheckedChanged:  {
+                    if (checked)
+                        heatStageLayout.heatStage = Number(text);
+                }
+
                 text: "1"
             }
 
             RadioButton {
+                checked: appModel.systemSetup.heatStage === Number(text)
+                onCheckedChanged: {
+                    if (checked)
+                        heatStageLayout.heatStage = Number(text);
+                }
+
                 text: "2"
             }
 
             RadioButton {
+                checked: appModel.systemSetup.heatStage === Number(text)
+                onCheckedChanged: {
+                    if (checked)
+                        heatStageLayout.heatStage = Number(text);
+                }
+
                 text: "3"
             }
         }

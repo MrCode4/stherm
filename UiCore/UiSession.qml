@@ -74,8 +74,19 @@ Item {
         }
     }
 
+    //! Save config every 1 minute
+    property Timer saveTimer:   Timer {
+        running: appModel
+        repeat: true
+        interval: 60000
+
+        onTriggered: {
+            AppCore.defaultRepo.saveToFile(root.configFilePath);
+        }
+    }
+
     //! Device controller
-    property bool simulating:   true
+    property bool simulating:   !true
 
     onSimulatingChanged: {
         if (!simulating) {
@@ -89,6 +100,8 @@ Item {
 
         }
     }
+
+    Component.onCompleted: realDeviceController.startDeviceRequested();
 
     /* Controllers
      * ****************************************************************************************/

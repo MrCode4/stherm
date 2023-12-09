@@ -9,6 +9,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     : QObject(parent)
     , _deviceIO(new DeviceIOController(this))
     , _deviceAPI(new DeviceAPI(this))
+    , mSystemSetup(nullptr)
     , m_scheme(new Scheme(_deviceAPI, this))
 {
     QVariantMap mainDataMap;
@@ -27,26 +28,41 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // todo: initialize with proper value
     mBacklightModelData = QVariantList();
 
+    // Update backlight
+    mBacklightTimer.setTimerType(Qt::PreciseTimer);
+    mBacklightTimer.setSingleShot(true);
+    connect(&mBacklightTimer, &QTimer::timeout, this, [this]() {
+        auto colorData = mBacklightTimer.property("color").value<QVariantList>();
+        TRACE << "restoring color with timer " << colorData;
+        setBacklight(colorData, true);
+    });
 
-    LOG_DEBUG("TEST");
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         setMainData(data);
     });
 
-    connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList data, int secs) {
-        setBacklight(data, true);
+    connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
-        if (secs < 0)
+        TRACE << "Update backlight." << color << afterColor << mBacklightModelData;
+
+        if (mBacklightTimer.isActive())
+            mBacklightTimer.stop();
+
+        if (color.isEmpty()) {
+            TRACE << "restoring color with force " << mBacklightModelData;
+            setBacklight(mBacklightModelData, true);
             return;
+        }
+
+        setBacklight(color, true);
+
+        if (afterColor.isEmpty()) {
+            afterColor = mBacklightModelData;
+        }
 
         // Back to last backlight after secs seconds
-        QTimer timer;
-
-        timer.connect(&timer, &QTimer::timeout, this, [this]() {
-            setBacklight(mBacklightModelData, true);
-        });
-
-        timer.start(secs * 1000);
+        mBacklightTimer.start(5 * 1000);
+        mBacklightTimer.setProperty("color", afterColor);
     });
 
     connect(m_scheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
@@ -65,17 +81,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
 
-QVariantMap DeviceControllerCPP::sendRequest(QString className, QString method, QVariantList data)
-{
-    if (className == "system") {
-        if (method == "getMainData") {
-            return getMainData();
-        }
-    }
-
-    return {};
-}
-
 bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {
     if (!isScheme) {
@@ -90,21 +95,64 @@ bool DeviceControllerCPP::setSettings(QVariantList data)
     return _deviceIO->setSettings(data);
 }
 
+void DeviceControllerCPP::setVacation(const double min_Temperature, const double max_Temperature,
+                                      const double min_Humidity, const double max_Humidity)
+{
+    // Prepare vacation struct
+    STHERM::Vacation vacation;
+    vacation.minimumTemperature = min_Temperature;
+    vacation.maximumTemperature = max_Temperature;
+    vacation.minimumHumidity    = min_Humidity;
+    vacation.maximumHumidity    = max_Humidity;
+
+    // Update vacations in scheme
+    if (m_scheme)
+        m_scheme->setVacation(vacation);
+}
+
+void DeviceControllerCPP::setRequestedTemperature(const double temperature)
+{
+    m_scheme->setSetPointTemperature(temperature);
+}
+
+void DeviceControllerCPP::setRequestedHumidity(const double humidity)
+{
+    m_scheme->setRequestedHumidity(humidity);
+}
+
 void DeviceControllerCPP::startDevice()
 {
     //! todo: move to constructor later
     _deviceIO->createConnections();
 
-    _deviceIO->setStopReading(false);
-
     TRACE << "start mode is: " << _deviceAPI->getStartMode();
 
-    m_scheme->start();
+    // Satart with delay to ensure the model loaded.
+    QTimer::singleShot(5000, this, [this]() {
+        TRACE << "starting scheme";
+        m_scheme->restartWork();
+    });
 }
 
 void DeviceControllerCPP::stopDevice()
 {
-    _deviceIO->setStopReading(true);
+    _deviceIO->stopReading();
+}
+
+SystemSetup *DeviceControllerCPP::systemSetup() const {
+    return mSystemSetup;
+}
+
+void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
+    if (mSystemSetup == systemSetup)
+        return;
+
+    mSystemSetup = systemSetup;
+
+    // Set system setp
+    m_scheme->setSystemSetup(mSystemSetup);
+
+    emit systemSetupChanged();
 }
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData)

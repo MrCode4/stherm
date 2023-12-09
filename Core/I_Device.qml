@@ -32,9 +32,6 @@ QSObject {
     //! TOF: Time of flight (distance sensor)
     property real           tof:            0.0
 
-    //! System mode
-    property int            systemMode:     AppSpec.SystemMode.Auto
-
     //!‌ Device is in hold state or not
     property bool           _isHold:         false
 
@@ -65,6 +62,10 @@ QSObject {
     //! Vacation
     property Vacation       vacation:       Vacation {}
 
+    // System setup
+    property SystemSetup    systemSetup:    SystemSetup {
+        _qsRepo: appModel._qsRepo
+    }
     /* Functions
      * ****************************************************************************************/
 }

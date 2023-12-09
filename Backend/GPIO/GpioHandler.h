@@ -39,8 +39,9 @@ private:
     QString filePath;
     QString mError;
 
+#ifdef __unix__
     int _fd;
     pthread_t poll_thread;
-
+#endif
 };
 

@@ -128,7 +128,7 @@ STHERM::SIOPacket DataParser::prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::P
         //    TODO update CRC
     }
 
-    case   STHERM::SetRelay: {
+    case STHERM::SetRelay: {
         auto relayConfig = data[0].value<STHERM::RelayConfigs>();
 
         int i = 0;

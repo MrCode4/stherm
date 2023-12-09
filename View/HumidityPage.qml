@@ -32,11 +32,8 @@ BasePageView {
         }
 
         onClicked: {
-            //! Apply humidity in backend
-            if (device) {
-                device.requestedHum = humidity;
-
-                //! Update requested humidity to device
+            if (deviceController) {
+                deviceController.setRequestedHumidity(humidity)
             }
 
             //! Also move out of this Page

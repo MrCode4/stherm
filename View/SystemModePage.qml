@@ -48,11 +48,11 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Cooling
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Cooling
             text: "Cooling"
 
             onClicked: {
-                deviceController.setSystemModeTo(AppSpec.SystemMode.Cooling);
+                deviceController.setSystemModeTo(AppSpecCPP.Cooling);
                 backButtonCallback();
             }
         }
@@ -63,11 +63,11 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Heating
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Heating
             text: "Heating"
 
             onClicked: {
-                deviceController.setSystemModeTo(AppSpec.SystemMode.Heating);
+                deviceController.setSystemModeTo(AppSpecCPP.Heating);
                 backButtonCallback();
             }
         }
@@ -78,11 +78,11 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Auto
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Auto
             text: "Auto"
 
             onClicked: {
-                deviceController.setSystemModeTo(AppSpec.SystemMode.Auto);
+                deviceController.setSystemModeTo(AppSpecCPP.Auto);
                 backButtonCallback();
             }
         }
@@ -94,7 +94,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Vacation
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Vacation
             text: "Vacation"
 
             onClicked: {
@@ -111,11 +111,11 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemMode === AppSpec.SystemMode.Off
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Off
             text: "OFF"
 
             onClicked: {
-                deviceController.setSystemModeTo(AppSpec.SystemMode.Off);
+                deviceController.setSystemModeTo(AppSpecCPP.Off);
                 backButtonCallback();
             }
         }
@@ -130,7 +130,7 @@ BasePageView {
             onSaved: {
                 _buttonsGrp.previousButton = null
 
-                deviceController.setSystemModeTo(AppSpec.SystemMode.Vacation);
+                deviceController.setSystemModeTo(AppSpecCPP.Vacation);
 
                 //! Go back twice
                 if (_root.StackView.view) {

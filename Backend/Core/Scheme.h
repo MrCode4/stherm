@@ -4,8 +4,10 @@
 #include <QVariantMap>
 
 #include "Core/Relay.h"
+#include "Device/SystemSetup.h"
 #include "DeviceAPI.h"
 #include "UtilityHelper.h"
+#include "AppSpecCPP.h"
 #include "include/timing.h"
 
 /*! ***********************************************************************************************
@@ -29,18 +31,9 @@ public:
 
     ~Scheme();
 
-    void updateRealState(const struct STHERM::Vacation &vacation,
-                         const double &setTemperature,
-                         const double &currentTemperature,
-                         const double &currentHumidity);
+    AppSpecCPP::SystemMode getCurrentSysMode() const;
+    void setCurrentSysMode(AppSpecCPP::SystemMode newSysMode);
 
-    STHERM::SystemMode getCurrentSysMode() const;
-    void setCurrentSysMode(STHERM::SystemMode newSysMode);
-
-    STHERM::SystemMode realSysMode() const;
-    void setRealSysMode(STHERM::SystemMode newRealSysMode);
-
-    void startWork();
 
     void setMainData(QVariantMap mainData);
 
@@ -59,48 +52,68 @@ public:
 
     void setFanWorkPerHour(int newFanWPH);
 
-    STHERM::SystemType systemType() const;
-    void setSystemType(STHERM::SystemType newSystemType);
+    void setSystemSetup(SystemSetup* systemSetup);
+
+    //! Set requested Temperature
+    void setSetPointTemperature(double newSetPointTemperature);
+
+    //! Set requested Humidity
+    void setRequestedHumidity(double newHumidity);
+
+    //! Restart the worker thread
+    void restartWork();
+
+    void setVacation(const STHERM::Vacation &newVacation);
 
 signals:
-    void changeBacklight(QVariantList colorData, int secs = 5);
+    //! Change backlight with the mode
+    //!changeBacklight() without any parameters resets the backlight to its original value
+    void changeBacklight(QVariantList colorData = QVariantList(),
+                         QVariantList colorDataAfter = QVariantList());
+
+    //! Send relay to DeviceIOController and update relays into ti board.
     void updateRelays(STHERM::RelayConfigs);
 
     void alert();
 
     void currentTemperatureChanged();
     void setTemperatureChanged();
-
-    void modeChanged();
+    void stopWorkRequested();
 
 protected:
-    virtual void run();
+    void run() override;
 
 private:
+    void updateParameters();
+    void resetDelays();
+
+    void AutoModeLoop();
+    void CoolingLoop();
+    void HeatingLoop();
+    void VacationLoop();
+    void EmergencyLoop();
+    void OffLoop();
+
+    void internalCoolingLoopStage1(bool pumpHeat);
+    bool internalCoolingLoopStage2();
+
+    void internalHeatingLoopStage1();
+    bool internalHeatingLoopStage2();
+    bool internalHeatingLoopStage3();
+
+    void internalPumpHeatingLoopStage1();
+    bool internalPumpHeatingLoopStage2();
+    void EmergencyHeating();
+    void sendAlertIfNeeded();
+
+    //! Send relays into ti
+    void sendRelays();
+
     //! Update vacation mode
     void updateVacationState();
 
-    STHERM::SystemMode updateNormalState(const double &setTemperature,
-                                         const double &currentTemperature,
-                                         const double &currentHumidity);
-
-    //! Cooling and heating roles.
-    void coolingHeatPumpRole1(bool needToWait = true);
-    void coolingHeatPumpRole2();
-    void heatingHeatPumpRole1();
-    void heatingHeatPumpRole2(bool needToWait = true);
-    void heatingHeatPumpRole3();
-    void heatingConventionalRole1(bool needToWait = true);
-    void heatingConventionalRole2();
-    void heatingConventionalRole3();
-
-    //! Emergency heating roles
-    void heatingEmergencyHeatPumpRole1();
-    void heatingEmergencyHeatPumpRole2();
-    void heatingEmergencyHeatPumpRole3();
-
     //! To monitor data change: current temperature, set temperature, mode
-    int waitLoop();
+    int waitLoop(int timeout = 10000);
 
     //! Update humidifire and dehumidifire after changes: mode, set point humidity,
     //! current humidity, and humidifier Id
@@ -113,12 +126,13 @@ private:
 
     QVariantMap _mainData;
 
-    STHERM::SystemMode mCurrentSysMode;
-    STHERM::SystemMode mRealSysMode;
+    AppSpecCPP::SystemMode mCurrentSysMode;
 
-    STHERM::SystemType mSystemType;
+    AppSpecCPP::SystemMode mRealSysMode;
 
     struct STHERM::Vacation mVacation;
+
+    SystemSetup *mSystemSetup = nullptr;
 
     NUVE::Timing* mTiming;
     Relay*  mRelay;
@@ -138,4 +152,3 @@ private:
 
     bool stopWork;
 };
-

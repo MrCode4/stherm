@@ -30,6 +30,11 @@ BasePageView {
 
         onClicked: {
             //! Do neccessary updates
+            if (deviceController) {
+                deviceController.setSystemHeatPump(_emergencyHeatingSwh.checked,
+                                                   heatPumpStageLayout.heatPumpStage,
+                                                   heatPumpOBStateLayout.heatPumpOBState)
+            }
 
             //! Also move out of this Page
             backButtonCallback();
@@ -50,6 +55,8 @@ BasePageView {
 
             Switch {
                 id: _emergencyHeatingSwh
+
+                checked: appModel.systemSetup.heatPumpEmergency
             }
         }
 
@@ -62,21 +69,41 @@ BasePageView {
             }
 
             RowLayout {
+                id: heatPumpStageLayout
+
                 Layout.fillWidth: false
 
+                property int heatPumpStage: 1
+
+
                 RadioButton {
-                    checked: true
+                    checked: appModel.systemSetup.heatStage === Number(text)
+                    onCheckedChanged: {
+                        if (checked)
+                            heatPumpStageLayout.heatPumpStage = Number(text);
+                    }
+
                     text: "1"
                 }
 
                 RadioButton {
+                    checked: appModel.systemSetup.heatStage === Number(text)
+                    onCheckedChanged: {
+                        if (checked)
+                            heatPumpStageLayout.heatPumpStage = Number(text);
+                    }
+
                     text: "2"
                 }
             }
         }
 
         RowLayout {
+            id: heatPumpOBStateLayout
+
             spacing: 24
+
+            property int heatPumpOBState: 1
 
             Label {
                 Layout.fillWidth: true
@@ -87,11 +114,21 @@ BasePageView {
                 Layout.fillWidth: false
 
                 RadioButton {
-                    checked: true
+                    checked: appModel.systemSetup.heatPumpOBState === 0
+                    onCheckedChanged: {
+                        if (checked)
+                            heatPumpOBStateLayout.heatPumpOBState = 0;
+                    }
                     text: "Cool"
                 }
 
                 RadioButton {
+                    checked: appModel.systemSetup.heatPumpOBState === 1
+                    onCheckedChanged: {
+                        if (checked)
+                            heatPumpOBStateLayout.heatPumpOBState = 1;
+                    }
+
                     text: "Heat"
                 }
             }

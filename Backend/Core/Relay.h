@@ -3,6 +3,7 @@
 #include <QObject>
 
 #include "UtilityHelper.h"
+#include "AppSpecCPP.h"
 
 
 /*! ***********************************************************************************************
@@ -23,7 +24,7 @@ public:
     /**
      * Start or restart timer for main state and stage
      */
-    void startTempTimer(STHERM::SystemMode current_state);
+    void startTempTimer(AppSpecCPP::SystemMode current_state);
 
     void updateStates();
     void setAllOff();
@@ -47,10 +48,10 @@ public:
 
     bool turnOffEmergencyHeating();
 
-    STHERM::SystemMode getOb_state() const;
-    void setOb_state(STHERM::SystemMode newOb_state);
+    AppSpecCPP::SystemMode getOb_state() const;
+    void setOb_state(AppSpecCPP::SystemMode newOb_state);
 
-    STHERM::SystemMode currentState() const;
+    AppSpecCPP::SystemMode currentState() const;
 
     //! Update Humidifier state
     void setHumidifierState(const bool on);
@@ -71,9 +72,9 @@ private:
 
     STHERM::RelayConfigs mRelay;
 
-    STHERM::SystemMode before_state;
-    STHERM::SystemMode current_state;
-    STHERM::SystemMode ob_state; // can be Cooling or Heating
+    AppSpecCPP::SystemMode before_state;
+    AppSpecCPP::SystemMode current_state;
+    AppSpecCPP::SystemMode ob_state; // can be Cooling or Heating
 
     int current_stage;
 

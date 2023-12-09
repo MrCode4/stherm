@@ -43,7 +43,7 @@ Control {
         anchors.horizontalCenter: parent.horizontalCenter
         height: parent.height / 2.
         width: height * 2
-        labelVisible: device?.systemMode !== AppSpec.SystemMode.Off
+        labelVisible: device?.systemSetup.systemMode !== AppSpecCPP.Off
         uiSession: _root.uiSession
     }
 
@@ -145,6 +145,8 @@ Control {
                     right: parent.right
                     top: parent.top
                 }
+                // using iaq
+                condition: device.co2 < 2.9 ? 0 : device.co2 > 4 ? 2 : 1
             }
 
             //! Fan

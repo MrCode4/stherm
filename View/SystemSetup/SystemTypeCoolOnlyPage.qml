@@ -28,13 +28,19 @@ BasePageView {
 
         onClicked: {
             //! Do neccessary updates
-
+            if (deviceController) {
+                deviceController.setSystemCoolingOnly(coolStageLayout.coolStage)
+            }
             //! Also move out of this Page
             backButtonCallback();
         }
     }
 
     RowLayout {
+        id: coolStageLayout
+
+        property int coolStage: 1
+
         anchors.centerIn: parent
         spacing: 48
 
@@ -47,11 +53,22 @@ BasePageView {
             Layout.fillWidth: false
 
             RadioButton {
-                checked: true
+                checked: appModel.systemSetup.coolStage === Number(text)
+                onCheckedChanged: {
+                    if (checked)
+                        coolStageLayout.coolStage = Number(text);
+                }
+
                 text: "1"
             }
 
             RadioButton {
+                checked: appModel.systemSetup.coolStage === Number(text)
+                onCheckedChanged: {
+                    if (checked)
+                        coolStageLayout.coolStage = Number(text);
+                }
+
                 text: "2"
             }
         }

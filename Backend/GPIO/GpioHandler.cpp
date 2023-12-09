@@ -2,16 +2,15 @@
 
 #include <fcntl.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
+#ifdef __unix__
 #include <poll.h>
-#include <signal.h>
 #include <unistd.h>
+#endif
+#include <sys/types.h>
+#include <signal.h>
 
 #include <QElapsedTimer>
 #include <QTimer>
-
-#include "LogHelper.h"
 
 GpioHandler::GpioHandler(int gpio_pin, QObject *parent)
     : QObject{parent}
@@ -28,6 +27,7 @@ GpioHandler::~GpioHandler()
 void *nrf_uart_thrd(void *a) {
     auto parent = static_cast<GpioHandler *>(a);
 
+#ifdef __unix__
     struct pollfd *fds = new pollfd();
 
     fds->fd = parent->fd();
@@ -52,6 +52,7 @@ void *nrf_uart_thrd(void *a) {
         }
     }
 
+#endif
     return nullptr;
 }
 
@@ -62,8 +63,10 @@ bool GpioHandler::startConnection()
         mError = QString();
         qInfo() << "File opened successfully";
 
+#ifdef __unix__
         // Create a notifier to monitor file descriptor for readability
         pthread_create(&poll_thread, nullptr, &nrf_uart_thrd, this);
+#endif
 
     } else {
         mError = "Failed to open file";
@@ -75,24 +78,34 @@ bool GpioHandler::startConnection()
 
 bool GpioHandler::openFile()
 {
+#ifdef __unix__
     _fd = open(filePath.toStdString().c_str(), O_RDONLY | O_NONBLOCK);;
 
     return _fd != -1;
+#else
+    return false;
+#endif
 }
 
 void GpioHandler::closeFile()
 {
+#ifdef __unix__
     if (_fd != -1) {
         close(_fd);
         _fd = -1;
     }
     pthread_join(poll_thread, nullptr);
+#endif
 }
 
 
 int GpioHandler::fd() const
 {
+#ifdef __unix__
     return _fd;
+#else
+    return -1;
+#endif
 }
 
 QString GpioHandler::error() const

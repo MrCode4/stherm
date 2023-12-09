@@ -14,7 +14,7 @@
  * todo: Add a request manager (queue)
  * ************************************************************************************************/
 class DeviceIOPrivate;
-class DeviceIOController : public QThread
+class DeviceIOController : public QObject
 {
     Q_OBJECT
 public:
@@ -22,10 +22,6 @@ public:
      * ****************************************************************************************/
     explicit DeviceIOController(QObject *parent = nullptr);
     ~DeviceIOController();
-
-    //! Send requests
-    //! transfer data with UARTConnection instance
-    QVariantMap sendRequest(QString className, QString method, QVariantList data);
 
     //! Set gpio
     void exportGPIOPin(int pinNumber);
@@ -42,9 +38,6 @@ public:
     //! Set time zone
     void setTimeZone(int offset);
 
-    bool setVacation(const int &minTemp, const int &maxTemp,
-                     const int &minHumidity, const int &maxHumidity);
-
     //! Create connections
     void createConnections();
 
@@ -52,7 +45,7 @@ public:
     void createSensor(QString name, QString id);
 
     //! Stop reading data from device
-    void setStopReading(bool stopReading);
+    void stopReading();
 
     //! Update paired sensors in TI
     void updateTiDevices();
@@ -84,8 +77,6 @@ private slots:
 
 private:
     void initialize();
-
-    void run() override;
 
     //! Create TI connection, called each 10 seconds, getInfo (mainData,temp, hum, aq, pressure), manage requests, wiring check
     void createTIConnection();

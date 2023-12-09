@@ -2,6 +2,7 @@
 
 #include <QColor>
 #include <QEventLoop>
+#include <QTimer>
 
 #include "LogHelper.h"
 
@@ -27,28 +28,18 @@ const double S2OFF_TIME              = 2;
 const QVariantList coolingColor      = QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE, "true"};
 const QVariantList heatingColor      = QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE,  "true"};
 const QVariantList emergencyColor    = QVariantList{255, 0, 0, STHERM::LedEffect::LED_BLINK,  "true"};
+const QVariantList emergencyColorS   = QVariantList{255, 0, 0, STHERM::LedEffect::LED_STABLE, "true"};
 
 Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
     QThread (parent)
 {
-    stopWork = false;
+    stopWork = true;
 
     mTiming = mDeviceAPI->timing();
     mRelay  = Relay::instance();
 
-    mCurrentSysMode = STHERM::Auto;
-    mSystemType = STHERM::SystemType::Conventional;
-
-    connect(this, &Scheme::modeChanged, this, [this] {
-        // todo: use a safe method
-        if (this->isRunning()) {
-            this->terminate();
-            this->wait(100);
-        }
-
-        this->start();
-    });
+    mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
 }
 
 Scheme::~Scheme()
@@ -61,616 +52,675 @@ Scheme::~Scheme()
 
 }
 
+void Scheme::restartWork()
+{
+    if (isRunning()) {
+        TRACE << "restarting HVAC" << stopWork;
+        if (stopWork) // restart is already in progress
+            return;
+        // Any finished signal should not start the worker.
+        connect(
+            this,
+            &Scheme::finished,
+            this,
+            [=]() {
+                TRACE << "restarted HVAC";
+                stopWork = false;
+                this->start();
+            },
+            Qt::SingleShotConnection);
+
+        stopWork = true;
+        emit stopWorkRequested();
+        this->wait(QDeadlineTimer(1000, Qt::PreciseTimer));
+
+    } else {
+        TRACE << "started HVAC";
+        stopWork = false;
+        this->start();
+    }
+}
+
+void Scheme::setSetPointTemperature(double newSetPointTemperature)
+{
+     newSetPointTemperature = 32.0 + newSetPointTemperature * 9 / 5;
+    if (qAbs(mSetPointTemperature - newSetPointTemperature) < 0.001)
+        return;
+
+    mSetPointTemperature = newSetPointTemperature;
+
+    TRACE << "mSetPointTemperature changed";
+}
+
+void Scheme::setRequestedHumidity(double newHumidity)
+{
+    if (qAbs(mSetPointHimidity - newHumidity) < 0.001)
+        return;
+
+    mSetPointHimidity = newHumidity;
+
+    // Restart is not necessary
+}
+
 void Scheme::run()
 {
-    TRACE << "-- startWork is running.";
+    TRACE << "-- startWork is running." << QThread::currentThreadId();
 
     QElapsedTimer timer;
-    while (!stopWork) {
-        startWork();
+    timer.start();
+
+    if (!mSystemSetup) {
+        TRACE << "-- mSystemSetup is not ready.";
+        return;
     }
 
-    TRACE << "-- startWork Stopped.";
+    //! get wires config type modes ...
+    updateParameters();
+
+    //! reset delays
+    resetDelays();
+
+    while (!stopWork) {
+        // where should schedule be handled
+
+        switch (mSystemSetup->systemMode) {
+        case AppSpecCPP::SystemMode::Auto:
+            AutoModeLoop();
+            break;
+        case AppSpecCPP::SystemMode::Cooling:
+            CoolingLoop();
+            break;
+        case AppSpecCPP::SystemMode::Heating:
+            HeatingLoop();
+            break;
+        case AppSpecCPP::SystemMode::Vacation:
+            VacationLoop();
+            break;
+        case AppSpecCPP::SystemMode::Off:
+            OffLoop();
+            break;
+        case AppSpecCPP::SystemMode::Emergency:
+            EmergencyLoop();
+            break;
+        default:
+            qWarning() << "Unsupported Mode in controller loop" << mSystemSetup->systemMode;
+            break;
+        }
+
+        mRelay->setAllOff();
+
+        //        int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
+        //        mRelay->fanWorkTime(mFanWPH, fanWork);
+
+        sendRelays();
+
+        if (stopWork)
+            break;
+
+        // all should be off! we can assert here
+        waitLoop();
+    }
+
+    TRACE << "-- startWork Stopped. working time(ms): " << timer.elapsed();
 }
 
-
-void Scheme::startWork()
+void Scheme::updateParameters()
 {
-    switch (mCurrentSysMode) {
-   case STHERM::SystemMode::Cooling: {
-
-        switch (mSystemType) { // Device type
-        case STHERM::SystemType::Conventional:
-       case STHERM::SystemType::CoolingOnly: {
-           if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
-               mRelay->setOb_state(STHERM::Heating);
-
-               // sysDelay
-               mRelay->coolingStage1();
-
-               // 5 Sec
-               emit changeBacklight(coolingColor);
-               mTiming->s1uptime.restart();
-               mTiming->s1uptime.restart();
-               mTiming->s2hold = false;
-               mTiming->alerts = false;
-
-               coolingHeatPumpRole1();
-
-           } else {
-               // turn off Y1, Y2 and G = 0
-               mRelay->setAllOff();
-//               startWork();
-           }
-       }
-
-       case STHERM::SystemType::HeatPump: {
-           if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
-               mRelay->setOb_state(STHERM::Cooling);
-
-               // sysDelay
-               mRelay->coolingStage1();
-
-               // 5 Sec
-               emit changeBacklight(coolingColor);
-               mTiming->s1uptime.restart();
-               mTiming->s1uptime.restart();
-               mTiming->s2hold = false;
-               mTiming->alerts = false;
-
-           } else {
-               // turn off Y1, Y2 and G = 0
-               mRelay->setAllOff();
-           }
-
-
-       } break;
-
-       default:
-           break;
-
-       }
-   } break;
-
-   case STHERM::SystemMode::Auto: {
-       if (mCurrentTemperature > mSetPointTemperature ) {
-           mRealSysMode = STHERM::SystemMode::Cooling;
-       } else if (mCurrentTemperature < mSetPointTemperature) {
-           mRealSysMode = STHERM::SystemMode::Heating;
-       }
-   } break;
-
-
-   case STHERM::SystemMode::Heating: {
-       switch (mSystemType) {
-       case STHERM::SystemType::HeatPump: {
-           if(mCurrentTemperature < mSetPointTemperature) {
-               if (mCurrentTemperature < ET) {
-                   heatingEmergencyHeatPumpRole1();
-               } else {
-                   heatingHeatPumpRole1();
-               }
-
-           } else {
-               // Turn off system (Y1, Y2, W1, W2,W3, G = 0)
-               mRelay->setAllOff();
-           }
-       }
-       case STHERM::SystemType::Conventional:
-       case STHERM::SystemType::HeatingOnly: {
-           if (mSetPointTemperature - mCurrentTemperature >= 1.9) {
-               // Sys delay
-               mRelay->heatingStage1();
-
-               mCurrentSysMode = mRelay->currentState();
-               // 5 secs
-               emit changeBacklight(heatingColor);
-
-               mTiming->s1uptime.restart();
-               mTiming->uptime.restart();
-               mTiming->s2hold = false;
-               mTiming->s3hold = false;
-               mTiming->alerts = false;
-
-               heatingConventionalRole1();
-
-           } else {
-               mRelay-> setAllOff();
-           }
-       }
-
-       default:
-           break;
-       }
-
-   } break;
-
-   case STHERM::SystemMode::Vacation: {
-       updateVacationState();
-       return;
-   } break;
-
-   default:
-       break;
-   }
-
-   int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
-   mRelay->fanWorkTime(mFanWPH, fanWork);
-
-   // Update relays
-   emit updateRelays(mRelay->relays());
-
-   // Wait for 1200 miliseconds
-   msleep(1200);
-
-//   startWork();
+    //TODO
+    // realSysMode from schedule or vacation
+    // wire!?! setAllOff for now
 }
 
-void Scheme::heatingConventionalRole1(bool needToWait)
+void Scheme::resetDelays()
 {
-   if (needToWait) {
-       auto loopResult = waitLoop();
-
-       if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-//           startWork();
-           return;
-       }
-   }
-
-   if (mCurrentTemperature - mSetPointTemperature >= 1) {
-       // turn of system (w1, w2, w3 = 0)
-       mRelay->setAllOff();
-//       startWork();
-
-       return;
-
-   } else {
-       if (mRelay->relays().w2 == STHERM::RelayMode::ON) {
-
-           if (mSetPointTemperature - mCurrentTemperature >= 2.9 || (mTiming->s2uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 10)) {
-               mRelay->heatingStage2();
-               mCurrentSysMode = mRelay->currentState();
-               // 5 secs
-               emit changeBacklight(heatingColor);
-
-               mTiming->s1uptime.invalidate();
-               heatingConventionalRole2();
-
-           } else {
-               heatingConventionalRole1();
-           }
-
-           return;
-       }
-
-       // Generate Alert
-       if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
-           emit alert();
-           mTiming->alerts = true;
-       }
-
-       heatingConventionalRole1();
-   }
+    //TODO
 }
 
-void Scheme::heatingConventionalRole2()
+void Scheme::AutoModeLoop()
 {
-   auto loopResult = waitLoop();
-
-   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-//       startWork();
-       return;
-   }
-
-   if (mTiming->s2hold) {
-       if (mCurrentTemperature - mSetPointTemperature >= 1) {
-           mRelay->setAllOff();
-//           startWork();
-           return;
-       } else if (mRelay->relays().w3 == STHERM::RelayMode::ON) {
-           if ((mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() / 60000 >= 10)) {
-               mRelay->heatingStage3();
-               mCurrentSysMode = mRelay->currentState();
-               // 5 secs
-               emit changeBacklight(heatingColor);
-
-               mTiming->s2hold = false;
-               heatingConventionalRole3();
-               return;
-           }
-       }
-
-   } else {
-       if (mSetPointTemperature - mCurrentTemperature < 8 || mRelay->relays().w3 != STHERM::RelayMode::ON) {
-           if (mSetPointTemperature - mCurrentTemperature < 1.9) {
-               mRelay->setAllOff();
-               mRelay->heatingStage1();
-               mCurrentSysMode = mRelay->currentState();
-               // 5 secs
-               emit changeBacklight(heatingColor);
-
-               mTiming->s2hold = true;
-               mTiming->s1uptime.invalidate();
-
-               heatingConventionalRole1(false);
-               return;
-
-           }
-       } else {
-           if (mRelay->relays().w3 == STHERM::RelayMode::ON) {
-               if (mSetPointTemperature - mCurrentTemperature >= 5.9 || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() / 60000 >= 10)) {
-                   mRelay->heatingStage3();
-                   mCurrentSysMode = mRelay->currentState();
-                   // 5 secs
-                   emit changeBacklight(heatingColor);
-
-                   mTiming->s2hold = false;
-                   heatingConventionalRole3();
-
-                   return;
-               }
-           }
-       }
-   }
-
-   if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
-       emit alert();
-       mTiming->alerts = true;
-   }
-
-   heatingConventionalRole2();
+    if (mCurrentTemperature > mSetPointTemperature) {
+        CoolingLoop();
+    } else if (mCurrentTemperature < mSetPointTemperature) {
+        HeatingLoop();
+    }
 }
 
-void Scheme::heatingConventionalRole3()
+void Scheme::CoolingLoop()
 {
-   auto loopResult = waitLoop();
+    TRACE_CHECK(true) << "Cooling started " << mSystemSetup->systemType;
 
-   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-//       startWork();
-       return;
-   }
+    bool heatPump = false;
+    // s1 time threshold
+    // Y1, Y2, O/B G config
 
-   if (mTiming->s3hold) {
-       if (mCurrentTemperature - mSetPointTemperature>= 1) {
-           mRelay->setAllOff();
-//           startWork();
-           return;
-       }
-   } else if (mSetPointTemperature - mCurrentTemperature < 4.9) {
-       // Turn off stage 3 keep stage 3 run (w3 = 0, W1, W2, G = 1)
-       mRelay->setAllOff();
-       mRelay->heatingStage2();
+    switch (mSystemSetup->systemType) { // Device type
+    case AppSpecCPP::SystemType::HeatPump:
+        heatPump = true;
+    case AppSpecCPP::SystemType::Conventional:
+    case AppSpecCPP::SystemType::CoolingOnly: {
+        TRACE << heatPump << mCurrentTemperature << mSetPointTemperature;
+        if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
+            internalCoolingLoopStage1(heatPump);
+        }
+    } break;
+    default:
+        qWarning() << "Unsupported system type in Cooling loop" << mSystemSetup->systemType;
+        break;
+    }
 
-       mCurrentSysMode = mRelay->currentState();
-       // 5 secs
-       emit changeBacklight(heatingColor);
-
-       mTiming->s1uptime.invalidate();
-       mTiming->s2uptime.invalidate();
-       mTiming->s3hold = false;
-
-       heatingConventionalRole2();
-       return;
-   }
-
-   // Generate Alert
-   if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
-       emit alert();
-       mTiming->alerts = true;
-   }
-
-   heatingConventionalRole3();
+    // turn off Y1, Y2 and G = 0 outside
 }
 
-void Scheme::heatingEmergencyHeatPumpRole1()
+void Scheme::HeatingLoop()
 {
-   // Y1, Y2, G = 0
-   mRelay->setAllOff();
-   mRelay->emergencyHeating1();
-   mCurrentSysMode = mRelay->currentState();
+    TRACE_CHECK(true) << "Heating started " << mSystemSetup->systemType;
 
-   // untile the end of emergency mode.
-   emit changeBacklight(emergencyColor, -1);
+    // update configs and ...
+    // s1 & s2 time threshold
+    //    Y1, Y2, O/B G W1 W2 W3
+    switch (mSystemSetup->systemType) {
+    case AppSpecCPP::SystemType::HeatPump: // emergency as well?
+    {
+        TRACE << "HeatPump" << mCurrentTemperature << mSetPointTemperature;
+        // get time threshold ETime
+        if (mCurrentTemperature < mSetPointTemperature) {
+            if (mCurrentTemperature < ET && mSystemSetup->heatPumpEmergency) {
+                TRACE << "Emergency";
+                EmergencyHeating();
+            } else {
+                TRACE << "Normal";
+                internalPumpHeatingLoopStage1();
+            }
+        }
+    } break;
+    case AppSpecCPP::SystemType::Conventional:
+    case AppSpecCPP::SystemType::HeatingOnly:
+        TRACE << "Conventional" << mCurrentTemperature << mSetPointTemperature;
+        if (mSetPointTemperature - mCurrentTemperature >= 1.9) {
+            internalHeatingLoopStage1();
+        }
+        break;
+    default:
+        qWarning() << "Unsupported system type in Heating loop" << mSystemSetup->systemType;
+        break;
+    }
 
-   heatingEmergencyHeatPumpRole2();
+    // Turn off system (Y1, Y2, W1, W2,W3, G = 0) outside
 }
 
-void Scheme::heatingEmergencyHeatPumpRole2()
+void Scheme::VacationLoop()
 {
-   auto loopResult = waitLoop();
-
-   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-       startWork();
-       return;
-   }
-
-   double sp = 0.0; // Set point temperature
-   double ct = mCurrentTemperature;
-
-
-   if (ct < ET - 3.5) {
-       mRelay->emergencyHeating2();
-       mCurrentSysMode = mRelay->currentState();
-       heatingEmergencyHeatPumpRole3();
-   } else if (ct < HPT) {
-       heatingEmergencyHeatPumpRole2();
-       return;
-   } else {
-       mRelay->setAllOff();
-       heatingHeatPumpRole1();
-       return;
-
-   }
+    //TODO
+    waitLoop();
 }
 
-void Scheme::heatingEmergencyHeatPumpRole3()
+void Scheme::EmergencyLoop()
 {
-   auto loopResult = waitLoop();
-
-   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-       startWork();
-       return;
-   }
-
-   if (mCurrentTemperature < HPT) {
-       heatingEmergencyHeatPumpRole3();
-   } else {
-       mRelay->turnOffEmergencyHeating();
-       heatingHeatPumpRole1();
-   }
+    //TODO
+    waitLoop();
 }
 
-void Scheme::heatingHeatPumpRole1()
+void Scheme::OffLoop()
 {
-   auto loopResult = waitLoop();
-
-   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-//       startWork();
-       return;
-   }
-
-   if (mSetPointTemperature - mCurrentTemperature >= 3) {
-       mRelay->setOb_state(STHERM::Heating);
-
-       //SysDelay
-       mRelay->heatingStage1();
-       mCurrentSysMode = mRelay->currentState();
-
-       // 5 secs
-       emit changeBacklight(heatingColor);
-
-       mTiming->s1uptime.restart();
-       mTiming->uptime.restart();
-       mTiming->s2hold = false;
-       mTiming->alerts = false;
-
-       heatingHeatPumpRole2();
-   } else {
-       mRelay->setAllOff();
-//       startWork();
-       return;
-   }
+    //TODO
+    waitLoop();
 }
 
-void Scheme::heatingHeatPumpRole2(bool needToWait)
+void Scheme::internalCoolingLoopStage1(bool pumpHeat)
 {
-   if (needToWait) {
-       auto loopResult = waitLoop();
+    if (pumpHeat) // how the system type setup get OB Orientatin
+        mRelay->setOb_state(AppSpecCPP::Cooling);
 
-       if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-//           startWork();
-           return;
-       }
-   }
+    // sysDelay
+    mRelay->coolingStage1();
 
-   if (mCurrentTemperature - mSetPointTemperature >= 1.9) {
-       mRelay->setAllOff();
-//       startWork();
-       return;
-   } else {
-       if (mRelay->relays().y2 == STHERM::RelayMode::ON) {
-           if (mSetPointTemperature - mCurrentTemperature >= 2.9 || (mTiming->uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 40)) {
-               if ((mTiming->s2Offtime.isValid() && mTiming->s2Offtime.elapsed() / 60000 >= 2)) {
-                   mRelay->heatingStage2();
-                   mCurrentSysMode = mRelay->currentState();
+    // 5 Sec
+    emit changeBacklight(coolingColor);
+    mTiming->s1uptime.restart();
+    mTiming->s2Offtime.invalidate(); // s2 off time should be high value? or invalid?
+    mTiming->uptime.restart();
+    mTiming->s2hold = false;
+    mTiming->alerts = false;
+    sendRelays();
 
-                   // 5 secs
-                   emit changeBacklight(heatingColor);
+    while (mSetPointTemperature - mCurrentTemperature < 1) {
+        TRACE << mCurrentTemperature << mSetPointTemperature << mRelay->relays().y2
+              << mSystemSetup->coolStage << mTiming->s1uptime.elapsed()
+              << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
+        if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mSystemSetup->coolStage == 2) {
+            if (mCurrentTemperature - mSetPointTemperature >= 2.9
+                || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
+                if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
+                    if (!internalCoolingLoopStage2()) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            sendAlertIfNeeded();
+        }
 
-                   return;
-               } else {
-                   heatingHeatPumpRole2();
-                   return;
-               }
-           } else {
-               heatingHeatPumpRole2();
-               return;
-           }
+        if (stopWork)
+            break;
 
-       } else if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
-           emit alert();
-           mTiming->alerts = true;
-           heatingHeatPumpRole2();
-           return;
-       }
-   }
+        waitLoop();
+
+        if (stopWork)
+            break;
+    }
+
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished cooling" << stopWork;
 }
 
-void Scheme::heatingHeatPumpRole3()
+bool Scheme::internalCoolingLoopStage2()
 {
+    TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
 
-   auto loopResult = waitLoop();
+    // turn on stage 2
+    mRelay->coolingStage2();
+    // 5 Sec
+    emit changeBacklight(coolingColor);
 
-   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-//       startWork();
-       return;
-   }
+    sendRelays();
 
-   if (mTiming->s2hold) {
-       if (mCurrentTemperature - mSetPointTemperature >= 1) {
-           mRelay->setAllOff();
-//           startWork();
-           return;
-       } else if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
-           emit alert();
-           mTiming->alerts = true;
-           heatingHeatPumpRole3();
-           return;
+    while (!stopWork) {
+        TRACE << mTiming->s2hold << mSetPointTemperature << mCurrentTemperature;
+        if (mTiming->s2hold) {
+            if (mSetPointTemperature - mCurrentTemperature < 1) {
+                sendAlertIfNeeded();
+            } else {
+                return false;
+            }
+        } else {
+            if (mCurrentTemperature - mSetPointTemperature > 1.9) {
+                sendAlertIfNeeded();
+            } else {
+                break;
+            }
+        }
 
-       } else {
-           heatingHeatPumpRole3();
-       }
+        if (stopWork)
+            break;
 
-   } else {
-       if (mSetPointTemperature - mCurrentTemperature <= 1.9) {
-           // Y2 = 0, Y1 and G = 1
-           mRelay->setAllOff();
-           mRelay->heatingStage1();
-           mCurrentSysMode = mRelay->currentState();
+        waitLoop();
+    }
 
-           // 5 secs
-           emit changeBacklight(heatingColor);
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished stage 2" << stopWork;
 
-           mTiming->s1uptime.restart();
-           mTiming->s2Offtime.restart();
-           mTiming->s2hold = true;
+    if (stopWork)
+        return false;
 
-           heatingHeatPumpRole2(false);
+    // to turn off stage 2
+    mRelay->setAllOff();
+    mRelay->coolingStage1();
+    // 5 secs
+    emit changeBacklight(coolingColor);
+    mTiming->s1uptime.restart();
+    mTiming->s2hold = true;
+    mTiming->s2Offtime.restart();
+    sendRelays();
 
-           return;
-
-       } else if (!mTiming->alerts && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() / 60000 >= 120)) {
-           emit alert();
-           mTiming->alerts = true;
-           heatingHeatPumpRole3();
-           return;
-       } else {
-           heatingHeatPumpRole3();
-       }
-   }
+    return true;
 }
 
-void Scheme::coolingHeatPumpRole1(bool needToWait)
+void Scheme::internalHeatingLoopStage1()
 {
-   if (needToWait) {
-       auto loopResult = waitLoop();
+    // Sys delay
+    mRelay->heatingStage1();
+    // 5 secs
+    emit changeBacklight(heatingColor);
 
-       if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-//           startWork();
-           return;
-       }
-   }
+    mTiming->s1uptime.restart();
+    mTiming->uptime.restart();
+    mTiming->s2hold = false;
+    mTiming->s3hold = false;
+    mTiming->alerts = false;
+    // not sending?
+    sendRelays();
 
-   if (mSetPointTemperature - mCurrentTemperature >= 1) {
-       // turn off Y1, Y2 and G = 0
-       mRelay->setAllOff();
-//       startWork();
+    while (mCurrentTemperature - mSetPointTemperature < 1) {
+        TRACE_CHECK(true) << mRelay->relays().w2 << mSystemSetup->heatStage
+                          << mTiming->s1uptime.isValid() << mTiming->s1uptime.elapsed();
+        if (mRelay->relays().w2 != STHERM::RelayMode::NoWire && mSystemSetup->heatStage >= 2) {
+            if (mSetPointTemperature - mCurrentTemperature >= 2.9
+                || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
+                if (!internalHeatingLoopStage2())
+                    break;
+            }
+        } else {
+            sendAlertIfNeeded();
+        }
 
-   } else {
-       if (mRelay->relays().y2 == STHERM::RelayMode::ON) {
-           if (mCurrentTemperature - mSetPointTemperature >= 2.9 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() / 60000 >= 40)) {
-               if (mTiming->s2Offtime.isValid() && mTiming->s2Offtime.elapsed() / 60000 >= 2) {
-                   // turn on stage 2
-                   mRelay->coolingStage2();
-                   // 5 Sec
-                   emit changeBacklight(coolingColor);
+        if (stopWork)
+            break;
 
-                   coolingHeatPumpRole2();
+        // TODO should we wait for temp update before new loop?
+        waitLoop();
 
-               } else {
-                   coolingHeatPumpRole1();
-                   return;
-               }
+        if (stopWork)
+            break;
+    }
 
-           } else {
-               coolingHeatPumpRole1();
-               return;
-           }
-       } else if (!mTiming->alerts && mTiming->uptime.elapsed() / 60000 >= 120) {
-           emit alert();
-           mTiming->alerts = true;
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished heating conventional"
+          << stopWork;
 
-           coolingHeatPumpRole1();
-           return;
-
-       } else {
-           coolingHeatPumpRole1();
-           return;
-
-       }
-   }
+    // will turn off all outside
 }
 
-void Scheme::coolingHeatPumpRole2()
+bool Scheme::internalHeatingLoopStage2()
 {
-   auto loopResult = waitLoop();
+    TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
 
-   if (loopResult == ChangeType::Mode || loopResult == ChangeType::SetTemperature) {
-//       startWork();
-       return;
-   }
+    mRelay->heatingStage2();
+    // 5 secs
+    emit changeBacklight(heatingColor);
+    mTiming->s2uptime.restart();
+    sendRelays();
 
-   if (mTiming->s2hold) {
-       if (mSetPointTemperature - mCurrentTemperature >= 1) {
-           mRelay->setAllOff();
-//           startWork();
-       } else {
-           if (!mTiming->alerts && mTiming->uptime.elapsed() / 60000 >= 120) {
-               emit alert();
-               mTiming->alerts = true;
-           }
-           coolingHeatPumpRole2();
-       }
-   } else {
-       if (mCurrentTemperature - mSetPointTemperature <= 1.9) {
-//           mRelay->relays().y2 = STHERM::OFF;
-           mRelay->coolingStage1();
+    while (!stopWork) {
+        TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
 
-           // 5 secs
-           emit changeBacklight(coolingColor);
-           mTiming->s1uptime.invalidate();// = 0;
-           mTiming->s2hold = true;
-           // Start to count s2 off time
-           mTiming->s2Offtime.restart();
+        if (mTiming->s2hold) {
+            if (mCurrentTemperature - mSetPointTemperature < 1) {
+                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)
+                    || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
+                    sendAlertIfNeeded();
+                } else {
+                    // stage 3
+                    if (!internalHeatingLoopStage3())
+                        return false;
+                }
+            } else {
+                // all will be turned off outside
+                return false;
+            }
+        } else {
+            if (mSetPointTemperature - mCurrentTemperature < 8
+                || (mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)) {
+                if (mSetPointTemperature - mCurrentTemperature < 1.9) {
+                    break;
+                } else {
+                    sendAlertIfNeeded();
+                }
+            } else {
+                if (mSetPointTemperature - mCurrentTemperature < 5.9
+                    && (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
+                    sendAlertIfNeeded();
+                } else {
+                    //stage 3
+                    if (!internalHeatingLoopStage3())
+                        return false;
+                }
+            }
+        }
 
-           // may be incorrect, must be call coolingHeatPumpRole1 with true
-           coolingHeatPumpRole1(false);
-       }
-   }
+        if (stopWork)
+            break;
+
+        waitLoop();
+    }
+
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished stage 2 heat" << stopWork;
+
+    if (stopWork)
+        return false;
+
+    //turn of stage 2
+    mRelay->setAllOff();
+    mRelay->heatingStage1();
+    // 5 secs
+    emit changeBacklight(heatingColor);
+    mTiming->s1uptime.restart();
+    mTiming->s2hold = true;
+    sendRelays();
+
+    return true;
 }
 
-int Scheme::waitLoop() {
-   QEventLoop loop;
-   connect(this, &Scheme::currentTemperatureChanged, &loop, [&loop]() {
-       loop.exit(ChangeType::CurrentTemperature);
-   });
+bool Scheme::internalHeatingLoopStage3()
+{
+    TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s3hold;
 
-   return loop.exec();
+    mRelay->heatingStage3();
+    // 5 secs
+    emit changeBacklight(heatingColor);
+    mTiming->s2hold = false;
+    sendRelays();
+
+    while (!stopWork) {
+        TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s3hold;
+        if (mTiming->s3hold) {
+            if (mCurrentTemperature - mSetPointTemperature < 1) {
+                sendAlertIfNeeded();
+            } else {
+                return false;
+            }
+        } else {
+            if (mSetPointTemperature - mCurrentTemperature < 4.9) {
+                break;
+            } else {
+                sendAlertIfNeeded();
+            }
+        }
+        if (stopWork)
+            break;
+
+        waitLoop();
+    }
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished stage 3" << stopWork;
+
+    if (stopWork)
+        return false;
+
+    //turn of stage 3
+    mRelay->setAllOff();
+    mRelay->heatingStage2();
+    // 5 secs
+    emit changeBacklight(heatingColor);
+    mTiming->s1uptime.restart();
+    mTiming->s2uptime.restart();
+    mTiming->s3hold = true;
+    sendRelays();
+    return true;
+}
+
+void Scheme::internalPumpHeatingLoopStage1()
+{
+    if (mSetPointTemperature - mCurrentTemperature >= 3) {
+        mRelay->setOb_state(AppSpecCPP::Heating);
+
+        // sysDelay
+        mRelay->heatingStage1();
+
+        // 5 Sec
+        emit changeBacklight(heatingColor);
+        mTiming->s1uptime.restart();
+        mTiming->s2Offtime.invalidate(); // s2 off time should be high value? or invalid?
+        mTiming->uptime.restart();
+        mTiming->s2hold = false;
+        mTiming->alerts = false;
+        sendRelays();
+
+        while (mCurrentTemperature - mSetPointTemperature < 1.9) {
+            TRACE << mCurrentTemperature << mSetPointTemperature << mRelay->relays().y2
+                  << mSystemSetup->heatStage << mTiming->s1uptime.elapsed()
+                  << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
+
+            if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mSystemSetup->heatStage >= 2) {
+                if (mSetPointTemperature - mCurrentTemperature >= 2.9
+                    || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
+                    if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
+                        if (!internalPumpHeatingLoopStage2()) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                sendAlertIfNeeded();
+                // wait for temperature update?
+            }
+
+            if (stopWork)
+                break;
+
+            waitLoop();
+
+            if (stopWork)
+                break;
+        }
+    }
+
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished pump heat" << stopWork;
+}
+
+bool Scheme::internalPumpHeatingLoopStage2()
+{
+    TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
+    // turn on stage 2
+    mRelay->heatingStage2();
+    // 5 Sec
+    emit changeBacklight(coolingColor);
+    sendRelays();
+
+    while (!stopWork) {
+        TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
+
+        if (mTiming->s2hold) {
+            if (mCurrentTemperature - mSetPointTemperature < 1) {
+                sendAlertIfNeeded();
+            } else {
+                return false;
+            }
+        } else {
+            if (mSetPointTemperature - mCurrentTemperature > 1.9) {
+                sendAlertIfNeeded();
+            } else {
+                break;
+            }
+        }
+
+        if (stopWork)
+            break;
+
+        waitLoop();
+    }
+    TRACE << mCurrentTemperature << mSetPointTemperature << "finished stage 2 pump" << stopWork;
+
+    if (stopWork)
+        return false;
+
+    // to turn off stage 2
+    mRelay->setAllOff();
+    mRelay->heatingStage1();
+    // 5 secs
+    emit changeBacklight(coolingColor);
+    mTiming->s1uptime.restart();
+    mTiming->s2hold = true;
+    mTiming->s2Offtime.restart();
+    sendRelays();
+
+    return true;
+}
+
+void Scheme::EmergencyHeating()
+{
+    mRelay->setAllOff();
+    mRelay->emergencyHeating1();
+
+    // 5 Sec
+    emit changeBacklight(emergencyColor, emergencyColorS);
+    sendRelays();
+
+    bool stage2 = false;
+    while (mCurrentTemperature < HPT) {
+        if (!stage2 && mCurrentTemperature < ET - ET_STAGE2) {
+            mRelay->emergencyHeating2();
+            sendRelays();
+            stage2 = true;
+        }
+    }
+
+    emit changeBacklight();
+    mRelay->turnOffEmergencyHeating();
+    sendRelays();
+
+    internalPumpHeatingLoopStage1();
+}
+
+void Scheme::sendAlertIfNeeded()
+{
+    // Generate Alert
+    if (!mTiming->alerts
+        && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() >= 120 * 60000)) {
+        TRACE;
+        emit alert();
+        mTiming->alerts = true;
+    }
+}
+
+void Scheme::sendRelays()
+{
+    if (stopWork)
+        return;
+
+    TRACE;
+
+    // Update relays
+    emit updateRelays(mRelay->relays());
+    this->msleep(5000);
+
+    TRACE;
+}
+
+int Scheme::waitLoop(int timeout)
+{
+    QEventLoop loop;
+    // connect signal for handling stopWork
+    connect(this, &Scheme::currentTemperatureChanged, &loop, [&loop]() {
+        loop.exit(ChangeType::CurrentTemperature);
+    });
+
+    connect(this, &Scheme::setTemperatureChanged, &loop, [&loop]() {
+        loop.exit(ChangeType::SetTemperature);
+    });
+
+    connect(this, &Scheme::stopWorkRequested, &loop, [&loop]() {
+        loop.exit(ChangeType::Mode);
+    });
+
+    if (timeout == 0) {
+        return 0;
+    } else if (timeout > 0) {
+        // quit will exit with, same as exit(ChangeType::CurrentTemperature)
+        QTimer::singleShot(timeout, &loop, &QEventLoop::quit);
+    }
+
+    return loop.exec();
 }
 
 double Scheme::currentHumidity() const
 {
-   return mCurrentHumidity;
+    return mCurrentHumidity;
 }
 
 void Scheme::setCurrentHumidity(double newCurrentHumidity)
 {
-   if (mCurrentHumidity != newCurrentHumidity)
-       return;
+    if (mCurrentHumidity != newCurrentHumidity)
+        return;
 
-   mCurrentHumidity = newCurrentHumidity;
+    mCurrentHumidity = newCurrentHumidity;
 
-   updateHumifiresState();
+    updateHumifiresState();
 }
 
 double Scheme::setPointHimidity() const
 {
-   return mSetPointHimidity;
+    return mSetPointHimidity;
 }
 
 void Scheme::setSetPointHimidity(double newSetPointHimidity)
 {
-   mSetPointHimidity = newSetPointHimidity;
+    mSetPointHimidity = newSetPointHimidity;
 }
 
 void Scheme::setMainData(QVariantMap mainData)
@@ -681,10 +731,10 @@ void Scheme::setMainData(QVariantMap mainData)
     _mainData = mainData;
 
     bool isOk;
-    double currentTemp = mainData.value("temperature").toDouble(&isOk);
+    double currentTemp = 32.0 + mainData.value("temperature").toDouble(&isOk) * 9 / 5;
 
     if (isOk && currentTemp != mCurrentTemperature) {
-        mCurrentTemperature = currentTemp;
+        mCurrentTemperature =currentTemp;
 
         emit currentTemperatureChanged();
     }
@@ -696,83 +746,72 @@ void Scheme::setMainData(QVariantMap mainData)
     }
 }
 
-void Scheme::updateRealState(const struct STHERM::Vacation &vacation, const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
-{
-    if (mRealSysMode == STHERM::SystemMode::Cooling) {
-       mRealSysMode = updateNormalState(setTemperature, currentTemperature, currentHumidity);
-
-    } else if (mRealSysMode == STHERM::SystemMode::Vacation) {
-//       mRealSysMode = updateVacationState(vacation, setTemperature, currentTemperature, currentHumidity);
-
-    }
-
-    if (mRealSysMode == STHERM::SystemMode::Heating) {
-       if (currentTemperature < ET) {
-           mRealSysMode = STHERM::SystemMode::Emergency;
-//           set_stage = 1;
-           if (currentTemperature < ET - ET_STAGE2) {
-//               set_stage = 2;
-           }
-       }
-    }
-
-    if (mRealSysMode != mCurrentSysMode) { // mode changes
-//       current_stage = 0;
-    }
-
-
-}
-
+//TODO
 void Scheme::updateVacationState()
 {
-    if (mCurrentSysMode == STHERM::SystemMode::Cooling) {
+    if (stopWork)
+       return;
+
+    if (mRealSysMode != AppSpecCPP::SystemMode::Vacation)
+       return; // we can also assert as this should not happen
+
+    TRACE << "mCurrentSysMode " << mCurrentSysMode;
+    AppSpecCPP::SystemMode realSysMode = AppSpecCPP::SystemMode::Off;
+
+    if (mCurrentSysMode == AppSpecCPP::SystemMode::Cooling) {
         if (mCurrentTemperature > mSetPointTemperature - STAGE1_OFF_RANGE) { // before stage 1 off
-           mRealSysMode = STHERM::SystemMode::Cooling;
+            realSysMode = AppSpecCPP::SystemMode::Cooling;
         } else if (mCurrentTemperature > mSetPointTemperature - STAGE1_ON_RANGE) { // before stage 1 on
-           mRealSysMode = STHERM::SystemMode::Off;
+            realSysMode = AppSpecCPP::SystemMode::Off;
         } else {  // stage 1 on
-           mRealSysMode = STHERM::SystemMode::Heating;
+            realSysMode = AppSpecCPP::SystemMode::Heating;
         }
-    } else if (mCurrentSysMode == STHERM::SystemMode::Heating) {
+    } else if (mCurrentSysMode == AppSpecCPP::SystemMode::Heating) {
         if (mCurrentTemperature < mSetPointTemperature + STAGE1_OFF_RANGE) { // before stage 1 off
-           mRealSysMode = STHERM::SystemMode::Heating;
+            realSysMode = AppSpecCPP::SystemMode::Heating;
         } else if (mCurrentTemperature < mSetPointTemperature + STAGE1_ON_RANGE) { // before stage 1 on
-           mRealSysMode = STHERM::SystemMode::Off;
+            realSysMode = AppSpecCPP::SystemMode::Off;
         } else {  // stage 1 on
-            mRealSysMode = STHERM::SystemMode::Cooling;
+            realSysMode = AppSpecCPP::SystemMode::Cooling;
         }
     } else { // OFF
         if (mCurrentTemperature < mSetPointTemperature - STAGE1_ON_RANGE) {
-            mRealSysMode = STHERM::SystemMode::Heating;
+            realSysMode = AppSpecCPP::SystemMode::Heating;
         } else if (mCurrentTemperature > mSetPointTemperature + STAGE1_ON_RANGE) {
-            mRealSysMode = STHERM::SystemMode::Cooling;
+            realSysMode = AppSpecCPP::SystemMode::Cooling;
+        } else {
+            // what should we do here?
         }
     }
 
     if (mVacation.minimumTemperature > mCurrentTemperature) {
-        mRealSysMode = STHERM::SystemMode::Heating;
+        realSysMode = AppSpecCPP::SystemMode::Heating;
         //        range = temperature - $current_state['min_temp'];
     } else if (mVacation.maximumTemperature < mCurrentTemperature) {
-        mRealSysMode = STHERM::SystemMode::Cooling;
+        realSysMode = AppSpecCPP::SystemMode::Cooling;
         //        range = temperature - current_state['max_temp'];
     }
 
     updateHumifiresState();
 
     // Update current system mode
-    mCurrentSysMode = mRealSysMode;
-
-
-    // Start work
-    startWork();
+    mCurrentSysMode = realSysMode;
+    mRealSysMode = realSysMode;
 }
 
+// TODO
 void Scheme::updateHumifiresState()
 {
-    if (mHumidifierId == 3)
+    if (stopWork)
         return;
 
-    if (mCurrentSysMode == STHERM::Vacation) {
+    TRACE << "HumidifierId " << mHumidifierId << mSystemSetup;
+
+    if (!mSystemSetup || mHumidifierId == 3)
+        return;
+
+    if (mRealSysMode == AppSpecCPP::Vacation) {
+        qDebug() << Q_FUNC_INFO << __LINE__ <<mRealSysMode;
         if (mHumidifierId == 1) {
             mRelay->setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
 
@@ -792,39 +831,23 @@ void Scheme::updateHumifiresState()
 
         if (mHumidifierId == 1) {
             if (mCurrentHumidity < mSetPointHimidity) // on
-               mRelay->setHumidifierState(true);
+                mRelay->setHumidifierState(true);
 
             else if (mCurrentHumidity >= max_hum)    // off
-               mRelay->setHumidifierState(false);
+                mRelay->setHumidifierState(false);
 
         } else if (mHumidifierId == 2) { // dehumidifier
             if (mCurrentHumidity > mSetPointHimidity)
-               mRelay->setDehumidifierState(true);
+                mRelay->setDehumidifierState(true);
             else if (mCurrentHumidity <= min_hum)
-               mRelay->setDehumidifierState(false);
+                mRelay->setDehumidifierState(false);
         }
     }
 }
 
-STHERM::SystemType Scheme::systemType() const
+void Scheme::setVacation(const STHERM::Vacation &newVacation)
 {
-    return mSystemType;
-}
-
-void Scheme::setSystemType(STHERM::SystemType newSystemType)
-{
-    if (mSystemType == newSystemType)
-        return;
-
-    mSystemType = newSystemType;
-
-    // Restart thread
-    if (this->isRunning()) {
-        this->terminate();
-        this->wait(100);
-    }
-
-    this->start();
+    mVacation = newVacation;
 }
 
 void Scheme::setFanWorkPerHour(int newFanWPH)
@@ -838,35 +861,52 @@ void Scheme::setFanWorkPerHour(int newFanWPH)
     mRelay->fanWorkTime(mFanWPH, fanWork);
 }
 
-STHERM::SystemMode Scheme::updateNormalState(const double &setTemperature, const double &currentTemperature, const double &currentHumidity)
+void Scheme::setSystemSetup(SystemSetup *systemSetup)
 {
-    STHERM::SystemMode realSetMode;
+    TRACE << systemSetup << mSystemSetup;
+    if (!systemSetup || mSystemSetup == systemSetup)
+        return;
 
-    if (mCurrentSysMode == STHERM::SystemMode::Cooling) {
-        if (currentTemperature > setTemperature - STAGE1_OFF_RANGE) { // before stage 1 off
-            realSetMode = STHERM::SystemMode::Cooling;
-        } else if (currentTemperature > setTemperature - STAGE1_ON_RANGE) { // before stage 1 on
-            realSetMode = STHERM::SystemMode::Off;
-        } else {  // stage 1 on
-            realSetMode = STHERM::SystemMode::Heating;
-        }
-    } else if (mCurrentSysMode == STHERM::SystemMode::Heating) {
-        if (currentTemperature < setTemperature + STAGE1_OFF_RANGE) { // before stage 1 off
-            realSetMode = STHERM::SystemMode::Heating;
-        } else if (currentTemperature < setTemperature + STAGE1_ON_RANGE) { // before stage 1 on
-            realSetMode = STHERM::SystemMode::Off;
-        } else {  // stage 1 on
-            realSetMode = STHERM::SystemMode::Cooling;
-        }
-    } else { // OFF
-        if (currentTemperature < setTemperature - STAGE1_ON_RANGE) {
-            realSetMode = STHERM::SystemMode::Heating;
-        } else if (currentTemperature > setTemperature + STAGE1_ON_RANGE) {
-            realSetMode = STHERM::SystemMode::Cooling;
-        }
+    if (mSystemSetup) {
+        mSystemSetup->disconnect(this);
     }
 
-    return realSetMode;
+    mSystemSetup = systemSetup;
+
+    connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
+        TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
+
+        restartWork();
+    });
+
+    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [this] {
+        TRACE<< "systemTypeChanged: "<< mSystemSetup->systemType;
+
+        restartWork();
+    });
+
+    // these parameters will be used in control loop, if any condition locked to these update here
+    connect(mSystemSetup, &SystemSetup::heatPumpOBStateChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
+            TRACE << "heatPumpOBStateChanged: " << mSystemSetup->heatPumpOBState
+                  << mSystemSetup->systemType;
+    });
+    connect(mSystemSetup, &SystemSetup::coolStageChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::CoolingOnly)
+            TRACE << "coolStageChanged: " << mSystemSetup->coolStage;
+    });
+    connect(mSystemSetup, &SystemSetup::heatStageChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatingOnly)
+            TRACE << "heatStageChanged: " << mSystemSetup->heatStage;
+    });
+    connect(mSystemSetup, &SystemSetup::systemRunDelayChanged, this, [this] {
+        TRACE << "systemRunDelayChanged: " << mSystemSetup->systemRunDelay
+              << mSystemSetup->systemType;
+    });
+    connect(mSystemSetup, &SystemSetup::heatPumpEmergencyChanged, this, [this] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
+            TRACE << "heatPumpEmergencyChanged: " << mSystemSetup->heatPumpEmergency;
+    });
 }
 
 void Scheme::setHumidifierId(const int &humidifierId)
@@ -879,25 +919,15 @@ void Scheme::setHumidifierId(const int &humidifierId)
 
 }
 
-STHERM::SystemMode Scheme::getCurrentSysMode() const
+AppSpecCPP::SystemMode Scheme::getCurrentSysMode() const
 {
     return mCurrentSysMode;
 }
 
-void Scheme::setCurrentSysMode(STHERM::SystemMode newSysMode)
+void Scheme::setCurrentSysMode(AppSpecCPP::SystemMode newSysMode)
 {
     if (mCurrentSysMode == newSysMode)
         return;
 
     mCurrentSysMode = newSysMode;
-}
-
-STHERM::SystemMode Scheme::realSysMode() const
-{
-    return mRealSysMode;
-}
-
-void Scheme::setRealSysMode(STHERM::SystemMode newRealSysMode)
-{
-    mRealSysMode = newRealSysMode;
 }

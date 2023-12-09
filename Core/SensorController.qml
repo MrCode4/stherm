@@ -17,10 +17,10 @@ QtObject {
         if (device.sensors.length !==0)
             return;
 
-        addSensorData("Hum Sensor", Sensor.Location.Unknown);
-        addSensorData("CO2 Sens - Bedroom", Sensor.Location.Bedroom);
-        addSensorData("Temp Sens - LR", Sensor.Location.LivingRoom);
-        addSensorData("Temp Sens - Kitchen", Sensor.Location.Kitchen);
+        addSensorData("Hum Sensor", AppSpec.SensorLocation.Unknown);
+        addSensorData("CO2 Sens - Bedroom", AppSpec.SensorLocation.Bedroom);
+        addSensorData("Temp Sens - LR", AppSpec.SensorLocation.LivingRoom);
+        addSensorData("Temp Sens - Kitchen", AppSpec.SensorLocation.Kitchen);
     }
 
     /* Methods

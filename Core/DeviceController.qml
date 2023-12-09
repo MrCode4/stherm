@@ -25,7 +25,9 @@ I_DeviceController {
 
     /* Object Properties
      * ****************************************************************************************/
-    deviceControllerCPP: DeviceControllerCPP {}
+    deviceControllerCPP: DeviceControllerCPP {
+        systemSetup: device.systemSetup
+    }
 
     /* Signals
      * ****************************************************************************************/
@@ -48,18 +50,18 @@ I_DeviceController {
         deviceControllerCPP.stopDevice();
     }
 
+    Component.onCompleted: {
+        console.log("* requestedTemp initial: ", device.requestedTemp);
+        console.log("* requestedHum initial: ", device.requestedHum);
+        deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
+        deviceControllerCPP.setRequestedHumidity(device.requestedHum);
+    }
+
     /* Children
      * ****************************************************************************************/
 
     /* Methods
      * ****************************************************************************************/
-
-    function sendReceive(className, method, data)
-    {
-        var data_msg = '{"request": {"class": "' + className + '", "method": "' + method + '", "params": ' + JSON.stringify(data) + '}}';
-
-        return deviceControllerCPP.sendRequest(className, method, data)
-    }
 
     function updateDeviceBacklight(isOn, color) : bool
     {
@@ -88,7 +90,7 @@ I_DeviceController {
     function updateFan(mode: int, workingPerHour: int)
     {
         console.log("starting rest for updateFan :", workingPerHour)
-        sendReceive('system', 'setFan', workingPerHour);
+        //! TODo required actions if any
 
         // Updatew model
         device.fan.mode = mode
@@ -100,21 +102,22 @@ I_DeviceController {
         if (!device)
             return;
 
-        sendReceive('system', 'setVacation', [temp_min, temp_max, hum_min, hum_max]);
+        deviceControllerCPP.setVacation(temp_min, temp_max, hum_min, hum_max);
 
         device.vacation.temp_min = temp_min;
         device.vacation.temp_max = temp_max;
         device.vacation.hum_min  = hum_min;
         device.vacation.hum_max  = hum_max ;
+
+
     }
 
     function setSystemModeTo(systemMode: int)
     {
-        if (systemMode >= 0 && systemMode <= AppSpec.SystemMode.Off) {
-            //! Do required actions if any
-            sendReceive('system', 'setMode', [ systemMode ]);
+        if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
+            //! TODo required actions if any
 
-            device.systemMode = systemMode;
+            device.systemSetup.systemMode = systemMode;
         }
     }
 
@@ -139,7 +142,7 @@ I_DeviceController {
            return;
        }
 
-        // Update setting when sendReceive is successful.
+        // Update setting when setSettings is successful.
         if (device.setting.brightness !== brightness) {
             device.setting.brightness = brightness;
         }
@@ -164,35 +167,69 @@ I_DeviceController {
 
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
-        sendReceive('system', 'setTemperature', [temperature]);
+        //! Apply temperature in backend
+        deviceControllerCPP.setRequestedTemperature(temperature);
 
         // Update device temperature when setTemperature is successful.
         device.requestedTemp = temperature;
+    }
+
+    function setRequestedHumidity(humidity: real) {
+        //! Apply humidity in backend
+        deviceControllerCPP.setRequestedHumidity(humidity);
+
+        //! Update requested humidity to device
+        device.requestedHum = humidity;
+    }
+
+    function setSystemRunDelay(delay: int) {
+        device.systemSetup.systemRunDelay = delay
+    }
+
+    function setSystemCoolingOnly(stage: int) {
+        device.systemSetup.coolStage  = stage;
+        device.systemSetup.systemType = AppSpecCPP.CoolingOnly;
+    }
+
+    function setSystemHeatOnly(stage: int) {
+        device.systemSetup.heatStage  = stage;
+        device.systemSetup.systemType = AppSpecCPP.HeatingOnly;
+    }
+
+    function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
+        device.systemSetup.heatPumpEmergency = emergency;
+        device.systemSetup.heatStage = stage;
+        device.systemSetup.coolStage = stage;
+        device.systemSetup.heatPumpOBState = obState;
+        device.systemSetup.systemType = AppSpecCPP.HeatPump;
+    }
+
+    function setSystemTraditional(coolStage: int, heatStage: int) {
+        device.systemSetup.coolStage = coolStage;
+        device.systemSetup.heatStage = heatStage;
+        device.systemSetup.systemType = AppSpecCPP.Conventional;
     }
 
     //! Read data from system with getMainData method.
     function updateInformation()
     {
 //        console.log("--------------- Start: updateInformation -------------------")
-        var result = sendReceive('system', 'getMainData', []);
+        var result = deviceControllerCPP.getMainData();
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
-        device.co2 = result?.co2 ?? 0
+        device.co2 = result?.iaq ?? 0 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brighness ?? 0
 
-        //        device.co2;
-        //        device.fan.mode
-        //        device.alert
+        //        device.fan.mode?
 
         //        console.log("--------------- End: updateInformation -------------------")
     }
 
     function updateHold(isHold)
     {
-        // should be updated to inform the logics
-        var result = sendReceive('system', 'setHold', [isHold]);
+        // TODO should be updated to inform the logics
 
         device._isHold = isHold;
     }
