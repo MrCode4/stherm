@@ -13,22 +13,13 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule
-    property Schedule   schedule: Schedule {
-        name: "Test Name"
-        type: "Night"
-        temprature: 72
-        humidity: 30
-        startTime: "04:30 PM"
-        endTime: "07:30 PM"
-        repeats: ["Mu", "We", "Th"]
-        dataSource: "On Board Sensor"
-    }
+    property Schedule   schedule
 
     //! Whether temprature unit is Celsius
     property bool       isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     //! Can schedule fields be editabled
-    property bool       isEditable: true
+    property bool       isEditable: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -308,7 +299,7 @@ BasePageView {
 
                 onClicked: {
                     //! Open ScheduleNamePage for editing
-                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleRepeatsPage.qml", {
+                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleRepeatPage.qml", {
                                        "uiSession": uiSession,
                                        "schedule": _root.schedule
                                    });
