@@ -43,5 +43,22 @@ T.Tumbler {
         currentIndex: visibleIndex
 
         property real delegateHeight: control.availableHeight / control.visibleItemCount
+
+        onVisibleIndexChanged: {
+            if (currentIndex !== visibleIndex) {
+                currentIndex = visibleIndex;
+            }
+        }
+
+        Connections {
+            target: control
+
+            function onCurrentIndexChanged()
+            {
+                if (control.contentItem.visibleIndex !== control.currentIndex) {
+                    control.contentItem.positionViewAtIndex(control.currentIndex, ListView.Center);
+                }
+            }
+        }
     }
 }
