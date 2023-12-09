@@ -130,6 +130,8 @@ BasePageView {
             onSaved: {
                 _buttonsGrp.previousButton = null
 
+                deviceController.setSystemModeTo(AppSpec.SystemMode.Vacation);
+
                 //! Go back twice
                 if (_root.StackView.view) {
                     _root.StackView.view.pop();

@@ -12,7 +12,7 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Wifi
+    //! Wi-Fi
     property WifiInfo   wifi
 
     //! Minimus password length

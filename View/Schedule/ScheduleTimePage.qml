@@ -16,7 +16,7 @@ BasePageView {
     property Schedule   schedule
 
     //! Schedule time property: end-time or start-time: only considered when schedule is set
-    property string     timeProperty: "star-time"
+    property string     timeProperty: "start-time"
 
     //! Time in string format: 'hh:mm AM/PM'
     readonly property string selectedTime: {

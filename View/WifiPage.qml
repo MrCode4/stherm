@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * WifiPage provides a ui to connect to a Wifi network
+ * WifiPage provides a ui to connect to a Wi-Fi network
  * ***********************************************************************************************/
 BasePageView {
     id: _root
@@ -35,6 +35,21 @@ BasePageView {
      * ****************************************************************************************/
     RowLayout {
         parent: _root.header.contentItem
+
+        Switch {
+            id: _wifiOnOffSw
+
+            enabled: false && !NetworkInterface.isRunning
+            visible: false
+            checked: NetworkInterface.deviceIsOn
+            onToggled: {
+                if (checked) {
+                    NetworkInterface.turnOn();
+                } else {
+                    NetworkInterface.turnOff();
+                }
+            }
+        }
 
         //! Referesh button and running BusyIndicator
         Item {
