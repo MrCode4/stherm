@@ -13,10 +13,13 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule   schedule
+    property Schedule           schedule
+
+    //! Type is alwasy valid
+    readonly property bool      isValid:    true
 
     //!
-    readonly property string type: _buttonsGroup.checkedButton?.text ?? ""
+    readonly property string    type:       _buttonsGroup.checkedButton?.text ?? ""
 
     /* Object properties
      * ****************************************************************************************/

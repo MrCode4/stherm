@@ -13,12 +13,16 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule   schedule
+    property Schedule       schedule
+
+    //! Temprature is alwasy valid
+    readonly property bool  isValid: true
 
     //! Temprature value
-    property alias      temprature: _tempSlider.value // conversion?
+    property alias          temprature: _tempSlider.value // conversion?
 
-    property bool       isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
+    //!
+    property bool           isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     /* Object properties
      * ****************************************************************************************/

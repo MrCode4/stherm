@@ -13,10 +13,13 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule   schedule
+    property Schedule       schedule
+
+    //! Repeats are always valid
+    readonly property bool  isValid: true
 
     //! Selected days for repeating
-    readonly property var repeats: {
+    readonly property var   repeats: {
         var rps = [];
 
         if (_muBtn.checked) rps.push("Mu");

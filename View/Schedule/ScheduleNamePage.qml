@@ -13,10 +13,13 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule: If set changes are applied to Schedule. This is can be used to edit a Schedule
-    property Schedule   schedule
+    property Schedule       schedule
+
+    //! Whether name is valid or not
+    readonly property bool  isValid:        _nameTf.acceptableInput
 
     //!
-    property alias      scheduleName: _nameTf.text
+    property alias          scheduleName:   _nameTf.text
 
     /* Object properties
      * ****************************************************************************************/
@@ -33,6 +36,9 @@ BasePageView {
         width: parent.width * 0.7
         placeholderText: "Enter Schedule Name"
         text: schedule?.name ?? ""
+        validator: RegularExpressionValidator {
+            regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
+        }
 
         onEditingFinished: {
             if (schedule) {

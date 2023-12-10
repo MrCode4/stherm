@@ -13,13 +13,21 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule
-    property Schedule   schedule
+    property Schedule   schedule: Schedule {
+        name: "Test"
+        type: "Night"
+        temprature: 72
+        humidity: 40
+        startTime: "08:40 AM"
+        endTime: "11:40 AM"
+        repeats: ["Mu", "Su", "Sa"]
+    }
 
     //! Whether temprature unit is Celsius
     property bool       isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     //! Can schedule fields be editabled
-    property bool       isEditable: false
+    property bool       isEditable: true
 
     /* Object properties
      * ****************************************************************************************/
@@ -44,6 +52,7 @@ BasePageView {
     ToolButton {
         parent: isEditable ? _root.header.contentItem : _root
         visible: isEditable && pageStack.depth > 1
+        enabled: Boolean(pageStack.currentItem?.isValid)
         contentItem: RoniaTextIcon {
             text: FAIcons.check
         }
@@ -252,7 +261,10 @@ BasePageView {
                     pageStack.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
                                        "uiSession": uiSession,
                                        "timeProperty": "end-time",
-                                       "schedule": _root.schedule
+                                       "schedule": _root.schedule,
+                                       "startTime": Date.fromLocaleTimeString(Qt.locale(),
+                                                                              _root.schedule.startTime,
+                                                                              "hh:mm AP")
                                    });
                 }
             }
