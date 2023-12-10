@@ -22,11 +22,18 @@ Item {
     /* Property declartion
      * ****************************************************************************************/
     //!
-    property alias exitConfirmPopup: exitConfPop
+    property alias exitConfirmPopup:        exitConfPop
+
+    //!
+    property alias scheduleOverlapPopup:    schOverlapPop
 
     /* Children
      * ****************************************************************************************/
     ExitConfirmPopup {
         id: exitConfPop
+    }
+
+    ScheduleOverlapPopup {
+        id: schOverlapPop
     }
 }
