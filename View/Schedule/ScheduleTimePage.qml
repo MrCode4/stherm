@@ -13,13 +13,27 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule   schedule
+    property Schedule           schedule
 
     //! Schedule time property: end-time or start-time: only considered when schedule is set
-    property string     timeProperty: "start-time"
+    property string             timeProperty:   "start-time"
+
+    //! Start time for schedule if this is end-time
+    property date               startTime:      null
+
+    //! Min minutes diff between start and end time
+    readonly property int       minTimeDiff:    120
+
+    //! This shows whether the inputs in this page are valid or not
+    readonly property bool      isValid:        {
+        return startTime && timeProperty === "end-time"
+                ? Math.abs(Date.fromLocaleTimeString(Qt.locale(), selectedTime, "hh:mm AP")
+                           - startTime) / 60000 >= minTimeDiff
+                : true
+    }
 
     //! Time in string format: 'hh:mm AM/PM'
-    readonly property string selectedTime: {
+    readonly property string    selectedTime:   {
         var h = `${_hourTumbler.currentItem.modelData}`;
         var m = `${_minuteTumbler.currentItem.modelData}`;
 
