@@ -45,4 +45,25 @@ QtObject {
             schedule.destroy();
         }
     }
+
+    //! Finding overlapping Schedules
+    function findOverlappingSchedules(startTime: Date, endTime: Date)
+    {
+        if (!device) return [];
+
+        var overlappings = [];
+        device.schedules.forEach(function(element, index) {
+            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
+            var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
+
+            if ((schStartTime > startTime && schStartTime < endTime)
+                    || (schEndTime > startTime && schEndTime < endTime)
+                    || (startTime > schStartTime && startTime < schEndTime)
+                    || (endTime > schStartTime && endTime < schEndTime)) {
+                overlappings.push(element);
+            }
+        });
+
+        return overlappings;
+    }
 }
