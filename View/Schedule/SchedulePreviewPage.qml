@@ -13,15 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule
-    property Schedule   schedule: Schedule {
-        name: "Test"
-        type: "Night"
-        temprature: 72
-        humidity: 40
-        startTime: "08:40 AM"
-        endTime: "11:40 AM"
-        repeats: ["Mu", "Su", "Sa"]
-    }
+    property Schedule   schedule
 
     //! Whether temprature unit is Celsius
     property bool       isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah

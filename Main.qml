@@ -80,7 +80,6 @@ ApplicationWindow {
      * ****************************************************************************************/
     UiSession {
         id: uiSessionId
-        parent: window
         popupLayout: popUpLayoutId
     }
 

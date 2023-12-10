@@ -19,7 +19,7 @@ BasePageView {
     property string             timeProperty:   "start-time"
 
     //! Start time for schedule if this is end-time
-    property date               startTime:      null
+    property date               startTime:      Date
 
     //! Min minutes diff between start and end time
     readonly property int       minTimeDiff:    120

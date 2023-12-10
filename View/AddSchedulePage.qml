@@ -37,6 +37,7 @@ BasePageView {
     //! Next/Confirm button
     ToolButton {
         parent: _root.header.contentItem
+        enabled: !_newSchedulePages.currentItem?.nextPage || _newSchedulePages.currentItem?.isValid
 
         RoniaTextIcon {
             anchors.centerIn: parent
@@ -91,7 +92,7 @@ BasePageView {
             readonly property Component nextPage: _typePage
 
             onScheduleNameChanged: {
-                if (_internal.newSchedule.name !== scheduleName) {
+                if (isValid &&_internal.newSchedule.name !== scheduleName) {
                     _internal.newSchedule.name = scheduleName;
                 }
             }
@@ -136,7 +137,7 @@ BasePageView {
 
             title: "Start Time"
             onSelectedTimeChanged: {
-                if (selectedTime !== _internal.newSchedule.startTime) {
+                if (isValid && selectedTime !== _internal.newSchedule.startTime) {
                     _internal.newSchedule.startTime = selectedTime;
                 }
             }
@@ -149,9 +150,11 @@ BasePageView {
         ScheduleTimePage {
             readonly property Component nextPage: _repeatPage
 
+            timeProperty: "end-time"
+            startTime: Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.startTime, "hh:mm AP")
             title: "End Time"
             onSelectedTimeChanged: {
-                if (selectedTime !== _internal.newSchedule.endTime) {
+                if (isValid &&selectedTime !== _internal.newSchedule.endTime) {
                     _internal.newSchedule.endTime = selectedTime;
                 }
             }
