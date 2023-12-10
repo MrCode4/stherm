@@ -68,11 +68,9 @@ qt6_add_qml_module(appStherm
         Core/AppSpec.qml
         Core/I_Device.qml
         Core/Device.qml
-        Core/SimDevice.qml
         Core/Fan.qml
         Core/Backlight.qml
         Core/DeviceController.qml
-        Core/SimDeviceController.qml
         Core/I_DeviceController.qml
         Core/Schedule.qml
         Core/SchedulesController.qml
@@ -116,7 +114,6 @@ qt6_add_qml_module(appStherm
         UiCore/Components/FanButton.qml
         UiCore/Components/CurrentHumidityButton.qml
         UiCore/Components/HoldButton.qml
-        UiCore/Components/DeviceToggleButton.qml
         UiCore/Components/WifiIcon.qml
         UiCore/Components/WifiButton.qml
         UiCore/Components/MenuButton.qml

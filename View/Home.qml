@@ -206,7 +206,6 @@ Control {
                 bottomMargin: _menuButton.implicitHeight
             }
             height: _menuButton.height * 1.2
-            visible: !uiSession.simulating
 
             TapHandler {
                 onTapped: {
@@ -215,17 +214,6 @@ Control {
                                        });
                 }
             }
-        }
-
-        //! Device Toggle Button
-        DeviceToggleButton {
-            anchors {
-                horizontalCenter: _logo.horizontalCenter
-                top: _logo.top
-            }
-            width: parent.width * 0.75
-
-            uiSession: _root.uiSession
         }
 
         //! Menu button

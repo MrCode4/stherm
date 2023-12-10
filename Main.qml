@@ -36,7 +36,6 @@ ApplicationWindow {
     onVisibleChanged: {
         if (visible) {
             _splashLoader.sourceComponent = null;
-            uiSessionId.simulating = false;
         }
     }
 
@@ -316,31 +315,5 @@ ApplicationWindow {
     MessagePopupView {
         uiSession: uiSessionId
         messageController: uiSession?.messageController ?? null
-    }
-
-    //! This Timer is used to generate arbitrary Messages (alert or notification)
-    Timer {
-        interval: 10000
-        repeat: true
-        running: uiSessionId?.simulating ?? false
-        onTriggered: {
-            if (Math.random() > 0.99) {
-                //! Create an alert
-                var now = new Date();
-                if (Math.random() > 0.5) {
-                    //! Create an Alert
-                    uiSessionId.messageController.addNewMessageFromData(
-                                Message.Type.Alert,
-                                "Arbitrary Alert Number " + Math.floor(Math.random() * 100),
-                                now.toLocaleTimeString("MMMM dd ddd - hh:mm:ss"))
-                } else {
-                    //! Create a Notification
-                    uiSessionId.messageController.addNewMessageFromData(
-                                Message.Type.Notification,
-                                "Arbitrary Notification Number " + Math.floor(Math.random() * 100),
-                                now.toLocaleTimeString("MMMM dd ddd - hh:mm:ss"))
-                }
-            }
-        }
     }
 }
