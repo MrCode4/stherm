@@ -54,12 +54,17 @@ BasePageView {
         onClicked: {
             if (!_newSchedulePages.currentItem.nextPage) {
                 //! It's done, save schedule and go back
-                if (schedulesController) {
-                    schedulesController.saveNewSchedule(_internal.newSchedule);
-                }
+                //! First check if this schedule has overlap with other Schedules
+                _internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
+                            Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.startTime, "hh:mm AP"),
+                            Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.endTime, "hh:mm AP"));
 
-                if (_root.StackView.view) {
-                    _root.StackView.view.pop();
+                if (_internal.overlappingSchedules.length > 0) {
+                    //! New schedules overlapps with at least one other Schedule
+                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveSchedule);
+                    uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
+                } else {
+                    saveSchedule();
                 }
             } else {
                 //! Go to next page
@@ -82,6 +87,8 @@ BasePageView {
         id: _internal
 
         property Schedule newSchedule: Schedule { }
+
+        property var overlappingSchedules: []
     }
 
     //! Page Components
@@ -154,7 +161,7 @@ BasePageView {
             startTime: Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.startTime, "hh:mm AP")
             title: "End Time"
             onSelectedTimeChanged: {
-                if (isValid &&selectedTime !== _internal.newSchedule.endTime) {
+                if (isValid && selectedTime !== _internal.newSchedule.endTime) {
                     _internal.newSchedule.endTime = selectedTime;
                 }
             }
@@ -196,6 +203,26 @@ BasePageView {
 
             uiSession: _root.uiSession
             schedule: _internal.newSchedule
+        }
+    }
+
+    /* Methods
+     * ****************************************************************************************/
+    function saveSchedule()
+    {
+        //! If there is overlapping Schedules disable them
+        _internal.overlappingSchedules.forEach((element, index) => {
+                                                   element.active = false;
+                                               });
+
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveSchedule);
+
+        if (schedulesController) {
+            schedulesController.saveNewSchedule(_internal.newSchedule);
+        }
+
+        if (_root.StackView.view) {
+            _root.StackView.view.pop();
         }
     }
 }
