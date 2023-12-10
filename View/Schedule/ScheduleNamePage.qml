@@ -25,7 +25,7 @@ BasePageView {
      * ****************************************************************************************/
     implicitHeight: implicitHeaderHeight * 6 + _nameTf.implicitHeight + topPadding + bottomPadding
     title: "New Schedule Name"
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
     backButtonVisible: false
 
     /* Children

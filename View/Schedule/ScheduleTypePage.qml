@@ -30,7 +30,7 @@ BasePageView {
     topPadding: 24
     title: "Schedule Type"
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/

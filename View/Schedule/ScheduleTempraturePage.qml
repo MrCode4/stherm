@@ -34,7 +34,7 @@ BasePageView {
     rightPadding: 8 * scaleFactor
     title: "Temprature (\u00b0" + (isCelcius ? "C" : "F") + ")"
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/

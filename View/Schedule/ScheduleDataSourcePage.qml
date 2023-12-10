@@ -29,7 +29,7 @@ BasePageView {
     topPadding: 32
     title: "Data Source"
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/
@@ -58,7 +58,11 @@ BasePageView {
     Flickable {
         id: sensorsFlick
 
-        ScrollIndicator.vertical: ScrollIndicator { }
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width
+            parent: sensorsFlick.parent
+            height: parent.height
+        }
 
         anchors.fill: parent
         clip: true

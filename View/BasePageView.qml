@@ -37,12 +37,12 @@ Page {
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
     implicitHeight: AppStyle.size
-    leftPadding: 6 * scaleFactor
-    rightPadding: 6 * scaleFactor
+    leftPadding: 8 * scaleFactor
+    rightPadding: 8 * scaleFactor
     topPadding: 8 * scaleFactor
     bottomPadding: 4 * scaleFactor
     header: Control {
-        horizontalPadding: 0
+        horizontalPadding: 2
         verticalPadding: 0
         background: null
         contentItem: RowLayout {

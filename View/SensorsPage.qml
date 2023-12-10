@@ -37,8 +37,8 @@ BasePageView {
                 //! Open AddSensorPage
                 if (root.StackView.view) {
                     root.StackView.view.push("qrc:/Stherm/View/Sensor/AddSensorPage.qml", {
-                                                  "uiSession": root.uiSession
-                                              });
+                                                 "uiSession": root.uiSession
+                                             });
                 }
             }
         }
@@ -70,31 +70,43 @@ BasePageView {
         }
 
         //! Sensors ListView
-        ListView {
-            id: _sensorsLv
-
-            ScrollIndicator.vertical: ScrollIndicator { }
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            clip: true
-            implicitHeight: contentHeight
-            model: appModel?.sensors ?? []
-            spacing: 12
-            delegate: SensorDelegate {
-                required property var modelData
-                required property int index
+            implicitHeight: _sensorsLv.implicitHeight
 
-                width: ListView.view.width
-                height: implicitHeight
-                sensor: modelData instanceof Sensor ? modelData : null
-                delegateIndex: index
+            ListView {
+                id: _sensorsLv
 
-                onClicked: {
-                    //! Open SensorInfoPage for this sensor
-                    if (root.StackView.view) {
-                        root.StackView.view.push("qrc:/Stherm/View/Sensor/SensorInfoPage.qml", {
-                                                     "sensor": sensor
-                                                 });
+                ScrollIndicator.vertical: ScrollIndicator {
+                    x: _sensorsLv.width + 4
+                    y: _root.contentItem.y
+                    parent: _sensorsLv.parent
+                    height: parent.height
+                }
+
+                anchors.fill: parent
+                anchors.rightMargin: 10
+                clip: true
+                implicitHeight: contentHeight
+                model: appModel?.sensors ?? []
+                spacing: 12
+                delegate: SensorDelegate {
+                    required property var modelData
+                    required property int index
+
+                    width: ListView.view.width
+                    height: implicitHeight
+                    sensor: modelData instanceof Sensor ? modelData : null
+                    delegateIndex: index
+
+                    onClicked: {
+                        //! Open SensorInfoPage for this sensor
+                        if (root.StackView.view) {
+                            root.StackView.view.push("qrc:/Stherm/View/Sensor/SensorInfoPage.qml", {
+                                                         "sensor": sensor
+                                                     });
+                        }
                     }
                 }
             }

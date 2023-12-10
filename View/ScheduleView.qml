@@ -40,7 +40,15 @@ BasePageView {
 
     //! Contents should be a list of current schedules
     ListView {
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width - 4
+            y: _root.contentItem.y
+            parent: _root
+            height: _root.contentItem.height
+        }
+
         anchors.fill: parent
+        anchors.rightMargin: 10
         clip: true
         model: appModel?.schedules ?? []
         delegate: ScheduleDelegate {

@@ -45,7 +45,7 @@ BasePageView {
     font.bold: true
     title: "Repeat"
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/

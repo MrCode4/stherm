@@ -18,10 +18,11 @@ ListView {
 
     /* Object properties
      * ****************************************************************************************/
+    ScrollIndicator.vertical: ScrollIndicator {}
+
     implicitWidth: 480
     implicitHeight: contentHeight
     clip: true
-    ScrollIndicator.vertical: ScrollIndicator {}
     model: [
         {
             "icon": FAIcons.sunDust, //! From FontAwesome

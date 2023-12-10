@@ -58,17 +58,14 @@ BasePageView {
         id: _contentFlick
 
         ScrollIndicator.vertical: ScrollIndicator {
-            parent: _contentFlick.parent
-            anchors {
-                left: parent.right
-                top: parent.top
-                bottom: parent.bottom
-                leftMargin: _root.rightPadding / 2
-            }
-            active: _contentFlick.height < _contentFlick.contentHeight
+            x: parent.width - width - 4
+            y: _root.contentItem.y
+            parent: _root
+            height: _root.contentItem.height
         }
 
         anchors.fill: parent
+        anchors.rightMargin: 10
         clip: true
         contentWidth: width
         contentHeight: _contentLay.implicitHeight + 4

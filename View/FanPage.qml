@@ -49,7 +49,7 @@ BasePageView {
         id: _contentsLay
         anchors.centerIn: parent
         width: parent.width
-        spacing: 8 * scaleFactor
+        spacing: 8
 
         ButtonGroup {
             buttons: [_autoButton, _onButton]
@@ -65,8 +65,8 @@ BasePageView {
                 Material.theme: checked ? (_root.Material.theme === Material.Dark ? Material.Light : Material.Dark)
                                         : _root.Material.theme
                 Layout.alignment: Qt.AlignCenter
-                leftPadding: 64 * scaleFactor
-                rightPadding: 64 * scaleFactor
+                leftPadding: 64
+                rightPadding: 64
                 font.weight: checked ? Font.ExtraBold : Font.Normal
                 checkable: true
                 text: "Auto"
@@ -81,8 +81,8 @@ BasePageView {
                                         : _root.Material.theme
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: _autoButton.width
-                leftPadding: 64 * scaleFactor
-                rightPadding: 64 * scaleFactor
+                leftPadding: 64
+                rightPadding: 64
                 font.weight: checked ? Font.ExtraBold : Font.Normal
                 checkable: true
                 text: "On"
@@ -98,8 +98,9 @@ BasePageView {
 
             Label {
                 id: _sliderDescLbl
-                Layout.topMargin: 40 * scaleFactor
+                Layout.topMargin: 40
                 Layout.fillWidth: true
+                font.pointSize: _root.font.pointSize * 0.85
                 text: "Fan working period during each hour"
                 wrapMode: "WrapAtWordBoundaryOrAnywhere"
                 horizontalAlignment: "AlignHCenter"

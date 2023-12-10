@@ -26,25 +26,30 @@ BasePageView {
     rightPadding: 4
     title: "Schedule Preview"
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/
     Flickable {
         id: itemsFlickable
+
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width - 4
+            y: _root.contentItem.y
+            parent: _root
+            height: _root.contentItem.height
+        }
+
         anchors.fill: parent
+        anchors.rightMargin: 10
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         contentHeight: _previewContentLay.implicitHeight
         contentWidth: width
-        ScrollIndicator.vertical: ScrollIndicator { }
 
         ColumnLayout {
             id: _previewContentLay
-            anchors {
-                fill: parent
-                rightMargin: 12
-            }
+            anchors.fill: parent
 
             ItemDelegate {
                 Layout.fillWidth: true

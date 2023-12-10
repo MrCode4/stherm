@@ -52,7 +52,7 @@ BasePageView {
     implicitHeight: _contentLay.implicitHeight + implicitHeaderHeight + implicitFooterHeight + topPadding + bottomPadding
     topPadding: 24
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
     title: timeProperty === "start-time" ? "Start Time" : "End Time"
 
     /* Children

@@ -81,19 +81,15 @@ BasePageView {
 
     Flickable {
         ScrollIndicator.vertical: ScrollIndicator {
-            parent: _root.contentItem
-            anchors {
-                left: parent.right
-                top: parent.top
-                bottom: parent.bottom
-                leftMargin: -_root.leftPadding / 2
-            }
+            x: parent.width - width - 4
+            y: _root.contentItem.y
+            parent: _root
+            height: _root.contentItem.height
         }
 
-        anchors.centerIn: parent
+        anchors.fill: parent
+        anchors.rightMargin: 10
         clip: true
-        width: parent.width * 0.9
-        height: parent.height
         boundsBehavior: Flickable.StopAtBounds
         contentWidth: width
         contentHeight: _contentCol.implicitHeight

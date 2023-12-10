@@ -23,16 +23,14 @@ BasePageView {
         id: _infoLv
 
         ScrollIndicator.vertical: ScrollIndicator {
-            parent: _infoLv.parent
-            anchors {
-                top: parent.top
-                bottom: parent.bottom
-                left: parent.right
-                leftMargin: _root.rightPadding / 2
-            }
+            x: parent.width - width - 4
+            y: _root.contentItem.y
+            parent: _root
+            height: _root.contentItem.height
         }
 
         anchors.fill: parent
+        anchors.rightMargin: 10
         clip: true
         model: [
             { "key": "Model",               "value": "Nuve - Samo" },
@@ -56,10 +54,12 @@ BasePageView {
                 font.bold: true
                 text: modelData.key + ":"
             }
+
             Label {
                 Layout.fillWidth: true
                 font.pointSize: Application.font.pointSize * 0.9
                 textFormat: "RichText"
+                horizontalAlignment: "AlignRight"
                 text: modelData.value
             }
         }
