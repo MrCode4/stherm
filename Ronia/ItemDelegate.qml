@@ -13,8 +13,7 @@ T.ItemDelegate {
                              implicitContentHeight + topPadding + bottomPadding,
                              implicitIndicatorHeight + topPadding + bottomPadding)
 
-    padding: 16
-    verticalPadding: 8
+    padding: 6
     spacing: 16
 
     icon.width: 24

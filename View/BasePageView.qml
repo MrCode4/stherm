@@ -22,7 +22,7 @@ Page {
     property I_DeviceController     deviceController: uiSession?.deviceController ?? null
 
     //! Page title heading level: from 1 to 6
-    property int                    titleHeadeingLevel: 2
+    property int                    titleHeadeingLevel: 3
 
     //! This should hold a callback to be called when back button is clicked.
     property var                    backButtonCallback
@@ -37,13 +37,13 @@ Page {
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
     implicitHeight: AppStyle.size
-    leftPadding: 12 * scaleFactor
-    rightPadding: 12 * scaleFactor
-    topPadding: 16 * scaleFactor
-    bottomPadding: 8 * scaleFactor
+    leftPadding: 0
+    rightPadding: 0
+    topPadding: 8 * scaleFactor
+    bottomPadding: 0
     header: Control {
-        horizontalPadding: 6 * scaleFactor
-        topPadding: 2 * scaleFactor
+        horizontalPadding: 0
+        verticalPadding: 0
         background: null
         contentItem: RowLayout {
             ToolButton {

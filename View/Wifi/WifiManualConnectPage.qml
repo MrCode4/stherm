@@ -15,8 +15,8 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 16 * scaleFactor
-    rightPadding: 24 * scaleFactor
+    leftPadding: 8 * scaleFactor
+    rightPadding: 12 * scaleFactor
     title: "WiFi Manual"
 
     /* Children

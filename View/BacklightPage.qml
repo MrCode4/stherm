@@ -39,8 +39,6 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: AppStyle.size / 12
-    rightPadding: AppStyle.size / 12
     title: "Backlight"
 
     backButtonCallback: function() {

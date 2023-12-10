@@ -23,7 +23,7 @@ Page {
     implicitWidth: AppStyle.size
     implicitHeight: implicitWidth
     leftPadding: 8
-    rightPadding: 20
+    rightPadding: 12
     background: null
 
     /* Children

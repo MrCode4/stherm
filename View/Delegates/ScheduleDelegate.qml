@@ -37,7 +37,8 @@ ItemDelegate {
         //! Schedule icon
         RoniaTextIcon {
             Layout.alignment: Qt.AlignCenter
-            Layout.rightMargin: 4
+            Layout.preferredWidth: 24
+            font.pointSize: Style.fontIconSize.smallPt
             text: {
                 switch(schedule?.type) {
                 case "Away":
@@ -52,27 +53,33 @@ ItemDelegate {
 
                 return "-";
             }
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
         }
 
         //! Schedule name
         Label {
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignCenter
             font.bold: true
             text: schedule?.name ?? ""
+            elide: "ElideRight"
         }
 
         //! Schedule repeat
         Item {
-            Layout.preferredWidth: _fontMetric.boundingRect("MuTuWeThFrSuSa").width + 6 * 3
+            Layout.preferredWidth: _fontMetric.advanceWidth("MuTuWeThFrSuSa") + 6
             Layout.preferredHeight: Material.delegateHeight
             opacity: 0.8
 
             RowLayout {
                 anchors.centerIn: parent
-                spacing: 3
+                spacing: 1
+
                 Repeater {
                     model: schedule?.repeats ?? 0
                     delegate: Label {
+                        font: _fontMetric.font
                         Layout.alignment: Qt.AlignTop
                         text: modelData
 
@@ -117,6 +124,7 @@ ItemDelegate {
 
     FontMetrics {
         id: _fontMetric
+        font.pointSize: _root.font.pointSize * 0.85
     }
 
     ParallelAnimation {

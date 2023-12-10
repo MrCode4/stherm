@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     const double refFontPt = 16;
     const double refDPI = 141;
     const double dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch();
-    const double scaleFactor = 0.9; //qMax(1., dpi / refDPI);
+    const double scaleFactor = qMax(1., dpi / refDPI);
 
     //! Load default font -> Montserrat-Regular for now
     int fontId = QFontDatabase::addApplicationFont(":/Stherm/Fonts/Montserrat-Regular.ttf");

@@ -23,9 +23,7 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 8
     rightPadding: 4
-    topPadding: 24
     title: "Schedule Preview"
     backButtonVisible: false
     titleHeadeingLevel: 3

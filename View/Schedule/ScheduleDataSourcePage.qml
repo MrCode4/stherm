@@ -40,6 +40,9 @@ BasePageView {
 
     Flickable {
         id: sensorsFlick
+
+        ScrollIndicator.vertical: ScrollIndicator { }
+
         anchors.fill: parent
         clip: true
         contentHeight: sensorsBtnsLay.implicitHeight

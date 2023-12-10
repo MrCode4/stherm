@@ -30,9 +30,8 @@ BasePageView {
     implicitHeight: contentItem.children.length === 1 ? contentItem.children[0].implicitHeight + implicitHeaderHeight
                                                         + implicitFooterHeight + topPadding + bottomPadding
                                                       : 0
-    topPadding: 24
-    leftPadding: 24 * scaleFactor
-    rightPadding: 24 * scaleFactor
+    leftPadding: 8 * scaleFactor
+    rightPadding: 8 * scaleFactor
     title: "Temprature (\u00b0" + (isCelcius ? "C" : "F") + ")"
     backButtonVisible: false
     titleHeadeingLevel: 3

@@ -89,6 +89,9 @@ ApplicationWindow {
 
         Flickable {
             id: _mainViewFlick
+
+            ScrollIndicator.vertical: ScrollIndicator { }
+
             width: window.width
             boundsBehavior: Flickable.StopAtBounds
             contentWidth: width
