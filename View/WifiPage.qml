@@ -85,95 +85,76 @@ BasePageView {
         }
     }
 
-    //! Available networks Label
-    Label {
-        id: _availLbl
-        parent: _wifisRepeater.count > 0 ? (sortedWifis[0]?.connected ? _wifisRepeater.itemAt(1)
-                                                                      : _wifisRepeater.itemAt(0))
-                                         : _root
-        anchors {
-            bottom: parent?.top ?? undefined
-            left: parent?.left ?? undefined
-        }
-        visible: (parent instanceof WifiDelegate) && (sortedWifis[0].connected ? sortedWifis.length > 1
-                                                                               : sortedWifis.length > 0)
-        opacity: 0.7
-        font.pointSize: Application.font.pointSize * 0.8
-        text: "Available Networks"
-    }
-
     ColumnLayout {
         anchors.fill: parent
+
+        Label {
+            visible: sortedWifis[0]?.connected ?? false
+            opacity: 0.7
+            font.pointSize: Application.font.pointSize * 0.8
+            text: "Current Network"
+        }
+
+        WifiDelegate {
+            id: _connectedWifiDelegate
+
+            Layout.fillWidth: true
+            Layout.bottomMargin: 16
+            visible: wifi
+
+            wifi: sortedWifis[0]?.connected ? sortedWifis[0] : null
+            delegateIndex: -1
+            onClicked: {
+                _wifisRepeater.currentIndex = -1;
+            }
+        }
+
+        //! Available networks Label
+        Label {
+            id: _availLbl
+            opacity: 0.7
+            font.pointSize: Application.font.pointSize * 0.8
+            text: "Available Networks"
+        }
+
+        //! Highlight Rectangle
+        Rectangle {
+            id: _hightlightRect
+            readonly property alias wifiDelegate: _wifisRepeater.currentItem
+
+            parent: wifiDelegate
+            visible: wifiDelegate
+            anchors.fill: parent ?? undefined
+            color: Style.listHighlightColor
+        }
 
         //! Wifis ListView
         Flickable {
             id: _wifisFlick
+
+            ScrollIndicator.vertical: ScrollIndicator { }
+
             Layout.fillHeight: true
             Layout.fillWidth: true
             clip: true
             contentWidth: width
             contentHeight: _wifisCol.implicitHeight
 
-            //! Highlight Rectangle
-            Rectangle {
-                id: _hightlightRect
-                readonly property alias wifiDelegate: _wifisRepeater.currentItem
-
-                visible: wifiDelegate
-                y: _availLbl.height + 8 //! Only init value, will be broken
-                width: wifiDelegate?.width ?? 0
-                height: wifiDelegate?.height ?? 0
-                color: Style.listHighlightColor
-
-                onWifiDelegateChanged: {
-                    updatePos();
-                }
-
-                Behavior on y {
-                    enabled: visible
-                    NumberAnimation { duration: 150 }
-                }
-
-                Connections {
-                    target: _hightlightRect.wifiDelegate
-
-                    function onYChanged()
-                    {
-                        _hightlightRect.updatePos();
-                    }
-                }
-
-                function updatePos()
-                {
-                    if (wifiDelegate) {
-                        var newPos = wifiDelegate.mapToItem(_wifisCol, 0, 0);
-                        x = newPos.x;
-                        y = newPos.y;
-                    }
-                }
-            }
-
             ColumnLayout {
                 id: _wifisCol
                 width: parent.width
                 spacing: 8
 
-                Label {
-                    visible: sortedWifis[0]?.connected ?? false
-                    opacity: 0.7
-                    font.pointSize: Application.font.pointSize * 0.8
-                    text: "Current Network"
-                }
-
                 Repeater {
                     id: _wifisRepeater
 
-                    property int currentIndex: -1
-                    readonly property WifiDelegate currentItem: currentIndex > -1 && currentIndex < count
-                                                                ? itemAt(currentIndex)
+                    property int currentIndex: -2 //! -1 means _connectedWifiDelegate is current item
+                    readonly property WifiDelegate currentItem: currentIndex > -2 && currentIndex < count
+                                                                ? currentIndex === -1 ? _connectedWifiDelegate
+                                                                                      : itemAt(currentIndex)
                                                                 : null
 
-                    model: sortedWifis
+                    model: sortedWifis.length > 0 && sortedWifis[0].connected ? sortedWifis.slice(1, sortedWifis.length) : sortedWifis
                     delegate: WifiDelegate {
                         id: _wifiDelegate
 
@@ -181,10 +162,6 @@ BasePageView {
                         required property int index
 
                         Layout.fillWidth: true
-                        Layout.topMargin: (_availLbl.parent === this
-                                           ? _availLbl.implicitHeight
-                                             + (sortedWifis[0]?.connected ? 16 : 0)
-                                           : 0)
 
                         wifi: (modelData instanceof WifiInfo) ? modelData : null
                         delegateIndex: index
