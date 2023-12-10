@@ -15,6 +15,9 @@ BasePageView {
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
     property Schedule   schedule
 
+    //!
+    readonly property bool       isValid: true
+
     //! Device reference
     property I_Device device: uiSession?.appModel ?? null
 

@@ -20,15 +20,16 @@ I_PopUp {
      * ****************************************************************************************/
     width: T.Overlay.overlay?.width * 0.7
     height: T.Overlay.overlay?.height * 0.7
-    title: "Schedule Overlapping"
+    bottomPadding: 12
+    title: "Schedule Overlap"
 
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
         id: mainLay
-        width: parent.width
+        width: parent?.width ?? 0
         anchors.centerIn: parent
-        spacing: 16
+        spacing: 8
 
         Label {
             Layout.fillWidth: true
@@ -49,7 +50,7 @@ I_PopUp {
         RowLayout {
             Layout.leftMargin: 24
             Layout.rightMargin: 24
-            Layout.topMargin: 24
+            Layout.topMargin: 12
             spacing: 24
 
             Button {
