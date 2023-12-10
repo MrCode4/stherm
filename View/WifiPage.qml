@@ -120,11 +120,12 @@ BasePageView {
         //! Highlight Rectangle
         Rectangle {
             id: _hightlightRect
+
             readonly property alias wifiDelegate: _wifisRepeater.currentItem
 
             parent: wifiDelegate
             visible: wifiDelegate
-            anchors.fill: parent ?? undefined
+            anchors.fill: parent ? parent : undefined
             color: Style.listHighlightColor
         }
 

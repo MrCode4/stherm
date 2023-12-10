@@ -205,7 +205,7 @@ Control {
                 horizontalCenter: parent.horizontalCenter
                 bottomMargin: _menuButton.implicitHeight * 0.6
             }
-            height: _menuButton.height * 1.2
+            width: parent.width * 0.4
             visible: !uiSession.simulating
 
             TapHandler {

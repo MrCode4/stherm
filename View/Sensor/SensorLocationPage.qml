@@ -52,7 +52,7 @@ Page {
         ScrollIndicator.vertical: ScrollIndicator {
             parent: _root
             x: parent.width - width - 2
-            height: parent.height
+            height: parent.height - 12
         }
 
         anchors.fill: parent

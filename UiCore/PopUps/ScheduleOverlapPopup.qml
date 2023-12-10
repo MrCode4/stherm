@@ -18,7 +18,7 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    width: T.Overlay.overlay?.width * 0.7
+    width: T.Overlay.overlay?.width * 0.8
     height: T.Overlay.overlay?.height * 0.7
     bottomPadding: 12
     title: "Schedule Overlap"
@@ -44,6 +44,7 @@ I_PopUp {
             font.italic: true
             textFormat: "RichText"
             text: "<small>Overlapping schedules will be disabled</small>"
+            wrapMode: "Wrap"
             horizontalAlignment: "AlignHCenter"
         }
 

@@ -28,7 +28,7 @@ Popup {
     property string                     title:              "Popup"
 
     //! H level of Popup title
-    property int                        titleHeadingLevel:  3
+    property int                        titleHeadingLevel:  4
 
     //! Icon of popup: this should be a font-awesome icon
     property string                     icon:               ""
@@ -44,7 +44,7 @@ Popup {
     implicitHeight: Math.min(implicitContentHeight + bottomPadding + topPadding,
                              (T.Overlay.overlay?.height ?? AppStyle.size) * 0.85)
     spacing: 24
-    horizontalPadding: 16
+    horizontalPadding: 12
     topPadding: 4
     bottomPadding: 24
     dim: true

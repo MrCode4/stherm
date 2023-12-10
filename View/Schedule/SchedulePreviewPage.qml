@@ -19,7 +19,7 @@ BasePageView {
     property bool       isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     //! Can schedule fields be editabled
-    property bool       isEditable: true
+    property bool       isEditable: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -37,7 +37,7 @@ BasePageView {
             x: parent.width - width - 4
             y: _root.contentItem.y
             parent: _root
-            height: _root.contentItem.height
+            height: _root.contentItem.height - 12
         }
 
         anchors.fill: parent

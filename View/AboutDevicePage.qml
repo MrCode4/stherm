@@ -15,7 +15,7 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "About Device"
+    title: "Device Info"
 
     /* Childrent
      * ****************************************************************************************/
@@ -26,7 +26,7 @@ BasePageView {
             x: parent.width - width - 4
             y: _root.contentItem.y
             parent: _root
-            height: _root.contentItem.height
+            height: _root.contentItem.height - 12
         }
 
         anchors.fill: parent

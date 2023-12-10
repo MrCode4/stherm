@@ -51,7 +51,7 @@ BasePageView {
             horizontalCenter: parent.horizontalCenter
             top: parent.top
         }
-        width: parent.width * 0.65
+        width: Math.min(parent.width * 0.8, implicitWidth)
         height: Math.min(implicitHeight, parent.height)
         spacing: 16
 
@@ -79,10 +79,9 @@ BasePageView {
                 id: _sensorsLv
 
                 ScrollIndicator.vertical: ScrollIndicator {
-                    x: _sensorsLv.width + 4
-                    y: _root.contentItem.y
+                    x: parent.width + (root.contentItem.width - parent.width) / 2 - width - 4
                     parent: _sensorsLv.parent
-                    height: parent.height
+                    height: parent.height - 12
                 }
 
                 anchors.fill: parent

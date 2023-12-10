@@ -44,11 +44,11 @@ BasePageView {
             x: parent.width - width - 4
             y: _root.contentItem.y
             parent: _root
-            height: _root.contentItem.height
+            height: _root.contentItem.height - 12
         }
 
         anchors.fill: parent
-        anchors.rightMargin: 10
+        anchors.rightMargin: 4
         clip: true
         model: appModel?.schedules ?? []
         delegate: ScheduleDelegate {
