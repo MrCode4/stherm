@@ -47,12 +47,16 @@ QtObject {
     }
 
     //! Finding overlapping Schedules
-    function findOverlappingSchedules(startTime: Date, endTime: Date, repeats)
+    function findOverlappingSchedules(startTime: Date, endTime: Date, repeats, exclude=null)
     {
         if (!device) return [];
 
         var overlappings = [];
         device.schedules.forEach(function(element, index) {
+            if (element === exclude) {
+                return;
+            }
+
             //! First check if repeats have at least one similiar values
             if (element.repeats.find((repeatElem, repeatIndex) => {
                                      return repeats.includes(repeatElem);

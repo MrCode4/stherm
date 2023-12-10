@@ -79,7 +79,8 @@ BasePageView {
                                                       timeProperty === "end-time"  ? selectedTime
                                                                                    : schedule.endTime,
                                                       "hh:mm AP"),
-                            schedule.repeats);
+                            schedule.repeats,
+                            schedule);
 
                 if (internal.overlappingSchedules.length > 0) {
                     //! New schedules overlapps with at least one other Schedule

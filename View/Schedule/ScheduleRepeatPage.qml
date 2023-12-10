@@ -64,7 +64,8 @@ BasePageView {
                 internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
                             Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
                             Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
-                            repeats);
+                            repeats,
+                            schedule);
 
                 if (internal.overlappingSchedules.length > 0) {
                     //! New schedules overlapps with at least one other Schedule
