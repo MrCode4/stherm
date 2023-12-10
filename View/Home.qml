@@ -41,7 +41,7 @@ Control {
         //! This is to fix a bug with slider working when there is a popup
         enabled: !uiSession?.popupLayout?.isTherePopup
         anchors.horizontalCenter: parent.horizontalCenter
-        height: parent.height / 2.
+        height: parent.height / 2. + 8
         width: height * 2
         labelVisible: device?.systemSetup.systemMode !== AppSpecCPP.Off
         uiSession: _root.uiSession
@@ -116,8 +116,8 @@ Control {
                 bottom: _dateTimeHolder.bottom
                 horizontalCenterOffset: 8
             }
-            width: _root.width - 140 * scaleFactor
-            height: _airCondItem.implicitHeight + _dateTimeHolder.height + 40 * scaleFactor
+            width: _root.width - 120
+            height: _airCondItem.implicitHeight + _dateTimeHolder.height + 40
 
             //! Humidity item
             CurrentHumidityButton {
@@ -178,7 +178,7 @@ Control {
 
         Item {
             id: _dateTimeHolder
-            y: _desiredTempItem.height + 4 * scaleFactor
+            y: _desiredTempItem.height + 12 * scaleFactor
             anchors.horizontalCenter: parent.horizontalCenter
             height: _dateTimeLbl.implicitHeight
             width: _dateTimeLbl.maximumWidth
@@ -203,7 +203,7 @@ Control {
             anchors {
                 bottom: parent.bottom
                 horizontalCenter: parent.horizontalCenter
-                bottomMargin: _menuButton.implicitHeight
+                bottomMargin: _menuButton.implicitHeight * 0.6
             }
             height: _menuButton.height * 1.2
             visible: !uiSession.simulating

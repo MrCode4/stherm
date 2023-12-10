@@ -37,7 +37,7 @@ Popup {
     ColumnLayout {
         id: _contentLay
         anchors.centerIn: parent
-        width: parent.width * 0.6
+        width: AppStyle.size * 0.6
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
@@ -47,6 +47,7 @@ Popup {
                 id: _tempratureLbl
 
                 Layout.fillWidth: true
+                Layout.rightMargin: unitLbl.width / 2
                 padding: 0
                 font.pointSize: Application.font.pointSize * 6.5
                 minimumPointSize: Application.font.pointSize
@@ -58,6 +59,7 @@ Popup {
                                  device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
 
                 Label {
+                    id: unitLbl
                     anchors {
                         horizontalCenter: parent.horizontalCenter
                         horizontalCenterOffset: (_tempratureLbl.contentWidth + width) / 2 + 6
