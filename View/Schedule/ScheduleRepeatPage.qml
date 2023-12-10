@@ -12,6 +12,9 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! schedulesModel: use to create new Schedule instance
+    property SchedulesController     schedulesController: uiSession?.schedulesController ?? null
+
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
     property Schedule       schedule
 
@@ -46,10 +49,46 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            //! First check if this schedule has overlap with other Schedules
+            //! Do this only if schedule is enabled (active)
+            if (schedule.active) {
+                internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
+                            Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
+                            Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
+                            repeats);
+
+                if (internal.overlappingSchedules.length > 0) {
+                    //! New schedules overlapps with at least one other Schedule
+                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveRepeat);
+                    uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
+                    return;
+                }
+            }
+
+            saveRepeat();
+        }
+    }
+
+    QtObject {
+        id: internal
+
+        property var overlappingSchedules: []
+    }
+
     GridLayout {
         id: _contentLay
-        anchors.fill: parent
-
+        width: parent.width
+        anchors.centerIn: parent
+        rowSpacing: 12
         columns: 7
 
         Label { Layout.alignment: Qt.AlignCenter; text: "Mu" }
@@ -69,12 +108,6 @@ BasePageView {
         RadioButton {id: _suBtn; autoExclusive: false }
     }
 
-    onRepeatsChanged: {
-        if (schedule && schedule.repeats.toString() !== repeats.toString()) {
-            schedule.repeats = repeats;
-        }
-    }
-
     onScheduleChanged: {
         if (schedule) {
             _muBtn.checked = Boolean(schedule.repeats.find(element => element === "Mu"));
@@ -85,5 +118,23 @@ BasePageView {
             _saBtn.checked = Boolean(schedule.repeats.find(element => element === "Sa"));
             _suBtn.checked = Boolean(schedule.repeats.find(element => element === "Su"));
         }
+    }
+
+    /* Methods
+     * ****************************************************************************************/
+    function saveRepeat()
+    {
+        //! If there is overlapping Schedules disable them
+        internal.overlappingSchedules.forEach((element, index) => {
+                                                  element.active = false;
+                                              });
+
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveRepeat);
+
+        if (schedule && schedule.repeats.toString() !== repeats.toString()) {
+            schedule.repeats = repeats;
+        }
+
+        backButtonCallback();
     }
 }

@@ -38,6 +38,23 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            if (schedule && schedule.temprature !== temprature) {
+                schedule.temprature = temprature;
+            }
+
+            backButtonCallback();
+        }
+    }
+
     TickedSlider {
         id: _tempSlider
         readonly property int tickStepSize: 4
@@ -59,12 +76,6 @@ BasePageView {
             timeout: Number.MAX_VALUE
             delay: 0
             text: _tempSlider.value
-        }
-
-        onMoved: {
-            if (schedule && schedule.temprature !== temprature) {
-                schedule.temprature = value;
-            }
         }
     }
 }

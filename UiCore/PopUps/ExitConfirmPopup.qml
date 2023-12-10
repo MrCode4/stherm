@@ -26,7 +26,7 @@ I_PopUp {
      * ****************************************************************************************/
     ColumnLayout {
         id: mainLay
-        width: parent.width
+        width: parent?.width ?? 0
         anchors.centerIn: parent
         spacing: 16
 

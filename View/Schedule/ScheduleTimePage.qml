@@ -12,6 +12,9 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! schedulesModel: use to create new Schedule instance
+    property SchedulesController     schedulesController: uiSession?.schedulesController ?? null
+
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
     property Schedule           schedule
 
@@ -50,9 +53,52 @@ BasePageView {
     topPadding: 24
     backButtonVisible: false
     titleHeadeingLevel: 3
+    title: timeProperty === "start-time" ? "Start Time" : "End Time"
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        enabled: isValid
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            //! First check if this schedule has overlap with other Schedules
+            //! Do this only if schedule is enabled (active)
+            if (schedule.active) {
+                internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
+                            Date.fromLocaleTimeString(Qt.locale(),
+                                                      timeProperty === "start-time" ? selectedTime
+                                                                                    : schedule.startTime,
+                                                      "hh:mm AP"),
+                            Date.fromLocaleTimeString(Qt.locale(),
+                                                      timeProperty === "end-time"  ? selectedTime
+                                                                                   : schedule.endTime,
+                                                      "hh:mm AP"),
+                            schedule.repeats);
+
+                if (internal.overlappingSchedules.length > 0) {
+                    //! New schedules overlapps with at least one other Schedule
+                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveTime);
+                    uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
+                    return;
+                }
+            }
+
+            saveTime();
+        }
+    }
+
+    QtObject {
+        id: internal
+
+        property var overlappingSchedules: []
+    }
+
     GridLayout {
         id: _contentLay
         anchors.centerIn: parent
@@ -94,16 +140,6 @@ BasePageView {
         }
     }
 
-    onSelectedTimeChanged: {
-        if (schedule) {
-            if (timeProperty === "start-time" && schedule.startTime !== selectedTime) {
-                schedule.startTime = selectedTime;
-            } else if (timeProperty === "end-time" && schedule.endTime !== selectedTime) {
-                schedule.endTime = selectedTime;
-            }
-        }
-    }
-
     onScheduleChanged: {
         if (schedule) {
             var time
@@ -123,5 +159,28 @@ BasePageView {
                 }
             }
         }
+    }
+
+    /* Methods
+     * ****************************************************************************************/
+    function saveTime()
+    {
+        //! If there is overlapping Schedules disable them
+        internal.overlappingSchedules.forEach((element, index) => {
+                                                  element.active = false;
+                                              });
+
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveTime);
+
+
+        if (schedule) {
+            if (timeProperty === "start-time" && schedule.startTime !== selectedTime) {
+                schedule.startTime = selectedTime;
+            } else if (timeProperty === "end-time" && schedule.endTime !== selectedTime) {
+                schedule.endTime = selectedTime;
+            }
+        }
+
+        backButtonCallback();
     }
 }

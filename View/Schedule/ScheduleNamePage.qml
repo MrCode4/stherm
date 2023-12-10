@@ -30,6 +30,24 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        enabled: _nameTf.acceptableInput
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            if (schedule) {
+                schedule.name = _nameTf.text;
+            }
+
+            backButtonCallback();
+        }
+    }
+
     TextField {
         id: _nameTf
         anchors.centerIn: parent
@@ -38,12 +56,6 @@ BasePageView {
         text: schedule?.name ?? ""
         validator: RegularExpressionValidator {
             regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
-        }
-
-        onEditingFinished: {
-            if (schedule) {
-                schedule.name = _nameTf.text;
-            }
         }
     }
 }

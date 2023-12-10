@@ -34,15 +34,26 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            if (schedule && schedule.type !== _buttonsGroup.checkedButton.text) {
+                schedule.type = _buttonsGroup.checkedButton.text;
+            }
+
+            backButtonCallback();
+        }
+    }
+
     ButtonGroup {
         id: _buttonsGroup
         buttons: _buttonsLay.children
-
-        onCheckedButtonChanged: {
-            if (schedule && schedule.type !== checkedButton.text) {
-                schedule.type = checkedButton.text;
-            }
-        }
     }
 
     ColumnLayout {

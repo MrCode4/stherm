@@ -33,6 +33,23 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            if (schedule) {
+                schedule.dataSource = sensor.name;
+            }
+
+            backButtonCallback();
+        }
+    }
+
     ButtonGroup {
         id: buttonsGrp
         buttons: sensorsBtnsLay.children
@@ -75,12 +92,6 @@ BasePageView {
                     sensor: modelData instanceof Sensor ? modelData : null
                 }
             }
-        }
-    }
-
-    onSensorChanged: {
-        if (schedule) {
-            schedule.dataSource = sensor.name;
         }
     }
 }
