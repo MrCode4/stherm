@@ -37,7 +37,7 @@ BasePageView {
             x: parent.width - width - 4
             y: _root.contentItem.y
             parent: _root
-            height: _root.contentItem.height - 12
+            height: _root.contentItem.height - 16
         }
 
         anchors.fill: parent

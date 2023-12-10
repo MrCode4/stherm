@@ -80,10 +80,10 @@ ListView {
             "icon": FAIcons.headSet,
             "text": "Contact Contractor"
         },
-        {
-            "icon": FAIcons.memoCircleInfo,
-            "text": "System Info"
-        }
+        // {
+        //     "icon": FAIcons.memoCircleInfo,
+        //     "text": "System Info"
+        // }
     ]
     delegate: ApplicationMenuDelegate {
         width: ListView.view.width

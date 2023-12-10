@@ -33,6 +33,7 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Settings"
+    leftPadding: 10 * scaleFactor
     backButtonCallback: function() {
         //! Check if color is modified
         var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
@@ -84,7 +85,7 @@ BasePageView {
             x: parent.width - width - 4
             y: _root.contentItem.y
             parent: _root
-            height: _root.contentItem.height - 12
+            height: _root.contentItem.height - 30
         }
 
         anchors.fill: parent

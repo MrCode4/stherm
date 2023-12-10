@@ -81,7 +81,7 @@ BasePageView {
                 ScrollIndicator.vertical: ScrollIndicator {
                     x: parent.width + (root.contentItem.width - parent.width) / 2 - width - 4
                     parent: _sensorsLv.parent
-                    height: parent.height - 12
+                    height: parent.height - 30
                 }
 
                 anchors.fill: parent
