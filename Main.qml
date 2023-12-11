@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.VirtualKeyboard
+import QtQuick.VirtualKeyboard.Settings
 
 import Ronia
 import Stherm
@@ -178,6 +179,8 @@ ApplicationWindow {
 
         Component.onCompleted: {
             //! Increase key height and keyboard height
+            VirtualKeyboardSettings.locale = "en_US";
+            VirtualKeyboardSettings.inputMethodHints = Qt.ImhNoAutoUppercase | Qt.ImhPreferLowercase;
             keyboard.style.keyboardDesignHeight = keyboard.style.keyboardDesignHeight * 1.3
             keyboard.style.keyboardHeight = keyboard.style.keyboardDesignHeight / 3.8;
         }

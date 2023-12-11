@@ -25,6 +25,7 @@ T.TextField {
     selectedTextColor: Style.background
     placeholderTextColor: Style.hintTextColor
     verticalAlignment: TextInput.AlignVCenter
+    passwordCharacter: "*"
 
     cursorDelegate: CursorDelegate { }
 
