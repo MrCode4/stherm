@@ -57,7 +57,7 @@ Item {
     //! managing popups
     property PopUpLayout        popupLayout
 
-    //! app core
+    //! app core, will be created in main.qml onCompleted function
     property I_Device           appModel
 
     //! This property can be used to disable wifi refreshing temporarily
@@ -85,34 +85,13 @@ Item {
         }
     }
 
-    //! Device controller
-    property bool simulating:   !true
-
-    onSimulatingChanged: {
-        if (!simulating) {
-            Style.background = "#000000";
-
-            // start real device
-            realDeviceController.startDeviceRequested();
-
-        } else {
-            realDeviceController.stopDeviceRequested();
-
-        }
-    }
-
-    Component.onCompleted: realDeviceController.startDeviceRequested();
+    Component.onCompleted: deviceController.startDeviceRequested();
 
     /* Controllers
      * ****************************************************************************************/
 
     //! Device controller
-    property I_DeviceController realDeviceController:   DeviceController {
-        device: appModel
-    }
-
-    //! Device controller
-    property I_DeviceController simDeviceController:   SimDeviceController {
+    property I_DeviceController deviceController:   DeviceController {
         device: appModel
     }
 
@@ -130,10 +109,6 @@ Item {
     property SchedulesController schedulesController:  SchedulesController {
         device: appModel
     }
-
-
-    //! Device controller
-    property I_DeviceController deviceController:  simulating ? simDeviceController : realDeviceController
 
     /* Connections
      * ****************************************************************************************/

@@ -205,8 +205,8 @@ Control {
                 horizontalCenter: parent.horizontalCenter
                 bottomMargin: _menuButton.implicitHeight * 0.6
             }
+            
             width: parent.width * 0.4
-            visible: !uiSession.simulating
 
             TapHandler {
                 onTapped: {
@@ -215,17 +215,6 @@ Control {
                                        });
                 }
             }
-        }
-
-        //! Device Toggle Button
-        DeviceToggleButton {
-            anchors {
-                horizontalCenter: _logo.horizontalCenter
-                top: _logo.top
-            }
-            width: parent.width * 0.75
-
-            uiSession: _root.uiSession
         }
 
         //! Menu button
