@@ -12,6 +12,9 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Device referenece
+    property Device     device: uiSession?.appModel ?? null
+
     //! Schedule
     property Schedule   schedule
 
@@ -139,9 +142,15 @@ BasePageView {
                     }
 
                     Label {
+                        readonly property string unit: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+                                                        ? "F" : "C") ?? "F"
+
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
-                        text: schedule?.temprature ?? 0
+                        text: Number(Utils.convertedTemperature(schedule?.temprature ?? 0,
+                                                                device.setting.tempratureUnit)
+                                     ).toLocaleString(locale, "f", 0)
+                              + ` \u00b0${unit}`
                     }
                 }
 
