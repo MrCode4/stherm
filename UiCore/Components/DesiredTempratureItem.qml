@@ -22,10 +22,10 @@ Control {
     property string             unit: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property int                minTemprature: isCelsius ? 18 : 65
+    property real               minTemprature: Utils.convertedTemperature(18, device.setting.tempratureUnit);
 
     //! Maximum temprature
-    property int                maxTemprature: isCelsius ? 30 : 85
+    property real               maxTemprature: Utils.convertedTemperature(30, device.setting.tempratureUnit);
 
     //! Offset of desired temp label
     property int                labelVerticalOffset: -8
@@ -38,8 +38,6 @@ Control {
 
     //! Label width
     readonly property alias     labelWidth: _desiredTempratureLbl.width
-
-    readonly property bool      isCelsius: device.setting.tempratureUnit === AppSpec.TempratureUnit.Cel
 
     /* Object properties
      * ****************************************************************************************/
@@ -106,6 +104,16 @@ Control {
             //! Update slider value (UI) with changed requestedTemp
             //! When setDesiredTemperature failed, update slider with previous value.
             function onRequestedTempChanged() {
+                _tempSlider.value = Utils.convertedTemperature(device.requestedTemp,
+                                                               device.setting.tempratureUnit);
+            }            
+        }
+
+        Connections {
+            target: _root
+
+            //! Update slider value (UI) with changed TempratureUnit
+            function onUnitChanged() {
                 _tempSlider.value = Utils.convertedTemperature(device.requestedTemp,
                                                                device.setting.tempratureUnit);
             }

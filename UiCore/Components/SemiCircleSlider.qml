@@ -119,7 +119,7 @@ Control {
     Item {
         id: _handle
 
-        readonly property int angleRange: 180
+        readonly property real angleRange: 180.0
 
         parent: _control.background
         x: parent.width / 2
