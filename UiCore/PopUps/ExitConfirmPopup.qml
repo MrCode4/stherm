@@ -18,8 +18,6 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    width: T.Overlay.overlay?.width * 0.7
-    height: T.Overlay.overlay?.height * 0.7
     title: "Exit"
 
     /* Children
@@ -33,7 +31,7 @@ I_PopUp {
         Label {
             Layout.fillWidth: true
             font.bold: true
-            text: "Do you want to exit without saving?"
+            text: "Do you want to save changes before exiting?"
             wrapMode: "Wrap"
             horizontalAlignment: "AlignHCenter"
         }
@@ -42,7 +40,7 @@ I_PopUp {
             Layout.fillWidth: true
             font.italic: true
             textFormat: "RichText"
-            text: "<small>All Changes will be discarded<"
+            text: "<small>Changes are lost if not saved.</small>"
             horizontalAlignment: "AlignHCenter"
         }
 
@@ -54,7 +52,7 @@ I_PopUp {
 
             Button {
                 Layout.fillWidth: true
-                text: "Yes"
+                text: "Save"
 
                 onClicked: {
                     accepted();
