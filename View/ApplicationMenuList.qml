@@ -18,10 +18,11 @@ ListView {
 
     /* Object properties
      * ****************************************************************************************/
+    ScrollIndicator.vertical: ScrollIndicator {}
+
     implicitWidth: 480
     implicitHeight: contentHeight
     clip: true
-    ScrollIndicator.vertical: ScrollIndicator {}
     model: [
         {
             "icon": FAIcons.sunDust, //! From FontAwesome
@@ -79,10 +80,10 @@ ListView {
             "icon": FAIcons.headSet,
             "text": "Contact Contractor"
         },
-        {
-            "icon": FAIcons.memoCircleInfo,
-            "text": "System Info"
-        }
+        // {
+        //     "icon": FAIcons.memoCircleInfo,
+        //     "text": "System Info"
+        // }
     ]
     delegate: ApplicationMenuDelegate {
         width: ListView.view.width

@@ -41,8 +41,8 @@ QtObject {
 
     //! Specific styles for some Controls
     readonly property FontIconsSize fontIconSize: FontIconsSize {
-        largePt: Application.font.pointSize * 1.8
-        normalPt: Application.font.pointSize * 1.3
+        largePt: Application.font.pointSize * 1.75
+        normalPt: Application.font.pointSize * 1.25
         smallPt: Application.font.pointSize * 1.
     }
 

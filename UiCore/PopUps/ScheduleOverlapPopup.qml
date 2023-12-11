@@ -18,7 +18,7 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Exit"
+    title: "Schedule Overlap"
 
     /* Children
      * ****************************************************************************************/
@@ -26,12 +26,12 @@ I_PopUp {
         id: mainLay
         width: parent?.width ?? 0
         anchors.centerIn: parent
-        spacing: 16
+        spacing: 8
 
         Label {
             Layout.fillWidth: true
             font.bold: true
-            text: "Do you want to save changes before exiting?"
+            text: "This schedule is overlapping with others. Enable it?"
             wrapMode: "Wrap"
             horizontalAlignment: "AlignHCenter"
         }
@@ -40,19 +40,20 @@ I_PopUp {
             Layout.fillWidth: true
             font.italic: true
             textFormat: "RichText"
-            text: "<small>Changes are lost if not saved.</small>"
+            text: "<small>Overlapping schedules will be disabled</small>"
+            wrapMode: "Wrap"
             horizontalAlignment: "AlignHCenter"
         }
 
         RowLayout {
             Layout.leftMargin: 24
             Layout.rightMargin: 24
-            Layout.topMargin: 24
+            Layout.topMargin: 12
             spacing: 24
 
             Button {
                 Layout.fillWidth: true
-                text: "Save"
+                text: "Yes"
 
                 onClicked: {
                     accepted();

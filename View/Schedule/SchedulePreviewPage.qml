@@ -12,6 +12,9 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Device referenece
+    property Device     device: uiSession?.appModel ?? null
+
     //! Schedule
     property Schedule   schedule
 
@@ -23,57 +26,33 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 8
     rightPadding: 4
-    topPadding: 24
     title: "Schedule Preview"
     backButtonVisible: false
-    titleHeadeingLevel: 3
-
-    //! Back button is invisible in AddSchedulePage and only visible when editing an existing Schedule
-    backButtonCallback: function() {
-        if (pageStack.depth > 1) {
-            pageStack.pop();
-        } else if (_root.StackView.view) {
-            _root.StackView.view.pop();
-        }
-    }
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/
-    ToolButton {
-        parent: isEditable ? _root.header.contentItem : _root
-        visible: isEditable && pageStack.depth > 1
-        contentItem: RoniaTextIcon {
-            text: FAIcons.check
-        }
-
-        onClicked: {
-            pageStack.pop();
-        }
-    }
-
-    StackView {
-        id: pageStack
-        anchors.fill: parent
-
-        initialItem: itemsFlickable
-    }
-
     Flickable {
         id: itemsFlickable
+
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width - 4
+            y: _root.contentItem.y
+            parent: _root
+            height: _root.contentItem.height - 16
+        }
+
+        anchors.fill: parent
+        anchors.rightMargin: 10
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         contentHeight: _previewContentLay.implicitHeight
         contentWidth: width
-        ScrollIndicator.vertical: ScrollIndicator { }
 
         ColumnLayout {
             id: _previewContentLay
-            anchors {
-                fill: parent
-                rightMargin: 12
-            }
+            anchors.fill: parent
 
             ItemDelegate {
                 Layout.fillWidth: true
@@ -99,11 +78,15 @@ BasePageView {
                 }
 
                 onClicked: {
+                    if (!isEditable) return;
                     //! Open ScheduleNamePage for editing
-                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleNamePage.qml", {
-                                       "uiSession": uiSession,
-                                       "schedule": _root.schedule
-                                   });
+                    if (_root.StackView.view) {
+                        _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleNamePage.qml", {
+                                                      "backButtonVisible": true,
+                                                      "uiSession": uiSession,
+                                                      "schedule": _root.schedule
+                                                  });
+                    }
                 }
             }
 
@@ -131,11 +114,15 @@ BasePageView {
                 }
 
                 onClicked: {
+                    if (!isEditable) return;
                     //! Open ScheduleNamePage for editing
-                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleTypePage.qml", {
-                                       "uiSession": uiSession,
-                                       "schedule": _root.schedule
-                                   });
+                    if (_root.StackView.view) {
+                        _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTypePage.qml", {
+                                                      "backButtonVisible": true,
+                                                      "uiSession": uiSession,
+                                                      "schedule": _root.schedule
+                                                  });
+                    }
                 }
             }
 
@@ -155,18 +142,28 @@ BasePageView {
                     }
 
                     Label {
+                        readonly property string unit: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+                                                        ? "F" : "C") ?? "F"
+
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
-                        text: schedule?.temprature ?? 0
+                        text: Number(Utils.convertedTemperature(schedule?.temprature ?? 0,
+                                                                device.setting.tempratureUnit)
+                                     ).toLocaleString(locale, "f", 0)
+                              + ` \u00b0${unit}`
                     }
                 }
 
                 onClicked: {
+                    if (!isEditable) return;
                     //! Open ScheduleNamePage for editing
-                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleTempraturePage.qml", {
-                                       "uiSession": uiSession,
-                                       "schedule": _root.schedule
-                                   });
+                    if (_root.StackView.view) {
+                        _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTempraturePage.qml", {
+                                                      "backButtonVisible": true,
+                                                      "uiSession": uiSession,
+                                                      "schedule": _root.schedule
+                                                  });
+                    }
                 }
             }
 
@@ -216,12 +213,16 @@ BasePageView {
                 }
 
                 onClicked: {
+                    if (!isEditable) return;
                     //! Open ScheduleNamePage for editing
-                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
-                                       "uiSession": uiSession,
-                                       "timeProperty": "start-time",
-                                       "schedule": _root.schedule
-                                   });
+                    if (_root.StackView.view) {
+                        _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
+                                                      "backButtonVisible": true,
+                                                      "uiSession": uiSession,
+                                                      "timeProperty": "start-time",
+                                                      "schedule": _root.schedule
+                                                  });
+                    }
                 }
             }
 
@@ -248,12 +249,19 @@ BasePageView {
                 }
 
                 onClicked: {
+                    if (!isEditable) return;
                     //! Open ScheduleNamePage for editing
-                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
-                                       "uiSession": uiSession,
-                                       "timeProperty": "end-time",
-                                       "schedule": _root.schedule
-                                   });
+                    if (_root.StackView.view) {
+                        _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
+                                                      "backButtonVisible": true,
+                                                      "uiSession": uiSession,
+                                                      "timeProperty": "end-time",
+                                                      "schedule": _root.schedule,
+                                                      "startTime": Date.fromLocaleTimeString(Qt.locale(),
+                                                                                             _root.schedule.startTime,
+                                                                                             "hh:mm AP")
+                                                  });
+                    }
                 }
             }
 
@@ -298,11 +306,15 @@ BasePageView {
                 }
 
                 onClicked: {
+                    if (!isEditable) return;
                     //! Open ScheduleNamePage for editing
-                    pageStack.push("qrc:/Stherm/View/Schedule/ScheduleRepeatPage.qml", {
-                                       "uiSession": uiSession,
-                                       "schedule": _root.schedule
-                                   });
+                    if (_root.StackView.view) {
+                        _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleRepeatPage.qml", {
+                                                      "backButtonVisible": true,
+                                                      "uiSession": uiSession,
+                                                      "schedule": _root.schedule
+                                                  });
+                    }
                 }
             }
 

@@ -13,10 +13,13 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule   schedule
+    property Schedule           schedule
+
+    //! Type is alwasy valid
+    readonly property bool      isValid:    true
 
     //!
-    readonly property string type: _buttonsGroup.checkedButton?.text ?? ""
+    readonly property string    type:       _buttonsGroup.checkedButton?.text ?? ""
 
     /* Object properties
      * ****************************************************************************************/
@@ -27,19 +30,30 @@ BasePageView {
     topPadding: 24
     title: "Schedule Type"
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            if (schedule && schedule.type !== _buttonsGroup.checkedButton.text) {
+                schedule.type = _buttonsGroup.checkedButton.text;
+            }
+
+            backButtonCallback();
+        }
+    }
+
     ButtonGroup {
         id: _buttonsGroup
         buttons: _buttonsLay.children
-
-        onCheckedButtonChanged: {
-            if (schedule && schedule.type !== checkedButton.text) {
-                schedule.type = checkedButton.text;
-            }
-        }
     }
 
     ColumnLayout {

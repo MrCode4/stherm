@@ -22,6 +22,6 @@ ToolButton {
     contentItem: Image {
         sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
         sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
-        source: _root.checked ? "qrc:/Stherm/Images/fan-on.png" : "qrc:/Stherm/Images/fan-off.png"
+        source: "qrc:/Stherm/Images/fan-on.png"
     }
 }

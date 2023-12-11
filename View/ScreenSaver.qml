@@ -37,7 +37,7 @@ Popup {
     ColumnLayout {
         id: _contentLay
         anchors.centerIn: parent
-        width: parent.width * 0.6
+        width: AppStyle.size
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
@@ -46,7 +46,8 @@ Popup {
             Label {
                 id: _tempratureLbl
 
-                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignCenter
+                Layout.rightMargin: unitLbl.width / 2
                 padding: 0
                 font.pointSize: Application.font.pointSize * 6.5
                 minimumPointSize: Application.font.pointSize
@@ -58,6 +59,7 @@ Popup {
                                  device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
 
                 Label {
+                    id: unitLbl
                     anchors {
                         horizontalCenter: parent.horizontalCenter
                         horizontalCenterOffset: (_tempratureLbl.contentWidth + width) / 2 + 6
@@ -75,7 +77,7 @@ Popup {
             //! Mode button
             SystemModeButton {
                 Layout.alignment: Qt.AlignCenter
-                Layout.leftMargin: dateTimeLbl.width + width / 2
+                Layout.leftMargin: dateTimeLbl.width / 2 + width / 2
                 Layout.topMargin: -height / 2
                 background: null
                 deviceController: _root.deviceController
@@ -98,8 +100,8 @@ Popup {
         OrganizationIcon {
             id: _icon
             Layout.alignment: Qt.AlignCenter
-            Layout.leftMargin: 8
-            Layout.rightMargin: 8
+            Layout.leftMargin: AppStyle.size / 10
+            Layout.rightMargin: AppStyle.size / 10
             Layout.fillWidth: true
         }
     }

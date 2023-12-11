@@ -33,6 +33,7 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Settings"
+    leftPadding: 10 * scaleFactor
     backButtonCallback: function() {
         //! Check if color is modified
         var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
@@ -44,7 +45,8 @@ BasePageView {
                         || setting.tempratureUnit !== selectedTempUnit
                         || setting.timeFormat !== selectedTimeFormat)) {
             //! This means that changes are occured that are not saved into model
-            uiSession.popUps.exitConfirmPopup.accepted.connect(goBack);
+            uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
+            uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
             uiSession.popupLayout.displayPopUp(uiSession.popUps.exitConfirmPopup);
         } else {
             goBack();
@@ -55,6 +57,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {
+        id: confirmtBtn
         parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.check
@@ -66,9 +69,7 @@ BasePageView {
             //! Make a copy of last applied data to Setting
             makeCopyOfSettings();
 
-            if (_root.StackView.view) {
-                _root.StackView.view.pop();
-            }
+            goBack();
         }
     }
 
@@ -81,19 +82,15 @@ BasePageView {
 
     Flickable {
         ScrollIndicator.vertical: ScrollIndicator {
-            parent: _root.contentItem
-            anchors {
-                left: parent.right
-                top: parent.top
-                bottom: parent.bottom
-                leftMargin: -_root.leftPadding / 2
-            }
+            x: parent.width - width - 4
+            y: _root.contentItem.y
+            parent: _root
+            height: _root.contentItem.height - 30
         }
 
-        anchors.centerIn: parent
+        anchors.fill: parent
+        anchors.rightMargin: 10
         clip: true
-        width: parent.width * 0.9
-        height: parent.height
         boundsBehavior: Flickable.StopAtBounds
         contentWidth: width
         contentHeight: _contentCol.implicitHeight
@@ -286,7 +283,8 @@ BasePageView {
     //! This method is used to go back
     function goBack()
     {
-        uiSession.popUps.exitConfirmPopup.accepted.disconnect(goBack);
+        uiSession.popUps.exitConfirmPopup.accepted.disconnect(confirmtBtn.clicked);
+        uiSession.popUps.exitConfirmPopup.rejected.disconnect(goBack);
 
         if (_root.StackView.view) {
             //! Then Page is inside an StackView

@@ -12,13 +12,22 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Device reference
+    property Device         device: uiSession?.appModel ?? null
+
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule   schedule
+    property Schedule       schedule
 
-    //! Temprature value
-    property alias      temprature: _tempSlider.value // conversion?
+    //! Temprature is alwasy valid
+    readonly property bool  isValid: true
 
-    property bool       isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
+    //! Temprature value: this is always in celsius
+    readonly property real  temprature: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+                                         ? Utils.fahrenheitToCelsius(_tempSlider.value)
+                                         : _tempSlider.value)
+
+    //!
+    property bool           isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     /* Object properties
      * ****************************************************************************************/
@@ -26,15 +35,31 @@ BasePageView {
     implicitHeight: contentItem.children.length === 1 ? contentItem.children[0].implicitHeight + implicitHeaderHeight
                                                         + implicitFooterHeight + topPadding + bottomPadding
                                                       : 0
-    topPadding: 24
-    leftPadding: 24 * scaleFactor
-    rightPadding: 24 * scaleFactor
+    leftPadding: 8 * scaleFactor
+    rightPadding: 8 * scaleFactor
     title: "Temprature (\u00b0" + (isCelcius ? "C" : "F") + ")"
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            if (schedule && schedule.temprature !== temprature) {
+                schedule.temprature = temprature;
+            }
+
+            backButtonCallback();
+        }
+    }
+
     TickedSlider {
         id: _tempSlider
         readonly property int tickStepSize: 4
@@ -43,7 +68,7 @@ BasePageView {
         width: parent.width
         from: isCelcius ? 18 : 65
         to: isCelcius ? 30 : 85
-        value: schedule?.temprature ?? 0
+        value: Utils.convertedTemperature(schedule?.temprature ?? 0, device.setting.tempratureUnit)
         majorTickCount: isCelcius ? 3 : 5
         ticksCount: to - from
         stepSize: 1
@@ -56,12 +81,6 @@ BasePageView {
             timeout: Number.MAX_VALUE
             delay: 0
             text: _tempSlider.value
-        }
-
-        onMoved: {
-            if (schedule && schedule.temprature !== temprature) {
-                schedule.temprature = value;
-            }
         }
     }
 }

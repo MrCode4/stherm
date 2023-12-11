@@ -23,8 +23,8 @@ Button {
     implicitWidth: (mainLay.implicitWidth + (!checkIcon.visible ? checkIcon.implicitWidth + spacing: 0)) + leftPadding + rightPadding
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
                              mainLay.implicitHeight + topPadding + bottomPadding)
-    horizontalPadding: 16 * scaleFactor
-    verticalPadding: 12 * scaleFactor
+    horizontalPadding: 16
+    verticalPadding: 12
     text: sensor?.name ?? ""
     contentItem: Item {}
 

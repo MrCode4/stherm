@@ -40,7 +40,15 @@ BasePageView {
 
     //! Contents should be a list of current schedules
     ListView {
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width - 4
+            y: _root.contentItem.y
+            parent: _root
+            height: _root.contentItem.height - 16
+        }
+
         anchors.fill: parent
+        anchors.rightMargin: 4
         clip: true
         model: appModel?.schedules ?? []
         delegate: ScheduleDelegate {
@@ -49,6 +57,7 @@ BasePageView {
 
             width: ListView.view.width
             height: Style.delegateHeight
+            uiSession: _root.uiSession
             schedule: (modelData instanceof Schedule) ? modelData : null
             delegateIndex: index
 

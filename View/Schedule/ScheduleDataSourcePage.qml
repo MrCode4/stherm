@@ -15,6 +15,9 @@ BasePageView {
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
     property Schedule   schedule
 
+    //!
+    readonly property bool       isValid: true
+
     //! Device reference
     property I_Device device: uiSession?.appModel ?? null
 
@@ -26,10 +29,27 @@ BasePageView {
     topPadding: 32
     title: "Data Source"
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            if (schedule) {
+                schedule.dataSource = sensor.name;
+            }
+
+            backButtonCallback();
+        }
+    }
+
     ButtonGroup {
         id: buttonsGrp
         buttons: sensorsBtnsLay.children
@@ -37,6 +57,13 @@ BasePageView {
 
     Flickable {
         id: sensorsFlick
+
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width
+            parent: sensorsFlick.parent
+            height: parent.height - 12
+        }
+
         anchors.fill: parent
         clip: true
         contentHeight: sensorsBtnsLay.implicitHeight
@@ -69,12 +96,6 @@ BasePageView {
                     sensor: modelData instanceof Sensor ? modelData : null
                 }
             }
-        }
-    }
-
-    onSensorChanged: {
-        if (schedule) {
-            schedule.dataSource = sensor.name;
         }
     }
 }

@@ -17,8 +17,6 @@ BasePageView {
     
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 16 * scaleFactor
-    rightPadding: 16 * scaleFactor
     title: "Time"
     
     /* Children

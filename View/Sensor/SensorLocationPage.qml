@@ -23,7 +23,7 @@ Page {
     implicitWidth: AppStyle.size
     implicitHeight: implicitWidth
     leftPadding: 8
-    rightPadding: 20
+    rightPadding: 12
     background: null
 
     /* Children
@@ -52,7 +52,7 @@ Page {
         ScrollIndicator.vertical: ScrollIndicator {
             parent: _root
             x: parent.width - width - 2
-            height: parent.height
+            height: parent.height - 16
         }
 
         anchors.fill: parent

@@ -20,9 +20,15 @@ BasePageView {
     ListView {
         id: _alnoListV
 
-        ScrollIndicator.vertical: ScrollIndicator { }
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width - 4
+            y: _root.contentItem.y
+            parent: _root
+            height: _root.contentItem.height - 30
+        }
 
         anchors.fill: parent
+        anchors.rightMargin: 10
         clip: true
         model: appModel?.messages ?? []
         delegate: AlertNotificationDelegate {

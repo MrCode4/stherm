@@ -39,8 +39,6 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: AppStyle.size / 12
-    rightPadding: AppStyle.size / 12
     title: "Backlight"
 
     backButtonCallback: function() {
@@ -48,7 +46,8 @@ BasePageView {
         if (backlight && (backlight.on !== _backlightOnOffSw.checked
                           || !Qt.colorEqual(backlight._color, liveColor))) {
             //! This means that changes are occured that are not saved into model
-            uiSession.popUps.exitConfirmPopup.accepted.connect(goBack);
+            uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
+            uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
             uiSession.popupLayout.displayPopUp(uiSession.popUps.exitConfirmPopup);
         } else {
             goBack();
@@ -70,17 +69,16 @@ BasePageView {
 
         //! Confirm button
         ToolButton {
+            id: confirmtBtn
             Layout.alignment: Qt.AlignCenter
             contentItem: RoniaTextIcon {
                 text: "\uf00c"
             }
 
             onClicked: {
-                applyToModel()
+                applyToModel();
 
-                if (_root.StackView.view) {
-                    _root.StackView.view.pop();
-                }
+                goBack();
             }
         }
     }
@@ -88,10 +86,11 @@ BasePageView {
     ColumnLayout {
         anchors.centerIn: parent
         width: _root.availableWidth
-        spacing: AppStyle.size / 18
+        spacing: 24
+        opacity: _backlightOnOffSw.checked ? 1. : 0.4
 
         Label {
-            Layout.leftMargin: 4
+            Layout.leftMargin: 8 * scaleFactor
             enabled: _backlightOnOffSw.checked
             text: "Color"
         }
@@ -100,7 +99,6 @@ BasePageView {
         ColorSlider {
             id: _colorSlider
             Layout.fillWidth: true
-            opacity: _backlightOnOffSw.checked ? 1. : 0.4
             onValueChanged: onlineTimer.startTimer()
             onMoved: dummyShadeDelegate.checked = true
             onPressedChanged: {
@@ -111,89 +109,105 @@ BasePageView {
             }
         }
 
-        ColumnLayout {
-            enabled: _backlightOnOffSw.checked
-            spacing: parent.spacing
+        Label {
+            Layout.topMargin: AppStyle.size / 48
+            Layout.leftMargin: 8 * scaleFactor
+            text: "Brightness"
+        }
 
-            Label {
-                Layout.topMargin: AppStyle.size / 48
-                Layout.leftMargin: AppStyle.size / 120
-                text: "Brightness"
-            }
+        //! Brightness slider
+        BrightnessSlider {
+            id: _brSlider
+            Layout.fillWidth: true
+            opacity: enabled ? 1. : 0.4
+            from: 0
+            to: 1.
+            onValueChanged: onlineTimer.startTimer()
 
-            //! Brightness slider
-            BrightnessSlider {
-                id: _brSlider
-                Layout.fillWidth: true
-                opacity: enabled ? 1. : 0.4
-                from: 0
-                to: 1.
-                onValueChanged: onlineTimer.startTimer()
-
-                Component.onCompleted: {
-                    handle.color = Style.background;
-                }
-            }
-
-            Label {
-                Layout.topMargin: AppStyle.size / 48
-                Layout.leftMargin: AppStyle.size / 120
-                visible: true
-                text: "Shades Of White"
-            }
-
-            //! Group for shade buttons
-            ButtonGroup {
-                id: _shadeButtonsGrp
-                buttons: _buttonsRow.children
-
-                onCheckedButtonChanged: onlineTimer.startTimer()
-            }
-
-            //! Shades of selected color
-            Item {
-                id: _buttonsRow
-
-                readonly property int cellSize: 82 * scaleFactor
-                readonly property int spacing: 4
-
-                Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + spacing)
-                Layout.preferredHeight: cellSize
-                Layout.alignment: Qt.AlignCenter
-                opacity: enabled ? 1. : 0.4
-                visible: true
-
-                Repeater {
-                    id: _shadeButtonsRepeater
-                    model: 5
-                    delegate: ShadeButtonDelegate {
-                        required property int index
-                        required property var modelData
-
-                        x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
-                        hoverEnabled: enabled
-                        cellSize: _buttonsRow.cellSize
-
-                        hue: backlight._whiteShade.hsvHue
-                        saturation: index / 4.
-                        value: backlight._whiteShade.hsvValue
+            onPressedChanged: {
+                if (pressed && !_backlightOnOffSw.checked) { {
+                        _backlightOnOffSw.toggle();
                     }
                 }
+            }
 
-                ShadeButtonDelegate {
-                    id: dummyShadeDelegate
+            Component.onCompleted: {
+                handle.color = Style.background;
+            }
+        }
 
-                    property int index: 5
+        Label {
+            Layout.topMargin: AppStyle.size / 48
+            Layout.leftMargin: 8 * scaleFactor
+            visible: true
+            text: "Shades Of White"
+        }
 
-                    visible: false
+        //! Group for shade buttons
+        ButtonGroup {
+            id: _shadeButtonsGrp
+            buttons: _buttonsRow.children
+
+            onCheckedButtonChanged: onlineTimer.startTimer()
+        }
+
+        //! Shades of selected color
+        Item {
+            id: _buttonsRow
+
+            readonly property int cellSize: 80
+            readonly property int spacing: 4
+
+            Layout.preferredWidth: _shadeButtonsRepeater.count * (cellSize + spacing)
+            Layout.preferredHeight: cellSize
+            Layout.alignment: Qt.AlignCenter
+            opacity: enabled ? 1. : 0.4
+            visible: true
+
+            Repeater {
+                id: _shadeButtonsRepeater
+                model: 5
+                delegate: ShadeButtonDelegate {
+                    required property int index
+                    required property var modelData
+
                     x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
-                    checked: false
                     hoverEnabled: enabled
                     cellSize: _buttonsRow.cellSize
 
-                    hue: _colorSlider.value
-                    saturation: 1
-                    value: _brSlider.value
+                    hue: backlight._whiteShade.hsvHue
+                    saturation: index / 4.
+                    value: backlight._whiteShade.hsvValue
+
+                    onPressedChanged: {
+                        if (pressed && !_backlightOnOffSw.checked) { {
+                                _backlightOnOffSw.toggle();
+                            }
+                        }
+                    }
+                }
+            }
+
+            ShadeButtonDelegate {
+                id: dummyShadeDelegate
+
+                property int index: 5
+
+                visible: false
+                x: index * (_buttonsRow.cellSize + _buttonsRow.spacing) + (cellSize - width) / 2
+                checked: false
+                hoverEnabled: enabled
+                cellSize: _buttonsRow.cellSize
+
+                hue: _colorSlider.value
+                saturation: 1
+                value: _brSlider.value
+
+                onPressedChanged: {
+                    if (pressed && !_backlightOnOffSw.checked) { {
+                            _backlightOnOffSw.toggle();
+                        }
+                    }
                 }
             }
         }
@@ -238,7 +252,8 @@ BasePageView {
     //! This method is used to go back
     function goBack()
     {
-        uiSession.popUps.exitConfirmPopup.accepted.disconnect(goBack);
+        uiSession.popUps.exitConfirmPopup.accepted.disconnect(confirmtBtn.clicked);
+        uiSession.popUps.exitConfirmPopup.rejected.disconnect(goBack);
 
         if (_root.StackView.view) {
             //! Then Page is inside an StackView

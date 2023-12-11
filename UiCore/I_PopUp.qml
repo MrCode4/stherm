@@ -28,7 +28,7 @@ Popup {
     property string                     title:              "Popup"
 
     //! H level of Popup title
-    property int                        titleHeadingLevel:  3
+    property int                        titleHeadingLevel:  4
 
     //! Icon of popup: this should be a font-awesome icon
     property string                     icon:               ""

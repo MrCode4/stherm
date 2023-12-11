@@ -16,17 +16,29 @@ ItemDelegate {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! UiSession
+    property UiSession              uiSession
+
+    //! SchedulesController
+    property SchedulesController    schedulesController: uiSession?.schedulesController ?? null
+
     //! Schedule
-    property Schedule   schedule
+    property Schedule               schedule
 
     //! Index in ListView
-    property int        delegateIndex
+    property int                    delegateIndex
 
     /* Object properties
      * ****************************************************************************************/
 
     /* Children
      * ****************************************************************************************/
+    QtObject {
+        id: internal
+
+        property var overlappingSchedules: []
+    }
+
     RowLayout {
         id: _delegateContent
         parent: _root.contentItem
@@ -37,7 +49,8 @@ ItemDelegate {
         //! Schedule icon
         RoniaTextIcon {
             Layout.alignment: Qt.AlignCenter
-            Layout.rightMargin: 4
+            Layout.preferredWidth: 24
+            font.pointSize: Style.fontIconSize.smallPt
             text: {
                 switch(schedule?.type) {
                 case "Away":
@@ -52,27 +65,33 @@ ItemDelegate {
 
                 return "-";
             }
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
         }
 
         //! Schedule name
         Label {
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignCenter
             font.bold: true
             text: schedule?.name ?? ""
+            elide: "ElideRight"
         }
 
         //! Schedule repeat
         Item {
-            Layout.preferredWidth: _fontMetric.boundingRect("MuTuWeThFrSuSa").width + 6 * 3
+            Layout.preferredWidth: _fontMetric.advanceWidth("MuTuWeThFrSuSa") + 6
             Layout.preferredHeight: Material.delegateHeight
             opacity: 0.8
 
             RowLayout {
                 anchors.centerIn: parent
-                spacing: 3
+                spacing: 1
+
                 Repeater {
                     model: schedule?.repeats ?? 0
                     delegate: Label {
+                        font: _fontMetric.font
                         Layout.alignment: Qt.AlignTop
                         text: modelData
 
@@ -96,6 +115,27 @@ ItemDelegate {
             checked: schedule?.active ?? false
 
             onToggled: {
+                if (checked) {
+                    //! First find if there is any overlapping schedules
+                    if (uiSession) {
+                        //! First check if this schedule has overlap with other Schedules
+                        internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
+                                    Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
+                                    Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
+                                    schedule.repeats,
+                                    schedule);
+
+                        if (internal.overlappingSchedules.length > 0) {
+                            //! First uncheck this Switch
+                            toggle() //! This won't emit toggled() signal so no recursion occurs
+
+                            uiSession.popUps.scheduleOverlapPopup.accepted.connect(setActive);
+                            uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
+                            return;
+                        }
+                    }
+                }
+
                 if (schedule && schedule.active !== checked) {
                     schedule.active = checked;
                 }
@@ -117,6 +157,7 @@ ItemDelegate {
 
     FontMetrics {
         id: _fontMetric
+        font.pointSize: _root.font.pointSize * 0.85
     }
 
     ParallelAnimation {
@@ -140,6 +181,20 @@ ItemDelegate {
 
         onFinished: {
             removed();
+        }
+    }
+
+    function setActive()
+    {
+        //! If there is overlapping Schedules disable them
+        internal.overlappingSchedules.forEach((element, index) => {
+                                                  element.active = false;
+                                              });
+
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(setActive);
+
+        if (schedule?.active === false) {
+            schedule.active = true;
         }
     }
 }

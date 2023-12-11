@@ -12,14 +12,20 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! schedulesModel: use to create new Schedule instance
+    property SchedulesController     schedulesController: uiSession?.schedulesController ?? null
+
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule   schedule
+    property Schedule       schedule
+
+    //! Repeats are always valid
+    readonly property bool  isValid: true
 
     //! Selected days for repeating
-    readonly property var repeats: {
+    readonly property var   repeats: {
         var rps = [];
 
-        if (_muBtn.checked) rps.push("Mu");
+        if (_muBtn.checked) rps.push("Mo");
         if (_tuBtn.checked) rps.push("Tu");
         if (_weBtn.checked) rps.push("We");
         if (_thBtn.checked) rps.push("Th");
@@ -34,23 +40,59 @@ BasePageView {
      * ****************************************************************************************/
     implicitWidth: Math.max(_contentLay.implicitWidth, implicitHeaderWidth) + leftPadding + rightPadding
     implicitHeight: _contentLay.implicitHeight + implicitHeaderHeight + implicitFooterHeight + topPadding + bottomPadding
-    topPadding: 24
-    leftPadding: 24 * scaleFactor
-    rightPadding: 24 * scaleFactor
+    leftPadding: 8 * scaleFactor
+    rightPadding: 8 * scaleFactor
     font.bold: true
     title: "Repeat"
     backButtonVisible: false
-    titleHeadeingLevel: 3
+    titleHeadeingLevel: 4
 
     /* Children
      * ****************************************************************************************/
+    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    ToolButton {
+        parent: schedule ? _root.header.contentItem : _root
+        visible: schedule
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            //! First check if this schedule has overlap with other Schedules
+            //! Do this only if schedule is enabled (active)
+            if (schedule.active) {
+                internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
+                            Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
+                            Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
+                            repeats,
+                            schedule);
+
+                if (internal.overlappingSchedules.length > 0) {
+                    //! New schedules overlapps with at least one other Schedule
+                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveRepeat);
+                    uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
+                    return;
+                }
+            }
+
+            saveRepeat();
+        }
+    }
+
+    QtObject {
+        id: internal
+
+        property var overlappingSchedules: []
+    }
+
     GridLayout {
         id: _contentLay
-        anchors.fill: parent
-
+        width: parent.width
+        anchors.centerIn: parent
+        rowSpacing: 12
         columns: 7
 
-        Label { Layout.alignment: Qt.AlignCenter; text: "Mu" }
+        Label { Layout.alignment: Qt.AlignCenter; text: "Mo" }
         Label { Layout.alignment: Qt.AlignCenter; text: "Tu" }
         Label { Layout.alignment: Qt.AlignCenter; text: "We" }
         Label { Layout.alignment: Qt.AlignCenter; text: "Th" }
@@ -67,15 +109,9 @@ BasePageView {
         RadioButton {id: _suBtn; autoExclusive: false }
     }
 
-    onRepeatsChanged: {
-        if (schedule && schedule.repeats.toString() !== repeats.toString()) {
-            schedule.repeats = repeats;
-        }
-    }
-
     onScheduleChanged: {
         if (schedule) {
-            _muBtn.checked = Boolean(schedule.repeats.find(element => element === "Mu"));
+            _muBtn.checked = Boolean(schedule.repeats.find(element => element === "Mo"));
             _tuBtn.checked = Boolean(schedule.repeats.find(element => element === "Tu"));
             _weBtn.checked = Boolean(schedule.repeats.find(element => element === "We"));
             _thBtn.checked = Boolean(schedule.repeats.find(element => element === "Th"));
@@ -83,5 +119,23 @@ BasePageView {
             _saBtn.checked = Boolean(schedule.repeats.find(element => element === "Sa"));
             _suBtn.checked = Boolean(schedule.repeats.find(element => element === "Su"));
         }
+    }
+
+    /* Methods
+     * ****************************************************************************************/
+    function saveRepeat()
+    {
+        //! If there is overlapping Schedules disable them
+        internal.overlappingSchedules.forEach((element, index) => {
+                                                  element.active = false;
+                                              });
+
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveRepeat);
+
+        if (schedule && schedule.repeats.toString() !== repeats.toString()) {
+            schedule.repeats = repeats;
+        }
+
+        backButtonCallback();
     }
 }
