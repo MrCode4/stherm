@@ -25,7 +25,7 @@ BasePageView {
     readonly property var   repeats: {
         var rps = [];
 
-        if (_muBtn.checked) rps.push("Mu");
+        if (_muBtn.checked) rps.push("Mo");
         if (_tuBtn.checked) rps.push("Tu");
         if (_weBtn.checked) rps.push("We");
         if (_thBtn.checked) rps.push("Th");
@@ -92,7 +92,7 @@ BasePageView {
         rowSpacing: 12
         columns: 7
 
-        Label { Layout.alignment: Qt.AlignCenter; text: "Mu" }
+        Label { Layout.alignment: Qt.AlignCenter; text: "Mo" }
         Label { Layout.alignment: Qt.AlignCenter; text: "Tu" }
         Label { Layout.alignment: Qt.AlignCenter; text: "We" }
         Label { Layout.alignment: Qt.AlignCenter; text: "Th" }
@@ -111,7 +111,7 @@ BasePageView {
 
     onScheduleChanged: {
         if (schedule) {
-            _muBtn.checked = Boolean(schedule.repeats.find(element => element === "Mu"));
+            _muBtn.checked = Boolean(schedule.repeats.find(element => element === "Mo"));
             _tuBtn.checked = Boolean(schedule.repeats.find(element => element === "Tu"));
             _weBtn.checked = Boolean(schedule.repeats.find(element => element === "We"));
             _thBtn.checked = Boolean(schedule.repeats.find(element => element === "Th"));
