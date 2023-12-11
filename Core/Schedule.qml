@@ -18,7 +18,7 @@ QSObject {
     //! Schedule type
     property string     type: ""
 
-    //! Schedule temprature (unit?)
+    //! Schedule temprature: This is always in Celsius
     property real       temprature: 0.
 
     //! Schedule humidity

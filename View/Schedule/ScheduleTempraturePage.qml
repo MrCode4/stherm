@@ -12,14 +12,19 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Device reference
+    property Device         device: uiSession?.appModel ?? null
+
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
     property Schedule       schedule
 
     //! Temprature is alwasy valid
     readonly property bool  isValid: true
 
-    //! Temprature value
-    property alias          temprature: _tempSlider.value // conversion?
+    //! Temprature value: this is always in celsius
+    readonly property real  temprature: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+                                         ? Utils.fahrenheitToCelsius(_tempSlider.value)
+                                         : _tempSlider.value)
 
     //!
     property bool           isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
@@ -63,7 +68,7 @@ BasePageView {
         width: parent.width
         from: isCelcius ? 18 : 65
         to: isCelcius ? 30 : 85
-        value: schedule?.temprature ?? 0
+        value: Utils.convertedTemperature(schedule?.temprature ?? 0, device.setting.tempratureUnit)
         majorTickCount: isCelcius ? 3 : 5
         ticksCount: to - from
         stepSize: 1
