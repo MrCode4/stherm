@@ -308,7 +308,7 @@ ApplicationWindow {
                      anchors.centerIn: parent
                      font.family: Application.font.family
                      font.capitalization: keypanel.control.uppercased ? "AllUppercase" : "MixedCase"
-                     color: Qt.darker(Style.foreground, keypanel.control.pressed ? 1.25 : 1)
+                     color: Qt.darker(Style.foreground, keypanel.control.pressed ? 2 : 1)
                      text: keypanel.control.displayText
                  }
              }
