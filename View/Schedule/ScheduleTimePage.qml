@@ -29,9 +29,9 @@ BasePageView {
 
     //! This shows whether the inputs in this page are valid or not
     readonly property bool      isValid:        {
+        var selectedTimeDate = Date.fromLocaleTimeString(Qt.locale(), selectedTime, "hh:mm AP");
         return startTime && timeProperty === "end-time"
-                ? Math.abs(Date.fromLocaleTimeString(Qt.locale(), selectedTime, "hh:mm AP")
-                           - startTime) / 60000 >= minTimeDiff
+                ? (selectedTimeDate - startTime) / 60000 >= minTimeDiff
                 : true
     }
 
@@ -151,13 +151,7 @@ BasePageView {
             }
 
             if (time) {
-                _hourTumbler.currentIndex = Number(time.slice(0, 2)) - 1;
-                _minuteTumbler.currentIndex = Number(time.slice(3, 5));
-                if (time.slice(6, 8) === "AM") {
-                    _amRBtn.checked = true;
-                } else if (time.slice(6, 8) === "PM") {
-                    _pmRBtn.checked = true;
-                }
+                setTimeFromString(time);
             }
         }
     }
@@ -183,5 +177,17 @@ BasePageView {
         }
 
         backButtonCallback();
+    }
+
+    //!
+    function setTimeFromString(time)
+    {
+        _hourTumbler.currentIndex = Number(time.slice(0, 2)) - 1;
+        _minuteTumbler.currentIndex = Number(time.slice(3, 5));
+        if (time.slice(6, 8) === "AM") {
+            _amRBtn.checked = true;
+        } else if (time.slice(6, 8) === "PM") {
+            _pmRBtn.checked = true;
+        }
     }
 }
