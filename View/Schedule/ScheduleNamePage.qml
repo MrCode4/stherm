@@ -10,6 +10,10 @@ import Stherm
 BasePageView {
     id: _root
 
+    /* Signals
+     * ****************************************************************************************/
+    signal accepted()
+
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule: If set changes are applied to Schedule. This is can be used to edit a Schedule
@@ -32,6 +36,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button: only visible if is editing and schedule (schedule is not null)
     ToolButton {
+        id: confirmBtn
         parent: schedule ? _root.header.contentItem : _root
         visible: schedule
         enabled: _nameTf.acceptableInput
@@ -56,6 +61,15 @@ BasePageView {
         text: schedule?.name ?? ""
         validator: RegularExpressionValidator {
             regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
+        }
+
+        onAccepted: {
+            if (confirmBtn.visible) {
+                confirmBtn.forceActiveFocus();
+                confirmBtn.clicked();
+            }
+
+            _root.accepted();
         }
     }
 }

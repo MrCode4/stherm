@@ -36,6 +36,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Next/Confirm button
     ToolButton {
+        id: nxtConfBtn
         parent: _root.header.contentItem
         enabled: !_newSchedulePages.currentItem?.nextPage || _newSchedulePages.currentItem?.isValid
 
@@ -103,6 +104,11 @@ BasePageView {
                 if (isValid &&_internal.newSchedule.name !== scheduleName) {
                     _internal.newSchedule.name = scheduleName;
                 }
+            }
+
+            onAccepted: {
+                nxtConfBtn.forceActiveFocus();
+                nxtConfBtn.clicked();
             }
         }
     }
