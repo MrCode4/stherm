@@ -18,9 +18,6 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    width: T.Overlay.overlay?.width * 0.8
-    height: T.Overlay.overlay?.height * 0.7
-    bottomPadding: 12
     title: "Schedule Overlap"
 
     /* Children

@@ -44,7 +44,7 @@ Popup {
     implicitHeight: Math.min(implicitContentHeight + bottomPadding + topPadding,
                              (T.Overlay.overlay?.height ?? AppStyle.size) * 0.85)
     spacing: 24
-    horizontalPadding: 12
+    horizontalPadding: 16
     topPadding: 4
     bottomPadding: 24
     dim: true
