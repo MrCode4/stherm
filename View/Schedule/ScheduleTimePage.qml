@@ -29,22 +29,14 @@ BasePageView {
 
     //! This shows whether the inputs in this page are valid or not
     readonly property bool      isValid:        {
-        var selectedTimeDate = Date.fromLocaleTimeString(Qt.locale(), selectedTime, "hh:mm AP");
+        var selectedTimeDate = Date.fromLocaleTimeString(Qt.locale(), _contentLay.selectedTime, "hh:mm AP");
         return startTime && timeProperty === "end-time"
                 ? (selectedTimeDate - startTime) / 60000 >= minTimeDiff
                 : true
     }
 
     //! Time in string format: 'hh:mm AM/PM'
-    readonly property string    selectedTime:   {
-        var h = `${_hourTumbler.currentItem.modelData}`;
-        var m = `${_minuteTumbler.currentItem.modelData}`;
-
-        if (h.length === 1) h = "0" + h;
-        if (m.length === 1) m = "0" + m;
-
-        return `${h}:${m} ${_amRBtn.checked ? "AM" : "PM"}`;
-    }
+    property string    selectedTime
 
     /* Object properties
      * ****************************************************************************************/
@@ -94,6 +86,13 @@ BasePageView {
         }
     }
 
+    Binding {
+        target: _root
+        delayed: true
+        property: "selectedTime"
+        value: _contentLay.selectedTime
+    }
+
     QtObject {
         id: internal
 
@@ -102,6 +101,17 @@ BasePageView {
 
     GridLayout {
         id: _contentLay
+
+        readonly property string    selectedTime:   {
+            var h = `${_hourTumbler.currentItem.modelData}`;
+            var m = `${_minuteTumbler.currentItem.modelData}`;
+
+            if (h.length === 1) h = "0" + h;
+            if (m.length === 1) m = "0" + m;
+
+            return `${h}:${m} ${_amRBtn.checked ? "AM" : "PM"}`;
+        }
+
         anchors.centerIn: parent
 
         columns: 3
@@ -110,6 +120,7 @@ BasePageView {
 
         Tumbler {
             id: _hourTumbler
+            currentIndex: 0
             model: Array.from({ length: 12 }, (elem, indx) => indx + 1)
         }
 
@@ -121,6 +132,7 @@ BasePageView {
 
         Tumbler {
             id: _minuteTumbler
+            currentIndex: 0
             model: 60
         }
 

@@ -155,6 +155,11 @@ BasePageView {
                     _internal.newSchedule.startTime = selectedTime;
                 }
             }
+
+            Component.onCompleted: {
+                //! Set start time to current time
+                setTimeFromString((new Date).toLocaleTimeString(Qt.locale(), "hh:mm AP"));
+            }
         }
     }
 
@@ -171,6 +176,17 @@ BasePageView {
                 if (isValid && selectedTime !== _internal.newSchedule.endTime) {
                     _internal.newSchedule.endTime = selectedTime;
                 }
+            }
+
+            Component.onCompleted: {
+                //! Set start time to current time
+                var endTime = _internal.newSchedule.startTime;
+                var hour = Number(endTime.slice(0, 2));
+                hour = Math.min(12, hour + 2);
+
+                endTime = (hour < 10 ? "0" + hour : hour) + endTime.slice(2, endTime.lengthd);
+
+                setTimeFromString(endTime);
             }
         }
     }
