@@ -45,7 +45,8 @@ BasePageView {
                         || setting.tempratureUnit !== selectedTempUnit
                         || setting.timeFormat !== selectedTimeFormat)) {
             //! This means that changes are occured that are not saved into model
-            uiSession.popUps.exitConfirmPopup.accepted.connect(goBack);
+            uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
+            uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
             uiSession.popupLayout.displayPopUp(uiSession.popUps.exitConfirmPopup);
         } else {
             goBack();
@@ -56,6 +57,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {
+        id: confirmtBtn
         parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.check
@@ -67,9 +69,7 @@ BasePageView {
             //! Make a copy of last applied data to Setting
             makeCopyOfSettings();
 
-            if (_root.StackView.view) {
-                _root.StackView.view.pop();
-            }
+            goBack();
         }
     }
 
@@ -283,7 +283,8 @@ BasePageView {
     //! This method is used to go back
     function goBack()
     {
-        uiSession.popUps.exitConfirmPopup.accepted.disconnect(goBack);
+        uiSession.popUps.exitConfirmPopup.accepted.disconnect(confirmtBtn.clicked);
+        uiSession.popUps.exitConfirmPopup.rejected.disconnect(goBack);
 
         if (_root.StackView.view) {
             //! Then Page is inside an StackView
