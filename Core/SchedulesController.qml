@@ -57,7 +57,7 @@ QtObject {
                 return;
             }
 
-            //! First check if repeats have at least one similiar values
+            //! First check if repeats have at least one similar values
             if (element.repeats.find((repeatElem, repeatIndex) => {
                                      return repeats.includes(repeatElem);
                                  })) {
