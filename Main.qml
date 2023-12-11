@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.VirtualKeyboard
+import QtQuick.VirtualKeyboard.Styles
 import QtQuick.VirtualKeyboard.Settings
 
 import Ronia
@@ -179,7 +180,8 @@ ApplicationWindow {
         Component.onCompleted: {
             //! Increase key height and keyboard height
             VirtualKeyboardSettings.locale = "en_US";
-            VirtualKeyboardSettings.inputMethodHints = Qt.ImhNoAutoUppercase | Qt.ImhPreferLowercase;
+
+            keyboard.style.keyPanel = keyboardKeyCompo;
             keyboard.style.keyboardDesignHeight = keyboard.style.keyboardDesignHeight * 1.3
             keyboard.style.keyboardHeight = keyboard.style.keyboardDesignHeight / 3.8;
         }
@@ -287,6 +289,30 @@ ApplicationWindow {
                 }
             }
         ]
+    }
+
+    //! Component for keyboard key. This will be set in keyboard style
+    Component {
+        id: keyboardKeyCompo
+
+        KeyPanel {
+            id: keypanel
+
+             Rectangle {
+                 anchors.fill: parent
+                 anchors.margins: 2
+                 color: [".", ","].includes(keypanel.control.displayText) ? "#4F5B62" : Style.background;
+                 radius: 4
+
+                 Text {
+                     anchors.centerIn: parent
+                     font.family: Application.font.family
+                     font.capitalization: keypanel.control.uppercased ? "AllUppercase" : "MixedCase"
+                     color: Qt.darker(Style.foreground, keypanel.control.pressed ? 1.25 : 1)
+                     text: keypanel.control.displayText
+                 }
+             }
+         }
     }
 
     //! SplashScreen Loader
