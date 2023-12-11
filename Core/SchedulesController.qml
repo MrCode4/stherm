@@ -53,7 +53,7 @@ QtObject {
 
         var overlappings = [];
         device.schedules.forEach(function(element, index) {
-            if (element === exclude) {
+            if (element === exclude || !element.active) {
                 return;
             }
 
