@@ -22,10 +22,10 @@ Control {
     property string             unit: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property int                minTemprature: 18
+    property int                minTemprature: isCelsius ? 18 : 65
 
     //! Maximum temprature
-    property int                maxTemprature: 30
+    property int                maxTemprature: isCelsius ? 30 : 85
 
     //! Offset of desired temp label
     property int                labelVerticalOffset: -8
@@ -38,6 +38,8 @@ Control {
 
     //! Label width
     readonly property alias     labelWidth: _desiredTempratureLbl.width
+
+    readonly property bool      isCelsius: device.setting.tempratureUnit === AppSpec.TempratureUnit.Cel
 
     /* Object properties
      * ****************************************************************************************/
@@ -52,11 +54,18 @@ Control {
             enabled: labelVisible
             from: minTemprature
             to: maxTemprature
-            value: device?.requestedTemp ?? 18.0
+            //! Note: this binding will be broken use Connections instead
+            value: Utils.convertedTemperature(device?.requestedTemp ?? 18.0, device.setting.tempratureUnit)
 
+            //! Use onPressed instead of on value changed so value is only applied to device when
+            //! Dragging is finished
             onPressedChanged: {
-                if (!pressed && device && device.requestedTemp !== value) {
-                    uiSession.deviceController.setDesiredTemperature(value);
+                if (!pressed) {
+                    var celValue = (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah)
+                            ? Utils.fahrenheitToCelsius(value) : value;
+                    if (device && device.requestedTemp !== celValue) {
+                        uiSession.deviceController.setDesiredTemperature(celValue);
+                    }
                 }
             }
         }
@@ -67,8 +76,7 @@ Control {
             visible: labelVisible
             anchors.centerIn: parent
             anchors.verticalCenterOffset: labelVerticalOffset
-            text: Number(Utils.convertedTemperature(_tempSlider.value, device.setting.tempratureUnit))
-                  .toLocaleString(locale, "f", 0)
+            text: Number(_tempSlider.value).toLocaleString(locale, "f", 0)
 
             //! Unit
             Label {
@@ -98,7 +106,8 @@ Control {
             //! Update slider value (UI) with changed requestedTemp
             //! When setDesiredTemperature failed, update slider with previous value.
             function onRequestedTempChanged() {
-                _tempSlider.value = device.requestedTemp;
+                _tempSlider.value = Utils.convertedTemperature(device.requestedTemp,
+                                                               device.setting.tempratureUnit);
             }
         }
     }
