@@ -57,6 +57,7 @@ BasePageView {
 
             width: ListView.view.width
             height: Style.delegateHeight
+            uiSession: _root.uiSession
             schedule: (modelData instanceof Schedule) ? modelData : null
             delegateIndex: index
 

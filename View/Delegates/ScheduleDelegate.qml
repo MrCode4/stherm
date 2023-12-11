@@ -16,17 +16,29 @@ ItemDelegate {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! UiSession
+    property UiSession              uiSession
+
+    //! SchedulesController
+    property SchedulesController    schedulesController: uiSession?.schedulesController ?? null
+
     //! Schedule
-    property Schedule   schedule
+    property Schedule               schedule
 
     //! Index in ListView
-    property int        delegateIndex
+    property int                    delegateIndex
 
     /* Object properties
      * ****************************************************************************************/
 
     /* Children
      * ****************************************************************************************/
+    QtObject {
+        id: internal
+
+        property var overlappingSchedules: []
+    }
+
     RowLayout {
         id: _delegateContent
         parent: _root.contentItem
@@ -103,6 +115,27 @@ ItemDelegate {
             checked: schedule?.active ?? false
 
             onToggled: {
+                if (checked) {
+                    //! First find if there is any overlapping schedules
+                    if (uiSession) {
+                        //! First check if this schedule has overlap with other Schedules
+                        internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
+                                    Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
+                                    Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
+                                    schedule.repeats,
+                                    schedule);
+
+                        if (internal.overlappingSchedules.length > 0) {
+                            //! First uncheck this Switch
+                            toggle() //! This won't emit toggled() signal so no recursion occurs
+
+                            uiSession.popUps.scheduleOverlapPopup.accepted.connect(setActive);
+                            uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
+                            return;
+                        }
+                    }
+                }
+
                 if (schedule && schedule.active !== checked) {
                     schedule.active = checked;
                 }
@@ -148,6 +181,20 @@ ItemDelegate {
 
         onFinished: {
             removed();
+        }
+    }
+
+    function setActive()
+    {
+        //! If there is overlapping Schedules disable them
+        internal.overlappingSchedules.forEach((element, index) => {
+                                                  element.active = false;
+                                              });
+
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(setActive);
+
+        if (schedule?.active === false) {
+            schedule.active = true;
         }
     }
 }
