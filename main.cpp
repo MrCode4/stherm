@@ -14,8 +14,6 @@
 
 int main(int argc, char *argv[])
 {
-    qDebug() << Q_FUNC_INFO << __LINE__ << "getStartMode: " << UtilityHelper::getStartMode();
-
     // CPU info example
     QString cpuid = UtilityHelper::getCPUInfo();
     qDebug() << "CPU ID: " << cpuid;
@@ -24,7 +22,7 @@ int main(int argc, char *argv[])
     UtilityHelper::setBrightness(200);
 
     // Time zone example
-    UtilityHelper::setTimeZone(8);
+    //    UtilityHelper::setTimeZone(8);
 
     //! Enable virtual keyboard
     qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));

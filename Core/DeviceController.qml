@@ -44,6 +44,11 @@ I_DeviceController {
 
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
+
+        var send_data = [device.setting.brightness, device.setting.volume, device.setting.tempratureUnit, device.setting.timeFormat, false, device.setting.adaptiveBrightness];
+       if (!deviceControllerCPP.setSettings(send_data)){
+           console.warn("setting failed");
+       }
     }
 
     onStopDeviceRequested: {
