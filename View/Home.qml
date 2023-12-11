@@ -117,7 +117,7 @@ Control {
                 horizontalCenterOffset: 8
             }
             width: _root.width - 120
-            height: _airCondItem.implicitHeight + _dateTimeHolder.height + 40
+            height: _airCondItem.implicitHeight + _dateTimeHolder.height + 40 * scaleFactor
 
             //! Humidity item
             CurrentHumidityButton {
@@ -205,8 +205,8 @@ Control {
                 horizontalCenter: parent.horizontalCenter
                 bottomMargin: _menuButton.implicitHeight * 0.6
             }
-            
-            width: parent.width * 0.4
+
+            width: parent.width * 0.5
 
             TapHandler {
                 onTapped: {
