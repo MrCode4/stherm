@@ -63,6 +63,8 @@ public:
 
     //! 0 normal, 1 adaptive
     uint8_t brighness_mode = 1;
+    uint32_t luminosity = 255;
+
     //! unknowns // TODO find unused ones and remove later
     bool pairing = false;
     bool last_pairing = false;
@@ -309,6 +311,9 @@ QString DeviceIOController::getCPUInfo()
 
 bool DeviceIOController::setBrightness(int value)
 {
+    if (m_p->brighness_mode == 1)
+        value = m_p->luminosity;
+
     return UtilityHelper::setBrightness(std::clamp(value, 5, 254));
 }
 
@@ -1245,6 +1250,7 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
 void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
 {
     TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity));
+    m_p->luminosity = luminosity;
     if (m_p->brighness_mode == 1) {
         if (!setBrightness(luminosity)) {
             TRACE_CHECK(false) << (QString("Error: setBrightness (Brightness: %0)").arg(luminosity));
