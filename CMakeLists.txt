@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.1 LANGUAGES CXX)
+project(Stherm VERSION 0.1.4 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -348,7 +348,7 @@ set_target_properties(appStherm PROPERTIES
 
 # Set a compile definition to be able to pass app version to cpp
 target_compile_definitions(appStherm PRIVATE
-    PROJECT_VERSION_STRING=${PROJECT_VERSION}
+    PROJECT_VERSION_STRING="${PROJECT_VERSION}"
 )
 
 target_link_directories(appStherm PRIVATE

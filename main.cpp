@@ -31,6 +31,8 @@ int main(int argc, char *argv[])
     QGuiApplication::setOrganizationName("STherm");
     QGuiApplication::setOrganizationDomain("SThermOrg");
 
+    QCoreApplication::setApplicationVersion(PROJECT_VERSION_STRING);
+
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
@@ -76,11 +78,9 @@ int main(int argc, char *argv[])
         qApp->setFont(defaultFont);
     }
 
-
     engine.rootContext()->setContextProperties({
-        { "scaleFactor", scaleFactor },
-        { "deviceInfo", deviceInfo },
-        { "PROJECT_VERSION", PROJECT_VERSION_STRING },
+        {"scaleFactor", scaleFactor},
+        {"deviceInfo", deviceInfo},
     });
     engine.rootContext()->setContextProperty("deviceInfo", deviceInfo);
 
