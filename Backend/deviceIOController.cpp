@@ -201,6 +201,8 @@ void DeviceIOController::initialize()
 
     nrfConfiguration();
     tiConfiguration();
+
+    TRACE << "Initialization done";
 }
 
 void DeviceIOController::nrfConfiguration()
