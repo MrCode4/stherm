@@ -39,12 +39,16 @@ QtObject {
     {
 //        let importString = imports.map(item => "import " + item + "; ").join("");
         let importString = imports.filter((item, index) => imports.indexOf(item) === index).map(item => "import " + item + "; ").join("");
+        console.log("importing", importString, qsType, parent)
         let obj = Qt.createQmlObject(importString + qsType + "{}", parent);
+        console.log("obj created")
 
         //! \todo Is this really necessary???
         if (parent === serializer) {
             obj._qsParent = null;
         }
+
+        console.log("returning obj")
 
         return obj;
     }
