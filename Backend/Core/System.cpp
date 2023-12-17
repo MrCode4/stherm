@@ -16,6 +16,11 @@ const QString m_getSystemUpdate = QString("getSystemUpdate");
 const QString m_requestJob      = QString("requestJob");
 const QString m_partialUpdate   = QString("partialUpdate");
 
+//! Function to calculate checksum (Md5)
+inline QByteArray calculateChecksum(const QByteArray &data) {
+    return QCryptographicHash::hash(data, QCryptographicHash::Md5);
+}
+
 NUVE::System::System(QObject *parent)
 {
     mNetManager = new QNetworkAccessManager();
@@ -75,13 +80,16 @@ void NUVE::System::partialUpdate(const QJsonObject &jsonObj) {
     QString filename = jsonObj["list"].toArray()[0].toObject()["filename"].toString();
     QString url = jsonObj["list"].toArray()[0].toObject()["url"].toString();
 
+    // Get shecksum md5
+    m_expectedUpdateChecksum = jsonObj["updateChecksum"].toString().toUtf8(); // check
+
     // Construct web file URL
-    QString web_file = m_domainUrl.toString() + m_updateUrl.toString() +
+    QString webFile = m_domainUrl.toString() + m_updateUrl.toString() +
                        hv + require + sv + type + "/" + filename;
 
     // Fetch the file from web location
     QNetworkAccessManager* manager = new QNetworkAccessManager();
-    QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(web_file)));
+    QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(webFile)));
     reply->setProperty(m_methodProperty, m_partialUpdate);
 
     connect(reply, &QNetworkReply::downloadProgress, this, [=] (qint64 bytesReceived, qint64 bytesTotal) {
@@ -90,6 +98,23 @@ void NUVE::System::partialUpdate(const QJsonObject &jsonObj) {
     });
 
 }
+
+
+// Checksum verification after download
+void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
+    QByteArray downloadedChecksum = calculateChecksum(downloadedData);
+
+    if (downloadedChecksum == m_expectedUpdateChecksum) {
+        // Checksums match - downloaded app is valid
+
+    } else {
+        // Checksums don't match - downloaded app might be corrupted
+    }
+
+    // clear expected update checksum
+    m_expectedUpdateChecksum.clear();
+}
+
 void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 {
     NetworkWorker::processNetworkReply(netReply);
@@ -118,14 +143,16 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             auto isRequire = (resultObj.value("require").toString() == "r");
             auto updateType = resultObj.value("type").toString();
 
-            if (updateType == "f") {
-                qDebug() << Q_FUNC_INFO << __LINE__ << "The system requires a full update.";
+            if (isRequire) {
+                if (updateType == "f") {
+                    qDebug() << Q_FUNC_INFO << __LINE__ << "The system requires a full update.";
 
-            } else {
-                qDebug() << Q_FUNC_INFO << __LINE__ << "The system requires a partial update.";
+                } else {
+                    qDebug() << Q_FUNC_INFO << __LINE__ << "The system requires a partial update.";
 
-                partialUpdate(resultObj);
+                    partialUpdate(resultObj);
 
+                }
             }
         }
 
@@ -135,7 +162,10 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
         // Partial update (download process) finished.
         if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
 
+            // Check data and prepare to set up.
+            verifyDownloadedFiles(netReply->readAll());
         }
+
     } break;
 
     default:

@@ -54,8 +54,14 @@ private:
     //! Start the partilally update
     void partialUpdate(const QJsonObject &jsonObj);
 
+    //! verify dounloaded files and prepare to set up.
+    void verifyDownloadedFiles(QByteArray downloadedData);
+
 private:
     QString mSerialNumber;
+
+    QByteArray m_expectedUpdateChecksum;
+
 };
 
 } // namespace NUVE
