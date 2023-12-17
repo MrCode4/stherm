@@ -48,6 +48,10 @@ signals:
     void snReady();
 
 private:
+    //! Start the partilally update
+    void partialUpdate(const QJsonObject &jsonObj);
+
+private:
     QString mSerialNumber;
 };
 
