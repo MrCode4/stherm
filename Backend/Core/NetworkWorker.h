@@ -7,7 +7,7 @@
  * Interface class to manage network requests.
  * ************************************************************************************************/
 
-const char* m_methodProperty = "method";
+constexpr char m_methodProperty[] = "method";
 
 class NetworkWorker : public QObject
 {
