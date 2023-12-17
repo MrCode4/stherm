@@ -86,6 +86,7 @@ void NUVE::System::partialUpdate(const QJsonObject &jsonObj) {
 
     connect(reply, &QNetworkReply::downloadProgress, this, [=] (qint64 bytesReceived, qint64 bytesTotal) {
         qDebug() << Q_FUNC_INFO << __LINE__ << bytesReceived << bytesTotal;
+        emit downloadProgress(bytesReceived * 100 / bytesTotal);
     });
 
 }
@@ -107,11 +108,11 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
             qDebug() << Q_FUNC_INFO << __LINE__ << resultArray;
 
-
             if (resultArray.count() > 0) {
                 mSerialNumber = resultArray.first().toString();
                 Q_EMIT snReady();
             }
+
         } else if (netReply->property(m_methodProperty).toString() == m_getSystemUpdate) {
             auto resultObj = obj.value("result").toObject().value("result").toObject();
             auto isRequire = (resultObj.value("require").toString() == "r");

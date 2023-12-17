@@ -47,6 +47,9 @@ protected slots:
 signals:
     void snReady();
 
+    //! progress is percentage
+    void downloadProgress(int progress);
+
 private:
     //! Start the partilally update
     void partialUpdate(const QJsonObject &jsonObj);
