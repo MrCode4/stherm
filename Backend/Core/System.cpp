@@ -106,6 +106,36 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
 
     if (downloadedChecksum == m_expectedUpdateChecksum) {
         // Checksums match - downloaded app is valid
+        // Define source and destination directories
+        QString sourceDir = "";
+        QString destDir = QDir::current().absolutePath();
+
+        // Run the shell script with source and destination arguments
+        // - copy files from source to destination folder
+        // - run the app
+        QString scriptPath = destDir + "/update.sh";
+        QStringList arguments;
+        arguments << scriptPath << sourceDir << destDir;
+
+
+        // Check for the existence of the flag file periodically
+        // The application can be stopped using the 'killall' or 'pkill' command in Linux.
+        // However, abruptly terminating processes could lead to potential data loss or
+        // unforeseen behavior within the application. So I use qApp->quit(); to be safe.
+        QTimer checkFlagTimer;
+        QObject::connect(&checkFlagTimer, &QTimer::timeout, [&]() {
+            QFileInfo flagInfo(destDir + "/quit.flag");
+
+            // Flag detection, close the Qt application
+            if (flagInfo.exists()) {
+                QFile::remove(flagInfo.absoluteFilePath());
+                // Close the stherm application
+                qApp->quit();
+            }
+        });
+
+        QProcess::startDetached("/bin/bash", arguments);
+        checkFlagTimer.start(500);
 
     } else {
         // Checksums don't match - downloaded app might be corrupted
