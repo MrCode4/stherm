@@ -88,6 +88,8 @@ void NUVE::System::partialUpdate(const QJsonObject &jsonObj) {
     QString webFile = m_domainUrl.toString() + m_updateUrl.toString() +
                        hv + require + sv + type + "/" + filename;
 
+    TRACE << webFile;
+
     // Fetch the file from web location
     QNetworkAccessManager* manager = new QNetworkAccessManager();
     QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(webFile)));
@@ -128,6 +130,8 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
         QStringList arguments;
         arguments << scriptPath << sourceDir << destDir;
 
+        // Check directory: sourceDir + update/prupdate
+        // QFile::setPermissions(dir + "update/prupdate", QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
 
         // Check for the existence of the flag file periodically
         // The application can be stopped using the 'killall' or 'pkill' command in Linux.
@@ -136,7 +140,6 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
         QTimer checkFlagTimer;
         QObject::connect(&checkFlagTimer, &QTimer::timeout, [&]() {
             QFileInfo flagInfo(destDir + "/quit.flag");
-            // QFile::setPermissions(dir + "update/prupdate", QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
 
             // Flag detection, close the Qt application
             if (flagInfo.exists()) {
