@@ -11,6 +11,10 @@ const QUrl m_domainUrl        = QUrl("http://test.hvac.z-soft.am"); // base doma
 const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
 const QUrl m_updateUrl        = QUrl("/update/");                   // update
 
+const QString m_getSN           = QString("m_getSN");
+const QString m_getSystemUpdate = QString("getSystemUpdate");
+const QString m_requestJob      = QString("requestJob");
+
 NUVE::System::System(QObject *parent)
 {
     mNetManager = new QNetworkAccessManager();
@@ -24,8 +28,8 @@ std::string NUVE::System::getSN(cpuid_t accessUid)
     paramsArray.append(QString::fromStdString(accessUid));
 
     // TODO parameter retrieval from cloud, can we utilise a value/isSet tuple and push the processing to a background function?  Or are we happy with a firing off a whole bunch of requests and waiting for them to complete?
-    QByteArray requestData = preparePacket("sync", "getSN", paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData);
+    QByteArray requestData = preparePacket("sync", m_getSN, paramsArray);
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSN);
 
     QEventLoop loop;
     QTimer timer;
@@ -47,8 +51,8 @@ void NUVE::System::getUpdate(QString softwareVersion)
     paramsArray.append(mSerialNumber);
     paramsArray.append(softwareVersion);
 
-    QByteArray requestData = preparePacket("sync", "getSystemUpdate", paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData);
+    QByteArray requestData = preparePacket("sync", m_getSystemUpdate, paramsArray);
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSystemUpdate);
 }
 
 void NUVE::System::requestJob(QString type)
@@ -57,8 +61,8 @@ void NUVE::System::requestJob(QString type)
     paramsArray.append(mSerialNumber);
     paramsArray.append(type);
 
-    QByteArray requestData = preparePacket("sync", "requestJob", paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData);
+    QByteArray requestData = preparePacket("sync", m_requestJob, paramsArray);
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_requestJob);
 }
 
 void NUVE::System::processNetworkReply(QNetworkReply *netReply)
@@ -75,7 +79,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
     switch (netReply->operation()) {
     case QNetworkAccessManager::PostOperation: {
 
-        if (netReply->url().toString().endsWith(m_engineUrl.toString())) {
+        if (netReply->property(m_methodProperty).toString() == m_getSN) {
             qDebug() << Q_FUNC_INFO << __LINE__ << obj;
             QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
 
