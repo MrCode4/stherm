@@ -1,4 +1,5 @@
 #include "System.h"
+#include "LogHelper.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -105,10 +106,20 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
     QByteArray downloadedChecksum = calculateChecksum(downloadedData);
 
     if (downloadedChecksum == m_expectedUpdateChecksum) {
+
         // Checksums match - downloaded app is valid
         // Define source and destination directories
-        QString sourceDir = "";
+        QString sourceDir = "/usr/share/apache2/default-site/htdocs/";
         QString destDir = QDir::current().absolutePath();
+
+        // Save the downloaded data
+        QFile file(sourceDir + "update.gz");
+        if (!file.open(QIODevice::WriteOnly)) {
+            TRACE << "Unable to open file for writing";
+            return;
+        }
+        file.write(downloadedData);
+        file.close();
 
         // Run the shell script with source and destination arguments
         // - copy files from source to destination folder
@@ -125,6 +136,7 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
         QTimer checkFlagTimer;
         QObject::connect(&checkFlagTimer, &QTimer::timeout, [&]() {
             QFileInfo flagInfo(destDir + "/quit.flag");
+            // QFile::setPermissions(dir + "update/prupdate", QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
 
             // Flag detection, close the Qt application
             if (flagInfo.exists()) {
@@ -139,6 +151,7 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
 
     } else {
         // Checksums don't match - downloaded app might be corrupted
+        TRACE << "Checksums don't match - downloaded app might be corrupted";
     }
 
     // clear expected update checksum

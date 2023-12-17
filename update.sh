@@ -14,7 +14,6 @@ fi
 touch "$destDir/quit.flag"
 sleep 2
 
-
 # Set source and destination directories from arguments
 sourceDir="$2"
 destDir="$3"
@@ -22,6 +21,9 @@ destDir="$3"
 # Display source and destination directories
 echo "Source directory: $sourceDir"
 echo "Destination directory: $destDir"
+
+cd "$sourceDir"
+gunzip -v "$sourceDir/update.gz"
 
 # Perform file copy operation from source to destination
 cp -r "$sourceDir"/* "$destDir"/
