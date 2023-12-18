@@ -85,6 +85,10 @@ BasePageView {
                 case "Contact Contractor":
                     _root.StackView.view.push("qrc:/Stherm/View/ContactContractorPage.qml");
                     break;
+
+                case "System Update":
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml");
+                    break;
                 }
             }
         }
