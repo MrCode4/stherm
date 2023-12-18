@@ -14,9 +14,6 @@ I_PopUp {
      * ****************************************************************************************/
     title: ""
 
-    width: Application.width * 0.8
-    height: Application.height * 0.8
-
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
@@ -24,6 +21,14 @@ I_PopUp {
         width: parent?.width ?? 0
         anchors.centerIn: parent
         spacing: 16
+
+        Item {
+            id: spacer
+
+            Layout.fillWidth: true
+            height: 10
+
+        }
 
         Label {
             Layout.fillWidth: true
@@ -59,6 +64,14 @@ I_PopUp {
             font.pointSize: Application.font.pointSize * 0.75
             text: "About 2 mins"
             horizontalAlignment: Text.AlignLeft
+        }
+
+        Item {
+            id: spacer2
+
+            Layout.fillWidth: true
+            height: 10
+
         }
     }
 }

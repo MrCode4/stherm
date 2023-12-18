@@ -117,13 +117,13 @@ BasePageView {
             RoniaTextIcon {
                 id: icon
 
-                anchors.left: parent.left
+                Layout.alignment: Qt.AlignLeft
                 text: FAIcons.download
             }
 
             Label {
-                anchors.left: icon.right
-                anchors.leftMargin: root.leftPadding
+                Layout.alignment: Qt.AlignLeft
+                Layout.leftMargin: root.leftPadding
 
                 color: Style.foreground
                 textFormat: Text.MarkdownText

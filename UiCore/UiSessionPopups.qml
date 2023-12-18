@@ -30,6 +30,9 @@ Item {
     //! Installing update progress
     property alias installingUpdatePopup:      installingPopup
 
+    //! Installing update progress
+    property alias updateInterruptionPopup:    updateInterruptionPopup
+
     /* Children
      * ****************************************************************************************/
     ExitConfirmPopup {
@@ -42,5 +45,9 @@ Item {
 
     InstallingPopup {
         id: installingPopup
+    }
+
+    UpdateInterruptionPopup {
+        id: updateInterruptionPopup
     }
 }
