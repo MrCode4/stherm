@@ -136,6 +136,9 @@ BasePageView {
 
         onClicked: {
            // Start download
+
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.installingUpdatePopup)
+
         }
     }
 }

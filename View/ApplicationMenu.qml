@@ -87,7 +87,9 @@ BasePageView {
                     break;
 
                 case "System Update":
-                    _root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml");
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
                     break;
                 }
             }

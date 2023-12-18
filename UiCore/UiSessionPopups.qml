@@ -27,6 +27,9 @@ Item {
     //!
     property alias scheduleOverlapPopup:    schOverlapPop
 
+    //! Installing update progress
+    property alias installingUpdatePopup:      installingPopup
+
     /* Children
      * ****************************************************************************************/
     ExitConfirmPopup {
@@ -35,5 +38,9 @@ Item {
 
     ScheduleOverlapPopup {
         id: schOverlapPop
+    }
+
+    InstallingPopup {
+        id: installingPopup
     }
 }
