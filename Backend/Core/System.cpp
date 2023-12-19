@@ -12,10 +12,15 @@ const QUrl m_domainUrl        = QUrl("http://test.hvac.z-soft.am"); // base doma
 const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
 const QUrl m_updateUrl        = QUrl("/update/");                   // update
 
+const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
+
 const QString m_getSN           = QString("getSN");
 const QString m_getSystemUpdate = QString("getSystemUpdate");
 const QString m_requestJob      = QString("requestJob");
 const QString m_partialUpdate   = QString("partialUpdate");
+const QString m_updateFromServer= QString("UpdateFromServer");
+
+const char m_isBusyDownloader[] = "isBusyDownloader";
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -27,6 +32,18 @@ NUVE::System::System(QObject *parent)
     mNetManager = new QNetworkAccessManager();
 
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &System::processNetworkReply);
+
+    mUpdateFilePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/update.json";
+
+    connect(&mTimer, &QTimer::timeout, this, [=]() {
+        getUpdateFromServer();
+    });
+
+    mTimer.start(12 * 60 * 60 *1000); // each 12 hours
+
+    QTimer::singleShot(10, this, [=]() {
+        getUpdateFromServer();
+    });
 }
 
 std::string NUVE::System::getSN(cpuid_t accessUid)
@@ -62,6 +79,13 @@ void NUVE::System::getUpdate(QString softwareVersion)
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSystemUpdate);
 }
 
+void NUVE::System::getUpdateFromServer() {
+    // Fetch the file from web location
+    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/update.json"))));
+    TRACE << reply->url().toString();
+    reply->setProperty(m_methodProperty, m_updateFromServer);
+}
+
 void NUVE::System::requestJob(QString type)
 {
     QJsonArray paramsArray;
@@ -72,7 +96,37 @@ void NUVE::System::requestJob(QString type)
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_requestJob);
 }
 
-void NUVE::System::partialUpdate(const QJsonObject &jsonObj) {
+QString NUVE::System::latestVersionDate() {
+    return mLatestVersionDate;
+}
+
+QString NUVE::System::latestVersionChangeLog() {
+    return mLatestVersionChangeLog;
+}
+
+QString NUVE::System::latestVersion() {
+    return mLatestVersion;
+}
+
+QString NUVE::System::remainingDownloadTime() {
+    return mRemainingDownloadTime;
+}
+
+int NUVE::System::partialUpdateProgress() {
+    return mPartialUpdateProgress;
+}
+
+void NUVE::System::setPartialUpdateProgress(int progress) {
+    mPartialUpdateProgress = progress;
+    emit partialUpdateProgressChanged();
+}
+
+void NUVE::System::partialUpdate() {
+    if (mNetManager->property(m_isBusyDownloader).toBool())
+        return;
+
+    QJsonObject jsonObj;
+
     // Extracting values from JSON
     QString hv = jsonObj["hv"].toString();
     QString require = jsonObj["require"].toString();
@@ -81,9 +135,6 @@ void NUVE::System::partialUpdate(const QJsonObject &jsonObj) {
     QString filename = jsonObj["list"].toArray()[0].toObject()["filename"].toString();
     QString url = jsonObj["list"].toArray()[0].toObject()["url"].toString();
 
-    // Get shecksum md5
-    m_expectedUpdateChecksum = jsonObj["updateChecksum"].toString().toUtf8(); // check
-
     // Construct web file URL
     QString webFile = m_domainUrl.toString() + m_updateUrl.toString() +
                        hv + require + sv + type + "/" + filename;
@@ -91,13 +142,35 @@ void NUVE::System::partialUpdate(const QJsonObject &jsonObj) {
     TRACE << webFile;
 
     // Fetch the file from web location
-    QNetworkAccessManager* manager = new QNetworkAccessManager();
-    QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(webFile)));
+    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(mLatestVersionAddress))));
     reply->setProperty(m_methodProperty, m_partialUpdate);
+    mNetManager->setProperty(m_isBusyDownloader, true);
 
+    setPartialUpdateProgress(0);
+
+    if (mElapsedTimer.isValid())
+        mElapsedTimer.invalidate();
+
+    mElapsedTimer.start();
     connect(reply, &QNetworkReply::downloadProgress, this, [=] (qint64 bytesReceived, qint64 bytesTotal) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << bytesReceived << bytesTotal;
-        emit downloadProgress(bytesReceived * 100 / bytesTotal);
+
+        double secTime = mElapsedTimer.elapsed() / 1000;
+        double rate = bytesReceived / secTime;
+        auto remain = bytesTotal - bytesReceived;
+        int remainTime = qRound(remain / rate);
+
+        QString unit = remainTime < 60 ? "second" : "minute";
+
+        remainTime = remainTime < 60 ? remainTime : qRound(remainTime / 60.0);
+
+        if (remainTime > 1)
+            unit += "s";
+
+        mRemainingDownloadTime = QString("About %1 %2 remaining").arg(QString::number(remainTime), unit);
+        emit remainingDownloadTimeChanged();
+
+        int percentage = bytesReceived * 100 / bytesTotal;
+        setPartialUpdateProgress(percentage);
     });
 
 }
@@ -107,6 +180,7 @@ void NUVE::System::partialUpdate(const QJsonObject &jsonObj) {
 void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
     QByteArray downloadedChecksum = calculateChecksum(downloadedData);
 
+    TRACE << downloadedChecksum;
     if (downloadedChecksum == m_expectedUpdateChecksum) {
 
         // Checksums match - downloaded app is valid
@@ -196,7 +270,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 } else {
                     qDebug() << Q_FUNC_INFO << __LINE__ << "The system requires a partial update.";
 
-                    partialUpdate(resultObj);
+                    partialUpdate();
 
                 }
             }
@@ -209,7 +283,23 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
         if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
 
             // Check data and prepare to set up.
-            verifyDownloadedFiles(netReply->readAll());
+            verifyDownloadedFiles(data);
+            mNetManager->setProperty(m_isBusyDownloader, false);
+
+        } else if (netReply->property(m_methodProperty).toString() == m_updateFromServer) { // Partial update (download process) finished.
+
+            TRACE << mUpdateFilePath;
+            // Save the downloaded data
+            QFile file(mUpdateFilePath);
+            if (!file.open(QIODevice::WriteOnly)) {
+                TRACE << "Unable to open file for writing";
+                return;
+            }
+            TRACE << data;
+            file.write(data);
+            file.close();
+
+            checkPartialUpdate();
         }
 
     } break;
@@ -218,6 +308,33 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
         break;
     }
+}
+
+void NUVE::System::checkPartialUpdate() {
+
+    TRACE;
+    // Save the downloaded data
+    QFile file(mUpdateFilePath);
+    if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
+        TRACE << "Unable to open file for writing";
+        return;
+    }
+
+    TRACE;
+    auto updateJsonObject = QJsonDocument::fromJson(file.readAll()).object();
+
+    file .close();
+
+    // Update version information
+    mLatestVersion = updateJsonObject.value("LatestVersion").toString();
+
+    auto latestVersionObj = updateJsonObject.value(mLatestVersion).toObject();
+    mLatestVersionDate = latestVersionObj.value("releaseDate").toString();
+    mLatestVersionChangeLog = latestVersionObj.value("changeLog").toString();
+    mLatestVersionAddress = latestVersionObj.value("address").toString();
+    m_expectedUpdateChecksum = latestVersionObj.value("checkSum").toString().toUtf8();
+
+    emit latestVersionChanged();
 }
 
 void NUVE::System::rebootDevice()
