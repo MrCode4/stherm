@@ -19,8 +19,12 @@ import Stherm
  *       that to the parent class.
  * ************************************************************************************************/
 Item {
+    id: root
+
     /* Property declartion
      * ****************************************************************************************/
+    property DeviceController deviceController: parent.deviceController
+
     //!
     property alias exitConfirmPopup:        exitConfPop
 
@@ -45,6 +49,8 @@ Item {
 
     InstallingPopup {
         id: installingPopup
+
+        deviceController: root.deviceController
     }
 
     UpdateInterruptionPopup {

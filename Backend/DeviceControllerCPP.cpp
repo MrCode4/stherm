@@ -12,6 +12,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , mSystemSetup(nullptr)
     , m_scheme(new Scheme(_deviceAPI, this))
 {
+
+    m_system = _deviceAPI->system();
     QVariantMap mainDataMap;
     mainDataMap.insert("temperature",     0);
     mainDataMap.insert("humidity",        0);

@@ -36,8 +36,8 @@ BasePageView {
         Label {
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * 0.9
-            horizontalAlignment: Text.AlignRight
-            text: "30/05/2023"
+            horizontalAlignment: Text.AlignLeft
+            text: deviceController.deviceControllerCPP.system.latestVersionDate
         }
 
         Label {
@@ -49,12 +49,13 @@ BasePageView {
         Label {
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * 0.9
-            horizontalAlignment: Text.AlignRight
-            text: ""
+            horizontalAlignment: Text.AlignLeft
+            text: deviceController.deviceControllerCPP.system.latestVersion
         }
 
         Rectangle {
 
+            visible: changeLogTextArea.text.length > 0
             height: changeLogTextArea.text.length > 0 ? Math.min(changeLogTextArea.implicitHeight + header.height + 6, 150) : 0
             Layout.fillWidth: true
             Layout.columnSpan: 2
@@ -83,7 +84,7 @@ BasePageView {
 
                 TextArea {
                     id: changeLogTextArea
-                    text: "- Use markdown text..."
+                    text: deviceController.deviceControllerCPP.system.latestVersionChangeLog
                     readOnly: true
                     textFormat: Text.MarkdownText
 
@@ -135,8 +136,9 @@ BasePageView {
         }
 
         onClicked: {
-           // Start download
+            deviceController.deviceControllerCPP.system.partialUpdate();
 
+            // Start download
             uiSession.popupLayout.displayPopUp(uiSession.popUps.installingUpdatePopup)
 
         }

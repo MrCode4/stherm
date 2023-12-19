@@ -49,7 +49,9 @@ Item {
     readonly property var       popUpQueue:     []
 
     // Popups that can be called for this UiSession
-    readonly property UiSessionPopups popUps:   UiSessionPopups { parent: root}
+    readonly property UiSessionPopups popUps:   UiSessionPopups {
+        parent: root
+    }
 
     //! Ui Preferences (Units, etc)
     property UiPreferences      uiPreferences:  UiPreferences {}

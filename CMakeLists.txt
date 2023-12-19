@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.1.4 LANGUAGES CXX)
+project(Stherm VERSION 0.1.5 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -23,6 +23,7 @@ find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Core)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
 

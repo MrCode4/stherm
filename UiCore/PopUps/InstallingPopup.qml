@@ -14,6 +14,8 @@ I_PopUp {
      * ****************************************************************************************/
     title: ""
 
+    property DeviceController deviceController
+
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
@@ -39,10 +41,12 @@ I_PopUp {
 
         //! Download progress bar
         ProgressBar {
+            Layout.preferredWidth: fontMetric.advanceWidth(" About     seconds remaining ") + 6
+
             id: progressBar
             from: 0.0
             to: 100
-            value: 100
+            value: deviceController.deviceControllerCPP.system.partialUpdateProgress
 
             contentItem: Item {
                 Rectangle {
@@ -60,10 +64,20 @@ I_PopUp {
         }
 
         Label {
+            id: remainingLabel
+
             Layout.fillWidth: true
+            Layout.preferredWidth: fontMetric.advanceWidth(" About     seconds remaining ") + 6
+
             font.pointSize: Application.font.pointSize * 0.75
-            text: "About 2 mins"
+            text: deviceController.deviceControllerCPP.system.remainingDownloadTime
             horizontalAlignment: Text.AlignLeft
+
+        }
+
+        FontMetrics {
+            id: fontMetric
+            font.pointSize: remainingLabel.font.pointSize
         }
 
         Item {
@@ -74,4 +88,5 @@ I_PopUp {
 
         }
     }
+
 }
