@@ -33,16 +33,16 @@ NUVE::System::System(QObject *parent)
 
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &System::processNetworkReply);
 
-    mUpdateFilePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/update.json";
+    mUpdateFilePath = qApp->applicationDirPath() + "/update.json";
 
     connect(&mTimer, &QTimer::timeout, this, [=]() {
-        getUpdateFromServer();
+        getUpdateInformation();
     });
 
     mTimer.start(12 * 60 * 60 *1000); // each 12 hours
 
     QTimer::singleShot(10, this, [=]() {
-        getUpdateFromServer();
+        getUpdateInformation();
     });
 }
 
@@ -79,7 +79,7 @@ void NUVE::System::getUpdate(QString softwareVersion)
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSystemUpdate);
 }
 
-void NUVE::System::getUpdateFromServer() {
+void NUVE::System::getUpdateInformation() {
     // Fetch the file from web location
     QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/update.json"))));
     TRACE << reply->url().toString();
@@ -175,72 +175,83 @@ void NUVE::System::partialUpdate() {
 
 }
 
+void NUVE::System::updateAndRestart()
+{
+    // Define source and destination directories
+    QString sourceDir = "/usr/share/apache2/default-site/htdocs/";
+    QString destDir = QDir::current().absolutePath();
+
+    // Run the shell script with source and destination arguments
+    // - copy files from source to destination folder
+    // - run the app
+    QString scriptPath = destDir + "/update.sh";
+    QStringList arguments;
+    arguments << scriptPath << sourceDir << destDir;
+
+    // Check directory: sourceDir + update/prupdate
+    // QFile::setPermissions(dir + "update/prupdate", QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
+
+    // Check for the existence of the flag file periodically
+    // The application can be stopped using the 'killall' or 'pkill' command in Linux.
+    // However, abruptly terminating processes could lead to potential data loss or
+    // unforeseen behavior within the application. So I use qApp->quit(); to be safe.
+    QTimer checkFlagTimer;
+    QObject::connect(&checkFlagTimer, &QTimer::timeout, [&]() {
+        QFileInfo flagInfo(destDir + "/quit.flag");
+
+        // Flag detection, close the Qt application
+        if (flagInfo.exists()) {
+            QFile::remove(flagInfo.absoluteFilePath());
+            // Close the stherm application
+            qApp->quit();
+        }
+    });
+
+    QProcess::startDetached("/bin/bash", arguments);
+    checkFlagTimer.start(500);
+}
+
 
 // Checksum verification after download
 void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
     QByteArray downloadedChecksum = calculateChecksum(downloadedData);
 
-    TRACE << downloadedChecksum;
+    TRACE << downloadedChecksum << m_expectedUpdateChecksum;
     if (downloadedChecksum == m_expectedUpdateChecksum) {
 
+        emit partialUpdateReady();
         // Checksums match - downloaded app is valid
         // Define source and destination directories
         QString sourceDir = "/usr/share/apache2/default-site/htdocs/";
-        QString destDir = QDir::current().absolutePath();
 
         // Save the downloaded data
         QFile file(sourceDir + "update.gz");
         if (!file.open(QIODevice::WriteOnly)) {
             TRACE << "Unable to open file for writing";
+            emit error("Unable to open file for writing");
             return;
         }
         file.write(downloadedData);
         file.close();
 
-        // Run the shell script with source and destination arguments
-        // - copy files from source to destination folder
-        // - run the app
-        QString scriptPath = destDir + "/update.sh";
-        QStringList arguments;
-        arguments << scriptPath << sourceDir << destDir;
-
-        // Check directory: sourceDir + update/prupdate
-        // QFile::setPermissions(dir + "update/prupdate", QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
-
-        // Check for the existence of the flag file periodically
-        // The application can be stopped using the 'killall' or 'pkill' command in Linux.
-        // However, abruptly terminating processes could lead to potential data loss or
-        // unforeseen behavior within the application. So I use qApp->quit(); to be safe.
-        QTimer checkFlagTimer;
-        QObject::connect(&checkFlagTimer, &QTimer::timeout, [&]() {
-            QFileInfo flagInfo(destDir + "/quit.flag");
-
-            // Flag detection, close the Qt application
-            if (flagInfo.exists()) {
-                QFile::remove(flagInfo.absoluteFilePath());
-                // Close the stherm application
-                qApp->quit();
-            }
-        });
-
-        QProcess::startDetached("/bin/bash", arguments);
-        checkFlagTimer.start(500);
+        emit partialUpdateReady();
 
     } else {
         // Checksums don't match - downloaded app might be corrupted
         TRACE << "Checksums don't match - downloaded app might be corrupted";
     }
-
-    // clear expected update checksum
-    m_expectedUpdateChecksum.clear();
 }
 
 void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 {
     NetworkWorker::processNetworkReply(netReply);
 
-    if (netReply->error() != QNetworkReply::NoError)
+    if (netReply->error() != QNetworkReply::NoError) {
+        if (netReply->operation() == QNetworkAccessManager::GetOperation) {
+            emit error("Download error...");
+        }
         return;
+    }
 
     QByteArray data = netReply->readAll();
     const QJsonDocument doc = QJsonDocument::fromJson(data);
@@ -293,6 +304,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             QFile file(mUpdateFilePath);
             if (!file.open(QIODevice::WriteOnly)) {
                 TRACE << "Unable to open file for writing";
+                emit error("Unable to open file for writing");
                 return;
             }
             TRACE << data;
@@ -312,15 +324,13 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
 void NUVE::System::checkPartialUpdate() {
 
-    TRACE;
     // Save the downloaded data
     QFile file(mUpdateFilePath);
     if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
-        TRACE << "Unable to open file for writing";
+        TRACE << "Unable to open file for reading";
         return;
     }
 
-    TRACE;
     auto updateJsonObject = QJsonDocument::fromJson(file.readAll()).object();
 
     file .close();
@@ -332,7 +342,8 @@ void NUVE::System::checkPartialUpdate() {
     mLatestVersionDate = latestVersionObj.value("releaseDate").toString();
     mLatestVersionChangeLog = latestVersionObj.value("changeLog").toString();
     mLatestVersionAddress = latestVersionObj.value("address").toString();
-    m_expectedUpdateChecksum = latestVersionObj.value("checkSum").toString().toUtf8();
+    m_expectedUpdateChecksum = latestVersionObj.value("checkSum").toString().toLatin1();
+    TRACE << latestVersionObj.value("checkSum").toString() << m_expectedUpdateChecksum;
 
     emit latestVersionChanged();
 }

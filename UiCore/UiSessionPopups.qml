@@ -32,10 +32,7 @@ Item {
     property alias scheduleOverlapPopup:    schOverlapPop
 
     //! Installing update progress
-    property alias installingUpdatePopup:      installingPopup
-
-    //! Installing update progress
-    property alias updateInterruptionPopup:    updateInterruptionPopup
+    property alias downloadingUpdatePopup:      downloadingPopup
 
     /* Children
      * ****************************************************************************************/
@@ -47,13 +44,43 @@ Item {
         id: schOverlapPop
     }
 
-    InstallingPopup {
-        id: installingPopup
+    DownloadingPopup {
+        id: downloadingPopup
 
         deviceController: root.deviceController
     }
 
     UpdateInterruptionPopup {
         id: updateInterruptionPopup
+
+        deviceController: root.deviceController
+    }
+
+    InstallConfirmationPopup {
+        id: installConfirmation
+
+        deviceController: root.deviceController
+    }
+
+    //! Connections to show installConfirmation popup
+    Connections {
+        target: deviceController.deviceControllerCPP.system
+
+        function onPartialUpdateReady() {
+
+            if (downloadingPopup.visible)
+                downloadingPopup.close();
+
+            parent.popupLayout.displayPopUp(installConfirmation)
+
+        }
+
+        function onError(err) {
+
+            if (downloadingPopup.visible)
+                downloadingPopup.close();
+
+            parent.popupLayout.displayPopUp(updateInterruptionPopup)
+        }
     }
 }

@@ -54,6 +54,8 @@ public:
     //! Start the partilally update
     Q_INVOKABLE void partialUpdate();
 
+    Q_INVOKABLE void updateAndRestart();
+
     //! Getters
     QString latestVersion();
 
@@ -79,12 +81,18 @@ signals:
     void partialUpdateProgressChanged();
     void remainingDownloadTimeChanged();
 
+    //! Emit when partially update is ready
+    void partialUpdateReady();
+
+    void error(QString err);
+
 private:
 
     //! verify dounloaded files and prepare to set up.
     void verifyDownloadedFiles(QByteArray downloadedData);
 
-    void getUpdateFromServer();
+    //! Get update information from server
+    void getUpdateInformation();
 
     //! Check new version from file.
     //! This function call automatically.

@@ -139,7 +139,7 @@ BasePageView {
             deviceController.deviceControllerCPP.system.partialUpdate();
 
             // Start download
-            uiSession.popupLayout.displayPopUp(uiSession.popUps.installingUpdatePopup)
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.downloadingUpdatePopup)
 
         }
     }

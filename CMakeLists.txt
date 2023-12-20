@@ -201,8 +201,9 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/TimeFormatPopup.qml
         UiCore/PopUps/ExitConfirmPopup.qml
         UiCore/PopUps/ScheduleOverlapPopup.qml
-        UiCore/PopUps/InstallingPopup.qml
+        UiCore/PopUps/DownloadingPopup.qml
         UiCore/PopUps/UpdateInterruptionPopup.qml
+        UiCore/PopUps/InstallConfirmationPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml

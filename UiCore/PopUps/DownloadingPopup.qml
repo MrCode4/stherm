@@ -14,6 +14,9 @@ I_PopUp {
      * ****************************************************************************************/
     title: ""
 
+    /* Property Declaration
+     * ****************************************************************************************/
+
     property DeviceController deviceController
 
     /* Children
@@ -24,18 +27,10 @@ I_PopUp {
         anchors.centerIn: parent
         spacing: 16
 
-        Item {
-            id: spacer
-
-            Layout.fillWidth: true
-            height: 10
-
-        }
-
         Label {
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * 0.75
-            text: "Installing Update..."
+            text: "Downloading Update..."
             horizontalAlignment: Text.AlignLeft
         }
 

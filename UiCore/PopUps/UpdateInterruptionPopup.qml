@@ -14,6 +14,11 @@ I_PopUp {
      * ****************************************************************************************/
     title: ""
 
+    /* Property Declaration
+     * ****************************************************************************************/
+
+    property DeviceController deviceController
+
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
@@ -56,6 +61,7 @@ I_PopUp {
                 text: "ignore"
 
                 onClicked: {
+                    close();
                 }
             }
 
@@ -72,6 +78,7 @@ I_PopUp {
                 text: "retry"
 
                 onClicked: {
+                    deviceController.deviceControllerCPP.system.partialUpdate();
                 }
             }
         }
