@@ -326,29 +326,29 @@ void NUVE::System::checkPartialUpdate() {
         auto appVersionList = currentVersion.split(".");
         auto latestVersion = mLatestVersion.split(".");
 
-        if (appVersionList.count() != 3 || latestVersion.count() != 3)
-            return;
+        if (appVersionList.count() > 2 && latestVersion.count() > 2) {
 
-        auto appVersionMajor = appVersionList.first().toInt();
-        auto latestVersionMajor = latestVersion.first().toInt();
+            auto appVersionMajor = appVersionList.first().toInt();
+            auto latestVersionMajor = latestVersion.first().toInt();
 
-        auto appVersionMinor = appVersionList[1].toInt();
-        auto latestVersionMinor = latestVersion[1].toInt();
+            auto appVersionMinor = appVersionList[1].toInt();
+            auto latestVersionMinor = latestVersion[1].toInt();
 
-        auto appVersionPatch = appVersionList[2].toInt();
-        auto latestVersionPatch = latestVersion[2].toInt();
+            auto appVersionPatch = appVersionList[2].toInt();
+            auto latestVersionPatch = latestVersion[2].toInt();
 
-        bool isUpdateAvailable = latestVersionMajor > appVersionMajor;
+            bool isUpdateAvailable = latestVersionMajor > appVersionMajor;
 
 
-        if (latestVersionMajor == appVersionMajor) {
-            isUpdateAvailable = latestVersionMinor > appVersionMinor;
+            if (latestVersionMajor == appVersionMajor) {
+                isUpdateAvailable = latestVersionMinor > appVersionMinor;
 
-            if (latestVersionMinor == appVersionMinor)
-                isUpdateAvailable = latestVersionPatch > appVersionPatch;
+                if (latestVersionMinor == appVersionMinor)
+                    isUpdateAvailable = latestVersionPatch > appVersionPatch;
+            }
+            setUpdateAvailable(isUpdateAvailable);
         }
 
-        setUpdateAvailable(isUpdateAvailable);
     }
 
     auto latestVersionObj = updateJsonObject.value(mLatestVersion).toObject();
