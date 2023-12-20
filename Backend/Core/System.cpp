@@ -43,7 +43,8 @@ NUVE::System::System(QObject *parent) :
 
     mTimer.start(12 * 60 * 60 *1000); // each 12 hours
 
-    QTimer::singleShot(10, this, [=]() {
+    QTimer::singleShot(0, this, [=]() {
+        checkPartialUpdate();
         getUpdateInformation();
     });
 }
@@ -124,9 +125,13 @@ void NUVE::System::setPartialUpdateProgress(int progress) {
 }
 
 void NUVE::System::partialUpdate() {
-    if (mNetManager->property(m_isBusyDownloader).toBool())
+    if (mNetManager->property(m_isBusyDownloader).toBool()) {
+        // To open progress bar.
+        emit downloadStarted();
         return;
+    }
 
+    if (false) {
     QJsonObject jsonObj;
 
     // Extracting values from JSON
@@ -140,6 +145,7 @@ void NUVE::System::partialUpdate() {
     // Construct web file URL
     QString webFile = m_domainUrl.toString() + m_updateUrl.toString() +
                        hv + require + sv + type + "/" + filename;
+    }
 
     emit downloadStarted();
 

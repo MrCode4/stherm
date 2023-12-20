@@ -80,7 +80,8 @@ Item {
         }
 
         function onDownloadStarted() {
-            parent.popupLayout.displayPopUp(downloadingPopup);
+            if (!downloadingPopup.visible)
+                parent.popupLayout.displayPopUp(downloadingPopup);
         }
     }
 }
