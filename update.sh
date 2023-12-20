@@ -11,7 +11,9 @@ if [ -z "$3" ]; then
 fi
 
 # Close the Qt application
-touch "$destDir/quit.flag"
+pid=$(ps aux | grep appStherm | grep -v grep | awk '{print $2}')
+kill -SIGTERM $pid
+
 sleep 2
 
 # Set source and destination directories from arguments
@@ -32,7 +34,7 @@ cp -r "$sourceDir"/* "$destDir"/
 # Change directory to the destination folder
 cd "$destDir" || exit
 # Run the application executable (replace 'Stherm' with the actual executable name)
-./Stherm
+./appStherm
 
 # Exit with success code
 exit 0

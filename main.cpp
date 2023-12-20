@@ -10,7 +10,16 @@
 #include <QScreen>
 #include <QSysInfo>
 
+#include <csignal>
+
 #include "UtilityHelper.h"
+
+void signalHandler(int signal) {
+    if (signal == SIGTERM) {
+        qDebug() << "Received SIGTERM, quitting the application gracefully (updating).";
+        QCoreApplication::quit();
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -34,6 +43,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion(PROJECT_VERSION_STRING);
 
     QGuiApplication app(argc, argv);
+
+    signal(SIGTERM, signalHandler);
 
     QQmlApplicationEngine engine;
 
