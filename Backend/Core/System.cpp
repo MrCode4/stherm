@@ -139,7 +139,7 @@ void NUVE::System::partialUpdate() {
     QString webFile = m_domainUrl.toString() + m_updateUrl.toString() +
                        hv + require + sv + type + "/" + filename;
 
-    TRACE << webFile;
+    emit downloadStarted();
 
     // Fetch the file from web location
     QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(mLatestVersionAddress))));
@@ -216,10 +216,8 @@ void NUVE::System::updateAndRestart()
 void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
     QByteArray downloadedChecksum = calculateChecksum(downloadedData);
 
-    TRACE << downloadedChecksum << m_expectedUpdateChecksum;
     if (downloadedChecksum == m_expectedUpdateChecksum) {
 
-        emit partialUpdateReady();
         // Checksums match - downloaded app is valid
         // Define source and destination directories
         QString sourceDir = "/usr/share/apache2/default-site/htdocs/";
@@ -239,6 +237,8 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
     } else {
         // Checksums don't match - downloaded app might be corrupted
         TRACE << "Checksums don't match - downloaded app might be corrupted";
+
+        emit error("Checksums don't match - downloaded app might be corrupted");
     }
 }
 
@@ -342,8 +342,8 @@ void NUVE::System::checkPartialUpdate() {
     mLatestVersionDate = latestVersionObj.value("releaseDate").toString();
     mLatestVersionChangeLog = latestVersionObj.value("changeLog").toString();
     mLatestVersionAddress = latestVersionObj.value("address").toString();
-    m_expectedUpdateChecksum = latestVersionObj.value("checkSum").toString().toLatin1();
-    TRACE << latestVersionObj.value("checkSum").toString() << m_expectedUpdateChecksum;
+
+    m_expectedUpdateChecksum = QByteArray::fromHex(latestVersionObj.value("checkSum").toString().toLatin1());
 
     emit latestVersionChanged();
 }

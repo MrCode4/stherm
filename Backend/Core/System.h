@@ -81,8 +81,11 @@ signals:
     void partialUpdateProgressChanged();
     void remainingDownloadTimeChanged();
 
-    //! Emit when partially update is ready
+    //! Emit when partially update is ready.
     void partialUpdateReady();
+
+    //! Start download process.
+    void downloadStarted();
 
     void error(QString err);
 

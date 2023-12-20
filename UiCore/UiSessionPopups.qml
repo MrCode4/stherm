@@ -31,9 +31,6 @@ Item {
     //!
     property alias scheduleOverlapPopup:    schOverlapPop
 
-    //! Installing update progress
-    property alias downloadingUpdatePopup:      downloadingPopup
-
     /* Children
      * ****************************************************************************************/
     ExitConfirmPopup {
@@ -67,20 +64,23 @@ Item {
         target: deviceController.deviceControllerCPP.system
 
         function onPartialUpdateReady() {
-
             if (downloadingPopup.visible)
                 downloadingPopup.close();
 
-            parent.popupLayout.displayPopUp(installConfirmation)
+            parent.popupLayout.displayPopUp(installConfirmation);
 
         }
 
         function onError(err) {
-
+            console.log("Update error: ", err);
             if (downloadingPopup.visible)
                 downloadingPopup.close();
 
-            parent.popupLayout.displayPopUp(updateInterruptionPopup)
+            parent.popupLayout.displayPopUp(updateInterruptionPopup);
+        }
+
+        function onDownloadStarted() {
+            parent.popupLayout.displayPopUp(downloadingPopup);
         }
     }
 }

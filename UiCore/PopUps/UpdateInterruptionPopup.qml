@@ -79,6 +79,7 @@ I_PopUp {
 
                 onClicked: {
                     deviceController.deviceControllerCPP.system.partialUpdate();
+                    close();
                 }
             }
         }
