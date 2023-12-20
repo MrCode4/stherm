@@ -79,11 +79,9 @@ void QSCoreCpp::onRepoMessageToAll(const QByteArray &msg)
  * ************************************************************************************************/
 void QSCoreCpp::addRepo(QSRepositoryCpp *repo)
 {
-    qInfo() << "addRepo security check";
     // Sanity check
     if (repo == nullptr || m_qsRepos.contains(repo->getUuidStr())) { return; }
 
-    qInfo() << "storing repo";
     // Add repo
     m_qsRepos[repo->getUuid().toString()] = QVariant::fromValue(repo);
     qInfo() << "[QSCoreCpp] Added new repo" << repo->getUuidStr();

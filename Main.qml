@@ -43,7 +43,6 @@ ApplicationWindow {
 
     //! Create defualt repo and root object to save and load
     Component.onCompleted: {
-        console.log("creating model")
 
         // Create and prepare DefaultRepo and RootModel as root.
         AppCore.defaultRepo = AppCore.createDefaultRepo(["QtQuickStream", "Stherm"]);
@@ -322,7 +321,6 @@ ApplicationWindow {
         sourceComponent: _splashCompo
         onLoaded: {
             item.visible = true;
-            console.log("Loading splash")
         }
     }
 
