@@ -41,7 +41,7 @@ NUVE::System::System(QObject *parent) :
         getUpdateInformation();
     });
 
-    mTimer.start(12 * 60 * 60 *1000); // each 12 hours
+    mTimer.start(12 * 60 * 60 * 1000); // each 12 hours
 
     QTimer::singleShot(0, this, [=]() {
         checkPartialUpdate();
@@ -186,7 +186,7 @@ void NUVE::System::partialUpdate() {
 void NUVE::System::updateAndRestart()
 {
     // Define source and destination directories
-    QString sourceDir = "/usr/share/apache2/default-site/htdocs/";
+    QString sourceDir = "/usr/share/cache/";
     QString destDir = qApp->applicationDirPath();
 
     // Run the shell script with source and destination arguments
@@ -208,7 +208,7 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
 
         // Checksums match - downloaded app is valid
         // Define source and destination directories
-        QString sourceDir = "/usr/share/apache2/default-site/htdocs/";
+        QString sourceDir = "/usr/share/cache/";
 
         // Save the downloaded data
         QFile file(sourceDir + "update.gz");
