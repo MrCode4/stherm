@@ -13,9 +13,12 @@ BasePageView {
     /* Property delcaration
      * ****************************************************************************************/
 
+    property System system: deviceController.deviceControllerCPP.system
+
     /* Object properties
      * ****************************************************************************************/
     title: "System Update"
+
 
     /* Children
      * ****************************************************************************************/
@@ -111,6 +114,8 @@ BasePageView {
         anchors.leftMargin: root.leftPadding
         anchors.bottomMargin: root.bottomPadding
 
+        visible: system.updateAvailable
+
         rightPadding: 4
         leftPadding: 8
 
@@ -136,7 +141,7 @@ BasePageView {
         }
 
         onClicked: {
-            deviceController.deviceControllerCPP.system.partialUpdate();
+            system.partialUpdate();
         }
     }
 }

@@ -27,8 +27,10 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
-NUVE::System::System(QObject *parent)
+NUVE::System::System(QObject *parent) :
+    mUpdateAvailable (false)
 {
+
     mNetManager = new QNetworkAccessManager();
 
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &System::processNetworkReply);
@@ -179,7 +181,7 @@ void NUVE::System::updateAndRestart()
 {
     // Define source and destination directories
     QString sourceDir = "/usr/share/apache2/default-site/htdocs/";
-    QString destDir = QDir::current().absolutePath();
+    QString destDir = qApp->applicationDirPath();
 
     // Run the shell script with source and destination arguments
     // - copy files from source to destination folder
@@ -188,27 +190,7 @@ void NUVE::System::updateAndRestart()
     QStringList arguments;
     arguments << scriptPath << sourceDir << destDir;
 
-    // Check directory: sourceDir + update/prupdate
-    // QFile::setPermissions(dir + "update/prupdate", QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
-
-    // Check for the existence of the flag file periodically
-    // The application can be stopped using the 'killall' or 'pkill' command in Linux.
-    // However, abruptly terminating processes could lead to potential data loss or
-    // unforeseen behavior within the application. So I use qApp->quit(); to be safe.
-    QTimer checkFlagTimer;
-    QObject::connect(&checkFlagTimer, &QTimer::timeout, [&]() {
-        QFileInfo flagInfo(destDir + "/quit.flag");
-
-        // Flag detection, close the Qt application
-        if (flagInfo.exists()) {
-            QFile::remove(flagInfo.absoluteFilePath());
-            // Close the stherm application
-            qApp->quit();
-        }
-    });
-
     QProcess::startDetached("/bin/bash", arguments);
-    checkFlagTimer.start(500);
 }
 
 
@@ -337,6 +319,37 @@ void NUVE::System::checkPartialUpdate() {
 
     // Update version information
     mLatestVersion = updateJsonObject.value("LatestVersion").toString();
+
+    // Check version (app and latest)
+    auto currentVersion = qApp->applicationVersion();
+    if (mLatestVersion != currentVersion) {
+        auto appVersionList = currentVersion.split(".");
+        auto latestVersion = mLatestVersion.split(".");
+
+        if (appVersionList.count() != 3 || latestVersion.count() != 3)
+            return;
+
+        auto appVersionMajor = appVersionList.first().toInt();
+        auto latestVersionMajor = latestVersion.first().toInt();
+
+        auto appVersionMinor = appVersionList[1].toInt();
+        auto latestVersionMinor = latestVersion[1].toInt();
+
+        auto appVersionPatch = appVersionList[2].toInt();
+        auto latestVersionPatch = latestVersion[2].toInt();
+
+        bool isUpdateAvailable = latestVersionMajor > appVersionMajor;
+
+
+        if (latestVersionMajor == appVersionMajor) {
+            isUpdateAvailable = latestVersionMinor > appVersionMinor;
+
+            if (latestVersionMinor == appVersionMinor)
+                isUpdateAvailable = latestVersionPatch > appVersionPatch;
+        }
+
+        setUpdateAvailable(isUpdateAvailable);
+    }
 
     auto latestVersionObj = updateJsonObject.value(mLatestVersion).toObject();
     mLatestVersionDate = latestVersionObj.value("releaseDate").toString();

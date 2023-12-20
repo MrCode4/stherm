@@ -20,6 +20,8 @@ class System : public NetworkWorker
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
 
+    Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
+
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
     QML_ELEMENT
@@ -67,6 +69,10 @@ public:
 
     int partialUpdateProgress();
 
+    bool updateAvailable() {
+        return mUpdateAvailable;
+    }
+
     void setPartialUpdateProgress(int progress);
 
 
@@ -80,6 +86,7 @@ signals:
     void latestVersionChanged();
     void partialUpdateProgressChanged();
     void remainingDownloadTimeChanged();
+    void updateAvailableChanged();
 
     //! Emit when partially update is ready.
     void partialUpdateReady();
@@ -101,6 +108,14 @@ private:
     //! This function call automatically.
     void checkPartialUpdate();
 
+    void setUpdateAvailable(bool updateAvailable) {
+        if (mUpdateAvailable == updateAvailable)
+            return;
+
+        mUpdateAvailable = updateAvailable;
+        emit updateAvailableChanged();
+    }
+
 private:
 
     QString mSerialNumber;
@@ -117,6 +132,8 @@ private:
     QString mRemainingDownloadTime;
 
     int mPartialUpdateProgress;
+
+    bool mUpdateAvailable;
 
     QTimer mTimer;
 
