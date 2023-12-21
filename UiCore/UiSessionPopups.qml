@@ -69,6 +69,8 @@ Item {
 
             parent.popupLayout.displayPopUp(installConfirmation);
 
+            // Active screen saver
+            ScreenSaverManager.setActive()();
         }
 
         function onError(err) {
@@ -77,11 +79,17 @@ Item {
                 downloadingPopup.close();
 
             parent.popupLayout.displayPopUp(updateInterruptionPopup);
+
+            // Active screen saver
+            ScreenSaverManager.setActive()();
         }
 
         function onDownloadStarted() {
             if (!downloadingPopup.visible)
                 parent.popupLayout.displayPopUp(downloadingPopup);
+
+            // Inactive screen saver
+            ScreenSaverManager.setInactive();
         }
     }
 }
