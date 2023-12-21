@@ -161,11 +161,13 @@ void NUVE::System::partialUpdate() {
 
     mElapsedTimer.start();
     connect(reply, &QNetworkReply::downloadProgress, this, [=] (qint64 bytesReceived, qint64 bytesTotal) {
+        if (bytesTotal == 0)
+            return;
 
         double secTime = mElapsedTimer.elapsed() / 1000;
-        double rate = bytesReceived / secTime;
+        double rate = bytesReceived / (secTime > 0 ? secTime : 1.0);
         auto remain = bytesTotal - bytesReceived;
-        int remainTime = qRound(remain / rate);
+        int remainTime = rate < 0.001 ? 1000000 : qRound(remain / rate);
 
         QString unit = remainTime < 60 ? "second" : "minute";
 
