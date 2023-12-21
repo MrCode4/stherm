@@ -42,11 +42,30 @@ NUVE::System::System(QObject *parent) :
     });
 
     mTimer.start(12 * 60 * 60 * 1000); // each 12 hours
+    mUpdateDirectory = qApp->applicationDirPath();
+
+#ifdef LINUX
+    QProcess process;
+    process.start("mkdir /mnt/update && mount /dev/mmcblk1p3 /mnt/update");
+    process.waitForFinished(); // wait 30 seconds (if needed)
+
+    // Check if the mount process executed successfully
+    if (process.exitCode() == 0) {
+        TRACE << "Device mounted successfully.";
+        mUpdateDirectory = "/mnt/update/";
+
+    } else {
+        TRACE << "Error mounting device. Error code:" << process.exitCode();
+        TRACE << "Error details:" << process.readAllStandardError();
+    }
+
+#endif
 
     QTimer::singleShot(0, this, [=]() {
         checkPartialUpdate();
         getUpdateInformation();
     });
+
 }
 
 std::string NUVE::System::getSN(cpuid_t accessUid)
@@ -188,7 +207,6 @@ void NUVE::System::partialUpdate() {
 void NUVE::System::updateAndRestart()
 {
     // Define source and destination directories
-    QString sourceDir = "/usr/share/cache/";
     QString destDir = qApp->applicationDirPath();
 
     // Run the shell script with source and destination arguments
@@ -196,7 +214,7 @@ void NUVE::System::updateAndRestart()
     // - run the app
     QString scriptPath = destDir + "/update.sh";
     QStringList arguments;
-    arguments << scriptPath << sourceDir << destDir;
+    arguments << scriptPath << mUpdateDirectory << destDir;
 
     QProcess::startDetached("/bin/bash", arguments);
 }
@@ -209,11 +227,8 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
     if (downloadedChecksum == m_expectedUpdateChecksum) {
 
         // Checksums match - downloaded app is valid
-        // Define source and destination directories
-        QString sourceDir = "/usr/share/cache/";
-
         // Save the downloaded data
-        QFile file(sourceDir + "update.gz");
+        QFile file(mUpdateDirectory + "update.gz");
         if (!file.open(QIODevice::WriteOnly)) {
             TRACE << "Unable to open file for writing";
             emit error("Unable to open file for writing");

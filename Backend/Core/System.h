@@ -131,6 +131,8 @@ private:
 
     QString mRemainingDownloadTime;
 
+    QString mUpdateDirectory;
+
     int mPartialUpdateProgress;
 
     bool mUpdateAvailable;
