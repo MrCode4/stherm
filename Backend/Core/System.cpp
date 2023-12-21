@@ -45,19 +45,14 @@ NUVE::System::System(QObject *parent) :
     mUpdateDirectory = qApp->applicationDirPath();
 
 #ifdef __unix__
-    QProcess process;
-    process.start("mkdir /mnt/update && mount /dev/mmcblk1p3 /mnt/update");
-    process.waitForFinished(); // wait 30 seconds (if needed)
-
+    int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update; mount /dev/mmcblk1p3 /mnt/update"});
     // Check if the mount process executed successfully
-    if (process.exitCode() == 0) {
-        TRACE << "Device mounted successfully.";
-        QProcess::execute("mkdir /mnt/update/latestVersion");
+    if (exitCode == 0) {
+        TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
         mUpdateDirectory = "/mnt/update/latestVersion";
 
     } else {
-        TRACE << "Error mounting device. Error code:" << process.exitCode();
-        TRACE << "Error details:" << process.readAllStandardError();
+        TRACE << "Error mounting device. Error code:" << exitCode;
     }
 
 #endif
@@ -231,8 +226,8 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
         // Save the downloaded data
         QFile file(mUpdateDirectory + "/update.gz");
         if (!file.open(QIODevice::WriteOnly)) {
-            TRACE << "Unable to open file for writing";
-            emit error("Unable to open file for writing");
+            TRACE << "Unable to open file for writing in " << mUpdateDirectory;
+            emit error("Unable to open file for writing in " + mUpdateDirectory);
             return;
         }
         file.write(downloadedData);
