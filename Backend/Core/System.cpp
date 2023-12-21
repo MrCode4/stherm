@@ -238,7 +238,13 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
     if (netReply->error() != QNetworkReply::NoError) {
         if (netReply->operation() == QNetworkAccessManager::GetOperation) {
-            emit error("Download error...");
+
+            if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
+                getUpdateInformation();
+
+            } else {
+                emit error("Download error...");
+            }
         }
         return;
     }
