@@ -43,7 +43,8 @@ NUVE::System::System(QObject *parent) :
 
     mTimer.start(12 * 60 * 60 * 1000); // each 12 hours
     mUpdateDirectory = qApp->applicationDirPath();
-#ifdef LINUX
+
+#ifdef __unix__
     QProcess process;
     process.start("mkdir /mnt/update && mount /dev/mmcblk1p3 /mnt/update");
     process.waitForFinished(); // wait 30 seconds (if needed)
@@ -257,11 +258,12 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
                 getUpdateInformation();
 
-            } else {
+            } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
-                emit error("Download error...");
+                emit error("Download error: " + netReply->errorString());
             }
         }
+
         return;
     }
 
