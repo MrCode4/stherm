@@ -99,7 +99,7 @@ signals:
 private:
 
     //! verify dounloaded files and prepare to set up.
-    void verifyDownloadedFiles(QByteArray downloadedData);
+    bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true);
 
     //! Get update information from server
     void getUpdateInformation();

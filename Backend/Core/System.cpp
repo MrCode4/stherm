@@ -140,6 +140,19 @@ void NUVE::System::setPartialUpdateProgress(int progress) {
 }
 
 void NUVE::System::partialUpdate() {
+    // Check update file
+    QFile file(mUpdateDirectory + "/update.gz");
+    if (file.exists() && file.open(QIODevice::ReadOnly)) {
+
+        auto downloadedData = file.readAll();
+        file.close();
+
+        if (verifyDownloadedFiles(downloadedData, false))
+            return;
+        else
+            TRACE << "The file update needs to be redownloaded.";
+    }
+
     if (mNetManager->property(m_isBusyDownloader).toBool()) {
         // To open progress bar.
         emit downloadStarted();
@@ -217,30 +230,35 @@ void NUVE::System::updateAndRestart()
 
 
 // Checksum verification after download
-void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
+bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite) {
     QByteArray downloadedChecksum = calculateChecksum(downloadedData);
 
     if (downloadedChecksum == m_expectedUpdateChecksum) {
 
         // Checksums match - downloaded app is valid
         // Save the downloaded data
-        QFile file(mUpdateDirectory + "/update.gz");
-        if (!file.open(QIODevice::WriteOnly)) {
-            TRACE << "Unable to open file for writing in " << mUpdateDirectory;
-            emit error("Unable to open file for writing in " + mUpdateDirectory);
-            return;
+        if (withWrite) {
+            QFile file(mUpdateDirectory + "/update.gz");
+            if (!file.open(QIODevice::WriteOnly)) {
+                emit error("Unable to open file for writing in " + mUpdateDirectory);
+                return false;
+            }
+            file.write(downloadedData);
+            file.close();
         }
-        file.write(downloadedData);
-        file.close();
 
         emit partialUpdateReady();
 
-    } else {
+        return true;
+
+    } else if (withWrite) {
         // Checksums don't match - downloaded app might be corrupted
         TRACE << "Checksums don't match - downloaded app might be corrupted";
 
         emit error("Checksums don't match - downloaded app might be corrupted");
     }
+
+    return false;
 }
 
 void NUVE::System::processNetworkReply(QNetworkReply *netReply)
@@ -391,7 +409,7 @@ void NUVE::System::checkPartialUpdate() {
 void NUVE::System::rebootDevice()
 {
         QProcess process;
-        QString command = "sudo reboot";
+        QString command = "reboot";
 
         process.start(command);
         process.waitForFinished();
