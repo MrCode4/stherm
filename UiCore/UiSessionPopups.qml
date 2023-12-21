@@ -70,7 +70,7 @@ Item {
             parent.popupLayout.displayPopUp(installConfirmation);
 
             // Active screen saver
-            ScreenSaverManager.setActive()();
+            ScreenSaverManager.setActive();
         }
 
         function onError(err) {
@@ -81,7 +81,7 @@ Item {
             parent.popupLayout.displayPopUp(updateInterruptionPopup);
 
             // Active screen saver
-            ScreenSaverManager.setActive()();
+            ScreenSaverManager.setActive();
         }
 
         function onDownloadStarted() {
