@@ -43,7 +43,6 @@ NUVE::System::System(QObject *parent) :
 
     mTimer.start(12 * 60 * 60 * 1000); // each 12 hours
     mUpdateDirectory = qApp->applicationDirPath();
-
 #ifdef LINUX
     QProcess process;
     process.start("mkdir /mnt/update && mount /dev/mmcblk1p3 /mnt/update");
@@ -52,7 +51,8 @@ NUVE::System::System(QObject *parent) :
     // Check if the mount process executed successfully
     if (process.exitCode() == 0) {
         TRACE << "Device mounted successfully.";
-        mUpdateDirectory = "/mnt/update/";
+        QProcess::execute("mkdir /mnt/update/latestVersion");
+        mUpdateDirectory = "/mnt/update/latestVersion";
 
     } else {
         TRACE << "Error mounting device. Error code:" << process.exitCode();
@@ -228,7 +228,7 @@ void NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData) {
 
         // Checksums match - downloaded app is valid
         // Save the downloaded data
-        QFile file(mUpdateDirectory + "update.gz");
+        QFile file(mUpdateDirectory + "/update.gz");
         if (!file.open(QIODevice::WriteOnly)) {
             TRACE << "Unable to open file for writing";
             emit error("Unable to open file for writing");

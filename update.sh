@@ -30,6 +30,8 @@ gunzip -v "$sourceDir/update.gz"
 # Perform file copy operation from source to destination
 cp -r "$sourceDir"/* "$destDir"/
 
+rm -rf "$sourceDir/*"
+
 # Run the updated app
 # Change directory to the destination folder
 cd "$destDir" || exit
