@@ -258,6 +258,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 getUpdateInformation();
 
             } else {
+                mNetManager->setProperty(m_isBusyDownloader, false);
                 emit error("Download error...");
             }
         }
