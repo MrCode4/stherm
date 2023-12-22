@@ -34,8 +34,8 @@ void *nrf_uart_thrd(void *a) {
     fds->events = POLLPRI | POLLERR;
 
     char buffer[256];
-    while (parent->fd() != -1) {
-        int ready = poll(fds, 1, -1);  // wait indefinitely for events
+    while (!parent->stopped()) {
+        int ready = poll(fds, 1, 10000);  // wait indefinitely for events
 
         if (ready > 0) {
             if (fds->revents & POLLPRI) {
@@ -62,7 +62,7 @@ bool GpioHandler::startConnection()
     if (openFile()) {
         mError = QString();
         qInfo() << "File opened successfully";
-
+        _stopped = false;
 #ifdef __unix__
         // Create a notifier to monitor file descriptor for readability
         pthread_create(&poll_thread, nullptr, &nrf_uart_thrd, this);
@@ -91,10 +91,12 @@ void GpioHandler::closeFile()
 {
 #ifdef __unix__
     if (_fd != -1) {
+        _stopped = true;
+        pthread_join(poll_thread, nullptr);
+
         close(_fd);
         _fd = -1;
     }
-    pthread_join(poll_thread, nullptr);
 #endif
 }
 
@@ -106,6 +108,11 @@ int GpioHandler::fd() const
 #else
     return -1;
 #endif
+}
+
+bool GpioHandler::stopped() const
+{
+    return _stopped;
 }
 
 QString GpioHandler::error() const
