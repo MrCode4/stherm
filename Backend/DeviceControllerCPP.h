@@ -30,6 +30,9 @@ public:
     DeviceControllerCPP(QObject *parent = nullptr);
     ~DeviceControllerCPP();
 
+
+    static DeviceControllerCPP* instance();
+
     //! Exposing RequestType Enum To QML
     //! RequestType
     enum RequestType {
@@ -98,6 +101,7 @@ Q_SIGNALS:
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
+    static DeviceControllerCPP* sInstance;
 
 private Q_SLOTS:
     /* Private Slots

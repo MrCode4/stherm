@@ -42,14 +42,22 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
 }
 
-Scheme::~Scheme()
+void Scheme::stop()
 {
+    TRACE << "stopping HVAC" ;
     stopWork = true;
 
     // Stop worker.
     terminate();
+    TRACE << "terminated HVAC" ;
     wait();
 
+    TRACE << "stopped HVAC" ;
+}
+
+Scheme::~Scheme()
+{
+    stop();
 }
 
 void Scheme::restartWork()

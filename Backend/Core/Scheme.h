@@ -29,6 +29,7 @@ class Scheme : public QThread
 public:
     explicit Scheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
 
+    void stop();
     ~Scheme();
 
     AppSpecCPP::SystemMode getCurrentSysMode() const;

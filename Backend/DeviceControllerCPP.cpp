@@ -2,6 +2,14 @@
 
 #include "LogHelper.h"
 
+
+DeviceControllerCPP* DeviceControllerCPP::sInstance = nullptr;
+
+DeviceControllerCPP* DeviceControllerCPP::instance()
+{
+    return sInstance;
+}
+
 /* ************************************************************************************************
  * Constructors & Destructor
  * ************************************************************************************************/
@@ -79,9 +87,16 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                    QString alertMessage) {
                 emit alert(alertLevel, alertType, alertMessage);
             });
+
+
+    //! Set sInstance to this
+    if (!sInstance) {
+        sInstance = this;
+    }
 }
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
+
 
 bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {
@@ -139,6 +154,7 @@ void DeviceControllerCPP::startDevice()
 void DeviceControllerCPP::stopDevice()
 {
     _deviceIO->stopReading();
+    m_scheme->stop();
 }
 
 SystemSetup *DeviceControllerCPP::systemSetup() const {
