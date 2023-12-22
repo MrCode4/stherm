@@ -47,14 +47,9 @@ NUVE::System::System(QObject *parent) :
 #ifdef __unix__
     int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update; mount /dev/mmcblk1p3 /mnt/update"});
     // Check if the mount process executed successfully
-    if (exitCode == 0) {
-        TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
-        mUpdateDirectory = "/mnt/update/latestVersion";
 
-    } else {
-        TRACE << "Error mounting device. Error code:" << exitCode;
-    }
-
+    TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"}) << exitCode;
+    mUpdateDirectory = "/mnt/update/latestVersion";
 #endif
 
     QTimer::singleShot(0, this, [=]() {
@@ -141,7 +136,7 @@ void NUVE::System::setPartialUpdateProgress(int progress) {
 
 void NUVE::System::partialUpdate() {
     // Check update file
-    QFile file(mUpdateDirectory + "/update.gz");
+    QFile file(mUpdateDirectory + "/update.zip");
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
 
         auto downloadedData = file.readAll();
@@ -215,17 +210,22 @@ void NUVE::System::partialUpdate() {
 
 void NUVE::System::updateAndRestart()
 {
-    // Define source and destination directories
-    QString destDir = qApp->applicationDirPath();
+    //    // Define source and destination directories
+    //    QString destDir = qApp->applicationDirPath();
 
-    // Run the shell script with source and destination arguments
-    // - copy files from source to destination folder
-    // - run the app
-    QString scriptPath = destDir + "/update.sh";
-    QStringList arguments;
-    arguments << scriptPath << mUpdateDirectory << destDir;
 
-    QProcess::startDetached("/bin/bash", arguments);
+    //    // Run the shell script with source and destination arguments
+    //    // - copy files from source to destination folder
+    //    // - run the app
+    //    QString scriptPath = destDir + "/update.sh";
+    //    QStringList arguments;
+    //    arguments << scriptPath << mUpdateDirectory << destDir;
+
+    TRACE << "stating update" ;
+
+    int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-update.service; systemctl start appStherm-update.service"});
+
+    TRACE << exitCode;
 }
 
 
@@ -238,7 +238,7 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
         // Checksums match - downloaded app is valid
         // Save the downloaded data
         if (withWrite) {
-            QFile file(mUpdateDirectory + "/update.gz");
+            QFile file(mUpdateDirectory + "/update.zip");
             if (!file.open(QIODevice::WriteOnly)) {
                 emit error("Unable to open file for writing in " + mUpdateDirectory);
                 return false;
