@@ -40,10 +40,10 @@ signals:
 private:
     QString filePath;
     QString mError;
+    bool _stopped = false;
 
 #ifdef __unix__
     int _fd;
-    bool _stopped = false;
     pthread_t poll_thread;
 #endif
 };

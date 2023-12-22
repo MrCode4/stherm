@@ -15,7 +15,11 @@
 #include "UtilityHelper.h"
 
 void signalHandler(int signal) {
-    if (signal == SIGTERM || signal == SIGHUP) {
+    if (signal == SIGTERM
+#ifdef __unix__
+        || signal == SIGHUP
+#endif
+    ) {
         qDebug() << "Received Signal, quitting the application gracefully (updating)." << signal;
         QGuiApplication::instance()->exit();
     }
@@ -45,7 +49,9 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     signal(SIGTERM, signalHandler);
+#ifdef __unix__
     signal(SIGHUP, signalHandler);
+#endif
 
     QQmlApplicationEngine engine;
 
