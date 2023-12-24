@@ -62,8 +62,8 @@ bool GpioHandler::startConnection()
     if (openFile()) {
         mError = QString();
         qInfo() << "File opened successfully";
-        _stopped = false;
 #ifdef __unix__
+        _stopped = false;
         // Create a notifier to monitor file descriptor for readability
         pthread_create(&poll_thread, nullptr, &nrf_uart_thrd, this);
 #endif
@@ -112,7 +112,11 @@ int GpioHandler::fd() const
 
 bool GpioHandler::stopped() const
 {
+#ifdef __unix__
     return _stopped;
+#else
+    return false;
+#endif
 }
 
 QString GpioHandler::error() const

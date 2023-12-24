@@ -39,4 +39,5 @@ QtObject {
     readonly property string calendarClock:                     "\ue0d2"
     readonly property string penCircle:                         "\ue20e"
     readonly property string download:                          "\uf019"
+    readonly property string restart:                           "\uf0e2"
 }

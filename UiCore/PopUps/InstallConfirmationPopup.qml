@@ -9,11 +9,18 @@ import Stherm
  * ***********************************************************************************************/
 
 I_PopUp {
-    /* Object properties
+    /* Property Declaration
      * ****************************************************************************************/
-    title: ""
 
     property DeviceController deviceController
+
+    property bool             restaring: false
+
+    /* Object properties
+     * ****************************************************************************************/
+
+    title: ""
+    onClosed: restaring = false;
 
     /* Children
      * ****************************************************************************************/
@@ -31,19 +38,36 @@ I_PopUp {
             Layout.alignment: Qt.AlignHCenter
             font.pointSize: Style.fontIconSize.largePt * 1.5
             font.weight: 400
-            text: FAIcons.circleCheck
+            text: restaring ? FAIcons.restart : FAIcons.circleCheck
         }
 
         Label {
+
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * 0.75
             wrapMode: Text.WordWrap
             text: "Updates has been successefully downloaded.\nThe application update requires a restart. Would you like to proceed?"
             horizontalAlignment: Text.AlignLeft
+            visible: !restaring
+        }
+
+        Label {
+            id: restartingLabel
+
+            visible: restaring
+            Layout.fillWidth: true
+            Layout.preferredWidth: 120
+            font.pointSize: Application.font.pointSize
+            wrapMode: Text.WordWrap
+            text: "Restarting..."
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
         }
 
 
         RowLayout {
+            id: rowButton
+
             Layout.fillWidth: true
 
             Item {
@@ -57,8 +81,11 @@ I_PopUp {
                 leftPadding: 8
                 rightPadding: 8
                 text: "Ok"
+                visible: !restaring
 
                 onClicked: {
+                    restaring = true;
+
                     deviceController.deviceControllerCPP.system.updateAndRestart();
                 }
             }
