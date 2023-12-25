@@ -49,7 +49,7 @@ BasePageView {
         }
 
         //! Humidifier CheckBox 1
-        CheckBox {
+        RadioButton {
             enabled: !noneChbox.checked
             Layout.leftMargin: 40 * scaleFactor
             checked: true
@@ -59,7 +59,7 @@ BasePageView {
         }
 
         //! Humidifier CheckBox 2
-        CheckBox {
+        RadioButton {
             enabled: !noneChbox.checked
             text: "T1\nshort"
 
@@ -67,7 +67,7 @@ BasePageView {
         }
 
         //! Humidifier CheckBox 3
-        CheckBox {
+        RadioButton {
             enabled: !noneChbox.checked
             text: "T2\npwrd"
 
@@ -82,17 +82,16 @@ BasePageView {
         }
 
         //! Dehumidifier CheckBox 1
-        CheckBox {
+        RadioButton {
             enabled: !noneChbox.checked
             Layout.leftMargin: 40 * scaleFactor
-            checked: true
             text: "T1\npwrd"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
 
         //! Dehumidifier CheckBox 2
-        CheckBox {
+        RadioButton {
             enabled: !noneChbox.checked
             text: "T1\nshort"
 
@@ -100,7 +99,7 @@ BasePageView {
         }
 
         //! Dehumidifier CheckBox 3
-        CheckBox {
+        RadioButton {
             enabled: !noneChbox.checked
             text: "T2\npwrd"
 
