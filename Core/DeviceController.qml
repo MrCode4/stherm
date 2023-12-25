@@ -238,4 +238,8 @@ I_DeviceController {
 
         device._isHold = isHold;
     }
+
+    function setSystemAccesseories(accType: int, wireType: int) {
+        appModel.systemSetup.systemAccessories.setSystemAccessories(accType, wireType);
+    }
 }

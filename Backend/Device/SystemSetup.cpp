@@ -16,4 +16,6 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     systemMode = AppSpecCPP::SystemMode::Auto;
 
     heatPumpEmergency = false;
+
+    systemAccessories = new SystemAccessories(this);
 }
