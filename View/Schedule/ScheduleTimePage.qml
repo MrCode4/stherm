@@ -118,14 +118,22 @@ BasePageView {
         columnSpacing: 12
         rowSpacing: 32
 
-        Tumbler {
-            id: _hourTumbler
-            currentIndex: 0
-            model: Array.from({ length: 12 }, (elem, indx) => indx + 1)
+        Item {
+            implicitHeight: _hourTumbler.implicitHeight
+            implicitWidth: _hourTumbler.implicitWidth
 
+            readonly property real delegateHeight: _hourTumbler.availableHeight / _hourTumbler.visibleItemCount
+
+            Tumbler {
+                id: _hourTumbler
+                anchors.fill: parent
+                currentIndex: 0
+                model: Array.from({ length: 12 }, (elem, indx) => indx + 1)
+
+            }
             Rectangle {
                 x: 12
-                y: parent.contentItem.delegateHeight * 2
+                y: parent.delegateHeight * 2
                 width: parent.width - 24
                 height: 2
                 color: Style.foreground
@@ -133,7 +141,7 @@ BasePageView {
 
             Rectangle {
                 x: 12
-                y: parent.contentItem.delegateHeight * 3
+                y: parent.delegateHeight * 3
                 width: parent.width - 24
                 height: 2
                 color: Style.foreground
@@ -146,14 +154,22 @@ BasePageView {
             Layout.fillWidth:  true
         }
 
-        Tumbler {
-            id: _minuteTumbler
-            currentIndex: 0
-            model: 60
+        Item {
+            implicitHeight: _minuteTumbler.implicitHeight
+            implicitWidth: _minuteTumbler.implicitWidth
+
+            readonly property real delegateHeight: _minuteTumbler.availableHeight / _minuteTumbler.visibleItemCount
+
+            Tumbler {
+                id: _minuteTumbler
+                anchors.fill: parent
+                currentIndex: 0
+                model: 60
+            }
 
             Rectangle {
                 x: 12
-                y: parent.contentItem.delegateHeight * 2
+                y: parent.delegateHeight * 2
                 width: parent.width - 24
                 height: 2
                 color: Style.foreground
@@ -161,7 +177,7 @@ BasePageView {
 
             Rectangle {
                 x: 12
-                y: parent.contentItem.delegateHeight * 3
+                y: parent.delegateHeight * 3
                 width: parent.width - 24
                 height: 2
                 color: Style.foreground

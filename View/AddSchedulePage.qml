@@ -179,14 +179,13 @@ BasePageView {
             }
 
             Component.onCompleted: {
-                //! Set start time to current time
-                var endTime = _internal.newSchedule.startTime;
-                var hour = Number(endTime.slice(0, 2));
-                hour = Math.min(12, hour + 2);
+                //! Set selected time to 2 hours after schedule's start time
+                var endTime = Date.fromLocaleTimeString(locale, _internal.newSchedule.startTime, "hh:mm AP");
+                console.log('s: ', endTime);
+                endTime.setTime(endTime.getTime() + 2 * 1000 * 60 * 60);
+                console.log('e: ', endTime);
 
-                endTime = (hour < 10 ? "0" + hour : hour) + endTime.slice(2, endTime.lengthd);
-
-                setTimeFromString(endTime);
+                setTimeFromString(endTime.toLocaleTimeString(locale, "hh:mm AP"));
             }
         }
     }
