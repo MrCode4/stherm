@@ -122,6 +122,22 @@ BasePageView {
             id: _hourTumbler
             currentIndex: 0
             model: Array.from({ length: 12 }, (elem, indx) => indx + 1)
+
+            Rectangle {
+                x: 12
+                y: parent.contentItem.delegateHeight * 2
+                width: parent.width - 24
+                height: 2
+                color: Style.foreground
+            }
+
+            Rectangle {
+                x: 12
+                y: parent.contentItem.delegateHeight * 3
+                width: parent.width - 24
+                height: 2
+                color: Style.foreground
+            }
         }
 
         Label {
@@ -134,6 +150,22 @@ BasePageView {
             id: _minuteTumbler
             currentIndex: 0
             model: 60
+
+            Rectangle {
+                x: 12
+                y: parent.contentItem.delegateHeight * 2
+                width: parent.width - 24
+                height: 2
+                color: Style.foreground
+            }
+
+            Rectangle {
+                x: 12
+                y: parent.contentItem.delegateHeight * 3
+                width: parent.width - 24
+                height: 2
+                color: Style.foreground
+            }
         }
 
         //! AM and PM radio buttons
