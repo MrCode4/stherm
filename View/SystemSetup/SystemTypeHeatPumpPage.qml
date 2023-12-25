@@ -18,6 +18,16 @@ BasePageView {
     leftPadding: 48
     rightPadding: 48
     title: "Heat Pump"
+    backButtonCallback: function() {
+        if (_root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (_root.StackView.view.currentItem == _root) {
+                //! Pop twice to get back to SystemSetupPage
+                _root.StackView.view.pop();
+                _root.StackView.view.pop();
+            }
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
