@@ -108,6 +108,9 @@ private:
     //! This function call automatically.
     void checkPartialUpdate();
 
+    //! Mount update directory
+    void mountUpdateDirectory();
+
     void setUpdateAvailable(bool updateAvailable) {
         if (mUpdateAvailable == updateAvailable)
             return;
@@ -128,6 +131,9 @@ private:
     QString mLatestVersion;
     QString mLatestVersionDate;
     QString mLatestVersionChangeLog;
+
+    int mRequiredMemory;
+    int mUpdateFileSize;
 
     QString mRemainingDownloadTime;
 

@@ -44,6 +44,16 @@ NUVE::System::System(QObject *parent) :
     mTimer.start(12 * 60 * 60 * 1000); // each 12 hours
     mUpdateDirectory = qApp->applicationDirPath();
 
+    mountUpdateDirectory();
+
+    QTimer::singleShot(0, this, [=]() {
+        checkPartialUpdate();
+        getUpdateInformation();
+    });
+
+}
+void  NUVE::System::mountUpdateDirectory()
+{
 #ifdef __unix__
     int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update; mount /dev/mmcblk1p3 /mnt/update"});
     // Check if the mount process executed successfully
@@ -51,11 +61,6 @@ NUVE::System::System(QObject *parent) :
     TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"}) << exitCode;
     mUpdateDirectory = "/mnt/update/latestVersion";
 #endif
-
-    QTimer::singleShot(0, this, [=]() {
-        checkPartialUpdate();
-        getUpdateInformation();
-    });
 
 }
 
@@ -135,6 +140,20 @@ void NUVE::System::setPartialUpdateProgress(int progress) {
 }
 
 void NUVE::System::partialUpdate() {
+
+    // Check
+    QStorageInfo storageInfo (mUpdateDirectory);
+
+    if (!storageInfo.isValid()) {
+        mountUpdateDirectory();
+    }
+
+    if (!storageInfo.isValid() || !storageInfo.isReady()) {
+        emit error("The update directory is not ready.");
+        return;
+    }
+
+
     // Check update file
     QFile file(mUpdateDirectory + "/update.zip");
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
@@ -146,6 +165,24 @@ void NUVE::System::partialUpdate() {
             return;
         else
             TRACE << "The file update needs to be redownloaded.";
+    }
+
+    if (storageInfo.bytesFree() < mUpdateFileSize) {
+
+        QDir dir(mUpdateDirectory);
+        // Removes the directory, including all its contents.
+        dir.removeRecursively();
+
+        // Create the latestVersion directory
+#ifdef __unix__
+        TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
+#endif
+
+        if (storageInfo.bytesFree() < mUpdateFileSize) {
+            emit error(QString("The update directory has no memory. Required memory is %0, and available memory is %1.")
+                           .arg(QString::number(mUpdateFileSize), QString::number(storageInfo.bytesFree())));
+            return;
+        }
     }
 
     if (mNetManager->property(m_isBusyDownloader).toBool()) {
@@ -221,11 +258,39 @@ void NUVE::System::updateAndRestart()
     //    QStringList arguments;
     //    arguments << scriptPath << mUpdateDirectory << destDir;
 
+    // Use to unzip the downloaded files.
+    QStorageInfo updateStorageInfo (mUpdateDirectory);
+
+    if (updateStorageInfo.bytesFree() < mUpdateFileSize) {
+
+        QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
+                          .arg(QString::number(mUpdateFileSize), QString::number(updateStorageInfo.bytesFree()));
+        emit error(err);
+        TRACE << err;
+
+        return;
+    }
+
+    QStorageInfo installStorageInfo (qApp->applicationDirPath());
+    QFileInfo appInfo(qApp->applicationFilePath());
+
+    if ((installStorageInfo.bytesFree() + appInfo.size()) < mRequiredMemory) {
+        QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
+                          .arg(QString::number(mRequiredMemory), QString::number(installStorageInfo.bytesFree()));
+        emit error(err);
+        TRACE << err;
+
+        return;
+    }
+
     TRACE << "stating update" ;
 
+#ifdef __unix__
     int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-update.service; systemctl start appStherm-update.service"});
-
     TRACE << exitCode;
+#endif
+
+
 }
 
 
@@ -400,6 +465,8 @@ void NUVE::System::checkPartialUpdate() {
     mLatestVersionDate = latestVersionObj.value("releaseDate").toString();
     mLatestVersionChangeLog = latestVersionObj.value("changeLog").toString();
     mLatestVersionAddress = latestVersionObj.value("address").toString();
+    mRequiredMemory = latestVersionObj.value("RequiredMemory").toInt();
+    mUpdateFileSize = latestVersionObj.value("CurrentFileSize").toInt();
 
     m_expectedUpdateChecksum = QByteArray::fromHex(latestVersionObj.value("checkSum").toString().toLatin1());
 
