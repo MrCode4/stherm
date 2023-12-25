@@ -31,7 +31,7 @@ I_PopUp {
         Label {
             Layout.fillWidth: true
             font.bold: true
-            text: "This schedule is overlapping with others. Enable it?"
+            text: "This schedule is overlapping with others. Save it as Enabled?"
             wrapMode: "Wrap"
             horizontalAlignment: "AlignHCenter"
         }
