@@ -114,7 +114,7 @@ BasePageView {
         anchors.leftMargin: root.leftPadding
         anchors.bottomMargin: root.bottomPadding
 
-        visible: system.updateAvailable
+        hoverEnabled: system.updateAvailable
 
         rightPadding: 4
         leftPadding: 8
@@ -124,7 +124,7 @@ BasePageView {
                 id: icon
 
                 Layout.alignment: Qt.AlignLeft
-                text: FAIcons.download
+                text: system.updateAvailable ? FAIcons.download : FAIcons.circleInfo
             }
 
             Label {
@@ -134,14 +134,16 @@ BasePageView {
                 color: Style.foreground
                 textFormat: Text.MarkdownText
                 font.family: "Roboto"
-                font.letterSpacing: 1.5
-                text: "<u>Download & Install</u>  "
+                font.pointSize: Qt.application.font.pointSize  * (system.updateAvailable ? 1.0 : 0.7)
+                font.letterSpacing: system.updateAvailable ? 1.5 : 1.0
+                text: system.updateAvailable ? "<u>Download & Install</u>  " : "You are using the most up-to-date version available."
                 lineHeight: 0.5
             }
         }
 
         onClicked: {
-            system.partialUpdate();
+            if (system.updateAvailable)
+                system.partialUpdate();
         }
     }
 }
