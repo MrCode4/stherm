@@ -157,7 +157,7 @@ BasePageView {
             id: noneChbox
 
             Layout.leftMargin: 40 * scaleFactor
-            checked: systemAccessories.accessoriesWireType === AppSpecCPP.None
+            checked: systemAccessories.isWireTypeNone
 
         }
     }
