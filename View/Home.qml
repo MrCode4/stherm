@@ -25,7 +25,7 @@ Control {
     readonly property   bool        isDragging: state === "dragging"
 
     //! Reference to main StackView
-    required property   StackView   mainStackView
+    /*required*/ property   StackView   mainStackView
 
     /* Object properties
      * ****************************************************************************************/
@@ -194,6 +194,18 @@ Control {
                         uiSession.popupLayout.displayPopUp(timeFormatPop, true);
                     }
                 }
+            }
+        }
+
+        OnScheduleLabel {
+            anchors {
+                bottom: _dateTimeHolder.top
+                horizontalCenter: _dateTimeHolder.horizontalCenter
+                bottomMargin: 16
+            }
+            visible: uiSession.appModel.currentSchedule
+            font {
+                pointSize: _root.font.pointSize * 0.8
             }
         }
 
