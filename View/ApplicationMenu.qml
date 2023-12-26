@@ -85,6 +85,12 @@ BasePageView {
                 case "Contact Contractor":
                     _root.StackView.view.push("qrc:/Stherm/View/ContactContractorPage.qml");
                     break;
+
+                case "Color Test": {
+                    _root.StackView.view.push("qrc:/Stherm/View/Test/ColorTestPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                } break;
                 }
             }
         }

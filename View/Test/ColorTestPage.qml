@@ -7,7 +7,7 @@ import Stherm
  * ColorTestPage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -16,22 +16,22 @@ BasePageView {
      * ****************************************************************************************/
     title: "Color Test"
     background: Rectangle {
-        color: "blue"
+        color: "black"
     }
 
     /* Children
      * ****************************************************************************************/
     //! Next button (loads ColorTestPage)
     ToolButton {
-        parent: _root.header.contentItem
+        parent: root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.arrowRight
         }
 
         onClicked: {
             //! Load next page
-            if (_root.StackView.view) {
-                _root.StackView.view.push("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
                                               "uiSession": uiSession
                                           })
             }
@@ -40,21 +40,21 @@ BasePageView {
 
     TapHandler {
         onTapped: {
-            switch(_root.state) {
+            switch(root.state) {
             case "black":
-                _root.state = "black";
+                root.state = "white";
                 break;
             case "white":
-                _root.state = "white";
+                root.state = "blue";
                 break;
             case "blue":
-                _root.state = "green";
+                root.state = "green";
                 break;
             case "green":
-                _root.state = "red";
+                root.state = "red";
                 break;
             case "red":
-                _root.state = "blue";
+                root.state = "black";
                 break;
             }
         }
@@ -62,40 +62,40 @@ BasePageView {
 
     /* States and Transitions
      * ****************************************************************************************/
-    state: "blue"
+    state: "black"
     states: [
         State {
             name: "black"
             PropertyChanges {
-                target: _root.background
+                target: root.background
                 color: "black"
             }
         },
         State {
             name: "white"
             PropertyChanges {
-                target: _root.background
+                target: root.background
                 color: "white"
             }
         },
         State {
             name: "blue"
             PropertyChanges {
-                target: _root.background
+                target: root.background
                 color: "blue"
             }
         },
         State {
             name: "green"
             PropertyChanges {
-                target: _root.background
+                target: root.background
                 color: "green"
             }
         },
         State {
             name: "red"
             PropertyChanges {
-                target: _root.background
+                target: root.background
                 color: "red"
             }
         }
@@ -103,7 +103,7 @@ BasePageView {
 
     transitions: Transition {
         ColorAnimation {
-            target: _root.background
+            target: root.background
             duration: 400
         }
     }
