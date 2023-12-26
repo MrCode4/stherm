@@ -14,7 +14,7 @@ class ScheduleCPP : public QSObjectCpp
     Q_PROPERTY(QString endTime    MEMBER endTime    NOTIFY endTimeChanged FINAL)
     Q_PROPERTY(QString dataSource MEMBER dataSource NOTIFY dataSourceChanged FINAL)
 
-    Q_PROPERTY(QStringList repeats MEMBER repeats NOTIFY repeatsChanged FINAL)
+    Q_PROPERTY(QString repeats MEMBER repeats NOTIFY repeatsChanged FINAL)
 
     Q_PROPERTY(double temprature MEMBER temprature NOTIFY tempratureChanged FINAL)
     Q_PROPERTY(double humidity   MEMBER humidity   NOTIFY humidityChanged FINAL)
@@ -39,7 +39,8 @@ public:
 
     QString dataSource;
 
-    QStringList repeats;
+    //! Ex: "Mo,Fr"
+    QString repeats;
 
     //! ScheduleCPP temprature: This is always in Celsius
     double temprature;

@@ -197,7 +197,7 @@ BasePageView {
             readonly property Component nextPage: dataSourcePageCompo
 
             onRepeatsChanged: {
-                if (repeats.toString() !== _internal.newSchedule.repeats.toString()) {
+                if (repeats !== _internal.newSchedule.repeats) {
                     _internal.newSchedule.repeats = repeats;
                 }
             }

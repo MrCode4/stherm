@@ -286,7 +286,7 @@ BasePageView {
                         Layout.alignment: Qt.AlignRight
 
                         Repeater {
-                            model: schedule?.repeats
+                            model: schedule?.repeats.split(",")
                             delegate: Label {
                                 Layout.alignment: Qt.AlignTop
                                 text: modelData

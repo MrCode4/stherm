@@ -30,7 +30,6 @@ QtObject {
         newSchedule.dataSource = schedule.dataSource;
 
         device.schedules.push(newSchedule);
-        console.log("sdsds" , newSchedule.repeats)
         device.schedulesChanged();
     }
 
@@ -85,11 +84,34 @@ QtObject {
                                          console.log(schedule.repeats);
 
                                          if(schedule.repeats.includes(currentDate)) {
-                                             var schStartTime = (Date).fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP");
-                                             console.log(Qt.formatDate(new Date(), "ddd")  ,"-*-----", schedule.startTime,schStartTime, " --- ", schedule.endTime);
-                                             var schEndTime = (Date).fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP");
+                                             let nowH = (new Date).getHours();
+                                             let nowMin = (new Date).getMinutes();
 
-                                             console.log(Qt.formatDate(new Date(), "ddd")  ,"-*-----", schedule.startTime, schEndTime," --- ", schedule.endTime, schEndTime);
+                                             var startTime = schedule.startTime.split(/[: ]/);
+                                             var startTimeH = parseInt(startTime[0]);
+                                             var startTimeM = parseInt(startTime[1]);
+                                             var period = startTime[2].toUpperCase();
+
+                                             if (period === "PM" && startTimeH !== 12) {
+                                                 startTimeH += 12;
+                                             } else if (period === "AM" && startTimeH === 12) {
+                                                 startTimeH = 0;
+                                             }
+
+                                             var endTime = schedule.endTime.split(/[: ]/);
+                                             var endTimeH = parseInt(endTime[0]);
+                                             var endTimeM = parseInt(endTime[1]);
+                                             var endPeriod = endTime[2].toUpperCase();
+
+                                             if (endPeriod === "PM" && endTimeH !== 12) {
+                                                 endTimeH += 12;
+                                             } else if (endPeriod === "AM" && endTimeH === 12) {
+                                                 endTimeH = 0;
+                                             }
+
+                                             schedule._active = ((startTimeH < nowH) || (startTimeH === nowH && startTimeM <= nowMin)) &&
+                                                                ((endTimeH > nowH) || (endTimeH === nowH && endTimeM >= nowMin));
+
                                          }
                                      }
                                  });

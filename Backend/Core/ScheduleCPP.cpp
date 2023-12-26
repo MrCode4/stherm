@@ -3,5 +3,4 @@
 ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     QSObjectCpp(parent)
 {
-
 }

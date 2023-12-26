@@ -22,7 +22,7 @@ BasePageView {
     readonly property bool  isValid: true
 
     //! Selected days for repeating
-    readonly property var   repeats: {
+    readonly property string   repeats: {
         var rps = [];
 
         if (_muBtn.checked) rps.push("Mo");
@@ -33,7 +33,7 @@ BasePageView {
         if (_saBtn.checked) rps.push("Sa");
         if (_suBtn.checked) rps.push("Su");
 
-        return rps;
+        return rps.join(",");
     }
 
     /* Object properties
@@ -111,13 +111,13 @@ BasePageView {
 
     onScheduleChanged: {
         if (schedule) {
-            _muBtn.checked = Boolean(schedule.repeats.find(element => element === "Mo"));
-            _tuBtn.checked = Boolean(schedule.repeats.find(element => element === "Tu"));
-            _weBtn.checked = Boolean(schedule.repeats.find(element => element === "We"));
-            _thBtn.checked = Boolean(schedule.repeats.find(element => element === "Th"));
-            _frBtn.checked = Boolean(schedule.repeats.find(element => element === "Fr"));
-            _saBtn.checked = Boolean(schedule.repeats.find(element => element === "Sa"));
-            _suBtn.checked = Boolean(schedule.repeats.find(element => element === "Su"));
+            _muBtn.checked = Boolean(schedule.repeats.includes("Mo"));
+            _tuBtn.checked = Boolean(schedule.repeats.includes("Tu"));
+            _weBtn.checked = Boolean(schedule.repeats.includes("We"));
+            _thBtn.checked = Boolean(schedule.repeats.includes("Th"));
+            _frBtn.checked = Boolean(schedule.repeats.includes("Fr"));
+            _saBtn.checked = Boolean(schedule.repeats.includes("Sa"));
+            _suBtn.checked = Boolean(schedule.repeats.includes("Su"));
         }
     }
 
@@ -132,7 +132,7 @@ BasePageView {
 
         uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveRepeat);
 
-        if (schedule && schedule.repeats.toString() !== repeats.toString()) {
+        if (schedule && schedule.repeats !== repeats) {
             schedule.repeats = repeats;
         }
 
