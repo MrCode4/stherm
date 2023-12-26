@@ -246,4 +246,8 @@ I_DeviceController {
 
         device._isHold = isHold;
     }
+
+    function setActivatedSchedule(schedule: ScheduleCPP) {
+        deviceControllerCPP.setActivatedSchedule(schedule);
+    }
 }

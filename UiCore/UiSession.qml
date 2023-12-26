@@ -107,7 +107,7 @@ Item {
 
     //! schedulesController instance
     property SchedulesController schedulesController:  SchedulesController {
-        device: appModel
+        deviceController: root.deviceController
     }
 
     /* Connections

@@ -11,7 +11,9 @@ QtObject {
 
     /* Property declaration
      * ****************************************************************************************/
-    property I_Device device
+    property I_DeviceController deviceController
+
+    property I_Device device: deviceController.device
 
     /* Methods
      * ****************************************************************************************/
@@ -78,42 +80,47 @@ QtObject {
 
     function findRunningSchedule() {
         device.schedules.forEach(schedule => {
-                                     if (schedule.enable) {
-                                         var currentDate = Qt.formatDate(new Date(), "ddd");
-                                         currentDate = currentDate.slice(0, -1);
-                                         console.log(schedule.repeats);
+                                     var active = false;
 
-                                         if(schedule.repeats.includes(currentDate)) {
-                                             let nowH = (new Date).getHours();
-                                             let nowMin = (new Date).getMinutes();
+                                    if (schedule.enable) {
+                                        var currentDate = Qt.formatDate(new Date(), "ddd");
+                                        currentDate = currentDate.slice(0, -1);
 
-                                             var startTime = schedule.startTime.split(/[: ]/);
-                                             var startTimeH = parseInt(startTime[0]);
-                                             var startTimeM = parseInt(startTime[1]);
-                                             var period = startTime[2].toUpperCase();
+                                        if(schedule.repeats.includes(currentDate)) {
+                                            let nowH = (new Date).getHours();
+                                            let nowMin = (new Date).getMinutes();
 
-                                             if (period === "PM" && startTimeH !== 12) {
-                                                 startTimeH += 12;
-                                             } else if (period === "AM" && startTimeH === 12) {
-                                                 startTimeH = 0;
-                                             }
+                                            var startTime   = schedule.startTime.split(/[: ]/);
+                                            var startTimeH  = parseInt(startTime[0]);
+                                            var startTimeM  = parseInt(startTime[1]);
+                                            var startPeriod = startTime[2].toUpperCase();
 
-                                             var endTime = schedule.endTime.split(/[: ]/);
-                                             var endTimeH = parseInt(endTime[0]);
-                                             var endTimeM = parseInt(endTime[1]);
-                                             var endPeriod = endTime[2].toUpperCase();
+                                            if (startPeriod === "PM" && startTimeH !== 12) {
+                                                startTimeH += 12;
+                                            } else if (startPeriod === "AM" && startTimeH === 12) {
+                                                startTimeH = 0;
+                                            }
 
-                                             if (endPeriod === "PM" && endTimeH !== 12) {
-                                                 endTimeH += 12;
-                                             } else if (endPeriod === "AM" && endTimeH === 12) {
-                                                 endTimeH = 0;
-                                             }
+                                            var endTime   = schedule.endTime.split(/[: ]/);
+                                            var endTimeH  = parseInt(endTime[0]);
+                                            var endTimeM  = parseInt(endTime[1]);
+                                            var endPeriod = endTime[2].toUpperCase();
 
-                                             schedule._active = ((startTimeH < nowH) || (startTimeH === nowH && startTimeM <= nowMin)) &&
+                                            if (endPeriod === "PM" && endTimeH !== 12) {
+                                                endTimeH += 12;
+                                            } else if (endPeriod === "AM" && endTimeH === 12) {
+                                                endTimeH = 0;
+                                            }
+
+                                            active = ((startTimeH < nowH) || (startTimeH === nowH && startTimeM <= nowMin)) &&
                                                                 ((endTimeH > nowH) || (endTimeH === nowH && endTimeM >= nowMin));
 
-                                         }
-                                     }
+                                        }
+                                    }
+
+                                    schedule._active = active;
+                                    if (active)
+                                       deviceController.setActivatedSchedule(schedule);
                                  });
     }
 

@@ -32,6 +32,7 @@ const QVariantList emergencyColorS   = QVariantList{255, 0, 0, STHERM::LedEffect
 
 Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
+    mSchedule(nullptr),
     QThread (parent)
 {
     stopWork = true;
@@ -129,14 +130,16 @@ void Scheme::run()
     resetDelays();
 
     while (!stopWork) {
-        // Set temperature to original value
-        setSetPointTemperature(mOriginalSetPointTemperature);
 
         // where should schedule be handled
+
         if (mSystemSetup->isVacation) {
+            // Set temperature to original value
+            setSetPointTemperature(mOriginalSetPointTemperature);
             VacationLoop();
 
         } else {
+            setSetPointTemperature((mSchedule && mSchedule->_active) ? mSchedule->temprature : mOriginalSetPointTemperature);
 
             switch (mSystemSetup->systemMode) {
             case AppSpecCPP::SystemMode::Auto:
@@ -910,6 +913,28 @@ void Scheme::updateHumifiresState()
                 mRelay->setDehumidifierState(false);
         }
     }
+}
+
+void Scheme::setSchedule(ScheduleCPP *newSchedule)
+{
+    if (mSchedule == newSchedule)
+        return;
+
+    if (mSchedule)
+        mSchedule->disconnect(this);
+
+    mSchedule = newSchedule;
+
+    connect(mSchedule, &ScheduleCPP::activeChanged,     this, &Scheme::restartWorkWithSchedule);
+    connect(mSchedule, &ScheduleCPP::tempratureChanged, this, &Scheme::restartWorkWithSchedule);
+}
+
+void Scheme::restartWorkWithSchedule()
+{
+    // setSetPointTemperature(mSchedule->_active ? mSchedule->temprature : mOriginalSetPointTemperature);
+    // setSetPointTemperature(schedule->_active ? schedule->humidity : mOriginalhumidity);
+
+    restartWork();
 }
 
 void Scheme::setVacation(const STHERM::Vacation &newVacation)

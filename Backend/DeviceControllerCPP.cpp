@@ -139,6 +139,11 @@ void DeviceControllerCPP::stopDevice()
     _deviceIO->stopReading();
 }
 
+void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
+{
+    m_scheme->setSchedule(schedule);
+}
+
 SystemSetup *DeviceControllerCPP::systemSetup() const {
     return mSystemSetup;
 }

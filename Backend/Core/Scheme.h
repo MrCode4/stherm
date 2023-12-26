@@ -6,6 +6,7 @@
 #include "Core/Relay.h"
 #include "Device/SystemSetup.h"
 #include "DeviceAPI.h"
+#include "ScheduleCPP.h"
 #include "UtilityHelper.h"
 #include "AppSpecCPP.h"
 #include "include/timing.h"
@@ -65,6 +66,8 @@ public:
 
     void setVacation(const STHERM::Vacation &newVacation);
 
+    void setSchedule(ScheduleCPP *newSchedule);
+
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
@@ -82,6 +85,9 @@ signals:
 
 protected:
     void run() override;
+
+private slots:
+    void restartWorkWithSchedule();
 
 private:
     void updateParameters();
@@ -131,6 +137,8 @@ private:
     AppSpecCPP::SystemMode mCurrentSysMode;
 
     AppSpecCPP::SystemMode mRealSysMode;
+
+    ScheduleCPP* mSchedule;
 
     struct STHERM::Vacation mVacation;
 
