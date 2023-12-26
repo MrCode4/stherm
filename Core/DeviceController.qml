@@ -119,11 +119,19 @@ I_DeviceController {
 
     function setSystemModeTo(systemMode: int)
     {
-        if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
+        if (systemMode === AppSpecCPP.Vacation) {
+            setVacationOn(true);
+
+        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
         }
+    }
+
+    //! On/off the vacation.
+    function setVacationOn(on: bool) {
+        device.systemSetup.isVacation = on;
     }
 
     //! Set device settings

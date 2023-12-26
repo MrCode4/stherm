@@ -16,4 +16,5 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     systemMode = AppSpecCPP::SystemMode::Auto;
 
     heatPumpEmergency = false;
+    isVacation = false;
 }

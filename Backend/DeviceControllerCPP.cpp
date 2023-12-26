@@ -112,7 +112,7 @@ void DeviceControllerCPP::setVacation(const double min_Temperature, const double
 
 void DeviceControllerCPP::setRequestedTemperature(const double temperature)
 {
-    m_scheme->setSetPointTemperature(temperature);
+    m_scheme->setOrgSetTemperature(temperature);
 }
 
 void DeviceControllerCPP::setRequestedHumidity(const double humidity)

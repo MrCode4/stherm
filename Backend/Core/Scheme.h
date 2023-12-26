@@ -57,6 +57,8 @@ public:
     //! Set requested Temperature
     void setSetPointTemperature(double newSetPointTemperature);
 
+    void setOrgSetTemperature(double newSetPointTemperature);
+
     //! Set requested Humidity
     void setRequestedHumidity(double newHumidity);
 
@@ -145,10 +147,12 @@ private:
 
     //! Temperature parameters
     double mCurrentTemperature;
+    double mOriginalSetPointTemperature;
     double mSetPointTemperature;
 
     // Fan work per hour (minutes per hour) Range: 0 - 60
     int mFanWPH;
 
     bool stopWork;
+    bool isVacation;
 };

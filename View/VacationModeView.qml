@@ -72,7 +72,7 @@ Popup {
                 onClicked: {
                     //! Set system mode to Auto
                     if (deviceController) {
-                        deviceController.setSystemModeTo(AppSpecCPP.Auto);
+                        deviceController.setVacationOn(false);
                     }
                 }
             }

@@ -92,6 +92,14 @@ void Scheme::setSetPointTemperature(double newSetPointTemperature)
     TRACE << "mSetPointTemperature changed";
 }
 
+void Scheme::setOrgSetTemperature(double newSetPointTemperature)
+{
+    mOriginalSetPointTemperature = newSetPointTemperature;
+
+    setSetPointTemperature(mOriginalSetPointTemperature);
+
+}
+
 void Scheme::setRequestedHumidity(double newHumidity)
 {
     if (qAbs(mSetPointHimidity - newHumidity) < 0.001)
@@ -121,30 +129,37 @@ void Scheme::run()
     resetDelays();
 
     while (!stopWork) {
-        // where should schedule be handled
+        // Set temperature to original value
+        setSetPointTemperature(mOriginalSetPointTemperature);
 
-        switch (mSystemSetup->systemMode) {
-        case AppSpecCPP::SystemMode::Auto:
-            AutoModeLoop();
-            break;
-        case AppSpecCPP::SystemMode::Cooling:
-            CoolingLoop();
-            break;
-        case AppSpecCPP::SystemMode::Heating:
-            HeatingLoop();
-            break;
-        case AppSpecCPP::SystemMode::Vacation:
+        // where should schedule be handled
+        if (mSystemSetup->isVacation) {
             VacationLoop();
-            break;
-        case AppSpecCPP::SystemMode::Off:
-            OffLoop();
-            break;
-        case AppSpecCPP::SystemMode::Emergency:
-            EmergencyLoop();
-            break;
-        default:
-            qWarning() << "Unsupported Mode in controller loop" << mSystemSetup->systemMode;
-            break;
+
+        } else {
+
+            switch (mSystemSetup->systemMode) {
+            case AppSpecCPP::SystemMode::Auto:
+                AutoModeLoop();
+                break;
+            case AppSpecCPP::SystemMode::Cooling:
+                CoolingLoop();
+                break;
+            case AppSpecCPP::SystemMode::Heating:
+                HeatingLoop();
+                break;
+            case AppSpecCPP::SystemMode::Vacation:
+                break;
+            case AppSpecCPP::SystemMode::Off:
+                OffLoop();
+                break;
+            case AppSpecCPP::SystemMode::Emergency:
+                EmergencyLoop();
+                break;
+            default:
+                qWarning() << "Unsupported Mode in controller loop" << mSystemSetup->systemMode;
+                break;
+            }
         }
 
         mRelay->setAllOff();
@@ -252,6 +267,58 @@ void Scheme::VacationLoop()
 {
     //TODO
     waitLoop();
+
+    if ((mVacation.minimumTemperature - mCurrentTemperature) > 0.001) {
+        setSetPointTemperature(mVacation.minimumTemperature);
+        HeatingLoop();
+
+    } else if ((mVacation.maximumTemperature - mCurrentTemperature) < 0.001) {
+        setSetPointTemperature(mVacation.maximumTemperature);
+        CoolingLoop();
+
+    } else {
+            switch (mSystemSetup->systemMode) {
+            case AppSpecCPP::SystemMode::Cooling: {
+                if (mSetPointTemperature  - mCurrentTemperature < 1) {
+                    // mCurrentSysMode = AppSpecCPP::SystemMode::Cooling;
+                    CoolingLoop();
+
+                } else if (mSetPointTemperature  - mCurrentTemperature < 1.9) {
+                    // mCurrentSysMode = AppSpecCPP::SystemMode::Off;
+                    OffLoop();
+
+                } else {
+                    HeatingLoop();
+                }
+
+            } break;
+
+            case AppSpecCPP::SystemMode::Heating: {
+                if (mCurrentTemperature - mSetPointTemperature < 1) {
+                    HeatingLoop();
+
+                } else if (mCurrentTemperature - mSetPointTemperature < 1.9) {
+                    OffLoop();
+
+                }  else {
+                    CoolingLoop();
+                }
+
+            } break;
+
+            default: {
+                if (mSetPointTemperature - mCurrentTemperature > 1.9) {
+                    HeatingLoop();
+
+                } else if (mCurrentTemperature - mSetPointTemperature > 1.9) {
+                    CoolingLoop();
+
+                }
+            } break;
+        }
+    }
+
+
 }
 
 void Scheme::EmergencyLoop()
@@ -734,7 +801,7 @@ void Scheme::setMainData(QVariantMap mainData)
     double currentTemp = 32.0 + mainData.value("temperature").toDouble(&isOk) * 9 / 5;
 
     if (isOk && currentTemp != mCurrentTemperature) {
-        mCurrentTemperature =currentTemp;
+        mCurrentTemperature = currentTemp;
 
         emit currentTemperatureChanged();
     }
@@ -875,6 +942,12 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
 
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
+
+        restartWork();
+    });
+
+    connect(mSystemSetup, &SystemSetup::isVacationChanged, this, [this] {
+        TRACE<< "isVacationChanged: "<< mSystemSetup->isVacation;
 
         restartWork();
     });

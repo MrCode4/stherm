@@ -94,7 +94,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemSetup.systemMode === AppSpecCPP.Vacation
+            checked: device?.systemSetup.isVacation
             text: "Vacation"
 
             onClicked: {
