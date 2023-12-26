@@ -318,7 +318,7 @@ void Scheme::VacationLoop()
         }
     }
 
-
+    updateHumifiresState();
 }
 
 void Scheme::EmergencyLoop()
@@ -877,8 +877,8 @@ void Scheme::updateHumifiresState()
     if (!mSystemSetup || mHumidifierId == 3)
         return;
 
-    if (mRealSysMode == AppSpecCPP::Vacation) {
-        qDebug() << Q_FUNC_INFO << __LINE__ <<mRealSysMode;
+    if (mSystemSetup->isVacation) {
+        qDebug() << Q_FUNC_INFO << __LINE__ << mRealSysMode;
         if (mHumidifierId == 1) {
             mRelay->setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
 

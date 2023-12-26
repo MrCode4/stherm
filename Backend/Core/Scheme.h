@@ -55,8 +55,6 @@ public:
     void setSystemSetup(SystemSetup* systemSetup);
 
     //! Set requested Temperature
-    void setSetPointTemperature(double newSetPointTemperature);
-
     void setOrgSetTemperature(double newSetPointTemperature);
 
     //! Set requested Humidity
@@ -120,6 +118,8 @@ private:
     //! Update humidifire and dehumidifire after changes: mode, set point humidity,
     //! current humidity, and humidifier Id
     void updateHumifiresState();
+
+    void setSetPointTemperature(double newSetPointTemperature);
 
 private:
     /* Attributes
