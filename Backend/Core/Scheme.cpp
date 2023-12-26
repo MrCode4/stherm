@@ -131,14 +131,15 @@ void Scheme::run()
 
     while (!stopWork) {
 
-        // where should schedule be handled
-
+        // Vacation has a higher priority compared to other processes.
         if (mSystemSetup->isVacation) {
             // Set temperature to original value
             setSetPointTemperature(mOriginalSetPointTemperature);
             VacationLoop();
 
         } else {
+            // where should schedule be handled
+            // Check to be set correct temperature
             setSetPointTemperature((mSchedule && mSchedule->_active) ? mSchedule->temprature : mOriginalSetPointTemperature);
 
             switch (mSystemSetup->systemMode) {
