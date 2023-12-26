@@ -23,6 +23,9 @@ BasePageView {
     //!
     property bool               completed: false
 
+    //! Used when backlight changed in test mode
+    property bool               isTest: false
+
     //!
     property Timer onlineTimer: Timer {
         repeat: false
@@ -78,7 +81,8 @@ BasePageView {
             onClicked: {
                 applyToModel();
 
-                goBack();
+                if (!isTest)
+                    goBack();
             }
         }
     }
@@ -237,7 +241,7 @@ BasePageView {
     function applyToModel() {
         if (deviceController) {
             deviceController.updateBacklight(_backlightOnOffSw.checked, _colorSlider.value, _brSlider.value,
-                                             (_shadeButtonsGrp.checkedButton?.index ?? dummyShadeDelegate.index));
+                                             (_shadeButtonsGrp.checkedButton?.index ?? dummyShadeDelegate.index), isTest);
         }
     }
 
@@ -260,6 +264,11 @@ BasePageView {
             if (_root.StackView.view.currentItem == _root) {
                 _root.StackView.view.pop();
             }
+        }
+
+        // Revert when change backlight with go back in test mode
+        if (isTest) {
+            revertToModel();
         }
     }
 

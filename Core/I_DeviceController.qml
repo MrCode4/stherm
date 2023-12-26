@@ -19,11 +19,11 @@ QtObject {
     /* Functions
      * ****************************************************************************************/
 
-    function updateBacklight(isOn, hue, brightness, shadeIndex)
+    function updateBacklight(isOn, hue, brightness, shadeIndex, isTest = false)
     {
         var color = device.backlight.backlightFinalColor(shadeIndex, hue, brightness);
 
-        if (updateDeviceBacklight(isOn, color))
+        if (updateDeviceBacklight(isOn, color) && !isTest)
         {
             device.backlight.on = isOn;
             device.backlight.hue = hue;

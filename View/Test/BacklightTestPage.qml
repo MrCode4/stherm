@@ -15,6 +15,7 @@ BacklightPage {
     topPadding: 0
     bottomPadding: 32 * scaleFactor
     title: "Backlight Test"
+    isTest: true
     // hasShades: false
 
     // onUnshadedColorChanged: {
@@ -36,6 +37,11 @@ BacklightPage {
                 _root.StackView.view.push("qrc:/Stherm/View/Test/AudioTestPage.qml", {
                                               "uiSession": uiSession
                                           })
+            }
+
+            // Revert when change backlight with go back in test mode
+            if (isTest) {
+                revertToModel();
             }
         }
     }
