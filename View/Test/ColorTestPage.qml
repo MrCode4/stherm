@@ -41,6 +41,12 @@ BasePageView {
     TapHandler {
         onTapped: {
             switch(_root.state) {
+            case "black":
+                _root.state = "black";
+                break;
+            case "white":
+                _root.state = "white";
+                break;
             case "blue":
                 _root.state = "green";
                 break;
@@ -58,6 +64,20 @@ BasePageView {
      * ****************************************************************************************/
     state: "blue"
     states: [
+        State {
+            name: "black"
+            PropertyChanges {
+                target: _root.background
+                color: "black"
+            }
+        },
+        State {
+            name: "white"
+            PropertyChanges {
+                target: _root.background
+                color: "white"
+            }
+        },
         State {
             name: "blue"
             PropertyChanges {
