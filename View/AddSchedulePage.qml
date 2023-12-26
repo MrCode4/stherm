@@ -88,7 +88,7 @@ BasePageView {
     QtObject {
         id: _internal
 
-        property Schedule newSchedule: Schedule { }
+        property ScheduleCPP newSchedule: ScheduleCPP { }
 
         property var overlappingSchedules: []
     }
@@ -234,7 +234,7 @@ BasePageView {
     {
         //! If there is overlapping Schedules disable them
         _internal.overlappingSchedules.forEach((element, index) => {
-                                                   element.active = false;
+                                                   element.enable = false;
                                                });
 
         uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveSchedule);

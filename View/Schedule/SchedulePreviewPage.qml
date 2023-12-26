@@ -13,16 +13,16 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Device referenece
-    property Device     device: uiSession?.appModel ?? null
+    property Device      device: uiSession?.appModel ?? null
 
     //! Schedule
-    property Schedule   schedule
+    property ScheduleCPP schedule
 
     //! Whether temprature unit is Celsius
-    property bool       isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
+    property bool        isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     //! Can schedule fields be editabled
-    property bool       isEditable: false
+    property bool        isEditable: false
 
     /* Object properties
      * ****************************************************************************************/

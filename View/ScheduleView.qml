@@ -58,7 +58,7 @@ BasePageView {
             width: ListView.view.width
             height: Style.delegateHeight
             uiSession: _root.uiSession
-            schedule: (modelData instanceof Schedule) ? modelData : null
+            schedule: (modelData instanceof ScheduleCPP) ? modelData : null
             delegateIndex: index
 
             onRemoved: {

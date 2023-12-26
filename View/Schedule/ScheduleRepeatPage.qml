@@ -16,7 +16,7 @@ BasePageView {
     property SchedulesController     schedulesController: uiSession?.schedulesController ?? null
 
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule       schedule
+    property ScheduleCPP    schedule
 
     //! Repeats are always valid
     readonly property bool  isValid: true
@@ -60,7 +60,7 @@ BasePageView {
         onClicked: {
             //! First check if this schedule has overlap with other Schedules
             //! Do this only if schedule is enabled (active)
-            if (schedule.active) {
+            if (schedule.enable) {
                 internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
                             Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
                             Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
@@ -127,7 +127,7 @@ BasePageView {
     {
         //! If there is overlapping Schedules disable them
         internal.overlappingSchedules.forEach((element, index) => {
-                                                  element.active = false;
+                                                  element.enable = false;
                                               });
 
         uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveRepeat);
