@@ -7,7 +7,12 @@ destDir="/usr/local/bin"
 # Display source and destination directories
 echo "Source directory: $sourceDir"
 echo "Destination directory: $destDir"
-
+if mount | awk '{if ($3 == "/mnt/update") { exit 0}} ENDFILE{exit -1}'; then
+    echo "/mnt/update already mounted"
+else
+	mkdir /mnt/update
+	mount /dev/mmcblk1p3 /mnt/update
+fi
 cd "$sourceDir"
 rm -rf "content"
 unzip "update.zip" -d "content"
