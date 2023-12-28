@@ -30,9 +30,9 @@ public:
     void setAllOff();
 
     bool heatingStage0();
-    bool heatingStage1();
-    bool heatingStage3();
-    bool heatingStage2();
+    bool heatingStage1(bool heatpump = false);
+    bool heatingStage3(bool heatpump = false);
+    bool heatingStage2(bool heatpump = false);
 
     bool coolingStage0();
     bool coolingStage1();
@@ -59,6 +59,9 @@ public:
     //! Update Dehumidifier state
     void setDehumidifierState(const bool on);
 
+    AppSpecCPP::SystemMode getOb_on_state() const;
+    void setOb_on_state(const AppSpecCPP::SystemMode &newOb_on_state);
+
 private:
     explicit Relay();
 
@@ -66,6 +69,8 @@ private:
     
     void fanOn();
     void fanOFF();
+
+    void updateOB();
 
 private:
     static Relay* mInstance;
@@ -75,6 +80,7 @@ private:
     AppSpecCPP::SystemMode before_state;
     AppSpecCPP::SystemMode current_state;
     AppSpecCPP::SystemMode ob_state; // can be Cooling or Heating
+    AppSpecCPP::SystemMode ob_on_state; // can be Cooling or Heating
 
     int current_stage;
 
