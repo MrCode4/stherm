@@ -33,6 +33,8 @@ Page {
     //! Controls visibility of backbutton
     property bool                   backButtonVisible: true
 
+    property color                  headerColor: "white"
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
@@ -50,6 +52,7 @@ Page {
                 visible: backButtonVisible
                 contentItem: RoniaTextIcon {
                     text: backButtonTextIcon
+                    color: _root.headerColor
                 }
 
                 onClicked: if (backButtonCallback instanceof Function) backButtonCallback();
@@ -65,6 +68,7 @@ Page {
 
                 visible: title.length > 0
                 textFormat: "MarkdownText"
+                color: _root.headerColor
                 verticalAlignment: "AlignVCenter"
                 horizontalAlignment: "AlignHCenter"
                 text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} ${title}`
@@ -78,7 +82,7 @@ Page {
     backButtonCallback: function() {
         if (_root.StackView.view) {
             //! Then Page is inside an StackView
-            if (_root.StackView.view.currentItem == _root) {
+            if (_root.StackView.view.currentItem === _root) {
                 _root.StackView.view.pop();
             }
         }

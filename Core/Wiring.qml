@@ -9,8 +9,6 @@ import QtQuickStream
 QSObject {
     id: _root
 
-    //! First column
-
     property bool       isR     : false
 
     property bool       isC     : false
@@ -23,8 +21,6 @@ QSObject {
 
     property bool       isT2    : false
 
-    //! Second column
-
     property bool       isW1    : false
 
     property bool       isW2    : false
@@ -36,11 +32,4 @@ QSObject {
     property bool       isT1p   : false
 
     property bool       isT1n   : false
-
-    Component.onCompleted: {
-        //! Arbitrary data
-        isR = true;
-        isW1 = true;
-        isW2 = true;
-    }
 }
