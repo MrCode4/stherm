@@ -298,6 +298,8 @@ qt6_add_qml_module(appStherm
         Backend/QRCodeGenerator.h
         Backend/Device/SystemSetup.h
         Backend/Device/SystemSetup.cpp
+        Backend/Device/SystemAccessories.h
+        Backend/Device/SystemAccessories.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
