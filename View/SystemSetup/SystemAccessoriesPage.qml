@@ -53,7 +53,6 @@ BasePageView {
             }
 
             deviceController.setSystemAccesseories(accTypeUI, wireTypeUI);
-
             //! Also move out of this Page
             backButtonCallback();
         }
@@ -86,7 +85,6 @@ BasePageView {
         RadioButton {
             id: humidifierT1Short
 
-            enabled: !noneChbox.checked
             checked: isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1Short
             text: "T1\nshort"
 

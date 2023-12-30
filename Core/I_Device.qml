@@ -65,11 +65,6 @@ QSObject {
     // System setup
     property SystemSetup    systemSetup:    SystemSetup {
         _qsRepo: appModel._qsRepo
-
-        systemAccessories: SystemAccessories {
-            _qsRepo: appModel._qsRepo
-        }
-
     }
     /* Functions
      * ****************************************************************************************/

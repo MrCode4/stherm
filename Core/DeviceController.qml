@@ -240,6 +240,6 @@ I_DeviceController {
     }
 
     function setSystemAccesseories(accType: int, wireType: int) {
-        appModel.systemSetup.systemAccessories.setSystemAccessories(accType, wireType);
+        device.systemSetup.systemAccessories.setSystemAccessories(accType, wireType);
     }
 }

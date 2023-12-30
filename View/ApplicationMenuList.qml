@@ -19,7 +19,7 @@ ListView {
     property I_Device appModel
 
     //! SystemAccessories
-    property SystemAccessories systemAccessories: appModel.systemSetup.systemAccessories
+    property SystemAccessories systemAccessories: appModel?.systemSetup?.systemAccessories ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -60,7 +60,7 @@ ListView {
         {
             "icon": FAIcons.droplet,
             "text": "Humidity Control",
-            "visible": (systemAccessories.accessoriesWireType !== AppSpecCPP.None)
+            "visible": ((systemAccessories?.accessoriesWireType ?? AppSpecCPP.None) !== AppSpecCPP.None)
         },
         {
             "icon": FAIcons.fan,

@@ -59,7 +59,4 @@ signals:
     void systemModeChanged();
     void heatPumpEmergencyChanged();
     void systemAccessoriesChanged();
-
-private:
-
 };
