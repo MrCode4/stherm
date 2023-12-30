@@ -22,6 +22,9 @@ BacklightPage {
         //! Apply selected color to device immediately
     // }
 
+    // Revert when change backlight with go back in test mode
+    Component.onDestruction: revertToModel();
+
     /* Children
      * ****************************************************************************************/
     //! Next button
@@ -37,11 +40,6 @@ BacklightPage {
                 _root.StackView.view.push("qrc:/Stherm/View/Test/AudioTestPage.qml", {
                                               "uiSession": uiSession
                                           })
-            }
-
-            // Revert when change backlight with go back in test mode
-            if (isTest) {
-                revertToModel();
             }
         }
     }

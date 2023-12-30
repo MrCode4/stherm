@@ -66,6 +66,8 @@ BasePageView {
         //! Backlight on/off button
         Switch {
             id: _backlightOnOffSw
+
+            visible: !_root.isTest
             checked: backlight ? backlight.on : true
             onCheckedChanged: onlineTimer.startTimer()
         }
@@ -73,6 +75,8 @@ BasePageView {
         //! Confirm button
         ToolButton {
             id: confirmtBtn
+
+            visible: !_root.isTest
             Layout.alignment: Qt.AlignCenter
             contentItem: RoniaTextIcon {
                 text: "\uf00c"
@@ -241,7 +245,7 @@ BasePageView {
     function applyToModel() {
         if (deviceController) {
             deviceController.updateBacklight(_backlightOnOffSw.checked, _colorSlider.value, _brSlider.value,
-                                             (_shadeButtonsGrp.checkedButton?.index ?? dummyShadeDelegate.index), isTest);
+                                             (_shadeButtonsGrp.checkedButton?.index ?? dummyShadeDelegate.index));
         }
     }
 
