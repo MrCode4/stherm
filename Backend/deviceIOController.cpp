@@ -342,7 +342,7 @@ void DeviceIOController::createConnections()
     connect(&m_wiring_timer, &QTimer::timeout, this, &DeviceIOController::wiringExec);
 
     m_wiring_timer.setSingleShot(false);
-    m_wiring_timer.start(12000);
+    // m_wiring_timer.start(12000); // wiring is not valid in firmware anymore
 
     //! the sensors will get every 30 seonds or from gpio interrupts! timer will restart on interrupts
     connect(&m_nRF_timer, &QTimer::timeout, this, &DeviceIOController::nRFExec);
@@ -1220,6 +1220,9 @@ void DeviceIOController::getDeviceID()
 
 bool DeviceIOController::checkRelayVaidation()
 {
+    // wiring check is not valid in firmware anymore!
+    return true;
+
     if (m_p->WiringState.count() < WIRING_IN_CNT)
         return false;
 

@@ -119,30 +119,19 @@ int Relay::getHeatingMaxStage()
 
 bool Relay::coolingStage1()
 {
-    if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        if (ob_state == AppSpecCPP::SystemMode::Cooling) {
-            mRelay.o_b = STHERM::RelayMode::ON;
-        } else {
-            mRelay.o_b = STHERM::RelayMode::OFF;
-        }
-        mRelay.y1 = STHERM::RelayMode::ON;
-        mRelay.y2 = STHERM::RelayMode::OFF;
-        mRelay.y3 = STHERM::RelayMode::OFF;
-    } else {
+    mRelay.g = STHERM::RelayMode::ON;
+    mRelay.y1 = STHERM::RelayMode::ON;
+    mRelay.y2 = STHERM::RelayMode::OFF;
+    mRelay.y3 = STHERM::RelayMode::OFF;
+    mRelay.w1 = STHERM::RelayMode::OFF;
+    mRelay.w2 = STHERM::RelayMode::OFF;
+    mRelay.w3 = STHERM::RelayMode::OFF;
 
-        mRelay.y1 = STHERM::RelayMode::ON;
-        mRelay.y2 = STHERM::RelayMode::OFF;
-        mRelay.y3 = STHERM::RelayMode::OFF;
-        mRelay.w1 = STHERM::RelayMode::OFF;
-        mRelay.w2 = STHERM::RelayMode::OFF;
-        mRelay.w3 = STHERM::RelayMode::OFF;
-    }
-    startTempTimer( AppSpecCPP::SystemMode::Cooling);
+    startTempTimer(AppSpecCPP::SystemMode::Cooling);
     current_state = AppSpecCPP::SystemMode::Cooling;
 
     return true;
 }
-
 
 void Relay::startTempTimer(AppSpecCPP::SystemMode current_state)
 {
@@ -194,6 +183,7 @@ AppSpecCPP::SystemMode Relay::getOb_state() const
 void Relay::setOb_state(AppSpecCPP::SystemMode newOb_state)
 {
     ob_state = newOb_state;
+    updateOB();
 }
 
 /**
@@ -213,13 +203,12 @@ void Relay::setAllOff()
     mRelay.o_b   = STHERM::RelayMode::OFF;
     mRelay.acc1p = STHERM::RelayMode::OFF;
     mRelay.acc1n = STHERM::RelayMode::OFF;
+
+    current_state = AppSpecCPP::SystemMode::Off;
 }
 
 bool Relay::heatingStage0()
 {
-    mRelay.o_b = (ob_state == AppSpecCPP::SystemMode::Heating) ?
-                     STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
-
     mRelay.y1 = STHERM::RelayMode::OFF;
     mRelay.y2 = STHERM::RelayMode::OFF;
     mRelay.y3 = STHERM::RelayMode::OFF;
@@ -236,11 +225,6 @@ bool Relay::heatingStage0()
 
 bool Relay::coolingStage0()
 {
-    mRelay.o_b   = STHERM::RelayMode::OFF;
-
-    mRelay.o_b = (ob_state == AppSpecCPP::SystemMode::Cooling) ?
-                     STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
-
     mRelay.y1  = STHERM::RelayMode::OFF;
     mRelay.y2  = STHERM::RelayMode::OFF;
     mRelay.y3 = STHERM::RelayMode::OFF;
@@ -255,22 +239,15 @@ bool Relay::coolingStage0()
     return true;
 }
 
-bool Relay:: heatingStage1()
+bool Relay::heatingStage1(bool heatpump)
 {
-    if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-            mRelay.o_b = (ob_state == AppSpecCPP::SystemMode::Heating) ?
-                         STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
-
-        mRelay.y1  = STHERM::RelayMode::ON;
-    } else {
-        mRelay.y1  = STHERM::RelayMode::OFF;
-        mRelay.w1  = STHERM::RelayMode::ON;
-        mRelay.w2 = STHERM::RelayMode::OFF;
-        mRelay.w3 = STHERM::RelayMode::OFF;
-    }
-
-    mRelay.y2  = STHERM::RelayMode::OFF;
+    mRelay.g = STHERM::RelayMode::ON;
+    mRelay.y1 = heatpump ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.y2 = STHERM::RelayMode::OFF;
     mRelay.y3 = STHERM::RelayMode::OFF;
+    mRelay.w1 = heatpump ? STHERM::RelayMode::OFF : STHERM::RelayMode::ON;
+    mRelay.w2 = STHERM::RelayMode::OFF;
+    mRelay.w3 = STHERM::RelayMode::OFF;
 
     startTempTimer(AppSpecCPP::SystemMode::Heating);
     current_state = AppSpecCPP::SystemMode::Heating;
@@ -278,24 +255,16 @@ bool Relay:: heatingStage1()
     return true;
 }
 
-bool Relay:: heatingStage2()
+bool Relay::heatingStage2(bool heatpump)
 {
-    if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        mRelay.o_b = (ob_state == AppSpecCPP::SystemMode::Heating) ?
-                         STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.g = STHERM::RelayMode::ON;
+    mRelay.y1 = heatpump ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.y2 = heatpump ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.y3 = STHERM::RelayMode::OFF;
+    mRelay.w1 = heatpump ? STHERM::RelayMode::OFF : STHERM::RelayMode::ON;
+    mRelay.w2 = heatpump ? STHERM::RelayMode::OFF : STHERM::RelayMode::ON;
+    mRelay.w3 = STHERM::RelayMode::OFF;
 
-        mRelay.y1 = STHERM::RelayMode::ON;
-        mRelay.y2  = STHERM::RelayMode::ON;
-        mRelay.y3= STHERM::RelayMode::OFF;
-
-    } else {
-        mRelay.y1  = STHERM::RelayMode::OFF;
-        mRelay.y2  = STHERM::RelayMode::OFF;
-        mRelay.y3 = STHERM::RelayMode::OFF;
-        mRelay.w1  = STHERM::RelayMode::ON;
-        mRelay.w2  = STHERM::RelayMode::ON;
-        mRelay.w3 = STHERM::RelayMode::OFF;
-    }
     startTempTimer(AppSpecCPP::SystemMode::Heating);
     current_state = AppSpecCPP::SystemMode::Heating;
 
@@ -304,19 +273,13 @@ bool Relay:: heatingStage2()
 
 bool Relay::coolingStage2()
 {
-    if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        mRelay.o_b = (ob_state == AppSpecCPP::SystemMode::Cooling) ?
-                         STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
-
-    } else {
-        mRelay.w1 = STHERM::RelayMode::OFF;
-        mRelay.w2 = STHERM::RelayMode::OFF;
-        mRelay.w3 = STHERM::RelayMode::OFF;
-    }
-
-    mRelay.y1  = STHERM::RelayMode::ON;
+    mRelay.g = STHERM::RelayMode::ON;
+    mRelay.y1 = STHERM::RelayMode::ON;
     mRelay.y2  = STHERM::RelayMode::ON;
     mRelay.y3 = STHERM::RelayMode::OFF;
+    mRelay.w1 = STHERM::RelayMode::OFF;
+    mRelay.w2 = STHERM::RelayMode::OFF;
+    mRelay.w3 = STHERM::RelayMode::OFF;
 
     startTempTimer(AppSpecCPP::SystemMode::Cooling);
     current_state = AppSpecCPP::SystemMode::Cooling;
@@ -324,25 +287,15 @@ bool Relay::coolingStage2()
     return true;
 }
 
-bool Relay::heatingStage3()
+bool Relay::heatingStage3(bool heatpump)
 {
-    if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        mRelay.o_b = (ob_state == AppSpecCPP::SystemMode::Heating) ?
-                         STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
-
-        mRelay.y1  = STHERM::RelayMode::ON;
-        mRelay.y2  = STHERM::RelayMode::ON;
-        mRelay.y3  = STHERM::RelayMode::ON;
-
-    } else {
-        mRelay.w1  = STHERM::RelayMode::ON;
-        mRelay.w2  = STHERM::RelayMode::ON;
-        mRelay.w3  = STHERM::RelayMode::ON;
-
-        mRelay.y1  = STHERM::RelayMode::OFF;
-        mRelay.y2  = STHERM::RelayMode::OFF;
-        mRelay.y3  = STHERM::RelayMode::OFF;
-    }
+    mRelay.g = STHERM::RelayMode::ON;
+    mRelay.y1 = heatpump ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.y2 = heatpump ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.y3 = heatpump ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.w1 = heatpump ? STHERM::RelayMode::OFF : STHERM::RelayMode::ON;
+    mRelay.w2 = heatpump ? STHERM::RelayMode::OFF : STHERM::RelayMode::ON;
+    mRelay.w3 = heatpump ? STHERM::RelayMode::OFF : STHERM::RelayMode::ON;
 
     startTempTimer(AppSpecCPP::SystemMode::Heating);
     current_state = AppSpecCPP::SystemMode::Heating;
@@ -374,44 +327,40 @@ bool Relay::coolingStage3()
 
 bool Relay::emergencyHeating1()
 {
-    if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        mRelay.y1  = STHERM::RelayMode::OFF;
-        mRelay.y2  = STHERM::RelayMode::OFF;
-        mRelay.y3 = STHERM::RelayMode::OFF;
+    mRelay.g = STHERM::RelayMode::ON;
+    mRelay.y1 = STHERM::RelayMode::OFF;
+    mRelay.y2 = STHERM::RelayMode::OFF;
+    mRelay.y3 = STHERM::RelayMode::OFF;
+    mRelay.w1 = STHERM::RelayMode::ON;
+    mRelay.w2 = STHERM::RelayMode::OFF;
+    mRelay.w3 = STHERM::RelayMode::OFF;
 
-        mRelay.w1  = STHERM::RelayMode::ON;
-        mRelay.w2 = STHERM::RelayMode::OFF;
+    current_state = AppSpecCPP::SystemMode::Emergency;
 
-        current_state = AppSpecCPP::SystemMode::Emergency;
-
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 bool Relay::emergencyHeating2()
 {
-    if (mRelay.o_b != STHERM::RelayMode::NoWire) {
-        mRelay.y1  = STHERM::RelayMode::OFF;
-        mRelay.y2  = STHERM::RelayMode::OFF;
-        mRelay.y3 = STHERM::RelayMode::OFF;
+    mRelay.g = STHERM::RelayMode::ON;
+    mRelay.y1 = STHERM::RelayMode::OFF;
+    mRelay.y2 = STHERM::RelayMode::OFF;
+    mRelay.y3 = STHERM::RelayMode::OFF;
+    mRelay.w1 = STHERM::RelayMode::ON;
+    mRelay.w2 = STHERM::RelayMode::ON;
+    mRelay.w3 = STHERM::RelayMode::OFF;
 
-        mRelay.w1  = STHERM::RelayMode::ON;
-        mRelay.w2  = STHERM::RelayMode::ON;
+    current_state = AppSpecCPP::SystemMode::Emergency;
 
-        current_state = AppSpecCPP::SystemMode::Emergency;
-
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 bool Relay::turnOffEmergencyHeating()
 {
+    mRelay.g = STHERM::RelayMode::OFF;
     mRelay.w1  = STHERM::RelayMode::OFF;
     mRelay.w2  = STHERM::RelayMode::OFF;
+    mRelay.w3 = STHERM::RelayMode::OFF;
 
     // update current_state
 
@@ -428,6 +377,25 @@ void Relay::fanOFF() {
     if (mRelay.g != STHERM::NoWire) {
         mRelay.g = STHERM::OFF;
     }
+}
+
+void Relay::updateOB()
+{
+    if (current_state != AppSpecCPP::SystemMode::Off && ob_state == ob_on_state) {
+        mRelay.o_b = STHERM::RelayMode::ON;
+    } else {
+        mRelay.o_b = STHERM::RelayMode::OFF;
+    }
+}
+
+AppSpecCPP::SystemMode Relay::getOb_on_state() const
+{
+    return ob_on_state;
+}
+
+void Relay::setOb_on_state(const AppSpecCPP::SystemMode &newOb_on_state)
+{
+    ob_on_state = newOb_on_state;
 }
 
 bool Relay::fanWorkTime(int fanWPH, int interval)
@@ -447,5 +415,6 @@ bool Relay::fanWorkTime(int fanWPH, int interval)
 }
 
 STHERM::RelayConfigs Relay::relays() {
+    updateOB();
     return mRelay;
 }
