@@ -27,6 +27,7 @@ BasePageView {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.arrowRight
+            color: labelColor
         }
 
         onClicked: {

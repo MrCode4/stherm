@@ -52,6 +52,7 @@ Page {
                 visible: backButtonVisible
                 contentItem: RoniaTextIcon {
                     text: backButtonTextIcon
+                    color: labelColor
                 }
 
                 onClicked: if (backButtonCallback instanceof Function) backButtonCallback();
