@@ -120,6 +120,11 @@ void DeviceControllerCPP::setRequestedHumidity(const double humidity)
     m_scheme->setRequestedHumidity(humidity);
 }
 
+bool DeviceControllerCPP::setTestRelays(QVariantList data)
+{
+    return _deviceIO->testRelays(data);
+}
+
 void DeviceControllerCPP::startDevice()
 {
     //! todo: move to constructor later

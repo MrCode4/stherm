@@ -60,4 +60,6 @@ QtObject {
     function updateInformation() {}
 
     function updateHold(isHold) {}
+
+    function testRelays(relays) {}
 }

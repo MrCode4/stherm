@@ -16,6 +16,23 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Next button
+    ToolButton {
+        parent: _root.header.contentItem
+        contentItem: RoniaTextIcon {
+            text: FAIcons.arrowRight
+        }
+
+        onClicked: {
+            //! Next page
+            if (_root.StackView.view) {
+                _root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
+                                              "uiSession": uiSession
+                                          })
+            }
+        }
+    }
+
     GridLayout {
         anchors.fill: parent
         columns: 2
@@ -39,7 +56,7 @@ BasePageView {
         Item { }
 
         Label {
-            text: "Ambiend :"
+            text: "Ambient :"
         }
 
         Item { }

@@ -173,15 +173,20 @@ qt6_add_qml_module(appStherm
         View/VacationModeView.qml
         View/AboutDevicePage.qml
         View/UserGuidePage.qml
+        View/ContactContractorPage.qml
+
+        # Time
+        View/Time/TimePage.qml
+        View/Time/SelectTimePage.qml
+        View/Time/SelectTimezonePage.qml
+
+        # Test
         View/Test/TouchTestPage.qml
         View/Test/ColorTestPage.qml
         View/Test/BacklightTestPage.qml
         View/Test/AudioTestPage.qml
         View/Test/InternalSensorTestPage.qml
-        View/ContactContractorPage.qml
-        View/Time/TimePage.qml
-        View/Time/SelectTimePage.qml
-        View/Time/SelectTimezonePage.qml
+        View/Test/RelayTestPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml

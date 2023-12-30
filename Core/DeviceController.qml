@@ -238,4 +238,11 @@ I_DeviceController {
 
         device._isHold = isHold;
     }
+
+    function testRelays(relays) {
+        var send_data = [relays.isR, relays.isC, relays.isG, relays.isY1, , relays.isY2, relays.isT2,
+                         relays.isW1, relays.isW2, relays.isW3, relays.isOB, relays.isT1p, relays.isT1n];
+        deviceControllerCPP.setTestRelays(send_data);
+    }
+
 }
