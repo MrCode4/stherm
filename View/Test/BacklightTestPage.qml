@@ -22,9 +22,6 @@ BacklightPage {
         //! Apply selected color to device immediately
     // }
 
-    // Revert when change backlight with go back in test mode
-    Component.onDestruction: revertToModel();
-
     /* Children
      * ****************************************************************************************/
     //! Next button
