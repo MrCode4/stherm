@@ -14,7 +14,8 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Color test"
+    title: "Color Test"
+    labelColor:  (root.state === "white") ? "black" : "white"
     background: Rectangle {
         color: "black"
     }
