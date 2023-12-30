@@ -15,6 +15,9 @@ BasePageView {
     //! I_Device
     readonly property I_Device  device: uiSession?.appModel ?? null
 
+    //! SystemAccessories
+    property SystemAccessories systemAccessories: appModel.systemSetup.systemAccessories
+
     //! Humidity
     readonly property alias     humidity: _humSlider.value
 
@@ -76,6 +79,7 @@ BasePageView {
             }
         }
 
+
         ToolTip {
             parent: _humSlider.handle
             y: -height - AppStyle.size / 30
@@ -84,6 +88,18 @@ BasePageView {
             timeout: Number.MAX_VALUE
             delay: 0
             text: Number(_humSlider.value).toLocaleString(locale, "f", 0)
+        }
+
+        //! Spacer
+        Item {
+            Layout.preferredWidth: 20
+            Layout.preferredHeight: 25
+        }
+
+        Label {
+            Layout.leftMargin: 25
+            Layout.alignment: Qt.AlignLeft
+            text: systemAccessories.accessoriesType === AppSpecCPP.Humidifier ? "Humidifier" : "Dehumidifier";
         }
     }
 }
