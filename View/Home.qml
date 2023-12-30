@@ -27,6 +27,10 @@ Control {
     //! Reference to main StackView
     required property   StackView   mainStackView
 
+    //! System Accessories use in humidity control.
+    property SystemAccessories systemAccessories: device.systemSetup.systemAccessories
+
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
@@ -130,7 +134,7 @@ Control {
                 device: _root.uiSession.appModel
 
                 onClicked: {
-                    if (mainStackView) {
+                    if (mainStackView && !systemAccessories.isWireTypeNone) {
                         mainStackView.push("qrc:/Stherm/View/HumidityPage.qml", {
                                                       "uiSession": Qt.binding(() => uiSession)
                                                   })
