@@ -33,7 +33,7 @@ Page {
     //! Controls visibility of backbutton
     property bool                   backButtonVisible: true
 
-    property color                  labelColor: "white"
+    property color                  headerColor: "white"
 
     /* Object properties
      * ****************************************************************************************/
@@ -52,7 +52,7 @@ Page {
                 visible: backButtonVisible
                 contentItem: RoniaTextIcon {
                     text: backButtonTextIcon
-                    color: labelColor
+                    color: _root.headerColor
                 }
 
                 onClicked: if (backButtonCallback instanceof Function) backButtonCallback();
@@ -68,7 +68,7 @@ Page {
 
                 visible: title.length > 0
                 textFormat: "MarkdownText"
-                color: _root.labelColor
+                color: _root.headerColor
                 verticalAlignment: "AlignVCenter"
                 horizontalAlignment: "AlignHCenter"
                 text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} ${title}`

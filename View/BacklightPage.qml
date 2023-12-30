@@ -24,7 +24,7 @@ BasePageView {
     property bool               completed: false
 
     //! Used when backlight changed in test mode
-    property bool               isTest: false
+    property bool               isTest:    false
 
     //!
     property Timer onlineTimer: Timer {
@@ -47,7 +47,7 @@ BasePageView {
     backButtonCallback: function() {
         //! Check if color is modified
         if (backlight && (backlight.on !== _backlightOnOffSw.checked
-                          || !Qt.colorEqual(backlight._color, liveColor))) {
+                          || !Qt.colorEqual(backlight._color, liveColor)) && !isTest) {
             //! This means that changes are occured that are not saved into model
             uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
             uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
@@ -84,9 +84,7 @@ BasePageView {
 
             onClicked: {
                 applyToModel();
-
-                if (!isTest)
-                    goBack();
+                goBack();
             }
         }
     }
@@ -268,11 +266,6 @@ BasePageView {
             if (_root.StackView.view.currentItem == _root) {
                 _root.StackView.view.pop();
             }
-        }
-
-        // Revert when change backlight with go back in test mode
-        if (isTest) {
-            revertToModel();
         }
     }
 

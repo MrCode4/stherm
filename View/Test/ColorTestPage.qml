@@ -15,7 +15,7 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Color Test"
-    labelColor:  (root.state === "white") ? "black" : "white"
+    headerColor:  (root.state === "white") ? "black" : "white"
     background: Rectangle {
         color: "black"
     }
@@ -27,7 +27,7 @@ BasePageView {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.arrowRight
-            color: labelColor
+            color: headerColor
         }
 
         onClicked: {
