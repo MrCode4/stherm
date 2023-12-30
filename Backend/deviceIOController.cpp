@@ -493,7 +493,7 @@ bool DeviceIOController::testRelays(QVariantList relaysData)
     TRACE_CHECK(false) << "testRelays request with data:" << relaysData
                        << (m_tiConnection && m_tiConnection->isConnected());
 
-    if (relaysData.size() == 10) {
+    if (relaysData.size() == 12) {
         STHERM::RelayConfigs  relays;
         // 0 and 1 are R & C
         relays.g = relaysData[2].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
@@ -515,7 +515,7 @@ bool DeviceIOController::testRelays(QVariantList relaysData)
         TRACE_CHECK(false) << "send testRelays request" << result;
         return result;
     } else {
-        qWarning() << "testRelays not sent: data is empty or not consistent";
+        qWarning() << "testRelays not sent: data is empty or not consistent" << relaysData;
     }
 
     return false;
