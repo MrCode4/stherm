@@ -14,7 +14,7 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Color Test"
+    title: "Color test"
     background: Rectangle {
         color: "black"
     }

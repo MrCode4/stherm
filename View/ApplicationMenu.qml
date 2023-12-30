@@ -86,8 +86,8 @@ BasePageView {
                     _root.StackView.view.push("qrc:/Stherm/View/ContactContractorPage.qml");
                     break;
 
-                case "Color Test": {
-                    _root.StackView.view.push("qrc:/Stherm/View/Test/ColorTestPage.qml", {
+                case "Test Mode": {
+                    _root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                 } break;

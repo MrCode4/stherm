@@ -95,7 +95,7 @@ ListView {
             menuActivated(delegateData.text);
         }
 
-        //! Show test color on "Device Information" button
+        //! Show test mode on "Device Information" button
         MouseArea {
             anchors.fill: parent
             enabled: parent.text === "Device Information"
@@ -108,7 +108,7 @@ ListView {
             }
 
             onPressAndHold: {
-                menuActivated("Color Test");
+                menuActivated("Test Mode");
             }
         }
     }
