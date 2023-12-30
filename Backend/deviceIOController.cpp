@@ -488,6 +488,39 @@ void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)
     processTIQueue();
 }
 
+bool DeviceIOController::testRelays(QVariantList relaysData)
+{
+    TRACE_CHECK(false) << "testRelays request with data:" << relaysData
+                       << (m_tiConnection && m_tiConnection->isConnected());
+
+    if (relaysData.size() == 12) {
+        STHERM::RelayConfigs  relays;
+        // 0 and 1 are R & C
+        relays.g = relaysData[2].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        relays.y1 = relaysData[3].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        relays.y2 = relaysData[4].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        relays.acc2 = relaysData[5].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        relays.w1 = relaysData[6].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        relays.w2 = relaysData[7].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        relays.w3 = relaysData[8].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        relays.o_b = relaysData[9].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        relays.acc1p = relaysData[10].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        relays.acc1n = relaysData[11].toBool() ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+        auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::SetRelay,
+                                                   STHERM::PacketType::UARTPacket,
+                                                   {QVariant::fromValue(relays)});
+
+        m_TI_queue.push(packet);
+        auto result = processTIQueue();
+        TRACE_CHECK(false) << "send testRelays request" << result;
+        return result;
+    } else {
+        qWarning() << "testRelays not sent: data is empty or not consistent" << relaysData;
+    }
+
+    return false;
+}
+
 bool DeviceIOController::setBacklight(QVariantList data)
 {
     TRACE_CHECK(false) << "sending setBacklight request with data:" << data
@@ -931,8 +964,8 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                 } else {
                     auto packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, {QVariant::fromValue(m_p->mRelaysIn)});
 
-
                     LOG_DEBUG("***** Ti  - Check_Wiring: Send SetRelay command *****");
+
                     sendTIRequest(packet);
                 }
 

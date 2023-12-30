@@ -23,6 +23,9 @@ BasePageView {
     //!
     property bool               completed: false
 
+    //! Used when backlight changed in test mode
+    property bool               isTest:    false
+
     //!
     property Timer onlineTimer: Timer {
         repeat: false
@@ -44,7 +47,7 @@ BasePageView {
     backButtonCallback: function() {
         //! Check if color is modified
         if (backlight && (backlight.on !== _backlightOnOffSw.checked
-                          || !Qt.colorEqual(backlight._color, liveColor))) {
+                          || !Qt.colorEqual(backlight._color, liveColor)) && !isTest) {
             //! This means that changes are occured that are not saved into model
             uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
             uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
@@ -63,6 +66,8 @@ BasePageView {
         //! Backlight on/off button
         Switch {
             id: _backlightOnOffSw
+
+            visible: !_root.isTest
             checked: backlight ? backlight.on : true
             onCheckedChanged: onlineTimer.startTimer()
         }
@@ -70,6 +75,8 @@ BasePageView {
         //! Confirm button
         ToolButton {
             id: confirmtBtn
+
+            visible: !_root.isTest
             Layout.alignment: Qt.AlignCenter
             contentItem: RoniaTextIcon {
                 text: "\uf00c"
@@ -77,7 +84,6 @@ BasePageView {
 
             onClicked: {
                 applyToModel();
-
                 goBack();
             }
         }

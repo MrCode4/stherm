@@ -74,7 +74,9 @@ BasePageView {
                                               });
                     break;
                 case "Device Information":
-                    _root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml")
+                    _root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              })
                     break;
                 case "Technician Access":
                     _root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml")
@@ -85,6 +87,12 @@ BasePageView {
                 case "Contact Contractor":
                     _root.StackView.view.push("qrc:/Stherm/View/ContactContractorPage.qml");
                     break;
+
+                case "Test Mode": {
+                    _root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                } break;
                 }
             }
         }

@@ -94,5 +94,22 @@ ListView {
         onClicked: {
             menuActivated(delegateData.text);
         }
+
+        //! Show test mode on "Device Information" button
+        MouseArea {
+            anchors.fill: parent
+            enabled: parent.text === "Device Information"
+            propagateComposedEvents: true;
+
+            pressAndHoldInterval: 10000
+
+            onClicked: {
+                menuActivated(parent.text);
+            }
+
+            onPressAndHold: {
+                menuActivated("Test Mode");
+            }
+        }
     }
 }

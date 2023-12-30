@@ -60,4 +60,9 @@ QtObject {
     function updateInformation() {}
 
     function updateHold(isHold) {}
+
+    function testRelays(relays) {}
+
+    function setTestData(temperature, on) {}
+
 }
