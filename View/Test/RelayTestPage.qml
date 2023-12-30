@@ -8,7 +8,7 @@ import Stherm
  * BacklightTestPage
  * ***********************************************************************************************/
 WiringPage {
-    id: _root
+    id: root
 
     /* Object properties
      * ****************************************************************************************/
@@ -35,20 +35,32 @@ WiringPage {
     /* Children
      * ****************************************************************************************/
     //! Next button
+//    ToolButton {
+//        parent: root.header.contentItem
+//        contentItem: RoniaTextIcon {
+//            text: FAIcons.arrowRight
+//        }
+
+//        onClicked: {
+//            //! Next page
+//            if (root.StackView.view) {
+//                root.StackView.view.push("qrc:/Stherm/View/Test/", {
+//                                              "uiSession": uiSession
+//                                          })
+//            }
+//        }
+//    }
+
+    //! Finish button
     ToolButton {
-        parent: _root.header.contentItem
+        parent: root.header.contentItem
         contentItem: RoniaTextIcon {
-            text: FAIcons.arrowRight
+            text: FAIcons.check
         }
 
         onClicked: {
-            if (_root.StackView.view) {
-                //! Next page
-//                _root.StackView.view.push("qrc:/Stherm/View/Test/", {
-//                                              "uiSession": uiSession
-//                                          })
-                //! Finish test
-            }
+            //! Finish test
+            uiSession.showHome()
         }
     }
 }
