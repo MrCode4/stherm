@@ -67,6 +67,8 @@ public:
     //! set relays using uart and file and respond the success
     Q_INVOKABLE bool setTestRelays(QVariantList data);
 
+    Q_INVOKABLE void setOverrideMainData(QVariantMap mainDataOverride);
+
     /* Public Functions
      * Read and write data without any UART connection
      * Read and write data directly
@@ -109,6 +111,7 @@ private:
     /* Attributes
      * ****************************************************************************************/
     QVariantMap _mainData;
+    QVariantMap _mainData_override;
 
     DeviceIOController *_deviceIO;
     DeviceAPI *_deviceAPI;

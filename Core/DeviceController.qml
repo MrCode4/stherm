@@ -245,4 +245,16 @@ I_DeviceController {
         deviceControllerCPP.setTestRelays(send_data);
     }
 
+
+    function setTestData(temperature, on) {
+        var send_data = {
+            "temperature": temperature,
+        }
+        deviceControllerCPP.setOverrideMainData(on ? send_data : {})
+    }
+
+    function getTestData() {
+        return deviceControllerCPP.getMainData();
+    }
+
 }

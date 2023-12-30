@@ -18,7 +18,7 @@ T.TextField {
     rightPadding: leftPadding
     topPadding: Style.textField.verticalPadding
     bottomPadding: topPadding
-    bottomInset: 16
+    bottomInset: 6
 
     color: enabled ? Material.foreground : Material.hintTextColor
     selectionColor: Style.accent
