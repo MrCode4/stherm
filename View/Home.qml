@@ -134,7 +134,7 @@ Control {
                 device: _root.uiSession.appModel
 
                 onClicked: {
-                    if (mainStackView && !systemAccessories.isWireTypeNone) {
+                    if (mainStackView && (systemAccessories.accessoriesWireType !== AppSpecCPP.None)) {
                         mainStackView.push("qrc:/Stherm/View/HumidityPage.qml", {
                                                       "uiSession": Qt.binding(() => uiSession)
                                                   })

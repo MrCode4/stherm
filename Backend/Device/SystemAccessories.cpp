@@ -8,11 +8,8 @@ SystemAccessories::SystemAccessories(QSObjectCpp *parent) :
 
 void SystemAccessories::setSystemAccessories(AppSpecCPP::AccessoriesType accessoriesType, AppSpecCPP::AccessoriesWireType wireType) {
     mAccessoriesType  = accessoriesType;
-    mIsWireTypeNone   = (wireType == AppSpecCPP::None);
 
-    // Saved last selection
-    if (!mIsWireTypeNone)
-        mAccessoriesWireType = wireType;
+    mAccessoriesWireType = wireType;
 
     emit accessoriesChanged();
 

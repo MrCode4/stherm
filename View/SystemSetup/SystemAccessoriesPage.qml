@@ -67,7 +67,6 @@ BasePageView {
         rowSpacing: 4
 
         Label {
-            enabled: !noneChbox.checked
             Layout.columnSpan: 3
             text: "Humidifier"
         }
@@ -76,7 +75,6 @@ BasePageView {
         RadioButton {
             id: humidifierT1PWRD
 
-            enabled: !noneChbox.checked
             Layout.leftMargin: 40 * scaleFactor
             checked: isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1PWRD
             text: "T1\npwrd"
@@ -99,7 +97,6 @@ BasePageView {
         RadioButton {
             id: humidifierT2PWRD
 
-            enabled: !noneChbox.checked
             checked: isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T2PWRD
             text: "T2\npwrd"
 
@@ -107,7 +104,6 @@ BasePageView {
         }
 
         Label {
-            enabled: !noneChbox.checked
             Layout.columnSpan: 3
             Layout.topMargin: 40 * scaleFactor
             text: "Dehumidifier"
@@ -117,7 +113,6 @@ BasePageView {
         RadioButton {
             id: deHumidifierT1PWRD
 
-            enabled: !noneChbox.checked
             Layout.leftMargin: 40 * scaleFactor
             checked: !isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1PWRD
             text: "T1\npwrd"
@@ -129,7 +124,6 @@ BasePageView {
         RadioButton {
             id: deHumidifierT1Short
 
-            enabled: !noneChbox.checked
             text: "T1\nshort"
             checked: !isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1Short
 
@@ -140,7 +134,6 @@ BasePageView {
         RadioButton {
             id: deHumidifierT2PWRD
 
-            enabled: !noneChbox.checked
             text: "T2\npwrd"
             checked: !isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T2PWRD
 
@@ -153,11 +146,11 @@ BasePageView {
             text: "None"
         }
 
-        CheckBox {
+        RadioButton {
             id: noneChbox
 
             Layout.leftMargin: 40 * scaleFactor
-            checked: systemAccessories.isWireTypeNone
+            checked: systemAccessories.accessoriesWireType === AppSpecCPP.None
 
         }
     }

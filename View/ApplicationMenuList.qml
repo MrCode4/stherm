@@ -60,7 +60,7 @@ ListView {
         {
             "icon": FAIcons.droplet,
             "text": "Humidity Control",
-            "visible": !systemAccessories.isWireTypeNone
+            "visible": (systemAccessories.accessoriesWireType !== AppSpecCPP.None)
         },
         {
             "icon": FAIcons.fan,

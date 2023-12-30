@@ -15,7 +15,6 @@ class SystemAccessories : public QSObjectCpp
 
     Q_PROPERTY(AppSpecCPP::AccessoriesType     accessoriesType     MEMBER mAccessoriesType     NOTIFY accessoriesChanged FINAL)
     Q_PROPERTY(AppSpecCPP::AccessoriesWireType accessoriesWireType MEMBER mAccessoriesWireType NOTIFY accessoriesChanged FINAL)
-    Q_PROPERTY(bool isWireTypeNone MEMBER mIsWireTypeNone NOTIFY accessoriesChanged FINAL)
 
     QML_ELEMENT
 public:
@@ -33,6 +32,4 @@ private:
     // The humidifier and dehumidifier cannot be activated simultaneously.
     AppSpecCPP::AccessoriesType     mAccessoriesType;
     AppSpecCPP::AccessoriesWireType mAccessoriesWireType;
-
-    bool mIsWireTypeNone;
 };
