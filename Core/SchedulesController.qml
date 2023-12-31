@@ -142,4 +142,14 @@ QtObject {
         }
 
     }
+
+    property Connections connections: Connections{
+        target: deviceController.currentSchedule
+
+        function onEnableChanged() {
+
+            deviceController.setActivatedSchedule(null);
+            findRunningSchedule();
+        }
+    }
 }

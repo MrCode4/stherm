@@ -7,6 +7,7 @@ import Stherm
  *
  * ************************************************************************************************/
 I_DeviceController {
+    id: root
 
     /* Property Declarations
      * ****************************************************************************************/
@@ -270,7 +271,11 @@ I_DeviceController {
     }
 
     function setActivatedSchedule(schedule: ScheduleCPP) {
-        currentSchedule = schedule
+
+        if (root.currentSchedule === schedule)
+            return;
+
+        root.currentSchedule = schedule;
         deviceControllerCPP.setActivatedSchedule(schedule);
     }
 }

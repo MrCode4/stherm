@@ -17,6 +17,7 @@ ToolButton {
     //! I_Device
     property I_Device               device: deviceController?.device ?? null
 
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: _coolingStateItem.implicitWidth + leftPadding + rightPadding
@@ -27,6 +28,7 @@ ToolButton {
      * ****************************************************************************************/
     Item {
         anchors.fill: parent
+        enabled:  !deviceController.currentSchedule
 
         //! Label for OFF state
         Row {
@@ -98,7 +100,7 @@ ToolButton {
         ColumnLayout {
             id: _autoStateItem
             anchors.centerIn: parent
-            visible: opacity > 0
+            visible: opacity > 0 || deviceController.currentSchedule
             opacity: _control.state === "auto" ? 1. : 0.
 
             //! AUTO mode icon
@@ -122,6 +124,9 @@ ToolButton {
     }
 
     state: {
+        if (deviceController.currentSchedule)
+            return "auto";
+
         switch(device?.systemSetup?.systemMode) {
         case AppSpecCPP.Off:
             return "off";

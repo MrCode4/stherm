@@ -74,6 +74,7 @@ Popup {
             onClicked: {
                 if (device.systemSetup.isVacation)
                     deviceController.setVacationOn(false);
+
                 uiSession.showMainWindow = true;
             }
         }
@@ -89,7 +90,6 @@ Popup {
                 vacationModePop.counter--;
                 if (deviceController && vacationModePop.counter <= 0) {
                      deviceController.setVacationOn(true);
-                    console.log("-----****-");
                 }
             }
         }
