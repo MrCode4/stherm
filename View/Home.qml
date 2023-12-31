@@ -25,7 +25,7 @@ Control {
     readonly property   bool        isDragging: state === "dragging"
 
     //! Reference to main StackView
-    /*required*/ property   StackView   mainStackView
+    required property   StackView   mainStackView
 
     /* Object properties
      * ****************************************************************************************/
