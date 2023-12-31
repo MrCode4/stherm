@@ -4,12 +4,15 @@
 #include <QQmlEngine>
 
 #include "AppSpecCPP.h"
+#include "SystemAccessories.h"
 #include "UtilityHelper.h"
 #include "QtQuickStream/Core/QSObjectCpp.h"
 
 class SystemSetup : public QSObjectCpp
 {
     Q_OBJECT
+
+    Q_PROPERTY(SystemAccessories* systemAccessories MEMBER systemAccessories NOTIFY systemAccessoriesChanged FINAL)
 
     Q_PROPERTY(AppSpecCPP::SystemType systemType            MEMBER  systemType          NOTIFY systemTypeChanged FINAL)
 
@@ -47,6 +50,8 @@ public:
 
     bool heatPumpEmergency;
 
+    SystemAccessories* systemAccessories;
+
     bool isVacation;
 
 signals:
@@ -57,8 +62,7 @@ signals:
     void systemRunDelayChanged();
     void systemModeChanged();
     void heatPumpEmergencyChanged();
+    void systemAccessoriesChanged();
     void isVacationChanged();
-
-private:
 
 };

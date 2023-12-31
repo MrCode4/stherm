@@ -8,7 +8,7 @@ import Stherm
  * AboutDevicePage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -17,6 +17,8 @@ BasePageView {
      * ****************************************************************************************/
     title: "Device Info"
 
+    property int testCounter: 0
+
     /* Childrent
      * ****************************************************************************************/
     ListView {
@@ -24,9 +26,9 @@ BasePageView {
 
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
-            y: _root.contentItem.y
-            parent: _root
-            height: _root.contentItem.height - 30
+            y: root.contentItem.y
+            parent: root
+            height: root.contentItem.height - 30
         }
 
         anchors.fill: parent
@@ -44,23 +46,46 @@ BasePageView {
             { "key": "Software version",    "value": Application.version },
             { "key": "Hardware version",    "value": "01" },
         ]
-        delegate: RowLayout {
+        delegate: Item {
             width: ListView.view.width
             height: Style.delegateHeight * 0.8
-            spacing: 16
+            RowLayout {
+                spacing: 16
 
-            Label {
-                Layout.preferredWidth: _fontMetrics.boundingRect("Hardware version :").width + leftPadding + rightPadding
-                font.bold: true
-                text: modelData.key + ":"
+                anchors.fill: parent
+
+                Label {
+                    Layout.preferredWidth: _fontMetrics.boundingRect("Hardware version :").width + leftPadding + rightPadding
+                    font.bold: true
+                    text: modelData.key + ":"
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    font.pointSize: Application.font.pointSize * 0.9
+                    textFormat: "RichText"
+                    horizontalAlignment: "AlignRight"
+                    text: modelData.value
+
+                }
             }
 
-            Label {
-                Layout.fillWidth: true
-                font.pointSize: Application.font.pointSize * 0.9
-                textFormat: "RichText"
-                horizontalAlignment: "AlignRight"
-                text: modelData.value
+            //! to start test mode Easter Egg
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (index === 1) {
+                        root.testCounter++;
+                        if (root.testCounter === 10) {
+                            root.testCounter = 0;
+                            if (root.StackView.view) {
+                                root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                                                              "uiSession": uiSession
+                                                          })
+                            }
+                        }
+                    }
+                }
             }
         }
     }

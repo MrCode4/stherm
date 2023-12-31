@@ -15,18 +15,12 @@ BacklightPage {
     topPadding: 0
     bottomPadding: 32 * scaleFactor
     title: "Backlight Test"
-    hasShades: false
+    isTest: true
+    // hasShades: false
 
-    onUnshadedColorChanged: {
+    // onUnshadedColorChanged: {
         //! Apply selected color to device immediately
-    }
-
-    Component.onCompleted: {
-        //! Hide tick button and switch
-        _root.header.contentItem.children[2].visible = false;
-        //! Set switch to checked also
-        _root.header.contentItem.children[2].children[0].checked = true;
-    }
+    // }
 
     /* Children
      * ****************************************************************************************/

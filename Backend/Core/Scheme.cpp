@@ -601,7 +601,7 @@ void Scheme::internalPumpHeatingLoopStage1()
         mRelay->setOb_state(AppSpecCPP::Heating);
 
         // sysDelay
-        mRelay->heatingStage1();
+        mRelay->heatingStage1(true);
 
         // 5 Sec
         emit changeBacklight(heatingColor);
@@ -648,7 +648,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
 {
     TRACE << mCurrentTemperature << mSetPointTemperature << mTiming->s2hold;
     // turn on stage 2
-    mRelay->heatingStage2();
+    mRelay->heatingStage2(true);
     // 5 Sec
     emit changeBacklight(coolingColor);
     sendRelays();
@@ -682,7 +682,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
 
     // to turn off stage 2
     mRelay->setAllOff();
-    mRelay->heatingStage1();
+    mRelay->heatingStage1(true);
     // 5 secs
     emit changeBacklight(coolingColor);
     mTiming->s1uptime.restart();
@@ -989,7 +989,10 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
         if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
             TRACE << "heatPumpOBStateChanged: " << mSystemSetup->heatPumpOBState
                   << mSystemSetup->systemType;
+        mRelay->setOb_on_state(mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
+                                                                  : AppSpecCPP::Heating);
     });
+
     connect(mSystemSetup, &SystemSetup::coolStageChanged, this, [this] {
         if (mSystemSetup->systemType == AppSpecCPP::SystemType::CoolingOnly)
             TRACE << "coolStageChanged: " << mSystemSetup->coolStage;

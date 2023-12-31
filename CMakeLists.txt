@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.1.4.4 LANGUAGES CXX)
+project(Stherm VERSION 0.1.6 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -173,15 +173,20 @@ qt6_add_qml_module(appStherm
         View/VacationModeView.qml
         View/AboutDevicePage.qml
         View/UserGuidePage.qml
+        View/ContactContractorPage.qml
+
+        # Time
+        View/Time/TimePage.qml
+        View/Time/SelectTimePage.qml
+        View/Time/SelectTimezonePage.qml
+
+        # Test
         View/Test/TouchTestPage.qml
         View/Test/ColorTestPage.qml
         View/Test/BacklightTestPage.qml
         View/Test/AudioTestPage.qml
         View/Test/InternalSensorTestPage.qml
-        View/ContactContractorPage.qml
-        View/Time/TimePage.qml
-        View/Time/SelectTimePage.qml
-        View/Time/SelectTimezonePage.qml
+        View/Test/RelayTestPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
@@ -293,6 +298,8 @@ qt6_add_qml_module(appStherm
         Backend/QRCodeGenerator.h
         Backend/Device/SystemSetup.h
         Backend/Device/SystemSetup.cpp
+        Backend/Device/SystemAccessories.h
+        Backend/Device/SystemAccessories.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf

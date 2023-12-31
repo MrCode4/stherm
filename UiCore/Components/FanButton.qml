@@ -17,7 +17,7 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    checkable: true
+    checkable: false
     checked: false //! \todo: connect to a property in Fan
     contentItem: Image {
         sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt

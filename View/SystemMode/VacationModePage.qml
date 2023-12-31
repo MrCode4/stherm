@@ -28,6 +28,11 @@ BasePageView {
         }
     }
 
+    //! System Accessories use in humidity control.
+    property SystemAccessories systemAccessories: appModel.systemSetup.systemAccessories
+
+
+
     /* Children
      * ****************************************************************************************/
     //! Confirm icon
@@ -85,6 +90,8 @@ BasePageView {
             Layout.columnSpan: 2
             Layout.topMargin: height * 2
             text: "Humidity"
+
+            visible: systemAccessories.accessoriesWireType !== AppSpecCPP.None
         }
 
         //! Humidity icon
@@ -92,6 +99,7 @@ BasePageView {
             Layout.leftMargin: 24
             font.pointSize: _root.font.pointSize * 2
             text: "\uf750" //! droplet-percent icon
+            visible: systemAccessories.accessoriesWireType !== AppSpecCPP.None
         }
 
         //! Humidity range
@@ -103,6 +111,7 @@ BasePageView {
             first.value: appModel?.vacation?.hum_min ?? from
             second.value: appModel?.vacation?.hum_max ?? to
             labelSuffix: "%"
+            visible: systemAccessories.accessoriesWireType !== AppSpecCPP.None
         }
     }
 }

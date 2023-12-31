@@ -39,6 +39,22 @@ public:
     };
     Q_ENUM(SystemType)
 
+    enum AccessoriesType
+    {
+        Humidifier = 0,
+        Dehumidifier,
+    };
+    Q_ENUM(AccessoriesType)
+
+    enum AccessoriesWireType
+    {
+        T1PWRD = 0,
+        T1Short,
+        T2PWRD,
+        None
+    };
+    Q_ENUM(AccessoriesWireType)
+
 signals:
 
 private:

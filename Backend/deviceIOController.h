@@ -51,6 +51,7 @@ public:
     void updateTiDevices();
 
     void updateRelays(STHERM::RelayConfigs relays);
+    bool testRelays(QVariantList relaysData);
 
     /* Public Methods
      * ****************************************************************************************/

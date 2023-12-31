@@ -13,6 +13,11 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
 
+    //! SystemAccessories
+    property SystemAccessories systemAccessories: appModel.systemSetup.systemAccessories
+
+    property bool              isHumidifier:      systemAccessories.accessoriesType === AppSpecCPP.Humidifier
+
     /* Object properties
      * ****************************************************************************************/
     title: "Accessories"
@@ -29,7 +34,25 @@ BasePageView {
         onClicked: {
             //! Apply settings and pop this from StackView
             //! Apply settings here
+            var accTypeUI = (humidifierT1PWRD.checked || humidifierT1Short.checked || humidifierT2PWRD.checked) ?
+                            AppSpecCPP.Humidifier : AppSpecCPP.Dehumidifier;
 
+            var wireTypeUI = AppSpecCPP.None;
+
+            if (!noneChbox.checked) {
+                if (humidifierT1PWRD.checked || deHumidifierT1PWRD.checked) {
+                    wireTypeUI = AppSpecCPP.T1PWRD;
+
+                } else if (humidifierT2PWRD.checked || deHumidifierT2PWRD.checked) {
+                    wireTypeUI = AppSpecCPP.T2PWRD;
+
+                } else if (humidifierT1Short.checked || deHumidifierT1Short.checked) {
+                    wireTypeUI = AppSpecCPP.T1Short;
+
+                }
+            }
+
+            deviceController.setSystemAccesseories(accTypeUI, wireTypeUI);
             //! Also move out of this Page
             backButtonCallback();
         }
@@ -43,66 +66,74 @@ BasePageView {
         rowSpacing: 4
 
         Label {
-            enabled: !noneChbox.checked
             Layout.columnSpan: 3
             text: "Humidifier"
         }
 
         //! Humidifier CheckBox 1
-        CheckBox {
-            enabled: !noneChbox.checked
+        RadioButton {
+            id: humidifierT1PWRD
+
             Layout.leftMargin: 40 * scaleFactor
-            checked: true
+            checked: isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1PWRD
             text: "T1\npwrd"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
 
         //! Humidifier CheckBox 2
-        CheckBox {
-            enabled: !noneChbox.checked
+        RadioButton {
+            id: humidifierT1Short
+
+            checked: isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1Short
             text: "T1\nshort"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
 
         //! Humidifier CheckBox 3
-        CheckBox {
-            enabled: !noneChbox.checked
+        RadioButton {
+            id: humidifierT2PWRD
+
+            checked: isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T2PWRD
             text: "T2\npwrd"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
 
         Label {
-            enabled: !noneChbox.checked
             Layout.columnSpan: 3
             Layout.topMargin: 40 * scaleFactor
             text: "Dehumidifier"
         }
 
         //! Dehumidifier CheckBox 1
-        CheckBox {
-            enabled: !noneChbox.checked
+        RadioButton {
+            id: deHumidifierT1PWRD
+
             Layout.leftMargin: 40 * scaleFactor
-            checked: true
+            checked: !isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1PWRD
             text: "T1\npwrd"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
 
         //! Dehumidifier CheckBox 2
-        CheckBox {
-            enabled: !noneChbox.checked
+        RadioButton {
+            id: deHumidifierT1Short
+
             text: "T1\nshort"
+            checked: !isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1Short
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
 
         //! Dehumidifier CheckBox 3
-        CheckBox {
-            enabled: !noneChbox.checked
+        RadioButton {
+            id: deHumidifierT2PWRD
+
             text: "T2\npwrd"
+            checked: !isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T2PWRD
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
@@ -113,9 +144,12 @@ BasePageView {
             text: "None"
         }
 
-        CheckBox {
+        RadioButton {
             id: noneChbox
+
             Layout.leftMargin: 40 * scaleFactor
+            checked: systemAccessories.accessoriesWireType === AppSpecCPP.None
+
         }
     }
 }
