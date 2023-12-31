@@ -34,6 +34,15 @@ else
 fi
 
 cd "$sourceDir"
+
+if [ -f "update.zip" ]; then
+    echo "File 'update.zip' exists."
+else
+    echo "File 'update.zip' does not exist."
+	exit 1
+fi
+
+
 rm -rf "content"
 unzip "update.zip" -d "content"
 cd "content"
