@@ -50,7 +50,6 @@ Control {
             _tempSlider.value = Utils.convertedTemperature(currentSchedule.temprature,
                                                            device.setting.tempratureUnit);
         } else if (device) {
-            console.log("----------", device.requestedTemp)
             _tempSlider.value = Utils.convertedTemperature(device.requestedTemp,
                                                            device.setting.tempratureUnit);
         }

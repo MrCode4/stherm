@@ -83,57 +83,59 @@ QtObject {
     function findRunningSchedule() {
         let currentSchedule = null;
 
-        device.schedules.forEach(schedule => {
-                                     if (currentSchedule)
-                                        return;
+        if (!device._isHold) {
+            device.schedules.forEach(schedule => {
+                                         if (currentSchedule)
+                                         return;
 
-                                     var isRunning = false;
+                                         var isRunning = false;
 
-                                    if (schedule.enable) {
-                                        var currentDate = Qt.formatDate(new Date(), "ddd");
-                                        currentDate = currentDate.slice(0, -1);
+                                         if (schedule.enable) {
+                                             var currentDate = Qt.formatDate(new Date(), "ddd");
+                                             currentDate = currentDate.slice(0, -1);
 
-                                        if(schedule.repeats.includes(currentDate)) {
-                                            let nowH = (new Date).getHours();
-                                            let nowMin = (new Date).getMinutes();
+                                             if(schedule.repeats.includes(currentDate)) {
+                                                 let nowH = (new Date).getHours();
+                                                 let nowMin = (new Date).getMinutes();
 
-                                            var startTime   = schedule.startTime.split(/[: ]/);
-                                            var startTimeH  = parseInt(startTime[0]);
-                                            var startTimeM  = parseInt(startTime[1]);
-                                            var startPeriod = startTime[2].toUpperCase();
+                                                 var startTime   = schedule.startTime.split(/[: ]/);
+                                                 var startTimeH  = parseInt(startTime[0]);
+                                                 var startTimeM  = parseInt(startTime[1]);
+                                                 var startPeriod = startTime[2].toUpperCase();
 
-                                            if (startPeriod === "PM" && startTimeH !== 12) {
-                                                startTimeH += 12;
-                                            } else if (startPeriod === "AM" && startTimeH === 12) {
-                                                startTimeH = 0;
-                                            }
+                                                 if (startPeriod === "PM" && startTimeH !== 12) {
+                                                     startTimeH += 12;
+                                                 } else if (startPeriod === "AM" && startTimeH === 12) {
+                                                     startTimeH = 0;
+                                                 }
 
-                                            var endTime   = schedule.endTime.split(/[: ]/);
-                                            var endTimeH  = parseInt(endTime[0]);
-                                            var endTimeM  = parseInt(endTime[1]);
-                                            var endPeriod = endTime[2].toUpperCase();
+                                                 var endTime   = schedule.endTime.split(/[: ]/);
+                                                 var endTimeH  = parseInt(endTime[0]);
+                                                 var endTimeM  = parseInt(endTime[1]);
+                                                 var endPeriod = endTime[2].toUpperCase();
 
-                                            if (endPeriod === "PM" && endTimeH !== 12) {
-                                                endTimeH += 12;
-                                            } else if (endPeriod === "AM" && endTimeH === 12) {
-                                                endTimeH = 0;
-                                            }
+                                                 if (endPeriod === "PM" && endTimeH !== 12) {
+                                                     endTimeH += 12;
+                                                 } else if (endPeriod === "AM" && endTimeH === 12) {
+                                                     endTimeH = 0;
+                                                 }
 
-                                            isRunning = ((startTimeH < nowH) || (startTimeH === nowH && startTimeM <= nowMin)) &&
-                                                                ((endTimeH > nowH) || (endTimeH === nowH && endTimeM >= nowMin));
+                                                 isRunning = ((startTimeH < nowH) || (startTimeH === nowH && startTimeM <= nowMin)) &&
+                                                 ((endTimeH > nowH) || (endTimeH === nowH && endTimeM >= nowMin));
 
-                                        }
-                                    }
+                                             }
+                                         }
 
-                                    if (isRunning)
-                                        currentSchedule = schedule;
-                                 });
+                                         if (isRunning)
+                                         currentSchedule = schedule;
+                                     });
+        }
 
         deviceController.setActivatedSchedule(currentSchedule);
     }
 
     property Timer _checkRunningTimer: Timer {
-        running: device.schedules.filter(schedule => schedule.enable).length > 0
+        running: !device._isHold && device.schedules.filter(schedule => schedule.enable).length > 0
         repeat: true
         interval: 1000
 
@@ -143,7 +145,17 @@ QtObject {
 
     }
 
-    property Connections connections: Connections{
+    property Connections deviceConnections: Connections{
+        target: device
+
+        function on_IsHoldChanged() {
+            console.log("device._isHold", device._isHold)
+            if (device._isHold)
+                deviceController.setActivatedSchedule(null);
+        }
+    }
+
+    property Connections deviceControllerConnections: Connections{
         target: deviceController.currentSchedule
 
         function onEnableChanged() {
