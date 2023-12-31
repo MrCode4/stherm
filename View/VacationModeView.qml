@@ -86,7 +86,6 @@ Popup {
 
             interval: 1000
             onTriggered: vacationModePop.counter--;
-
         }
 
 
@@ -113,7 +112,7 @@ Popup {
             text: "OK"
 
             onClicked: {
-                //! Set system mode to Auto
+                //! Set system mode to Previous state
                 if (deviceController) {
                     deviceController.setVacationOn(false);
                 }

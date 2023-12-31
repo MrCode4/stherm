@@ -234,7 +234,7 @@ BasePageView {
     {
         _internal.newSchedule.enable = false;
 
-        saveSchedule();
+        saveScheduleAndDisconnect();
     }
 
     //! Saves a schedule as enabled, disable overlapping schedules if any
@@ -244,14 +244,19 @@ BasePageView {
         _internal.overlappingSchedules.forEach((element, index) => {
                                                    element.enable = false;
                                                });
+        saveScheduleAndDisconnect();
+    }
+
+    function saveScheduleAndDisconnect()
+    {
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveDisabledSchedule);
+        uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(saveEnabledSchedule);
+
         saveSchedule();
     }
 
     function saveSchedule()
     {
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveAndDisableCurrentSchedule);
-        uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(saveAndEnableCurrentSchedule);
-
         if (schedulesController) {
             schedulesController.saveNewSchedule(_internal.newSchedule);
         }

@@ -545,7 +545,7 @@ class Scheme
                 }
             } else if ($device_state === 'vacation') {
                 if ($humidifier === 1) {
-                    if ($curren[قt_humidity < $stl) {
+                    if ($current_humidity < $stl) {
                         $this->relay->humidifierOn();
                     } else {
                         $this->relay->humidifierOff();

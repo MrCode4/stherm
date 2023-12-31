@@ -207,7 +207,7 @@ Control {
                 horizontalCenter: _dateTimeHolder.horizontalCenter
                 bottomMargin: 16
             }
-            visible: uiSession.appModel.currentSchedule
+            visible: uiSession.deviceController.currentSchedule
             font {
                 pointSize: _root.font.pointSize * 0.8
             }

@@ -10,6 +10,8 @@ QtObject {
      * ****************************************************************************************/
     required property I_Device device
 
+    //! Holds current Schedule
+    property ScheduleCPP       currentSchedule: null
 
     property DeviceControllerCPP deviceControllerCPP: null
 

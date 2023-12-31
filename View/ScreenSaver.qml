@@ -21,7 +21,7 @@ Popup {
     //! Unit
     property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C" ?? "F"
 
-    property bool isActiveSchedule: device?.schedules.filter(schedule => schedule._active).length > 0 ?? false
+    property bool isActiveSchedule: deviceController?.currentSchedule ?? null
 
     /* Object properties
      * ****************************************************************************************/

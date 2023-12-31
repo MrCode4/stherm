@@ -270,6 +270,7 @@ I_DeviceController {
     }
 
     function setActivatedSchedule(schedule: ScheduleCPP) {
+        currentSchedule = schedule
         deviceControllerCPP.setActivatedSchedule(schedule);
     }
 }

@@ -63,7 +63,7 @@ BasePageView {
         function copySchedule()
         {
             if (_root.schedule) {
-                scheduleToEdit.active = false; //! This is always false so overlapping check dont take
+                scheduleToEdit.enable = false; //! This is always false so overlapping check dont take
                                                 //! place in ScheduleTimePage since this copy will
                                                 //! overlap with itself
                 scheduleToEdit.name = _root.schedule.name;
@@ -72,7 +72,7 @@ BasePageView {
                 scheduleToEdit.humidity = _root.schedule.humidity;
                 scheduleToEdit.startTime = _root.schedule.startTime;
                 scheduleToEdit.endTime = _root.schedule.endTime;
-                scheduleToEdit.repeats = [..._root.schedule.repeats];
+                scheduleToEdit.repeats = _root.schedule.repeats;
                 scheduleToEdit.dataSource = _root.schedule.dataSource;
             }
         }
@@ -86,7 +86,7 @@ BasePageView {
                       || _root.schedule.humidity !== internal.scheduleToEdit.humidity
                       || _root.schedule.startTime !== internal.scheduleToEdit.startTime
                       || _root.schedule.endTime !== internal.scheduleToEdit.endTime
-                      || JSON.stringify(_root.schedule.repeats) !== JSON.stringify(internal.scheduleToEdit.repeats)
+                      || _root.schedule.repeats !== internal.scheduleToEdit.repeats
                       || _root.schedule.dataSource !== internal.scheduleToEdit.dataSource
                     : false
         }
