@@ -6,6 +6,7 @@
 #include "Core/Relay.h"
 #include "Device/SystemSetup.h"
 #include "DeviceAPI.h"
+#include "ScheduleCPP.h"
 #include "UtilityHelper.h"
 #include "AppSpecCPP.h"
 #include "include/timing.h"
@@ -65,6 +66,8 @@ public:
 
     void setVacation(const STHERM::Vacation &newVacation);
 
+    void setSchedule(ScheduleCPP *newSchedule);
+
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
@@ -82,6 +85,8 @@ signals:
 
 protected:
     void run() override;
+
+private slots:
 
 private:
     void updateParameters();
@@ -119,6 +124,10 @@ private:
     //! current humidity, and humidifier Id
     void updateHumifiresState();
 
+    //! Find the effective temperature to run the system with founded temperature
+    //! return the tempereture as Fahrenheit
+    double effectiveTemperature();
+
 private:
     /* Attributes
      * ****************************************************************************************/
@@ -129,6 +138,8 @@ private:
     AppSpecCPP::SystemMode mCurrentSysMode;
 
     AppSpecCPP::SystemMode mRealSysMode;
+
+    ScheduleCPP* mSchedule;
 
     struct STHERM::Vacation mVacation;
 
@@ -151,4 +162,5 @@ private:
     int mFanWPH;
 
     bool stopWork;
+    bool isVacation;
 };

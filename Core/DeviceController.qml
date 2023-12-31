@@ -7,6 +7,7 @@ import Stherm
  *
  * ************************************************************************************************/
 I_DeviceController {
+    id: root
 
     /* Property Declarations
      * ****************************************************************************************/
@@ -119,11 +120,19 @@ I_DeviceController {
 
     function setSystemModeTo(systemMode: int)
     {
-        if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
+        if (systemMode === AppSpecCPP.Vacation) {
+            setVacationOn(true);
+
+        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
         }
+    }
+
+    //! On/off the vacation.
+    function setVacationOn(on: bool) {
+        device.systemSetup.isVacation = on;
     }
 
     //! Set device settings
@@ -259,5 +268,14 @@ I_DeviceController {
 
     function getTestData() {
         return deviceControllerCPP.getMainData();
+    }
+
+    function setActivatedSchedule(schedule: ScheduleCPP) {
+
+        if (root.currentSchedule === schedule)
+            return;
+
+        root.currentSchedule = schedule;
+        deviceControllerCPP.setActivatedSchedule(schedule);
     }
 }

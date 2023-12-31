@@ -47,9 +47,6 @@ QSObject {
     //! List <Schedule>
     property var            schedules:      []
 
-    //! Holds current Schedule
-    property Schedule       currentSchedule: null
-
     //! Backlight
     property Backlight      backlight:      Backlight {}
 

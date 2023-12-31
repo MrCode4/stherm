@@ -100,6 +100,9 @@ Control {
         //! System mode button
         SystemModeButton {
             id: _systemModeBtn
+            enabled: !deviceController.currentSchedule
+            hoverEnabled: enabled
+
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 horizontalCenterOffset: -_desiredTempItem.labelWidth - 12
@@ -108,9 +111,11 @@ Control {
             deviceController: uiSession?.deviceController ?? null
 
             onClicked: {
-                _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
-                                              "uiSession": Qt.binding(() => uiSession)
-                                          });
+                if (!deviceController.currentSchedule) {
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                }
             }
         }
 
@@ -207,7 +212,7 @@ Control {
                 horizontalCenter: _dateTimeHolder.horizontalCenter
                 bottomMargin: 16
             }
-            visible: uiSession.appModel.currentSchedule
+            visible: uiSession.deviceController.currentSchedule
             font {
                 pointSize: _root.font.pointSize * 0.8
             }

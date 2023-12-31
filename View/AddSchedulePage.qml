@@ -89,7 +89,7 @@ BasePageView {
     QtObject {
         id: _internal
 
-        property Schedule newSchedule: Schedule { }
+        property ScheduleCPP newSchedule: ScheduleCPP { }
 
         property var overlappingSchedules: []
     }
@@ -196,7 +196,7 @@ BasePageView {
             readonly property Component nextPage: dataSourcePageCompo
 
             onRepeatsChanged: {
-                if (repeats.toString() !== _internal.newSchedule.repeats.toString()) {
+                if (repeats !== _internal.newSchedule.repeats) {
                     _internal.newSchedule.repeats = repeats;
                 }
             }
@@ -232,26 +232,31 @@ BasePageView {
     //! Saves a schedule as disabled, do not disabled overlapping schedules if any
     function saveDisabledSchedule()
     {
-        _internal.newSchedule.active = false;
-        saveSchedule();
+        _internal.newSchedule.enable = false;
+
+        saveScheduleAndDisconnect();
     }
 
     //! Saves a schedule as enabled, disable overlapping schedules if any
     function saveEnabledSchedule()
     {
-        _internal.newSchedule.active = true;
         //! If there is overlapping Schedules disable them
         _internal.overlappingSchedules.forEach((element, index) => {
-                                                   element.active = false;
+                                                   element.enable = false;
                                                });
+        saveScheduleAndDisconnect();
+    }
+
+    function saveScheduleAndDisconnect()
+    {
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveDisabledSchedule);
+        uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(saveEnabledSchedule);
+
         saveSchedule();
     }
 
     function saveSchedule()
     {
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveEnabledSchedule);
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveDisabledSchedule);
-
         if (schedulesController) {
             schedulesController.saveNewSchedule(_internal.newSchedule);
         }

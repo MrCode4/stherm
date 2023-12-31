@@ -112,12 +112,14 @@ void DeviceControllerCPP::setVacation(const double min_Temperature, const double
 
 void DeviceControllerCPP::setRequestedTemperature(const double temperature)
 {
-    m_scheme->setSetPointTemperature(temperature);
+    if (m_scheme)
+        m_scheme->setSetPointTemperature(temperature);
 }
 
 void DeviceControllerCPP::setRequestedHumidity(const double humidity)
 {
-    m_scheme->setRequestedHumidity(humidity);
+    if (m_scheme)
+        m_scheme->setRequestedHumidity(humidity);
 }
 
 bool DeviceControllerCPP::setTestRelays(QVariantList data)
@@ -142,6 +144,12 @@ void DeviceControllerCPP::startDevice()
 void DeviceControllerCPP::stopDevice()
 {
     _deviceIO->stopReading();
+}
+
+void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
+{
+    if (m_scheme)
+        m_scheme->setSchedule(schedule);
 }
 
 SystemSetup *DeviceControllerCPP::systemSetup() const {

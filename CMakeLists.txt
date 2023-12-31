@@ -23,6 +23,7 @@ find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Core)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
 
@@ -72,7 +73,6 @@ qt6_add_qml_module(appStherm
         Core/Backlight.qml
         Core/DeviceController.qml
         Core/I_DeviceController.qml
-        Core/Schedule.qml
         Core/SchedulesController.qml
         Core/Sensor.qml
         Core/SensorController.qml
@@ -267,8 +267,8 @@ qt6_add_qml_module(appStherm
         Backend/Core/Relay.cpp
         Backend/Core/Scheme.h
         Backend/Core/Scheme.cpp
-        Backend/Core/Schedule.h
-        Backend/Core/Schedule.cpp
+        Backend/Core/ScheduleCPP.h
+        Backend/Core/ScheduleCPP.cpp
         Backend/Core/System.h
         Backend/Core/System.cpp
         Backend/Core/Sync.h

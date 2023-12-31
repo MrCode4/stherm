@@ -16,7 +16,7 @@ BasePageView {
     property Device         device: uiSession?.appModel ?? null
 
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule       schedule
+    property ScheduleCPP    schedule
 
     //! Temprature is alwasy valid
     readonly property bool  isValid: true

@@ -9,6 +9,8 @@
 #include "Core/Scheme.h"
 #include "Device/SystemSetup.h"
 
+class ScheduleCPP;
+
 /*! ***********************************************************************************************
  * This class manages send requests from app to device and and process the received response.
  * ************************************************************************************************/
@@ -80,6 +82,8 @@ public:
 
     //! Stop device
     Q_INVOKABLE void stopDevice();
+
+    Q_INVOKABLE void setActivatedSchedule(ScheduleCPP* schedule);
 
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);

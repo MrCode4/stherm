@@ -11,16 +11,18 @@ QtObject {
 
     /* Property declaration
      * ****************************************************************************************/
-    property I_Device device
+    property I_DeviceController deviceController
+
+    property I_Device device: deviceController.device
 
     /* Methods
      * ****************************************************************************************/
     //! Saves new schedule
-    function saveNewSchedule(schedule: Schedule)
+    function saveNewSchedule(schedule: ScheduleCPP)
     {
-        var newSchedule = QSSerializer.createQSObject("Schedule", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
+        var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
         newSchedule._qsRepo = AppCore.defaultRepo;
-        newSchedule.active = schedule.active;
+        newSchedule.enable = schedule.enable;
         newSchedule.name = schedule.name;
         newSchedule.type = schedule.type;
         newSchedule.temprature = schedule.temprature;
@@ -35,7 +37,7 @@ QtObject {
     }
 
     //! Remove an schedule
-    function removeSchedule(schedule: Schedule)
+    function removeSchedule(schedule: ScheduleCPP)
     {
         var schIndex = device.schedules.findIndex(elem => elem === schedule);
 
@@ -54,12 +56,12 @@ QtObject {
 
         var overlappings = [];
         device.schedules.forEach(function(element, index) {
-            if (element === exclude || !element.active) {
+            if (element === exclude || !element.enable) {
                 return;
             }
 
             //! First check if repeats have at least one similar values
-            if (element.repeats.find((repeatElem, repeatIndex) => {
+            if (element.repeats.split(",").find((repeatElem, repeatIndex) => {
                                      return repeats.includes(repeatElem);
                                  })) {
                 var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
@@ -75,5 +77,91 @@ QtObject {
         });
 
         return overlappings;
+    }
+
+    //! Find current schedule to active it and pass to Scheme to work around
+    function findRunningSchedule() {
+        let currentSchedule = null;
+
+        if (!device._isHold) {
+            device.schedules.forEach(schedule => {
+                                         if (currentSchedule)
+                                         return;
+
+                                         var isRunning = false;
+
+                                         if (schedule.enable) {
+                                             var currentDate = Qt.formatDate(new Date(), "ddd");
+                                             currentDate = currentDate.slice(0, -1);
+
+                                             if(schedule.repeats.includes(currentDate)) {
+                                                 let nowH = (new Date).getHours();
+                                                 let nowMin = (new Date).getMinutes();
+
+                                                 var startTime   = schedule.startTime.split(/[: ]/);
+                                                 var startTimeH  = parseInt(startTime[0]);
+                                                 var startTimeM  = parseInt(startTime[1]);
+                                                 var startPeriod = startTime[2].toUpperCase();
+
+                                                 if (startPeriod === "PM" && startTimeH !== 12) {
+                                                     startTimeH += 12;
+                                                 } else if (startPeriod === "AM" && startTimeH === 12) {
+                                                     startTimeH = 0;
+                                                 }
+
+                                                 var endTime   = schedule.endTime.split(/[: ]/);
+                                                 var endTimeH  = parseInt(endTime[0]);
+                                                 var endTimeM  = parseInt(endTime[1]);
+                                                 var endPeriod = endTime[2].toUpperCase();
+
+                                                 if (endPeriod === "PM" && endTimeH !== 12) {
+                                                     endTimeH += 12;
+                                                 } else if (endPeriod === "AM" && endTimeH === 12) {
+                                                     endTimeH = 0;
+                                                 }
+
+                                                 isRunning = ((startTimeH < nowH) || (startTimeH === nowH && startTimeM <= nowMin)) &&
+                                                 ((endTimeH > nowH) || (endTimeH === nowH && endTimeM >= nowMin));
+
+                                             }
+                                         }
+
+                                         if (isRunning)
+                                         currentSchedule = schedule;
+                                     });
+        }
+
+        deviceController.setActivatedSchedule(currentSchedule);
+    }
+
+    property Timer _checkRunningTimer: Timer {
+        running: !device._isHold && device.schedules.filter(schedule => schedule.enable).length > 0
+        repeat: true
+        interval: 1000
+
+        onTriggered: {
+            findRunningSchedule();
+        }
+
+    }
+
+    property Connections deviceConnections: Connections{
+        target: device
+
+        function on_IsHoldChanged() {
+            console.log("device._isHold", device._isHold)
+            if (device._isHold)
+                deviceController.setActivatedSchedule(null);
+        }
+    }
+
+    property Connections deviceControllerConnections: Connections{
+        target: deviceController.currentSchedule
+
+        function onEnableChanged() {
+
+            deviceController.setActivatedSchedule(null);
+            findRunningSchedule();
+        }
     }
 }

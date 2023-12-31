@@ -17,6 +17,7 @@ ToolButton {
     //! I_Device
     property I_Device               device: deviceController?.device ?? null
 
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: _coolingStateItem.implicitWidth + leftPadding + rightPadding
@@ -122,6 +123,9 @@ ToolButton {
     }
 
     state: {
+        if (deviceController.currentSchedule)
+            return "auto";
+
         switch(device?.systemSetup?.systemMode) {
         case AppSpecCPP.Off:
             return "off";

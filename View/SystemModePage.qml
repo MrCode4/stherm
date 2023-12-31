@@ -94,7 +94,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemSetup.systemMode === AppSpecCPP.Vacation
+            checked: device?.systemSetup.isVacation
             text: "Vacation"
 
             onClicked: {
@@ -130,7 +130,8 @@ BasePageView {
             onSaved: {
                 _buttonsGrp.previousButton = null
 
-                deviceController.setSystemModeTo(AppSpecCPP.Vacation);
+                // Show vacation view page
+                uiSession.showMainWindow = false;
 
                 //! Go back twice
                 if (_root.StackView.view) {
