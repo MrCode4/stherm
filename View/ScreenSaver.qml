@@ -77,7 +77,7 @@ Popup {
             }
 
             RowLayout {
-                Layout.leftMargin: dateTimeLbl.width / 2 + 10
+                Layout.leftMargin: dateTimeLbl.width / 1.3
                 Layout.rightMargin: dateTimeLbl.width / 2
                 Layout.topMargin: -height / 2
 
