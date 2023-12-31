@@ -50,6 +50,7 @@ public:
     //! Whether this ScheduleCPP is active or not
     bool enable;
 
+    //! _active is established through a schedule controller when a schedule is in progress.
     bool _active;
 
 signals:
