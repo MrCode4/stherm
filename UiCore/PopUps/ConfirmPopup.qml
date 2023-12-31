@@ -1,90 +1,89 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Templates as T
 import QtQuick.Layouts
-import QtQuick.Controls.Universal
-import QtQuick.Dialogs
+
+import Ronia
+import Stherm
 
 /*! ***********************************************************************************************
- * Confirmation  Popup
- * ************************************************************************************************/
-
-Popup {
-    id: popUp
-
-    /* Property Declarations
-     * ****************************************************************************************/
-    //! Confirm Text
-    property string confirmText: "Are you sure you want to delete this item?"
-
-    /* Object Properties
-     * ****************************************************************************************/
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    parent: Overlay.overlay
-    x: Math.round((parent.width - width) / 2)
-    y: Math.round((parent.height - height) / 2)
-    width: 400
-    height: 200
-    padding: 30
-    modal: true
-    focus: true
-
+ * ExitConfirmPopup prompts user to confirm exiting when changes are not saved.
+ * ***********************************************************************************************/
+I_PopUp {
+    id: root
 
     /* Signals
      * ****************************************************************************************/
-    signal accepted();
-    signal rejected();
+    signal accepted()
+    signal rejected()
+
+    /* Property declaration
+     * ****************************************************************************************/
+    //! Text message
+    property string message: "Are you sure?"
+
+    //! Detail
+    property string detailMessage: ""
+
+    //! Accept button text
+    property string acceptText: qsTr("Yes")
+
+    //! Reject button text
+    property string rejectText: qsTr("No")
+
+
+    /* Object properties
+     * ****************************************************************************************/
+    title: ""
 
     /* Children
      * ****************************************************************************************/
-    background: Rectangle {
-        color: "black"
-        border.width: 5
-        border.color: "gray"
-        radius: 5
-    }
+    ColumnLayout {
+        id: mainLay
+        width: parent?.width ?? 0
+        anchors.centerIn: parent
+        spacing: 16
 
-    Rectangle {
-        anchors.fill: parent
-        color: "transparent"
-        Text {
-            text: popUp.confirmText
-            font.pointSize: 12
-            color: "white"
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
+        Label {
+            Layout.fillWidth: true
+            font.bold: true
+            text: message
+            wrapMode: "Wrap"
+            horizontalAlignment: "AlignHCenter"
         }
 
-        //if clicked yes, card is deleted
-        Button {
-            id: yesbutton
-            width: 80
-            anchors.left: parent.left
-            anchors.bottom: parent.bottom
-            background: Rectangle {
-                color: "gray"
-                radius:5
-            }
-            text: qsTr("Yes")
-            onClicked: {
-                popUp.accepted();
-                popUp.close();
-            }
+        Label {
+            Layout.fillWidth: true
+            visible: detailMessage.length > 0
+            font.italic: true
+            textFormat: "RichText"
+            text: `<small>${detailMessage}</small>`
+            horizontalAlignment: "AlignHCenter"
         }
 
-        //if clicked no, popup is closed
-        Button {
-            id: nobutton
-            width: 80
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            background: Rectangle {
-                color: "gray"
-                radius: 5
+        RowLayout {
+            Layout.leftMargin: 24
+            Layout.rightMargin: 24
+            Layout.topMargin: 24
+            spacing: 24
+
+            Button {
+                Layout.fillWidth: true
+                text: acceptText
+
+                onClicked: {
+                    accepted();
+                    close();
+                }
             }
-            text: qsTr("No")
-            onClicked: {
-                popUp.rejected();
-                popUp.close()
+
+            Button {
+                Layout.fillWidth: true
+                text: rejectText
+
+                onClicked: {
+                    rejected();
+                    close();
+                }
             }
         }
     }
