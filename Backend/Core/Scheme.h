@@ -56,7 +56,7 @@ public:
     void setSystemSetup(SystemSetup* systemSetup);
 
     //! Set requested Temperature
-    void setOrgSetTemperature(double newSetPointTemperature);
+    void setSetPointTemperature(double newSetPointTemperature);
 
     //! Set requested Humidity
     void setRequestedHumidity(double newHumidity);
@@ -67,6 +67,8 @@ public:
     void setVacation(const STHERM::Vacation &newVacation);
 
     void setSchedule(ScheduleCPP *newSchedule);
+
+    double effectiveTemperature();
 
 signals:
     //! Change backlight with the mode
@@ -125,8 +127,6 @@ private:
     //! current humidity, and humidifier Id
     void updateHumifiresState();
 
-    void setSetPointTemperature(double newSetPointTemperature);
-
 private:
     /* Attributes
      * ****************************************************************************************/
@@ -155,7 +155,6 @@ private:
 
     //! Temperature parameters
     double mCurrentTemperature;
-    double mOriginalSetPointTemperature;
     double mSetPointTemperature;
 
     // Fan work per hour (minutes per hour) Range: 0 - 60

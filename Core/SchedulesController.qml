@@ -82,8 +82,13 @@ QtObject {
     // refactor
     //! Find current schedule to active it and pass to Scheme to work around
     function findRunningSchedule() {
+        let currentSchedule = null;
+
         device.schedules.forEach(schedule => {
-                                     var active = false;
+                                     if (currentSchedule)
+                                        return;
+
+                                     var isRunning = false;
 
                                     if (schedule.enable) {
                                         var currentDate = Qt.formatDate(new Date(), "ddd");
@@ -115,16 +120,17 @@ QtObject {
                                                 endTimeH = 0;
                                             }
 
-                                            active = ((startTimeH < nowH) || (startTimeH === nowH && startTimeM <= nowMin)) &&
+                                            isRunning = ((startTimeH < nowH) || (startTimeH === nowH && startTimeM <= nowMin)) &&
                                                                 ((endTimeH > nowH) || (endTimeH === nowH && endTimeM >= nowMin));
 
                                         }
                                     }
 
-                                    schedule._active = active;
-                                    if (active)
-                                       deviceController.setActivatedSchedule(schedule);
+                                    if (isRunning)
+                                        currentSchedule = schedule;
                                  });
+
+        deviceController.setActivatedSchedule(currentSchedule);
     }
 
     property Timer _checkRunningTimer: Timer {
