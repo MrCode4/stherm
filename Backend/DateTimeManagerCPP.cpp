@@ -169,6 +169,29 @@ QVariantList DateTimeManagerCPP::timezones() const
         }
     }
 
+    //! Sort timezones based on their offset
+    std::sort(timezones.begin(), timezones.end(),
+              [](const QVariant& first, const QVariant& second) {
+        const QString firstOffset = first.toMap()["offset"].toString();
+        const QString secondOffset = second.toMap()["offset"].toString();
+
+        if (firstOffset.at(3) == '+' && secondOffset.at(3) == '-') {
+            return false;
+        } else if (firstOffset.at(3) == '-' && secondOffset.at(3) == '+') {
+            return true;
+        } else {
+            const int fstHour = firstOffset.sliced(4, 2).toInt();
+            const int fstMin = firstOffset.sliced(7).toInt();
+            const int fstOffset = fstHour * 60 + fstMin;
+
+            const int secHour = secondOffset.sliced(4, 2).toInt();
+            const int secMin = secondOffset.sliced(7).toInt();
+            const int secOffset = secHour * 60 + secMin;
+
+            return fstOffset <= secOffset ? true : false;
+        }
+    });
+
     return timezones;
 }
 

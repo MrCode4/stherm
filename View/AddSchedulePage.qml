@@ -63,7 +63,8 @@ BasePageView {
 
                 if (_internal.overlappingSchedules.length > 0) {
                     //! New schedules overlapps with at least one other Schedule
-                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveSchedule);
+                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveEnabledSchedule);
+                    uiSession.popUps.scheduleOverlapPopup.rejected.connect(saveDisabledSchedule);
                     uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
                 } else {
                     saveSchedule();
@@ -181,9 +182,7 @@ BasePageView {
             Component.onCompleted: {
                 //! Set selected time to 2 hours after schedule's start time
                 var endTime = Date.fromLocaleTimeString(locale, _internal.newSchedule.startTime, "hh:mm AP");
-                console.log('s: ', endTime);
                 endTime.setTime(endTime.getTime() + 2 * 1000 * 60 * 60);
-                console.log('e: ', endTime);
 
                 setTimeFromString(endTime.toLocaleTimeString(locale, "hh:mm AP"));
             }
@@ -230,14 +229,28 @@ BasePageView {
 
     /* Methods
      * ****************************************************************************************/
-    function saveSchedule()
+    //! Saves a schedule as disabled, do not disabled overlapping schedules if any
+    function saveDisabledSchedule()
     {
+        _internal.newSchedule.active = false;
+        saveSchedule();
+    }
+
+    //! Saves a schedule as enabled, disable overlapping schedules if any
+    function saveEnabledSchedule()
+    {
+        _internal.newSchedule.active = true;
         //! If there is overlapping Schedules disable them
         _internal.overlappingSchedules.forEach((element, index) => {
                                                    element.active = false;
                                                });
+        saveSchedule();
+    }
 
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveSchedule);
+    function saveSchedule()
+    {
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveEnabledSchedule);
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveDisabledSchedule);
 
         if (schedulesController) {
             schedulesController.saveNewSchedule(_internal.newSchedule);
