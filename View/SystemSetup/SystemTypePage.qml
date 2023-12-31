@@ -28,7 +28,6 @@ BasePageView {
             Layout.fillWidth: true
             text: "Traditional"
             autoExclusive: true
-            checkable: true
             checked: appModel.systemSetup.systemMode === AppSpec.Conventional
 
             onClicked: {
@@ -43,7 +42,6 @@ BasePageView {
             Layout.fillWidth: true
             text: "Heat Pump"
             autoExclusive: true
-            checkable: true
             checked: appModel.systemSetup.systemMode === AppSpec.HeatPump
 
             onClicked: {
@@ -58,7 +56,6 @@ BasePageView {
             Layout.fillWidth: true
             text: "Cool Only"
             autoExclusive: true
-            checkable: true
             checked: appModel.systemSetup.systemMode === AppSpec.CoolingOnly
 
             onClicked: {
@@ -73,7 +70,6 @@ BasePageView {
             Layout.fillWidth: true
             text: "Heat Only"
             autoExclusive: true
-            checkable: true
             checked: appModel.systemSetup.systemMode === AppSpec.HeatingOnly
 
             onClicked: {
