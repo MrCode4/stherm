@@ -26,6 +26,11 @@ else
     fi
 	
 	mkdir -p "$sourceDir"
+	
+	# The script should exit because the "update.zip" file does not currently exist.
+	
+	echo "The script should exit because the 'update.zip' file does not currently exist."
+	exit 1
 fi
 
 cd "$sourceDir"
