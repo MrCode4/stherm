@@ -37,12 +37,13 @@ I_PopUp {
         }
 
         Label {
-            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignCenter
+            Layout.fillWidth: implicitWidth > root.width
             font.italic: true
             textFormat: "RichText"
-            text: "<small>Overlapping schedules will be disabled</small>"
+            text: "<small>Yes: Overlapping schedules will be disabled<br>"
+                  + "No: This schedule will be disabled</small>"
             wrapMode: "Wrap"
-            horizontalAlignment: "AlignHCenter"
         }
 
         RowLayout {
