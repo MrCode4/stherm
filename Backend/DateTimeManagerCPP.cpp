@@ -180,11 +180,11 @@ QVariantList DateTimeManagerCPP::timezones() const
         } else if (firstOffset.at(3) == '-' && secondOffset.at(3) == '+') {
             return true;
         } else {
-            const int fstHour = firstOffset.sliced(4, 2).toInt();
+            const int fstHour = firstOffset.sliced(3, 3).toInt();
             const int fstMin = firstOffset.sliced(7).toInt();
             const int fstOffset = fstHour * 60 + fstMin;
 
-            const int secHour = secondOffset.sliced(4, 2).toInt();
+            const int secHour = secondOffset.sliced(3, 3).toInt();
             const int secMin = secondOffset.sliced(7).toInt();
             const int secOffset = secHour * 60 + secMin;
 
