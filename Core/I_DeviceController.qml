@@ -56,8 +56,14 @@ QtObject {
     function setSystemHeatOnly(stage: int) {}
     function setSystemHeatPump(emergency: bool, stage: int, obState: int) {}
     function setSystemTraditional(coolStage: int, heatStage: int) {}
+    function setSystemAccesseories(accType: int, wireType: int) {}
 
     function updateInformation() {}
 
     function updateHold(isHold) {}
+
+    function testRelays(relays) {}
+
+    function setTestData(temperature, on) {}
+
 }

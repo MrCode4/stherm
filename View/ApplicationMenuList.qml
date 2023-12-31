@@ -16,6 +16,11 @@ ListView {
     /* Property declaration
      * ****************************************************************************************/
 
+    property I_Device appModel
+
+    //! SystemAccessories
+    property SystemAccessories systemAccessories: appModel?.systemSetup?.systemAccessories ?? null
+
     /* Object properties
      * ****************************************************************************************/
     ScrollIndicator.vertical: ScrollIndicator {}
@@ -54,7 +59,8 @@ ListView {
         },
         {
             "icon": FAIcons.droplet,
-            "text": "Humidity Control"
+            "text": "Humidity Control",
+            "visible": ((systemAccessories?.accessoriesWireType ?? AppSpecCPP.None) !== AppSpecCPP.None)
         },
         {
             "icon": FAIcons.fan,
@@ -87,12 +93,32 @@ ListView {
     ]
     delegate: ApplicationMenuDelegate {
         width: ListView.view.width
+        height: (modelData?.visible ?? true) ? implicitHeight : 0
         text: delegateData?.text ?? ""
         delegateData: modelData
         delegateIndex: index
 
+        visible: modelData?.visible ?? true
+
         onClicked: {
             menuActivated(delegateData.text);
+        }
+
+        //! Show test mode on "Device Information" button
+        MouseArea {
+            anchors.fill: parent
+            enabled: parent.text === "Device Information"
+            propagateComposedEvents: true;
+
+            pressAndHoldInterval: 10000
+
+            onClicked: {
+                menuActivated(parent.text);
+            }
+
+            onPressAndHold: {
+                menuActivated("Test Mode");
+            }
         }
     }
 }

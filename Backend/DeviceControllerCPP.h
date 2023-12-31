@@ -60,7 +60,7 @@ public:
     //! isScheme: is true when the backlight set from scheme and false for model
     Q_INVOKABLE bool setBacklight(QVariantList data, bool isScheme = false);
 
-    //! set setttings using uart and file and respond the success
+    //! set settings using uart and file and respond the success
     Q_INVOKABLE bool setSettings(QVariantList data);
 
     //! update vacation
@@ -69,6 +69,11 @@ public:
 
     Q_INVOKABLE void setRequestedTemperature(const double temperature);
     Q_INVOKABLE void setRequestedHumidity(const double humidity);
+
+    //! set relays using uart and file and respond the success
+    Q_INVOKABLE bool setTestRelays(QVariantList data);
+
+    Q_INVOKABLE void setOverrideMainData(QVariantMap mainDataOverride);
 
     /* Public Functions
      * Read and write data without any UART connection
@@ -115,6 +120,7 @@ private:
     /* Attributes
      * ****************************************************************************************/
     QVariantMap _mainData;
+    QVariantMap _mainData_override;
 
     DeviceIOController *_deviceIO;
     DeviceAPI *_deviceAPI;

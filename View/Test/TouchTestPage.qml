@@ -150,7 +150,6 @@ BasePageView {
         readonly property int newPointThershold: 30
         property vector2d lastActiveTranslation
 
-        parent: _root
         target: null
         onGrabChanged: function(grabState, point){
             //! See enum QPointingDevice::GrabTransition

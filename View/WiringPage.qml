@@ -8,7 +8,7 @@ import Stherm
  * WiringPage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -32,37 +32,43 @@ BasePageView {
             CheckBox {
                 hoverEnabled: false
                 text: "R"
-                checked: wiring?.isR ?? false
+                checked: root.wiring?.isR ?? false
+                onCheckedChanged: root.wiring.isR = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "C"
-                checked: wiring?.isC ?? false
+                checked: root.wiring?.isC ?? false
+                onCheckedChanged: root.wiring.isC = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "G"
-                checked: wiring?.isG ?? false
+                checked: root.wiring?.isG ?? false
+                onCheckedChanged: root.wiring.isG = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "Y1"
-                checked: wiring?.isY1 ?? false
+                checked: root.wiring?.isY1 ?? false
+                onCheckedChanged: root.wiring.isY1 = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "Y2"
-                checked: wiring?.isY2 ?? false
+                checked: root.wiring?.isY2 ?? false
+                onCheckedChanged: root.wiring.isY2 = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "T2"
-                checked: wiring?.isT2 ?? false
+                checked: root.wiring?.isT2 ?? false
+                onCheckedChanged: root.wiring.isT2 = checked
             }
         }
 
@@ -73,45 +79,44 @@ BasePageView {
             CheckBox {
                 hoverEnabled: false
                 text: "W1"
-                checked: wiring?.isW1 ?? false
+                checked: root.wiring?.isW1 ?? false
+                onCheckedChanged: root.wiring.isW1 = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "W2"
-                checked: wiring?.isW2 ?? false
+                checked: root.wiring?.isW2 ?? false
+                onCheckedChanged: root.wiring.isW2 = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "W3"
-                checked: wiring?.isW3 ?? false
+                checked: root.wiring?.isW3 ?? false
+                onCheckedChanged: root.wiring.isW3 = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "O/B"
-                checked: wiring?.isOB ?? false
+                checked: root.wiring?.isOB ?? false
+                onCheckedChanged: root.wiring.isOB = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "T1P"
-                checked: wiring?.isT1p ?? false
+                checked: root.wiring?.isT1p ?? false
+                onCheckedChanged: root.wiring.isT1p = checked
             }
 
             CheckBox {
                 hoverEnabled: false
                 text: "T1N"
-                checked: wiring?.isT1n ?? false
+                checked: root.wiring?.isT1n ?? false
+                onCheckedChanged: root.wiring.isT1n = checked
             }
         }
-    }
-
-    //! To make CheckBoxes non-editable
-    Pane {
-        anchors.fill: parent
-        background: null
-        hoverEnabled: false
     }
 }

@@ -17,6 +17,7 @@ BasePageView {
      * ****************************************************************************************/
     title: "Menu"
     contentItem: ApplicationMenuList {
+        appModel: _root.appModel
         onMenuActivated: function(menuTitle) {
             //! Push related menu to stack
             if (_root.StackView.view) {
@@ -74,7 +75,9 @@ BasePageView {
                                               });
                     break;
                 case "Device Information":
-                    _root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml")
+                    _root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              })
                     break;
                 case "Technician Access":
                     _root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml")
@@ -91,6 +94,12 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;
+
+                case "Test Mode": {
+                    _root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                } break;
                 }
             }
         }

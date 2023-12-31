@@ -40,15 +40,15 @@ T.ToolButton {
         height: square ? control.height : control.height
         x: (parent.width - width) / 2
         y: (parent.height - height) / 2
-        color: control.hovered ? (control.highlighted ? Style.highlightedRippleColor : Style.rippleColor)
-                               : "transparent"
+        color: control.hovered ? (control.checked || control.highlighted ? Style.highlightedRippleColor : Style.rippleColor)
+                               : (control.checked || control.highlighted ? Style.highlightedRippleColor : "transparent")
         radius: Math.min(width, height) / 2
 
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
-            color: control.pressed ? (control.highlighted ? Style.highlightedRippleColor : Style.rippleColor)
-                                   : "transparent"
+            color: control.pressed ? (control.checked || control.highlighted ? Style.highlightedRippleColor : Style.rippleColor)
+                                   : (control.checked || control.highlighted ? Style.highlightedRippleColor : "transparent")
         }
     }
 }

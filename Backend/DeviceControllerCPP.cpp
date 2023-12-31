@@ -137,6 +137,11 @@ void DeviceControllerCPP::setRequestedHumidity(const double humidity)
     m_scheme->setRequestedHumidity(humidity);
 }
 
+bool DeviceControllerCPP::setTestRelays(QVariantList data)
+{
+    return _deviceIO->testRelays(data);
+}
+
 void DeviceControllerCPP::startDevice()
 {
     //! todo: move to constructor later
@@ -181,11 +186,27 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
     _mainData = mainData;
 
     if (m_scheme)
-        m_scheme->setMainData(mainData);
+        m_scheme->setMainData(getMainData());
+}
 
+void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
+{
+    if (_mainData_override == mainDataOverride)
+        return;
+
+    _mainData_override = mainDataOverride;
+
+    if (m_scheme)
+        m_scheme->setMainData(getMainData());
 }
 
 QVariantMap DeviceControllerCPP::getMainData()
 {
-    return _mainData;
+    auto mainData = _mainData;
+
+    for (const auto &pair : _mainData_override.toStdMap()) {
+        mainData.insert(pair.first, pair.second);
+    }
+
+    return mainData;
 }
