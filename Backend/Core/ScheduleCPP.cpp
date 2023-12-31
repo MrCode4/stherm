@@ -5,7 +5,7 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
 {
     // Defaults
     enable     = true;
-    temprature = 0; // Celsius
+    temprature = 18; // Celsius
     humidity   = 0; // Percentage
 
     connect(this, &ScheduleCPP::enableChanged, this, [=]() {
