@@ -68,8 +68,6 @@ public:
 
     void setSchedule(ScheduleCPP *newSchedule);
 
-    double effectiveTemperature();
-
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
@@ -89,7 +87,6 @@ protected:
     void run() override;
 
 private slots:
-    void restartWorkWithSchedule();
 
 private:
     void updateParameters();
@@ -126,6 +123,10 @@ private:
     //! Update humidifire and dehumidifire after changes: mode, set point humidity,
     //! current humidity, and humidifier Id
     void updateHumifiresState();
+
+    //! Find the effective temperature to run the system with founded temperature
+    //! return the tempereture as Fahrenheit
+    double effectiveTemperature();
 
 private:
     /* Attributes

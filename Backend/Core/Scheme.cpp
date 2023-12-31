@@ -931,14 +931,6 @@ double Scheme::effectiveTemperature()
     return (32.0 + effTemperature * 9 / 5);
 }
 
-void Scheme::restartWorkWithSchedule()
-{
-    // setSetPointTemperature(mSchedule->_active ? mSchedule->temprature : mOriginalSetPointTemperature);
-    // setSetPointTemperature(schedule->_active ? schedule->humidity : mOriginalhumidity);
-
-    restartWork();
-}
-
 void Scheme::setVacation(const STHERM::Vacation &newVacation)
 {
     mVacation = newVacation;
