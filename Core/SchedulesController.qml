@@ -24,6 +24,7 @@ QtObject {
         newSchedule._qsRepo = AppCore.defaultRepo;
         newSchedule.name = schedule.name;
         newSchedule.type = schedule.type;
+        newSchedule.enable = schedule.enable;
         newSchedule.temprature = schedule.temprature;
         newSchedule.humidity = schedule.humidity;
         newSchedule.startTime = schedule.startTime;
@@ -60,7 +61,7 @@ QtObject {
             }
 
             //! First check if repeats have at least one similar values
-            if (element.repeats.find((repeatElem, repeatIndex) => {
+            if (element.repeats.split(",").find((repeatElem, repeatIndex) => {
                                      return repeats.includes(repeatElem);
                                  })) {
                 var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");

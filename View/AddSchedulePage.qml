@@ -63,10 +63,11 @@ BasePageView {
 
                 if (_internal.overlappingSchedules.length > 0) {
                     //! New schedules overlapps with at least one other Schedule
-                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveSchedule);
+                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveAndEnableCurrentSchedule);
+                    uiSession.popUps.scheduleOverlapPopup.rejected.connect(saveAndDisableCurrentSchedule);
                     uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
                 } else {
-                    saveSchedule();
+                    saveAndEnableCurrentSchedule();
                 }
             } else {
                 //! Go to next page
@@ -230,14 +231,29 @@ BasePageView {
 
     /* Methods
      * ****************************************************************************************/
-    function saveSchedule()
-    {
+
+    //! Disable the current schedule and save it
+    function saveAndDisableCurrentSchedule() {
+        _internal.newSchedule.enable = false;
+
+        saveSchedule();
+    }
+
+    //! Enable the current schedule and save it
+    function saveAndEnableCurrentSchedule() {
         //! If there is overlapping Schedules disable them
         _internal.overlappingSchedules.forEach((element, index) => {
                                                    element.enable = false;
                                                });
 
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveSchedule);
+
+        saveSchedule();
+    }
+
+    function saveSchedule()
+    {
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveAndDisableCurrentSchedule);
+        uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(saveAndEnableCurrentSchedule);
 
         if (schedulesController) {
             schedulesController.saveNewSchedule(_internal.newSchedule);
