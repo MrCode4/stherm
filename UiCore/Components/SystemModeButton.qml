@@ -28,7 +28,6 @@ ToolButton {
      * ****************************************************************************************/
     Item {
         anchors.fill: parent
-        enabled:  !deviceController.currentSchedule
 
         //! Label for OFF state
         Row {
@@ -100,7 +99,7 @@ ToolButton {
         ColumnLayout {
             id: _autoStateItem
             anchors.centerIn: parent
-            visible: opacity > 0 || deviceController.currentSchedule
+            visible: opacity > 0
             opacity: _control.state === "auto" ? 1. : 0.
 
             //! AUTO mode icon
