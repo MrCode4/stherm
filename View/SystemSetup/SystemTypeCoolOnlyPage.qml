@@ -16,18 +16,6 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Cool Only"
-    backButtonCallback: function() {
-        if (_root.StackView.view) {
-            //! Then Page is inside an StackView
-            if (_root.StackView.view.currentItem == _root) {
-                //! Pop twice to get back to SystemSetupPage
-                if (_root.StackView.view.get(_root.StackView.view.depth - 2, StackView.DontLoad) instanceof SystemSetupPage) {
-                    _root.StackView.view.pop();
-                }
-                _root.StackView.view.pop();
-            }
-        }
-    }
 
     /* Children
      * ****************************************************************************************/
@@ -43,8 +31,9 @@ BasePageView {
             if (deviceController) {
                 deviceController.setSystemCoolingOnly(coolStageLayout.coolStage)
             }
+
             //! Also move out of this Page
-            backButtonCallback();
+            goToSystemTypePage();
         }
     }
 
@@ -82,6 +71,20 @@ BasePageView {
                 }
 
                 text: "2"
+            }
+        }
+    }
+
+    function goToSystemTypePage()
+    {
+        if (_root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (_root.StackView.view.currentItem == _root) {
+                //! Pop twice to get back to SystemSetupPage
+                if (_root.StackView.view.get(_root.StackView.view.depth - 2, StackView.DontLoad) instanceof SystemTypePage) {
+                    _root.StackView.view.pop();
+                }
+                _root.StackView.view.pop();
             }
         }
     }

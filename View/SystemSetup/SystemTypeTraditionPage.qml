@@ -16,18 +16,6 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Traditional"
-    backButtonCallback: function() {
-        if (_root.StackView.view) {
-            //! Then Page is inside an StackView
-            if (_root.StackView.view.currentItem == _root) {
-                //! Pop twice to get back to SystemSetupPage
-                if (_root.StackView.view.get(_root.StackView.view.depth - 2, StackView.DontLoad) instanceof SystemSetupPage) {
-                    _root.StackView.view.pop();
-                }
-                _root.StackView.view.pop();
-            }
-        }
-    }
 
     /* Children
      * ****************************************************************************************/
@@ -46,7 +34,7 @@ BasePageView {
             }
 
             //! Also move out of this Page
-            backButtonCallback();
+            goToSystemSetupPage();
         }
     }
 
@@ -122,6 +110,20 @@ BasePageView {
                 }
 
                 text: "3"
+            }
+        }
+    }
+
+    function goToSystemSetupPage()
+    {
+        if (_root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (_root.StackView.view.currentItem == _root) {
+                //! Pop twice to get back to SystemSetupPage
+                if (_root.StackView.view.get(_root.StackView.view.depth - 2, StackView.DontLoad) instanceof SystemTypePage) {
+                    _root.StackView.view.pop();
+                }
+                _root.StackView.view.pop();
             }
         }
     }
