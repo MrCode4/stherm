@@ -25,7 +25,7 @@ BasePageView {
     property bool        isEditable: false
 
     //!
-    readonly property Schedule scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
+    readonly property ScheduleCPP scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
 
     /* Object properties
      * ****************************************************************************************/
@@ -58,7 +58,7 @@ BasePageView {
 
         //! A copy of _root.schedule in edit mode so user can preview changes and confirm before
         //! saving changes to the original schedule.
-        property Schedule scheduleToEdit: Schedule { }
+        property ScheduleCPP scheduleToEdit: ScheduleCPP { }
 
         function copySchedule()
         {
