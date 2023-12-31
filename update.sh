@@ -27,13 +27,6 @@ else
         echo "Failed to mount /mnt/update"
         exit 0
     fi
-	
-	mkdir -p "$sourceDir"
-	
-	# The script should exit because the "update.zip" file does not currently exist.
-	
-	echo "The script should exit because the 'update.zip' file does not currently exist."
-	exit 0
 fi
 
 cd "$sourceDir"
