@@ -7,12 +7,27 @@ destDir="/usr/local/bin"
 # Display source and destination directories
 echo "Source directory: $sourceDir"
 echo "Destination directory: $destDir"
-if mount | awk '{if ($3 == "/mnt/update") { exit 0}} ENDFILE{exit -1}'; then
+
+# https://man7.org/linux/man-pages/man1/mountpoint.1.html
+if mountpoint -q /mnt/update; then
     echo "/mnt/update already mounted"
 else
-	mkdir /mnt/update
+    # Create the directory using 'mkdir -p' if it doesn't exist.
+	mkdir -p /mnt/update
 	mount /dev/mmcblk1p3 /mnt/update
+	
+	 # Check if the mount was successful
+	 # check the exit status of the previous command executed in the script
+    if [ $? -eq 0 ]; then
+        echo "/mnt/update mounted successfully"
+    else
+        echo "Failed to mount /mnt/update"
+        exit 1
+    fi
+	
+	mkdir -p "$sourceDir"
 fi
+
 cd "$sourceDir"
 rm -rf "content"
 unzip "update.zip" -d "content"
