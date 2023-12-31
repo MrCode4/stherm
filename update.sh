@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit with 1: restart
+#           0: success, stop the service
+
 # Set source and destination directories from arguments
 sourceDir="/mnt/update/latestVersion"
 destDir="/usr/local/bin"
@@ -22,7 +25,7 @@ else
         echo "/mnt/update mounted successfully"
     else
         echo "Failed to mount /mnt/update"
-        exit 1
+        exit 0
     fi
 	
 	mkdir -p "$sourceDir"
@@ -30,7 +33,7 @@ else
 	# The script should exit because the "update.zip" file does not currently exist.
 	
 	echo "The script should exit because the 'update.zip' file does not currently exist."
-	exit 1
+	exit 0
 fi
 
 cd "$sourceDir"
@@ -39,7 +42,7 @@ if [ -f "update.zip" ]; then
     echo "File 'update.zip' exists."
 else
     echo "File 'update.zip' does not exist."
-	exit 1
+	exit 0
 fi
 
 
