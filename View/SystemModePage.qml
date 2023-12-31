@@ -130,8 +130,8 @@ BasePageView {
             onSaved: {
                 _buttonsGrp.previousButton = null
 
-// let it be done after countdown
-                deviceController.setSystemModeTo(AppSpecCPP.Vacation);
+                // Show vacation view page
+                uiSession.showMainWindow = false;
 
                 //! Go back twice
                 if (_root.StackView.view) {

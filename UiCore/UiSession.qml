@@ -40,6 +40,9 @@ Item {
     // Logged in user level
     property int                userLevel:      UiSession.UserLevel.USER
 
+    //! To switch between main window and vacation page
+    property bool               showMainWindow: true
+
     // Stack of current panels
     //! \todo this should probably be a custom type with extra props
     readonly property var       panelStack:     []

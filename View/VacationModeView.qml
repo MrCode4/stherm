@@ -35,7 +35,7 @@ Popup {
 
     onVisibleChanged: {
         if (visible) {
-            welcomeLabel.visible   = false;
+            welcomeLabel.visible    = false;
             vacationModePop.counter = 5;
         }
     }
@@ -56,7 +56,7 @@ Popup {
             id: timerLabel
 
             text: vacationModePop.counter
-            visible: vacationModePop.counter > 0
+            visible: vacationModePop.counter > 0 && !device.systemSetup.isVacation
             anchors.centerIn: parent
 
             font.pointSize: Qt.application.font.pointSize * 2.5
@@ -68,24 +68,30 @@ Popup {
             anchors.margins: 40
 
             font.bold: true
-            visible: vacationModePop.counter > 0
+            visible: vacationModePop.counter > 0 && !device.systemSetup.isVacation
             text: "Cancel"
 
             onClicked: {
-                //! Set system mode to Auto
-                if (deviceController) {
+                if (device.systemSetup.isVacation)
                     deviceController.setVacationOn(false);
-                }
+                uiSession.showMainWindow = true;
             }
         }
 
 
         Timer {
-            running: vacationModePop.counter > 0
+            running: _root.visible && vacationModePop.counter > 0 && !device.systemSetup.isVacation
             repeat: true
 
             interval: 1000
-            onTriggered: vacationModePop.counter--;
+            onTriggered: {
+
+                vacationModePop.counter--;
+                if (deviceController && vacationModePop.counter <= 0) {
+                     deviceController.setVacationOn(true);
+                    console.log("-----****-");
+                }
+            }
         }
 
 
@@ -116,13 +122,15 @@ Popup {
                 if (deviceController) {
                     deviceController.setVacationOn(false);
                 }
+
+                uiSession.showMainWindow = true;
             }
         }
 
         ColumnLayout {
             anchors.fill: parent
             spacing: 8
-            visible: vacationModePop.counter <= 0 && !welcomeLabel.visible
+            visible: device.systemSetup.isVacation && !welcomeLabel.visible
 
             Item {
                 Layout.fillHeight: true
