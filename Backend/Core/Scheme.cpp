@@ -926,6 +926,7 @@ void Scheme::setSchedule(ScheduleCPP *newSchedule)
 
     mSchedule = newSchedule;
 
+// nullcheck if needed, remove these
     connect(mSchedule, &ScheduleCPP::activeChanged,     this, &Scheme::restartWorkWithSchedule);
     connect(mSchedule, &ScheduleCPP::tempratureChanged, this, &Scheme::restartWorkWithSchedule);
 }

@@ -79,6 +79,7 @@ QtObject {
         return overlappings;
     }
 
+    // refactor
     //! Find current schedule to active it and pass to Scheme to work around
     function findRunningSchedule() {
         device.schedules.forEach(schedule => {

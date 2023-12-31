@@ -130,6 +130,7 @@ BasePageView {
             onSaved: {
                 _buttonsGrp.previousButton = null
 
+// let it be done after countdown
                 deviceController.setSystemModeTo(AppSpecCPP.Vacation);
 
                 //! Go back twice
