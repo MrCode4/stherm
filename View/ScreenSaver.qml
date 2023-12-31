@@ -21,6 +21,8 @@ Popup {
     //! Unit
     property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C" ?? "F"
 
+    property bool isActiveSchedule: device?.schedules.filter(schedule => schedule._active).length > 0 ?? false
+
     /* Object properties
      * ****************************************************************************************/
     implicitHeight: AppStyle.size
@@ -74,15 +76,31 @@ Popup {
                 }
             }
 
-            //! Mode button
-            SystemModeButton {
-                Layout.alignment: Qt.AlignCenter
-                Layout.leftMargin: dateTimeLbl.width / 2 + width / 2
+            RowLayout {
+                Layout.leftMargin: dateTimeLbl.width / 2 + 10
+                Layout.rightMargin: dateTimeLbl.width / 2
                 Layout.topMargin: -height / 2
-                background: null
-                deviceController: _root.deviceController
 
-                TapHandler { } //! To ensure no button functionality
+                //! Schedule button
+                RoniaTextIcon {
+                    font.pointSize: Style.fontIconSize.normalPt
+                    color: _root.Material.foreground
+                    text: "\uf073"
+                    visible: _root.isActiveSchedule
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                }
+
+                //! Mode button
+                SystemModeButton {
+                    background: null
+                    deviceController: _root.deviceController
+
+                    TapHandler { } //! To ensure no button functionality
+                }
             }
         }
 
