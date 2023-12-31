@@ -201,6 +201,18 @@ Control {
             }
         }
 
+        OnScheduleLabel {
+            anchors {
+                bottom: _dateTimeHolder.top
+                horizontalCenter: _dateTimeHolder.horizontalCenter
+                bottomMargin: 16
+            }
+            visible: uiSession.appModel.currentSchedule
+            font {
+                pointSize: _root.font.pointSize * 0.8
+            }
+        }
+
         //! NEXGEN icon
         OrganizationIcon {
             id: _logo

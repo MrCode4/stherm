@@ -123,6 +123,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/TickedSlider.qml
         UiCore/Components/RangeSliderLabeled.qml
         UiCore/Components/ButtonInverted.qml
+        UiCore/Components/OnScheduleLabel.qml
 
 
         # Views and Widgets

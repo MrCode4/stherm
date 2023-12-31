@@ -150,6 +150,7 @@ Control {
         DragHandler {
             id: _handleDh
             property bool dragging: false
+            property real startAngle: -1
 
             readonly property real maxThresholdRadiusSq: Math.pow(center.y - _control.background.pathWidth + 40, 2)
             readonly property real minThresholdRadiusSq: Math.pow(center.y - _control.background.pathWidth - 40, 2)
@@ -168,10 +169,15 @@ Control {
                     var lenSquared = Math.pow(pressToCircle.x, 2) + Math.pow(pressToCircle.y, 2);
 
                     if (lenSquared > minThresholdRadiusSq && lenSquared < maxThresholdRadiusSq) {
-                        updateValue();
-                        dragging = true;
+                        //! Press must be on the handle circle (with a threshold
+                        var pressAngle = Math.atan2(pressToCircle.y, pressToCircle.x) * 57.2958 + 180;
+                        if (Math.abs(pressAngle - _handle.rotation) < 12) {
+                            startAngle = pressAngle;
+                            dragging = true;
+                        }
                     }
                 } else if (grabState === 2 || grabState === 0x30 || grabState === 0x20) {
+                    startAngle = -1;
                     dragging = false;
                 }
             }
@@ -180,11 +186,9 @@ Control {
 
             function updateValue()
             {
-                var newHandlePos = Qt.point(0, 0);
-                newHandlePos.x = centroid.position.x;
-                newHandlePos.y = centroid.position.y;
+                var newPos = Qt.point(centroid.position.x, centroid.position.y);
 
-                var angle = Math.atan2(center.y - newHandlePos.y, center.x - newHandlePos.x) * 57.2958;
+                var angle = Math.atan2(center.y - newPos.y, center.x - newPos.x) * 57.2958;
 
                 //! Allow angle a little more beyond 0 and 180 to make sure 'to' and 'from' are
                 //! always easily reached. This won't effect on value since it's always clamped
@@ -192,7 +196,12 @@ Control {
                 if (angle > -8 || angle < -172) {
                     //! Set value based on angle
                     angle = angle < -170 ? angle + 360 : angle;
-                    value = from + Math.min(to - from, Math.max(0, angle / (_handle.angleRange)) * Math.abs(to - from));
+
+                    var diffAngle = angle - startAngle;
+                    var newValue = value + diffAngle / (_handle.angleRange) * Math.abs(to - from);
+                    value = Math.max(from, Math.min(to, newValue));
+
+                    startAngle = angle;
                 }
             }
         }

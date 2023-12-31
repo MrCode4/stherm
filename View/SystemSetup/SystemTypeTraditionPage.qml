@@ -16,6 +16,16 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Traditional"
+    backButtonCallback: function() {
+        if (_root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (_root.StackView.view.currentItem == _root) {
+                //! Pop twice to get back to SystemSetupPage
+                _root.StackView.view.pop();
+                _root.StackView.view.pop();
+            }
+        }
+    }
 
     /* Children
      * ****************************************************************************************/

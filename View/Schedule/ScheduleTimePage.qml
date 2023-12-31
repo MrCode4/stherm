@@ -40,8 +40,9 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: _contentLay.implicitWidth + leftPadding + rightPadding
-    implicitHeight: _contentLay.implicitHeight + implicitHeaderHeight + implicitFooterHeight + topPadding + bottomPadding
+    implicitWidth: AppStyle.size // _contentLay.implicitWidth + leftPadding + rightPadding
+    implicitHeight: _contentLay.implicitHeight + (msgLabel.visible ? msgLabel.implicitHeight : 0)
+                    + implicitHeaderHeight + implicitFooterHeight + topPadding + bottomPadding
     topPadding: 24
     backButtonVisible: false
     titleHeadeingLevel: 4
@@ -113,12 +114,14 @@ BasePageView {
         }
 
         anchors.centerIn: parent
+        width: parent.width * 0.6
 
         columns: 3
         columnSpacing: 12
-        rowSpacing: 32
+        rowSpacing: 20
 
         Item {
+            Layout.alignment: Qt.AlignCenter
             implicitHeight: _hourTumbler.implicitHeight
             implicitWidth: _hourTumbler.implicitWidth
 
@@ -149,12 +152,15 @@ BasePageView {
         }
 
         Label {
+            id: colonLbl
+            Layout.fillWidth:  true
             textFormat: "MarkdownText"
             text: "# :"
-            Layout.fillWidth:  true
+            horizontalAlignment: "AlignHCenter"
         }
 
         Item {
+            Layout.alignment: Qt.AlignLeft
             implicitHeight: _minuteTumbler.implicitHeight
             implicitWidth: _minuteTumbler.implicitWidth
 
@@ -192,13 +198,29 @@ BasePageView {
             checked: true
         }
 
-        Item { Layout.fillWidth:  true }
+        Item { }
 
         RadioButton {
             id: _pmRBtn
-            Layout.alignment: Qt.AlignCenter
+            Layout.alignment: Qt.AlignLeft
             text: "PM"
         }
+    }
+
+    Label {
+        id: msgLabel
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            top: _contentLay.bottom
+            topMargin: 12
+        }
+        visible: timeProperty === "end-time"
+        width: parent.width * 0.8
+        font.pointSize: _root.font.pointSize * 0.85
+        font.weight: Font.DemiBold
+        wrapMode: "Wrap"
+        text: "Please, select at least 2 hours period for the schedule"
+        horizontalAlignment: "AlignHCenter"
     }
 
     onScheduleChanged: {
