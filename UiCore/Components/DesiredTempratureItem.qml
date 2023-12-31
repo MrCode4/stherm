@@ -130,7 +130,7 @@ Control {
 
             //! Update slider value (UI) with changed TempratureUnit
             function onUnitChanged() {
-                _tempSlider.value = Utils.convertedTemperature(device.requestedTemp,
+                _tempSlider.value = Utils.convertedTemperature(currentSchedule?.temprature ?? device.requestedTemp,
                                                                device.setting.tempratureUnit);
             }
         }
