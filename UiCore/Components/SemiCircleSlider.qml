@@ -126,7 +126,7 @@ Control {
         y: parent.height - (_control.height - _control.background.shapeHeight) / 2
         rotation: {
             var valueRange = Math.abs(to - from);
-            return ((value - from)/ (valueRange > 0 ? valueRange : 1)) * angleRange
+            return (((value - from) / (valueRange > 0 ? valueRange : 1)) * angleRange) % 360
         }
 
         Rectangle {
@@ -142,19 +142,20 @@ Control {
     }
 
     Item {
-        x: (_control.background.width - width) / 2
-        y: (_control.background.height - height) / 2
-        width: _control.background.shapeWidth
-        height: _control.background.shapeHeight + 4
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+        width: parent.width + 24
+        height: parent.height + 24
 
         DragHandler {
             id: _handleDh
             property bool dragging: false
             property real startAngle: -1
 
-            readonly property real maxThresholdRadiusSq: Math.pow(center.y - _control.background.pathWidth + 40, 2)
-            readonly property real minThresholdRadiusSq: Math.pow(center.y - _control.background.pathWidth - 40, 2)
-            readonly property point center: Qt.point(parent.width / 2, parent.height)
+            readonly property real maxThresholdRadiusSq: Math.pow(_control.background.shapeHeight + 24, 2)
+            readonly property real minThresholdRadiusSq: Math.pow(_control.background.shapeHeight
+                                                                  - _control.background.pathWidth - 24, 2)
+            readonly property point center: Qt.point((parent.width + parent.x) / 2, parent.height + parent.y * 2)
 
             grabPermissions: dragging ? PointerHandler.CanTakeOverFromAnything
                                       : PointerHandler.ApprovesTakeOverByAnything
@@ -171,7 +172,11 @@ Control {
                     if (lenSquared > minThresholdRadiusSq && lenSquared < maxThresholdRadiusSq) {
                         //! Press must be on the handle circle (with a threshold
                         var pressAngle = Math.atan2(pressToCircle.y, pressToCircle.x) * 57.2958 + 180;
-                        if (Math.abs(pressAngle - _handle.rotation) < 12) {
+                        if (pressAngle > 270) {
+                            pressAngle = 360 - pressAngle;
+                        }
+
+                        if (Math.abs(pressAngle - _handle.rotation) < 14) {
                             startAngle = pressAngle;
                             dragging = true;
                         }
@@ -196,10 +201,10 @@ Control {
                 if (angle > -8 || angle < -172) {
                     //! Set value based on angle
                     angle = angle < -170 ? angle + 360 : angle;
-
                     var diffAngle = angle - startAngle;
                     var newValue = value + diffAngle / (_handle.angleRange) * Math.abs(to - from);
                     value = Math.max(from, Math.min(to, newValue));
+
 
                     startAngle = angle;
                 }

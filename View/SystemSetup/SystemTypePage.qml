@@ -27,6 +27,8 @@ BasePageView {
         Button {
             Layout.fillWidth: true
             text: "Traditional"
+            autoExclusive: true
+            checked: appModel.systemSetup.systemType === AppSpec.Conventional
 
             onClicked: {
                 //! Move to corresponding page
@@ -39,6 +41,8 @@ BasePageView {
         Button {
             Layout.fillWidth: true
             text: "Heat Pump"
+            autoExclusive: true
+            checked: appModel.systemSetup.systemType === AppSpec.HeatPump
 
             onClicked: {
                 //! Move to corresponding page
@@ -51,6 +55,8 @@ BasePageView {
         Button {
             Layout.fillWidth: true
             text: "Cool Only"
+            autoExclusive: true
+            checked: appModel.systemSetup.systemType === AppSpec.CoolingOnly
 
             onClicked: {
                 //! Move to corresponding page
@@ -63,6 +69,8 @@ BasePageView {
         Button {
             Layout.fillWidth: true
             text: "Heat Only"
+            autoExclusive: true
+            checked: appModel.systemSetup.systemType === AppSpec.HeatingOnly
 
             onClicked: {
                 //! Move to corresponding page

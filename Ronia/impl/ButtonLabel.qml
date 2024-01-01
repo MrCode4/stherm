@@ -16,8 +16,7 @@ Item {
     Text {
         id: textId
         height: parent.height
-        width: button?.checkable && button?.checked ? parent.width - checkIconId.width
-                                                    : parent.width
+        width: button?.checked ? parent.width - checkIconId.width : parent.width
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         clip: true
@@ -28,7 +27,7 @@ Item {
         id: checkIconId
         x: Math.max(textId.width + spacing, parent.width - width)
         y: (parent.height - height) / 2
-        visible: button ? button.checkable && button.checked : false
+        visible: button ? button?.checked ?? false : false
         width: 16
         height: width
         radius: width / 2

@@ -44,6 +44,28 @@ BasePageView {
 
             onClicked: {
                 //! Show corresponding page
+                switch(appModel.systemSetup.systemType) {
+                    case AppSpec.Conventional:
+                        _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeTraditionPage.qml", {
+                                                      "uiSession": _root.uiSession
+                                                  });
+                        break;
+                    case AppSpec.HeatPump:
+                        _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeHeatPumpPage.qml", {
+                                                      "uiSession": _root.uiSession
+                                                  });
+                        break;
+                    case AppSpec.CoolingOnly:
+                        _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeCoolOnlyPage.qml", {
+                                                      "uiSession": _root.uiSession
+                                                  });
+                        break;
+                    case AppSpec.HeatingOnly:
+                        _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeHeatOnlyPage.qml", {
+                                                      "uiSession": _root.uiSession
+                                                  });
+                        break;
+                }
             }
         }
 
