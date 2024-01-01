@@ -23,7 +23,7 @@ ItemDelegate {
     property SchedulesController    schedulesController: uiSession?.schedulesController ?? null
 
     //! Schedule
-    property Schedule               schedule
+    property ScheduleCPP            schedule
 
     //! Index in ListView
     property int                    delegateIndex
@@ -112,7 +112,7 @@ ItemDelegate {
         //! Enable switch
         Switch {
             id: _scheduleEnableSw
-            checked: schedule?.active ?? false
+            checked: schedule?.enable ?? false
 
             onToggled: {
                 if (checked) {
@@ -136,8 +136,8 @@ ItemDelegate {
                     }
                 }
 
-                if (schedule && schedule.active !== checked) {
-                    schedule.active = checked;
+                if (schedule && schedule.enable !== checked) {
+                    schedule.enable = checked;
                 }
             }
         }
@@ -188,13 +188,13 @@ ItemDelegate {
     {
         //! If there is overlapping Schedules disable them
         internal.overlappingSchedules.forEach((element, index) => {
-                                                  element.active = false;
+                                                  element.enable = false;
                                               });
 
         uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(setActive);
 
-        if (schedule?.active === false) {
-            schedule.active = true;
+        if (schedule?.enable === false) {
+            schedule.enable = true;
         }
     }
 }

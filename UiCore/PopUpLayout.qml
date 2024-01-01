@@ -67,4 +67,13 @@ Item {
             }
         }
     }
+
+    function closeAllPopups()
+    {
+        _internal.popupQueue.forEach((popup) => {
+                                         if (popup instanceof Popup) {
+                                             popup.close();
+                                         }
+                                     })
+    }
 }

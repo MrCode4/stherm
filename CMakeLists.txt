@@ -73,7 +73,6 @@ qt6_add_qml_module(appStherm
         Core/Backlight.qml
         Core/DeviceController.qml
         Core/I_DeviceController.qml
-        Core/Schedule.qml
         Core/SchedulesController.qml
         Core/Sensor.qml
         Core/SensorController.qml
@@ -124,6 +123,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/TickedSlider.qml
         UiCore/Components/RangeSliderLabeled.qml
         UiCore/Components/ButtonInverted.qml
+        UiCore/Components/OnScheduleLabel.qml
 
 
         # Views and Widgets
@@ -271,8 +271,8 @@ qt6_add_qml_module(appStherm
         Backend/Core/Relay.cpp
         Backend/Core/Scheme.h
         Backend/Core/Scheme.cpp
-        Backend/Core/Schedule.h
-        Backend/Core/Schedule.cpp
+        Backend/Core/ScheduleCPP.h
+        Backend/Core/ScheduleCPP.cpp
         Backend/Core/System.h
         Backend/Core/System.cpp
         Backend/Core/Sync.h

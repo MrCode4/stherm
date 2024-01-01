@@ -10,6 +10,8 @@ QtObject {
      * ****************************************************************************************/
     required property I_Device device
 
+    //! Holds current Schedule
+    property ScheduleCPP       currentSchedule: null
 
     property DeviceControllerCPP deviceControllerCPP: null
 
@@ -45,6 +47,8 @@ QtObject {
 
     function setSystemModeTo(systemMode: int) {}
 
+    function setVacationOn(on: bool) {}
+
     function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive) {}
 
     function setDesiredTemperature(temperature: real) {}
@@ -62,8 +66,11 @@ QtObject {
 
     function updateHold(isHold) {}
 
+
     function testRelays(relays) {}
 
     function setTestData(temperature, on) {}
+
+    function setActivatedSchedule(schedule: ScheduleCPP) {}
 
 }

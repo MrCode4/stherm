@@ -70,6 +70,9 @@ Item {
         function onShowHome()
         {
             _mainStackView.pop(null) //! Pop all items except the first one which is _mainViewSw
+
+            //! Close all popups too.
+            uiSession.popupLayout.closeAllPopups();
         }
     }
 }

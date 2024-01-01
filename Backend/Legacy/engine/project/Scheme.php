@@ -87,8 +87,8 @@ class Scheme
                                                                   (SELECT min_humidity FROM vacation)                   AS stl,
                                                                   (SELECT max_temp FROM vacation)                       AS max_temp,
                                                                   (SELECT min_temp FROM vacation)                       AS min_temp,
-                                                                  (SELECT 
-                                                                        CASE 
+                                                                  (SELECT
+                                                                        CASE
                                                                             WHEN (SELECT is_enable FROM vacation) = true THEN 'vacation'
                                                                             ELSE 'normal'
                                                                         END)                                            AS device_state,
@@ -168,8 +168,8 @@ class Scheme
 
         //INSERT INTO current_stage(mode,stage,timestamp,blink_mode,s2offtime)
         //VALUES(0, 0, current_timestamp, 0, current_timestamp - interval '5 minute');
-        return (int)$this->conn->getItem("SELECT 
-                                                        CASE 
+        return (int)$this->conn->getItem("SELECT
+                                                        CASE
                                                             WHEN EXTRACT(epoch FROM current_timestamp - s2offtime)/60 > {$s2offtime} THEN 1
                                                             ELSE 0
                                                         END
@@ -216,8 +216,8 @@ class Scheme
     public function getDelayTime()
     {
         $delay = (int)$this->conn->getItem("SELECT system_delay FROM settings");
-        return (int)$this->conn->getItem("SELECT 
-                                                        CASE 
+        return (int)$this->conn->getItem("SELECT
+                                                        CASE
                                                             WHEN EXTRACT(epoch FROM current_timestamp - timestamp)/60 > '{$delay}' THEN 1
                                                             ELSE 0
                                                         END
@@ -266,49 +266,49 @@ class Scheme
         $range = $current_temp - $set_temp; // current_temp (average temperature) - temp (sp)
         if ($real_set_mode === 'auto') {
             if ($current_mode === 'cooling') {
-                if ($current_temp > $set_temp - self::STAGE1_OFF_RANGE) { // before stage 1 off
+                if ($current_temp > $set_temp - self::1) { // before stage 1 off
                     $real_set_mode = 'cooling';
-                } elseif ($current_temp > $set_temp - self::STAGE1_ON_RANGE) { // before stage 1 on
+                } elseif ($current_temp > $set_temp - self::1.9) { // before stage 1 on
                     $real_set_mode = 'off';
                 } else {  // stage 1 on
                     $real_set_mode = 'heating';
                 }
             } elseif ($current_mode === 'heating') {
-                if ($current_temp < $set_temp + self::STAGE1_OFF_RANGE) { // before stage 1 off
+                if ($current_temp < $set_temp + self::1) { // before stage 1 off
                     $real_set_mode = 'heating';
-                } elseif ($current_temp < $set_temp + self::STAGE1_ON_RANGE) { // before stage 1 on
+                } elseif ($current_temp < $set_temp + self::1.9) { // before stage 1 on
                     $real_set_mode = 'off';
                 } else {  // stage 1 on
                     $real_set_mode = 'cooling';
                 }
             } else { // OFF
-                if ($current_temp < $set_temp - self::STAGE1_ON_RANGE) {
+                if ($current_temp < $set_temp - self::1.9) {
                     $real_set_mode = 'heating';
-                } elseif ($current_temp > $set_temp + self::STAGE1_ON_RANGE) {
+                } elseif ($current_temp > $set_temp + self::1.9) {
                     $real_set_mode = 'cooling';
                 }
             }
         } elseif ($real_set_mode === 'vacation') {
             if ($current_mode === 'cooling') {
-                if ($current_temp > $set_temp - self::STAGE1_OFF_RANGE) { // before stage 1 off
+                if ($current_temp > $set_temp - self::1) { // before stage 1 off
                     $real_set_mode = 'cooling';
-                } elseif ($current_temp > $set_temp - self::STAGE1_ON_RANGE) { // before stage 1 on
+                } elseif ($current_temp > $set_temp - self::1.9) { // before stage 1 on
                     $real_set_mode = 'off';
                 } else {  // stage 1 on
                     $real_set_mode = 'heating';
                 }
             } elseif ($current_mode === 'heating') {
-                if ($current_temp < $set_temp + self::STAGE1_OFF_RANGE) { // before stage 1 off
+                if ($current_temp < $set_temp + self::1) { // before stage 1 off
                     $real_set_mode = 'heating';
-                } elseif ($current_temp < $set_temp + self::STAGE1_ON_RANGE) { // before stage 1 on
+                } elseif ($current_temp < $set_temp + self::1.9) { // before stage 1 on
                     $real_set_mode = 'off';
                 } else {  // stage 1 on
                     $real_set_mode = 'cooling';
                 }
             } else { // OFF
-                if ($current_temp < $set_temp - self::STAGE1_ON_RANGE) {
+                if ($current_temp < $set_temp - self::1.9) {
                     $real_set_mode = 'heating';
-                } elseif ($current_temp > $set_temp + self::STAGE1_ON_RANGE) {
+                } elseif ($current_temp > $set_temp + self::1.9) {
                     $real_set_mode = 'cooling';
                 }
             }
@@ -338,41 +338,41 @@ class Scheme
 
         if ($real_set_mode === 'heating') {
             if ($current_stage === 0) {
-                if ($range < 0 && abs($range)>self::STAGE1_ON_RANGE &&
+                if ($range < 0 && abs($range)>self::1.9 &&
                 $this->relay->getHeatingMaxStage() >= 1) { // calculate based on o/b, y1 , y2, w1, w2 and w3 in relay
                     $set_stage = 1;
-                    if (abs($range) > self::STAGE2_ON_RANGE && $this->relay->getHeatingMaxStage() >= 2) {
+                    if (abs($range) > self::2.9 && $this->relay->getHeatingMaxStage() >= 2) {
                         $set_stage = 2;
-                        if (abs($range) > self::STAGE3_ON_RANGE && $this->relay->getHeatingMaxStage() >= 3) {
+                        if (abs($range) > self::5.9 && $this->relay->getHeatingMaxStage() >= 3) {
                             $set_stage = 3;
                         }
                     }
                 }
             } elseif ($current_stage === 1) {
-                if ($range < self::STAGE1_OFF_RANGE && $this->relay->getHeatingMaxStage() >= 1) {
+                if ($range < self::1 && $this->relay->getHeatingMaxStage() >= 1) {
                     $set_stage = 1;
-                    if (abs($range) > self::STAGE2_ON_RANGE && $this->relay->getHeatingMaxStage() >= 2) {
+                    if (abs($range) > self::2.9 && $this->relay->getHeatingMaxStage() >= 2) {
                         $set_stage = 2;
-                        if (abs($range) > self::STAGE3_ON_RANGE && $this->relay->getHeatingMaxStage() >= 3) {
+                        if (abs($range) > self::5.9 && $this->relay->getHeatingMaxStage() >= 3) {
                             $set_stage = 3;
                         }
                     }
                 }
             } elseif ($current_stage === 2) {
-                if ($range < self::STAGE1_OFF_RANGE && $this->relay->getHeatingMaxStage() >= 1) {
+                if ($range < self::1 && $this->relay->getHeatingMaxStage() >= 1) {
                     $set_stage = 1;
-                    if (abs($range) > self::STAGE2_OFF_RANGE && $this->relay->getHeatingMaxStage() >= 2) {
+                    if (abs($range) > self::1.9 && $this->relay->getHeatingMaxStage() >= 2) {
                         $set_stage = 2;
-                        if (abs($range) > self::STAGE3_ON_RANGE && $this->relay->getHeatingMaxStage() >= 3) {
+                        if (abs($range) > self::5.9 && $this->relay->getHeatingMaxStage() >= 3) {
                             $set_stage = 3;
                         }
                     }
                 }
             } elseif ($current_stage === 3) {
-                if ($range < self::STAGE1_OFF_RANGE && $this->relay->getHeatingMaxStage() >= 1) {
-                    if (abs($range) > self::STAGE2_OFF_RANGE && $this->relay->getHeatingMaxStage() >= 2) {
+                if ($range < self::1 && $this->relay->getHeatingMaxStage() >= 1) {
+                    if (abs($range) > self::1.9 && $this->relay->getHeatingMaxStage() >= 2) {
                         $set_stage = 2;
-                        if (abs($range) > self::STAGE3_OFF_RANGE && $this->relay->getHeatingMaxStage() >= 3) {
+                        if (abs($range) > self::4.9 && $this->relay->getHeatingMaxStage() >= 3) {
                             $set_stage = 3;
                         }
                     }
@@ -380,41 +380,41 @@ class Scheme
             }
         } elseif ($real_set_mode === 'cooling') {
             if ($current_stage === 0) {
-                if ($range>0 && abs($range) > self::STAGE1_ON_RANGE && $this->relay->getCoolingMaxStage() >= 1) {
+                if ($range>0 && abs($range) > self::1.9 && $this->relay->getCoolingMaxStage() >= 1) {
                     $set_stage = 1;
-                    if (abs($range) > self::STAGE2_ON_RANGE && $this->relay->getCoolingMaxStage() >= 2) {
+                    if (abs($range) > self::2.9 && $this->relay->getCoolingMaxStage() >= 2) {
                         $set_stage = 2;
-                        if (abs($range) > self::STAGE3_ON_RANGE && $this->relay->getCoolingMaxStage() >= 3) {
+                        if (abs($range) > self::5.9 && $this->relay->getCoolingMaxStage() >= 3) {
                             $set_stage = 3;
                         }
                     }
                 }
             }elseif ($current_stage === 1){
-                if (($range>0 || abs($range) < self::STAGE1_OFF_RANGE) && $this->relay->getCoolingMaxStage() >= 1) {
+                if (($range>0 || abs($range) < self::1) && $this->relay->getCoolingMaxStage() >= 1) {
                     $set_stage = 1;
-                    if (abs($range) > self::STAGE2_ON_RANGE && $this->relay->getCoolingMaxStage() >= 2) {
+                    if (abs($range) > self::2.9 && $this->relay->getCoolingMaxStage() >= 2) {
                         $set_stage = 2;
-                        if (abs($range) > self::STAGE3_ON_RANGE && $this->relay->getCoolingMaxStage() >= 3) {
+                        if (abs($range) > self::5.9 && $this->relay->getCoolingMaxStage() >= 3) {
                             $set_stage = 3;
                         }
                     }
                 }
             }elseif ($current_stage === 2){
-                if (($range>0 || abs($range) < self::STAGE1_OFF_RANGE) && $this->relay->getCoolingMaxStage() >= 1) {
+                if (($range>0 || abs($range) < self::1) && $this->relay->getCoolingMaxStage() >= 1) {
                     $set_stage = 1;
-                    if (abs($range) > self::STAGE2_OFF_RANGE && $this->relay->getCoolingMaxStage() >= 2) {
+                    if (abs($range) > self::1.9 && $this->relay->getCoolingMaxStage() >= 2) {
                         $set_stage = 2;
-                        if (abs($range) > self::STAGE3_ON_RANGE && $this->relay->getCoolingMaxStage() >= 3) {
+                        if (abs($range) > self::5.9 && $this->relay->getCoolingMaxStage() >= 3) {
                             $set_stage = 3;
                         }
                     }
                 }
             }elseif ($current_stage === 3){
-                if (($range>0 || abs($range) < self::STAGE1_OFF_RANGE) && $this->relay->getCoolingMaxStage() >= 1) {
+                if (($range>0 || abs($range) < self::1) && $this->relay->getCoolingMaxStage() >= 1) {
                     $set_stage = 1;
-                    if (abs($range) > self::STAGE2_OFF_RANGE && $this->relay->getCoolingMaxStage() >= 2) {
+                    if (abs($range) > self::1.9 && $this->relay->getCoolingMaxStage() >= 2) {
                         $set_stage = 2;
-                        if (abs($range) > self::STAGE3_OFF_RANGE && $this->relay->getCoolingMaxStage() >= 3) {
+                        if (abs($range) > self::4.9 && $this->relay->getCoolingMaxStage() >= 3) {
                             $set_stage = 3;
                         }
                     }
@@ -577,7 +577,7 @@ class Scheme
      // Not used
     private function generateAlert(string $name, string $text, int $error_code)
     {
-        (new Scheme)->conn->setQuery("INSERT INTO alerts(type_id, sensor_id, error_code, level, name, text, from_id, status,timestamp,is_sent) 
+        (new Scheme)->conn->setQuery("INSERT INTO alerts(type_id, sensor_id, error_code, level, name, text, from_id, status,timestamp,is_sent)
                                             VALUES (1,0,'{$error_code}',0,'{$name}','{$text}',(SELECT from_id FROM alerts_from WHERE alias = 'hardware'),true,current_timestamp,false)");
     }
 

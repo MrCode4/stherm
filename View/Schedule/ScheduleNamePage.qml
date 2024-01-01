@@ -17,7 +17,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule: If set changes are applied to Schedule. This is can be used to edit a Schedule
-    property Schedule       schedule
+    property ScheduleCPP    schedule
 
     //! Whether name is valid or not
     readonly property bool  isValid:        _nameTf.acceptableInput

@@ -16,4 +16,5 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     systemMode = AppSpecCPP::SystemMode::Auto;
 
     systemAccessories = new SystemAccessories(this);
+    isVacation = false;
 }

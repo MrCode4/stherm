@@ -25,23 +25,33 @@ BasePageView {
         anchors.fill: parent
         spacing: 8
 
-        TextField {
-            id: searchTf
+        RowLayout {
+            TextField {
+                id: searchTf
 
-            property var regexp: new RegExp(`.*${text}.*`, "i")
+                property var regexp: new RegExp(`.*${text}.*`, "i")
 
-            Layout.leftMargin: 16
-            Layout.rightMargin: 16
-            Layout.fillWidth: true
+                Layout.leftMargin: 16
+                Layout.rightMargin: 16
+                Layout.fillWidth: true
+            }
+
+            DateTimeLabel {
+                Layout.topMargin: 12
+                font.pointSize: root.font.pointSize * 0.8
+                showDate: false
+            }
         }
 
         ListView {
+            readonly property var timezones: DateTimeManager.timezones()
+
             Layout.fillHeight: true
             Layout.fillWidth: true
 
             clip: true
-            model: searchTf.length > 0 ? DateTimeManager.timezones().filter((element, index) => element.id.toString().match(searchTf.regexp))
-                                       : DateTimeManager.timezones()
+            model: searchTf.length > 0 ? timezones.filter((element, index) => element.id.toString().match(searchTf.regexp))
+                                       : timezones
 
             delegate: ItemDelegate {
                 width: ListView.view.width

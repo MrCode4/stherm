@@ -63,7 +63,8 @@ BasePageView {
 
                 if (_internal.overlappingSchedules.length > 0) {
                     //! New schedules overlapps with at least one other Schedule
-                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveSchedule);
+                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveEnabledSchedule);
+                    uiSession.popUps.scheduleOverlapPopup.rejected.connect(saveDisabledSchedule);
                     uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
                 } else {
                     saveSchedule();
@@ -88,7 +89,7 @@ BasePageView {
     QtObject {
         id: _internal
 
-        property Schedule newSchedule: Schedule { }
+        property ScheduleCPP newSchedule: ScheduleCPP { }
 
         property var overlappingSchedules: []
     }
@@ -181,9 +182,7 @@ BasePageView {
             Component.onCompleted: {
                 //! Set selected time to 2 hours after schedule's start time
                 var endTime = Date.fromLocaleTimeString(locale, _internal.newSchedule.startTime, "hh:mm AP");
-                console.log('s: ', endTime);
                 endTime.setTime(endTime.getTime() + 2 * 1000 * 60 * 60);
-                console.log('e: ', endTime);
 
                 setTimeFromString(endTime.toLocaleTimeString(locale, "hh:mm AP"));
             }
@@ -197,7 +196,7 @@ BasePageView {
             readonly property Component nextPage: dataSourcePageCompo
 
             onRepeatsChanged: {
-                if (repeats.toString() !== _internal.newSchedule.repeats.toString()) {
+                if (repeats !== _internal.newSchedule.repeats) {
                     _internal.newSchedule.repeats = repeats;
                 }
             }
@@ -230,15 +229,34 @@ BasePageView {
 
     /* Methods
      * ****************************************************************************************/
-    function saveSchedule()
+    //! Saves a schedule as disabled, do not disabled overlapping schedules if any
+    function saveDisabledSchedule()
+    {
+        _internal.newSchedule.enable = false;
+
+        saveScheduleAndDisconnect();
+    }
+
+    //! Saves a schedule as enabled, disable overlapping schedules if any
+    function saveEnabledSchedule()
     {
         //! If there is overlapping Schedules disable them
         _internal.overlappingSchedules.forEach((element, index) => {
-                                                   element.active = false;
+                                                   element.enable = false;
                                                });
+        saveScheduleAndDisconnect();
+    }
 
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveSchedule);
+    function saveScheduleAndDisconnect()
+    {
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveDisabledSchedule);
+        uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(saveEnabledSchedule);
 
+        saveSchedule();
+    }
+
+    function saveSchedule()
+    {
         if (schedulesController) {
             schedulesController.saveNewSchedule(_internal.newSchedule);
         }

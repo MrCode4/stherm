@@ -13,7 +13,11 @@ Control {
     /* Property declaration
      * ****************************************************************************************/
 
-    property  UiSession             uiSession
+    property  UiSession         uiSession
+
+    property I_DeviceController deviceController: uiSession.deviceController
+
+    property ScheduleCPP        currentSchedule: deviceController?.currentSchedule ?? null
 
     //! Reference to I_Device
     property I_Device           device: uiSession.appModel
@@ -41,6 +45,16 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
+    onCurrentScheduleChanged: {
+        if (currentSchedule) {
+            _tempSlider.value = Utils.convertedTemperature(currentSchedule.temprature,
+                                                           device.setting.tempratureUnit);
+        } else if (device) {
+            _tempSlider.value = Utils.convertedTemperature(device.requestedTemp,
+                                                           device.setting.tempratureUnit);
+        }
+    }
+
     font.pointSize: Qt.application.font.pointSize * 2.8
     background: null
     contentItem: Item {
@@ -49,11 +63,12 @@ Control {
             anchors.centerIn: parent
             width: parent.width
             height: width / 2
-            enabled: labelVisible
+            enabled: labelVisible && !currentSchedule
             from: minTemprature
             to: maxTemprature
+
             //! Note: this binding will be broken use Connections instead
-            value: Utils.convertedTemperature(device?.requestedTemp ?? 18.0, device.setting.tempratureUnit)
+            value: Utils.convertedTemperature(currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0), device.setting.tempratureUnit)
 
             //! Use onPressed instead of on value changed so value is only applied to device when
             //! Dragging is finished
@@ -100,6 +115,7 @@ Control {
         //! Connections to sync slider with device.
         Connections {
             target: device
+            enabled: !currentSchedule
 
             //! Update slider value (UI) with changed requestedTemp
             //! When setDesiredTemperature failed, update slider with previous value.
@@ -114,7 +130,17 @@ Control {
 
             //! Update slider value (UI) with changed TempratureUnit
             function onUnitChanged() {
-                _tempSlider.value = Utils.convertedTemperature(device.requestedTemp,
+                _tempSlider.value = Utils.convertedTemperature(currentSchedule?.temprature ?? device.requestedTemp,
+                                                               device.setting.tempratureUnit);
+            }
+        }
+
+        Connections {
+            target: currentSchedule
+
+            //! Update slider value (UI) with changed temperature in schedule
+            function onTempratureChanged() {
+                _tempSlider.value = Utils.convertedTemperature(currentSchedule.temprature,
                                                                device.setting.tempratureUnit);
             }
         }

@@ -13,7 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
-    property Schedule           schedule
+    property ScheduleCPP        schedule
 
     //! Type is alwasy valid
     readonly property bool      isValid:    true
