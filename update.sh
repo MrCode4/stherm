@@ -58,7 +58,7 @@ cp -r * "$destDir"/
 
 echo "cleaning up "
 
-rm -rf "$sourceDir/*"
+rm -rf $sourceDir/*
 
 echo "starting service"
 sleep 2
