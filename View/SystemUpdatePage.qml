@@ -85,6 +85,12 @@ BasePageView {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
 
+                //! to show scroll if needed on show
+                ScrollBar.vertical.interactive: false
+                ScrollBar.vertical.active: true
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
                 TextArea {
                     id: changeLogTextArea
                     text: deviceController.deviceControllerCPP.system.latestVersionChangeLog
