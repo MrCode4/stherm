@@ -60,8 +60,6 @@ NUVE::System::System(QObject *parent) :
 }
 void  NUVE::System::installUpdateService()
 {
-
-
 #ifdef __unix__
     QFile updateFileSH("/usr/local/bin/update.sh");
     if (updateFileSH.exists())
@@ -346,6 +344,8 @@ void NUVE::System::updateAndRestart()
     TRACE << "stating update" ;
 
 #ifdef __unix__
+    emit systemUpdating();
+
     installUpdateService();
 
     int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-update.service; systemctl start appStherm-update.service"});

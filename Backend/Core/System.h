@@ -96,6 +96,9 @@ signals:
 
     void error(QString err);
 
+    //! Emit when need the system move to updating/restarting mode
+    void systemUpdating();
+
 private:
 
     //! verify dounloaded files and prepare to set up.

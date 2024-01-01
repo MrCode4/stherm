@@ -79,6 +79,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         _deviceIO->updateRelays(relays);
     });
 
+    if (m_system) {
+        connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
+            m_scheme->moveToUpdatingMode();
+        });
+    }
+
     connect(_deviceIO,
             &DeviceIOController::alert,
             this,
