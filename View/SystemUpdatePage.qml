@@ -136,7 +136,7 @@ BasePageView {
                 font.family: "Roboto"
                 font.pointSize: Qt.application.font.pointSize  * (system.updateAvailable ? 1.0 : 0.7)
                 font.letterSpacing: system.updateAvailable ? 1.5 : 1.0
-                text: system.updateAvailable ? "<u>Download & Install</u>  " : "You are using the most up-to-date version available."
+                text: system.updateAvailable ? "<u>Download & Install</u>  " : "This version is up to date."
                 lineHeight: 0.5
             }
         }
