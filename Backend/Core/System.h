@@ -119,6 +119,9 @@ private:
         emit updateAvailableChanged();
     }
 
+    //! Install update service
+    void installUpdateService();
+
 private:
 
     QString mSerialNumber;

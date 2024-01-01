@@ -20,6 +20,9 @@ const QString m_requestJob      = QString("requestJob");
 const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
 
+
+const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
+
 const char m_isBusyDownloader[] = "isBusyDownloader";
 
 //! Function to calculate checksum (Md5)
@@ -44,6 +47,9 @@ NUVE::System::System(QObject *parent) :
     mTimer.start(12 * 60 * 60 * 1000); // each 12 hours
     mUpdateDirectory = qApp->applicationDirPath();
 
+    // Install update service
+    installUpdateService();
+
     mountUpdateDirectory();
 
     QTimer::singleShot(0, this, [=]() {
@@ -52,6 +58,55 @@ NUVE::System::System(QObject *parent) :
     });
 
 }
+void  NUVE::System::installUpdateService()
+{
+
+#ifdef __unix__
+    QFile updateServiceFile(m_updateService);
+
+    QString serviceContent = "[Unit]\n"
+                             "Description=Nuve Smart HVAC system update service\n"
+                             "[Service]\n"
+                             "Type=simple\n"
+                             "ExecStart=/bin/bash -c \"/usr/local/bin/update.sh\"\n"
+                             "Restart=on-failure\n"
+                             "[Install]\n"
+                             "WantedBy=multi-user.target";
+
+    bool neetToUpdateService = true;
+
+    // Check the service
+    if (updateServiceFile.exists()) {
+        if (updateServiceFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            neetToUpdateService = updateServiceFile.readAll() != serviceContent.toUtf8();
+            updateServiceFile.close();
+
+        }
+
+    }
+
+    if (neetToUpdateService && updateServiceFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+
+
+        updateServiceFile.write(serviceContent.toUtf8());
+
+        updateServiceFile.close();
+
+        // Reload systemd to read the updated service files
+        QProcess::execute("/bin/bash", {"-c", "systemctl daemon-reload"});
+
+        TRACE << "The update service successfully installed.";
+
+    } else if (!neetToUpdateService) {
+        TRACE << "The service is already installed..";
+
+    } else {
+        TRACE << "Unable to install the update service.";
+    }
+
+#endif
+}
+
 void  NUVE::System::mountUpdateDirectory()
 {
 #ifdef __unix__
@@ -286,6 +341,8 @@ void NUVE::System::updateAndRestart()
     TRACE << "stating update" ;
 
 #ifdef __unix__
+    installUpdateService();
+
     int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-update.service; systemctl start appStherm-update.service"});
     TRACE << exitCode;
 #endif
