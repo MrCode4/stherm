@@ -1,11 +1,19 @@
 # STHERM Update
 
 - Add partial update: 
-  - Use gzip to compress all needed files for updating (create .gz files) 
-  - Use zip to compress all .gz files as a single file.
-  - connect to server (ssh Tony@fileserver.nuvehvac.com   pass: zIWIRvgwPd)
+  - find needed files for update from build directory
+  - Use gzip to compress all needed files for updating (create .gz files)  e.g., `gzip appStherm`
+  - Use zip to compress all .gz files as a single file. e.g., `zip update.zip appStherm.gz ...`
+  - upload to server (Tony@fileserver.nuvehvac.com   pass: zIWIRvgwPd)
   - upload files in the server in directory: '/usr/share/nginx/html/files'
+ e.g., `scp update.zip Tony@fileserver.nuvehvac.com:/usr/share/nginx/html/files/updateV0.2.0.zip`
   - Add some information into the update.json file in the server: 
+get md5 from here:  https://emn178.github.io/online-tools/md5_checksum.html
+get the file size in bytes using `ls -l`
+update the file address based on name you copied
+update release data
+for the changeLog acknowledge the markdown format
+update the latest version
  ```
 "LatestVersion" : "0.1.5",
 "0.1.5": {
