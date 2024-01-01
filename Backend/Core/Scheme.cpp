@@ -174,13 +174,14 @@ void Scheme::run()
             }
         }
 
-        if (!mRestarting)
+        if (!mRestarting) {
             mRelay->setAllOff();
 
-        //        int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
-        //        mRelay->fanWorkTime(mFanWPH, fanWork);
+            //        int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
+            //        mRelay->fanWorkTime(mFanWPH, fanWork);
 
-        sendRelays();
+            sendRelays();
+        }
 
         if (stopWork)
             break;
@@ -944,6 +945,7 @@ void Scheme::moveToUpdatingMode()
 {
     mRestarting = true;
 
+    // If the system fails to restart within 10 seconds, it returns to normal operation.
     mUpdatingTimer.start(10000);
 }
 
