@@ -93,7 +93,7 @@ void  NUVE::System::installUpdateService()
         updateServiceFile.close();
 
         // Reload systemd to read the updated service files
-        QProcess::execute("/bin/bash", {"-c", "systemctl daemon-reload"});
+        // QProcess::execute("/bin/bash", {"-c", "systemctl daemon-reload"});
 
         TRACE << "The update service successfully installed.";
 
