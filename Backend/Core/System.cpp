@@ -61,7 +61,14 @@ NUVE::System::System(QObject *parent) :
 void  NUVE::System::installUpdateService()
 {
 
+
 #ifdef __unix__
+    QFile updateFileSH("/usr/local/bin/update.sh");
+    if (updateFileSH.exists())
+        updateFileSH.remove("/usr/local/bin/update.sh");
+
+    TRACE <<"update.sh file updated: " << QFile::copy(":/Stherm/Update.sh", "/usr/local/bin/update.sh");
+
     QFile updateServiceFile(m_updateService);
 
     QString serviceContent = "[Unit]\n"
@@ -82,11 +89,9 @@ void  NUVE::System::installUpdateService()
             updateServiceFile.close();
 
         }
-
     }
 
     if (neetToUpdateService && updateServiceFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-
 
         updateServiceFile.write(serviceContent.toUtf8());
 
