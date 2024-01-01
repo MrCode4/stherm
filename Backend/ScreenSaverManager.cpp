@@ -113,7 +113,7 @@ void ScreenSaverManager::restart()
     if (mState == State::Running) {
         mScreenSaverTimer.stop();
         mScreenSaverTimer.start();
-    } else {
+    } else if (mState != State::Disabled){
         setActive();
     }
 }

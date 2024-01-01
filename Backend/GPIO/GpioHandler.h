@@ -30,6 +30,8 @@ public:
 
     int fd() const;
 
+    bool stopped() const;
+
 signals:
     void readyRead(QByteArray buffer);
 
@@ -38,6 +40,7 @@ signals:
 private:
     QString filePath;
     QString mError;
+    bool _stopped = false;
 
 #ifdef __unix__
     int _fd;

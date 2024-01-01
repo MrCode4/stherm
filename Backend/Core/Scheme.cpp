@@ -33,6 +33,7 @@ const QVariantList emergencyColorS   = QVariantList{255, 0, 0, STHERM::LedEffect
 Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
     mSchedule(nullptr),
+    mRestarting (false),
     QThread (parent)
 {
     stopWork = true;
@@ -41,16 +42,35 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mRelay  = Relay::instance();
 
     mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
+
+    mUpdatingTimer.setTimerType(Qt::PreciseTimer);
+    mUpdatingTimer.setSingleShot(true);
+    mUpdatingTimer.connect(&mUpdatingTimer, &QTimer::timeout, this, [=]() {
+        mRestarting = false;
+    });
+
 }
 
-Scheme::~Scheme()
+void Scheme::stop()
 {
+    TRACE << "stopping HVAC" ;
+
+    if (mUpdatingTimer.isActive())
+        mUpdatingTimer.stop();
+
     stopWork = true;
 
     // Stop worker.
     terminate();
+    TRACE << "terminated HVAC" ;
     wait();
 
+    TRACE << "stopped HVAC" ;
+}
+
+Scheme::~Scheme()
+{
+    stop();
 }
 
 void Scheme::restartWork()
@@ -154,12 +174,14 @@ void Scheme::run()
             }
         }
 
-        mRelay->setAllOff();
+        if (!mRestarting) {
+            mRelay->setAllOff();
 
-        //        int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
-        //        mRelay->fanWorkTime(mFanWPH, fanWork);
+            //        int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
+            //        mRelay->fanWorkTime(mFanWPH, fanWork);
 
-        sendRelays();
+            sendRelays();
+        }
 
         if (stopWork)
             break;
@@ -407,15 +429,17 @@ bool Scheme::internalCoolingLoopStage2()
     if (stopWork)
         return false;
 
-    // to turn off stage 2
-    mRelay->setAllOff();
-    mRelay->coolingStage1();
-    // 5 secs
-    emit changeBacklight(coolingColor);
-    mTiming->s1uptime.restart();
-    mTiming->s2hold = true;
-    mTiming->s2Offtime.restart();
-    sendRelays();
+    if (!mRestarting) {
+        // to turn off stage 2
+        mRelay->setAllOff();
+        mRelay->coolingStage1();
+        // 5 secs
+        emit changeBacklight(coolingColor);
+        mTiming->s1uptime.restart();
+        mTiming->s2hold = true;
+        mTiming->s2Offtime.restart();
+        sendRelays();
+    }
 
     return true;
 }
@@ -522,14 +546,16 @@ bool Scheme::internalHeatingLoopStage2()
     if (stopWork)
         return false;
 
-    //turn of stage 2
-    mRelay->setAllOff();
-    mRelay->heatingStage1();
-    // 5 secs
-    emit changeBacklight(heatingColor);
-    mTiming->s1uptime.restart();
-    mTiming->s2hold = true;
-    sendRelays();
+    if (!mRestarting) {
+        //turn of stage 2
+        mRelay->setAllOff();
+        mRelay->heatingStage1();
+        // 5 secs
+        emit changeBacklight(heatingColor);
+        mTiming->s1uptime.restart();
+        mTiming->s2hold = true;
+        sendRelays();
+    }
 
     return true;
 }
@@ -569,15 +595,18 @@ bool Scheme::internalHeatingLoopStage3()
     if (stopWork)
         return false;
 
-    //turn of stage 3
-    mRelay->setAllOff();
-    mRelay->heatingStage2();
-    // 5 secs
-    emit changeBacklight(heatingColor);
-    mTiming->s1uptime.restart();
-    mTiming->s2uptime.restart();
-    mTiming->s3hold = true;
-    sendRelays();
+    if (!mRestarting) {
+        //turn of stage 3
+        mRelay->setAllOff();
+        mRelay->heatingStage2();
+        // 5 secs
+        emit changeBacklight(heatingColor);
+        mTiming->s1uptime.restart();
+        mTiming->s2uptime.restart();
+        mTiming->s3hold = true;
+        sendRelays();
+    }
+
     return true;
 }
 
@@ -666,15 +695,17 @@ bool Scheme::internalPumpHeatingLoopStage2()
     if (stopWork)
         return false;
 
-    // to turn off stage 2
-    mRelay->setAllOff();
-    mRelay->heatingStage1(true);
-    // 5 secs
-    emit changeBacklight(coolingColor);
-    mTiming->s1uptime.restart();
-    mTiming->s2hold = true;
-    mTiming->s2Offtime.restart();
-    sendRelays();
+    if (!mRestarting) {
+        // to turn off stage 2
+        mRelay->setAllOff();
+        mRelay->heatingStage1(true);
+        // 5 secs
+        emit changeBacklight(coolingColor);
+        mTiming->s1uptime.restart();
+        mTiming->s2hold = true;
+        mTiming->s2Offtime.restart();
+        sendRelays();
+    }
 
     return true;
 }
@@ -908,6 +939,14 @@ void Scheme::setSchedule(ScheduleCPP *newSchedule)
         return;
 
     mSchedule = newSchedule;
+}
+
+void Scheme::moveToUpdatingMode()
+{
+    mRestarting = true;
+
+    // If the system fails to restart within 10 seconds, it returns to normal operation.
+    mUpdatingTimer.start(10000);
 }
 
 double Scheme::effectiveTemperature()

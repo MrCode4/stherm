@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QtNetwork>
+#include <QQmlEngine>
 
 #include "Backend/Device/nuve_types.h"
 #include "NetworkWorker.h"
@@ -13,6 +14,17 @@ namespace NUVE {
 class System : public NetworkWorker
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString latestVersion          READ latestVersion           NOTIFY latestVersionChanged FINAL)
+    Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
+    Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY latestVersionChanged FINAL)
+    Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
+
+    Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
+
+    Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
+
+    QML_ELEMENT
 
 public:
     /* Public Constructors & Destructor
@@ -40,6 +52,30 @@ public:
     //! Send request job to web server
     void requestJob(QString type);
 
+
+    //! Start the partilally update
+    Q_INVOKABLE void partialUpdate();
+
+    Q_INVOKABLE void updateAndRestart();
+
+    //! Getters
+    QString latestVersion();
+
+    QString latestVersionDate();
+
+    QString latestVersionChangeLog();
+
+    QString remainingDownloadTime();
+
+    int partialUpdateProgress();
+
+    bool updateAvailable() {
+        return mUpdateAvailable;
+    }
+
+    void setPartialUpdateProgress(int progress);
+
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -47,8 +83,77 @@ protected slots:
 signals:
     void snReady();
 
+    void latestVersionChanged();
+    void partialUpdateProgressChanged();
+    void remainingDownloadTimeChanged();
+    void updateAvailableChanged();
+
+    //! Emit when partially update is ready.
+    void partialUpdateReady();
+
+    //! Start download process.
+    void downloadStarted();
+
+    void error(QString err);
+
+    //! Emit when need the system move to updating/restarting mode
+    void systemUpdating();
+
 private:
+
+    //! verify dounloaded files and prepare to set up.
+    bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true);
+
+    //! Get update information from server
+    void getUpdateInformation();
+
+    //! Check new version from file.
+    //! This function call automatically.
+    void checkPartialUpdate();
+
+    //! Mount update directory
+    void mountUpdateDirectory();
+
+    void setUpdateAvailable(bool updateAvailable) {
+        if (mUpdateAvailable == updateAvailable)
+            return;
+
+        mUpdateAvailable = updateAvailable;
+        emit updateAvailableChanged();
+    }
+
+    //! Install update service
+    void installUpdateService();
+
+private:
+
     QString mSerialNumber;
+
+    QByteArray m_expectedUpdateChecksum;
+
+    QString mUpdateFilePath;
+
+    QString mLatestVersionAddress;
+    QString mLatestVersion;
+    QString mLatestVersionDate;
+    QString mLatestVersionChangeLog;
+
+    int mRequiredMemory;
+    int mUpdateFileSize;
+
+    QString mRemainingDownloadTime;
+
+    QString mUpdateDirectory;
+
+    int mPartialUpdateProgress;
+
+    bool mUpdateAvailable;
+
+    QTimer mTimer;
+
+    //! QElapsedTimer to measure download rate.
+    QElapsedTimer mElapsedTimer;
+
 };
 
 } // namespace NUVE

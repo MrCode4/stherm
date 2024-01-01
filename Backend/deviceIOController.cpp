@@ -458,7 +458,7 @@ void DeviceIOController::updateTiDevices()
 
     // CO2 sensor
 
-    qDebug() << Q_FUNC_INFO << __LINE__ << "Device count:   " << m_p->DeviceID.count();
+    qDebug() << Q_FUNC_INFO << __LINE__ << "Device count:   " << m_p->DeviceID.size();
 }
 
 void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)

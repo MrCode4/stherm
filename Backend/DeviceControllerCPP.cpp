@@ -2,6 +2,14 @@
 
 #include "LogHelper.h"
 
+
+DeviceControllerCPP* DeviceControllerCPP::sInstance = nullptr;
+
+DeviceControllerCPP* DeviceControllerCPP::instance()
+{
+    return sInstance;
+}
+
 /* ************************************************************************************************
  * Constructors & Destructor
  * ************************************************************************************************/
@@ -12,6 +20,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , mSystemSetup(nullptr)
     , m_scheme(new Scheme(_deviceAPI, this))
 {
+
+    m_system = _deviceAPI->system();
     QVariantMap mainDataMap;
     mainDataMap.insert("temperature",     0);
     mainDataMap.insert("humidity",        0);
@@ -69,6 +79,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         _deviceIO->updateRelays(relays);
     });
 
+    if (m_system) {
+        connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
+            m_scheme->moveToUpdatingMode();
+        });
+    }
+
     connect(_deviceIO,
             &DeviceIOController::alert,
             this,
@@ -77,9 +93,16 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                    QString alertMessage) {
                 emit alert(alertLevel, alertType, alertMessage);
             });
+
+
+    //! Set sInstance to this
+    if (!sInstance) {
+        sInstance = this;
+    }
 }
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
+
 
 bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {
@@ -144,6 +167,7 @@ void DeviceControllerCPP::startDevice()
 void DeviceControllerCPP::stopDevice()
 {
     _deviceIO->stopReading();
+    m_scheme->stop();
 }
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)

@@ -2,6 +2,7 @@
 
 #include <QThread>
 #include <QVariantMap>
+#include <QTimer>
 
 #include "Core/Relay.h"
 #include "Device/SystemSetup.h"
@@ -30,6 +31,7 @@ class Scheme : public QThread
 public:
     explicit Scheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
 
+    void stop();
     ~Scheme();
 
     AppSpecCPP::SystemMode getCurrentSysMode() const;
@@ -67,6 +69,8 @@ public:
     void setVacation(const STHERM::Vacation &newVacation);
 
     void setSchedule(ScheduleCPP *newSchedule);
+
+    void moveToUpdatingMode();
 
 signals:
     //! Change backlight with the mode
@@ -148,6 +152,8 @@ private:
     NUVE::Timing* mTiming;
     Relay*  mRelay;
 
+    QTimer mUpdatingTimer;
+
     int mHumidifierId;
 
     //! Humidity parameters
@@ -163,4 +169,5 @@ private:
 
     bool stopWork;
     bool isVacation;
+    bool mRestarting;
 };

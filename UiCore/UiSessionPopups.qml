@@ -19,8 +19,12 @@ import Stherm
  *       that to the parent class.
  * ************************************************************************************************/
 Item {
+    id: root
+
     /* Property declartion
      * ****************************************************************************************/
+    property DeviceController deviceController: parent.deviceController
+
     //!
     property alias exitConfirmPopup:        exitConfPop
 
@@ -35,5 +39,57 @@ Item {
 
     ScheduleOverlapPopup {
         id: schOverlapPop
+    }
+
+    DownloadingPopup {
+        id: downloadingPopup
+
+        deviceController: root.deviceController
+    }
+
+    UpdateInterruptionPopup {
+        id: updateInterruptionPopup
+
+        deviceController: root.deviceController
+    }
+
+    InstallConfirmationPopup {
+        id: installConfirmation
+
+        deviceController: root.deviceController
+    }
+
+    //! Connections to show installConfirmation popup
+    Connections {
+        target: deviceController.deviceControllerCPP.system
+
+        function onPartialUpdateReady() {
+            if (downloadingPopup.visible)
+                downloadingPopup.close();
+
+            parent.popupLayout.displayPopUp(installConfirmation);
+
+            // Active screen saver
+            ScreenSaverManager.setActive();
+        }
+
+        function onError(err) {
+            console.log("Update error: ", err);
+            if (downloadingPopup.visible)
+                downloadingPopup.close();
+
+            parent.popupLayout.displayPopUp(updateInterruptionPopup);
+
+            // Active screen saver
+            ScreenSaverManager.setActive();
+        }
+
+        function onDownloadStarted() {
+            if (!downloadingPopup.visible)
+                parent.popupLayout.displayPopUp(downloadingPopup);
+
+            // Inactive screen saver
+            ScreenSaverManager.setInactive();
+        }
     }
 }
