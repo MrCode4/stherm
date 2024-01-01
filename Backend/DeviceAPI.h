@@ -24,6 +24,7 @@ class DeviceAPI : public QObject
      * e.g.
      *  Q_PROPERTY(QString userName READ userName WRITE setUserName NOTIFY userNameChanged)
     */
+
     QML_ELEMENT
 public:
     explicit DeviceAPI(QObject *parent = nullptr);
@@ -31,6 +32,10 @@ public:
     Q_INVOKABLE int getStartMode();
 
     NUVE::Timing *timing();
+
+    NUVE::System* system() {
+        return m_system;
+    }
 
 signals:
 

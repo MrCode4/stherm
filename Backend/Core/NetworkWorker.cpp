@@ -31,7 +31,8 @@ QByteArray NetworkWorker::preparePacket(QString className, QString method, QJson
     return jsonDocument.toJson();
 }
 
-void NetworkWorker::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData)
+void NetworkWorker::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl,
+                                    const QByteArray &postData, const QString &method)
 {
     // Prepare request
     QNetworkRequest netRequest(mainUrl.resolved(relativeUrl));
@@ -39,6 +40,7 @@ void NetworkWorker::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl
 
     // Post a request
     QNetworkReply *netReply = mNetManager->post(netRequest, postData);
+    netReply->setProperty(m_methodProperty, method);
     //    connect(netReply, &QNetworkReply::finished, )
     //    netReply->ignoreSslErrors();
 }

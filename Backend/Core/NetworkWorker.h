@@ -7,6 +7,8 @@
  * Interface class to manage network requests.
  * ************************************************************************************************/
 
+constexpr char m_methodProperty[] = "method";
+
 class NetworkWorker : public QObject
 {
     Q_OBJECT
@@ -24,7 +26,8 @@ public:
     virtual QByteArray preparePacket(QString className, QString method, QJsonArray params);
 
     //! Send post request
-    virtual void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData);
+    virtual void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl,
+                                 const QByteArray &postData, const QString &method = QString());
 
 
 protected slots:

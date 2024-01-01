@@ -4,6 +4,7 @@
 #include <QString>
 #include <QtNetwork>
 
+#include "Core/System.h"
 #include "DeviceAPI.h"
 #include "deviceIOController.h"
 #include "Core/Scheme.h"
@@ -20,6 +21,8 @@ class DeviceControllerCPP  : public QObject
     Q_OBJECT
 
     Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
+    Q_PROPERTY(NUVE::System *system MEMBER  m_system NOTIFY systemChanged)
+    //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
     QML_ELEMENT
 
@@ -28,6 +31,9 @@ public:
      * ****************************************************************************************/
     DeviceControllerCPP(QObject *parent = nullptr);
     ~DeviceControllerCPP();
+
+
+    static DeviceControllerCPP* instance();
 
     //! Exposing RequestType Enum To QML
     //! RequestType
@@ -99,9 +105,12 @@ Q_SIGNALS:
 
     void systemSetupChanged();
 
+    void systemChanged();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
+    static DeviceControllerCPP* sInstance;
 
 private Q_SLOTS:
     /* Private Slots
@@ -122,6 +131,8 @@ private:
 
     SystemSetup *mSystemSetup;
     Scheme      *m_scheme;
+
+    NUVE::System *m_system;
 
     QTimer mBacklightTimer;
 
