@@ -215,12 +215,15 @@ BasePageView {
             topMargin: 12
         }
         visible: timeProperty === "end-time"
+        opacity: isValid ? 0. : 1.
         width: parent.width * 0.8
         font.pointSize: _root.font.pointSize * 0.85
         font.weight: Font.DemiBold
         wrapMode: "Wrap"
         text: "Please, select at least 2 hours period for the schedule"
         horizontalAlignment: "AlignHCenter"
+
+        Behavior on opacity { NumberAnimation { duration: 150 } }
     }
 
     onScheduleChanged: {
