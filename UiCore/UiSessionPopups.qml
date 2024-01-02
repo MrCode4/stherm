@@ -31,6 +31,9 @@ Item {
     //!
     property alias scheduleOverlapPopup:    schOverlapPop
 
+    //!
+    property alias errorPopup:              errorPop
+
     /* Children
      * ****************************************************************************************/
     ExitConfirmPopup {
@@ -39,6 +42,10 @@ Item {
 
     ScheduleOverlapPopup {
         id: schOverlapPop
+    }
+
+    ErrorPopup {
+        id: errorPop
     }
 
     DownloadingPopup {

@@ -13,19 +13,22 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Device referenece
-    property Device      device: uiSession?.appModel ?? null
+    property Device                 device: uiSession?.appModel ?? null
+
+    //! Schedules controlller
+    property SchedulesController    schedulesController: uiSession?.schedulesController ?? null
 
     //! Schedule
-    property ScheduleCPP schedule
+    property ScheduleCPP            schedule
 
     //! Whether temprature unit is Celsius
-    property bool        isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
+    property bool                   isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     //! Can schedule fields be editabled
-    property bool        isEditable: false
+    property bool                   isEditable: false
 
     //!
-    readonly property ScheduleCPP scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
+    readonly property ScheduleCPP   scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
 
     /* Object properties
      * ****************************************************************************************/
@@ -40,7 +43,7 @@ BasePageView {
                 //! Prompt user for save confirm
                 confPop.message = "Schedule is modified, do you want to save it before exiting?";
                 confPop.detailMessage = "Changes are lost if No is pressed";
-                confPop.accepted.connect(this, saveScheduleAndGoBack);
+                confPop.acceptCallback = saveScheduleAndGoBack;
                 confPop.rejected.connect(this, goBack)
 
                 confPop.open();
@@ -53,45 +56,6 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    QtObject {
-        id: internal
-
-        //! A copy of _root.schedule in edit mode so user can preview changes and confirm before
-        //! saving changes to the original schedule.
-        property ScheduleCPP scheduleToEdit: ScheduleCPP { }
-
-        function copySchedule()
-        {
-            if (_root.schedule) {
-                scheduleToEdit.enable = false; //! This is always false so overlapping check dont take
-                                                //! place in ScheduleTimePage since this copy will
-                                                //! overlap with itself
-                scheduleToEdit.name = _root.schedule.name;
-                scheduleToEdit.type = _root.schedule.type;
-                scheduleToEdit.temprature = _root.schedule.temprature;
-                scheduleToEdit.humidity = _root.schedule.humidity;
-                scheduleToEdit.startTime = _root.schedule.startTime;
-                scheduleToEdit.endTime = _root.schedule.endTime;
-                scheduleToEdit.repeats = _root.schedule.repeats;
-                scheduleToEdit.dataSource = _root.schedule.dataSource;
-            }
-        }
-
-        function isScheduleModified()
-        {
-            return isEditable && _root.schedule && internal.scheduleToEdit
-                    ? _root.schedule.name !== internal.scheduleToEdit.name
-                      || _root.schedule.type !== internal.scheduleToEdit.type
-                      || _root.schedule.temprature !== internal.scheduleToEdit.temprature
-                      || _root.schedule.humidity !== internal.scheduleToEdit.humidity
-                      || _root.schedule.startTime !== internal.scheduleToEdit.startTime
-                      || _root.schedule.endTime !== internal.scheduleToEdit.endTime
-                      || _root.schedule.repeats !== internal.scheduleToEdit.repeats
-                      || _root.schedule.dataSource !== internal.scheduleToEdit.dataSource
-                    : false
-        }
-    }
-
     //! Confirm change button
     ToolButton {
         id: confirmtBtn
@@ -102,13 +66,44 @@ BasePageView {
         }
 
         onClicked: {
+            //! First check if start and end time are correct
+            var startTime = Date.fromLocaleTimeString(locale, internal.scheduleToEdit.startTime, "hh:mm AP");
+            var endTime = Date.fromLocaleTimeString(locale, internal.scheduleToEdit.endTime, "hh:mm AP");
+
+            const twoHoursToMs = 2 * 60 * 60 * 1000;
+            if (endTime.getTime() - startTime.getTime() < twoHoursToMs) {
+                //! Show an error popup
+                uiSession.popUps.errorPopup.errorMessage = "Schedule time period must be at least +2 hours";
+                uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
+            } else {
+                //! Check overlapping schedules
+                internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
+                            Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.startTime, "hh:mm AP"),
+                            Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.endTime, "hh:mm AP"),
+                            internal.scheduleToEdit.repeats,
+                            schedule // Exclude the original of this copy
+                            );
+
+                if (internal.overlappingSchedules.length > 0) {
+                    //! New schedules overlapps with at least one other Schedule
+                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(internal.saveEnabledSchedule);
+                    uiSession.popUps.scheduleOverlapPopup.rejected.connect(internal.saveDisabledSchedule);
+                    uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
+                } else {
+                    promptSavingSchedule(saveSchedule);
+                }
+            }
+        }
+
+        function promptSavingSchedule(acceptCallback=saveSchedule)
+        {
             //! Prompt user for save confirm
             //! It's might be better to show this only if this schedule is active since changing its
             //! properties may make it inactive
-            confPop.message = "Save changes to schedule?"
+            confPop.message = "Are you sure you want to save changes to schedule?"
             confPop.acceptText = qsTr("Yes");
             confPop.rejectText = qsTr("No");
-            confPop.accepted.connect(this, saveScheduleAndGoBack);
+            confPop.acceptCallback = acceptCallback;
 
             confPop.open();
         }
@@ -427,15 +422,96 @@ BasePageView {
 
     ConfirmPopup {
         id: confPop
+
+        property var acceptCallback
+
+        onAccepted: if (acceptCallback instanceof Function) acceptCallback();
+        onClosed: acceptCallback = null;
     }
 
     onIsEditableChanged: if (isEditable) internal.copySchedule()
     onScheduleChanged: if (isEditable) internal.copySchedule()
 
-    function saveScheduleAndGoBack()
-    {
-        confPop.accepted.disconnect(saveScheduleAndGoBack);
+    QtObject {
+        id: internal
 
+        //! A copy of _root.schedule in edit mode so user can preview changes and confirm before
+        //! saving changes to the original schedule.
+        property ScheduleCPP scheduleToEdit: ScheduleCPP { }
+
+        //! Overlapping schedules
+        property var         overlappingSchedules: []
+
+        //! Get a copy of _root.schedule to be edited
+        function copySchedule()
+        {
+            if (_root.schedule) {
+                scheduleToEdit.enable = false; //! This is always false so overlapping check dont take
+                //! place in ScheduleTimePage since this copy will
+                //! overlap with itself
+                scheduleToEdit.name = _root.schedule.name;
+                scheduleToEdit.type = _root.schedule.type;
+                scheduleToEdit.temprature = _root.schedule.temprature;
+                scheduleToEdit.humidity = _root.schedule.humidity;
+                scheduleToEdit.startTime = _root.schedule.startTime;
+                scheduleToEdit.endTime = _root.schedule.endTime;
+                scheduleToEdit.repeats = _root.schedule.repeats;
+                scheduleToEdit.dataSource = _root.schedule.dataSource;
+            }
+        }
+
+        //! Check if copied schedule is modified and needs to be saved
+        function isScheduleModified()
+        {
+            return isEditable && _root.schedule && internal.scheduleToEdit
+                    ? _root.schedule.name !== internal.scheduleToEdit.name
+                      || _root.schedule.type !== internal.scheduleToEdit.type
+                      || _root.schedule.temprature !== internal.scheduleToEdit.temprature
+                      || _root.schedule.humidity !== internal.scheduleToEdit.humidity
+                      || _root.schedule.startTime !== internal.scheduleToEdit.startTime
+                      || _root.schedule.endTime !== internal.scheduleToEdit.endTime
+                      || _root.schedule.repeats !== internal.scheduleToEdit.repeats
+                      || _root.schedule.dataSource !== internal.scheduleToEdit.dataSource
+                    : false
+        }
+
+        //! Makes editing schedule saved and enables it, also disables overlapping schedules
+        function saveEnabledSchedule()
+        {
+            //! Disable overlapping schedules if any.
+            overlappingSchedules.forEach((element, index) => {
+                                             element.enable = false;
+                                         });
+            //! Enable this.
+            schedule.enable = true;
+
+            //! Perform saving (and disconnecting from ScheduleOverlapPopup's signal
+            saveScheduleAndDisconnectScheduleOverlapPopup()
+        }
+
+        //! Makes editing schedule saved and disabled
+        function saveDisabledSchedule()
+        {
+            //! Disable this.
+            schedule.enable = false;
+
+            //! Perform saving (and disconnecting from ScheduleOverlapPopup's signal
+            saveScheduleAndDisconnectScheduleOverlapPopup()
+        }
+
+        //! Disconnect from ScheduleOverlapPopup's signals and prompts for saving schedule
+        function saveScheduleAndDisconnectScheduleOverlapPopup()
+        {
+            uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveEnabledSchedule);
+            uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(saveDisabledSchedule);
+
+            saveSchedule();
+        }
+    }
+
+    //! This method saves editing data to _root.schedule
+    function saveSchedule()
+    {
         //! Apply internal.scheduleToEdit to _root.schedule and go back
         _root.schedule.name = internal.scheduleToEdit.name;
         _root.schedule.type = internal.scheduleToEdit.type;
@@ -445,10 +521,16 @@ BasePageView {
         _root.schedule.endTime = internal.scheduleToEdit.endTime;
         _root.schedule.repeats = [...internal.scheduleToEdit.repeats];
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
+    }
 
+    //! Simply calls saveSchedule() and goes back by calling goBack()
+    function saveScheduleAndGoBack()
+    {
+        saveSchedule();
         goBack();
     }
 
+    //! Pop this page from StackView
     function goBack()
     {
         if (_root.StackView.view) {
