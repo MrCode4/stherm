@@ -89,7 +89,7 @@ ItemDelegate {
                 spacing: 1
 
                 Repeater {
-                    model: schedule?.repeats ?? 0
+                    model: schedule?.repeats.split(",") ?? 0
                     delegate: Label {
                         font: _fontMetric.font
                         Layout.alignment: Qt.AlignTop
