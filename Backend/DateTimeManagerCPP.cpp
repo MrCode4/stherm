@@ -43,7 +43,12 @@ void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
             callProcessFinished({ exitCode });
         }, Qt::SingleShotConnection);
 
-    mProcess.start(TDC_COMMAND, { TDC_SET_NTP, autoUpdate ? "true" : "false" });
+    if (autoUpdate) {
+        mProcess.start("systemctl", { "start" , "systemd-timesyncd" });
+    }else{
+        mProcess.start(TDC_COMMAND, { TDC_SET_NTP, "false" });
+    }
+
 }
 
 bool DateTimeManagerCPP::autoUpdateTime() const
