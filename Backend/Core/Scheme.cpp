@@ -667,7 +667,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
     // turn on stage 2
     mRelay->heatingStage2(true);
     // 5 Sec
-    emit changeBacklight(coolingColor);
+    emit changeBacklight(heatingColor);
     sendRelays();
 
     while (!stopWork) {
@@ -702,7 +702,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
         mRelay->setAllOff();
         mRelay->heatingStage1(true);
         // 5 secs
-        emit changeBacklight(coolingColor);
+        emit changeBacklight(heatingColor);
         mTiming->s1uptime.restart();
         mTiming->s2hold = true;
         mTiming->s2Offtime.restart();
