@@ -62,6 +62,7 @@ public:
 
 signals:
     void mainDataReady(QVariantMap data);
+    void tofDataReady(QVariantMap data);
 
     //! Send response with requestType
     void responseReady(int requestType, QVariant response);

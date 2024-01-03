@@ -651,8 +651,10 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                        rxPacket.DataArray + sizeof(RangeMilliMeter),
                        sizeof(Luminosity));
 
-                //                resultMap.insert("RangeMilliMeter", RangeMilliMeter);
-                //                resultMap.insert("Luminosity", Luminosity);
+                QVariantMap resultMap;
+                resultMap.insert("RangeMilliMeter", RangeMilliMeter);
+                resultMap.insert("Luminosity", Luminosity);
+                emit tofDataReady(resultMap);
 
                 checkTOFRangeValue(RangeMilliMeter);
                 checkTOFLuminosity(Luminosity);

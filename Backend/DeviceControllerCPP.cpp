@@ -50,6 +50,11 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         setMainData(data);
     });
+    connect(_deviceIO, &DeviceIOController::tofDataReady, this, [this](QVariantMap data) {
+        for (const auto &pair : data.toStdMap()) {
+            _mainData.insert(pair.first, pair.second);
+        }
+    });
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
