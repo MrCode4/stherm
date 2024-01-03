@@ -19,6 +19,10 @@ BasePageView {
      * ****************************************************************************************/
     title: "System Update"
 
+    //! Send request to get update information from server
+    Component.onCompleted: {
+        system.getUpdateInformation();
+    }
 
     /* Children
      * ****************************************************************************************/

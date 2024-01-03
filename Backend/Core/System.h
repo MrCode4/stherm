@@ -58,6 +58,9 @@ public:
 
     Q_INVOKABLE void updateAndRestart();
 
+    //! Get update information from server
+    Q_INVOKABLE void getUpdateInformation();
+
     //! Getters
     QString latestVersion();
 
@@ -74,6 +77,7 @@ public:
     }
 
     void setPartialUpdateProgress(int progress);
+
 
 
 protected slots:
@@ -99,13 +103,12 @@ signals:
     //! Emit when need the system move to updating/restarting mode
     void systemUpdating();
 
+
 private:
 
     //! verify dounloaded files and prepare to set up.
     bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true);
 
-    //! Get update information from server
-    void getUpdateInformation();
 
     //! Check new version from file.
     //! This function call automatically.
