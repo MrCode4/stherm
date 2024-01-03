@@ -13,6 +13,8 @@ QtObject {
      * ****************************************************************************************/
     property I_Device device
 
+    property I_DeviceController deviceController
+
     /* Signals
      * ****************************************************************************************/
     signal newMessageReceived(Message message)
@@ -47,6 +49,15 @@ QtObject {
         if (msgIndex > -1) {
             var msgToRemove = device.messages.splice(msgIndex, 1)[0];
             msgToRemove.destroy();
+        }
+    }
+
+    // To add system alerts into messages.
+    property Connections sytemConnections: Connections {
+        target: deviceController.deviceControllerCPP.system
+
+        function onAlert(message: string) {
+            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
         }
     }
 }
