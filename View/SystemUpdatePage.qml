@@ -35,34 +35,34 @@ BasePageView {
         columnSpacing: 32
 
         Label {
-            Layout.preferredWidth: fontMetrics.boundingRect("Last update date: ").width + leftPadding + rightPadding
+            Layout.preferredWidth: fontMetrics.boundingRect("Update release date: ").width + leftPadding + rightPadding
             font.bold: true
-            text: "Last update date: "
+            text: system.updateAvailable ? "Update Release date: " : "Last Update date: "
         }
 
         Label {
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * 0.9
             horizontalAlignment: Text.AlignLeft
-            text: deviceController.deviceControllerCPP.system.latestVersionDate
+            text: system.updateAvailable ? system.latestVersionDate : system.lastInstalledUpdateDate
         }
 
         Label {
-            Layout.preferredWidth: fontMetrics.boundingRect("Last update date: ").width + leftPadding + rightPadding
+            Layout.preferredWidth: fontMetrics.boundingRect("Update release date: ").width + leftPadding + rightPadding
             font.bold: true
-            text: "Update Available: "
+            text: system.updateAvailable ? "Update Available: " : "Installed Version: "
         }
 
         Label {
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * 0.9
             horizontalAlignment: Text.AlignLeft
-            text: deviceController.deviceControllerCPP.system.latestVersion
+            text: system.latestVersion
         }
 
         Rectangle {
 
-            visible: changeLogTextArea.text.length > 0
+            visible: system.updateAvailable && changeLogTextArea.text.length > 0
             height: changeLogTextArea.text.length > 0 ? Math.min(changeLogTextArea.implicitHeight + header.height + 6, 150) : 0
             Layout.fillWidth: true
             Layout.columnSpan: 2
@@ -97,7 +97,7 @@ BasePageView {
 
                 TextArea {
                     id: changeLogTextArea
-                    text: deviceController.deviceControllerCPP.system.latestVersionChangeLog
+                    text: system.latestVersionChangeLog
                     readOnly: true
                     textFormat: Text.MarkdownText
 
@@ -110,8 +110,6 @@ BasePageView {
                 }
             }
         }
-
-
     }
 
     FontMetrics {

@@ -15,6 +15,7 @@ class System : public NetworkWorker
 {
     Q_OBJECT
 
+    Q_PROPERTY(QString lastInstalledUpdateDate READ lastInstalledUpdateDate NOTIFY lastInstalledUpdateDateChanged FINAL)
     Q_PROPERTY(QString latestVersion          READ latestVersion           NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY latestVersionChanged FINAL)
@@ -70,6 +71,8 @@ public:
 
     QString remainingDownloadTime();
 
+    QString lastInstalledUpdateDate();
+
     int partialUpdateProgress();
 
     bool updateAvailable() {
@@ -91,6 +94,7 @@ signals:
     void partialUpdateProgressChanged();
     void remainingDownloadTimeChanged();
     void updateAvailableChanged();
+    void lastInstalledUpdateDateChanged();
 
     //! Emit when partially update is ready.
     void partialUpdateReady();
@@ -140,6 +144,7 @@ private:
     QString mLatestVersion;
     QString mLatestVersionDate;
     QString mLatestVersionChangeLog;
+    QString mLastInstalledUpdateDate;
 
     int mRequiredMemory;
     int mUpdateFileSize;

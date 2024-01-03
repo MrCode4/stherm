@@ -52,6 +52,8 @@ NUVE::System::System(QObject *parent) :
 
     mountUpdateDirectory();
 
+    mLastInstalledUpdateDate = QDate::currentDate().toString("dd/MM/yyyy");
+
     QTimer::singleShot(0, this, [=]() {
         checkPartialUpdate();
         getUpdateInformation();
@@ -188,6 +190,11 @@ QString NUVE::System::latestVersion() {
 
 QString NUVE::System::remainingDownloadTime() {
     return mRemainingDownloadTime;
+}
+
+QString NUVE::System::lastInstalledUpdateDate()
+{
+    return mLastInstalledUpdateDate;
 }
 
 int NUVE::System::partialUpdateProgress() {
@@ -346,6 +353,11 @@ void NUVE::System::updateAndRestart()
     TRACE << "starting update" ;
 
 #ifdef __unix__
+    // It's incorrect if the update process failed,
+    // but in that case, the update is available and
+    // this property remains hidden.
+    mLastInstalledUpdateDate = QDate::currentDate().toString("dd/MM/yyyy");
+
     emit systemUpdating();
 
     installUpdateService();
