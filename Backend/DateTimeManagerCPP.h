@@ -53,11 +53,11 @@ public:
     QDateTime       now() const;
 
     /*!
-     * \brief setTime Set system time to given time.
-     * \param time
+     * \brief setDateTime Set system datetime to given datetime.
+     * \param datetime
      * \return
      */
-    Q_INVOKABLE void            setTime(const QDateTime& time);
+    Q_INVOKABLE void            setDateTime(const QDateTime& datetime);
 
     /*!
      * \brief timeZones Returns a list of all the timezones avaialable in the system.

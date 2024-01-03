@@ -17,11 +17,6 @@ DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
     connect(&mNowTimer, &QTimer::timeout, this, [&]() {
         //! Update now
         mNow = QDateTime::currentDateTime();
-
-        if (hasDST()) {
-            mNow = mNow.addSecs(mCurrentTimeZone.daylightTimeOffset(mNow));
-        }
-
         emit nowChanged();
     });
 }
@@ -118,9 +113,9 @@ QDateTime DateTimeManagerCPP::now() const
     return mNow;
 }
 
-void DateTimeManagerCPP::setTime(const QDateTime& time)
+void DateTimeManagerCPP::setDateTime(const QDateTime& datetime)
 {
-    if (isRunning() || QDateTime::currentDateTime().time() == time.time()) {
+    if (isRunning() || QDateTime::currentDateTime() == datetime) {
         return;
     }
 
@@ -129,9 +124,10 @@ void DateTimeManagerCPP::setTime(const QDateTime& time)
             callProcessFinished({ exitCode });
         }, Qt::SingleShotConnection);
 
+    QString newDateTime = datetime.toString("yyyy-MM-dd hh:mm:ss");
     mProcess.start(TDC_COMMAND, {
                                     TDC_SET_TIME,
-                                    time.time().toString("hh:mm:ss"),
+                                    newDateTime,
                                 });
 }
 

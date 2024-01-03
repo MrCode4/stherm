@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 import Ronia
 import Stherm
-import "."
+
 /*! ***********************************************************************************************
  * SelectDatePage
  * ***********************************************************************************************/
@@ -43,7 +43,13 @@ BasePageView {
             text: FAIcons.check
         }
 
-        onClicked: dateSelected(selectedDate)
+        onClicked: {
+            dateSelected(selectedDate);
+
+            if (root.StackView.view) {
+                root.StackView.view.pop();
+            }
+        }
     }
 
     StackView {

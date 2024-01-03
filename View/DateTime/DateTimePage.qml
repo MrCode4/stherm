@@ -25,7 +25,7 @@ BasePageView {
         id: mainLay
 
         anchors.fill: parent
-        spacing: 6
+        spacing: 4
 
         RowLayout {
             Label {
@@ -76,6 +76,33 @@ BasePageView {
                 //! Open SelectTimePage
                 if (root.StackView.view) {
                     root.StackView.view.push(selectTimeCompo);
+                }
+            }
+        }
+
+        ItemDelegate {
+            Layout.fillWidth: true
+            rightPadding: 4
+            leftPadding: 8
+            contentItem: RowLayout {
+                enabled: !autoTimeSwh.checked
+
+                Label {
+                    Layout.fillWidth: true
+                    text: "Date"
+                }
+
+                Label {
+                    Layout.rightMargin: autoTimeSwh.rightPadding
+                    font.letterSpacing: 1.5
+                    text: DateTimeManager.now.toLocaleString(locale, "ddd MMM d, yyyy");
+                }
+            }
+
+            onClicked: {
+                //! Open SelectTimePage
+                if (root.StackView.view) {
+                    root.StackView.view.push(selectDateCompo);
                 }
             }
         }
@@ -157,7 +184,26 @@ BasePageView {
 
         SelectTimePage {
             onTimeSelected: function(time) {
-                DateTimeManager.setTime(Date.fromLocaleTimeString(Qt.locale(), time, "hh:mm:ss"));
+                var selectedTime = new Date;
+                selectedTime = Date.fromLocaleTimeString(Qt.locale(), time, "hh:mm:ss");
+                selectedTime.setSeconds(0);
+
+                DateTimeManager.setDateTime(selectedTime);
+            }
+        }
+    }
+
+    Component {
+        id: selectDateCompo
+
+        SelectDatePage {
+            onDateSelected: function(date) {
+                var selectedDate = new Date;
+                selectedDate.setDate(date.getDate());
+                selectedDate.setMonth(date.getMonth());
+                selectedDate.setFullYear(date.getFullYear());
+
+                DateTimeManager.setDateTime(selectedDate);
             }
         }
     }
