@@ -351,6 +351,7 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
         mRelay->setOb_state(AppSpecCPP::Cooling);
 
     // sysDelay
+    waitLoop(mSystemSetup->systemRunDelay);
     mRelay->coolingStage1();
 
     // 5 Sec
@@ -616,6 +617,7 @@ void Scheme::internalPumpHeatingLoopStage1()
         mRelay->setOb_state(AppSpecCPP::Heating);
 
         // sysDelay
+        waitLoop(mSystemSetup->systemRunDelay);
         mRelay->heatingStage1(true);
 
         // 5 Sec

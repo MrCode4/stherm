@@ -200,7 +200,6 @@ void Relay::setAllOff()
     mRelay.w1    = STHERM::RelayMode::OFF;
     mRelay.w2    = STHERM::RelayMode::OFF;
     mRelay.w3    = STHERM::RelayMode::OFF;
-    mRelay.o_b   = STHERM::RelayMode::OFF;
     mRelay.acc1p = STHERM::RelayMode::OFF;
     mRelay.acc1n = STHERM::RelayMode::OFF;
 
