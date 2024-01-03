@@ -93,6 +93,7 @@ Control {
 
             //! Unit
             Label {
+                id: unitLbl
                 anchors.left: parent.right
                 anchors.top: parent.top
                 opacity: 0.6
@@ -103,10 +104,16 @@ Control {
                 text: `\u00b0${unit}`
             }
 
-            TapHandler {
-                onTapped: {
-                    if (uiSession) {
-                        uiSession.popupLayout.displayPopUp(tempUnitPop, true);
+            Item {
+                width: parent.width + unitLbl.width + 8
+                height: parent.height + unitLbl.height
+                anchors.verticalCenter: parent.verticalCenter
+
+                TapHandler {
+                    onTapped: {
+                        if (uiSession) {
+                            uiSession.popupLayout.displayPopUp(tempUnitPop, true);
+                        }
                     }
                 }
             }
