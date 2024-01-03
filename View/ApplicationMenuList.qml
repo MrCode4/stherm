@@ -51,7 +51,7 @@ ListView {
         },
         {
             "icon": FAIcons.calendarClock,
-            "text": "Time Settings"
+            "text": "Date & Time"
         },
         {
             "icon": FAIcons.signalStream,
