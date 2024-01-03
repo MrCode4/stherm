@@ -132,6 +132,9 @@ private:
     //! Install update service
     void installUpdateService();
 
+    //! Check and validate update json file
+    bool checkUpdateFile(const QByteArray updateData);
+
 private:
 
     QString mSerialNumber;

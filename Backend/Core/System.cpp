@@ -25,6 +25,17 @@ const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.
 
 const char m_isBusyDownloader[] = "isBusyDownloader";
 
+/* ************************************************************************************************
+ * Update Json Keys
+ * ************************************************************************************************/
+const QString m_LatestVersion   = QString("LatestVersion");
+const QString m_ReleaseDate     = QString("ReleaseDate");
+const QString m_ChangeLog       = QString("ChangeLog");
+const QString m_Address         = QString("Address");
+const QString m_RequiredMemory  = QString("RequiredMemory");
+const QString m_CurrentFileSize = QString("CurrentFileSize");
+const QString m_CheckSum        = QString("CheckSum");
+
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
@@ -469,16 +480,22 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
             TRACE << mUpdateFilePath;
             // Save the downloaded data
-            QFile file(mUpdateFilePath);
-            if (!file.open(QIODevice::WriteOnly)) {
-                TRACE << "Unable to open file for writing";
-                emit error("Unable to open file for writing");
-                return;
-            }
-            TRACE << data;
-            file.write(data);
-            file.close();
+            if (checkUpdateFile(data)) {
 
+                QFile file(mUpdateFilePath);
+                if (!file.open(QIODevice::WriteOnly)) {
+                    TRACE << "Unable to open file for writing";
+                    emit error("Unable to open file for writing");
+                    return;
+                }
+                TRACE << data;
+
+                file.write(data);
+
+                file.close();
+            }
+
+            // Check the last saved update.json file
             checkPartialUpdate();
         }
 
@@ -488,6 +505,62 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
         break;
     }
+}
+
+bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
+    auto updateJson = QJsonDocument::fromJson(updateData).object();
+
+    if (updateJson.contains(m_LatestVersion)) {
+        auto latestVersion = updateJson.value(m_LatestVersion).toString();
+        if (latestVersion.split(".").count() == 3) {
+
+            if (!updateJson.contains(latestVersion)) {
+                TRACE << "The 'LatestVersion' value (" << latestVersion << ") is not found or has invalid format in the Update file (server side).";
+                return false;
+            }
+
+            QStringList jsonKeys;
+            jsonKeys << m_ReleaseDate
+                     << m_ChangeLog
+                     << m_Address
+                     << m_RequiredMemory
+                     << m_CurrentFileSize
+                     << m_CheckSum;
+
+            auto latestVersionObj = updateJson.value(latestVersion).toObject();
+            if (latestVersionObj.isEmpty()) {
+                TRACE << "The 'LatestVersion' value (" << latestVersion << ") is empty in the Update file (server side).";
+                return false;
+            }
+
+            foreach (auto key, jsonKeys) {
+                auto value = latestVersionObj.value(key);
+                if (value.isUndefined() || value.type() == QJsonValue::Null) {
+                    TRACE << "The key (" << key << ") not found in the 'LatestVersion' value (" << latestVersion << ") (server side).";
+                    return false;
+                }
+
+                if (value.isString() && value.toString().isEmpty()) {
+                    TRACE << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
+                    return false;
+
+                } else if (value.isDouble() && (value.toDouble(-100) == -100)) {
+                    TRACE << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
+                    return false;
+                }
+            }
+
+        } else {
+            TRACE << "The 'LatestVersion' value (" << latestVersion << ") is incorrect in the Update file (server side).";
+            return false;
+        }
+
+    } else {
+        TRACE << "The 'LatestVersion' key is not present in the Update file (server side).";
+        return false;
+    }
+
+    return true;
 }
 
 void NUVE::System::checkPartialUpdate() {
@@ -533,18 +606,21 @@ void NUVE::System::checkPartialUpdate() {
                     isUpdateAvailable = latestVersionPatch > appVersionPatch;
             }
             setUpdateAvailable(isUpdateAvailable);
+
+        } else {
+            TRACE << "The version format is incorrect (major.minor.patch)" << mLatestVersion;
         }
 
     }
 
     auto latestVersionObj = updateJsonObject.value(mLatestVersion).toObject();
-    mLatestVersionDate = latestVersionObj.value("releaseDate").toString();
-    mLatestVersionChangeLog = latestVersionObj.value("changeLog").toString();
-    mLatestVersionAddress = latestVersionObj.value("address").toString();
-    mRequiredMemory = latestVersionObj.value("RequiredMemory").toInt();
-    mUpdateFileSize = latestVersionObj.value("CurrentFileSize").toInt();
+    mLatestVersionDate = latestVersionObj.value(m_ReleaseDate).toString();
+    mLatestVersionChangeLog = latestVersionObj.value(m_ChangeLog).toString();
+    mLatestVersionAddress = latestVersionObj.value(m_Address).toString();
+    mRequiredMemory = latestVersionObj.value(m_RequiredMemory).toInt();
+    mUpdateFileSize = latestVersionObj.value(m_CurrentFileSize).toInt();
 
-    m_expectedUpdateChecksum = QByteArray::fromHex(latestVersionObj.value("checkSum").toString().toLatin1());
+    m_expectedUpdateChecksum = QByteArray::fromHex(latestVersionObj.value(m_CheckSum).toString().toLatin1());
 
     emit latestVersionChanged();
 }
