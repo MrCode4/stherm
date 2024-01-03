@@ -63,7 +63,22 @@ BasePageView {
             Layout.alignment: Qt.AlignCenter
             Layout.preferredWidth: root.width / 1.8
             Layout.preferredHeight: 1
-            Layout.bottomMargin: 16
+            Layout.bottomMargin: 8
+        }
+
+        DayOfWeekRow {
+            Layout.alignment: Qt.AlignCenter
+            Layout.fillWidth: true
+            Layout.bottomMargin: 8
+            Layout.leftMargin: 16
+            Layout.rightMargin: Layout.leftMargin
+            locale: Qt.locale()
+            delegate: Label {
+                opacity: 0.6
+                font.bold: false
+                text: model.narrowName
+                horizontalAlignment: "AlignHCenter"
+            }
         }
 
         MonthGrid {
