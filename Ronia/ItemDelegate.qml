@@ -39,7 +39,8 @@ T.ItemDelegate {
 
         Rectangle {
             anchors.fill: parent
-            color: control.hovered ? Style.rippleColor : "transparent"
+            radius: parent.radius
+            color: control.enabled && control.hovered ? Style.rippleColor : "transparent"
         }
     }
 }
