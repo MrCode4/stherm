@@ -177,7 +177,7 @@ qt6_add_qml_module(appStherm
         View/ContactContractorPage.qml
 
         # Date and Time
-        View/DateTime/TimePage.qml
+        View/DateTime/DateTimePage.qml
         View/DateTime/SelectTimePage.qml
         View/DateTime/SelectTimezonePage.qml
         View/DateTime/SelectDatePage.qml

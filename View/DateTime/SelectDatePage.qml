@@ -24,6 +24,15 @@ BasePageView {
     topPadding: 0
     bottomPadding: 4
     title: "Select Date"
+    backButtonCallback: function() {
+        if (mainStack.currentItem === selectYearItem) {
+            mainStack.replace(mainStack.currentItem, dateLay);
+        } else {
+            if (root.StackView.view) {
+                root.StackView.view.pop();
+            }
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -37,6 +46,78 @@ BasePageView {
         onClicked: dateSelected(selectedDate)
     }
 
+    StackView {
+        id: mainStack
+        anchors.fill: parent
+        initialItem: dateLay
+    }
+
+    //! Select year grid
+    Item {
+        id: selectYearItem
+
+        GridView {
+            id: yearGrid
+
+            anchors {
+                fill: parent
+                leftMargin: 16
+                rightMargin: 16
+                topMargin: 24
+                bottomMargin: 24
+            }
+            clip: true
+            model: 101
+            boundsBehavior: Flickable.StopAtBounds
+            cellWidth: width / 5
+            cellHeight: height / 5
+            delegate: ItemDelegate {
+                width: GridView.view.cellWidth
+                height: GridView.view.cellHeight
+                highlighted: monthGrid.year === modelData + 1980
+
+                contentItem: Label {
+                    text: modelData + 1980
+                    font.bold: parent.highlighted
+                    color: parent.highlighted ? Style.background : Style.foreground
+                    horizontalAlignment: "AlignHCenter"
+                    verticalAlignment: "AlignVCenter"
+                }
+
+                Component.onCompleted: {
+                    background.color = Qt.binding(() => highlighted ? Style.foreground : "transparent")
+                }
+
+                onClicked: {
+                    monthGrid.year = modelData + 1980;
+                    goToDateDelay.start();
+                }
+            }
+
+            Component.onCompleted: {
+                var yearIndx = selectedDate.getFullYear() - 1980;
+                yearGrid.positionViewAtIndex(monthGrid.year - 1980, GridView.Center);
+            }
+
+            Connections {
+                target: monthGrid
+
+                function onYearChanged()
+                {
+                    yearGrid.positionViewAtIndex(monthGrid.year - 1980, GridView.Contain);
+                }
+            }
+        }
+
+        Timer {
+            id: goToDateDelay
+            interval: 300
+            running: false
+            onTriggered: mainStack.replace(mainStack.currentItem, dateLay);
+        }
+    }
+
+    //! Select date
     ColumnLayout {
         id: dateLay
 
@@ -48,15 +129,45 @@ BasePageView {
             "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
         ]
 
-        anchors.fill: parent
+        visible: false
         spacing: 8
 
         //! Selected Date
-        Label {
+        RowLayout {
             Layout.alignment: Qt.AlignCenter
-            Layout.bottomMargin: 8
-            font.bold: true
-            text: selectedDate.toLocaleDateString(locale, "ddd, MMM d yyyy")
+            Layout.preferredHeight: Style.touchTarget * 0.8
+
+            spacing: 12
+
+            Label {
+                font.bold: true
+                text: selectedDate.toLocaleDateString(locale, "ddd, MMM d yyyy")
+
+                TapHandler {
+                    onTapped: {
+                        //! Show a grid for selecting year
+                        mainStack.replace(mainStack.currentItem, selectYearItem);
+                    }
+                }
+            }
+
+            ToolButton {
+                id: goToTodayBtn
+                Layout.fillHeight: true
+                Layout.preferredWidth: height
+
+                visible: {
+                    var today = new Date;
+                    return monthGrid.year !== today.getFullYear() && monthGrid.month !== today.getMonth();
+                }
+                contentItem: RoniaTextIcon {
+                    text: FAIcons.arrowRight
+                }
+
+                onClicked: {
+                    goToToday();
+                }
+            }
         }
 
         Rectangle {
@@ -142,5 +253,14 @@ BasePageView {
                 }
             }
         }
+    }
+
+    function goToToday()
+    {
+        var now = new Date();
+        monthGrid.year = now.getFullYear();
+        monthGrid.month = now.getMonth();
+
+        selectedDate = now;
     }
 }
