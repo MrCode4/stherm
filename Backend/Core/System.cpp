@@ -137,6 +137,14 @@ void  NUVE::System::mountUpdateDirectory()
 
 }
 
+void NUVE::System::setUpdateAvailable(bool updateAvailable) {
+    if (mUpdateAvailable == updateAvailable)
+        return;
+
+    mUpdateAvailable = updateAvailable;
+    emit updateAvailableChanged();
+}
+
 std::string NUVE::System::getSN(cpuid_t accessUid)
 {
     QJsonArray paramsArray;
@@ -210,6 +218,10 @@ QString NUVE::System::lastInstalledUpdateDate()
 
 int NUVE::System::partialUpdateProgress() {
     return mPartialUpdateProgress;
+}
+
+bool NUVE::System::updateAvailable() {
+    return mUpdateAvailable;
 }
 
 void NUVE::System::setPartialUpdateProgress(int progress) {
@@ -421,6 +433,9 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
         if (netReply->operation() == QNetworkAccessManager::GetOperation) {
 
             if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
+                qWarning() << "Unable to download update.json file: " << netReply->errorString();
+                emit alert("Unable to download update.json file: " + netReply->errorString());
+
                 getUpdateInformation();
 
             } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
@@ -493,6 +508,8 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 file.write(data);
 
                 file.close();
+            } else {
+                emit alert("The update.json file is corrupted, Contact administrator!");
             }
 
             // Check the last saved update.json file
@@ -515,7 +532,7 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
         if (latestVersion.split(".").count() == 3) {
 
             if (!updateJson.contains(latestVersion)) {
-                TRACE << "The 'LatestVersion' value (" << latestVersion << ") is not found or has invalid format in the Update file (server side).";
+                qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is not found or has invalid format in the Update file (server side).";
                 return false;
             }
 
@@ -529,34 +546,34 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
 
             auto latestVersionObj = updateJson.value(latestVersion).toObject();
             if (latestVersionObj.isEmpty()) {
-                TRACE << "The 'LatestVersion' value (" << latestVersion << ") is empty in the Update file (server side).";
+                qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is empty in the Update file (server side).";
                 return false;
             }
 
             foreach (auto key, jsonKeys) {
                 auto value = latestVersionObj.value(key);
                 if (value.isUndefined() || value.type() == QJsonValue::Null) {
-                    TRACE << "The key (" << key << ") not found in the 'LatestVersion' value (" << latestVersion << ") (server side).";
+                    qWarning() << "The key (" << key << ") not found in the 'LatestVersion' value (" << latestVersion << ") (server side).";
                     return false;
                 }
 
                 if (value.isString() && value.toString().isEmpty()) {
-                    TRACE << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
+                    qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
                     return false;
 
                 } else if (value.isDouble() && (value.toDouble(-100) == -100)) {
-                    TRACE << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
+                    qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
                     return false;
                 }
             }
 
         } else {
-            TRACE << "The 'LatestVersion' value (" << latestVersion << ") is incorrect in the Update file (server side).";
+            qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is incorrect in the Update file (server side).";
             return false;
         }
 
     } else {
-        TRACE << "The 'LatestVersion' key is not present in the Update file (server side).";
+        qWarning() << "The 'LatestVersion' key is not present in the Update file (server side).";
         return false;
     }
 
@@ -608,7 +625,7 @@ void NUVE::System::checkPartialUpdate() {
             setUpdateAvailable(isUpdateAvailable);
 
         } else {
-            TRACE << "The version format is incorrect (major.minor.patch)" << mLatestVersion;
+            qWarning() << "The version format is incorrect (major.minor.patch)" << mLatestVersion;
         }
 
     }

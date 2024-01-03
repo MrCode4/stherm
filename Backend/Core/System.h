@@ -75,9 +75,7 @@ public:
 
     int partialUpdateProgress();
 
-    bool updateAvailable() {
-        return mUpdateAvailable;
-    }
+    bool updateAvailable();
 
     void setPartialUpdateProgress(int progress);
 
@@ -104,6 +102,8 @@ signals:
 
     void error(QString err);
 
+    void alert(QString msg);
+
     //! Emit when need the system move to updating/restarting mode
     void systemUpdating();
 
@@ -121,13 +121,7 @@ private:
     //! Mount update directory
     void mountUpdateDirectory();
 
-    void setUpdateAvailable(bool updateAvailable) {
-        if (mUpdateAvailable == updateAvailable)
-            return;
-
-        mUpdateAvailable = updateAvailable;
-        emit updateAvailableChanged();
-    }
+    void setUpdateAvailable(bool updateAvailable);
 
     //! Install update service
     void installUpdateService();
