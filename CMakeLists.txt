@@ -176,10 +176,12 @@ qt6_add_qml_module(appStherm
         View/UserGuidePage.qml
         View/ContactContractorPage.qml
 
-        # Time
-        View/Time/TimePage.qml
-        View/Time/SelectTimePage.qml
-        View/Time/SelectTimezonePage.qml
+        # Date and Time
+        View/DateTime/TimePage.qml
+        View/DateTime/SelectTimePage.qml
+        View/DateTime/SelectTimezonePage.qml
+        View/DateTime/SelectDatePage.qml
+        View/DateTime/MonthDayDelegate.qml
 
         # Test
         View/Test/TouchTestPage.qml
