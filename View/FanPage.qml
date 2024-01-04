@@ -133,11 +133,11 @@ BasePageView {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.fillWidth: true
                     Layout.rightMargin: 24 * scaleFactor
-                    majorTickCount: ticksCount / 5
-                    ticksCount: to / tickStepSize
+                    majorTickCount: 1
+                    ticksCount: to / 5
                     from: 0
-                    to: 50
-                    stepSize: 1
+                    to: 55
+                    stepSize: 5
                     value: fan?.workingPerHour ?? 0
                     valueChangeAnimation: true
 
