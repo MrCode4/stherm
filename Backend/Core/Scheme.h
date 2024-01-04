@@ -154,7 +154,10 @@ private:
 
     QTimer mUpdatingTimer;
 
+    //! Fan hours loop
     QTimer mFanHourTimer;
+
+    //! Fan work (minutes) per hour loop
     QTimer mFanWPHTimer;
 
     int mHumidifierId;
@@ -167,7 +170,7 @@ private:
     double mCurrentTemperature;
     double mSetPointTemperature;
 
-    // Fan work per hour (minutes per hour) Range: 0 - 60
+    //! Fan work per hour (minutes per hour) Range: 0 - 60
     int mFanWPH;
     AppSpecCPP::FanMode mFanMode;
 
