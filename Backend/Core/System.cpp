@@ -380,6 +380,7 @@ void NUVE::System::updateAndRestart()
     // but in that case, the update is available and
     // this property remains hidden.
     mLastInstalledUpdateDate = QDate::currentDate().toString("dd/MM/yyyy");
+    emit lastInstalledUpdateDateChanged();
 
     emit systemUpdating();
 
