@@ -441,7 +441,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
             if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
                 qWarning() << "Unable to download update.json file: " << netReply->errorString();
-                emit alert("Unable to download update.json file: " + netReply->errorString());
+                emit alert("Unable to download update information, contact administrator with this: " + netReply->errorString());
 
             } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
@@ -515,7 +515,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
                 file.close();
             } else {
-                emit alert("The update.json file is corrupted, Contact administrator!");
+                emit alert("he update information fetched corrupted, Contact Administrator!!");
             }
 
             // Check the last saved update.json file
@@ -533,7 +533,13 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 }
 
 bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
-    auto updateJson = QJsonDocument::fromJson(updateData).object();
+    auto updateDoc = QJsonDocument::fromJson(updateData);
+    if (updateDoc.isNull()) {
+        qWarning() << "The update information has invalid format (server side).";
+        return false
+    }
+
+    auto updateJson = updateDoc.object();
 
     if (updateJson.contains(m_LatestVersion)) {
         auto latestVersion = updateJson.value(m_LatestVersion).toString();
