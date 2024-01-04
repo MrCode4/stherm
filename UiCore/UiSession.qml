@@ -30,6 +30,11 @@ Item {
     //! Path of File to save model.
     property string           currentFile:    ""
 
+    //! Set to true when new update available,
+    //! the hasUpdateNotification just use in red notification hint in
+    //! menu and update page in menu
+    property bool             hasUpdateNotification: false
+
     //! Config file path
     readonly property string  configFilePath:   "sthermConfig.QQS.json"
 
@@ -126,6 +131,9 @@ Item {
     signal sigShowPopUp (I_PopUp popUp);
     signal sigHidePopUp (I_PopUp popUp);
     signal showHome(); //! This signal can be emitted to request going back to Home
+
+    //! Open a page from home.
+    signal openPageFromHome(item: string, properties: var);
 
     /* Signal Handlers
      * ****************************************************************************************/

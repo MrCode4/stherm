@@ -59,6 +59,10 @@ Item {
         deviceController: root.deviceController
     }
 
+    UpdateNotificationPopup {
+        id: updateNotificationPopup
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: deviceController.deviceControllerCPP.system
@@ -90,6 +94,11 @@ Item {
 
             // Inactive screen saver
             ScreenSaverManager.setInactive();
+        }
+
+        function onUpdateAvailableChanged() {
+            if (deviceController.deviceControllerCPP.system.updateAvailable)
+                updateNotificationPopup.open();
         }
     }
 }

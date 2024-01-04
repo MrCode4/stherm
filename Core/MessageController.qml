@@ -59,5 +59,10 @@ QtObject {
         function onAlert(message: string) {
             addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
         }
+
+        //! Manage update notifications (a message type)
+        function onUpdateAvailableChanged() {
+            hasUpdateNotification = deviceController.deviceControllerCPP.system.updateAvailable;
+        }
     }
 }

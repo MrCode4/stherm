@@ -16,14 +16,11 @@ ListView {
     /* Property declaration
      * ****************************************************************************************/
 
-    property I_Device appModel
+    property UiSession uiSession
 
-    property I_DeviceController deviceController
+    property I_Device appModel: uiSession.appModel
 
-    //! System, use in update notification
-    property System             system:            deviceController.deviceControllerCPP.system
-
-    property bool               hasUpdateNotification: system.updateAvailable
+    property bool               hasUpdateNotification: uiSession.hasUpdateNotification
 
     //! SystemAccessories
     property SystemAccessories  systemAccessories: appModel?.systemSetup?.systemAccessories ?? null
@@ -84,7 +81,7 @@ ListView {
         {
             "icon": FAIcons.arrowsRotate,
             "text": "System Update",
-            "hasNotification": root.hasUpdateNotification
+            "hasNotification": uiSession.hasUpdateNotification
         },
         {
             "icon": FAIcons.memoCircleInfo,
@@ -130,15 +127,6 @@ ListView {
             onPressAndHold: {
                 root.menuActivated("Test Mode");
             }
-        }
-    }
-
-    //! Manage update notifications ()
-    Connections {
-        target: system
-
-        function onUpdateAvailableChanged() {
-            root.hasUpdateNotification = system.updateAvailable;
         }
     }
 }

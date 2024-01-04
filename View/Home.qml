@@ -251,6 +251,7 @@ Control {
                 bottom: parent.bottom
             }
 
+            hasNotification: uiSession.hasUpdateNotification
             onClicked: {
                 //! Push ApplicationMenu to StackView
                 if (mainStackView) {
@@ -258,19 +259,8 @@ Control {
                                            "uiSession": Qt.binding(() => uiSession)
                                        });
 
-                    hasNotification = false;
                 }
             }
-
-            //! Manage update notifications
-              Connections {
-                  target: system
-
-                  function onUpdateAvailableChanged() {
-                      _menuButton.hasNotification = system.updateAvailable;
-
-                  }
-              }
         }
 
         //! Schedule button
@@ -296,6 +286,15 @@ Control {
         uiSession: _root.uiSession
     }
 
+
+    //! Open a page from home
+    Connections {
+        target: uiSession
+
+        function onOpenPageFromHome(item: string, properties: var) {
+            _root.StackView.view.push(item, properties);
+        }
+    }
 
     /* States and Transitions
      * ****************************************************************************************/
