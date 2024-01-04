@@ -21,6 +21,11 @@ Control {
     //! Reference to I_Device
     readonly property   I_Device    device: uiSession?.appModel ?? null
 
+    property I_DeviceController     deviceController: uiSession?.deviceController ?? null
+
+    //! System, use in update notification
+    property System                 system:           deviceController.deviceControllerCPP.system
+
     //! Whether DesiredTempratureItem is being dragged
     readonly property   bool        isDragging: state === "dragging"
 
@@ -252,8 +257,20 @@ Control {
                     mainStackView.push("qrc:/Stherm/View/ApplicationMenu.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
                                        });
+
+                    hasNotification = false;
                 }
             }
+
+            //! Manage update notifications
+              Connections {
+                  target: system
+
+                  function onUpdateAvailableChanged() {
+                      _menuButton.hasNotification = system.updateAvailable;
+
+                  }
+              }
         }
 
         //! Schedule button

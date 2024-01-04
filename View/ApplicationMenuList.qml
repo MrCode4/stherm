@@ -7,7 +7,7 @@ import Stherm
  * ApplicationMenuList is a ListView to show application settings
  * ***********************************************************************************************/
 ListView {
-    id: _root
+    id: root
 
     /* Signals
      * ****************************************************************************************/
@@ -18,8 +18,15 @@ ListView {
 
     property I_Device appModel
 
+    property I_DeviceController deviceController
+
+    //! System, use in update notification
+    property System             system:            deviceController.deviceControllerCPP.system
+
+    property bool               hasUpdateNotification: system.updateAvailable
+
     //! SystemAccessories
-    property SystemAccessories systemAccessories: appModel?.systemSetup?.systemAccessories ?? null
+    property SystemAccessories  systemAccessories: appModel?.systemSetup?.systemAccessories ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -76,7 +83,8 @@ ListView {
         },
         {
             "icon": FAIcons.arrowsRotate,
-            "text": "System Update"
+            "text": "System Update",
+            "hasNotification": root.hasUpdateNotification
         },
         {
             "icon": FAIcons.memoCircleInfo,
@@ -100,8 +108,11 @@ ListView {
 
         visible: modelData?.visible ?? true
 
+        hasNotification:  modelData?.hasNotification ?? false
+
         onClicked: {
-            menuActivated(delegateData.text);
+            root.menuActivated(delegateData.text);
+            root.hasUpdateNotification = false;
         }
 
         //! Show test mode on "Device Information" button
@@ -113,12 +124,21 @@ ListView {
             pressAndHoldInterval: 10000
 
             onClicked: {
-                menuActivated(parent.text);
+                root.menuActivated(parent.text);
             }
 
             onPressAndHold: {
-                menuActivated("Test Mode");
+                root.menuActivated("Test Mode");
             }
+        }
+    }
+
+    //! Manage update notifications ()
+    Connections {
+        target: system
+
+        function onUpdateAvailableChanged() {
+            root.hasUpdateNotification = system.updateAvailable;
         }
     }
 }

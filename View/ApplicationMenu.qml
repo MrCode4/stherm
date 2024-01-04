@@ -18,6 +18,8 @@ BasePageView {
     title: "Menu"
     contentItem: ApplicationMenuList {
         appModel: _root.appModel
+        deviceController: _root.uiSession.deviceController
+
         onMenuActivated: function(menuTitle) {
             //! Push related menu to stack
             if (_root.StackView.view) {
