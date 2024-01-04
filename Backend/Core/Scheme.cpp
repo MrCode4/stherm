@@ -48,20 +48,14 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mFanHourTimer.connect(&mFanHourTimer, &QTimer::timeout, this, [=]() {
         // Fan on when 1 hour finished and fan mode in on
         if (mFanMode == AppSpecCPP::FMOn) {
-            mRelay->updateFan();
-            mFanWPHTimer.start(mFanWPH * 60 * 1000);
-
-        } else {
-            mRelay->updateFan(false);
-            mFanHourTimer.stop();
+            fanWork(true);
         }
-
     });
 
     mFanWPHTimer.setTimerType(Qt::PreciseTimer);
     mFanWPHTimer.setSingleShot(true);
     mFanWPHTimer.connect(&mFanWPHTimer, &QTimer::timeout, this, [=]() {
-        mRelay->updateFan(false);
+        mRelay->setFanMode(false);
     });
 
     mUpdatingTimer.setTimerType(Qt::PreciseTimer);
@@ -1010,18 +1004,27 @@ void Scheme::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
     mFanWPH = newFanWPH;
 
     if (mFanMode == AppSpecCPP::FMOn && newFanWPH > 0) {
-        mRelay->updateFan();
         mFanHourTimer.start(1 * 60 * 60 * 1000);
-        mFanWPHTimer.start(newFanWPH * 60 * 1000);
+        fanWork(true);
 
     } else {
         mFanHourTimer.stop();
-        mFanWPHTimer.stop();
+        fanWork(false);
 
-        // Move to auto mode
-        mRelay->updateFan(false);
     }
 
+}
+void Scheme::fanWork(bool isOn) {
+
+    if (isOn) {
+        mFanWPHTimer.start(mFanWPH * 60 * 1000);
+
+    } else {
+        // Move to auto mode
+        mFanWPHTimer.stop();
+    }
+
+    mRelay->setFanMode(isOn);
 }
 
 void Scheme::setSystemSetup(SystemSetup *systemSetup)

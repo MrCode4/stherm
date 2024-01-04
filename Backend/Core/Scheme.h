@@ -177,4 +177,5 @@ private:
     bool stopWork;
     bool isVacation;
     bool mRestarting;
+    void fanWork(bool isOn);
 };
