@@ -36,7 +36,7 @@ public:
      * \brief isRunning Checks if internal process is running
      * \return
      */
-    bool isRunning() const;
+    bool            isRunning() const;
 
     /*!
      * \brief setAutoUpdateTime Set auto updat time off/on
@@ -65,12 +65,12 @@ public:
      */
     Q_INVOKABLE QVariantList    timezones() const;
 
-private:
     /*!
      * \brief checkAutoUpdateTime Checks if auto update time is enabled using \a\b timedatectl
      */
-    void checkAutoUpdateTime();
+    Q_INVOKABLE void            checkAutoUpdateTime();
 
+private:
     /*!
      * \brief callProcessFinished Calls \ref onfinish callback if its a callable
      * \param args

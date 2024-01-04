@@ -45,7 +45,7 @@ void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
 
     if (autoUpdate) {
         mProcess.start("systemctl", { "start" , "systemd-timesyncd" });
-    }else{
+    } else {
         mProcess.start(TDC_COMMAND, { TDC_SET_NTP, "false" });
     }
 

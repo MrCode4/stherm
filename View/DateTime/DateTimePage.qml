@@ -217,4 +217,8 @@ BasePageView {
             }
         }
     }
+
+    Component.onCompleted: {
+        DateTimeManager.checkAutoUpdateTime();
+    }
 }
