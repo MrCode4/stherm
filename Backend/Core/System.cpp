@@ -664,17 +664,20 @@ void NUVE::System::checkPartialUpdate() {
 
 void NUVE::System::rebootDevice()
 {
-        QProcess process;
-        QString command = "reboot";
+#ifdef __unix__
+    QProcess process;
+    QString command = "reboot";
 
-        process.start(command);
-        process.waitForFinished();
+    process.start(command);
+    process.waitForFinished();
 
-        int exitCode = process.exitCode();
-        QByteArray result = process.readAllStandardOutput();
-        QByteArray error = process.readAllStandardError();
+    int exitCode = process.exitCode();
+    QByteArray result = process.readAllStandardOutput();
+    QByteArray error = process.readAllStandardError();
 
-        qDebug() << "Exit Code:" << exitCode;
-        qDebug() << "Standard Output:" << result;
-        qDebug() << "Standard Error:" << error;
+    qDebug() << "Exit Code:" << exitCode;
+    qDebug() << "Standard Output:" << result;
+    qDebug() << "Standard Error:" << error;
+
+    #endif
 }

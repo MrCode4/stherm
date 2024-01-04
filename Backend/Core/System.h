@@ -40,7 +40,7 @@ public:
      * ****************************************************************************************/
 
     //! Reboot device
-    void rebootDevice();
+    Q_INVOKABLE void rebootDevice();
 
     //! Get technic's url and serial number
     void getQR(QString accessUid) { getSN(accessUid.toStdString()); }

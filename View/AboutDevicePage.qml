@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Templates as Template
 
 import Ronia
 import Stherm
@@ -12,6 +13,10 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    property I_DeviceController     deviceController: uiSession?.deviceController ?? null
+
+    //! System, use in update notification
+    property System                 system:           deviceController.deviceControllerCPP.system
 
     /* Object properties
      * ****************************************************************************************/
@@ -23,6 +28,12 @@ BasePageView {
      * ****************************************************************************************/
     ListView {
         id: _infoLv
+
+        anchors.top: parent.top
+        anchors.bottom: rebootDevice.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottomMargin: 5
 
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
@@ -88,6 +99,29 @@ BasePageView {
                 }
             }
         }
+
+    }
+
+    ButtonInverted {
+        id: rebootDevice
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+        leftPadding: 8
+        rightPadding: 8
+        text: "Restart Device"
+
+        onClicked: {
+           rebootPopup.open();
+        }
+    }
+
+    //! Reboot popup with count down timer to send reboot request to system
+    RebootDevicePopup {
+        id: rebootPopup
+        system: root.system
+        anchors.centerIn: Template.Overlay.overlay
     }
 
     FontMetrics {
