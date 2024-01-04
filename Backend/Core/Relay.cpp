@@ -399,7 +399,7 @@ void Relay::setOb_on_state(const AppSpecCPP::SystemMode &newOb_on_state)
 
 void Relay::updateFan(bool on)
 {
-    // Fan is on when fan set to on with wph or one of y1 or w1 is one
+    // The fan operates if it's set to 'on' using either WPH or if either Y1 or W1 is activated.
     if (on || mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON) {
         fanOn();
 
