@@ -33,6 +33,9 @@ public:
 
     System(QObject *parent = nullptr);
 
+    ~System();
+
+
     /* Public Functions (Setters and getters)
      * ****************************************************************************************/
 

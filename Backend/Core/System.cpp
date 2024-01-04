@@ -71,6 +71,12 @@ NUVE::System::System(QObject *parent) :
     });
 
 }
+
+NUVE::System::~System()
+{
+    delete mNetManager;
+}
+
 void  NUVE::System::installUpdateService()
 {
 #ifdef __unix__
@@ -437,14 +443,13 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 qWarning() << "Unable to download update.json file: " << netReply->errorString();
                 emit alert("Unable to download update.json file: " + netReply->errorString());
 
-                getUpdateInformation();
-
             } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
                 emit error("Download error: " + netReply->errorString());
             }
         }
 
+        netReply->deleteLater();
         return;
     }
 
@@ -502,7 +507,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 if (!file.open(QIODevice::WriteOnly)) {
                     TRACE << "Unable to open file for writing";
                     emit error("Unable to open file for writing");
-                    return;
+                    break;;
                 }
                 TRACE << data;
 
@@ -523,6 +528,8 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
         break;
     }
+
+    netReply->deleteLater();
 }
 
 bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
