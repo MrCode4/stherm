@@ -141,7 +141,7 @@ private:
     QString mUpdateFilePath;
 
     QString mLatestVersionAddress;
-    QString mLatestVersion;
+    QString mLatestVersionKey;
     QString mLatestVersionDate;
     QString mLatestVersionChangeLog;
     QString mLastInstalledUpdateDate;

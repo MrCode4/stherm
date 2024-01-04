@@ -210,7 +210,7 @@ QString NUVE::System::latestVersionChangeLog() {
 }
 
 QString NUVE::System::latestVersion() {
-    return mLatestVersion;
+    return mLatestVersionKey;
 }
 
 QString NUVE::System::remainingDownloadTime() {
@@ -608,13 +608,13 @@ void NUVE::System::checkPartialUpdate() {
     file .close();
 
     // Update version information
-    mLatestVersion = updateJsonObject.value("LatestVersion").toString();
+    mLatestVersionKey = updateJsonObject.value("LatestVersion").toString();
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
-    if (mLatestVersion != currentVersion) {
+    if (mLatestVersionKey != currentVersion) {
         auto appVersionList = currentVersion.split(".");
-        auto latestVersion = mLatestVersion.split(".");
+        auto latestVersion = mLatestVersionKey.split(".");
 
         if (appVersionList.count() > 2 && latestVersion.count() > 2) {
 
@@ -639,12 +639,12 @@ void NUVE::System::checkPartialUpdate() {
             setUpdateAvailable(isUpdateAvailable);
 
         } else {
-            qWarning() << "The version format is incorrect (major.minor.patch)" << mLatestVersion;
+            qWarning() << "The version format is incorrect (major.minor.patch)" << mLatestVersionKey;
         }
 
     }
 
-    auto latestVersionObj = updateJsonObject.value(mLatestVersion).toObject();
+    auto latestVersionObj = updateJsonObject.value(mLatestVersionKey).toObject();
     mLatestVersionDate = latestVersionObj.value(m_ReleaseDate).toString();
     mLatestVersionChangeLog = latestVersionObj.value(m_ChangeLog).toString();
     mLatestVersionAddress = latestVersionObj.value(m_Address).toString();
