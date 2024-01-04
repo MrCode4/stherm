@@ -36,6 +36,8 @@ const QString m_RequiredMemory  = QString("RequiredMemory");
 const QString m_CurrentFileSize = QString("CurrentFileSize");
 const QString m_CheckSum        = QString("CheckSum");
 
+const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
+
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
@@ -63,7 +65,8 @@ NUVE::System::System(QObject *parent) :
 
     mountUpdateDirectory();
 
-    mLastInstalledUpdateDate = QDate::currentDate().toString("dd/MM/yyyy");
+    QSettings setting;
+    mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
 
     QTimer::singleShot(0, this, [=]() {
         checkPartialUpdate();
@@ -386,6 +389,9 @@ void NUVE::System::updateAndRestart()
     // but in that case, the update is available and
     // this property remains hidden.
     mLastInstalledUpdateDate = QDate::currentDate().toString("dd/MM/yyyy");
+    QSettings setting;
+    setting.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
+
     emit lastInstalledUpdateDateChanged();
 
     emit systemUpdating();
