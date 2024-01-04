@@ -536,7 +536,7 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
     auto updateDoc = QJsonDocument::fromJson(updateData);
     if (updateDoc.isNull()) {
         qWarning() << "The update information has invalid format (server side).";
-        return false
+        return false;
     }
 
     auto updateJson = updateDoc.object();
