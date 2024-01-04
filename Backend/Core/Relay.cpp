@@ -397,20 +397,15 @@ void Relay::setOb_on_state(const AppSpecCPP::SystemMode &newOb_on_state)
     ob_on_state = newOb_on_state;
 }
 
-bool Relay::fanWorkTime(int fanWPH, int interval)
+void Relay::updateFan(bool on)
 {
-    if (mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON) {
+    // Fan is on when fan set to on with wph or one of y1 or w1 is one
+    if (on || mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON) {
         fanOn();
-        return true;
-    }
 
-    if (fanWPH > 0 && interval < 0 && interval >= -1 * fanWPH) {
-        fanOn();
-        return true;
+    } else {
+        fanOFF();
     }
-
-    fanOFF();
-    return false;
 }
 
 STHERM::RelayConfigs Relay::relays() {

@@ -42,7 +42,7 @@ public:
     bool emergencyHeating1();
     bool emergencyHeating2();
 
-    bool fanWorkTime(int fanWPH, int interval);
+    void updateFan(bool on = true);
 
     STHERM::RelayConfigs relays();
 
@@ -61,6 +61,7 @@ public:
 
     AppSpecCPP::SystemMode getOb_on_state() const;
     void setOb_on_state(const AppSpecCPP::SystemMode &newOb_on_state);
+
 
 private:
     explicit Relay();

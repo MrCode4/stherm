@@ -154,6 +154,9 @@ private:
 
     QTimer mUpdatingTimer;
 
+    QTimer mFanHourTimer;
+    QTimer mFanWPHTimer;
+
     int mHumidifierId;
 
     //! Humidity parameters

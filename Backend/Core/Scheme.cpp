@@ -43,6 +43,26 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
 
     mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
 
+    mFanHourTimer.setTimerType(Qt::PreciseTimer);
+    mFanHourTimer.setSingleShot(false);
+    mFanHourTimer.connect(&mFanHourTimer, &QTimer::timeout, this, [=]() {
+        if (mFanMode == AppSpecCPP::FMOn) {
+            mRelay->updateFan();
+            mFanWPHTimer.start(mFanWPH * 60 * 1000);
+
+        } else {
+            mRelay->updateFan(false);
+            mFanHourTimer.stop();
+        }
+
+    });
+
+    mFanWPHTimer.setTimerType(Qt::PreciseTimer);
+    mFanWPHTimer.setSingleShot(true);
+    mFanWPHTimer.connect(&mFanWPHTimer, &QTimer::timeout, this, [=]() {
+        mRelay->updateFan(false);
+    });
+
     mUpdatingTimer.setTimerType(Qt::PreciseTimer);
     mUpdatingTimer.setSingleShot(true);
     mUpdatingTimer.connect(&mUpdatingTimer, &QTimer::timeout, this, [=]() {
@@ -57,6 +77,12 @@ void Scheme::stop()
 
     if (mUpdatingTimer.isActive())
         mUpdatingTimer.stop();
+
+    if (mFanHourTimer.isActive())
+        mFanHourTimer.stop();
+
+    if (mFanWPHTimer.isActive())
+        mFanWPHTimer.stop();
 
     stopWork = true;
 
@@ -979,16 +1005,15 @@ void Scheme::setVacation(const STHERM::Vacation &newVacation)
 
 void Scheme::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
 {
-    if (mFanMode != fanMode)
-        mFanMode = fanMode;
-
-    if (mFanWPH == newFanWPH)
-        return;
-
+    mFanMode = fanMode;
     mFanWPH = newFanWPH;
 
-    int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
-    mRelay->fanWorkTime(mFanWPH, fanWork);
+    if (mFanMode == AppSpecCPP::FMOn && newFanWPH > 0) {
+        mRelay->updateFan();
+        mFanHourTimer.start(1 * 60 * 60 * 1000);
+        mFanWPHTimer.start(newFanWPH * 60 * 1000);
+    }
+
 }
 
 void Scheme::setSystemSetup(SystemSetup *systemSetup)
