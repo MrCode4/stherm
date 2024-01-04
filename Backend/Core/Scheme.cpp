@@ -55,7 +55,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mFanWPHTimer.setTimerType(Qt::PreciseTimer);
     mFanWPHTimer.setSingleShot(true);
     mFanWPHTimer.connect(&mFanWPHTimer, &QTimer::timeout, this, [=]() {
-        mRelay->setFanMode(false);
+        fanWork(false);
     });
 
     mUpdatingTimer.setTimerType(Qt::PreciseTimer);
@@ -1025,6 +1025,8 @@ void Scheme::fanWork(bool isOn) {
     }
 
     mRelay->setFanMode(isOn);
+
+    sendRelays();
 }
 
 void Scheme::setSystemSetup(SystemSetup *systemSetup)
