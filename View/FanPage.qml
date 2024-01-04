@@ -31,9 +31,9 @@ BasePageView {
         onClicked: {
             //! Update Fan
             if (deviceController) {
-                var fanMode = _autoButton.checked ? AppSpec.FanMode.FMAuto :
-                                                    (_onButton.checked ? AppSpec.FanMode.FMOn :
-                                                                         AppSpec.FanMode.FMOff)
+                var fanMode = _autoButton.checked ? AppSpec.FMAuto :
+                                                    (_onButton.checked ? AppSpec.FMOn :
+                                                                         AppSpec.FMOff)
                 deviceController.updateFan(fanMode, _hourSliders.value);
             }
 
@@ -71,7 +71,7 @@ BasePageView {
                 checkable: true
                 text: "Auto"
 
-                checked: fan?.mode === AppSpec.FanMode.FMAuto
+                checked: fan?.mode === AppSpec.FMAuto
             }
 
             Button {
@@ -87,7 +87,7 @@ BasePageView {
                 checkable: true
                 text: "On"
 
-                checked: fan?.mode === AppSpec.FanMode.FMOn
+                checked: fan?.mode === AppSpec.FMOn
             }
         }
 

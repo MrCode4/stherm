@@ -55,6 +55,13 @@ public:
     };
     Q_ENUM(AccessoriesWireType)
 
+    enum FanMode {
+        FMAuto = 0,
+        FMOn,
+        FMOff
+    };
+    Q_ENUM(FanMode)
+
 signals:
 
 private:

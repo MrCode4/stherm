@@ -977,8 +977,11 @@ void Scheme::setVacation(const STHERM::Vacation &newVacation)
     mVacation = newVacation;
 }
 
-void Scheme::setFanWorkPerHour(int newFanWPH)
+void Scheme::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
 {
+    if (mFanMode != fanMode)
+        mFanMode = fanMode;
+
     if (mFanWPH == newFanWPH)
         return;
 

@@ -52,8 +52,8 @@ public:
     //! Update from setMainData.
     double currentHumidity() const;
     void setCurrentHumidity(double newCurrentHumidity);
-
-    void setFanWorkPerHour(int newFanWPH);
+    
+    void setFan(AppSpecCPP::FanMode fanMode, int newFanWPH);
 
     void setSystemSetup(SystemSetup* systemSetup);
 
@@ -166,6 +166,7 @@ private:
 
     // Fan work per hour (minutes per hour) Range: 0 - 60
     int mFanWPH;
+    AppSpecCPP::FanMode mFanMode;
 
     bool stopWork;
     bool isVacation;
