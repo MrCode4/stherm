@@ -181,9 +181,10 @@ QSRepositoryCpp {
          * ********************************************************************************/
         // Replace all qs://UUID properties by references
         for (const [objId, jsonObj] of Object.entries(jsonObjects)) {
-            QSSerializer.fromQSUrlProps(_qsObjects[objId], jsonObj, repo);
+            let obj = _qsObjects[objId];
+            if (obj)
+                QSSerializer.fromQSUrlProps(obj, jsonObj, repo);
         }
-
 
         return true;
     }

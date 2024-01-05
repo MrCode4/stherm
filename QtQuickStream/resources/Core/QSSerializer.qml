@@ -81,7 +81,7 @@ QtObject {
     function fromQSUrlProp(objProp, propValue, repo: QSRepository)
     {
         // Immediately return null, undefined, 0, etc.
-        if (propValue == null) {
+        if (propValue === null) {
             return propValue;
         }
         // Resolve QtQuickStream references
@@ -99,9 +99,13 @@ QtObject {
             }
             // Make sure arrays stay arrays
             else if (Array.isArray(objProp)) {
-                return Object.values(propValue).map(
-                    item => fromQSUrlProp(item, item, repo)
-                );
+                let mapValue = Object.values(propValue).map(
+                        item => fromQSUrlProp(item, item, repo)
+                        );
+
+                // Remove null or undefined objests from array properties
+                mapValue = mapValue.filter(item => item !== undefined && item !== null );
+                return mapValue
             }
             // Handle Dates
             else if (objProp instanceof Date) {
@@ -147,7 +151,10 @@ QtObject {
             // Skip non-interface propnames
             if (handleAsInterface && !ifacePropNames.includes(propName))    { continue; }
 
-            objectSimpleProps[propName] = getQSProp(propVal, serialType);
+            let qrProp = getQSProp(propVal, serialType);
+            if (Array.isArray(qrProp))
+                qrProp = qrProp.filter(elem => (elem !== undefined && elem !== null))
+            objectSimpleProps[propName] = qrProp;
         }
 
         // Overwrite type by interface if only interfaces requested
@@ -162,7 +169,7 @@ QtObject {
     function getQSProp(propValue, serialType = QSSerializer.SerialType.STORAGE)
     {
         // Nothing to do for null, undefined, etc.
-        if (propValue == null) { return propValue; }
+        if (propValue === null) { return propValue; }
 
         // Write non-qt objects
         if (typeof propValue === "object") {
@@ -180,6 +187,8 @@ QtObject {
             }
             // Handle arrays
             else if (Array.isArray(propValue)) {
+                propValue = propValue.filter(elem => (elem !== undefined && elem !== null));
+
                 return propValue.map(elem => getQSProp(elem, serialType));
             }
             // Recurse
