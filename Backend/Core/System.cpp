@@ -68,7 +68,7 @@ NUVE::System::System(QObject *parent) :
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
 
-    QTimer::singleShot(0, this, [=]() {
+    QTimer::singleShot(5 * 60 * 1000, this, [=]() {
         checkPartialUpdate();
         getUpdateInformation();
     });
@@ -447,7 +447,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
             if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
                 qWarning() << "Unable to download update.json file: " << netReply->errorString();
-                emit alert("Unable to download update information, contact administrator with this: " + netReply->errorString());
+                emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
 
             } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
