@@ -26,10 +26,10 @@ Control {
     property string             unit: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property real               minTemprature: Utils.convertedTemperature(18, device.setting.tempratureUnit);
+    property real               minTemprature: Utils.convertedTemperature(AppSpec.minimumTemperatureC, device.setting.tempratureUnit);
 
     //! Maximum temprature
-    property real               maxTemprature: Utils.convertedTemperature(30, device.setting.tempratureUnit);
+    property real               maxTemprature: Utils.convertedTemperature(AppSpec.maximumTemperatureC, device.setting.tempratureUnit);
 
     //! Offset of desired temp label
     property int                labelVerticalOffset: -8
