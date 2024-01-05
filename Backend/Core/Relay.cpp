@@ -131,8 +131,6 @@ bool Relay::coolingStage1()
     startTempTimer(AppSpecCPP::SystemMode::Cooling);
     current_state = AppSpecCPP::SystemMode::Cooling;
 
-    updateFan();
-
     return true;
 }
 
@@ -207,7 +205,6 @@ void Relay::setAllOff()
 
     current_state = AppSpecCPP::SystemMode::Off;
 
-    updateFan();
 }
 
 bool Relay::heatingStage0()
@@ -222,8 +219,6 @@ bool Relay::heatingStage0()
 
     startTempTimer(AppSpecCPP::SystemMode::Heating);
     current_state = AppSpecCPP::SystemMode::Heating;
-
-    updateFan();
 
     return true;
 }
@@ -241,8 +236,6 @@ bool Relay::coolingStage0()
     startTempTimer(AppSpecCPP::SystemMode::Cooling);
     current_state = AppSpecCPP::SystemMode::Cooling;
 
-    updateFan();
-
     return true;
 }
 
@@ -257,8 +250,6 @@ bool Relay::heatingStage1(bool heatpump)
 
     startTempTimer(AppSpecCPP::SystemMode::Heating);
     current_state = AppSpecCPP::SystemMode::Heating;
-
-    updateFan();
 
     return true;
 }
@@ -275,8 +266,6 @@ bool Relay::heatingStage2(bool heatpump)
     startTempTimer(AppSpecCPP::SystemMode::Heating);
     current_state = AppSpecCPP::SystemMode::Heating;
 
-    updateFan();
-
     return true;
 }
 
@@ -292,8 +281,6 @@ bool Relay::coolingStage2()
     startTempTimer(AppSpecCPP::SystemMode::Cooling);
     current_state = AppSpecCPP::SystemMode::Cooling;
 
-    updateFan();
-
     return true;
 }
 
@@ -308,8 +295,6 @@ bool Relay::heatingStage3(bool heatpump)
 
     startTempTimer(AppSpecCPP::SystemMode::Heating);
     current_state = AppSpecCPP::SystemMode::Heating;
-
-    updateFan();
 
     return true;
 }
@@ -334,8 +319,6 @@ bool Relay::coolingStage3()
     startTempTimer(AppSpecCPP::SystemMode::Cooling);
     current_state = AppSpecCPP::SystemMode::Cooling;
 
-    updateFan();
-
     return true;
 }
 
@@ -349,8 +332,6 @@ bool Relay::emergencyHeating1()
     mRelay.w3 = STHERM::RelayMode::OFF;
 
     current_state = AppSpecCPP::SystemMode::Emergency;
-
-    updateFan();
 
     return true;
 }
@@ -366,7 +347,6 @@ bool Relay::emergencyHeating2()
 
     current_state = AppSpecCPP::SystemMode::Emergency;
 
-    updateFan();
     return true;
 }
 
@@ -411,7 +391,6 @@ void Relay::setOb_on_state(const AppSpecCPP::SystemMode &newOb_on_state)
 void Relay::setFanMode(bool on)
 {
     mFanOn = on;
-    updateFan();
 }
 
 void Relay::updateFan()
@@ -427,5 +406,7 @@ void Relay::updateFan()
 
 STHERM::RelayConfigs Relay::relays() {
     updateOB();
+    updateFan();
+
     return mRelay;
 }
