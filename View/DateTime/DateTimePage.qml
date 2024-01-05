@@ -150,7 +150,13 @@ BasePageView {
 
             Switch {
                 id: dstSwh
-                checked: false
+                checked: DateTimeManager.effectDst
+
+                onToggled: {
+                    if (DateTimeManager.effectDst !== checked) {
+                        DateTimeManager.effectDst = checked;
+                    }
+                }
             }
         }
 

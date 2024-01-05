@@ -7,6 +7,8 @@
 #include <QTimeZone>
 #include <QTimer>
 
+#include "TimezonesDSTMap.h"
+
 #define TDC_COMMAND         "timedatectl"
 #define TDC_SHOW            "show"
 #define TDC_SET_NTP         "set-ntp"
@@ -27,6 +29,7 @@ class DateTimeManagerCPP : public QObject
     Q_PROPERTY(bool autoUpdateTime READ autoUpdateTime WRITE setAutoUpdateTime NOTIFY autoUpdateTimeChanged)
     Q_PROPERTY(QJSValue onfinish  MEMBER  mProcessFinishCb)
     Q_PROPERTY(QDateTime now READ now NOTIFY nowChanged)
+    Q_PROPERTY(bool effectDst READ effectDst WRITE setEffectDst NOTIFY effectDstChanged FINAL)
 
     QML_ELEMENT
 public:
@@ -47,6 +50,9 @@ public:
 
     QVariant        currentTimeZone() const;
     void            setCurrentTimeZone(const QVariant& timezoneId);
+
+    bool            effectDst() const;
+    void            setEffectDst(bool newEffectDst);
 
     bool            hasDST() const;
 
@@ -77,10 +83,17 @@ private:
      */
     void callProcessFinished(const QJSValueList& args);
 
+    /*!
+     * \brief setTimezoneTo Sets system timezone to the given
+     * \param timezone
+     */
+    void setTimezoneTo(const QTimeZone& timezone);
+
 signals:
     void autoUpdateTimeChanged();
     void currentTimeZoneChanged();
     void nowChanged();
+    void effectDstChanged();
 
 private:
     //!
@@ -113,6 +126,16 @@ private:
     //! \brief mNowTimer This timer is used to update current date time
     //!
     QTimer              mNowTimer;
+
+    //!
+    //! \brief mEffectDst Whether DST should effect or not.
+    //!
+    bool                mEffectDst;
+
+    //!
+    //! \brief mTzMap
+    //!
+    TimezonesDSTMap     mTzMap;
 };
 
 /*!

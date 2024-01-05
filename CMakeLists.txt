@@ -226,6 +226,7 @@ qt6_add_qml_module(appStherm
         Backend/ScreenSaverManager.cpp
         Backend/DateTimeManagerCPP.h
         Backend/DateTimeManagerCPP.cpp
+        Backend/TimezonesDSTMap.h
 
         # php
         Backend/PhpApi.h

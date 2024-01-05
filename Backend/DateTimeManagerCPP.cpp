@@ -4,9 +4,10 @@
 
 DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
     : QObject{parent}
-    , mAutoUpdateTime { false }
+    , mAutoUpdateTime { true }
     , mCurrentTimeZone { QTimeZone::systemTimeZone() }
     , mNow { QDateTime::currentDateTime() }
+    , mEffectDst { true }
 {
     //! Check auto-update time
     checkAutoUpdateTime();
@@ -89,6 +90,13 @@ void DateTimeManagerCPP::setCurrentTimeZone(const QVariant& timezoneId)
         return;
     }
 
+    //! If new timezone has DST and user disabled DST use map to get equivalent non-DST timezone
+    if (newCurrentTimezone.hasDaylightTime() && mTzMap.map.contains(timezoneId.toString())) {
+        if (!mEffectDst) {
+            newCurrentTimezone = QTimeZone(mTzMap.map[timezoneId.toString()].toUtf8());
+        }
+    }
+
     connect(&mProcess, &QProcess::finished, this,
         [this, newCurrentTimezone](int exitCode, QProcess::ExitStatus) {
             if (exitCode == 0) {
@@ -99,18 +107,45 @@ void DateTimeManagerCPP::setCurrentTimeZone(const QVariant& timezoneId)
             //! Call onfinished callback
             callProcessFinished({ exitCode });
         }, Qt::SingleShotConnection);
+    setTimezoneTo(newCurrentTimezone);
+}
 
-    //! Set system time zone
-    mProcess.start(TDC_COMMAND, {
-                                    TDC_SET_TIMEZONE,
-                                    newCurrentTimezone.id(),
-                                });
+bool DateTimeManagerCPP::effectDst() const
+{
+    return mEffectDst;
+}
 
+void DateTimeManagerCPP::setEffectDst(bool newEffectDst)
+{
+    if (mEffectDst == newEffectDst) {
+        return;
+    }
+
+    //! Also change timezone if needed
+    //! If DST is true, change timezone to the original one not considering DST
+    if (newEffectDst) {
+        if (mCurrentTimeZone.id() != QTimeZone::systemTimeZoneId()) {
+            setTimezoneTo(mCurrentTimeZone);
+        }
+    } else {
+        //! If mCurrentTimeZone supports DST and user disabled it, set system timezone to the
+        //! equivalent one.
+        if (hasDST()) {
+            QString nonDstTzId = mTzMap.map[mCurrentTimeZone.id()];
+            if (QTimeZone nonDstTz = QTimeZone(nonDstTzId.toUtf8());
+                nonDstTz.isValid() && nonDstTzId != QTimeZone::systemTimeZoneId()) {
+                setTimezoneTo(nonDstTz);
+            }
+        }
+    }
+
+    mEffectDst = newEffectDst;
+    emit effectDstChanged();
 }
 
 bool DateTimeManagerCPP::hasDST() const
 {
-    return mCurrentTimeZone.hasDaylightTime();
+    return mCurrentTimeZone.hasDaylightTime() && mTzMap.map.contains(mCurrentTimeZone.id());
 }
 
 QDateTime DateTimeManagerCPP::now() const
@@ -227,6 +262,15 @@ void DateTimeManagerCPP::callProcessFinished(const QJSValueList& args)
         //! Make it null.
         mProcessFinishCb = QJSValue(QJSValue::NullValue);
     }
+}
+
+void DateTimeManagerCPP::setTimezoneTo(const QTimeZone& timezone)
+{
+    //! Set system time zone
+    mProcess.start(TDC_COMMAND, {
+                                    TDC_SET_TIMEZONE,
+                                    timezone.id(),
+                                });
 }
 
 bool operator!=(const QJSValue& left, const QJSValue& right)
