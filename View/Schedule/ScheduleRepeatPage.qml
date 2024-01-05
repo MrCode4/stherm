@@ -19,13 +19,13 @@ BasePageView {
     property ScheduleCPP    schedule
 
     //! Repeats are always valid
-    readonly property bool  isValid: true
+    readonly property bool  isValid: repeats.length > 0
 
     //! Selected days for repeating
     readonly property string   repeats: {
         var rps = [];
 
-        if (_muBtn.checked) rps.push("Mo");
+        if (_moBtn.checked) rps.push("Mo");
         if (_tuBtn.checked) rps.push("Tu");
         if (_weBtn.checked) rps.push("We");
         if (_thBtn.checked) rps.push("Th");
@@ -100,7 +100,7 @@ BasePageView {
         Label { Layout.alignment: Qt.AlignCenter; text: "Sa" }
         Label { Layout.alignment: Qt.AlignCenter; text: "Su" }
 
-        RadioButton {id: _muBtn; autoExclusive: false; checked: true }
+        RadioButton {id: _moBtn; autoExclusive: false;}
         RadioButton {id: _tuBtn; autoExclusive: false }
         RadioButton {id: _weBtn; autoExclusive: false }
         RadioButton {id: _thBtn; autoExclusive: false }
@@ -111,7 +111,7 @@ BasePageView {
 
     onScheduleChanged: {
         if (schedule) {
-            _muBtn.checked = Boolean(schedule.repeats.includes("Mo"));
+            _moBtn.checked = Boolean(schedule.repeats.includes("Mo"));
             _tuBtn.checked = Boolean(schedule.repeats.includes("Tu"));
             _weBtn.checked = Boolean(schedule.repeats.includes("We"));
             _thBtn.checked = Boolean(schedule.repeats.includes("Th"));
