@@ -11,7 +11,7 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     coolStage = 1;
     heatStage = 1;
 
-    systemRunDelay = 1;
+    systemRunDelay = 5;
 
     systemMode = AppSpecCPP::SystemMode::Auto;
 
