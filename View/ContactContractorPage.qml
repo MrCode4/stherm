@@ -56,7 +56,7 @@ BasePageView {
         Image {
             Layout.alignment: Qt.AlignCenter
 
-            source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg("https://www.nuvehome.com/", Style.foreground)}`
+            source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg(appModel.contactContractor.qrURL, Style.foreground)}`
             sourceSize.height: 130
             sourceSize.width: 130
         }

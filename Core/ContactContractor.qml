@@ -15,4 +15,6 @@ QSObject {
     //! todo: use binary format
     property string iconSource:  "qrc:/Stherm/Images/nuve-icon.png"
 
+    property string qrURL:       "https://www.nuvehome.com/"
+
 }
