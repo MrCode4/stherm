@@ -172,7 +172,7 @@ enum RelayMode
 struct RelayConfigs
 {
     RelayConfigs() {
-        g     = RelayMode::NoWire;
+        g     = RelayMode::OFF;
         y1    = RelayMode::NoWire;
         y2    = RelayMode::NoWire;
         y3    = RelayMode::NoWire;
@@ -180,7 +180,7 @@ struct RelayConfigs
         w1    = RelayMode::NoWire;
         w2    = RelayMode::NoWire;
         w3    = RelayMode::NoWire;
-        o_b   = RelayMode::NoWire;
+        o_b   = RelayMode::OFF;
         acc1p = RelayMode::NoWire;
         acc1n = RelayMode::NoWire;
     }

@@ -31,9 +31,9 @@ BasePageView {
         onClicked: {
             //! Update Fan
             if (deviceController) {
-                var fanMode = _autoButton.checked ? AppSpec.FanMode.FMAuto :
-                                                    (_onButton.checked ? AppSpec.FanMode.FMOn :
-                                                                         AppSpec.FanMode.FMOff)
+                var fanMode = _autoButton.checked ? AppSpec.FMAuto :
+                                                    (_onButton.checked ? AppSpec.FMOn :
+                                                                         AppSpec.FMOff)
                 deviceController.updateFan(fanMode, _hourSliders.value);
             }
 
@@ -71,7 +71,7 @@ BasePageView {
                 checkable: true
                 text: "Auto"
 
-                checked: fan?.mode === AppSpec.FanMode.FMAuto
+                checked: fan?.mode === AppSpec.FMAuto
             }
 
             Button {
@@ -87,7 +87,7 @@ BasePageView {
                 checkable: true
                 text: "On"
 
-                checked: fan?.mode === AppSpec.FanMode.FMOn
+                checked: fan?.mode === AppSpec.FMOn
             }
         }
 
@@ -133,11 +133,11 @@ BasePageView {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.fillWidth: true
                     Layout.rightMargin: 24 * scaleFactor
-                    majorTickCount: ticksCount / 5
-                    ticksCount: to / tickStepSize
+                    majorTickCount: 1
+                    ticksCount: to / 5
                     from: 0
-                    to: 50
-                    stepSize: 1
+                    to: 55
+                    stepSize: 5
                     value: fan?.workingPerHour ?? 0
                     valueChangeAnimation: true
 

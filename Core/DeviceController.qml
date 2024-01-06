@@ -98,9 +98,12 @@ I_DeviceController {
         console.log("starting rest for updateFan :", workingPerHour)
         //! TODo required actions if any
 
-        // Updatew model
-        device.fan.mode = mode
-        device.fan.workingPerHour = workingPerHour
+
+        if (deviceControllerCPP?.setFan(mode, workingPerHour) ?? false) {
+            // Updatew model
+            device.fan.mode = mode;
+            device.fan.workingPerHour = workingPerHour;
+        }
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
