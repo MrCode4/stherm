@@ -22,4 +22,10 @@ QSObject {
 
     //! Timer format
     property int        timeFormat:             AppSpec.TimeFormat.Hour12
+
+    //! Current timezone
+    property string     currentTimezone:        ""
+
+    //! DST effect enable/disable
+    property bool       effectDst:              true
 }

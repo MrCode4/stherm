@@ -57,6 +57,13 @@ ApplicationWindow {
         else
             AppCore.defaultRepo.initRootObject("Device");
 
+        //! Load DST effect and then current timezone to DateTimeManager
+        //! NOTE: Order of setting effect DST and current timezone is important.
+        DateTimeManager.effectDst = uiSessionId.appModel.setting.effectDst;
+        if (uiSessionId.appModel.setting.currentTimezone !== "") {
+            DateTimeManager.currentTimeZone = uiSessionId.appModel.setting.currentTimezone;
+        }
+
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 30000;
     }
@@ -79,6 +86,25 @@ ApplicationWindow {
 
     /* Children
      * ****************************************************************************************/
+    //! This Connections are used to sync current timezone and dst in DateTimeManager and Setting
+    Connections {
+        target: DateTimeManager
+
+        function onEffectDstChanged()
+        {
+            if (uiSessionId.appModel.setting.effectDst !== DateTimeManager.effectDst) {
+                uiSessionId.appModel.setting.effectDst = DateTimeManager.effectDst;
+            }
+        }
+
+        function onCurrentTimeZoneChanged()
+        {
+            if (uiSessionId.appModel.setting.currentTimezone !== DateTimeManager.currentTimeZone.id) {
+               uiSessionId.appModel.setting.currentTimezone = DateTimeManager.currentTimeZone.id;
+            }
+        }
+    }
+
     UiSession {
         id: uiSessionId
         popupLayout: popUpLayoutId
