@@ -121,6 +121,7 @@ Popup {
             Layout.leftMargin: AppStyle.size / 10
             Layout.rightMargin: AppStyle.size / 10
             Layout.fillWidth: true
+            Layout.preferredHeight: _root.height / 8
         }
     }
 }
