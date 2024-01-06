@@ -197,7 +197,7 @@ QVariantList DateTimeManagerCPP::timezones() const
             if (minStr.size() < 2) minStr.prepend('0');
 
             QVariantMap timezoneMap;
-            timezoneMap["id"] = timezone.id();
+            timezoneMap["id"] = QString(timezone.id());
             timezoneMap["city"] = timezone.id().sliced(timezone.id().indexOf('/') + 1);
             timezoneMap["offset"] = "UTC" + sign + hourStr + ":" + minStr;
 
