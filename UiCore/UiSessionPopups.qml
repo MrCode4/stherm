@@ -31,12 +31,14 @@ Item {
     //!
     property alias scheduleOverlapPopup:    schOverlapPop
 
+    //!
+    property alias errorPopup:              errorPop
+
     /* Signal Handlers
      * ****************************************************************************************/
 
     //! Open a page from home.
     signal openPageFromHome(item: string);
-
 
     /* Children
      * ****************************************************************************************/
@@ -46,6 +48,10 @@ Item {
 
     ScheduleOverlapPopup {
         id: schOverlapPop
+    }
+
+    ErrorPopup {
+        id: errorPop
     }
 
     DownloadingPopup {

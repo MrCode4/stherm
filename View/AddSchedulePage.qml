@@ -249,8 +249,8 @@ BasePageView {
 
     function saveScheduleAndDisconnect()
     {
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveDisabledSchedule);
-        uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(saveEnabledSchedule);
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveEnabledSchedule);
+        uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(saveDisabledSchedule);
 
         saveSchedule();
     }

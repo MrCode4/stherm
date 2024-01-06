@@ -83,7 +83,6 @@ Popup {
 
             ToolButton {
                 Layout.rightMargin: -_popup.rightPadding + 4
-                highlighted: true
                 contentItem: RoniaTextIcon {
                     font.pointSize: Application.font.pointSize * 1.2
                     text: FAIcons.xmark
