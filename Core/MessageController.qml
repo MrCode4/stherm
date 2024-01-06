@@ -62,6 +62,7 @@ QtObject {
 
         //! Manage update notifications (a message type)
         function onUpdateAvailableChanged() {
+            // hasUpdateNotification is a UiSession property, update when updateAvailableChanged
             hasUpdateNotification = deviceController.deviceControllerCPP.system.updateAvailable;
         }
     }

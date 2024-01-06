@@ -23,9 +23,6 @@ Control {
 
     property I_DeviceController     deviceController: uiSession?.deviceController ?? null
 
-    //! System, use in update notification
-    property System                 system:           deviceController.deviceControllerCPP.system
-
     //! Whether DesiredTempratureItem is being dragged
     readonly property   bool        isDragging: state === "dragging"
 
