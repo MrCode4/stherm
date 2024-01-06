@@ -117,6 +117,8 @@ Popup {
         //! NEXGEN icon
         OrganizationIcon {
             id: _icon
+
+            appModel: _root.device
             Layout.alignment: Qt.AlignCenter
             Layout.leftMargin: AppStyle.size / 10
             Layout.rightMargin: AppStyle.size / 10

@@ -28,6 +28,8 @@ BasePageView {
         columnSpacing: 32
 
         OrganizationIcon {
+            appModel: root.appModel
+
             Layout.columnSpan: 2
             Layout.alignment: Qt.AlignHCenter
             Layout.bottomMargin: 48

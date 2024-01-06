@@ -227,6 +227,7 @@ Control {
                 bottomMargin: _menuButton.implicitHeight * 0.6
             }
 
+            appModel: _root.device
             width: parent.width * 0.5
 
             TapHandler {
