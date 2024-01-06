@@ -184,7 +184,6 @@ AppSpecCPP::SystemMode Relay::getOb_state() const
 void Relay::setOb_state(AppSpecCPP::SystemMode newOb_state)
 {
     ob_state = newOb_state;
-    updateOB();
 }
 
 /**

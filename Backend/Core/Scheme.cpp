@@ -369,7 +369,10 @@ void Scheme::OffLoop()
 void Scheme::internalCoolingLoopStage1(bool pumpHeat)
 {
     if (pumpHeat) // how the system type setup get OB Orientatin
+    {
         mRelay->setOb_state(AppSpecCPP::Cooling);
+        sendRelays();
+    }
 
     // sysDelay
     waitLoop(mSystemSetup->systemRunDelay);
@@ -636,6 +639,7 @@ void Scheme::internalPumpHeatingLoopStage1()
 {
     if (effectiveTemperature() - mCurrentTemperature >= 3) {
         mRelay->setOb_state(AppSpecCPP::Heating);
+        sendRelays();
 
         // sysDelay
         waitLoop(mSystemSetup->systemRunDelay);
@@ -778,7 +782,6 @@ void Scheme::sendRelays()
 
     // Update relays
     emit updateRelays(mRelay->relays());
-    this->msleep(5000);
 
     TRACE;
 }
@@ -1040,6 +1043,9 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
     }
 
     mSystemSetup = systemSetup;
+
+    mRelay->setOb_on_state(mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
+                                                              : AppSpecCPP::Heating);
 
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
