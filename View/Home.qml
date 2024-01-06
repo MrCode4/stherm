@@ -286,10 +286,12 @@ Control {
 
     //! Open a page from home
     Connections {
-        target: uiSession
+        target: uiSession.popUps
 
-        function onOpenPageFromHome(item: string, properties: var) {
-            _root.StackView.view.push(item, properties);
+        function onOpenPageFromHome(item: string) {
+            _root.StackView.view.push(item, {
+                                          "uiSession": Qt.binding(() => root.parent.parent)
+                                      });
         }
     }
 

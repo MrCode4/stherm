@@ -132,9 +132,6 @@ Item {
     signal sigHidePopUp (I_PopUp popUp);
     signal showHome(); //! This signal can be emitted to request going back to Home
 
-    //! Open a page from home.
-    signal openPageFromHome(item: string, properties: var);
-
     /* Signal Handlers
      * ****************************************************************************************/
 

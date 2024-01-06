@@ -524,7 +524,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
                 file.close();
             } else {
-                emit alert("he update information fetched corrupted, Contact Administrator!!");
+                emit alert("The update information fetched corrupted, Contact Administrator!");
             }
 
             // Check the last saved update.json file

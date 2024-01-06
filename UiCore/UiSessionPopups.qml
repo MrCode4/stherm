@@ -31,6 +31,13 @@ Item {
     //!
     property alias scheduleOverlapPopup:    schOverlapPop
 
+    /* Signal Handlers
+     * ****************************************************************************************/
+
+    //! Open a page from home.
+    signal openPageFromHome(item: string);
+
+
     /* Children
      * ****************************************************************************************/
     ExitConfirmPopup {
@@ -61,6 +68,10 @@ Item {
 
     UpdateNotificationPopup {
         id: updateNotificationPopup
+
+        onOpenUpdatePage: {
+            root.openPageFromHome("qrc:/Stherm/View/SystemUpdatePage.qml");
+        }
     }
 
     //! Connections to show installConfirmation popup
