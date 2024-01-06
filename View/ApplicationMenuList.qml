@@ -7,7 +7,7 @@ import Stherm
  * ApplicationMenuList is a ListView to show application settings
  * ***********************************************************************************************/
 ListView {
-    id: _root
+    id: root
 
     /* Signals
      * ****************************************************************************************/
@@ -16,10 +16,14 @@ ListView {
     /* Property declaration
      * ****************************************************************************************/
 
-    property I_Device appModel
+    property UiSession uiSession
+
+    property I_Device appModel: uiSession.appModel
+
+    property bool               hasUpdateNotification: uiSession.hasUpdateNotification
 
     //! SystemAccessories
-    property SystemAccessories systemAccessories: appModel?.systemSetup?.systemAccessories ?? null
+    property SystemAccessories  systemAccessories: appModel?.systemSetup?.systemAccessories ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -76,7 +80,8 @@ ListView {
         },
         {
             "icon": FAIcons.arrowsRotate,
-            "text": "System Update"
+            "text": "System Update",
+            "hasNotification": uiSession.hasUpdateNotification
         },
         {
             "icon": FAIcons.memoCircleInfo,
@@ -100,8 +105,11 @@ ListView {
 
         visible: modelData?.visible ?? true
 
+        hasNotification:  modelData?.hasNotification ?? false
+
         onClicked: {
-            menuActivated(delegateData.text);
+            root.menuActivated(delegateData.text);
+            root.hasUpdateNotification = false;
         }
 
         //! Show test mode on "Device Information" button
@@ -113,11 +121,11 @@ ListView {
             pressAndHoldInterval: 10000
 
             onClicked: {
-                menuActivated(parent.text);
+                root.menuActivated(parent.text);
             }
 
             onPressAndHold: {
-                menuActivated("Test Mode");
+                root.menuActivated("Test Mode");
             }
         }
     }

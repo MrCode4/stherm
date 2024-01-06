@@ -31,6 +31,13 @@ Item {
     //!
     property alias scheduleOverlapPopup:    schOverlapPop
 
+    /* Signal Handlers
+     * ****************************************************************************************/
+
+    //! Open a page from home.
+    signal openPageFromHome(item: string);
+
+
     /* Children
      * ****************************************************************************************/
     ExitConfirmPopup {
@@ -57,6 +64,14 @@ Item {
         id: installConfirmation
 
         deviceController: root.deviceController
+    }
+
+    UpdateNotificationPopup {
+        id: updateNotificationPopup
+
+        onOpenUpdatePage: {
+            root.openPageFromHome("qrc:/Stherm/View/SystemUpdatePage.qml");
+        }
     }
 
     //! Connections to show installConfirmation popup
@@ -90,6 +105,11 @@ Item {
 
             // Inactive screen saver
             ScreenSaverManager.setInactive();
+        }
+
+        function onNotifyNewUpdateAvailable() {
+            if (deviceController.deviceControllerCPP.system.updateAvailable)
+                updateNotificationPopup.open();
         }
     }
 }

@@ -210,6 +210,8 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/DownloadingPopup.qml
         UiCore/PopUps/UpdateInterruptionPopup.qml
         UiCore/PopUps/InstallConfirmationPopup.qml
+        UiCore/PopUps/RebootDevicePopup.qml
+        UiCore/PopUps/UpdateNotificationPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
@@ -349,7 +351,6 @@ qt6_add_qml_module(appStherm
 
         # Update file
         update.sh
-
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

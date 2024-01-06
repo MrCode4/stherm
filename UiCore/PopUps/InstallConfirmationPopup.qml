@@ -20,6 +20,9 @@ I_PopUp {
      * ****************************************************************************************/
 
     title: ""
+    closePolicy: restaring ? Popup.NoAutoClose : (Popup.CloseOnReleaseOutside | Popup.CloseOnEscape)
+    titleBar: !restaring
+
     onClosed: restaring = false;
 
     /* Children

@@ -21,6 +21,8 @@ Control {
     //! Reference to I_Device
     readonly property   I_Device    device: uiSession?.appModel ?? null
 
+    property I_DeviceController     deviceController: uiSession?.deviceController ?? null
+
     //! Whether DesiredTempratureItem is being dragged
     readonly property   bool        isDragging: state === "dragging"
 
@@ -247,12 +249,14 @@ Control {
                 bottom: parent.bottom
             }
 
+            hasNotification: uiSession.hasUpdateNotification
             onClicked: {
                 //! Push ApplicationMenu to StackView
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/ApplicationMenu.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
                                        });
+
                 }
             }
         }
@@ -280,6 +284,18 @@ Control {
         uiSession: _root.uiSession
     }
 
+
+    //! Open a page from home
+    Connections {
+        target: uiSession.popUps
+
+        function onOpenPageFromHome(item: string) {
+            if (mainStackView) 
+                mainStackView.view.push(item, {
+                                          "uiSession": Qt.binding(() => uiSession)
+                                      });
+        }
+    }
 
     /* States and Transitions
      * ****************************************************************************************/

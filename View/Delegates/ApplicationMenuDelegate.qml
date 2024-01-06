@@ -8,10 +8,13 @@ import Stherm
  * ApplicationMenuDelegate is a simple delegate for ApplicationMenuList
  * ***********************************************************************************************/
 ItemDelegate {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Use to show a red info circle on menu
+    property bool hasNotification: false
+
     //! Holds delegate data
     property var    delegateData
 
@@ -27,11 +30,26 @@ ItemDelegate {
         RoniaTextIcon {
             Layout.preferredWidth: implicitHeight * 1.5
             text: delegateData?.icon ?? ""
+
+            //! Notification rectangle
+            Rectangle {
+                id: notificationRect
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.topMargin: -10
+
+                visible: root.hasNotification
+                width: 5
+                height: 5
+                radius: 2
+                color: "red"
+            }
         }
 
         Label {
             Layout.fillWidth: true
-            text: _root.text
+            text: root.text
             verticalAlignment: "AlignVCenter"
         }
     }
