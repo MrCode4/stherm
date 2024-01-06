@@ -154,7 +154,6 @@ Popup {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.horizontalCenterOffset: (parent.contentWidth + width) / 2 + 6
                     anchors.top: parent.top
-                    anchors.topMargin: -10
 
                     opacity: 0.6
                     font.pointSize: Qt.application.font.pointSize * 1.2
