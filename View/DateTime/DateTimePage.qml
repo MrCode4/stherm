@@ -9,16 +9,16 @@ import Stherm
  * ***********************************************************************************************/
 BasePageView {
     id: root
-    
+
     /* Property declaration
      * ****************************************************************************************/
     //! Setting
     property Setting    setting: uiSession?.appModel?.setting ?? null
-    
+
     /* Object properties
      * ****************************************************************************************/
     title: "Date & Time"
-    
+
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
@@ -53,11 +53,10 @@ BasePageView {
 
         ItemDelegate {
             Layout.fillWidth: true
+            enabled: !autoTimeSwh.checked
             rightPadding: 4
             leftPadding: 8
             contentItem: RowLayout {
-                enabled: !autoTimeSwh.checked
-
                 Label {
                     Layout.fillWidth: true
                     text: "Time"
@@ -82,11 +81,10 @@ BasePageView {
 
         ItemDelegate {
             Layout.fillWidth: true
+            enabled: !autoTimeSwh.checked
             rightPadding: 4
             leftPadding: 8
             contentItem: RowLayout {
-                enabled: !autoTimeSwh.checked
-
                 Label {
                     Layout.fillWidth: true
                     text: "Date"
