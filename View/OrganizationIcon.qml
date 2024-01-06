@@ -10,10 +10,15 @@ import Stherm
 Image {
     id: _root
 
+    /* Property declaration
+     * ****************************************************************************************/
+    //! Reference to I_Device
+    property I_Device appModel
+
     /* Object properties
      * ****************************************************************************************/
     fillMode: Image.PreserveAspectFit
-    source: "qrc:/Stherm/Images/nuve-icon.png"
+    source: appModel.contactContractor.iconSource
     sourceSize.width: width
     cache: true
 }

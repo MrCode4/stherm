@@ -100,7 +100,7 @@ Popup {
 
             font.bold: true
             //! Nuve must be replaced with contractor name
-            text: "Nuve\nwelcomes you at home!\nHope you enjoyed your trip."
+            text: device.contactContractor.brandName + "\nwelcomes you at home!\nHope you enjoyed your trip."
             visible: vacationModePop.counter > 0
             anchors.centerIn: parent
             horizontalAlignment: Text.AlignHCenter

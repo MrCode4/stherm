@@ -28,6 +28,8 @@ BasePageView {
         columnSpacing: 32
 
         OrganizationIcon {
+            appModel: root.appModel
+
             Layout.columnSpan: 2
             Layout.alignment: Qt.AlignHCenter
             Layout.bottomMargin: 48
@@ -43,7 +45,7 @@ BasePageView {
 
         Label {
             Layout.alignment: Qt.AlignCenter
-            text: "(714) 471-7965"
+            text: appModel.contactContractor.phoneNumber
         }
 
         //! Nuve Url

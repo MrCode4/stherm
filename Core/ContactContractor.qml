@@ -1,0 +1,18 @@
+import QtQuick
+import QtQuickStream
+import Stherm
+
+/*! ***********************************************************************************************
+ * Contactc ontractor keep the contractor properties.
+ * ************************************************************************************************/
+QSObject {
+    id: root
+
+    property string brandName :  "Nuve"
+
+    property string phoneNumber: "(714) 471-7965"
+
+    //! todo: use binary format
+    property string iconSource:  "qrc:/Stherm/Images/nuve-icon.png"
+
+}

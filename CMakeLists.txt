@@ -83,6 +83,7 @@ qt6_add_qml_module(appStherm
         Core/Setting.qml
         Core/Utils.qml
         Core/DateTimeManager.qml
+        Core/ContactContractor.qml
 
 
         # Primitive Components
