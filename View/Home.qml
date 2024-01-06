@@ -289,8 +289,9 @@ Control {
         target: uiSession.popUps
 
         function onOpenPageFromHome(item: string) {
-            _root.StackView.view.push(item, {
-                                          "uiSession": Qt.binding(() => root.parent.parent)
+            if (mainStackView) 
+                mainStackView.view.push(item, {
+                                          "uiSession": Qt.binding(() => uiSession)
                                       });
         }
     }
