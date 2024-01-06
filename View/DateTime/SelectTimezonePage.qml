@@ -44,26 +44,36 @@ BasePageView {
         }
 
         ListView {
+            id: timezonesLv
             readonly property var timezones: DateTimeManager.timezones()
 
             Layout.fillHeight: true
             Layout.fillWidth: true
+            ScrollIndicator.vertical: ScrollIndicator { }
 
             clip: true
             model: searchTf.length > 0 ? timezones.filter((element, index) => element.id.toString().match(searchTf.regexp))
                                        : timezones
 
             delegate: ItemDelegate {
-                width: ListView.view.width
+                id: tzDelegate
+
+                required property var modelData
+                required property int index
+                property bool current: modelData.id === DateTimeManager.currentTimeZone.id
+
+                width: ListView.view.width - 12
                 height: Style.delegateHeight
 
                 contentItem: RowLayout {
                     ColumnLayout {
                         Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
                         spacing: 4
+
                         Label {
                             Layout.fillWidth: true
                             text: modelData.id
+                            color: tzDelegate.current ? Style.linkColor : Style.foreground
                         }
 
                         Label {
@@ -71,6 +81,7 @@ BasePageView {
                             opacity: 0.7
                             font.pointSize: root.font.pointSize * 0.8
                             text: modelData.city
+                            color: tzDelegate.current ? Style.linkColor : Style.foreground
                         }
                     }
 
@@ -79,11 +90,25 @@ BasePageView {
                         opacity: 0.7
                         font.pointSize: root.font.pointSize * 0.8
                         text: modelData.offset
+                        color: tzDelegate.current ? Style.linkColor : Style.foreground
                     }
                 }
 
                 onClicked: timezoneSelected(modelData.id)
             }
         }
+    }
+
+    Component.onCompleted: positionViewAtCurrentTimeZone()
+
+    /* Methods
+     * ****************************************************************************************/
+    function positionViewAtCurrentTimeZone()
+    {
+        var currentTzId = DateTimeManager.currentTimeZone.id.toString();
+        var currentTzIndex = timezonesLv.model.findIndex((element) => {
+                                                             return element.id === currentTzId;
+                                                         })
+        timezonesLv.positionViewAtIndex(currentTzIndex, ListView.Center);
     }
 }
