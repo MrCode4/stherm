@@ -45,7 +45,6 @@ Control {
                 countdownTmr.stop();
             } else {
                 //! Start countdown for pairing
-                countdownLbl.text = "60";
                 countdownTmr.start();
             }
         }
@@ -73,25 +72,49 @@ Control {
 
     Label {
         id: countdownLbl
+
+        property int time: 60
+
         anchors {
             verticalCenter: parent.verticalCenter
             left: parent.right
         }
         opacity: 0.
-        font {
-            pointSize: 64
-            family: "monospace"
-        }
         padding: 20
-        text: "60"
     }
 
     Timer {
         id: countdownTmr
         interval: 1000
         repeat: true
+
+        onRunningChanged: {
+            //! Disable screen saver if countdown is happening
+            if (running) {
+                ScreenSaverManager.setInactive();
+            } else {
+                ScreenSaverManager.setActive();
+            }
+        }
+
         onTriggered: {
-            countdownLbl.text = Number(countdownLbl.text) - 1;
+            if (countdownLbl.time > 0) {
+                countdownLbl.time--;
+
+                if (countdownLbl.time === 0) {
+                    //! Aborted
+                    countdownLbl.font = root.font;
+                    countdownLbl.text = "No sensor is found."
+                }
+            } else {
+                //! Stop countdown
+                stop();
+                Qt.callLater(function() {
+                    if (root.StackView.view) {
+                        root.StackView.view.pop();
+                    }
+                });
+            }
         }
     }
 
@@ -110,6 +133,12 @@ Control {
             }
             PropertyChanges {
                 target: countdownLbl
+                font {
+                    pointSize: 64
+                    family: "monospace"
+                }
+                time: 60
+                text: countdownLbl.time
                 opacity: 1.
             }
 
