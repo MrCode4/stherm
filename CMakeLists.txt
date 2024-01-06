@@ -215,7 +215,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/InstallConfirmationPopup.qml
         UiCore/PopUps/ErrorPopup.qml
         UiCore/PopUps/RebootDevicePopup.qml
-        UiCore/PopUps/UpdateNotificationPopup.qm
+        UiCore/PopUps/UpdateNotificationPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
