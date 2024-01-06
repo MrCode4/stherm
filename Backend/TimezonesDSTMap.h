@@ -3,6 +3,12 @@
 #include <QObject>
 #include <QMap>
 
+/*!
+ * \brief The TimezonesDSTMap class holds a map from timezones that has DST to non-DST timezones
+ * with same standard UTC offset. This is because it is not possible to disable DST effect for a
+ * timezone in Linux, so we need to hold a map to mimic this behaviour by setting an equivalent
+ * timezone.
+ */
 class TimezonesDSTMap
 {
 public:

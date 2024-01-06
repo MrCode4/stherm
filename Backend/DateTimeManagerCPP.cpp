@@ -90,13 +90,6 @@ void DateTimeManagerCPP::setCurrentTimeZone(const QVariant& timezoneId)
         return;
     }
 
-    //! If new timezone has DST and user disabled DST use map to get equivalent non-DST timezone
-    if (newCurrentTimezone.hasDaylightTime() && mTzMap.map.contains(timezoneId.toString())) {
-        if (!mEffectDst) {
-            newCurrentTimezone = QTimeZone(mTzMap.map[timezoneId.toString()].toUtf8());
-        }
-    }
-
     connect(&mProcess, &QProcess::finished, this,
         [this, newCurrentTimezone](int exitCode, QProcess::ExitStatus) {
             if (exitCode == 0) {
@@ -107,6 +100,14 @@ void DateTimeManagerCPP::setCurrentTimeZone(const QVariant& timezoneId)
             //! Call onfinished callback
             callProcessFinished({ exitCode });
         }, Qt::SingleShotConnection);
+
+    //! If new timezone has DST and user disabled DST use map to get equivalent non-DST timezone
+    if (newCurrentTimezone.hasDaylightTime() && mTzMap.map.contains(timezoneId.toString())) {
+        if (!mEffectDst) {
+            setTimezoneTo(QTimeZone(mTzMap.map[timezoneId.toString()].toUtf8()));
+            return;
+        }
+    }
     setTimezoneTo(newCurrentTimezone);
 }
 
