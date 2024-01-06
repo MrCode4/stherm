@@ -80,10 +80,8 @@ I_PopUp {
                 text: "Update Now"
 
                 onClicked: {
-                    // Call from uisession
-                    root.parent.parent.openPageFromHome("qrc:/Stherm/View/SystemUpdatePage.qml", {
-                                                  "uiSession": Qt.binding(() => root.parent.parent)
-                                              });
+                    openUpdatePage();
+
                     close();
                 }
             }
