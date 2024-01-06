@@ -182,7 +182,7 @@ QVariantList DateTimeManagerCPP::timezones() const
         QTimeZone timezone(tzId);
 
         if (timezone.isValid() && timezone.territory() != QLocale::AnyTerritory) {
-            int minutesOffset = timezone.offsetFromUtc(now) / 60;
+            int minutesOffset = timezone.standardTimeOffset(now) / 60;
 
             QString sign = "-";
             if (minutesOffset >= 0) {
