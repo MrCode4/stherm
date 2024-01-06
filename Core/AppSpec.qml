@@ -69,4 +69,8 @@ AppSpecCPP {
 
         return names
     }
+
+    //! Minimum and maximum temperature in the app (Celcius)
+    property real minimumTemperatureC: 18
+    property real maximumTemperatureC: 30
 }

@@ -17,6 +17,10 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    property Setting setting: appModel.setting
+
+    //! System Accessories use in humidity control.
+    property SystemAccessories systemAccessories: appModel.systemSetup.systemAccessories
 
     /* Object properties
      * ****************************************************************************************/
@@ -27,11 +31,6 @@ BasePageView {
             _root.StackView.view.pop();
         }
     }
-
-    //! System Accessories use in humidity control.
-    property SystemAccessories systemAccessories: appModel.systemSetup.systemAccessories
-
-
 
     /* Children
      * ****************************************************************************************/
@@ -45,7 +44,15 @@ BasePageView {
         onClicked: {
             //! Apply settings and go back
             if (deviceController) {
-                deviceController.setVacation(_tempSlider.first.value, _tempSlider.second.value,
+                var minValue = _tempSlider.first.value;
+                var maxValue = _tempSlider.second.value;
+
+                if (setting.tempratureUnit === AppSpec.TempratureUnit.Fah) {
+                    minValue = Utils.fahrenheitToCelsius(minValue)
+                    maxValue = Utils.fahrenheitToCelsius(maxValue)
+                }
+
+                deviceController.setVacation(minValue, maxValue,
                                              _humSlider.first.value, _humSlider.second.value);
             }
 
@@ -78,11 +85,14 @@ BasePageView {
         RangeSliderLabeled {
             id: _tempSlider
             Layout.fillWidth: true
-            from: 0
-            to: 60
-            first.value: appModel?.vacation?.temp_min ?? from
-            second.value: appModel?.vacation?.temp_max ?? to
-            labelSuffix: "\u00b0C"
+
+            from: Utils.convertedTemperature(AppSpec.minimumTemperatureC, setting.tempratureUnit)
+            to:  Utils.convertedTemperature(AppSpec.maximumTemperatureC, setting.tempratureUnit)
+
+            first.value: Utils.convertedTemperature(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit)
+            second.value: Utils.convertedTemperature(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit)
+
+            labelSuffix: "\u00b0" + (setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
         }
 
         //! Humidity
