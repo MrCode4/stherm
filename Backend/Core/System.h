@@ -63,7 +63,8 @@ public:
     Q_INVOKABLE void updateAndRestart();
 
     //! Get update information from server
-    Q_INVOKABLE void getUpdateInformation();
+    //! notifyUser: Send notification for user when new update is available
+    Q_INVOKABLE void getUpdateInformation(bool notifyUser = false);
 
     //! Getters
     QString latestVersion();
@@ -110,6 +111,9 @@ signals:
     //! Emit when need the system move to updating/restarting mode
     void systemUpdating();
 
+    //! Send when new update os available
+    void notifyNewUpdateAvailable();
+
 
 private:
 
@@ -119,7 +123,8 @@ private:
 
     //! Check new version from file.
     //! This function call automatically.
-    void checkPartialUpdate();
+    //! notifyUser: Send notification for user when new update is available
+    void checkPartialUpdate(bool notifyUser = false);
 
     //! Mount update directory
     void mountUpdateDirectory();

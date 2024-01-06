@@ -96,7 +96,7 @@ Item {
             ScreenSaverManager.setInactive();
         }
 
-        function onUpdateAvailableChanged() {
+        function onNotifyNewUpdateAvailable() {
             if (deviceController.deviceControllerCPP.system.updateAvailable)
                 updateNotificationPopup.open();
         }

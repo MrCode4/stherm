@@ -25,6 +25,8 @@ const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.
 
 const char m_isBusyDownloader[] = "isBusyDownloader";
 
+constexpr char m_notifyUserProperty[] = "notifyUser";
+
 /* ************************************************************************************************
  * Update Json Keys
  * ************************************************************************************************/
@@ -54,7 +56,7 @@ NUVE::System::System(QObject *parent) :
     mUpdateFilePath = qApp->applicationDirPath() + "/update.json";
 
     connect(&mTimer, &QTimer::timeout, this, [=]() {
-        getUpdateInformation();
+        getUpdateInformation(true);
     });
 
     mTimer.start(12 * 60 * 60 * 1000); // each 12 hours
@@ -69,8 +71,8 @@ NUVE::System::System(QObject *parent) :
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
 
     QTimer::singleShot(5 * 60 * 1000, this, [=]() {
-        checkPartialUpdate();
-        getUpdateInformation();
+        checkPartialUpdate(true);
+        getUpdateInformation(true);
     });
 
 }
@@ -187,11 +189,12 @@ void NUVE::System::getUpdate(QString softwareVersion)
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSystemUpdate);
 }
 
-void NUVE::System::getUpdateInformation() {
+void NUVE::System::getUpdateInformation(bool notifyUser) {
     // Fetch the file from web location
     QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/update.json"))));
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
+    reply->setProperty(m_notifyUserProperty, notifyUser);
 }
 
 void NUVE::System::requestJob(QString type)
@@ -525,7 +528,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             }
 
             // Check the last saved update.json file
-            checkPartialUpdate();
+            checkPartialUpdate(netReply->property(m_notifyUserProperty).toBool());
         }
 
     } break;
@@ -600,7 +603,7 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
     return true;
 }
 
-void NUVE::System::checkPartialUpdate() {
+void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
     // Save the downloaded data
     QFile file(mUpdateFilePath);
@@ -644,6 +647,9 @@ void NUVE::System::checkPartialUpdate() {
             }
             setUpdateAvailable(isUpdateAvailable);
 
+            if (notifyUser)
+                emit notifyNewUpdateAvailable();
+
         } else {
             qWarning() << "The version format is incorrect (major.minor.patch)" << mLatestVersionKey;
         }
@@ -658,6 +664,9 @@ void NUVE::System::checkPartialUpdate() {
     mUpdateFileSize = latestVersionObj.value(m_CurrentFileSize).toInt();
 
     m_expectedUpdateChecksum = QByteArray::fromHex(latestVersionObj.value(m_CheckSum).toString().toLatin1());
+
+    if (mLastInstalledUpdateDate.isEmpty())
+        mLastInstalledUpdateDate = mLatestVersionDate;
 
     emit latestVersionChanged();
 }
