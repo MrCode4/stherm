@@ -43,7 +43,7 @@ BasePageView {
                 //! Prompt user for save confirm
                 confPop.message = "Schedule is modified, do you want to save it before exiting?";
                 confPop.detailMessage = "Changes are lost if No is pressed";
-                confPop.acceptCallback = saveScheduleAndGoBack;
+                confPop.acceptCallback = saveOnBackProcedure;
                 confPop.rejected.connect(this, goBack)
 
                 confPop.open();
@@ -67,29 +67,9 @@ BasePageView {
 
         onClicked: {
             //! First check if start and end time are correct
-            var startTime = Date.fromLocaleTimeString(locale, internal.scheduleToEdit.startTime, "hh:mm AP");
-            var endTime = Date.fromLocaleTimeString(locale, internal.scheduleToEdit.endTime, "hh:mm AP");
-
-            const twoHoursToMs = 2 * 60 * 60 * 1000;
-            if (endTime.getTime() - startTime.getTime() < twoHoursToMs) {
-                //! Show an error popup
-                uiSession.popUps.errorPopup.errorMessage = "Schedule time period must be at least +2 hours";
-                uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
-            } else {
-                //! Check overlapping schedules
-                internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
-                            Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.startTime, "hh:mm AP"),
-                            Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.endTime, "hh:mm AP"),
-                            internal.scheduleToEdit.repeats,
-                            schedule // Exclude the original of this copy
-                            );
-
-                if (internal.overlappingSchedules.length > 0) {
-                    //! New schedules overlapps with at least one other Schedule
-                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(internal.saveEnabledSchedule);
-                    uiSession.popUps.scheduleOverlapPopup.rejected.connect(internal.saveDisabledSchedule);
-                    uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
-                } else {
+            internal.exitAfterSave = false; //! Do not exit after save
+            if (checkValidity()) {
+                if (!checkOverlappings()) {
                     promptSavingSchedule(saveSchedule);
                 }
             }
@@ -435,6 +415,9 @@ BasePageView {
     QtObject {
         id: internal
 
+        //! This boolean holds if it should exit this page after save happens, i.e in saveSchedule()
+        property bool exitAfterSave: false
+
         //! A copy of _root.schedule in edit mode so user can preview changes and confirm before
         //! saving changes to the original schedule.
         property ScheduleCPP scheduleToEdit: ScheduleCPP { }
@@ -509,7 +492,76 @@ BasePageView {
         }
     }
 
-    //! This method saves editing data to _root.schedule
+    /* Methods
+     * ****************************************************************************************/
+    //! This procedure is called when user clicks save on exit-while-modified prompt
+    function saveOnBackProcedure()
+    {
+        internal.exitAfterSave = true; //! Do exit after save
+
+        if (checkValidity()) {
+            if (!checkOverlappings()) {
+                saveSchedule(); //! No prompt is needed
+            }
+        }
+    }
+
+    //! Checks schedule validity. Returns true if valid and false if invalid and shows error pop if
+    //! needed
+    function checkValidity()
+    {
+        if (!internal.scheduleToEdit) {
+            return true;
+        }
+
+        var startTime = Date.fromLocaleTimeString(locale, internal.scheduleToEdit.startTime, "hh:mm AP");
+        var endTime = Date.fromLocaleTimeString(locale, internal.scheduleToEdit.endTime, "hh:mm AP");
+
+        const twoHoursToMs = 2 * 60 * 60 * 1000;
+        if (endTime.getTime() - startTime.getTime() < twoHoursToMs) {
+            //! Show an error popup
+            uiSession.popUps.errorPopup.errorMessage = "Schedule time period must be at least +2 hours.";
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
+
+            return false;
+        }
+
+        if (internal.scheduleToEdit.repeats === "") {
+            //! Show an error popup
+            uiSession.popUps.errorPopup.errorMessage = "Repeats can not be empty.";
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    //! Checks overlap. Returns false if no overlappings. If there are overlappings prompt user for
+    //! saving as enabled or disabled.
+    function checkOverlappings()
+    {
+        //! Check overlapping schedules
+        internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
+                    Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.startTime, "hh:mm AP"),
+                    Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.endTime, "hh:mm AP"),
+                    internal.scheduleToEdit.repeats,
+                    schedule // Exclude the original of this copy
+                    );
+
+        if (internal.overlappingSchedules.length > 0) {
+            //! New schedules overlapps with at least one other Schedule
+            uiSession.popUps.scheduleOverlapPopup.accepted.connect(internal.saveEnabledSchedule);
+            uiSession.popUps.scheduleOverlapPopup.rejected.connect(internal.saveDisabledSchedule);
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //! This method saves editing data to _root.schedule. All of the save senarios will end up here
     function saveSchedule()
     {
         //! Apply internal.scheduleToEdit to _root.schedule and go back
@@ -521,13 +573,10 @@ BasePageView {
         _root.schedule.endTime = internal.scheduleToEdit.endTime;
         _root.schedule.repeats = [...internal.scheduleToEdit.repeats];
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
-    }
 
-    //! Simply calls saveSchedule() and goes back by calling goBack()
-    function saveScheduleAndGoBack()
-    {
-        saveSchedule();
-        goBack();
+        if (internal.exitAfterSave) {
+            goBack();
+        }
     }
 
     //! Pop this page from StackView
