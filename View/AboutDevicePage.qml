@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Templates as Template
 
 import Ronia
 import Stherm
@@ -12,6 +13,10 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    property I_DeviceController     deviceController: uiSession?.deviceController ?? null
+
+    //! System, use in update notification
+    property System                 system:           deviceController.deviceControllerCPP.system
 
     /* Object properties
      * ****************************************************************************************/
@@ -23,6 +28,12 @@ BasePageView {
      * ****************************************************************************************/
     ListView {
         id: _infoLv
+
+        anchors.top: parent.top
+        anchors.bottom: rebootDevice.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottomMargin: 5
 
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
@@ -45,12 +56,16 @@ BasePageView {
             { "key": "E-mail",              "value": '<a href="support@nuvehome.com" style="text-decoration:none;color:#44A0FF;">support@nuvehome.com</link>' },
             { "key": "Software version",    "value": Application.version },
             { "key": "Hardware version",    "value": "01" },
+            { "key": "Restart Device",      "value": "01", "type": "button" },
         ]
         delegate: Item {
             width: ListView.view.width
             height: Style.delegateHeight * 0.8
             RowLayout {
+                id: textContent
                 spacing: 16
+
+                visible: (modelData?.type !== "button") ?? true
 
                 anchors.fill: parent
 
@@ -72,6 +87,7 @@ BasePageView {
 
             //! to start test mode Easter Egg
             MouseArea {
+                enabled: textContent.visible
                 anchors.fill: parent
                 onClicked: {
                     if (index === 1) {
@@ -87,7 +103,29 @@ BasePageView {
                     }
                 }
             }
+
+            ButtonInverted {
+                id: rebootDevice
+
+                anchors.centerIn: parent
+                visible: modelData?.type === "button"
+                leftPadding: 8
+                rightPadding: 8
+                text: modelData.key
+
+                onClicked: {
+                    rebootPopup.open();
+                }
+            }
         }
+    }
+
+
+    //! Reboot popup with count down timer to send reboot request to system
+    RebootDevicePopup {
+        id: rebootPopup
+        system: root.system
+        anchors.centerIn: Template.Overlay.overlay
     }
 
     FontMetrics {

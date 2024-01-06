@@ -527,11 +527,21 @@ bool DeviceIOController::setBacklight(QVariantList data)
                        << (m_nRfConnection && m_nRfConnection->isConnected());
 
     if (data.size() == 5) {
-        auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::SetColorRGB,
-                                                STHERM::PacketType::UARTPacket,
-                                                data);
+        if (m_nRF_queue.empty() || m_nRF_queue.back().CMD != STHERM::SIOCommand::SetColorRGB) {
+            auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::SetColorRGB,
+                                                       STHERM::PacketType::UARTPacket,
+                                                       data);
+            m_nRF_queue.push(packet);
+        } else  {
+            auto last = m_nRF_queue.back();
+            bool on = data[4].toBool();
+            last.DataArray[0] = on ? std::clamp(data[0].toInt(), 0, 255) : 0;
+            last.DataArray[1] = on ? std::clamp(data[1].toInt(), 0, 255) : 0;
+            last.DataArray[2] = on ? std::clamp(data[2].toInt(), 0, 255) : 0;
+            last.DataArray[3] = 255;
+            last.DataArray[4] = data[3].toInt();
+        }
 
-        m_nRF_queue.push(packet);
         auto result = processNRFQueue();
         TRACE_CHECK(false) << "send setBacklight request" << result;
         return result;

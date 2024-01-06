@@ -30,7 +30,7 @@ BasePageView {
     property Timer onlineTimer: Timer {
         repeat: false
         running: false
-        interval: 50
+        interval: 100
         onTriggered: applyOnline()
 
         function startTimer() {

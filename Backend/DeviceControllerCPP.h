@@ -77,6 +77,9 @@ public:
 
     Q_INVOKABLE void setOverrideMainData(QVariantMap mainDataOverride);
 
+    //! Set fan to scheme
+    Q_INVOKABLE bool setFan(AppSpecCPP::FanMode fanMode, int newFanWPH);
+
     /* Public Functions
      * Read and write data without any UART connection
      * Read and write data directly

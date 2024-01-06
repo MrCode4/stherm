@@ -83,6 +83,7 @@ qt6_add_qml_module(appStherm
         Core/Setting.qml
         Core/Utils.qml
         Core/DateTimeManager.qml
+        Core/ContactContractor.qml
 
 
         # Primitive Components
@@ -124,6 +125,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/RangeSliderLabeled.qml
         UiCore/Components/ButtonInverted.qml
         UiCore/Components/OnScheduleLabel.qml
+        UiCore/Components/RangeSlider.qml
 
 
         # Views and Widgets
@@ -210,6 +212,8 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/UpdateInterruptionPopup.qml
         UiCore/PopUps/InstallConfirmationPopup.qml
         UiCore/PopUps/ErrorPopup.qml
+        UiCore/PopUps/RebootDevicePopup.qml
+        UiCore/PopUps/UpdateNotificationPopup.qm
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
@@ -349,7 +353,6 @@ qt6_add_qml_module(appStherm
 
         # Update file
         update.sh
-
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

@@ -219,6 +219,16 @@ void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
         m_scheme->setMainData(getMainData());
 }
 
+bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
+{
+    if (m_scheme) {
+        m_scheme->setFan(fanMode, newFanWPH);
+        return true;
+    }
+
+    return false;
+}
+
 QVariantMap DeviceControllerCPP::getMainData()
 {
     auto mainData = _mainData;

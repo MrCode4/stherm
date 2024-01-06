@@ -100,7 +100,7 @@ Popup {
 
             font.bold: true
             //! Nuve must be replaced with contractor name
-            text: "Nuve\nwelcomes you at home!\nHope you enjoyed your trip."
+            text: device.contactContractor.brandName + "\nwelcomes you at home!\nHope you enjoyed your trip."
             visible: vacationModePop.counter > 0
             anchors.centerIn: parent
             horizontalAlignment: Text.AlignHCenter
@@ -148,6 +148,19 @@ Popup {
                 font.pointSize: Qt.application.font.pointSize * 2.5
                 text: Number(Utils.convertedTemperature(device?.currentTemp ?? 0, device?.setting?.tempratureUnit))
                       .toLocaleString(locale, "f", 0)
+
+                Label {
+                    id: unitLbl
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.horizontalCenterOffset: (parent.contentWidth + width) / 2 + 6
+                    anchors.top: parent.top
+
+                    opacity: 0.6
+                    font.pointSize: Qt.application.font.pointSize * 1.2
+                    font.capitalization: Font.AllUppercase
+
+                    text: `\u00b0${(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")}`
+                }
             }
 
             //! Date and time

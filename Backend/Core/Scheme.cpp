@@ -43,6 +43,21 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
 
     mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
 
+    mFanHourTimer.setTimerType(Qt::PreciseTimer);
+    mFanHourTimer.setSingleShot(false);
+    mFanHourTimer.connect(&mFanHourTimer, &QTimer::timeout, this, [=]() {
+        // Fan on when 1 hour finished and fan mode in on
+        if (mFanMode == AppSpecCPP::FMOn) {
+            fanWork(true);
+        }
+    });
+
+    mFanWPHTimer.setTimerType(Qt::PreciseTimer);
+    mFanWPHTimer.setSingleShot(true);
+    mFanWPHTimer.connect(&mFanWPHTimer, &QTimer::timeout, this, [=]() {
+        fanWork(false);
+    });
+
     mUpdatingTimer.setTimerType(Qt::PreciseTimer);
     mUpdatingTimer.setSingleShot(true);
     mUpdatingTimer.connect(&mUpdatingTimer, &QTimer::timeout, this, [=]() {
@@ -57,6 +72,12 @@ void Scheme::stop()
 
     if (mUpdatingTimer.isActive())
         mUpdatingTimer.stop();
+
+    if (mFanHourTimer.isActive())
+        mFanHourTimer.stop();
+
+    if (mFanWPHTimer.isActive())
+        mFanWPHTimer.stop();
 
     stopWork = true;
 
@@ -348,9 +369,13 @@ void Scheme::OffLoop()
 void Scheme::internalCoolingLoopStage1(bool pumpHeat)
 {
     if (pumpHeat) // how the system type setup get OB Orientatin
+    {
         mRelay->setOb_state(AppSpecCPP::Cooling);
+        sendRelays();
+    }
 
     // sysDelay
+    waitLoop(mSystemSetup->systemRunDelay);
     mRelay->coolingStage1();
 
     // 5 Sec
@@ -614,8 +639,10 @@ void Scheme::internalPumpHeatingLoopStage1()
 {
     if (effectiveTemperature() - mCurrentTemperature >= 3) {
         mRelay->setOb_state(AppSpecCPP::Heating);
+        sendRelays();
 
         // sysDelay
+        waitLoop(mSystemSetup->systemRunDelay);
         mRelay->heatingStage1(true);
 
         // 5 Sec
@@ -665,7 +692,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
     // turn on stage 2
     mRelay->heatingStage2(true);
     // 5 Sec
-    emit changeBacklight(coolingColor);
+    emit changeBacklight(heatingColor);
     sendRelays();
 
     while (!stopWork) {
@@ -700,7 +727,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
         mRelay->setAllOff();
         mRelay->heatingStage1(true);
         // 5 secs
-        emit changeBacklight(coolingColor);
+        emit changeBacklight(heatingColor);
         mTiming->s1uptime.restart();
         mTiming->s2hold = true;
         mTiming->s2Offtime.restart();
@@ -755,7 +782,6 @@ void Scheme::sendRelays()
 
     // Update relays
     emit updateRelays(mRelay->relays());
-    this->msleep(5000);
 
     TRACE;
 }
@@ -975,15 +1001,35 @@ void Scheme::setVacation(const STHERM::Vacation &newVacation)
     mVacation = newVacation;
 }
 
-void Scheme::setFanWorkPerHour(int newFanWPH)
+void Scheme::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
 {
-    if (mFanWPH == newFanWPH)
-        return;
-
+    mFanMode = fanMode;
     mFanWPH = newFanWPH;
 
-    int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
-    mRelay->fanWorkTime(mFanWPH, fanWork);
+    if (mFanMode == AppSpecCPP::FMOn && newFanWPH > 0) {
+        mFanHourTimer.start(1 * 60 * 60 * 1000);
+        fanWork(true);
+
+    } else {
+        mFanHourTimer.stop();
+        fanWork(false);
+
+    }
+
+}
+void Scheme::fanWork(bool isOn) {
+
+    if (isOn) {
+        mFanWPHTimer.start(mFanWPH * 60 * 1000);
+
+    } else {
+        // Move to auto mode
+        mFanWPHTimer.stop();
+    }
+
+    mRelay->setFanMode(isOn);
+
+    sendRelays();
 }
 
 void Scheme::setSystemSetup(SystemSetup *systemSetup)
@@ -997,6 +1043,9 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
     }
 
     mSystemSetup = systemSetup;
+
+    mRelay->setOb_on_state(mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
+                                                              : AppSpecCPP::Heating);
 
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;

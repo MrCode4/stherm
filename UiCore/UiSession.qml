@@ -30,6 +30,11 @@ Item {
     //! Path of File to save model.
     property string           currentFile:    ""
 
+    //! Set to true when new update available,
+    //! the hasUpdateNotification just use in red notification hint in
+    //! menu and update page in menu
+    property bool             hasUpdateNotification: false
+
     //! Config file path
     readonly property string  configFilePath:   "sthermConfig.QQS.json"
 
@@ -108,6 +113,7 @@ Item {
     //! MessageController instance
     property MessageController  messageController:      MessageController {
         device: appModel
+        deviceController: root.deviceController
     }
 
     //! schedulesController instance

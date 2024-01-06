@@ -7,12 +7,6 @@ AppSpecCPP {
 
     property int readInterval: 1000
 
-    enum FanMode {
-        FMAuto = 0,
-        FMOn,
-        FMOff
-    }
-
     enum DeviceType {
         DT_IMX6 = 0,
         DT_Sim,
@@ -75,4 +69,8 @@ AppSpecCPP {
 
         return names
     }
+
+    //! Minimum and maximum temperature in the app (Celcius)
+    property real minimumTemperatureC: 18
+    property real maximumTemperatureC: 30
 }

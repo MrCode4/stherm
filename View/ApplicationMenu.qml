@@ -17,7 +17,8 @@ BasePageView {
      * ****************************************************************************************/
     title: "Menu"
     contentItem: ApplicationMenuList {
-        appModel: _root.appModel
+        uiSession: _root.uiSession
+
         onMenuActivated: function(menuTitle) {
             //! Push related menu to stack
             if (_root.StackView.view) {
@@ -86,7 +87,9 @@ BasePageView {
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")
                     break;
                 case "Contact Contractor":
-                    _root.StackView.view.push("qrc:/Stherm/View/ContactContractorPage.qml");
+                    _root.StackView.view.push("qrc:/Stherm/View/ContactContractorPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
                     break;
 
                 case "System Update":

@@ -1,16 +1,18 @@
 import QtQuick
-
 import QtQuickStream
 import Stherm
 
 /*! ***********************************************************************************************
- *
+ * Contactc ontractor keep the contractor properties.
  * ************************************************************************************************/
 QSObject {
+    id: root
 
-    //! Fan Mode
-    property int mode:             AppSpec.FMAuto
+    property string brandName :  "Nuve"
 
-    //! Fan working period per each hour
-    property int workingPerHour: 30
+    property string phoneNumber: "(714) 471-7965"
+
+    //! todo: use binary format
+    property string iconSource:  "qrc:/Stherm/Images/nuve-icon.png"
+
 }

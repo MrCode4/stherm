@@ -15,6 +15,7 @@ class System : public NetworkWorker
 {
     Q_OBJECT
 
+    Q_PROPERTY(QString lastInstalledUpdateDate READ lastInstalledUpdateDate NOTIFY lastInstalledUpdateDateChanged FINAL)
     Q_PROPERTY(QString latestVersion          READ latestVersion           NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY latestVersionChanged FINAL)
@@ -32,11 +33,14 @@ public:
 
     System(QObject *parent = nullptr);
 
+    ~System();
+
+
     /* Public Functions (Setters and getters)
      * ****************************************************************************************/
 
     //! Reboot device
-    void rebootDevice();
+    Q_INVOKABLE void rebootDevice();
 
     //! Get technic's url and serial number
     void getQR(QString accessUid) { getSN(accessUid.toStdString()); }
@@ -58,6 +62,10 @@ public:
 
     Q_INVOKABLE void updateAndRestart();
 
+    //! Get update information from server
+    //! notifyUser: Send notification for user when new update is available
+    Q_INVOKABLE void getUpdateInformation(bool notifyUser = false);
+
     //! Getters
     QString latestVersion();
 
@@ -67,13 +75,14 @@ public:
 
     QString remainingDownloadTime();
 
+    QString lastInstalledUpdateDate();
+
     int partialUpdateProgress();
 
-    bool updateAvailable() {
-        return mUpdateAvailable;
-    }
+    bool updateAvailable();
 
     void setPartialUpdateProgress(int progress);
+
 
 
 protected slots:
@@ -87,6 +96,7 @@ signals:
     void partialUpdateProgressChanged();
     void remainingDownloadTimeChanged();
     void updateAvailableChanged();
+    void lastInstalledUpdateDateChanged();
 
     //! Emit when partially update is ready.
     void partialUpdateReady();
@@ -96,34 +106,36 @@ signals:
 
     void error(QString err);
 
+    void alert(QString msg);
+
     //! Emit when need the system move to updating/restarting mode
     void systemUpdating();
+
+    //! Send when new update os available
+    void notifyNewUpdateAvailable();
+
 
 private:
 
     //! verify dounloaded files and prepare to set up.
     bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true);
 
-    //! Get update information from server
-    void getUpdateInformation();
 
     //! Check new version from file.
     //! This function call automatically.
-    void checkPartialUpdate();
+    //! notifyUser: Send notification for user when new update is available
+    void checkPartialUpdate(bool notifyUser = false);
 
     //! Mount update directory
     void mountUpdateDirectory();
 
-    void setUpdateAvailable(bool updateAvailable) {
-        if (mUpdateAvailable == updateAvailable)
-            return;
-
-        mUpdateAvailable = updateAvailable;
-        emit updateAvailableChanged();
-    }
+    void setUpdateAvailable(bool updateAvailable);
 
     //! Install update service
     void installUpdateService();
+
+    //! Check and validate update json file
+    bool checkUpdateFile(const QByteArray updateData);
 
 private:
 
@@ -134,9 +146,10 @@ private:
     QString mUpdateFilePath;
 
     QString mLatestVersionAddress;
-    QString mLatestVersion;
+    QString mLatestVersionKey;
     QString mLatestVersionDate;
     QString mLatestVersionChangeLog;
+    QString mLastInstalledUpdateDate;
 
     int mRequiredMemory;
     int mUpdateFileSize;
