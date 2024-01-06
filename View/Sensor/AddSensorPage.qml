@@ -49,21 +49,6 @@ BasePageView {
 
         visible: false
 
-        //! For test: to add an arbitrary Sensor after two seconds
-        Timer {
-            interval: 2000
-            running: true
-            onTriggered: {
-                sensorPairPage.newSensor = Qt.createQmlObject(
-                            `
-                            import Stherm
-
-                            Sensor { }
-                            `, AppCore.defaultRepo);
-                sensorPairPage.sensorPaired(sensorPairPage.newSensor);
-            }
-        }
-
         onSensorPaired: function(sensor) {
             if (sensor instanceof Sensor) {
                 //! Push selecting sensor name and location pages
