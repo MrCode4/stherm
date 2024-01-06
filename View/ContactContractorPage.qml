@@ -43,7 +43,7 @@ BasePageView {
 
         Label {
             Layout.alignment: Qt.AlignCenter
-            text: "(714) 471-7965"
+            text: appModel.contactContractor.phoneNumber
         }
 
         //! Nuve Url

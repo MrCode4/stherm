@@ -66,6 +66,12 @@ QSObject {
     property SystemSetup    systemSetup:    SystemSetup {
         _qsRepo: appModel._qsRepo
     }
+
+    //! Contact Contractor
+    property ContactContractor contactContractor: ContactContractor {
+        _qsRepo: appModel._qsRepo
+    }
+
     /* Functions
      * ****************************************************************************************/
 }
