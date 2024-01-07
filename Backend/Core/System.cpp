@@ -53,7 +53,7 @@ NUVE::System::System(QObject *parent) :
 
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &System::processNetworkReply);
 
-    mUpdateFilePath = qApp->applicationDirPath() + "/update.json";
+    mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
     connect(&mTimer, &QTimer::timeout, this, [=]() {
         getUpdateInformation(true);
@@ -191,7 +191,7 @@ void NUVE::System::getUpdate(QString softwareVersion)
 
 void NUVE::System::getUpdateInformation(bool notifyUser) {
     // Fetch the file from web location
-    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/update.json"))));
+    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/updateInfo.json"))));
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
     reply->setProperty(m_notifyUserProperty, notifyUser);
@@ -449,7 +449,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
         if (netReply->operation() == QNetworkAccessManager::GetOperation) {
 
             if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
-                qWarning() << "Unable to download update.json file: " << netReply->errorString();
+                qWarning() << "Unable to download updateInfo.json file: " << netReply->errorString();
                 emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
 
             } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
@@ -527,7 +527,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 emit alert("The update information fetched corrupted, Contact Administrator!");
             }
 
-            // Check the last saved update.json file
+            // Check the last saved updateInfo.json file
             checkPartialUpdate(netReply->property(m_notifyUserProperty).toBool());
         }
 
