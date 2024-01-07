@@ -21,9 +21,6 @@ BasePageView {
         if (pageStack.depth > 1) {
             pageStack.pop();
         } else {
-            //! Adding sensor is canceled, delete created instance
-            sensorPairPage.newSensor.destroy();
-
             if (root.StackView.view) {
                 //! Then Page is inside an StackView
                 if (root.StackView.view.currentItem == root) {
