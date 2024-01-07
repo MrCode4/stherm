@@ -105,6 +105,7 @@ private:
     static qsizetype    networkCount(WifiInfoList* list);
 
 private slots:
+    void                onErrorOccured(int error); //! error is: NmcliInterface::Error
     void                onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis);
     void                onWifiConnected(const QString& bssid);
     void                onWifiDisconnected();

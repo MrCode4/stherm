@@ -12,6 +12,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , mRequestedToConnectedWifi { nullptr }
     , mDeviceIsOn { false }
 {
+    connect(mNmcliInterface, &NmcliInterface::errorOccured, this, &NetworkInterface::onErrorOccured);
     connect(mNmcliInterface, &NmcliInterface::wifiListRefereshed, this, &NetworkInterface::onWifiListRefreshed);
     connect(mNmcliInterface, &NmcliInterface::wifiConnected, this, &NetworkInterface::onWifiConnected);
     connect(mNmcliInterface, &NmcliInterface::wifiDisconnected, this, &NetworkInterface::onWifiDisconnected);
@@ -160,6 +161,22 @@ qsizetype NetworkInterface::networkCount(WifiInfoList* list)
     }
 
     return 0;
+}
+
+void NetworkInterface::onErrorOccured(int error)
+{
+    switch (error) {
+    case NmcliInterface::Error::ActivationFailed:
+        //! If there was a wifi requested to connect, forget it
+        if (mRequestedToConnectedWifi) {
+            forgetWifi(mRequestedToConnectedWifi);
+            mRequestedToConnectedWifi = nullptr;
+        }
+        break;
+    default:
+        qDebug() << Q_FUNC_INFO << __LINE__ << " nmcli Error: " << error;
+        break;
+    }
 }
 
 void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis)

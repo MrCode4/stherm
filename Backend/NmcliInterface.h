@@ -56,8 +56,8 @@ public:
         UnknownError=1,         //! Unknown or unspecified error.
         Invalid=2,              //! Invalid user input, wrong nmcli invocation.
         Timeout=3,              //! Timeout expired (see --wait option).
-        ActiveFailed=4,         //! Connection activation failed.
-        DeactiveFailed=5,       //! Connection deactivation failed.
+        ActivationFailed=4,     //! Connection activation failed.
+        DeactivationFailed=5,   //! Connection deactivation failed.
         DisconnectFailed=6,     //! Disconnecting device failed.
         ConnectDeleteFailed=7,  //! Connection deletion failed.
         NotRunning=8,           //! NetworkManager is not running.
