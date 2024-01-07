@@ -1,9 +1,10 @@
 import QtQuick
 import QtQuickStream
+
 import Stherm
 
 /*! ***********************************************************************************************
- * Contactc ontractor keep the contractor properties.
+ * Contact contractor keeps the contractor properties.
  * ************************************************************************************************/
 QSObject {
     id: root
