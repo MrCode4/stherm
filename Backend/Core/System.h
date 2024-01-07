@@ -20,6 +20,7 @@ class System : public NetworkWorker
     Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
+    Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY snReady FINAL)
 
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
 
@@ -76,6 +77,8 @@ public:
     QString remainingDownloadTime();
 
     QString lastInstalledUpdateDate();
+
+    QString serialNumber();
 
     int partialUpdateProgress();
 

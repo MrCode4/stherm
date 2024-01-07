@@ -17,4 +17,6 @@ QSObject {
 
     property string qrURL:       "https://www.nuvehome.com/"
 
+    property string technicianURL: "https://upload.nuvehvac.com/#EN/USA/technician/view/"
+
 }

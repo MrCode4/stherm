@@ -1,5 +1,6 @@
 #include "System.h"
 #include "LogHelper.h"
+#include "UtilityHelper.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -71,6 +72,15 @@ NUVE::System::System(QObject *parent) :
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
 
     QTimer::singleShot(5 * 60 * 1000, this, [=]() {
+
+        // Get serial number
+        QString cpuid = UtilityHelper::getCPUInfo();
+        getSN(cpuid.toStdString());
+
+        if (mSerialNumber.isEmpty()) {
+            emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
+        }
+
         checkPartialUpdate(true);
         getUpdateInformation(true);
     });
@@ -226,6 +236,11 @@ QString NUVE::System::remainingDownloadTime() {
 QString NUVE::System::lastInstalledUpdateDate()
 {
     return mLastInstalledUpdateDate;
+}
+
+QString NUVE::System::serialNumber()
+{
+    return mSerialNumber;
 }
 
 int NUVE::System::partialUpdateProgress() {
@@ -455,6 +470,10 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
                 emit error("Download error: " + netReply->errorString());
+
+            } else if (netReply->property(m_methodProperty).toString() == m_getSN) {
+                emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
+
             }
         }
 
