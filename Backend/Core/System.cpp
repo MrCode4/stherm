@@ -20,6 +20,7 @@ const QString m_getSystemUpdate = QString("getSystemUpdate");
 const QString m_requestJob      = QString("requestJob");
 const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
+const QString m_getContractorInfo = QString("getContractorInfo");
 
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
@@ -75,7 +76,8 @@ NUVE::System::System(QObject *parent) :
 
         // Get serial number
         QString cpuid = UtilityHelper::getCPUInfo();
-        getSN(cpuid.toStdString());
+        // getSN(cpuid.toStdString());
+        getSN("122079d4d9642249");
 
         if (mSerialNumber.isEmpty()) {
             emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
@@ -205,6 +207,19 @@ void NUVE::System::getUpdateInformation(bool notifyUser) {
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
     reply->setProperty(m_notifyUserProperty, notifyUser);
+}
+
+void NUVE::System::getContractorInfo() {
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
+        return;
+    }
+
+    QJsonArray paramsArray;
+    paramsArray.append(mSerialNumber);
+
+    QByteArray requestData = preparePacket("sync", m_getContractorInfo, paramsArray);
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getContractorInfo);
 }
 
 void NUVE::System::requestJob(QString type)
@@ -463,6 +478,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
     if (netReply->error() != QNetworkReply::NoError) {
         if (netReply->operation() == QNetworkAccessManager::GetOperation) {
 
+            qWarning() << "Network/request Error: " << netReply->errorString();
             if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
                 qWarning() << "Unable to download update.json file: " << netReply->errorString();
                 emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
@@ -513,6 +529,15 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
                 }
             }
+        } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {
+            auto resultObj = obj.value("result").toObject().value("result").toObject();
+            TRACE << resultObj;
+            QVariantMap map;
+            map.insert("phone", resultObj.value("phone").toString());
+            map.insert("name", resultObj.value("name").toString());
+            map.insert("url", resultObj.value("url").toString());
+            map.insert("techLink", resultObj.value("tech_link").toString());
+
         }
 
     } break;

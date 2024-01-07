@@ -117,6 +117,8 @@ signals:
     //! Send when new update os available
     void notifyNewUpdateAvailable();
 
+    //! Get Contractor Information
+    void getContractorInfo();
 
 private:
 
