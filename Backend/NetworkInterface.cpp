@@ -23,7 +23,6 @@ NetworkInterface::NetworkInterface(QObject *parent)
             emit deviceIsOnChanged();
         }
 
-        emit connectedWifiChanged();
         emit wifisChanged();
     });
 
@@ -248,12 +247,23 @@ void NetworkInterface::onWifiConnected(const QString& bssid)
         mConnectedWifiInfo->setProperty("connected", false);
     }
 
-    if (mRequestedToConnectedWifi) {
+    if (mRequestedToConnectedWifi && mRequestedToConnectedWifi->mBssid == bssid) {
         mRequestedToConnectedWifi->setProperty("connected", true);
 
         mConnectedWifiInfo = mRequestedToConnectedWifi;
         mRequestedToConnectedWifi = nullptr;
         emit connectedWifiChanged();
+    } else {
+        mRequestedToConnectedWifi = nullptr;
+        //! Search for a wifi with this bssid.
+        for (WifiInfo* wifi : mWifiInfos) {
+            if (wifi->mBssid == bssid) {
+                wifi->setProperty("connected", true);
+                mConnectedWifiInfo = wifi;
+                emit connectedWifiChanged();
+                return;
+            }
+        }
     }
 }
 
