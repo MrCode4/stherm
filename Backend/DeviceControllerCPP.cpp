@@ -233,7 +233,17 @@ QVariantMap DeviceControllerCPP::getMainData()
 {
     auto mainData = _mainData;
 
-    for (const auto &pair : _mainData_override.toStdMap()) {
+    auto overrideData = _mainData_override;
+#ifdef __unix__
+    QSettings override("/usr/local/bin/override.ini", QSettings::IniFormat);
+    bool hasOverride = override.value("on").toBool();
+    if (hasOverride) {
+        auto overrideTemp = override.value("temp").toDouble();
+        overrideData.insert("temperature", overrideTemp);
+    }
+#endif
+
+    for (const auto &pair : overrideData.toStdMap()) {
         mainData.insert(pair.first, pair.second);
     }
 
