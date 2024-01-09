@@ -291,7 +291,7 @@ Control {
 
         function onOpenPageFromHome(item: string) {
             if (mainStackView) 
-                mainStackView.view.push(item, {
+                mainStackView.push(item, {
                                           "uiSession": Qt.binding(() => uiSession)
                                       });
         }
