@@ -605,7 +605,7 @@ inline QString NmcliInterface::getConnectedWifiBssid() const
                               NC_ARG_DEVICE,
                               NC_ARG_WIFI,
                           });
-    pr->waitForFinished(30);
+    pr->waitForFinished(200);
     if (pr->exitStatus() == QProcess::NormalExit && !pr->exitCode()) {
         QByteArray line = pr->readLine();
         while (!line.isEmpty()) {
@@ -614,6 +614,7 @@ inline QString NmcliInterface::getConnectedWifiBssid() const
                 bssid.chop(1);
                 return bssid;
             }
+            line = pr->readLine();
         }
     } else {
         qDebug() << "nmcli: pr error: " << pr->errorString();
