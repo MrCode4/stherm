@@ -7,7 +7,7 @@
   - upload to server (Tony@fileserver.nuvehvac.com   pass: zIWIRvgwPd)
   - upload files in the server in directory: '/usr/share/nginx/html/files'
  e.g., `scp update.zip Tony@fileserver.nuvehvac.com:/usr/share/nginx/html/files/updateV0.2.0.zip`
-  - Add some information into the update.json file in the server: 
+  - Add some information into the updateInfo.json file in the server: 
 get md5 from here:  https://emn178.github.io/online-tools/md5_checksum.html
 get the file size in bytes using `ls -l`
 update the file address based on name you copied
@@ -17,12 +17,12 @@ update the latest version
  ```
 "LatestVersion" : "0.1.5",
 "0.1.5": {
-		"CurrentFileSize": 5715000, // downloadable file size
-		"RequiredMemory": 14785850, // size of files after completely decompressed.
-		"checkSum": "ffa2ad90c16ed65bb1cae39255fdadbe",
-		"address": "/files/update.v0.1.5.zip", // Relative path to upload update file
-		"releaseDate": "20/12/2023", // Relase data with proper format
-		"changeLog": "- V1.5 update added. \n - update system added"  // Change logs
+                "CurrentFileSize": 5715000, // downloadable file size
+                "RequiredMemory": 14785850, // size of files after completely decompressed.
+                "CheckSum": "ffa2ad90c16ed65bb1cae39255fdadbe",
+                "Address": "/files/update.v0.1.5.zip", // Relative path to upload update file
+                "ReleaseDate": "20/12/2023", // Relase data with proper format
+                "ChangeLog": "- V1.5 update added. \n - update system added"  // Change logs
 	}
 ```
 - Stablish an update service on the device using the following settings: extract update files from a zip-formatted file, decompress .gz files into actual files, transfer uncompressed files to the 'appStherm' directory, and initiate the 'appStherm' service.:
@@ -36,4 +36,4 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 ```
-- MAke sure the 'update.sh' exist in the app directory.
+- Make sure the 'update.sh' exist in the app directory.

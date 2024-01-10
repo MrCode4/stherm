@@ -40,11 +40,8 @@ Control {
         readonly property real shapeWidth: shapeHeight * 2
         readonly property real shapeHeight: height - pathWidth * 2
 
-        layer.enabled: true
-        layer.samples: 8
-
         Rectangle {
-            y: (parent.shapeHeight + 4)
+            y: (parent.shapeHeight + 6)
             x: (parent.width - parent.shapeWidth) / 2
             width: parent.pathWidth
             height: width
@@ -53,7 +50,7 @@ Control {
         }
 
         Rectangle {
-            y: (parent.shapeHeight + 4)
+            y: (parent.shapeHeight + 6)
             x: (parent.shapeWidth + (parent.width - parent.shapeWidth) / 2 - width)
             width: parent.pathWidth
             height: width
