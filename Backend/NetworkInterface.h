@@ -4,6 +4,8 @@
 #include <QQmlEngine>
 #include <QNetworkInterface>
 #include <QProcess>
+#include <QNetworkAccessManager>
+#include <QTimer>
 
 class NmcliInterface;
 
@@ -62,6 +64,7 @@ class NetworkInterface : public QObject
     Q_PROPERTY(bool isRunning                   READ isRunning       NOTIFY isRunningChanged)
     Q_PROPERTY(WifiInfo* connectedWifi          READ connectedWifi   NOTIFY connectedWifiChanged)
     Q_PROPERTY(bool deviceIsOn                  READ deviceIsOn      NOTIFY deviceIsOnChanged)
+    Q_PROPERTY(bool hasInternet                 READ hasInternet     NOTIFY hasInternetChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -80,6 +83,8 @@ public:
     WifiInfo*           connectedWifi() const;
 
     bool                deviceIsOn() const { return mDeviceIsOn; }
+
+    bool                hasInternet() const { return mHasInternet; }
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
     Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
@@ -109,6 +114,7 @@ private slots:
     void                onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis);
     void                onWifiConnected(const QString& bssid);
     void                onWifiDisconnected();
+    void                checkHasInternet();
 
     /* Signals
      * ****************************************************************************************/
@@ -117,6 +123,7 @@ signals:
     void                isRunningChanged();
     void                connectedWifiChanged();
     void                deviceIsOnChanged();
+    void                hasInternetChanged();
     //!
     //! \brief errorOccured This is a private signal and is emitted when an error occurs during an
     //! opration. The \a ssid param holds name of the wifi network that this error is related to and
@@ -129,12 +136,19 @@ signals:
     /* Private attributes
      * ****************************************************************************************/
 private:
-    NmcliInterface*     mNmcliInterface;
+    NmcliInterface*         mNmcliInterface;
 
-    bool                mDeviceIsOn;
+    bool                    mDeviceIsOn;
 
-    QList<WifiInfo*>    mWifiInfos;
+    bool                    mHasInternet;
 
-    WifiInfo*           mConnectedWifiInfo;
-    WifiInfo*           mRequestedToConnectedWifi;
+    QTimer                  mCheckInternetAccessTmr;
+
+    QList<WifiInfo*>        mWifiInfos;
+
+    QNetworkAccessManager   mNam;
+    bool                    mNamIsRunning;
+
+    WifiInfo*               mConnectedWifiInfo;
+    WifiInfo*               mRequestedToConnectedWifi;
 };

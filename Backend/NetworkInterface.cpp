@@ -2,8 +2,10 @@
 #include "NmcliInterface.h"
 
 #include <QNetworkInterface>
+#include <QNetworkRequest>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QNetworkReply>
 
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
@@ -11,6 +13,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , mConnectedWifiInfo { nullptr }
     , mRequestedToConnectedWifi { nullptr }
     , mDeviceIsOn { false }
+    , mHasInternet { true }
+    , mNamIsRunning { false }
 {
     connect(mNmcliInterface, &NmcliInterface::errorOccured, this, &NetworkInterface::onErrorOccured);
     connect(mNmcliInterface, &NmcliInterface::wifiListRefereshed, this, &NetworkInterface::onWifiListRefreshed);
@@ -20,10 +24,11 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(mNmcliInterface, &NmcliInterface::wifiDevicePowerChanged, this, [&](bool on) {
         if (mDeviceIsOn != on) {
             mDeviceIsOn = on;
-            emit deviceIsOnChanged();
-        }
 
-        emit wifisChanged();
+            emit deviceIsOnChanged();
+            emit wifisChanged();
+            emit connectedWifiChanged();
+        }
     });
 
     connect(mNmcliInterface, &NmcliInterface::wifiForgotten, this, [this](const QString& ssid) {
@@ -32,6 +37,41 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
             mConnectedWifiInfo = nullptr;
             emit connectedWifiChanged();
+        }
+    });
+
+    //! Connecting to QNetworkAccessManager
+    connect(&mNam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
+        bool hasInternet = reply->error() != QNetworkReply::TimeoutError
+                           && reply->error() != QNetworkReply::OperationCanceledError;
+        if (mHasInternet != hasInternet) {
+            mHasInternet = hasInternet;
+            emit hasInternetChanged();
+        }
+
+        mNamIsRunning = false;
+        reply->deleteLater();
+    });
+
+    //! Set up time for checking internet access: every 60 seconds
+    mCheckInternetAccessTmr.setInterval(30000);
+    connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
+    connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
+        if (mConnectedWifiInfo) {
+            if (!mCheckInternetAccessTmr.isActive()) {
+                mCheckInternetAccessTmr.start();
+
+                checkHasInternet();
+            }
+        } else {
+            if (mCheckInternetAccessTmr.isActive()) {
+                mCheckInternetAccessTmr.stop();
+
+                if (mHasInternet) {
+                    mHasInternet = false;
+                    emit hasInternetChanged();
+                }
+            }
         }
     });
 }
@@ -160,6 +200,20 @@ qsizetype NetworkInterface::networkCount(WifiInfoList* list)
     }
 
     return 0;
+}
+
+void NetworkInterface::checkHasInternet()
+{
+    if (!mConnectedWifiInfo) {
+        mHasInternet = false;
+        emit hasInternetChanged();
+    } else if (!mNamIsRunning) {
+        QNetworkRequest request(QUrl("http://google.com"));
+        request.setTransferTimeout(8000);
+        mNamIsRunning = true;
+
+        mNam.get(request);
+    }
 }
 
 void NetworkInterface::onErrorOccured(int error)
