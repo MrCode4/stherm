@@ -75,6 +75,11 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                     break;
+                case "WIFI":
+                    _root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                    break;
                 case "Device Information":
                     _root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
