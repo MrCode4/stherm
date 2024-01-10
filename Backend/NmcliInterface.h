@@ -165,7 +165,7 @@ private:
                                                NC_ARG_DEVICE,
                                                NC_ARG_SHOW,
                                            });
-        mMonitorProcess->waitForFinished(50);
+        mMonitorProcess->waitForFinished(500);
         if (mMonitorProcess->exitStatus() == QProcess::NormalExit
             && mMonitorProcess->exitCode() == 0) {
             //! Get wifi device name
