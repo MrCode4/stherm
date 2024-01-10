@@ -339,6 +339,7 @@ qt6_add_qml_module(appStherm
         Images/Wifi/wifi-fair.png
         Images/Wifi/wifi-weak.png
         Images/Wifi/wifi-off.png
+        Images/Wifi/wifi-no-internet.png
         Images/Locations/basement.svg
         Images/Locations/bathroom.svg
         Images/Locations/bedroom.svg
