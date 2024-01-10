@@ -9,6 +9,8 @@ DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
     , mNow { QDateTime::currentDateTime() }
     , mEffectDst { true }
 {
+    mProcess.setReadChannel(QProcess::StandardOutput);
+
     //! Check auto-update time
     checkAutoUpdateTime();
 
@@ -36,8 +38,10 @@ void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
     connect(&mProcess, &QProcess::finished, this,
         [this, autoUpdate](int exitCode, QProcess::ExitStatus) {
             if (exitCode == 0) {
-                mAutoUpdateTime = autoUpdate;
-                autoUpdateTimeChanged();
+                if (autoUpdate != mAutoUpdateTime) {
+                    mAutoUpdateTime = autoUpdate;
+                    autoUpdateTimeChanged();
+                }
             }
 
             //! Call onfinished callback
@@ -234,17 +238,20 @@ QVariantList DateTimeManagerCPP::timezones() const
 
 void DateTimeManagerCPP::checkAutoUpdateTime()
 {
-    mProcess.setReadChannel(QProcess::StandardOutput);
     mProcess.start(TDC_COMMAND, {
                                     TDC_SHOW,
                                     TDC_NTP_PROPERTY,
                                 });
     mProcess.waitForFinished(40);
 
-    if (mProcess.exitCode() == 0) {
-        mAutoUpdateTime = (mProcess.readLine() == "NTP=yes\n");
+    if (mProcess.exitStatus() == QProcess::NormalExit && mProcess.exitCode() == 0) {
+        bool autoUpdate = (mProcess.readLine() == "NTP=yes\n");
+        if (mAutoUpdateTime != autoUpdate) {
+            mAutoUpdateTime = autoUpdate;
+            autoUpdateTimeChanged();
+        }
     } else {
-        qDebug() << Q_FUNC_INFO << __LINE__ << mProcess.readLine();
+        qDebug() << "DTM: " << Q_FUNC_INFO << __LINE__ << mProcess.readLine();
     }
 }
 
