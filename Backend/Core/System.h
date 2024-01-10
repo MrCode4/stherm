@@ -67,6 +67,9 @@ public:
     //! notifyUser: Send notification for user when new update is available
     Q_INVOKABLE void getUpdateInformation(bool notifyUser = false);
 
+    //! Get Contractor Information
+    void getContractorInfo();
+
     //! Getters
     QString latestVersion();
 
@@ -116,9 +119,6 @@ signals:
 
     //! Send when new update os available
     void notifyNewUpdateAvailable();
-
-    //! Get Contractor Information
-    void getContractorInfo();
 
 private:
 

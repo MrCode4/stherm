@@ -29,6 +29,8 @@ const char m_isBusyDownloader[] = "isBusyDownloader";
 
 constexpr char m_notifyUserProperty[] = "notifyUser";
 
+const int m_timeout = 100000; // 100 seconds
+
 /* ************************************************************************************************
  * Update Json Keys
  * ************************************************************************************************/
@@ -41,6 +43,7 @@ const QString m_CurrentFileSize = QString("CurrentFileSize");
 const QString m_CheckSum        = QString("CheckSum");
 
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
+const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -71,13 +74,15 @@ NUVE::System::System(QObject *parent) :
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
+    mSerialNumber            = setting.value(m_SerialNumberSetting).toString();
+
+    QTimer::singleShot(0, this, [=]() {
+        if (!mSerialNumber.isEmpty()) {
+            emit snReady();
+        }
+    });
 
     QTimer::singleShot(5 * 60 * 1000, this, [=]() {
-
-        // Get serial number
-        QString cpuid = UtilityHelper::getCPUInfo();
-        // getSN(cpuid.toStdString());
-        getSN("122079d4d9642249");
 
         if (mSerialNumber.isEmpty()) {
             emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
@@ -183,10 +188,15 @@ std::string NUVE::System::getSN(cpuid_t accessUid)
     connect(this, &NUVE::System::snReady, &loop, &QEventLoop::quit);
     // TODO this timeout is enough for a post request?
     // TODO the timeout needs to be defined in a paramter somewhere
-    timer.start(3000);
+    timer.start(m_timeout);
     loop.exec();
 
     qDebug() << Q_FUNC_INFO << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
+
+
+    // Save the serial number in settings
+    QSettings setting;
+    setting.setValue(m_SerialNumberSetting, mSerialNumber);
 
     return mSerialNumber.toStdString();
 }
@@ -481,7 +491,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             qWarning() << "Network/request Error: " << netReply->errorString();
             if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
                 qWarning() << "Unable to download update.json file: " << netReply->errorString();
-                emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
+                // emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
 
             } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
@@ -509,7 +519,12 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             qDebug() << Q_FUNC_INFO << __LINE__ << resultArray;
 
             if (resultArray.count() > 0) {
-                mSerialNumber = resultArray.first().toString();
+                auto sn = resultArray.first().toString();
+
+                if (!mSerialNumber.isEmpty() && sn != mSerialNumber)
+                    emit alert("The serial number does not match the last one.");
+
+                mSerialNumber = sn;
                 Q_EMIT snReady();
             }
 
