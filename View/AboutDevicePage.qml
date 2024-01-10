@@ -30,7 +30,6 @@ BasePageView {
         id: _infoLv
 
         anchors.top: parent.top
-        anchors.bottom: rebootDevice.top
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottomMargin: 5

@@ -20,13 +20,18 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+
+    property string pointsState : "0,0,0,0,0,0,0,0,0"
+
+    property var points: ({})
+
     //! Next button (loads ColorTestPage)
     ToolButton {
         parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.arrowRight
         }
-
+        enabled: pointsState === "1,1,1,1,1,1,1,1,1"
         onClicked: {
             //! Load next page
             if (_root.StackView.view) {
@@ -44,13 +49,19 @@ BasePageView {
         rowSpacing: 0
 
         Repeater {
-            model: 9
+            model: pointsState.split(",")
             delegate: Rectangle {
-                Layout.preferredWidth: 40
+                Layout.preferredWidth:  40
                 Layout.preferredHeight: 40
                 Layout.alignment: Qt.AlignCenter
                 radius: width / 2
-                color: "#5700FF"
+                color: modelData === "1" ? "green" : "red"
+
+                // seems to be the latest one to be called
+                onRadiusChanged:
+                {
+                   _root.points[index] = Qt.point(x + radius, y + radius)
+                }
             }
         }
     }
@@ -155,11 +166,22 @@ BasePageView {
             //! See enum QPointingDevice::GrabTransition
             if (grabState === 1) {
                 _shape.points.length = 0;
-                _shape.points.push(Qt.point(point.position.x, point.position.y - _root.header.height - _root.topPadding));
+
+                for(var i = 0; i < 9; i++) {
+                    var pos_ = _root.points[i];
+                    if (Math.abs(pos_.x - point.position.x) < 40 &&Math.abs(pos_.y - point.position.y) < 40){
+                        var states = pointsState.split(",");
+                        states[i] = "1";
+                        pointsState =  states.join(",")
+                    }
+                }
+
+                _shape.points.push(Qt.point(point.position.x, point.position.y));
+
                 lastActiveTranslation = Qt.vector2d(0, 0);
                 _shape.pointsChanged();
             } else if (grabState === 2 || grabState === 0x30 || grabState === 0x20) {
-                //! Play destroy anima
+                //! Play destroy animation
                 _clearPathAnima.running = true;
             }
         }
@@ -170,6 +192,15 @@ BasePageView {
                     || Math.abs(activeTranslation.y - lastActiveTranslation.y) > newPointThershold) {
                 //! Add activeTranslation to 'first point' (not last one)
                 var firstPoint = _shape.points[0];
+                for(var i = 0; i < 9; i++) {
+                    var pos_ = _root.points[i];
+                    if (Math.abs(pos_.x - (firstPoint.x + activeTranslation.x)) < 40 &&Math.abs(pos_.y - (firstPoint.y + activeTranslation.y)) < 40)
+                    {
+                        var states = pointsState.split(",");
+                        states[i] = "1";
+                        pointsState =  states.join(",")
+                    }
+                }
                 _shape.points.push(Qt.point(firstPoint.x + activeTranslation.x,
                                             firstPoint.y + activeTranslation.y/* - _root.header.height*/));
 
