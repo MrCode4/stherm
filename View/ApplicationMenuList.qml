@@ -76,7 +76,7 @@ ListView {
         },
         {
             "icon": FAIcons.wifi,
-            "text": "WIFI"
+            "text": "Wi-Fi Settings"
         },
         {
             "icon": FAIcons.fileExclamation,
