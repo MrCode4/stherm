@@ -94,6 +94,8 @@ public:
 
     Q_INVOKABLE void setActivatedSchedule(ScheduleCPP* schedule);
 
+    Q_INVOKABLE int getStartMode();
+
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);
 

@@ -43,6 +43,8 @@ I_DeviceController {
         console.log("************** Initialize and create connections **************")
         deviceControllerCPP.startDevice();
 
+        startMode = deviceControllerCPP.getStartMode();
+
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
 

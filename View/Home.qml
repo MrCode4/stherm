@@ -297,6 +297,20 @@ Control {
         }
     }
 
+    //! Open a test mode page from home when app start with test mode.
+    Timer {
+        id: modeTimer
+
+        interval: 6000
+        running: (uiSession?.deviceController?.startMode ?? -1) === 0
+        repeat: false
+        onTriggered: {
+            if (mainStackView)
+                mainStackView.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                                       "uiSession": Qt.binding(() => uiSession)
+                                   });
+        }
+    }
     /* States and Transitions
      * ****************************************************************************************/
     state: "idle"
