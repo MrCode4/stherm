@@ -306,7 +306,7 @@ Control {
         repeat: false
         onTriggered: {
             if (mainStackView)
-                mainStackView.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                        "uiSession": Qt.binding(() => uiSession)
                                    });
         }

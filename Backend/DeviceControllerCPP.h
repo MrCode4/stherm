@@ -22,6 +22,7 @@ class DeviceControllerCPP  : public QObject
 
     Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
     Q_PROPERTY(NUVE::System *system MEMBER  m_system NOTIFY systemChanged)
+    Q_PROPERTY(DeviceAPI    *deviceAPI MEMBER  _deviceAPI NOTIFY deviceAPIChanged)
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
     QML_ELEMENT
@@ -111,6 +112,8 @@ Q_SIGNALS:
     void systemSetupChanged();
 
     void systemChanged();
+
+    void deviceAPIChanged();
 
 private:
     // update main data and send data to scheme.
