@@ -124,7 +124,7 @@ int UtilityHelper::getGpioValue(int pinNumber)
 
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        TRACE << "Failed to open the file.";
+        TRACE << "Failed to open the file. The pin(" << pinNumber << ") value could not be opened";
         return -1;
     }
 
