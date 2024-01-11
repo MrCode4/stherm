@@ -90,7 +90,7 @@ bool NUVE::Hardware::getSN(cpuid_t uid, std::string &sn)
         sn = system.getSN(uid);
 
     else
-        qWarning() << "The client ID is missing";
+        qWarning() << "The UID is missing...";
 
     if (!sn.empty())
         deviceConfig.serial_number = sn;
