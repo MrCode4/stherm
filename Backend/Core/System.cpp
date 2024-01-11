@@ -182,6 +182,10 @@ std::string NUVE::System::getSN(cpuid_t accessUid)
     QByteArray requestData = preparePacket("sync", m_getSN, paramsArray);
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSN);
 
+    // Return Serial number when serial number already exist.
+    if (!mSerialNumber.isEmpty())
+        return mSerialNumber.toStdString();
+
     QEventLoop loop;
     QTimer timer;
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
@@ -192,11 +196,6 @@ std::string NUVE::System::getSN(cpuid_t accessUid)
     loop.exec();
 
     qDebug() << Q_FUNC_INFO << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
-
-
-    // Save the serial number in settings
-    QSettings setting;
-    setting.setValue(m_SerialNumberSetting, mSerialNumber);
 
     return mSerialNumber.toStdString();
 }
@@ -525,6 +524,11 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                     emit alert("The serial number does not match the last one.");
 
                 mSerialNumber = sn;
+
+                // Save the serial number in settings
+                QSettings setting;
+                setting.setValue(m_SerialNumberSetting, mSerialNumber);
+
                 Q_EMIT snReady();
             }
 
