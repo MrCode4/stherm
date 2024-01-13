@@ -85,7 +85,11 @@ NUVE::System::System(QObject *parent) :
     QTimer::singleShot(5 * 60 * 1000, this, [=]() {
 
         if (mSerialNumber.isEmpty()) {
-            emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
+            if (!mUID.empty())
+                getSN(mUID);
+
+            if (mSerialNumber.isEmpty())
+                emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
         }
 
         checkPartialUpdate(true);
@@ -665,6 +669,11 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
     }
 
     return true;
+}
+
+void NUVE::System::setUID(cpuid_t uid)
+{
+    mUID = uid;
 }
 
 void NUVE::System::checkPartialUpdate(bool notifyUser) {

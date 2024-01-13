@@ -117,6 +117,8 @@ signals:
     //! Send when new update os available
     void notifyNewUpdateAvailable();
 
+    void setUID(NUVE::cpuid_t uid);
+
 private:
 
     //! verify dounloaded files and prepare to set up.
@@ -165,6 +167,8 @@ private:
     bool mUpdateAvailable;
 
     QTimer mTimer;
+
+    NUVE::cpuid_t mUID;
 
     //! QElapsedTimer to measure download rate.
     QElapsedTimer mElapsedTimer;
