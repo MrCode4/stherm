@@ -45,6 +45,9 @@ I_DeviceController {
 
         startMode = deviceControllerCPP.getStartMode();
 
+        // Update test mode in system
+        deviceControllerCPP.system.testMode = (startMode === 0);
+
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
 

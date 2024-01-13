@@ -15,7 +15,6 @@ update release data
 for the changeLog acknowledge the markdown format
 update the latest version
  ```
-"LatestVersion" : "0.1.5",
 "0.1.5": {
                 "CurrentFileSize": 5715000, // downloadable file size
                 "RequiredMemory": 14785850, // size of files after completely decompressed.
@@ -23,6 +22,8 @@ update the latest version
                 "Address": "/files/update.v0.1.5.zip", // Relative path to upload update file
                 "ReleaseDate": "20/12/2023", // Relase data with proper format
                 "ChangeLog": "- V1.5 update added. \n - update system added"  // Change logs
+				"Staging": true, // This update available just in test mode
+                "ForceUpdate": false // Forced update.  So a device receiving this will update the device without user intervention.
 	}
 ```
 - Stablish an update service on the device using the following settings: extract update files from a zip-formatted file, decompress .gz files into actual files, transfer uncompressed files to the 'appStherm' directory, and initiate the 'appStherm' service.:

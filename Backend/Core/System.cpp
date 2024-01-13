@@ -37,6 +37,8 @@ const QString m_Address         = QString("Address");
 const QString m_RequiredMemory  = QString("RequiredMemory");
 const QString m_CurrentFileSize = QString("CurrentFileSize");
 const QString m_CheckSum        = QString("CheckSum");
+const QString m_Staging         = QString("Staging");
+const QString m_ForceUpdate     = QString("ForceUpdate");
 
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
 
@@ -46,7 +48,9 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 }
 
 NUVE::System::System(QObject *parent) :
-    mUpdateAvailable (false)
+    mUpdateAvailable (false),
+    mTestMode(false)
+
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -70,7 +74,7 @@ NUVE::System::System(QObject *parent) :
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
 
-    QTimer::singleShot(5 * 60 * 1000, this, [=]() {
+    QTimer::singleShot(0, this, [=]() {
         checkPartialUpdate(true);
         getUpdateInformation(true);
     });
@@ -234,6 +238,18 @@ int NUVE::System::partialUpdateProgress() {
 
 bool NUVE::System::updateAvailable() {
     return mUpdateAvailable;
+}
+
+bool NUVE::System::testMode() {
+    return mTestMode;
+}
+
+void NUVE::System::setTestMode(bool testMode) {
+    if (mTestMode == testMode)
+        return;
+
+    mTestMode = testMode;
+    emit testModeChanged();
 }
 
 void NUVE::System::setPartialUpdateProgress(int progress) {
@@ -565,7 +581,9 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
                      << m_Address
                      << m_RequiredMemory
                      << m_CurrentFileSize
-                     << m_CheckSum;
+                     << m_CheckSum
+                     << m_Staging
+                     << m_ForceUpdate;
 
             auto latestVersionObj = updateJson.value(latestVersion).toObject();
             if (latestVersionObj.isEmpty()) {
@@ -616,14 +634,35 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
     file .close();
 
-    // Update version information
-    mLatestVersionKey = updateJsonObject.value("LatestVersion").toString();
+
+    QStringList versions = updateJsonObject.keys();
+
+    // Find the maximum version
+    QString latestVersionKey;
+
+    QJsonObject latestVersionObj;
+
+    do {
+        latestVersionKey = *std::max_element(versions.begin(), versions.end());
+        latestVersionObj = updateJsonObject.value(latestVersionKey).toObject();
+
+        versions.removeOne(latestVersionKey);
+
+        // Reduce the amount of allocated memory.
+        versions.squeeze();
+
+    } while (!mTestMode && !versions.isEmpty() && latestVersionObj.value(m_Staging).toBool());
+
+    TRACE << "Maximum Version:" << latestVersionKey;
+
+    if (latestVersionKey.isEmpty())
+        return;
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
-    if (mLatestVersionKey != currentVersion) {
+    if (latestVersionKey != currentVersion) {
         auto appVersionList = currentVersion.split(".");
-        auto latestVersion = mLatestVersionKey.split(".");
+        auto latestVersion = latestVersionKey.split(".");
 
         if (appVersionList.count() > 2 && latestVersion.count() > 2) {
 
@@ -651,12 +690,12 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
                 emit notifyNewUpdateAvailable();
 
         } else {
-            qWarning() << "The version format is incorrect (major.minor.patch)" << mLatestVersionKey;
+            qWarning() << "The version format is incorrect (major.minor.patch)" << latestVersionKey;
         }
 
     }
 
-    auto latestVersionObj = updateJsonObject.value(mLatestVersionKey).toObject();
+    mLatestVersionKey  = latestVersionKey;
     mLatestVersionDate = latestVersionObj.value(m_ReleaseDate).toString();
     mLatestVersionChangeLog = latestVersionObj.value(m_ChangeLog).toString();
     mLatestVersionAddress = latestVersionObj.value(m_Address).toString();
