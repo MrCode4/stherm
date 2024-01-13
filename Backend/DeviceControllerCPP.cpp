@@ -160,7 +160,6 @@ void DeviceControllerCPP::startDevice()
     //! todo: move to constructor later
     _deviceIO->createConnections();
 
-    TRACE << "start mode is: " << _deviceAPI->getStartMode();
 
     // Satart with delay to ensure the model loaded.
     QTimer::singleShot(5000, this, [this]() {
@@ -179,6 +178,14 @@ void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
 {
     if (m_scheme)
         m_scheme->setSchedule(schedule);
+}
+
+int DeviceControllerCPP::getStartMode()
+{
+    auto sm = _deviceAPI->getStartMode();
+    TRACE << "start mode is: " << sm;
+
+    return sm;
 }
 
 SystemSetup *DeviceControllerCPP::systemSetup() const {

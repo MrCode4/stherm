@@ -30,13 +30,14 @@ constexpr char m_notifyUserProperty[] = "notifyUser";
 /* ************************************************************************************************
  * Update Json Keys
  * ************************************************************************************************/
-const QString m_LatestVersion   = QString("LatestVersion");
 const QString m_ReleaseDate     = QString("ReleaseDate");
 const QString m_ChangeLog       = QString("ChangeLog");
 const QString m_Address         = QString("Address");
 const QString m_RequiredMemory  = QString("RequiredMemory");
 const QString m_CurrentFileSize = QString("CurrentFileSize");
 const QString m_CheckSum        = QString("CheckSum");
+const QString m_Staging         = QString("Staging");
+const QString m_ForceUpdate     = QString("ForceUpdate");
 
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
 
@@ -46,7 +47,9 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 }
 
 NUVE::System::System(QObject *parent) :
-    mUpdateAvailable (false)
+    mUpdateAvailable (false),
+    mTestMode(false)
+
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -234,6 +237,18 @@ int NUVE::System::partialUpdateProgress() {
 
 bool NUVE::System::updateAvailable() {
     return mUpdateAvailable;
+}
+
+bool NUVE::System::testMode() {
+    return mTestMode;
+}
+
+void NUVE::System::setTestMode(bool testMode) {
+    if (mTestMode == testMode)
+        return;
+
+    mTestMode = testMode;
+    emit testModeChanged();
 }
 
 void NUVE::System::setPartialUpdateProgress(int progress) {
@@ -550,53 +565,51 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
 
     auto updateJson = updateDoc.object();
 
-    if (updateJson.contains(m_LatestVersion)) {
-        auto latestVersion = updateJson.value(m_LatestVersion).toString();
-        if (latestVersion.split(".").count() == 3) {
+    // Find the maximum version
+    QString latestVersionKey = findLatestVersion(updateJson);
 
-            if (!updateJson.contains(latestVersion)) {
-                qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is not found or has invalid format in the Update file (server side).";
-                return false;
-            }
+    // Save the file
+    if (latestVersionKey.isEmpty())
+        return true;
 
-            QStringList jsonKeys;
-            jsonKeys << m_ReleaseDate
-                     << m_ChangeLog
-                     << m_Address
-                     << m_RequiredMemory
-                     << m_CurrentFileSize
-                     << m_CheckSum;
+    auto latestVersionObj = updateJson.value(latestVersionKey).toObject();
 
-            auto latestVersionObj = updateJson.value(latestVersion).toObject();
-            if (latestVersionObj.isEmpty()) {
-                qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is empty in the Update file (server side).";
-                return false;
-            }
+    if (latestVersionKey.split(".").count() == 3) {
 
-            foreach (auto key, jsonKeys) {
-                auto value = latestVersionObj.value(key);
-                if (value.isUndefined() || value.type() == QJsonValue::Null) {
-                    qWarning() << "The key (" << key << ") not found in the 'LatestVersion' value (" << latestVersion << ") (server side).";
-                    return false;
-                }
+        QStringList jsonKeys;
+        jsonKeys << m_ReleaseDate
+                 << m_ChangeLog
+                 << m_Address
+                 << m_RequiredMemory
+                 << m_CurrentFileSize
+                 << m_CheckSum
+                 << m_Staging
+                 << m_ForceUpdate;
 
-                if (value.isString() && value.toString().isEmpty()) {
-                    qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
-                    return false;
-
-                } else if (value.isDouble() && (value.toDouble(-100) == -100)) {
-                    qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
-                    return false;
-                }
-            }
-
-        } else {
-            qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is incorrect in the Update file (server side).";
+        if (latestVersionObj.isEmpty()) {
+            qWarning() << "The 'LatestVersion' value (" << latestVersionKey << ") is empty in the Update file (server side).";
             return false;
         }
 
+        foreach (auto key, jsonKeys) {
+            auto value = latestVersionObj.value(key);
+            if (value.isUndefined() || value.type() == QJsonValue::Null) {
+                qWarning() << "The key (" << key << ") not found in the 'LatestVersion' value (" << latestVersionKey << ") (server side).";
+                return false;
+            }
+
+            if (value.isString() && value.toString().isEmpty()) {
+                qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersionKey << ") (server side).";
+                return false;
+
+            } else if (value.isDouble() && (value.toDouble(-100) == -100)) {
+                qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersionKey << ") (server side).";
+                return false;
+            }
+        }
+
     } else {
-        qWarning() << "The 'LatestVersion' key is not present in the Update file (server side).";
+        qWarning() << "The 'LatestVersion' value (" << latestVersionKey << ") is incorrect in the Update file (server side).";
         return false;
     }
 
@@ -616,47 +629,39 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
     file .close();
 
-    // Update version information
-    mLatestVersionKey = updateJsonObject.value("LatestVersion").toString();
+    auto latestVersionKey = findLatestVersion(updateJsonObject);
+
+
+    TRACE << "Maximum Version:" << latestVersionKey;
+
+    if (latestVersionKey.isEmpty())
+        return;
+
+    auto latestVersionObj = updateJsonObject.value(latestVersionKey).toObject();
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
-    if (mLatestVersionKey != currentVersion) {
+
+
+    // Compare versions lexicographically
+    if (latestVersionKey > currentVersion) {
         auto appVersionList = currentVersion.split(".");
-        auto latestVersion = mLatestVersionKey.split(".");
+        auto latestVersion = latestVersionKey.split(".");
 
         if (appVersionList.count() > 2 && latestVersion.count() > 2) {
 
-            auto appVersionMajor = appVersionList.first().toInt();
-            auto latestVersionMajor = latestVersion.first().toInt();
-
-            auto appVersionMinor = appVersionList[1].toInt();
-            auto latestVersionMinor = latestVersion[1].toInt();
-
-            auto appVersionPatch = appVersionList[2].toInt();
-            auto latestVersionPatch = latestVersion[2].toInt();
-
-            bool isUpdateAvailable = latestVersionMajor > appVersionMajor;
-
-
-            if (latestVersionMajor == appVersionMajor) {
-                isUpdateAvailable = latestVersionMinor > appVersionMinor;
-
-                if (latestVersionMinor == appVersionMinor)
-                    isUpdateAvailable = latestVersionPatch > appVersionPatch;
-            }
-            setUpdateAvailable(isUpdateAvailable);
+            setUpdateAvailable(true);
 
             if (notifyUser)
                 emit notifyNewUpdateAvailable();
 
         } else {
-            qWarning() << "The version format is incorrect (major.minor.patch)" << mLatestVersionKey;
+            qWarning() << "The version format is incorrect (major.minor.patch)" << latestVersionKey;
+            return;
         }
-
     }
 
-    auto latestVersionObj = updateJsonObject.value(mLatestVersionKey).toObject();
+    mLatestVersionKey  = latestVersionKey;
     mLatestVersionDate = latestVersionObj.value(m_ReleaseDate).toString();
     mLatestVersionChangeLog = latestVersionObj.value(m_ChangeLog).toString();
     mLatestVersionAddress = latestVersionObj.value(m_Address).toString();
@@ -688,5 +693,27 @@ void NUVE::System::rebootDevice()
     qDebug() << "Standard Output:" << result;
     qDebug() << "Standard Error:" << error;
 
-    #endif
+#endif
+}
+
+QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
+    QStringList versions = updateJson.keys();
+    if (versions.contains("LatestVersion"))
+        versions.removeOne("LatestVersion");
+
+    std::sort(versions.begin(), versions.end(), std::greater<QString>());
+
+    TRACE << versions;
+    // Find the maximum version
+    QString latestVersionKey;
+
+    foreach (auto ver, versions) {
+        auto latestVersionObj = updateJson.value(ver).toObject();
+        if (mTestMode || !latestVersionObj.value(m_Staging).toBool()) {
+            latestVersionKey = ver;
+            break;
+        }
+    }
+
+    return latestVersionKey;
 }

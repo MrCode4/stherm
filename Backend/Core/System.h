@@ -22,6 +22,7 @@ class System : public NetworkWorker
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
 
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
+    Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
@@ -81,6 +82,10 @@ public:
 
     bool updateAvailable();
 
+    bool testMode();
+
+    void setTestMode(bool testMode);
+
     void setPartialUpdateProgress(int progress);
 
 
@@ -114,6 +119,8 @@ signals:
     //! Send when new update os available
     void notifyNewUpdateAvailable();
 
+    void testModeChanged();
+
 
 private:
 
@@ -136,6 +143,9 @@ private:
 
     //! Check and validate update json file
     bool checkUpdateFile(const QByteArray updateData);
+
+    //! Find Latest version from the update JsonObject
+    QString findLatestVersion(QJsonObject updateJson);
 
 private:
 
@@ -161,6 +171,9 @@ private:
     int mPartialUpdateProgress;
 
     bool mUpdateAvailable;
+
+    //! System on test mode or not
+    bool mTestMode;
 
     QTimer mTimer;
 
