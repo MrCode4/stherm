@@ -36,6 +36,8 @@ qt_add_qml_module(RoniaStyle
         TextField.qml
         Slider.qml
         ScrollIndicator.qml
+
+        LimitedRangeSlider.qml
 )
 
 qt_add_qml_module(RoniaStyleImpl
@@ -60,6 +62,7 @@ qt_add_qml_module(RoniaStyleImpl
         impl/CheckIndicator.qml
         impl/CursorDelegate.qml
         impl/SliderHandle.qml
+        impl/RangeSliderHandleData.qml
 )
 
 target_link_libraries(RoniaStyleImpl PUBLIC
