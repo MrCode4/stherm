@@ -38,10 +38,7 @@ void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
     connect(&mProcess, &QProcess::finished, this,
         [this, autoUpdate](int exitCode, QProcess::ExitStatus) {
             if (exitCode == 0) {
-                if (autoUpdate != mAutoUpdateTime) {
-                    mAutoUpdateTime = autoUpdate;
-                    autoUpdateTimeChanged();
-                }
+                setAutoUpdateTimeProperty(autoUpdate);
             }
 
             //! Call onfinished callback
@@ -246,10 +243,7 @@ void DateTimeManagerCPP::checkAutoUpdateTime()
 
     if (mProcess.exitStatus() == QProcess::NormalExit && mProcess.exitCode() == 0) {
         bool autoUpdate = (mProcess.readLine() == "NTP=yes\n");
-        if (mAutoUpdateTime != autoUpdate) {
-            mAutoUpdateTime = autoUpdate;
-            autoUpdateTimeChanged();
-        }
+        setAutoUpdateTimeProperty(autoUpdate);
     } else {
         qDebug() << "DTM: " << Q_FUNC_INFO << __LINE__ << mProcess.readLine();
     }

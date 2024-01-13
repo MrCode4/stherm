@@ -586,7 +586,8 @@ inline void NmcliInterface::addConnection(const QString& name,
 
 inline QString NmcliInterface::getConnectedWifiBssid() const
 {
-    //! if mProcess is running use another one
+    //! if mProcess is running use another one. If mProcess is not running use it instead of
+    //! creating a new one.
     QProcess* pr;
     if (isRunning()) {
         pr = new QProcess();
@@ -595,7 +596,7 @@ inline QString NmcliInterface::getConnectedWifiBssid() const
         pr = mProcess;
     }
 
-    //nmcli -e no -t -f active,bssid device wifi
+    //! nmcli -e no -t -f active,bssid device wifi
     pr->start(NC_COMMAND, {
                               "-t",
                               "-e",

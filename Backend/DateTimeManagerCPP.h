@@ -78,6 +78,18 @@ public:
 
 private:
     /*!
+     * \brief setAutoUpdateTimeProperty Sets mAutoUpdateTime value
+     * \param autoUpdate
+     */
+    inline void setAutoUpdateTimeProperty(bool autoUpdate)
+    {
+        if (mAutoUpdateTime != autoUpdate) {
+            mAutoUpdateTime = autoUpdate;
+            emit autoUpdateTimeChanged();
+        }
+    }
+
+    /*!
      * \brief callProcessFinished Calls \ref onfinish callback if its a callable
      * \param args
      */
