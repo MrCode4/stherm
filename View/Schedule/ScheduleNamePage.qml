@@ -74,7 +74,12 @@ BasePageView {
         }
     }
 
-    Component.onCompleted: {
-        _nameTf.forceActiveFocus();
+    Timer {
+        id: delayedTextFieldFocusTmr
+        running: true
+        interval: 100
+        onTriggered: {
+            _nameTf.forceActiveFocus();
+        }
     }
 }

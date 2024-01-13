@@ -189,7 +189,6 @@ BasePageView {
         SelectTimePage {
             uiSession: root.uiSession
             onTimeSelected: function(time) {
-                console.log('time: ', time)
                 DateTimeManager.setDateTime(time);
             }
         }

@@ -120,13 +120,15 @@ BasePageView {
         }
     }
 
+    StackView.onActivated: {
+        _passwordTf.forceActiveFocus();
+    }
+
     Component.onCompleted: {
         //! Disable wifi refresh
         if (uiSession) {
             uiSession.refreshWifiEnabled = false;
         }
-
-        _passwordTf.forceActiveFocus();
     }
 
     Component.onDestruction: {
