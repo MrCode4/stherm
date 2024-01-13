@@ -701,21 +701,19 @@ QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
     if (versions.contains("LatestVersion"))
         versions.removeOne("LatestVersion");
 
+    std::sort(versions.begin(), versions.end(), std::greater<QString>());
+
+    TRACE << versions;
     // Find the maximum version
     QString latestVersionKey;
 
-    QJsonObject latestVersionObj;
-
-    do {
-        latestVersionKey = *std::max_element(versions.begin(), versions.end());
-        latestVersionObj = updateJson.value(latestVersionKey).toObject();
-
-        versions.removeOne(latestVersionKey);
-
-        // Reduce the amount of allocated memory.
-        versions.squeeze();
-
-    } while (!mTestMode && !versions.isEmpty() && latestVersionObj.value(m_Staging).toBool());
+    foreach (auto ver, versions) {
+        auto latestVersionObj = updateJson.value(ver).toObject();
+        if (mTestMode || (!mTestMode && !latestVersionObj.value(m_Staging).toBool())) {
+            latestVersionKey = ver;
+            break;
+        }
+    }
 
     return latestVersionKey;
 }

@@ -18,9 +18,8 @@ BasePageView {
      * ****************************************************************************************/
     title: "Test Touch"
 
-    onVisibleChanged: {
-        if (visible)
-            deviceController.deviceControllerCPP.system.testMode = true;
+    Component.onCompleted: {
+        deviceController.deviceControllerCPP.system.testMode = true;
     }
 
     /* Children
