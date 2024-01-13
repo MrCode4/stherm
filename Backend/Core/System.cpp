@@ -51,7 +51,8 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 }
 
 NUVE::System::System(QObject *parent) :
-    mUpdateAvailable (false)
+    mUpdateAvailable (false),
+    mIsGetSNReceived(false)
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -176,6 +177,10 @@ void NUVE::System::setUpdateAvailable(bool updateAvailable) {
 
 std::string NUVE::System::getSN(cpuid_t accessUid)
 {
+    if (mIsGetSNReceived) {
+        return mSerialNumber.toStdString();
+    }
+
     QJsonArray paramsArray;
     paramsArray.append(QString::fromStdString(accessUid));
 
@@ -523,7 +528,12 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 if (!mSerialNumber.isEmpty() && sn != mSerialNumber)
                     emit alert("The serial number does not match the last one.");
 
-                mSerialNumber = sn;
+                if (sn.isEmpty()) {
+                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
+
+                } else {
+                    mSerialNumber = sn;
+                }
 
                 // Save the serial number in settings
                 QSettings setting;
@@ -531,8 +541,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
                 Q_EMIT snReady();
 
-            } else if (mSerialNumber.isEmpty()) {
-                emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
+                mIsGetSNReceived = true;
             }
 
         } else if (netReply->property(m_methodProperty).toString() == m_getSystemUpdate) {

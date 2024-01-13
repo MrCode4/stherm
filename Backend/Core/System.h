@@ -165,6 +165,8 @@ private:
 
     bool mUpdateAvailable;
 
+    bool mIsGetSNReceived;
+
     QTimer mTimer;
 
     NUVE::cpuid_t mUID;
