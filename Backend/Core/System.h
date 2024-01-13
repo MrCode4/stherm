@@ -86,7 +86,7 @@ public:
 
     void setPartialUpdateProgress(int progress);
 
-
+    void setUID(NUVE::cpuid_t uid);
 
 protected slots:
     //! Process network replay
@@ -117,7 +117,6 @@ signals:
     //! Send when new update os available
     void notifyNewUpdateAvailable();
 
-    void setUID(NUVE::cpuid_t uid);
 
 private:
 
