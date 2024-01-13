@@ -15,6 +15,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , mDeviceIsOn { false }
     , mHasInternet { true }
     , mNamIsRunning { false }
+    , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
+                                                        "http://google.com")) }
 {
     connect(mNmcliInterface, &NmcliInterface::errorOccured, this, &NetworkInterface::onErrorOccured);
     connect(mNmcliInterface, &NmcliInterface::wifiListRefereshed, this, &NetworkInterface::onWifiListRefreshed);
@@ -198,7 +200,7 @@ void NetworkInterface::checkHasInternet()
     if (!mConnectedWifiInfo) {
         setHasInternet(false);
     } else if (!mNamIsRunning) {
-        QNetworkRequest request(QUrl("http://google.com"));
+        QNetworkRequest request(cCheckInternetAccessUrl);
         request.setTransferTimeout(8000);
         mNamIsRunning = true;
 

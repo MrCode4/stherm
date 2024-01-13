@@ -174,6 +174,12 @@ private:
     const int               cCheckInternetAccessInterval = 30000;
 
     /*!
+     * \brief mCheckInternetAccessUrl The url that is used to check internet access. This is read
+     * from env (NMCLI_INTERNET_ACCESS_URL) and 'google.com' is used if it doesn't exist.
+     */
+    const QUrl                    cCheckInternetAccessUrl;
+
+    /*!
      * \brief mWifiInfos List of all the wifis
      */
     QList<WifiInfo*>        mWifiInfos;
