@@ -30,6 +30,7 @@ BasePageView {
         verticalAlignment: Qt.AlignVCenter
         color: enabled ? Style.foreground : Style.hintTextColor
         visible: system.serialNumber.length === 0
+        font.pointSize: Application.font.pointSize * 0.8
     }
 
     Column {
