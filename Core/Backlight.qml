@@ -24,7 +24,7 @@ QSObject {
     //! Hue of color
     property real               hue:            0.
 
-    //! Value of color
+    //! Value of color (brightness, should not be less than 0.05, turn off for dark color)
     property real               value:          1.
 
     //! Index of shade button in BacklightPage that backlight color is set based on it.
@@ -37,6 +37,6 @@ QSObject {
     {
         return Qt.hsva(shadeIndex < 5 ? _whiteShade.hsvHue : hue,
                        shadeIndex < 5 ? shadeIndex / 4. : _saturation,
-                       value);
+                       value < 0.05 ? 0.05 : value);
     }
 }
