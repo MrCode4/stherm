@@ -190,8 +190,7 @@ std::string NUVE::System::getSN(cpuid_t accessUid)
     QTimer timer;
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::System::snReady, &loop, &QEventLoop::quit);
-    // TODO this timeout is enough for a post request?
-    // TODO the timeout needs to be defined in a paramter somewhere
+
     timer.start(m_timeout);
     loop.exec();
 
@@ -549,6 +548,8 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 }
             }
         } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {
+
+            // TODO: complete contractor information.
             auto resultObj = obj.value("result").toObject().value("result").toObject();
             TRACE << resultObj;
             QVariantMap map;

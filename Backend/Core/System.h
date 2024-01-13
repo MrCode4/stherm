@@ -43,10 +43,7 @@ public:
     //! Reboot device
     Q_INVOKABLE void rebootDevice();
 
-    //! Get technic's url and serial number
-    void getQR(QString accessUid) { getSN(accessUid.toStdString()); }
-
-    // TODO review if this, and others below, should be static
+    //! Get serial number from server
     std::string getSN(cpuid_t accessUid);
 
     //! Get update
