@@ -27,11 +27,16 @@ BasePageView {
         }
 
         onClicked: {
-            //! Next page
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
-                                              "uiSession": uiSession
-                                          })
+            if (deviceController.startMode !== 0) {
+                //! Next page
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
+                                                 "uiSession": uiSession
+                                             })
+                }
+            } else {
+                //! Test mode enabled with GPIO
+                uiSession.showHome();
             }
         }
     }
