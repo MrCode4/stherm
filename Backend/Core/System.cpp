@@ -87,9 +87,6 @@ NUVE::System::System(QObject *parent) :
         if (mSerialNumber.isEmpty()) {
             if (!mUID.empty())
                 getSN(mUID);
-
-            if (mSerialNumber.isEmpty())
-                emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
         }
 
         checkPartialUpdate(true);
@@ -533,6 +530,9 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 setting.setValue(m_SerialNumberSetting, mSerialNumber);
 
                 Q_EMIT snReady();
+
+            } else if (mSerialNumber.isEmpty()) {
+                emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
             }
 
         } else if (netReply->property(m_methodProperty).toString() == m_getSystemUpdate) {
