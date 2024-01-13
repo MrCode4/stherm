@@ -709,7 +709,7 @@ QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
 
     foreach (auto ver, versions) {
         auto latestVersionObj = updateJson.value(ver).toObject();
-        if (mTestMode || (!mTestMode && !latestVersionObj.value(m_Staging).toBool())) {
+        if (mTestMode || !latestVersionObj.value(m_Staging).toBool()) {
             latestVersionKey = ver;
             break;
         }
