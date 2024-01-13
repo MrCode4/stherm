@@ -144,6 +144,9 @@ private:
     //! Check and validate update json file
     bool checkUpdateFile(const QByteArray updateData);
 
+    //! Find Latest version from the update JsonObject
+    QString findLatestVersion(QJsonObject updateJson);
+
 private:
 
     QString mSerialNumber;

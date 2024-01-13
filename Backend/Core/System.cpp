@@ -565,29 +565,15 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
 
     auto updateJson = updateDoc.object();
 
-    QStringList versions = updateJson.keys();
-
     // Find the maximum version
-    QString latestVersionKey;
-
-    QJsonObject latestVersionObj;
-
-    do {
-        latestVersionKey = *std::max_element(versions.begin(), versions.end());
-        latestVersionObj = updateJson.value(latestVersionKey).toObject();
-
-        versions.removeOne(latestVersionKey);
-
-        // Reduce the amount of allocated memory.
-        versions.squeeze();
-
-    } while (!mTestMode && !versions.isEmpty() && latestVersionObj.value(m_Staging).toBool());
+    QString latestVersionKey = findLatestVersion(updateJson);
 
     // Save the file
     if (latestVersionKey.isEmpty())
         return true;
 
-    auto latestVersion = latestVersionKey;
+    auto latestVersionObj = updateJson.value(latestVersionKey).toObject();
+
     if (latestVersionKey.split(".").count() == 3) {
 
         QStringList jsonKeys;
@@ -601,29 +587,29 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
                  << m_ForceUpdate;
 
         if (latestVersionObj.isEmpty()) {
-            qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is empty in the Update file (server side).";
+            qWarning() << "The 'LatestVersion' value (" << latestVersionKey << ") is empty in the Update file (server side).";
             return false;
         }
 
         foreach (auto key, jsonKeys) {
             auto value = latestVersionObj.value(key);
             if (value.isUndefined() || value.type() == QJsonValue::Null) {
-                qWarning() << "The key (" << key << ") not found in the 'LatestVersion' value (" << latestVersion << ") (server side).";
+                qWarning() << "The key (" << key << ") not found in the 'LatestVersion' value (" << latestVersionKey << ") (server side).";
                 return false;
             }
 
             if (value.isString() && value.toString().isEmpty()) {
-                qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
+                qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersionKey << ") (server side).";
                 return false;
 
             } else if (value.isDouble() && (value.toDouble(-100) == -100)) {
-                qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
+                qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersionKey << ") (server side).";
                 return false;
             }
         }
 
     } else {
-        qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is incorrect in the Update file (server side).";
+        qWarning() << "The 'LatestVersion' value (" << latestVersionKey << ") is incorrect in the Update file (server side).";
         return false;
     }
 
@@ -643,26 +629,15 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
     file .close();
 
-    QStringList versions = updateJsonObject.keys();
-    QString latestVersionKey;
-    QJsonObject latestVersionObj;
+    auto latestVersionKey = findLatestVersion(updateJsonObject);
 
-    do {
-        // Find the maximum version
-        latestVersionKey = *std::max_element(versions.begin(), versions.end());
-        latestVersionObj = updateJsonObject.value(latestVersionKey).toObject();
-
-        versions.removeOne(latestVersionKey);
-
-        // Reduce the amount of allocated memory.
-        versions.squeeze();
-
-    } while (!mTestMode && !versions.isEmpty() && latestVersionObj.value(m_Staging).toBool());
 
     TRACE << "Maximum Version:" << latestVersionKey;
 
     if (latestVersionKey.isEmpty())
         return;
+
+    auto latestVersionObj = updateJsonObject.value(latestVersionKey).toObject();
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
@@ -719,4 +694,28 @@ void NUVE::System::rebootDevice()
     qDebug() << "Standard Error:" << error;
 
 #endif
+}
+
+QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
+    QStringList versions = updateJson.keys();
+    if (versions.contains("LatestVersion"))
+        versions.removeOne("LatestVersion");
+
+    // Find the maximum version
+    QString latestVersionKey;
+
+    QJsonObject latestVersionObj;
+
+    do {
+        latestVersionKey = *std::max_element(versions.begin(), versions.end());
+        latestVersionObj = updateJson.value(latestVersionKey).toObject();
+
+        versions.removeOne(latestVersionKey);
+
+        // Reduce the amount of allocated memory.
+        versions.squeeze();
+
+    } while (!mTestMode && !versions.isEmpty() && latestVersionObj.value(m_Staging).toBool());
+
+    return latestVersionKey;
 }
