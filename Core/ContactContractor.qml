@@ -1,9 +1,10 @@
 import QtQuick
 import QtQuickStream
+
 import Stherm
 
 /*! ***********************************************************************************************
- * Contactc ontractor keep the contractor properties.
+ * Contact contractor keeps the contractor properties.
  * ************************************************************************************************/
 QSObject {
     id: root
@@ -16,5 +17,7 @@ QSObject {
     property string iconSource:  "qrc:/Stherm/Images/nuve-icon.png"
 
     property string qrURL:       "https://www.nuvehome.com/"
+
+    property string technicianURL: "https://upload.nuvehvac.com/#EN/USA/technician/view/"
 
 }

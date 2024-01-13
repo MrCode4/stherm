@@ -37,4 +37,4 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 ```
-- MAke sure the 'update.sh' exist in the app directory.
+- Make sure the 'update.sh' exist in the app directory.

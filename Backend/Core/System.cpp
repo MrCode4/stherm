@@ -1,5 +1,6 @@
 #include "System.h"
 #include "LogHelper.h"
+#include "UtilityHelper.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -19,6 +20,7 @@ const QString m_getSystemUpdate = QString("getSystemUpdate");
 const QString m_requestJob      = QString("requestJob");
 const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
+const QString m_getContractorInfo = QString("getContractorInfo");
 
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
@@ -26,6 +28,8 @@ const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.
 const char m_isBusyDownloader[] = "isBusyDownloader";
 
 constexpr char m_notifyUserProperty[] = "notifyUser";
+
+const int m_timeout = 100000; // 100 seconds
 
 /* ************************************************************************************************
  * Update Json Keys
@@ -40,6 +44,7 @@ const QString m_Staging         = QString("Staging");
 const QString m_ForceUpdate     = QString("ForceUpdate");
 
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
+const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -48,8 +53,8 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 
 NUVE::System::System(QObject *parent) :
     mUpdateAvailable (false),
+    mIsGetSNReceived(false),
     mTestMode(false)
-
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -72,8 +77,21 @@ NUVE::System::System(QObject *parent) :
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
+    mSerialNumber            = setting.value(m_SerialNumberSetting).toString();
+
+    QTimer::singleShot(0, this, [=]() {
+        if (!mSerialNumber.isEmpty()) {
+            emit snReady();
+        }
+    });
 
     QTimer::singleShot(5 * 60 * 1000, this, [=]() {
+
+        if (mSerialNumber.isEmpty()) {
+            if (!mUID.empty())
+                getSN(mUID);
+        }
+
         checkPartialUpdate(true);
         getUpdateInformation(true);
     });
@@ -161,6 +179,10 @@ void NUVE::System::setUpdateAvailable(bool updateAvailable) {
 
 std::string NUVE::System::getSN(cpuid_t accessUid)
 {
+    if (mIsGetSNReceived) {
+        return mSerialNumber.toStdString();
+    }
+
     QJsonArray paramsArray;
     paramsArray.append(QString::fromStdString(accessUid));
 
@@ -168,13 +190,16 @@ std::string NUVE::System::getSN(cpuid_t accessUid)
     QByteArray requestData = preparePacket("sync", m_getSN, paramsArray);
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSN);
 
+    // Return Serial number when serial number already exist.
+    if (!mSerialNumber.isEmpty())
+        return mSerialNumber.toStdString();
+
     QEventLoop loop;
     QTimer timer;
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::System::snReady, &loop, &QEventLoop::quit);
-    // TODO this timeout is enough for a post request?
-    // TODO the timeout needs to be defined in a paramter somewhere
-    timer.start(3000);
+
+    timer.start(m_timeout);
     loop.exec();
 
     qDebug() << Q_FUNC_INFO << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
@@ -198,6 +223,19 @@ void NUVE::System::getUpdateInformation(bool notifyUser) {
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
     reply->setProperty(m_notifyUserProperty, notifyUser);
+}
+
+void NUVE::System::getContractorInfo() {
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
+        return;
+    }
+
+    QJsonArray paramsArray;
+    paramsArray.append(mSerialNumber);
+
+    QByteArray requestData = preparePacket("sync", m_getContractorInfo, paramsArray);
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getContractorInfo);
 }
 
 void NUVE::System::requestJob(QString type)
@@ -229,6 +267,11 @@ QString NUVE::System::remainingDownloadTime() {
 QString NUVE::System::lastInstalledUpdateDate()
 {
     return mLastInstalledUpdateDate;
+}
+
+QString NUVE::System::serialNumber()
+{
+    return mSerialNumber;
 }
 
 int NUVE::System::partialUpdateProgress() {
@@ -463,13 +506,18 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
     if (netReply->error() != QNetworkReply::NoError) {
         if (netReply->operation() == QNetworkAccessManager::GetOperation) {
 
+            qWarning() << "Network/request Error: " << netReply->errorString();
             if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
                 qWarning() << "Unable to download updateInfo.json file: " << netReply->errorString();
-                emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
+                // emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
 
             } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
                 emit error("Download error: " + netReply->errorString());
+
+            } else if (netReply->property(m_methodProperty).toString() == m_getSN) {
+                emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
+
             }
         }
 
@@ -489,8 +537,25 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             qDebug() << Q_FUNC_INFO << __LINE__ << resultArray;
 
             if (resultArray.count() > 0) {
-                mSerialNumber = resultArray.first().toString();
+                auto sn = resultArray.first().toString();
+
+                if (!mSerialNumber.isEmpty() && sn != mSerialNumber)
+                    emit alert("The serial number does not match the last one.");
+
+                if (sn.isEmpty()) {
+                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
+
+                } else {
+                    mSerialNumber = sn;
+                }
+
+                // Save the serial number in settings
+                QSettings setting;
+                setting.setValue(m_SerialNumberSetting, mSerialNumber);
+
                 Q_EMIT snReady();
+
+                mIsGetSNReceived = true;
             }
 
         } else if (netReply->property(m_methodProperty).toString() == m_getSystemUpdate) {
@@ -509,6 +574,17 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
                 }
             }
+        } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {
+
+            // TODO: complete contractor information.
+            auto resultObj = obj.value("result").toObject().value("result").toObject();
+            TRACE << resultObj;
+            QVariantMap map;
+            map.insert("phone", resultObj.value("phone").toString());
+            map.insert("name", resultObj.value("name").toString());
+            map.insert("url", resultObj.value("url").toString());
+            map.insert("techLink", resultObj.value("tech_link").toString());
+
         }
 
     } break;
@@ -614,6 +690,11 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
     }
 
     return true;
+}
+
+void NUVE::System::setUID(cpuid_t uid)
+{
+    mUID = uid;
 }
 
 void NUVE::System::checkPartialUpdate(bool notifyUser) {
