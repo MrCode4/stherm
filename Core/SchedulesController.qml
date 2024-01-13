@@ -50,15 +50,19 @@ QtObject {
     }
 
     //! Finding overlapping Schedules
-    function findOverlappingSchedules(startTime: Date, endTime: Date, repeats, exclude=null)
+    function findOverlappingSchedules(startTime: Date, endTime: Date, repeats, exclude = null)
     {
         if (!device) return [];
 
+        if ((endTime - startTime) < 0) {
+            endTime.setDate(endTime.getDate() + 1);
+        }
         var overlappings = [];
         device.schedules.forEach(function(element, index) {
             if (element === exclude || !element.enable) {
                 return;
             }
+
 
             //! First check if repeats have at least one similar values
             if (element.repeats.split(",").find((repeatElem, repeatIndex) => {
@@ -66,6 +70,10 @@ QtObject {
                                  })) {
                 var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
                 var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
+
+                if ((schEndTime - schStartTime) < 0) {
+                    schEndTime.setDate(schEndTime.getDate() + 1);
+                }
 
                 if ((schStartTime > startTime && schStartTime < endTime)
                         || (schEndTime > startTime && schEndTime < endTime)
@@ -84,50 +92,33 @@ QtObject {
         let currentSchedule = null;
 
         if (!device._isHold) {
+            var now = new Date();
+
             device.schedules.forEach(schedule => {
-                                         if (currentSchedule)
-                                         return;
+                                        if (currentSchedule)
+                                            return;
 
-                                         var isRunning = false;
+                                        var isRunning = false;
 
-                                         if (schedule.enable) {
-                                             var currentDate = Qt.formatDate(new Date(), "ddd");
-                                             currentDate = currentDate.slice(0, -1);
+                                        if (schedule.enable) {
+                                            var currentDate = Qt.formatDate(new Date(), "ddd");
+                                            currentDate = currentDate.slice(0, -1);
 
-                                             if(schedule.repeats.includes(currentDate)) {
-                                                 let nowH = (new Date).getHours();
-                                                 let nowMin = (new Date).getMinutes();
+                                            if(schedule.repeats.includes(currentDate)) {
 
-                                                 var startTime   = schedule.startTime.split(/[: ]/);
-                                                 var startTimeH  = parseInt(startTime[0]);
-                                                 var startTimeM  = parseInt(startTime[1]);
-                                                 var startPeriod = startTime[2].toUpperCase();
+                                                var schStartTime = Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP");
+                                                var schEndTime = Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP");
 
-                                                 if (startPeriod === "PM" && startTimeH !== 12) {
-                                                     startTimeH += 12;
-                                                 } else if (startPeriod === "AM" && startTimeH === 12) {
-                                                     startTimeH = 0;
-                                                 }
+                                                if ((schEndTime - schStartTime) < 0) {
+                                                    schEndTime.setDate(schEndTime.getDate() + 1);
+                                                }
 
-                                                 var endTime   = schedule.endTime.split(/[: ]/);
-                                                 var endTimeH  = parseInt(endTime[0]);
-                                                 var endTimeM  = parseInt(endTime[1]);
-                                                 var endPeriod = endTime[2].toUpperCase();
+                                                isRunning = (now >= schStartTime) && (now <= schEndTime);
+                                            }
+                                        }
 
-                                                 if (endPeriod === "PM" && endTimeH !== 12) {
-                                                     endTimeH += 12;
-                                                 } else if (endPeriod === "AM" && endTimeH === 12) {
-                                                     endTimeH = 0;
-                                                 }
-
-                                                 isRunning = ((startTimeH < nowH) || (startTimeH === nowH && startTimeM <= nowMin)) &&
-                                                 ((endTimeH > nowH) || (endTimeH === nowH && endTimeM >= nowMin));
-
-                                             }
-                                         }
-
-                                         if (isRunning)
-                                         currentSchedule = schedule;
+                                        if (isRunning)
+                                            currentSchedule = schedule;
                                      });
         }
 

@@ -18,6 +18,10 @@ BasePageView {
      * ****************************************************************************************/
     title: "Test Touch"
 
+    Component.onCompleted: {
+        deviceController.deviceControllerCPP.system.testMode = true;
+    }
+
     /* Children
      * ****************************************************************************************/
 

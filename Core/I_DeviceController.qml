@@ -15,6 +15,8 @@ QtObject {
 
     property DeviceControllerCPP deviceControllerCPP: null
 
+    property int                 startMode: -1
+
     /* Object Properties
      * ****************************************************************************************/
 

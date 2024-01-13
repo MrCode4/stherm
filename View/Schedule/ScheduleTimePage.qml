@@ -30,9 +30,19 @@ BasePageView {
     //! This shows whether the inputs in this page are valid or not
     readonly property bool      isValid:        {
         var selectedTimeDate = Date.fromLocaleTimeString(Qt.locale(), _contentLay.selectedTime, "hh:mm AP");
-        return startTime && timeProperty === "end-time"
-                ? (selectedTimeDate - startTime) / 60000 >= minTimeDiff
-                : true
+        if (startTime && timeProperty === "end-time") {
+            var diffTime   = (selectedTimeDate - startTime);
+
+            if (diffTime < 0) {
+                selectedTimeDate.setDate(selectedTimeDate.getDate() + 1);
+                diffTime = (selectedTimeDate - startTime);
+            }
+
+            return (diffTime / 60000 >= minTimeDiff);
+
+        } else {
+            return true;
+        }
     }
 
     //! Time in string format: 'hh:mm AM/PM'
