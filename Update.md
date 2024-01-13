@@ -13,7 +13,7 @@ get the file size in bytes using `ls -l`
 update the file address based on name you copied
 update release data
 for the changeLog acknowledge the markdown format
-update the latest version
+Every version should follow the major.minor.patch format, encompassing major, minor, and patch components (ex: "0.1.5").
  ```
 "0.1.5": {
                 "CurrentFileSize": 5715000, // downloadable file size
