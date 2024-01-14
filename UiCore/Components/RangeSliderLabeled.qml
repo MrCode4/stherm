@@ -6,7 +6,7 @@ import Stherm
 /*! ***********************************************************************************************
  * A RangeSlider with labels for handles
  * ***********************************************************************************************/
-RangeSlider {
+LimitedRangeSlider {
     id: _root
 
     /* Property declaration

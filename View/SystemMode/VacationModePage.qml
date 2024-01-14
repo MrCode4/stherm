@@ -87,10 +87,14 @@ BasePageView {
             Layout.fillWidth: true
 
             from: Utils.convertedTemperature(AppSpec.minimumTemperatureC, setting.tempratureUnit)
-            to:  Utils.convertedTemperature(AppSpec.maximumTemperatureC, setting.tempratureUnit)
+            to: Utils.convertedTemperature(AppSpec.maximumTemperatureC, setting.tempratureUnit)
 
             first.value: Utils.convertedTemperature(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit)
             second.value: Utils.convertedTemperature(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit)
+            difference: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 10 : 6
+
+            onFromChanged: console.log('fr: ', from)
+            onToChanged: console.log('to: ', to)
 
             labelSuffix: "\u00b0" + (setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
         }
@@ -120,6 +124,7 @@ BasePageView {
             to: 100
             first.value: appModel?.vacation?.hum_min ?? from
             second.value: appModel?.vacation?.hum_max ?? to
+            difference: 20
             labelSuffix: "%"
             visible: systemAccessories.accessoriesWireType !== AppSpecCPP.None
         }
