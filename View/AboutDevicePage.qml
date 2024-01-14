@@ -29,11 +29,6 @@ BasePageView {
     ListView {
         id: _infoLv
 
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottomMargin: 5
-
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
             y: root.contentItem.y
@@ -43,13 +38,15 @@ BasePageView {
 
         anchors.fill: parent
         anchors.rightMargin: 10
+        anchors.bottomMargin: 5
+
         clip: true
         model: [
             { "key": "Model",               "value": "Nuve - Samo" },
             { "key": "FCC ID",              "value": "2BBXVSAMOV1" },
             { "key": "Contians FCC ID",     "value": "VPYLB1DX" },
             { "key": "IC",                  "value": "LBWA1KL1FX-875" },
-            { "key": "Serial No",           "value": "01323000001" },
+            { "key": "Serial No",           "value": system.serialNumber },
             { "key": "Custom Name",         "value": "Living Room" },
             { "key": "URL",                 "value": '<a href="nuvehome.com" style="text-decoration:none;color:#44A0FF;">nuvehome.com</a>' },
             { "key": "E-mail",              "value": '<a href="support@nuvehome.com" style="text-decoration:none;color:#44A0FF;">support@nuvehome.com</link>' },

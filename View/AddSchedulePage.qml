@@ -79,9 +79,7 @@ BasePageView {
     //! StackView for new-schedule pages
     StackView {
         id: _newSchedulePages
-        anchors.centerIn: parent
-        implicitHeight: Math.min(parent.height, currentItem?.implicitHeight)
-        width: _root.availableWidth
+        anchors.fill: parent
 
         initialItem: _sheduleNamePage
     }

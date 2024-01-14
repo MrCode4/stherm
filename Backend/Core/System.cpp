@@ -1,5 +1,6 @@
 #include "System.h"
 #include "LogHelper.h"
+#include "UtilityHelper.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -19,6 +20,7 @@ const QString m_getSystemUpdate = QString("getSystemUpdate");
 const QString m_requestJob      = QString("requestJob");
 const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
+const QString m_getContractorInfo = QString("getContractorInfo");
 
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
@@ -27,18 +29,22 @@ const char m_isBusyDownloader[] = "isBusyDownloader";
 
 constexpr char m_notifyUserProperty[] = "notifyUser";
 
+const int m_timeout = 100000; // 100 seconds
+
 /* ************************************************************************************************
  * Update Json Keys
  * ************************************************************************************************/
-const QString m_LatestVersion   = QString("LatestVersion");
 const QString m_ReleaseDate     = QString("ReleaseDate");
 const QString m_ChangeLog       = QString("ChangeLog");
 const QString m_Address         = QString("Address");
 const QString m_RequiredMemory  = QString("RequiredMemory");
 const QString m_CurrentFileSize = QString("CurrentFileSize");
 const QString m_CheckSum        = QString("CheckSum");
+const QString m_Staging         = QString("Staging");
+const QString m_ForceUpdate     = QString("ForceUpdate");
 
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
+const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -46,7 +52,9 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 }
 
 NUVE::System::System(QObject *parent) :
-    mUpdateAvailable (false)
+    mUpdateAvailable (false),
+    mIsGetSNReceived(false),
+    mTestMode(false)
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -69,8 +77,21 @@ NUVE::System::System(QObject *parent) :
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
+    mSerialNumber            = setting.value(m_SerialNumberSetting).toString();
+
+    QTimer::singleShot(0, this, [=]() {
+        if (!mSerialNumber.isEmpty()) {
+            emit snReady();
+        }
+    });
 
     QTimer::singleShot(5 * 60 * 1000, this, [=]() {
+
+        if (mSerialNumber.isEmpty()) {
+            if (!mUID.empty())
+                getSN(mUID);
+        }
+
         checkPartialUpdate(true);
         getUpdateInformation(true);
     });
@@ -158,6 +179,10 @@ void NUVE::System::setUpdateAvailable(bool updateAvailable) {
 
 std::string NUVE::System::getSN(cpuid_t accessUid)
 {
+    if (mIsGetSNReceived) {
+        return mSerialNumber.toStdString();
+    }
+
     QJsonArray paramsArray;
     paramsArray.append(QString::fromStdString(accessUid));
 
@@ -165,13 +190,16 @@ std::string NUVE::System::getSN(cpuid_t accessUid)
     QByteArray requestData = preparePacket("sync", m_getSN, paramsArray);
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSN);
 
+    // Return Serial number when serial number already exist.
+    if (!mSerialNumber.isEmpty())
+        return mSerialNumber.toStdString();
+
     QEventLoop loop;
     QTimer timer;
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::System::snReady, &loop, &QEventLoop::quit);
-    // TODO this timeout is enough for a post request?
-    // TODO the timeout needs to be defined in a paramter somewhere
-    timer.start(3000);
+
+    timer.start(m_timeout);
     loop.exec();
 
     qDebug() << Q_FUNC_INFO << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
@@ -195,6 +223,19 @@ void NUVE::System::getUpdateInformation(bool notifyUser) {
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
     reply->setProperty(m_notifyUserProperty, notifyUser);
+}
+
+void NUVE::System::getContractorInfo() {
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
+        return;
+    }
+
+    QJsonArray paramsArray;
+    paramsArray.append(mSerialNumber);
+
+    QByteArray requestData = preparePacket("sync", m_getContractorInfo, paramsArray);
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getContractorInfo);
 }
 
 void NUVE::System::requestJob(QString type)
@@ -228,12 +269,29 @@ QString NUVE::System::lastInstalledUpdateDate()
     return mLastInstalledUpdateDate;
 }
 
+QString NUVE::System::serialNumber()
+{
+    return mSerialNumber;
+}
+
 int NUVE::System::partialUpdateProgress() {
     return mPartialUpdateProgress;
 }
 
 bool NUVE::System::updateAvailable() {
     return mUpdateAvailable;
+}
+
+bool NUVE::System::testMode() {
+    return mTestMode;
+}
+
+void NUVE::System::setTestMode(bool testMode) {
+    if (mTestMode == testMode)
+        return;
+
+    mTestMode = testMode;
+    emit testModeChanged();
 }
 
 void NUVE::System::setPartialUpdateProgress(int progress) {
@@ -448,13 +506,18 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
     if (netReply->error() != QNetworkReply::NoError) {
         if (netReply->operation() == QNetworkAccessManager::GetOperation) {
 
+            qWarning() << "Network/request Error: " << netReply->errorString();
             if (netReply->property(m_methodProperty).toString() == m_updateFromServer) {
                 qWarning() << "Unable to download updateInfo.json file: " << netReply->errorString();
-                emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
+                // emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
 
             } else if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
                 emit error("Download error: " + netReply->errorString());
+
+            } else if (netReply->property(m_methodProperty).toString() == m_getSN) {
+                emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
+
             }
         }
 
@@ -474,8 +537,25 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             qDebug() << Q_FUNC_INFO << __LINE__ << resultArray;
 
             if (resultArray.count() > 0) {
-                mSerialNumber = resultArray.first().toString();
+                auto sn = resultArray.first().toString();
+
+                if (!mSerialNumber.isEmpty() && sn != mSerialNumber)
+                    emit alert("The serial number does not match the last one.");
+
+                if (sn.isEmpty()) {
+                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
+
+                } else {
+                    mSerialNumber = sn;
+                }
+
+                // Save the serial number in settings
+                QSettings setting;
+                setting.setValue(m_SerialNumberSetting, mSerialNumber);
+
                 Q_EMIT snReady();
+
+                mIsGetSNReceived = true;
             }
 
         } else if (netReply->property(m_methodProperty).toString() == m_getSystemUpdate) {
@@ -494,6 +574,17 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
                 }
             }
+        } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {
+
+            // TODO: complete contractor information.
+            auto resultObj = obj.value("result").toObject().value("result").toObject();
+            TRACE << resultObj;
+            QVariantMap map;
+            map.insert("phone", resultObj.value("phone").toString());
+            map.insert("name", resultObj.value("name").toString());
+            map.insert("url", resultObj.value("url").toString());
+            map.insert("techLink", resultObj.value("tech_link").toString());
+
         }
 
     } break;
@@ -550,57 +641,60 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
 
     auto updateJson = updateDoc.object();
 
-    if (updateJson.contains(m_LatestVersion)) {
-        auto latestVersion = updateJson.value(m_LatestVersion).toString();
-        if (latestVersion.split(".").count() == 3) {
+    // Find the maximum version
+    QString latestVersionKey = findLatestVersion(updateJson);
 
-            if (!updateJson.contains(latestVersion)) {
-                qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is not found or has invalid format in the Update file (server side).";
-                return false;
-            }
+    // Save the file
+    if (latestVersionKey.isEmpty())
+        return true;
 
-            QStringList jsonKeys;
-            jsonKeys << m_ReleaseDate
-                     << m_ChangeLog
-                     << m_Address
-                     << m_RequiredMemory
-                     << m_CurrentFileSize
-                     << m_CheckSum;
+    auto latestVersionObj = updateJson.value(latestVersionKey).toObject();
 
-            auto latestVersionObj = updateJson.value(latestVersion).toObject();
-            if (latestVersionObj.isEmpty()) {
-                qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is empty in the Update file (server side).";
-                return false;
-            }
+    if (latestVersionKey.split(".").count() == 3) {
 
-            foreach (auto key, jsonKeys) {
-                auto value = latestVersionObj.value(key);
-                if (value.isUndefined() || value.type() == QJsonValue::Null) {
-                    qWarning() << "The key (" << key << ") not found in the 'LatestVersion' value (" << latestVersion << ") (server side).";
-                    return false;
-                }
+        QStringList jsonKeys;
+        jsonKeys << m_ReleaseDate
+                 << m_ChangeLog
+                 << m_Address
+                 << m_RequiredMemory
+                 << m_CurrentFileSize
+                 << m_CheckSum
+                 << m_Staging
+                 << m_ForceUpdate;
 
-                if (value.isString() && value.toString().isEmpty()) {
-                    qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
-                    return false;
-
-                } else if (value.isDouble() && (value.toDouble(-100) == -100)) {
-                    qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersion << ") (server side).";
-                    return false;
-                }
-            }
-
-        } else {
-            qWarning() << "The 'LatestVersion' value (" << latestVersion << ") is incorrect in the Update file (server side).";
+        if (latestVersionObj.isEmpty()) {
+            qWarning() << "The 'LatestVersion' value (" << latestVersionKey << ") is empty in the Update file (server side).";
             return false;
         }
 
+        foreach (auto key, jsonKeys) {
+            auto value = latestVersionObj.value(key);
+            if (value.isUndefined() || value.type() == QJsonValue::Null) {
+                qWarning() << "The key (" << key << ") not found in the 'LatestVersion' value (" << latestVersionKey << ") (server side).";
+                return false;
+            }
+
+            if (value.isString() && value.toString().isEmpty()) {
+                qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersionKey << ") (server side).";
+                return false;
+
+            } else if (value.isDouble() && (value.toDouble(-100) == -100)) {
+                qWarning() << "The key (" << key << ") is empty in the 'LatestVersion' value (" << latestVersionKey << ") (server side).";
+                return false;
+            }
+        }
+
     } else {
-        qWarning() << "The 'LatestVersion' key is not present in the Update file (server side).";
+        qWarning() << "The 'LatestVersion' value (" << latestVersionKey << ") is incorrect in the Update file (server side).";
         return false;
     }
 
     return true;
+}
+
+void NUVE::System::setUID(cpuid_t uid)
+{
+    mUID = uid;
 }
 
 void NUVE::System::checkPartialUpdate(bool notifyUser) {
@@ -616,47 +710,39 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
     file .close();
 
-    // Update version information
-    mLatestVersionKey = updateJsonObject.value("LatestVersion").toString();
+    auto latestVersionKey = findLatestVersion(updateJsonObject);
+
+
+    TRACE << "Maximum Version:" << latestVersionKey;
+
+    if (latestVersionKey.isEmpty())
+        return;
+
+    auto latestVersionObj = updateJsonObject.value(latestVersionKey).toObject();
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
-    if (mLatestVersionKey != currentVersion) {
+
+
+    // Compare versions lexicographically
+    if (latestVersionKey > currentVersion) {
         auto appVersionList = currentVersion.split(".");
-        auto latestVersion = mLatestVersionKey.split(".");
+        auto latestVersion = latestVersionKey.split(".");
 
         if (appVersionList.count() > 2 && latestVersion.count() > 2) {
 
-            auto appVersionMajor = appVersionList.first().toInt();
-            auto latestVersionMajor = latestVersion.first().toInt();
-
-            auto appVersionMinor = appVersionList[1].toInt();
-            auto latestVersionMinor = latestVersion[1].toInt();
-
-            auto appVersionPatch = appVersionList[2].toInt();
-            auto latestVersionPatch = latestVersion[2].toInt();
-
-            bool isUpdateAvailable = latestVersionMajor > appVersionMajor;
-
-
-            if (latestVersionMajor == appVersionMajor) {
-                isUpdateAvailable = latestVersionMinor > appVersionMinor;
-
-                if (latestVersionMinor == appVersionMinor)
-                    isUpdateAvailable = latestVersionPatch > appVersionPatch;
-            }
-            setUpdateAvailable(isUpdateAvailable);
+            setUpdateAvailable(true);
 
             if (notifyUser)
                 emit notifyNewUpdateAvailable();
 
         } else {
-            qWarning() << "The version format is incorrect (major.minor.patch)" << mLatestVersionKey;
+            qWarning() << "The version format is incorrect (major.minor.patch)" << latestVersionKey;
+            return;
         }
-
     }
 
-    auto latestVersionObj = updateJsonObject.value(mLatestVersionKey).toObject();
+    mLatestVersionKey  = latestVersionKey;
     mLatestVersionDate = latestVersionObj.value(m_ReleaseDate).toString();
     mLatestVersionChangeLog = latestVersionObj.value(m_ChangeLog).toString();
     mLatestVersionAddress = latestVersionObj.value(m_Address).toString();
@@ -688,5 +774,27 @@ void NUVE::System::rebootDevice()
     qDebug() << "Standard Output:" << result;
     qDebug() << "Standard Error:" << error;
 
-    #endif
+#endif
+}
+
+QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
+    QStringList versions = updateJson.keys();
+    if (versions.contains("LatestVersion"))
+        versions.removeOne("LatestVersion");
+
+    std::sort(versions.begin(), versions.end(), std::greater<QString>());
+
+    TRACE << versions;
+    // Find the maximum version
+    QString latestVersionKey;
+
+    foreach (auto ver, versions) {
+        auto latestVersionObj = updateJson.value(ver).toObject();
+        if (mTestMode || !latestVersionObj.value(m_Staging).toBool()) {
+            latestVersionKey = ver;
+            break;
+        }
+    }
+
+    return latestVersionKey;
 }

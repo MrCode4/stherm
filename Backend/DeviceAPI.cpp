@@ -12,6 +12,8 @@ DeviceAPI::DeviceAPI(QObject *parent)
           new NUVE::Hardware(m_deviceConfig, m_timing, m_currentStage, m_sensors, *m_system, this))
 {
     _uid = UtilityHelper::getCPUInfo().toStdString();
+
+    m_system->setUID(_uid);
 }
 
 int DeviceAPI::getStartMode()

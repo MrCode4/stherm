@@ -187,12 +187,9 @@ BasePageView {
         id: selectTimeCompo
 
         SelectTimePage {
+            uiSession: root.uiSession
             onTimeSelected: function(time) {
-                var selectedTime = new Date;
-                selectedTime = Date.fromLocaleTimeString(Qt.locale(), time, "hh:mm:ss");
-                selectedTime.setSeconds(0);
-
-                DateTimeManager.setDateTime(selectedTime);
+                DateTimeManager.setDateTime(time);
             }
         }
     }

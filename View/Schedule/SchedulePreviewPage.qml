@@ -532,7 +532,12 @@ BasePageView {
         var endTime = Date.fromLocaleTimeString(locale, internal.scheduleToEdit.endTime, "hh:mm AP");
 
         const twoHoursToMs = 2 * 60 * 60 * 1000;
-        if (endTime.getTime() - startTime.getTime() < twoHoursToMs) {
+
+        if ((endTime - startTime) < 0) {
+            endTime.setDate(endTime.getDate() + 1);
+        }
+
+        if ((endTime - startTime) < twoHoursToMs) {
             //! Show an error popup
             uiSession.popUps.errorPopup.errorMessage = "Schedule time period must be at least +2 hours.";
             uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);

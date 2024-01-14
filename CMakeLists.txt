@@ -142,6 +142,7 @@ qt6_add_qml_module(appStherm
         View/FanPage.qml
         View/SystemInfoPage.qml
         View/AddSchedulePage.qml
+        View/SystemUpdatePage.qml
         View/Schedule/ScheduleTypePage.qml
         View/Schedule/ScheduleTempraturePage.qml
         View/Schedule/ScheduleTimePage.qml
@@ -192,7 +193,7 @@ qt6_add_qml_module(appStherm
         View/Test/AudioTestPage.qml
         View/Test/InternalSensorTestPage.qml
         View/Test/RelayTestPage.qml
-        View/SystemUpdatePage.qml
+        View/Test/VersionInformationPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml

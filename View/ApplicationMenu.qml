@@ -86,7 +86,9 @@ BasePageView {
                                               })
                     break;
                 case "Technician Access":
-                    _root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml")
+                    _root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              })
                     break;
                 case "System Info":
                     _root.StackView.view.push("qrc:/Stherm/View/SystemInfoPage.qml")

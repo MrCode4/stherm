@@ -85,8 +85,17 @@ bool NUVE::Hardware::getSN(cpuid_t uid, std::string &sn)
 
     // TODO curl send will give the serial nubmer and a bool representing if hte client_id is >0
     // TODO send the http request
-    sn = system.getSN(uid);
-    return true;
+
+    if (!uid.empty())
+        sn = system.getSN(uid);
+
+    else
+        qWarning() << "The UID is missing...";
+
+    if (!sn.empty())
+        deviceConfig.serial_number = sn;
+
+    return !sn.empty();
 }
 
 // TODO refactor, this does MUCH more than just get the start mode
@@ -104,7 +113,9 @@ int NUVE::Hardware::getStartMode(cpuid_t uid)
 
     if (sm < 0) {
         // TODO this is a critical error.... how to handle it
+        qWarning() << "Start mode encounter an error!";
     }
+
     if (sm == 0) {
         deviceConfig.start_mode = 0;
         return 0;
@@ -129,7 +140,6 @@ int NUVE::Hardware::getStartMode(cpuid_t uid)
         // staring normally, but defaults not set
         timing.setDefaultValues();
         currentStage.timestamp = current_timestamp();
-        deviceConfig.serial_number = sn;
         deviceConfig.start_mode = 1;
         return 1;
     }

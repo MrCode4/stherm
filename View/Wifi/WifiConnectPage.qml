@@ -72,11 +72,11 @@ BasePageView {
         id: _passwordTf
 
         anchors.centerIn: parent
-        width: parent.width * 0.65
+        width: parent.width * 0.8
 
         maximumLength: 256
         rightPadding: _passwordEchoBtn.width
-        placeholderText: "Enter Wi-Fi password"
+        placeholderText: `Password For "${wifi.ssid}"`
         echoMode: _passwordEchoBtn.checked ? TextField.Normal : TextField.Password
         validator: RegularExpressionValidator {
             regularExpression: new RegExp(`.{${minPasswordLength},${_passwordTf.maximumLength}}`)
@@ -119,6 +119,10 @@ BasePageView {
 
             _connectCheckCon.enabled = false;
         }
+    }
+
+    StackView.onActivated: {
+        _passwordTf.forceActiveFocus();
     }
 
     Component.onCompleted: {

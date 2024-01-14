@@ -25,6 +25,8 @@ class DeviceAPI : public QObject
      *  Q_PROPERTY(QString userName READ userName WRITE setUserName NOTIFY userNameChanged)
     */
 
+    Q_PROPERTY(QString uid READ uid NOTIFY uidChanged)
+
     QML_ELEMENT
 public:
     explicit DeviceAPI(QObject *parent = nullptr);
@@ -37,7 +39,12 @@ public:
         return m_system;
     }
 
+    QString uid() {
+        return QString::fromStdString(_uid);
+    }
+
 signals:
+    void uidChanged();
 
 private:
     NUVE::DeviceConfig m_deviceConfig;

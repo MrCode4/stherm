@@ -20,8 +20,10 @@ class System : public NetworkWorker
     Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
+    Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY snReady FINAL)
 
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
+    Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
@@ -42,10 +44,7 @@ public:
     //! Reboot device
     Q_INVOKABLE void rebootDevice();
 
-    //! Get technic's url and serial number
-    void getQR(QString accessUid) { getSN(accessUid.toStdString()); }
-
-    // TODO review if this, and others below, should be static
+    //! Get serial number from server
     std::string getSN(cpuid_t accessUid);
 
     //! Get update
@@ -66,6 +65,9 @@ public:
     //! notifyUser: Send notification for user when new update is available
     Q_INVOKABLE void getUpdateInformation(bool notifyUser = false);
 
+    //! Get Contractor Information
+    void getContractorInfo();
+
     //! Getters
     QString latestVersion();
 
@@ -77,13 +79,19 @@ public:
 
     QString lastInstalledUpdateDate();
 
+    QString serialNumber();
+
     int partialUpdateProgress();
 
     bool updateAvailable();
 
+    bool testMode();
+
+    void setTestMode(bool testMode);
+
     void setPartialUpdateProgress(int progress);
 
-
+    void setUID(NUVE::cpuid_t uid);
 
 protected slots:
     //! Process network replay
@@ -114,6 +122,8 @@ signals:
     //! Send when new update os available
     void notifyNewUpdateAvailable();
 
+    void testModeChanged();
+
 
 private:
 
@@ -136,6 +146,9 @@ private:
 
     //! Check and validate update json file
     bool checkUpdateFile(const QByteArray updateData);
+
+    //! Find Latest version from the update JsonObject
+    QString findLatestVersion(QJsonObject updateJson);
 
 private:
 
@@ -162,7 +175,14 @@ private:
 
     bool mUpdateAvailable;
 
+    bool mIsGetSNReceived;
+    
+    //! System on test mode or not
+    bool mTestMode;
+
     QTimer mTimer;
+
+    NUVE::cpuid_t mUID;
 
     //! QElapsedTimer to measure download rate.
     QElapsedTimer mElapsedTimer;
