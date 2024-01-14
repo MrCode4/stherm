@@ -1,6 +1,8 @@
 pragma Singleton
 
 import QtQuick
+
+import QtQuickStream
 import Stherm
 
 AppSpecCPP {
@@ -47,6 +49,7 @@ AppSpecCPP {
         DinningRoom,
         GuestHouse
     }
+
     //! Sensor location names
     //! \note: we use map (js object) instead of array to avoid bugs in case of moving
     //! SensorLocation enum values
@@ -70,7 +73,64 @@ AppSpecCPP {
         return names
     }
 
+    readonly property var scheduleTypeNames: {
+        var names = {};
+
+        names[`${AppSpec.Away}`]      = "Away";
+        names[`${AppSpec.Night}`]     = "Night";
+        names[`${AppSpec.Home}`]      = "Home";
+        names[`${AppSpec.Custom}`]    = "Custom";
+
+        return names
+    }
+
+    function scheduleNameToType(typeName: string) {
+        var type = AppSpec.STUnknown;
+        let index = Object.values(scheduleTypeNames).findIndex(elem => elem === typeName);
+
+        if (index !== -1)
+            type = Object.keys(scheduleTypeNames)[index];
+
+        return type;
+    }
+
     //! Minimum and maximum temperature in the app (Celcius)
     property real minimumTemperatureC: 18
     property real maximumTemperatureC: 30
+
+    //! Get default schedule
+    function getDefaultSchedule (type: int) : SceduleCPP {
+
+        var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"]);
+        newSchedule.type = type;
+
+        switch (type) {
+        case AppSpecCPP.Away: {
+            newSchedule.temprature = 26;
+            newSchedule.startTime = "06:00 AM";
+            newSchedule.endTime = "03:00 PM";
+            newSchedule.repeats = "Mo,Tu,We,Th,Fr";
+        } break;
+
+        case AppSpecCPP.Night: {
+            newSchedule.temprature = 25;
+            newSchedule.startTime = "10:00 PM";
+            newSchedule.endTime = "06:00 AM";
+            newSchedule.repeats = "Mo,Tu,We,Th,Fr,Sa,Su";
+        } break;
+
+        case AppSpecCPP.Home: {
+            newSchedule.temprature = 23;
+            newSchedule.startTime = "09:00 AM";
+            newSchedule.endTime = "06:00 PM";
+            newSchedule.repeats = "Mo,Tu,We,Th,Fr";
+        } break;
+
+        default: {
+
+        }
+        }
+
+        return newSchedule;
+    }
 }

@@ -167,7 +167,7 @@ void Scheme::run()
         if (mSystemSetup->isVacation) {
             VacationLoop();
 
-        } else if (mSchedule) {
+        } else if (mSchedule) { // Schedule moves the app to auto mode and use the schedule property (temperature/humidity)
             AutoModeLoop();
 
         } else {

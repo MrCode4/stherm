@@ -9,12 +9,13 @@ class ScheduleCPP : public QSObjectCpp
     Q_OBJECT
 
     Q_PROPERTY(QString name       MEMBER name       NOTIFY nameChanged FINAL)
-    Q_PROPERTY(QString type       MEMBER type       NOTIFY typeChanged FINAL)
     Q_PROPERTY(QString startTime  MEMBER startTime  NOTIFY startTimeChanged FINAL)
     Q_PROPERTY(QString endTime    MEMBER endTime    NOTIFY endTimeChanged FINAL)
     Q_PROPERTY(QString dataSource MEMBER dataSource NOTIFY dataSourceChanged FINAL)
 
     Q_PROPERTY(QString repeats MEMBER repeats NOTIFY repeatsChanged FINAL)
+
+    Q_PROPERTY(int type        MEMBER type       NOTIFY typeChanged FINAL)
 
     Q_PROPERTY(double temprature MEMBER temprature NOTIFY tempratureChanged FINAL)
     Q_PROPERTY(double humidity   MEMBER humidity   NOTIFY humidityChanged FINAL)
@@ -28,7 +29,6 @@ public:
 
 
     QString name;
-    QString type;
 
     //! ScheduleCPP start time
     QString startTime;
@@ -40,6 +40,8 @@ public:
 
     //! Ex: "Mo,Fr"
     QString repeats;
+
+    int type;
 
     //! ScheduleCPP temprature: This is always in Celsius
     double temprature;

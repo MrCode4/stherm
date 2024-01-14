@@ -62,6 +62,16 @@ public:
     };
     Q_ENUM(FanMode)
 
+    //! Schedule Type
+    enum ScheduleType {
+        Away   = 0,
+        Night  = 1,
+        Home   = 2,
+        Custom = 3,
+        STUnknown
+    };
+    Q_ENUM(ScheduleType)
+
 signals:
 
 private:
