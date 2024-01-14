@@ -132,6 +132,11 @@ qreal RangeSliderHandleData::getMaxValue() const
 void RangeSliderHandleData::setMaxValue(qreal newMaxValue)
 {
     mMaxValue = newMaxValue;
+
+    //! Update value if needed
+    if (mValue > mMaxValue) {
+        setValue(mMaxValue);
+    }
 }
 
 qreal RangeSliderHandleData::getMinValue() const
@@ -142,4 +147,9 @@ qreal RangeSliderHandleData::getMinValue() const
 void RangeSliderHandleData::setMinValue(qreal newMinValue)
 {
     mMinValue = newMinValue;
+
+    //! Update value if needed
+    if (mValue < mMinValue) {
+        setValue(mMinValue);
+    }
 }

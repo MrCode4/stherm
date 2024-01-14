@@ -6,32 +6,46 @@ import Ronia.impl
 Item {
     id: sliderHandles
 
+    //! Is slider horizontal
     property bool horizontal
+
+    //! to: must be max of to and from
     property real to: 0
+
+    //! from: must be min of to and from
     property real from: 0
+
+    //! Difference between first and second values
     property real difference: 0
+
+    //! Difference value mapped to position (0 to 1)
+    readonly property real positionDifference: (difference - from) / Math.abs(to - from)
+
+    //! Color of handles
     property color handleColor
 
+    //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
         handle: firstHandle
         value: from
 
         onValueChanged: {
             //! Set position and visualPosition
-            setPosition((value - from) / Math.abs(to - from));
+            setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set min value of second handler
             sliderHandles.second.setMinValue(value + difference);
         }
     }
 
+    //! Second handle data
     property RangeSliderHandleData second: RangeSliderHandleData {
         handle: secondHandle
         value: to
 
         onValueChanged: {
             //! Set position and visualPosition
-            setPosition((value - from) / Math.abs(to - from));
+            setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set max value of second handler
             sliderHandles.first.setMaxValue(value - difference);
@@ -85,7 +99,7 @@ Item {
 
             onActiveTranslationChanged: {
                 if (sliderHandles.horizontal) {
-                    var newPos = Math.max(0, Math.min(sliderHandles.second.position - sliderHandles.difference,
+                    var newPos = Math.max(0, Math.min(sliderHandles.second.position - sliderHandles.positionDifference,
                                                       prevPosition + (activeTranslation.x / sliderHandles.width)
                                                       )
                                           );
@@ -137,7 +151,7 @@ Item {
 
             onActiveTranslationChanged: {
                 if (sliderHandles.horizontal) {
-                    var newPos = Math.min(1, Math.max(sliderHandles.first.position + sliderHandles.difference,
+                    var newPos = Math.min(1, Math.max(sliderHandles.first.position + sliderHandles.positionDifference,
                                                       prevPosition + (activeTranslation.x / sliderHandles.width)
                                                       )
                                           );

@@ -2,7 +2,7 @@ import QtQuick
 
 import Ronia
 import Ronia.impl
-// import "./impl"
+
 /*! ***********************************************************************************************
  * LimitedRangeSlider
  * ************************************************************************************************/
@@ -10,7 +10,7 @@ Control {
     id: control
 
     property int orientation: Qt.Horizontal
-    property real difference: 0.3
+    property real difference: 0
     property real from: 0.
     property real to: 1.
     readonly property bool horizontal: orientation === Qt.Horizontal
@@ -53,7 +53,7 @@ Control {
         anchors.fill: parent
         horizontal: control.horizontal
         to: Math.max(control.to, control.from)
-        from: Maht.min(control.to, control.from)
+        from: Math.min(control.to, control.from)
         difference: control.difference
         handleColor: Style.accent
     }
