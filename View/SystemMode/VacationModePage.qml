@@ -93,9 +93,6 @@ BasePageView {
             second.value: Utils.convertedTemperature(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit)
             difference: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 10 : 6
 
-            onFromChanged: console.log('fr: ', from)
-            onToChanged: console.log('to: ', to)
-
             labelSuffix: "\u00b0" + (setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
         }
 

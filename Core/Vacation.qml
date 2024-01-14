@@ -9,14 +9,14 @@ import Stherm
 
 QSObject {
     //! Minimum temperature
-    property int temp_min: 0
+    property real temp_min: 0
 
     //! Maximum temperature
-    property int temp_max: 60
+    property real temp_max: 60
 
     //! Minimum temperature
-    property int hum_min: 0
+    property real hum_min: 0
 
     //! Maximum temperature
-    property int hum_max: 100
+    property real hum_max: 100
 }
