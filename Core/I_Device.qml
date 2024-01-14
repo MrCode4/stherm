@@ -39,9 +39,13 @@ QSObject {
     //! List <Message>
     property var            messages:       []
 
-    //! List of device sensors
+    //! List of device sensors previously paired
     //! List <Sensor>
     property var            sensors:        []
+
+    //! List of device sensors connected
+    //! List <Sensor>
+    property var            _sensors:        []
 
     //! List of device schedules
     //! List <Schedule>

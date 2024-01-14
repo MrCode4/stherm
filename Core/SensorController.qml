@@ -14,9 +14,14 @@ QtObject {
     property I_Device device
 
     Component.onCompleted: {
-        if (device.sensors.length !==0)
-            return;
+        device._sensors = []
 
+        device.sensors.forEach(sensor => {
+                                   // should check and try to connecting to all sensors
+                                   console.log(sensor.name, sensor.location);
+        });
+
+        return; // uncomment this for testing!
         addSensorData("Hum Sensor", AppSpec.SensorLocation.Unknown);
         addSensorData("CO2 Sens - Bedroom", AppSpec.SensorLocation.Bedroom);
         addSensorData("Temp Sens - LR", AppSpec.SensorLocation.LivingRoom);
@@ -33,21 +38,21 @@ QtObject {
         sensor.name = name;
         sensor.location = location;
 
-        device.sensors.push(sensor);
-        device.sensorsChanged();
+        device._sensors.push(sensor);
+        device._sensorsChanged();
     }
 
     function addSensor(sensor: Sensor)
     {
-        device.sensors.push(sensor);
-        device.sensorsChanged();
+        device._sensors.push(sensor);
+        device._sensorsChanged();
     }
 
     function removeSensor(sensor: Sensor)
     {
         var sensorIndx = device.sensors.findIndex((element, index) => element === sensor);
         if (sensorIndx > -1) {
-            var sensorToDelete = device.sensors.splice(sensorIndx, 1)[0];
+            var sensorToDelete = device._sensors.splice(sensorIndx, 1)[0];
             sensorToDelete.destroy();
         }
     }

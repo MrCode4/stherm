@@ -21,9 +21,6 @@ BasePageView {
         if (pageStack.depth > 1) {
             pageStack.pop();
         } else {
-            //! Adding sensor is canceled, delete created instance
-            sensorPairPage.newSensor.destroy();
-
             if (root.StackView.view) {
                 //! Then Page is inside an StackView
                 if (root.StackView.view.currentItem == root) {
@@ -49,21 +46,6 @@ BasePageView {
 
         visible: false
 
-        //! For test: to add an arbitrary Sensor after two seconds
-        Timer {
-            interval: 2000
-            running: true
-            onTriggered: {
-                sensorPairPage.newSensor = Qt.createQmlObject(
-                            `
-                            import Stherm
-
-                            Sensor { }
-                            `, AppCore.defaultRepo);
-                sensorPairPage.sensorPaired(sensorPairPage.newSensor);
-            }
-        }
-
         onSensorPaired: function(sensor) {
             if (sensor instanceof Sensor) {
                 //! Push selecting sensor name and location pages
@@ -72,6 +54,8 @@ BasePageView {
                                 });
             }
         }
+
+        onSensorPairingCanceled : backButtonCallback()
     }
 
     Component {

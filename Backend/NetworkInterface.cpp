@@ -1,9 +1,12 @@
 #include "NetworkInterface.h"
+#include "LogHelper.h"
 #include "NmcliInterface.h"
 
 #include <QNetworkInterface>
+#include <QNetworkRequest>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QNetworkReply>
 
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
@@ -11,7 +14,12 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , mConnectedWifiInfo { nullptr }
     , mRequestedToConnectedWifi { nullptr }
     , mDeviceIsOn { false }
+    , mHasInternet { false }
+    , mNamIsRunning { false }
+    , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
+                                                        "http://google.com")) }
 {
+    connect(mNmcliInterface, &NmcliInterface::errorOccured, this, &NetworkInterface::onErrorOccured);
     connect(mNmcliInterface, &NmcliInterface::wifiListRefereshed, this, &NetworkInterface::onWifiListRefreshed);
     connect(mNmcliInterface, &NmcliInterface::wifiConnected, this, &NetworkInterface::onWifiConnected);
     connect(mNmcliInterface, &NmcliInterface::wifiDisconnected, this, &NetworkInterface::onWifiDisconnected);
@@ -19,19 +27,45 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(mNmcliInterface, &NmcliInterface::wifiDevicePowerChanged, this, [&](bool on) {
         if (mDeviceIsOn != on) {
             mDeviceIsOn = on;
-            emit deviceIsOnChanged();
-        }
 
-        emit connectedWifiChanged();
-        emit wifisChanged();
+            emit deviceIsOnChanged();
+            emit wifisChanged();
+            emit connectedWifiChanged();
+        }
     });
 
     connect(mNmcliInterface, &NmcliInterface::wifiForgotten, this, [this](const QString& ssid) {
         if (mConnectedWifiInfo && mConnectedWifiInfo->mSsid == ssid) {
-            mConnectedWifiInfo->setProperty("connected", false);
+            setConnectedWifiInfo(nullptr);
+        }
+    });
 
-            mConnectedWifiInfo = nullptr;
-            emit connectedWifiChanged();
+    //! Connecting to QNetworkAccessManager
+    connect(&mNam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
+
+        bool hasInternet = reply->error() == QNetworkReply::NoError;
+        setHasInternet(hasInternet);
+
+        mNamIsRunning = false;
+        reply->deleteLater();
+    });
+
+    //! Set up time for checking internet access: every 30 seconds
+    mCheckInternetAccessTmr.setInterval(cCheckInternetAccessInterval);
+    connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
+    connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
+        if (mConnectedWifiInfo) {
+            if (!mCheckInternetAccessTmr.isActive()) {
+                mCheckInternetAccessTmr.start();
+
+                checkHasInternet();
+            }
+        } else {
+            if (mCheckInternetAccessTmr.isActive()) {
+                mCheckInternetAccessTmr.stop();
+
+                setHasInternet(false);
+            }
         }
     });
 }
@@ -162,6 +196,35 @@ qsizetype NetworkInterface::networkCount(WifiInfoList* list)
     return 0;
 }
 
+void NetworkInterface::checkHasInternet()
+{
+    if (!mConnectedWifiInfo) {
+        setHasInternet(false);
+    } else if (!mNamIsRunning) {
+        QNetworkRequest request(cCheckInternetAccessUrl);
+        request.setTransferTimeout(8000);
+        mNamIsRunning = true;
+
+        mNam.get(request);
+    }
+}
+
+void NetworkInterface::onErrorOccured(int error)
+{
+    switch (error) {
+    case NmcliInterface::Error::ActivationFailed:
+        //! If there was a wifi requested to connect, forget it
+        if (mRequestedToConnectedWifi) {
+            forgetWifi(mRequestedToConnectedWifi);
+            mRequestedToConnectedWifi = nullptr;
+        }
+        break;
+    default:
+        qDebug() << Q_FUNC_INFO << __LINE__ << " nmcli Error: " << error;
+        break;
+    }
+}
+
 void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis)
 {
     //! Find wifis to be deleted.
@@ -215,7 +278,9 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
     mWifiInfos = std::move(wifiInfos);
 
     if (!anyWifiConnected
-        || std::find(toDeleteWifis.begin(), toDeleteWifis.end(), mConnectedWifiInfo) != toDeleteWifis.end()) {
+        || std::find(toDeleteWifis.begin(),
+                     toDeleteWifis.end(),
+                     mConnectedWifiInfo) != toDeleteWifis.end()) {
         mConnectedWifiInfo = nullptr;
     }
     emit connectedWifiChanged();
@@ -227,25 +292,21 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
 
 void NetworkInterface::onWifiConnected(const QString& bssid)
 {
-    if (mConnectedWifiInfo) {
-        mConnectedWifiInfo->setProperty("connected", false);
-    }
-
-    if (mRequestedToConnectedWifi) {
-        mRequestedToConnectedWifi->setProperty("connected", true);
-
-        mConnectedWifiInfo = mRequestedToConnectedWifi;
+    if (mRequestedToConnectedWifi && mRequestedToConnectedWifi->mBssid == bssid) {
+        setConnectedWifiInfo(mRequestedToConnectedWifi);
+    } else {
         mRequestedToConnectedWifi = nullptr;
-        emit connectedWifiChanged();
+        //! Search for a wifi with this bssid.
+        for (WifiInfo* wifi : mWifiInfos) {
+            if (wifi->mBssid == bssid) {
+                setConnectedWifiInfo(wifi);
+                return;
+            }
+        }
     }
 }
 
 void NetworkInterface::onWifiDisconnected()
 {
-    if (mConnectedWifiInfo) {
-        mConnectedWifiInfo->setProperty("connected", false);
-
-        mConnectedWifiInfo = nullptr;
-        emit connectedWifiChanged();
-    }
+    setConnectedWifiInfo(nullptr);
 }

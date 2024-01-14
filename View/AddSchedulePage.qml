@@ -14,6 +14,8 @@ BasePageView {
      * ****************************************************************************************/
     //! schedulesModel: use to create new Schedule instance
     property SchedulesController     schedulesController: uiSession?.schedulesController ?? null
+    //! Device reference
+    property I_Device                device:              uiSession?.appModel ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -70,6 +72,16 @@ BasePageView {
                     saveSchedule();
                 }
             } else {
+
+                // if sensors are empty we skip this page!
+                if (_newSchedulePages.currentItem instanceof ScheduleRepeatPage) {
+                    if (device?._sensors.length === 0) {
+                        _internal.newSchedule.dataSource = "Onboard Sensor";
+                        _newSchedulePages.push(_preivewPage)
+                        return;
+                    }
+                }
+
                 //! Go to next page
                 _newSchedulePages.push(_newSchedulePages.currentItem.nextPage)
             }
@@ -191,7 +203,7 @@ BasePageView {
         id: _repeatPage
 
         ScheduleRepeatPage {
-            readonly property Component nextPage: dataSourcePageCompo
+            readonly property Component nextPage: _dataSourcePageCompo
 
             onRepeatsChanged: {
                 if (repeats !== _internal.newSchedule.repeats) {
@@ -202,7 +214,7 @@ BasePageView {
     }
 
     Component {
-        id: dataSourcePageCompo
+        id: _dataSourcePageCompo
 
         ScheduleDataSourcePage {
             readonly property Component nextPage: _preivewPage

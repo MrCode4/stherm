@@ -35,7 +35,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button: only visible if is editing and schedule (schedule is not null)
     ToolButton {
-        parent: schedule ? _root.header.contentItem : _root
+        parent: schedule ? root.header.contentItem : root
         visible: schedule
         contentItem: RoniaTextIcon {
             text: FAIcons.check
@@ -79,20 +79,21 @@ BasePageView {
             SensorDelegate {
                 Layout.fillWidth: true
                 checkable: true
-                checked: true
+                checked: root.schedule ? root.schedule.dataSource === sensor.name : true
                 sensor: Sensor {
                     name: "Onboard Sensor"
                 }
             }
 
             Repeater {
-                model: device?.sensors ?? 0
+                model: device?._sensors ?? 0
                 delegate: SensorDelegate {
                     required property var modelData
                     required property int index
 
                     Layout.fillWidth: true
                     checkable: true
+                    checked: root.schedule ? root.schedule.dataSource === sensor?.name : false
                     sensor: modelData instanceof Sensor ? modelData : null
                 }
             }

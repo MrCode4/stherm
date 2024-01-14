@@ -75,6 +75,10 @@ ListView {
             "text": "System Setup"
         },
         {
+            "icon": FAIcons.wifi,
+            "text": "Wi-Fi Settings"
+        },
+        {
             "icon": FAIcons.fileExclamation,
             "text": "Technician Access"
         },

@@ -60,6 +60,7 @@ BasePageView {
 
             BusyIndicator {
                 anchors.fill: parent
+                anchors.margins: 4
                 visible: NetworkInterface.isRunning
                 running: visible
             }

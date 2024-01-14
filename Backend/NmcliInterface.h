@@ -1,8 +1,10 @@
 #pragma once
 
+#include <QEventLoop>
+#include <QDebug>
 #include <QObject>
 #include <QProcess>
-#include <QDebug>
+#include <QTimer>
 #include <QVariant>
 
 
@@ -26,6 +28,7 @@
 #define NC_ARG_GET_VALUES   "--get-values"
 #define NC_ARG_RESCAN       "--rescan"
 #define NC_ARG_FIELDS       "--fields"
+#define NC_WAIT_MSEC        500
 
 
 //! Aliasing wifi info list structure
@@ -56,8 +59,8 @@ public:
         UnknownError=1,         //! Unknown or unspecified error.
         Invalid=2,              //! Invalid user input, wrong nmcli invocation.
         Timeout=3,              //! Timeout expired (see --wait option).
-        ActiveFailed=4,         //! Connection activation failed.
-        DeactiveFailed=5,       //! Connection deactivation failed.
+        ActivationFailed=4,     //! Connection activation failed.
+        DeactivationFailed=5,   //! Connection deactivation failed.
         DisconnectFailed=6,     //! Disconnecting device failed.
         ConnectDeleteFailed=7,  //! Connection deletion failed.
         NotRunning=8,           //! NetworkManager is not running.
@@ -150,11 +153,69 @@ public:
                        const QString& security,
                        const QString& password);
 
+    QString getConnectedWifiBssid() const;
+
 private:
     /*!
      * \brief initialize Gets initial information about wifi device
      */
     void    initialize()
+    {
+        //! Get wifi device name without detaching
+        mMonitorProcess->start(NC_COMMAND, {
+                                               NC_ARG_GET_VALUES,
+                                               "GENERAL.TYPE,GENERAL.DEVICE",
+                                               NC_ARG_DEVICE,
+                                               NC_ARG_SHOW,
+                                           });
+        waitLoop(mMonitorProcess, NC_WAIT_MSEC);
+        if (mMonitorProcess->exitStatus() == QProcess::NormalExit
+            && mMonitorProcess->exitCode() == 0) {
+            //! Get wifi device name
+            QByteArray line = mMonitorProcess->readLine();
+            while (!line.isEmpty() && line != "wifi\n") {
+                line = mMonitorProcess->readLine();
+            }
+
+            mWifiDevice = mMonitorProcess->readLine();
+            if (!mWifiDevice.isEmpty()) {
+                mWifiDevice.remove(mWifiDevice.size() - 1, 1);
+
+                //! Start monitoring
+                connect(mMonitorProcess, &QProcess::readyReadStandardOutput, this, &NmcliInterface::onMonitorProcessReadReady);
+                mMonitorProcess->start(NC_COMMAND, {
+                                                       NC_ARG_DEVICE,
+                                                       "monitor",
+                                                       mWifiDevice,
+                                                   });
+
+                //! Get device enable state
+                getDevicePowerState();
+                return;
+            }
+        }
+        qCritical() << Q_FUNC_INFO << __LINE__ << ": No wifi device is found. Wifi will not function";
+    }
+
+    int waitLoop(QProcess *process, int timeout = 1000) const
+    {
+        QEventLoop loop;
+        // connect signal for handling stopWork
+        connect(process, &QProcess::finished, &loop, [&loop]() {
+            loop.exit();
+        });
+
+        if (timeout == 0) {
+            return 0;
+        } else if (timeout > 0) {
+            // quit will exit with, same as exit(ChangeType::CurrentTemperature)
+            QTimer::singleShot(timeout, &loop, &QEventLoop::quit);
+        }
+
+        return loop.exec();
+    }
+
+    void    getDevicePowerState()
     {
         //! Use another instance of QProcess to avoid possible possible immediate call to \ref
         //! refreshWifis() failing.
@@ -163,11 +224,10 @@ private:
         //! First check wifi device on/off state
         connect(process, &QProcess::finished, this, [this, process](int exitCode, QProcess::ExitStatus) {
                 if (exitCode == 0) {
-                    emit wifiDevicePowerChanged(process->readLine().contains("enabled"));
+                    mDeviceIsOn = process->readLine().contains("enabled");
+                    emit wifiDevicePowerChanged(mDeviceIsOn);
                 }
-
-                //! Now get device wifi name
-                getWifiDeviceName(process);
+                process->deleteLater();
             }, Qt::SingleShotConnection);
 
         process->start(NC_COMMAND, {
@@ -178,26 +238,12 @@ private:
                                    });
     }
 
-    void    getWifiDeviceName(QProcess* process)
-    {
-        //! Get wifi device name
-        connect(process, &QProcess::finished, this,
-            [this, process](int exitCode, QProcess::ExitStatus exitStatus) {
-                onGetWifiDeviceNameFinished(exitCode, exitStatus);
-
-                //! Delete process
-                process->deleteLater();
-            }, Qt::SingleShotConnection);
-
-        process->start(NC_COMMAND, {
-                                       NC_ARG_GET_VALUES,
-                                       "GENERAL.TYPE,GENERAL.DEVICE",
-                                       NC_ARG_DEVICE,
-                                       NC_ARG_SHOW,
-                                   });
-    }
-
 private slots:
+    /*!
+     * \brief onMonitorProcessReadReady
+     */
+    void    onMonitorProcessReadReady();
+
     /*!
      * \brief onGetWifiDeviceNameFinished This slot is used to get the name of wifi device and store
      * it in \a\b mWifiDevice
@@ -270,10 +316,17 @@ signals:
     void    errorOccured(NmcliInterface::Error error);
 
 private:
+    bool                mDeviceIsOn;
+
     /*!
      * \brief mProcess The \a\b QProcess that is used to do everything;
      */
     QProcess*           mProcess;
+
+    /*!
+     * \brief mMonitorProcess This process is used to monitor nmcli for changes in network
+     */
+    QProcess*           mMonitorProcess;
 
     /*!
      * \brief mWifiDevice This will hold the name of wifi device. Possible values are wlp2s0,
@@ -285,7 +338,6 @@ private:
      * \brief mRequestedWifiToConnect Holds the SSID/BSSID of a wifi that is requested to connect
      */
     QString             mRequestedWifiToConnect;
-
 
     /*!
      * \brief cWifiInfoFields
@@ -303,7 +355,9 @@ private:
 inline NmcliInterface::NmcliInterface(QObject* parent)
     : QObject { parent }
     , mProcess { new QProcess(this) }
+    , mMonitorProcess { new QProcess(this) }
 {
+    mMonitorProcess->setReadChannel(QProcess::StandardOutput);
     mProcess->setReadChannel(QProcess::StandardOutput);
     connect(mProcess, &QProcess::stateChanged, this, &NmcliInterface::isRunningChanged);
 
@@ -349,7 +403,7 @@ inline bool NmcliInterface::hasWifiProfile(const QString& ssid, const QString& b
                                   NC_ARG_SHOW,
                                   ssid
                               });
-    process.waitForFinished(100);
+    waitLoop(&process, NC_WAIT_MSEC);
     if (process.exitCode() == 0) {
         //! Profile is saved
         return process.readLine() == bssid + "\n";
@@ -459,6 +513,7 @@ inline void NmcliInterface::turnWifiDeviceOn()
 
     connect(mProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus) {
         if (exitCode == 0) {
+            mDeviceIsOn = true;
             emit wifiDevicePowerChanged(true);
         } else {
             emit errorOccured(NmcliInterface::Error(exitCode));
@@ -483,6 +538,7 @@ inline void NmcliInterface::turnWifiDeviceOff()
 
     connect(mProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus) {
             if (exitCode == 0) {
+                mDeviceIsOn = false;
                 emit wifiDevicePowerChanged(false);
             } else {
                 emit errorOccured(NmcliInterface::Error(exitCode));
@@ -547,6 +603,95 @@ inline void NmcliInterface::addConnection(const QString& name,
     }
 
     mProcess->start(NC_COMMAND, args);
+}
+
+inline QString NmcliInterface::getConnectedWifiBssid() const
+{
+    //! if mProcess is running use another one. If mProcess is not running use it instead of
+    //! creating a new one.
+    QProcess* pr;
+    if (isRunning()) {
+        pr = new QProcess();
+        pr->setReadChannel(QProcess::StandardOutput);
+    } else {
+        pr = mProcess;
+    }
+
+    //! nmcli -e no -t -f active,bssid device wifi
+    pr->start(NC_COMMAND, {
+                              "-t",
+                              "-e",
+                              "no",
+                              NC_ARG_GET_VALUES,
+                              "active,bssid",
+                              NC_ARG_DEVICE,
+                              NC_ARG_WIFI,
+                          });
+
+    waitLoop(pr, NC_WAIT_MSEC);
+    if (pr->exitStatus() == QProcess::NormalExit && !pr->exitCode()) {
+        QByteArray line = pr->readLine();
+        while (!line.isEmpty()) {
+            if (line.startsWith("yes:")) {
+                QString bssid = line.sliced(QString("yes:").length());
+                bssid.chop(1);
+                return bssid;
+            }
+            line = pr->readLine();
+        }
+    } else {
+        qDebug() << "nmcli: pr error: " << pr->errorString();
+    }
+
+    if (pr != mProcess) {
+        pr->deleteLater();
+    }
+
+    return "";
+}
+
+inline void NmcliInterface::onMonitorProcessReadReady()
+{
+    QString message = mMonitorProcess->readLine();
+    message.chop(1); //! Discard \n
+    while(!message.isEmpty()) {
+        if (message.startsWith(mWifiDevice + ": ")) {
+            QString msgAction = message.sliced((mWifiDevice + ": ").length());
+
+            if (msgAction.startsWith("connecting (") || msgAction.startsWith("using ")) {
+                message = mMonitorProcess->readLine();
+                message.chop(1); //! Discard \n
+                continue;
+            }
+
+            if (msgAction == "unavailable") {
+                //! Wifi is turned off
+                mDeviceIsOn = false;
+                emit wifiDevicePowerChanged(false);
+            } else {
+                if (!mDeviceIsOn) {
+                    //! Device is no on.
+                    mDeviceIsOn = true;
+                    emit wifiDevicePowerChanged(true);
+                }
+
+                if (msgAction == "disconnected") {
+                    //! Wifi is disconnected
+                    emit wifiDisconnected();
+                } else if (msgAction == "connected") {
+                    //! Get current connection name
+                    QString connBssid = getConnectedWifiBssid();
+                    if (!connBssid.isEmpty()) {
+                        emit wifiConnected(connBssid);
+                    }
+                    qDebug() << "nmcli: " << "connected to: " << connBssid;
+                }
+            }
+        }
+
+        message = mMonitorProcess->readLine();
+        message.chop(1); //! Discard \n
+    }
 }
 
 inline void NmcliInterface::onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitStatus exitStatus)
