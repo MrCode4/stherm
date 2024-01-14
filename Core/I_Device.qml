@@ -15,7 +15,7 @@ QSObject {
     property int            type:           AppSpec.DeviceType.DT_Unknown
 
     //! Requested Temperature (Cel)
-    property real           requestedTemp:  22.22
+    property real           requestedTemp:  22.22 // 72 F
 
     //! Current Temperature (Cel)
     property real           currentTemp:    18.0

@@ -45,7 +45,7 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Confirm button: only visible if is editing and schedule (schedule is not null)
+    //! Confirm button: only visible if is editing
     ToolButton {
         parent: schedule ? _root.header.contentItem : _root
         visible: editMode

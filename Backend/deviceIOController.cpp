@@ -1291,7 +1291,7 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
 {
     TRACE_CHECK(false) << (QString("RangeMilliMeter (%0)").arg(range_mm));
 
-    // TOF sensor activate display when distance < 1 meter and time > 1 second
+    // TOF sensor activate display when distance < 1 meter and time > 1 second (handled in firmware)
     if (range_mm > 60 && range_mm <= TOF_IRQ_RANGE) {
         if (auto manager = ScreenSaverManager::instance()) {
             manager->restart();
