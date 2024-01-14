@@ -26,6 +26,7 @@
 #define NC_ARG_GET_VALUES   "--get-values"
 #define NC_ARG_RESCAN       "--rescan"
 #define NC_ARG_FIELDS       "--fields"
+#define NC_WAIT_MSEC        300
 
 
 //! Aliasing wifi info list structure
@@ -165,7 +166,7 @@ private:
                                                NC_ARG_DEVICE,
                                                NC_ARG_SHOW,
                                            });
-        mMonitorProcess->waitForFinished(500);
+        mMonitorProcess->waitForFinished(NC_WAIT_MSEC);
         if (mMonitorProcess->exitStatus() == QProcess::NormalExit
             && mMonitorProcess->exitCode() == 0) {
             //! Get wifi device name
@@ -382,7 +383,7 @@ inline bool NmcliInterface::hasWifiProfile(const QString& ssid, const QString& b
                                   NC_ARG_SHOW,
                                   ssid
                               });
-    process.waitForFinished(100);
+    process.waitForFinished(NC_WAIT_MSEC);
     if (process.exitCode() == 0) {
         //! Profile is saved
         return process.readLine() == bssid + "\n";
@@ -606,7 +607,7 @@ inline QString NmcliInterface::getConnectedWifiBssid() const
                               NC_ARG_DEVICE,
                               NC_ARG_WIFI,
                           });
-    pr->waitForFinished(200);
+    pr->waitForFinished(NC_WAIT_MSEC);
     if (pr->exitStatus() == QProcess::NormalExit && !pr->exitCode()) {
         QByteArray line = pr->readLine();
         while (!line.isEmpty()) {
