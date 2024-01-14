@@ -164,7 +164,7 @@ BasePageView {
                     Label {
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
-                        text: scheduleToDisplay?.type ?? ""
+                        text: AppSpec.scheduleTypeNames[scheduleToDisplay?.type ?? AppSpec.Away]
                         elide: "ElideRight"
                     }
                 }
