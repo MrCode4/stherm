@@ -13,6 +13,7 @@ Control {
     /* Signals
      * ****************************************************************************************/
     signal sensorPaired(Sensor sensor)
+    signal sensorPairingCanceled()
 
     /* Property declaration
      * ****************************************************************************************/
@@ -43,6 +44,7 @@ Control {
         onClicked: {
             if (text === "Cancel") {
                 countdownTmr.stop();
+                sensorPairingCanceled();
             } else {
                 //! Start countdown for pairing
                 countdownTmr.start();
@@ -109,11 +111,7 @@ Control {
             } else {
                 //! Stop countdown
                 stop();
-                Qt.callLater(function() {
-                    if (root.StackView.view) {
-                        root.StackView.view.pop();
-                    }
-                });
+                sensorPairingCanceled();
             }
         }
     }

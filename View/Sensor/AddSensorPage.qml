@@ -54,6 +54,8 @@ BasePageView {
                                 });
             }
         }
+
+        onSensorPairingCanceled : backButtonCallback()
     }
 
     Component {
