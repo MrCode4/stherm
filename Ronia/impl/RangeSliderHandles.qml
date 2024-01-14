@@ -12,26 +12,40 @@ Item {
     property real difference: 0
     property color handleColor
 
-    property QtObject first: QtObject {
-        property Item handle: firstHandle
-        property alias value: firstValue.value
-        readonly property bool hovered: false
-        readonly property bool pressed: firstDrag.active
-        readonly property real position: value / Math.abs(sliderHandles.to - sliderHandles.from)
-        readonly property real visualPosition: 0.
-        readonly property real implicitHandleHeight: handle.implicitHeight
-        readonly property real implicitHandleWidth: handle.implicitWidth
+    property RangeSliderHandleData first: RangeSliderHandleData {
+        handle: firstHandle
+        value: from
+
+        onValueChanged: {
+            //! Set position and visualPosition
+            setPosition((value - from) / Math.abs(to - from));
+
+            //! Set min value of second handler
+            sliderHandles.second.setMinValue(value + difference);
+        }
     }
 
-    property QtObject second: QtObject {
-        property Item handle: secondHandle
-        property alias value: secondValue.value
-        readonly property bool hovered: false
-        readonly property bool pressed: secondDrag.active
-        readonly property real position: value / Math.abs(sliderHandles.to - sliderHandles.from)
-        readonly property real visualPosition: 1.
-        readonly property real implicitHandleHeight: handle.implicitHeight
-        readonly property real implicitHandleWidth: handle.implicitWidth
+    property RangeSliderHandleData second: RangeSliderHandleData {
+        handle: secondHandle
+        value: to
+
+        onValueChanged: {
+            //! Set position and visualPosition
+            setPosition((value - from) / Math.abs(to - from));
+
+            //! Set max value of second handler
+            sliderHandles.first.setMaxValue(value - difference);
+        }
+    }
+
+    onToChanged: {
+        sliderHandles.second.setMaxValue(to);
+        sliderHandles.first.setMaxValue(Math.min(sliderHandles.second.value - difference, to));
+    }
+
+    onFromChanged: {
+        sliderHandles.second.setMinValue(Math.max(sliderHandles.first.value + difference, from));
+        sliderHandles.first.setMinValue(from);
     }
 
     Item {
@@ -40,11 +54,6 @@ Item {
         y: sliderHandles.horizontal ? (parent.height - height) / 2 : sliderHandles.first.position * parent.height - width / 2
         implicitWidth: 36
         implicitHeight: 36
-
-        BindableQReal {
-            id: firstValue
-            value: sliderHandles.from
-        }
 
         Rectangle {
             anchors.centerIn: parent
@@ -60,12 +69,13 @@ Item {
             property real prevPosition
 
             xAxis.enabled: sliderHandles.horizontal
-            xAxis.maximum: (sliderHandles.second.position - sliderHandles.difference) * sliderHandles.width - target.width / 2
-            xAxis.minimum: -target.width / 2
+            xAxis.maximum: (sliderHandles.second.position - sliderHandles.difference) * sliderHandles.width - parent.width / 2
+            xAxis.minimum: -parent.width / 2
 
             yAxis.enabled: !sliderHandles.horizontal
-            yAxis.maximum: (sliderHandles.second.position - sliderHandles.difference) * sliderHandles.width - target.width / 2
-            yAxis.minimum: -target.width / 2
+            yAxis.maximum: (sliderHandles.second.position - sliderHandles.difference) * sliderHandles.width - parent.width / 2
+            yAxis.minimum: -parent.width / 2
+            target: null
 
             onGrabChanged: function(grab, point) {
                 if (grab === 1) {
@@ -80,9 +90,9 @@ Item {
                                                       )
                                           );
 
-                    var newValue = newPos * (to - from) //! Assuming that to is bigger than from
-                    if (firstValue.value !== newValue) {
-                        firstValue.setValue(newValue); //! Use setter to avoid breaking bindings
+                    var newValue = newPos * (to - from) + from; //! Assuming that to is bigger than from
+                    if (sliderHandles.first.value !== newValue) {
+                        sliderHandles.first.setValue(newValue); //! Use setter to avoid breaking bindings
                     }
                 }
             }
@@ -96,11 +106,6 @@ Item {
         y: sliderHandles.horizontal ? (parent.height - height) / 2 : sliderHandles.second.position * parent.height - width / 2
         implicitWidth: 36
         implicitHeight: 36
-
-        BindableQReal {
-            id: secondValue
-            value: sliderHandles.to
-        }
 
         Rectangle {
             anchors.centerIn: parent
@@ -117,11 +122,12 @@ Item {
 
             xAxis.enabled: sliderHandles.horizontal
             xAxis.maximum: sliderHandles.width - secondHandle.width / 2
-            xAxis.minimum: (sliderHandles.first.position + sliderHandles.difference) * sliderHandles.width - target.width / 2
+            xAxis.minimum: (sliderHandles.first.position + sliderHandles.difference) * sliderHandles.width - parent.width / 2
 
             yAxis.enabled: !sliderHandles.horizontal
-            yAxis.maximum: -target.width / 2
-            yAxis.minimum: (sliderHandles.second.position + sliderHandles.difference) * sliderHandles.width - target.width / 2
+            yAxis.maximum: -parent.width / 2
+            yAxis.minimum: (sliderHandles.second.position + sliderHandles.difference) * sliderHandles.width - parent.width / 2
+            target: null
 
             onGrabChanged: function(grab, point) {
                 if (grab === 1) {
@@ -136,9 +142,9 @@ Item {
                                                       )
                                           );
 
-                    var newValue = newPos * (to - from) //! Assuming that to is bigger than from
-                    if (secondValue.value !== newValue) {
-                        secondValue.setValue(newValue); //! Use setter to avoid breaking bindings
+                    var newValue = newPos * (to - from) + from //! Assuming that to is bigger than from
+                    if (sliderHandles.second.value !== newValue) {
+                        sliderHandles.second.setValue(newValue); //! Use setter to avoid breaking bindings
                     }
                 }
             }

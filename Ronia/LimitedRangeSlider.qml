@@ -2,7 +2,7 @@ import QtQuick
 
 import Ronia
 import Ronia.impl
-
+// import "./impl"
 /*! ***********************************************************************************************
  * LimitedRangeSlider
  * ************************************************************************************************/
@@ -52,8 +52,8 @@ Control {
         id: handles
         anchors.fill: parent
         horizontal: control.horizontal
-        to: control.to
-        from: control.from
+        to: Math.max(control.to, control.from)
+        from: Maht.min(control.to, control.from)
         difference: control.difference
         handleColor: Style.accent
     }
