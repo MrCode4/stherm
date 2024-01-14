@@ -66,6 +66,8 @@ qt_add_qml_module(RoniaStyleImpl
     SOURCES
         impl/src/BindinableQReal.h
         impl/src/BindinableQReal.cpp
+        impl/src/RangeSliderHandleData.h
+        impl/src/RangeSliderHandleData.cpp
 )
 
 target_include_directories(RoniaStyleImpl PUBLIC
