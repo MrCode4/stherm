@@ -55,7 +55,8 @@ BasePageView {
 
     TextField {
         id: _nameTf
-        anchors.centerIn: parent
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: height * 0.8
         width: parent.width * 0.7
         placeholderText: "Enter Schedule Name"
         text: schedule?.name ?? ""
@@ -70,6 +71,15 @@ BasePageView {
             }
 
             _root.accepted();
+        }
+    }
+
+    Timer {
+        id: delayedTextFieldFocusTmr
+        running: true
+        interval: 100
+        onTriggered: {
+            _nameTf.forceActiveFocus();
         }
     }
 }
