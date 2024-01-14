@@ -46,6 +46,10 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    ButtonGroup {
+        buttons : [onBoardBtn]//append wireless ones
+    }
+
     ColumnLayout {
         anchors {
             horizontalCenter: parent.horizontalCenter
@@ -56,6 +60,7 @@ BasePageView {
         spacing: 16
 
         Button {
+            id:onBoardBtn
             Layout.alignment: Qt.AlignCenter
             text: "Onboard Sensor"
             checkable: true
@@ -99,7 +104,7 @@ BasePageView {
                     sensor: modelData instanceof Sensor ? modelData : null
                     delegateIndex: index
 
-                    onClicked: {
+                    onPressAndHold: {
                         //! Open SensorInfoPage for this sensor
                         if (root.StackView.view) {
                             root.StackView.view.push("qrc:/Stherm/View/Sensor/SensorInfoPage.qml", {
