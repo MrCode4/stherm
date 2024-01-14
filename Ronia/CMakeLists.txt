@@ -62,7 +62,14 @@ qt_add_qml_module(RoniaStyleImpl
         impl/CheckIndicator.qml
         impl/CursorDelegate.qml
         impl/SliderHandle.qml
-        impl/RangeSliderHandleData.qml
+
+    SOURCES
+        impl/src/BindinableQReal.h
+        impl/src/BindinableQReal.cpp
+)
+
+target_include_directories(RoniaStyleImpl PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/impl/src
 )
 
 target_link_libraries(RoniaStyleImpl PUBLIC
