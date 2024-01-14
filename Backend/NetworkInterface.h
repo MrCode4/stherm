@@ -4,6 +4,8 @@
 #include <QQmlEngine>
 #include <QNetworkInterface>
 #include <QProcess>
+#include <QNetworkAccessManager>
+#include <QTimer>
 
 class NmcliInterface;
 
@@ -62,6 +64,7 @@ class NetworkInterface : public QObject
     Q_PROPERTY(bool isRunning                   READ isRunning       NOTIFY isRunningChanged)
     Q_PROPERTY(WifiInfo* connectedWifi          READ connectedWifi   NOTIFY connectedWifiChanged)
     Q_PROPERTY(bool deviceIsOn                  READ deviceIsOn      NOTIFY deviceIsOnChanged)
+    Q_PROPERTY(bool hasInternet                 READ hasInternet     NOTIFY hasInternetChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -80,6 +83,8 @@ public:
     WifiInfo*           connectedWifi() const;
 
     bool                deviceIsOn() const { return mDeviceIsOn; }
+
+    bool                hasInternet() const { return mHasInternet; }
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
     Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
@@ -104,10 +109,24 @@ private:
     static WifiInfo*    networkAt(WifiInfoList* list, qsizetype index);
     static qsizetype    networkCount(WifiInfoList* list);
 
+    /*!
+     * \brief setHasInternet
+     * \param hasInternet
+     */
+    inline void         setHasInternet(bool hasInternet);
+
+    /*!
+     * \brief setConnectedWifiInfo
+     * \param wifiInfo
+     */
+    inline void         setConnectedWifiInfo(WifiInfo* wifiInfo);
+
 private slots:
+    void                onErrorOccured(int error); //! error is: NmcliInterface::Error
     void                onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis);
     void                onWifiConnected(const QString& bssid);
     void                onWifiDisconnected();
+    void                checkHasInternet();
 
     /* Signals
      * ****************************************************************************************/
@@ -116,6 +135,7 @@ signals:
     void                isRunningChanged();
     void                connectedWifiChanged();
     void                deviceIsOnChanged();
+    void                hasInternetChanged();
     //!
     //! \brief errorOccured This is a private signal and is emitted when an error occurs during an
     //! opration. The \a ssid param holds name of the wifi network that this error is related to and
@@ -128,12 +148,84 @@ signals:
     /* Private attributes
      * ****************************************************************************************/
 private:
-    NmcliInterface*     mNmcliInterface;
+    /*!
+     * \brief mNmcliInterface An instance of NmcliInterface
+     */
+    NmcliInterface*         mNmcliInterface;
 
-    bool                mDeviceIsOn;
+    /*!
+     * \brief mDeviceIsOn Holds whether wifi device is on or off
+     */
+    bool                    mDeviceIsOn;
 
-    QList<WifiInfo*>    mWifiInfos;
+    /*!
+     * \brief mHasInternet Holds whether there is a wifi connection AND it has full internet access
+     */
+    bool                    mHasInternet;
 
-    WifiInfo*           mConnectedWifiInfo;
-    WifiInfo*           mRequestedToConnectedWifi;
+    /*!
+     * \brief mCheckInternetAccessTmr A timer to check internet access
+     */
+    QTimer                  mCheckInternetAccessTmr;
+
+    /*!
+     * \brief cCheckInternetAccessInterval Interval of checking internet access (default: 30 secs)
+     */
+    const int               cCheckInternetAccessInterval = 30000;
+
+    /*!
+     * \brief mCheckInternetAccessUrl The url that is used to check internet access. This is read
+     * from env (NMCLI_INTERNET_ACCESS_URL) and 'google.com' is used if it doesn't exist.
+     */
+    const QUrl                    cCheckInternetAccessUrl;
+
+    /*!
+     * \brief mWifiInfos List of all the wifis
+     */
+    QList<WifiInfo*>        mWifiInfos;
+
+    /*!
+     * \brief mNam QNetworkRequestManager that is used to check internet access
+     */
+    QNetworkAccessManager   mNam;
+
+    /*!
+     *  \brief mNamIsRunning Whether mNam is running a request
+     */
+    bool                    mNamIsRunning;
+
+    /*!
+     * \brief mConnectedWifiInfo Currently connected wifi
+     */
+    WifiInfo*               mConnectedWifiInfo;
+
+    /*!
+     * \brief mRequestedToConnectedWifi The wifi that is requested to connect to
+     */
+    WifiInfo*               mRequestedToConnectedWifi;
 };
+
+inline void NetworkInterface::setHasInternet(bool hasInternet)
+{
+    if (mHasInternet != hasInternet) {
+        mHasInternet = hasInternet;
+        emit hasInternetChanged();
+    }
+}
+
+inline void NetworkInterface::setConnectedWifiInfo(WifiInfo* wifiInfo)
+{
+    if (mConnectedWifiInfo == wifiInfo) {
+        return;
+    }
+
+    if (mConnectedWifiInfo) {
+        mConnectedWifiInfo->setProperty("connected", false);
+    }
+
+    mConnectedWifiInfo = wifiInfo;
+    if (mConnectedWifiInfo) {
+        mConnectedWifiInfo->setProperty("connected", true);
+    }
+    emit connectedWifiChanged();
+}

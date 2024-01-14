@@ -16,13 +16,31 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    WifiIcon {
-        id: _wifiIcon
-        anchors.centerIn: parent
-        width: _root.width - 8
-        height: width
+    Image {
+        id: _wifiImage
 
-        isConnected: Boolean(NetworkInterface.connectedWifi)
-        strength: NetworkInterface.connectedWifi?.strength ?? 0
+        property bool isConnected: Boolean(NetworkInterface.connectedWifi)
+        property bool hasInternet: NetworkInterface.hasInternet
+        property int  strength: NetworkInterface.connectedWifi?.strength ?? 0
+
+        anchors.fill: parent
+
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        source: isConnected
+                ? (hasInternet ? (strength > 79
+                                  ? "qrc:/Stherm/Images/Wifi/wifi.png"
+                                  : (strength > 50
+                                     ? "qrc:/Stherm/Images/Wifi/wifi-good.png"
+                                     : (strength > 25
+                                        ? "qrc:/Stherm/Images/Wifi/wifi-fair.png"
+                                        : "qrc:/Stherm/Images/Wifi/wifi-weak.png"
+                                        )
+                                     )
+                                  )
+                               : "qrc:/Stherm/Images/Wifi/wifi-no-internet.png")
+                : "qrc:/Stherm/Images/Wifi/wifi-off.png"
+        sourceSize.width: width
+        sourceSize.height: height
     }
 }

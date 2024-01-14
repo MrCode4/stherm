@@ -345,7 +345,7 @@ BasePageView {
                         Layout.alignment: Qt.AlignRight
 
                         Repeater {
-                            model: scheduleToDisplay?.repeats.split(",")
+                            model: scheduleToDisplay?.repeats ? scheduleToDisplay.repeats.split(",") : 0
                             delegate: Label {
                                 Layout.alignment: Qt.AlignTop
                                 text: modelData
@@ -366,6 +366,7 @@ BasePageView {
 
                 onClicked: {
                     if (!isEditable) return;
+
                     //! Open ScheduleNamePage for editing
                     if (_root.StackView.view) {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleRepeatPage.qml", {
@@ -398,6 +399,19 @@ BasePageView {
                         horizontalAlignment: "AlignRight"
                         text: scheduleToDisplay?.dataSource ?? ""
                         elide: "ElideRight"
+                    }
+                }
+
+                onClicked: {
+                    if (!isEditable) return;
+
+                    //! Open ScheduleNamePage for editing
+                    if (_root.StackView.view) {
+                        _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleDataSourcePage.qml", {
+                                                      "backButtonVisible": true,
+                                                      "uiSession": uiSession,
+                                                      "schedule": internal.scheduleToEdit
+                                                  });
                     }
                 }
             }

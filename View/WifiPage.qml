@@ -14,15 +14,6 @@ BasePageView {
      * ****************************************************************************************/
     readonly property var sortedWifis: {
         var wifis = Array.from(NetworkInterface.wifis);
-
-        if (wifis.length > 0) {
-            var connectedIndex = wifis.findIndex((element) => {
-                                                     return element.connected === true;
-                                                 });
-            if (connectedIndex > -1) {
-                wifis.unshift(wifis.splice(connectedIndex, 1)[0]);
-            }
-        }
         return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.ssid !== "");
     }
 
@@ -89,7 +80,7 @@ BasePageView {
         anchors.fill: parent
 
         Label {
-            visible: sortedWifis[0]?.connected ?? false
+            visible: Boolean(NetworkInterface.connectedWifi)
             opacity: 0.7
             font.pointSize: Application.font.pointSize * 0.8
             text: "Current Network"
@@ -102,7 +93,7 @@ BasePageView {
             Layout.bottomMargin: 16
             visible: wifi
 
-            wifi: sortedWifis[0]?.connected ? sortedWifis[0] : null
+            wifi: NetworkInterface.connectedWifi
             delegateIndex: -1
             onClicked: {
                 _wifisRepeater.currentIndex = -1;
@@ -155,7 +146,9 @@ BasePageView {
                                                                                       : itemAt(currentIndex)
                                                                 : null
 
-                    model: sortedWifis.length > 0 && sortedWifis[0].connected ? sortedWifis.slice(1, sortedWifis.length) : sortedWifis
+                    model: NetworkInterface.connectedWifi
+                           ? sortedWifis.filter((element, index) => element !== NetworkInterface.connectedWifi)
+                           : sortedWifis
                     delegate: WifiDelegate {
                         id: _wifiDelegate
 
