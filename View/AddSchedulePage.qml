@@ -145,6 +145,12 @@ BasePageView {
                     _internal.newSchedule.temprature = temprature;
                 }
             }
+
+            Component.onCompleted: {
+                if (_internal.newSchedule.type === AppSpec.Custom) {
+                    schedule.temprature = appModel.currentTemp;
+                }
+            }
         }
     }
 
