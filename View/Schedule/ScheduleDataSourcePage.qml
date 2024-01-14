@@ -86,7 +86,7 @@ BasePageView {
             }
 
             Repeater {
-                model: device?.sensors ?? 0
+                model: device?._sensors ?? 0
                 delegate: SensorDelegate {
                     required property var modelData
                     required property int index

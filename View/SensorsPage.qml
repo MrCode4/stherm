@@ -88,7 +88,7 @@ BasePageView {
                 anchors.rightMargin: 10
                 clip: true
                 implicitHeight: contentHeight
-                model: appModel?.sensors ?? []
+                model: appModel?._sensors ?? []
                 spacing: 12
                 delegate: SensorDelegate {
                     required property var modelData
