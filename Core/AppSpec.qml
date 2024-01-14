@@ -106,21 +106,21 @@ AppSpecCPP {
 
         switch (type) {
         case AppSpecCPP.Away: {
-            newSchedule.temprature = 26;
+            newSchedule.temprature = 25.55;
             newSchedule.startTime = "06:00 AM";
             newSchedule.endTime = "03:00 PM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr";
         } break;
 
         case AppSpecCPP.Night: {
-            newSchedule.temprature = 25;
+            newSchedule.temprature = 24.44;
             newSchedule.startTime = "10:00 PM";
             newSchedule.endTime = "06:00 AM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr,Sa,Su";
         } break;
 
         case AppSpecCPP.Home: {
-            newSchedule.temprature = 23;
+            newSchedule.temprature = 23.33
             newSchedule.startTime = "09:00 AM";
             newSchedule.endTime = "06:00 PM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr";
