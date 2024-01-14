@@ -158,7 +158,7 @@ BasePageView {
 
             Component.onCompleted: {
                 if (_internal.newSchedule.type === AppSpec.Custom) {
-                    schedule.temprature = appModel.currentTemp;
+                    schedule.temprature = appModel.requestedTemp;
                 }
             }
         }
