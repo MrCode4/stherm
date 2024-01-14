@@ -21,6 +21,8 @@ BasePageView {
     //! Repeats are always valid
     readonly property bool  isValid: repeats.length > 0
 
+    property bool editMode: false
+
     //! Selected days for repeating
     readonly property string   repeats: {
         var rps = [];
@@ -52,7 +54,7 @@ BasePageView {
     //! Confirm button: only visible if is editing and schedule (schedule is not null)
     ToolButton {
         parent: schedule ? _root.header.contentItem : _root
-        visible: schedule
+        visible: editMode
         contentItem: RoniaTextIcon {
             text: FAIcons.check
         }

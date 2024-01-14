@@ -21,6 +21,8 @@ BasePageView {
     //! Temprature is alwasy valid
     readonly property bool  isValid: true
 
+    property bool editMode: false
+
     //! Temprature value: this is always in celsius
     readonly property real  temprature: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
                                          ? Utils.fahrenheitToCelsius(_tempSlider.value)
@@ -46,7 +48,7 @@ BasePageView {
     //! Confirm button: only visible if is editing and schedule (schedule is not null)
     ToolButton {
         parent: schedule ? _root.header.contentItem : _root
-        visible: schedule
+        visible: editMode
         contentItem: RoniaTextIcon {
             text: FAIcons.check
         }

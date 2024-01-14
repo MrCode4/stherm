@@ -217,7 +217,8 @@ BasePageView {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTempraturePage.qml", {
                                                       "backButtonVisible": true,
                                                       "uiSession": uiSession,
-                                                      "schedule": internal.scheduleToEdit
+                                                      "schedule": internal.scheduleToEdit,
+                                                      "editMode": true
                                                   });
                     }
                 }
@@ -276,7 +277,8 @@ BasePageView {
                                                       "backButtonVisible": true,
                                                       "uiSession": uiSession,
                                                       "timeProperty": "start-time",
-                                                      "schedule": internal.scheduleToEdit
+                                                      "schedule": internal.scheduleToEdit,
+                                                      "editMode": true
                                                   });
                     }
                 }
@@ -315,7 +317,8 @@ BasePageView {
                                                       "schedule": internal.scheduleToEdit,
                                                       "startTime": Date.fromLocaleTimeString(Qt.locale(),
                                                                                              scheduleToDisplay.startTime,
-                                                                                             "hh:mm AP")
+                                                                                             "hh:mm AP"),
+                                                      "editMode": true
                                                   });
                     }
                 }
@@ -368,7 +371,8 @@ BasePageView {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleRepeatPage.qml", {
                                                       "backButtonVisible": true,
                                                       "uiSession": uiSession,
-                                                      "schedule": internal.scheduleToEdit
+                                                      "schedule": internal.scheduleToEdit,
+                                                      "editMode": true
                                                   });
                     }
                 }

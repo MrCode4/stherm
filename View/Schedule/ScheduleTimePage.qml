@@ -27,6 +27,8 @@ BasePageView {
     //! Min minutes diff between start and end time
     readonly property int       minTimeDiff:    120
 
+    property bool editMode:                 false
+
     //! This shows whether the inputs in this page are valid or not
     readonly property bool      isValid:        {
         var selectedTimeDate = Date.fromLocaleTimeString(Qt.locale(), _contentLay.selectedTime, "hh:mm AP");
@@ -63,7 +65,7 @@ BasePageView {
     //! Confirm button: only visible if is editing and schedule (schedule is not null)
     ToolButton {
         parent: schedule ? _root.header.contentItem : _root
-        visible: schedule
+        visible: editMode
         enabled: isValid
         contentItem: RoniaTextIcon {
             text: FAIcons.check
@@ -263,7 +265,7 @@ BasePageView {
         uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveTime);
 
 
-        if (schedule) {
+        if (editMode && schedule) {
             if (timeProperty === "start-time" && schedule.startTime !== selectedTime) {
                 schedule.startTime = selectedTime;
             } else if (timeProperty === "end-time" && schedule.endTime !== selectedTime) {

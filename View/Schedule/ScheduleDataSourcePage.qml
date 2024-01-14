@@ -35,7 +35,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button: only visible if is editing and schedule (schedule is not null)
     ToolButton {
-        parent: schedule ? _root.header.contentItem : _root
+        parent: schedule ? root.header.contentItem : root
         visible: schedule
         contentItem: RoniaTextIcon {
             text: FAIcons.check
