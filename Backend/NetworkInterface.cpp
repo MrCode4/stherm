@@ -1,4 +1,5 @@
 #include "NetworkInterface.h"
+#include "LogHelper.h"
 #include "NmcliInterface.h"
 
 #include <QNetworkInterface>
@@ -13,7 +14,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , mConnectedWifiInfo { nullptr }
     , mRequestedToConnectedWifi { nullptr }
     , mDeviceIsOn { false }
-    , mHasInternet { true }
+    , mHasInternet { false }
     , mNamIsRunning { false }
     , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
                                                         "http://google.com")) }
@@ -41,8 +42,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
     //! Connecting to QNetworkAccessManager
     connect(&mNam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
-        bool hasInternet = reply->error() != QNetworkReply::TimeoutError
-                           && reply->error() != QNetworkReply::OperationCanceledError;
+
+        bool hasInternet = reply->error() == QNetworkReply::NoError;
         setHasInternet(hasInternet);
 
         mNamIsRunning = false;
