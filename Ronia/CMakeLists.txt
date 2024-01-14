@@ -76,6 +76,7 @@ target_include_directories(RoniaStyleImpl PUBLIC
 
 target_link_libraries(RoniaStyleImpl PUBLIC
     Qt6::Core5Compat
+    Qt6::Quick
 )
 
 target_link_libraries(RoniaStyle PUBLIC

@@ -1,5 +1,4 @@
-#ifndef RANGESLIDERHANDLEDATA_H
-#define RANGESLIDERHANDLEDATA_H
+#pragma once
 
 #include <QObject>
 #include <QQmlEngine>
@@ -81,5 +80,3 @@ private:
     qreal mImplicitHandleHeight = 0;
     qreal mImplicitHandleWidth = 0;
 };
-
-#endif // RANGESLIDERHANDLEDATA_H
