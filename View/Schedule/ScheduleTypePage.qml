@@ -19,7 +19,7 @@ BasePageView {
     readonly property bool      isValid:    true
 
     //!
-    readonly property string    type:       _buttonsGroup.checkedButton?.text ?? ""
+    readonly property int    type:       AppSpec.scheduleNameToType(_buttonsGroup.checkedButton.text)
 
     /* Object properties
      * ****************************************************************************************/
@@ -43,8 +43,10 @@ BasePageView {
         }
 
         onClicked: {
-            if (schedule && schedule.type !== _buttonsGroup.checkedButton.text) {
-                schedule.type = _buttonsGroup.checkedButton.text;
+            var type = AppSpec.scheduleNameToType(_buttonsGroup.checkedButton.text)
+
+            if (schedule && schedule.type !== type) {
+                schedule.type = type;
             }
 
             backButtonCallback();
@@ -62,32 +64,15 @@ BasePageView {
         width: parent.width * 0.4
         spacing: 12
 
-        Button {
-            Layout.fillWidth: true
-            checkable: true
-            checked: schedule ? schedule.type === text : true
-            text: "Away"
-        }
+        Repeater {
+            model: Object.values(AppSpec.scheduleTypeNames)
 
-        Button {
-            Layout.fillWidth: true
-            checkable: true
-            checked: schedule?.type === text
-            text: "Night"
-        }
-
-        Button {
-            Layout.fillWidth: true
-            checkable: true
-            checked: schedule?.type === text
-            text: "Home"
-        }
-
-        Button {
-            Layout.fillWidth: true
-            checkable: true
-            checked: schedule?.type === text
-            text: "Custom"
+            delegate: Button {
+                Layout.fillWidth: true
+                checkable: true
+                checked: modelData === AppSpec.scheduleTypeNames[schedule?.type ?? AppSpec.Away]
+                text: modelData
+            }
         }
     }
 }

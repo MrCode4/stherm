@@ -13,7 +13,7 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
 
     systemRunDelay = 5;
 
-    systemMode = AppSpecCPP::SystemMode::Auto;
+    systemMode = AppSpecCPP::SystemMode::Off;
 
     systemAccessories = new SystemAccessories(this);
     isVacation = false;

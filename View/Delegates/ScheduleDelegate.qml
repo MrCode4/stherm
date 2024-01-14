@@ -53,13 +53,13 @@ ItemDelegate {
             font.pointSize: Style.fontIconSize.smallPt
             text: {
                 switch(schedule?.type) {
-                case "Away":
+                case AppSpec.Away:
                     return "\uf30d";
-                case "Night":
+                case AppSpec.Night:
                     return "\uf186"
-                case "Home":
+                case AppSpec.Home:
                     return "\uf015"
-                case "Custom":
+                case AppSpec.Custom:
                     return "\uf1de"
                 }
 

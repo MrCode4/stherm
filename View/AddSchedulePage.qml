@@ -8,7 +8,7 @@ import Stherm
  * AddSchedulePage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -16,6 +16,8 @@ BasePageView {
     property SchedulesController     schedulesController: uiSession?.schedulesController ?? null
     //! Device reference
     property I_Device                device:              uiSession?.appModel ?? null
+
+    readonly property ScheduleCPP    defaultSchedule:     AppSpec.getDefaultSchedule(_internal.newSchedule.type);
 
     /* Object properties
      * ****************************************************************************************/
@@ -39,7 +41,7 @@ BasePageView {
     //! Next/Confirm button
     ToolButton {
         id: nxtConfBtn
-        parent: _root.header.contentItem
+        parent: root.header.contentItem
         enabled: !_newSchedulePages.currentItem?.nextPage || _newSchedulePages.currentItem?.isValid
 
         RoniaTextIcon {
@@ -144,11 +146,19 @@ BasePageView {
         ScheduleTempraturePage {
             readonly property Component nextPage: _startTimePage
 
-            uiSession: _root.uiSession
+            uiSession: root.uiSession
+
+            schedule: root.defaultSchedule
 
             onTempratureChanged: {
                 if (temprature !== _internal.newSchedule.temprature) {
                     _internal.newSchedule.temprature = temprature;
+                }
+            }
+
+            Component.onCompleted: {
+                if (_internal.newSchedule.type === AppSpec.Custom) {
+                    schedule.temprature = appModel.requestedTemp;
                 }
             }
         }
@@ -161,6 +171,9 @@ BasePageView {
             readonly property Component nextPage: _endTimePage
 
             title: "Start Time"
+
+            schedule: root.defaultSchedule
+
             onSelectedTimeChanged: {
                 if (isValid && selectedTime !== _internal.newSchedule.startTime) {
                     _internal.newSchedule.startTime = selectedTime;
@@ -168,8 +181,10 @@ BasePageView {
             }
 
             Component.onCompleted: {
-                //! Set start time to current time
-                setTimeFromString((new Date).toLocaleTimeString(Qt.locale(), "hh:mm AP"));
+                if (_internal.newSchedule.type === AppSpec.Custom) {
+                    //! Set start time to current time
+                    setTimeFromString((new Date).toLocaleTimeString(Qt.locale(), "hh:mm AP"));
+                }
             }
         }
     }
@@ -180,9 +195,12 @@ BasePageView {
         ScheduleTimePage {
             readonly property Component nextPage: _repeatPage
 
-            timeProperty: "end-time"
-            startTime: Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.startTime, "hh:mm AP")
             title: "End Time"
+            timeProperty: "end-time"
+
+            startTime: Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.startTime, "hh:mm AP")
+            schedule: root.defaultSchedule
+
             onSelectedTimeChanged: {
                 if (isValid && selectedTime !== _internal.newSchedule.endTime) {
                     _internal.newSchedule.endTime = selectedTime;
@@ -190,11 +208,13 @@ BasePageView {
             }
 
             Component.onCompleted: {
-                //! Set selected time to 2 hours after schedule's start time
-                var endTime = Date.fromLocaleTimeString(locale, _internal.newSchedule.startTime, "hh:mm AP");
-                endTime.setTime(endTime.getTime() + 2 * 1000 * 60 * 60);
+                if (_internal.newSchedule.type === AppSpec.Custom) {
+                    //! Set selected time to 2 hours after schedule's start time
+                    var endTime = Date.fromLocaleTimeString(locale, _internal.newSchedule.startTime, "hh:mm AP");
+                    endTime.setTime(endTime.getTime() + 2 * 1000 * 60 * 60);
 
-                setTimeFromString(endTime.toLocaleTimeString(locale, "hh:mm AP"));
+                    setTimeFromString(endTime.toLocaleTimeString(locale, "hh:mm AP"));
+                }
             }
         }
     }
@@ -204,6 +224,8 @@ BasePageView {
 
         ScheduleRepeatPage {
             readonly property Component nextPage: _dataSourcePageCompo
+
+            schedule: root.defaultSchedule
 
             onRepeatsChanged: {
                 if (repeats !== _internal.newSchedule.repeats) {
@@ -219,7 +241,7 @@ BasePageView {
         ScheduleDataSourcePage {
             readonly property Component nextPage: _preivewPage
 
-            uiSession: _root.uiSession
+            uiSession: root.uiSession
             onSensorChanged: {
                 _internal.newSchedule.dataSource = (sensor?.name ?? "");
             }
@@ -232,7 +254,7 @@ BasePageView {
         SchedulePreviewPage {
             readonly property Component nextPage: null
 
-            uiSession: _root.uiSession
+            uiSession: root.uiSession
             schedule: _internal.newSchedule
         }
     }
@@ -271,8 +293,8 @@ BasePageView {
             schedulesController.saveNewSchedule(_internal.newSchedule);
         }
 
-        if (_root.StackView.view) {
-            _root.StackView.view.pop();
+        if (root.StackView.view) {
+            root.StackView.view.pop();
         }
     }
 }

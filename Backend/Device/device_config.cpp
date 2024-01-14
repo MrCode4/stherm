@@ -12,7 +12,7 @@ void NUVE::DeviceConfig::initialise(const cpuid_t cpuid)
     soft_v = swVer;
     hard_v = hwVer;
     mode = 1;
-    brightness = 80;
+    brightness = 100;
     brightness_mode = 0;
     serial_number = "";
     uid = cpuid;
