@@ -8,6 +8,9 @@ import Stherm
 AppSpecCPP {
 
     property int readInterval: 1000
+    property int minStepTempC: 6
+    property int minStepTempF: 10
+    property int minStepHum:   20
 
     enum DeviceType {
         DT_IMX6 = 0,
