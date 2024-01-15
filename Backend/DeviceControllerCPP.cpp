@@ -246,11 +246,13 @@ QVariantMap DeviceControllerCPP::getMainData()
     bool hasOverride = override.value("on").toBool();
     if (hasOverride) {
         auto overrideTemp = override.value("temp").toDouble();
+        TRACE <<"temperature will be overriden by value: " << overrideTemp << ", read from /usr/local/bin/override.ini file.";
         overrideData.insert("temperature", overrideTemp);
     }
 #endif
 
     for (const auto &pair : overrideData.toStdMap()) {
+        TRACE << pair.first << "with value: " << mainData.value(pair.first) << ", replaced by: " << pair.second;
         mainData.insert(pair.first, pair.second);
     }
 
