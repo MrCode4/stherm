@@ -1,6 +1,7 @@
 #include "NetworkInterface.h"
 #include "LogHelper.h"
-#include "NmcliInterface.h"
+#include "Nmcli/NmcliInterface.h"
+#include "Nmcli/NmcliObserver.h"
 
 #include <QNetworkInterface>
 #include <QNetworkRequest>
@@ -11,20 +12,21 @@
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
     , mNmcliInterface { new NmcliInterface(this) }
+    , mNmcliObserver { new NmcliObserver(this) }
     , mConnectedWifiInfo { nullptr }
     , mRequestedToConnectedWifi { nullptr }
     , mDeviceIsOn { false }
     , mHasInternet { false }
     , mNamIsRunning { false }
     , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
-                                                        "http://google.com")) }
+                                                          "http://google.com")) }
 {
     connect(mNmcliInterface, &NmcliInterface::errorOccured, this, &NetworkInterface::onErrorOccured);
     connect(mNmcliInterface, &NmcliInterface::wifiListRefereshed, this, &NetworkInterface::onWifiListRefreshed);
-    connect(mNmcliInterface, &NmcliInterface::wifiConnected, this, &NetworkInterface::onWifiConnected);
-    connect(mNmcliInterface, &NmcliInterface::wifiDisconnected, this, &NetworkInterface::onWifiDisconnected);
     connect(mNmcliInterface, &NmcliInterface::isRunningChanged, this, &NetworkInterface::isRunningChanged);
-    connect(mNmcliInterface, &NmcliInterface::wifiDevicePowerChanged, this, [&](bool on) {
+    connect(mNmcliObserver, &NmcliObserver::wifiConnected, this, &NetworkInterface::onWifiConnected);
+    connect(mNmcliObserver, &NmcliObserver::wifiDisconnected, this, &NetworkInterface::onWifiDisconnected);
+    connect(mNmcliObserver, &NmcliObserver::wifiDevicePowerChanged, this, [&](bool on) {
         if (mDeviceIsOn != on) {
             mDeviceIsOn = on;
 
@@ -34,9 +36,19 @@ NetworkInterface::NetworkInterface(QObject *parent)
         }
     });
 
-    connect(mNmcliInterface, &NmcliInterface::wifiForgotten, this, [this](const QString& ssid) {
+    connect(mNmcliObserver, &NmcliObserver::wifiForgotten, this, [this](const QString& ssid) {
         if (mConnectedWifiInfo && mConnectedWifiInfo->mSsid == ssid) {
             setConnectedWifiInfo(nullptr);
+        }
+    });
+
+    connect(mNmcliObserver, &NmcliObserver::wifiIsConnecting, this, [this](const QString ssid) {
+        //! Search for a wifi with this bssid.
+        for (WifiInfo* wifi : mWifiInfos) {
+            if (wifi->mSsid == ssid) {
+                wifi->setProperty("isConnecting", true);
+                return;
+            }
         }
     });
 
@@ -290,15 +302,15 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
     qDeleteAll(toDeleteWifis);
 }
 
-void NetworkInterface::onWifiConnected(const QString& bssid)
+void NetworkInterface::onWifiConnected(const QString& ssid)
 {
-    if (mRequestedToConnectedWifi && mRequestedToConnectedWifi->mBssid == bssid) {
+    if (mRequestedToConnectedWifi && mRequestedToConnectedWifi->mBssid == ssid) {
         setConnectedWifiInfo(mRequestedToConnectedWifi);
     } else {
         mRequestedToConnectedWifi = nullptr;
         //! Search for a wifi with this bssid.
         for (WifiInfo* wifi : mWifiInfos) {
-            if (wifi->mBssid == bssid) {
+            if (wifi->mBssid == ssid) {
                 setConnectedWifiInfo(wifi);
                 return;
             }
