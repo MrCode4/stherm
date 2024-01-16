@@ -225,9 +225,6 @@ qt6_add_qml_module(appStherm
     SOURCES
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
-        Backend/NetworkInterface.h
-        Backend/NetworkInterface.cpp
-        Backend/NmcliInterface.h
         Backend/ScreenSaverManager.h
         Backend/ScreenSaverManager.cpp
         Backend/DateTimeManagerCPP.h
@@ -314,6 +311,13 @@ qt6_add_qml_module(appStherm
         Backend/Device/SystemSetup.cpp
         Backend/Device/SystemAccessories.h
         Backend/Device/SystemAccessories.cpp
+
+        Backend/Nmcli/NmcliObserver.h
+        Backend/Nmcli/NmcliObserver.cpp
+        Backend/NmcliInterface.h
+        Backend/NmcliInterface.cpp
+        Backend/NetworkInterface.h
+        Backend/NetworkInterface.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
