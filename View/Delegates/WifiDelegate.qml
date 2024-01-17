@@ -49,7 +49,7 @@ Control {
         RowLayout {
             id: _delegateContentRow
             x: 8
-            width: parent.width - 16
+            width: parent.width - 12
             height: parent.height
             spacing: 12
 
@@ -84,6 +84,18 @@ Control {
                     color: wifi?.connected ? Style.accent : Style.foreground
                     text: "Connected"
                 }
+            }
+
+            BusyIndicator {
+                Layout.fillHeight: true
+                Layout.preferredWidth: height
+                Layout.topMargin: 8
+                Layout.bottomMargin: 8
+
+                implicitWidth: 0
+                implicitHeight: 0
+                visible: wifi?.isConnecting ?? false
+                running: visible
             }
         }
 

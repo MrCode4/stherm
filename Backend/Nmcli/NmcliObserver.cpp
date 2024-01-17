@@ -128,7 +128,7 @@ void NmcliObserver::onMonitorProcessReadReady()
                     setDevicePowerState(true);
                 }
 
-                if (message == "disconnected") {
+                if (message == NC_MSG_DISCONNECTED) {
                     //! Wifi is disconnected
                     emit wifiDisconnected();
                 } else if (message == NC_MSG_CONNECTION_FAILED) {

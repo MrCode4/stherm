@@ -97,10 +97,6 @@ bool NmcliInterface::connectSavedWifi(const QString& ssid, const QString& bssid)
         return false;
     }
 
-    //! Profile exist, connect to it.
-    connect(mProcess, &QProcess::finished, this, &NmcliInterface::onWifiConnectedFinished,
-            Qt::SingleShotConnection);
-
     //! Perform connection command
     const QStringList args({
         NC_ARG_CONNECTION,

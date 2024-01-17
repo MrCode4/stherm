@@ -26,7 +26,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(mNmcliInterface, &NmcliInterface::isRunningChanged, this, &NetworkInterface::isRunningChanged);
     connect(mNmcliObserver, &NmcliObserver::wifiConnected, this, &NetworkInterface::onWifiConnected);
     connect(mNmcliObserver, &NmcliObserver::wifiDisconnected, this, &NetworkInterface::onWifiDisconnected);
-    connect(mNmcliObserver, &NmcliObserver::wifiDevicePowerChanged, this, [&](bool on) {
+    connect(mNmcliObserver, &NmcliObserver::wifiDevicePowerChanged, this, [&]() {
+        bool on = mNmcliObserver->isWifiOn();
         if (mDeviceIsOn != on) {
             mDeviceIsOn = on;
 
@@ -320,5 +321,15 @@ void NetworkInterface::onWifiConnected(const QString& ssid)
 
 void NetworkInterface::onWifiDisconnected()
 {
-    setConnectedWifiInfo(nullptr);
+    if (mConnectedWifiInfo) {
+        setConnectedWifiInfo(nullptr);
+    }
+
+    //! Also set isConnecting to false if its true in any WifiInfo
+    qDebug() << "Disconnected";
+    for (auto wifi : mWifiInfos) {
+        if (wifi->mIsConnecting) {
+            wifi->setProperty("isConnecting", false);
+        }
+    }
 }
