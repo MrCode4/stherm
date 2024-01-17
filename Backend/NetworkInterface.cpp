@@ -311,8 +311,9 @@ void NetworkInterface::onWifiConnected(const QString& ssid)
         mRequestedToConnectedWifi = nullptr;
         //! Search for a wifi with this bssid.
         for (WifiInfo* wifi : mWifiInfos) {
-            if (wifi->mBssid == ssid) {
+            if (wifi->mSsid == ssid) {
                 setConnectedWifiInfo(wifi);
+                wifi->setProperty("isConnecting", false);
                 return;
             }
         }
