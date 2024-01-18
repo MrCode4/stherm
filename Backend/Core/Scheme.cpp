@@ -366,16 +366,29 @@ void Scheme::OffLoop()
     waitLoop();
 }
 
+void Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
+{
+    mRelay->setOb_state(newOb_state);
+
+    // , maybe we should check if it is changed or not!
+    {
+        sendRelays();
+
+        //                if (stopWork)
+        //                    return;
+
+        // sysDelay
+        waitLoop(mSystemSetup->systemRunDelay);
+    }
+}
+
 void Scheme::internalCoolingLoopStage1(bool pumpHeat)
 {
     if (pumpHeat) // how the system type setup get OB Orientatin
     {
-        mRelay->setOb_state(AppSpecCPP::Cooling);
-        sendRelays();
+        updateOBState(AppSpecCPP::Cooling);
     }
 
-    // sysDelay
-    waitLoop(mSystemSetup->systemRunDelay);
     mRelay->coolingStage1();
 
     // 5 Sec
@@ -638,11 +651,8 @@ bool Scheme::internalHeatingLoopStage3()
 void Scheme::internalPumpHeatingLoopStage1()
 {
     if (effectiveTemperature() - mCurrentTemperature >= 3) {
-        mRelay->setOb_state(AppSpecCPP::Heating);
-        sendRelays();
+        updateOBState(AppSpecCPP::Heating);
 
-        // sysDelay
-        waitLoop(mSystemSetup->systemRunDelay);
         mRelay->heatingStage1(true);
 
         // 5 Sec
@@ -780,8 +790,12 @@ void Scheme::sendRelays()
 
     TRACE;
 
+    auto relaysConfig = mRelay->relays();
     // Update relays
-    emit updateRelays(mRelay->relays());
+    emit updateRelays(relaysConfig);
+
+    TRACE << &lastConfigs << &relaysConfig << (lastConfigs  == relaysConfig);
+    lastConfigs = relaysConfig;
 
     TRACE;
 }
@@ -1044,6 +1058,7 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
 
     mSystemSetup = systemSetup;
 
+    // ob_state_ initial value?
     mRelay->setOb_on_state(mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
                                                               : AppSpecCPP::Heating);
 

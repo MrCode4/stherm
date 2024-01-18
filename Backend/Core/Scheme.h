@@ -103,6 +103,8 @@ private:
     void EmergencyLoop();
     void OffLoop();
 
+    void updateOBState(AppSpecCPP::SystemMode newOb_state);
+
     void internalCoolingLoopStage1(bool pumpHeat);
     bool internalCoolingLoopStage2();
 
@@ -177,5 +179,8 @@ private:
     bool stopWork;
     bool isVacation;
     bool mRestarting;
+
+    STHERM::RelayConfigs lastConfigs;
+
     void fanWork(bool isOn);
 };

@@ -370,7 +370,7 @@ void Relay::fanOFF() {
 
 void Relay::updateOB()
 {
-    if (current_state != AppSpecCPP::SystemMode::Off && ob_state == ob_on_state) {
+    if (ob_state == ob_on_state) {
         mRelay.o_b = STHERM::RelayMode::ON;
     } else {
         mRelay.o_b = STHERM::RelayMode::OFF;
