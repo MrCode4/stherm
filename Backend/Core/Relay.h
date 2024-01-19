@@ -48,7 +48,7 @@ public:
     bool turnOffEmergencyHeating();
 
     AppSpecCPP::SystemMode getOb_state() const;
-    void setOb_state(AppSpecCPP::SystemMode newOb_state);
+    bool setOb_state(AppSpecCPP::SystemMode newOb_state);
 
     AppSpecCPP::SystemMode currentState() const;
 
@@ -82,7 +82,7 @@ private:
 
     AppSpecCPP::SystemMode before_state;
     AppSpecCPP::SystemMode current_state;
-    AppSpecCPP::SystemMode ob_state; // can be Cooling or Heating
+    AppSpecCPP::SystemMode ob_state; // can be Cooling or Heating or OFF as initial state
     AppSpecCPP::SystemMode ob_on_state; // can be Cooling or Heating
 
     int current_stage;

@@ -368,17 +368,15 @@ void Scheme::OffLoop()
 
 void Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
 {
-    mRelay->setOb_state(newOb_state);
-
-    // , maybe we should check if it is changed or not!
+    // we should check if it is changed or not!
+    if (mRelay->setOb_state(newOb_state))
     {
+        bool relaysChanged = true;
         sendRelays();
-
-        //                if (stopWork)
-        //                    return;
-
-        // sysDelay
-        waitLoop(mSystemSetup->systemRunDelay);
+        if (relaysChanged && !stopWork){
+                // sysDelay
+                waitLoop(mSystemSetup->systemRunDelay);
+        }
     }
 }
 
@@ -388,6 +386,10 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
     {
         updateOBState(AppSpecCPP::Cooling);
     }
+
+
+    if (stopWork)
+        return;
 
     mRelay->coolingStage1();
 
@@ -652,6 +654,9 @@ void Scheme::internalPumpHeatingLoopStage1()
 {
     if (effectiveTemperature() - mCurrentTemperature >= 3) {
         updateOBState(AppSpecCPP::Heating);
+
+        if (stopWork)
+            return;
 
         mRelay->heatingStage1(true);
 

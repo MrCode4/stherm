@@ -14,6 +14,7 @@ Relay *Relay::instance()
 
 Relay::Relay()
 {
+    ob_state = AppSpecCPP::SystemMode::Off;
     before_state  = AppSpecCPP::SystemMode::Off;
     current_state = AppSpecCPP::SystemMode::Off;
     current_stage = 0;
@@ -181,9 +182,13 @@ AppSpecCPP::SystemMode Relay::getOb_state() const
     return ob_state;
 }
 
-void Relay::setOb_state(AppSpecCPP::SystemMode newOb_state)
+bool Relay::setOb_state(AppSpecCPP::SystemMode newOb_state)
 {
-    ob_state = newOb_state;
+    if (ob_state != newOb_state) {
+        ob_state = newOb_state;
+        return true;
+    }
+    return false;
 }
 
 /**
