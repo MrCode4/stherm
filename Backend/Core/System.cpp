@@ -53,6 +53,7 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 
 NUVE::System::System(QObject *parent) :
     mUpdateAvailable (false),
+    mIsForceUpdate(false),
     mIsGetSNReceived(false),
     mTestMode(false)
 {
@@ -85,7 +86,7 @@ NUVE::System::System(QObject *parent) :
         }
     });
 
-    QTimer::singleShot(5 * 60 * 1000, this, [=]() {
+    QTimer::singleShot(10 * 1000, this, [=]() {
 
         if (mSerialNumber.isEmpty()) {
             if (!mUID.empty())
@@ -284,6 +285,11 @@ bool NUVE::System::updateAvailable() {
 
 bool NUVE::System::testMode() {
     return mTestMode;
+}
+
+bool NUVE::System::isForceUpdate()
+{
+    return mIsForceUpdate;
 }
 
 void NUVE::System::setTestMode(bool testMode) {
@@ -744,29 +750,36 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
         }
     }
 
-    bool forceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
-    mLatestVersionDate = latestVersionObj.value(m_ReleaseDate).toString();
-    mLatestVersionChangeLog = latestVersionObj.value(m_ChangeLog).toString();
+    mIsForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
     mLatestVersionAddress = latestVersionObj.value(m_Address).toString();
     mRequiredMemory = latestVersionObj.value(m_RequiredMemory).toInt();
     mUpdateFileSize = latestVersionObj.value(m_CurrentFileSize).toInt();
+    auto releaseDate = latestVersionObj.value(m_ReleaseDate).toString();
+    auto changeLog = latestVersionObj.value(m_ChangeLog).toString();
 
     m_expectedUpdateChecksum = QByteArray::fromHex(latestVersionObj.value(m_CheckSum).toString().toLatin1());
 
     if (mLastInstalledUpdateDate.isEmpty())
         mLastInstalledUpdateDate = mLatestVersionDate;
 
+    mLatestVersionChangeLog = changeLog;
+
     // Check all logs
     updateLog(updateJsonObject);
 
-    if (mLatestVersionKey  != latestVersionKey) {
-        mLatestVersionKey  = latestVersionKey;
-            emit latestVersionChanged();
-    }
+    if (mLatestVersionKey  != latestVersionKey ||
+        mLatestVersionDate != releaseDate) {
 
-    if (forceUpdate) {
+        mLatestVersionKey  = latestVersionKey;
+        mLatestVersionDate = releaseDate;
+
+        emit latestVersionChanged();
+
+    }
+    if (mIsForceUpdate) {
         partialUpdate();
     }
+
 }
 
 void NUVE::System::updateLog(const QJsonObject updateJsonObject)
@@ -784,7 +797,7 @@ void NUVE::System::updateLog(const QJsonObject updateJsonObject)
     auto currentVersion = qApp->applicationVersion();
 
     foreach (auto keyVersion, versions) {
-        if (keyVersion > currentVersion) {
+        if (keyVersion > currentVersion && keyVersion < mLatestVersionKey) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
             mLatestVersionChangeLog += (" \n\n" + obj.value(m_ChangeLog).toString());
         } else {

@@ -14,7 +14,7 @@ I_PopUp {
 
     property DeviceController deviceController
 
-    property bool             restaring: false
+    property bool             restaring: deviceController.deviceControllerCPP.system.isForceUpdate
 
     /* Object properties
      * ****************************************************************************************/
@@ -24,6 +24,13 @@ I_PopUp {
     titleBar: !restaring
 
     onClosed: restaring = false;
+
+    onOpened: {
+        if (restaring) {
+            installUpdate();
+        }
+    }
+
 
     /* Children
      * ****************************************************************************************/
@@ -89,10 +96,19 @@ I_PopUp {
                 onClicked: {
                     restaring = true;
 
-                    deviceController.deviceControllerCPP.system.updateAndRestart();
+                    installUpdate();
                 }
             }
         }
 
+    }
+
+    //! Install update and restart the app.
+    function installUpdate() {
+        // Inactive screen saver
+        ScreenSaverManager.setInactive();
+
+        // Restart the app.
+        deviceController.deviceControllerCPP.system.updateAndRestart();
     }
 }
