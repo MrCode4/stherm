@@ -86,7 +86,7 @@ NUVE::System::System(QObject *parent) :
         }
     });
 
-    QTimer::singleShot(10 * 1000, this, [=]() {
+    QTimer::singleShot(5 * 60 * 1000, this, [=]() {
 
         if (mSerialNumber.isEmpty()) {
             if (!mUID.empty())
