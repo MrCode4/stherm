@@ -377,7 +377,7 @@ void Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
         sendRelays();
         if (relaysChanged && !stopWork){
                 // sysDelay
-                waitLoop(mSystemSetup->systemRunDelay);
+                waitLoop(mSystemSetup->systemRunDelay * 60000);
         }
     }
 }
@@ -830,20 +830,34 @@ void Scheme::sendRelays()
         for (int var = 0; var < steps.size(); ++var) {
             auto step = steps.at(var);
             TRACE << step.first.c_str() << step.second;
-            if (step.first == "o/b")
+            if (step.first == "o/b"){
                 lastConfigs.o_b = relaysConfig.o_b;
-            else if (step.first == "g")
+                TRACE << relaysConfig.o_b;
+            }
+            else if (step.first == "g"){
                 lastConfigs.g = relaysConfig.g;
-            else if (step.first == "y1")
+                TRACE << relaysConfig.g;
+            }
+            else if (step.first == "y1"){
                 lastConfigs.y1 = relaysConfig.y1;
-            else if (step.first == "y2")
+                TRACE << relaysConfig.y1;
+            }
+            else if (step.first == "y2"){
                 lastConfigs.y2 = relaysConfig.y2;
-            else if (step.first == "w1")
+                TRACE << relaysConfig.y2;
+            }
+            else if (step.first == "w1"){
                 lastConfigs.w1 = relaysConfig.w1;
-            else if (step.first == "w2")
+                TRACE << relaysConfig.w1;
+            }
+            else if (step.first == "w2"){
                 lastConfigs.w2 = relaysConfig.w2;
-            else if (step.first == "w3")
+                TRACE << relaysConfig.w2;
+            }
+            else if (step.first == "w3"){
                 lastConfigs.w3 = relaysConfig.w3;
+                TRACE << relaysConfig.w3;
+            }
 
             // Update relays
             if (step.second != 0) {
