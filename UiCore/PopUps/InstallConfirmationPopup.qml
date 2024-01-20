@@ -14,32 +14,26 @@ I_PopUp {
 
     property DeviceController deviceController
 
-    property bool             restaring: deviceController.deviceControllerCPP.system.isForceUpdate
-
     /* Object properties
      * ****************************************************************************************/
 
     title: ""
-    closePolicy: restaring ? Popup.NoAutoClose : (Popup.CloseOnReleaseOutside | Popup.CloseOnEscape)
-    titleBar: !restaring
+    closePolicy: Popup.NoAutoClose
+    titleBar: false
 
-    onClosed: restaring = false;
 
     onOpened: {
-        if (restaring) {
-            installUpdate();
-        }
+        installUpdate();
     }
-
 
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
         id: mainLay
-        width: parent?.width ?? 0
-        anchors.centerIn: parent
-        anchors.leftMargin: 16
-        anchors.rightMargin: 16
+
+        anchors.fill: parent
+        anchors.margins: 8
+
         spacing: 32
 
         RoniaTextIcon {
@@ -48,57 +42,19 @@ I_PopUp {
             Layout.alignment: Qt.AlignHCenter
             font.pointSize: Style.fontIconSize.largePt * 1.5
             font.weight: 400
-            text: restaring ? FAIcons.restart : FAIcons.circleCheck
-        }
-
-        Label {
-
-            Layout.fillWidth: true
-            font.pointSize: Application.font.pointSize * 0.75
-            wrapMode: Text.WordWrap
-            text: "Updates has been successefully downloaded.\nThe application update requires a restart. Would you like to proceed?"
-            horizontalAlignment: Text.AlignLeft
-            visible: !restaring
+            text: FAIcons.restart
         }
 
         Label {
             id: restartingLabel
 
-            visible: restaring
             Layout.fillWidth: true
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: 250
             font.pointSize: Application.font.pointSize
             wrapMode: Text.WordWrap
             text: "Restarting..."
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-        }
-
-
-        RowLayout {
-            id: rowButton
-
-            Layout.fillWidth: true
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            ButtonInverted {
-                id: okButton
-
-                Layout.fillHeight: true
-                leftPadding: 8
-                rightPadding: 8
-                text: "Ok"
-                visible: !restaring
-
-                onClicked: {
-                    restaring = true;
-
-                    installUpdate();
-                }
-            }
         }
 
     }

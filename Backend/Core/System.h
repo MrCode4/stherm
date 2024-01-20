@@ -24,6 +24,8 @@ class System : public NetworkWorker
 
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
+
+    //! Maybe used in future...
     Q_PROPERTY(bool isForceUpdate    READ isForceUpdate   NOTIFY latestVersionChanged FINAL)
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
