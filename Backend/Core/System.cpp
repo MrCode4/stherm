@@ -710,10 +710,12 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
     file .close();
 
-    auto latestVersionKey = findLatestVersion(updateJsonObject);
+    auto latestVersionKey = checkForceUpdates(updateJsonObject);
+    if (latestVersionKey.isEmpty())
+        latestVersionKey = findLatestVersion(updateJsonObject);
 
 
-    TRACE << "Maximum Version:" << latestVersionKey;
+    TRACE << "Installable version: " << latestVersionKey << "Maximum Version:" << findLatestVersion(updateJsonObject);
 
     if (latestVersionKey.isEmpty())
         return;
@@ -742,7 +744,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
         }
     }
 
-    mLatestVersionKey  = latestVersionKey;
+    bool forceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
     mLatestVersionDate = latestVersionObj.value(m_ReleaseDate).toString();
     mLatestVersionChangeLog = latestVersionObj.value(m_ChangeLog).toString();
     mLatestVersionAddress = latestVersionObj.value(m_Address).toString();
@@ -757,7 +759,14 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     // Check all logs
     updateLog(updateJsonObject);
 
-    emit latestVersionChanged();
+    if (mLatestVersionKey  != latestVersionKey) {
+        mLatestVersionKey  = latestVersionKey;
+            emit latestVersionChanged();
+    }
+
+    if (forceUpdate) {
+        partialUpdate();
+    }
 }
 
 void NUVE::System::updateLog(const QJsonObject updateJsonObject)
@@ -776,11 +785,38 @@ void NUVE::System::updateLog(const QJsonObject updateJsonObject)
 
     foreach (auto keyVersion, versions) {
         if (keyVersion > currentVersion) {
-            mLatestVersionChangeLog += (" \n\n" + updateJsonObject.value(keyVersion).toObject().value(m_ChangeLog).toString());
+            auto obj = updateJsonObject.value(keyVersion).toObject();
+            mLatestVersionChangeLog += (" \n\n" + obj.value(m_ChangeLog).toString());
         } else {
             break;
         }
     }
+}
+
+QString NUVE::System::checkForceUpdates(const QJsonObject updateJsonObject)
+{
+    auto versions = updateJsonObject.keys();
+    if (versions.contains("LatestVersion"))
+        versions.removeOne("LatestVersion");
+
+
+    // Install first or last force update.
+    std::sort(versions.begin(), versions.end(), std::less<QString>());
+
+    // Check version (app and latest)
+    auto currentVersion = qApp->applicationVersion();
+
+    foreach (auto keyVersion, versions) {
+        if (keyVersion > currentVersion) {
+            auto obj = updateJsonObject.value(keyVersion).toObject();
+            if (obj.value(m_ForceUpdate).toBool()) {
+                return keyVersion;
+            }
+
+        }
+    }
+
+    return QString();
 }
 
 void NUVE::System::rebootDevice()
