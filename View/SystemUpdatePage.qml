@@ -21,7 +21,6 @@ BasePageView {
 
     //! Send request to get update information from server
     Component.onCompleted: {
-        uiSession.hasUpdateNotification = false;
         system.getUpdateInformation();
     }
 
