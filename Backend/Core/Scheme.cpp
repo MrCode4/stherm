@@ -210,7 +210,7 @@ void Scheme::run()
             break;
 
         // all should be off! we can assert here
-        waitLoop();
+        waitLoop(RELAYS_WAIT_MS);
     }
 
     TRACE << "-- startWork Stopped. working time(ms): " << timer.elapsed();
@@ -389,7 +389,6 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
         updateOBState(AppSpecCPP::Cooling);
     }
 
-
     if (stopWork)
         return;
 
@@ -403,6 +402,7 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
     mTiming->s2hold = false;
     mTiming->alerts = false;
     sendRelays();
+    waitLoop(RELAYS_WAIT_MS);
 
     while (effectiveTemperature() - mCurrentTemperature < 1) {
         TRACE << mCurrentTemperature << effectiveTemperature() << mRelay->relays().y2
@@ -419,12 +419,15 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
             }
         } else {
             sendAlertIfNeeded();
+            if (stopWork)
+                break;
+            waitLoop();
         }
 
         if (stopWork)
             break;
 
-        waitLoop();
+        waitLoop(RELAYS_WAIT_MS);
 
         if (stopWork)
             break;
@@ -500,6 +503,7 @@ void Scheme::internalHeatingLoopStage1()
     mTiming->alerts = false;
     // not sending?
     sendRelays();
+    waitLoop(RELAYS_WAIT_MS);
 
     while (mCurrentTemperature - effectiveTemperature() < 1) {
         TRACE_CHECK(true) << mRelay->relays().w2 << mSystemSetup->heatStage
@@ -512,13 +516,16 @@ void Scheme::internalHeatingLoopStage1()
             }
         } else {
             sendAlertIfNeeded();
+            if (stopWork)
+                break;
+            waitLoop();
         }
 
         if (stopWork)
             break;
 
         // TODO should we wait for temp update before new loop?
-        waitLoop();
+        waitLoop(RELAYS_WAIT_MS);
 
         if (stopWork)
             break;
@@ -539,6 +546,7 @@ bool Scheme::internalHeatingLoopStage2()
     emit changeBacklight(heatingColor);
     mTiming->s2uptime.restart();
     sendRelays();
+    waitLoop(RELAYS_WAIT_MS);
 
     while (!stopWork) {
         TRACE << mCurrentTemperature << effectiveTemperature() << mTiming->s2hold;
@@ -548,6 +556,9 @@ bool Scheme::internalHeatingLoopStage2()
                 if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)
                     || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
                     sendAlertIfNeeded();
+                    if (stopWork)
+                        break;
+                    waitLoop();
                 } else {
                     // stage 3
                     if (!internalHeatingLoopStage3())
@@ -565,10 +576,16 @@ bool Scheme::internalHeatingLoopStage2()
                 } else {
                     sendAlertIfNeeded();
                 }
+                if (stopWork)
+                    break;
+                waitLoop();
             } else {
                 if (effectiveTemperature() - mCurrentTemperature < 5.9
                     && (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
                     sendAlertIfNeeded();
+                    if (stopWork)
+                        break;
+                    waitLoop();
                 } else {
                     //stage 3
                     if (!internalHeatingLoopStage3())
@@ -580,7 +597,7 @@ bool Scheme::internalHeatingLoopStage2()
         if (stopWork)
             break;
 
-        waitLoop();
+        waitLoop(RELAYS_WAIT_MS);
     }
 
     TRACE << mCurrentTemperature << effectiveTemperature() << "finished stage 2 heat" << stopWork;
@@ -670,6 +687,7 @@ void Scheme::internalPumpHeatingLoopStage1()
         mTiming->s2hold = false;
         mTiming->alerts = false;
         sendRelays();
+        waitLoop(RELAYS_WAIT_MS);
 
         while (mCurrentTemperature - effectiveTemperature() < 1.9) {
             TRACE << mCurrentTemperature << effectiveTemperature() << mRelay->relays().y2
@@ -688,12 +706,15 @@ void Scheme::internalPumpHeatingLoopStage1()
             } else {
                 sendAlertIfNeeded();
                 // wait for temperature update?
+                if (stopWork)
+                    break;
+                waitLoop();
             }
 
             if (stopWork)
                 break;
 
-            waitLoop();
+            waitLoop(RELAYS_WAIT_MS);
 
             if (stopWork)
                 break;
@@ -762,12 +783,14 @@ void Scheme::EmergencyHeating()
     // 5 Sec
     emit changeBacklight(emergencyColor, emergencyColorS);
     sendRelays();
+    waitLoop(RELAYS_WAIT_MS);
 
     bool stage2 = false;
     while (mCurrentTemperature < HPT) {
         if (!stage2 && mCurrentTemperature < ET - ET_STAGE2) {
             mRelay->emergencyHeating2();
             sendRelays();
+            waitLoop(RELAYS_WAIT_MS);
             stage2 = true;
         }
     }
@@ -775,6 +798,7 @@ void Scheme::EmergencyHeating()
     emit changeBacklight();
     mRelay->turnOffEmergencyHeating();
     sendRelays();
+    waitLoop(RELAYS_WAIT_MS);
 
     internalPumpHeatingLoopStage1();
 }

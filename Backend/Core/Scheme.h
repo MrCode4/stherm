@@ -124,6 +124,7 @@ private:
     void updateVacationState();
 
     //! To monitor data change: current temperature, set temperature, mode
+    //! use low values for timeout in exit cases as it might had abrupt changes previously
     int waitLoop(int timeout = 10000);
 
     //! Update humidifire and dehumidifire after changes: mode, set point humidity,
