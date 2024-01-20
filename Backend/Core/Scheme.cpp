@@ -23,6 +23,7 @@ const double ALERT_TIME              = 120;
 const double CHANGE_STAGE_TIME       = 40;
 const double CHANGE_STAGE_TIME_WO_OB = 10;
 const double S2OFF_TIME              = 2;
+const double RELAYS_WAIT_MS          = 500;
 
 // Status backlight color
 const QVariantList coolingColor      = QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE, "true"};
@@ -37,6 +38,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     QThread (parent)
 {
     stopWork = true;
+    debugMode = RELAYS_WAIT_MS != 0;
 
     mTiming = mDeviceAPI->timing();
     mRelay  = Relay::instance();
@@ -793,16 +795,44 @@ void Scheme::sendRelays()
     if (stopWork)
         return;
 
-    TRACE;
-
     auto relaysConfig = mRelay->relays();
-    // Update relays
-    emit updateRelays(relaysConfig);
 
-    TRACE << &lastConfigs << &relaysConfig << (lastConfigs  == relaysConfig);
-    lastConfigs = relaysConfig;
+    if (debugMode) {
+        if (lastConfigs == relaysConfig) {
+            TRACE_CHECK(false) << "no change";
+            return;
+        }
+        auto steps = lastConfigs.changeStepsSorted(relaysConfig);
+        for (int var = 0; var < steps.size(); ++var) {
+            auto step = steps.at(var);
+            TRACE << step.first.c_str() << step.second;
+            if (step.first == "o/b")
+                lastConfigs.o_b = relaysConfig.o_b;
+            else if (step.first == "g")
+                lastConfigs.g = relaysConfig.g;
+            else if (step.first == "y1")
+                lastConfigs.y1 = relaysConfig.y1;
+            else if (step.first == "y2")
+                lastConfigs.y2 = relaysConfig.y2;
+            else if (step.first == "w1")
+                lastConfigs.w1 = relaysConfig.w1;
+            else if (step.first == "w2")
+                lastConfigs.w2 = relaysConfig.w2;
+            else if (step.first == "w3")
+                lastConfigs.w3 = relaysConfig.w3;
 
-    TRACE;
+            // Update relays
+            if (step.second != 0) {
+                emit updateRelays(lastConfigs);
+                waitLoop(RELAYS_WAIT_MS);
+            }
+        }
+    } else { // Update relays
+        emit updateRelays(relaysConfig);
+        lastConfigs = relaysConfig;
+    }
+
+    TRACE_CHECK(false) << "finished";
 }
 
 int Scheme::waitLoop(int timeout)
@@ -872,7 +902,7 @@ void Scheme::setMainData(QVariantMap mainData)
         emit currentTemperatureChanged();
     }
 
-    double currentHumidity =mainData.value("humidity").toDouble(&isOk);
+    double currentHumidity = mainData.value("humidity").toDouble(&isOk);
 
     if (isOk) {
         setCurrentHumidity(currentHumidity);

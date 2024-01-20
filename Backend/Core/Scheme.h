@@ -182,5 +182,7 @@ private:
 
     STHERM::RelayConfigs lastConfigs;
 
+    bool debugMode = true;
+
     void fanWork(bool isOn);
 };
