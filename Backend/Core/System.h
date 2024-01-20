@@ -150,6 +150,9 @@ private:
     //! Find Latest version from the update JsonObject
     QString findLatestVersion(QJsonObject updateJson);
 
+    //! Update Logs
+    void updateLog(const QJsonObject updateJsonObject);
+
 private:
 
     QString mSerialNumber;

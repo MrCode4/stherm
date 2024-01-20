@@ -754,7 +754,33 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     if (mLastInstalledUpdateDate.isEmpty())
         mLastInstalledUpdateDate = mLatestVersionDate;
 
+    // Check all logs
+    updateLog(updateJsonObject);
+
     emit latestVersionChanged();
+}
+
+void NUVE::System::updateLog(const QJsonObject updateJsonObject)
+{
+    auto versions = updateJsonObject.keys();
+    if (versions.contains("LatestVersion"))
+        versions.removeOne("LatestVersion");
+
+    // The current version log added.
+    versions.removeOne(mLatestVersionKey);
+
+    std::sort(versions.begin(), versions.end(), std::greater<QString>());
+
+    // Check version (app and latest)
+    auto currentVersion = qApp->applicationVersion();
+
+    foreach (auto keyVersion, versions) {
+        if (keyVersion > currentVersion) {
+            mLatestVersionChangeLog += (" \n\n" + updateJsonObject.value(keyVersion).toObject().value(m_ChangeLog).toString());
+        } else {
+            break;
+        }
+    }
 }
 
 void NUVE::System::rebootDevice()
