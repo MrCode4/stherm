@@ -327,7 +327,6 @@ void NetworkInterface::onWifiDisconnected()
     }
 
     //! Also set isConnecting to false if its true in any WifiInfo
-    qDebug() << "Disconnected";
     for (auto wifi : mWifiInfos) {
         if (wifi->mIsConnecting) {
             wifi->setProperty("isConnecting", false);
