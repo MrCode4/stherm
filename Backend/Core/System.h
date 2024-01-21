@@ -18,7 +18,7 @@ class System : public NetworkWorker
     Q_PROPERTY(QString lastInstalledUpdateDate READ lastInstalledUpdateDate NOTIFY lastInstalledUpdateDateChanged FINAL)
     Q_PROPERTY(QString latestVersion          READ latestVersion           NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
-    Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY latestVersionChanged FINAL)
+    Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY logVersionChanged FINAL)
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
     Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY snReady FINAL)
 
@@ -106,6 +106,7 @@ signals:
     void snReady();
 
     void latestVersionChanged();
+    void logVersionChanged();
     void partialUpdateProgressChanged();
     void remainingDownloadTimeChanged();
     void updateAvailableChanged();

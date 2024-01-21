@@ -766,8 +766,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
     mLatestVersionChangeLog = changeLog;
 
-    // Check all logs
-    updateLog(updateJsonObject);
 
     if (mLatestVersionKey  != installableVersionKey ||
         mLatestVersionDate != releaseDate) {
@@ -776,12 +774,15 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
         mLatestVersionDate = releaseDate;
 
         emit latestVersionChanged();
-
     }
+
+    // Check all logs
+    updateLog(updateJsonObject);
+    emit logVersionChanged();
+
     if (mHasForceUpdate) {
         partialUpdate();
     }
-
 }
 
 void NUVE::System::updateLog(const QJsonObject updateJsonObject)
