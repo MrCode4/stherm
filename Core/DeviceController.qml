@@ -24,6 +24,14 @@ I_DeviceController {
         }
     }
 
+    property Connections networkInterface: Connections {
+        target: NetworkInterface
+
+        function onHasInternetChanged() {
+            deviceControllerCPP.system.wifiConnected(NetworkInterface.hasInternet);
+        }
+    }
+
     /* Object Properties
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {

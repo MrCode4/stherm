@@ -22,6 +22,7 @@ const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
 const QString m_getContractorInfo = QString("getContractorInfo");
 
+const QString m_checkInternetConnection = QString("checkInternetConnection");
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
 
@@ -64,11 +65,11 @@ NUVE::System::System(QObject *parent) :
 
     mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
-    connect(&mTimer, &QTimer::timeout, this, [=]() {
+    connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
         getUpdateInformation(true);
     });
 
-    mTimer.start(12 * 60 * 60 * 1000); // each 12 hours
+    mUpdateTimer.setInterval(12 * 60 * 60 * 1000); // each 12 hours
     mUpdateDirectory = qApp->applicationDirPath();
 
     // Install update service
@@ -80,22 +81,14 @@ NUVE::System::System(QObject *parent) :
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
     mSerialNumber            = setting.value(m_SerialNumberSetting).toString();
 
-    QTimer::singleShot(0, this, [=]() {
+    QTimer::singleShot(2000, this, [=]() {
         if (!mSerialNumber.isEmpty()) {
             emit snReady();
         }
-    });
-
-    QTimer::singleShot(5 * 60 * 1000, this, [=]() {
-
-        if (mSerialNumber.isEmpty()) {
-            if (!mUID.empty())
-                getSN(mUID);
-        }
 
         checkPartialUpdate(true);
-        getUpdateInformation(true);
     });
+
 }
 
 NUVE::System::~System()
@@ -226,6 +219,22 @@ void NUVE::System::getUpdateInformation(bool notifyUser) {
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
     reply->setProperty(m_notifyUserProperty, notifyUser);
+}
+
+void NUVE::System::wifiConnected(bool hasInternet) {
+    if (!hasInternet) {
+        mUpdateTimer.stop();
+        return;
+    }
+
+    mUpdateTimer.start();
+
+    if (mSerialNumber.isEmpty()) {
+        if (!mUID.empty())
+            getSN(mUID);
+    }
+
+    getUpdateInformation(true);
 }
 
 void NUVE::System::getContractorInfo() {
