@@ -96,7 +96,6 @@ NUVE::System::System(QObject *parent) :
         checkPartialUpdate(true);
         getUpdateInformation(true);
     });
-
 }
 
 NUVE::System::~System()
@@ -154,6 +153,9 @@ void  NUVE::System::installUpdateService()
     } else {
         TRACE << "Unable to install the update service.";
     }
+
+    // Disable the appStherm-update.service
+    QProcess::execute("/bin/bash", {"-c", "systemctl disable appStherm-update.service;"});
 
 #endif
 }
