@@ -94,6 +94,7 @@ BasePageView {
                 ScrollBar.vertical.active: true
                 ScrollBar.vertical.policy: ScrollBar.AsNeeded
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                ScrollBar.horizontal.active: false
 
                 TextArea {
                     id: changeLogTextArea
