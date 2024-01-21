@@ -22,12 +22,12 @@ ToolButton {
 
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
-            anchors.topMargin: -5
+            anchors.topMargin: -10
 
             visible: hasNotification
-            width: 5
-            height: 5
-            radius: 2
+            width: 10
+            height: 10
+            radius: 5
             color: "red"
         }
 
