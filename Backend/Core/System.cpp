@@ -53,7 +53,7 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 
 NUVE::System::System(QObject *parent) :
     mUpdateAvailable (false),
-    mIsForceUpdate(false),
+    mHasForceUpdate(false),
     mIsGetSNReceived(false),
     mTestMode(false)
 {
@@ -287,9 +287,9 @@ bool NUVE::System::testMode() {
     return mTestMode;
 }
 
-bool NUVE::System::isForceUpdate()
+bool NUVE::System::hasForceUpdate()
 {
-    return mIsForceUpdate;
+    return mHasForceUpdate;
 }
 
 void NUVE::System::setTestMode(bool testMode) {
@@ -716,26 +716,28 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
     file .close();
 
-    auto latestVersionKey = checkForceUpdates(updateJsonObject);
-    if (latestVersionKey.isEmpty())
-        latestVersionKey = findLatestVersion(updateJsonObject);
+    auto installableVersionKey = findForceUpdate(updateJsonObject);
+    auto latestVersionKey = findLatestVersion(updateJsonObject);
+
+    if (installableVersionKey.isEmpty())
+        installableVersionKey = latestVersionKey;
 
 
-    TRACE << "Installable version: " << latestVersionKey << "Maximum Version:" << findLatestVersion(updateJsonObject);
+    TRACE << "Installable version: " << installableVersionKey << "Maximum Version:" << latestVersionKey;
 
-    if (latestVersionKey.isEmpty())
+    if (installableVersionKey.isEmpty())
         return;
 
-    auto latestVersionObj = updateJsonObject.value(latestVersionKey).toObject();
+    auto latestVersionObj = updateJsonObject.value(installableVersionKey).toObject();
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
 
 
     // Compare versions lexicographically
-    if (latestVersionKey > currentVersion) {
+    if (installableVersionKey > currentVersion) {
         auto appVersionList = currentVersion.split(".");
-        auto latestVersion = latestVersionKey.split(".");
+        auto latestVersion = installableVersionKey.split(".");
 
         if (appVersionList.count() > 2 && latestVersion.count() > 2) {
 
@@ -745,12 +747,12 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
                 emit notifyNewUpdateAvailable();
 
         } else {
-            qWarning() << "The version format is incorrect (major.minor.patch)" << latestVersionKey;
+            qWarning() << "The version format is incorrect (major.minor.patch)" << installableVersionKey;
             return;
         }
     }
 
-    mIsForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
+    mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
     mLatestVersionAddress = latestVersionObj.value(m_Address).toString();
     mRequiredMemory = latestVersionObj.value(m_RequiredMemory).toInt();
     mUpdateFileSize = latestVersionObj.value(m_CurrentFileSize).toInt();
@@ -767,16 +769,16 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     // Check all logs
     updateLog(updateJsonObject);
 
-    if (mLatestVersionKey  != latestVersionKey ||
+    if (mLatestVersionKey  != installableVersionKey ||
         mLatestVersionDate != releaseDate) {
 
-        mLatestVersionKey  = latestVersionKey;
+        mLatestVersionKey  = installableVersionKey;
         mLatestVersionDate = releaseDate;
 
         emit latestVersionChanged();
 
     }
-    if (mIsForceUpdate) {
+    if (mHasForceUpdate) {
         partialUpdate();
     }
 
@@ -806,26 +808,26 @@ void NUVE::System::updateLog(const QJsonObject updateJsonObject)
     }
 }
 
-QString NUVE::System::checkForceUpdates(const QJsonObject updateJsonObject)
+QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
 {
     auto versions = updateJsonObject.keys();
     if (versions.contains("LatestVersion"))
         versions.removeOne("LatestVersion");
 
 
-    // Install first or last force update.
+    // First force update.
     std::sort(versions.begin(), versions.end(), std::less<QString>());
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
 
+    // return the first force update that is greater than the current version
     foreach (auto keyVersion, versions) {
         if (keyVersion > currentVersion) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
             if (obj.value(m_ForceUpdate).toBool()) {
                 return keyVersion;
             }
-
         }
     }
 
