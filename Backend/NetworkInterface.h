@@ -8,6 +8,7 @@
 #include <QTimer>
 
 class NmcliInterface;
+class NmcliObserver;
 
 /*!
  * \brief The WifiInfo class holds information of a wifi network
@@ -16,6 +17,7 @@ class WifiInfo : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool     connected       MEMBER mConnected       NOTIFY connectedChanged)
+    Q_PROPERTY(bool     isConnecting    MEMBER mIsConnecting    NOTIFY isConnectingChanged)
     Q_PROPERTY(int      strength        MEMBER mStrength        NOTIFY strengthChanged)
     Q_PROPERTY(QString  ssid            MEMBER mSsid            NOTIFY ssidChanged)
     Q_PROPERTY(QString  bssid           MEMBER mBssid           NOTIFY bssidChanged)
@@ -33,10 +35,12 @@ public:
         , mSsid(ssid)
         , mBssid(bssid)
         , mSecurity(security)
+        , mIsConnecting(false)
         {
         };
 
     bool        mConnected;
+    bool        mIsConnecting;
     int         mStrength;
     QString     mSsid;
     QString     mBssid;
@@ -48,6 +52,7 @@ signals:
     void        ssidChanged();
     void        bssidChanged();
     void        securityChanged();
+    void        isConnectingChanged();
 };
 
 /*!
@@ -124,7 +129,7 @@ private:
 private slots:
     void                onErrorOccured(int error); //! error is: NmcliInterface::Error
     void                onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis);
-    void                onWifiConnected(const QString& bssid);
+    void                onWifiConnected(const QString& ssid);
     void                onWifiDisconnected();
     void                checkHasInternet();
 
@@ -154,6 +159,11 @@ private:
     NmcliInterface*         mNmcliInterface;
 
     /*!
+     * \brief mNmcliObserver
+     */
+    NmcliObserver*          mNmcliObserver;
+
+    /*!
      * \brief mDeviceIsOn Holds whether wifi device is on or off
      */
     bool                    mDeviceIsOn;
@@ -177,7 +187,7 @@ private:
      * \brief mCheckInternetAccessUrl The url that is used to check internet access. This is read
      * from env (NMCLI_INTERNET_ACCESS_URL) and 'google.com' is used if it doesn't exist.
      */
-    const QUrl                    cCheckInternetAccessUrl;
+    const QUrl              cCheckInternetAccessUrl;
 
     /*!
      * \brief mWifiInfos List of all the wifis

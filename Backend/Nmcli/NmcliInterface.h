@@ -1,0 +1,203 @@
+#pragma once
+
+#include <QEventLoop>
+#include <QDebug>
+#include <QObject>
+#include <QProcess>
+#include <QTimer>
+#include <QVariant>
+
+//! Aliasing wifi info list structure
+using WifiListMap = QList<QMap<QString, QVariant>>;
+
+/*!
+ * \brief The NmcliInterface class is an interface to hide complexity of interacting with \a \b
+ * nmcli.
+ * \note Following data are retrieved and stored for all wifi networks:
+ *  - IN-USE:       boolean
+ *  - BSSID:        string
+ *  - SSID:         string
+ *  - MODE:         string
+ *  - CHAN:         int
+ *  - RATE:         int (Mbit/s)
+ *  - SIGNAL:       int (0 to 100)
+ *  - SECURITY:     string
+ */
+class NmcliInterface : public QObject
+{
+    Q_OBJECT
+
+    //! Enums
+public:
+    //! See nmcli man page
+    enum Error {
+        Success=0,              //! indicates the operation succeeded.
+        UnknownError=1,         //! Unknown or unspecified error.
+        Invalid=2,              //! Invalid user input, wrong nmcli invocation.
+        Timeout=3,              //! Timeout expired (see --wait option).
+        ActivationFailed=4,     //! Connection activation failed.
+        DeactivationFailed=5,   //! Connection deactivation failed.
+        DisconnectFailed=6,     //! Disconnecting device failed.
+        ConnectDeleteFailed=7,  //! Connection deletion failed.
+        NotRunning=8,           //! NetworkManager is not running.
+        NotExist=10,            //! Connection, device, or access point does not exist.
+    };
+
+public:
+    explicit NmcliInterface(QObject* parent = nullptr);
+    ~NmcliInterface();
+
+    /*!
+     * \brief isRunning Determines if a process is already running
+     * \return
+     */
+    bool    isRunning() const;
+
+    /*!
+     * \brief refreshWifis This method can be used to refresh wifis.
+     * \param rescan If this is true \a\b NetworkManager is forced to rescan and if false it will
+     * be automatically decided by \a\b NetworkManager
+     */
+    void    refreshWifis(bool rescan=false);
+
+    /*!
+     * \brief hasWifiProfile Check if a profile for the given wifi is there (i.e wifi password is saved)
+     * \param ssid The SSID (and not BSSID) of wifi
+     * \param bssid The BSSID to make sure if retrived profile is for this ssid
+     * \return
+     */
+    bool    hasWifiProfile(const QString& ssid, const QString& bssid);
+
+    /*!
+     * \brief connectToWifi Connects to a wifi network with the given \a bssid (or ssid)
+     * \param bssid
+     */
+    void    connectToWifi(const QString& bssid, const QString& password);
+
+    /*!
+     * \brief connectToWifi This is an overloaded method and connects to the given wifi without any
+     * password, if the given \a ssid is not saved into \a\b NetworkManager this returns
+     * immediately otherwise connection process starts
+     * \param ssid The SSID (and not BSSID) of wifi
+     * \param bssid The BSSID of wifi
+     * \return False if wifi profile with this \a ssid doesn't exit
+     * \note This methods uses \ref hasWifiProfile(const QStrig&) to check if \a ssid is saved.
+     */
+    bool    connectSavedWifi(const QString& ssid, const QString& bssid);
+
+    /*!
+     * \brief disconnectWifi Disconnects from currently connected wifi
+     * \param ssid The SSID (and not BSSID) of wifi
+     */
+    void    disconnectFromWifi(const QString& ssid);
+
+    /*!
+     * \brief forgetWifi Forgets a wifi
+     * \param ssid The SSID (and not BSSID) of wifi
+     */
+    void    forgetWifi(const QString& ssid);
+
+    /*!
+     * \brief turnWifiDeviceOn Turn on wifi device
+     */
+    void    turnWifiDeviceOn();
+
+    /*!
+     * \brief turnWifiDeviceOff Turn on wifi device
+     */
+    void    turnWifiDeviceOff();
+
+    /*!
+     * \brief addConnection Add a custom connection
+     * \param name
+     * \param ssid
+     * \param ip4
+     * \param gw4
+     * \param dns
+     * \param security
+     * \param password
+     */
+    void    addConnection(const QString& name,
+                       const QString& ssid,
+                       const QString& ip4,
+                       const QString& gw4,
+                       const QString& dns,
+                       const QString& security,
+                       const QString& password);
+
+    /*!
+     * \brief getConnectedWifiBssid
+     * \return
+     */
+    QString getConnectedWifiBssid() const;
+
+private:
+   /*!
+     * \brief waitLoop
+     * \param process
+     * \param timeout
+     * \return
+     */
+    int     waitLoop(QProcess *process, int timeout = 1000) const;
+
+private slots:
+    /*!
+     * \brief onGetWifiDeviceNameFinished This slot is used to get the name of wifi device and store
+     * it in \a\b mWifiDevice
+     * \param exitCode
+     * \param exitStatus
+     */
+    void    onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+    /*!
+     * \brief onWifiListRefreshFinished This slot is connected to \a\b QProcess::finished() as
+     * single-shot in \ref refreshWifis(bool) to get wifi lists and emit \ref
+     * wifiListRefereshed(WifiListMap) signal
+     * \param exitCode
+     * \param exitStatus
+     */
+    void    onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+signals:
+    /*!
+     * \brief isRunningChanged This signal is emitted when running state of internal \a\b QProcess
+     * is changed
+     */
+    void    isRunningChanged();
+
+    /*!
+     * \brief wifiListRefereshed This signal is emitted when wifi list are refereshed carrying out
+     * a list of \a\b QMap holding wifi information.
+     * \param wifis
+     */
+    void    wifiListRefereshed(WifiListMap wifis);
+
+
+    /*!
+     * \brief errorOccured This signal is emitted when an error is occured
+     * \param error
+     */
+    void    errorOccured(NmcliInterface::Error error);
+
+private:
+    /*!
+     * \brief mProcess The \a\b QProcess that is used to do everything;
+     */
+    QProcess*           mProcess;
+
+    /*!
+     * \brief mWifiDevice This will hold the name of wifi device. Possible values are wlp2s0,
+     * wlp1s0, etc.
+     */
+    QString             mWifiDevice;
+
+    /*!
+     * \brief cWifiInfoFields
+     */
+    const QStringList   cWifiListFieldsArg = { "--fields", "IN-USE,BSSID,SSID,MODE,CHAN,RATE,SIGNAL,SECURITY" };
+
+    /*!
+     * \brief cNmcliPrintMode
+     */
+    const QStringList   cPrintModeArg = { "--mode", "multiline", "--terse" };
+};
