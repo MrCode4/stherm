@@ -775,7 +775,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     if (mLastInstalledUpdateDate.isEmpty())
         mLastInstalledUpdateDate = mLatestVersionDate;
 
-    mLatestVersionChangeLog = changeLog;
+    mLatestVersionChangeLog = "V" + installableVersionKey + ":\n\n" + changeLog;
 
 
     if (mLatestVersionKey  != installableVersionKey ||
@@ -813,7 +813,7 @@ void NUVE::System::updateLog(const QJsonObject updateJsonObject)
     foreach (auto keyVersion, versions) {
         if (keyVersion > currentVersion && keyVersion < mLatestVersionKey) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
-            mLatestVersionChangeLog += (" \n\n" + obj.value(m_ChangeLog).toString());
+            mLatestVersionChangeLog += ("\n\nV" + keyVersion + ":\n\n" + obj.value(m_ChangeLog).toString());
         } else {
             break;
         }
