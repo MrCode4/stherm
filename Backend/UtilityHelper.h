@@ -213,6 +213,11 @@ struct RelayConfigs
                 acc1n == rc.acc1n);
     }
 
+    //! we can not change multiple relays at once! so we need to find change steps to send with some delays,
+    //! the rules are simple, first turn off relays, then turn on
+    //! turning off orders is from highest proprity to lowest, and turning on is vice versa
+    //! priorities is as follow first O/B, then G, then Relay power from low to high stages
+    //! accessories relays are not considered yet! // TODO
     std::vector<std::pair<std::string, int>> changeStepsSorted(const RelayConfigs &newState) {
         std::vector<std::pair<std::string, int>> transitions;
         auto factor = [](RelayMode current, RelayMode next, int factor) {
