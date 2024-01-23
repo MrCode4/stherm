@@ -131,9 +131,21 @@ private:
     //! current humidity, and humidifier Id
     void updateHumifiresState();
 
-    //! Find the effective temperature to run the system with founded temperature
-    //! return the tempereture as Fahrenheit
+    //! Find the effective temperature to run the system with found temperature
+    //! based on schedule or vacation settings
+    //! return the temperature as Fahrenheit
     double effectiveTemperature();
+
+    //! find the currentTemperature based on source sensor or any overriding rule!
+    double effectiveCurrentTemperature();
+
+
+    //! Find the effective humidity to run the system with found humidity
+    //! based on schedule or vacation settings
+    double effectiveHumidity();
+
+    //! find the currentHumidity based on source sensor or any overriding rule!
+    double effectiveCurrentHumidity();
 
 private:
     /* Attributes
@@ -146,7 +158,7 @@ private:
 
     AppSpecCPP::SystemMode mRealSysMode;
 
-    ScheduleCPP* mSchedule;
+    ScheduleCPP* mSchedule = nullptr;
 
     struct STHERM::Vacation mVacation;
 
@@ -162,6 +174,9 @@ private:
 
     //! Fan work (minutes) per hour loop
     QTimer mFanWPHTimer;
+
+    //! to log vital informations
+    QTimer mLogTimer;
 
     int mHumidifierId;
 

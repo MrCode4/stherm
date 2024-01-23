@@ -33,7 +33,6 @@ const QVariantList emergencyColorS   = QVariantList{255, 0, 0, STHERM::LedEffect
 
 Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
-    mSchedule(nullptr),
     mRestarting (false),
     QThread (parent)
 {
@@ -66,11 +65,35 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
         mRestarting = false;
     });
 
+    mLogTimer.setInterval(30000);
+    mLogTimer.connect(&mLogTimer, &QTimer::timeout, this, [=]() {
+
+        LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------";
+        LOG_CHECK(isRunning() && mSystemSetup) << "systemMode: " << mSystemSetup->systemMode << "systemType: " << mSystemSetup->systemType;
+        LOG_CHECK(isRunning() && mSystemSetup) << "systemRunDelay: " << mSystemSetup->systemRunDelay << "isVacation: " << mSystemSetup->isVacation;
+        LOG_CHECK(isRunning() && mSystemSetup) << "heatStage: "  << mSystemSetup->heatStage << "coolStage: " << mSystemSetup->coolStage;
+        LOG_CHECK(isRunning() && mSystemSetup) << "heatPumpEmergency: "  << mSystemSetup->heatPumpEmergency << "heatPumpOBState: " << (mSystemSetup->heatPumpOBState == 0 ? "cooling" : "heating");
+        LOG_CHECK(isRunning() && mSystemSetup) << "systemAccessories (wire, typ): " << mSystemSetup->systemAccessories->property("accessoriesWireType") <<  mSystemSetup->systemAccessories->property("accessoriesType");
+        LOG_CHECK(isRunning() && mRelay) << "getOb_state: "  << mRelay->getOb_state() << "relays: " << mRelay->relays().printStr();
+        LOG_CHECK(isRunning() && mSchedule) << "Schedule : " << mSchedule->name;
+        LOG_CHECK(isRunning()) << "Timing S1UT: " << mTiming->s1uptime.elapsed() << "S2UT: " << mTiming->s2uptime.elapsed();
+        LOG_CHECK(isRunning()) << "S2OT: " << mTiming->s2Offtime.elapsed() << "uptime: " << mTiming->uptime.elapsed();
+        LOG_CHECK(isRunning()) << "alert:" << mTiming->alerts << "s3hold:" << mTiming->s3hold << "s2hold:" << mTiming->s2hold;
+        LOG_CHECK(isRunning() && mFanHourTimer.isActive()) << "fan on 1 hour stage finishes in " << mFanHourTimer.remainingTime() / 60000 << "minutes";
+        LOG_CHECK(isRunning() && mFanWPHTimer.isActive()) << "fan on stage finishes in " << mFanWPHTimer.remainingTime() / 60000 << "minutes";
+        LOG_CHECK(isRunning()) << "Current Temperature : " << effectiveCurrentTemperature() << "Effective Set Temperature: " << effectiveTemperature();
+        LOG_CHECK(isRunning() && false) << "Current Humidity : " << effectiveCurrentHumidity() << "Effective Set Humidity: " << effectiveHumidity();
+        LOG_CHECK(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
+        LOG_CHECK(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";
+    });
 }
 
 void Scheme::stop()
 {
     TRACE << "stopping HVAC" ;
+
+    if (mLogTimer.isActive())
+        mLogTimer.stop();
 
     if (mUpdatingTimer.isActive())
         mUpdatingTimer.stop();
@@ -110,6 +133,7 @@ void Scheme::restartWork()
             [=]() {
                 TRACE << "restarted HVAC";
                 stopWork = false;
+                mLogTimer.start();
                 this->start();
             },
             Qt::SingleShotConnection);
@@ -121,6 +145,7 @@ void Scheme::restartWork()
     } else {
         TRACE << "started HVAC";
         stopWork = false;
+        mLogTimer.start();
         this->start();
     }
 }
@@ -1081,6 +1106,21 @@ double Scheme::effectiveTemperature()
 
     // Convert to F
     return (32.0 + effTemperature * 9 / 5);
+}
+
+double Scheme::effectiveCurrentTemperature()
+{
+    return mCurrentTemperature;
+}
+
+double Scheme::effectiveHumidity()
+{
+    return mSetPointHimidity;
+}
+
+double Scheme::effectiveCurrentHumidity()
+{
+    return mCurrentHumidity;
 }
 
 void Scheme::setVacation(const STHERM::Vacation &newVacation)
