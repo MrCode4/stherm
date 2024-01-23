@@ -754,9 +754,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
             setUpdateAvailable(true);
 
-            if (notifyUser)
-                emit notifyNewUpdateAvailable();
-
         } else {
             qWarning() << "The version format is incorrect (major.minor.patch)" << installableVersionKey;
             return;
@@ -785,6 +782,9 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
         mLatestVersionDate = releaseDate;
 
         emit latestVersionChanged();
+
+        if (notifyUser)
+            emit notifyNewUpdateAvailable();
     }
 
     // Check all logs
