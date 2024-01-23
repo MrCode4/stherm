@@ -89,6 +89,7 @@ BasePageView {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
 
+                // To inactive horizontal scroll and its bound animations
                 contentWidth: availableWidth
 
                 //! to show scroll if needed on show
