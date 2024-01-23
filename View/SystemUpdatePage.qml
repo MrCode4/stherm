@@ -21,7 +21,6 @@ BasePageView {
 
     //! Send request to get update information from server
     Component.onCompleted: {
-        uiSession.hasUpdateNotification = false;
         system.getUpdateInformation();
     }
 
@@ -64,7 +63,7 @@ BasePageView {
         Rectangle {
 
             visible: system.updateAvailable && changeLogTextArea.text.length > 0
-            height: changeLogTextArea.text.length > 0 ? Math.min(changeLogTextArea.implicitHeight + header.height + 6, 150) : 0
+            height: changeLogTextArea.text.length > 0 ? Math.min(changeLogTextArea.implicitHeight + header.height + 6, root.height * 0.45) : 0
             Layout.fillWidth: true
             Layout.columnSpan: 2
             Layout.rowSpan: 2
@@ -90,11 +89,16 @@ BasePageView {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
 
+                // To inactive horizontal scroll and its bound animations
+                contentWidth: availableWidth
+
                 //! to show scroll if needed on show
                 ScrollBar.vertical.interactive: false
                 ScrollBar.vertical.active: true
                 ScrollBar.vertical.policy: ScrollBar.AsNeeded
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                ScrollBar.horizontal.active: false
+                ScrollBar.horizontal.interactive: false
 
                 TextArea {
                     id: changeLogTextArea

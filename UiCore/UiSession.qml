@@ -112,8 +112,7 @@ Item {
 
     //! MessageController instance
     property MessageController  messageController:      MessageController {
-        device: appModel
-        deviceController: root.deviceController
+        uiSession: root
     }
 
     //! schedulesController instance

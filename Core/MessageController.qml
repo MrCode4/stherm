@@ -11,9 +11,14 @@ QtObject {
 
     /* Property Declarations
      * ****************************************************************************************/
-    property I_Device device
 
-    property I_DeviceController deviceController
+    //! uiSession to get model, deviceController and hasUpdateNotification
+    //! Use 'var' type to avoid cyclic dependency
+    property var uiSession
+
+    property I_Device device: uiSession.appModel
+
+    property I_DeviceController deviceController: uiSession.deviceController
 
     /* Signals
      * ****************************************************************************************/
@@ -63,7 +68,7 @@ QtObject {
         //! Manage update notifications (a message type)
         function onUpdateAvailableChanged() {
             // hasUpdateNotification is a UiSession property, update when updateAvailableChanged
-            hasUpdateNotification = deviceController.deviceControllerCPP.system.updateAvailable;
+            uiSession.hasUpdateNotification = deviceController.deviceControllerCPP.system.updateAvailable;
         }
     }
 }

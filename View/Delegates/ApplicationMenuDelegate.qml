@@ -40,9 +40,9 @@ ItemDelegate {
                 anchors.topMargin: -10
 
                 visible: root.hasNotification
-                width: 5
-                height: 5
-                radius: 2
+                width: 10
+                height: 10
+                radius: 5
                 color: "red"
             }
         }
