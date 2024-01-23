@@ -18,7 +18,9 @@ public:
 
     static Relay* instance();
 
+    //! OBSOLETE
     int getCoolingMaxStage();
+    //! OBSOLETE
     int getHeatingMaxStage();
 
     /**
@@ -26,17 +28,21 @@ public:
      */
     void startTempTimer(AppSpecCPP::SystemMode current_state);
 
+    //! OBSOLETE
     void updateStates();
     void setAllOff();
 
+    //! OBSOLETE
     bool heatingStage0();
     bool heatingStage1(bool heatpump = false);
     bool heatingStage3(bool heatpump = false);
     bool heatingStage2(bool heatpump = false);
 
+    //! OBSOLETE
     bool coolingStage0();
     bool coolingStage1();
     bool coolingStage2();
+    //! OBSOLETE
     bool coolingStage3();
 
     bool emergencyHeating1();
@@ -48,7 +54,7 @@ public:
     bool turnOffEmergencyHeating();
 
     AppSpecCPP::SystemMode getOb_state() const;
-    void setOb_state(AppSpecCPP::SystemMode newOb_state);
+    bool setOb_state(AppSpecCPP::SystemMode newOb_state);
 
     AppSpecCPP::SystemMode currentState() const;
 
@@ -82,7 +88,7 @@ private:
 
     AppSpecCPP::SystemMode before_state;
     AppSpecCPP::SystemMode current_state;
-    AppSpecCPP::SystemMode ob_state; // can be Cooling or Heating
+    AppSpecCPP::SystemMode ob_state; // can be Cooling or Heating or OFF as initial state
     AppSpecCPP::SystemMode ob_on_state; // can be Cooling or Heating
 
     int current_stage;

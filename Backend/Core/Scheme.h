@@ -103,6 +103,8 @@ private:
     void EmergencyLoop();
     void OffLoop();
 
+    void updateOBState(AppSpecCPP::SystemMode newOb_state);
+
     void internalCoolingLoopStage1(bool pumpHeat);
     bool internalCoolingLoopStage2();
 
@@ -122,15 +124,28 @@ private:
     void updateVacationState();
 
     //! To monitor data change: current temperature, set temperature, mode
+    //! use low values for timeout in exit cases as it might had abrupt changes previously
     int waitLoop(int timeout = 10000);
 
     //! Update humidifire and dehumidifire after changes: mode, set point humidity,
     //! current humidity, and humidifier Id
     void updateHumifiresState();
 
-    //! Find the effective temperature to run the system with founded temperature
-    //! return the tempereture as Fahrenheit
+    //! Find the effective temperature to run the system with found temperature
+    //! based on schedule or vacation settings
+    //! return the temperature as Fahrenheit
     double effectiveTemperature();
+
+    //! find the currentTemperature based on source sensor or any overriding rule!
+    double effectiveCurrentTemperature();
+
+
+    //! Find the effective humidity to run the system with found humidity
+    //! based on schedule or vacation settings
+    double effectiveHumidity();
+
+    //! find the currentHumidity based on source sensor or any overriding rule!
+    double effectiveCurrentHumidity();
 
 private:
     /* Attributes
@@ -143,7 +158,7 @@ private:
 
     AppSpecCPP::SystemMode mRealSysMode;
 
-    ScheduleCPP* mSchedule;
+    ScheduleCPP* mSchedule = nullptr;
 
     struct STHERM::Vacation mVacation;
 
@@ -159,6 +174,9 @@ private:
 
     //! Fan work (minutes) per hour loop
     QTimer mFanWPHTimer;
+
+    //! to log vital informations
+    QTimer mLogTimer;
 
     int mHumidifierId;
 
@@ -177,5 +195,10 @@ private:
     bool stopWork;
     bool isVacation;
     bool mRestarting;
+
+    STHERM::RelayConfigs lastConfigs;
+
+    bool debugMode = true;
+
     void fanWork(bool isOn);
 };

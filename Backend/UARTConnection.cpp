@@ -73,6 +73,7 @@ bool UARTConnection::isConnected()
 }
 
 bool UARTConnection::sendRequest(QByteArray data) {
+    TRACE_CHECK(m_debug) << this << data.toHex(' ').toUpper();
     return mSerial->write(data) != -1;
 }
 
@@ -129,7 +130,7 @@ void UARTConnection::onReadyRead()
 {
     // Handle data
     QByteArray dataBA = mSerial->readAll();
-    TRACE_CHECK(m_debug) << dataBA.toHex(' ').toUpper();
+    TRACE_CHECK(m_debug) << this << dataBA.toHex(' ').toUpper();
 
     emit sendData(dataBA);
 }

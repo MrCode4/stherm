@@ -169,20 +169,22 @@ enum RelayMode
     OFF
 };
 
+QString printModeStr(RelayMode mode);
+
 struct RelayConfigs
 {
     RelayConfigs() {
         g     = RelayMode::OFF;
-        y1    = RelayMode::NoWire;
-        y2    = RelayMode::NoWire;
+        y1    = RelayMode::OFF;
+        y2    = RelayMode::OFF;
         y3    = RelayMode::NoWire;
-        acc2  = RelayMode::NoWire;
-        w1    = RelayMode::NoWire;
-        w2    = RelayMode::NoWire;
-        w3    = RelayMode::NoWire;
+        acc2  = RelayMode::OFF;
+        w1    = RelayMode::OFF;
+        w2    = RelayMode::OFF;
+        w3    = RelayMode::OFF;
         o_b   = RelayMode::OFF;
-        acc1p = RelayMode::NoWire;
-        acc1n = RelayMode::NoWire;
+        acc1p = RelayMode::OFF;
+        acc1n = RelayMode::OFF;
     }
 
     RelayMode g;
@@ -204,14 +206,23 @@ struct RelayConfigs
         return (g == rc.g &&
                 y1 == rc.y1 &&
                 y2 == rc.y2 &&
-                y3 == rc.y3 &&
                 acc2 == rc.acc2 &&
                 w1 == rc.w1 &&
                 w2 == rc.w2 &&
                 w3 == rc.w3 &&
                 o_b == rc.o_b &&
-                acc1n == rc.acc1n);
+                acc1n == rc.acc1n &&
+                acc1n == rc.acc1p);
     }
+
+    //! we can not change multiple relays at once! so we need to find change steps to send with some delays,
+    //! the rules are simple, first turn off relays, then turn on
+    //! turning off orders is from highest proprity to lowest, and turning on is vice versa
+    //! priorities is as follow first O/B, then G, then Relay power from low to high stages
+    //! accessories relays are not considered yet! // TODO
+    std::vector<std::pair<std::string, int>> changeStepsSorted(const RelayConfigs &newState);
+
+    QString printStr();
 };
 
 /**

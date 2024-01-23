@@ -74,6 +74,8 @@ I_DeviceController {
         console.log("* requestedHum initial: ", device.requestedHum);
         deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
+        // TODO what parameters should be initialized here?
+        deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
     }
 
     /* Children
@@ -113,7 +115,7 @@ I_DeviceController {
 
 
         if (deviceControllerCPP?.setFan(mode, workingPerHour) ?? false) {
-            // Updatew model
+            // Update model
             device.fan.mode = mode;
             device.fan.workingPerHour = workingPerHour;
         }

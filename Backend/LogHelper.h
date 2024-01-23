@@ -35,6 +35,15 @@ public:
 
 #define TRACE_CHECK(check) if (check) TRACE
 
+
+#define LOG_PRINT \
+    qDebug() << QString("%0 - Log: ") \
+                    .arg(QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss")) \
+                    .toStdString() \
+                    .c_str()
+
+#define LOG_CHECK(check) if (check) LOG_PRINT
+
 #define LOG_DEBUG(message) Logger::logDebug(message, __FILE__, __LINE__)
 
 // Example usage:

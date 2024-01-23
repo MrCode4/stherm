@@ -346,3 +346,33 @@ uint8_t UtilityHelper::packetType(STHERM::PacketType packetType) {
 
     return NONE_Packet;
 }
+
+QString STHERM::printModeStr(RelayMode mode) {
+    return mode == ON ? "On" : (mode == NoWire ? "invalid" : "Off");
+}
+
+std::vector<std::pair<std::string, int> > STHERM::RelayConfigs::changeStepsSorted(const RelayConfigs &newState) {
+    std::vector<std::pair<std::string, int>> transitions;
+    auto factor = [](RelayMode current, RelayMode next, int factor) {
+        int change = current == next ? 0 : (next == OFF ? -1 : 1);
+        return change * factor;
+    };
+
+    transitions.push_back({"o/b", factor(o_b, newState.o_b, 1)});
+    transitions.push_back({"g", factor(g, newState.g, 2)});
+    transitions.push_back({"y1", factor(y1, newState.y1, 3)});
+    transitions.push_back({"y2", factor(y2, newState.y2, 4)});
+    transitions.push_back({"w1", factor(w1, newState.w1, 3)});
+    transitions.push_back({"w2", factor(w2, newState.w2, 4)});
+    transitions.push_back({"w3", factor(w3, newState.w3, 5)});
+
+    std::sort(transitions.begin(), transitions.end(), [&](const std::pair<std::string, int> &a, const std::pair<std::string, int> &b) {
+        return a.second < b.second;
+    });
+
+    return transitions;
+}
+
+QString STHERM::RelayConfigs::printStr(){
+    return QString("o/b:%0, g:%1, y1:%2, y2:%3, w1:%4, w2:%5, w3:%6").arg(printModeStr(o_b),printModeStr(g),printModeStr(y1),printModeStr(y2),printModeStr(w1),printModeStr(w2),printModeStr(w3));
+}

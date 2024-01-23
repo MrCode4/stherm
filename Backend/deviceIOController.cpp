@@ -80,7 +80,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
     , m_p(new DeviceIOPrivate)
 {
     // move creating objects here
-    m_tiConnection = new UARTConnection(TI_SERIAL_PORT, true, this);
+    m_tiConnection = new UARTConnection(TI_SERIAL_PORT, false, this);
     m_nRfConnection = new UARTConnection(NRF_SERIAL_PORT, false, this);
     m_gpioHandler4 = new GpioHandler(NRF_GPIO_4, this);
     m_gpioHandler5 = new GpioHandler(NRF_GPIO_5, this);
@@ -363,12 +363,13 @@ void DeviceIOController::createTIConnection()
     }
 
     connect(m_tiConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
-        LOG_DEBUG(QString("Ti Response: %0").arg(data));
-        //        m_wtd_timer.start();
 
         auto rxPacket = DataParser::deserializeData(data);
+        bool trace = rxPacket.CMD != STHERM::feed_wtd;
+        TRACE_CHECK(trace) << QString("Ti Response: %0").arg(data.toHex(' '));
+        //        m_wtd_timer.start();
 
-        LOG_DEBUG(QString("TI Response - CMD: %0").arg(rxPacket.CMD));
+        TRACE_CHECK(trace) << QString("TI Response - CMD: %0").arg(rxPacket.CMD);
         processTIResponse(rxPacket);
 
         processTIQueue();
@@ -421,7 +422,7 @@ void DeviceIOController::createNRF()
             if (data.length() == 2 && data.at(0) == '0') {
                 m_p->lastTimeSensors = time;
                 m_nRF_queue.push(m_p->SensorPacketBA);
-                TRACE << "request for gpio 4" << processNRFQueue();
+                TRACE_CHECK(false) << "request for gpio 4" << processNRFQueue();
                 // check after tiemout if no other request sent
                 m_nRF_timer.start();
             }
@@ -432,7 +433,7 @@ void DeviceIOController::createNRF()
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             if (data.length() == 2 && data.at(0) == '0') {
                 m_nRF_queue.push(m_p->TOFPacketBA);
-                TRACE << "request for gpio 5" << processNRFQueue();
+                TRACE_CHECK(false) << "request for gpio 5" << processNRFQueue();
             }
         });
     }
@@ -574,8 +575,6 @@ bool DeviceIOController::setSettings(QVariantList data)
 
 void DeviceIOController::wtdExec()
 {
-    TRACE << "start wtd" << (m_tiConnection && m_tiConnection->isConnected());
-
     if (m_tiConnection && m_tiConnection->isConnected()) {
         auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::feed_wtd);
         auto rsp = sendTIRequest(packet);
@@ -583,10 +582,12 @@ void DeviceIOController::wtdExec()
         if (rsp == false) {
             TRACE << "Ti heartbeat message send failed";
         } else {
-            TRACE << "Ti heartbeat message sent";
+            TRACE_CHECK(false) << "Ti heartbeat message sent";
         }
 
-        TRACE << "Ti heartbeat message finished" << rsp;
+        TRACE_CHECK(false) << "Ti heartbeat message finished" << rsp;
+    } else {
+        TRACE << "start wtd failed not connected" << m_tiConnection;
     }
 }
 
@@ -911,9 +912,9 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
         } break;
         case STHERM::SetRelay: {
             if (rxPacket.ACK == STHERM::ERROR_NO) {
-                LOG_DEBUG("***** Ti  - Start SetRelay *****");
+                TRACE_CHECK(false) << "***** Ti  - Start SetRelay *****";
                 m_p->relays_in_l = m_p->relays_in;
-                LOG_DEBUG("***** Ti  - SetRelay finished *****");
+                TRACE_CHECK(false) << "***** Ti  - SetRelay finished *****";
             } else {
                 switch (rxPacket.ACK) {
                 case STHERM::ERROR_WIRING_NOT_CONNECTED: {
@@ -1009,11 +1010,9 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
             TRACE << "TI_HW: " << TI_HW << " TI_SW: " << TI_SW;
 
-            TRACE << "***** Ti  - Get_addr packet sent to ti *****";
-
             sendTIRequest(tp);
 
-            LOG_DEBUG("***** Ti  - Finished: GetInfo *****");
+            TRACE << "***** Ti  - Get_addr packet sent to ti *****";
 
         } break;
         case STHERM::Get_addr: {
@@ -1079,20 +1078,19 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
 bool DeviceIOController::processTIQueue()
 {
-    TRACE;
     if (!m_tiConnection || !m_tiConnection->isConnected()) {
         TRACE;
         return false;
     }
 
     if (m_TI_queue.empty()) {
-        TRACE;
         return false;
     }
 
 
     auto packet = m_TI_queue.front();
-    TRACE << packet.CMD;
+
+    TRACE_CHECK(packet.CMD != STHERM::feed_wtd) << "TI Request" << packet.CMD;
 
     if ((packet.CMD == STHERM::SetRelay || packet.CMD == STHERM::Check_Wiring)
         && m_p->wait_relay_response) {
@@ -1102,14 +1100,12 @@ bool DeviceIOController::processTIQueue()
 
     if (sendTIRequest(packet)) {
         m_TI_queue.pop();
-        TRACE;
         return true;
     } else {
         qWarning() << "ti request packet not sent" << packet.CMD
                    << "queue size: " << m_TI_queue.size();
     }
 
-    TRACE;
     return false;
 }
 

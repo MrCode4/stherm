@@ -133,6 +133,8 @@ private:
      * ****************************************************************************************/
     QVariantMap _mainData;
     QVariantMap _mainData_override;
+    bool _override_by_file = false;
+    double _temperatureLast = 0.0;
 
     DeviceIOController *_deviceIO;
     DeviceAPI *_deviceAPI;

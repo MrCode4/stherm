@@ -58,7 +58,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
-        TRACE << "Update backlight." << color << afterColor << mBacklightModelData;
+        TRACE_CHECK(false) << "Update backlight." << color << afterColor << mBacklightModelData;
 
         if (mBacklightTimer.isActive())
             mBacklightTimer.stop();
@@ -246,14 +246,28 @@ QVariantMap DeviceControllerCPP::getMainData()
     bool hasOverride = override.value("on").toBool();
     if (hasOverride) {
         auto overrideTemp = override.value("temp").toDouble();
-        TRACE <<"temperature will be overriden by value: " << overrideTemp << ", read from /usr/local/bin/override.ini file.";
+        TRACE_CHECK(!_override_by_file) <<"temperature will be overriden by value: " << overrideTemp << ", read from /usr/local/bin/override.ini file.";
         overrideData.insert("temperature", overrideTemp);
+    }
+
+    if (_override_by_file != hasOverride){
+        TRACE_CHECK(!hasOverride) << "temperature will not be overriden anymore.";
+        _override_by_file = hasOverride;
     }
 #endif
 
     for (const auto &pair : overrideData.toStdMap()) {
         TRACE << pair.first << "with value: " << mainData.value(pair.first) << ", replaced by: " << pair.second;
         mainData.insert(pair.first, pair.second);
+    }
+
+    // to make effect of overriding instantly, TODO  remove or disable later
+    bool isOk;
+    double currentTemp = mainData.value("temperature").toDouble(&isOk);
+    if (isOk && currentTemp != _temperatureLast) {
+        _temperatureLast = currentTemp;
+        if (m_scheme)
+            m_scheme->setMainData(mainData);
     }
 
     return mainData;
