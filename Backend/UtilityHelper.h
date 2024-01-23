@@ -175,7 +175,7 @@ struct RelayConfigs
         g     = RelayMode::OFF;
         y1    = RelayMode::OFF;
         y2    = RelayMode::OFF;
-        y3    = RelayMode::OFF;
+        y3    = RelayMode::NoWire;
         acc2  = RelayMode::OFF;
         w1    = RelayMode::OFF;
         w2    = RelayMode::OFF;
@@ -204,13 +204,13 @@ struct RelayConfigs
         return (g == rc.g &&
                 y1 == rc.y1 &&
                 y2 == rc.y2 &&
-                y3 == rc.y3 &&
                 acc2 == rc.acc2 &&
                 w1 == rc.w1 &&
                 w2 == rc.w2 &&
                 w3 == rc.w3 &&
                 o_b == rc.o_b &&
-                acc1n == rc.acc1n);
+                acc1n == rc.acc1n &&
+                acc1n == rc.acc1p);
     }
 
     //! we can not change multiple relays at once! so we need to find change steps to send with some delays,

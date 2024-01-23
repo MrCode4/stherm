@@ -18,7 +18,9 @@ public:
 
     static Relay* instance();
 
+    //! OBSOLETE
     int getCoolingMaxStage();
+    //! OBSOLETE
     int getHeatingMaxStage();
 
     /**
@@ -26,17 +28,21 @@ public:
      */
     void startTempTimer(AppSpecCPP::SystemMode current_state);
 
+    //! OBSOLETE
     void updateStates();
     void setAllOff();
 
+    //! OBSOLETE
     bool heatingStage0();
     bool heatingStage1(bool heatpump = false);
     bool heatingStage3(bool heatpump = false);
     bool heatingStage2(bool heatpump = false);
 
+    //! OBSOLETE
     bool coolingStage0();
     bool coolingStage1();
     bool coolingStage2();
+    //! OBSOLETE
     bool coolingStage3();
 
     bool emergencyHeating1();
