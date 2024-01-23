@@ -827,13 +827,13 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
         versions.removeOne("LatestVersion");
 
 
-    // First force update.
-    std::sort(versions.begin(), versions.end(), std::less<QString>());
+    // Last force update.
+    std::sort(versions.begin(), versions.end(), std::greater<QString>());
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
 
-    // return the first force update that is greater than the current version
+    // return the last force update that is greater than the current version
     foreach (auto keyVersion, versions) {
         if (keyVersion > currentVersion) {
             auto obj = updateJsonObject.value(keyVersion).toObject();

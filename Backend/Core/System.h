@@ -161,7 +161,7 @@ private:
     void updateLog(const QJsonObject updateJsonObject);
 
     //! Check force updates
-    //! Return first force update version that in greater than currecnt version
+    //! Return last force update version that in greater than currecnt version
     QString findForceUpdate(const QJsonObject updateJsonObject);
 
 private:
@@ -175,7 +175,7 @@ private:
     QString mLatestVersionAddress;
 
     //! Latest version is installable version
-    //! (latest version or first force update that is greater than current version)
+    //! (latest version or last force update that is greater than current version)
     QString mLatestVersionKey;
 
     QString mLatestVersionDate;
