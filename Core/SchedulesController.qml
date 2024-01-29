@@ -39,13 +39,13 @@ QtObject {
     //! Remove an schedule
     function removeSchedule(schedule: ScheduleCPP)
     {
-        var schIndex = device.schedules.findIndex(elem => elem === schedule);
+        var schIndex = device.schedules.findIndex(elem => elem._qsUuid === schedule._qsUuid);
 
         if (schIndex !== -1) {
             device.schedules.splice(schIndex, 1);
             device.schedulesChanged();
 
-            schedule.destroy();
+//            schedule.destroy();
         }
     }
 
