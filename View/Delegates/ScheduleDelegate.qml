@@ -89,7 +89,7 @@ ItemDelegate {
                 spacing: 1
 
                 Repeater {
-                    model: schedule?.repeats.split(",") ?? 0
+                    model: schedule?.repeats?.includes("No repeat") ? ["No repeat"] : schedule.repeats.split(",")
                     delegate: Label {
                         font: _fontMetric.font
                         Layout.alignment: Qt.AlignTop
@@ -118,6 +118,9 @@ ItemDelegate {
                 if (checked) {
                     //! First find if there is any overlapping schedules
                     if (uiSession) {
+
+                        schedulesController.checkNoRepeatSchedule(schedule);
+
                         //! First check if this schedule has overlap with other Schedules
                         internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
                                     Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),

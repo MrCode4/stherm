@@ -35,6 +35,10 @@ BasePageView {
         if (_saBtn.checked) rps.push("Sa");
         if (_suBtn.checked) rps.push("Su");
 
+        if (rps.length === 0 && schedule.type === AppSpec.Custom) {
+            rps.push("No repeat");
+        }
+
         return rps.join(",");
     }
 
@@ -113,13 +117,15 @@ BasePageView {
 
     onScheduleChanged: {
         if (schedule) {
-            _moBtn.checked = Boolean(schedule.repeats.includes("Mo"));
-            _tuBtn.checked = Boolean(schedule.repeats.includes("Tu"));
-            _weBtn.checked = Boolean(schedule.repeats.includes("We"));
-            _thBtn.checked = Boolean(schedule.repeats.includes("Th"));
-            _frBtn.checked = Boolean(schedule.repeats.includes("Fr"));
-            _saBtn.checked = Boolean(schedule.repeats.includes("Sa"));
-            _suBtn.checked = Boolean(schedule.repeats.includes("Su"));
+            var isNoRepeat = schedule.repeats.includes("No repeat")
+
+            _moBtn.checked = isNoRepeat ? false : Boolean(schedule.repeats.includes("Mo"));
+            _tuBtn.checked = isNoRepeat ? false : Boolean(schedule.repeats.includes("Tu"));
+            _weBtn.checked = isNoRepeat ? false : Boolean(schedule.repeats.includes("We"));
+            _thBtn.checked = isNoRepeat ? false : Boolean(schedule.repeats.includes("Th"));
+            _frBtn.checked = isNoRepeat ? false : Boolean(schedule.repeats.includes("Fr"));
+            _saBtn.checked = isNoRepeat ? false : Boolean(schedule.repeats.includes("Sa"));
+            _suBtn.checked = isNoRepeat ? false : Boolean(schedule.repeats.includes("Su"));
         }
     }
 

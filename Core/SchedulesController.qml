@@ -15,6 +15,8 @@ QtObject {
 
     property I_Device device: deviceController.device
 
+    property ScheduleCPP runningSchedule: null
+
     /* Methods
      * ****************************************************************************************/
     //! Saves new schedule
@@ -116,7 +118,8 @@ QtObject {
                                             var currentDate = Qt.formatDate(new Date(), "ddd");
                                             currentDate = currentDate.slice(0, -1);
 
-                                            if(schedule.repeats.includes(currentDate)) {
+                                            if(schedule.repeats.includes(currentDate) || (schedule.repeats.length === 0 &&
+                                                                                          schedule.type === AppSpec.Custom)) {
 
                                                 var schStartTime = Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP");
                                                 var schEndTime = Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP");
@@ -134,7 +137,13 @@ QtObject {
                                      });
         }
 
-        deviceController.setActivatedSchedule(currentSchedule);
+        // Disable a 'No repeat' schedule after running one time.
+        if (runningSchedule !== currentSchedule && (runningSchedule?.repeats?.includes("No repeat") ?? false)) {
+            runningSchedule.enable = false;
+        }
+
+        runningSchedule = currentSchedule;
+        deviceController.setActivatedSchedule(runningSchedule);
     }
 
     function formatTime(timeString) {
@@ -259,6 +268,23 @@ QtObject {
     }
 
 
+    //! Check the custom/no repeat schedules.
+    function checkNoRepeatSchedule(schedule: ScheduleCPP) {
+        if (schedule.type === AppSpec.Custom && schedule.repeats.includes ("No repeat")) {
+            var now = new Date();
+            var currentDate = Qt.formatDate(now, "ddd");
+
+            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP");
+            if(schStartTime - now < 0) {
+                now.setDate(schStartTime.getDate() + 1);
+                currentDate = Qt.formatDate(now, "ddd");
+            }
+
+            currentDate = currentDate.slice(0, -1);
+            schedule.repeats += ("," + currentDate);
+        }
+    }
+
     property Timer _checkRunningTimer: Timer {
         running: (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off &&
                  !device.isHold && device.schedules.filter(schedule => schedule.enable).length > 0
@@ -271,7 +297,7 @@ QtObject {
 
     }
 
-    property Connections deviceConnections: Connections{
+    property Connections deviceConnections: Connections {
         target: device
 
         function onIsHoldChanged() {

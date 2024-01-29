@@ -348,7 +348,7 @@ BasePageView {
                         Layout.alignment: Qt.AlignRight
 
                         Repeater {
-                            model: scheduleToDisplay?.repeats ? scheduleToDisplay.repeats.split(",") : 0
+                            model: scheduleToDisplay?.repeats?.includes("No repeat") ? ["No repeat"] : scheduleToDisplay.repeats.split(",")
                             delegate: Label {
                                 Layout.alignment: Qt.AlignTop
                                 text: modelData
