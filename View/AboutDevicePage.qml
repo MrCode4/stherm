@@ -24,6 +24,14 @@ BasePageView {
 
     property int testCounter: 0
 
+    property string appVesion: ""
+
+    Component.onCompleted: {
+        const versionArray = Application.version.split('.')
+        const versionArrayMain = versionArray.splice(0, 3)
+        appVesion = versionArrayMain.join('.')
+    }
+
     /* Childrent
      * ****************************************************************************************/
     ListView {
@@ -50,7 +58,7 @@ BasePageView {
             { "key": "Custom Name",         "value": "Living Room" },
             { "key": "URL",                 "value": '<a href="nuvehome.com" style="text-decoration:none;color:#44A0FF;">nuvehome.com</a>' },
             { "key": "E-mail",              "value": '<a href="support@nuvehome.com" style="text-decoration:none;color:#44A0FF;">support@nuvehome.com</link>' },
-            { "key": "Software version",    "value": Application.version },
+            { "key": "Software version",    "value": appVesion },
             { "key": "Hardware version",    "value": "01" },
             { "key": "Restart Device",      "value": "01", "type": "button" },
         ]
