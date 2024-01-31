@@ -221,11 +221,18 @@ I_DeviceController {
     function setSystemCoolingOnly(stage: int) {
         device.systemSetup.coolStage  = stage;
         device.systemSetup.systemType = AppSpecCPP.CoolingOnly;
+
+        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== Vacation)  {
+            setSystemModeTo(AppSpecCPP.Cooling)
+        }
     }
 
     function setSystemHeatOnly(stage: int) {
         device.systemSetup.heatStage  = stage;
         device.systemSetup.systemType = AppSpecCPP.HeatingOnly;
+        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== Vacation)  {
+            setSystemModeTo(AppSpecCPP.Heating)
+        }
     }
 
     function setSystemHeatPump(emergency: bool, stage: int, obState: int) {

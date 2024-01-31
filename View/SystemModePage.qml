@@ -15,6 +15,9 @@ BasePageView {
     //! I_Device
     property I_Device       device: deviceController?.device
 
+    property bool heatAvailable: device.systemSetup.systemType != AppSpecCPP.CoolingOnly
+    property bool coolAvailable: device.systemSetup.systemType != AppSpecCPP.HeatingOnly
+
     /* Object properties
      * ****************************************************************************************/
     title: "System Mode"
@@ -49,6 +52,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Cooling
+            enabled: coolAvailable
             text: "Cooling"
 
             onClicked: {
@@ -64,6 +68,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Heating
+            enabled: heatAvailable
             text: "Heating"
 
             onClicked: {
@@ -79,6 +84,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Auto
+            enabled: coolAvailable && heatAvailable
             text: "Auto"
 
             onClicked: {
