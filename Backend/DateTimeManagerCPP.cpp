@@ -36,7 +36,7 @@ void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
     }
 
     connect(&mProcess, &QProcess::finished, this,
-        [this, autoUpdate](int exitCode, QProcess::ExitStatus) {
+        [this, autoUpdate](int exitCode) {
             if (exitCode == 0) {
                 setAutoUpdateTimeProperty(autoUpdate);
             }
@@ -50,7 +50,6 @@ void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
     } else {
         mProcess.start(TDC_COMMAND, { TDC_SET_NTP, "false" });
     }
-
 }
 
 bool DateTimeManagerCPP::autoUpdateTime() const
@@ -239,14 +238,17 @@ void DateTimeManagerCPP::checkAutoUpdateTime()
                                     TDC_SHOW,
                                     TDC_NTP_PROPERTY,
                                 });
-    mProcess.waitForFinished(40);
+    mProcess.waitForFinished(300);
 
     if (mProcess.exitStatus() == QProcess::NormalExit && mProcess.exitCode() == 0) {
-        bool autoUpdate = (mProcess.readLine() == "NTP=yes\n");
-        setAutoUpdateTimeProperty(autoUpdate);
-    } else {
-        qDebug() << "DTM: " << Q_FUNC_INFO << __LINE__ << mProcess.readLine();
+        auto line = mProcess.readLine();
+        if (!line.isEmpty()){
+            setAutoUpdateTimeProperty(line == "NTP=yes\n");
+            return;
+        }
     }
+
+    qWarning() << "Error: DTM checkAutoUpdateTime failed to read output";
 }
 
 void DateTimeManagerCPP::callProcessFinished(const QJSValueList& args)
