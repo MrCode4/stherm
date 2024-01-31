@@ -100,6 +100,8 @@ AppSpecCPP {
     //! Minimum and maximum temperature in the app (Celcius)
     property real minimumTemperatureC: 18
     property real maximumTemperatureC: 30
+    property real minimumTemperatureF: 65
+    property real maximumTemperatureF: 85
 
     //! Get default schedule
     function getDefaultSchedule (type: int) : SceduleCPP {

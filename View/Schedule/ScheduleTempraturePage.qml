@@ -68,9 +68,9 @@ BasePageView {
 
         anchors.centerIn: parent
         width: parent.width
-        from: isCelcius ? 18 : 65
-        to: isCelcius ? 30 : 85
-        value: Utils.convertedTemperature(schedule?.temprature ?? 0, device.setting.tempratureUnit)
+        from: isCelcius ? AppSpec.minimumTemperatureC : AppSpec.minimumTemperatureF
+        to: isCelcius ? AppSpec.maximumTemperatureC : AppSpec.maximumTemperatureF
+        value: Utils.convertedTemperatureClamped(schedule?.temprature ?? 0, device.setting.tempratureUnit)
         majorTickCount: isCelcius ? 3 : 5
         ticksCount: to - from
         stepSize: 1

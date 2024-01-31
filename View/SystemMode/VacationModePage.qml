@@ -86,11 +86,11 @@ BasePageView {
             id: _tempSlider
             Layout.fillWidth: true
 
-            from: Utils.convertedTemperature(AppSpec.minimumTemperatureC, setting.tempratureUnit)
-            to: Utils.convertedTemperature(AppSpec.maximumTemperatureC, setting.tempratureUnit)
+            from: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minimumTemperatureF : AppSpec.minimumTemperatureC) ?? AppSpec.minimumTemperatureF
+            to: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.maximumTemperatureF : AppSpec.maximumTemperatureC) ?? AppSpec.maximumTemperatureF
 
-            first.value: Utils.convertedTemperature(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit)
-            second.value: Utils.convertedTemperature(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit)
+            first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit)
+            second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit)
             difference: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
 
             labelSuffix: "\u00b0" + (setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
