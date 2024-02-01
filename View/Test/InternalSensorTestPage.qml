@@ -12,9 +12,11 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
+    property var model: ({})
+
     title: "Internal Sensor Test"
 
-    property var model: ({})
+    Component.onCompleted: root.model = deviceController.getTestData();
 
     /* Children
      * ****************************************************************************************/
@@ -118,7 +120,7 @@ BasePageView {
         }
 
         Label {
-            text:root.model?.humidity  ?? ""
+            text:root.model?.humidity  ?? "NaN"
             Layout.preferredWidth:  temperatureField.width
         }
 
@@ -127,7 +129,7 @@ BasePageView {
         }
 
         Label {
-            text:root.model?.RangeMilliMeter  ?? ""
+            text: (root.model?.RangeMilliMeter > 0) ? ("ON (" + root.model.RangeMilliMeter + ")") : "OFF"
             Layout.preferredWidth:  temperatureField.width
         }
 
