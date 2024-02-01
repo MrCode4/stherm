@@ -18,13 +18,13 @@ BasePageView {
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system
 
-    /* Object properties
-     * ****************************************************************************************/
-    title: "Device Info"
-
     property int testCounter: 0
 
     property string appVesion: ""
+
+    /* Object properties
+     * ****************************************************************************************/
+    title: "Device Info"
 
     Component.onCompleted: {
         const versionArray = Application.version.split('.')

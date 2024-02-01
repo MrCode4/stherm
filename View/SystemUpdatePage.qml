@@ -15,12 +15,17 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
 
+    property string installedVesion: ""
+
     /* Object properties
      * ****************************************************************************************/
     title: "System Update"
 
     //! Send request to get update information from server
     Component.onCompleted: {
+        const versionArray = Application.version.split('.')
+        const versionArrayMain = versionArray.splice(0, 3)
+        installedVesion = versionArrayMain.join('.')
         system.getUpdateInformation();
     }
 
@@ -31,7 +36,7 @@ BasePageView {
 
         anchors.top: parent.top
         columns: 2
-        rowSpacing: 16
+        rowSpacing: 8
         columnSpacing: 32
 
         Label {
@@ -50,7 +55,20 @@ BasePageView {
         Label {
             Layout.preferredWidth: fontMetrics.boundingRect("Update release date: ").width + leftPadding + rightPadding
             font.bold: true
-            text: system.updateAvailable ? "Update Available: " : "Installed Version: "
+            text: "Installed Version: "
+        }
+
+        Label {
+            Layout.fillWidth: true
+            font.pointSize: Application.font.pointSize * 0.9
+            horizontalAlignment: Text.AlignLeft
+            text: installedVesion
+        }
+
+        Label {
+            Layout.preferredWidth: fontMetrics.boundingRect("Update release date: ").width + leftPadding + rightPadding
+            font.bold: true
+            text: system.updateAvailable ? "Update Available: " : "Latest Version: "
         }
 
         Label {
@@ -115,10 +133,46 @@ BasePageView {
                 }
             }
         }
-    }
 
-    FontMetrics {
-        id: fontMetrics
+        FontMetrics {
+            id: fontMetrics
+        }
+
+        ItemDelegate {
+            Layout.fillWidth: true
+            Layout.columnSpan: 2
+
+            hoverEnabled: system.updateAvailable
+            visible: system.updateAvailable
+
+            rightPadding: 4
+            leftPadding: 8
+
+            contentItem: RowLayout {
+                RoniaTextIcon {
+                    Layout.alignment: Qt.AlignLeft
+                    text:  FAIcons.download
+                }
+
+                Label {
+                    Layout.alignment: Qt.AlignLeft
+                    Layout.leftMargin: root.leftPadding
+
+                    color: Style.foreground
+                    textFormat: Text.MarkdownText
+                    font.family: "Roboto"
+                    font.pointSize: Qt.application.font.pointSize  * (system.updateAvailable ? 1.0 : 0.7)
+                    font.letterSpacing: system.updateAvailable ? 1.5 : 1.0
+                    text: "<u>Download & Install</u>  "
+                    lineHeight: 0.5
+                }
+            }
+
+            onClicked: {
+                if (system.updateAvailable)
+                    system.partialUpdate();
+            }
+        }
     }
 
     ItemDelegate {
@@ -127,17 +181,16 @@ BasePageView {
         anchors.leftMargin: root.leftPadding
         anchors.bottomMargin: root.bottomPadding
 
-        hoverEnabled: system.updateAvailable
+        hoverEnabled: false
+        visible: !system.updateAvailable
 
         rightPadding: 4
         leftPadding: 8
 
         contentItem: RowLayout {
             RoniaTextIcon {
-                id: icon
-
                 Layout.alignment: Qt.AlignLeft
-                text: system.updateAvailable ? FAIcons.download : FAIcons.circleInfo
+                text: FAIcons.circleInfo
             }
 
             Label {
@@ -149,14 +202,9 @@ BasePageView {
                 font.family: "Roboto"
                 font.pointSize: Qt.application.font.pointSize  * (system.updateAvailable ? 1.0 : 0.7)
                 font.letterSpacing: system.updateAvailable ? 1.5 : 1.0
-                text: system.updateAvailable ? "<u>Download & Install</u>  " : "This version is up to date."
+                text: "This version is up to date."
                 lineHeight: 0.5
             }
-        }
-
-        onClicked: {
-            if (system.updateAvailable)
-                system.partialUpdate();
         }
     }
 }
