@@ -278,7 +278,8 @@ BasePageView {
 
     Component.onDestruction: {
         //! Revert to the color in model if last liveColor is not confirmed
-        if (!Qt.colorEqual(backlight._color, liveColor)) {
+        if (!Qt.colorEqual(backlight._color, liveColor) ||
+            backlight.on !== _backlightOnOffSw.checked) {
             revertToModel();
         }
     }
