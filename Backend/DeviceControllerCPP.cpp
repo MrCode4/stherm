@@ -50,14 +50,14 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
-    mBacklightTimer.setSingleShot(false);
-    mBacklightTimer.setInterval(1000);
-    connect(&mBacklightTimer, &QTimer::timeout, this, [this]() {
+    mBacklightPowerTimer.setSingleShot(false);
+    mBacklightPowerTimer.setInterval(1000);
+    connect(&mBacklightPowerTimer, &QTimer::timeout, this, [this]() {
         mDeltaTemperatureIntegrator *= TEMPERATURE_INTEGRATOR_DECAY_CONSTANT;
         mDeltaTemperatureIntegrator += backlightFactor;
         TRACE << "mDeltaTemperatureIntegrator total is " << mDeltaTemperatureIntegrator;
     });
-    mBacklightTimer.start();
+    mBacklightPowerTimer.start();
 
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         setMainData(data);
