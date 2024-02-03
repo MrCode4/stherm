@@ -523,6 +523,7 @@ bool DeviceIOController::testRelays(QVariantList relaysData)
 }
 
 bool DeviceIOController::setBacklight(QVariantList data)
+bool DeviceIOController::setBacklight(QVariantList data, double *powerFactor)
 {
     TRACE_CHECK(false) << "sending setBacklight request with data:" << data
                        << (m_nRfConnection && m_nRfConnection->isConnected());
@@ -541,6 +542,9 @@ bool DeviceIOController::setBacklight(QVariantList data)
             last.DataArray[2] = on ? std::clamp(data[2].toInt(), 0, 255) : 0;
             last.DataArray[3] = 255;
             last.DataArray[4] = data[3].toInt();
+            if (powerFactor) {
+                *powerFactor = (last.DataArray[0] + last.DataArray[1] + last.DataArray[2]) / (3 * 255.0);
+            }
         }
 
         auto result = processNRFQueue();

@@ -47,6 +47,17 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setBacklight(colorData, true);
     });
 
+    // TODO should be loaded later for accounting previous session
+    mDeltaTemperatureIntegrator = 0;
+    mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
+    mBacklightTimer.setSingleShot(false);
+    mBacklightTimer.setInterval(1000);
+    connect(&mBacklightTimer, &QTimer::timeout, this, [this]() {
+        mDeltaTemperatureIntegrator *= TEMPERATURE_INTEGRATOR_DECAY_CONSTANT;
+        mDeltaTemperatureIntegrator += backlightFactor;
+    });
+    mBacklightTimer.start();
+
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         setMainData(data);
     });
@@ -115,7 +126,8 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
         mBacklightModelData = data;
     }
 
-    return _deviceIO->setBacklight(data);
+    // TODO the scheme is using blinking mode! we should account for that later
+    return _deviceIO->setBacklight(data, isScheme ? nullptr : &backlightFactor);
 }
 
 bool DeviceControllerCPP::setSettings(QVariantList data)
@@ -206,6 +218,12 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData)
 {
+    bool isOk;
+    double tc = mainData.value("temperature").toDouble(&isOk);
+    if (isOk){
+        mainData.insert("temperature", tc - deltaCorrection());
+    }
+
     if (_mainData == mainData)
         return;
 

@@ -56,7 +56,7 @@ public:
     /* Public Methods
      * ****************************************************************************************/
 public:
-    bool setBacklight(QVariantList data);
+    bool setBacklight(QVariantList data, double *powerFactor = nullptr);
     //! TODO handles only the brighness for now
     bool setSettings(QVariantList data);
 

@@ -145,7 +145,18 @@ private:
     NUVE::System *m_system;
 
     QTimer mBacklightTimer;
+    QTimer mBacklightPowerTimer;
 
     QVariantList mBacklightModelData;
 
+    //! Temperature correction parameters
+    double backlightFactor = 0.0;
+    double mDeltaTemperatureIntegrator;
+    const double TEMPERATURE_INTEGRATOR_DECAY_CONSTANT = 0.99721916;
+    const double TEMPERATURE_COMPENSATION_OFFSET = 0.5;
+    const double TEMPERATURE_COMPENSATION_SCALER = 3.1/360;
+    double deltaCorrection()
+    {
+        return  TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
+    }
 };

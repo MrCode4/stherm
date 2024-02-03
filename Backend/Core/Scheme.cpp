@@ -65,8 +65,6 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
         mRestarting = false;
     });
 
-    mDeltaTemperatureIntegrator = 0;
-
     mLogTimer.setInterval(30000);
     mLogTimer.connect(&mLogTimer, &QTimer::timeout, this, [=]() {
 
@@ -961,10 +959,6 @@ void Scheme::setMainData(QVariantMap mainData)
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
     double currentTemp = 32.0 + tc * 9 / 5;
-
-    // TODO this assumes that this is called every 1 second....
-    mDeltaTemperatureIntegrator += LED_PWER;    // TODO add the power level here
-    mDeltaTemperatureIntegrator *= TEMPERATURE_INTEGRATOR_DECAY_CONSTANT;
 
     if (isOk && currentTemp != mCurrentTemperature) {
         mCurrentTemperature = currentTemp;
