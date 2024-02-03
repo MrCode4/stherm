@@ -522,7 +522,6 @@ bool DeviceIOController::testRelays(QVariantList relaysData)
     return false;
 }
 
-bool DeviceIOController::setBacklight(QVariantList data)
 bool DeviceIOController::setBacklight(QVariantList data, double *powerFactor)
 {
     TRACE_CHECK(false) << "sending setBacklight request with data:" << data
