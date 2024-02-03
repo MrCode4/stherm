@@ -532,6 +532,10 @@ bool DeviceIOController::setBacklight(QVariantList data, double *powerFactor)
             auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::SetColorRGB,
                                                        STHERM::PacketType::UARTPacket,
                                                        data);
+            if (powerFactor) {
+                TRACE << "Data " << packet.DataArray[0] << " " << packet.DataArray[1] << " " << packet.DataArray[2];
+                *powerFactor = ((double)packet.DataArray[0] + (double)packet.DataArray[1] + (double)packet.DataArray[2]) / (3.0 * 255.0);
+            }
             m_nRF_queue.push(packet);
         } else  {
             auto last = m_nRF_queue.back();
@@ -542,7 +546,8 @@ bool DeviceIOController::setBacklight(QVariantList data, double *powerFactor)
             last.DataArray[3] = 255;
             last.DataArray[4] = data[3].toInt();
             if (powerFactor) {
-                *powerFactor = (last.DataArray[0] + last.DataArray[1] + last.DataArray[2]) / (3 * 255.0);
+                TRACE << "Data " << last.DataArray[0] << " " << last.DataArray[1] << " " << last.DataArray[2];
+                *powerFactor = ((double)last.DataArray[0] + (double)last.DataArray[1] + (double)last.DataArray[2]) / (3.0 * 255.0);
             }
         }
 
