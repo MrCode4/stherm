@@ -225,7 +225,7 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
     double tc = mainData.value("temperature").toDouble(&isOk);
     if (isOk){
         double dt = deltaCorrection();
-        TRACE << "Delta T correction: " << dt;
+        TRACE << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
         mainData.insert("temperature", tc - dt);
     }
 
