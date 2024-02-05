@@ -93,9 +93,9 @@ DeviceIOController::DeviceIOController(QObject *parent)
         double target = m_backlightFactorUpdater.property("target").toDouble();
         double diff = m_backlightFactorUpdater.property("diff").toDouble();
         m_backlightFactor += diff / 20;
-        if (qAbs(m_backlightFactor - target) < diff / 40) {
+        if (qAbs(m_backlightFactor - target) < qAbs(diff / 40)) {
             m_backlightFactor = target;
-        } else  if (diff != 0) {
+        } else  if (qAbs(diff) > 1E-3) {
             m_backlightFactorUpdater.start();
         }
         TRACE << "backlight factor updated to "  << m_backlightFactor << "with step " << diff / 20 << "and Target " << target;
