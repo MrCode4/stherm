@@ -127,9 +127,7 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
         mBacklightModelData = data;
     }
 
-    // TODO the scheme is using blinking mode! we should account for that later
-    bool rv = _deviceIO->setBacklight(data);
-    return rv;
+    return _deviceIO->setBacklight(data);
 }
 
 bool DeviceControllerCPP::setSettings(QVariantList data)
