@@ -54,7 +54,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mBacklightPowerTimer.setInterval(1000);
     connect(&mBacklightPowerTimer, &QTimer::timeout, this, [this]() {
         mDeltaTemperatureIntegrator *= TEMPERATURE_INTEGRATOR_DECAY_CONSTANT;
-        mDeltaTemperatureIntegrator += backlightFactor;
+        mDeltaTemperatureIntegrator += _deviceIO->backlightFactor();
         TRACE << "mDeltaTemperatureIntegrator total is " << mDeltaTemperatureIntegrator;
     });
     mBacklightPowerTimer.start();
@@ -128,8 +128,7 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
     }
 
     // TODO the scheme is using blinking mode! we should account for that later
-    bool rv = _deviceIO->setBacklight(data, isScheme ? nullptr : &backlightFactor);
-    TRACE << "backlight factor updated to " << backlightFactor;
+    bool rv = _deviceIO->setBacklight(data);
     return rv;
 }
 

@@ -150,7 +150,6 @@ private:
     QVariantList mBacklightModelData;
 
     //! Temperature correction parameters
-    double backlightFactor = 0.0;
     double mDeltaTemperatureIntegrator;
     const double TEMPERATURE_INTEGRATOR_DECAY_CONSTANT = 0.99721916;
     const double TEMPERATURE_COMPENSATION_OFFSET = 0.0;

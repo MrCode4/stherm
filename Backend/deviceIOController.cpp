@@ -86,6 +86,20 @@ DeviceIOController::DeviceIOController(QObject *parent)
     m_gpioHandler5 = new GpioHandler(NRF_GPIO_5, this);
 
     initialize();
+
+    m_backlightFactorUpdater.setInterval(1000);
+    m_backlightFactorUpdater.setSingleShot(true);
+    connect(&m_backlightFactorUpdater, &QTimer::timeout, this, [this]() {
+        double target = m_backlightFactorUpdater.property("target").toDouble();
+        double diff = m_backlightFactorUpdater.property("diff").toDouble();
+        m_backlightFactor += diff / 20;
+        if (qAbs(m_backlightFactor - target) < diff / 40) {
+            m_backlightFactor = target;
+        } else  {
+            m_backlightFactorUpdater.start();
+        }
+        TRACE << "backlight factor updated to "  << m_backlightFactor << "with step " << diff << "and Target " << target;
+    });
 }
 
 DeviceIOController::~DeviceIOController()
@@ -522,7 +536,7 @@ bool DeviceIOController::testRelays(QVariantList relaysData)
     return false;
 }
 
-bool DeviceIOController::setBacklight(QVariantList data, double *powerFactor)
+bool DeviceIOController::setBacklight(QVariantList data)
 {
     TRACE_CHECK(false) << "sending setBacklight request with data:" << data
                        << (m_nRfConnection && m_nRfConnection->isConnected());
@@ -532,10 +546,6 @@ bool DeviceIOController::setBacklight(QVariantList data, double *powerFactor)
             auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::SetColorRGB,
                                                        STHERM::PacketType::UARTPacket,
                                                        data);
-            if (powerFactor) {
-                TRACE << "Data " << packet.DataArray[0] << " " << packet.DataArray[1] << " " << packet.DataArray[2];
-                *powerFactor = ((double)packet.DataArray[0] + (double)packet.DataArray[1] + (double)packet.DataArray[2]) / (3.0 * 255.0);
-            }
             m_nRF_queue.push(packet);
         } else  {
             auto last = m_nRF_queue.back();
@@ -545,10 +555,6 @@ bool DeviceIOController::setBacklight(QVariantList data, double *powerFactor)
             last.DataArray[2] = on ? std::clamp(data[2].toInt(), 0, 255) : 0;
             last.DataArray[3] = 255;
             last.DataArray[4] = data[3].toInt();
-            if (powerFactor) {
-                TRACE << "Data " << last.DataArray[0] << " " << last.DataArray[1] << " " << last.DataArray[2];
-                *powerFactor = ((double)last.DataArray[0] + (double)last.DataArray[1] + (double)last.DataArray[2]) / (3.0 * 255.0);
-            }
         }
 
         auto result = processNRFQueue();
@@ -809,6 +815,14 @@ bool DeviceIOController::processNRFQueue()
         if (packet.CMD == STHERM::SIOCommand::GetTOF) {
         } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
             m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
+        } else if (packet.CMD == STHERM::SIOCommand::SetColorRGB){
+            // TODO: blinking with data array [4]
+            TRACE << "Data " << packet.DataArray[0] << " " << packet.DataArray[1] << " " << packet.DataArray[2];
+            double backlightFactor = ((double)packet.DataArray[0] + (double)packet.DataArray[1] + (double)packet.DataArray[2]) / (3.0 * 255.0);
+            TRACE << "backlight factor will be updated to " << backlightFactor;
+            m_backlightFactorUpdater.setProperty("diff", backlightFactor - m_backlightFactor);
+            m_backlightFactorUpdater.setProperty("target", backlightFactor);
+            m_backlightFactorUpdater.start();
         }
         //        m_nRF_queue.pop(); // we pop it when the result reciever so we can confirm
         return true;
@@ -1312,4 +1326,9 @@ void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
             TRACE_CHECK(false) << (QString("Error: setBrightness (Brightness: %0)").arg(luminosity));
         }
     }
+}
+
+double DeviceIOController::backlightFactor()
+{
+    return m_backlightFactor;
 }
