@@ -45,16 +45,16 @@ Control {
                 id: _conditionIcon
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectFit
-                source: 0 < condition && condition < sources.length ? sources[condition] : "qrc:/Stherm/Images/condition-good.png"
+                source: condition >= 0 && condition < sources.length ? sources[condition] : "qrc:/Stherm/Images/condition-good.png"
             }
         }
 
         Label {
-            readonly property var conditionNames: [ "Good", "Moderate", "Poor" ]
+            readonly property var conditionNames: [ "Good", "Fair", "Poor" ]
 
             Layout.fillWidth: true
             font.pointSize: Qt.application.font.pointSize * 1.25
-            text: 0 < condition && condition < conditionNames.length ? conditionNames[condition] : "Good"
+            text: condition >= 0 && condition < conditionNames.length ? conditionNames[condition] : "Good"
         }
     }
 }
