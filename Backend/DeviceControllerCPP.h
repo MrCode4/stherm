@@ -152,7 +152,7 @@ private:
     //! Temperature correction parameters
     double mDeltaTemperatureIntegrator;
     const double TEMPERATURE_INTEGRATOR_DECAY_CONSTANT = 0.99721916;
-    const double TEMPERATURE_COMPENSATION_OFFSET = 0.5;
+    const double TEMPERATURE_COMPENSATION_OFFSET = 0.25;
     const double TEMPERATURE_COMPENSATION_SCALER = 0.8*3.1/360;
     double deltaCorrection()
     {
