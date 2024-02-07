@@ -24,8 +24,20 @@ Every version should follow the major.minor.patch format, encompassing major, mi
                 "ChangeLog": "- V1.5 update added. \n - update system added"  // Change logs
 				"Staging": true, // This update available just in test mode
                 "ForceUpdate": false // Forced update.  So a device receiving this will update the device without user intervention.
-	}
+           }
 ```
+- Staging Update
+as mentioned in the preious section, there is a `staging` variable in the json, which you can set to true in order to stage an update.
+staged update is available only in test mode; i.e., only when ti not attached or user activated it by pressing the FCC ID in Device Info
+default OFF if you omit this
+
+- Force Update
+Similar to Staging, there is a `ForceUpdate` variable in the json, which you can set to true in order to Force an update.
+Force update will be installed without user intervention in the background as soon as it is vailable
+default OFF if you omit this
+
+# OBSOLETE
+these section is handled in the software and not needed anymore
 - Stablish an update service on the device using the following settings: extract update files from a zip-formatted file, decompress .gz files into actual files, transfer uncompressed files to the 'appStherm' directory, and initiate the 'appStherm' service.:
 ```
 [Unit]
