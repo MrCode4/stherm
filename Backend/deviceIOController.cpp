@@ -86,6 +86,20 @@ DeviceIOController::DeviceIOController(QObject *parent)
     m_gpioHandler5 = new GpioHandler(NRF_GPIO_5, this);
 
     initialize();
+
+    m_backlightFactorUpdater.setInterval(1000);
+    m_backlightFactorUpdater.setSingleShot(true);
+    connect(&m_backlightFactorUpdater, &QTimer::timeout, this, [this]() {
+        double target = m_backlightFactorUpdater.property("target").toDouble();
+        double diff = m_backlightFactorUpdater.property("diff").toDouble();
+        m_backlightFactor += diff / 60;
+        if (qAbs(m_backlightFactor - target) < qAbs(diff / 120)) {
+            m_backlightFactor = target;
+        } else  if (qAbs(diff) > 1E-3) {
+            m_backlightFactorUpdater.start();
+        }
+        TRACE_CHECK(true) << "backlight factor updated to "  << m_backlightFactor << "with step " << diff / 20 << "and Target " << target;
+    });
 }
 
 DeviceIOController::~DeviceIOController()
@@ -801,6 +815,14 @@ bool DeviceIOController::processNRFQueue()
         if (packet.CMD == STHERM::SIOCommand::GetTOF) {
         } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
             m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
+        } else if (packet.CMD == STHERM::SIOCommand::SetColorRGB){
+            // TODO: blinking with data array [4]
+            TRACE_CHECK(true) << "Data " << packet.DataArray[0] << " " << packet.DataArray[1] << " " << packet.DataArray[2];
+            double backlightFactor = ((double)packet.DataArray[0] + (double)packet.DataArray[1] + (double)packet.DataArray[2]) / (3.0 * 255.0);
+            TRACE_CHECK(true) << "backlight factor will be updated to " << backlightFactor;
+            m_backlightFactorUpdater.setProperty("diff", backlightFactor - m_backlightFactor);
+            m_backlightFactorUpdater.setProperty("target", backlightFactor);
+            m_backlightFactorUpdater.start();
         }
         //        m_nRF_queue.pop(); // we pop it when the result reciever so we can confirm
         return true;
@@ -1304,4 +1326,9 @@ void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
             TRACE_CHECK(false) << (QString("Error: setBrightness (Brightness: %0)").arg(luminosity));
         }
     }
+}
+
+double DeviceIOController::backlightFactor()
+{
+    return m_backlightFactor;
 }

@@ -53,6 +53,8 @@ public:
     void updateRelays(STHERM::RelayConfigs relays);
     bool testRelays(QVariantList relaysData);
 
+    double backlightFactor();
+
     /* Public Methods
      * ****************************************************************************************/
 public:
@@ -150,4 +152,8 @@ private:
     std::queue<STHERM::SIOPacket> m_nRF_queue;
 
     std::queue<STHERM::SIOPacket> m_TI_queue;
+
+
+    double m_backlightFactor = 0.0;
+    QTimer m_backlightFactorUpdater;
 };

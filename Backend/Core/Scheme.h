@@ -37,7 +37,6 @@ public:
     AppSpecCPP::SystemMode getCurrentSysMode() const;
     void setCurrentSysMode(AppSpecCPP::SystemMode newSysMode);
 
-
     void setMainData(QVariantMap mainData);
 
     //! Update Humidifier Id

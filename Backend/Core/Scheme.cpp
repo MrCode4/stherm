@@ -957,7 +957,8 @@ void Scheme::setMainData(QVariantMap mainData)
     _mainData = mainData;
 
     bool isOk;
-    double currentTemp = 32.0 + mainData.value("temperature").toDouble(&isOk) * 9 / 5;
+    double tc = mainData.value("temperature").toDouble(&isOk);
+    double currentTemp = 32.0 + tc * 9 / 5;
 
     if (isOk && currentTemp != mCurrentTemperature) {
         mCurrentTemperature = currentTemp;
