@@ -436,20 +436,26 @@ void DeviceIOController::createNRF()
             if (data.length() == 2 && data.at(0) == '0') {
                 m_p->lastTimeSensors = time;
                 m_nRF_queue.push(m_p->SensorPacketBA);
-                TRACE_CHECK(false) << "request for gpio 4" << processNRFQueue();
+                bool processed = processNRFQueue();
+                TRACE_CHECK(false) << "request for gpio 4" << processed;
                 // check after tiemout if no other request sent
                 m_nRF_timer.start();
             }
         });
+    } else {
+        qWarning() << "GPIO 4 failed to connect" ;
     }
 
     if (m_gpioHandler5->startConnection()) {
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             if (data.length() == 2 && data.at(0) == '0') {
                 m_nRF_queue.push(m_p->TOFPacketBA);
-                TRACE_CHECK(false) << "request for gpio 5" << processNRFQueue();
+                bool processed = processNRFQueue();
+                TRACE_CHECK(false) << "request for gpio 5" << processed;
             }
         });
+    } else {
+        qWarning() << "GPIO 5 failed to connect" ;
     }
 }
 
@@ -678,7 +684,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
 
                 QVariantMap resultMap;
                 resultMap.insert("RangeMilliMeter", RangeMilliMeter);
-                resultMap.insert("Luminosity", Luminosity);
+                resultMap.insert("brighness", Luminosity);
                 emit tofDataReady(resultMap);
 
                 checkTOFRangeValue(RangeMilliMeter);
