@@ -22,18 +22,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
 
     m_system = _deviceAPI->system();
-    QVariantMap mainDataMap;
-    mainDataMap.insert("temperature",     0);
-    mainDataMap.insert("humidity",        0);
-    mainDataMap.insert("co2",             0);
-    mainDataMap.insert("etoh",            0);
-    mainDataMap.insert("Tvoc",            0);
-    mainDataMap.insert("iaq",             0);
-    mainDataMap.insert("pressure",        0);
-    mainDataMap.insert("RangeMilliMeter", 0);
-    mainDataMap.insert("brighness",       0);
-    mainDataMap.insert("fanSpeed",        0);
-    setMainData(mainDataMap);
 
     // todo: initialize with proper value
     mBacklightModelData = QVariantList();
@@ -49,13 +37,27 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
+
+    QVariantMap mainDataMap;
+    mainDataMap.insert("temperature",     0);
+    mainDataMap.insert("humidity",        0);
+    mainDataMap.insert("co2",             0);
+    mainDataMap.insert("etoh",            0);
+    mainDataMap.insert("Tvoc",            0);
+    mainDataMap.insert("iaq",             0);
+    mainDataMap.insert("pressure",        0);
+    mainDataMap.insert("RangeMilliMeter", 0);
+    mainDataMap.insert("brighness",       0);
+    mainDataMap.insert("fanSpeed",        0);
+    setMainData(mainDataMap);
+
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
     mBacklightPowerTimer.setSingleShot(false);
     mBacklightPowerTimer.setInterval(1000);
     connect(&mBacklightPowerTimer, &QTimer::timeout, this, [this]() {
         mDeltaTemperatureIntegrator *= TEMPERATURE_INTEGRATOR_DECAY_CONSTANT;
         mDeltaTemperatureIntegrator += _deviceIO->backlightFactor();
-        TRACE_CHECK(true) << "mDeltaTemperatureIntegrator total is " << mDeltaTemperatureIntegrator;
+        TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "mDeltaTemperatureIntegrator total is " << mDeltaTemperatureIntegrator;
     });
     mBacklightPowerTimer.start();
 
@@ -222,8 +224,12 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
     double tc = mainData.value("temperature").toDouble(&isOk);
     if (isOk){
         double dt = deltaCorrection();
-        TRACE_CHECK(true) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
-        mainData.insert("temperature", tc - dt);
+        TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
+        if (qAbs(dt) < 10) {
+            mainData.insert("temperature", tc - dt);
+        } else {
+            qWarning() << "dt is greater than 10! check for any error.";
+        }
     }
 
     if (_mainData == mainData)

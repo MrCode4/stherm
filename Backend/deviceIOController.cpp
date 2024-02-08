@@ -90,14 +90,20 @@ DeviceIOController::DeviceIOController(QObject *parent)
     m_backlightFactorUpdater.setInterval(1000);
     m_backlightFactorUpdater.setSingleShot(true);
     connect(&m_backlightFactorUpdater, &QTimer::timeout, this, [this]() {
-        double target = m_backlightFactorUpdater.property("target").toDouble();
-        double diff = m_backlightFactorUpdater.property("diff").toDouble();
+        bool ok;
+        double target = m_backlightFactorUpdater.property("target").toDouble(&ok);
+        if (!ok)
+            return;
+        double diff = m_backlightFactorUpdater.property("diff").toDouble(&ok);
+        if (!ok)
+            return;
         m_backlightFactor += diff / 60;
         if (qAbs(m_backlightFactor - target) < qAbs(diff / 120)) {
             m_backlightFactor = target;
         } else  if (qAbs(diff) > 1E-3) {
             m_backlightFactorUpdater.start();
         }
+        // when it reaches to the target stops and will not print anymore
         TRACE_CHECK(true) << "backlight factor updated to "  << m_backlightFactor << "with step " << diff / 20 << "and Target " << target;
     });
 }
