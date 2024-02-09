@@ -101,7 +101,7 @@ BasePageView {
             id: temperatureField
             readOnly: !overrideBtn.checked
             Layout.preferredHeight: 50
-            text: readOnly ? (root.model?.temperature  ?? "") : text
+            text: readOnly ? (root.model?.temperature.toFixed(3)  ?? "") : text
 
             validator: DoubleValidator {
                 top: 40
