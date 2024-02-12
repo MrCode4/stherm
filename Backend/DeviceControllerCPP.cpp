@@ -169,13 +169,25 @@ bool DeviceControllerCPP::setTestRelays(QVariantList data)
     return _deviceIO->testRelays(data);
 }
 
+//! runDevice in Hardware.php
 void DeviceControllerCPP::startDevice()
 {
     //! todo: move to constructor later
     _deviceIO->createConnections();
 
+    //    get uid from device and save it!
+    //     if was not in config
+            // set defauls
+    // else set timings?
 
-    // Satart with delay to ensure the model loaded.
+
+    //    load wifi
+    // set timezone
+    // remove any trash file in non volatile
+
+
+
+    // Start with delay to ensure the model loaded.
     QTimer::singleShot(5000, this, [this]() {
         TRACE << "starting scheme";
         m_scheme->restartWork();

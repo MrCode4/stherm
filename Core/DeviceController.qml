@@ -56,6 +56,20 @@ I_DeviceController {
         // Update test mode in system
         deviceControllerCPP.system.testMode = (startMode === 0);
 
+        // check if updated
+        var updateMode = false;
+        if (updateMode) {
+            //            Run API to get settings from server (sync, getWirings, )
+
+        }
+
+        //            Get serial number from device configuration NV memory
+        //            If serial number not set
+                   //            Get serial number from API (sync, getSN, )
+                   // timings? if valid or default
+//! getStartMode IN Harfware.php
+                    // DEFAULT VALUES
+
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
 
