@@ -97,6 +97,8 @@ public:
 
     Q_INVOKABLE int getStartMode();
 
+    Q_INVOKABLE bool getUpdateMode();
+
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);
 

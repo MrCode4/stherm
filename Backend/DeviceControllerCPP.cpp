@@ -214,6 +214,15 @@ int DeviceControllerCPP::getStartMode()
     return sm;
 }
 
+bool DeviceControllerCPP::getUpdateMode()
+{
+    if (m_system)
+        return m_system->updateSequenceOnStart();
+
+    qWarning() << "system is not initialized correctly!";
+    return false;
+}
+
 SystemSetup *DeviceControllerCPP::systemSetup() const {
     return mSystemSetup;
 }

@@ -58,6 +58,7 @@ I_DeviceController {
 
         // check if updated
         var updateMode = false;
+        updateMode = deviceControllerCPP.getUpdateMode();
         if (updateMode) {
             //            Run API to get settings from server (sync, getWirings, )
 

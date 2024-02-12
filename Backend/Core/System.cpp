@@ -47,6 +47,8 @@ const QString m_ForceUpdate     = QString("ForceUpdate");
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
 const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
 
+const QString m_updateOnStartKey = "updateSequenceOnStart";
+
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
@@ -89,6 +91,10 @@ NUVE::System::System(QObject *parent) :
         checkPartialUpdate(true);
     });
 
+    connect(this, &NUVE::System::systemUpdating, this, [this](){
+        QSettings settings;
+        settings.setValue("m_updateOnStartKey", true);
+    });
 }
 
 NUVE::System::~System()
@@ -296,6 +302,15 @@ bool NUVE::System::updateAvailable() {
 
 bool NUVE::System::testMode() {
     return mTestMode;
+}
+
+bool NUVE::System::updateSequenceOnStart()
+{
+    QSettings settings;
+    auto update = settings.value(m_updateOnStartKey);
+    settings.setValue(m_updateOnStartKey, false);
+
+    return update.isValid() && update.toBool();
 }
 
 bool NUVE::System::hasForceUpdate()

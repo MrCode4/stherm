@@ -92,6 +92,13 @@ public:
 
     bool testMode();
 
+    /*!
+     * \brief updateSequenceOnStart gets if the app just updated and set the state false so this happens only once
+     * remember to call this only in one place on startup so you can manage better
+     * \return if after update use case needs to be handled
+     */
+    bool updateSequenceOnStart();
+
     bool hasForceUpdate();
 
     void setTestMode(bool testMode);
