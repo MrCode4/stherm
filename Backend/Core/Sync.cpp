@@ -5,6 +5,7 @@
 /* ************************************************************************************************
  * Network information
  * ************************************************************************************************/
+namespace NUVE {
 const QUrl m_domainUrl        = QUrl("http://test.hvac.z-soft.am"); // base domain
 const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
 const QUrl m_updateUrl        = QUrl("/update/");                   // update
@@ -54,4 +55,5 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
         break;
     }
+}
 }

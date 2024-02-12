@@ -2,11 +2,13 @@
 
 #include "UtilityHelper.h"
 
+#include "Core/Sync.h"
 #include "Core/System.h"
 #include "Core/hardware.h"
 
 DeviceAPI::DeviceAPI(QObject *parent)
     : QObject{parent}
+    , m_sync(new NUVE::Sync(this))
     , m_system(new NUVE::System(this))
     , m_hardware(
           new NUVE::Hardware(m_deviceConfig, m_timing, m_currentStage, m_sensors, *m_system, this))

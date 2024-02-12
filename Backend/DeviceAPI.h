@@ -13,6 +13,7 @@
  *
 */
 namespace NUVE {
+class Sync;
 class System;
 class Hardware;
 } // namespace NUVE
@@ -52,6 +53,7 @@ private:
     NUVE::CurrentStage m_currentStage;
     NUVE::Sensors m_sensors;
 
+    NUVE::Sync *m_sync;
     NUVE::System *m_system;
     NUVE::Hardware *m_hardware;
 
