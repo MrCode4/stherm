@@ -76,6 +76,12 @@ I_DeviceController {
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
+
+        device.contactContractor.brandName     = "Nuve"
+        device.contactContractor.phoneNumber   = "(714) 471-7965"
+        device.contactContractor.iconSource    = "qrc:/Stherm/Images/nuve-icon.png"
+        device.contactContractor.qrURL         = "https://www.nuvehome.com/"
+        device.contactContractor.technicianURL = "https://upload.nuvehvac.com/#EN/USA/technician/view/"
     }
 
     /* Children
