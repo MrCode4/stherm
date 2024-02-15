@@ -49,28 +49,11 @@ I_DeviceController {
 
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************")
+        //! initialize the device and config
+        // as well as device io which may TODO refactor later and call it on demand
         deviceControllerCPP.startDevice();
 
-        startMode = deviceControllerCPP.getStartMode();
-
-        // Update test mode in system
-        deviceControllerCPP.system.testMode = (startMode === 0);
-
-        // check if updated
-        var updateMode = false;
-        updateMode = deviceControllerCPP.getUpdateMode();
-        if (updateMode) {
-            //            Run API to get settings from server (sync, getWirings, )
-
-        }
-
-        //            Get serial number from device configuration NV memory
-        //            If serial number not set
-                   //            Get serial number from API (sync, getSN, )
-                   // timings? if valid or default
-//! getStartMode IN Harfware.php
-                    // DEFAULT VALUES
-
+        // TODO    we might call this contitionally
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
 

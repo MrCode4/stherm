@@ -33,6 +33,8 @@ public:
     explicit DeviceAPI(QObject *parent = nullptr);
 
     Q_INVOKABLE int getStartMode();
+    int runDevice();
+    int checkSN();
 
     NUVE::Timing *timing();
 

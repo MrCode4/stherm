@@ -122,6 +122,10 @@ private:
     void setMainData(QVariantMap mainData);
     static DeviceControllerCPP* sInstance;
 
+    void startTestMode();
+    void checkUpdateMode();
+    bool checkSN();
+
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/

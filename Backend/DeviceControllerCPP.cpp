@@ -175,16 +175,22 @@ void DeviceControllerCPP::startDevice()
     //! todo: move to constructor later
     _deviceIO->createConnections();
 
-    //    get uid from device and save it!
-    //     if was not in config
-            // set defauls
-    // else set timings?
+    // Start by calling runDevice, which will load and populate the device config
+    _deviceAPI->runDevice();
 
+    int startMode = getStartMode();
 
-    //    load wifi
-    // set timezone
-    // remove any trash file in non volatile
+    if (startMode == 0) {
+        startTestMode();
 
+        // if test mode returns, when the other codes should be run? after finishing test mode? //TODO
+        return;
+    }
+
+    checkUpdateMode();
+
+    if (!checkSN())
+        TRACE << "INITAIL SETUP"; // wifi
 
 
     // Start with delay to ensure the model loaded.
@@ -260,6 +266,30 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
 
     if (m_scheme)
         m_scheme->setMainData(getMainData());
+}
+
+void DeviceControllerCPP::startTestMode()
+{
+    // Update test mode in system
+    if (m_system)
+        m_system->setTestMode(true);
+}
+
+void DeviceControllerCPP::checkUpdateMode()
+{
+    // check if updated
+    bool updateMode = getUpdateMode();
+    if (updateMode) {
+        //            Run API to get settings from server (sync, getWirings, )
+
+    }
+}
+
+bool DeviceControllerCPP::checkSN()
+{
+    auto state = _deviceAPI->checkSN();
+    TRACE << "checkSN : " << state;
+    return state != 2;
 }
 
 void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)

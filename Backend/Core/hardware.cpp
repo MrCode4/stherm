@@ -28,6 +28,7 @@ NUVE::Hardware::Hardware(DeviceConfig &config,
     , sensors(sens)
     , system(sys)
 {
+    // TODO deviceConfig, timing and current stage should be loaded from NV
 }
 
 /**
@@ -46,17 +47,18 @@ void NUVE::Hardware::setDefaultValues(cpuid_t uid)
     currentStage.setDefaultValues();
 }
 
-// TODO refactor this code actually peforms an initial configuration
+// TODO we recieve and propagate the uid here, but this is really just becuase I dont want to introduce the getter here
 int NUVE::Hardware::runDevice(cpuid_t uid)
 {
     if (deviceConfig.uid.empty()) {
-        //        qDebug << Q_FUNC_INFO << "device config not initialised";
+        TRACE << "device config not initialised, maybe FIRST RUN.\n                                setting default values";
         setDefaultValues(uid);
     } else {
         // Configuration exists, so just update timing
         timing.refreshTimestamps();
         currentStage.timestamp = current_timestamp();
     }
+
     // TODO I'm not sure if there is just one sensor reading or multiple, we assume one but its most likely this is an array
     // TODO need to convert UID to text and put he UID in here....
     std::ostringstream oss;
@@ -74,36 +76,20 @@ int NUVE::Hardware::runDevice(cpuid_t uid)
     //  /usr/share/apache2/default-site/htdocs/update       -- partial update file?
     // need_recover.txt                                     -- ??
 
+    //    set the time zone from config file
+
     return 0;
 }
 
-/** Send a CURL request to the remote server to look up the UID and return the
- *  serial number associated with it */
-bool NUVE::Hardware::getSN(cpuid_t uid, std::string &sn)
+///** Send a CURL request to the remote server to look up the UID and return the
+// *  serial number associated with it */
+//bool NUVE::Hardware::getSN(cpuid_t uid, std::string &sn)
+//{
+//    return !sn.empty();
+//}
+
+int NUVE::Hardware::getStartMode()
 {
-    // TODO this function should probably cache the serial number to avoid duplicated look ups?  QUESTION: should we retrieve once only for the device, once every boot, or only after update?
-
-    // TODO curl send will give the serial nubmer and a bool representing if hte client_id is >0
-    // TODO send the http request
-
-    if (!uid.empty())
-        sn = system.getSN(uid);
-
-    else
-        qWarning() << "The UID is missing...";
-
-    if (!sn.empty())
-        deviceConfig.serial_number = sn;
-
-    return !sn.empty();
-}
-
-// TODO refactor, this does MUCH more than just get the start mode
-// TODO we recieve and propagate the uid here, but this is really just becuase I dont want to introduce the getter here
-int NUVE::Hardware::getStartMode(cpuid_t uid)
-{
-    // Start by calling runDevice, which will load and populate the device config
-    runDevice(uid);
     // then check the start mode of the device, to see if this is the first run
     // TODO the getstartmode exe would read export, then read GPIO90, and return 0 if high, and 1 if low
     // if == 0, set in device config, then return
@@ -116,38 +102,7 @@ int NUVE::Hardware::getStartMode(cpuid_t uid)
         qWarning() << "Start mode encounter an error!";
     }
 
-    if (sm == 0) {
-        deviceConfig.start_mode = 0;
-        return 0;
-    }
-    deviceConfig.start_mode = 1;
-
-    // Check if device is newly updated: call system->getIsDeviceUpdated()
-    if (true == UtilityHelper::tempIsUpdated()) {
-        getWiringsFromServer(uid);
-        UtilityHelper::tempClearUpdatedFlag();
-    }
-
-    // Check serial number
-    if (deviceConfig.serial_number != "") {
-        // serial number already set, starting normally
-        // TODO what do these return values mean?
-        return 1;
-    }
-    std::string sn;
-    if (getSN(uid, sn)) {
-        LOG_DEBUG(QString("serial number : ") + QString::fromStdString(sn));
-        // staring normally, but defaults not set
-        timing.setDefaultValues();
-        currentStage.timestamp = current_timestamp();
-        deviceConfig.start_mode = 1;
-        return 1;
-    }
-    // Staring first time setup
-    setDefaultValues(uid);
-    deviceConfig.start_mode = 2;
-
-    return 2;
+    return sm;
 }
 
 void NUVE::Hardware::getWiringsFromServer(cpuid_t uid)

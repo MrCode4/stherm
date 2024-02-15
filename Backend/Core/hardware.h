@@ -31,17 +31,6 @@ private:
 
     // TODO refactor these
 
-    /**
- * Sets default values in various tables for device configuration.
- *
- * This method initializes the database tables for device configuration by setting default values.
- * It first clears existing entries from the `device_config` and `timing` tables.
- * Then, it reads software and hardware version information from a configuration file and sets the
- * default values in the `device_config` and `timing` tables based on these versions and other predefined constants.
- *
- * @param string $uid The unique identifier used to initialize the `device_config` table.
- */
-    void setDefaultValues(cpuid_t uid);
 
     /**
  * Sets the system's timezone based on the `timezone_number` from the `device_config` table.
@@ -52,21 +41,7 @@ private:
  */
     void setTimezone(void);
 
-    /**
- * Initializes the device settings and ensures the device is in a ready state.
- *
- * This method performs several tasks to set up the device for regular operation:
- * 1. Fetches the device's UID (Unique Identifier) and updates it in the database.
- * 2. If the device's UID is not found in the database or is empty, it sets default values.
- * 3. Updates certain timing and state parameters in the database.
- * 4. If a WiFi configuration file exists, reads the configuration, connects to the WiFi, and then deletes the configuration file.
- * 5. Cleans up any update files and directories.
- * 6. Sets the system's timezone.
- *
- * @return string Returns the UID of the device.
- */
-    int runDevice(cpuid_t);
-    /**
+    /** OBSOLETE
  * Requests the serial number (SN) of a device using its UID (Unique Identifier).
  *
  * This method constructs a JSON payload to request the serial number (SN) for a device
@@ -76,7 +51,6 @@ private:
  * @param string $uid The UID of the device for which the SN is requested.
  * @return mixed Returns the result received from the remote server after sending the request.
  */
-    // TODO this is moved to UtilityHelper
     bool getSN(cpuid_t uid, std::string &sn);
 
 public:
@@ -103,7 +77,33 @@ public:
  *
  * @return int Returns 0 for PRODUCTION mode, 1 for NORMAL mode, or 2 for FIRST RUN mode.
  */
-    int getStartMode(cpuid_t uid);
+    int getStartMode();
+    /**
+ * Initializes the device settings and ensures the device is in a ready state.
+ *
+ * This method performs several tasks to set up the device for regular operation:
+ * 1. Fetches the device's UID (Unique Identifier) and updates it in the database.
+ * 2. If the device's UID is not found in the database or is empty, it sets default values.
+ * 3. Updates certain timing and state parameters in the database.
+ * 4. If a WiFi configuration file exists, reads the configuration, connects to the WiFi, and then deletes the configuration file.
+ * 5. Cleans up any update files and directories.
+ * 6. Sets the system's timezone.
+ *
+ * @return string Returns the UID of the device.
+ */
+    int runDevice(cpuid_t);
+
+    /**
+ * Sets default values in various tables for device configuration.
+ *
+ * This method initializes the database tables for device configuration by setting default values.
+ * It first clears existing entries from the `device_config` and `timing` tables.
+ * Then, it reads software and hardware version information from a configuration file and sets the
+ * default values in the `device_config` and `timing` tables based on these versions and other predefined constants.
+ *
+ * @param string $uid The unique identifier used to initialize the `device_config` table.
+ */
+    void setDefaultValues(cpuid_t uid);
 
     // TODO move backlight to its own class?
 
