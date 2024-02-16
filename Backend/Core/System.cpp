@@ -866,11 +866,11 @@ void NUVE::System::rebootDevice()
 #endif
 }
 
-void NUVE::System::exitDevice()
+void NUVE::System::stopDevice()
 {
 #ifdef __unix__
     QTimer::singleShot(500, this, [](){
-        int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl stop appStherm.service;"});
+        int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl disable appStherm.service;systemctl stop appStherm.service;"});
         TRACE << exitCode;
     });
 #endif

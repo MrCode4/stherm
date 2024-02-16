@@ -60,7 +60,7 @@ I_PopUp {
         Label {
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * (mainLay.counter > 0 ? 1.5 : 0.9)
-            text: mainLay.counter > 0 ? mainLay.counter : "Exiting Device..."
+            text: mainLay.counter > 0 ? mainLay.counter : "Stopping Device..."
             horizontalAlignment: Text.AlignHCenter
         }
 
@@ -90,7 +90,7 @@ I_PopUp {
 
                 mainLay.counter--;
                 if (system && mainLay.counter <= 0) {
-                    system.exitDevice();
+                    system.stopDevice();
                 }
             }
         }
