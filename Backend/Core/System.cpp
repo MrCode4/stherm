@@ -866,6 +866,16 @@ void NUVE::System::rebootDevice()
 #endif
 }
 
+void NUVE::System::exitDevice()
+{
+#ifdef __unix__
+    QTimer::singleShot(500, this, [](){
+        int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl stop appStherm.service;"});
+        TRACE << exitCode;
+    });
+#endif
+}
+
 QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
     QStringList versions = updateJson.keys();
     if (versions.contains("LatestVersion"))
