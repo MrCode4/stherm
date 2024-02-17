@@ -6,6 +6,7 @@
 
 #include "Backend/Device/nuve_types.h"
 #include "NetworkWorker.h"
+#include "Sync.h"
 
 /*! ***********************************************************************************************
  * This class manage system requests.
@@ -36,7 +37,7 @@ public:
     /* Public Constructors & Destructor
      * ****************************************************************************************/
 
-    System(QObject *parent = nullptr);
+    System(NUVE::Sync *sync, QObject *parent = nullptr);
 
     ~System();
 
@@ -129,6 +130,7 @@ signals:
 
     void error(QString err);
 
+    // is this even used?
     void alert(QString msg);
 
     //! Emit when need the system move to updating/restarting mode
@@ -172,8 +174,7 @@ private:
     QString findForceUpdate(const QJsonObject updateJsonObject);
 
 private:
-
-    QString mSerialNumber;
+    Sync *mSync;
 
     QByteArray m_expectedUpdateChecksum;
 
@@ -202,7 +203,6 @@ private:
 
     bool mHasForceUpdate;
 
-    bool mIsGetSNReceived;
     
     //! System on test mode or not
     bool mTestMode;

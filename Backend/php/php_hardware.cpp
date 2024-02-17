@@ -16,7 +16,7 @@ php_hardware::php_hardware(
     , currentStage(stage)
     , sensors(sens)
 {
-    m_system = new NUVE::System(this);
+    m_system = new NUVE::System(nullptr, this);
 }
 
 

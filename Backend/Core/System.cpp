@@ -15,7 +15,6 @@ const QUrl m_updateUrl        = QUrl("/update/");                   // update
 
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
 
-const QString m_getSN           = QString("getSN");
 const QString m_getSystemUpdate = QString("getSystemUpdate");
 const QString m_requestJob      = QString("requestJob");
 const QString m_partialUpdate   = QString("partialUpdate");
@@ -54,10 +53,10 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
-NUVE::System::System(QObject *parent) :
+NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
+    mSync(sync),
     mUpdateAvailable (false),
     mHasForceUpdate(false),
-    mIsGetSNReceived(false),
     mTestMode(false)
 {
 
@@ -81,15 +80,16 @@ NUVE::System::System(QObject *parent) :
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
-    mSerialNumber            = setting.value(m_SerialNumberSetting).toString();
 
     QTimer::singleShot(2000, this, [=]() {
-        if (!mSerialNumber.isEmpty()) {
+        if (!serialNumber().isEmpty()) {
             emit snReady();
         }
 
         checkPartialUpdate(true);
     });
+
+    connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::snReady);
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
         QSettings settings;
@@ -179,40 +179,15 @@ void NUVE::System::setUpdateAvailable(bool updateAvailable) {
     emit updateAvailableChanged();
 }
 
-std::string NUVE::System::getSN(cpuid_t accessUid)
+std::string NUVE::System::getSN(NUVE::cpuid_t accessUid)
 {
-    if (mIsGetSNReceived) {
-        return mSerialNumber.toStdString();
-    }
-
-    QJsonArray paramsArray;
-    paramsArray.append(QString::fromStdString(accessUid));
-
-    // TODO parameter retrieval from cloud, can we utilise a value/isSet tuple and push the processing to a background function?  Or are we happy with a firing off a whole bunch of requests and waiting for them to complete?
-    QByteArray requestData = preparePacket("sync", m_getSN, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSN);
-
-    // Return Serial number when serial number already exist.
-    if (!mSerialNumber.isEmpty())
-        return mSerialNumber.toStdString();
-
-    QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    connect(this, &NUVE::System::snReady, &loop, &QEventLoop::quit);
-
-    timer.start(m_timeout);
-    loop.exec();
-
-    qDebug() << Q_FUNC_INFO << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
-
-    return mSerialNumber.toStdString();
+    return mSync->getSN(accessUid);
 }
 
 void NUVE::System::getUpdate(QString softwareVersion)
 {
     QJsonArray paramsArray;
-    paramsArray.append(mSerialNumber);
+    paramsArray.append(serialNumber());
     paramsArray.append(softwareVersion);
 
     QByteArray requestData = preparePacket("sync", m_getSystemUpdate, paramsArray);
@@ -235,7 +210,8 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 
     mUpdateTimer.start();
 
-    if (mSerialNumber.isEmpty()) {
+    //    sync getsn
+    if (serialNumber().isEmpty()) {
         if (!mUID.empty())
             getSN(mUID);
     }
@@ -244,13 +220,13 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 }
 
 void NUVE::System::getContractorInfo() {
-    if (mSerialNumber.isEmpty()) {
+    if (serialNumber().isEmpty()) {
         qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
         return;
     }
 
     QJsonArray paramsArray;
-    paramsArray.append(mSerialNumber);
+    paramsArray.append(serialNumber());
 
     QByteArray requestData = preparePacket("sync", m_getContractorInfo, paramsArray);
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getContractorInfo);
@@ -259,7 +235,7 @@ void NUVE::System::getContractorInfo() {
 void NUVE::System::requestJob(QString type)
 {
     QJsonArray paramsArray;
-    paramsArray.append(mSerialNumber);
+    paramsArray.append(serialNumber());
     paramsArray.append(type);
 
     QByteArray requestData = preparePacket("sync", m_requestJob, paramsArray);
@@ -289,7 +265,7 @@ QString NUVE::System::lastInstalledUpdateDate()
 
 QString NUVE::System::serialNumber()
 {
-    return mSerialNumber;
+    return QString::fromStdString(mSync->getSN());
 }
 
 int NUVE::System::partialUpdateProgress() {
@@ -547,9 +523,6 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 mNetManager->setProperty(m_isBusyDownloader, false);
                 emit error("Download error: " + netReply->errorString());
 
-            } else if (netReply->property(m_methodProperty).toString() == m_getSN) {
-                emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
-
             }
         }
 
@@ -563,34 +536,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
     switch (netReply->operation()) {
     case QNetworkAccessManager::PostOperation: {
-
-        if (netReply->property(m_methodProperty).toString() == m_getSN) {
-            QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
-            qDebug() << Q_FUNC_INFO << __LINE__ << resultArray;
-
-            if (resultArray.count() > 0) {
-                auto sn = resultArray.first().toString();
-
-                if (!mSerialNumber.isEmpty() && sn != mSerialNumber)
-                    emit alert("The serial number does not match the last one.");
-
-                if (sn.isEmpty()) {
-                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
-
-                } else {
-                    mSerialNumber = sn;
-                }
-
-                // Save the serial number in settings
-                QSettings setting;
-                setting.setValue(m_SerialNumberSetting, mSerialNumber);
-
-                Q_EMIT snReady();
-
-                mIsGetSNReceived = true;
-            }
-
-        } else if (netReply->property(m_methodProperty).toString() == m_getSystemUpdate) {
+        if (netReply->property(m_methodProperty).toString() == m_getSystemUpdate) {
             auto resultObj = obj.value("result").toObject().value("result").toObject();
             auto isRequire = (resultObj.value("require").toString() == "r");
             auto updateType = resultObj.value("type").toString();

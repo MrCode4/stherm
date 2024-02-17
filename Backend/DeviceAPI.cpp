@@ -10,7 +10,7 @@
 DeviceAPI::DeviceAPI(QObject *parent)
     : QObject{parent}
     , m_sync(new NUVE::Sync(this))
-    , m_system(new NUVE::System(this))
+    , m_system(new NUVE::System(m_sync, this))
     , m_hardware(
           new NUVE::Hardware(m_deviceConfig, m_timing, m_currentStage, m_sensors, *m_system, this))
 {

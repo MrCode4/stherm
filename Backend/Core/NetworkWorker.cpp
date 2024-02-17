@@ -1,6 +1,6 @@
 #include "NetworkWorker.h"
 
-NetworkWorker::NetworkWorker(QObject *parent)
+NetworkWorker::NetworkWorker(QObject *parent) : QObject(parent)
 {
     mNetManager = new QNetworkAccessManager();
 
