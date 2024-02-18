@@ -15,11 +15,8 @@ const QUrl m_updateUrl        = QUrl("/update/");                   // update
 
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
 
-const QString m_getSystemUpdate = QString("getSystemUpdate");
-const QString m_requestJob      = QString("requestJob");
 const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
-const QString m_getContractorInfo = QString("getContractorInfo");
 
 const QString m_checkInternetConnection = QString("checkInternetConnection");
 
@@ -186,12 +183,7 @@ std::string NUVE::System::getSN(NUVE::cpuid_t accessUid)
 
 void NUVE::System::getUpdate(QString softwareVersion)
 {
-    QJsonArray paramsArray;
-    paramsArray.append(serialNumber());
-    paramsArray.append(softwareVersion);
-
-    QByteArray requestData = preparePacket("sync", m_getSystemUpdate, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSystemUpdate);
+    return mSync->getSettings();
 }
 
 void NUVE::System::getUpdateInformation(bool notifyUser) {
@@ -220,26 +212,13 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 }
 
 void NUVE::System::getContractorInfo() {
-    if (serialNumber().isEmpty()) {
-        qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
-        return;
-    }
 
-    QJsonArray paramsArray;
-    paramsArray.append(serialNumber());
-
-    QByteArray requestData = preparePacket("sync", m_getContractorInfo, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getContractorInfo);
+    mSync->getContractorInfo();
 }
 
 void NUVE::System::requestJob(QString type)
 {
-    QJsonArray paramsArray;
-    paramsArray.append(serialNumber());
-    paramsArray.append(type);
-
-    QByteArray requestData = preparePacket("sync", m_requestJob, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_requestJob);
+    mSync->requestJob(type);
 }
 
 QString NUVE::System::latestVersionDate() {
@@ -536,34 +515,6 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
     switch (netReply->operation()) {
     case QNetworkAccessManager::PostOperation: {
-        if (netReply->property(m_methodProperty).toString() == m_getSystemUpdate) {
-            auto resultObj = obj.value("result").toObject().value("result").toObject();
-            auto isRequire = (resultObj.value("require").toString() == "r");
-            auto updateType = resultObj.value("type").toString();
-
-            if (isRequire) {
-                if (updateType == "f") {
-                    qDebug() << Q_FUNC_INFO << __LINE__ << "The system requires a full update.";
-
-                } else {
-                    qDebug() << Q_FUNC_INFO << __LINE__ << "The system requires a partial update.";
-
-                    partialUpdate();
-
-                }
-            }
-        } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {
-
-            // TODO: complete contractor information.
-            auto resultObj = obj.value("result").toObject().value("result").toObject();
-            TRACE << resultObj;
-            QVariantMap map;
-            map.insert("phone", resultObj.value("phone").toString());
-            map.insert("name", resultObj.value("name").toString());
-            map.insert("url", resultObj.value("url").toString());
-            map.insert("techLink", resultObj.value("tech_link").toString());
-
-        }
 
     } break;
     case QNetworkAccessManager::GetOperation: {

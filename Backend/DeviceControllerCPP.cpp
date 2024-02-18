@@ -281,7 +281,9 @@ void DeviceControllerCPP::checkUpdateMode()
     bool updateMode = getUpdateMode();
     if (updateMode) {
         //            Run API to get settings from server (sync, getWirings, )
-
+        TRACE << "getting settings from server";
+        if (m_system)
+            m_system->getUpdate();
     }
 }
 

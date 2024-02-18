@@ -10,8 +10,12 @@ namespace NUVE {
 const QUrl m_domainUrl        = QUrl("https://devapi.nuvehvac.com/"); // base domain
 const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
 const QUrl m_updateUrl        = QUrl("/update/");                   // update
-const QString m_getSN         = QString("getSN");
+const QString m_getSN             = QString("getSN");
+const QString m_getContractorInfo = QString("getContractorInfo");
+const QString m_getSettings = QString("getSettings");
+const QString m_getWirings = QString("getWirings");
 const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
+const QString m_requestJob      = QString("requestJob");
 
 Sync::Sync(QObject *parent) : NetworkWorker(parent),
     mIsGetSNReceived(false)
@@ -26,14 +30,6 @@ Sync::Sync(QObject *parent) : NetworkWorker(parent),
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &Sync::processNetworkReply);
 }
 
-void Sync::changeContractorInfo(QString serialNumber)
-{
-    QJsonArray paramsArray;
-    paramsArray.append(serialNumber);
-
-    QByteArray requestData = preparePacket("sync", "getContractorInfo", paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData);
-}
 
 std::string Sync::getSN(cpuid_t accessUid)
 {
@@ -65,6 +61,67 @@ std::string Sync::getSN()
     return mSerialNumber.toStdString();
 }
 
+void Sync::getContractorInfo()
+{
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
+        return;
+    }
+
+    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getContractorInfo?sn=%0").arg(mSerialNumber)), m_getContractorInfo);
+
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    connect(this, &NUVE::Sync::contractorInfoReady, &loop, &QEventLoop::quit);
+
+    timer.start(100000); // 100 seconds TODO
+    loop.exec();
+}
+
+void Sync::getSettings()
+{
+    if (mSerialNumber.isEmpty()) {
+        qWarning()   << "Sn is not ready! can not get settings!";
+        return;
+    }
+
+    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSettings?sn=%0").arg(mSerialNumber)), m_getSettings);
+
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit);
+
+    timer.start(100000); // 100 seconds TODO
+    loop.exec();
+
+}
+
+void Sync::getWirings(cpuid_t accessUid)
+{
+    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getWirings?uid=%0").arg(accessUid.c_str())), m_getWirings);
+
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    connect(this, &NUVE::Sync::wiringReady, &loop, &QEventLoop::quit);
+
+    timer.start(100000); // 100 seconds TODO
+    loop.exec();
+
+}
+
+void Sync::requestJob(QString type)
+{
+    QJsonArray paramsArray;
+    paramsArray.append(mSerialNumber);
+    paramsArray.append(type);
+
+    QByteArray requestData = preparePacket("sync", m_requestJob, paramsArray);
+    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_requestJob);
+}
+
 void Sync::processNetworkReply(QNetworkReply *netReply)
 {
     NetworkWorker::processNetworkReply(netReply);
@@ -83,14 +140,15 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
     QByteArray data = netReply->readAll();
     const QJsonDocument doc = QJsonDocument::fromJson(data);
     const QJsonObject obj = doc.object();
+    auto dataObj = obj.value("data");
 
     switch (netReply->operation()) {
     case QNetworkAccessManager::PostOperation: {
-        TRACE << data << obj;
+        TRACE << data << obj << dataObj << dataObj.isObject();
 
     } break;
     case QNetworkAccessManager::GetOperation: {
-        TRACE << data << obj;
+        TRACE << data << obj << dataObj << dataObj.isObject() << netReply->property(m_methodProperty).toString();
 
         if (netReply->property(m_methodProperty).toString() == m_getSN) {
             QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
@@ -117,6 +175,27 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
                 mIsGetSNReceived = true;
             }
+        } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {
+            TRACE;
+
+            // TODO: complete contractor information.
+            auto resultObj = obj.value("result").toObject().value("result").toObject();
+            TRACE << resultObj;
+            QVariantMap map;
+            map.insert("phone", resultObj.value("phone").toString());
+            map.insert("name", resultObj.value("name").toString());
+            map.insert("url", resultObj.value("url").toString());
+            map.insert("techLink", resultObj.value("tech_link").toString());
+
+
+            Q_EMIT contractorInfoReady();
+        } else if (netReply->property(m_methodProperty).toString() == m_getSettings) {
+            TRACE;
+
+            Q_EMIT settingsLoaded();
+        } else if (netReply->property(m_methodProperty).toString() == m_getWirings) {
+            TRACE ;
+            Q_EMIT wiringReady();
         }
     } break;
 

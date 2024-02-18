@@ -17,15 +17,22 @@ class Sync : public NetworkWorker
 public:
     Sync(QObject *parent = nullptr);
 
-    void changeContractorInfo(QString serialNumber);
-
     //! Get serial number from server if not fetched or saved
     std::string getSN(cpuid_t accessUid);
     //! returns last fetched from save or server
     std::string getSN();
 
+    void getContractorInfo();
+    void getSettings();
+    void getWirings(cpuid_t accessUid);
+    void requestJob(QString type);
+
 signals:
     void snReady();
+    void wiringReady();
+    void contractorInfoReady();
+    void settingsLoaded();
+    void requestJobDone();
 
 private slots:
     //! Process network replay
