@@ -1,4 +1,5 @@
 #include "NetworkWorker.h"
+#include "LogHelper.h"
 
 NetworkWorker::NetworkWorker(QObject *parent) : QObject(parent)
 {
@@ -52,7 +53,7 @@ void NetworkWorker::processNetworkReply(QNetworkReply *netReply)
         qDebug() << Q_FUNC_INFO <<__LINE__<< netReply->error()<<netReply->errorString();
         const QJsonObject errObj = QJsonDocument::fromJson(netReply->readAll()).object();
         QStringList errMsg = errObj.value("non_field_errors").toVariant().toStringList();
-
+        TRACE << errObj;
         // Remove url from error.
         QString error = netReply->errorString().remove(netReply->request().url().toString());
         //        emit logInError(errMsg.isEmpty() ? error : errMsg.join("\n"));

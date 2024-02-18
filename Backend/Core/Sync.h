@@ -37,5 +37,7 @@ private:
 
     bool mIsGetSNReceived;
     QString mSerialNumber;
+
+    void sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
 };
 }

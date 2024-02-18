@@ -7,7 +7,7 @@
  * Network information
  * ************************************************************************************************/
 namespace NUVE {
-const QUrl m_domainUrl        = QUrl("http://test.hvac.z-soft.am"); // base domain
+const QUrl m_domainUrl        = QUrl("https://devapi.nuvehvac.com/"); // base domain
 const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
 const QUrl m_updateUrl        = QUrl("/update/");                   // update
 const QString m_getSN         = QString("getSN");
@@ -41,16 +41,11 @@ std::string Sync::getSN(cpuid_t accessUid)
         return mSerialNumber.toStdString();
     }
 
-    QJsonArray paramsArray;
-    paramsArray.append(QString::fromStdString(accessUid));
-
-    // TODO parameter retrieval from cloud, can we utilise a value/isSet tuple and push the processing to a background function?  Or are we happy with a firing off a whole bunch of requests and waiting for them to complete?
-    QByteArray requestData = preparePacket("sync", m_getSN, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSN);
-
     // Return Serial number when serial number already exist.
     if (!mSerialNumber.isEmpty())
         return mSerialNumber.toStdString();
+
+    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSn?uid=%0").arg(accessUid.c_str())), m_getSN);
 
     QEventLoop loop;
     QTimer timer;
@@ -91,6 +86,12 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
     switch (netReply->operation()) {
     case QNetworkAccessManager::PostOperation: {
+        TRACE << data << obj;
+
+    } break;
+    case QNetworkAccessManager::GetOperation: {
+        TRACE << data << obj;
+
         if (netReply->property(m_methodProperty).toString() == m_getSN) {
             QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
             qDebug() << Q_FUNC_INFO << __LINE__ << resultArray;
@@ -117,15 +118,6 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 mIsGetSNReceived = true;
             }
         }
-
-        if (netReply->url().toString().endsWith(m_engineUrl.toString())) {
-            qDebug() << Q_FUNC_INFO << __LINE__ << obj;
-            QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
-        }
-
-    } break;
-    case QNetworkAccessManager::GetOperation: {
-
     } break;
 
     default:
@@ -133,5 +125,17 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
         break;
     }
     netReply->deleteLater();
+}
+
+void Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method)
+{
+    // Prepare request
+    QNetworkRequest netRequest(mainUrl.resolved(relativeUrl));
+    netRequest.setRawHeader("accept", "application/json");
+
+    // Post a request
+    QNetworkReply *netReply = mNetManager->get(netRequest);
+    netReply->setProperty(m_methodProperty, method);
+    //    netReply->ignoreSslErrors();
 }
 }
