@@ -15,14 +15,16 @@ const QString m_getContractorInfo = QString("getContractorInfo");
 const QString m_getSettings = QString("getSettings");
 const QString m_getWirings = QString("getWirings");
 const QString m_SerialNumberSetting = QString("NUVE/SerialNumber");
+const QString m_HasClientSetting = QString("NUVE/SerialNumberClient");
 const QString m_requestJob      = QString("requestJob");
 
 Sync::Sync(QObject *parent) : NetworkWorker(parent),
-    mIsGetSNReceived(false)
+    mIsGetSNReceived(false), mHasClient(false)
 {
 
     QSettings setting;
-    mSerialNumber            = setting.value(m_SerialNumberSetting).toString();
+    mHasClient            = setting.value(m_HasClientSetting).toBool();
+    mSerialNumber         = setting.value(m_SerialNumberSetting).toString();
 
 
     mNetManager = new QNetworkAccessManager();
@@ -31,17 +33,18 @@ Sync::Sync(QObject *parent) : NetworkWorker(parent),
 }
 
 
-std::string Sync::getSN(cpuid_t accessUid)
+std::pair<std::string, bool> Sync::getSN(cpuid_t accessUid)
 {
+    // allows maximum one time to fetch the sn from server
     if (mIsGetSNReceived) {
-        return mSerialNumber.toStdString();
+        return getSN();
     }
 
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSn?uid=%0").arg(accessUid.c_str())), m_getSN);
 
     // Return Serial number when serial number already exist.
     if (!mSerialNumber.isEmpty())
-        return mSerialNumber.toStdString();
+        return getSN();
 
     QEventLoop loop;
     QTimer timer;
@@ -53,12 +56,12 @@ std::string Sync::getSN(cpuid_t accessUid)
 
     TRACE << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
 
-    return mSerialNumber.toStdString();
+    return getSN();
 }
 
-std::string Sync::getSN()
+std::pair<std::string, bool> Sync::getSN()
 {
-    return mSerialNumber.toStdString();
+    return {mSerialNumber.toStdString(), mHasClient};
 }
 
 void Sync::getContractorInfo()
@@ -152,25 +155,32 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
             if (dataObj.isObject())
             {
                 auto sn = dataObj.toObject().value("serial_number").toString();
-                bool hasClient = dataObj.toObject().value("has_client").toBool();
-                TRACE << sn << hasClient;
+                mHasClient = dataObj.toObject().value("has_client").toBool();
+                TRACE << sn << mHasClient;
 
-                if (!mSerialNumber.isEmpty() && sn != mSerialNumber);
-                //                    emit alert("The serial number does not match the last one.");
-
-                if (sn.isEmpty() || !hasClient) {
-                    //                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
-                    //                    mSerialNumber = ""; // TODO should we clear serial number when hasClient shows false? or when saved before but returns empty now?
-                } else {
-                    mSerialNumber = sn;
+                if (!mHasClient) {
+                    TRACE << "Should start initial setup!";
                 }
+
+                if (!mSerialNumber.isEmpty() && sn != mSerialNumber){
+                //                    emit alert("The serial number does not match the last one.");
+                }
+
+                if (sn.isEmpty()) {
+                    //                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
+                    //                    mSerialNumber = ""; // TODO should we clear serial number when saved before but returns empty now?
+                }
+
+                mSerialNumber = sn;
 
                 // Save the serial number in settings
                 QSettings setting;
+                setting.setValue(m_HasClientSetting, mHasClient);
                 setting.setValue(m_SerialNumberSetting, mSerialNumber);
 
                 Q_EMIT snReady();
 
+                // prevents fetching again from server
                 mIsGetSNReceived = true;
             }
         } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {

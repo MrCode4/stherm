@@ -49,7 +49,7 @@ public:
     Q_INVOKABLE void rebootDevice();
 
     //! Get serial number from server
-    std::string getSN(cpuid_t accessUid);
+    std::pair<std::string, bool> getSN(cpuid_t accessUid);
 
     //! Get update
     //! todo: process response packet

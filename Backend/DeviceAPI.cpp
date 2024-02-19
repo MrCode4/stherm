@@ -27,15 +27,14 @@ int DeviceAPI::runDevice()
 int DeviceAPI::checkSN()
 {
     // Check serial number
+    // serial number already set, starting normally
     if (m_deviceConfig.serial_number != "") {
-        // serial number already set, starting normally
-        // TODO what do these return values mean?
-        // send is ready?
         return 1;
     }
 
-    auto sn = m_system->getSN(_uid);
-    if (sn.empty()) {
+    // can take some time in the initial usage, but not blocking ui as the WiFi is not connected for sure
+    auto sn_config = m_system->getSN(_uid);
+    if (!sn_config.second) {
 
         qWarning() << "serial number empty: ";
 
@@ -45,12 +44,12 @@ int DeviceAPI::checkSN()
         return 2;
     }
 
-    TRACE << "serial number : " << QString::fromStdString(sn);
+    TRACE << "serial number : " << QString::fromStdString(sn_config.first);
 
     // staring normally, but defaults not set
     m_timing.setDefaultValues();
     m_currentStage.timestamp = NUVE::current_timestamp();
-    m_deviceConfig.serial_number = sn;
+    m_deviceConfig.serial_number = sn_config.first;
     m_deviceConfig.start_mode = 1;
     return 1;
 }

@@ -17,10 +17,10 @@ class Sync : public NetworkWorker
 public:
     Sync(QObject *parent = nullptr);
 
-    //! Get serial number from server if not fetched or saved
-    std::string getSN(cpuid_t accessUid);
+    //! Get serial number and if has client from server if not fetched or saved
+    std::pair<std::string, bool> getSN(cpuid_t accessUid);
     //! returns last fetched from save or server
-    std::string getSN();
+    std::pair<std::string, bool> getSN();
 
     void getContractorInfo();
     void getSettings();
@@ -43,6 +43,7 @@ private:
      * ****************************************************************************************/
 
     bool mIsGetSNReceived;
+    bool mHasClient;
     QString mSerialNumber;
 
     void sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");

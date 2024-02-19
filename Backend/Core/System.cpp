@@ -176,7 +176,7 @@ void NUVE::System::setUpdateAvailable(bool updateAvailable) {
     emit updateAvailableChanged();
 }
 
-std::string NUVE::System::getSN(NUVE::cpuid_t accessUid)
+std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
 {
     return mSync->getSN(accessUid);
 }
@@ -244,7 +244,7 @@ QString NUVE::System::lastInstalledUpdateDate()
 
 QString NUVE::System::serialNumber()
 {
-    return QString::fromStdString(mSync->getSN());
+    return QString::fromStdString(mSync->getSN().first);
 }
 
 int NUVE::System::partialUpdateProgress() {

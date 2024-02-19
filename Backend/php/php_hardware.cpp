@@ -79,7 +79,7 @@ bool php_hardware::getSN(cpuid_t uid, std::string &sn)
 
     // TODO curl send will give the serial nubmer and a bool representing if hte client_id is >0
     // TODO send the http request
-    sn = m_system->getSN(uid);
+    sn = m_system->getSN(uid).first;
     return true;
 }
 
