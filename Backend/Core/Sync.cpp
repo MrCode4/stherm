@@ -14,7 +14,7 @@ const QString m_getSN             = QString("getSN");
 const QString m_getContractorInfo = QString("getContractorInfo");
 const QString m_getSettings = QString("getSettings");
 const QString m_getWirings = QString("getWirings");
-const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
+const QString m_SerialNumberSetting = QString("NUVE/SerialNumber");
 const QString m_requestJob      = QString("requestJob");
 
 Sync::Sync(QObject *parent) : NetworkWorker(parent),
@@ -37,11 +37,11 @@ std::string Sync::getSN(cpuid_t accessUid)
         return mSerialNumber.toStdString();
     }
 
+    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSn?uid=%0").arg(accessUid.c_str())), m_getSN);
+
     // Return Serial number when serial number already exist.
     if (!mSerialNumber.isEmpty())
         return mSerialNumber.toStdString();
-
-    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSn?uid=%0").arg(accessUid.c_str())), m_getSN);
 
     QEventLoop loop;
     QTimer timer;
@@ -128,14 +128,12 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
     if (netReply->error() != QNetworkReply::NoError){
         if (netReply->property(m_methodProperty).toString() == m_getSN) {
-//            emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
-
+            //            emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
         }
 
         netReply->deleteLater();
         return;
     }
-
 
     QByteArray data = netReply->readAll();
     const QJsonDocument doc = QJsonDocument::fromJson(data);
@@ -151,18 +149,18 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
         TRACE << data << obj << dataObj << dataObj.isObject() << netReply->property(m_methodProperty).toString();
 
         if (netReply->property(m_methodProperty).toString() == m_getSN) {
-            QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
-            qDebug() << Q_FUNC_INFO << __LINE__ << resultArray;
-
-            if (resultArray.count() > 0) {
-                auto sn = resultArray.first().toString();
+            if (dataObj.isObject())
+            {
+                auto sn = dataObj.toObject().value("serial_number").toString();
+                bool hasClient = dataObj.toObject().value("has_client").toBool();
+                TRACE << sn << hasClient;
 
                 if (!mSerialNumber.isEmpty() && sn != mSerialNumber);
                 //                    emit alert("The serial number does not match the last one.");
 
-                if (sn.isEmpty()) {
+                if (sn.isEmpty() || !hasClient) {
                     //                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
-
+                    //                    mSerialNumber = ""; // TODO should we clear serial number when hasClient shows false? or when saved before but returns empty now?
                 } else {
                     mSerialNumber = sn;
                 }
