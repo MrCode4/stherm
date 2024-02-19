@@ -117,6 +117,8 @@ Q_SIGNALS:
 
     void deviceAPIChanged();
 
+    void contractorInfoUpdated(QString brandName, QString phoneNumber, QString iconUrl, QString url, QString techUrl);
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
@@ -125,6 +127,7 @@ private:
     void startTestMode();
     void checkUpdateMode();
     bool checkSN();
+    void checkContractorInfo();
 
 private Q_SLOTS:
     /* Private Slots

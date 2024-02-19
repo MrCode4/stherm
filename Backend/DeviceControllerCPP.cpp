@@ -192,6 +192,8 @@ void DeviceControllerCPP::startDevice()
     if (!checkSN())
         TRACE << "INITAIL SETUP"; // wifi
 
+    //    after wifi is connected get the contractor info
+    checkContractorInfo();
 
     // Start with delay to ensure the model loaded.
     QTimer::singleShot(5000, this, [this]() {
@@ -292,6 +294,15 @@ bool DeviceControllerCPP::checkSN()
     auto state = _deviceAPI->checkSN();
     TRACE << "checkSN : " << state;
     return state != 2;
+}
+
+void DeviceControllerCPP::checkContractorInfo()
+{
+    auto info = m_system->getContractorInfo();
+
+    Q_EMIT contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
+                                 info.value("logo").toString(), info.value("url").toString(),
+                                 info.value("tech").toString());
 }
 
 void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)

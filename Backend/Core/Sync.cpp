@@ -1,6 +1,7 @@
 #include "Sync.h"
 #include "LogHelper.h"
 
+#include <QImage>
 #include <QUrl>
 
 /* ************************************************************************************************
@@ -12,6 +13,7 @@ const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
 const QUrl m_updateUrl        = QUrl("/update/");                   // update
 const QString m_getSN             = QString("getSN");
 const QString m_getContractorInfo = QString("getContractorInfo");
+const QString m_getContractorLogo = QString("getContractorLogo");
 const QString m_getSettings = QString("getSettings");
 const QString m_getWirings = QString("getWirings");
 const QString m_SerialNumberSetting = QString("NUVE/SerialNumber");
@@ -64,11 +66,11 @@ std::pair<std::string, bool> Sync::getSN()
     return {mSerialNumber.toStdString(), mHasClient};
 }
 
-void Sync::getContractorInfo()
+QVariantMap Sync::getContractorInfo()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
-        return;
+        return mContractorInfo;
     }
 
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getContractorInfo?sn=%0").arg(mSerialNumber)), m_getContractorInfo);
@@ -80,6 +82,8 @@ void Sync::getContractorInfo()
 
     timer.start(100000); // 100 seconds TODO
     loop.exec();
+
+    return mContractorInfo;
 }
 
 void Sync::getSettings()
@@ -184,22 +188,35 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 mIsGetSNReceived = true;
             }
         } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {
-            TRACE;
+            if (dataObj.isObject())
+            {
+                QVariantMap map;
+                map.insert("phone", dataObj.toObject().value("phone").toString());
+                map.insert("brand", dataObj.toObject().value("brand").toString());
+                map.insert("url", dataObj.toObject().value("url").toString());
+                map.insert("tech", dataObj.toObject().value("schedule").toString());
+                auto logo = dataObj.toObject().value("logo").toString();
+                map.insert("logo", logo);
+                mContractorInfo = map;
 
-            // TODO: complete contractor information.
-            auto resultObj = obj.value("result").toObject().value("result").toObject();
-            TRACE << resultObj;
-            QVariantMap map;
-            map.insert("phone", resultObj.value("phone").toString());
-            map.insert("name", resultObj.value("name").toString());
-            map.insert("url", resultObj.value("url").toString());
-            map.insert("techLink", resultObj.value("tech_link").toString());
-
-
+                if (logo.isEmpty()){
+                    Q_EMIT contractorInfoReady();
+                } else {
+                    // what if gets error, should we return immadiately?
+                    QNetworkRequest dlRequest(logo);
+                    QNetworkReply *netReply = mNetManager->get(dlRequest);
+                    netReply->setProperty(m_methodProperty, m_getContractorLogo);
+                }
+            }
+        }  else if (netReply->property(m_methodProperty).toString() == m_getContractorLogo) {
+            QImage image;
+            if (image.loadFromData(data)){
+                image.save("/home/root/customIcon.png");
+                mContractorInfo.insert("logo", "file:///home/root/customIcon.png");
+            }
             Q_EMIT contractorInfoReady();
         } else if (netReply->property(m_methodProperty).toString() == m_getSettings) {
             TRACE;
-
             Q_EMIT settingsLoaded();
         } else if (netReply->property(m_methodProperty).toString() == m_getWirings) {
             TRACE ;

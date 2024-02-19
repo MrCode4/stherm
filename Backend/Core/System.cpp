@@ -79,6 +79,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
 
     QTimer::singleShot(2000, this, [=]() {
+        // TODO
         if (!serialNumber().isEmpty()) {
             emit snReady();
         }
@@ -211,9 +212,8 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     getUpdateInformation(true);
 }
 
-void NUVE::System::getContractorInfo() {
-
-    mSync->getContractorInfo();
+QVariantMap NUVE::System::getContractorInfo() {
+    return mSync->getContractorInfo();
 }
 
 void NUVE::System::requestJob(QString type)

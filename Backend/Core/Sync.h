@@ -22,7 +22,7 @@ public:
     //! returns last fetched from save or server
     std::pair<std::string, bool> getSN();
 
-    void getContractorInfo();
+    QVariantMap getContractorInfo();
     void getSettings();
     void getWirings(cpuid_t accessUid);
     void requestJob(QString type);
@@ -45,6 +45,7 @@ private:
     bool mIsGetSNReceived;
     bool mHasClient;
     QString mSerialNumber;
+    QVariantMap mContractorInfo;
 
     void sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
 };

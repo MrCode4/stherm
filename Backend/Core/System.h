@@ -72,7 +72,7 @@ public:
     Q_INVOKABLE void wifiConnected(bool hasInternet);
 
     //! Get Contractor Information
-    void getContractorInfo();
+    QVariantMap getContractorInfo();
 
     //! Getters
     QString latestVersion();
