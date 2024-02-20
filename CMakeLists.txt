@@ -160,6 +160,7 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemRunDelayPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
+        View/RequestTechPriorityPage.qml
         View/Wifi/WifiConnectPage.qml
         View/Wifi/WifiManualConnectPage.qml
         View/SystemModePage.qml

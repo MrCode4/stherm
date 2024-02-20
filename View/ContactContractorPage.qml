@@ -61,16 +61,23 @@ BasePageView {
             sourceSize.width: 130
         }
 
-        //! Request a job
+        //! Request a Tech
         RoniaTextIcon {
             text: FAIcons.briefcase
         }
 
         ButtonInverted {
-            id: requestJobBtn
             Layout.alignment: Qt.AlignCenter
             font.bold: true
-            text: "Request a Job"
+            text: "Request a Tech"
+
+            onClicked: {
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/RequestTechPriorityPage.qml", {
+                                                  "uiSession": uiSession
+                                              });
+                }
+            }
         }
     }
 }
