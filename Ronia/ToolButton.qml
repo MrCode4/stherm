@@ -34,8 +34,8 @@ T.ToolButton {
     background: Rectangle {
         property bool square: control.contentItem.width <= control.contentItem.height
 
-        implicitWidth: Style.touchTarget
-        implicitHeight: Style.touchTarget
+        implicitWidth: Style.touchTarget + 10
+        implicitHeight: Style.touchTarget + 10
         width: square ? control.height : control.width
         height: square ? control.height : control.height
         x: (parent.width - width) / 2
