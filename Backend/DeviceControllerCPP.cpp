@@ -180,6 +180,8 @@ void DeviceControllerCPP::startDevice()
 
     int startMode = getStartMode();
 
+    emit startModeChanged(startMode);
+
     if (startMode == 0) {
         startTestMode();
 
@@ -193,7 +195,7 @@ void DeviceControllerCPP::startDevice()
         TRACE << "INITAIL SETUP"; // wifi
 
     //    after wifi is connected get the contractor info
-    checkContractorInfo();
+    // checkContractorInfo();
 
     // Start with delay to ensure the model loaded.
     QTimer::singleShot(5000, this, [this]() {
@@ -293,7 +295,11 @@ bool DeviceControllerCPP::checkSN()
 {
     auto state = _deviceAPI->checkSN();
     TRACE << "checkSN : " << state;
-    return state != 2;
+
+    bool snMode = state != 2;
+    emit snModeChanged(snMode);
+
+    return snMode;
 }
 
 void DeviceControllerCPP::checkContractorInfo()

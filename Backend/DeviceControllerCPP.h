@@ -99,6 +99,10 @@ public:
 
     Q_INVOKABLE bool getUpdateMode();
 
+    Q_INVOKABLE bool checkSN();
+
+    Q_INVOKABLE void checkContractorInfo();
+
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);
 
@@ -119,6 +123,10 @@ Q_SIGNALS:
 
     void contractorInfoUpdated(QString brandName, QString phoneNumber, QString iconUrl, QString url, QString techUrl);
 
+    void snModeChanged(bool snMode);
+
+    void startModeChanged(int startMode);
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
@@ -126,8 +134,6 @@ private:
 
     void startTestMode();
     void checkUpdateMode();
-    bool checkSN();
-    void checkContractorInfo();
 
 private Q_SLOTS:
     /* Private Slots

@@ -297,20 +297,73 @@ Control {
         }
     }
 
-    //! Open a test mode page from home when app start with test mode.
-    Timer {
-        id: modeTimer
+    Connections {
+        target: deviceController.deviceControllerCPP
 
-        interval: 6000
-        running: (uiSession?.deviceController?.startMode ?? -1) === 0
-        repeat: false
-        onTriggered: {
-            if (mainStackView)
-                mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                       "uiSession": Qt.binding(() => uiSession)
-                                   });
+        function onStartModeChanged(startMode: int) {
+            // Temp
+            deviceController.startMode = startMode;
+
+            //! Open a test mode page from home when app start with test mode.
+            if (startMode === 0) {
+                if (mainStackView)
+                    mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                                           "uiSession": Qt.binding(() => uiSession)
+                                       });
+
+            } else {
+                //! Open WifiPage
+                if (mainStackView) {
+                    mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
+                                           "uiSession": uiSession,
+                                           "backButtonVisible": false
+                                       });
+                }
+            }
+       }
+    }
+
+    //! Check SN mode
+    Connections {
+        target: deviceController.deviceControllerCPP
+
+        function onSnModeChanged(snMode: bool) {
+            if (snMode) {
+                uiSession.showHome();
+
+                // Send  check contractor info
+                deviceController.deviceControllerCPP.checkContractorInfo();
+
+                //! Open UserGuidePage
+                if (mainStackView) {
+                    mainStackView.push("qrc:/STHERM/View/UserGuidePage.qml", {
+                                           "uiSession": uiSession
+                                       });
+
+                } else {
+                    //! Open WifiPage
+                    if (mainStackView) {
+                        mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
+                                               "uiSession": uiSession,
+                                               "backButtonVisible": false
+                                           });
+                    }
+                }
+            }
         }
     }
+
+    //! checkSN when the internet is connected.
+    Connections {
+        target: NetworkInterface
+
+        function onHasInternetChanged() {
+            if (NetworkInterface.hasInternet) {
+                deviceController.deviceControllerCPP.checkSN();
+            }
+        }
+    }
+
     /* States and Transitions
      * ****************************************************************************************/
     state: "idle"

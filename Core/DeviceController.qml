@@ -31,7 +31,7 @@ I_DeviceController {
             device.contactContractor.phoneNumber   = phoneNumber
             device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl
             device.contactContractor.qrURL         = url
-//            device.contactContractor.technicianURL = techUr
+//            device.contactContractor.technicianURL = techUrl
         }
     }
 
