@@ -111,20 +111,54 @@ BasePageView {
                 }
             }
 
-            ButtonInverted {
-                id: rebootDevice
+            RowLayout {
+                spacing: 16
 
                 anchors.centerIn: parent
-                visible: modelData?.type === "button"
+
+                ButtonInverted {
+                    id: rebootDevice
+
+                    visible: modelData?.type === "button" && modelData.key === "Restart Device"
+                    leftPadding: 8
+                    rightPadding: 8
+                    text: modelData.key
+
+                    onClicked: {
+                        rebootPopup.open();
+                    }
+                }
+
+                ButtonInverted {
+                    id: installVersion
+
+                    visible: rebootDevice.visible && deviceController.deviceControllerCPP.system.testMode
+                    leftPadding: 8
+                    rightPadding: 8
+                    text: "System Update"
+
+                    onClicked: {
+                        if (root.StackView.view) {
+                            root.StackView.view.push("qrc:/Stherm/View/Test/SystemUpdateOnTestModePage.qml", {
+                                                         "uiSession": root.uiSession
+                                                     });
+                        }
+                    }
+                }
+            }
+
+            ButtonInverted {
+                id: exitDevice
+
+                anchors.centerIn: parent
+
+                visible: modelData?.type === "button" && modelData.key === "Exit"
                 leftPadding: 8
                 rightPadding: 8
-                text: modelData.key
+                text: "   " + modelData.key + "   "
 
                 onClicked: {
-                    if (modelData.key === "Exit")
-                        exitPopup.open();
-                    else
-                        rebootPopup.open();
+                    exitPopup.open();
                 }
             }
         }
