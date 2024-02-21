@@ -119,16 +119,13 @@ BasePageView {
                 ButtonInverted {
                     id: rebootDevice
 
-                    visible: modelData?.type === "button"
+                    visible: modelData?.type === "button" && modelData.key === "Restart Device"
                     leftPadding: 8
                     rightPadding: 8
                     text: modelData.key
 
                     onClicked: {
-                         if (modelData.key === "Exit")
-                            exitPopup.open();
-                        else
-                            rebootPopup.open();
+                        rebootPopup.open();
                     }
                 }
 
@@ -147,6 +144,21 @@ BasePageView {
                                                      });
                         }
                     }
+                }
+            }
+
+            ButtonInverted {
+                id: exitDevice
+
+                anchors.centerIn: parent
+
+                visible: modelData?.type === "button" && modelData.key === "Exit"
+                leftPadding: 8
+                rightPadding: 8
+                text: "   " + modelData.key + "   "
+
+                onClicked: {
+                    exitPopup.open();
                 }
             }
         }
