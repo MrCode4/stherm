@@ -16,7 +16,7 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    touchMargin: 10
+    touchMargin: 30
 
     /* Children
      * ****************************************************************************************/
@@ -29,7 +29,7 @@ ToolButton {
         property int  strength: NetworkInterface.connectedWifi?.strength ?? 0
 
         anchors.fill: parent
-        anchors.margins: root.padding
+        anchors.margins: root.padding + touchMargin / 4
 
         fillMode: Image.PreserveAspectFit
         smooth: true

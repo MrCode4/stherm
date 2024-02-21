@@ -16,7 +16,7 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    touchMargin: 10
+    touchMargin: 30
 
     contentItem: Item {
 
