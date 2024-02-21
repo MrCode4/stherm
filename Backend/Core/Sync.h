@@ -34,6 +34,8 @@ signals:
     void settingsLoaded();
     void requestJobDone();
 
+    void alert(QString msg);
+
 private slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);

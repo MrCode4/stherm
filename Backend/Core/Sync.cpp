@@ -133,9 +133,15 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 {
     NetworkWorker::processNetworkReply(netReply);
 
+    auto method = netReply->property(m_methodProperty).toString();
+
     if (netReply->error() != QNetworkReply::NoError){
-        if (netReply->property(m_methodProperty).toString() == m_getSN) {
-            //            emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
+        if (method == m_getSN) {
+            Q_EMIT snReady();
+
+            emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
+        } else if (method == m_getContractorLogo) {
+            Q_EMIT contractorInfoReady();
         }
 
         netReply->deleteLater();
@@ -153,7 +159,6 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
     } break;
     case QNetworkAccessManager::GetOperation: {
-        auto method = netReply->property(m_methodProperty).toString();
         TRACE << dataObj.isObject() << netReply->property(m_methodProperty).toString();
         TRACE_CHECK(method != m_getContractorLogo) << data << obj;
 
@@ -165,16 +170,14 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 TRACE << sn << mHasClient;
 
                 if (!mHasClient) {
-                    TRACE << "Should start initial setup!";
+                    TRACE << "will start initial setup!";
                 }
 
                 if (!mSerialNumber.isEmpty() && sn != mSerialNumber){
-                //                    emit alert("The serial number does not match the last one.");
-                }
-
-                if (sn.isEmpty()) {
-                    //                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
-                    //                    mSerialNumber = ""; // TODO should we clear serial number when saved before but returns empty now?
+                    emit alert("The serial number does not match the last one.");
+                    TRACE << "The serial number does not match the last one." << mSerialNumber << sn;
+                } else if (sn.isEmpty()) {
+                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
                 }
 
                 mSerialNumber = sn;
@@ -197,10 +200,10 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 map.insert("brand", dataObj.toObject().value("brand").toString());
                 map.insert("url", dataObj.toObject().value("url").toString());
                 map.insert("tech", dataObj.toObject().value("schedule").toString());
-                auto logo = dataObj.toObject().value("logo").toString();
-                map.insert("logo", logo);
+                map.insert("logo", "");
                 mContractorInfo = map;
 
+                auto logo = dataObj.toObject().value("logo").toString();
                 if (logo.isEmpty()){
                     Q_EMIT contractorInfoReady();
                 } else {

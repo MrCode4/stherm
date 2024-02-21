@@ -133,7 +133,6 @@ signals:
 
     void error(QString err);
 
-    // is this even used?
     void alert(QString msg);
 
     //! Emit when need the system move to updating/restarting mode
