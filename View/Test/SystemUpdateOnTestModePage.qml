@@ -21,7 +21,7 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "System Update On Test Mode"
+    title: "Reset System Version"
 
     Component.onCompleted: {
         system.getUpdateInformation();
@@ -97,6 +97,7 @@ BasePageView {
                     text: system?.getLogByVersion(versionCombobox.currentText) ?? ""
                     readOnly: true
                     textFormat: Text.MarkdownText
+                    onTextChanged: changeLogScrollView.contentWidth = changeLogScrollView.availableWidth
 
                     font.family: "Roboto"
                     font.pointSize: Qt.application.font.pointSize * 0.8

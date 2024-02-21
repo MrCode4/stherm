@@ -135,7 +135,7 @@ BasePageView {
                     visible: rebootDevice.visible && deviceController.deviceControllerCPP.system.testMode
                     leftPadding: 8
                     rightPadding: 8
-                    text: "System Update"
+                    text: "Reset to version"
 
                     onClicked: {
                         if (root.StackView.view) {
