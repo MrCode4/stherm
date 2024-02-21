@@ -107,7 +107,11 @@ void  NUVE::System::installUpdateService()
     if (updateFileSH.exists())
         updateFileSH.remove("/usr/local/bin/update.sh");
 
-    TRACE << "update.sh file updated: " << QFile::copy(":/Stherm/update.sh", "/usr/local/bin/update.sh");
+    QFile copyFile(":/Stherm/update.sh");
+    if (!copyFile.copy("/usr/local/bin/update.sh")) {
+        TRACE << "update.sh file did not updated: " << copyFile.errorString();
+        TRACE << qApp->applicationDirPath();
+    }
 
     QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/update.sh"});
 
