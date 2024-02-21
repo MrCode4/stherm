@@ -315,10 +315,6 @@ I_DeviceController {
 
     function getFromBrandName(brandName) {
         var name = brandName.toLowerCase();
-
-
-        console.log(brandName, name, "__________________________________")
-
         if (name === "nuve")
             return "qrc:/Stherm/Images/nuve-icon.png"
         else if (name === "nexgen")
