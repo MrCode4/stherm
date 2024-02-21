@@ -21,9 +21,9 @@ Control {
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 8 * scaleFactor
+    leftPadding: 16 * scaleFactor
     rightPadding: 8 * scaleFactor
-    topPadding: 8 * scaleFactor
+    topPadding: 10 * scaleFactor
     bottomPadding: 8 * scaleFactor
     contentItem: GridLayout {
         columnSpacing: 0

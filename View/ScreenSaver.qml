@@ -75,43 +75,12 @@ Popup {
                     text: `\u00b0${unit}`
                 }
             }
-
-            RowLayout {
-                Layout.leftMargin: dateTimeLbl.width / 1.3
-                Layout.rightMargin: dateTimeLbl.width / 2
-                Layout.topMargin: -height / 2
-
-                //! Schedule button
-                RoniaTextIcon {
-                    font.pointSize: Style.fontIconSize.normalPt
-                    color: _root.Material.foreground
-                    text: "\uf073"
-                    visible: _root.isActiveSchedule
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                }
-
-                //! Mode button
-                SystemModeButton {
-                    background: null
-                    deviceController: _root.deviceController
-
-                    TapHandler { } //! To ensure no button functionality
-                }
-            }
         }
 
-        //! Current time
-        DateTimeLabel {
-            id: dateTimeLbl
-            Layout.alignment: Qt.AlignCenter
-            Layout.bottomMargin: 24
-            font.pointSize: Application.font.pointSize * 1.8
-            is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
-            showDate: false
+        //! Spacer
+        Item {
+            height: 120
+            Layout.fillWidth: true
         }
 
         //! NEXGEN icon

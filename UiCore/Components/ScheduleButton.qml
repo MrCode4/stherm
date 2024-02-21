@@ -14,6 +14,8 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
+    touchMargin: 30
+
     contentItem: RoniaTextIcon {
         font.pointSize: Style.fontIconSize.largePt
         color: _root.Material.foreground

@@ -32,7 +32,7 @@ BasePageView {
         Label {
             Layout.fillWidth: true
             textFormat: "MarkdownText"
-            text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} Password for "${wifi.ssid}"`
+            text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} Password for\n"${wifi.ssid}"`
             horizontalAlignment: "AlignHCenter"
         }
 
@@ -76,7 +76,7 @@ BasePageView {
 
         maximumLength: 256
         rightPadding: _passwordEchoBtn.width
-        placeholderText: `Password For "${wifi.ssid}"`
+        placeholderText: `Password For\n"${wifi.ssid}"`
         echoMode: _passwordEchoBtn.checked ? TextField.Normal : TextField.Password
         validator: RegularExpressionValidator {
             regularExpression: new RegExp(`.{${minPasswordLength},${_passwordTf.maximumLength}}`)

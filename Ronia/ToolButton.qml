@@ -7,6 +7,8 @@ import Ronia
 T.ToolButton {
     id: control
 
+    property int touchMargin: 0
+
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
@@ -34,8 +36,8 @@ T.ToolButton {
     background: Rectangle {
         property bool square: control.contentItem.width <= control.contentItem.height
 
-        implicitWidth: Style.touchTarget
-        implicitHeight: Style.touchTarget
+        implicitWidth: Style.touchTarget + touchMargin
+        implicitHeight: Style.touchTarget + touchMargin
         width: square ? control.height : control.width
         height: square ? control.height : control.height
         x: (parent.width - width) / 2
