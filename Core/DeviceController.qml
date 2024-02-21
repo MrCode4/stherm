@@ -29,7 +29,8 @@ I_DeviceController {
 
             device.contactContractor.brandName     = brandName
             device.contactContractor.phoneNumber   = phoneNumber
-            device.contactContractor.iconSource    = iconUrl === "" ? (brandName === "nuve" ? "qrc:/Stherm/Images/nuve-icon.png" : "qrc:/Stherm/Images/nexgen.png") : iconUrl
+            device.contactContractor.iconSource    = iconUrl === "" ? (brandName === "nuve" ? "qrc:/Stherm/Images/nuve-icon.png" : "qrc:/Stherm/Images/nexgen.png") :
+                                                                      iconUrl
             device.contactContractor.qrURL         = url
 //            device.contactContractor.technicianURL = techUr
         }

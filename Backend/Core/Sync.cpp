@@ -153,9 +153,11 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
     } break;
     case QNetworkAccessManager::GetOperation: {
-        TRACE << data << obj << dataObj << dataObj.isObject() << netReply->property(m_methodProperty).toString();
+        auto method = netReply->property(m_methodProperty).toString();
+        TRACE << dataObj.isObject() << netReply->property(m_methodProperty).toString();
+        TRACE_CHECK(method != m_getContractorLogo) << data << obj;
 
-        if (netReply->property(m_methodProperty).toString() == m_getSN) {
+        if (method == m_getSN) {
             if (dataObj.isObject())
             {
                 auto sn = dataObj.toObject().value("serial_number").toString();
@@ -187,7 +189,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 // prevents fetching again from server
                 mIsGetSNReceived = true;
             }
-        } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {
+        } else if (method == m_getContractorInfo) {
             if (dataObj.isObject())
             {
                 QVariantMap map;
@@ -208,17 +210,17 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                     netReply->setProperty(m_methodProperty, m_getContractorLogo);
                 }
             }
-        }  else if (netReply->property(m_methodProperty).toString() == m_getContractorLogo) {
+        }  else if (method == m_getContractorLogo) {
             QImage image;
             if (image.loadFromData(data)){
                 image.save("/home/root/customIcon.png");
                 mContractorInfo.insert("logo", "file:///home/root/customIcon.png");
             }
             Q_EMIT contractorInfoReady();
-        } else if (netReply->property(m_methodProperty).toString() == m_getSettings) {
+        } else if (method == m_getSettings) {
             TRACE;
             Q_EMIT settingsLoaded();
-        } else if (netReply->property(m_methodProperty).toString() == m_getWirings) {
+        } else if (method == m_getWirings) {
             TRACE ;
             Q_EMIT wiringReady();
         }
