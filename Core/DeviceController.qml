@@ -29,8 +29,7 @@ I_DeviceController {
 
             device.contactContractor.brandName     = brandName
             device.contactContractor.phoneNumber   = phoneNumber
-            device.contactContractor.iconSource    = iconUrl === "" ? (brandName === "nuve" ? "qrc:/Stherm/Images/nuve-icon.png" : "qrc:/Stherm/Images/nexgen.png") :
-                                                                      iconUrl
+            device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl
             device.contactContractor.qrURL         = url
 //            device.contactContractor.technicianURL = techUr
         }
@@ -312,5 +311,23 @@ I_DeviceController {
 
         root.currentSchedule = schedule;
         deviceControllerCPP.setActivatedSchedule(schedule);
+    }
+
+    function getFromBrandName(brandName) {
+        var name = brandName.toLowerCase();
+
+
+        console.log(brandName, name, "__________________________________")
+
+        if (name === "nuve")
+            return "qrc:/Stherm/Images/nuve-icon.png"
+        else if (name === "nexgen")
+            return "qrc:/Stherm/Images/nexgen.png"
+        else if (name === "medley")
+            return "qrc:/Stherm/Images/medley.png"
+        else if (name === "lees")
+            return "qrc:/Stherm/Images/lee_s.png"
+
+        return "qrc:/Stherm/Images/nuve-icon.png"
     }
 }
