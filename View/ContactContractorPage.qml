@@ -19,6 +19,16 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    OrganizationIcon {
+        appModel: root.appModel
+
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        width: parent.width * 0.5
+        height: parent.height * 0.25
+    }
+
     GridLayout {
         height: Math.min(root.availableHeight, implicitHeight)
         anchors.horizontalCenter: parent.horizontalCenter
@@ -27,8 +37,7 @@ BasePageView {
         rowSpacing: 16
         columnSpacing: 32
 
-        OrganizationIcon {
-            appModel: root.appModel
+        Item {
 
             Layout.columnSpan: 2
             Layout.alignment: Qt.AlignHCenter

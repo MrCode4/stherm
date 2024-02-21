@@ -223,14 +223,14 @@ Control {
         //! NEXGEN icon
         OrganizationIcon {
             id: _logo
-            anchors {
-                bottom: parent.bottom
-                horizontalCenter: parent.horizontalCenter
-                bottomMargin: _menuButton.implicitHeight * 0.6
-            }
+
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottomMargin: 5
 
             appModel: _root.device
             width: parent.width * 0.5
+            height: parent.height * 0.25
 
             TapHandler {
                 onTapped: {
