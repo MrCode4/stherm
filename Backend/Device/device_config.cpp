@@ -1,6 +1,17 @@
 #include "device_config.h"
 
+#include <QSettings>
+
+#include "LogHelper.h"
+
 void NUVE::DeviceConfig::initialise(const cpuid_t cpuid)
+{
+    uid = cpuid;
+    init();
+    save();
+}
+
+void NUVE::DeviceConfig::init()
 {
     // TODO we need to pull these values from config file (version.ini) and extract SOFTWARE_VERSION and HARDWARE_VERSION
     uint32_t swVer = 100;
@@ -15,7 +26,6 @@ void NUVE::DeviceConfig::initialise(const cpuid_t cpuid)
     brightness = 100;
     brightness_mode = 0;
     serial_number = "";
-    uid = cpuid;
     timezone = "Pacific/Midway";
     technical_access_link = TECHNIC_QR;
     backlight_rgb = {0, 0, 0};
@@ -45,4 +55,19 @@ void NUVE::DeviceConfig::initialise(const cpuid_t cpuid)
     emergency_heating = 0;
     ob_state = "cool";
     technical_edit_link = TECHNIC_EDIT_QR;
+}
+
+void NUVE::DeviceConfig::load()
+{
+    QSettings config("/usr/local/bin/device_config.ini", QSettings::IniFormat);
+    uid = config.value("uid").toString().toStdString();
+    serial_number = config.value("serial_number").toString().toStdString();
+}
+
+void NUVE::DeviceConfig::save()
+{
+    QSettings config("/usr/local/bin/device_config.ini", QSettings::IniFormat);
+
+    config.setValue("uid", QString::fromStdString(uid));
+    config.setValue("serial_number", QString::fromStdString(serial_number));
 }

@@ -27,11 +27,11 @@ I_DeviceController {
 
             console.log("onContractorInfoUpdated: ", brandName, phoneNumber, iconUrl, url, techUrl);
 
-            device.contactContractor.brandName     = brandName
-            device.contactContractor.phoneNumber   = phoneNumber
-            device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl
-            device.contactContractor.qrURL         = url
-//            device.contactContractor.technicianURL = techUrl
+            root.device.contactContractor.brandName     = brandName
+            root.device.contactContractor.phoneNumber   = phoneNumber
+            root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl
+            root.device.contactContractor.qrURL         = url
+//            root.device.contactContractor.technicianURL = techUrl
         }
     }
 
@@ -85,12 +85,6 @@ I_DeviceController {
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
-
-        device.contactContractor.brandName     = "Nuve"
-        device.contactContractor.phoneNumber   = "(714) 471-7965"
-        device.contactContractor.iconSource    = "qrc:/Stherm/Images/nuve-icon.png"
-        device.contactContractor.qrURL         = "https://www.nuvehome.com/"
-        device.contactContractor.technicianURL = "https://upload.nuvehvac.com/#EN/USA/technician/view/"
     }
 
     /* Children

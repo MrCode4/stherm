@@ -51,6 +51,7 @@ int DeviceAPI::checkSN()
     m_currentStage.timestamp = NUVE::current_timestamp();
     m_deviceConfig.serial_number = sn_config.first;
     m_deviceConfig.start_mode = 1;
+    m_deviceConfig.save();
     return 1;
 }
 

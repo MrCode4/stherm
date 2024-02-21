@@ -541,9 +541,9 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 if (!file.open(QIODevice::WriteOnly)) {
                     TRACE << "Unable to open file for writing";
                     emit error("Unable to open file for writing");
-                    break;;
+                    break;
                 }
-                TRACE << data;
+                TRACE << data.toStdString().c_str();
 
                 file.write(data);
 
