@@ -9,13 +9,18 @@ import Stherm
  * WifiButton provide a ui for connecting to a wifi network and show status of current connection
  * ***********************************************************************************************/
 ToolButton {
-    id: _root
+    id: root
 
     /* Property declration
      * ****************************************************************************************/
 
     /* Object properties
      * ****************************************************************************************/
+    touchMargin: 30
+
+    /* Children
+     * ****************************************************************************************/
+
     Image {
         id: _wifiImage
 
@@ -24,6 +29,7 @@ ToolButton {
         property int  strength: NetworkInterface.connectedWifi?.strength ?? 0
 
         anchors.fill: parent
+        anchors.margins: root.padding + touchMargin / 4
 
         fillMode: Image.PreserveAspectFit
         smooth: true

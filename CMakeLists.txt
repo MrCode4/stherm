@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.2.7 LANGUAGES CXX)
+project(Stherm VERSION 0.2.8 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -160,6 +160,7 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemRunDelayPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
+        View/RequestTechPriorityPage.qml
         View/Wifi/WifiConnectPage.qml
         View/Wifi/WifiManualConnectPage.qml
         View/SystemModePage.qml
@@ -216,6 +217,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/InstallConfirmationPopup.qml
         UiCore/PopUps/ErrorPopup.qml
         UiCore/PopUps/RebootDevicePopup.qml
+        UiCore/PopUps/ResetDevicePopup.qml
         UiCore/PopUps/UpdateNotificationPopup.qml
 
         # Dialogs

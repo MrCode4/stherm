@@ -16,7 +16,11 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
+    touchMargin: 30
+
     contentItem: Item {
+
+        //! Red box
         Rectangle {
             id: notificationRect
 
@@ -32,8 +36,9 @@ ToolButton {
         }
 
         RoniaTextIcon {
+            anchors.centerIn: parent
             font.pointSize: Style.fontIconSize.largePt
-            color: _root.Material.foreground
+            color: root.Material.foreground
             text: "\uf0c9"
         }
     }

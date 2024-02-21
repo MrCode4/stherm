@@ -61,10 +61,13 @@ BasePageView {
             { "key": "Software version",    "value": appVesion },
             { "key": "Hardware version",    "value": "01" },
             { "key": "Restart Device",      "value": "01", "type": "button" },
+            { "key": "Exit",                "value": "02", "type": "button" },
         ]
         delegate: Item {
             width: ListView.view.width
-            height: Style.delegateHeight * 0.8
+            height: visible ? Style.delegateHeight * 0.8 : 0
+            visible: modelData.key !== "Exit" || system.testMode;
+
             RowLayout {
                 id: textContent
                 spacing: 16
@@ -118,7 +121,10 @@ BasePageView {
                 text: modelData.key
 
                 onClicked: {
-                    rebootPopup.open();
+                    if (modelData.key === "Exit")
+                        exitPopup.open();
+                    else
+                        rebootPopup.open();
                 }
             }
         }
@@ -128,6 +134,14 @@ BasePageView {
     //! Reboot popup with count down timer to send reboot request to system
     RebootDevicePopup {
         id: rebootPopup
+        system: root.system
+        anchors.centerIn: Template.Overlay.overlay
+    }
+
+
+    //! Exit popup with count down timer to send exit request to system
+    ResetDevicePopup {
+        id: exitPopup
         system: root.system
         anchors.centerIn: Template.Overlay.overlay
     }

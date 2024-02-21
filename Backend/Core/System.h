@@ -48,6 +48,9 @@ public:
     //! Reboot device
     Q_INVOKABLE void rebootDevice();
 
+    //! Reset device by exiting app and disabling service
+    Q_INVOKABLE void stopDevice();
+
     //! Get serial number from server
     std::pair<std::string, bool> getSN(cpuid_t accessUid);
 
