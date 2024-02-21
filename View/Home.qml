@@ -328,25 +328,18 @@ Control {
         target: deviceController.deviceControllerCPP
 
         function onSnModeChanged(snMode: bool) {
+            // snMode != 2
             if (snMode) {
                 uiSession.showHome();
 
                 // Send  check contractor info
                 deviceController.deviceControllerCPP.checkContractorInfo();
-
-                //! Open UserGuidePage
-                if (mainStackView) {
-                    mainStackView.push("qrc:/STHERM/View/UserGuidePage.qml", {
-                                           "uiSession": uiSession
-                                       });
-
-                } else {
-                    //! Open WifiPage
+            } else {
+                if (deviceController.deviceControllerCPP.system.serialNumber !== "") {
                     if (mainStackView) {
-                        mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
-                                               "uiSession": uiSession,
-                                               "backButtonVisible": false
-                                           });
+                                       mainStackView.push("qrc:/STHERM/View/UserGuidePage.qml", {
+                                                              "uiSession": uiSession
+                                                          });
                     }
                 }
             }
