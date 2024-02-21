@@ -16,6 +16,8 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
+    touchMargin: 10
+
     contentItem: Item {
 
         //! Red box
