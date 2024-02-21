@@ -18,6 +18,12 @@ BasePageView {
      * ****************************************************************************************/
     title: "Technician Access"
 
+    onVisibleChanged: {
+        if (!visible) {
+            deviceController.deviceControllerCPP.checkSN();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
 
