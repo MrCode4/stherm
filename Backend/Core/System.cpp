@@ -250,6 +250,11 @@ void NUVE::System::getContractorInfo() {
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getContractorInfo);
 }
 
+QStringList NUVE::System::availableVersions()
+{
+    return mAvailableVersions;
+}
+
 void NUVE::System::requestJob(QString type)
 {
     QJsonArray paramsArray;
@@ -330,6 +335,34 @@ void NUVE::System::partialUpdate() {
         return;
     }
 
+    checkAndDownloadPartialUpdate(mLatestVersionKey);
+}
+
+void NUVE::System::partialUpdateByVersion(const QString version)
+{
+    checkAndDownloadPartialUpdate(version);
+}
+
+void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion)
+{
+    auto versionObj = mUpdateJsonObject.value(installingVersion).toObject();
+    auto versionAddressInServer = versionObj.value(m_Address).toString();
+    mUpdateFileSize = versionObj.value(m_CurrentFileSize).toInt();
+
+    mRequiredMemory = versionObj.value(m_RequiredMemory).toInt();
+    m_expectedUpdateChecksum = QByteArray::fromHex(versionObj.value(m_CheckSum).toString().toLatin1());
+
+    // Check
+    QStorageInfo storageInfo (mUpdateDirectory);
+
+    if (!storageInfo.isValid()) {
+        mountUpdateDirectory();
+    }
+
+    if (!storageInfo.isValid() || !storageInfo.isReady()) {
+        emit error("The update directory is not ready.");
+        return;
+    }
 
     // Check update file
     QFile file(mUpdateDirectory + "/update.zip");
@@ -350,7 +383,7 @@ void NUVE::System::partialUpdate() {
         // Removes the directory, including all its contents.
         dir.removeRecursively();
 
-        // Create the latestVersion directory
+// Create the latestVersion directory
 #ifdef __unix__
         TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
 #endif
@@ -368,26 +401,10 @@ void NUVE::System::partialUpdate() {
         return;
     }
 
-    if (false) {
-    QJsonObject jsonObj;
-
-    // Extracting values from JSON
-    QString hv = jsonObj["hv"].toString();
-    QString require = jsonObj["require"].toString();
-    QString sv = jsonObj["sv"].toString();
-    QString type = jsonObj["type"].toString();
-    QString filename = jsonObj["list"].toArray()[0].toObject()["filename"].toString();
-    QString url = jsonObj["list"].toArray()[0].toObject()["url"].toString();
-
-    // Construct web file URL
-    QString webFile = m_domainUrl.toString() + m_updateUrl.toString() +
-                       hv + require + sv + type + "/" + filename;
-    }
-
     emit downloadStarted();
 
     // Fetch the file from web location
-    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(mLatestVersionAddress))));
+    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(versionAddressInServer))));
     reply->setProperty(m_methodProperty, m_partialUpdate);
     mNetManager->setProperty(m_isBusyDownloader, true);
 
@@ -419,6 +436,7 @@ void NUVE::System::partialUpdate() {
         int percentage = bytesReceived * 100 / bytesTotal;
         setPartialUpdateProgress(percentage);
     });
+
 
 }
 
@@ -716,19 +734,23 @@ void NUVE::System::setUID(cpuid_t uid)
 
 void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
-    // Save the downloaded data
+    // Read the downloaded data
     QFile file(mUpdateFilePath);
     if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
         TRACE << "Unable to open file for reading";
         return;
     }
 
-    auto updateJsonObject = QJsonDocument::fromJson(file.readAll()).object();
+    mUpdateJsonObject = QJsonDocument::fromJson(file.readAll()).object();
+    mUpdateJsonObject.remove("LatestVersion");
 
     file .close();
 
-    auto installableVersionKey = findForceUpdate(updateJsonObject);
-    auto latestVersionKey = findLatestVersion(updateJsonObject);
+
+    updateAvailableVersions(mUpdateJsonObject);
+
+    auto installableVersionKey = findForceUpdate(mUpdateJsonObject);
+    auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
 
     if (installableVersionKey.isEmpty())
         installableVersionKey = latestVersionKey;
@@ -739,7 +761,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     if (installableVersionKey.isEmpty())
         return;
 
-    auto latestVersionObj = updateJsonObject.value(installableVersionKey).toObject();
+    auto latestVersionObj = mUpdateJsonObject.value(installableVersionKey).toObject();
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
@@ -761,13 +783,9 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     }
 
     mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
-    mLatestVersionAddress = latestVersionObj.value(m_Address).toString();
-    mRequiredMemory = latestVersionObj.value(m_RequiredMemory).toInt();
-    mUpdateFileSize = latestVersionObj.value(m_CurrentFileSize).toInt();
     auto releaseDate = latestVersionObj.value(m_ReleaseDate).toString();
     auto changeLog = latestVersionObj.value(m_ChangeLog).toString();
 
-    m_expectedUpdateChecksum = QByteArray::fromHex(latestVersionObj.value(m_CheckSum).toString().toLatin1());
 
     if (mLastInstalledUpdateDate.isEmpty())
         mLastInstalledUpdateDate = mLatestVersionDate;
@@ -788,12 +806,31 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     }
 
     // Check all logs
-    updateLog(updateJsonObject);
+    updateLog(mUpdateJsonObject);
     emit logVersionChanged();
 
     if (mHasForceUpdate) {
         partialUpdate();
     }
+}
+
+void NUVE::System::updateAvailableVersions(const QJsonObject updateJsonObject)
+{
+    auto versions = updateJsonObject.keys();
+
+    if (mAvailableVersions != versions) {
+        mAvailableVersions = versions;
+        emit availableVersionsChanged();
+    }
+}
+
+QString NUVE::System::getLogByVersion(const QString version)
+{
+    if (mUpdateJsonObject.empty())
+        return QString();
+
+    auto obj = mUpdateJsonObject.value(version).toObject();
+    return ("V" + version + ":\n\n" + obj.value(m_ChangeLog).toString());
 }
 
 void NUVE::System::updateLog(const QJsonObject updateJsonObject)

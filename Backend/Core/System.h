@@ -15,6 +15,8 @@ class System : public NetworkWorker
 {
     Q_OBJECT
 
+    Q_PROPERTY(QStringList availableVersions READ availableVersions NOTIFY availableVersionsChanged FINAL)
+
     Q_PROPERTY(QString lastInstalledUpdateDate READ lastInstalledUpdateDate NOTIFY lastInstalledUpdateDateChanged FINAL)
     Q_PROPERTY(QString latestVersion          READ latestVersion           NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
@@ -47,6 +49,9 @@ public:
     //! Reboot device
     Q_INVOKABLE void rebootDevice();
 
+    //! Get log by version
+    Q_INVOKABLE QString getLogByVersion(const QString version);
+
     //! Reset device by exiting app and disabling service
     Q_INVOKABLE void stopDevice();
 
@@ -63,7 +68,10 @@ public:
 
 
     //! Start the partilally update
+    //! if the version is empty, partialUpdate start to install the latest version
     Q_INVOKABLE void partialUpdate();
+    Q_INVOKABLE void partialUpdateByVersion(const QString version);
+
 
     Q_INVOKABLE void updateAndRestart();
 
@@ -77,6 +85,8 @@ public:
     void getContractorInfo();
 
     //! Getters
+    QStringList availableVersions();
+
     QString latestVersion();
 
     QString latestVersionDate();
@@ -135,6 +145,8 @@ signals:
 
     void testModeChanged();
 
+    void availableVersionsChanged();
+
 private:
 
     //! verify dounloaded files and prepare to set up.
@@ -167,15 +179,23 @@ private:
     //! Return last force update version that in greater than current version, otherwise returns empty string
     QString findForceUpdate(const QJsonObject updateJsonObject);
 
+    //! Update Available versions
+    void updateAvailableVersions(const QJsonObject updateJsonObject);
+
+    //! Check and prepare the system to start download process.
+    void checkAndDownloadPartialUpdate(const QString installingVersion);
+
 private:
+
+    QJsonObject mUpdateJsonObject;
 
     QString mSerialNumber;
 
     QByteArray m_expectedUpdateChecksum;
 
-    QString mUpdateFilePath;
+    QStringList mAvailableVersions;
 
-    QString mLatestVersionAddress;
+    QString mUpdateFilePath;
 
     //! Latest version is installable version
     //! (last force update that is greater than current version or the lastes version if no new force version exists)
