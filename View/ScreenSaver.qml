@@ -82,17 +82,16 @@ Popup {
             height: 120
             Layout.fillWidth: true
         }
+    }
 
-        //! NEXGEN icon
-        OrganizationIcon {
-            id: _icon
+    //! Organization icon
+    OrganizationIcon {
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottomMargin: 3
 
-            appModel: _root.device
-            Layout.alignment: Qt.AlignCenter
-            Layout.leftMargin: AppStyle.size / 10
-            Layout.rightMargin: AppStyle.size / 10
-            Layout.fillWidth: true
-            Layout.preferredHeight: _root.height / 8
-        }
+        appModel: _root.device
+        width: parent.width * 0.5
+        height: parent.height * 0.25
     }
 }

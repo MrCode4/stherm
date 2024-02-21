@@ -13,6 +13,7 @@
  *
 */
 namespace NUVE {
+class Sync;
 class System;
 class Hardware;
 } // namespace NUVE
@@ -32,6 +33,8 @@ public:
     explicit DeviceAPI(QObject *parent = nullptr);
 
     Q_INVOKABLE int getStartMode();
+    int runDevice();
+    int checkSN();
 
     NUVE::Timing *timing();
 
@@ -52,6 +55,7 @@ private:
     NUVE::CurrentStage m_currentStage;
     NUVE::Sensors m_sensors;
 
+    NUVE::Sync *m_sync;
     NUVE::System *m_system;
     NUVE::Hardware *m_hardware;
 

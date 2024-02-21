@@ -169,13 +169,35 @@ bool DeviceControllerCPP::setTestRelays(QVariantList data)
     return _deviceIO->testRelays(data);
 }
 
+//! runDevice in Hardware.php
 void DeviceControllerCPP::startDevice()
 {
     //! todo: move to constructor later
     _deviceIO->createConnections();
 
+    // Start by calling runDevice, which will load and populate the device config
+    _deviceAPI->runDevice();
 
-    // Satart with delay to ensure the model loaded.
+    int startMode = getStartMode();
+
+    emit startModeChanged(startMode);
+
+    if (startMode == 0) {
+        startTestMode();
+
+        // if test mode returns, when the other codes should be run? after finishing test mode? //TODO
+        return;
+    }
+
+    checkUpdateMode();
+
+    if (!checkSN())
+        TRACE << "INITAIL SETUP"; // wifi
+
+    //    after wifi is connected get the contractor info
+    // checkContractorInfo();
+
+    // Start with delay to ensure the model loaded.
     QTimer::singleShot(5000, this, [this]() {
         TRACE << "starting scheme";
         m_scheme->restartWork();
@@ -200,6 +222,15 @@ int DeviceControllerCPP::getStartMode()
     TRACE << "start mode is: " << sm;
 
     return sm;
+}
+
+bool DeviceControllerCPP::getUpdateMode()
+{
+    if (m_system)
+        return m_system->updateSequenceOnStart();
+
+    qWarning() << "system is not initialized correctly!";
+    return false;
 }
 
 SystemSetup *DeviceControllerCPP::systemSetup() const {
@@ -239,6 +270,45 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
 
     if (m_scheme)
         m_scheme->setMainData(getMainData());
+}
+
+void DeviceControllerCPP::startTestMode()
+{
+    // Update test mode in system
+    if (m_system)
+        m_system->setTestMode(true);
+}
+
+void DeviceControllerCPP::checkUpdateMode()
+{
+    // check if updated
+    bool updateMode = getUpdateMode();
+    if (updateMode) {
+        //            Run API to get settings from server (sync, getWirings, )
+        TRACE << "getting settings from server";
+        if (m_system)
+            m_system->getUpdate();
+    }
+}
+
+bool DeviceControllerCPP::checkSN()
+{
+    auto state = _deviceAPI->checkSN();
+    TRACE << "checkSN : " << state;
+
+    bool snMode = state != 2;
+    emit snModeChanged(snMode);
+
+    return snMode;
+}
+
+void DeviceControllerCPP::checkContractorInfo()
+{
+    auto info = m_system->getContractorInfo();
+
+    Q_EMIT contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
+                                 info.value("logo").toString(), info.value("url").toString(),
+                                 info.value("tech").toString());
 }
 
 void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)

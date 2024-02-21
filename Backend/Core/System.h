@@ -6,6 +6,7 @@
 
 #include "Backend/Device/nuve_types.h"
 #include "NetworkWorker.h"
+#include "Sync.h"
 
 /*! ***********************************************************************************************
  * This class manage system requests.
@@ -38,7 +39,7 @@ public:
     /* Public Constructors & Destructor
      * ****************************************************************************************/
 
-    System(QObject *parent = nullptr);
+    System(NUVE::Sync *sync, QObject *parent = nullptr);
 
     ~System();
 
@@ -56,7 +57,7 @@ public:
     Q_INVOKABLE void stopDevice();
 
     //! Get serial number from server
-    std::string getSN(cpuid_t accessUid);
+    std::pair<std::string, bool> getSN(cpuid_t accessUid);
 
     //! Get update
     //! todo: process response packet
@@ -82,7 +83,7 @@ public:
     Q_INVOKABLE void wifiConnected(bool hasInternet);
 
     //! Get Contractor Information
-    void getContractorInfo();
+    QVariantMap getContractorInfo();
 
     //! Getters
     QStringList availableVersions();
@@ -104,6 +105,13 @@ public:
     bool updateAvailable();
 
     bool testMode();
+
+    /*!
+     * \brief updateSequenceOnStart gets if the app just updated and set the state false so this happens only once
+     * remember to call this only in one place on startup so you can manage better
+     * \return if after update use case needs to be handled
+     */
+    bool updateSequenceOnStart();
 
     bool hasForceUpdate();
 
@@ -186,10 +194,9 @@ private:
     void checkAndDownloadPartialUpdate(const QString installingVersion);
 
 private:
+    Sync *mSync;
 
     QJsonObject mUpdateJsonObject;
-
-    QString mSerialNumber;
 
     QByteArray m_expectedUpdateChecksum;
 
@@ -218,7 +225,6 @@ private:
 
     bool mHasForceUpdate;
 
-    bool mIsGetSNReceived;
     
     //! System on test mode or not
     bool mTestMode;

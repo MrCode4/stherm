@@ -6,10 +6,16 @@ namespace NUVE {
 
 struct DeviceConfig
 {
-    DeviceConfig() = default;
+    DeviceConfig() {
+        init();
+        load();
+    }
     DeviceConfig(const cpuid_t cpuid) { initialise(cpuid); }
 
     void initialise(const cpuid_t cpuid);
+    void init();
+    void load();
+    void save();
 
     timestamp_t last_update;
     timestamp_t server_last_update;

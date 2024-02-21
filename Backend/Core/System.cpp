@@ -15,12 +15,8 @@ const QUrl m_updateUrl        = QUrl("/update/");                   // update
 
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
 
-const QString m_getSN           = QString("getSN");
-const QString m_getSystemUpdate = QString("getSystemUpdate");
-const QString m_requestJob      = QString("requestJob");
 const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
-const QString m_getContractorInfo = QString("getContractorInfo");
 
 const QString m_checkInternetConnection = QString("checkInternetConnection");
 
@@ -47,15 +43,17 @@ const QString m_ForceUpdate     = QString("ForceUpdate");
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
 const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
 
+const QString m_updateOnStartKey = "updateSequenceOnStart";
+
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
-NUVE::System::System(QObject *parent) :
+NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
+    mSync(sync),
     mUpdateAvailable (false),
     mHasForceUpdate(false),
-    mIsGetSNReceived(false),
     mTestMode(false)
 {
 
@@ -79,16 +77,23 @@ NUVE::System::System(QObject *parent) :
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
-    mSerialNumber            = setting.value(m_SerialNumberSetting).toString();
 
     QTimer::singleShot(2000, this, [=]() {
-        if (!mSerialNumber.isEmpty()) {
+        // TODO
+        if (!serialNumber().isEmpty()) {
             emit snReady();
         }
 
         checkPartialUpdate(true);
     });
 
+    connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::snReady);
+    connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
+
+    connect(this, &NUVE::System::systemUpdating, this, [this](){
+        QSettings settings;
+        settings.setValue("m_updateOnStartKey", true);
+    });
 }
 
 NUVE::System::~System()
@@ -103,7 +108,11 @@ void  NUVE::System::installUpdateService()
     if (updateFileSH.exists())
         updateFileSH.remove("/usr/local/bin/update.sh");
 
-    TRACE << "update.sh file updated: " << QFile::copy(":/Stherm/update.sh", "/usr/local/bin/update.sh");
+    QFile copyFile(":/Stherm/update.sh");
+    if (!copyFile.copy("/usr/local/bin/update.sh")) {
+        TRACE << "update.sh file did not updated: " << copyFile.errorString();
+        TRACE << qApp->applicationDirPath();
+    }
 
     QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/update.sh"});
 
@@ -173,44 +182,14 @@ void NUVE::System::setUpdateAvailable(bool updateAvailable) {
     emit updateAvailableChanged();
 }
 
-std::string NUVE::System::getSN(cpuid_t accessUid)
+std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
 {
-    if (mIsGetSNReceived) {
-        return mSerialNumber.toStdString();
-    }
-
-    QJsonArray paramsArray;
-    paramsArray.append(QString::fromStdString(accessUid));
-
-    // TODO parameter retrieval from cloud, can we utilise a value/isSet tuple and push the processing to a background function?  Or are we happy with a firing off a whole bunch of requests and waiting for them to complete?
-    QByteArray requestData = preparePacket("sync", m_getSN, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSN);
-
-    // Return Serial number when serial number already exist.
-    if (!mSerialNumber.isEmpty())
-        return mSerialNumber.toStdString();
-
-    QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    connect(this, &NUVE::System::snReady, &loop, &QEventLoop::quit);
-
-    timer.start(m_timeout);
-    loop.exec();
-
-    qDebug() << Q_FUNC_INFO << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
-
-    return mSerialNumber.toStdString();
+    return mSync->getSN(accessUid);
 }
 
 void NUVE::System::getUpdate(QString softwareVersion)
 {
-    QJsonArray paramsArray;
-    paramsArray.append(mSerialNumber);
-    paramsArray.append(softwareVersion);
-
-    QByteArray requestData = preparePacket("sync", m_getSystemUpdate, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getSystemUpdate);
+    return mSync->getSettings();
 }
 
 void NUVE::System::getUpdateInformation(bool notifyUser) {
@@ -229,7 +208,8 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 
     mUpdateTimer.start();
 
-    if (mSerialNumber.isEmpty()) {
+    //    sync getsn
+    if (serialNumber().isEmpty()) {
         if (!mUID.empty())
             getSN(mUID);
     }
@@ -237,17 +217,8 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     getUpdateInformation(true);
 }
 
-void NUVE::System::getContractorInfo() {
-    if (mSerialNumber.isEmpty()) {
-        qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
-        return;
-    }
-
-    QJsonArray paramsArray;
-    paramsArray.append(mSerialNumber);
-
-    QByteArray requestData = preparePacket("sync", m_getContractorInfo, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_getContractorInfo);
+QVariantMap NUVE::System::getContractorInfo() {
+    return mSync->getContractorInfo();
 }
 
 QStringList NUVE::System::availableVersions()
@@ -257,12 +228,7 @@ QStringList NUVE::System::availableVersions()
 
 void NUVE::System::requestJob(QString type)
 {
-    QJsonArray paramsArray;
-    paramsArray.append(mSerialNumber);
-    paramsArray.append(type);
-
-    QByteArray requestData = preparePacket("sync", m_requestJob, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_requestJob);
+    mSync->requestJob(type);
 }
 
 QString NUVE::System::latestVersionDate() {
@@ -288,7 +254,7 @@ QString NUVE::System::lastInstalledUpdateDate()
 
 QString NUVE::System::serialNumber()
 {
-    return mSerialNumber;
+    return QString::fromStdString(mSync->getSN().first);
 }
 
 int NUVE::System::partialUpdateProgress() {
@@ -301,6 +267,15 @@ bool NUVE::System::updateAvailable() {
 
 bool NUVE::System::testMode() {
     return mTestMode;
+}
+
+bool NUVE::System::updateSequenceOnStart()
+{
+    QSettings settings;
+    auto update = settings.value(m_updateOnStartKey);
+    settings.setValue(m_updateOnStartKey, false);
+
+    return update.isValid() && update.toBool();
 }
 
 bool NUVE::System::hasForceUpdate()
@@ -550,9 +525,6 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 mNetManager->setProperty(m_isBusyDownloader, false);
                 emit error("Download error: " + netReply->errorString());
 
-            } else if (netReply->property(m_methodProperty).toString() == m_getSN) {
-                emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
-
             }
         }
 
@@ -566,61 +538,6 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
     switch (netReply->operation()) {
     case QNetworkAccessManager::PostOperation: {
-
-        if (netReply->property(m_methodProperty).toString() == m_getSN) {
-            QJsonArray resultArray = obj.value("result").toObject().value("result").toArray();
-            qDebug() << Q_FUNC_INFO << __LINE__ << resultArray;
-
-            if (resultArray.count() > 0) {
-                auto sn = resultArray.first().toString();
-
-                if (!mSerialNumber.isEmpty() && sn != mSerialNumber)
-                    emit alert("The serial number does not match the last one.");
-
-                if (sn.isEmpty()) {
-                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
-
-                } else {
-                    mSerialNumber = sn;
-                }
-
-                // Save the serial number in settings
-                QSettings setting;
-                setting.setValue(m_SerialNumberSetting, mSerialNumber);
-
-                Q_EMIT snReady();
-
-                mIsGetSNReceived = true;
-            }
-
-        } else if (netReply->property(m_methodProperty).toString() == m_getSystemUpdate) {
-            auto resultObj = obj.value("result").toObject().value("result").toObject();
-            auto isRequire = (resultObj.value("require").toString() == "r");
-            auto updateType = resultObj.value("type").toString();
-
-            if (isRequire) {
-                if (updateType == "f") {
-                    qDebug() << Q_FUNC_INFO << __LINE__ << "The system requires a full update.";
-
-                } else {
-                    qDebug() << Q_FUNC_INFO << __LINE__ << "The system requires a partial update.";
-
-                    partialUpdate();
-
-                }
-            }
-        } else if (netReply->property(m_methodProperty).toString() == m_getContractorInfo) {
-
-            // TODO: complete contractor information.
-            auto resultObj = obj.value("result").toObject().value("result").toObject();
-            TRACE << resultObj;
-            QVariantMap map;
-            map.insert("phone", resultObj.value("phone").toString());
-            map.insert("name", resultObj.value("name").toString());
-            map.insert("url", resultObj.value("url").toString());
-            map.insert("techLink", resultObj.value("tech_link").toString());
-
-        }
 
     } break;
     case QNetworkAccessManager::GetOperation: {
@@ -642,9 +559,9 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 if (!file.open(QIODevice::WriteOnly)) {
                     TRACE << "Unable to open file for writing";
                     emit error("Unable to open file for writing");
-                    break;;
+                    break;
                 }
-                TRACE << data;
+                TRACE << data.toStdString().c_str();
 
                 file.write(data);
 

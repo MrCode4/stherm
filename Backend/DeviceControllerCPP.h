@@ -97,6 +97,12 @@ public:
 
     Q_INVOKABLE int getStartMode();
 
+    Q_INVOKABLE bool getUpdateMode();
+
+    Q_INVOKABLE bool checkSN();
+
+    Q_INVOKABLE void checkContractorInfo();
+
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);
 
@@ -115,10 +121,19 @@ Q_SIGNALS:
 
     void deviceAPIChanged();
 
+    void contractorInfoUpdated(QString brandName, QString phoneNumber, QString iconUrl, QString url, QString techUrl);
+
+    void snModeChanged(bool snMode);
+
+    void startModeChanged(int startMode);
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
     static DeviceControllerCPP* sInstance;
+
+    void startTestMode();
+    void checkUpdateMode();
 
 private Q_SLOTS:
     /* Private Slots

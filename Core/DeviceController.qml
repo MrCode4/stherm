@@ -22,6 +22,17 @@ I_DeviceController {
             console.log("Alert: ", alertLevel, alertType, alertMessage);
 
         }
+
+        function onContractorInfoUpdated(brandName, phoneNumber, iconUrl, url,  techUrl) {
+
+            console.log("onContractorInfoUpdated: ", brandName, phoneNumber, iconUrl, url, techUrl);
+
+            root.device.contactContractor.brandName     = brandName
+            root.device.contactContractor.phoneNumber   = phoneNumber
+            root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl
+            root.device.contactContractor.qrURL         = url
+//            root.device.contactContractor.technicianURL = techUrl
+        }
     }
 
     property Connections networkInterface: Connections {
@@ -49,13 +60,11 @@ I_DeviceController {
 
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************")
+        //! initialize the device and config
+        // as well as device io which may TODO refactor later and call it on demand
         deviceControllerCPP.startDevice();
 
-        startMode = deviceControllerCPP.getStartMode();
-
-        // Update test mode in system
-        deviceControllerCPP.system.testMode = (startMode === 0);
-
+        // TODO    we might call this contitionally
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
 
@@ -76,12 +85,6 @@ I_DeviceController {
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
-
-        device.contactContractor.brandName     = "Nuve"
-        device.contactContractor.phoneNumber   = "(714) 471-7965"
-        device.contactContractor.iconSource    = "qrc:/Stherm/Images/nuve-icon.png"
-        device.contactContractor.qrURL         = "https://www.nuvehome.com/"
-        device.contactContractor.technicianURL = "https://upload.nuvehvac.com/#EN/USA/technician/view/"
     }
 
     /* Children
@@ -308,5 +311,19 @@ I_DeviceController {
 
         root.currentSchedule = schedule;
         deviceControllerCPP.setActivatedSchedule(schedule);
+    }
+
+    function getFromBrandName(brandName) {
+        var name = brandName.toLowerCase();
+        if (name === "nuve")
+            return "qrc:/Stherm/Images/nuve-icon.png"
+        else if (name === "nexgen")
+            return "qrc:/Stherm/Images/nexgen.png"
+        else if (name === "medley")
+            return "qrc:/Stherm/Images/medley.png"
+        else if (name === "lees")
+            return "qrc:/Stherm/Images/lee_s.png"
+
+        return "qrc:/Stherm/Images/nuve-icon.png"
     }
 }
