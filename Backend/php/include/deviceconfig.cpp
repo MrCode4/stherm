@@ -27,8 +27,6 @@ void DeviceConfig::initialise(const cpuid_t cpuid)
     backlight_rgb = {0,0,0};
     backlight_type = 0;
     backlight_status = false;
-    last_update = current_timestamp();
-    server_last_update = current_timestamp();
     current_speed = 0;
     logo = "nexgen.png";
     phone = "";
