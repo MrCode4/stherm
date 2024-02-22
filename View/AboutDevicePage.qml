@@ -102,7 +102,7 @@ BasePageView {
                         if (root.testCounter === 10) {
                             root.testCounter = 0;
                             if (root.StackView.view) {
-                                root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                                root.StackView.view.push("qrc:/Stherm/View/Test/StartTestPage.qml", {
                                                               "uiSession": uiSession
                                                           })
                             }

@@ -121,6 +121,12 @@ public:
 
     void setUID(NUVE::cpuid_t uid);
 
+    //! Install update service
+    Q_INVOKABLE bool installUpdateService();
+
+    //! Mount update directory
+    Q_INVOKABLE bool mountUpdateDirectory();
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -166,13 +172,8 @@ private:
     //! notifyUser: Send notification for user when new update is available
     void checkPartialUpdate(bool notifyUser = false);
 
-    //! Mount update directory
-    void mountUpdateDirectory();
-
     void setUpdateAvailable(bool updateAvailable);
 
-    //! Install update service
-    void installUpdateService();
 
     //! Check and validate update json file
     bool checkUpdateFile(const QByteArray updateData);

@@ -101,7 +101,7 @@ NUVE::System::~System()
     delete mNetManager;
 }
 
-void  NUVE::System::installUpdateService()
+bool NUVE::System::installUpdateService()
 {
 #ifdef __unix__
     QFile updateFileSH("/usr/local/bin/update.sh");
@@ -112,9 +112,13 @@ void  NUVE::System::installUpdateService()
     if (!copyFile.copy("/usr/local/bin/update.sh")) {
         TRACE << "update.sh file did not updated: " << copyFile.errorString();
         TRACE << qApp->applicationDirPath();
+
+        return false;
     }
 
-    QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/update.sh"});
+    auto exitCode = QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/update.sh"});
+    if (exitCode == -1 || exitCode == -2)
+        return false;
 
     QFile updateServiceFile(m_updateService);
 
@@ -154,24 +158,37 @@ void  NUVE::System::installUpdateService()
 
     } else {
         TRACE << "Unable to install the update service.";
+
+        return false;
     }
 
     // Disable the appStherm-update.service
-    QProcess::execute("/bin/bash", {"-c", "systemctl disable appStherm-update.service;"});
+    exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl disable appStherm-update.service;"});
+    if (exitCode == -1 || exitCode == -2)
+        return false;
 
 #endif
+    return true;
 }
 
-void  NUVE::System::mountUpdateDirectory()
+bool  NUVE::System::mountUpdateDirectory()
 {
 #ifdef __unix__
     int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update; mount /dev/mmcblk1p3 /mnt/update"});
+    if (exitCode != 0)
+        return false;
+
     // Check if the mount process executed successfully
 
-    TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"}) << exitCode;
+    TRACE << "Device mounted successfully." << exitCode;
+    exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
+    if (exitCode != 0)
+        return false;
+
     mUpdateDirectory = "/mnt/update/latestVersion";
 #endif
 
+    return true;
 }
 
 void NUVE::System::setUpdateAvailable(bool updateAvailable) {

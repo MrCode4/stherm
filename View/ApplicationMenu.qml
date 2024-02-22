@@ -106,7 +106,7 @@ BasePageView {
                     break;
 
                 case "Test Mode": {
-                    _root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                    _root.StackView.view.push("qrc:/Stherm/View/Test/StartTestPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
                 } break;
