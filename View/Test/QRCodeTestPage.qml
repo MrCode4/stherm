@@ -10,9 +10,14 @@ import Stherm
 BasePageView {
     id: root
 
-    /* Object Declaration
+    /* Property Declaration
      * ****************************************************************************************/
     property System system: deviceController.deviceControllerCPP.system
+
+    /* Object properties
+     * ****************************************************************************************/
+
+    title: "System  QR Code "
 
     /* Children
      * ****************************************************************************************/
