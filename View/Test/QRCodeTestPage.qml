@@ -30,9 +30,6 @@ BasePageView {
         }
 
         onClicked: {
-            // Back to last relays
-            deviceController.deviceControllerCPP.sendRelaysBasedOnModel();
-
             //! Finish test, add delay to set relays
             uiSession.showHome();
         }

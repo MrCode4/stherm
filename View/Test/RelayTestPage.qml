@@ -13,6 +13,11 @@ WiringPage {
     /* Object properties
      * ****************************************************************************************/
 
+    Component.onDestruction: {
+        // Back to last relays
+        deviceController.deviceControllerCPP.sendRelaysBasedOnModel();
+    }
+
     topPadding: 0
     bottomPadding: 32 * scaleFactor
     title: "Relay Test"
