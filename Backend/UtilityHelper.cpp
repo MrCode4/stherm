@@ -141,6 +141,31 @@ int UtilityHelper::getGpioValue(int pinNumber)
 }
 
 QString UtilityHelper::getCPUInfo() {
+
+    QFile file("/sys/fsl_otp/HW_OCOTP_CFG1");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        TRACE << "Failed to open the CFG1 file.";
+        return NULL;
+    }
+    QString cfg1 = QByteArray::fromHex(file.readLine()).toHex().remove(0, 2);
+    file.close();
+
+    QFile file0("/sys/fsl_otp/HW_OCOTP_CFG0");
+    if (!file0.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        TRACE << "Failed to open the CFG0 file.";
+        return NULL;
+    }
+    QString cfg0 = QByteArray::fromHex(file0.readLine()).toHex().remove(0, 2);
+    file0.close();
+
+    QString serialNumberHex = cfg1 + cfg0;
+
+//    TRACE << "Serial Number: " << serialNumberHex << cfg1 << cfg0;
+    return serialNumberHex;
+}
+
+QString UtilityHelper::getCPUInfoOld()
+{
     QFile file("/proc/cpuinfo");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         TRACE << "Failed to open the file.";

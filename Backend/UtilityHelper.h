@@ -409,6 +409,8 @@ public:
     //! todo: Adjust the format to meet the UI requirements
     static QString getCPUInfo();
 
+    static QString getCPUInfoOld();
+
     //! setBrightness, value is a number between 0 and 254
     static bool setBrightness(int value);
 
