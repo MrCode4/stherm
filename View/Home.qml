@@ -330,6 +330,9 @@ Control {
         function onSnModeChanged(snMode: bool) {
             // snMode != 2
             if (snMode) {
+                // Active the screen saver
+                ScreenSaverManager.setActive();
+
                 uiSession.showHome();
 
                 // Send  check contractor info

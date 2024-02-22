@@ -101,7 +101,7 @@ NUVE::System::~System()
     delete mNetManager;
 }
 
-void  NUVE::System::installUpdateService()
+bool NUVE::System::installUpdateService()
 {
 #ifdef __unix__
     QFile updateFileSH("/usr/local/bin/update.sh");
@@ -112,9 +112,13 @@ void  NUVE::System::installUpdateService()
     if (!copyFile.copy("/usr/local/bin/update.sh")) {
         TRACE << "update.sh file did not updated: " << copyFile.errorString();
         TRACE << qApp->applicationDirPath();
+
+        return false;
     }
 
-    QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/update.sh"});
+    auto exitCode = QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/update.sh"});
+    if (exitCode == -1 || exitCode == -2)
+        return false;
 
     QFile updateServiceFile(m_updateService);
 
@@ -154,24 +158,55 @@ void  NUVE::System::installUpdateService()
 
     } else {
         TRACE << "Unable to install the update service.";
+
+        return false;
     }
 
     // Disable the appStherm-update.service
-    QProcess::execute("/bin/bash", {"-c", "systemctl disable appStherm-update.service;"});
+    exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl disable appStherm-update.service;"});
+    if (exitCode == -1 || exitCode == -2)
+        return false;
 
 #endif
+    return true;
 }
 
-void  NUVE::System::mountUpdateDirectory()
+bool  NUVE::System::mountUpdateDirectory()
+{
+    if (mountDirectory("/mnt/update", "/mnt/update/latestVersion")) {
+        mUpdateDirectory = "/mnt/update/latestVersion";
+        return true;
+    }
+
+    return false;
+}
+
+bool  NUVE::System::mountRecoveryDirectory()
+{
+    if (mountDirectory("/mnt/recovery", "/mnt/recovery/recovery")) {
+        mRecoveryDirectory = "/mnt/recovery/recovery";
+        return true;
+    }
+
+    return false;
+}
+
+bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
 {
 #ifdef __unix__
-    int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update; mount /dev/mmcblk1p3 /mnt/update"});
-    // Check if the mount process executed successfully
+    int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir "+ targetDirectory + "; mount /dev/mmcblk1p3 " + targetDirectory });
+    if (exitCode < 0)
+        return false;
 
-    TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"}) << exitCode;
-    mUpdateDirectory = "/mnt/update/latestVersion";
+    TRACE << "Device mounted successfully." << exitCode;
+
+    exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir " + targetFolder});
+    TRACE << exitCode;
+    if (exitCode < 0)
+        return false;
 #endif
 
+    return true;
 }
 
 void NUVE::System::setUpdateAvailable(bool updateAvailable) {
@@ -647,6 +682,12 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
 void NUVE::System::setUID(cpuid_t uid)
 {
     mUID = uid;
+    emit systemUIDChanged();
+}
+
+QString NUVE::System::systemUID()
+{
+    return QString::fromStdString(mUID);
 }
 
 void NUVE::System::checkPartialUpdate(bool notifyUser) {

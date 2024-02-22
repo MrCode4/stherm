@@ -106,6 +106,9 @@ public:
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);
 
+    //! Reset relays based on model
+    Q_INVOKABLE void sendRelaysBasedOnModel();
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/

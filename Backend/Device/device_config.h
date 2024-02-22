@@ -17,8 +17,6 @@ struct DeviceConfig
     void load();
     void save();
 
-    timestamp_t last_update;
-    timestamp_t server_last_update;
     uint32_t soft_v;
     uint32_t hard_v;
     uint32_t mode;

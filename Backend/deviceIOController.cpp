@@ -498,21 +498,7 @@ void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)
 
     m_p->mRelaysIn = relays;
 
-    STHERM::SIOPacket packet;
-
-    if (!checkRelayVaidation()) {
-        TRACE << "Send Check_Wiring request.";
-        // Prepare Check_Wiring packet
-        packet = DataParser::prepareSIOPacket(STHERM::Check_Wiring);
-
-    } else {
-        TRACE << "Send SetRelay request.";
-        // Prepare Set relay packet
-        packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, {QVariant::fromValue(relays)});
-    }
-
-    m_TI_queue.push(packet);
-    processTIQueue();
+    sendRelays();
 }
 
 bool DeviceIOController::testRelays(QVariantList relaysData)
@@ -547,6 +533,26 @@ bool DeviceIOController::testRelays(QVariantList relaysData)
 
     return false;
 }
+
+void DeviceIOController::sendRelays()
+{
+    STHERM::SIOPacket packet;
+
+    if (!checkRelayVaidation()) {
+        TRACE << "Send Check_Wiring request.";
+        // Prepare Check_Wiring packet
+        packet = DataParser::prepareSIOPacket(STHERM::Check_Wiring);
+
+    } else {
+        TRACE << "Send SetRelay request.";
+        // Prepare Set relay packet
+        packet = DataParser::prepareSIOPacket(STHERM::SetRelay, STHERM::UARTPacket, {QVariant::fromValue(m_p->mRelaysIn)});
+    }
+
+    m_TI_queue.push(packet);
+    processTIQueue();
+}
+
 
 bool DeviceIOController::setBacklight(QVariantList data)
 {

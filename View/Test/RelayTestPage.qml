@@ -13,6 +13,11 @@ WiringPage {
     /* Object properties
      * ****************************************************************************************/
 
+    Component.onDestruction: {
+        // Back to last relays
+        deviceController.deviceControllerCPP.sendRelaysBasedOnModel();
+    }
+
     topPadding: 0
     bottomPadding: 32 * scaleFactor
     title: "Relay Test"
@@ -35,32 +40,19 @@ WiringPage {
     /* Children
      * ****************************************************************************************/
     //! Next button
-//    ToolButton {
-//        parent: root.header.contentItem
-//        contentItem: RoniaTextIcon {
-//            text: FAIcons.arrowRight
-//        }
+   ToolButton {
+       parent: root.header.contentItem
+       contentItem: RoniaTextIcon {
+           text: FAIcons.arrowRight
+       }
 
-//        onClicked: {
-//            //! Next page
-//            if (root.StackView.view) {
-//                root.StackView.view.push("qrc:/Stherm/View/Test/", {
-//                                              "uiSession": uiSession
-//                                          })
-//            }
-//        }
-//    }
-
-    //! Finish button
-    ToolButton {
-        parent: root.header.contentItem
-        contentItem: RoniaTextIcon {
-            text: FAIcons.check
-        }
-
-        onClicked: {
-            //! Finish test
-            uiSession.showHome()
-        }
-    }
+       onClicked: {
+           //! Next page
+           if (root.StackView.view) {
+               root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
+                                             "uiSession": uiSession
+                                         })
+           }
+       }
+   }
 }

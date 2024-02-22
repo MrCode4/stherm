@@ -24,6 +24,7 @@ class System : public NetworkWorker
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY logVersionChanged FINAL)
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
     Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY snReady FINAL)
+    Q_PROPERTY(QString systemUID              READ systemUID               NOTIFY systemUIDChanged FINAL)
 
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
@@ -121,6 +122,17 @@ public:
 
     void setUID(NUVE::cpuid_t uid);
 
+    QString systemUID();
+
+    //! Install update service
+    Q_INVOKABLE bool installUpdateService();
+
+    //! Mount update directory
+    Q_INVOKABLE bool mountUpdateDirectory();
+
+    //! Mount Recovery directory
+    Q_INVOKABLE bool mountRecoveryDirectory();
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -155,6 +167,8 @@ signals:
 
     void availableVersionsChanged();
 
+    void systemUIDChanged();
+
 private:
 
     //! verify dounloaded files and prepare to set up.
@@ -166,13 +180,8 @@ private:
     //! notifyUser: Send notification for user when new update is available
     void checkPartialUpdate(bool notifyUser = false);
 
-    //! Mount update directory
-    void mountUpdateDirectory();
-
     void setUpdateAvailable(bool updateAvailable);
 
-    //! Install update service
-    void installUpdateService();
 
     //! Check and validate update json file
     bool checkUpdateFile(const QByteArray updateData);
@@ -192,6 +201,8 @@ private:
 
     //! Check and prepare the system to start download process.
     void checkAndDownloadPartialUpdate(const QString installingVersion);
+
+    bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
 private:
     Sync *mSync;
@@ -218,6 +229,7 @@ private:
     QString mRemainingDownloadTime;
 
     QString mUpdateDirectory;
+    QString mRecoveryDirectory;
 
     int mPartialUpdateProgress;
 

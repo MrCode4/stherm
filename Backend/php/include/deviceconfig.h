@@ -21,8 +21,6 @@ public:
     rgbVal_t            backlight_rgb;
     uint32_t            backlight_type;
     bool                backlight_status;
-    timestamp_t         last_update;
-    timestamp_t         server_last_update;
     uint32_t            current_speed;
     std::string         logo;
     std::string         phone;

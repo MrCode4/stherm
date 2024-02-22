@@ -24,7 +24,6 @@ ScreenSaverManager::ScreenSaverManager(QObject *parent)
 
     //! By default screen saver timeout is 20000
     mScreenSaverTimer.setInterval(20000);
-    setActive();
 
     connect(&mScreenSaverTimer, &QTimer::timeout, this, [&]() {
         //! Set state to time out and stop timer

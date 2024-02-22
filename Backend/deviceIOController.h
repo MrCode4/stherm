@@ -62,6 +62,8 @@ public:
     //! TODO handles only the brighness for now
     bool setSettings(QVariantList data);
 
+    void sendRelays();
+
 signals:
     void mainDataReady(QVariantMap data);
     void tofDataReady(QVariantMap data);

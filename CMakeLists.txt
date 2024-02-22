@@ -196,6 +196,8 @@ qt6_add_qml_module(appStherm
         View/Test/RelayTestPage.qml
         View/Test/VersionInformationPage.qml
         View/Test/SystemUpdateOnTestModePage.qml
+        View/Test/StartTestPage.qml
+        View/Test/QRCodeTestPage.qml
 
         # Delegates
         View/Delegates/ApplicationMenuDelegate.qml
