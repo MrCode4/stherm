@@ -195,14 +195,15 @@ bool NUVE::System::mountDirectory(const QString targetDirectory, const QString t
 {
 #ifdef __unix__
     int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir "+ targetDirectory + "; mount /dev/mmcblk1p3 " + targetDirectory });
-    if (exitCode != 0)
+    if (exitCode < 0)
         return false;
 
     TRACE << "Device mounted successfully." << exitCode;
-    exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir " + targetFolder});
-    if (exitCode != 0)
-        return false;
 
+    exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir " + targetFolder});
+    TRACE << exitCode;
+    if (exitCode < 0)
+        return false;
 #endif
 
     return true;
