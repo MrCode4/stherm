@@ -52,6 +52,16 @@ BasePageView {
         }
     }
 
+    Timer {
+        interval: 10000
+        repeat: false
+        running: testCounter === 2
+
+        onTriggered: {
+            nextPage();
+        }
+    }
+
     //! Next button (loads TouchTestPage)
     ToolButton {
         parent: root.header.contentItem
@@ -60,12 +70,7 @@ BasePageView {
         }
         enabled: testCounter === 2
         onClicked: {
-            //! Load next page
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
-                                              "uiSession": uiSession
-                                          })
-            }
+            nextPage();
         }
     }
 
@@ -92,4 +97,12 @@ BasePageView {
         horizontalAlignment: Text.AlignHCenter
     }
 
+    function nextPage() {
+        //! Load next page
+        if (root.StackView.view) {
+            root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                                         "uiSession": uiSession
+                                     })
+        }
+    }
 }
