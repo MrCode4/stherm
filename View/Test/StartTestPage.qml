@@ -15,6 +15,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property int testCounter: 0
+    property int allTests:    3
 
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system
@@ -36,6 +37,7 @@ BasePageView {
         running: true
 
         onTriggered: {
+            // Test 1
             if (system.installUpdateService()) {
                 testCounter++;
 
@@ -43,11 +45,20 @@ BasePageView {
                 notPassedTests.text += "\nThe Update service can not be installed."
             }
 
+            // Test 2
             if (system.mountUpdateDirectory()) {
                 testCounter++;
 
             } else {
                 notPassedTests.text += "\nThe Update directory can not be mounted."
+            }
+
+            // Test 3
+            if (system.mountRecoveryDirectory()) {
+                testCounter++;
+
+            } else {
+                notPassedTests.text += "\nThe Recovery directory can not be mounted."
             }
         }
     }
@@ -55,7 +66,7 @@ BasePageView {
     Timer {
         interval: 10000
         repeat: false
-        running: testCounter === 2
+        running: testCounter === allTests
 
         onTriggered: {
             nextPage();
@@ -68,7 +79,7 @@ BasePageView {
         contentItem: RoniaTextIcon {
             text: FAIcons.arrowRight
         }
-        enabled: testCounter === 2
+        enabled: testCounter === allTests
         onClicked: {
             nextPage();
         }

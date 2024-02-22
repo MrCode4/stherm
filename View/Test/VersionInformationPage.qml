@@ -20,7 +20,7 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    //! Next button (loads TouchTestPage)
+    //! Next button (loads StartTestPage)
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
@@ -30,7 +30,7 @@ BasePageView {
             //! Load next page
             timer.stop();
             if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                root.StackView.view.push("qrc:/Stherm/View/Test/StartTestPage.qml", {
                                               "uiSession": uiSession
                                           })
             }
@@ -87,7 +87,7 @@ BasePageView {
         interval: 10000
 
         onTriggered: {
-            root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+            root.StackView.view.push("qrc:/Stherm/View/Test/StartTestPage.qml", {
                                          "uiSession": Qt.binding(() => uiSession)
                                      });
         }
