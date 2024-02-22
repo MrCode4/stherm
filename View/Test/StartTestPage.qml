@@ -64,6 +64,7 @@ BasePageView {
     }
 
     Timer {
+        id: nextPageTimer
         interval: 10000
         repeat: false
         running: testCounter === allTests
@@ -109,6 +110,7 @@ BasePageView {
     }
 
     function nextPage() {
+        nextPageTimer.stop()
         //! Load next page
         if (root.StackView.view) {
             root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
