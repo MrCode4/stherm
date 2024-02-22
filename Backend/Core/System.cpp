@@ -173,19 +173,27 @@ bool NUVE::System::installUpdateService()
 
 bool  NUVE::System::mountUpdateDirectory()
 {
+    return mountDirectory("/mnt/update", "/mnt/update/latestVersion");
+}
+
+bool  NUVE::System::mountRecoveryDirectory()
+{
+    return mountDirectory("/mnt/recovery", "/mnt/recovery/recovery");
+}
+
+bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
+{
 #ifdef __unix__
-    int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update; mount /dev/mmcblk1p3 /mnt/update"});
+    int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir "+ targetDirectory + "; mount /dev/mmcblk1p3 " + targetDirectory });
     if (exitCode != 0)
         return false;
-
-    // Check if the mount process executed successfully
 
     TRACE << "Device mounted successfully." << exitCode;
-    exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
+    exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir " + targetFolder});
     if (exitCode != 0)
         return false;
 
-    mUpdateDirectory = "/mnt/update/latestVersion";
+    mRecoveryDirectory = "/mnt/recovery/recovery";
 #endif
 
     return true;
