@@ -173,12 +173,22 @@ bool NUVE::System::installUpdateService()
 
 bool  NUVE::System::mountUpdateDirectory()
 {
-    return mountDirectory("/mnt/update", "/mnt/update/latestVersion");
+    if (mountDirectory("/mnt/update", "/mnt/update/latestVersion")) {
+        mUpdateDirectory = "/mnt/update/latestVersion";
+        return true;
+    }
+
+    return false;
 }
 
 bool  NUVE::System::mountRecoveryDirectory()
 {
-    return mountDirectory("/mnt/recovery", "/mnt/recovery/recovery");
+    if (mountDirectory("/mnt/recovery", "/mnt/recovery/recovery")) {
+        mRecoveryDirectory = "/mnt/recovery/recovery";
+        return true;
+    }
+
+    return false;
 }
 
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
@@ -193,7 +203,6 @@ bool NUVE::System::mountDirectory(const QString targetDirectory, const QString t
     if (exitCode != 0)
         return false;
 
-    mRecoveryDirectory = "/mnt/recovery/recovery";
 #endif
 
     return true;
