@@ -24,6 +24,7 @@ class System : public NetworkWorker
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY logVersionChanged FINAL)
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
     Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY snReady FINAL)
+    Q_PROPERTY(QString systemUID              READ systemUID               NOTIFY systemUIDChanged FINAL)
 
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
@@ -121,6 +122,8 @@ public:
 
     void setUID(NUVE::cpuid_t uid);
 
+    QString systemUID();
+
     //! Install update service
     Q_INVOKABLE bool installUpdateService();
 
@@ -160,6 +163,8 @@ signals:
     void testModeChanged();
 
     void availableVersionsChanged();
+
+    void systemUIDChanged();
 
 private:
 

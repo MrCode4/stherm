@@ -169,6 +169,11 @@ bool DeviceControllerCPP::setTestRelays(QVariantList data)
     return _deviceIO->testRelays(data);
 }
 
+void DeviceControllerCPP::sendRelaysBasedOnModel()
+{
+    _deviceIO->sendRelays();
+}
+
 //! runDevice in Hardware.php
 void DeviceControllerCPP::startDevice()
 {

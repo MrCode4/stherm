@@ -664,6 +664,12 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
 void NUVE::System::setUID(cpuid_t uid)
 {
     mUID = uid;
+    emit systemUIDChanged();
+}
+
+QString NUVE::System::systemUID()
+{
+    return QString::fromStdString(mUID);
 }
 
 void NUVE::System::checkPartialUpdate(bool notifyUser) {
