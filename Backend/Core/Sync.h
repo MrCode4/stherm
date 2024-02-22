@@ -49,6 +49,8 @@ private:
     QString mSerialNumber;
     QVariantMap mContractorInfo;
 
+    cpuid_t mSystemUuid;
+
     void sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
 };
 }
