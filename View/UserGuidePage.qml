@@ -14,12 +14,14 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
 
+    property bool initialSetup : false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Technician Access"
 
     onVisibleChanged: {
-        if (!visible) {
+        if (!visible && initialSetup) {
             deviceController.deviceControllerCPP.checkSN();
         }
     }

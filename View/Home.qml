@@ -341,7 +341,8 @@ Control {
                 if (deviceController.deviceControllerCPP.system.serialNumber !== "") {
                     if (mainStackView) {
                                        mainStackView.push("qrc:/STHERM/View/UserGuidePage.qml", {
-                                                              "uiSession": uiSession
+                                                              "uiSession": uiSession,
+                                                              "initialSetup" : true
                                                           });
                     }
                 }
