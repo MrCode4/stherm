@@ -79,11 +79,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
 
     QTimer::singleShot(2000, this, [=]() {
-        // TODO
-        if (!serialNumber().isEmpty()) {
-            emit snReady();
-        }
-
         checkPartialUpdate(true);
     });
 
@@ -242,12 +237,6 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     }
 
     mUpdateTimer.start();
-
-    //    sync getsn
-    if (serialNumber().isEmpty()) {
-        if (!mUID.empty())
-            getSN(mUID);
-    }
 
     getUpdateInformation(true);
 }
