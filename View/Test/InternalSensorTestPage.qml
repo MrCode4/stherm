@@ -37,8 +37,12 @@ BasePageView {
                                              })
                 }
             } else {
-                //! Test mode enabled with GPIO
-                uiSession.showHome();
+                //! Test mode enabled with GPIO as there is no ti board connected
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
+                                                  "uiSession": uiSession
+                                              })
+                }
             }
         }
     }

@@ -339,8 +339,8 @@ Control {
                 deviceController.deviceControllerCPP.checkContractorInfo();
             } else {
                 if (deviceController.deviceControllerCPP.system.serialNumber !== "") {
-                    if (mainStackView) {
-                                       mainStackView.push("qrc:/STHERM/View/UserGuidePage.qml", {
+                    if (mainStackView && mainStackView.currentItem.objectName !== "TechnicianAccess") {
+                                       mainStackView.push("qrc:/Stherm/View/UserGuidePage.qml", {
                                                               "uiSession": uiSession,
                                                               "initialSetup" : true
                                                           });
@@ -356,7 +356,9 @@ Control {
 
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {
-                deviceController.deviceControllerCPP.checkSN();
+                if (deviceController.startMode !== 0){
+                    deviceController.deviceControllerCPP.checkSN();
+                }
             }
         }
     }

@@ -9,6 +9,8 @@ import Stherm
 BasePageView {
     id: _root
 
+    objectName: "TechnicianAccess"
+
     /* Object Declaration
      * ****************************************************************************************/
 
