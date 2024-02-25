@@ -248,7 +248,7 @@ void Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QS
         auto data = mSystemUuid + mSerialNumber.toStdString();
 
         // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain the header compression context for the connection"
-        netRequest.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(data, QCryptographicHash::Sha256));
+        netRequest.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(data, QCryptographicHash::Sha256).toBase64());
     }
 
 
