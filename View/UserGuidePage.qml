@@ -7,7 +7,7 @@ import Stherm
  * UserGuidePage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     objectName: "TechnicianAccess"
 
@@ -22,14 +22,22 @@ BasePageView {
      * ****************************************************************************************/
     title: "Technician Access"
 
-    onVisibleChanged: {
-        if (!visible && initialSetup) {
-            deviceController.deviceControllerCPP.checkSN();
-        }
-    }
-
     /* Children
      * ****************************************************************************************/
+
+    //! Finish button
+    ToolButton {
+        parent: root.header.contentItem
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+        visible: initialSetup
+
+        onClicked: {
+            deviceController.deviceControllerCPP.checkSN();
+            if (backButtonCallback instanceof Function) backButtonCallback();
+        }
+    }
 
     Text {
         anchors.centerIn: parent

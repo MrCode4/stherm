@@ -43,8 +43,6 @@ private slots:
 private:
     /* Attributes
      * ****************************************************************************************/
-
-    bool mIsGetSNReceived;
     bool mHasClient;
     QString mSerialNumber;
     QVariantMap mContractorInfo;

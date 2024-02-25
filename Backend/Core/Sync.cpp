@@ -21,7 +21,7 @@ const QString m_HasClientSetting = QString("NUVE/SerialNumberClient");
 const QString m_requestJob      = QString("requestJob");
 
 Sync::Sync(QObject *parent) : NetworkWorker(parent),
-    mIsGetSNReceived(false), mHasClient(false)
+    mHasClient(false)
 {
 
     QSettings setting;
@@ -39,15 +39,10 @@ std::pair<std::string, bool> Sync::getSN(cpuid_t accessUid)
 {
     mSystemUuid = accessUid;
 
-    // allows maximum one time to fetch the sn from server
-    if (mIsGetSNReceived) {
-        return getSN();
-    }
-
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSn?uid=%0").arg(accessUid.c_str())), m_getSN);
 
     // Return Serial number when serial number already exist.
-    if (!mSerialNumber.isEmpty())
+    if (!mSerialNumber.isEmpty() && mHasClient)
         return getSN();
 
     QEventLoop loop;
@@ -190,9 +185,6 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 setting.setValue(m_SerialNumberSetting, mSerialNumber);
 
                 Q_EMIT snReady();
-
-                // prevents fetching again from server
-                mIsGetSNReceived = true;
             }
         } else if (method == m_getContractorInfo) {
             if (dataObj.isObject())
