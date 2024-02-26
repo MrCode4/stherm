@@ -20,6 +20,21 @@ QtObject {
 
     property I_DeviceController deviceController: uiSession.deviceController
 
+    property bool activeAlerts: false
+
+    property Timer activeAlertsTimer: Timer {
+        running: true
+        repeat: false
+
+        //! Activation of alerts after 3 minutes of program start.
+        interval: 3 * 60 * 1000
+
+        onTriggered: {
+            activeAlerts = true;
+        }
+
+    }
+
     /* Signals
      * ****************************************************************************************/
     signal newMessageReceived(Message message)
@@ -29,6 +44,10 @@ QtObject {
      * ****************************************************************************************/
     function addNewMessageFromData(type, message, datetime)
     {
+        if (!activeAlerts) {
+            return;
+        }
+
         var newMessage = QSSerializer.createQSObject("Message", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
         newMessage._qsRepo = AppCore.defaultRepo;
         newMessage.type = type;
@@ -44,6 +63,10 @@ QtObject {
 
     function addNewMessage(message: Message)
     {
+        if (!activeAlerts) {
+            return;
+        }
+
         device.messages.push(message);
         device.messagesChanged();
     }
