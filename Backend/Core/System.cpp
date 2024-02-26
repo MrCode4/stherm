@@ -169,7 +169,10 @@ bool NUVE::System::installUpdateService()
 bool  NUVE::System::mountUpdateDirectory()
 {
     if (mountDirectory("/mnt/update", "/mnt/update/latestVersion")) {
+
+#ifdef __unix__
         mUpdateDirectory = "/mnt/update/latestVersion";
+#endif
         return true;
     }
 
@@ -179,7 +182,9 @@ bool  NUVE::System::mountUpdateDirectory()
 bool  NUVE::System::mountRecoveryDirectory()
 {
     if (mountDirectory("/mnt/recovery", "/mnt/recovery/recovery")) {
+#ifdef __unix__
         mRecoveryDirectory = "/mnt/recovery/recovery";
+#endif
         return true;
     }
 
@@ -321,7 +326,7 @@ void NUVE::System::setPartialUpdateProgress(int progress) {
 }
 
 void NUVE::System::partialUpdate() {
-
+#ifdef __unix__
     // Check
     QStorageInfo storageInfo (mUpdateDirectory);
 
@@ -333,6 +338,7 @@ void NUVE::System::partialUpdate() {
         emit error("The update directory is not ready.");
         return;
     }
+#endif
 
     checkAndDownloadPartialUpdate(mLatestVersionKey);
 }
@@ -412,12 +418,16 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     if (mElapsedTimer.isValid())
         mElapsedTimer.invalidate();
 
-    mElapsedTimer.start();
-    connect(reply, &QNetworkReply::downloadProgress, this, [=] (qint64 bytesReceived, qint64 bytesTotal) {
-        if (bytesTotal == 0)
-            return;
+    mElapsedTimer.restart();
 
-        double secTime = mElapsedTimer.elapsed() / 1000;
+    connect(reply, &QNetworkReply::downloadProgress, this, [=] (qint64 bytesReceived, qint64 bytesTotal) {
+        double secTime = mElapsedTimer.elapsed() / 1000.0;
+        if (bytesReceived != bytesTotal && (secTime < 1.5 || bytesTotal == 0)) {
+            mRemainingDownloadTime = "Connecting...";
+            emit remainingDownloadTimeChanged();
+            return;
+        }
+
         double rate = bytesReceived / (secTime > 0 ? secTime : 1.0);
         auto remain = bytesTotal - bytesReceived;
         int remainTime = rate < 0.001 ? 1000000 : qRound(remain / rate);
