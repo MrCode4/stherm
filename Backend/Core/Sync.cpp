@@ -137,8 +137,14 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
             Q_EMIT snReady();
 
             emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
+        } else if (method == m_getContractorInfo) {
+            Q_EMIT contractorInfoReady();
+            emit alert("Unable to fetch the Contarctor Info, Please check your internet connection: " + netReply->errorString());
         } else if (method == m_getContractorLogo) {
             Q_EMIT contractorInfoReady();
+            emit alert("Unable to fetch the Contarctor logo, Please check your internet connection: " + netReply->errorString());
+        } else {
+            qWarning() << "unknown method in sync processNetworkReply " + method + netReply->errorString();
         }
 
         netReply->deleteLater();

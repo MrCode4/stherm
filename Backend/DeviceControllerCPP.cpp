@@ -187,6 +187,13 @@ void DeviceControllerCPP::startDevice()
 
     emit startModeChanged(startMode);
 
+    // Start with delay to ensure the model loaded.
+    // will be loaded always, but should be OFF in iniial setup mode as its default is OFF
+    QTimer::singleShot(5000, this, [this]() {
+        TRACE << "starting scheme";
+        m_scheme->restartWork();
+    });
+
     if (startMode == 0) {
         startTestMode();
 
@@ -197,16 +204,7 @@ void DeviceControllerCPP::startDevice()
     checkUpdateMode();
 
     if (!checkSN())
-        TRACE << "INITAIL SETUP"; // wifi
-
-    //    after wifi is connected get the contractor info
-    // checkContractorInfo();
-
-    // Start with delay to ensure the model loaded.
-    QTimer::singleShot(5000, this, [this]() {
-        TRACE << "starting scheme";
-        m_scheme->restartWork();
-    });
+        TRACE << "INITAIL SETUP";
 }
 
 void DeviceControllerCPP::stopDevice()

@@ -356,7 +356,7 @@ Control {
 
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {
-                if (deviceController.startMode !== 0){
+                if (deviceController.startMode !== 0 && deviceController.startMode !== -1){
                     deviceController.deviceControllerCPP.checkSN();
                 }
             }
