@@ -207,6 +207,10 @@ QSRepositoryCpp {
         }
 
         var fileObjects = JSON.parse(jsonString);
+        if (fileObjects == 0) {
+            console.log("[QSRepo] File empty, aborting");
+            return false;
+        }
 
         return loadRepo(fileObjects);
     }

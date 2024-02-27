@@ -51,11 +51,19 @@ ApplicationWindow {
         uiSessionId.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
 
         // Load the file
+        // check if not exist uiSessionId.configFilePath
+        // then load from relative path (sthermCOnfig.qss.josn)), and remove it
+
+        // if any load was successful, write it to recovery
         console.info("Load the config file: ", uiSessionId.configFilePath)
+
         if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath))
             console.info("Config file succesfully loaded.")
-        else
+        else {
+            // load from nv memory if exist
+            //            else
             AppCore.defaultRepo.initRootObject("Device");
+        }
 
         //! Load DST effect and then current timezone to DateTimeManager
         //! NOTE: Order of setting effect DST and current timezone is important.
