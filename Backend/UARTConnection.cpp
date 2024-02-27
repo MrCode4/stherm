@@ -74,7 +74,9 @@ bool UARTConnection::isConnected()
 
 bool UARTConnection::sendRequest(QByteArray data) {
     TRACE_CHECK(m_debug) << this << data.toHex(' ').toUpper();
-    return mSerial->write(data) != -1;
+    auto resp = mSerial->write(data);
+    TRACE_CHECK(resp != -1) << this << resp;
+    return resp != -1;
 }
 
 bool UARTConnection::sendRequest(const char *data, qint64 len)

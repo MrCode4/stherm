@@ -75,6 +75,7 @@ bool UtilityHelper::configurePins(int gpio)
 
     edgeFile.close();
 
+    TRACE << gpio << "successful";
     return true;
 }
 

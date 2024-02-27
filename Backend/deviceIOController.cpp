@@ -81,7 +81,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
 {
     // move creating objects here
     m_tiConnection = new UARTConnection(TI_SERIAL_PORT, false, this);
-    m_nRfConnection = new UARTConnection(NRF_SERIAL_PORT, false, this);
+    m_nRfConnection = new UARTConnection(NRF_SERIAL_PORT, true, this);
     m_gpioHandler4 = new GpioHandler(NRF_GPIO_4, this);
     m_gpioHandler5 = new GpioHandler(NRF_GPIO_5, this);
 
@@ -418,9 +418,9 @@ void DeviceIOController::createNRF()
     }
 
     connect(m_nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
-        TRACE_CHECK(false) << "NRF Response:   " << data;
+        TRACE_CHECK(true) << "NRF Response:   " << data;
         auto rxPacket = DataParser::deserializeData(data);
-        TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+        TRACE_CHECK(true) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
             qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD;
@@ -443,7 +443,7 @@ void DeviceIOController::createNRF()
                 m_p->lastTimeSensors = time;
                 m_nRF_queue.push(m_p->SensorPacketBA);
                 bool processed = processNRFQueue();
-                TRACE_CHECK(false) << "request for gpio 4" << processed;
+                TRACE_CHECK(true) << "request for gpio 4" << processed;
                 // check after tiemout if no other request sent
                 m_nRF_timer.start();
             }
@@ -457,7 +457,7 @@ void DeviceIOController::createNRF()
             if (data.length() == 2 && data.at(0) == '0') {
                 m_nRF_queue.push(m_p->TOFPacketBA);
                 bool processed = processNRFQueue();
-                TRACE_CHECK(false) << "request for gpio 5" << processed;
+                TRACE_CHECK(true) << "request for gpio 5" << processed;
             }
         });
     } else {
@@ -831,7 +831,9 @@ bool DeviceIOController::processNRFQueue()
 
     if (m_nRfConnection->sendRequest(packetBA)) {
         if (packet.CMD == STHERM::SIOCommand::GetTOF) {
+            TRACE << "CHECK for TOF values";
         } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
+            TRACE << "CHECK for Sensor values";
             m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
         } else if (packet.CMD == STHERM::SIOCommand::SetColorRGB){
             // TODO: blinking with data array [4]
