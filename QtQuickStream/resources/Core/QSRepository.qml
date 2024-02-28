@@ -201,18 +201,19 @@ QSRepositoryCpp {
         var jsonString = QSFileIO.read(fileName);
 
         // Sanity check: abort if file was empty
-        if (jsonString == 0) {
+        if (jsonString === 0) {
             console.log("[QSRepo] File empty, aborting");
             return false;
         }
 
-        var fileObjects = JSON.parse(jsonString);
-        if (fileObjects == 0) {
-            console.log("[QSRepo] File empty, aborting");
+        try {
+            var fileObjects = JSON.parse(jsonString);
+            return loadRepo(fileObjects);
+
+        } catch (e) {
+            console.log("error: loadFromFile", e);
             return false;
         }
-
-        return loadRepo(fileObjects);
     }
 
     /*! ***************************************************************************************

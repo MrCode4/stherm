@@ -74,6 +74,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     installUpdateService();
 
     mountUpdateDirectory();
+    mountRecoveryDirectory();
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();

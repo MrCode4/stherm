@@ -52,18 +52,28 @@ ApplicationWindow {
 
         // Load the file
         // check if not exist uiSessionId.configFilePath
-        // then load from relative path (sthermCOnfig.qss.josn)), and remove it
+        // then load from relative path (sthermConfig.QSS.json)), and remove it
 
-        // if any load was successful, write it to recovery
-        console.info("Load the config file: ", uiSessionId.configFilePath)
+        if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath)) {
+            console.info("Load the config file: ", uiSessionId.configFilePath);
+            console.info("Config file succesfully loaded.");
 
-        if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath))
-            console.info("Config file succesfully loaded.")
-        else {
-            // load from nv memory if exist
-            //            else
+        } else if (AppCore.defaultRepo.loadFromFile("sthermConfig.QQS.json")) {
+            QSFileIO.removeFile("sthermConfig.QQS.json");
+            console.info("Load the config file: sthermConfig.QQS.json");
+            console.info("Config file succesfully loaded.");
+
+
+        } else {
+            console.info("Load the app with default settings");
             AppCore.defaultRepo.initRootObject("Device");
         }
+
+
+        // if any load was successful, write it to recovery
+        // defaults also saved.
+        AppCore.defaultRepo.saveToFile("/mnt/recovery/recovery/sthermConfig.QQS.json");
+
 
         //! Load DST effect and then current timezone to DateTimeManager
         //! NOTE: Order of setting effect DST and current timezone is important.
