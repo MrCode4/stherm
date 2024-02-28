@@ -7,6 +7,7 @@ import QtQuick.VirtualKeyboard.Settings
 
 import Ronia
 import Stherm
+import QtQuickStream
 
 /*! ***********************************************************************************************
  * This is the highest level graphical object, i.e., the main application window. The state
@@ -53,22 +54,22 @@ ApplicationWindow {
         // Load the file
         // check if not exist uiSessionId.configFilePath
         // then load from relative path (sthermConfig.QSS.json)), and remove it
-
         if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath)) {
             console.info("Load the config file: ", uiSessionId.configFilePath);
             console.info("Config file succesfully loaded.");
 
         } else if (AppCore.defaultRepo.loadFromFile("sthermConfig.QQS.json")) {
-            QSFileIO.removeFile("sthermConfig.QQS.json");
             console.info("Load the config file: sthermConfig.QQS.json");
             console.info("Config file succesfully loaded.");
-
 
         } else {
             console.info("Load the app with default settings");
             AppCore.defaultRepo.initRootObject("Device");
         }
 
+
+        // Remove the relative file from the directory.
+        QSFileIO.removeFile("sthermConfig.QQS.json");
 
         // if any load was successful, write it to recovery
         // defaults also saved.
