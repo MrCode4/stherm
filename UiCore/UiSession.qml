@@ -38,6 +38,8 @@ Item {
     //! Config file path
     readonly property string  configFilePath:   "/usr/local/bin/sthermConfig.QQS.json"
 
+    readonly property string  recoveryConfigFilePath:   "/mnt/recovery/recovery/sthermConfig.QQS.json"
+
     // Debug or not
     property bool               debug:          userLevel >= UiSession.UserLevel.DEVELOPER
 

@@ -62,18 +62,21 @@ ApplicationWindow {
             console.info("Load the config file: sthermConfig.QQS.json");
             console.info("Config file succesfully loaded.");
 
+        } else if (AppCore.defaultRepo.loadFromFile(uiSessionId.recoveryConfigFilePath)) {
+            console.info("Load the config file:", uiSessionId.recoveryConfigFilePath);
+            console.info("Config file succesfully loaded.");
+
         } else {
             console.info("Load the app with default settings");
             AppCore.defaultRepo.initRootObject("Device");
         }
-
 
         // Remove the relative file from the directory.
         QSFileIO.removeFile("sthermConfig.QQS.json");
 
         // if any load was successful, write it to recovery
         // defaults also saved.
-        AppCore.defaultRepo.saveToFile("/mnt/recovery/recovery/sthermConfig.QQS.json");
+        AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath);
 
 
         //! Load DST effect and then current timezone to DateTimeManager
