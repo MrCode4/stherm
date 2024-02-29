@@ -60,11 +60,11 @@ ApplicationWindow {
 
         } else if (AppCore.defaultRepo.loadFromFile("sthermConfig.QQS.json")) {
             console.info("Load the config file: sthermConfig.QQS.json");
-            console.info("Config file succesfully loaded.");
+            console.info("old Config file succesfully loaded.");
 
         } else if (AppCore.defaultRepo.loadFromFile(uiSessionId.recoveryConfigFilePath)) {
             console.info("Load the config file:", uiSessionId.recoveryConfigFilePath);
-            console.info("Config file succesfully loaded.");
+            console.info("recovery Config file succesfully loaded.");
 
         } else {
             console.info("Load the app with default settings");

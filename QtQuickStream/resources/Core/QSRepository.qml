@@ -211,7 +211,7 @@ QSRepositoryCpp {
             return loadRepo(fileObjects);
 
         } catch (e) {
-            console.log("error: loadFromFile", e);
+            console.log("[QSRepo] error: loadFromFile", e);
             return false;
         }
     }

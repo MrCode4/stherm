@@ -55,9 +55,7 @@ public slots:
     {
         if (fileName.isEmpty())                             { return ""; }
 
-        if (!exists(fileName)) {
-            return "";
-        }
+        if (!exists(fileName))                              { return ""; }
 
         QFile file(fileName);
         if (!file.open(QFile::ReadOnly))                    { return ""; }
