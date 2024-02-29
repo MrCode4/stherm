@@ -825,7 +825,7 @@ void NUVE::System::updateLog(const QJsonObject updateJsonObject)
 
     foreach (auto keyVersion, versions) {
         auto compareVersion = isVersionNewer(keyVersion, currentVersion);
-        if (compareVersion && isVersionNewer(mLatestVersionKey, keyVersion) && mLatestVersionKey != keyVersion) {
+        if (compareVersion && isVersionNewer(mLatestVersionKey, keyVersion)) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
             mLatestVersionChangeLog += ("\n\nV" + keyVersion + ":\n\n" + obj.value(m_ChangeLog).toString());
         } else if (!compareVersion) {
