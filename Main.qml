@@ -7,6 +7,7 @@ import QtQuick.VirtualKeyboard.Settings
 
 import Ronia
 import Stherm
+import QtQuickStream
 
 /*! ***********************************************************************************************
  * This is the highest level graphical object, i.e., the main application window. The state
@@ -51,11 +52,32 @@ ApplicationWindow {
         uiSessionId.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
 
         // Load the file
-        console.info("Load the config file: ", uiSessionId.configFilePath)
-        if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath))
-            console.info("Config file succesfully loaded.")
-        else
+        // check if not exist uiSessionId.configFilePath
+        // then load from relative path (sthermConfig.QSS.json)), and remove it
+        if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath)) {
+            console.info("Load the config file: ", uiSessionId.configFilePath);
+            console.info("Config file succesfully loaded.");
+
+        } else if (AppCore.defaultRepo.loadFromFile("sthermConfig.QQS.json")) {
+            console.info("Load the config file: sthermConfig.QQS.json");
+            console.info("old Config file succesfully loaded.");
+
+        } else if (AppCore.defaultRepo.loadFromFile(uiSessionId.recoveryConfigFilePath)) {
+            console.info("Load the config file:", uiSessionId.recoveryConfigFilePath);
+            console.info("recovery Config file succesfully loaded.");
+
+        } else {
+            console.info("Load the app with default settings");
             AppCore.defaultRepo.initRootObject("Device");
+        }
+
+        // Remove the relative file from the directory.
+        QSFileIO.removeFile("sthermConfig.QQS.json");
+
+        // if any load was successful, write it to recovery
+        // defaults also saved.
+        AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath);
+
 
         //! Load DST effect and then current timezone to DateTimeManager
         //! NOTE: Order of setting effect DST and current timezone is important.

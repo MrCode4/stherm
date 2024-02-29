@@ -26,13 +26,9 @@ struct DeviceConfig
     std::string serial_number;
     std::string timezone;
     std::string technical_access_link;
-    rgbVal_t backlight_rgb;
     uint32_t backlight_type;
     bool backlight_status;
     uint32_t current_speed;
-    std::string logo;
-    std::string phone;
-    std::string url;
     std::string user_guide;
     bool start_pairing;
     bool wiring_check;
@@ -40,7 +36,6 @@ struct DeviceConfig
     std::string timezone_number;
     bool qa_test;
     bool forget_sensor;
-    std::string contractor_name;
     uint32_t ventilator;
     uint32_t start_mode;
     bool shut_down;
@@ -48,9 +43,6 @@ struct DeviceConfig
     uint32_t humidifier_id;
     std::string hum_wiring;
     uint32_t system_type;
-    uint32_t emergency_heating;
-    std::string ob_state;
-    std::string technical_edit_link;
 };
 
 } // namespace NUVE

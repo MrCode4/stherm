@@ -50,6 +50,29 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
+//! isVersionNewer
+//! return true when version1 > version2
+//! return false when version1 <= version2
+bool isVersionNewer(const QString& version1, const QString& version2) {
+    QStringList parts1 = version1.split('.');
+    QStringList parts2 = version2.split('.');
+
+    // Compare each component numerically
+    for (int i = 0; i < qMax(parts1.size(), parts2.size()); i++) {
+        int part1 = (i < parts1.size()) ? parts1[i].toInt() : 0;
+        int part2 = (i < parts2.size()) ? parts2[i].toInt() : 0;
+
+        if (part1 > part2) {
+            return true;  // version1 is greater than version2
+
+        } else if (part1 < part2) {
+            return false;  // version1 is less than version2
+        }
+    }
+
+    return false;  // versions are equal
+}
+
 NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mSync(sync),
     mUpdateAvailable (false),
@@ -74,6 +97,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     installUpdateService();
 
     mountUpdateDirectory();
+    mountRecoveryDirectory();
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
@@ -726,18 +750,12 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
 
     // Compare versions lexicographically
-    if (installableVersionKey > currentVersion) {
+    // installableVersionKey > currentVersion
+    if (isVersionNewer(installableVersionKey, currentVersion)) {
         auto appVersionList = currentVersion.split(".");
         auto latestVersion = installableVersionKey.split(".");
 
-        if (appVersionList.count() > 2 && latestVersion.count() > 2) {
-
-            setUpdateAvailable(true);
-
-        } else {
-            qWarning() << "The version format is incorrect (major.minor.patch)" << installableVersionKey;
-            return;
-        }
+        setUpdateAvailable(true);
     }
 
     mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
@@ -800,16 +818,17 @@ void NUVE::System::updateLog(const QJsonObject updateJsonObject)
     // The current version log added.
     versions.removeOne(mLatestVersionKey);
 
-    std::sort(versions.begin(), versions.end(), std::greater<QString>());
+    std::sort(versions.begin(), versions.end(), isVersionNewer);
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
 
     foreach (auto keyVersion, versions) {
-        if (keyVersion > currentVersion && keyVersion < mLatestVersionKey) {
+        auto compareVersion = isVersionNewer(keyVersion, currentVersion);
+        if (compareVersion && isVersionNewer(mLatestVersionKey, keyVersion)) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
             mLatestVersionChangeLog += ("\n\nV" + keyVersion + ":\n\n" + obj.value(m_ChangeLog).toString());
-        } else if (keyVersion <= currentVersion ) {
+        } else if (!compareVersion) {
             break;
         }
     }
@@ -823,14 +842,14 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
 
 
     // Last force update.
-    std::sort(versions.begin(), versions.end(), std::greater<QString>());
+    std::sort(versions.begin(), versions.end(), isVersionNewer);
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
 
     // return the last force update that is greater than the current version
     foreach (auto keyVersion, versions) {
-        if (keyVersion > currentVersion) {
+        if (isVersionNewer(keyVersion, currentVersion)) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
             if (obj.value(m_ForceUpdate).toBool()) {
                 return keyVersion;
@@ -876,7 +895,7 @@ QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
     if (versions.contains("LatestVersion"))
         versions.removeOne("LatestVersion");
 
-    std::sort(versions.begin(), versions.end(), std::greater<QString>());
+    std::sort(versions.begin(), versions.end(), isVersionNewer);
 
     TRACE << versions;
     // Find the maximum version

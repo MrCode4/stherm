@@ -2,6 +2,7 @@
 #define FILEIO_H
 
 #include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
 #include <qqml.h>
 
@@ -21,6 +22,17 @@ public:
     /* Public Slots
      * ****************************************************************************************/
 public slots:
+
+    static bool exists(const QString file)
+    {
+        return QFileInfo::exists(file);
+    }
+
+    static bool removeFile(const QString file)
+    {
+        return QFile::remove(file);
+    }
+
     //! Writes data to file with fileName and returns whether successful
     bool write(const QString &fileName, const QByteArray &data)
     {
@@ -42,6 +54,8 @@ public slots:
     QByteArray read(const QString &fileName)
     {
         if (fileName.isEmpty())                             { return ""; }
+
+        if (!exists(fileName))                              { return ""; }
 
         QFile file(fileName);
         if (!file.open(QFile::ReadOnly))                    { return ""; }

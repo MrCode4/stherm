@@ -27,14 +27,9 @@ void NUVE::DeviceConfig::init()
     brightness_mode = 0;
     serial_number = "";
     timezone = "Pacific/Midway";
-    technical_access_link = TECHNIC_QR;
-    backlight_rgb = {0, 0, 0};
     backlight_type = 0;
     backlight_status = false;
     current_speed = 0;
-    logo = "nexgen.png";
-    phone = "";
-    url = "";
     user_guide = "";
     start_pairing = false;
     wiring_check = true;
@@ -42,7 +37,6 @@ void NUVE::DeviceConfig::init()
     timezone_number = "";
     qa_test = false;
     forget_sensor = false;
-    contractor_name = "NextGen";
     ventilator = 0;
     start_mode = 0;
     shut_down = false;
@@ -50,9 +44,6 @@ void NUVE::DeviceConfig::init()
     humidifier_id = 3;
     hum_wiring = "";
     system_type = 1;
-    emergency_heating = 0;
-    ob_state = "cool";
-    technical_edit_link = TECHNIC_EDIT_QR;
 }
 
 void NUVE::DeviceConfig::load()
