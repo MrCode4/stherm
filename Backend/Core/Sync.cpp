@@ -130,109 +130,144 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 {
     NetworkWorker::processNetworkReply(netReply);
 
+    QString errorString = netReply->error() == QNetworkReply::NoError ? "" : netReply->errorString();
     auto method = netReply->property(m_methodProperty).toString();
 
-    if (netReply->error() != QNetworkReply::NoError){
+    QByteArray dataRaw = netReply->readAll();
+    const QJsonDocument jsonDoc = QJsonDocument::fromJson(dataRaw);
+    const QJsonObject jsonDocObj = jsonDoc.object();
+    if (errorString.isEmpty() && !jsonDocObj.contains("data")) {
+        errorString = "server returned null response";
+    }
+
+    if (errorString.isEmpty()) {
+        auto dataValue = jsonDocObj.value("data");
+
+        switch (netReply->operation()) {
+        case QNetworkAccessManager::PostOperation: {
+            TRACE << dataRaw << jsonDocObj << dataValue << dataValue.isObject();
+
+        } break;
+        case QNetworkAccessManager::GetOperation: {
+            TRACE << dataValue.isObject() << netReply->property(m_methodProperty).toString();
+            TRACE_CHECK(method != m_getContractorLogo) << dataRaw << jsonDocObj;
+
+            if (method == m_getSN) {
+                if (dataValue.isObject())
+                {
+                    auto dataObj = dataValue.toObject();
+                    if (!dataObj.contains("serial_number")) {
+                        errorString = "No serial number has returned by server";
+                        break;
+                    }
+
+                    auto sn = dataObj.value("serial_number").toString();
+                    mHasClient = dataObj.value("has_client").toBool();
+                    TRACE << sn << mHasClient;
+
+                    if (!mHasClient) {
+                        TRACE << "will start initial setup!";
+                    }
+
+                    if (!mSerialNumber.isEmpty() && sn != mSerialNumber){
+                        emit alert("The serial number does not match the last one.");
+                        TRACE << "The serial number does not match the last one." << mSerialNumber << sn;
+                    } else if (sn.isEmpty()) {
+                        emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
+                    }
+
+                    mSerialNumber = sn;
+
+                    // Save the serial number in settings
+                    QSettings setting;
+                    setting.setValue(m_HasClientSetting, mHasClient);
+                    setting.setValue(m_SerialNumberSetting, mSerialNumber);
+
+                    Q_EMIT snReady();
+                } else {
+                    errorString = "No serial number has returned by server";
+                }
+            } else if (method == m_getContractorInfo) {
+                if (dataValue.isObject())
+                {
+                    auto dataObj = dataValue.toObject();
+                    auto brandValue = dataObj.value("brand");
+                    auto phoneValue = dataObj.value("phone");
+                    auto logoValue = dataObj.value("logo");
+
+                    if (!brandValue.isString() || brandValue.toString().isEmpty()) {
+                        errorString = "Wrong contractor info fetched from server";
+                        break;
+                    }
+
+                    QVariantMap map;
+                    map.insert("phone", phoneValue.toString(mContractorInfo.value("phone").toString()));
+                    map.insert("brand", brandValue.toString(mContractorInfo.value("brand").toString()));
+                    map.insert("url", dataObj.value("url").toString(mContractorInfo.value("url").toString()));
+                    map.insert("tech", dataObj.value("schedule").toString(mContractorInfo.value("tech").toString()));
+                    // logo is a bit more complicated than others,
+                    // the value inside map should be either empty so it loads from brand name, or be a resource or local fs path
+                    // so if it has the logo response we keep it empty until the actual value handled (if not empty, it should be downloaded to a local path)
+                    // and if it has null or has not value, we will keep the previous value
+                    map.insert("logo", logoValue.isString() ? "" : mContractorInfo.value("logo").toString());
+                    mContractorInfo = map;
+
+                    auto logo = logoValue.toString();
+                    if (logo.isEmpty()){
+                        Q_EMIT contractorInfoReady();
+                    } else {
+                        // what if gets error, should we return immadiately?
+                        QNetworkRequest dlRequest(logo);
+                        QNetworkReply *netReply = mNetManager->get(dlRequest);
+                        netReply->setProperty(m_methodProperty, m_getContractorLogo);
+                    }
+                } else {
+                    errorString = "Wrong contractor info fetched from server";
+                }
+            }  else if (method == m_getContractorLogo) {
+                QImage image;
+                if (image.loadFromData(dataRaw)){
+                    image.save("/home/root/customIcon.png");
+                    mContractorInfo.insert("logo", "file:///home/root/customIcon.png");
+                }
+                Q_EMIT contractorInfoReady();
+            } else if (method == m_getSettings) {
+                TRACE;
+                Q_EMIT settingsLoaded();
+            } else if (method == m_getWirings) {
+                TRACE ;
+                Q_EMIT wiringReady();
+            }
+        } break;
+
+        default:
+
+            break;
+        }
+    }
+
+    if (!errorString.isEmpty()){
         if (method == m_getSN) {
             Q_EMIT snReady();
-
-            emit alert("Unable to fetch the device serial number, Please check your internet connection: " + netReply->errorString());
+            QString error = "Unable to fetch the device serial number, Please check your internet connection: ";
+            emit alert(error + errorString);
+            qWarning() << error << errorString ;
         } else if (method == m_getContractorInfo) {
             Q_EMIT contractorInfoReady();
-            emit alert("Unable to fetch the Contarctor Info, Please check your internet connection: " + netReply->errorString());
+            QString error = "Unable to fetch the Contarctor Info, Please check your internet connection: ";
+            emit alert(error + errorString);
+            qWarning() << error << errorString ;
         } else if (method == m_getContractorLogo) {
             Q_EMIT contractorInfoReady();
-            emit alert("Unable to fetch the Contarctor logo, Please check your internet connection: " + netReply->errorString());
+            QString error = "Unable to fetch the Contarctor logo, Please check your internet connection: ";
+            emit alert(error + errorString);
+            qWarning() << error << errorString ;
         } else {
-            qWarning() << "unknown method in sync processNetworkReply " << method << netReply->errorString();
+            QString error = "unknown method in sync processNetworkReply ";
+            qWarning() << method << error << errorString ;
         }
-
-        netReply->deleteLater();
-        return;
     }
 
-    QByteArray data = netReply->readAll();
-    const QJsonDocument doc = QJsonDocument::fromJson(data);
-    const QJsonObject obj = doc.object();
-    auto dataObj = obj.value("data");
-
-    switch (netReply->operation()) {
-    case QNetworkAccessManager::PostOperation: {
-        TRACE << data << obj << dataObj << dataObj.isObject();
-
-    } break;
-    case QNetworkAccessManager::GetOperation: {
-        TRACE << dataObj.isObject() << netReply->property(m_methodProperty).toString();
-        TRACE_CHECK(method != m_getContractorLogo) << data << obj;
-
-        if (method == m_getSN) {
-            if (dataObj.isObject())
-            {
-                auto sn = dataObj.toObject().value("serial_number").toString();
-                mHasClient = dataObj.toObject().value("has_client").toBool();
-                TRACE << sn << mHasClient;
-
-                if (!mHasClient) {
-                    TRACE << "will start initial setup!";
-                }
-
-                if (!mSerialNumber.isEmpty() && sn != mSerialNumber){
-                    emit alert("The serial number does not match the last one.");
-                    TRACE << "The serial number does not match the last one." << mSerialNumber << sn;
-                } else if (sn.isEmpty()) {
-                    emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
-                }
-
-                mSerialNumber = sn;
-
-                // Save the serial number in settings
-                QSettings setting;
-                setting.setValue(m_HasClientSetting, mHasClient);
-                setting.setValue(m_SerialNumberSetting, mSerialNumber);
-
-                Q_EMIT snReady();
-            }
-        } else if (method == m_getContractorInfo) {
-            if (dataObj.isObject())
-            {
-                QVariantMap map;
-                map.insert("phone", dataObj.toObject().value("phone").toString());
-                map.insert("brand", dataObj.toObject().value("brand").toString());
-                map.insert("url", dataObj.toObject().value("url").toString());
-                map.insert("tech", dataObj.toObject().value("schedule").toString());
-                map.insert("logo", "");
-                mContractorInfo = map;
-
-                auto logo = dataObj.toObject().value("logo").toString();
-                if (logo.isEmpty()){
-                    Q_EMIT contractorInfoReady();
-                } else {
-                    // what if gets error, should we return immadiately?
-                    QNetworkRequest dlRequest(logo);
-                    QNetworkReply *netReply = mNetManager->get(dlRequest);
-                    netReply->setProperty(m_methodProperty, m_getContractorLogo);
-                }
-            }
-        }  else if (method == m_getContractorLogo) {
-            QImage image;
-            if (image.loadFromData(data)){
-                image.save("/home/root/customIcon.png");
-                mContractorInfo.insert("logo", "file:///home/root/customIcon.png");
-            }
-            Q_EMIT contractorInfoReady();
-        } else if (method == m_getSettings) {
-            TRACE;
-            Q_EMIT settingsLoaded();
-        } else if (method == m_getWirings) {
-            TRACE ;
-            Q_EMIT wiringReady();
-        }
-    } break;
-
-    default:
-
-        break;
-    }
     netReply->deleteLater();
 }
 
