@@ -34,11 +34,13 @@ Sync::Sync(QObject *parent) : NetworkWorker(parent),
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &Sync::processNetworkReply);
 }
 
+void Sync::setUID(cpuid_t accessUid)
+{
+    mSystemUuid = accessUid;
+}
 
 std::pair<std::string, bool> Sync::getSN(cpuid_t accessUid)
 {
-    mSystemUuid = accessUid;
-
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSn?uid=%0").arg(accessUid.c_str())), m_getSN);
 
     // Return Serial number when serial number already exist.
@@ -281,7 +283,7 @@ void Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QS
         auto data = mSystemUuid + mSerialNumber.toStdString();
 
         // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain the header compression context for the connection"
-        netRequest.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(data, QCryptographicHash::Sha256).toBase64());
+        netRequest.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(data, QCryptographicHash::Sha256).toHex());
     }
 
 

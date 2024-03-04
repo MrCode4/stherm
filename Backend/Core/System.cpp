@@ -243,7 +243,10 @@ void NUVE::System::setUpdateAvailable(bool updateAvailable) {
 
 std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
 {
-    return mSync->getSN(accessUid);
+    auto response = mSync->getSN(accessUid);
+    if (response.second)
+        setUID(accessUid);
+    return response;
 }
 
 void NUVE::System::getUpdate(QString softwareVersion)
@@ -706,6 +709,7 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
 void NUVE::System::setUID(cpuid_t uid)
 {
     mUID = uid;
+    mSync->setUID(uid);
     emit systemUIDChanged();
 }
 
