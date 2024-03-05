@@ -36,21 +36,6 @@ BasePageView {
         }
     }
 
-    //! Finish button
-    ToolButton {
-        parent: root.header.contentItem
-        contentItem: RoniaTextIcon {
-            text: FAIcons.check
-        }
-
-        visible: initialSetup
-        enabled: deviceController.deviceControllerCPP.system.serialNumber.length > 0
-
-        onClicked: {
-            uiSession.showHome();
-        }
-    }
-
     Text {
         anchors.centerIn: parent
 
