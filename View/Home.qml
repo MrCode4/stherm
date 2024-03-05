@@ -300,6 +300,8 @@ Control {
     Connections {
         target: deviceController.deviceControllerCPP
 
+        enabled: !uiSession.debug
+
         function onStartModeChanged(startMode: int) {
             // Temp
             deviceController.startMode = startMode;
