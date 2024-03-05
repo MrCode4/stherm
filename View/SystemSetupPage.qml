@@ -8,10 +8,11 @@ import Stherm
  * SystemSetupPage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
+    property bool initialSetup : false
 
     /* Object properties
      * ****************************************************************************************/
@@ -19,6 +20,23 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Finish button
+    ToolButton {
+        parent: root.header.contentItem
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        onClicked: {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
+                                              "uiSession": uiSession,
+                                              "initialSetup": root.initialSetup
+                                          });
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         width: Math.min(parent.width * 0.9, implicitWidth)
@@ -30,8 +48,8 @@ BasePageView {
 
             onClicked: {
                 //! Show corresponding page
-                if (_root.StackView.view) {
-                    _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                                   "uiSession": uiSession
                                               });
                 }
@@ -46,23 +64,23 @@ BasePageView {
                 //! Show corresponding page
                 switch(appModel.systemSetup.systemType) {
                     case AppSpec.Conventional:
-                        _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeTraditionPage.qml", {
-                                                      "uiSession": _root.uiSession
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeTraditionPage.qml", {
+                                                      "uiSession": root.uiSession
                                                   });
                         break;
                     case AppSpec.HeatPump:
-                        _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeHeatPumpPage.qml", {
-                                                      "uiSession": _root.uiSession
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeHeatPumpPage.qml", {
+                                                      "uiSession": root.uiSession
                                                   });
                         break;
                     case AppSpec.CoolingOnly:
-                        _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeCoolOnlyPage.qml", {
-                                                      "uiSession": _root.uiSession
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeCoolOnlyPage.qml", {
+                                                      "uiSession": root.uiSession
                                                   });
                         break;
                     case AppSpec.HeatingOnly:
-                        _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeHeatOnlyPage.qml", {
-                                                      "uiSession": _root.uiSession
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypeHeatOnlyPage.qml", {
+                                                      "uiSession": root.uiSession
                                                   });
                         break;
                 }
@@ -75,8 +93,8 @@ BasePageView {
 
             onClicked: {
                 //! Show corresponding page
-                if (_root.StackView.view) {
-                    _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
                                                   "uiSession": uiSession
                                               });
                 }
@@ -89,8 +107,8 @@ BasePageView {
 
             onClicked: {
                 //! Show corresponding page
-                if (_root.StackView.view) {
-                    _root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemRunDelayPage.qml", {
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemRunDelayPage.qml", {
                                                   "uiSession": uiSession
                                               });
                 }

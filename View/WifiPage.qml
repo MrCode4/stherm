@@ -8,7 +8,7 @@ import Stherm
  * WifiPage provides a ui to connect to a Wi-Fi network
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -17,6 +17,8 @@ BasePageView {
         return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.ssid !== "");
     }
 
+    property bool initialSetup: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Wi-Fi Settings"
@@ -24,8 +26,31 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+
+    //! Next button
+    ToolButton {
+        parent: root.header.contentItem
+
+        visible: initialSetup
+
+        contentItem: RoniaTextIcon {
+            text: FAIcons.arrowRight
+        }
+
+        // Enable when the serial number is correctly filled
+        enabled: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
+        onClicked: {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+            }
+        }
+    }
+
     RowLayout {
-        parent: _root.header.contentItem
+        parent: root.header.contentItem
 
         Switch {
             id: _wifiOnOffSw
@@ -177,8 +202,8 @@ BasePageView {
                 text: _wifisRepeater.currentItem?.wifi.connected ? "Forget" : "Manual"
                 onClicked: {
                     if (text === "Manual") {
-                        if (_root.StackView.view) {
-                            _root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiManualConnectPage.qml");
+                        if (root.StackView.view) {
+                            root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiManualConnectPage.qml");
                         }
                     } else {
                         if (uiSession) {
@@ -209,10 +234,10 @@ BasePageView {
                             var isSaved = NetworkInterface.isWifiSaved(wifi);
 
                             //! Open connect page
-                            if (_root.StackView.view) {
+                            if (root.StackView.view) {
                                 //! Note: it's better to stop wifi refreshing to prevent any deleted
                                 //! object access issues
-                                _root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
+                                root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
                                                               "uiSession": uiSession,
                                                               "wifi": _wifisRepeater.currentItem.wifi,
                                                               "minPasswordLength": minPasswordLength,
