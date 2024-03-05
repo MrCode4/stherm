@@ -18,6 +18,7 @@ const QString m_getSettings = QString("getSettings");
 const QString m_getWirings = QString("getWirings");
 const QString m_SerialNumberSetting = QString("NUVE/SerialNumber");
 const QString m_HasClientSetting = QString("NUVE/SerialNumberClient");
+const QString m_ContractorSettings = QString("NUVE/Contractor");
 const QString m_requestJob      = QString("requestJob");
 
 Sync::Sync(QObject *parent) : NetworkWorker(parent),
@@ -27,6 +28,7 @@ Sync::Sync(QObject *parent) : NetworkWorker(parent),
     QSettings setting;
     mHasClient            = setting.value(m_HasClientSetting).toBool();
     mSerialNumber         = setting.value(m_SerialNumberSetting).toString();
+    mContractorInfo       = setting.value(m_ContractorSettings).toMap();
 
 
     mNetManager = new QNetworkAccessManager();
@@ -82,6 +84,8 @@ QVariantMap Sync::getContractorInfo()
     timer.start(100000); // 100 seconds TODO
     loop.exec();
 
+    QSettings setting;
+    setting.setValue(m_ContractorSettings, mContractorInfo);
     return mContractorInfo;
 }
 
