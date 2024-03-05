@@ -16,7 +16,7 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
 
-    property bool initialSetup : false
+    property bool initialSetup : deviceController.deviceControllerCPP.system.serialNumber.length === 0
 
     /* Object properties
      * ****************************************************************************************/
@@ -25,17 +25,14 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    //! Finish button
-    ToolButton {
-        parent: root.header.contentItem
-        contentItem: RoniaTextIcon {
-            text: FAIcons.check
-        }
-        visible: initialSetup
+    //! Start a timer once they are in technician page and check hasClient (checkSN) every 5 seconds
+    Timer {
+        repeat: true
+        running: root.visible && initialSetup
+        interval: 5000
 
-        onClicked: {
+        onTriggered: {
             deviceController.deviceControllerCPP.checkSN();
-            if (backButtonCallback instanceof Function) backButtonCallback();
         }
     }
 
