@@ -19,7 +19,7 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Finish button (loads TouchTestPage)
+    //! Finish button
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {

@@ -318,7 +318,8 @@ Control {
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
                                            "uiSession": uiSession,
-                                           "backButtonVisible": false
+                                           "backButtonVisible": false,
+                                           "initialSetup": true
                                        });
                 }
             }
@@ -339,15 +340,6 @@ Control {
 
                 // Send  check contractor info
                 deviceController.deviceControllerCPP.checkContractorInfo();
-            } else {
-                if (deviceController.deviceControllerCPP.system.serialNumber !== "") {
-                    if (mainStackView && mainStackView.currentItem.objectName !== "TechnicianAccess") {
-                                       mainStackView.push("qrc:/Stherm/View/UserGuidePage.qml", {
-                                                              "uiSession": uiSession,
-                                                              "initialSetup" : true
-                                                          });
-                    }
-                }
             }
         }
     }

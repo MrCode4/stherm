@@ -17,6 +17,8 @@ BasePageView {
         return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.ssid !== "");
     }
 
+    property bool initialSetup: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Wi-Fi Settings"
@@ -25,15 +27,18 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    //! Next button (loads TouchTestPage)
+    //! Next button
     ToolButton {
         parent: root.header.contentItem
+
+        visible: initialSetup
+
         contentItem: RoniaTextIcon {
             text: FAIcons.arrowRight
         }
 
         // Enable when the serial number is correctly filled
-        enabled: deviceController.deviceControllerCPP.system.serialNumber.length > 0
+        enabled: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
         onClicked: {
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
