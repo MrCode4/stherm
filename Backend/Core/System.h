@@ -247,6 +247,9 @@ private:
 
     //! QElapsedTimer to measure download rate.
     QElapsedTimer mElapsedTimer;
+
+    qint64 mDownloadBytesReceived;
+    double mDownloadRateEMA;
 };
 
 } // namespace NUVE

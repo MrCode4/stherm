@@ -444,17 +444,28 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
     mElapsedTimer.restart();
 
+    mDownloadBytesReceived = 0;
+
+    mRemainingDownloadTime = "Connecting...";
+    mDownloadRateEMA = 0;
+    emit remainingDownloadTimeChanged();
+
     connect(reply, &QNetworkReply::downloadProgress, this, [=] (qint64 bytesReceived, qint64 bytesTotal) {
         double secTime = mElapsedTimer.elapsed() / 1000.0;
-        if (bytesReceived != bytesTotal && (secTime < 1.5 || bytesTotal == 0)) {
-            mRemainingDownloadTime = "Connecting...";
-            emit remainingDownloadTimeChanged();
+        if (secTime < 1.0 || bytesTotal == 0) {
             return;
         }
 
-        double rate = bytesReceived / (secTime > 0 ? secTime : 1.0);
-        auto remain = bytesTotal - bytesReceived;
-        int remainTime = rate < 0.001 ? 1000000 : qRound(remain / rate);
+        mElapsedTimer.restart();
+
+        double rate = (bytesReceived - mDownloadBytesReceived) / secTime;
+        mDownloadBytesReceived = bytesReceived;
+
+        // Adjust smoothing factor (0.2) as needed
+        mDownloadRateEMA = (0.2 * rate) + (0.8 * mDownloadRateEMA);
+
+        auto remain = bytesTotal - bytesReceived ;
+        int remainTime = mDownloadRateEMA < 0.001 ? 1000000 : qRound(remain / mDownloadRateEMA);
 
         QString unit = remainTime < 60 ? "second" : "minute";
 
