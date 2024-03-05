@@ -42,7 +42,8 @@ BasePageView {
         onClicked: {
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
-                                              "uiSession": uiSession
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
                                           });
             }
         }

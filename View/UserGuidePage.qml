@@ -16,7 +16,7 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
 
-    property bool initialSetup : deviceController.deviceControllerCPP.system.serialNumber.length === 0
+    property bool initialSetup : false
 
     /* Object properties
      * ****************************************************************************************/
@@ -33,6 +33,21 @@ BasePageView {
 
         onTriggered: {
             deviceController.deviceControllerCPP.checkSN();
+        }
+    }
+
+    //! Finish button
+    ToolButton {
+        parent: root.header.contentItem
+        contentItem: RoniaTextIcon {
+            text: FAIcons.check
+        }
+
+        visible: initialSetup
+        enabled: deviceController.deviceControllerCPP.system.serialNumber.length > 0
+
+        onClicked: {
+            uiSession.showHome();
         }
     }
 
