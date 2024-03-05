@@ -326,6 +326,23 @@ Control {
        }
     }
 
+    Timer {
+        id: startupTimer
+        repeat: false
+        running: false
+        interval: 100
+
+        onTriggered: {
+            // Active the screen saver
+            ScreenSaverManager.setActive();
+
+            uiSession.showHome();
+
+            // Send  check contractor info
+            deviceController.deviceControllerCPP.checkContractorInfo();
+        }
+    }
+
     //! Check SN mode
     Connections {
         target: deviceController.deviceControllerCPP
@@ -333,13 +350,8 @@ Control {
         function onSnModeChanged(snMode: bool) {
             // snMode != 2
             if (snMode) {
-                // Active the screen saver
-                ScreenSaverManager.setActive();
-
-                uiSession.showHome();
-
-                // Send  check contractor info
-                deviceController.deviceControllerCPP.checkContractorInfo();
+                // should be done by timer as can cause crash
+                startupTimer.start()
             }
         }
     }

@@ -54,7 +54,7 @@ std::pair<std::string, bool> Sync::getSN(cpuid_t accessUid)
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::snReady, &loop, &QEventLoop::quit);
 
-    timer.start(100000); // 100 seconds TODO
+    timer.start(20000); // 20 seconds TODO
     loop.exec();
 
     TRACE << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());

@@ -25,11 +25,11 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    //! Start a timer once they are in technician page and check hasClient (checkSN) every 5 seconds
+    //! Start a timer once they are in technician page and check hasClient (checkSN) every 30 seconds
     Timer {
         repeat: true
         running: root.visible && initialSetup
-        interval: 5000
+        interval: 30000
 
         onTriggered: {
             deviceController.deviceControllerCPP.checkSN();
