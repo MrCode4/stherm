@@ -232,7 +232,7 @@ BasePageView {
         }
     }
 
-    //! Update backlight for test
+    //! Update backlight for test and quick feedback without saving to model
     function applyOnline(){
         if (deviceController && completed) {
             deviceController.updateDeviceBacklight(_backlightOnOffSw.checked, liveColor);

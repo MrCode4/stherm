@@ -576,8 +576,8 @@ bool DeviceIOController::setBacklight(QVariantList data)
         }
 
         auto result = processNRFQueue();
-        TRACE_CHECK(false) << "send setBacklight request" << result;
-        return result;
+        TRACE_CHECK(result) << "send setBacklight request failed or waiting in queue";
+        return true;
     } else {
         qWarning() << "backlight not sent: data is empty or not consistent";
     }

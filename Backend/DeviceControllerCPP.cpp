@@ -125,11 +125,13 @@ DeviceControllerCPP::~DeviceControllerCPP() {}
 
 bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {
-    if (!isScheme) {
+    bool success = _deviceIO->setBacklight(data);
+
+    if (success && !isScheme) {
         mBacklightModelData = data;
     }
 
-    return _deviceIO->setBacklight(data);
+    return success;
 }
 
 bool DeviceControllerCPP::setSettings(QVariantList data)
