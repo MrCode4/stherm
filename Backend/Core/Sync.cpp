@@ -263,7 +263,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
             Q_EMIT contractorInfoReady();
             QString error = "Unable to fetch the Contarctor logo, Please check your internet connection: ";
             emit alert(error + errorString);
-            qWarning() << error << errorString ;
+            qWarning() << error << errorString;
         } else {
             QString error = "unknown method in sync processNetworkReply ";
             qWarning() << method << error << errorString ;

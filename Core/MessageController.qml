@@ -45,6 +45,7 @@ QtObject {
     function addNewMessageFromData(type, message, datetime)
     {
         if (!activeAlerts) {
+            console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
         }
 
@@ -64,6 +65,7 @@ QtObject {
     function addNewMessage(message: Message)
     {
         if (!activeAlerts) {
+            console.log("ignored message: ______________________________________\n", "message:", message, "\n----------------------------------------------");
             return;
         }
 
