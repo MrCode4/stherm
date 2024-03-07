@@ -27,6 +27,9 @@ public:
     void getSettings();
     void getWirings(cpuid_t accessUid);
     void requestJob(QString type);
+    void pushSettingsToServer(const QVariantMap &settings);
+
+    void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method) override;
 
 signals:
     void snReady();
@@ -39,7 +42,7 @@ signals:
 
 private slots:
     //! Process network replay
-    void processNetworkReply(QNetworkReply *netReply);
+    void processNetworkReply(QNetworkReply *netReply) override;
 
 private:
     /* Attributes

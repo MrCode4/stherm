@@ -15,6 +15,7 @@ const QString m_getSN             = QString("getSN");
 const QString m_getContractorInfo = QString("getContractorInfo");
 const QString m_getContractorLogo = QString("getContractorLogo");
 const QString m_getSettings = QString("getSettings");
+const QString m_setSettings = QString("setSettings");
 const QString m_getWirings = QString("getWirings");
 const QString m_SerialNumberSetting = QString("NUVE/SerialNumber");
 const QString m_HasClientSetting = QString("NUVE/SerialNumberClient");
@@ -132,6 +133,21 @@ void Sync::requestJob(QString type)
     sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_requestJob);
 }
 
+void Sync::pushSettingsToServer(const QVariantMap &settings)
+{
+    QJsonObject requestDataObj = QJsonObject::fromVariantMap(settings);
+    requestDataObj["sn"] = mSerialNumber;
+    requestDataObj["uid"] = QString::fromStdString(mSystemUuid);
+
+
+    QJsonDocument jsonDocument(requestDataObj);
+
+    QByteArray requestData = jsonDocument.toJson();
+
+
+    sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/update")), requestData, m_setSettings);
+}
+
 void Sync::processNetworkReply(QNetworkReply *netReply)
 {
     NetworkWorker::processNetworkReply(netReply);
@@ -238,7 +254,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 }
                 Q_EMIT contractorInfoReady();
             } else if (method == m_getSettings) {
-                TRACE;
+                TRACE << jsonDoc.toJson().toStdString().c_str();
                 Q_EMIT settingsLoaded();
             } else if (method == m_getWirings) {
                 TRACE ;
@@ -293,6 +309,27 @@ void Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QS
 
     // Post a request
     QNetworkReply *netReply = mNetManager->get(netRequest);
+    netReply->setProperty(m_methodProperty, method);
+    //    netReply->ignoreSslErrors();
+}
+
+void Sync::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method)
+{
+    // Prepare request
+    QNetworkRequest netRequest(mainUrl.resolved(relativeUrl));
+    netRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    netRequest.setRawHeader("accept", "application/json");
+
+    // set authentication
+    {
+        auto data = mSystemUuid + mSerialNumber.toStdString();
+
+        // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain the header compression context for the connection"
+        netRequest.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(data, QCryptographicHash::Sha256).toHex());
+    }
+
+    // Post a request
+    QNetworkReply *netReply = mNetManager->post(netRequest, postData);
     netReply->setProperty(m_methodProperty, method);
     //    netReply->ignoreSslErrors();
 }

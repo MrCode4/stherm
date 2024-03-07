@@ -273,6 +273,11 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     getUpdateInformation(true);
 }
 
+void NUVE::System::pushSettingsToServer(const QVariantMap &settings)
+{
+    mSync->pushSettingsToServer(settings);
+}
+
 QVariantMap NUVE::System::getContractorInfo() {
     return mSync->getContractorInfo();
 }
@@ -634,7 +639,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                     emit error("Unable to open file for writing");
                     break;
                 }
-                TRACE << data.toStdString().c_str();
+                TRACE << doc.toJson().toStdString().c_str();
 
                 file.write(data);
 

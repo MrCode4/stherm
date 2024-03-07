@@ -51,9 +51,10 @@ void NetworkWorker::processNetworkReply(QNetworkReply *netReply)
     // Handle Errors
     if (netReply->error() != QNetworkReply::NoError) {
         qDebug() << Q_FUNC_INFO <<__LINE__<< netReply->error()<<netReply->errorString();
-        const QJsonObject errObj = QJsonDocument::fromJson(netReply->readAll()).object();
+        const auto errdoc= QJsonDocument::fromJson(netReply->readAll());
+        const QJsonObject errObj = errdoc.object();
         QStringList errMsg = errObj.value("non_field_errors").toVariant().toStringList();
-        TRACE << errObj;
+        TRACE << errdoc.toJson().toStdString().c_str();
         // Remove url from error.
         QString error = netReply->errorString().remove(netReply->request().url().toString());
         //        emit logInError(errMsg.isEmpty() ? error : errMsg.join("\n"));

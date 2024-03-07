@@ -203,7 +203,62 @@ I_DeviceController {
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
         }
+        pushToServer();
+    }
 
+    function pushToServer() {
+        var send_data = {
+            "temp": device.requestedTemp,
+            "humidity": device.requestedHum,
+            "current_humidity": device.currentHum.toString(),
+            "current_temp": device.currentTemp.toString(),
+            "co2_id": device.co2,
+            "hold" : device._isHold,
+            "mode_id" : device.systemSetup.systemMode,
+            "fan" : {
+                "mode" : device.fan.mode,
+                "workingPerHour": device.fan.workingPerHour,
+            },
+            "backlight" : {
+                "on": device.backlight.on,
+                "hue": device.backlight.hue,
+                "value": device.backlight.value,
+                "shadeIndex": device.backlight.shadeIndex
+            },
+            "settings" : {
+                "brightness": device.setting.brightness,
+                "brightness_mode": device.setting.adaptiveBrightness ? 1 : 0,
+                "speaker": device.setting.volume,
+                "temperatureUnit": device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 1 : 0,
+                "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour12 ? 1 : 0,
+                "currentTimezone": device.setting.currentTimezone.length > 0 ? "device.setting.currentTimezone" : "UTC",
+                "effectDst": device.setting.effectDst,
+            },
+            "sensors" : [],
+            "schedules" : [],
+            "messages" : [],
+            "vacation" : {
+                "min_humidity" : device.vacation.hum_min,
+                "max_humidity": device.vacation.hum_max,
+                "min_temp": device.vacation.temp_min,
+                "max_temp": device.vacation.temp_max,
+                "is_enable": device.systemSetup.isVacation ? "t" : "f",
+            },
+            "system" : {
+                "type": device.systemSetup.systemType === 0 ? "traditional" : " traditional",
+                "coolStage": device.systemSetup.coolStage,
+                "heatStage": device.systemSetup.heatStage,
+                "heatPumpOBState": device.systemSetup.heatPumpOBState,
+                "heatPumpEmergency": device.systemSetup.heatPumpEmergency,
+                "systemRunDelay": device.systemSetup.systemRunDelay,
+                "systemAccessories": {
+                    "wire": device.systemSetup.systemAccessories.accessoriesWireType === 0 ? "Tw1" : "none",
+                    "mode": device.systemSetup.systemAccessories.accessoriesType,
+                }
+            },
+        }
+
+        deviceControllerCPP.pushSettingsToServer(send_data)
     }
 
     //! Set temperature to device (system) and update model.

@@ -83,6 +83,8 @@ public:
 
     Q_INVOKABLE void wifiConnected(bool hasInternet);
 
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
+
     //! Get Contractor Information
     QVariantMap getContractorInfo();
 

@@ -318,6 +318,11 @@ void DeviceControllerCPP::checkContractorInfo()
                                  info.value("tech").toString());
 }
 
+void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings)
+{
+    m_system->pushSettingsToServer(settings);
+}
+
 void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
 {
     if (_mainData_override == mainDataOverride)
