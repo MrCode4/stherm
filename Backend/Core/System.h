@@ -133,6 +133,10 @@ public:
     //! Mount Recovery directory
     Q_INVOKABLE bool mountRecoveryDirectory();
 
+    Q_INVOKABLE QString kernelBuildVersion();
+
+    Q_INVOKABLE QString rootfsBuildTimestamp();
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
