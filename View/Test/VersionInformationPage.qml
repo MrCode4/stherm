@@ -55,6 +55,7 @@ BasePageView {
         ]
 
         delegate: Item {
+            visible: modelData.value.length > 0
             width: ListView.view.width
             height: Style.delegateHeight * 0.8
             RowLayout {
