@@ -46,6 +46,8 @@ BasePageView {
         model: [
             {"key": "Uid",               "value": deviceController.deviceControllerCPP.deviceAPI.uid},
             {"key": "Software version",  "value": Application.version},
+            {"key": "kernel build",  "value": deviceController.deviceControllerCPP.system.kernelBuildVersion()},
+            {"key": "rootfs build",  "value": deviceController.deviceControllerCPP.system.rootfsBuildTimestamp()},
         ]
 
         delegate: Item {
