@@ -113,10 +113,7 @@ public:
 
     Q_INVOKABLE QString getNRF_SW() const;
 
-    Q_INVOKABLE QString getTI_HW() const
-    {
-        return _deviceIO->getTI_HW();
-    }
+    Q_INVOKABLE QString getTI_HW() const;
 
     Q_INVOKABLE QString getTI_SW() const;
 
