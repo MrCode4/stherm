@@ -1348,6 +1348,26 @@ void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
     }
 }
 
+QString DeviceIOController::getTI_SW() const
+{
+    return TI_SW;
+}
+
+QString DeviceIOController::getTI_HW() const
+{
+    return TI_HW;
+}
+
+QString DeviceIOController::getNRF_SW() const
+{
+    return NRF_SW;
+}
+
+QString DeviceIOController::getNRF_HW() const
+{
+    return NRF_HW;
+}
+
 double DeviceIOController::backlightFactor()
 {
     return m_backlightFactor;

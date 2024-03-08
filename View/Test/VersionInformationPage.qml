@@ -48,6 +48,10 @@ BasePageView {
             {"key": "Software version",  "value": Application.version},
             {"key": "kernel build",  "value": deviceController.deviceControllerCPP.system.kernelBuildVersion()},
             {"key": "rootfs build",  "value": deviceController.deviceControllerCPP.system.rootfsBuildTimestamp()},
+            {"key": "TI HW",  "value": deviceController.deviceControllerCPP.getTI_HW()},
+            {"key": "TI SW",  "value": deviceController.deviceControllerCPP.getTI_SW()},
+            {"key": "nRF HW",  "value": deviceController.deviceControllerCPP.getNRF_SW()},
+            {"key": "nRF SW",  "value": deviceController.deviceControllerCPP.getNRF_HW()},
         ]
 
         delegate: Item {

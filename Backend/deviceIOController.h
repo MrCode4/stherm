@@ -64,6 +64,14 @@ public:
 
     void sendRelays();
 
+    QString getNRF_HW() const;
+
+    QString getNRF_SW() const;
+
+    QString getTI_HW() const;
+
+    QString getTI_SW() const;
+
 signals:
     void mainDataReady(QVariantMap data);
     void tofDataReady(QVariantMap data);

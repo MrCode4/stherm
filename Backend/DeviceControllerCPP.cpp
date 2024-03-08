@@ -176,6 +176,26 @@ void DeviceControllerCPP::sendRelaysBasedOnModel()
     _deviceIO->sendRelays();
 }
 
+QString DeviceControllerCPP::getTI_SW() const
+{
+    return _deviceIO->getTI_SW();
+}
+
+QString DeviceControllerCPP::getTI_HW() const
+{
+    return _deviceIO->getTI_HW();
+}
+
+QString DeviceControllerCPP::getNRF_SW() const
+{
+    return _deviceIO->getNRF_SW();
+}
+
+QString DeviceControllerCPP::getNRF_HW() const
+{
+    return _deviceIO->getNRF_HW();
+}
+
 //! runDevice in Hardware.php
 void DeviceControllerCPP::startDevice()
 {
