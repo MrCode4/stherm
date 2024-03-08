@@ -43,6 +43,10 @@ Item {
 
         AlertNotifPopup {
             onClosed: {
+                if (message.type === Message.Type.SystemNotification) {
+                    messageController.removeMessage(message);
+                }
+
                 destroy(this);
             }
         }

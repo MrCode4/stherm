@@ -12,6 +12,7 @@ QSObject {
         Unknown,
         Alert,
         Notification,
+        SystemNotification, // like No Wi-Fi connection and No internet connection
         Error
     }
 

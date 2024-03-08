@@ -31,6 +31,9 @@ QtObject {
 
         onTriggered: {
             activeAlerts = true;
+
+            if (checkWifiConnection())
+                checkInternetConnection();
         }
 
     }
@@ -95,5 +98,36 @@ QtObject {
             // hasUpdateNotification is a UiSession property, update when updateAvailableChanged
             uiSession.hasUpdateNotification = deviceController.deviceControllerCPP.system.updateAvailable;
         }
+    }
+
+    property Connections wifiConnection: Connections {
+        target: NetworkInterface
+
+        function onHasInternetChanged() {
+           checkInternetConnection();
+        }
+
+        function onConnectedWifiChanged() {
+            checkWifiConnection();
+        }
+    }
+
+    function checkWifiConnection() : bool {
+        if (!NetworkInterface.connectedWifi) {
+            var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
+            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+            return false;
+        }
+
+        return true;
+    }
+
+    function checkInternetConnection() : bool {
+        if (!NetworkInterface.hasInternet) {
+            var message = "No internet connection. Please check your internet connection.";
+            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+            return false;
+        }
+        return true;
     }
 }
