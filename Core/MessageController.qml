@@ -120,6 +120,9 @@ QtObject {
         function onCo2Changed() {
             if (device.co2 > 4.0) {
                 airConditionWatcher.start();
+
+            } else {
+                airConditionWatcher.stop();
             }
         }
     }
@@ -131,15 +134,26 @@ QtObject {
         interval: 3 * 60 * 60 * 1000
 
         onTriggered: {
-
-            // Poor Quality range, We can use 3 hours average.
-            if (device.co2 > 4.0) {
-                var message = "Poor air quality detected. Please ventilate the room.";
-                addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
-            }
+            var message = "Poor air quality detected. Please ventilate the room.";
+            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
         }
     }
 
+    property Connections  deviceControllerConnection: Connections {
+        target: deviceController.deviceControllerCPP
+
+        function onAlert(alertLevel : int,
+                         alertType : int,
+                         alertMessage : string) {
+
+            console.log("Alert: ", alertLevel, alertType, alertMessage);
+
+            if (alertType === 12) {
+                addNewMessageFromData(Message.Type.Alert, alertMessage, (new Date()).toLocaleString());
+            }
+
+        }
+    }
 
     function checkWifiConnection() : bool {
         if (!NetworkInterface.connectedWifi) {

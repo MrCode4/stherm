@@ -35,6 +35,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setBacklight(colorData, true);
     });
 
+    connect(m_scheme, &Scheme::alert, this, [this]() {
+        emit alert(STHERM::AlertLevel::LVL_Emergency,
+                   STHERM::AlertTypes::Alert_temperature_not_reach,
+                   QString("System efficiency issue: temperature not reached in 2 hours"));
+    });
+
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
 

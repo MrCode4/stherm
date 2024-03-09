@@ -342,6 +342,7 @@ enum AlertTypes
     Alert_c02_high,//400 to 5000ppm
     Alert_wiring_not_connected,
     Alert_could_not_set_relay,
+    Alert_temperature_not_reach,
     NO_ALlert
 };
 
