@@ -220,7 +220,7 @@ BasePageView {
             //! Connect/Disconnect button
             ButtonInverted {
                 visible: _wifisRepeater.currentItem?.wifi ?? false
-                text: _wifisRepeater.currentItem?.wifi.connected ? "Disconnect" : "Connect"
+                text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
 
                 onClicked: {
                     if (text === "Connect") {

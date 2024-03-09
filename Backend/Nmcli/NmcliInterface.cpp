@@ -219,6 +219,17 @@ void NmcliInterface::addConnection(const QString& name,
         };
     }
 
+    //! Connect to this new connection if successfully added
+    connect(mProcess, &QProcess::finished, this, [&, name](int exitCode, QProcess::ExitStatus exitStatus) {
+        if (exitStatus == QProcess::NormalExit && exitCode == 0) {
+            mProcess->start(NC_COMMAND, {
+                                            NC_ARG_CONNECTION,
+                                            NC_ARG_UP,
+                                            name
+                                        });
+        }
+    }, Qt::SingleShotConnection);
+
     mProcess->start(NC_COMMAND, args);
 }
 
