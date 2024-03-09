@@ -345,6 +345,7 @@ Control {
 
     //! Check SN mode
     Connections {
+        id: startupSN
         target: deviceController.deviceControllerCPP
 
         function onSnModeChanged(snMode: bool) {
@@ -352,12 +353,16 @@ Control {
             if (snMode) {
                 // should be done by timer as can cause crash
                 startupTimer.start()
+                // disable fetching sn again
+                startupSN.enabled = false;
+                snChecker.enabled = false;
             }
         }
     }
 
     //! checkSN when the internet is connected.
     Connections {
+        id: snChecker
         target: NetworkInterface
 
         function onHasInternetChanged() {
