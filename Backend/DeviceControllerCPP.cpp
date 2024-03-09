@@ -203,10 +203,12 @@ void DeviceControllerCPP::startDevice()
         return;
     }
 
-    checkUpdateMode();
-
-    if (!checkSN())
+    if (!checkSN()){
         TRACE << "INITAIL SETUP";
+        return;
+    }
+
+    checkUpdateMode();
 }
 
 void DeviceControllerCPP::stopDevice()
