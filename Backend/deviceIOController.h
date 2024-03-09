@@ -84,6 +84,9 @@ signals:
                STHERM::AlertTypes alertType,
                QString alertMessage = QString());
 
+    void tiVersionUpdated();
+    void nrfVersionUpdated();
+
 private slots:
     void wtdExec();
     void wiringExec();

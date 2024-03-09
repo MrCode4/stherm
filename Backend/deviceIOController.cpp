@@ -682,6 +682,8 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
 
                 TRACE << " NRF_HW :" << NRF_HW << " NRF_SW :" << NRF_SW;
 
+                emit nrfVersionUpdated();
+
             } break;
 
             case STHERM::GetTOF: {
@@ -1051,6 +1053,8 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
             }
 
             TRACE << "TI_HW: " << TI_HW << " TI_SW: " << TI_SW;
+
+            emit tiVersionUpdated();
 
             sendTIRequest(tp);
 

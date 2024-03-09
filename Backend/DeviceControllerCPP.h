@@ -23,6 +23,12 @@ class DeviceControllerCPP  : public QObject
     Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
     Q_PROPERTY(NUVE::System *system MEMBER  m_system NOTIFY systemChanged)
     Q_PROPERTY(DeviceAPI    *deviceAPI MEMBER  _deviceAPI NOTIFY deviceAPIChanged)
+
+    Q_PROPERTY(QString    swTI  READ  getTI_SW  NOTIFY tiVersionChanged)
+    Q_PROPERTY(QString    hwTI  READ  getTI_HW  NOTIFY tiVersionChanged)
+    Q_PROPERTY(QString    swNRF READ  getNRF_SW NOTIFY nrfVersionChanged)
+    Q_PROPERTY(QString    hwNRF READ  getNRF_HW NOTIFY nrfVersionChanged)
+
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
     QML_ELEMENT
@@ -109,13 +115,13 @@ public:
     //! Reset relays based on model
     Q_INVOKABLE void sendRelaysBasedOnModel();
 
-    Q_INVOKABLE QString getNRF_HW() const;
+    QString getNRF_HW() const;
 
-    Q_INVOKABLE QString getNRF_SW() const;
+    QString getNRF_SW() const;
 
-    Q_INVOKABLE QString getTI_HW() const;
+    QString getTI_HW() const;
 
-    Q_INVOKABLE QString getTI_SW() const;
+    QString getTI_SW() const;
 
 Q_SIGNALS:
     /* Public Signals
@@ -137,6 +143,9 @@ Q_SIGNALS:
     void snModeChanged(bool snMode);
 
     void startModeChanged(int startMode);
+
+    void tiVersionChanged();
+    void nrfVersionChanged();
 
 private:
     // update main data and send data to scheme.
