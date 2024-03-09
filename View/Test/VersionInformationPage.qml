@@ -50,8 +50,8 @@ BasePageView {
             {"key": "rootfs build",  "value": deviceController.deviceControllerCPP.system.rootfsBuildTimestamp()},
             {"key": "TI HW",  "value": deviceController.deviceControllerCPP.getTI_HW()},
             {"key": "TI SW",  "value": deviceController.deviceControllerCPP.getTI_SW()},
-            {"key": "nRF HW",  "value": deviceController.deviceControllerCPP.getNRF_SW()},
-            {"key": "nRF SW",  "value": deviceController.deviceControllerCPP.getNRF_HW()},
+            {"key": "nRF HW",  "value": deviceController.deviceControllerCPP.getNRF_HW()},
+            {"key": "nRF SW",  "value": deviceController.deviceControllerCPP.getNRF_SW()},
         ]
 
         delegate: Item {
