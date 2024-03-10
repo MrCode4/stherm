@@ -147,10 +147,7 @@ QtObject {
                          alertMessage : string) {
 
             console.log("Alert: ", alertLevel, alertType, alertMessage);
-
-            if (alertType === 12) {
-                addNewMessageFromData(Message.Type.Alert, alertMessage, (new Date()).toLocaleString());
-            }
+            addNewMessageFromData(Message.Type.Alert, alertMessage, (new Date()).toLocaleString());
 
         }
     }

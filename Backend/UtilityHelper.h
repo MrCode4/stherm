@@ -346,6 +346,36 @@ enum AlertTypes
     NO_ALlert
 };
 
+static QString getAlertTypeString(AlertTypes alertType) {
+    switch (alertType) {
+    case Alert_temp_high:
+        return QString("Temperature is high");
+    case Alert_temp_low:
+        return QString("Temperature is low");
+    case Alert_Tvoc_high:
+        return QString("Tvoc is high");
+    case Alert_etoh_high:
+        return QString("etoh is high");
+    case Alert_iaq_high:
+        return QString("iaq is high");
+    case Alert_humidity_high:
+        return QString("Humidity is high");
+    case Alert_humidity_low:
+        return QString("Humidity is low");
+    case Alert_pressure_high:
+        return QString("Pressure is high");
+    case Alert_wiring_not_connected:
+        return QString("Wiring is not connected.");
+    case Alert_could_not_set_relay:
+        return QString("Could not set relay.");
+    case Alert_temperature_not_reach:
+        return QString("System efficiency issue: temperature not reached in 2 hours");
+
+    default:
+        return QString();
+    }
+}
+
 /**
  * @brief Enumeration for alert levels.
  */

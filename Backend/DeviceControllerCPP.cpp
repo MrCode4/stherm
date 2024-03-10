@@ -38,7 +38,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(m_scheme, &Scheme::alert, this, [this]() {
         emit alert(STHERM::AlertLevel::LVL_Emergency,
                    STHERM::AlertTypes::Alert_temperature_not_reach,
-                   QString("System efficiency issue: temperature not reached in 2 hours"));
+                   STHERM::getAlertTypeString(STHERM::Alert_temperature_not_reach));
     });
 
     // TODO should be loaded later for accounting previous session
@@ -74,6 +74,14 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         for (const auto &pair : data.toStdMap()) {
             _mainData.insert(pair.first, pair.second);
         }
+    });
+
+    connect(_deviceIO, &DeviceIOController::alert, this, [this](STHERM::AlertLevel alertLevel,
+                                                                STHERM::AlertTypes alertType,
+                                                                QString alertMessage) {
+        emit alert(STHERM::AlertLevel::LVL_Emergency,
+                   STHERM::AlertTypes::Alert_temperature_not_reach,
+                   alertMessage);
     });
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {

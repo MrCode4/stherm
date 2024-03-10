@@ -31,11 +31,6 @@ public:
     //! In OLD Code: ti: Line 494-515 / NRF: Line 1068-1089
     static STHERM::SIOPacket deserializeData(const QByteArray &serializeData);
 
-signals:
-    void alert(STHERM::AlertLevel alertLevel,
-               STHERM::AlertTypes alertType,
-               QString alertMessage = QString());
-
 private:
     STHERM::AQ_TH_PR_vals AQTHPRFromBytes(const QByteArray &bytes);
 };

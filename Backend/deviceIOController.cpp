@@ -1169,31 +1169,40 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
 {
     if (values.temp > m_p->throlds_aq.temp_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_high);
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_high,
+                   STHERM::getAlertTypeString(STHERM::Alert_temp_high));
 
     } else if (values.temp < m_p->throlds_aq.temp_low) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_low);
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_low,
+                   STHERM::getAlertTypeString(STHERM::Alert_temp_low));
 
     } else if (values.humidity > m_p->throlds_aq.humidity_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_high);
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_high,
+                   STHERM::getAlertTypeString(STHERM::Alert_humidity_high));
 
     } else if (values.humidity < m_p->throlds_aq.humidity_low) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_low);
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_low,
+                   STHERM::getAlertTypeString(STHERM::Alert_humidity_low));
 
     } else if (values.pressure > m_p->throlds_aq.pressure_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_pressure_high);
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_pressure_high,
+                   STHERM::getAlertTypeString(STHERM::Alert_pressure_high));
 
     } else if (values.c02 > m_p->throlds_aq.c02_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_c02_high);
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_c02_high,
+                   STHERM::getAlertTypeString(STHERM::Alert_c02_high));
 
     } else if (values.Tvoc > m_p->throlds_aq.Tvoc_high * 1000) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_Tvoc_high);
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_Tvoc_high,
+                   STHERM::getAlertTypeString(STHERM::Alert_Tvoc_high));
 
     } else if (values.etoh > m_p->throlds_aq.etoh_high * 100) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_etoh_high);
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_etoh_high,
+                   STHERM::getAlertTypeString(STHERM::Alert_etoh_high));
 
     } else if (values.iaq > m_p->throlds_aq.iaq_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_iaq_high);
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_iaq_high,
+                   STHERM::getAlertTypeString(STHERM::Alert_iaq_high));
     }
 }
 
