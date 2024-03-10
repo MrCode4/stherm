@@ -42,9 +42,9 @@ BasePageView {
         onClicked: {
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
-                                              "uiSession": uiSession,
+                                             "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
-                                          });
+                                         });
             }
         }
     }
@@ -169,7 +169,7 @@ BasePageView {
                     readonly property WifiDelegate currentItem: currentIndex > -2 && currentIndex < count
                                                                 ? currentIndex === -1 ? _connectedWifiDelegate
                                                                                       : itemAt(currentIndex)
-                                                                : null
+                    : null
 
                     model: NetworkInterface.connectedWifi
                            ? sortedWifis.filter((element, index) => element !== NetworkInterface.connectedWifi)
@@ -238,10 +238,10 @@ BasePageView {
                                 //! Note: it's better to stop wifi refreshing to prevent any deleted
                                 //! object access issues
                                 root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
-                                                              "uiSession": uiSession,
-                                                              "wifi": _wifisRepeater.currentItem.wifi,
-                                                              "minPasswordLength": minPasswordLength,
-                                                          })
+                                                             "uiSession": uiSession,
+                                                             "wifi": _wifisRepeater.currentItem.wifi,
+                                                             "minPasswordLength": minPasswordLength,
+                                                         })
                             }
                         }
                     } else {
@@ -306,10 +306,21 @@ BasePageView {
     Connections {
         target: NetworkInterface
 
-        function onErrorOccured(error, ssid)
+        function onIncorrectWifiPassword(wifi: WifiInfo)
         {
-            _errorMessageLbl.text = `${error} ${ssid ? "**" + ssid + "**" : ""}`;
-            _errorDrawer.open();
+            console.log('incorrect pass for: ', wifi.ssid);
+            //! Incorrect password entered
+            if (root.StackView.view && root.StackView.view.currentItem === root) {
+                var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
+
+                //! Note: it's better to stop wifi refreshing to prevent any deleted
+                //! object access issues
+                root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
+                                             "uiSession": uiSession,
+                                             "wifi": wifi,
+                                             "minPasswordLength": minPasswordLength,
+                                         })
+            }
         }
     }
 

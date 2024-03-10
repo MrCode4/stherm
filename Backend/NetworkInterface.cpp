@@ -37,6 +37,37 @@ NetworkInterface::NetworkInterface(QObject *parent)
         }
     });
 
+    connect(mNmcliObserver, &NmcliObserver::wifiNeedAuthentication, this, [&](const QString& ssid) {
+        mRequestedToConnectedWifi = nullptr;
+        //! Find wifi with this ssid
+        WifiInfo* wifi;
+        for (WifiInfo* wifi : mWifiInfos) {
+            if (wifi->mSsid == ssid) {
+                emit incorrectWifiPassword(wifi);
+                return;
+            }
+        }
+    });
+
+    connect(mNmcliInterface, &NmcliInterface::wifiConnectionAdded, this, [&](const auto& newCon) {
+        const QString ssid = newCon["ssid"].toString();
+        if (std::find_if(mWifiInfos.begin(), mWifiInfos.end(), [ssid](WifiInfo* a) {
+                return a->mSsid == ssid;
+            }) != mWifiInfos.end()) {
+            return;
+        }
+
+        WifiInfo* newWifi = new WifiInfo(
+            newCon["inUse"].toBool(),
+            newCon["ssid"].toString(),
+            newCon["bssid"].toString(),
+            newCon["signal"].toInt(),
+            newCon["security"].toString()
+            );
+        mWifiInfos.push_back(newWifi);
+        emit wifisChanged();
+    });
+
     connect(mNmcliObserver, &NmcliObserver::wifiForgotten, this, [this](const QString& ssid) {
         if (mConnectedWifiInfo && mConnectedWifiInfo->mSsid == ssid) {
             setConnectedWifiInfo(nullptr);
@@ -153,7 +184,7 @@ bool NetworkInterface::isWifiSaved(WifiInfo* wifiInfo)
         return false;
     }
 
-    return mNmcliInterface->hasWifiProfile(wifiInfo->mSsid, wifiInfo->mBssid);
+    return mNmcliInterface->hasWifiProfile(wifiInfo->mSsid);
 }
 
 void NetworkInterface::turnOn()
@@ -225,13 +256,6 @@ void NetworkInterface::checkHasInternet()
 void NetworkInterface::onErrorOccured(int error)
 {
     switch (error) {
-    case NmcliInterface::Error::ActivationFailed:
-        //! If there was a wifi requested to connect, forget it
-        if (mRequestedToConnectedWifi) {
-            forgetWifi(mRequestedToConnectedWifi);
-            mRequestedToConnectedWifi = nullptr;
-        }
-        break;
     default:
         qDebug() << Q_FUNC_INFO << __LINE__ << " nmcli Error: " << error;
         break;

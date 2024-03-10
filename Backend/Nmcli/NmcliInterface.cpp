@@ -50,7 +50,7 @@ void NmcliInterface::refreshWifis(bool rescan)
     mProcess->start(NC_COMMAND, args);
 }
 
-bool NmcliInterface::hasWifiProfile(const QString& ssid, const QString& bssid)
+bool NmcliInterface::hasWifiProfile(const QString& ssid)
 {
     QProcess process;
     process.setReadChannel(QProcess::StandardOutput);
@@ -64,12 +64,7 @@ bool NmcliInterface::hasWifiProfile(const QString& ssid, const QString& bssid)
                                   ssid
                               });
     waitLoop(&process, NC_WAIT_MSEC);
-    if (process.exitCode() == 0) {
-        //! Profile is saved
-        return process.readLine() == bssid + "\n";
-    }
-
-    return false;
+    return process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0;
 }
 
 void NmcliInterface::connectToWifi(const QString& bssid, const QString& password)
@@ -78,22 +73,50 @@ void NmcliInterface::connectToWifi(const QString& bssid, const QString& password
         return;
     }
 
-    //! Perform connection command
-    const QStringList args({
-        NC_ARG_DEVICE,
-        NC_ARG_WIFI,
-        NC_ARG_CONNECT,
-        bssid,
-        NC_ARG_PASSWORD,
-        password,
-    });
+    //! First check if connection is saved
+    if (hasWifiProfile(bssid)) {
+        //! Modify its password then connect as saved
+        connect(mProcess, &QProcess::finished, this,
+            [&, bssid](int exitCode, QProcess::ExitStatus exitStatus) {
+                if (exitStatus == QProcess::NormalExit && exitCode == 0) {
+                    //! Perform connection command
+                    const QStringList args({
+                        NC_ARG_CONNECTION,
+                        NC_ARG_UP,
+                        bssid,
+                    });
 
-    mProcess->start(NC_COMMAND, args);
+                    mProcess->start(NC_COMMAND, args);
+                }
+            });
+
+        const QStringList args({
+            NC_ARG_CONNECTION,
+            "modify",
+            bssid,
+            "802-11-wireless-security.psk",
+            password
+        });
+
+        mProcess->start(NC_COMMAND, args);
+    } else {
+        //! Perform connection command
+        const QStringList args({
+            NC_ARG_DEVICE,
+            NC_ARG_WIFI,
+            NC_ARG_CONNECT,
+            bssid,
+            NC_ARG_PASSWORD,
+            password,
+        });
+
+        mProcess->start(NC_COMMAND, args);
+    }
 }
 
 bool NmcliInterface::connectSavedWifi(const QString& ssid, const QString& bssid)
 {
-    if (!hasWifiProfile(ssid, bssid)) {
+    if (!hasWifiProfile(ssid)) {
         return false;
     }
 
@@ -220,15 +243,28 @@ void NmcliInterface::addConnection(const QString& name,
     }
 
     //! Connect to this new connection if successfully added
-    connect(mProcess, &QProcess::finished, this, [&, name](int exitCode, QProcess::ExitStatus exitStatus) {
-        if (exitStatus == QProcess::NormalExit && exitCode == 0) {
-            mProcess->start(NC_COMMAND, {
-                                            NC_ARG_CONNECTION,
-                                            NC_ARG_UP,
-                                            name
-                                        });
-        }
-    }, Qt::SingleShotConnection);
+    connect(mProcess, &QProcess::finished, this,
+        [&, name, ssid, password, security](int exitCode, QProcess::ExitStatus exitStatus) {
+            if (exitStatus == QProcess::NormalExit && exitCode == 0) {
+                QMap<QString, QVariant> newCon;
+                newCon["inUse"] = false;
+                newCon["bssid"] = "";
+                newCon["ssid"] = ssid;
+                newCon["mode"] = "";
+                newCon["chan"] = "";
+                newCon["rate"] = "";
+                newCon["signal"] = 100;
+                newCon["security"] = security;
+
+                emit wifiConnectionAdded(newCon);
+
+                mProcess->start(NC_COMMAND, {
+                                                NC_ARG_CONNECTION,
+                                                NC_ARG_UP,
+                                                name
+                                            });
+            }
+        }, Qt::SingleShotConnection);
 
     mProcess->start(NC_COMMAND, args);
 }

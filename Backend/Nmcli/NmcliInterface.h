@@ -66,7 +66,7 @@ public:
      * \param bssid The BSSID to make sure if retrived profile is for this ssid
      * \return
      */
-    bool    hasWifiProfile(const QString& ssid, const QString& bssid);
+    bool    hasWifiProfile(const QString& ssid);
 
     /*!
      * \brief connectToWifi Connects to a wifi network with the given \a bssid (or ssid)
@@ -171,6 +171,11 @@ signals:
      * \param wifis
      */
     void    wifiListRefereshed(WifiListMap wifis);
+
+    /*!
+     * \brief wifiConnectionAdded emitted when a new wifi profile is added manuall
+     */
+    void    wifiConnectionAdded(QMap<QString, QVariant>);
 
 
     /*!
