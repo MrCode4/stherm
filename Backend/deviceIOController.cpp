@@ -1211,7 +1211,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_fan_High,
                    STHERM::getAlertTypeString(STHERM::Alert_fan_High));
 
-    }  else if (fanSpeed > m_p->throlds_aq.fan_low) {
+    }  else if (fanSpeed < m_p->throlds_aq.fan_low) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_fan_low,
                    STHERM::getAlertTypeString(STHERM::Alert_fan_low));
     }

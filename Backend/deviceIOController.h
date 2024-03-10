@@ -94,7 +94,8 @@ private:
     void nrfConfiguration();
 
     //! Check alerts with AQ_TH_PR_vals
-    void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed);
+    //! fanSpeed default is 4000 to avoid any related alerts.
+    void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed = 4000);
 
     //! Process NRF response
     void processNRFResponse(STHERM::SIOPacket rxPacket);

@@ -80,8 +80,19 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                                                                 STHERM::AlertTypes alertType,
                                                                 QString alertMessage) {
         emit alert(STHERM::AlertLevel::LVL_Emergency,
-                   STHERM::AlertTypes::Alert_temperature_not_reach,
+                   alertType,
                    alertMessage);
+
+        switch (alertType) {
+        case STHERM::Alert_humidity_high:
+        case STHERM::Alert_humidity_low:
+        case STHERM::Alert_temp_high:
+        case STHERM::Alert_temp_low:
+            // mSystemSetup->systemMode = AppSpecCPP::SystemMode::Off;
+            break;
+        default:
+            break;
+        }
     });
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
