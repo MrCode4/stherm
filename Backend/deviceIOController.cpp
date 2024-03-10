@@ -784,7 +784,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 checkTOFRangeValue(RangeMilliMeter);
                 checkTOFLuminosity(Luminosity);
 
-                checkMainDataAlert(mainDataValues);
+                checkMainDataAlert(mainDataValues, fanSpeed);
 
                 // todo
                 //                if (!setSensorData(main_dev, rx_packet.DataArray, rx_packet.DataLen)) {
@@ -1166,7 +1166,7 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
     return m_tiConnection->sendRequest(packetBA);
 }
 
-void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
+void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed)
 {
     if (values.temp > m_p->throlds_aq.temp_high) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_high,
@@ -1191,6 +1191,9 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
     } else if (values.c02 > m_p->throlds_aq.c02_high) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_c02_high,
                    STHERM::getAlertTypeString(STHERM::Alert_c02_high));
+    } else if (values.c02 < m_p->throlds_aq.c02_low) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_c02_low,
+                   STHERM::getAlertTypeString(STHERM::Alert_c02_low));
 
     } else if (values.Tvoc > m_p->throlds_aq.Tvoc_high * 1000) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_Tvoc_high,
@@ -1203,6 +1206,14 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values)
     } else if (values.iaq > m_p->throlds_aq.iaq_high) {
         emit alert(STHERM::LVL_Emergency, STHERM::Alert_iaq_high,
                    STHERM::getAlertTypeString(STHERM::Alert_iaq_high));
+
+    } else if (fanSpeed > m_p->throlds_aq.fan_high) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_fan_High,
+                   STHERM::getAlertTypeString(STHERM::Alert_fan_High));
+
+    }  else if (fanSpeed > m_p->throlds_aq.fan_low) {
+        emit alert(STHERM::LVL_Emergency, STHERM::Alert_fan_low,
+                   STHERM::getAlertTypeString(STHERM::Alert_fan_low));
     }
 }
 
