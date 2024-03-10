@@ -147,7 +147,7 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
     }
 
     mRequestedToConnectedWifi = wifiInfo;
-    mNmcliInterface->connectToWifi(wifiInfo->mBssid, password);
+    mNmcliInterface->connectToWifi(wifiInfo->mSsid, password);
 }
 
 void NetworkInterface::connectSavedWifi(WifiInfo* wifiInfo)
@@ -299,12 +299,13 @@ void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>&
                 );
             wifiInfos.push_back(newWifi);
         } else {
+            (*wiInstance)->setProperty("ssid", wifi["ssid"].toString());
             (*wiInstance)->setProperty("connected", wifi["inUse"].toBool());
             (*wiInstance)->setProperty("strength", wifi["signal"].toInt());
             wifiInfos.push_back((*wiInstance));
         }
 
-        if (wifi["inUse"].toBool() && !anyWifiConnected) {
+        if (wifi["inUse"].toBool()) {
             anyWifiConnected = true;
             mConnectedWifiInfo = wifiInfos.back();
         }

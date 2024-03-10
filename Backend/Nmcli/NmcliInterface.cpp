@@ -88,7 +88,7 @@ void NmcliInterface::connectToWifi(const QString& bssid, const QString& password
 
                     mProcess->start(NC_COMMAND, args);
                 }
-            });
+            }, Qt::SingleShotConnection);
 
         const QStringList args({
             NC_ARG_CONNECTION,
