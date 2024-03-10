@@ -357,6 +357,7 @@ static QString getAlertTypeString(AlertTypes alertType) {
         return QString("etoh is high");
     case Alert_iaq_high:
         return QString("iaq is high");
+
     case Alert_humidity_high:
     case Alert_humidity_low:
         return QString("Humidity Sensor Malfunction\nPlease contact your contractor.");
