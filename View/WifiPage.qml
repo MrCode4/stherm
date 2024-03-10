@@ -27,6 +27,23 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
+    //! Once the network connection is established, the System Types page should automatically open,
+    Timer {
+        repeat: false
+        running: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
+
+        interval: 10000
+
+        onTriggered: {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+            }
+        }
+    }
+
     //! Next button
     ToolButton {
         parent: root.header.contentItem
