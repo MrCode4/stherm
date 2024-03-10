@@ -253,10 +253,10 @@ struct AQ_TH_PR_thld {
         Tvoc_high     = 50;
         etoh_high     = 70;
         iaq_high      = 40;
-        temp_high     = 60;
+        temp_high     = 125;
         temp_low      = -40;
-        humidity_high = 80;
-        humidity_low  = 10;
+        humidity_high = 100;
+        humidity_low  = 0;
     }
 
     uint16_t pressure_high;  ///< Pressure threshold high (up to 1200 hPa)
@@ -349,9 +349,8 @@ enum AlertTypes
 static QString getAlertTypeString(AlertTypes alertType) {
     switch (alertType) {
     case Alert_temp_high:
-        return QString("Temperature is high");
     case Alert_temp_low:
-        return QString("Temperature is low");
+        return QString("Temperature Sensor Malfunction\nPlease contact your contractor.");
     case Alert_Tvoc_high:
         return QString("Tvoc is high");
     case Alert_etoh_high:
@@ -359,9 +358,8 @@ static QString getAlertTypeString(AlertTypes alertType) {
     case Alert_iaq_high:
         return QString("iaq is high");
     case Alert_humidity_high:
-        return QString("Humidity is high");
     case Alert_humidity_low:
-        return QString("Humidity is low");
+        return QString("Humidity Sensor Malfunction\nPlease contact your contractor.");
     case Alert_pressure_high:
         return QString("Pressure is high");
     case Alert_wiring_not_connected:
