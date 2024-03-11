@@ -37,6 +37,7 @@ signals:
     void wiringReady();
     void contractorInfoReady();
     void settingsLoaded();
+    void settingsReady(QVariantMap settings);
     void messagesLoaded();
     void requestJobDone();
 

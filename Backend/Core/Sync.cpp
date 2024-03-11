@@ -295,7 +295,16 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 Q_EMIT contractorInfoReady();
             } else if (method == m_getSettings) {
                 TRACE << jsonDoc.toJson().toStdString().c_str();
+
                 Q_EMIT settingsLoaded();
+
+                if (jsonDoc.isObject()) {
+                    auto data = jsonDoc.object().value("data");
+                    if (data.isObject()){
+                        emit settingsReady(data.toObject().toVariantMap());
+                    }
+                }
+
             } else if (method == m_getMessages) {
                 TRACE << jsonDoc.toJson().toStdString().c_str();
                 Q_EMIT messagesLoaded();

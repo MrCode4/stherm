@@ -141,6 +141,8 @@ protected slots:
 
 signals:
     void snReady();
+    void settingsReady(QVariantMap settings);
+
 
     void latestVersionChanged();
     void logVersionChanged();

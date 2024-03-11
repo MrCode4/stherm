@@ -43,6 +43,27 @@ I_DeviceController {
         }
     }
 
+    property Connections sync: Connections {
+        target: deviceControllerCPP.system
+
+        function onSettingsReady(settings) {
+            // should we ignore on some cases?
+            console.log("loaded settings sn: ", settings.sn, "%%%%%%%%%%%%%%%%%%%%%%%%");
+            checkQRurl(settings.qr_url)
+
+            updateHold(settings.hold)
+            updateFanServer(settings.fan)
+            setVacationServer(settings.vacation)
+            setRequestedHumidity(settings.humidity)
+            setDesiredTemperature(settings.temp)
+            checkMessages(settings.messages)
+            checkSchedules(settings.schedule)
+            checkSensors(settings.sensors)
+            setSettingsServer(settings.setting)
+            setSystemSetupServer(settings.system)
+        }
+    }
+
     /* Object Properties
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {
@@ -117,6 +138,13 @@ I_DeviceController {
         return deviceControllerCPP.setBacklight(send_data);
     }
 
+    function updateFanServer(settings : var) {
+
+        console.log("updateFanSettings")
+        console.log(settings.mode, settings.workingPerHour)
+        console.log(settings.modesada)
+    }
+
     function updateFan(mode: int, workingPerHour: int)
     {
         console.log("starting rest for updateFan :", workingPerHour)
@@ -128,6 +156,12 @@ I_DeviceController {
             device.fan.mode = mode;
             device.fan.workingPerHour = workingPerHour;
         }
+    }
+
+    function setVacationServer(settings : var)
+    {
+        console.log("setVacationServer")
+        console.log(settings.min_humidity, settings.max_humidity, settings.min_temp, settings.max_temp, settings.is_enable)
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
@@ -206,6 +240,18 @@ I_DeviceController {
         pushToServer();
     }
 
+    function setSettingsServer(settings: var) {
+        console.log("setSettingsServer", settings.brightness, settings.brightness_mode
+                    , settings.currentTimezone, settings.effectDst, settings.speaker
+                    , settings.temperatureUnit, settings.timeFormat, settings.backlight)
+        setBacklightServer(settings.backlight)
+    }
+
+    function setBacklightServer(settings: var) {
+        console.log("setBacklightServer", settings.hue, settings.shadeIndex
+                    , settings.value, settings.on)
+    }
+
     function pushToServer() {
         var send_data = {
             "temp": device.requestedTemp,
@@ -261,6 +307,10 @@ I_DeviceController {
         deviceControllerCPP.pushSettingsToServer(send_data)
     }
 
+    function checkQRurl(url: var) {
+        console.log("checkQRurl", url)
+    }
+
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
         //! Apply temperature in backend
@@ -311,6 +361,26 @@ I_DeviceController {
         device.systemSetup.coolStage = coolStage;
         device.systemSetup.heatStage = heatStage;
         device.systemSetup.systemType = AppSpecCPP.Conventional;
+    }
+
+    function setSystemSetupServer(settings: var) {
+
+        console.log("setSystemSetupServer", settings.coolStage, settings.heatPumpEmergency
+                    , settings.heatPumpOBState, settings.heatStage, settings.systemRunDelay
+                    , settings.type, settings.systemAccessories.mode, settings.systemAccessories.wire)
+    }
+
+    function checkSensors(sensors: var) {
+        console.log("checkSensors", sensors.length)
+        sensors.forEach(sensor => console.log(sensor.location, sensor.name, sensor.type, sensor.uid, sensor.locationsd))
+    }
+
+    function checkSchedules(schedules: var) {
+        console.log("checkSchedules", schedules.length)
+    }
+
+    function checkMessages(messages: var) {
+        console.log("checkMessages", messages.length)
     }
 
     //! Read data from system with getMainData method.
