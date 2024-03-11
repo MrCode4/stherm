@@ -15,7 +15,9 @@ const QString m_getSN             = QString("getSN");
 const QString m_getContractorInfo = QString("getContractorInfo");
 const QString m_getContractorLogo = QString("getContractorLogo");
 const QString m_getSettings = QString("getSettings");
+const QString m_getMessages = QString("getMessages");
 const QString m_setSettings = QString("setSettings");
+const QString m_setAlerts = QString("setAlerts");
 const QString m_getWirings = QString("getWirings");
 const QString m_SerialNumberSetting = QString("NUVE/SerialNumber");
 const QString m_HasClientSetting = QString("NUVE/SerialNumberClient");
@@ -106,7 +108,24 @@ void Sync::getSettings()
 
     timer.start(100000); // 100 seconds TODO
     loop.exec();
+}
 
+void Sync::getMessages()
+{
+    if (mSerialNumber.isEmpty()) {
+        qWarning()   << "Sn is not ready! can not get messages!";
+        return;
+    }
+
+    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/messages?sn=%0").arg(mSerialNumber)), m_getMessages);
+
+    QEventLoop loop;
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    connect(this, &NUVE::Sync::messagesLoaded, &loop, &QEventLoop::quit);
+
+    timer.start(100000); // 100 seconds TODO
+    loop.exec();
 }
 
 void Sync::getWirings(cpuid_t accessUid)
@@ -148,6 +167,27 @@ void Sync::pushSettingsToServer(const QVariantMap &settings)
     sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/update")), requestData, m_setSettings);
 }
 
+void Sync::pushAlertToServer(const QVariantMap &settings)
+{
+    QJsonObject requestDataObj; //        = QJsonObject::fromVariantMap(settings);
+    requestDataObj["sn"] = mSerialNumber;
+
+    QJsonObject requestDataObjAlert;
+    requestDataObjAlert["alert_id"] = 1;
+
+    QJsonArray requestDataObjAlertArr;
+    requestDataObjAlertArr.append(requestDataObjAlert);
+    requestDataObj["alerts"] = requestDataObjAlertArr;
+
+    QJsonDocument jsonDocument(requestDataObj);
+
+    QByteArray requestData = jsonDocument.toJson();
+
+
+    TRACE << requestData.toStdString().c_str();
+    sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/alerts")), requestData, m_setAlerts);
+}
+
 void Sync::processNetworkReply(QNetworkReply *netReply)
 {
     NetworkWorker::processNetworkReply(netReply);
@@ -167,7 +207,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
         switch (netReply->operation()) {
         case QNetworkAccessManager::PostOperation: {
-            TRACE << dataRaw << jsonDocObj << dataValue << dataValue.isObject();
+            TRACE << method << dataRaw << jsonDocObj << dataValue << dataValue.isObject() << jsonDoc.toJson().toStdString().c_str();
 
         } break;
         case QNetworkAccessManager::GetOperation: {
@@ -256,6 +296,9 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
             } else if (method == m_getSettings) {
                 TRACE << jsonDoc.toJson().toStdString().c_str();
                 Q_EMIT settingsLoaded();
+            } else if (method == m_getMessages) {
+                TRACE << jsonDoc.toJson().toStdString().c_str();
+                Q_EMIT messagesLoaded();
             } else if (method == m_getWirings) {
                 TRACE ;
                 Q_EMIT wiringReady();
@@ -287,6 +330,10 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
         } else if (method == m_getSettings) {
             QString error = "Unable to fetch the settings, Please check your internet connection: ";
             Q_EMIT settingsLoaded();
+            qWarning() << error << errorString;
+        } else if (method == m_getMessages) {
+            QString error = "Unable to fetch the messages, Please check your internet connection: ";
+            Q_EMIT messagesLoaded();
             qWarning() << error << errorString;
         } else {
             QString error = "unknown method in sync processNetworkReply ";
