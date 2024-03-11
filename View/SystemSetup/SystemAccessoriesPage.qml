@@ -8,7 +8,7 @@ import Stherm
  * SystemAccessoriesPage provides a ui for controlling system accesories
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -18,41 +18,52 @@ BasePageView {
 
     property bool              isHumidifier:      systemAccessories.accessoriesType === AppSpecCPP.Humidifier
 
+    property bool initialSetup : false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Accessories"
 
     /* Children
      * ****************************************************************************************/
+    //! Next button
+    ToolButton {
+        parent: root.header.contentItem
+
+        visible: initialSetup
+
+        contentItem: RoniaTextIcon {
+            text: FAIcons.arrowRight
+        }
+
+        // Enable when the serial number is correctly filled
+        enabled: initialSetup
+        onClicked: {
+           updateModel();
+
+
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemRunDelayPage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+            }
+        }
+    }
+
     //! Confirm button
     ToolButton {
-        parent: _root.header.contentItem
+        parent: root.header.contentItem
         contentItem: RoniaTextIcon {
             text: "\uf00c" //! check icon
         }
 
+        visible: !initialSetup
+        enabled: !initialSetup
+
         onClicked: {
-            //! Apply settings and pop this from StackView
-            //! Apply settings here
-            var accTypeUI = (humidifierT1PWRD.checked || humidifierT1Short.checked || humidifierT2PWRD.checked) ?
-                            AppSpecCPP.Humidifier : AppSpecCPP.Dehumidifier;
+            updateModel();
 
-            var wireTypeUI = AppSpecCPP.None;
-
-            if (!noneChbox.checked) {
-                if (humidifierT1PWRD.checked || deHumidifierT1PWRD.checked) {
-                    wireTypeUI = AppSpecCPP.T1PWRD;
-
-                } else if (humidifierT2PWRD.checked || deHumidifierT2PWRD.checked) {
-                    wireTypeUI = AppSpecCPP.T2PWRD;
-
-                } else if (humidifierT1Short.checked || deHumidifierT1Short.checked) {
-                    wireTypeUI = AppSpecCPP.T1Short;
-
-                }
-            }
-
-            deviceController.setSystemAccesseories(accTypeUI, wireTypeUI);
             //! Also move out of this Page
             backButtonCallback();
         }
@@ -151,5 +162,30 @@ BasePageView {
             checked: systemAccessories.accessoriesWireType === AppSpecCPP.None
 
         }
+    }
+
+    //! Update model
+    function updateModel() {
+        //! Apply settings and pop this from StackView
+        //! Apply settings here
+        var accTypeUI = (humidifierT1PWRD.checked || humidifierT1Short.checked || humidifierT2PWRD.checked) ?
+                        AppSpecCPP.Humidifier : AppSpecCPP.Dehumidifier;
+
+        var wireTypeUI = AppSpecCPP.None;
+
+        if (!noneChbox.checked) {
+            if (humidifierT1PWRD.checked || deHumidifierT1PWRD.checked) {
+                wireTypeUI = AppSpecCPP.T1PWRD;
+
+            } else if (humidifierT2PWRD.checked || deHumidifierT2PWRD.checked) {
+                wireTypeUI = AppSpecCPP.T2PWRD;
+
+            } else if (humidifierT1Short.checked || deHumidifierT1Short.checked) {
+                wireTypeUI = AppSpecCPP.T1Short;
+
+            }
+        }
+
+        deviceController.setSystemAccesseories(accTypeUI, wireTypeUI);
     }
 }

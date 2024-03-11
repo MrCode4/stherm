@@ -12,6 +12,7 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    property bool initialSetup: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -137,6 +138,11 @@ BasePageView {
 
     function goToSystemTypePage()
     {
+        if (initialSetup) {
+            backButtonCallback();
+            return;
+        }
+
         if (_root.StackView.view) {
             //! Then Page is inside an StackView
             if (_root.StackView.view.currentItem == _root) {

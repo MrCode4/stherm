@@ -15,12 +15,15 @@ BasePageView {
 
     property int systemRunDelay: 1
 
+    property bool initialSetup : false
+
     /* Object properties
      * ****************************************************************************************/
     title: "System Run Delay"
 
     /* Children
      * ****************************************************************************************/
+
     //! Confirm button
     ToolButton {
         parent: root.header.contentItem
@@ -34,8 +37,11 @@ BasePageView {
                 deviceController.setSystemRunDelay(root.systemRunDelay)
             }
 
+            if (initialSetup) {
+                uiSession.showHome();
+
+            } else if (root.StackView.view) {
             //! pop this from StackView
-            if (root.StackView.view) {
                 root.StackView.view.pop()
             }
         }

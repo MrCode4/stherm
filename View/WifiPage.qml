@@ -36,7 +36,7 @@ BasePageView {
 
         onTriggered: {
             if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                               "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
                                           });
@@ -58,7 +58,7 @@ BasePageView {
         enabled: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
         onClicked: {
             if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                              "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
                                          });
