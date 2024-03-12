@@ -156,7 +156,6 @@ void Sync::pushSettingsToServer(const QVariantMap &settings)
 {
     QJsonObject requestDataObj = QJsonObject::fromVariantMap(settings);
     requestDataObj["sn"] = mSerialNumber;
-    requestDataObj["uid"] = QString::fromStdString(mSystemUuid);
 
 
     QJsonDocument jsonDocument(requestDataObj);
