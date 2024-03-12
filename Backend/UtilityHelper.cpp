@@ -141,6 +141,23 @@ int UtilityHelper::getGpioValue(int pinNumber)
     return result;
 }
 
+std::string convert_hex_to_string(const std::string& hex_value) {
+    // Remove the "0x" prefix (if present)
+    std::string value = hex_value.substr(2);
+
+    // Convert the hex string to a long long int (assuming 64-bit system)
+    std::stringstream ss;
+    ss << std::hex << value;
+    unsigned long long int integer_value;
+    ss >> integer_value;
+
+    // Format the integer as an 8-character string with leading zeros
+    std::stringstream formatted_string;
+    formatted_string << std::setfill('0') << std::setw(8) << std::hex << integer_value;
+
+    return formatted_string.str();
+}
+
 QString UtilityHelper::getCPUInfo() {
 
     QFile file("/sys/fsl_otp/HW_OCOTP_CFG1");
@@ -148,7 +165,9 @@ QString UtilityHelper::getCPUInfo() {
         TRACE << "Failed to open the CFG1 file.";
         return NULL;
     }
-    QString cfg1 = QByteArray::fromHex(file.readLine()).toHex().remove(0, 2);
+
+    auto line = file.readLine().trimmed();
+    QString cfg1 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
     file.close();
 
     QFile file0("/sys/fsl_otp/HW_OCOTP_CFG0");
@@ -156,7 +175,9 @@ QString UtilityHelper::getCPUInfo() {
         TRACE << "Failed to open the CFG0 file.";
         return NULL;
     }
-    QString cfg0 = QByteArray::fromHex(file0.readLine()).toHex().remove(0, 2);
+
+    line = file0.readLine().trimmed();
+    QString cfg0 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
     file0.close();
 
     QString serialNumberHex = cfg1 + cfg0;
