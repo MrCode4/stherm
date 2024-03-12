@@ -41,7 +41,7 @@ BasePageView {
 
         anchors.centerIn: parent
 
-        property string url: "\{\"hv\":\"01\",\"uid\":" + system.systemUID +"}"
+        property string url: "{\"hv\":\"01\",\"uid\":\"" + system.systemUID +"\"}"
 
         width: parent.width * 0.75
         height: width
