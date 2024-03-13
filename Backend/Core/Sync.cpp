@@ -300,9 +300,16 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 if (jsonDoc.isObject()) {
                     auto data = jsonDoc.object().value("data");
                     if (data.isObject()){
-                        emit settingsReady(data.toObject().toVariantMap());
+                        auto object = data.toObject();
+                        if (object.value("sn").toString() == mSerialNumber){
+                            Q_EMIT settingsReady(object.toVariantMap());
+                            break;
+                        } else {
+                            qWarning() << "Received settings belong to another device" << mSerialNumber << object.value("sn");
+                        }
                     }
                 }
+                qWarning() << "Received settings corrupted" << mSerialNumber ;
 
             } else if (method == m_getMessages) {
                 TRACE << jsonDoc.toJson().toStdString().c_str();

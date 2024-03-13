@@ -48,9 +48,8 @@ I_DeviceController {
 
         function onSettingsReady(settings) {
             // should we ignore on some cases?
-            console.log("loaded settings sn: ", settings.sn, "%%%%%%%%%%%%%%%%%%%%%%%%");
+            console.log("loaded settings sn: ", settings.sn, "%%%%%%%%%%%%%%%%%%%%%%%");
             checkQRurl(settings.qr_url)
-
             updateHold(settings.hold)
             updateFanServer(settings.fan)
             setVacationServer(settings.vacation)
@@ -141,8 +140,7 @@ I_DeviceController {
     function updateFanServer(settings : var) {
 
         console.log("updateFanSettings")
-        console.log(settings.mode, settings.workingPerHour)
-        console.log(settings.modesada)
+        updateFan(settings.mode, settings.workingPerHour)
     }
 
     function updateFan(mode: int, workingPerHour: int)
@@ -161,7 +159,8 @@ I_DeviceController {
     function setVacationServer(settings : var)
     {
         console.log("setVacationServer")
-        console.log(settings.min_humidity, settings.max_humidity, settings.min_temp, settings.max_temp, settings.is_enable)
+        setVacation(settings.min_temp, settings.max_temp, settings.min_humidity, settings.max_humidity)
+        setVacationOn(settings.is_enable) // showMainWindow TODO
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
@@ -175,8 +174,6 @@ I_DeviceController {
         device.vacation.temp_max = temp_max;
         device.vacation.hum_min  = hum_min;
         device.vacation.hum_max  = hum_max ;
-
-
     }
 
     function setSystemModeTo(systemMode: int)
@@ -241,15 +238,18 @@ I_DeviceController {
     }
 
     function setSettingsServer(settings: var) {
-        console.log("setSettingsServer", settings.brightness, settings.brightness_mode
-                    , settings.currentTimezone, settings.effectDst, settings.speaker
-                    , settings.temperatureUnit, settings.timeFormat, settings.backlight)
+        console.log("setSettingsServer")
+        setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
+                    settings.timeFormat, false, settings.brightness_mode)
+        device.setting.effectDst = settings.effectDst;
+        device.setting.currentTimezone = settings.currentTimezone;
         setBacklightServer(settings.backlight)
     }
 
     function setBacklightServer(settings: var) {
-        console.log("setBacklightServer", settings.hue, settings.shadeIndex
-                    , settings.value, settings.on)
+        console.log("setBacklightServer")
+        updateBacklight(settings.on, settings.hue, settings.value,
+                        settings.shadeIndex)
     }
 
     function pushToServer() {
@@ -258,7 +258,7 @@ I_DeviceController {
             "humidity": device.requestedHum,
             "current_humidity": device.currentHum.toString(),
             "current_temp": device.currentTemp.toString(),
-            "co2_id": device.co2,
+            "co2_id": device._co2_id + 1,
             "hold" : device._isHold,
             "mode_id" : device.systemSetup.systemMode,
             "fan" : {
@@ -277,7 +277,7 @@ I_DeviceController {
                 "speaker": device.setting.volume,
                 "temperatureUnit": device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 1 : 0,
                 "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour12 ? 1 : 0,
-                "currentTimezone": device.setting.currentTimezone.length > 0 ? "device.setting.currentTimezone" : "UTC",
+                "currentTimezone": device.setting.currentTimezone.length > 0 ? device.setting.currentTimezone : "UTC",
                 "effectDst": device.setting.effectDst,
             },
             "sensors" : [],
@@ -303,6 +303,46 @@ I_DeviceController {
                 }
             },
         }
+
+        device.schedules.forEach(schedule =>
+                                 {
+                                     send_data.schedules.push(
+                                         {
+                                             "is_enable": schedule.enable,
+                                             "name": schedule.name,
+                                             "type_id": schedule.type,
+                                             "start_time": schedule.startTime,
+                                             "end_time": schedule.endTime,
+                                             "temp": schedule.temprature,
+                                             "humidity": schedule.humidity,
+                                             "dataSource": schedule.dataSource,
+                                             "weekdays": schedule.repeats.split(',')
+                                         })
+                                 })
+
+        device.messages.forEach(message =>
+                                 {
+                                     send_data.messages.push(
+                                         {
+                                             "icon": message.icon,
+                                             "message": message.message,
+                                             "type": message.type,
+                                             "isRead": message.isRead,
+                                             "datetime": message.datetime,
+                                         })
+                                 })
+
+        device._sensors.forEach(sensor =>
+                                 {
+                                     send_data.sensors.push(
+                                         {
+                                             "name": sensor.name,
+                                             "location": sensor.location === 0 ? "Office" : "Bedroom", // string
+                                             "type": sensor.type === 0 ? "OnBoard" : "Wireless", //string
+                                             "uid": "213137"
+                                         })
+                                 })
+
 
         deviceControllerCPP.pushSettingsToServer(send_data)
     }
@@ -365,9 +405,17 @@ I_DeviceController {
 
     function setSystemSetupServer(settings: var) {
 
-        console.log("setSystemSetupServer", settings.coolStage, settings.heatPumpEmergency
-                    , settings.heatPumpOBState, settings.heatStage, settings.systemRunDelay
-                    , settings.type, settings.systemAccessories.mode, settings.systemAccessories.wire)
+        console.log("setSystemSetupServer")
+        device.systemSetup.heatPumpEmergency = settings.heatPumpEmergency;
+        device.systemSetup.heatStage = settings.heatStage;
+        device.systemSetup.coolStage = settings.coolStage;
+        device.systemSetup.heatPumpOBState = settings.heatPumpOBState;
+        device.systemSetup.systemRunDelay = settings.systemRunDelay;
+        setSystemAccesseoriesServer(settings.systemAccessories)
+        if (settings.type === "traditional")
+            setSystemTraditional(settings.coolStage, settings.heatStage);
+        else
+            ;// TODO
     }
 
     function checkSensors(sensors: var) {
@@ -405,6 +453,10 @@ I_DeviceController {
         // TODO should be updated to inform the logics
 
         device._isHold = isHold;
+    }
+
+    function setSystemAccesseoriesServer(settings: var) {
+        setSystemAccesseories(settings.mode, settings.wire);
     }
 
     function setSystemAccesseories(accType: int, wireType: int) {

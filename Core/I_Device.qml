@@ -29,6 +29,8 @@ QSObject {
     //! CO2 Sensor (Air Quality)
     property real           co2:            0.0
 
+    property int           _co2_id: co2 < 2.9 ? 0 : co2 > 4 ? 2 : 1
+
     //! TOF: Time of flight (distance sensor)
     property real           tof:            0.0
 
