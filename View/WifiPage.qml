@@ -29,12 +29,13 @@ BasePageView {
 
     //! Once the network connection is established, the System Types page should automatically open,
     Timer {
+        property bool once : false
+
         repeat: false
-        running: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
-
+        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
         interval: 10000
-
         onTriggered: {
+            once = true;
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                               "uiSession": uiSession,
