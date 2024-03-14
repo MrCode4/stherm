@@ -35,7 +35,8 @@ public:
         Conventional = 0,
         HeatPump,
         CoolingOnly,
-        HeatingOnly
+        HeatingOnly,
+        SysTUnknown
     };
     Q_ENUM(SystemType)
 
