@@ -60,8 +60,11 @@ public slots:
         QFile file(fileName);
         if (!file.open(QFile::ReadOnly))                    { return ""; }
 
+        auto data = file.readAll();
+        if (data.isNull() || data.isEmpty())                { return ""; }
+
         // File is closed automatically when if goes out of scope
-        return file.readAll();
+        return data;
     }
 
     //! Reads data from file with fileUrl, empty if failed
