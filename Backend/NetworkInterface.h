@@ -23,7 +23,6 @@ class WifiInfo : public QObject
     Q_PROPERTY(QString  bssid           MEMBER mBssid           NOTIFY bssidChanged)
     Q_PROPERTY(QString  security        MEMBER mSecurity        NOTIFY securityChanged)
     QML_ELEMENT
-    QML_UNCREATABLE("WifiInfo cannot be created from QML.")
 
 public:
     explicit WifiInfo(QObject* parent=nullptr) : QObject(parent) {}
@@ -149,6 +148,8 @@ signals:
     //! \param ssid
     //!
     void                errorOccured(QString error, QString ssid);
+
+    void                incorrectWifiPassword(WifiInfo* wifi);
 
     /* Private attributes
      * ****************************************************************************************/

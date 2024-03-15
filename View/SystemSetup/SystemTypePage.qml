@@ -12,13 +12,38 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
+    property bool initialSetup: false
 
     /* Object properties
      * ****************************************************************************************/
     title: "System Type"
+    backButtonVisible: false
 
     /* Children
      * ****************************************************************************************/
+
+    //! Next button
+    ToolButton {
+        parent: root.header.contentItem
+
+        visible: initialSetup
+
+        contentItem: RoniaTextIcon {
+            text: FAIcons.arrowRight
+        }
+
+        // Enable when the serial number is correctly filled
+        enabled: initialSetup
+        onClicked: {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         width: parent.width * 0.5
@@ -88,6 +113,8 @@ BasePageView {
 
         SystemTypeTraditionPage {
             uiSession: root.uiSession
+            initialSetup: root.initialSetup
+
         }
     }
 
@@ -96,6 +123,7 @@ BasePageView {
 
         SystemTypeHeatPumpPage {
             uiSession: root.uiSession
+            initialSetup: root.initialSetup
         }
     }
 
@@ -104,6 +132,7 @@ BasePageView {
 
         SystemTypeCoolOnlyPage {
             uiSession: root.uiSession
+            initialSetup: root.initialSetup
         }
     }
 
@@ -112,6 +141,7 @@ BasePageView {
 
         SystemTypeHeatOnlyPage {
             uiSession: root.uiSession
+            initialSetup: root.initialSetup
         }
     }
 }

@@ -15,12 +15,40 @@ BasePageView {
 
     property int systemRunDelay: 1
 
+    property bool initialSetup : false
+
     /* Object properties
      * ****************************************************************************************/
     title: "System Run Delay"
 
     /* Children
      * ****************************************************************************************/
+
+    //! Next button
+    ToolButton {
+        parent: root.header.contentItem
+
+
+        contentItem: RoniaTextIcon {
+            text: FAIcons.arrowRight
+        }
+
+        visible: initialSetup
+        // Enable when the serial number is correctly filled
+        enabled: initialSetup
+
+        onClicked: {
+           updateModel();
+
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+            }
+        }
+    }
+
     //! Confirm button
     ToolButton {
         parent: root.header.contentItem
@@ -28,14 +56,14 @@ BasePageView {
             text: "\uf00c" //! check icon
         }
 
-        onClicked: {
-            //! Apply settings
-            if (deviceController) {
-                deviceController.setSystemRunDelay(root.systemRunDelay)
-            }
+        visible: !initialSetup
+        enabled: !initialSetup
 
-            //! pop this from StackView
+        onClicked: {
+            updateModel()
+
             if (root.StackView.view) {
+                //! pop this from StackView
                 root.StackView.view.pop()
             }
         }
@@ -79,6 +107,13 @@ BasePageView {
                         systemRunDelay = 5;
                 }
             }
+        }
+    }
+
+    function updateModel() {
+        //! Apply settings
+        if (deviceController) {
+            deviceController.setSystemRunDelay(root.systemRunDelay)
         }
     }
 }

@@ -4,7 +4,7 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     : QSObjectCpp{parent}
 {
     // defaults
-    systemType = AppSpecCPP::SystemType::Conventional;
+    systemType = AppSpecCPP::SystemType::SysTUnknown;
 
     heatPumpOBState = 0;
 

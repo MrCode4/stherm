@@ -27,6 +27,24 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
+    //! Once the network connection is established, the System Types page should automatically open,
+    Timer {
+        property bool once : false
+
+        repeat: false
+        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
+        interval: 10000
+        onTriggered: {
+            once = true;
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+            }
+        }
+    }
+
     //! Next button
     ToolButton {
         parent: root.header.contentItem
@@ -41,10 +59,10 @@ BasePageView {
         enabled: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
         onClicked: {
             if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetupPage.qml", {
-                                              "uiSession": uiSession,
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                             "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
-                                          });
+                                         });
             }
         }
     }
@@ -169,7 +187,7 @@ BasePageView {
                     readonly property WifiDelegate currentItem: currentIndex > -2 && currentIndex < count
                                                                 ? currentIndex === -1 ? _connectedWifiDelegate
                                                                                       : itemAt(currentIndex)
-                                                                : null
+                    : null
 
                     model: NetworkInterface.connectedWifi
                            ? sortedWifis.filter((element, index) => element !== NetworkInterface.connectedWifi)
@@ -220,7 +238,7 @@ BasePageView {
             //! Connect/Disconnect button
             ButtonInverted {
                 visible: _wifisRepeater.currentItem?.wifi ?? false
-                text: _wifisRepeater.currentItem?.wifi.connected ? "Disconnect" : "Connect"
+                text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
 
                 onClicked: {
                     if (text === "Connect") {
@@ -238,10 +256,10 @@ BasePageView {
                                 //! Note: it's better to stop wifi refreshing to prevent any deleted
                                 //! object access issues
                                 root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
-                                                              "uiSession": uiSession,
-                                                              "wifi": _wifisRepeater.currentItem.wifi,
-                                                              "minPasswordLength": minPasswordLength,
-                                                          })
+                                                             "uiSession": uiSession,
+                                                             "wifi": _wifisRepeater.currentItem.wifi,
+                                                             "minPasswordLength": minPasswordLength,
+                                                         })
                             }
                         }
                     } else {
@@ -306,10 +324,21 @@ BasePageView {
     Connections {
         target: NetworkInterface
 
-        function onErrorOccured(error, ssid)
+        function onIncorrectWifiPassword(wifi: WifiInfo)
         {
-            _errorMessageLbl.text = `${error} ${ssid ? "**" + ssid + "**" : ""}`;
-            _errorDrawer.open();
+            console.log('incorrect pass for: ', wifi.ssid);
+            //! Incorrect password entered
+            if (root.StackView.view && root.StackView.view.currentItem === root) {
+                var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
+
+                //! Note: it's better to stop wifi refreshing to prevent any deleted
+                //! object access issues
+                root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
+                                             "uiSession": uiSession,
+                                             "wifi": wifi,
+                                             "minPasswordLength": minPasswordLength,
+                                         })
+            }
         }
     }
 

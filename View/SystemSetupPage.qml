@@ -20,22 +20,6 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Finish button
-    ToolButton {
-        parent: root.header.contentItem
-        contentItem: RoniaTextIcon {
-            text: FAIcons.check
-        }
-
-        onClicked: {
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
-                                              "uiSession": uiSession,
-                                              "initialSetup": root.initialSetup
-                                          });
-            }
-        }
-    }
 
     ColumnLayout {
         anchors.centerIn: parent
