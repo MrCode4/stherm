@@ -24,7 +24,7 @@ public:
     std::pair<std::string, bool> getSN();
 
     QVariantMap getContractorInfo();
-    void getSettings();
+    bool getSettings();
     void getMessages();
     void getWirings(cpuid_t accessUid);
     void requestJob(QString type);
@@ -42,6 +42,9 @@ signals:
     void requestJobDone();
 
     void alert(QString msg);
+
+    void pushSuccess();
+    void pushFailed();
 
 private slots:
     //! Process network replay

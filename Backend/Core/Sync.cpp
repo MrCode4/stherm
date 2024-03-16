@@ -92,11 +92,11 @@ QVariantMap Sync::getContractorInfo()
     return mContractorInfo;
 }
 
-void Sync::getSettings()
+bool Sync::getSettings()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning()   << "Sn is not ready! can not get settings!";
-        return;
+        return false;
     }
 
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSettings?sn=%0").arg(mSerialNumber)), m_getSettings);
@@ -105,9 +105,13 @@ void Sync::getSettings()
     QTimer timer;
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit);
+    connect(this, &NUVE::Sync::settingsReady, &loop, [&loop] {
+        loop.setProperty("success", true);
+    });
 
-    timer.start(100000); // 100 seconds TODO
+    timer.start(3000); // 100 seconds TODO
     loop.exec();
+    return loop.property("success").toBool();
 }
 
 void Sync::getMessages()
@@ -208,6 +212,10 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
         case QNetworkAccessManager::PostOperation: {
             TRACE << method << dataRaw << jsonDocObj << dataValue << dataValue.isObject() << jsonDoc.toJson().toStdString().c_str();
 
+            if (method == m_setSettings) {
+                Q_EMIT pushSuccess();
+            }
+
         } break;
         case QNetworkAccessManager::GetOperation: {
             TRACE << dataValue.isObject() << netReply->property(m_methodProperty).toString();
@@ -295,7 +303,6 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
             } else if (method == m_getSettings) {
                 TRACE << jsonDoc.toJson().toStdString().c_str();
 
-                Q_EMIT settingsLoaded();
 
                 if (jsonDoc.isObject()) {
                     auto data = jsonDoc.object().value("data");
@@ -309,6 +316,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                         }
                     }
                 }
+                Q_EMIT settingsLoaded();
                 qWarning() << "Received settings corrupted" << mSerialNumber ;
 
             } else if (method == m_getMessages) {
@@ -350,6 +358,10 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
             QString error = "Unable to fetch the messages, Please check your internet connection: ";
             Q_EMIT messagesLoaded();
             qWarning() << error << errorString;
+        } else if (method == m_setSettings) {
+            QString error = "Unable to push the settings to server, Please check your internet connection: ";
+            qWarning() << error << errorString;
+            Q_EMIT pushFailed();
         } else {
             QString error = "unknown method in sync processNetworkReply ";
             qWarning() << method << error << errorString ;

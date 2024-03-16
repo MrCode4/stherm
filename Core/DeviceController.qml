@@ -61,6 +61,31 @@ I_DeviceController {
             setSettingsServer(settings.setting)
             setSystemSetupServer(settings.system)
         }
+
+        function onPushFailed() {
+            // start a timer to push again
+        }
+    }
+
+    property Timer  settingsLoader: Timer {
+        repeat: true;
+        running: false;
+        interval: 5000;
+        onTriggered:
+        {
+            if (ScreenSaverManager.state !== 3){
+                return;
+            }
+            if (!deviceControllerCPP.system.fetchSettings()) {
+                interval = interval * 2;
+                if (interval > 60000)
+                    interval = 60000;
+                console.log("fetching failed, backing off to ", interval)
+            } else {
+              interval = 5000;
+                console.log("fetching success, back to ", interval)
+            }
+        }
     }
 
     /* Object Properties
@@ -92,6 +117,8 @@ I_DeviceController {
        if (!deviceControllerCPP.setSettings(send_data)){
            console.warn("setting failed");
        }
+
+       settingsLoader.start();
     }
 
     onStopDeviceRequested: {
@@ -234,15 +261,15 @@ I_DeviceController {
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
         }
-        pushToServer();
-    }
 
+        //pushToServer();
+    }
     function setSettingsServer(settings: var) {
         console.log("setSettingsServer")
         setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
                     settings.timeFormat, false, settings.brightness_mode)
-        device.setting.effectDst = settings.effectDst;
         device.setting.currentTimezone = settings.currentTimezone;
+        device.setting.effectDst = settings.effectDst;
         setBacklightServer(settings.backlight)
     }
 
