@@ -215,6 +215,42 @@ bool  NUVE::System::mountRecoveryDirectory()
     return false;
 }
 
+QString NUVE::System::kernelBuildVersion()
+{
+    QProcess process;
+
+    // Set the command to "uname" with the argument "-v"
+    process.start("uname", QStringList() << "-v");
+
+    // Wait for the process to finish
+    if (process.waitForFinished()) {
+        // Read the output of the process
+        QByteArray result = process.readAllStandardOutput();
+        QString response(result);
+
+        TRACE << "Response:" << response;
+
+        return response;
+
+    } else {
+        // Handle errors
+        TRACE << "Error:" << process.errorString();
+    }
+
+    return QString();
+}
+
+QString NUVE::System::rootfsBuildTimestamp()
+{
+    QFile rootfsFile("/etc/timestamp");
+
+    if (rootfsFile.open(QIODevice::ReadOnly)) {
+        return rootfsFile.readAll();
+    }
+
+    return QString();
+}
+
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
 {
 #ifdef __unix__

@@ -64,6 +64,14 @@ public:
 
     void sendRelays();
 
+    QString getNRF_HW() const;
+
+    QString getNRF_SW() const;
+
+    QString getTI_HW() const;
+
+    QString getTI_SW() const;
+
 signals:
     void mainDataReady(QVariantMap data);
     void tofDataReady(QVariantMap data);
@@ -75,6 +83,9 @@ signals:
     void alert(STHERM::AlertLevel alertLevel,
                STHERM::AlertTypes alertType,
                QString alertMessage = QString());
+
+    void tiVersionUpdated();
+    void nrfVersionUpdated();
 
 private slots:
     void wtdExec();

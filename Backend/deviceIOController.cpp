@@ -682,6 +682,8 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
 
                 TRACE << " NRF_HW :" << NRF_HW << " NRF_SW :" << NRF_SW;
 
+                emit nrfVersionUpdated();
+
             } break;
 
             case STHERM::GetTOF: {
@@ -1052,6 +1054,8 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
 
             TRACE << "TI_HW: " << TI_HW << " TI_SW: " << TI_SW;
 
+            emit tiVersionUpdated();
+
             sendTIRequest(tp);
 
             TRACE << "***** Ti  - Get_addr packet sent to ti *****";
@@ -1346,6 +1350,26 @@ void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
             TRACE_CHECK(false) << (QString("Error: setBrightness (Brightness: %0)").arg(luminosity));
         }
     }
+}
+
+QString DeviceIOController::getTI_SW() const
+{
+    return TI_SW;
+}
+
+QString DeviceIOController::getTI_HW() const
+{
+    return TI_HW;
+}
+
+QString DeviceIOController::getNRF_SW() const
+{
+    return NRF_SW;
+}
+
+QString DeviceIOController::getNRF_HW() const
+{
+    return NRF_HW;
 }
 
 double DeviceIOController::backlightFactor()

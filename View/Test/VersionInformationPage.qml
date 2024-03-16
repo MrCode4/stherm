@@ -46,19 +46,33 @@ BasePageView {
         model: [
             {"key": "Uid",               "value": deviceController.deviceControllerCPP.deviceAPI.uid},
             {"key": "Software version",  "value": Application.version},
+            {"key": "kernel build",  "value": deviceController.deviceControllerCPP.system.kernelBuildVersion()},
+            {"key": "rootfs build",  "value": deviceController.deviceControllerCPP.system.rootfsBuildTimestamp()},
+            {"key": "TI HW",  "value": deviceController.deviceControllerCPP.hwTI},
+            {"key": "TI SW",  "value": deviceController.deviceControllerCPP.swTI},
+            {"key": "nRF HW",  "value": deviceController.deviceControllerCPP.hwNRF},
+            {"key": "nRF SW",  "value": deviceController.deviceControllerCPP.swNRF},
         ]
 
         delegate: Item {
+            id: mainDelegate
+
+            property real keyWidth: fontMetrics.boundingRect("Software version :").width + leftPadding + rightPadding
+            property bool isRowLayout: (width - keyWidth) >= fontMetrics.boundingRect(modelData.value).width
+
             width: ListView.view.width
-            height: Style.delegateHeight * 0.8
-            RowLayout {
+            height: Style.delegateHeight * (isRowLayout ? 0.8 : 1.6)
+            GridLayout {
                 id: textContent
-                spacing: 16
+
+                columnSpacing: 16
+                columns: mainDelegate.isRowLayout ? 2 : 1
+                rows: mainDelegate.isRowLayout ? 1 : 2
 
                 anchors.fill: parent
 
                 Label {
-                    Layout.preferredWidth: fontMetrics.boundingRect("Software version :").width + leftPadding + rightPadding
+                    Layout.preferredWidth: mainDelegate.keyWidth
                     font.bold: true
                     text: modelData.key + ":"
                 }
@@ -68,7 +82,7 @@ BasePageView {
                     font.pointSize: Application.font.pointSize * 0.9
                     textFormat: Text.RichText
                     horizontalAlignment: Text.AlignLeft
-                    text: modelData.value
+                    text: modelData.value.length > 0 ? modelData.value : "Unknown"
 
                 }
             }

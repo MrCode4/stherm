@@ -64,6 +64,17 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         setMainData(data);
     });
+
+    // Update nrf version
+    connect(_deviceIO, &DeviceIOController::nrfVersionUpdated, this, [this]() {
+        emit nrfVersionChanged();
+    });
+
+    // Update ti version
+    connect(_deviceIO, &DeviceIOController::tiVersionUpdated, this, [this]() {
+        emit tiVersionChanged();
+    });
+
     connect(_deviceIO, &DeviceIOController::tofDataReady, this, [this](QVariantMap data) {
         for (const auto &pair : data.toStdMap()) {
             _mainData.insert(pair.first, pair.second);
@@ -174,6 +185,26 @@ bool DeviceControllerCPP::setTestRelays(QVariantList data)
 void DeviceControllerCPP::sendRelaysBasedOnModel()
 {
     _deviceIO->sendRelays();
+}
+
+QString DeviceControllerCPP::getTI_SW() const
+{
+    return _deviceIO->getTI_SW();
+}
+
+QString DeviceControllerCPP::getTI_HW() const
+{
+    return _deviceIO->getTI_HW();
+}
+
+QString DeviceControllerCPP::getNRF_SW() const
+{
+    return _deviceIO->getNRF_SW();
+}
+
+QString DeviceControllerCPP::getNRF_HW() const
+{
+    return _deviceIO->getNRF_HW();
 }
 
 //! runDevice in Hardware.php
