@@ -67,6 +67,8 @@ BasePageView {
         onClicked: {
             applyToModel();
 
+            deviceController.finalizeSettings();
+
             //! Make a copy of last applied data to Setting
             makeCopyOfSettings();
 

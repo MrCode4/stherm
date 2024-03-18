@@ -67,8 +67,36 @@ I_DeviceController {
             setSystemSetupServer(settings.system)
         }
 
+        function onCanFetchServerChanged() {
+            if (deviceControllerCPP.system.canFetchServer) {
+                settingsPushRetry.failed = false;
+            }
+        }
+
         function onPushFailed() {
-            // start a timer to push again
+            if (settingsPushRetry.failed) {
+                settingsPushRetry.interval = settingsPushRetry.interval *2;
+                if (settingsPushRetry.interval > 60000)
+                    settingsPushRetry.interval = 60000;
+            } else {
+                settingsPushRetry.interval = 5000;
+                settingsPushRetry.failed = true;
+            }
+
+            settingsPushRetry.start()
+        }
+    }
+
+    property Timer  settingsPushRetry: Timer {
+        repeat: false;
+        running: false;
+        interval: 5000;
+
+        property bool failed: false
+
+        onTriggered:
+        {
+            pushToServer();
         }
     }
 
@@ -281,9 +309,12 @@ I_DeviceController {
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
         }
-
-        //pushToServer();
     }
+
+    function finalizeSettings() {
+        pushToServer();
+    }
+
     function setSettingsServer(settings: var) {
         if (editMode === AppSpec.EMSettings) {
             console.log("The system settings is being edited and cannot be updated by the server.")
