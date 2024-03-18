@@ -73,6 +73,22 @@ public:
     };
     Q_ENUM(ScheduleType)
 
+    //! Edit Mode
+    enum EditMode {
+        EMSchedule           = 0,
+        EMHold               = 1,
+        EMFan                = 2,
+        EMVacation           = 3,
+        EMRequestedHumidity  = 4,
+        EMDesiredTemperature = 5,
+        EMSensors            = 6,
+        EMSettings           = 7,
+        EMSystemSetup        = 8,
+
+        EMNone
+    };
+    Q_ENUM(EditMode)
+
 signals:
 
 private:
