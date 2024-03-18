@@ -43,6 +43,14 @@ Control {
     //! Label width
     readonly property alias     labelWidth: _desiredTempratureLbl.width
 
+
+    onDraggingChanged: {
+        if (dragging)
+            deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
+        else
+            deviceController.updateEditMode(AppSpec.EMNone);
+    }
+
     /* Object properties
      * ****************************************************************************************/
     onCurrentScheduleChanged: {

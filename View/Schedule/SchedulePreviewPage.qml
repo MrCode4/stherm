@@ -30,6 +30,10 @@ BasePageView {
     //!
     readonly property ScheduleCPP   scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSchedule);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Object properties
      * ****************************************************************************************/
     rightPadding: 4

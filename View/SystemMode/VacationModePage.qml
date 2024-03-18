@@ -22,6 +22,10 @@ BasePageView {
     //! System Accessories use in humidity control.
     property SystemAccessories systemAccessories: appModel.systemSetup.systemAccessories
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Object properties
      * ****************************************************************************************/
     title: "Vacation"

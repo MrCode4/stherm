@@ -18,6 +18,10 @@ BasePageView {
      * ****************************************************************************************/
     title: "System Setup"
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSystemSetup);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Children
      * ****************************************************************************************/
 

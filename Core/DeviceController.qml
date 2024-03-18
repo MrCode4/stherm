@@ -13,6 +13,8 @@ I_DeviceController {
     /* Property Declarations
      * ****************************************************************************************/
 
+    property int editMode: AppSpec.EMNone
+
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
@@ -54,8 +56,8 @@ I_DeviceController {
             updateHold(settings.hold)
             updateFanServer(settings.fan)
             setVacationServer(settings.vacation)
-            setRequestedHumidity(settings.humidity)
-            setDesiredTemperature(settings.temp)
+            setRequestedHumidityFromServer(settings.humidity)
+            setDesiredTemperatureFromServer(settings.temp)
             checkMessages(settings.messages)
             checkSchedules(settings.schedule)
             checkSensors(settings.sensors)
@@ -141,6 +143,11 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
 
+    function updateEditMode(editMode : int) {
+        console.log("editMode = ", editMode);
+        root.editMode = editMode;
+    }
+
     function updateDeviceBacklight(isOn, color) : bool
     {
         console.log("starting updateBacklight, color: ", color)
@@ -167,6 +174,11 @@ I_DeviceController {
 
     function updateFanServer(settings : var) {
 
+        if (editMode === AppSpec.EMFan) {
+            console.log("The fan page is being edited and cannot be updated by the server.")
+            return;
+        }
+
         console.log("updateFanSettings")
         updateFan(settings.mode, settings.workingPerHour)
     }
@@ -186,6 +198,11 @@ I_DeviceController {
 
     function setVacationServer(settings : var)
     {
+        if (editMode === AppSpec.EMVacation) {
+            console.log("The vacation is being edited and cannot be updated by the server.")
+            return;
+        }
+
         console.log("setVacationServer")
         setVacation(settings.min_temp, settings.max_temp, settings.min_humidity, settings.max_humidity)
         setVacationOn(settings.is_enable) // showMainWindow TODO
@@ -266,6 +283,11 @@ I_DeviceController {
         //pushToServer();
     }
     function setSettingsServer(settings: var) {
+        if (editMode === AppSpec.EMSettings) {
+            console.log("The system settings is being edited and cannot be updated by the server.")
+            return;
+        }
+
         console.log("setSettingsServer")
         setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
                     settings.timeFormat, false, settings.brightness_mode)
@@ -379,6 +401,15 @@ I_DeviceController {
         console.log("checkQRurl", url)
     }
 
+    function setDesiredTemperatureFromServer(temperature: real) {
+        if (editMode === AppSpec.EMDesiredTemperature) {
+            console.log("The temperature is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        setDesiredTemperature(temperature);
+    }
+
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
         //! Apply temperature in backend
@@ -386,6 +417,15 @@ I_DeviceController {
 
         // Update device temperature when setTemperature is successful.
         device.requestedTemp = temperature;
+    }
+
+    function setRequestedHumidityFromServer(humidity: real) {
+        if (editMode === AppSpec.EMRequestedHumidity) {
+            console.log("The humidity is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        setRequestedHumidity(humidity);
     }
 
     function setRequestedHumidity(humidity: real) {
@@ -433,6 +473,11 @@ I_DeviceController {
 
     function setSystemSetupServer(settings: var) {
 
+        if (editMode === AppSpec.EMSystemSetup) {
+            console.log("The system setup is being edited and cannot be updated by the server.")
+            return;
+        }
+
         console.log("setSystemSetupServer")
         device.systemSetup.heatPumpEmergency = settings.heatPumpEmergency;
         device.systemSetup.heatStage = settings.heatStage;
@@ -447,12 +492,22 @@ I_DeviceController {
     }
 
     function checkSensors(sensors: var) {
+        if (editMode === AppSpec.EMSensors) {
+            console.log("The sensors are being edited and cannot be updated by the server.")
+            return;
+        }
+
         console.log("checkSensors", sensors.length)
         sensors.forEach(sensor => console.log(sensor.location, sensor.name, sensor.type, sensor.uid, sensor.locationsd))
     }
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
     function checkSchedules(serverSchedules: var) {
+        if (editMode === AppSpec.EMSchedule) {
+            console.log("The schedules are being edited and cannot be updated by the server.")
+            return;
+        }
+
         console.log("checkSchedules", serverSchedules.length)
 
         var modelSchedules = device.schedules;
@@ -579,6 +634,11 @@ I_DeviceController {
     function updateHold(isHold)
     {
         // TODO should be updated to inform the logics
+
+        if (editMode === AppSpec.EMHold) {
+            console.log("The hold page is being edited and cannot be updated by the server.")
+            return;
+        }
 
         device._isHold = isHold;
     }

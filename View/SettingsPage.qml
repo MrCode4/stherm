@@ -30,6 +30,7 @@ BasePageView {
         }
     }
 
+
     /* Object properties
      * ****************************************************************************************/
     title: "Settings"
@@ -316,10 +317,14 @@ BasePageView {
     }
 
     Component.onCompleted: {
+        deviceController.updateEditMode(AppSpec.EMSettings);
+
         makeCopyOfSettings();
     }
 
     Component.onDestruction: {
+        deviceController.updateEditMode(AppSpec.EMNone);
+
         if (setting) {
             if (setting.brightness !== internal.copyOfSettings.brightness
                     || setting.adaptiveBrightness !== internal.copyOfSettings.adaptiveBrightness

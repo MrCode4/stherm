@@ -25,6 +25,10 @@ BasePageView {
      * ****************************************************************************************/
     title: "Humidity Control"
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMRequestedHumidity);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Children
      * ****************************************************************************************/
     //! Confirm button

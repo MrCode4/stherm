@@ -19,6 +19,10 @@ BasePageView {
      * ****************************************************************************************/
     title: "Fan"
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMFan);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Childrent
      * ****************************************************************************************/
     //! Confirm button

@@ -256,7 +256,7 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
 
 bool NUVE::System::getUpdate(QString softwareVersion)
 {
-    if (mCanFetchServer){
+    if (mCanFetchServer) {
         return mSync->getSettings();
     }
 
