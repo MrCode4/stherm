@@ -84,6 +84,7 @@ qt6_add_qml_module(appStherm
         Core/Utils.qml
         Core/DateTimeManager.qml
         Core/ContactContractor.qml
+        Core/NightMode.qml
 
 
         # Primitive Components
