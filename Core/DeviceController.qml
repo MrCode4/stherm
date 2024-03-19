@@ -12,6 +12,60 @@ I_DeviceController {
     /* Property Declarations
      * ****************************************************************************************/
 
+    //! Timer to check and run the night mode.
+    property Timer nightModeControllerTimer: Timer {
+        repeat: true
+        running: device.nightMode.mode === AppSpec.NMOn
+
+        interval: 1000
+
+        onTriggered: {
+            var currentTime = new Date();
+
+            if (currentTime.getHours() >= 22 || currentTime.getHours() < 7) {
+                device.nightMode._running = true;
+
+            } else if (currentTime.getHours() >= 7) {
+                device.nightMode._running = false;
+            }
+        }
+    }
+
+    //! Manage the night mode
+    property Connections nightModeController: Connections {
+        target: device.nightMode
+
+        function on_runningChanged() {
+            if (device.nightMode._running) {
+                // Applay night mode
+
+                // Set night mode settings
+                // LCD should be set to minimum brightness, and ideally disabled.
+                var send_data = [5, 0, device.setting.tempratureUnit,
+                                 device.setting.timeFormat, false, true];
+                if (!deviceControllerCPP.setSettings(send_data)){
+                    console.warn("setting failed");
+                    return;
+                }
+
+                // Set night mode backlight.
+                // LED light ring will be completely disabled.
+                updateDeviceBacklight(false, Qt.color("black"));
+
+            } else {
+                // revert to model
+                if (device)
+                    setSettings(device.setting.brightness, device.setting.volume, device.setting.tempratureUnit,
+                                device.setting.timeFormat, false, device.setting.adaptiveBrightness)
+
+                var backlight = device.backlight;
+                if (backlight)
+                    deviceController.updateBacklight(backlight.on, backlight.hue, backlight.value,
+                                                     backlight.shadeIndex);
+            }
+        }
+    }
+
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 

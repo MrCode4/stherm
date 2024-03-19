@@ -9,6 +9,8 @@ import Stherm
 
 QSObject {
 
+    property bool _running: false
+
     //! Night Mode
     property int mode:             AppSpec.NMOff
 }
