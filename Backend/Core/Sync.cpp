@@ -97,10 +97,10 @@ bool Sync::getSettings()
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSettings?sn=%0").arg(mSerialNumber)), m_getSettings);
 
     QEventLoop loop;
-    connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit);
+    connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit, Qt::SingleShotConnection);
     connect(this, &NUVE::Sync::settingsReady, &loop, [&loop] {
         loop.setProperty("success", true);
-    });
+    }, Qt::SingleShotConnection);
 
     loop.exec();
     return loop.property("success").toBool();
