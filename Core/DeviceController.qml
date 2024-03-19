@@ -106,9 +106,6 @@ I_DeviceController {
         interval: 5000;
         onTriggered:
         {
-            if (ScreenSaverManager.state !== 3){
-                return;
-            }
             if (!deviceControllerCPP.system.fetchSettings()) {
                 interval = interval * 2;
                 if (interval > 60000)
@@ -316,20 +313,24 @@ I_DeviceController {
     }
 
     function setSettingsServer(settings: var) {
-        if (editMode === AppSpec.EMSettings) {
+        if (editMode !== AppSpec.EMSettings) {
+            console.log("setSettingsServer")
+            setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
+                        settings.timeFormat, false, settings.brightness_mode)
+            device.setting.currentTimezone = settings.currentTimezone;
+            device.setting.effectDst = settings.effectDst;
+        } else {
             console.log("The system settings is being edited and cannot be updated by the server.")
-            return;
         }
-
-        console.log("setSettingsServer")
-        setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
-                    settings.timeFormat, false, settings.brightness_mode)
-        device.setting.currentTimezone = settings.currentTimezone;
-        device.setting.effectDst = settings.effectDst;
         setBacklightServer(settings.backlight)
     }
 
     function setBacklightServer(settings: var) {
+        if (editMode === AppSpec.EMBacklight) {
+            console.log("The backlight is being edited and cannot be updated by the server.")
+            return;
+        }
+
         console.log("setBacklightServer")
         updateBacklight(settings.on, settings.hue, settings.value,
                         settings.shadeIndex)

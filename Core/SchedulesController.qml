@@ -181,7 +181,7 @@ QtObject {
                                       newSchedule.startTime = schedule.start_time;
                                       newSchedule.endTime = schedule.end_time;
                                       newSchedule.repeats = schedule.weekdays.map(String).join(',');
-                                      newSchedule.dataSource = schedule.data_source;
+                                      newSchedule.dataSource = schedule.dataSource;
 
                                       device.schedules.push(newSchedule);
 
@@ -212,8 +212,8 @@ QtObject {
                                           foundSchedule.humidity = schedule.humidity;
                                       }
 
-                                      if (foundSchedule.dataSource !== schedule.data_source) {
-                                          foundSchedule.dataSource = schedule.data_source;
+                                      if (foundSchedule.dataSource !== schedule.dataSource) {
+                                          foundSchedule.dataSource = schedule.dataSource;
                                       }
 
                                       var repeats = schedule.weekdays.map(String).join(',')

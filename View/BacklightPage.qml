@@ -270,6 +270,7 @@ BasePageView {
     }
 
     Component.onCompleted: {
+        deviceController.updateEditMode(AppSpec.EMBacklight);
         if (backlight) {
             setCurrentColor(backlight.shadeIndex);
         }
@@ -282,5 +283,6 @@ BasePageView {
             backlight.on !== _backlightOnOffSw.checked) {
             revertToModel();
         }
+        deviceController.updateEditMode(AppSpec.EMNone);
     }
 }

@@ -83,7 +83,8 @@ public:
         EMDesiredTemperature = 5,
         EMSensors            = 6,
         EMSettings           = 7,
-        EMSystemSetup        = 8,
+        EMBacklight          = 8,
+        EMSystemSetup        = 9,
 
         EMNone
     };
