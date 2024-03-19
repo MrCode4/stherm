@@ -145,6 +145,14 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
     return success;
 }
 
+//! TODO
+//! Handle the CPU frequency or governor will be set to minimum speed level.
+//! Handle other power limiting functions
+void DeviceControllerCPP::nightModeControl(bool start)
+{
+
+}
+
 bool DeviceControllerCPP::setSettings(QVariantList data)
 {
     return _deviceIO->setSettings(data);

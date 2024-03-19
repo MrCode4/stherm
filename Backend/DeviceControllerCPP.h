@@ -123,6 +123,8 @@ public:
 
     QString getTI_SW() const;
 
+    Q_INVOKABLE void startNightMode(bool start);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
