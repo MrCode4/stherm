@@ -97,10 +97,11 @@ bool Sync::getSettings()
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSettings?sn=%0").arg(mSerialNumber)), m_getSettings);
 
     QEventLoop loop;
-    connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit, Qt::SingleShotConnection);
+    connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::settingsReady, &loop, [&loop] {
         loop.setProperty("success", true);
-    }, Qt::SingleShotConnection);
+        loop.quit();
+    });
 
     loop.exec();
     return loop.property("success").toBool();
@@ -277,7 +278,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 } else {
                     errorString = "Wrong contractor info fetched from server";
                 }
-            }  else if (method == m_getContractorLogo) {
+            } else if (method == m_getContractorLogo) {
                 QImage image;
                 if (image.loadFromData(dataRaw)){
                     image.save("/home/root/customIcon.png");
@@ -296,12 +297,13 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                             Q_EMIT settingsReady(object.toVariantMap());
                             break;
                         } else {
-                            qWarning() << "Received settings belong to another device" << mSerialNumber << object.value("sn");
+                            errorString = "Received settings belong to another device: " + mSerialNumber + ", " + object.value("sn").toString();
+                            break;
                         }
                     }
                 }
-                Q_EMIT settingsLoaded();
-                qWarning() << "Received settings corrupted" << mSerialNumber ;
+
+                errorString = "Received settings corrupted: " + mSerialNumber ;
 
             } else if (method == m_getMessages) {
                 TRACE << jsonDoc.toJson().toStdString().c_str();
