@@ -59,7 +59,7 @@ I_DeviceController {
             setRequestedHumidityFromServer(settings.humidity)
             setDesiredTemperatureFromServer(settings.temp)
             checkMessages(settings.messages)
-            checkSchedules(settings.schedule)
+            setSchedulesFromServer(settings.schedule)
             checkSensors(settings.sensors)
             setSettingsServer(settings.setting)
             setSystemSetupServer(settings.system)
@@ -502,7 +502,7 @@ I_DeviceController {
     }
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
-    function checkSchedules(serverSchedules: var) {
+    function setSchedulesFromServer(serverSchedules: var) {
         if (editMode === AppSpec.EMSchedule) {
             console.log("The schedules are being edited and cannot be updated by the server.")
             return;
