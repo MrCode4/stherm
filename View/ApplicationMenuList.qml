@@ -79,6 +79,10 @@ ListView {
             "text": "Wi-Fi Settings"
         },
         {
+            "icon": FAIcons.night,
+            "text": "Night Mode"
+        },
+        {
             "icon": FAIcons.fileExclamation,
             "text": "Technician Access"
         },

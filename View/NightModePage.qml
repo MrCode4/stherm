@@ -98,7 +98,9 @@ BasePageView {
         anchors.top: contentsLay.bottom
         anchors.topMargin: 10
 
-        text: "The night mode will be active between 10:00 PM and 7:00 AM."
+        property int timeFormat: appModel?.setting?.timeFormat ?? AppSpec.TimeFormat.Hour12
+        text: "The night mode will be active between " + (timeFormat === AppSpec.TimeFormat.Hour12 ? "10:00 PM" : "22:00") + " and " +
+                                                         (timeFormat === AppSpec.TimeFormat.Hour12 ? "7:00 AM" : "7:00");
 
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
