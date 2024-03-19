@@ -30,7 +30,10 @@ BasePageView {
 
         onClicked: {
             //! Update NightMode
-
+            if (deviceController) {
+                var nightMode = onButton.checked ? AppSpec.NMOn : AppSpec.NMOff
+                deviceController.updateNightMode(nightMode);
+            }
 
             //! Also move out of this Page
             if (root.StackView.view) {

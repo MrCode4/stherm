@@ -75,4 +75,6 @@ QtObject {
 
     function setActivatedSchedule(schedule: ScheduleCPP) {}
 
+    function updateNightMode(nightMode : int) {}
+
 }

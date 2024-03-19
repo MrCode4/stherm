@@ -326,4 +326,9 @@ I_DeviceController {
 
         return "qrc:/Stherm/Images/nuve-icon.png"
     }
+
+    function updateNightMode(nightMode : int) {
+        if (device)
+            device.nightMode.mode = nightMode;
+    }
 }
