@@ -180,6 +180,7 @@ qt6_add_qml_module(appStherm
         View/AboutDevicePage.qml
         View/UserGuidePage.qml
         View/ContactContractorPage.qml
+        View/NightMode/NightModeTimePage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
