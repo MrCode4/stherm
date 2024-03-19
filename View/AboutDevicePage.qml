@@ -32,7 +32,7 @@ BasePageView {
         appVesion = versionArrayMain.join('.')
     }
 
-    /* Childrent
+    /* Children
      * ****************************************************************************************/
     ListView {
         id: _infoLv
