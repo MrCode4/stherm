@@ -63,6 +63,12 @@ public:
     };
     Q_ENUM(FanMode)
 
+    enum NightMode {
+        NMOn = 0,
+        NMOff
+    };
+    Q_ENUM(NightMode)
+
     //! Schedule Type
     enum ScheduleType {
         Away   = 0,
