@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * NightMode provide ui for changing NightMode settings
+ * FanPage provide ui for changing fan settings
  * ***********************************************************************************************/
 BasePageView {
     id: root
@@ -30,7 +30,7 @@ BasePageView {
 
         onClicked: {
             //! Update NightMode
-/
+
 
             //! Also move out of this Page
             if (root.StackView.view) {
@@ -41,7 +41,7 @@ BasePageView {
 
     //! Contents
     ColumnLayout {
-        id: _contentsLay
+        id: contentsLay
         anchors.centerIn: parent
         width: parent.width
         spacing: 8
@@ -84,105 +84,22 @@ BasePageView {
 
                 checked: nightMode?.mode === AppSpec.NMOff
             }
+
         }
 
-        ColumnLayout {
-            id: manualFanColumn
-            opacity: 0
-            enabled: false
+    }
 
-            ItemDelegate {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Material.delegateHeight
+    Label {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: contentsLay.bottom
+        anchors.topMargin: 10
 
-                verticalPadding: 0
-                horizontalPadding: 8
-                contentItem: RowLayout {
-                    spacing: 16
+        text: "The night mode will be active between 10:00 PM and 7:00 AM."
 
-                    Label {
-                        Layout.fillWidth: true
-                        font.bold: true
-                        text: "Start Time"
-                    }
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
 
-                    Label {
-                        Layout.fillWidth: true
-                        horizontalAlignment: Text.AlignRight
-                        text: root.nightMode?.startTime ?? ""
-                    }
-                }
-
-                onClicked: {
-                    //! Open NightModeTimePage for editing
-                    if (root.StackView.view) {
-                        root.StackView.view.push("qrc:/Stherm/View/NightMode/NightModeTimePage.qml", {
-                                                      "backButtonVisible": true,
-                                                      "uiSession": uiSession,
-                                                      "timeProperty": "start-time",
-                                                      "nightMode": root.nightMode
-                                                  });
-                    }
-                }
-            }
-
-            ItemDelegate {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Material.delegateHeight
-
-                verticalPadding: 0
-                horizontalPadding: 8
-                contentItem: RowLayout {
-                    spacing: 16
-
-                    Label {
-                        Layout.fillWidth: true
-                        font.bold: true
-                        text: "End Time"
-                    }
-
-                    Label {
-                        Layout.fillWidth: true
-                        horizontalAlignment: "AlignRight"
-                        text: root.nightMode?.endTime ?? ""
-                    }
-                }
-
-                onClicked: {
-                    //! Open nightMode for editing
-                    if (root.StackView.view) {
-                        root.StackView.view.push("qrc:/Stherm/View/NightMode/NightModeTimePage.qml", {
-                                                      "backButtonVisible": true,
-                                                      "uiSession": uiSession,
-                                                      "timeProperty": "end-time",
-                                                      "nightMode": root.nightMode
-                                                  });
-                    }
-                }
-            }
-
-
-
-            states: State {
-                when: onButton.checked
-                name: "visible"
-
-                PropertyChanges {
-                    target: manualFanColumn
-                    opacity: 1
-                    enabled: true
-                }
-            }
-
-            transitions: Transition {
-                to: "visible"
-                reversible: true
-
-                SequentialAnimation {
-                    PropertyAnimation { target: manualFanColumn; property: "enabled"; duration: 0 }
-                    NumberAnimation { property: "opacity" }
-                }
-            }
-        }
+        visible: onButton.checked
     }
 }
