@@ -35,6 +35,7 @@ Sync::Sync(QObject *parent) : NetworkWorker(parent),
 
 
     mNetManager = new QNetworkAccessManager();
+    mNetManager->setTransferTimeout(10000);
 
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &Sync::processNetworkReply);
 }
@@ -53,11 +54,8 @@ std::pair<std::string, bool> Sync::getSN(cpuid_t accessUid)
         return getSN();
 
     QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::snReady, &loop, &QEventLoop::quit);
 
-    timer.start(20000); // 20 seconds TODO
     loop.exec();
 
     TRACE << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
@@ -80,11 +78,8 @@ QVariantMap Sync::getContractorInfo()
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getContractorInfo?sn=%0").arg(mSerialNumber)), m_getContractorInfo);
 
     QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::contractorInfoReady, &loop, &QEventLoop::quit);
 
-    timer.start(100000); // 100 seconds TODO
     loop.exec();
 
     QSettings setting;
@@ -102,14 +97,11 @@ bool Sync::getSettings()
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSettings?sn=%0").arg(mSerialNumber)), m_getSettings);
 
     QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::settingsReady, &loop, [&loop] {
         loop.setProperty("success", true);
     });
 
-    timer.start(3000); // 100 seconds TODO
     loop.exec();
     return loop.property("success").toBool();
 }
@@ -124,11 +116,8 @@ void Sync::getMessages()
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/messages?sn=%0").arg(mSerialNumber)), m_getMessages);
 
     QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::messagesLoaded, &loop, &QEventLoop::quit);
 
-    timer.start(100000); // 100 seconds TODO
     loop.exec();
 }
 
@@ -137,13 +126,9 @@ void Sync::getWirings(cpuid_t accessUid)
     sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getWirings?uid=%0").arg(accessUid.c_str())), m_getWirings);
 
     QEventLoop loop;
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::wiringReady, &loop, &QEventLoop::quit);
 
-    timer.start(100000); // 100 seconds TODO
     loop.exec();
-
 }
 
 void Sync::requestJob(QString type)
@@ -160,7 +145,6 @@ void Sync::pushSettingsToServer(const QVariantMap &settings)
 {
     QJsonObject requestDataObj = QJsonObject::fromVariantMap(settings);
     requestDataObj["sn"] = mSerialNumber;
-
 
     QJsonDocument jsonDocument(requestDataObj);
 
