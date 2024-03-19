@@ -21,19 +21,19 @@ I_DeviceController {
 
         onTriggered: {
             var currentTime = new Date();
-
-            if (currentTime.getHours() >= 22 || currentTime.getHours() < 7) {
-                device.nightMode._running = true;
-
-            } else if (currentTime.getHours() >= 7) {
-                device.nightMode._running = false;
-            }
+            device.nightMode._running = currentTime.getHours() >= 22 || currentTime.getHours() < 7;
         }
     }
 
     //! Manage the night mode
     property Connections nightModeController: Connections {
         target: device.nightMode
+
+        function onModeChanged() {
+            if (device.nightMode.mode === AppSpec.NMOff) {
+                device.nightMode._running = false;
+            }
+        }
 
         function on_runningChanged() {
             if (device.nightMode._running) {
@@ -45,12 +45,13 @@ I_DeviceController {
                                  device.setting.timeFormat, false, true];
                 if (!deviceControllerCPP.setSettings(send_data)){
                     console.warn("setting failed");
-                    return;
                 }
 
                 // Set night mode backlight.
                 // LED light ring will be completely disabled.
                 updateDeviceBacklight(false, Qt.color("black"));
+
+               deviceControllerCPP.nightModeControl(true);
 
             } else {
                 // revert to model
@@ -62,7 +63,19 @@ I_DeviceController {
                 if (backlight)
                     deviceController.updateBacklight(backlight.on, backlight.hue, backlight.value,
                                                      backlight.shadeIndex);
+
+                deviceControllerCPP.nightModeControl(false);
             }
+        }
+    }
+
+    property Connections nightMode_BacklightController: Connections {
+        target: device.backlight
+
+        function onOnChanged() {
+           if (device.backlight.on) {
+               updateNightMode(AppSpec.NMOff);
+           }
         }
     }
 

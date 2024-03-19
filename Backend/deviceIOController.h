@@ -72,6 +72,7 @@ public:
 
     QString getTI_SW() const;
 
+
 signals:
     void mainDataReady(QVariantMap data);
     void tofDataReady(QVariantMap data);
