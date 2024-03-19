@@ -125,6 +125,110 @@ QtObject {
         deviceController.setActivatedSchedule(currentSchedule);
     }
 
+    //! Compare the server schedules and the model schedules and update model based on the server data.
+    function setSchedulesFromServer(serverSchedules: var) {
+
+        var modelSchedules = device.schedules;
+        if (!Array.isArray(serverSchedules)) {
+            console.log("Invalid server input. Expected arrays.");
+            return;
+        }
+
+        // Check the length of both arrays
+        if (serverSchedules.length !== modelSchedules.length) {
+            console.log("Number of schedules in server and model differ.");
+        }
+
+        // Clean the device schedules when the serverSchedules is empty.
+        if (serverSchedules.length === 0) {
+            console.log("Schedules in server is empty.");
+            device.schedules = [];
+            device.schedulesChanged();
+
+            return;
+        }
+
+        var isNeedToUpdate = false;
+
+        // Schedules that do not exist on the server will be deleted.
+        modelSchedules.every(schedule => {
+                                 // Find Schedule in the model
+                                 var foundSchedule = serverSchedules.find(serverSchedule => schedule.name === serverSchedule.name);
+
+                                 if (foundSchedule === undefined) {
+                                    var schIndex = device.schedules.findIndex(elem => elem.name === schedule.name);
+                                     if (schIndex !== -1) {
+                                         device.schedules.splice(schIndex, 1);
+                                         isNeedToUpdate = true;
+                                     }
+                                 }
+
+                              });
+
+        serverSchedules.every(schedule => {
+                                  // Find Schedule in the model
+                                  var foundSchedule = modelSchedules.find(modelSchedule => schedule.name === modelSchedule.name);
+
+                                  // Add new schedule
+                                  if (foundSchedule === undefined) {
+                                      var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
+                                      newSchedule._qsRepo = AppCore.defaultRepo;
+                                      newSchedule.enable = schedule.is_enable;
+                                      newSchedule.name = schedule.name;
+                                      newSchedule.type = schedule.type_id;
+                                      newSchedule.temprature = schedule.temp;
+                                      newSchedule.humidity = schedule.humidity;
+                                      newSchedule.startTime = schedule.start_time;
+                                      newSchedule.endTime = schedule.end_time;
+                                      newSchedule.repeats = schedule.weekdays.map(String).join(',');
+                                      newSchedule.dataSource = schedule.data_source;
+
+                                      device.schedules.push(newSchedule);
+
+                                      isNeedToUpdate = true;
+
+                                  } else {
+                                      if (foundSchedule.enable !== schedule.is_enable) {
+                                          foundSchedule.enable = schedule.is_enable;
+                                      }
+
+                                      if (foundSchedule.type !== schedule.type_id) {
+                                          foundSchedule.type = schedule.type_id;
+                                      }
+
+                                      if (foundSchedule.startTime !== schedule.start_time) {
+                                          foundSchedule.startTime = schedule.start_time;
+                                      }
+
+                                      if (foundSchedule.endTime !== schedule.end_time) {
+                                          foundSchedule.endTime = schedule.end_time;
+                                      }
+
+                                      if (foundSchedule.temprature !== schedule.temp) {
+                                          foundSchedule.temprature = schedule.temp;
+                                      }
+
+                                      if (foundSchedule.humidity !== schedule.humidity) {
+                                          foundSchedule.humidity = schedule.humidity;
+                                      }
+
+                                      if (foundSchedule.dataSource !== schedule.data_source) {
+                                          foundSchedule.dataSource = schedule.data_source;
+                                      }
+
+                                      var repeats = schedule.weekdays.map(String).join(',')
+                                      if (foundSchedule.repeats !== repeats) {
+                                          foundSchedule.repeats = repeats;
+                                      }
+                                  }
+                        });
+
+        if (isNeedToUpdate) {
+            device.schedulesChanged();
+        }
+    }
+
+
     property Timer _checkRunningTimer: Timer {
         running: !device._isHold && device.schedules.filter(schedule => schedule.enable).length > 0
         repeat: true
@@ -154,5 +258,9 @@ QtObject {
             deviceController.setActivatedSchedule(null);
             findRunningSchedule();
         }
+    }
+
+    property Connections deviceControllerConnection: Connections {
+        target: deviceController
     }
 }

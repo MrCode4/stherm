@@ -105,6 +105,7 @@ Item {
     //! Device controller
     property I_DeviceController deviceController:   DeviceController {
         device: appModel
+        schedulesController: root.schedulesController
     }
 
     //! SensorController instance
