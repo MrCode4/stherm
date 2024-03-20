@@ -585,6 +585,21 @@ bool DeviceIOController::setBacklight(QVariantList data)
     return false;
 }
 
+bool DeviceIOController::setFanSpeed(int speed)
+{
+    TRACE_CHECK(false) << "sending fan speed request with data:" << speed
+                       << (m_nRfConnection && m_nRfConnection->isConnected());
+
+    auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::SetFanSpeed,
+                                               STHERM::PacketType::UARTPacket,
+                                               {speed});
+    m_nRF_queue.push(packet);
+
+    auto result = processNRFQueue();
+    TRACE_CHECK(result) << "send fan speed request failed or waiting in queue";
+    return result;
+}
+
 bool DeviceIOController::setSettings(QVariantList data)
 {
     if (data.size() <= 0) {
@@ -832,12 +847,14 @@ bool DeviceIOController::processNRFQueue()
     auto packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff), ThreadSendSize);
 
     if (m_nRfConnection->sendRequest(packetBA)) {
-        if (packet.CMD == STHERM::SIOCommand::GetTOF) {
+        if (packet.CMD == STHERM::SIOCommand::SetFanSpeed) {
+            TRACE << "CHECK for set fan speed";
+        } else if (packet.CMD == STHERM::SIOCommand::GetTOF) {
             TRACE << "CHECK for TOF values";
         } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
             TRACE << "CHECK for Sensor values";
             m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
-        } else if (packet.CMD == STHERM::SIOCommand::SetColorRGB){
+        } else if (packet.CMD == STHERM::SIOCommand::SetColorRGB) {
             // TODO: blinking with data array [4]
             TRACE_CHECK(true) << "Data " << packet.DataArray[0] << " " << packet.DataArray[1] << " " << packet.DataArray[2];
             double backlightFactor = ((double)packet.DataArray[0] + (double)packet.DataArray[1] + (double)packet.DataArray[2]) / (3.0 * 255.0);

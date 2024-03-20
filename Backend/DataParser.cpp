@@ -54,6 +54,10 @@ QByteArray DataParser::preparePacket(STHERM::SIOCommand cmd, STHERM::PacketType 
         txPacket.DataArray[3] = 255;
         txPacket.DataArray[4] = data[3].toInt();
     } break;
+    case STHERM::SetFanSpeed: {
+        txPacket.DataLen = 1;
+        txPacket.DataArray[0] = std::clamp(data[0].toInt(), 0, 100);
+    } break;
     default:
         break;
     }
@@ -89,6 +93,10 @@ STHERM::SIOPacket DataParser::prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::P
         txPacket.DataArray[2] = on ? std::clamp(data[2].toInt(), 0, 255) : 0;
         txPacket.DataArray[3] = 255;
         txPacket.DataArray[4] = data[3].toInt();
+    } break;
+    case STHERM::SetFanSpeed: {
+        txPacket.DataLen = 1;
+        txPacket.DataArray[0] = std::clamp(data[0].toInt(), 0, 100);
     } break;
     case STHERM::InitMcus: {
         auto thresholds = data[0].value<STHERM::AQ_TH_PR_thld>();

@@ -30,6 +30,7 @@ namespace STHERM {
 enum SIOCommand {
     SetConfig = 0x01,
     SetColorRGB,
+    SetFanSpeed,
     InitMcus = 0x21,
     SetChildStatus,
     StartPairing,
