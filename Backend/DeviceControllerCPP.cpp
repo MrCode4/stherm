@@ -150,7 +150,7 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 //! Handle other power limiting functions
 void DeviceControllerCPP::nightModeControl(bool start)
 {
-
+    _deviceIO->setFanSpeed(start ? 100 : 0);
 }
 
 bool DeviceControllerCPP::setSettings(QVariantList data)
