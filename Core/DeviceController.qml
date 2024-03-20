@@ -35,14 +35,13 @@ I_DeviceController {
             }
         }
 
-        function on_runningChanged() {
+        function on_RunningChanged() {
             if (device.nightMode._running) {
-                // Applay night mode
-
+                // Apply night mode
                 // Set night mode settings
                 // LCD should be set to minimum brightness, and ideally disabled.
                 var send_data = [5, 0, device.setting.tempratureUnit,
-                                 device.setting.timeFormat, false, true];
+                                 device.setting.timeFormat, false, false];
                 if (!deviceControllerCPP.setSettings(send_data)){
                     console.warn("setting failed");
                 }
@@ -51,7 +50,7 @@ I_DeviceController {
                 // LED light ring will be completely disabled.
                 updateDeviceBacklight(false, Qt.color("black"));
 
-               deviceControllerCPP.nightModeControl(true);
+                deviceControllerCPP.nightModeControl(true);
 
             } else {
                 // revert to model
