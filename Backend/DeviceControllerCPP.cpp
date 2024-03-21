@@ -2,6 +2,29 @@
 
 #include "LogHelper.h"
 
+//! Set CPU governer in the zeus base system
+//! It is strongly dependent on the kernel.
+inline void setCPUGovernor(QString governer) {
+#ifdef __unix__
+    QDir cpuDir("/sys/devices/system/cpu/");
+    QStringList cpuList = cpuDir.entryList(QStringList() << "cpu[0-9]*");
+
+    TRACE << "CPU List: =" << cpuList;
+
+    foreach (const QString& cpu, cpuList) {
+        QString governorFile = QString("/sys/devices/system/cpu/%1/cpufreq/scaling_governor").arg(cpu);
+        QFile file(governorFile);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+            QTextStream out(&file);
+            out << governer; // Set CPU governor
+            file.close();
+            TRACE << "Set CPU" << cpu << "governor to " << governer;
+        } else {
+            TRACE << "Failed to set CPU" << cpu << "governor to performance";
+        }
+    }
+#endif
+}
 
 DeviceControllerCPP* DeviceControllerCPP::sInstance = nullptr;
 
@@ -150,13 +173,20 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 //! Handle other power limiting functions
 void DeviceControllerCPP::nightModeControl(bool start)
 {
-    if (!start) {
-        _deviceIO->setFanSpeed(16); //100 / 7
-    }
-    else {
+// #ifdef __unix__
+    QFile cpuGovernor ("/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor");
+// #endif
+    if (start) {
+        setCPUGovernor("powersave");
+
         QTimer::singleShot(5000 * 60, this, [this] () {
             _deviceIO->setFanSpeed(0);
         });
+
+    } else {
+        setCPUGovernor("ondemand");
+
+        _deviceIO->setFanSpeed(16); //100 / 7
     }
 
 }
