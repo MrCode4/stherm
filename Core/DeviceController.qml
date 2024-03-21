@@ -60,8 +60,8 @@ I_DeviceController {
 
                 var backlight = device.backlight;
                 if (backlight)
-                    deviceController.updateBacklight(backlight.on, backlight.hue, backlight.value,
-                                                     backlight.shadeIndex);
+                    updateDeviceBacklight(backlight.on, backlight.hue, backlight.value,
+                                          backlight.shadeIndex);
 
                 deviceControllerCPP.nightModeControl(false);
             }
@@ -181,6 +181,26 @@ I_DeviceController {
 //        console.log("send data: ", send_data)
 
         return deviceControllerCPP.setBacklight(send_data);
+    }
+
+    function updateBacklight(isOn, hue, brightness, shadeIndex)
+    {
+        var color = device.backlight.backlightFinalColor(shadeIndex, hue, brightness);
+
+        if (updateDeviceBacklight(isOn, color)) {
+            device.backlight.on = isOn;
+            device.backlight.hue = hue;
+            device.backlight.value = brightness;
+            device.backlight.shadeIndex = shadeIndex;
+
+            if (device.backlight.on) {
+                updateNightMode(AppSpec.NMOff);
+            }
+
+        } else {
+            console.log("revert the backlight in model: ")
+        }
+
     }
 
     function updateFan(mode: int, workingPerHour: int)
