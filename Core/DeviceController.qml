@@ -59,9 +59,12 @@ I_DeviceController {
                                 device.setting.timeFormat, false, device.setting.adaptiveBrightness)
 
                 var backlight = device.backlight;
-                if (backlight)
-                    updateDeviceBacklight(backlight.on, backlight.hue, backlight.value,
-                                          backlight.shadeIndex);
+                if (backlight) {
+                    var color = device.backlight.backlightFinalColor(backlight.shadeIndex,
+                                                                     backlight.hue,
+                                                                     backlight.value);
+                    updateDeviceBacklight(backlight.on, color);
+                }
 
                 deviceControllerCPP.nightModeControl(false);
             }
