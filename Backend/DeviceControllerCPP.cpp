@@ -173,9 +173,6 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 //! Handle other power limiting functions
 void DeviceControllerCPP::nightModeControl(bool start)
 {
-// #ifdef __unix__
-    QFile cpuGovernor ("/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor");
-// #endif
     if (start) {
         setCPUGovernor("powersave");
 
