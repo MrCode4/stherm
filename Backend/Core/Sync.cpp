@@ -35,7 +35,7 @@ Sync::Sync(QObject *parent) : NetworkWorker(parent),
 
 
     mNetManager = new QNetworkAccessManager();
-    mNetManager->setTransferTimeout(10000);
+    mNetManager->setTransferTimeout(4000);
 
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &Sync::processNetworkReply);
 }
@@ -103,7 +103,7 @@ bool Sync::getSettings()
         loop.quit();
     });
 
-    loop.exec();
+    loop.exec(QEventLoop::ExcludeSocketNotifiers);
     return loop.property("success").toBool();
 }
 
