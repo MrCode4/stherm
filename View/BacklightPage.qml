@@ -84,6 +84,7 @@ BasePageView {
 
             onClicked: {
                 applyToModel();
+                deviceController.finalizeSettings();
                 goBack();
             }
         }
