@@ -17,7 +17,7 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "System Type"
-    backButtonVisible: false
+    backButtonVisible: !initialSetup
 
     /* Children
      * ****************************************************************************************/
