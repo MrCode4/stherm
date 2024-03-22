@@ -186,6 +186,8 @@ private:
 
     QVariantList mBacklightModelData;
 
+    QTimer mNightModeTimer;
+
     //! Temperature correction parameters
     double mDeltaTemperatureIntegrator;
     const double TEMPERATURE_INTEGRATOR_DECAY_CONSTANT = 0.99721916;

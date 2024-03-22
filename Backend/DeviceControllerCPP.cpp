@@ -74,6 +74,13 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mainDataMap.insert("fanSpeed",        0);
     setMainData(mainDataMap);
 
+    mNightModeTimer.setTimerType(Qt::PreciseTimer);
+    mNightModeTimer.setInterval(5000 * 60);
+    mNightModeTimer.setSingleShot(true);
+    connect(&mNightModeTimer, &QTimer::timeout, this, [this]() {
+        _deviceIO->setFanSpeed(0);
+    });
+
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
     mBacklightPowerTimer.setSingleShot(false);
     mBacklightPowerTimer.setInterval(1000);
@@ -181,14 +188,11 @@ void DeviceControllerCPP::nightModeControl(bool start)
 {
     if (start) {
         setCPUGovernor("powersave");
-
-        QTimer::singleShot(5000 * 60, this, [this] () {
-            _deviceIO->setFanSpeed(0);
-        });
+        mNightModeTimer.start();
 
     } else {
+        mNightModeTimer.stop();
         setCPUGovernor("ondemand");
-
         _deviceIO->setFanSpeed(16); //100 / 7
     }
 
