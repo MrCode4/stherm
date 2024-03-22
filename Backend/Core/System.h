@@ -74,6 +74,8 @@ public:
     Q_INVOKABLE void partialUpdate();
     Q_INVOKABLE void partialUpdateByVersion(const QString version);
 
+    Q_INVOKABLE void updateFirmware();
+
 
     Q_INVOKABLE void updateAndRestart();
 
@@ -126,6 +128,9 @@ public:
 
     //! Install update service
     Q_INVOKABLE bool installUpdateService();
+
+    //! Install update service
+    Q_INVOKABLE bool installUpdate_NRF_FW_Service();
 
     //! Mount update directory
     Q_INVOKABLE bool mountUpdateDirectory();

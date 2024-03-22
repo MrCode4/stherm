@@ -372,6 +372,8 @@ qt6_add_qml_module(appStherm
 
         # Update file
         update.sh
+        update_fw_nrf.sh
+        nrf_fw_update.zip
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
