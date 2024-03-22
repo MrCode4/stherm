@@ -12,5 +12,5 @@ QSObject {
     property bool _running: false
 
     //! Night Mode
-    property int mode:             AppSpec.NMOff
+    property int mode:             AppSpec.NMOn
 }

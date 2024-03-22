@@ -92,9 +92,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceIO, &DeviceIOController::nrfVersionUpdated, this, [this]() {
         emit nrfVersionChanged();
 
-
         TRACE << "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVvvvvvv" << getNRF_SW();
-        if (getNRF_SW() != "1.10-RC1") {
+        if (getNRF_SW() != "01.10-RC1") {
             TRACE << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx";
             QTimer::singleShot(10000, this, [this]() {m_system->updateFirmware();});
         }
