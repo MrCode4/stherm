@@ -107,12 +107,13 @@ I_DeviceController {
         onTriggered:
         {
             if (!deviceControllerCPP.system.fetchSettings()) {
-                interval = interval * 2;
-                if (interval > 60000)
-                    interval = 60000;
+                var intervalNew = interval * 2;
+                if (intervalNew > 60000)
+                    intervalNew = 60000;
+                interval = intervalNew;
                 console.log("fetching failed, backing off to ", interval)
             } else {
-              interval = 5000;
+                interval = 5000;
                 console.log("fetching success, back to ", interval)
             }
         }
