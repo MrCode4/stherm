@@ -75,9 +75,7 @@ I_DeviceController {
         target: device.backlight
 
         function onOnChanged() {
-           if (device.backlight.on) {
-               updateNightMode(AppSpec.NMOff);
-           }
+           updateNightModeWithBacklight();
         }
     }
 
@@ -154,6 +152,9 @@ I_DeviceController {
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
+
+        console.log("Update night mode with Backlight")
+        updateNightModeWithBacklight();
     }
 
     /* Children
@@ -196,9 +197,7 @@ I_DeviceController {
             device.backlight.value = brightness;
             device.backlight.shadeIndex = shadeIndex;
 
-            if (device.backlight.on) {
-                updateNightMode(AppSpec.NMOff);
-            }
+            updateNightModeWithBacklight();
 
         } else {
             console.log("revert the backlight in model: ")
@@ -419,5 +418,13 @@ I_DeviceController {
     function updateNightMode(nightMode : int) {
         if (device)
             device.nightMode.mode = nightMode;
+    }
+
+    function updateNightModeWithBacklight() {
+        if (device && device.backlight.on) {
+            updateNightMode(AppSpec.NMOff);
+        } else {
+            updateNightMode(AppSpec.NMOn);
+        }
     }
 }

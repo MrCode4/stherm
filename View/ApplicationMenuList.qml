@@ -80,7 +80,8 @@ ListView {
         },
         {
             "icon": FAIcons.night,
-            "text": "Night Mode"
+            "text": "Night Mode",
+            "visible": false
         },
         {
             "icon": FAIcons.fileExclamation,
