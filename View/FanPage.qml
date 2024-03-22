@@ -41,6 +41,8 @@ BasePageView {
                 deviceController.updateFan(fanMode, _hourSliders.value);
             }
 
+            deviceController.finalizeSettings();
+
             //! Also move out of this Page
             if (_root.StackView.view) {
                 _root.StackView.view.pop();

@@ -296,6 +296,7 @@ BasePageView {
         if (schedulesController) {
             schedulesController.saveNewSchedule(_internal.newSchedule);
         }
+        deviceController.finalizeSettings();
 
         if (root.StackView.view) {
             root.StackView.view.pop();

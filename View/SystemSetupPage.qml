@@ -20,7 +20,10 @@ BasePageView {
 
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSystemSetup);
 
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+    Component.onDestruction: {
+        deviceController.finalizeSettings();
+        deviceController.updateEditMode(AppSpec.EMNone);
+    }
 
     /* Children
      * ****************************************************************************************/

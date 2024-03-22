@@ -60,6 +60,8 @@ BasePageView {
                                              _humSlider.first.value, _humSlider.second.value);
             }
 
+            deviceController.finalizeSettings();
+
             saved();
         }
     }
