@@ -8,7 +8,7 @@ import Stherm
  * SystemTypeTraditionPage handle setting values in tranditional system type
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -20,22 +20,29 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Confirm button
+
+    //! Confirm/Next button
     ToolButton {
-        parent: _root.header.contentItem
+        parent: root.header.contentItem
         contentItem: RoniaTextIcon {
-            text: "\uf00c"
+            text: initialSetup ? FAIcons.arrowRight : "\uf00c"
         }
 
         onClicked: {
             //! Do neccessary updates
-            if (deviceController) {
-                deviceController.setSystemTraditional(traditionalCoolStageLayout.traditionalCoolStage,
-                                                      traditionalHeatStageLayout.traditionalHeatStage)
-            }
+           updateModel()
 
-            //! Also move out of this Page
-            goToSystemSetupPage();
+            if (initialSetup) {
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+                                                  "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                              });
+                }
+            } else {
+                //! Also move out of this Page
+                goToSystemSetupPage();
+            }
         }
     }
 
@@ -115,6 +122,13 @@ BasePageView {
         }
     }
 
+    function updateModel() {
+        if (deviceController) {
+            deviceController.setSystemTraditional(traditionalCoolStageLayout.traditionalCoolStage,
+                                                  traditionalHeatStageLayout.traditionalHeatStage)
+        }
+    }
+
     function goToSystemSetupPage()
     {
         if (initialSetup) {
@@ -122,14 +136,14 @@ BasePageView {
             return;
         }
 
-        if (_root.StackView.view) {
+        if (root.StackView.view) {
             //! Then Page is inside an StackView
-            if (_root.StackView.view.currentItem == _root) {
+            if (root.StackView.view.currentItem == root) {
                 //! Pop twice to get back to SystemSetupPage
-                if (_root.StackView.view.get(_root.StackView.view.depth - 2, StackView.DontLoad) instanceof SystemTypePage) {
-                    _root.StackView.view.pop();
+                if (root.StackView.view.get(root.StackView.view.depth - 2, StackView.DontLoad) instanceof SystemTypePage) {
+                    root.StackView.view.pop();
                 }
-                _root.StackView.view.pop();
+                root.StackView.view.pop();
             }
         }
     }
