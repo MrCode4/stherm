@@ -186,7 +186,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
     QByteArray dataRaw = netReply->readAll();
     const QJsonDocument jsonDoc = QJsonDocument::fromJson(dataRaw);
     const QJsonObject jsonDocObj = jsonDoc.object();
-    if (errorString.isEmpty() && !jsonDocObj.contains("data")) {
+    if (errorString.isEmpty() && !jsonDocObj.contains("data") && method != m_getContractorLogo) {
         errorString = "server returned null response";
     }
 
