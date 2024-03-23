@@ -89,7 +89,8 @@ Popup {
 
                 vacationModePop.counter--;
                 if (deviceController && vacationModePop.counter <= 0) {
-                     deviceController.setVacationOn(true);
+                    deviceController.setVacationOn(true);
+                    uiSession.showMainWindow = true;
                 }
             }
         }
@@ -123,7 +124,7 @@ Popup {
                     deviceController.setVacationOn(false);
                 }
 
-                uiSession.showMainWindow = true;
+                //uiSession.showMainWindow = true;
             }
         }
 

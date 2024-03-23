@@ -36,7 +36,7 @@ I_DeviceController {
             root.device.contactContractor.phoneNumber   = phoneNumber
             root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl
             root.device.contactContractor.qrURL         = url
-//            root.device.contactContractor.technicianURL = techUrl
+            //            root.device.contactContractor.technicianURL = techUrl
         }
     }
 
@@ -55,7 +55,7 @@ I_DeviceController {
             // should we ignore on some cases?
             console.log("loaded settings sn: ", settings.sn, "%%%%%%%%%%%%%%%%%%%%%%%");
             checkQRurl(settings.qr_url)
-            updateHold(settings.hold)
+            updateHoldServer(settings.hold)
             updateFanServer(settings.fan)
             setVacationServer(settings.vacation)
             setRequestedHumidityFromServer(settings.humidity)
@@ -70,6 +70,7 @@ I_DeviceController {
         function onCanFetchServerChanged() {
             if (deviceControllerCPP.system.canFetchServer) {
                 settingsPushRetry.failed = false;
+                settingsPushRetry.interval = 5000;
             }
         }
 
@@ -79,11 +80,21 @@ I_DeviceController {
                 if (settingsPushRetry.interval > 60000)
                     settingsPushRetry.interval = 60000;
             } else {
-                settingsPushRetry.interval = 5000;
                 settingsPushRetry.failed = true;
             }
 
             settingsPushRetry.start()
+        }
+    }
+
+    property Timer  settingsPush: Timer {
+        repeat: false;
+        running: false;
+        interval: 100;
+
+        onTriggered:
+        {
+            pushToServer();
         }
     }
 
@@ -96,7 +107,7 @@ I_DeviceController {
 
         onTriggered:
         {
-            pushToServer();
+            settingsPush.start();
         }
     }
 
@@ -145,11 +156,11 @@ I_DeviceController {
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
 
         var send_data = [device.setting.brightness, device.setting.volume, device.setting.tempratureUnit, device.setting.timeFormat, false, device.setting.adaptiveBrightness];
-       if (!deviceControllerCPP.setSettings(send_data)){
-           console.warn("setting failed");
-       }
+        if (!deviceControllerCPP.setSettings(send_data)){
+            console.warn("setting failed");
+        }
 
-       settingsLoader.start();
+        settingsLoader.start();
     }
 
     onStopDeviceRequested: {
@@ -185,7 +196,7 @@ I_DeviceController {
         var g = Math.round(color.g * 255)
         var b = Math.round(color.b * 255)
 
-//        console.log("colors: ", r, ",", g, ",", b)
+        //        console.log("colors: ", r, ",", g, ",", b)
 
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
         //! 1: mode
@@ -195,7 +206,7 @@ I_DeviceController {
         //!    LED_NO_MODE= 3
         var send_data = [r, g, b, 0, isOn ? "true" : "false"];
 
-//        console.log("send data: ", send_data)
+        //        console.log("send data: ", send_data)
 
         return deviceControllerCPP.setBacklight(send_data);
     }
@@ -233,7 +244,7 @@ I_DeviceController {
 
         console.log("setVacationServer")
         setVacation(settings.min_temp, settings.max_temp, settings.min_humidity, settings.max_humidity)
-        setVacationOn(settings.is_enable) // showMainWindow TODO
+        setVacationOn(settings.is_enable)
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
@@ -282,10 +293,10 @@ I_DeviceController {
                     );
 
         var send_data = [brightness, volume, temperatureUnit, timeFormat, reset, adaptive];
-       if (!deviceControllerCPP.setSettings(send_data)){
-           console.warn("setting failed");
-           return;
-       }
+        if (!deviceControllerCPP.setSettings(send_data)){
+            console.warn("setting failed");
+            return;
+        }
 
         // Update setting when setSettings is successful.
         if (device.setting.brightness !== brightness) {
@@ -310,7 +321,8 @@ I_DeviceController {
     }
 
     function finalizeSettings() {
-        pushToServer();
+        if (!settingsPush.running)
+            settingsPush.start()
     }
 
     function setSettingsServer(settings: var) {
@@ -406,27 +418,27 @@ I_DeviceController {
                                  })
 
         device.messages.forEach(message =>
-                                 {
-                                     send_data.messages.push(
-                                         {
-                                             "icon": message.icon,
-                                             "message": message.message,
-                                             "type": message.type,
-                                             "isRead": message.isRead,
-                                             "datetime": message.datetime,
-                                         })
-                                 })
+                                {
+                                    send_data.messages.push(
+                                        {
+                                            "icon": message.icon,
+                                            "message": message.message,
+                                            "type": message.type,
+                                            "isRead": message.isRead,
+                                            "datetime": message.datetime,
+                                        })
+                                })
 
         device._sensors.forEach(sensor =>
-                                 {
-                                     send_data.sensors.push(
-                                         {
-                                             "name": sensor.name,
-                                             "location": sensor.location === 0 ? "Office" : "Bedroom", // string
-                                             "type": sensor.type === 0 ? "OnBoard" : "Wireless", //string
-                                             "uid": "213137"
-                                         })
-                                 })
+                                {
+                                    send_data.sensors.push(
+                                        {
+                                            "name": sensor.name,
+                                            "location": sensor.location === 0 ? "Office" : "Bedroom", // string
+                                            "type": sensor.type === 0 ? "OnBoard" : "Wireless", //string
+                                            "uid": "213137"
+                                        })
+                                })
 
 
         deviceControllerCPP.pushSettingsToServer(send_data)
@@ -556,7 +568,7 @@ I_DeviceController {
     //! Read data from system with getMainData method.
     function updateInformation()
     {
-//        console.log("--------------- Start: updateInformation -------------------")
+        //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
 
         // should be catched later here
@@ -570,14 +582,20 @@ I_DeviceController {
         //        console.log("--------------- End: updateInformation -------------------")
     }
 
-    function updateHold(isHold)
+    function updateHoldServer(isHold)
     {
-        // TODO should be updated to inform the logics
 
         if (editMode === AppSpec.EMHold) {
             console.log("The hold page is being edited and cannot be updated by the server.")
             return;
         }
+
+        updateHold(isHold);
+    }
+
+    function updateHold(isHold)
+    {
+        // TODO should be updated to inform the logics
 
         device._isHold = isHold;
     }
