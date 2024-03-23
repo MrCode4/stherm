@@ -125,6 +125,24 @@ QtObject {
         deviceController.setActivatedSchedule(currentSchedule);
     }
 
+    function formatTime(timeString) {
+        // Split the time string into hours, minutes, and seconds
+        const [hoursString, minutes, seconds] = timeString.split(':');
+
+        // Convert hours to a number and handle leading zero
+        const hours = parseInt(hoursString, 10).padStart(2, '0');
+
+        // Convert hours to 12-hour format and add AM/PM
+        const amPm = hours >= 12 ? 'PM' : 'AM';
+        const adjustedHours = hours % 12 || 12;  // Adjust for 12-hour format and noon
+
+        // Format minutes with leading zero if needed
+        const formattedMinutes = minutes.padStart(2, '0');
+
+        // Return the formatted time string
+        return `${hours}:${formattedMinutes} ${amPm}`;
+    }
+
     //! Compare the server schedules and the model schedules and update model based on the server data.
     function setSchedulesFromServer(serverSchedules: var) {
 
@@ -178,8 +196,8 @@ QtObject {
                                       newSchedule.type = schedule.type_id;
                                       newSchedule.temprature = schedule.temp;
                                       newSchedule.humidity = schedule.humidity;
-                                      newSchedule.startTime = schedule.start_time;
-                                      newSchedule.endTime = schedule.end_time;
+                                      newSchedule.startTime = formatTime(schedule.start_time);
+                                      newSchedule.endTime = formatTime(schedule.end_time);
                                       newSchedule.repeats = schedule.weekdays.map(String).join(',');
                                       newSchedule.dataSource = schedule.dataSource;
 
@@ -195,13 +213,13 @@ QtObject {
                                       if (foundSchedule.type !== schedule.type_id) {
                                           foundSchedule.type = schedule.type_id;
                                       }
-
-                                      if (foundSchedule.startTime !== schedule.start_time) {
-                                          foundSchedule.startTime = schedule.start_time;
+                                      var startTime = formatTime(schedule.start_time);
+                                      if (foundSchedule.startTime !== startTime) {
+                                          foundSchedule.startTime = startTime;
                                       }
-
-                                      if (foundSchedule.endTime !== schedule.end_time) {
-                                          foundSchedule.endTime = schedule.end_time;
+                                      var endTime = formatTime(schedule.end_time)
+                                      if (foundSchedule.endTime !== endTime) {
+                                          foundSchedule.endTime = endTime;
                                       }
 
                                       if (foundSchedule.temprature !== schedule.temp) {
