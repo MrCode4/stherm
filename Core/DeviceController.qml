@@ -60,21 +60,17 @@ I_DeviceController {
             // should we ignore on some cases?
             console.log("loaded settings sn: ", settings.sn, "%%%%%%%%%%%%%%%%%%%%%%%");
 
-            if (editMode !== AppSpec.EMSystemMode) {
-                console.log("The system setup is being edited and cannot be updated (mode_id) by the server.")
-                device.systemSetup.systemMode = parseInt(settings.mode_id) - 1;
-            }
-
             checkQRurl(settings.qr_url)
             updateHoldServer(settings.hold)
             updateFanServer(settings.fan)
-            setVacationServer(settings.vacation)
+            setSettingsServer(settings.setting)
             setRequestedHumidityFromServer(settings.humidity)
             setDesiredTemperatureFromServer(settings.temp)
-            checkMessages(settings.messages)
+            setSystemModeServer(settings.mode_id)
             setSchedulesFromServer(settings.schedule)
+            setVacationServer(settings.vacation)
+            checkMessages(settings.messages)
             checkSensors(settings.sensors)
-            setSettingsServer(settings.setting)
             setSystemSetupServer(settings.system)
         }
 
@@ -430,7 +426,8 @@ I_DeviceController {
                 "systemRunDelay": device.systemSetup.systemRunDelay,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
-                    "mode": device.systemSetup.systemAccessories.accessoriesType,
+                    "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
+                                AppSpec.ATNone : device.systemSetup.systemAccessories.accessoriesType,
                 }
             },
         }
@@ -480,6 +477,18 @@ I_DeviceController {
 
     function checkQRurl(url: var) {
         console.log("checkQRurl", url)
+    }
+
+    function setSystemModeServer(mode_id) {
+        if (editMode === AppSpec.EMSystemMode) {
+            console.log("The system setup is being edited and cannot be updated (mode_id) by the server.")
+        } else {
+            var modeInt = parseInt() - 1;
+            //! Vacation will be handled using setVacationServer
+            if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Off &&
+                    modeInt !== AppSpec.Vacation)
+                device.systemSetup.systemMode = modeInt;
+        }
     }
 
     function setDesiredTemperatureFromServer(temperature: real) {
@@ -568,7 +577,16 @@ I_DeviceController {
         device.systemSetup.systemRunDelay = settings.systemRunDelay;
         setSystemAccesseoriesServer(settings.systemAccessories)
 
-        device.systemSetup.systemType = AppSpec.systemTypeToEnum(settings.type);
+        if (settings.type === "traditional")
+            setSystemTraditional(settings.coolStage, settings.heatStage);
+        else if(settings.type === "heating")
+            setSystemHeatOnly(settings.heatStage)
+        else if(settings.type === "heat_pump")
+            setSystemHeatPump(settings.heatPumpEmergency, settings.heatStage, settings.heatPumpOBState)
+        else if(settings.type === "cooling")
+            setSystemCoolingOnly(settings.coolStage)
+        else
+            console.warn("System type unknown", settings.type)
     }
 
     function checkSensors(sensors: var) {
