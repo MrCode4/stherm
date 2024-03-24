@@ -74,6 +74,7 @@ I_DeviceController {
     property Connections nightMode_BacklightController: Connections {
         target: device.backlight
 
+        enabled: false
         function onOnChanged() {
            updateNightModeWithBacklight();
         }
@@ -421,6 +422,8 @@ I_DeviceController {
     }
 
     function updateNightModeWithBacklight() {
+        return;
+
         if (device && device.backlight.on) {
             updateNightMode(AppSpec.NMOff);
         } else {
