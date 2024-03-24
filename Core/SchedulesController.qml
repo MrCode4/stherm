@@ -130,7 +130,7 @@ QtObject {
         const [hoursString, minutes, seconds] = timeString.split(':');
 
         // Convert hours to a number and handle leading zero
-        const hours = parseInt(hoursString, 10).padStart(2, '0');
+        const hours = parseInt(hoursString, 10);
 
         // Convert hours to 12-hour format and add AM/PM
         const amPm = hours >= 12 ? 'PM' : 'AM';
@@ -140,7 +140,7 @@ QtObject {
         const formattedMinutes = minutes.padStart(2, '0');
 
         // Return the formatted time string
-        return `${hours}:${formattedMinutes} ${amPm}`;
+        return `${adjustedHours.toString().padStart(2, '0')}:${formattedMinutes} ${amPm}`;
     }
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
