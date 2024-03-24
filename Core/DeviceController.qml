@@ -424,10 +424,12 @@ I_DeviceController {
     }
 
     function updateNightModeWithBacklight() {
-        if (device && device.backlight.on) {
-            updateNightMode(AppSpec.NMOff);
-        } else {
-            updateNightMode(AppSpec.NMOn);
+        if (deviceControllerCPP.system.testMode || uiSession.uiTetsMode) {
+            if (device && device.backlight.on) {
+                updateNightMode(AppSpec.NMOff);
+            } else {
+                updateNightMode(AppSpec.NMOn);
+            }
         }
     }
 }
