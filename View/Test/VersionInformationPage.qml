@@ -15,7 +15,12 @@ BasePageView {
      * ****************************************************************************************/
     title: "Version Info"
 
-    Component.onCompleted: timer.start()
+    // Start the test mode
+    Component.onCompleted: {
+        appModel.nightMode.mode = AppSpec.NMOn;
+
+        timer.start();
+    }
 
     /* Children
      * ****************************************************************************************/
