@@ -486,7 +486,7 @@ I_DeviceController {
         if (editMode === AppSpec.EMSystemMode) {
             console.log("The system setup is being edited and cannot be updated (mode_id) by the server.")
         } else {
-            var modeInt = parseInt() - 1;
+            var modeInt = parseInt(mode_id) - 1;
             //! Vacation will be handled using setVacationServer
             if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Off &&
                     modeInt !== AppSpec.Vacation)
