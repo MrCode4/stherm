@@ -43,6 +43,8 @@ BasePageView {
 
     //! Once the network connection is established, the System Types page should automatically open,
     Timer {
+        id: nextPageTimer
+
         property bool once : false
 
         repeat: false
@@ -72,6 +74,8 @@ BasePageView {
         // Enable when the serial number is correctly filled
         enabled: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && settingsReady
         onClicked: {
+            nextPageTimer.stop();
+            nextPageTimer.once = true;
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                              "uiSession": uiSession,
