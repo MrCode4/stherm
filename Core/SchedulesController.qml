@@ -46,6 +46,9 @@ QtObject {
             device.schedulesChanged();
 
 //            schedule.destroy();
+
+            // Send data to server
+            deviceController.finalizeSettings();
         }
     }
 
