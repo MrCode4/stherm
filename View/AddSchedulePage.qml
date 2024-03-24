@@ -36,10 +36,6 @@ BasePageView {
     }
     backButtonTextIcon: _newSchedulePages.depth > 1 ? "\uf00d" : "\uf060"
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSchedule);
-
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
-
     /* Children
      * ****************************************************************************************/
     //! Next/Confirm button
