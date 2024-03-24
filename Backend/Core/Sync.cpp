@@ -329,12 +329,12 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
         } else if (method == m_getContractorInfo) {
             Q_EMIT contractorInfoReady();
             QString error = "Unable to fetch the Contarctor Info, Please check your internet connection: ";
-            emit alert(error + errorString);
+//            emit alert(error + errorString);
             qWarning() << error << errorString ;
         } else if (method == m_getContractorLogo) {
             Q_EMIT contractorInfoReady();
             QString error = "Unable to fetch the Contarctor logo, Please check your internet connection: ";
-            emit alert(error + errorString);
+//            emit alert(error + errorString);
             qWarning() << error << errorString;
         } else if (method == m_getSettings) {
             QString error = "Unable to fetch the settings, Please check your internet connection: ";
