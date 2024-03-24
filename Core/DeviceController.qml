@@ -264,7 +264,7 @@ I_DeviceController {
 
         console.log("setVacationServer")
         setVacation(settings.min_temp, settings.max_temp, settings.min_humidity, settings.max_humidity)
-        setVacationOn(settings.is_enable)
+        setVacationOnFromServer(settings.is_enable)
     }
 
     function setVacation(temp_min, temp_max, hum_min, hum_max)
@@ -290,6 +290,11 @@ I_DeviceController {
 
             device.systemSetup.systemMode = systemMode;
         }
+    }
+
+    //! On/off the vacation from server.
+    function setVacationOnFromServer(on: bool) {
+        device.systemSetup.isVacation = on;
     }
 
     //! On/off the vacation.
