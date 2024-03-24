@@ -106,6 +106,7 @@ BasePageView {
                     break;
 
                 case "Test Mode": {
+                    uiSession.uiTetsMode = true;
                     _root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });

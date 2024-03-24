@@ -12,6 +12,8 @@ I_DeviceController {
     /* Property Declarations
      * ****************************************************************************************/
 
+    property var uiSession
+
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
@@ -74,7 +76,8 @@ I_DeviceController {
     property Connections nightMode_BacklightController: Connections {
         target: device.backlight
 
-        enabled: false
+        enabled: deviceControllerCPP.system.testMode || uiSession.uiTetsMode
+
         function onOnChanged() {
            updateNightModeWithBacklight();
         }
@@ -155,7 +158,6 @@ I_DeviceController {
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
 
         console.log("Update night mode with Backlight")
-        updateNightModeWithBacklight();
     }
 
     /* Children
@@ -422,8 +424,6 @@ I_DeviceController {
     }
 
     function updateNightModeWithBacklight() {
-        return;
-
         if (device && device.backlight.on) {
             updateNightMode(AppSpec.NMOff);
         } else {

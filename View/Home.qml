@@ -308,6 +308,7 @@ Control {
 
             //! Open a test mode page from home when app start with test mode.
             if (startMode === 0) {
+                uiSession.uiTetsMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
