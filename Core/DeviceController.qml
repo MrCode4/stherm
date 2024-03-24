@@ -400,7 +400,7 @@ I_DeviceController {
                 "brightness_mode": device.setting.adaptiveBrightness ? 1 : 0,
                 "speaker": device.setting.volume,
                 "temperatureUnit": device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 1 : 0,
-                "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour12 ? 1 : 0,
+                "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour24 ? 1 : 0,
                 "currentTimezone": device.setting.currentTimezone.length > 0 ? device.setting.currentTimezone : "UTC",
                 "effectDst": device.setting.effectDst,
             },
