@@ -34,6 +34,9 @@ QtObject {
 
         device.schedules.push(newSchedule);
         device.schedulesChanged();
+
+        // Send data to server
+        deviceController.finalizeSettings();
     }
 
     //! Remove an schedule
