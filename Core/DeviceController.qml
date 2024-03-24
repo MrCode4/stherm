@@ -200,6 +200,7 @@ I_DeviceController {
         console.log("editMode = ", editMode);
         if (editMode !== AppSpec.EMNone) {
             root.editMode = editMode;
+            editModeTimer.stop();
 
         } else {
             editModeTimer.start();
@@ -294,6 +295,8 @@ I_DeviceController {
     //! On/off the vacation.
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
+
+        finalizeSettings();
     }
 
     //! Set device settings
@@ -376,7 +379,7 @@ I_DeviceController {
             "current_temp": device.currentTemp.toString(),
             "co2_id": device._co2_id + 1,
             "hold" : device._isHold,
-            "mode_id" : device.systemSetup.systemMode,
+            "mode_id" : device.systemSetup.systemMode + 1,
             "fan" : {
                 "mode" : device.fan.mode,
                 "workingPerHour": device.fan.workingPerHour,
