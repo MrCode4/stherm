@@ -314,6 +314,7 @@ Control {
                                        });
 
             } else {
+                deviceController.setInitialSetup(true);
                 //! Open WifiPage
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {

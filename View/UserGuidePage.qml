@@ -22,6 +22,19 @@ BasePageView {
      * ****************************************************************************************/
     title: "Technician Access"
 
+    Component.onCompleted: {
+        if (initialSetup) {
+            deviceController.finalizeSettings();
+        }
+    }
+
+    Component.onDestruction: {
+        if (initialSetup) {
+            deviceController.setInitialSetup(false);
+            deviceController.finalizeSettings();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
 

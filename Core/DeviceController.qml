@@ -17,6 +17,8 @@ I_DeviceController {
 
     property int editMode: AppSpec.EMNone
 
+    property bool initalSetup: false;
+
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
@@ -118,7 +120,7 @@ I_DeviceController {
 
     property Timer  settingsLoader: Timer {
         repeat: true;
-        running: false;
+        running: !initalSetup;
         interval: 5000;
         onTriggered:
         {
@@ -174,8 +176,6 @@ I_DeviceController {
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }
-
-        settingsLoader.start();
     }
 
     onStopDeviceRequested: {
@@ -197,6 +197,9 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
 
+    function setInitialSetup(init: bool) {
+        initalSetup = init;
+    }
 
     function updateEditMode(editMode : int) {
         console.log("editMode = ", editMode);
