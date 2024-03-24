@@ -23,6 +23,10 @@ I_PopUp {
     leftPadding: 24; rightPadding: 24
     title: "\u00b0F / \u00b0C"
 
+
+    onOpened: uiSession.deviceController.updateEditMode(AppSpec.EMSettings);
+    onClosed: uiSession.deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
@@ -57,6 +61,8 @@ I_PopUp {
                         appModel.setting.tempratureUnit = AppSpec.TempratureUnit.Fah;
                     }
                 }
+
+                uiSession.deviceController.finalizeSettings();
 
                 delayedClose.start();
             }
