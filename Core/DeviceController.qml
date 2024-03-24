@@ -19,6 +19,77 @@ I_DeviceController {
 
     property bool initalSetup: false;
 
+    property var uiSession
+
+    //! Timer to check and run the night mode.
+    property Timer nightModeControllerTimer: Timer {
+        repeat: true
+        running: device.nightMode.mode === AppSpec.NMOn
+
+        interval: 1000
+
+        onTriggered: {
+            var currentTime = new Date();
+            device.nightMode._running = currentTime.getHours() >= 22 || currentTime.getHours() < 7;
+        }
+    }
+
+    //! Manage the night mode
+    property Connections nightModeController: Connections {
+        target: device.nightMode
+
+        function onModeChanged() {
+            if (device.nightMode.mode === AppSpec.NMOff) {
+                device.nightMode._running = false;
+            }
+        }
+
+        function on_RunningChanged() {
+            if (device.nightMode._running) {
+                // Apply night mode
+                // Set night mode settings
+                // LCD should be set to minimum brightness, and ideally disabled.
+                var send_data = [5, 0, device.setting.tempratureUnit,
+                                 device.setting.timeFormat, false, false];
+                if (!deviceControllerCPP.setSettings(send_data)){
+                    console.warn("setting failed");
+                }
+
+                // Set night mode backlight.
+                // LED light ring will be completely disabled.
+                updateDeviceBacklight(false, Qt.color("black"));
+
+                deviceControllerCPP.nightModeControl(true);
+
+            } else {
+                // revert to model
+                if (device)
+                    setSettings(device.setting.brightness, device.setting.volume, device.setting.tempratureUnit,
+                                device.setting.timeFormat, false, device.setting.adaptiveBrightness)
+
+                var backlight = device.backlight;
+                if (backlight) {
+                    var color = device.backlight.backlightFinalColor(backlight.shadeIndex,
+                                                                     backlight.hue,
+                                                                     backlight.value);
+                    updateDeviceBacklight(backlight.on, color);
+                }
+
+                deviceControllerCPP.nightModeControl(false);
+            }
+        }
+    }
+
+    property Connections nightMode_BacklightController: Connections {
+        target: device.backlight
+
+        enabled: deviceControllerCPP.system.testMode || uiSession.uiTetsMode
+
+        function onOnChanged() {
+           updateNightModeWithBacklight();
+        }
+    }
+
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
@@ -245,6 +316,24 @@ I_DeviceController {
 
         console.log("updateFanSettings")
         updateFan(settings.mode, settings.workingPerHour)
+    }
+
+    function updateBacklight(isOn, hue, brightness, shadeIndex)
+    {
+        var color = device.backlight.backlightFinalColor(shadeIndex, hue, brightness);
+
+        if (updateDeviceBacklight(isOn, color)) {
+            device.backlight.on = isOn;
+            device.backlight.hue = hue;
+            device.backlight.value = brightness;
+            device.backlight.shadeIndex = shadeIndex;
+
+            updateNightModeWithBacklight();
+
+        } else {
+            console.log("revert the backlight in model: ")
+        }
+
     }
 
     function updateFan(mode: int, workingPerHour: int)
@@ -701,5 +790,20 @@ I_DeviceController {
             return "qrc:/Stherm/Images/lee_s.png"
 
         return "qrc:/Stherm/Images/nuve-icon.png"
+    }
+
+    function updateNightMode(nightMode : int) {
+        if (device)
+            device.nightMode.mode = nightMode;
+    }
+
+    function updateNightModeWithBacklight() {
+        if (deviceControllerCPP.system.testMode || uiSession.uiTetsMode) {
+            if (device && device.backlight.on) {
+                updateNightMode(AppSpec.NMOff);
+            } else {
+                updateNightMode(AppSpec.NMOn);
+            }
+        }
     }
 }

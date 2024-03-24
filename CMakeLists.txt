@@ -84,6 +84,7 @@ qt6_add_qml_module(appStherm
         Core/Utils.qml
         Core/DateTimeManager.qml
         Core/ContactContractor.qml
+        Core/NightMode.qml
 
 
         # Primitive Components
@@ -179,6 +180,7 @@ qt6_add_qml_module(appStherm
         View/AboutDevicePage.qml
         View/UserGuidePage.qml
         View/ContactContractorPage.qml
+        View/NightModePage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
@@ -370,6 +372,8 @@ qt6_add_qml_module(appStherm
 
         # Update file
         update.sh
+        update_fw_nrf.sh
+        nrf_fw_update.zip
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

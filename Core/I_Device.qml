@@ -68,6 +68,9 @@ QSObject {
     //! Vacation
     property Vacation       vacation:       Vacation {}
 
+    //! Night Mode
+    property NightMode       nightMode:      NightMode {}
+
     // System setup
     property SystemSetup    systemSetup:    SystemSetup {
         _qsRepo: appModel._qsRepo

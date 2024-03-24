@@ -23,7 +23,7 @@ BasePageView {
 
     Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
 
-    /* Childrent
+    /* Children
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {

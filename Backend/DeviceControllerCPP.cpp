@@ -2,6 +2,29 @@
 
 #include "LogHelper.h"
 
+//! Set CPU governer in the zeus base system
+//! It is strongly dependent on the kernel.
+inline void setCPUGovernor(QString governer) {
+#ifdef __unix__
+    QDir cpuDir("/sys/devices/system/cpu/");
+    QStringList cpuList = cpuDir.entryList(QStringList() << "cpu[0-9]*");
+
+    TRACE << "CPU List: =" << cpuList;
+
+    foreach (const QString& cpu, cpuList) {
+        QString governorFile = QString("/sys/devices/system/cpu/%1/cpufreq/scaling_governor").arg(cpu);
+        QFile file(governorFile);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+            QTextStream out(&file);
+            out << governer; // Set CPU governor
+            file.close();
+            TRACE << "Set CPU" << cpu << "governor to " << governer;
+        } else {
+            TRACE << "Failed to set CPU" << cpu << "governor to performance";
+        }
+    }
+#endif
+}
 
 DeviceControllerCPP* DeviceControllerCPP::sInstance = nullptr;
 
@@ -51,6 +74,13 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mainDataMap.insert("fanSpeed",        0);
     setMainData(mainDataMap);
 
+    mNightModeTimer.setTimerType(Qt::PreciseTimer);
+    mNightModeTimer.setInterval(5000 * 60);
+    mNightModeTimer.setSingleShot(true);
+    connect(&mNightModeTimer, &QTimer::timeout, this, [this]() {
+        _deviceIO->setFanSpeed(0);
+    });
+
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
     mBacklightPowerTimer.setSingleShot(false);
     mBacklightPowerTimer.setInterval(1000);
@@ -68,6 +98,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // Update nrf version
     connect(_deviceIO, &DeviceIOController::nrfVersionUpdated, this, [this]() {
         emit nrfVersionChanged();
+
+        TRACE << "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVvvvvvv" << getNRF_SW();
+        if (getNRF_SW() != "01.10-RC1") {
+            TRACE << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx";
+            QTimer::singleShot(10000, this, [this]() {m_system->updateFirmware();});
+        }
     });
 
     // Update ti version
@@ -143,6 +179,23 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
     }
 
     return success;
+}
+
+//! TODO
+//! Handle the CPU frequency or governor will be set to minimum speed level.
+//! Handle other power limiting functions
+void DeviceControllerCPP::nightModeControl(bool start)
+{
+    if (start) {
+        setCPUGovernor("powersave");
+        mNightModeTimer.start();
+
+    } else {
+        mNightModeTimer.stop();
+        setCPUGovernor("ondemand");
+        _deviceIO->setFanSpeed(16); //100 / 7
+    }
+
 }
 
 bool DeviceControllerCPP::setSettings(QVariantList data)

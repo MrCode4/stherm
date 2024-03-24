@@ -21,6 +21,7 @@ const QString m_updateFromServer= QString("UpdateFromServer");
 const QString m_checkInternetConnection = QString("checkInternetConnection");
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
+const QString m_updateNRFService   = QString("/etc/systemd/system/nrf-fw-update.service");
 
 const char m_isBusyDownloader[] = "isBusyDownloader";
 
@@ -98,6 +99,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     mountUpdateDirectory();
     mountRecoveryDirectory();
+
+    installUpdate_NRF_FW_Service();
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
@@ -195,6 +198,88 @@ bool NUVE::System::installUpdateService()
     return true;
 }
 
+bool NUVE::System::installUpdate_NRF_FW_Service()
+{
+#ifdef __unix__
+    QFile updateFileSH("/usr/local/bin/update_fw_nrf.sh");
+    if (updateFileSH.exists())
+        updateFileSH.remove("/usr/local/bin/update_fw_nrf.sh");
+
+    QFile copyFile(":/Stherm/update_fw_nrf.sh");
+    if (!copyFile.copy("/usr/local/bin/update_fw_nrf.sh")) {
+        TRACE << "update_fw_nrf.sh file did not updated: " << copyFile.errorString();
+        TRACE << qApp->applicationDirPath();
+
+        return false;
+    }
+
+    QFile updateFileZip("/mnt/update/nrf_fw/update.zip");
+    if (updateFileZip.exists())
+        updateFileZip.remove("/mnt/update/nrf_fw/update.zip");
+
+
+    QFile copyFileZip(":/Stherm/nrf_fw_update.zip");
+    if (!copyFileZip.copy("/mnt/update/nrf_fw/update.zip")) {
+        TRACE << "udpate.zip file did not updated: " << copyFileZip.errorString();
+        TRACE << qApp->applicationDirPath();
+
+        return false;
+    }
+
+    auto exitCode = QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/update_fw_nrf.sh"});
+    if (exitCode == -1 || exitCode == -2)
+        return false;
+
+    QFile updateServiceFile(m_updateNRFService);
+
+    QString serviceContent = "[Unit]\n"
+                             "Description=Nuve Smart HVAC nrf fw update service\n"
+                             "[Service]\n"
+                             "Type=simple\n"
+                             "ExecStart=/bin/bash -c \"/usr/local/bin/update_fw_nrf.sh\"\n"
+                             "Restart=on-failure\n"
+                             "[Install]\n"
+                             "WantedBy=multi-user.target";
+
+    bool neetToUpdateService = true;
+
+    // Check the service
+    if (updateServiceFile.exists()) {
+        if (updateServiceFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            neetToUpdateService = updateServiceFile.readAll() != serviceContent.toUtf8();
+            updateServiceFile.close();
+
+        }
+    }
+
+    if (neetToUpdateService && updateServiceFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+
+        updateServiceFile.write(serviceContent.toUtf8());
+
+        updateServiceFile.close();
+
+        // Reload systemd to read the updated service files
+        // QProcess::execute("/bin/bash", {"-c", "systemctl daemon-reload"});
+
+        TRACE << "The update service successfully installed.";
+
+    } else if (!neetToUpdateService) {
+        TRACE << "The service is already installed..";
+
+    } else {
+        TRACE << "Unable to install the update service.";
+
+        return false;
+    }
+
+    // Disable the nrf-fw-update.service
+    exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl disable nrf-fw-update.service;"});
+    if (exitCode == -1 || exitCode == -2)
+        return false;
+
+#endif
+    return true;
+}
 bool  NUVE::System::mountUpdateDirectory()
 {
     if (mountDirectory("/mnt/update", "/mnt/update/latestVersion")) {
@@ -438,6 +523,21 @@ void NUVE::System::partialUpdate() {
 void NUVE::System::partialUpdateByVersion(const QString version)
 {
     checkAndDownloadPartialUpdate(version);
+}
+
+void NUVE::System::updateFirmware()
+{
+    TRACE << "starting fw nrf update" ;
+
+#ifdef __unix__
+
+
+    installUpdate_NRF_FW_Service();
+
+    int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable nrf-fw-update.service; systemctl start nrf-fw-update.service"});
+    TRACE << exitCode;
+#endif
+
 }
 
 void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion)

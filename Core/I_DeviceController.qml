@@ -23,21 +23,7 @@ QtObject {
     /* Functions
      * ****************************************************************************************/
 
-    function updateBacklight(isOn, hue, brightness, shadeIndex)
-    {
-        var color = device.backlight.backlightFinalColor(shadeIndex, hue, brightness);
-
-        if (updateDeviceBacklight(isOn, color))
-        {
-            device.backlight.on = isOn;
-            device.backlight.hue = hue;
-            device.backlight.value = brightness;
-            device.backlight.shadeIndex = shadeIndex;
-        } else {
-            console.log("revert the backlight in model: ")
-        }
-
-    }
+    function updateBacklight(isOn, hue, brightness, shadeIndex) {}
 
     //! These methods should be overriden by subclasses to provide implementation
 
@@ -75,5 +61,7 @@ QtObject {
     function setTestData(temperature, on) {}
 
     function setActivatedSchedule(schedule: ScheduleCPP) {}
+
+    function updateNightMode(nightMode : int) {}
 
 }

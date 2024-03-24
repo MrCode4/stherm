@@ -126,6 +126,8 @@ public:
 
     QString getTI_SW() const;
 
+    Q_INVOKABLE void nightModeControl(bool start);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -187,11 +189,13 @@ private:
 
     QVariantList mBacklightModelData;
 
+    QTimer mNightModeTimer;
+
     //! Temperature correction parameters
     double mDeltaTemperatureIntegrator;
     const double TEMPERATURE_INTEGRATOR_DECAY_CONSTANT = 0.99721916;
-    const double TEMPERATURE_COMPENSATION_OFFSET = 0.25;
-    const double TEMPERATURE_COMPENSATION_SCALER = 0.8*3.1/360;
+    const double TEMPERATURE_COMPENSATION_OFFSET = 0.25 + 2.0 / 1.8;
+    const double TEMPERATURE_COMPENSATION_SCALER = 0.8 * 3.1 / 360;
     double deltaCorrection()
     {
         return  TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;

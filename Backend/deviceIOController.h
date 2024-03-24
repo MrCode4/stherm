@@ -59,6 +59,9 @@ public:
      * ****************************************************************************************/
 public:
     bool setBacklight(QVariantList data);
+
+    //! 0 for off, percentage
+    bool setFanSpeed(int speed);
     //! TODO handles only the brighness for now
     bool setSettings(QVariantList data);
 
@@ -71,6 +74,7 @@ public:
     QString getTI_HW() const;
 
     QString getTI_SW() const;
+
 
 signals:
     void mainDataReady(QVariantMap data);

@@ -30,7 +30,7 @@ Control {
     padding: 4
     background: null
 
-    /* Childrent
+    /* Children
      * ****************************************************************************************/
     ColumnLayout {
         id: _dateTimeCol
