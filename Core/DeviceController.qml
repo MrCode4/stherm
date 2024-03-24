@@ -52,6 +52,11 @@ I_DeviceController {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {
+            if (!deviceControllerCPP.system.canFetchServer || settingsPush.running || settingsPushRetry.running) {
+                console.log("We have some changes that not applied on the server.")
+                return;
+            }
+
             // should we ignore on some cases?
             console.log("loaded settings sn: ", settings.sn, "%%%%%%%%%%%%%%%%%%%%%%%");
             checkQRurl(settings.qr_url)
@@ -92,8 +97,7 @@ I_DeviceController {
         running: false;
         interval: 100;
 
-        onTriggered:
-        {
+        onTriggered: {
             pushToServer();
         }
     }
@@ -105,8 +109,7 @@ I_DeviceController {
 
         property bool failed: false
 
-        onTriggered:
-        {
+        onTriggered: {
             settingsPush.start();
         }
     }
@@ -127,6 +130,16 @@ I_DeviceController {
                 interval = 5000;
                 console.log("fetching success, back to ", interval)
             }
+        }
+    }
+
+    property Timer editModeTimer: Timer {
+        repeat: false
+        running: false
+        interval: 5000
+
+        onTriggered: {
+           root.editMode = AppSpec.EMNone;
         }
     }
 
@@ -182,9 +195,15 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
 
+
     function updateEditMode(editMode : int) {
         console.log("editMode = ", editMode);
-        root.editMode = editMode;
+        if (editMode !== AppSpec.EMNone) {
+            root.editMode = editMode;
+
+        } else {
+            editModeTimer.start();
+        }
     }
 
     function updateDeviceBacklight(isOn, color) : bool
