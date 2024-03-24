@@ -422,7 +422,7 @@ I_DeviceController {
                 "heatPumpEmergency": device.systemSetup.heatPumpEmergency,
                 "systemRunDelay": device.systemSetup.systemRunDelay,
                 "systemAccessories": {
-                    "wire": device.systemSetup.systemAccessories.accessoriesWireType === 0 ? "Tw1" : "none",
+                    "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesType,
                 }
             },
@@ -626,7 +626,7 @@ I_DeviceController {
     }
 
     function setSystemAccesseoriesServer(settings: var) {
-        setSystemAccesseories(settings.mode, settings.wire);
+        setSystemAccesseories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
     }
 
     function setSystemAccesseories(accType: int, wireType: int) {

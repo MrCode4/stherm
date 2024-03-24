@@ -50,3 +50,43 @@ AppSpecCPP::SystemType AppSpecCPP::systemTypeToEnum(QString systemTypeStr) {
 
     return Conventional;
 }
+
+QString AppSpecCPP::accessoriesWireTypeString(AccessoriesWireType wt)
+{
+    switch (wt) {
+    case T1PWRD:
+        return "T1PWRD";
+
+    case T1Short:
+        return "T1Short";
+
+    case T2PWRD:
+        return "T2PWRD";
+
+    case None:
+        return "None";
+
+    default:
+        break;
+    }
+
+    return QString("None");
+}
+
+AppSpecCPP::AccessoriesWireType AppSpecCPP::accessoriesWireTypeToEnum(QString wtStr)
+{
+    if (wtStr == "T1PWRD") {
+        return T1PWRD;
+
+    } else if (wtStr == "T1Short") {
+        return T1Short;
+
+    } else if (wtStr == "T2PWRD") {
+        return T2PWRD;
+
+    } else if (wtStr == "None") {
+        return None;
+    }
+
+    return None;
+}

@@ -59,6 +59,9 @@ public:
         None
     };
     Q_ENUM(AccessoriesWireType)
+    Q_INVOKABLE QString accessoriesWireTypeString(AccessoriesWireType wt);
+    Q_INVOKABLE AccessoriesWireType accessoriesWireTypeToEnum(QString wtStr);
+
 
     enum FanMode {
         FMAuto = 0,
