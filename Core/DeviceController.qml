@@ -415,7 +415,7 @@ I_DeviceController {
                 "is_enable": device.systemSetup.isVacation ? "t" : "f",
             },
             "system" : {
-                "type": device.systemSetup.systemType === 0 ? "traditional" : " traditional",
+                "type": AppSpec.systemTypeString(device.systemSetup.systemType),
                 "coolStage": device.systemSetup.coolStage,
                 "heatStage": device.systemSetup.heatStage,
                 "heatPumpOBState": device.systemSetup.heatPumpOBState,
@@ -559,10 +559,8 @@ I_DeviceController {
         device.systemSetup.heatPumpOBState = settings.heatPumpOBState;
         device.systemSetup.systemRunDelay = settings.systemRunDelay;
         setSystemAccesseoriesServer(settings.systemAccessories)
-        if (settings.type === "traditional")
-            setSystemTraditional(settings.coolStage, settings.heatStage);
-        else
-            ;// TODO
+
+        device.systemSetup.systemType = AppSpec.systemTypeToEnum(settings.type);
     }
 
     function checkSensors(sensors: var) {

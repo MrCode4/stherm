@@ -40,6 +40,10 @@ public:
     };
     Q_ENUM(SystemType)
 
+
+    Q_INVOKABLE QString systemTypeString(SystemType systemType);
+    Q_INVOKABLE SystemType systemTypeToEnum(QString systemTypeStr);
+
     enum AccessoriesType
     {
         Humidifier = 0,
