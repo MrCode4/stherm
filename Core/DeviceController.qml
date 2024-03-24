@@ -59,6 +59,12 @@ I_DeviceController {
 
             // should we ignore on some cases?
             console.log("loaded settings sn: ", settings.sn, "%%%%%%%%%%%%%%%%%%%%%%%");
+
+            if (editMode !== AppSpec.EMSystemMode) {
+                console.log("The system setup is being edited and cannot be updated (mode_id) by the server.")
+                device.systemSetup.systemMode = parseInt(settings.mode_id) - 1;
+            }
+
             checkQRurl(settings.qr_url)
             updateHoldServer(settings.hold)
             updateFanServer(settings.fan)
@@ -289,6 +295,7 @@ I_DeviceController {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
+            finalizeSettings();
         }
     }
 
@@ -553,8 +560,6 @@ I_DeviceController {
         }
 
         console.log("setSystemSetupServer")
-
-        device.systemSetup.systemMode = parseInt(settings.mode_id) - 1;
 
         device.systemSetup.heatPumpEmergency = settings.heatPumpEmergency;
         device.systemSetup.heatStage = settings.heatStage;

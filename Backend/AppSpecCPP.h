@@ -92,6 +92,7 @@ public:
         EMSettings           = 7,
         EMBacklight          = 8,
         EMSystemSetup        = 9,
+        EMSystemMode         = 10,
 
         EMNone
     };
