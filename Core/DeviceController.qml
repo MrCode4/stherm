@@ -553,6 +553,9 @@ I_DeviceController {
         }
 
         console.log("setSystemSetupServer")
+
+        device.systemSetup.systemMode = parseInt(settings.mode_id) - 1;
+
         device.systemSetup.heatPumpEmergency = settings.heatPumpEmergency;
         device.systemSetup.heatStage = settings.heatStage;
         device.systemSetup.coolStage = settings.coolStage;
