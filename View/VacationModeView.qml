@@ -40,9 +40,9 @@ Popup {
         }
     }
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
+    onOpened: deviceController.updateEditMode(AppSpec.EMVacation);
 
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+    onClosed: deviceController.updateEditMode(AppSpec.EMNone);
 
     Material.theme: Material.Dark
     /* Children
