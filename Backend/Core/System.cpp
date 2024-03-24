@@ -108,6 +108,11 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::snReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
+    connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
+    connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
+    connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
+        setCanFetchServer(true);
+    });
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
         QSettings settings;
@@ -285,9 +290,13 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
     return response;
 }
 
-void NUVE::System::getUpdate(QString softwareVersion)
+bool NUVE::System::getUpdate(QString softwareVersion)
 {
-    return mSync->getSettings();
+    if (mCanFetchServer) {
+        return mSync->getSettings();
+    }
+
+    return false;
 }
 
 void NUVE::System::getUpdateInformation(bool notifyUser) {
@@ -307,6 +316,26 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     mUpdateTimer.start();
 
     getUpdateInformation(true);
+}
+
+void NUVE::System::pushSettingsToServer(const QVariantMap &settings)
+{
+    setCanFetchServer(false);
+    mSync->pushSettingsToServer(settings);
+}
+
+void NUVE::System::setCanFetchServer(bool canFetch)
+{
+    if (mCanFetchServer == canFetch)
+        return;
+
+    mCanFetchServer = canFetch;
+    emit canFetchServerChanged();
+}
+
+bool NUVE::System::canFetchServer()
+{
+    return mCanFetchServer;
 }
 
 QVariantMap NUVE::System::getContractorInfo() {
@@ -670,7 +699,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                     emit error("Unable to open file for writing");
                     break;
                 }
-                TRACE << data.toStdString().c_str();
+                TRACE << doc.toJson().toStdString().c_str();
 
                 file.write(data);
 
@@ -939,6 +968,11 @@ void NUVE::System::stopDevice()
         TRACE << exitCode;
     });
 #endif
+}
+
+bool NUVE::System::fetchSettings()
+{
+    return getUpdate();
 }
 
 QString NUVE::System::findLatestVersion(QJsonObject updateJson) {

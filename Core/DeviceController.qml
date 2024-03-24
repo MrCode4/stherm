@@ -1,6 +1,7 @@
 import QtQuick
 
 import Stherm
+import QtQuickStream
 
 /*! ***********************************************************************************************
  * Device Controller
@@ -11,6 +12,12 @@ I_DeviceController {
 
     /* Property Declarations
      * ****************************************************************************************/
+
+    property SchedulesController schedulesController
+
+    property int editMode: AppSpec.EMNone
+
+    property bool initalSetup: false;
 
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
@@ -31,7 +38,7 @@ I_DeviceController {
             root.device.contactContractor.phoneNumber   = phoneNumber
             root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl
             root.device.contactContractor.qrURL         = url
-//            root.device.contactContractor.technicianURL = techUrl
+            //            root.device.contactContractor.technicianURL = techUrl
         }
     }
 
@@ -40,6 +47,103 @@ I_DeviceController {
 
         function onHasInternetChanged() {
             deviceControllerCPP.system.wifiConnected(NetworkInterface.hasInternet);
+        }
+    }
+
+    property Connections sync: Connections {
+        target: deviceControllerCPP.system
+
+        function onSettingsReady(settings) {
+            if (!deviceControllerCPP.system.canFetchServer || settingsPush.running || settingsPushRetry.running) {
+                console.log("We have some changes that not applied on the server.")
+                return;
+            }
+
+            // should we ignore on some cases?
+            console.log("loaded settings sn: ", settings.sn, "%%%%%%%%%%%%%%%%%%%%%%%");
+
+            checkQRurl(settings.qr_url)
+            updateHoldServer(settings.hold)
+            updateFanServer(settings.fan)
+            setSettingsServer(settings.setting)
+            setRequestedHumidityFromServer(settings.humidity)
+            setDesiredTemperatureFromServer(settings.temp)
+            setSystemModeServer(settings.mode_id)
+            setSchedulesFromServer(settings.schedule)
+            setVacationServer(settings.vacation)
+            checkMessages(settings.messages)
+            checkSensors(settings.sensors)
+            setSystemSetupServer(settings.system)
+        }
+
+        function onCanFetchServerChanged() {
+            if (deviceControllerCPP.system.canFetchServer) {
+                settingsPushRetry.failed = false;
+                settingsPushRetry.interval = 5000;
+            }
+        }
+
+        function onPushFailed() {
+            if (settingsPushRetry.failed) {
+                settingsPushRetry.interval = settingsPushRetry.interval *2;
+                if (settingsPushRetry.interval > 60000)
+                    settingsPushRetry.interval = 60000;
+            } else {
+                settingsPushRetry.failed = true;
+            }
+
+            settingsPushRetry.start()
+        }
+    }
+
+    property Timer  settingsPush: Timer {
+        repeat: false;
+        running: false;
+        interval: 100;
+
+        onTriggered: {
+            pushToServer();
+        }
+    }
+
+    property Timer  settingsPushRetry: Timer {
+        repeat: false;
+        running: false;
+        interval: 5000;
+
+        property bool failed: false
+
+        onTriggered: {
+            settingsPush.start();
+        }
+    }
+
+    property Timer  settingsLoader: Timer {
+        repeat: true;
+        running: !initalSetup;
+        interval: 5000;
+        onTriggered:
+        {
+            if (!deviceControllerCPP.system.fetchSettings()) {
+                var intervalNew = interval * 2;
+                if (intervalNew > 60000)
+                    intervalNew = 60000;
+                interval = intervalNew;
+                console.log("fetching failed, backing off to ", interval)
+            } else {
+                interval = 5000;
+                console.log("fetching success, back to ", interval)
+            }
+        }
+    }
+
+    property Timer editModeTimer: Timer {
+        repeat: false
+        running: false
+        interval: 5000
+
+        onTriggered: {
+           root.editMode = AppSpec.EMNone;
         }
     }
 
@@ -69,9 +173,9 @@ I_DeviceController {
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
 
         var send_data = [device.setting.brightness, device.setting.volume, device.setting.tempratureUnit, device.setting.timeFormat, false, device.setting.adaptiveBrightness];
-       if (!deviceControllerCPP.setSettings(send_data)){
-           console.warn("setting failed");
-       }
+        if (!deviceControllerCPP.setSettings(send_data)){
+            console.warn("setting failed");
+        }
     }
 
     onStopDeviceRequested: {
@@ -93,6 +197,21 @@ I_DeviceController {
     /* Methods
      * ****************************************************************************************/
 
+    function setInitialSetup(init: bool) {
+        initalSetup = init;
+    }
+
+    function updateEditMode(editMode : int) {
+        console.log("editMode = ", editMode);
+        if (editMode !== AppSpec.EMNone) {
+            root.editMode = editMode;
+            editModeTimer.stop();
+
+        } else {
+            editModeTimer.start();
+        }
+    }
+
     function updateDeviceBacklight(isOn, color) : bool
     {
         console.log("starting updateBacklight, color: ", color)
@@ -102,7 +221,7 @@ I_DeviceController {
         var g = Math.round(color.g * 255)
         var b = Math.round(color.b * 255)
 
-//        console.log("colors: ", r, ",", g, ",", b)
+        //        console.log("colors: ", r, ",", g, ",", b)
 
         //! RGB colors are also sent, maybe device preserve RGB color in off state too.
         //! 1: mode
@@ -112,9 +231,20 @@ I_DeviceController {
         //!    LED_NO_MODE= 3
         var send_data = [r, g, b, 0, isOn ? "true" : "false"];
 
-//        console.log("send data: ", send_data)
+        //        console.log("send data: ", send_data)
 
         return deviceControllerCPP.setBacklight(send_data);
+    }
+
+    function updateFanServer(settings : var) {
+
+        if (editMode === AppSpec.EMFan) {
+            console.log("The fan page is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        console.log("updateFanSettings")
+        updateFan(settings.mode, settings.workingPerHour)
     }
 
     function updateFan(mode: int, workingPerHour: int)
@@ -130,6 +260,18 @@ I_DeviceController {
         }
     }
 
+    function setVacationServer(settings : var)
+    {
+        if (editMode === AppSpec.EMVacation) {
+            console.log("The vacation is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        console.log("setVacationServer")
+        setVacation(settings.min_temp, settings.max_temp, settings.min_humidity, settings.max_humidity)
+        setVacationOnFromServer(settings.is_enable)
+    }
+
     function setVacation(temp_min, temp_max, hum_min, hum_max)
     {
         if (!device)
@@ -141,8 +283,6 @@ I_DeviceController {
         device.vacation.temp_max = temp_max;
         device.vacation.hum_min  = hum_min;
         device.vacation.hum_max  = hum_max ;
-
-
     }
 
     function setSystemModeTo(systemMode: int)
@@ -154,12 +294,20 @@ I_DeviceController {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
+            finalizeSettings();
         }
+    }
+
+    //! On/off the vacation from server.
+    function setVacationOnFromServer(on: bool) {
+        device.systemSetup.isVacation = on;
     }
 
     //! On/off the vacation.
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
+
+        finalizeSettings();
     }
 
     //! Set device settings
@@ -178,10 +326,10 @@ I_DeviceController {
                     );
 
         var send_data = [brightness, volume, temperatureUnit, timeFormat, reset, adaptive];
-       if (!deviceControllerCPP.setSettings(send_data)){
-           console.warn("setting failed");
-           return;
-       }
+        if (!deviceControllerCPP.setSettings(send_data)){
+            console.warn("setting failed");
+            return;
+        }
 
         // Update setting when setSettings is successful.
         if (device.setting.brightness !== brightness) {
@@ -203,7 +351,156 @@ I_DeviceController {
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
         }
+    }
 
+    function finalizeSettings() {
+        if (!settingsPush.running)
+            settingsPush.start()
+    }
+
+    function setSettingsServer(settings: var) {
+        if (editMode !== AppSpec.EMSettings) {
+            console.log("setSettingsServer")
+            setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
+                        settings.timeFormat, false, settings.brightness_mode)
+            device.setting.currentTimezone = settings.currentTimezone;
+            device.setting.effectDst = settings.effectDst;
+        } else {
+            console.log("The system settings is being edited and cannot be updated by the server.")
+        }
+        setBacklightServer(settings.backlight)
+    }
+
+    function setBacklightServer(settings: var) {
+        if (editMode === AppSpec.EMBacklight) {
+            console.log("The backlight is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        console.log("setBacklightServer")
+        updateBacklight(settings.on, settings.hue, settings.value,
+                        settings.shadeIndex)
+    }
+
+    function pushToServer() {
+        var send_data = {
+            "temp": device.requestedTemp,
+            "humidity": device.requestedHum,
+            "current_humidity": device.currentHum.toString(),
+            "current_temp": device.currentTemp.toString(),
+            "co2_id": device._co2_id + 1,
+            "hold" : device._isHold,
+            "mode_id" : device.systemSetup.systemMode + 1,
+            "fan" : {
+                "mode" : device.fan.mode,
+                "workingPerHour": device.fan.workingPerHour,
+            },
+            "backlight" : {
+                "on": device.backlight.on,
+                "hue": device.backlight.hue,
+                "value": device.backlight.value,
+                "shadeIndex": device.backlight.shadeIndex
+            },
+            "settings" : {
+                "brightness": device.setting.brightness,
+                "brightness_mode": device.setting.adaptiveBrightness ? 1 : 0,
+                "speaker": device.setting.volume,
+                "temperatureUnit": device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 1 : 0,
+                "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour24 ? 1 : 0,
+                "currentTimezone": device.setting.currentTimezone.length > 0 ? device.setting.currentTimezone : "UTC",
+                "effectDst": device.setting.effectDst,
+            },
+            "sensors" : [],
+            "schedules" : [],
+            "messages" : [],
+            "vacation" : {
+                "min_humidity" : device.vacation.hum_min,
+                "max_humidity": device.vacation.hum_max,
+                "min_temp": device.vacation.temp_min,
+                "max_temp": device.vacation.temp_max,
+                "is_enable": device.systemSetup.isVacation ? "t" : "f",
+            },
+            "system" : {
+                "type": AppSpec.systemTypeString(device.systemSetup.systemType),
+                "coolStage": device.systemSetup.coolStage,
+                "heatStage": device.systemSetup.heatStage,
+                "heatPumpOBState": device.systemSetup.heatPumpOBState,
+                "heatPumpEmergency": device.systemSetup.heatPumpEmergency,
+                "systemRunDelay": device.systemSetup.systemRunDelay,
+                "systemAccessories": {
+                    "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
+                    "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
+                                AppSpec.ATNone : device.systemSetup.systemAccessories.accessoriesType,
+                }
+            },
+        }
+
+        device.schedules.forEach(schedule =>
+                                 {
+                                     send_data.schedules.push(
+                                         {
+                                             "is_enable": schedule.enable,
+                                             "name": schedule.name,
+                                             "type_id": schedule.type,
+                                             "start_time": schedule.startTime,
+                                             "end_time": schedule.endTime,
+                                             "temp": schedule.temprature,
+                                             "humidity": schedule.humidity,
+                                             "dataSource": schedule.dataSource,
+                                             "weekdays": schedule.repeats.split(',')
+                                         })
+                                 })
+
+        device.messages.forEach(message =>
+                                {
+                                    send_data.messages.push(
+                                        {
+                                            "icon": message.icon,
+                                            "message": message.message,
+                                            "type": message.type,
+                                            "isRead": message.isRead,
+                                            "datetime": message.datetime,
+                                        })
+                                })
+
+        device._sensors.forEach(sensor =>
+                                {
+                                    send_data.sensors.push(
+                                        {
+                                            "name": sensor.name,
+                                            "location": sensor.location === 0 ? "Office" : "Bedroom", // string
+                                            "type": sensor.type === 0 ? "OnBoard" : "Wireless", //string
+                                            "uid": "213137"
+                                        })
+                                })
+
+
+        deviceControllerCPP.pushSettingsToServer(send_data)
+    }
+
+    function checkQRurl(url: var) {
+        console.log("checkQRurl", url)
+    }
+
+    function setSystemModeServer(mode_id) {
+        if (editMode === AppSpec.EMSystemMode) {
+            console.log("The system setup is being edited and cannot be updated (mode_id) by the server.")
+        } else {
+            var modeInt = parseInt() - 1;
+            //! Vacation will be handled using setVacationServer
+            if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Off &&
+                    modeInt !== AppSpec.Vacation)
+                device.systemSetup.systemMode = modeInt;
+        }
+    }
+
+    function setDesiredTemperatureFromServer(temperature: real) {
+        if (editMode === AppSpec.EMDesiredTemperature) {
+            console.log("The temperature is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        setDesiredTemperature(temperature);
     }
 
     //! Set temperature to device (system) and update model.
@@ -213,6 +510,15 @@ I_DeviceController {
 
         // Update device temperature when setTemperature is successful.
         device.requestedTemp = temperature;
+    }
+
+    function setRequestedHumidityFromServer(humidity: real) {
+        if (editMode === AppSpec.EMRequestedHumidity) {
+            console.log("The humidity is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        setRequestedHumidity(humidity);
     }
 
     function setRequestedHumidity(humidity: real) {
@@ -258,10 +564,65 @@ I_DeviceController {
         device.systemSetup.systemType = AppSpecCPP.Conventional;
     }
 
+    function setSystemSetupServer(settings: var) {
+
+        if (editMode === AppSpec.EMSystemSetup) {
+            console.log("The system setup is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        console.log("setSystemSetupServer")
+
+        device.systemSetup.heatPumpEmergency = settings.heatPumpEmergency;
+        device.systemSetup.heatStage = settings.heatStage;
+        device.systemSetup.coolStage = settings.coolStage;
+        device.systemSetup.heatPumpOBState = settings.heatPumpOBState;
+        device.systemSetup.systemRunDelay = settings.systemRunDelay;
+        setSystemAccesseoriesServer(settings.systemAccessories)
+
+        if (settings.type === "traditional")
+            setSystemTraditional(settings.coolStage, settings.heatStage);
+        else if(settings.type === "heating")
+            setSystemHeatOnly(settings.heatStage)
+        else if(settings.type === "heat_pump")
+            setSystemHeatPump(settings.heatPumpEmergency, settings.heatStage, settings.heatPumpOBState)
+        else if(settings.type === "cooling")
+            setSystemCoolingOnly(settings.coolStage)
+        else
+            console.warn("System type unknown", settings.type)
+    }
+
+    function checkSensors(sensors: var) {
+        if (editMode === AppSpec.EMSensors) {
+            console.log("The sensors are being edited and cannot be updated by the server.")
+            return;
+        }
+
+        console.log("checkSensors", sensors.length)
+        sensors.forEach(sensor => console.log(sensor.location, sensor.name, sensor.type, sensor.uid, sensor.locationsd))
+    }
+
+    //! Compare the server schedules and the model schedules and update model based on the server data.
+    function setSchedulesFromServer(serverSchedules: var) {
+        if (editMode === AppSpec.EMSchedule) {
+            console.log("The schedules are being edited and cannot be updated by the server.")
+            return;
+        }
+
+        console.log("checkSchedules", serverSchedules.length)
+
+        if (schedulesController)
+            schedulesController.setSchedulesFromServer(serverSchedules);
+    }
+
+    function checkMessages(messages: var) {
+        console.log("checkMessages", messages.length)
+    }
+
     //! Read data from system with getMainData method.
     function updateInformation()
     {
-//        console.log("--------------- Start: updateInformation -------------------")
+        //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
 
         // should be catched later here
@@ -275,11 +636,26 @@ I_DeviceController {
         //        console.log("--------------- End: updateInformation -------------------")
     }
 
+    function updateHoldServer(isHold)
+    {
+
+        if (editMode === AppSpec.EMHold) {
+            console.log("The hold page is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        updateHold(isHold);
+    }
+
     function updateHold(isHold)
     {
         // TODO should be updated to inform the logics
 
         device._isHold = isHold;
+    }
+
+    function setSystemAccesseoriesServer(settings: var) {
+        setSystemAccesseories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
     }
 
     function setSystemAccesseories(accType: int, wireType: int) {

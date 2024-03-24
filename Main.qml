@@ -127,6 +127,23 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: uiSessionId.appModel.setting
+        function onCurrentTimezoneChanged() {
+
+            if (uiSessionId.appModel.setting.currentTimezone !== DateTimeManager.currentTimeZone.id) {
+                DateTimeManager.currentTimeZone = uiSessionId.appModel.setting.currentTimezone;
+            }
+        }
+
+        function onEffectDstChanged() {
+
+            if (uiSessionId.appModel.setting.effectDst !== DateTimeManager.effectDst) {
+                DateTimeManager.effectDst = uiSessionId.appModel.setting.effectDst;
+            }
+        }
+    }
+
     UiSession {
         id: uiSessionId
         popupLayout: popUpLayoutId

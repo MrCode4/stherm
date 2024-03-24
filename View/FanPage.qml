@@ -19,6 +19,10 @@ BasePageView {
      * ****************************************************************************************/
     title: "Fan"
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMFan);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Childrent
      * ****************************************************************************************/
     //! Confirm button
@@ -36,6 +40,8 @@ BasePageView {
                                                                          AppSpec.FMOff)
                 deviceController.updateFan(fanMode, _hourSliders.value);
             }
+
+            deviceController.finalizeSettings();
 
             //! Also move out of this Page
             if (_root.StackView.view) {

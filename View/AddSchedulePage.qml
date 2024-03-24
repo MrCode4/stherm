@@ -36,6 +36,10 @@ BasePageView {
     }
     backButtonTextIcon: _newSchedulePages.depth > 1 ? "\uf00d" : "\uf060"
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSchedule);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Children
      * ****************************************************************************************/
     //! Next/Confirm button
@@ -292,6 +296,7 @@ BasePageView {
         if (schedulesController) {
             schedulesController.saveNewSchedule(_internal.newSchedule);
         }
+        deviceController.finalizeSettings();
 
         if (root.StackView.view) {
             root.StackView.view.pop();

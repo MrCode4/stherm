@@ -34,6 +34,9 @@ QtObject {
 
         device.schedules.push(newSchedule);
         device.schedulesChanged();
+
+        // Send data to server
+        deviceController.finalizeSettings();
     }
 
     //! Remove an schedule
@@ -46,6 +49,9 @@ QtObject {
             device.schedulesChanged();
 
 //            schedule.destroy();
+
+            // Send data to server
+            deviceController.finalizeSettings();
         }
     }
 
@@ -125,6 +131,128 @@ QtObject {
         deviceController.setActivatedSchedule(currentSchedule);
     }
 
+    function formatTime(timeString) {
+        // Split the time string into hours, minutes, and seconds
+        const [hoursString, minutes, seconds] = timeString.split(':');
+
+        // Convert hours to a number and handle leading zero
+        const hours = parseInt(hoursString, 10);
+
+        // Convert hours to 12-hour format and add AM/PM
+        const amPm = hours >= 12 ? 'PM' : 'AM';
+        const adjustedHours = hours % 12 || 12;  // Adjust for 12-hour format and noon
+
+        // Format minutes with leading zero if needed
+        const formattedMinutes = minutes.padStart(2, '0');
+
+        // Return the formatted time string
+        return `${adjustedHours.toString().padStart(2, '0')}:${formattedMinutes} ${amPm}`;
+    }
+
+    //! Compare the server schedules and the model schedules and update model based on the server data.
+    function setSchedulesFromServer(serverSchedules: var) {
+
+        var modelSchedules = device.schedules;
+        if (!Array.isArray(serverSchedules)) {
+            console.log("Invalid server input. Expected arrays.");
+            return;
+        }
+
+        // Check the length of both arrays
+        if (serverSchedules.length !== modelSchedules.length) {
+            console.log("Number of schedules in server and model differ.");
+        }
+
+        // Clean the device schedules when the serverSchedules is empty.
+        if (serverSchedules.length === 0) {
+            console.log("Schedules in server is empty.");
+            device.schedules = [];
+            device.schedulesChanged();
+
+            return;
+        }
+
+        var isNeedToUpdate = false;
+
+        // Schedules that do not exist on the server will be deleted.
+        modelSchedules.every(schedule => {
+                                 // Find Schedule in the model
+                                 var foundSchedule = serverSchedules.find(serverSchedule => schedule.name === serverSchedule.name);
+
+                                 if (foundSchedule === undefined) {
+                                    var schIndex = device.schedules.findIndex(elem => elem.name === schedule.name);
+                                     if (schIndex !== -1) {
+                                         device.schedules.splice(schIndex, 1);
+                                         isNeedToUpdate = true;
+                                     }
+                                 }
+
+                              });
+
+        serverSchedules.every(schedule => {
+                                  // Find Schedule in the model
+                                  var foundSchedule = modelSchedules.find(modelSchedule => schedule.name === modelSchedule.name);
+
+                                  // Add new schedule
+                                  if (foundSchedule === undefined) {
+                                      var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
+                                      newSchedule._qsRepo = AppCore.defaultRepo;
+                                      newSchedule.enable = schedule.is_enable;
+                                      newSchedule.name = schedule.name;
+                                      newSchedule.type = schedule.type_id;
+                                      newSchedule.temprature = schedule.temp;
+                                      newSchedule.humidity = schedule.humidity;
+                                      newSchedule.startTime = formatTime(schedule.start_time);
+                                      newSchedule.endTime = formatTime(schedule.end_time);
+                                      newSchedule.repeats = schedule.weekdays.map(String).join(',');
+                                      newSchedule.dataSource = schedule.dataSource;
+
+                                      device.schedules.push(newSchedule);
+
+                                      isNeedToUpdate = true;
+
+                                  } else {
+                                      if (foundSchedule.enable !== schedule.is_enable) {
+                                          foundSchedule.enable = schedule.is_enable;
+                                      }
+
+                                      if (foundSchedule.type !== schedule.type_id) {
+                                          foundSchedule.type = schedule.type_id;
+                                      }
+                                      var startTime = formatTime(schedule.start_time);
+                                      if (foundSchedule.startTime !== startTime) {
+                                          foundSchedule.startTime = startTime;
+                                      }
+                                      var endTime = formatTime(schedule.end_time)
+                                      if (foundSchedule.endTime !== endTime) {
+                                          foundSchedule.endTime = endTime;
+                                      }
+
+                                      if (foundSchedule.temprature !== schedule.temp) {
+                                          foundSchedule.temprature = schedule.temp;
+                                      }
+
+                                      if (foundSchedule.humidity !== schedule.humidity) {
+                                          foundSchedule.humidity = schedule.humidity;
+                                      }
+
+                                      if (foundSchedule.dataSource !== schedule.dataSource) {
+                                          foundSchedule.dataSource = schedule.dataSource;
+                                      }
+
+                                      var repeats = schedule.weekdays.map(String).join(',')
+                                      if (foundSchedule.repeats !== repeats) {
+                                          foundSchedule.repeats = repeats;
+                                      }
+                                  }
+                        });
+
+        if (isNeedToUpdate) {
+            device.schedulesChanged();
+        }
+    }
+
+
     property Timer _checkRunningTimer: Timer {
         running: !device._isHold && device.schedules.filter(schedule => schedule.enable).length > 0
         repeat: true
@@ -154,5 +282,9 @@ QtObject {
             deviceController.setActivatedSchedule(null);
             findRunningSchedule();
         }
+    }
+
+    property Connections deviceControllerConnection: Connections {
+        target: deviceController
     }
 }

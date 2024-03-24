@@ -21,6 +21,10 @@ Popup {
     //! App model
     property I_Device   device: uiSession.appModel
 
+    onOpened: deviceController.updateEditMode(AppSpec.EMHold);
+
+    onClosed: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Object properties
      * ****************************************************************************************/
     horizontalPadding: 96
@@ -63,6 +67,7 @@ Popup {
             onCheckedChanged: {
                 if (device && deviceController && device._isHold !== checked) {
                     deviceController.updateHold(checked)
+                    deviceController.finalizeSettings();
                     delayedCloseTmr.running = true;
                 }
             }

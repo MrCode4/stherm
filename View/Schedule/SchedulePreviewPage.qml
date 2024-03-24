@@ -30,6 +30,10 @@ BasePageView {
     //!
     readonly property ScheduleCPP   scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSchedule);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Object properties
      * ****************************************************************************************/
     rightPadding: 4
@@ -596,6 +600,8 @@ BasePageView {
         _root.schedule.endTime = internal.scheduleToEdit.endTime;
         _root.schedule.repeats = [...internal.scheduleToEdit.repeats];
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
+
+        deviceController.finalizeSettings();
 
         if (internal.exitAfterSave) {
             goBack();

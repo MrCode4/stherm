@@ -157,7 +157,7 @@ Control {
                     top: parent.top
                 }
                 // using iaq
-                condition: device.co2 < 2.9 ? 0 : device.co2 > 4 ? 2 : 1
+                condition: device._co2_id
             }
 
             //! Fan
@@ -199,11 +199,11 @@ Control {
                 id: _dateTimeLbl
                 anchors.centerIn: parent
                 is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+            }
 
-                TapHandler {
-                    onTapped: {
-                        uiSession.popupLayout.displayPopUp(timeFormatPop, true);
-                    }
+            TapHandler {
+                onTapped: {
+                    uiSession.popupLayout.displayPopUp(timeFormatPop, true);
                 }
             }
         }
@@ -314,6 +314,7 @@ Control {
                                        });
 
             } else {
+                deviceController.setInitialSetup(true);
                 //! Open WifiPage
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {

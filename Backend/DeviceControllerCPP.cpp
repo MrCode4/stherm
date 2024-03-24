@@ -321,7 +321,7 @@ void DeviceControllerCPP::checkUpdateMode()
 {
     // check if updated
     bool updateMode = getUpdateMode();
-    if (updateMode) {
+    if (updateMode) { // or intial mode, in this case disable fetching after one time fetching
         //            Run API to get settings from server (sync, getWirings, )
         TRACE << "getting settings from server";
         if (m_system)
@@ -347,6 +347,11 @@ void DeviceControllerCPP::checkContractorInfo()
     Q_EMIT contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
                                  info.value("logo").toString(), info.value("url").toString(),
                                  info.value("tech").toString());
+}
+
+void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings)
+{
+    m_system->pushSettingsToServer(settings);
 }
 
 void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)

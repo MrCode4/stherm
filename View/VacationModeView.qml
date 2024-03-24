@@ -40,6 +40,10 @@ Popup {
         }
     }
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     Material.theme: Material.Dark
     /* Children
      * ****************************************************************************************/
@@ -89,7 +93,8 @@ Popup {
 
                 vacationModePop.counter--;
                 if (deviceController && vacationModePop.counter <= 0) {
-                     deviceController.setVacationOn(true);
+                    deviceController.setVacationOn(true);
+                    uiSession.showMainWindow = true;
                 }
             }
         }
@@ -123,7 +128,7 @@ Popup {
                     deviceController.setVacationOn(false);
                 }
 
-                uiSession.showMainWindow = true;
+                //uiSession.showMainWindow = true;
             }
         }
 

@@ -22,6 +22,10 @@ BasePageView {
      * ****************************************************************************************/
     title: "System Mode"
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSystemMode);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Children
      * ****************************************************************************************/
     //! Make buttons mutually-exclusive

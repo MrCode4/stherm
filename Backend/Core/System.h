@@ -32,6 +32,8 @@ class System : public NetworkWorker
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
 
+    Q_PROPERTY(bool canFetchServer READ canFetchServer WRITE setCanFetchServer NOTIFY canFetchServerChanged FINAL)
+
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
     QML_ELEMENT
@@ -57,13 +59,15 @@ public:
     //! Reset device by exiting app and disabling service
     Q_INVOKABLE void stopDevice();
 
+    Q_INVOKABLE bool fetchSettings();
+
     //! Get serial number from server
     std::pair<std::string, bool> getSN(cpuid_t accessUid);
 
     //! Get update
     //! todo: process response packet
     //! TEMP: "022"
-    void getUpdate(QString softwareVersion = "022");
+    bool getUpdate(QString softwareVersion = "022");
 
     //! Send request job to web server
     void requestJob(QString type);
@@ -82,6 +86,12 @@ public:
     Q_INVOKABLE void getUpdateInformation(bool notifyUser = false);
 
     Q_INVOKABLE void wifiConnected(bool hasInternet);
+
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
+
+    void setCanFetchServer(bool canFetch);
+
+    bool canFetchServer();
 
     //! Get Contractor Information
     QVariantMap getContractorInfo();
@@ -143,6 +153,8 @@ protected slots:
 
 signals:
     void snReady();
+    void settingsReady(QVariantMap settings);
+    void pushFailed();
 
     void latestVersionChanged();
     void logVersionChanged();
@@ -172,6 +184,8 @@ signals:
     void availableVersionsChanged();
 
     void systemUIDChanged();
+
+    void canFetchServerChanged();
 
 private:
 
@@ -254,6 +268,8 @@ private:
 
     qint64 mDownloadBytesReceived;
     double mDownloadRateEMA;
+
+    bool mCanFetchServer = true;
 };
 
 } // namespace NUVE

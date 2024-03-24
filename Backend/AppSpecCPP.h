@@ -40,10 +40,15 @@ public:
     };
     Q_ENUM(SystemType)
 
+
+    Q_INVOKABLE QString systemTypeString(SystemType systemType);
+    Q_INVOKABLE SystemType systemTypeToEnum(QString systemTypeStr);
+
     enum AccessoriesType
     {
         Humidifier = 0,
         Dehumidifier,
+        ATNone
     };
     Q_ENUM(AccessoriesType)
 
@@ -55,6 +60,9 @@ public:
         None
     };
     Q_ENUM(AccessoriesWireType)
+    Q_INVOKABLE QString accessoriesWireTypeString(AccessoriesWireType wt);
+    Q_INVOKABLE AccessoriesWireType accessoriesWireTypeToEnum(QString wtStr);
+
 
     enum FanMode {
         FMAuto = 0,
@@ -72,6 +80,24 @@ public:
         STUnknown
     };
     Q_ENUM(ScheduleType)
+
+    //! Edit Mode
+    enum EditMode {
+        EMSchedule           = 0,
+        EMHold               = 1,
+        EMFan                = 2,
+        EMVacation           = 3,
+        EMRequestedHumidity  = 4,
+        EMDesiredTemperature = 5,
+        EMSensors            = 6,
+        EMSettings           = 7,
+        EMBacklight          = 8,
+        EMSystemSetup        = 9,
+        EMSystemMode         = 10,
+
+        EMNone
+    };
+    Q_ENUM(EditMode)
 
 signals:
 

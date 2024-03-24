@@ -25,6 +25,10 @@ BasePageView {
      * ****************************************************************************************/
     title: "Humidity Control"
 
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMRequestedHumidity);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
     /* Children
      * ****************************************************************************************/
     //! Confirm button
@@ -38,6 +42,8 @@ BasePageView {
             if (deviceController) {
                 deviceController.setRequestedHumidity(humidity)
             }
+
+            deviceController.finalizeSettings();
 
             //! Also move out of this Page
             if (_root.StackView.view && _root.StackView.view.depth > 1
