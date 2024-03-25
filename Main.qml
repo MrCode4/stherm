@@ -76,7 +76,8 @@ ApplicationWindow {
 
         // if any load was successful, write it to recovery
         // defaults also saved.
-        AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath);
+        console.log("Save recovery file: ", AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath));
+
 
 
         //! Load DST effect and then current timezone to DateTimeManager
