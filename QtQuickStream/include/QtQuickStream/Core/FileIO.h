@@ -36,10 +36,16 @@ public slots:
     //! Writes data to file with fileName and returns whether successful
     bool write(const QString &fileName, const QByteArray &data)
     {
-        if (fileName.isEmpty())                             { return false; }
+        if (fileName.isEmpty()) {
+            qDebug() << Q_FUNC_INFO << __LINE__ << "The file name in empty. [saveToFile]";
+            return false;
+        }
 
         QFile file(fileName);
-        if (!file.open(QFile::WriteOnly | QFile::Truncate)) { return false; }
+        if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
+            qDebug() << Q_FUNC_INFO << __LINE__ << "Could not open the file. [saveToFile]";
+            return false;
+        }
 
         // File is closed automatically when if goes out of scope
         return file.write(data);
