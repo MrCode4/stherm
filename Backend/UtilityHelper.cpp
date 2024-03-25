@@ -172,6 +172,7 @@ QString UtilityHelper::getCPUInfo() {
     }
 
     auto line = file.readLine().trimmed();
+    TRACE << "CFG1:" << line;
     QString cfg1 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
     file.close();
 
@@ -182,6 +183,7 @@ QString UtilityHelper::getCPUInfo() {
     }
 
     line = file0.readLine().trimmed();
+    TRACE << "CFG0:" << line;
     QString cfg0 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
     file0.close();
 

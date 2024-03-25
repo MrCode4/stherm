@@ -49,6 +49,8 @@ int main(int argc, char *argv[])
 
     QCoreApplication::setApplicationVersion(PROJECT_VERSION_STRING);
 
+    qInfo() << "App Version: " << QCoreApplication::applicationVersion();
+
     QGuiApplication app(argc, argv);
 
     signal(SIGTERM, signalHandler);
