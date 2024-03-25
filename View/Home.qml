@@ -342,6 +342,8 @@ Control {
 
             // Send  check contractor info
             deviceController.deviceControllerCPP.checkContractorInfo();
+
+            deviceController.setInitialSetup(false);
         }
     }
 
