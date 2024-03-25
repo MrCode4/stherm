@@ -142,6 +142,8 @@ int UtilityHelper::getGpioValue(int pinNumber)
 }
 
 std::string convert_hex_to_string(const std::string& hex_value) {
+
+#ifdef __unix__
     // Remove the "0x" prefix (if present)
     std::string value = hex_value.substr(2);
 
@@ -156,6 +158,9 @@ std::string convert_hex_to_string(const std::string& hex_value) {
     formatted_string << std::setfill('0') << std::setw(8) << std::hex << integer_value;
 
     return formatted_string.str();
+#endif
+
+    return hex_value;
 }
 
 QString UtilityHelper::getCPUInfo() {
