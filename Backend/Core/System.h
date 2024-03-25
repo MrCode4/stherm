@@ -148,6 +148,9 @@ public:
     //! Mount Recovery directory
     Q_INVOKABLE bool mountRecoveryDirectory();
 
+    //! Mount nrf fw update directory
+    Q_INVOKABLE bool mountNRF_FW_Directory();
+
     Q_INVOKABLE QString kernelBuildVersion();
 
     Q_INVOKABLE QString rootfsBuildTimestamp();

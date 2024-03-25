@@ -95,7 +95,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     mountUpdateDirectory();
     mountRecoveryDirectory();
-
+    mountNRF_FW_Directory();
     installUpdate_NRF_FW_Service();
 
     QSettings setting;
@@ -298,6 +298,16 @@ bool  NUVE::System::mountRecoveryDirectory()
         return true;
     }
 
+    return false;
+}
+
+bool NUVE::System::mountNRF_FW_Directory()
+{
+    if (mountDirectory("/mnt/update", "/mnt/update/nrf_fw")) {
+        TRACE << "nrf fw mounted to /mnt/recovery/recovery";
+        return true;
+    }
+    TRACE << "nrf fw did not mount";
     return false;
 }
 
