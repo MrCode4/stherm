@@ -28,7 +28,7 @@ void signalHandler(int signal) {
 int main(int argc, char *argv[])
 {
     //! Set check internet access url in env, used by NmcliInterface
-    qputenv("NMCLI_INTERNET_ACCESS_URL", "http://test.hvac.z-soft.am");
+    qputenv("NMCLI_INTERNET_ACCESS_URL", "https://devapi.nuvehvac.com/");
 
     // CPU info example
     QString cpuid = UtilityHelper::getCPUInfo();
