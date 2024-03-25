@@ -48,7 +48,7 @@ echo "copying ... "
 
 # Perform file copy operation from source to destination
 printf '\xf0\x4b\x00\x01\x00\x00\xf1' > /dev/ttymxc1
-nrfdfu serial -v --port /dev/ttymxc1 --hexcmd f04b00010000f1 /mnt/update/nrf_fw/update.zip
+nrfdfu serial --port /dev/ttymxc1 /mnt/update/nrf_fw/update.zip
 
 echo "cleaning up "
 
