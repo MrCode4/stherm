@@ -118,6 +118,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
         QSettings settings;
         settings.setValue("m_updateOnStartKey", true);
     });
+
+    // Check: The downloader has been open for more than 30 seconds and has not received any bytes
+    downloaderTimer.setTimerType(Qt::PreciseTimer);
+    downloaderTimer.setSingleShot(false);
 }
 
 NUVE::System::~System()
@@ -627,9 +631,35 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     mDownloadRateEMA = 0;
     emit remainingDownloadTimeChanged();
 
+
+    // The downloader has been open for more than 30 seconds and has not received any bytes
+
+    connect(&downloaderTimer, &QTimer::timeout, this, [=]() {
+        double secTime = mElapsedTimer.elapsed() / 1000.0;
+
+        if (mElapsedTimer.isValid() && secTime >= 30) {
+            reply->abort();
+            downloaderTimer.stop();
+            downloaderTimer.disconnect();
+        }
+    });
+
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        downloaderTimer.stop();
+        downloaderTimer.disconnect();
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [=]() {
+        downloaderTimer.stop();
+        downloaderTimer.disconnect();
+    });
+
+    downloaderTimer.start(1000);
+
+
     connect(reply, &QNetworkReply::downloadProgress, this, [=] (qint64 bytesReceived, qint64 bytesTotal) {
         double secTime = mElapsedTimer.elapsed() / 1000.0;
-        if (secTime < 1.0 || bytesTotal == 0) {
+        if (secTime < 1.5 || bytesTotal == 0) {
             return;
         }
 
