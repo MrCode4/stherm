@@ -423,10 +423,10 @@ void DeviceIOController::createNRF()
         TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
-            qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD;
-        m_nRF_queue.pop();
+            qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD << m_nRF_queue.size();
+        if (!m_nRF_queue.empty())
+            m_nRF_queue.pop();
         processNRFResponse(rxPacket);
-
         m_nRfConnection->setProperty("busy", false);
         processNRFQueue();
     });
@@ -835,7 +835,7 @@ bool DeviceIOController::processNRFQueue()
     auto packet = m_nRF_queue.front();
 
     if (m_nRfConnection->property("busy").toBool() && m_nRF_queue.size() > 3) {
-        TRACE << "busy with previous one" << packet.CMD;
+        TRACE_CHECK(packet.CMD != STHERM::GetTOF) << "busy with previous one" << packet.CMD << m_nRF_queue.size();
         return false;
     }
 
