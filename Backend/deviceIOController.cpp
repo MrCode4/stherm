@@ -453,9 +453,13 @@ void DeviceIOController::createNRF()
     }
 
     if (m_gpioHandler5->startConnection()) {
+        static QElapsedTimer tofTimer;
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             if (data.length() == 2 && data.at(0) == '0') {
+                if (tofTimer.isValid() && tofTimer.elapsed() < 500)
+                    return;
                 m_nRF_queue.push(m_p->TOFPacketBA);
+                tofTimer.restart();
                 bool processed = processNRFQueue();
                 TRACE_CHECK(true) << "request for gpio 5" << processed;
             }
