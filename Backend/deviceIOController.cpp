@@ -856,7 +856,7 @@ bool DeviceIOController::processNRFQueue()
         } else if (packet.CMD == STHERM::SIOCommand::GetTOF) {
             TRACE_CHECK(false) << "CHECK for TOF values";
         } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
-            TRACE << "CHECK for Sensor values";
+            TRACE_CHECK(false) << "CHECK for Sensor values";
             m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
         } else if (packet.CMD == STHERM::SIOCommand::SetColorRGB) {
             // TODO: blinking with data array [4]

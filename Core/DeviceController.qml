@@ -130,9 +130,6 @@ I_DeviceController {
                 return;
             }
 
-            // should we ignore on some cases?
-            console.log("loaded settings sn: ", settings.sn, "%%%%%%%%%%%%%%%%%%%%%%%");
-
             checkQRurl(settings.qr_url)
             updateHoldServer(settings.hold)
             updateFanServer(settings.fan)
@@ -273,7 +270,6 @@ I_DeviceController {
     }
 
     function updateEditMode(editMode : int) {
-        console.log("editMode = ", editMode);
         if (editMode !== AppSpec.EMNone) {
             root.editMode = editMode;
             editModeTimer.stop();
@@ -314,12 +310,15 @@ I_DeviceController {
             return;
         }
 
-        console.log("updateFanSettings")
         updateFan(settings.mode, settings.workingPerHour)
     }
 
     function updateBacklight(isOn, hue, brightness, shadeIndex)
     {
+        if (isOn === device.backlight.on && hue === device.backlight.hue &&
+                brightness === device.backlight.value && shadeIndex === device.backlight.shadeIndex)
+            return;
+
         var color = device.backlight.backlightFinalColor(shadeIndex, hue, brightness);
 
         if (updateDeviceBacklight(isOn, color)) {
@@ -338,10 +337,6 @@ I_DeviceController {
 
     function updateFan(mode: int, workingPerHour: int)
     {
-        console.log("starting rest for updateFan :", workingPerHour)
-        //! TODo required actions if any
-
-
         if (deviceControllerCPP?.setFan(mode, workingPerHour) ?? false) {
             // Update model
             device.fan.mode = mode;
@@ -356,7 +351,6 @@ I_DeviceController {
             return;
         }
 
-        console.log("setVacationServer")
         setVacation(settings.min_temp, settings.max_temp, settings.min_humidity, settings.max_humidity)
         setVacationOnFromServer(settings.is_enable)
     }
@@ -405,16 +399,14 @@ I_DeviceController {
         if (!device)
             return;
 
-        console.log("Change settings to : ",
-                    "brightness: ",     brightness,     "\n    ",
-                    "volume: ",         volume,         "\n    ",
-                    "temperature: ",    temperatureUnit,    "\n    ",
-                    "timeFormat: ",     timeFormat,           "\n    ",
-                    "reset: ",          reset,          "\n    ",
-                    "adaptive: ",       adaptive,       "\n    "
-                    );
-
         var send_data = [brightness, volume, temperatureUnit, timeFormat, reset, adaptive];
+        var current_data = [device.setting.brightness, device.setting.volume,
+                            device.setting.tempratureUnit, device.setting.timeFormat,
+                            reset, device.setting.adaptiveBrightness]
+        if (send_data === current_data) {
+            return;
+        }
+
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
             return;
@@ -449,7 +441,6 @@ I_DeviceController {
 
     function setSettingsServer(settings: var) {
         if (editMode !== AppSpec.EMSettings) {
-            console.log("setSettingsServer")
             setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
                         settings.timeFormat, false, settings.brightness_mode)
             device.setting.currentTimezone = settings.currentTimezone;
@@ -466,7 +457,6 @@ I_DeviceController {
             return;
         }
 
-        console.log("setBacklightServer")
         updateBacklight(settings.on, settings.hue, settings.value,
                         settings.shadeIndex)
     }
@@ -568,7 +558,6 @@ I_DeviceController {
     }
 
     function checkQRurl(url: var) {
-        console.log("checkQRurl", url)
     }
 
     function setSystemModeServer(mode_id) {
@@ -660,8 +649,6 @@ I_DeviceController {
             return;
         }
 
-        console.log("setSystemSetupServer")
-
         device.systemSetup.heatPumpEmergency = settings.heatPumpEmergency;
         device.systemSetup.heatStage = settings.heatStage;
         device.systemSetup.coolStage = settings.coolStage;
@@ -687,7 +674,6 @@ I_DeviceController {
             return;
         }
 
-        console.log("checkSensors", sensors.length)
         sensors.forEach(sensor => console.log(sensor.location, sensor.name, sensor.type, sensor.uid, sensor.locationsd))
     }
 
@@ -698,14 +684,11 @@ I_DeviceController {
             return;
         }
 
-        console.log("checkSchedules", serverSchedules.length)
-
         if (schedulesController)
             schedulesController.setSchedulesFromServer(serverSchedules);
     }
 
     function checkMessages(messages: var) {
-        console.log("checkMessages", messages.length)
     }
 
     //! Read data from system with getMainData method.

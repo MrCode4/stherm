@@ -157,7 +157,7 @@ void Sync::pushSettingsToServer(const QVariantMap &settings)
 
 void Sync::pushAlertToServer(const QVariantMap &settings)
 {
-    QJsonObject requestDataObj; //        = QJsonObject::fromVariantMap(settings);
+    QJsonObject requestDataObj;
     requestDataObj["sn"] = mSerialNumber;
 
     QJsonObject requestDataObjAlert;
@@ -172,7 +172,7 @@ void Sync::pushAlertToServer(const QVariantMap &settings)
     QByteArray requestData = jsonDocument.toJson();
 
 
-    TRACE << requestData.toStdString().c_str();
+    TRACE_CHECK(false) << requestData.toStdString().c_str();
     sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/alerts")), requestData, m_setAlerts);
 }
 
@@ -204,7 +204,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
         } break;
         case QNetworkAccessManager::GetOperation: {
             TRACE << dataValue.isObject() << netReply->property(m_methodProperty).toString();
-            TRACE_CHECK(method != m_getContractorLogo) << dataRaw << jsonDocObj;
+            TRACE_CHECK(method != m_getContractorLogo && method != m_getSettings) << dataRaw << jsonDocObj;
 
             if (method == m_getSN) {
                 if (dataValue.isObject())
@@ -286,7 +286,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 }
                 Q_EMIT contractorInfoReady();
             } else if (method == m_getSettings) {
-                TRACE << jsonDoc.toJson().toStdString().c_str();
+                TRACE_CHECK(false) << jsonDoc.toJson().toStdString().c_str();
 
 
                 if (jsonDoc.isObject()) {

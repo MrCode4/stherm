@@ -87,7 +87,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(&mBacklightPowerTimer, &QTimer::timeout, this, [this]() {
         mDeltaTemperatureIntegrator *= TEMPERATURE_INTEGRATOR_DECAY_CONSTANT;
         mDeltaTemperatureIntegrator += _deviceIO->backlightFactor();
-        TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "mDeltaTemperatureIntegrator total is " << mDeltaTemperatureIntegrator;
     });
     mBacklightPowerTimer.start();
 
