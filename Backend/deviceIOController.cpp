@@ -81,7 +81,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
 {
     // move creating objects here
     m_tiConnection = new UARTConnection(TI_SERIAL_PORT, false, this);
-    m_nRfConnection = new UARTConnection(NRF_SERIAL_PORT, true, this);
+    m_nRfConnection = new UARTConnection(NRF_SERIAL_PORT, false, this);
     m_gpioHandler4 = new GpioHandler(NRF_GPIO_4, this);
     m_gpioHandler5 = new GpioHandler(NRF_GPIO_5, this);
 
@@ -104,7 +104,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
             m_backlightFactorUpdater.start();
         }
         // when it reaches to the target stops and will not print anymore
-        TRACE_CHECK(true) << "backlight factor updated to "  << m_backlightFactor << "with step " << diff / 20 << "and Target " << target;
+        TRACE_CHECK(false) << "backlight factor updated to "  << m_backlightFactor << "with step " << diff / 20 << "and Target " << target;
     });
 }
 
@@ -418,9 +418,9 @@ void DeviceIOController::createNRF()
     }
 
     connect(m_nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
-        TRACE_CHECK(true) << "NRF Response:   " << data;
+        TRACE_CHECK(false) << "NRF Response:   " << data;
         auto rxPacket = DataParser::deserializeData(data);
-        TRACE_CHECK(true) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+        TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
             qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD;
@@ -443,7 +443,7 @@ void DeviceIOController::createNRF()
                 m_p->lastTimeSensors = time;
                 m_nRF_queue.push(m_p->SensorPacketBA);
                 bool processed = processNRFQueue();
-                TRACE_CHECK(true) << "request for gpio 4" << processed;
+                TRACE_CHECK(false) << "request for gpio 4" << processed;
                 // check after tiemout if no other request sent
                 m_nRF_timer.start();
             }
@@ -461,7 +461,7 @@ void DeviceIOController::createNRF()
                 m_nRF_queue.push(m_p->TOFPacketBA);
                 tofTimer.restart();
                 bool processed = processNRFQueue();
-                TRACE_CHECK(true) << "request for gpio 5" << processed;
+                TRACE_CHECK(false) << "request for gpio 5" << processed;
             }
         });
     } else {
@@ -672,7 +672,7 @@ void DeviceIOController::nRFExec()
         m_nRF_queue.push(m_p->SensorPacketBA);
         auto result = processNRFQueue();
 
-        TRACE_CHECK(true) << "GetSensors message finished" << result;
+        TRACE_CHECK(false) << "GetSensors message finished" << result;
     }
 }
 
@@ -854,15 +854,15 @@ bool DeviceIOController::processNRFQueue()
         if (packet.CMD == STHERM::SIOCommand::SetFanSpeed) {
             TRACE << "CHECK for set fan speed";
         } else if (packet.CMD == STHERM::SIOCommand::GetTOF) {
-            TRACE << "CHECK for TOF values";
+            TRACE_CHECK(false) << "CHECK for TOF values";
         } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
             TRACE << "CHECK for Sensor values";
             m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
         } else if (packet.CMD == STHERM::SIOCommand::SetColorRGB) {
             // TODO: blinking with data array [4]
-            TRACE_CHECK(true) << "Data " << packet.DataArray[0] << " " << packet.DataArray[1] << " " << packet.DataArray[2];
+            TRACE_CHECK(false) << "Data " << packet.DataArray[0] << " " << packet.DataArray[1] << " " << packet.DataArray[2];
             double backlightFactor = ((double)packet.DataArray[0] + (double)packet.DataArray[1] + (double)packet.DataArray[2]) / (3.0 * 255.0);
-            TRACE_CHECK(true) << "backlight factor will be updated to " << backlightFactor;
+            TRACE_CHECK(false) << "backlight factor will be updated to " << backlightFactor;
             m_backlightFactorUpdater.setProperty("diff", backlightFactor - m_backlightFactor);
             m_backlightFactorUpdater.setProperty("target", backlightFactor);
             m_backlightFactorUpdater.start();
