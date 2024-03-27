@@ -373,6 +373,7 @@ qt6_add_qml_module(appStherm
         # Update file
         update.sh
         update_fw_nrf.sh
+        update_fw_nrf_seamless.sh
         nrf_fw_update.zip
 )
 

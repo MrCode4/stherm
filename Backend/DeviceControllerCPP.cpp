@@ -98,10 +98,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceIO, &DeviceIOController::nrfVersionUpdated, this, [this]() {
         emit nrfVersionChanged();
 
-        TRACE << "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVvvvvvv" << getNRF_SW();
+        TRACE << getNRF_SW();
         if (getNRF_SW() != "01.10-RC1") {
-            TRACE << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx";
-            QTimer::singleShot(10000, this, [this]() {m_system->updateFirmware();});
+            TRACE << "counting down to 10 to start firmware update";
+            QTimer::singleShot(10000, this, [this]() {updateNRFFirmware();});
+        } else if (!mBacklightModelData.empty()){
+            setBacklight(mBacklightModelData, true);
         }
     });
 
@@ -431,10 +433,11 @@ bool DeviceControllerCPP::updateNRFFirmware()
 {
     TRACE << "NRF Hardware: " << getNRF_HW() <<
         "NRF software:" << getNRF_SW();
+    if (m_system->installUpdate_NRF_FW_Service()){
 
-
-
-    return m_system->updateFirmware();
+        return _deviceIO->update_nRF_Firmware();
+    }
+    return false;
 }
 
 QVariantMap DeviceControllerCPP::getMainData()

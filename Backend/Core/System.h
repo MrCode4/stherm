@@ -78,9 +78,6 @@ public:
     Q_INVOKABLE void partialUpdate();
     Q_INVOKABLE void partialUpdateByVersion(const QString version);
 
-    Q_INVOKABLE bool updateFirmware();
-
-
     Q_INVOKABLE void updateAndRestart();
 
     //! Get update information from server

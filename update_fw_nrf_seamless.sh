@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# exit with 1: restart
+#           0: success, stop the service
+
+# Set source and destination directories from arguments
+sourceDir="/mnt/update/nrf_fw"
+destDir="/usr/local/bin"
+
+# Display source and destination directories
+echo "Source directory: $sourceDir"
+echo "Destination directory: $destDir"
+
+# https://man7.org/linux/man-pages/man1/mountpoint.1.html
+if mountpoint -q /mnt/update; then
+    echo "/mnt/update already mounted"
+else
+    # Create the directory using 'mkdir -p' if it doesn't exist.
+	mkdir -p /mnt/update
+	mount /dev/mmcblk1p3 /mnt/update
+	
+	 # Check if the mount was successful
+	 # check the exit status of the previous command executed in the script
+    if [ $? -eq 0 ]; then
+        echo "/mnt/update mounted successfully"
+    else
+        echo "Failed to mount /mnt/update"
+        exit 0
+    fi
+fi
+
+cd "$sourceDir"
+
+if [ -f "update.zip" ]; then
+    echo "File 'update.zip' exists."
+else
+    echo "File 'update.zip' does not exist."
+	exit 0
+fi
+
+nrfdfu serial --port /dev/ttymxc1 /mnt/update/nrf_fw/update.zip
+
+echo "cleaning up "
+
+rm -rf $sourceDir/*
+
+# Exit with success code
+exit 0
