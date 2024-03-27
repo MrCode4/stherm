@@ -84,7 +84,14 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mNightModeLogTimer.setTimerType(Qt::PreciseTimer);
     mNightModeLogTimer.setInterval(10000);
     connect(&mNightModeLogTimer, &QTimer::timeout, this, [this]() {
+        TRACE << "---------------------- Start Night Mode Log ----------------------";
+
         m_system->cpuInformation();
+        TRACE << "Delta Correction" << deltaCorrection() <<
+            "- Delta Temperature Integrator " << mDeltaTemperatureIntegrator <<
+                "- backlightFactor" << _deviceIO->backlightFactor();
+
+        TRACE << "---------------------- End Night Mode Log ----------------------";
     });
 
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
