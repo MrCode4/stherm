@@ -531,19 +531,26 @@ void NUVE::System::partialUpdateByVersion(const QString version)
     checkAndDownloadPartialUpdate(version);
 }
 
-void NUVE::System::updateFirmware()
+bool NUVE::System::updateFirmware()
 {
     TRACE << "starting fw nrf update" ;
 
 #ifdef __unix__
 
 
-    installUpdate_NRF_FW_Service();
+    if (installUpdate_NRF_FW_Service()) {
 
-    int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable nrf-fw-update.service; systemctl start nrf-fw-update.service"});
-    TRACE << exitCode;
+        int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable nrf-fw-update.service; systemctl start nrf-fw-update.service"});
+        TRACE << exitCode;
+
+        // Check the exit code...
+
+    } else {
+        return false;
+    }
 #endif
 
+    return true;
 }
 
 void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion)

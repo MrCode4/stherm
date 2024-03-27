@@ -427,6 +427,16 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
     return false;
 }
 
+bool DeviceControllerCPP::updateNRFFirmware()
+{
+    TRACE << "NRF Hardware: " << getNRF_HW() <<
+        "NRF software:" << getNRF_SW();
+
+
+
+    return m_system->updateFirmware();
+}
+
 QVariantMap DeviceControllerCPP::getMainData()
 {
     auto mainData = _mainData;
