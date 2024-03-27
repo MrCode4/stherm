@@ -155,6 +155,8 @@ public:
 
     Q_INVOKABLE QString rootfsBuildTimestamp();
 
+    void cpuInformation();
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);

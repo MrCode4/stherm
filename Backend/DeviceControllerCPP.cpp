@@ -81,6 +81,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         _deviceIO->setFanSpeed(0);
     });
 
+    mNightModeLogTimer.setTimerType(Qt::PreciseTimer);
+    mNightModeLogTimer.setInterval(10000);
+    connect(&mNightModeLogTimer, &QTimer::timeout, this, [this]() {
+        m_system->cpuInformation();
+    });
+
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
     mBacklightPowerTimer.setSingleShot(false);
     mBacklightPowerTimer.setInterval(1000);
@@ -188,9 +194,13 @@ void DeviceControllerCPP::nightModeControl(bool start)
     if (start) {
         setCPUGovernor("powersave");
         mNightModeTimer.start();
+        mNightModeLogTimer.start();
+        
+        m_system->cpuInformation();	
 
     } else {
         mNightModeTimer.stop();
+        mNightModeLogTimer.stop();
         setCPUGovernor("ondemand");
         _deviceIO->setFanSpeed(16); //100 / 7
     }
