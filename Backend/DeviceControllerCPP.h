@@ -191,8 +191,11 @@ private:
 
     QTimer mNightModeTimer;
 
-    //TEMP
+    //! TEMP
     QTimer mNightModeLogTimer;
+
+    //! TEMP, To keep raw temperature.
+    double mRawTemperature;
 
     //! Temperature correction parameters
     double mDeltaTemperatureIntegrator;

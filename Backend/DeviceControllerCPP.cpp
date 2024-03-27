@@ -94,6 +94,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         TRACE << "Brightness: " << UtilityHelper::brightness();
 
+        TRACE << "Raw Temperature: " << mRawTemperature;
+
         TRACE << "---------------------- End Night Mode Log ----------------------";
     });
 
@@ -364,6 +366,8 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
     if (isOk){
+        mRawTemperature = tc;
+
         double dt = deltaCorrection();
         TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
         if (qAbs(dt) < 10) {
