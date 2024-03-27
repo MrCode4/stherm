@@ -87,9 +87,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         TRACE << "---------------------- Start Night Mode Log ----------------------";
 
         m_system->cpuInformation();
-        TRACE << "Delta Correction" << deltaCorrection() <<
-            "- Delta Temperature Integrator " << mDeltaTemperatureIntegrator <<
-                "- backlightFactor" << _deviceIO->backlightFactor();
+        TRACE << "Delta Correction: " << deltaCorrection() <<
+            "- Delta Temperature Integrator: " << mDeltaTemperatureIntegrator <<
+            "- backlightFactor: " << _deviceIO->backlightFactor();
+
+
+        TRACE << "Brightness: " << UtilityHelper::brightness();
 
         TRACE << "---------------------- End Night Mode Log ----------------------";
     });
