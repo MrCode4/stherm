@@ -104,7 +104,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         TRACE << "Is night mode running: " << mIsNightModeRunning;
 
-        writeNightModeData(cpuData, brightness);
+        writeGeneralSysData(cpuData, brightness);
 
         TRACE << "---------------------- End Night Mode Log ----------------------";
     });
@@ -499,8 +499,8 @@ QVariantMap DeviceControllerCPP::getMainData()
     return mainData;
 }
 
-void DeviceControllerCPP::writeNightModeData(const QStringList& cpuData, const int& brightness) {
-    const QString filePath = "/mnt/data/sensor/nightModeData.csv";
+void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness) {
+    const QString filePath = "/mnt/data/sensor/generalSystemData.csv";
     const QString dateTimeHeader = "DateTime UTC (sec)";
     const QString deltaCorrectionHeader = "Delta Correction";
     const QString dtiHeader = "Delta Temperature Integrator";
