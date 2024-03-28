@@ -431,12 +431,11 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
 
 bool DeviceControllerCPP::updateNRFFirmware()
 {
-    emit nrfUpdateStarted();
 
     TRACE << "NRF Hardware: " << getNRF_HW() <<
         "NRF software:" << getNRF_SW();
     if (m_system->installUpdate_NRF_FW_Service()){
-
+        emit nrfUpdateStarted();
         return _deviceIO->update_nRF_Firmware();
     }
     return false;
