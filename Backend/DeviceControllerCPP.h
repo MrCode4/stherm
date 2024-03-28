@@ -193,7 +193,8 @@ private:
     QTimer mNightModeTimer;
 
     //! TEMP
-    QTimer mNightModeLogTimer;
+    QTimer mLogTimer;
+    bool mIsNightModeRunning;
 
     //! TEMP, To keep raw temperature.
     double mRawTemperature;

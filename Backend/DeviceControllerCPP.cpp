@@ -84,9 +84,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // Thge system prepare the direcories for usage
     m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
 
-    mNightModeLogTimer.setTimerType(Qt::PreciseTimer);
-    mNightModeLogTimer.setInterval(10000);
-    connect(&mNightModeLogTimer, &QTimer::timeout, this, [this]() {
+    mIsNightModeRunning = false;
+    mLogTimer.setTimerType(Qt::PreciseTimer);
+    mLogTimer.start(10000);
+    connect(&mLogTimer, &QTimer::timeout, this, [this]() {
         TRACE << "---------------------- Start Night Mode Log ----------------------";
 
         auto cpuData = m_system->cpuInformation();
@@ -100,6 +101,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         TRACE << "Brightness: " << brightness;
 
         TRACE << "Raw Temperature: " << mRawTemperature;
+
+        TRACE << "Is night mode running: " << mIsNightModeRunning;
 
         writeNightModeData(cpuData, brightness);
 
@@ -213,13 +216,14 @@ void DeviceControllerCPP::nightModeControl(bool start)
     if (start) {
         setCPUGovernor("powersave");
         mNightModeTimer.start();
-        mNightModeLogTimer.start();
+        mIsNightModeRunning = true;
         
-        m_system->cpuInformation();	
+        m_system->cpuInformation();
 
     } else {
         mNightModeTimer.stop();
-        mNightModeLogTimer.stop();
+        mIsNightModeRunning = false;
+
         setCPUGovernor("ondemand");
         _deviceIO->setFanSpeed(16); //100 / 7
     }
@@ -503,9 +507,10 @@ void DeviceControllerCPP::writeNightModeData(const QStringList& cpuData, const i
     const QString backlightFactorHeader = "backlightFactor";
     const QString brightnessHeader = "Brightness";
     const QString rawTemperatureHeader = "Raw Temperature";
+    const QString nightModeHeader = "Is Night Mode Running";
 
     QStringList header = {dateTimeHeader, deltaCorrectionHeader, dtiHeader,
-                          backlightFactorHeader, brightnessHeader, rawTemperatureHeader};
+                          backlightFactorHeader, brightnessHeader, rawTemperatureHeader, nightModeHeader};
 
     for (auto var = 0; var < cpuData.length(); var++) {
         header.append(QString("Temperature CPU%0").arg(var));
@@ -550,6 +555,9 @@ void DeviceControllerCPP::writeNightModeData(const QStringList& cpuData, const i
 
             } else if (key == rawTemperatureHeader) {
                 dataStrList.append(QString::number(mRawTemperature));
+
+            } else if (key == nightModeHeader) {
+                dataStrList.append(mIsNightModeRunning ? "true" : "false");
             }
 
         }
