@@ -167,6 +167,7 @@ private Q_SLOTS:
 private:
     /* Private Functions
      * ****************************************************************************************/
+    void writeNightModeData(const QStringList &cpuData, const int &brightness);
 
 private:
     /* Attributes

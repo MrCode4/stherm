@@ -1103,7 +1103,9 @@ QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
     return latestVersionKey;
 }
 
-void NUVE::System::cpuInformation() {
+QStringList NUVE::System::cpuInformation() {
+
+    QStringList cpuTempList;
 
     for (int i = 0; ; ++i) {
         QString fileName = QString("/sys/class/thermal/thermal_zone%1/temp").arg(i);
@@ -1119,8 +1121,10 @@ void NUVE::System::cpuInformation() {
             bool ok;
             int temperature = line.toInt(&ok);
             if (ok) {
+                cpuTempList.append(line);
                 TRACE << "CPU" << i << "Temperature:" << temperature << "mili Centigrade";
             } else {
+                cpuTempList.append("invalid");
                 TRACE << "Failed to parse temperature for CPU" << i;
             }
         } else {
@@ -1129,4 +1133,6 @@ void NUVE::System::cpuInformation() {
 
         file.close();
     }
+
+    return cpuTempList;
 }

@@ -155,7 +155,7 @@ public:
 
     Q_INVOKABLE QString rootfsBuildTimestamp();
 
-    void cpuInformation();
+    QStringList cpuInformation();
 
 protected slots:
     //! Process network replay
@@ -197,6 +197,8 @@ signals:
 
     void canFetchServerChanged();
 
+    bool mountDirectory(const QString targetDirectory, const QString targetFolder);
+
 private:
 
     //! verify dounloaded files and prepare to set up.
@@ -230,7 +232,6 @@ private:
     //! Check and prepare the system to start download process.
     void checkAndDownloadPartialUpdate(const QString installingVersion);
 
-    bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
 private:
     Sync *mSync;
