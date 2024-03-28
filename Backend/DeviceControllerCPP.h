@@ -154,6 +154,8 @@ Q_SIGNALS:
     void tiVersionChanged();
     void nrfVersionChanged();
 
+    void nrfUpdateStarted();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
