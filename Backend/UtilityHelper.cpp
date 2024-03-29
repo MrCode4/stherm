@@ -163,29 +163,43 @@ std::string convert_hex_to_string(const std::string& hex_value) {
     return hex_value;
 }
 
-QString UtilityHelper::getCPUInfo() {
-
+QString UtilityHelper::getCPUInfo()
+{
     QFile file("/sys/fsl_otp/HW_OCOTP_CFG1");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         TRACE << "Failed to open the CFG1 file.";
         return NULL;
     }
+    auto line = file.readLine();
+    file.close();
 
-    auto line = file.readLine().trimmed();
+    if (!line.startsWith("0x") || !line.endsWith("\n"))
+    {
+        TRACE << "CFG1 not validated" << line;
+        return NULL;
+    }
+
+    line = line.trimmed();
     TRACE << "CFG1:" << line;
     QString cfg1 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
-    file.close();
 
     QFile file0("/sys/fsl_otp/HW_OCOTP_CFG0");
     if (!file0.open(QIODevice::ReadOnly | QIODevice::Text)) {
         TRACE << "Failed to open the CFG0 file.";
         return NULL;
     }
+    line = file0.readLine();
+    file0.close();
 
-    line = file0.readLine().trimmed();
+    if (!line.startsWith("0x") || !line.endsWith("\n"))
+    {
+        TRACE << "CFG0 not validated:" << line;
+        return NULL;
+    }
+
+    line = line.trimmed();
     TRACE << "CFG0:" << line;
     QString cfg0 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
-    file0.close();
 
     QString serialNumberHex = cfg1 + cfg0;
 
