@@ -87,6 +87,8 @@ public:
     //! Set fan to scheme
     Q_INVOKABLE bool setFan(AppSpecCPP::FanMode fanMode, int newFanWPH);
 
+    Q_INVOKABLE bool updateNRFFirmware();
+
     /* Public Functions
      * Read and write data without any UART connection
      * Read and write data directly
@@ -151,6 +153,8 @@ Q_SIGNALS:
 
     void tiVersionChanged();
     void nrfVersionChanged();
+
+    void nrfUpdateStarted();
 
 private:
     // update main data and send data to scheme.

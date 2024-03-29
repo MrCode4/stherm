@@ -98,10 +98,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceIO, &DeviceIOController::nrfVersionUpdated, this, [this]() {
         emit nrfVersionChanged();
 
-        TRACE << "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVvvvvvv" << getNRF_SW();
+        TRACE << getNRF_SW();
         if (getNRF_SW() != "01.10-RC1") {
-            TRACE << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx";
-            QTimer::singleShot(10000, this, [this]() {m_system->updateFirmware();});
+            TRACE << "start firmware update in 3 seconds";
+            QTimer::singleShot(3000, this, [this]() {updateNRFFirmware();});
+        } else if (!mBacklightModelData.empty()){
+            setBacklight(mBacklightModelData, true);
         }
     });
 
@@ -424,6 +426,18 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
         return true;
     }
 
+    return false;
+}
+
+bool DeviceControllerCPP::updateNRFFirmware()
+{
+
+    TRACE << "NRF Hardware: " << getNRF_HW() <<
+        "NRF software:" << getNRF_SW();
+    if (m_system->installUpdate_NRF_FW_Service()){
+        emit nrfUpdateStarted();
+        return _deviceIO->update_nRF_Firmware();
+    }
     return false;
 }
 

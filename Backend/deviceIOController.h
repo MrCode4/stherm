@@ -50,6 +50,8 @@ public:
     //! Update paired sensors in TI
     void updateTiDevices();
 
+    bool update_nRF_Firmware();
+
     void updateRelays(STHERM::RelayConfigs relays);
     bool testRelays(QVariantList relaysData);
 
