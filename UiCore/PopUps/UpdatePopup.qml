@@ -19,6 +19,11 @@ I_PopUp {
     titleBar: false
 
     closePolicy: Popup.NoAutoClose
+
+    enter: Transition {}
+
+    exit: Transition {}
+
     /* Children
      * ****************************************************************************************/
     ColumnLayout {

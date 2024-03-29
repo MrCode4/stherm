@@ -100,8 +100,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         TRACE << getNRF_SW();
         if (getNRF_SW() != "01.10-RC1") {
-            TRACE << "counting down to 10 to start firmware update";
-            QTimer::singleShot(10000, this, [this]() {updateNRFFirmware();});
+            TRACE << "start firmware update in 3 seconds";
+            QTimer::singleShot(3000, this, [this]() {updateNRFFirmware();});
         } else if (!mBacklightModelData.empty()){
             setBacklight(mBacklightModelData, true);
         }
