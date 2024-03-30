@@ -497,6 +497,20 @@ void DeviceIOController::updateTiDevices()
     qDebug() << Q_FUNC_INFO << __LINE__ << "Device count:   " << m_p->DeviceID.size();
 }
 
+bool DeviceIOController::update_nRF_Firmware()
+{
+    TRACE_CHECK(true) << "sending get into dfu:"
+                       << (m_nRfConnection && m_nRfConnection->isConnected());
+
+    auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::GetIntoDFU,
+                                               STHERM::PacketType::UARTPacket);
+    m_nRF_queue.push(packet);
+
+    auto result = processNRFQueue();
+    TRACE_CHECK(result) << "sending get into dfu failed or waiting in queue";
+    return result;
+}
+
 void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)
 {
     //! In daemon: main.cpp: Line 1495 to 1518
@@ -694,6 +708,9 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
             case STHERM::GetInfo: {
                 int indx_rev = 0;
 
+                NRF_HW = "";
+                NRF_SW = "";
+
                 // TODO: When NRF_HW.clear() called?
                 for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++) {
                     NRF_HW.push_back(static_cast<char>(rxPacket.DataArray[indx_rev]));
@@ -707,6 +724,20 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 TRACE << " NRF_HW :" << NRF_HW << " NRF_SW :" << NRF_SW;
 
                 emit nrfVersionUpdated();
+
+            } break;
+
+            case STHERM::GetIntoDFU: {
+                // send actual file to nRF
+                int exitCode = QProcess::execute("/bin/bash", {"-c", "/usr/local/bin/update_fw_nrf_seamless.sh"});
+                TRACE << exitCode;
+
+                // sleep and wait for nRF to restart
+                QThread::msleep(5000);
+
+                // Send GetInfo request to re-initialize communication
+                auto packet = DataParser::prepareSIOPacket(STHERM::GetInfo);
+                m_nRF_queue.push(packet);
 
             } break;
 
@@ -843,7 +874,7 @@ bool DeviceIOController::processNRFQueue()
 
     auto packet = m_nRF_queue.front();
 
-    if (m_nRfConnection->property("busy").toBool() && m_nRF_queue.size() > 3) {
+    if (m_nRfConnection->property("busy").toBool()) {
         TRACE_CHECK(packet.CMD != STHERM::GetTOF) << "busy with previous one" << packet.CMD << m_nRF_queue.size();
         return false;
     }

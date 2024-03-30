@@ -61,12 +61,13 @@ BasePageView {
             { "key": "Software version",    "value": appVesion },
             { "key": "Hardware version",    "value": "01" },
             { "key": "Restart Device",      "value": "01", "type": "button" },
+            { "key": "Update NRF",          "value": "02", "type": "button" },
             { "key": "Exit",                "value": "02", "type": "button" },
         ]
         delegate: Item {
             width: ListView.view.width
             height: visible ? Style.delegateHeight * 0.8 : 0
-            visible: modelData.key !== "Exit" || system.testMode;
+            visible: (modelData.key !== "Exit" && modelData.key !== "Update NRF" ) || system.testMode;
 
             RowLayout {
                 id: textContent
@@ -149,17 +150,19 @@ BasePageView {
             }
 
             ButtonInverted {
-                id: exitDevice
 
                 anchors.centerIn: parent
 
-                visible: modelData?.type === "button" && modelData.key === "Exit"
+                visible: modelData?.type === "button" && (modelData.key === "Exit" || modelData.key === "Update NRF")
                 leftPadding: 8
                 rightPadding: 8
                 text: "   " + modelData.key + "   "
 
                 onClicked: {
-                    exitPopup.open();
+                    if (modelData.key === "Exit")
+                        exitPopup.open();
+                    else if (modelData.key === "Update NRF")
+                        deviceController.deviceControllerCPP.updateNRFFirmware();
                 }
             }
         }

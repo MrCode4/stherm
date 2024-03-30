@@ -106,6 +106,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/ConfirmPopup.qml
         UiCore/PopUps/SaveDialoge.qml
         UiCore/PopUps/LoadDialoge.qml
+        UiCore/PopUps/UpdatePopup.qml
         UiCore/ShortcutManager.qml
         UiCore/Components/SemiCircleSlider.qml
         UiCore/Components/SystemModeButton.qml
@@ -373,6 +374,7 @@ qt6_add_qml_module(appStherm
         # Update file
         update.sh
         update_fw_nrf.sh
+        update_fw_nrf_seamless.sh
         nrf_fw_update.zip
 )
 
