@@ -704,7 +704,7 @@ I_DeviceController {
         //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
         var iaq = result?.iaq ?? 0;
-        var co2Id = device?.airQuality() ?? 0;
+        var co2Id = device?.airQuality(iaq) ?? 0;
 
         // Fahrenheit is more sensitive than Celsius,
         // so for every one degree change,

@@ -29,7 +29,7 @@ QSObject {
     //! CO2 Sensor (Air Quality)
     property real           co2:            0.0
 
-    property int           _co2_id: co2 < 2.9 ? 0 : co2 > 4 ? 2 : 1
+    property int           _co2_id: airQuality(co2)
 
     //! TOF: Time of flight (distance sensor)
     property real           tof:            0.0
@@ -83,7 +83,9 @@ QSObject {
 
     /* Functions
      * ****************************************************************************************/
-    function airQuality() : int {
-        return co2 < 2.9 ? 0 : co2 > 4 ? 2 : 1;
+
+    //! Air quality
+    function airQuality(co2Value : int) : int {
+        return co2Value < 2.9 ? 0 : co2Value > 4 ? 2 : 1;
     }
 }
