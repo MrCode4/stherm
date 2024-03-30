@@ -148,6 +148,11 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
+        if (mIsNightModeRunning) {
+            mBacklightTimer.stop();
+            return;
+        }
+
         TRACE_CHECK(false) << "Update backlight." << color << afterColor << mBacklightModelData;
 
         if (mBacklightTimer.isActive())
