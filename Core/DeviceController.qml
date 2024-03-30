@@ -446,10 +446,14 @@ I_DeviceController {
 
     function setSettingsServer(settings: var) {
         if (editMode !== AppSpec.EMDateTime) {
-            device.setting.currentTimezone = settings.currentTimezone;
-            device.setting.effectDst = settings.effectDst;
+            if (device.setting.currentTimezone !== settings.currentTimezone)
+                device.setting.currentTimezone = settings.currentTimezone;
 
-            device.setting.timeFormat = settings.timeFormat;
+            if (device.setting.effectDst !== settings.effectDst)
+                device.setting.effectDst = settings.effectDst;
+
+            if (device.setting.timeFormat !== settings.timeFormat)
+                device.setting.timeFormat = settings.timeFormat;
 
         } else {
             console.log("The Date time settings is being edited and cannot be updated by the server.")
@@ -737,7 +741,8 @@ I_DeviceController {
     {
         // TODO should be updated to inform the logics
 
-        device._isHold = isHold;
+        if (device._isHold !== isHold)
+            device._isHold = isHold;
     }
 
     function setSystemAccesseoriesServer(settings: var) {
