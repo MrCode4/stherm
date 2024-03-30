@@ -49,16 +49,6 @@ I_DeviceController {
         }
     }
 
-    property Connections nightMode_BacklightController: Connections {
-        target: device.backlight
-
-        enabled: deviceControllerCPP.system.testMode || uiSession.uiTetsMode
-
-        function onOnChanged() {
-           updateNightModeWithBacklight();
-        }
-    }
-
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
@@ -226,8 +216,6 @@ I_DeviceController {
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
-
-        runNightMode();
     }
 
     /* Children
@@ -269,7 +257,9 @@ I_DeviceController {
         //!    LED_NO_MODE= 3
         var send_data = [r, g, b, 0, isOn ? "true" : "false"];
 
+        updateNightModeWithBacklight(isOn);
         //        console.log("send data: ", send_data)
+
 
         return deviceControllerCPP.setBacklight(send_data);
     }
@@ -297,8 +287,6 @@ I_DeviceController {
             device.backlight.hue = hue;
             device.backlight.value = brightness;
             device.backlight.shadeIndex = shadeIndex;
-
-            updateNightModeWithBacklight();
 
         } else {
             console.log("revert the backlight in model: ")
@@ -756,8 +744,8 @@ I_DeviceController {
             device.nightMode.mode = nightMode;
     }
 
-    function updateNightModeWithBacklight() {
-        if (device && device.backlight.on) {
+    function updateNightModeWithBacklight(isOn : bool) {
+        if (isOn) {
             updateNightMode(AppSpec.NMOff);
         } else {
             updateNightMode(AppSpec.NMOn);
@@ -785,7 +773,7 @@ I_DeviceController {
                             device.setting.timeFormat, false, device.setting.adaptiveBrightness)
 
             var backlight = device.backlight;
-            if (backlight) {
+            if (backlight && device.nightMode.mode === AppSpec.NMOn) {
                 var color = device.backlight.backlightFinalColor(backlight.shadeIndex,
                                                                  backlight.hue,
                                                                  backlight.value);
