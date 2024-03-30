@@ -410,7 +410,6 @@ I_DeviceController {
         //  In night mode the brightness, volume and adaptive can not be send to device controller with model values
         if (device.nightMode._running) {
             send_data = [50, 0, temperatureUnit, timeFormat, false, false];
-
         }
 
         if (!deviceControllerCPP.setSettings(send_data)){

@@ -219,7 +219,7 @@ void DeviceControllerCPP::nightModeControl(bool start)
         setCPUGovernor("powersave");
         mNightModeTimer.start();
         mIsNightModeRunning = true;
-        
+
         m_system->cpuInformation();
 
     } else {

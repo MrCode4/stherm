@@ -154,6 +154,8 @@ public:
 
     QStringList cpuInformation();
 
+    bool mountDirectory(const QString targetDirectory, const QString targetFolder);
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -193,8 +195,6 @@ signals:
     void systemUIDChanged();
 
     void canFetchServerChanged();
-
-    bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
 private:
 
