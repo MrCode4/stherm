@@ -542,7 +542,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(QDateTime::currentDateTimeUtc().toSecsSinceEpoch()));
 
             } else if (key == deltaCorrectionHeader) {
-                dataStrList.append(QString::number(deltaCorrection()));
+                dataStrList.append(QString::number(deltaCorrection() * 1.8));
 
             } else if (key == dtiHeader) {
                 dataStrList.append(QString::number(mDeltaTemperatureIntegrator));
