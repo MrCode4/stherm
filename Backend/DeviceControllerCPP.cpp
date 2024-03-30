@@ -502,11 +502,11 @@ QVariantMap DeviceControllerCPP::getMainData()
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness) {
     const QString filePath = "/mnt/data/sensor/generalSystemData.csv";
     const QString dateTimeHeader = "DateTime UTC (sec)";
-    const QString deltaCorrectionHeader = "Delta Correction";
+    const QString deltaCorrectionHeader = "Delta Correction (F)";
     const QString dtiHeader = "Delta Temperature Integrator";
     const QString backlightFactorHeader = "backlightFactor";
-    const QString brightnessHeader = "Brightness";
-    const QString rawTemperatureHeader = "Raw Temperature";
+    const QString brightnessHeader = "Brightness (%)";
+    const QString rawTemperatureHeader = "Raw Temperature (C)";
     const QString nightModeHeader = "Is Night Mode Running";
 
     QStringList header = {dateTimeHeader, deltaCorrectionHeader, dtiHeader,
