@@ -45,38 +45,7 @@ I_DeviceController {
         }
 
         function on_RunningChanged() {
-            if (device.nightMode._running) {
-                // Apply night mode
-                // Set night mode settings
-                // LCD should be set to minimum brightness, and ideally disabled.
-                var send_data = [50, 0, device.setting.tempratureUnit,
-                                 device.setting.timeFormat, false, false];
-                if (!deviceControllerCPP.setSettings(send_data)){
-                    console.warn("setting failed");
-                }
-
-                // Set night mode backlight.
-                // LED light ring will be completely disabled.
-                updateDeviceBacklight(false, Qt.color("black"));
-
-                deviceControllerCPP.nightModeControl(true);
-
-            } else {
-                // revert to model
-                if (device)
-                    setSettings(device.setting.brightness, device.setting.volume, device.setting.tempratureUnit,
-                                device.setting.timeFormat, false, device.setting.adaptiveBrightness)
-
-                var backlight = device.backlight;
-                if (backlight) {
-                    var color = device.backlight.backlightFinalColor(backlight.shadeIndex,
-                                                                     backlight.hue,
-                                                                     backlight.value);
-                    updateDeviceBacklight(backlight.on, color);
-                }
-
-                deviceControllerCPP.nightModeControl(false);
-            }
+            runNightMode();
         }
     }
 
@@ -257,6 +226,8 @@ I_DeviceController {
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
+
+        runNightMode();
     }
 
     /* Children
@@ -786,12 +757,42 @@ I_DeviceController {
     }
 
     function updateNightModeWithBacklight() {
-        if (deviceControllerCPP.system.testMode || uiSession.uiTetsMode) {
-            if (device && device.backlight.on) {
-                updateNightMode(AppSpec.NMOff);
-            } else {
-                updateNightMode(AppSpec.NMOn);
+        if (device && device.backlight.on) {
+            updateNightMode(AppSpec.NMOff);
+        } else {
+            updateNightMode(AppSpec.NMOn);
+        }
+    }
+
+    function runNightMode() {
+        if (device.nightMode._running) {
+            // Apply night mode
+            // Set night mode settings
+            // LCD should be set to minimum brightness, and ideally disabled.
+            var send_data = [50, 0, device.setting.tempratureUnit,
+                             device.setting.timeFormat, false, false];
+            if (!deviceControllerCPP.setSettings(send_data)){
+                console.warn("setting failed");
             }
+
+            deviceControllerCPP.nightModeControl(true);
+
+        } else {
+            console.log("Night mode stopping: revert to model.")
+            // revert to model
+            if (device)
+                setSettings(device.setting.brightness, device.setting.volume, device.setting.tempratureUnit,
+                            device.setting.timeFormat, false, device.setting.adaptiveBrightness)
+
+            var backlight = device.backlight;
+            if (backlight) {
+                var color = device.backlight.backlightFinalColor(backlight.shadeIndex,
+                                                                 backlight.hue,
+                                                                 backlight.value);
+                updateDeviceBacklight(backlight.on, color);
+            }
+
+            deviceControllerCPP.nightModeControl(false);
         }
     }
 }
