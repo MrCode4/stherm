@@ -360,6 +360,13 @@ I_DeviceController {
         if (!device)
             return;
 
+        if (device.vacation.temp_min === temp_min &&
+            device.vacation.temp_max === temp_max &&
+            device.vacation.hum_min  === hum_min &&
+            device.vacation.hum_max  === hum_max) {
+            return;
+        }
+
         deviceControllerCPP.setVacation(temp_min, temp_max, hum_min, hum_max);
 
         device.vacation.temp_min = temp_min;
