@@ -401,8 +401,8 @@ void Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
         bool relaysChanged = true;
         sendRelays();
         if (relaysChanged && !stopWork){
-                // sysDelay
-                waitLoop(mSystemSetup->systemRunDelay * 60000);
+            // sysDelay
+            waitLoop(mSystemSetup->systemRunDelay * 60000);
         }
     }
 }

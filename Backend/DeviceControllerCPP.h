@@ -196,8 +196,9 @@ private:
 
     QTimer mNightModeTimer;
 
-    //! TEMP
+    //! TODO: Delete when logging is not required
     QTimer mLogTimer;
+
     bool mIsNightModeRunning;
 
     //! TEMP, To keep raw temperature.
