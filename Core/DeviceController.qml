@@ -684,11 +684,34 @@ I_DeviceController {
     function checkMessages(messages: var) {
     }
 
+    //! Control the push to server with the updateInformation().
+    property int _pushUpdateInformationCounter: 0
+
+    //! Reset the _pushUpdateInformationCounter
+    property Timer _pushUpdateInformationTimer: Timer {
+        repeat: true
+        running: true
+        interval: 60000
+
+        onTriggered: {
+            _pushUpdateInformationCounter = 0;
+        }
+    }
+
     //! Read data from system with getMainData method.
     function updateInformation()
     {
         //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
+        var iaq = result?.iaq ?? 0;
+        var co2Id = device?.airQuality() ?? 0;
+
+        // Fahrenheit is more sensitive than Celsius,
+        // so for every one degree change,
+        // it needs to be sent to the server.
+        var isNeedToPushToServer = (Math.abs(device.currentHum !== result?.humidity ?? 0) >= 1) ||
+                (Math.abs(device.currentTemp - result?.temperature ?? 0) * 1.8 >= 1.0) ||
+                (device._co2_id !== co2Id);
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
@@ -697,6 +720,11 @@ I_DeviceController {
         //        device.setting.brightness = result?.brighness ?? 0
 
         //        device.fan.mode?
+
+        if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
+            _pushUpdateInformationCounter++;
+            finalizeSettings();
+        }
 
         //        console.log("--------------- End: updateInformation -------------------")
     }
