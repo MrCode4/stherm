@@ -30,7 +30,7 @@ I_DeviceController {
 
         onTriggered: {
             var currentTime = new Date();
-            device.nightMode._running = currentTime.getHours() >= 22 || currentTime.getHours() < 7;
+            device.nightMode._running = currentTime.getHours() >= 21 || currentTime.getHours() < 7;
         }
     }
 
