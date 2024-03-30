@@ -49,7 +49,7 @@ I_DeviceController {
                 // Apply night mode
                 // Set night mode settings
                 // LCD should be set to minimum brightness, and ideally disabled.
-                var send_data = [5, 0, device.setting.tempratureUnit,
+                var send_data = [50, 0, device.setting.tempratureUnit,
                                  device.setting.timeFormat, false, false];
                 if (!deviceControllerCPP.setSettings(send_data)){
                     console.warn("setting failed");
@@ -405,6 +405,12 @@ I_DeviceController {
                             reset, device.setting.adaptiveBrightness]
         if (send_data === current_data) {
             return;
+        }
+
+        //  In night mode the brightness, volume and adaptive can not be send to device controller with model values
+        if (device.nightMode._running) {
+            send_data = [50, 0, temperatureUnit, timeFormat, false, false];
+
         }
 
         if (!deviceControllerCPP.setSettings(send_data)){
