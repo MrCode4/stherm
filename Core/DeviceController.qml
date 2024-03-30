@@ -440,6 +440,8 @@ I_DeviceController {
     }
 
     function setSettingsServer(settings: var) {
+        var timeFormat = (editMode === AppSpec.EMDateTime || editMode === AppSpec.EMSettings) ?
+                    device.setting.timeFormat : settings.timeFormat;
         if (editMode !== AppSpec.EMDateTime) {
             device.setting.currentTimezone = settings.currentTimezone;
             device.setting.effectDst = settings.effectDst;
@@ -450,7 +452,7 @@ I_DeviceController {
 
         if (editMode !== AppSpec.EMSettings) {
             setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
-                        settings.timeFormat, false, settings.brightness_mode)
+                        timeFormat, false, settings.brightness_mode)
         } else {
             console.log("The system settings is being edited and cannot be updated by the server.")
         }
