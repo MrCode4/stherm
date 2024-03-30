@@ -340,7 +340,6 @@ bool DeviceIOController::setBrightness(int value)
         value = 255.0 * std::sqrt(m_p->luminosity / 255.0);
 
     if (m_p->brightnessValue == value) {
-        TRACE << "The brightness has not changed.";
         return true;
     }
 
