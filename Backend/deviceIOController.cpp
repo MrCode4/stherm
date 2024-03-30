@@ -64,6 +64,7 @@ public:
     //! 0 normal, 1 adaptive
     uint8_t brighness_mode = 1;
     uint32_t luminosity = 255;
+    uint32_t brightnessValue;
 
     //! unknowns // TODO find unused ones and remove later
     bool pairing = false;
@@ -124,6 +125,8 @@ void DeviceIOController::initialize()
 {
     //! Get device id
     getDeviceID();
+
+    m_p->brightnessValue = UtilityHelper::brightness();
 
     //! Prepare main device
     m_p->MainDevice.address = 0xffffffff; // this address is used in rf comms
@@ -336,7 +339,13 @@ bool DeviceIOController::setBrightness(int value)
     if (m_p->brighness_mode == 1)
         value = 255.0 * std::sqrt(m_p->luminosity / 255.0);
 
-    return UtilityHelper::setBrightness(std::clamp(value, 5, 254));
+    if (m_p->brightnessValue == value) {
+        return true;
+    }
+
+    m_p->brightnessValue = std::clamp(value, 5, 254);
+
+    return UtilityHelper::setBrightness(m_p->brightnessValue);
 }
 
 void DeviceIOController::setTimeZone(int offset)

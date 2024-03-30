@@ -255,6 +255,21 @@ bool UtilityHelper::setBrightness(int value) {
     return true;
 }
 
+int UtilityHelper::brightness() {
+    QFile brightnessFile("/sys/class/backlight/backlight_display/brightness");
+    if (!brightnessFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        TRACE << "Failed to open brightness file.";
+        return -1;
+    }
+
+    bool isOk;
+    auto brightnessValue = brightnessFile.readLine().toInt(&isOk);
+    if (!isOk)
+        TRACE << "Failed to read brightness value";
+
+    return (isOk ? brightnessValue : -1);
+}
+
 void UtilityHelper::setTimeZone(int offset) {
     QString timezoneName = "GMT";
     QString offsetStr = (offset >= 0) ? "+" : "";

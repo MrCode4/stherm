@@ -81,6 +81,35 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         _deviceIO->setFanSpeed(0);
     });
 
+    // Thge system prepare the direcories for usage
+    m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
+    mGeneralSystemDatafilePath = QString("/mnt/data/sensor/gsd-%0.csv").arg(QDateTime::currentSecsSinceEpoch());
+
+    mIsNightModeRunning = false;
+    mLogTimer.setTimerType(Qt::PreciseTimer);
+    mLogTimer.start(10000);
+    connect(&mLogTimer, &QTimer::timeout, this, [this]() {
+        TRACE << "---------------------- Start Night Mode Log ----------------------";
+
+        auto cpuData = m_system->cpuInformation();
+        auto brightness = UtilityHelper::brightness();
+
+        TRACE << "Delta Correction: " << deltaCorrection() <<
+            "- Delta Temperature Integrator: " << mDeltaTemperatureIntegrator <<
+            "- backlightFactor: " << _deviceIO->backlightFactor();
+
+
+        TRACE << "Brightness: " << brightness;
+
+        TRACE << "Raw Temperature: " << mRawTemperature;
+
+        TRACE << "Is night mode running: " << mIsNightModeRunning;
+
+        writeGeneralSysData(cpuData, brightness);
+
+        TRACE << "---------------------- End Night Mode Log ----------------------";
+    });
+
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
     mBacklightPowerTimer.setSingleShot(false);
     mBacklightPowerTimer.setInterval(1000);
@@ -120,10 +149,16 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
-        TRACE_CHECK(false) << "Update backlight." << color << afterColor << mBacklightModelData;
+
 
         if (mBacklightTimer.isActive())
             mBacklightTimer.stop();
+
+        if (mIsNightModeRunning) {
+            return;
+        }
+
+        TRACE_CHECK(false) << "Update backlight." << color << afterColor << mBacklightModelData;
 
         if (color.isEmpty()) {
             TRACE << "restoring color with force " << mBacklightModelData;
@@ -190,9 +225,14 @@ void DeviceControllerCPP::nightModeControl(bool start)
     if (start) {
         setCPUGovernor("powersave");
         mNightModeTimer.start();
+        mIsNightModeRunning = true;
+
+        m_system->cpuInformation();
 
     } else {
         mNightModeTimer.stop();
+        mIsNightModeRunning = false;
+
         setCPUGovernor("ondemand");
         _deviceIO->setFanSpeed(16); //100 / 7
     }
@@ -346,6 +386,8 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
     if (isOk){
+        mRawTemperature = tc;
+
         double dt = deltaCorrection();
         TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
         if (qAbs(dt) < 10) {
@@ -476,4 +518,83 @@ QVariantMap DeviceControllerCPP::getMainData()
     }
 
     return mainData;
+}
+
+void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness) {
+    const QString dateTimeHeader = "DateTime UTC (sec)";
+    const QString deltaCorrectionHeader = "Delta Correction (F)";
+    const QString dtiHeader = "Delta Temperature Integrator";
+    const QString backlightFactorHeader = "backlightFactor";
+    const QString brightnessHeader = "Brightness (%)";
+    const QString rawTemperatureHeader = "Raw Temperature (C)";
+    const QString nightModeHeader = "Is Night Mode Running";
+
+    QStringList header = {dateTimeHeader, deltaCorrectionHeader, dtiHeader,
+                          backlightFactorHeader, brightnessHeader, rawTemperatureHeader, nightModeHeader};
+
+    for (auto var = 0; var < cpuData.length(); var++) {
+        header.append(QString("Temperature CPU%0").arg(var));
+    }
+
+    QFile file(mGeneralSystemDatafilePath);
+
+    if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        QTextStream out(&file);
+
+        QString allData = out.readAll();
+        file.resize(0);
+
+        // Check the header
+        auto checkHeader = allData.isEmpty() ? false : allData.split("\n").first().contains(dateTimeHeader);
+        if (!checkHeader) {
+            // Write header
+            QStringList headerData;
+            foreach (auto field, header) {
+                headerData.append(field);
+            }
+            allData.append(headerData.join(",") + "\n");
+        }
+
+        // Write data rows
+        QStringList dataStrList;
+        foreach (auto key, header) {
+            if (key == dateTimeHeader) {
+                dataStrList.append(QString::number(QDateTime::currentDateTimeUtc().toSecsSinceEpoch()));
+
+            } else if (key == deltaCorrectionHeader) {
+                dataStrList.append(QString::number(deltaCorrection() * 1.8));
+
+            } else if (key == dtiHeader) {
+                dataStrList.append(QString::number(mDeltaTemperatureIntegrator));
+
+            } else if (key == backlightFactorHeader) {
+                dataStrList.append(QString::number(_deviceIO->backlightFactor()));
+
+            } else if (key == brightnessHeader) {
+                dataStrList.append(QString::number(brightness));
+
+            } else if (key == rawTemperatureHeader) {
+                dataStrList.append(QString::number(mRawTemperature));
+
+            } else if (key == nightModeHeader) {
+                dataStrList.append(mIsNightModeRunning ? "true" : "false");
+            }
+
+        }
+
+        dataStrList.append(cpuData);
+        allData.append(dataStrList.join(","));
+
+        QStringList lines = allData.split("\n");
+
+        foreach (auto line, lines) {
+            out << line << "\n";
+        }
+
+        file.close();
+        TRACE << "nightModeData CSV file written successfully.";
+
+    } else {
+        TRACE << "nightModeData.csv Failed to open the file for writing/Reading.";
+    }
 }

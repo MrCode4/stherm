@@ -1038,3 +1038,37 @@ QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
 
     return latestVersionKey;
 }
+
+QStringList NUVE::System::cpuInformation() {
+
+    QStringList cpuTempList;
+
+    for (int i = 0; ; ++i) {
+        QString fileName = QString("/sys/class/thermal/thermal_zone%1/temp").arg(i);
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            // No more thermal zones found, exit the loop
+            break;
+        }
+
+        QTextStream in(&file);
+        QString line = in.readLine();
+        if (!line.isEmpty()) {
+            bool ok;
+            int temperature = line.toInt(&ok);
+            if (ok) {
+                cpuTempList.append(line);
+                TRACE << "CPU" << i << "Temperature:" << temperature << "mili Centigrade";
+            } else {
+                cpuTempList.append("invalid");
+                TRACE << "Failed to parse temperature for CPU" << i;
+            }
+        } else {
+            TRACE << "Empty temperature file for CPU" << i;
+        }
+
+        file.close();
+    }
+
+    return cpuTempList;
+}

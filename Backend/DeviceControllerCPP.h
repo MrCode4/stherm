@@ -171,6 +171,7 @@ private Q_SLOTS:
 private:
     /* Private Functions
      * ****************************************************************************************/
+    void writeGeneralSysData(const QStringList &cpuData, const int &brightness);
 
 private:
     /* Attributes
@@ -194,6 +195,16 @@ private:
     QVariantList mBacklightModelData;
 
     QTimer mNightModeTimer;
+
+    //! TODO: Delete when logging is not required
+    QTimer mLogTimer;
+
+    QString mGeneralSystemDatafilePath;
+
+    bool mIsNightModeRunning;
+
+    //! TEMP, To keep raw temperature.
+    double mRawTemperature;
 
     //! Temperature correction parameters
     double mDeltaTemperatureIntegrator;

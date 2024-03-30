@@ -415,6 +415,8 @@ public:
     //! setBrightness, value is a number between 0 and 254
     static bool setBrightness(int value);
 
+    static int brightness();
+
     //! Set time zone
     static void setTimeZone(int offset);
 
