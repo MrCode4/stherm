@@ -19,7 +19,11 @@ BasePageView {
      * ****************************************************************************************/
     title: "Date & Time"
 
-    Component.onCompleted: deviceController.editMode = AppSpec.EMDateTime;
+    Component.onCompleted: {
+        deviceController.editMode = AppSpec.EMDateTime;
+        DateTimeManager.checkAutoUpdateTime();
+    }
+
     Component.onDestruction: deviceController.editMode = AppSpec.EMNone;
 
     /* Children
@@ -216,9 +220,5 @@ BasePageView {
                 DateTimeManager.currentTimeZone = timezone;
             }
         }
-    }
-
-    Component.onCompleted: {
-        DateTimeManager.checkAutoUpdateTime();
     }
 }
