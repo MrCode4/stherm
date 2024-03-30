@@ -763,8 +763,6 @@ I_DeviceController {
                 console.warn("setting failed");
             }
 
-            deviceControllerCPP.nightModeControl(true);
-
         } else {
             console.log("Night mode stopping: revert to model.")
             // revert to model
@@ -779,8 +777,8 @@ I_DeviceController {
                                                                  backlight.value);
                 updateDeviceBacklight(backlight.on, color);
             }
-
-            deviceControllerCPP.nightModeControl(false);
         }
+
+        deviceControllerCPP.nightModeControl(device?.nightMode?._running ?? false);
     }
 }
