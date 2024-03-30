@@ -393,16 +393,25 @@ I_DeviceController {
         finalizeSettings();
     }
 
+    //! Set time format
+    function setTimeFormat(timeFormat : int) {
+        if (device.setting.timeFormat !== timeFormat) {
+            device.setting.timeFormat = timeFormat;
+
+            // Send changes to server
+            finalizeSettings();
+        }
+    }
+
     //! Set device settings
-    function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive)
+    function setSettings(brightness, volume, temperatureUnit, adaptive)
     {
         if (!device)
             return;
 
-        var send_data = [brightness, volume, temperatureUnit, timeFormat, reset, adaptive];
+        var send_data = [brightness, volume, temperatureUnit, adaptive];
         var current_data = [device.setting.brightness, device.setting.volume,
-                            device.setting.tempratureUnit, device.setting.timeFormat,
-                            reset, device.setting.adaptiveBrightness]
+                            device.setting.tempratureUnit, device.setting.adaptiveBrightness]
         if (send_data === current_data) {
             return;
         }
@@ -425,10 +434,6 @@ I_DeviceController {
             device.setting.adaptiveBrightness = adaptive;
         }
 
-        if (device.setting.timeFormat !== timeFormat) {
-            device.setting.timeFormat = timeFormat;
-        }
-
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
         }
@@ -440,19 +445,20 @@ I_DeviceController {
     }
 
     function setSettingsServer(settings: var) {
-        var timeFormat = (editMode === AppSpec.EMDateTime || editMode === AppSpec.EMSettings) ?
-                    device.setting.timeFormat : settings.timeFormat;
         if (editMode !== AppSpec.EMDateTime) {
             device.setting.currentTimezone = settings.currentTimezone;
             device.setting.effectDst = settings.effectDst;
+
+            device.setting.timeFormat = settings.timeFormat;
 
         } else {
             console.log("The Date time settings is being edited and cannot be updated by the server.")
         }
 
         if (editMode !== AppSpec.EMSettings) {
-            setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
-                        timeFormat, false, settings.brightness_mode)
+            setSettings(settings.brightness, settings.speaker,
+                        settings.temperatureUnit, settings.brightness_mode);
+
         } else {
             console.log("The system settings is being edited and cannot be updated by the server.")
         }

@@ -620,7 +620,7 @@ bool DeviceIOController::setSettings(QVariantList data)
         qWarning() << "data sent is empty";
         return false;
     } else {
-        if (data.size() != 6) {
+        if (data.size() != 4) {
             qWarning() << "data sent is not consistent";
             return false;
         }

@@ -174,21 +174,7 @@ BasePageView {
                 checked: setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
                 onToggled: {
-                    var isNeedToSendToServer = false;
-
-                    if (checked && setting.timeFormat !== AppSpec.TimeFormat.Hour12) {
-                        setting.timeFormat = AppSpec.TimeFormat.Hour12;
-                        isNeedToSendToServer = true;
-
-                    } else if (!checked && setting.timeFormat !== AppSpec.TimeFormat.Hour24) {
-                        setting.timeFormat = AppSpec.TimeFormat.Hour24;
-                        isNeedToSendToServer = true;
-                    }
-
-                    if (isNeedToSendToServer) {
-                        // Send changes to server
-                        deviceController.finalizeSettings();
-                    }
+                    deviceController.setTimeFormat(checked ? AppSpec.TimeFormat.Hour12 : AppSpec.TimeFormat.Hour24);
                 }
             }
         }
