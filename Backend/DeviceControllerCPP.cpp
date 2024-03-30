@@ -83,6 +83,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     // Thge system prepare the direcories for usage
     m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
+    mGeneralSystemDatafilePath = QString("/mnt/data/sensor/gsd-%0.csv").arg(QDateTime::currentSecsSinceEpoch());
 
     mIsNightModeRunning = false;
     mLogTimer.setTimerType(Qt::PreciseTimer);
@@ -520,7 +521,6 @@ QVariantMap DeviceControllerCPP::getMainData()
 }
 
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness) {
-    const QString filePath = "/mnt/data/sensor/generalSystemData.csv";
     const QString dateTimeHeader = "DateTime UTC (sec)";
     const QString deltaCorrectionHeader = "Delta Correction (F)";
     const QString dtiHeader = "Delta Temperature Integrator";
@@ -536,7 +536,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
         header.append(QString("Temperature CPU%0").arg(var));
     }
 
-    QFile file(filePath);
+    QFile file(mGeneralSystemDatafilePath);
 
     if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
         QTextStream out(&file);

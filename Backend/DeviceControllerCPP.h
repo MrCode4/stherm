@@ -199,6 +199,8 @@ private:
     //! TODO: Delete when logging is not required
     QTimer mLogTimer;
 
+    QString mGeneralSystemDatafilePath;
+
     bool mIsNightModeRunning;
 
     //! TEMP, To keep raw temperature.
