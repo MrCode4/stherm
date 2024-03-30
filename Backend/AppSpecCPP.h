@@ -100,6 +100,7 @@ public:
         EMBacklight          = 8,
         EMSystemSetup        = 9,
         EMSystemMode         = 10,
+        EMDateTime           = 11,
 
         EMNone
     };

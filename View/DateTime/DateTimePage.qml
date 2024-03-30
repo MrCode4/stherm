@@ -19,6 +19,9 @@ BasePageView {
      * ****************************************************************************************/
     title: "Date & Time"
 
+    Component.onCompleted: deviceController.editMode = AppSpec.EMDateTime;
+    Component.onDestruction: deviceController.editMode = AppSpec.EMNone;
+
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
