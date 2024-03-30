@@ -66,7 +66,7 @@ BasePageView {
                 }
 
                 Label {
-                    readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+                    readonly property bool is12Hour: setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
                     Layout.rightMargin: autoTimeSwh.rightPadding
                     font.letterSpacing: 1.5
@@ -122,7 +122,7 @@ BasePageView {
                 }
 
                 Label {
-                    readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+                    readonly property bool is12Hour: setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
                     Layout.rightMargin: autoTimeSwh.rightPadding
                     Layout.fillWidth: true
@@ -171,13 +171,23 @@ BasePageView {
             Switch {
                 id: hourFortmatSwh
                 enabled: appModel
-                checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+                checked: setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
                 onToggled: {
-                    if (checked && appModel.setting.timeFormat !== AppSpec.TimeFormat.Hour12) {
-                        appModel.setting.timeFormat = AppSpec.TimeFormat.Hour12;
-                    } else if (!checked && appModel.setting.timeFormat !== AppSpec.TimeFormat.Hour24) {
-                        appModel.setting.timeFormat = AppSpec.TimeFormat.Hour24;
+                    var isNeedToSendToServer = false;
+
+                    if (checked && setting.timeFormat !== AppSpec.TimeFormat.Hour12) {
+                        setting.timeFormat = AppSpec.TimeFormat.Hour12;
+                        isNeedToSendToServer = true;
+
+                    } else if (!checked && setting.timeFormat !== AppSpec.TimeFormat.Hour24) {
+                        setting.timeFormat = AppSpec.TimeFormat.Hour24;
+                        isNeedToSendToServer = true;
+                    }
+
+                    if (isNeedToSendToServer) {
+                        // Send changes to server
+                        deviceController.finalizeSettings();
                     }
                 }
             }

@@ -17,6 +17,8 @@ BasePageView {
 
     // Start the test mode
     Component.onCompleted: {
+        appModel.nightMode.mode = AppSpec.NMOn;
+
         timer.start();
     }
 
