@@ -117,9 +117,6 @@ ApplicationWindow {
         {
             if (uiSessionId.appModel.setting.effectDst !== DateTimeManager.effectDst) {
                 uiSessionId.appModel.setting.effectDst = DateTimeManager.effectDst;
-
-                // Send changes to server
-                uiSessionId.deviceController.finalizeSettings();
             }
         }
 
@@ -127,9 +124,6 @@ ApplicationWindow {
         {
             if (uiSessionId.appModel.setting.currentTimezone !== DateTimeManager.currentTimeZone.id) {
                uiSessionId.appModel.setting.currentTimezone = DateTimeManager.currentTimeZone.id;
-
-                // Send changes to server
-                uiSessionId.deviceController.finalizeSettings();
             }
         }
     }

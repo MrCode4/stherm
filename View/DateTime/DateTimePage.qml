@@ -160,6 +160,7 @@ BasePageView {
                 onToggled: {
                     if (DateTimeManager.effectDst !== checked) {
                         DateTimeManager.effectDst = checked;
+                        deviceController.finalizeSettings();
                     }
                 }
             }
@@ -217,7 +218,10 @@ BasePageView {
 
         SelectTimezonePage {
             onTimezoneSelected: function(timezone) {
-                DateTimeManager.currentTimeZone = timezone;
+                if (DateTimeManager.currentTimeZone.id !== timezone) {
+                    DateTimeManager.currentTimeZone = timezone;
+                    deviceController.finalizeSettings();
+                }
             }
         }
     }
