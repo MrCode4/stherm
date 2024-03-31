@@ -22,8 +22,8 @@ I_DeviceController {
     property var uiSession
 
     //! Night mode brighness when screen saver is off.
-    property bool nightModeBrighness: -1
-    property bool targetNightModeBrighness: Math.min(50, device.setting.brightness);
+    property real nightModeBrighness: -1
+    property real targetNightModeBrighness: Math.min(50, device.setting.brightness);
 
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
