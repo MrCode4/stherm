@@ -22,8 +22,8 @@ I_DeviceController {
     property var uiSession
 
     //! Night mode brighness when screen saver is off.
-    property real nightModeBrighness: -1
-    property real targetNightModeBrighness: Math.min(50, device.setting.brightness);
+    property real nightModeBrightness: -1
+    property real targetNightModeBrightness: Math.min(50, device.setting.brightness);
 
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
@@ -62,21 +62,21 @@ I_DeviceController {
 
         function onStateChanged() {
             if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
-                if (nightModeBrighness !== targetNightModeBrighness) {
+                if (nightModeBrightness !== targetNightModeBrightness) {
                     brightnessTimer.start();
-                    nightModeBrighness = targetNightModeBrighness;
+                    nightModeBrightness = targetNightModeBrightness;
                 }
 
             } else {
                brightnessTimer.stop();
                setBrightnessInNightMode(5);
-               nightModeBrighness = 5;
+               nightModeBrightness = 5;
 
             }
         }
     }
 
-    //! The screen will gradually (within up to 3 seconds) set the screen brightness to 50%
+    //! The screen will gradually (within up to 3 seconds) set the screen brightness to targetNightModeBrighness
     property Timer brightnessTimer: Timer {
 
         property int steps: 1
@@ -87,12 +87,12 @@ I_DeviceController {
         }
 
         repeat: true
-        interval: Math.round(3000 / Math.abs(targetNightModeBrighness - 5));
+        interval: Math.round(3000 / Math.abs(targetNightModeBrightness - 5));
 
         onTriggered: {
             setBrightnessInNightMode(5 + steps);
             steps++;
-            if (steps > Math.abs(targetNightModeBrighness - 5))
+            if (steps > Math.abs(targetNightModeBrightness - 5))
                 stop();
         }
     }
@@ -826,7 +826,7 @@ I_DeviceController {
 
             var brightness = 5;
             if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
-                brightness = 50;
+                brightness = targetNightModeBrightness;
             }
 
             setBrightnessInNightMode(brightness);
