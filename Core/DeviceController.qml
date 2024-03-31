@@ -429,7 +429,7 @@ I_DeviceController {
             if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
                 brightnessTemp = 50;
             }
-            send_data = [brightnessTemp, 0, temperatureUnit, timeFormat, false, false];
+            send_data = [brightnessTemp, 0, temperatureUnit, false];
         }
 
         if (!deviceControllerCPP.setSettings(send_data)){
