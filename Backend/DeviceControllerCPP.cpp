@@ -10,7 +10,7 @@ static  const QString m_DeltaCorrectionHeader = "Delta Correction (F)";
 static  const QString m_DTIHeader             = "Delta Temperature Integrator";
 static  const QString m_BacklightFactorHeader = "backlightFactor";
 static  const QString m_BrightnessHeader      = "Brightness (%)";
-static  const QString m_RawTemperatureHeader  = "Raw Temperature (C)";
+static  const QString m_RawTemperatureHeader  = "Raw Temperature (F)";
 static  const QString m_NightModeHeader       = "Is Night Mode Running";
 static  const QString m_BacklightRHeader      = "Backlight - R";
 static  const QString m_BacklightGHeader      = "Backlight - G";
@@ -600,7 +600,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(brightness));
 
             } else if (key == m_RawTemperatureHeader) {
-                dataStrList.append(QString::number(mRawTemperature));
+                dataStrList.append(QString::number(mRawTemperature * 1.8 + 32));
 
             } else if (key == m_NightModeHeader) {
                 dataStrList.append(mIsNightModeRunning ? "true" : "false");

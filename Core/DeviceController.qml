@@ -21,6 +21,10 @@ I_DeviceController {
 
     property var uiSession
 
+    //! Night mode brighness when screen saver is off.
+    property bool nightModeBrighness: -1
+    property bool targetNightModeBrighness: Math.min(50, device.setting.brightness);
+
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
@@ -58,11 +62,15 @@ I_DeviceController {
 
         function onStateChanged() {
             if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
-                brightnessTimer.start();
+                if (nightModeBrighness !== targetNightModeBrighness) {
+                    brightnessTimer.start();
+                    nightModeBrighness = targetNightModeBrighness;
+                }
 
             } else {
                brightnessTimer.stop();
                setBrightnessInNightMode(5);
+               nightModeBrighness = 5;
 
             }
         }
@@ -79,12 +87,12 @@ I_DeviceController {
         }
 
         repeat: true
-        interval: 500
+        interval: Math.round(3000 / Math.abs(targetNightModeBrighness - 5));
 
         onTriggered: {
-            setBrightnessInNightMode(5 + steps * 7.5);
+            setBrightnessInNightMode(5 + steps);
             steps++;
-            if (steps > 6)
+            if (steps > Math.abs(targetNightModeBrighness - 5))
                 stop();
         }
     }
