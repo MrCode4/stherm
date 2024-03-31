@@ -431,16 +431,7 @@ I_DeviceController {
             return;
         }
 
-        //  In night mode the brightness, volume and adaptive can not be send to device controller with model values
-        if (device.nightMode._running) {
-            var brightnessTemp = 5;
-            if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
-                brightnessTemp = 50;
-            }
-            send_data = [brightnessTemp, 0, temperatureUnit, false];
-        }
-
-        if (!deviceControllerCPP.setSettings(send_data)){
+        if (!device.nightMode._running && !deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
             return;
         }
