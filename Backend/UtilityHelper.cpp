@@ -450,8 +450,8 @@ double UtilityHelper::CPUUsage() {
     file.close();
 
     // Parse CPU stats
-    QStringList parts = line.split(" ", Qt::SkipEmptyParts);
-    if (parts.size() < 11) {
+    QStringList parts = line.split(" ");
+    if (parts.size() < 5) {
         TRACE << "Insufficient data" << parts.size();
         return -1; // Insufficient data
     }
