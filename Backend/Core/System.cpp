@@ -12,7 +12,9 @@
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
 
 const QString m_partialUpdate   = QString("partialUpdate");
+const QString m_backdoorUpdate   = QString("backdoorUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
+const QString m_backdoorFromServer= QString("BackdoorFromServer");
 
 const QString m_checkInternetConnection = QString("checkInternetConnection");
 
@@ -298,6 +300,45 @@ QString NUVE::System::rootfsBuildTimestamp()
     return QString();
 }
 
+bool NUVE::System::findBackdoorVersion(const QString fileName)
+{
+    if (fileName.isEmpty())
+        return false;
+
+    // Read the downloaded data
+    QFile file(qApp->applicationDirPath() + "/backdoor.json");
+
+    if (!file.exists())
+        getBackdoorInformation();
+
+    if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
+        TRACE << "Unable to open file (backdoor.json) for reading";
+        return false;
+    }
+
+    auto jsonData = QJsonDocument::fromJson(file.readAll()).object();
+
+    if (jsonData.keys().contains(fileName)) {
+        auto value = jsonData.value(fileName);
+        if (value.isObject()) {
+            auto valueObj = value.toObject();
+            mBackdoorFileName = fileName;
+            mExpectedBackdoorChecksum = QByteArray::fromHex(valueObj.value(m_CheckSum).toString().toLatin1());
+            mBackdoorUpdateFileSize = valueObj.value(m_CurrentFileSize).toInt(-1);
+            mBackdoorRequiredMemory = valueObj.value(m_RequiredMemory).toInt(-1);
+
+            mBackdoorLog = valueObj.value(m_ChangeLog).toString();
+            emit backdoorLogChanged();
+
+            return !mExpectedBackdoorChecksum.isEmpty() &&
+                   mBackdoorUpdateFileSize != -1 &&
+                   mBackdoorRequiredMemory != -1;
+        }
+    }
+
+    return false;
+}
+
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
 {
 #ifdef __unix__
@@ -349,6 +390,13 @@ void NUVE::System::getUpdateInformation(bool notifyUser) {
     reply->setProperty(m_notifyUserProperty, notifyUser);
 }
 
+void NUVE::System::getBackdoorInformation() {
+    // Fetch the backdoor file from web location
+    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("backdoor/backdoor.json"))));
+    TRACE << "backdoor information - URL: " << reply->url().toString();
+    reply->setProperty(m_methodProperty, m_backdoorFromServer);
+}
+
 void NUVE::System::wifiConnected(bool hasInternet) {
     if (!hasInternet) {
         mUpdateTimer.stop();
@@ -358,6 +406,8 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     mUpdateTimer.start();
 
     getUpdateInformation(true);
+
+    getBackdoorInformation();
 }
 
 void NUVE::System::pushSettingsToServer(const QVariantMap &settings)
@@ -420,6 +470,11 @@ QString NUVE::System::serialNumber()
     return QString::fromStdString(mSync->getSN().first);
 }
 
+QString NUVE::System::backdoorLog()
+{
+    return mBackdoorLog;
+}
+
 int NUVE::System::partialUpdateProgress() {
     return mPartialUpdateProgress;
 }
@@ -459,7 +514,7 @@ void NUVE::System::setPartialUpdateProgress(int progress) {
     emit partialUpdateProgressChanged();
 }
 
-void NUVE::System::partialUpdate() {
+void NUVE::System::partialUpdate(const bool isBackdoor) {
 #ifdef __unix__
     // Check
     QStorageInfo storageInfo (mUpdateDirectory);
@@ -474,7 +529,7 @@ void NUVE::System::partialUpdate() {
     }
 #endif
 
-    checkAndDownloadPartialUpdate(mLatestVersionKey);
+    checkAndDownloadPartialUpdate(mLatestVersionKey, isBackdoor);
 }
 
 void NUVE::System::partialUpdateByVersion(const QString version)
@@ -482,14 +537,26 @@ void NUVE::System::partialUpdateByVersion(const QString version)
     checkAndDownloadPartialUpdate(version);
 }
 
-void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion)
+void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor)
 {
-    auto versionObj = mUpdateJsonObject.value(installingVersion).toObject();
-    auto versionAddressInServer = versionObj.value(m_Address).toString();
-    mUpdateFileSize = versionObj.value(m_CurrentFileSize).toInt();
+    QString versionAddressInServer;
+    int updateFileSize;
 
-    mRequiredMemory = versionObj.value(m_RequiredMemory).toInt();
-    m_expectedUpdateChecksum = QByteArray::fromHex(versionObj.value(m_CheckSum).toString().toLatin1());
+    if (isBackdoor) {
+        versionAddressInServer = "/backdoor/" + mBackdoorFileName;
+        updateFileSize = mBackdoorUpdateFileSize;
+
+    } else {
+        auto versionObj = mUpdateJsonObject.value(installingVersion).toObject();
+        versionAddressInServer = versionObj.value(m_Address).toString();
+
+        mUpdateFileSize = versionObj.value(m_CurrentFileSize).toInt();
+        updateFileSize = mUpdateFileSize;
+
+        mRequiredMemory = versionObj.value(m_RequiredMemory).toInt();
+        m_expectedUpdateChecksum = QByteArray::fromHex(versionObj.value(m_CheckSum).toString().toLatin1());
+    }
+
 
     // Check
     QStorageInfo storageInfo (mUpdateDirectory);
@@ -504,19 +571,19 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     }
 
     // Check update file
-    QFile file(mUpdateDirectory + "/update.zip");
+    QFile file(mUpdateDirectory + (isBackdoor ? "/backdoorUpdate.zip" : "/update.zip"));
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
 
         auto downloadedData = file.readAll();
         file.close();
 
-        if (verifyDownloadedFiles(downloadedData, false))
+        if (verifyDownloadedFiles(downloadedData, false, isBackdoor))
             return;
         else
             TRACE << "The file update needs to be redownloaded.";
     }
 
-    if (storageInfo.bytesFree() < mUpdateFileSize) {
+    if (storageInfo.bytesFree() < updateFileSize) {
 
         QDir dir(mUpdateDirectory);
         // Removes the directory, including all its contents.
@@ -527,9 +594,9 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
 #endif
 
-        if (storageInfo.bytesFree() < mUpdateFileSize) {
+        if (storageInfo.bytesFree() < updateFileSize) {
             emit error(QString("The update directory has no memory. Required memory is %0, and available memory is %1.")
-                           .arg(QString::number(mUpdateFileSize), QString::number(storageInfo.bytesFree())));
+                           .arg(QString::number(updateFileSize), QString::number(storageInfo.bytesFree())));
             return;
         }
     }
@@ -544,7 +611,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
     // Fetch the file from web location
     QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(versionAddressInServer))));
-    reply->setProperty(m_methodProperty, m_partialUpdate);
+    reply->setProperty(m_methodProperty, isBackdoor ? m_backdoorUpdate : m_partialUpdate);
     mNetManager->setProperty(m_isBusyDownloader, true);
 
     setPartialUpdateProgress(0);
@@ -657,15 +724,16 @@ void NUVE::System::updateAndRestart()
 
 
 // Checksum verification after download
-bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite) {
+bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite, bool isBackdoor) {
     QByteArray downloadedChecksum = calculateChecksum(downloadedData);
 
-    if (downloadedChecksum == m_expectedUpdateChecksum) {
+    auto expectedBA = isBackdoor ? mExpectedBackdoorChecksum : m_expectedUpdateChecksum;
+    if (downloadedChecksum == expectedBA) {
 
         // Checksums match - downloaded app is valid
         // Save the downloaded data
         if (withWrite) {
-            QFile file(mUpdateDirectory + "/update.zip");
+            QFile file(mUpdateDirectory + (isBackdoor ? "/backdoorUpdate.zip" : "/update.zip"));
             if (!file.open(QIODevice::WriteOnly)) {
                 emit error("Unable to open file for writing in " + mUpdateDirectory);
                 return false;
@@ -729,6 +797,12 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             verifyDownloadedFiles(data);
             mNetManager->setProperty(m_isBusyDownloader, false);
 
+        } else if (netReply->property(m_methodProperty).toString() == m_backdoorUpdate) {
+
+                // Check data and prepare to set up.
+                verifyDownloadedFiles(data, true, true);
+                mNetManager->setProperty(m_isBusyDownloader, false);
+
         } else if (netReply->property(m_methodProperty).toString() == m_updateFromServer) { // Partial update (download process) finished.
 
             TRACE << mUpdateFilePath;
@@ -752,6 +826,21 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
             // Check the last saved updateInfo.json file
             checkPartialUpdate(netReply->property(m_notifyUserProperty).toBool());
+
+        }  else if (netReply->property(m_methodProperty).toString() == m_backdoorFromServer) {
+
+            // Save the downloaded data
+            QFile file(qApp->applicationDirPath() + "/backdoor.json");
+            if (!file.open(QIODevice::WriteOnly)) {
+                TRACE << "Unable to open file for writing";
+                emit error("Unable to open file for writing");
+                break;
+            }
+            TRACE << "Backdoor Data: " << doc.toJson().toStdString().c_str();
+
+            file.write(data);
+
+            file.close();
         }
 
     } break;

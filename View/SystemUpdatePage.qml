@@ -218,6 +218,14 @@ BasePageView {
         text: "  Manual Update  "
 
         onClicked: {
+            if (system) {
+                system.getBackdoorInformation();
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/BackdoorUpdatePage.qml", {
+                                                 "uiSession": root.uiSession
+                                             });
+                }
+            }
         }
     }
 
