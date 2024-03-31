@@ -41,11 +41,51 @@ I_DeviceController {
         function onModeChanged() {
             if (device.nightMode.mode === AppSpec.NMOff) {
                 device.nightMode._running = false;
+                brightnessTimer.stop();
             }
         }
 
         function on_RunningChanged() {
             runNightMode();
+        }
+    }
+
+    //! Manage the night mode with screen saver
+    property Connections nightMode_screenSaverController: Connections {
+        target: ScreenSaverManager
+
+        enabled: device.nightMode._running
+
+        function onStateChanged() {
+            if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
+                brightnessTimer.start();
+
+            } else {
+               brightnessTimer.stop();
+               setBrightnessInNightMode(5);
+
+            }
+        }
+    }
+
+    //! The screen will gradually (within up to 3 seconds) set the screen brightness to 50%
+    property Timer brightnessTimer: Timer {
+
+        property int steps: 1
+
+        running: false
+        onRunningChanged: {
+            steps = 1;
+        }
+
+        repeat: true
+        interval: 500
+
+        onTriggered: {
+            setBrightnessInNightMode(5 + steps * 7.5);
+            steps++;
+            if (steps > 6)
+                stop();
         }
     }
 
@@ -368,7 +408,11 @@ I_DeviceController {
 
         //  In night mode the brightness, volume and adaptive can not be send to device controller with model values
         if (device.nightMode._running) {
-            send_data = [50, 0, temperatureUnit, timeFormat, false, false];
+            var brightnessTemp = 5;
+            if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
+                brightnessTemp = 50;
+            }
+            send_data = [brightnessTemp, 0, temperatureUnit, timeFormat, false, false];
         }
 
         if (!deviceControllerCPP.setSettings(send_data)){
@@ -757,11 +801,13 @@ I_DeviceController {
             // Apply night mode
             // Set night mode settings
             // LCD should be set to minimum brightness, and ideally disabled.
-            var send_data = [50, 0, device.setting.tempratureUnit,
-                             device.setting.timeFormat, false, false];
-            if (!deviceControllerCPP.setSettings(send_data)){
-                console.warn("setting failed");
+
+            var brightness = 5;
+            if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
+                brightness = 50;
             }
+
+            setBrightnessInNightMode(brightness);
 
         } else {
             console.log("Night mode stopping: revert to model.")
@@ -780,5 +826,14 @@ I_DeviceController {
         }
 
         deviceControllerCPP.nightModeControl(device?.nightMode?._running ?? false);
+    }
+
+    //! Just use for night mode
+    function setBrightnessInNightMode(brightness) {
+        var send_data = [brightness, 0, device.setting.tempratureUnit,
+                         device.setting.timeFormat, false, false];
+        if (!deviceControllerCPP.setSettings(send_data)){
+            console.warn("setting failed");
+        }
     }
 }

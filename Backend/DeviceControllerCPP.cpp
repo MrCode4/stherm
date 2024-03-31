@@ -222,21 +222,23 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 //! Handle other power limiting functions
 void DeviceControllerCPP::nightModeControl(bool start)
 {
+    if (mIsNightModeRunning == start)
+        return;
+
+    mIsNightModeRunning = start;
+
     if (start) {
         setCPUGovernor("powersave");
         mNightModeTimer.start();
-        mIsNightModeRunning = true;
 
         m_system->cpuInformation();
 
     } else {
         mNightModeTimer.stop();
-        mIsNightModeRunning = false;
 
         setCPUGovernor("ondemand");
         _deviceIO->setFanSpeed(16); //100 / 7
     }
-
 }
 
 bool DeviceControllerCPP::setSettings(QVariantList data)
