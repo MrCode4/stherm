@@ -439,16 +439,23 @@ double UtilityHelper::CPUUsage() {
     // Read all lines from /proc/stat
     QTextStream in(&file);
     QString line;
-    while (!in.atEnd()) {
-        line = in.readLine();
+
+    // Read all data from file and split them
+    auto fileLines = in.readAll().split("\n");
+
+    foreach (auto var, fileLines) {
         // overall CPU statistics
-        if (line.startsWith("cpu ")) // Find line starting with "cpu "
+        // Find line starting with "cpu "
+        if (var.startsWith("cpu  ")) {
+            line = var;
             break;
+        }
     }
 
     // Close the file
     file.close();
 
+    line.remove("cpu  ");
     // Parse CPU stats
     QStringList parts = line.split(" ");
     if (parts.size() < 5) {
