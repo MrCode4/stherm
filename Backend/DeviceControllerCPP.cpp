@@ -2,6 +2,20 @@
 
 #include "LogHelper.h"
 
+/* ************************************************************************************************
+ * Log properties
+ * ************************************************************************************************/
+static  const QString m_DateTimeHeader = "DateTime UTC (sec)";
+static  const QString m_DeltaCorrectionHeader = "Delta Correction (F)";
+static  const QString m_DTIHeader = "Delta Temperature Integrator";
+static  const QString m_BacklightFactorHeader = "backlightFactor";
+static  const QString m_BrightnessHeader = "Brightness (%)";
+static  const QString m_RawTemperatureHeader = "Raw Temperature (C)";
+static  const QString m_NightModeHeader = "Is Night Mode Running";
+static  const QString m_BacklightRHeader = "Backlight - R";
+static  const QString m_BacklightGHeader = "Backlight - G";
+static  const QString m_BacklightBHeader = "Backlight - B";
+
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
 inline void setCPUGovernor(QString governer) {
@@ -523,16 +537,11 @@ QVariantMap DeviceControllerCPP::getMainData()
 }
 
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness) {
-    const QString dateTimeHeader = "DateTime UTC (sec)";
-    const QString deltaCorrectionHeader = "Delta Correction (F)";
-    const QString dtiHeader = "Delta Temperature Integrator";
-    const QString backlightFactorHeader = "backlightFactor";
-    const QString brightnessHeader = "Brightness (%)";
-    const QString rawTemperatureHeader = "Raw Temperature (C)";
-    const QString nightModeHeader = "Is Night Mode Running";
 
-    QStringList header = {dateTimeHeader, deltaCorrectionHeader, dtiHeader,
-                          backlightFactorHeader, brightnessHeader, rawTemperatureHeader, nightModeHeader};
+
+    QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_DTIHeader,
+                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
+                          m_NightModeHeader, m_BacklightRHeader, m_BacklightGHeader, m_BacklightBHeader};
 
     for (auto var = 0; var < cpuData.length(); var++) {
         header.append(QString("Temperature CPU%0").arg(var));
@@ -547,7 +556,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
         file.resize(0);
 
         // Check the header
-        auto checkHeader = allData.isEmpty() ? false : allData.split("\n").first().contains(dateTimeHeader);
+        auto checkHeader = allData.isEmpty() ? false : allData.split("\n").first().contains(m_DateTimeHeader);
         if (!checkHeader) {
             // Write header
             QStringList headerData;
@@ -559,27 +568,49 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 
         // Write data rows
         QStringList dataStrList;
+        auto backLightData = mBacklightModelData;
+        if (mBacklightTimer.isActive()) {
+            auto color = mBacklightTimer.property("color").value<QVariantList>();
+            if (!color.isEmpty()) {
+                backLightData = color;
+            }
+        }
+
+        // Check backlight data.
+        if (backLightData.size() != 5) {
+            backLightData = QVariantList{-255, -255, -255, -1, "invalid"};
+        }
+
         foreach (auto key, header) {
-            if (key == dateTimeHeader) {
+            if (key == m_DateTimeHeader) {
                 dataStrList.append(QString::number(QDateTime::currentDateTimeUtc().toSecsSinceEpoch()));
 
-            } else if (key == deltaCorrectionHeader) {
+            } else if (key == m_DeltaCorrectionHeader) {
                 dataStrList.append(QString::number(deltaCorrection() * 1.8));
 
-            } else if (key == dtiHeader) {
+            } else if (key == m_DTIHeader) {
                 dataStrList.append(QString::number(mDeltaTemperatureIntegrator));
 
-            } else if (key == backlightFactorHeader) {
+            } else if (key == m_BacklightFactorHeader) {
                 dataStrList.append(QString::number(_deviceIO->backlightFactor()));
 
-            } else if (key == brightnessHeader) {
+            } else if (key == m_BrightnessHeader) {
                 dataStrList.append(QString::number(brightness));
 
-            } else if (key == rawTemperatureHeader) {
+            } else if (key == m_RawTemperatureHeader) {
                 dataStrList.append(QString::number(mRawTemperature));
 
-            } else if (key == nightModeHeader) {
+            } else if (key == m_NightModeHeader) {
                 dataStrList.append(mIsNightModeRunning ? "true" : "false");
+
+            }  else if (key == m_BacklightRHeader) {
+                dataStrList.append(QString::number(backLightData[0].toInt() / 255.0));
+
+            }  else if (key == m_BacklightGHeader) {
+                dataStrList.append(QString::number(backLightData[1].toInt() / 255.0));
+
+            }  else if (key == m_BacklightBHeader) {
+                dataStrList.append(QString::number(backLightData[2].toInt() / 255.0));
             }
 
         }
