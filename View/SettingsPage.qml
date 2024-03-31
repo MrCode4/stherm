@@ -38,13 +38,11 @@ BasePageView {
     backButtonCallback: function() {
         //! Check if color is modified
         var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
-        var selectedTimeFormat = _time24FormBtn.checked ? AppSpec.TimeFormat.Hour24 : AppSpec.TimeFormat.Hour12;
 
         if (setting && (setting.brightness !== _brightnessSlider.value
                         || setting.adaptiveBrightness !== _adaptiveBrSw.checked
                         || setting.volume !== _speakerSlider.value
-                        || setting.tempratureUnit !== selectedTempUnit
-                        || setting.timeFormat !== selectedTimeFormat)) {
+                        || setting.tempratureUnit !== selectedTempUnit)) {
             //! This means that changes are occured that are not saved into model
             uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
             uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
@@ -252,7 +250,6 @@ BasePageView {
             internal.copyOfSettings["adaptiveBrightness"]   = setting.adaptiveBrightness;
             internal.copyOfSettings["volume"]               = setting.volume;
             internal.copyOfSettings["tempratureUnit"]       = setting.tempratureUnit;
-            internal.copyOfSettings["timeFormat"]           = setting.timeFormat;
         }
     }
 
