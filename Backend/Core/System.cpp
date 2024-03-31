@@ -663,7 +663,6 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
 void NUVE::System::updateAndRestart(const bool isBackdoor)
 {
-    TRACE << "***********isBackdoorisBackdoorisBackdoor*" << isBackdoor;
     //    // Define source and destination directories
     //    QString destDir = qApp->applicationDirPath();
 
