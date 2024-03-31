@@ -816,11 +816,7 @@ I_DeviceController {
     }
 
     function updateNightModeWithBacklight(isOn : bool) {
-        if (isOn) {
-            updateNightMode(AppSpec.NMOff);
-        } else {
-            updateNightMode(AppSpec.NMOn);
-        }
+        updateNightMode(isOn ? AppSpec.NMOff : AppSpec.NMOn);
     }
 
     function runNightMode() {
