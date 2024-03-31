@@ -38,13 +38,11 @@ BasePageView {
     backButtonCallback: function() {
         //! Check if color is modified
         var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
-        var selectedTimeFormat = _time24FormBtn.checked ? AppSpec.TimeFormat.Hour24 : AppSpec.TimeFormat.Hour12;
 
         if (setting && (setting.brightness !== _brightnessSlider.value
                         || setting.adaptiveBrightness !== _adaptiveBrSw.checked
                         || setting.volume !== _speakerSlider.value
-                        || setting.tempratureUnit !== selectedTempUnit
-                        || setting.timeFormat !== selectedTimeFormat)) {
+                        || setting.tempratureUnit !== selectedTempUnit)) {
             //! This means that changes are occured that are not saved into model
             uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
             uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
@@ -220,34 +218,6 @@ BasePageView {
                     text: "\u00b0C"
                     checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
                 }
-
-                //! Time Format
-                Label {
-                    opacity: 0.6
-                    Layout.fillWidth: true
-                    text: "Time Format"
-                }
-
-                //! Use explicit ButtonGroup to avoid time format RadioButtons being mutually exclusive
-                //! with temprature RadioButtons.
-                ButtonGroup {
-                    id: _timeButtonGrp
-                    buttons: [_time24FormBtn, _time12FormBtn]
-                }
-
-                RadioButton {
-                    id: _time24FormBtn
-                    autoExclusive: false
-                    text: "24H"
-                    checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour24
-                }
-
-                RadioButton {
-                    id: _time12FormBtn
-                    autoExclusive: false
-                    text: "12H"
-                    checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
-                }
             }
 
             //! Reset setting Button
@@ -269,9 +239,6 @@ BasePageView {
                                          _speakerSlider.value,
                                          _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
                                                                    : AppSpec.TempratureUnit.Cel,
-                                         _time24FormBtn.checked ? AppSpec.TimeFormat.Hour24
-                                                                : AppSpec.TimeFormat.Hour12,
-                                         false, //! Reset
                                          _adaptiveBrSw.checked);
         }
     }
@@ -283,7 +250,6 @@ BasePageView {
             internal.copyOfSettings["adaptiveBrightness"]   = setting.adaptiveBrightness;
             internal.copyOfSettings["volume"]               = setting.volume;
             internal.copyOfSettings["tempratureUnit"]       = setting.tempratureUnit;
-            internal.copyOfSettings["timeFormat"]           = setting.timeFormat;
         }
     }
 
@@ -311,10 +277,9 @@ BasePageView {
                 deviceController.setSettings(80,
                                              80,
                                              AppSpec.TempratureUnit.Cel,
-                                             AppSpec.TimeFormat.Hour24,
-                                             true, //! Reset
                                              true);
             }
+            deviceController.finalizeSettings()
         }
     }
 
@@ -331,15 +296,12 @@ BasePageView {
             if (setting.brightness !== internal.copyOfSettings.brightness
                     || setting.adaptiveBrightness !== internal.copyOfSettings.adaptiveBrightness
                     || setting.volume !== internal.copyOfSettings.volume
-                    || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit
-                    || setting.timeFormat !== internal.copyOfSettings.timeFormat) {
+                    || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit) {
                 //! Reset to last saved setting
                 deviceController.setSettings(
                             internal.copyOfSettings.brightness,
                             internal.copyOfSettings.volume,
                             internal.copyOfSettings.tempratureUnit,
-                            internal.copyOfSettings.timeFormat,
-                            false,
                             internal.copyOfSettings.adaptiveBrightness
                             );
             }
