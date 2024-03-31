@@ -661,8 +661,9 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
 }
 
-void NUVE::System::updateAndRestart()
+void NUVE::System::updateAndRestart(const bool isBackdoor)
 {
+    TRACE << "***********isBackdoorisBackdoorisBackdoor*" << isBackdoor;
     //    // Define source and destination directories
     //    QString destDir = qApp->applicationDirPath();
 
@@ -677,10 +678,11 @@ void NUVE::System::updateAndRestart()
     // Use to unzip the downloaded files.
     QStorageInfo updateStorageInfo (mUpdateDirectory);
 
-    if (updateStorageInfo.bytesFree() < mUpdateFileSize) {
+    auto updateFileSize = isBackdoor ? mBackdoorUpdateFileSize : mUpdateFileSize;
+    if (updateStorageInfo.bytesFree() < updateFileSize) {
 
         QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
-                          .arg(QString::number(mUpdateFileSize), QString::number(updateStorageInfo.bytesFree()));
+                          .arg(QString::number(updateFileSize), QString::number(updateStorageInfo.bytesFree()));
         emit error(err);
         TRACE << err;
 
@@ -690,9 +692,10 @@ void NUVE::System::updateAndRestart()
     QStorageInfo installStorageInfo (qApp->applicationDirPath());
     QFileInfo appInfo(qApp->applicationFilePath());
 
-    if ((installStorageInfo.bytesFree() + appInfo.size()) < mRequiredMemory) {
+    auto requiredMemory = isBackdoor ? mBackdoorRequiredMemory : mRequiredMemory;;
+    if ((installStorageInfo.bytesFree() + appInfo.size()) < requiredMemory) {
         QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
-                          .arg(QString::number(mRequiredMemory), QString::number(installStorageInfo.bytesFree()));
+                          .arg(QString::number(requiredMemory), QString::number(installStorageInfo.bytesFree()));
         emit error(err);
         TRACE << err;
 
@@ -742,7 +745,7 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
             file.close();
         }
 
-        emit partialUpdateReady();
+        emit partialUpdateReady(isBackdoor);
 
         return true;
 

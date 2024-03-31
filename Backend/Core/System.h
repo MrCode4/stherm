@@ -79,7 +79,7 @@ public:
     Q_INVOKABLE void partialUpdate(const bool isBackdoor = false);
     Q_INVOKABLE void partialUpdateByVersion(const QString version);
 
-    Q_INVOKABLE void updateAndRestart();
+    Q_INVOKABLE void updateAndRestart(const bool isBackdoor);
 
     //! Get update information from server
     //! notifyUser: Send notification for user when new update is available
@@ -180,7 +180,7 @@ signals:
     void lastInstalledUpdateDateChanged();
 
     //! Emit when partially update is ready.
-    void partialUpdateReady();
+    void partialUpdateReady(bool isBackdoor = false);
 
     //! Start download process.
     void downloadStarted();
