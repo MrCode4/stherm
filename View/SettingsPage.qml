@@ -279,6 +279,7 @@ BasePageView {
                                              AppSpec.TempratureUnit.Cel,
                                              true);
             }
+            deviceController.finalizeSettings()
         }
     }
 
