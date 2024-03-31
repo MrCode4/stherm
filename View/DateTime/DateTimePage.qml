@@ -15,6 +15,8 @@ BasePageView {
     //! Setting
     property Setting    setting: uiSession?.appModel?.setting ?? null
 
+    property bool       sendToServer: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Date & Time"
@@ -24,7 +26,12 @@ BasePageView {
         DateTimeManager.checkAutoUpdateTime();
     }
 
-    Component.onDestruction: deviceController.editMode = AppSpec.EMNone;
+    Component.onDestruction: {
+        if (sendToServer)
+            deviceController.finalizeSettings();
+
+        deviceController.editMode = AppSpec.EMNone;
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -160,7 +167,7 @@ BasePageView {
                 onToggled: {
                     if (DateTimeManager.effectDst !== checked) {
                         DateTimeManager.effectDst = checked;
-                        deviceController.finalizeSettings();
+                        sendToServer = true;
                     }
                 }
             }
@@ -179,7 +186,8 @@ BasePageView {
                 checked: setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
                 onToggled: {
-                    deviceController.setTimeFormat(checked ? AppSpec.TimeFormat.Hour12 : AppSpec.TimeFormat.Hour24);
+                    if (deviceController.setTimeFormat(checked ? AppSpec.TimeFormat.Hour12 : AppSpec.TimeFormat.Hour24))
+                        sendToServer = true;
                 }
             }
         }
@@ -220,7 +228,7 @@ BasePageView {
             onTimezoneSelected: function(timezone) {
                 if (DateTimeManager.currentTimeZone.id !== timezone) {
                     DateTimeManager.currentTimeZone = timezone;
-                    deviceController.finalizeSettings();
+                    sendToServer = true;
                 }
             }
         }

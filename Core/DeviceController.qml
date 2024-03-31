@@ -404,10 +404,10 @@ I_DeviceController {
     function setTimeFormat(timeFormat : int) {
         if (device.setting.timeFormat !== timeFormat) {
             device.setting.timeFormat = timeFormat;
-
-            // Send changes to server
-            finalizeSettings();
+            return true;
         }
+
+        return false;
     }
 
     //! Set device settings
