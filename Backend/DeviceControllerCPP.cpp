@@ -87,7 +87,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     mIsNightModeRunning = false;
     mLogTimer.setTimerType(Qt::PreciseTimer);
-    mLogTimer.start(10000);
+    mLogTimer.start(1000);
     connect(&mLogTimer, &QTimer::timeout, this, [this]() {
         TRACE << "---------------------- Start Night Mode Log ----------------------";
 
