@@ -82,10 +82,10 @@ ApplicationWindow {
 
         //! Load DST effect and then current timezone to DateTimeManager
         //! NOTE: Order of setting effect DST and current timezone is important.
-        DateTimeManager.effectDst = uiSessionId.appModel.setting.effectDst;
         if (uiSessionId.appModel.setting.currentTimezone !== "") {
             DateTimeManager.currentTimeZone = uiSessionId.appModel.setting.currentTimezone;
         }
+        DateTimeManager.effectDst = uiSessionId.appModel.setting.effectDst;
 
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 30000;

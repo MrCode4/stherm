@@ -239,7 +239,8 @@ I_DeviceController {
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
 
-        var send_data = [device.setting.brightness, device.setting.volume, device.setting.tempratureUnit, device.setting.timeFormat, false, device.setting.adaptiveBrightness];
+        var send_data = [device.setting.brightness, device.setting.volume,
+                         device.setting.tempratureUnit, device.setting.adaptiveBrightness];
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }
@@ -359,6 +360,13 @@ I_DeviceController {
         if (!device)
             return;
 
+        if (device.vacation.temp_min === temp_min &&
+            device.vacation.temp_max === temp_max &&
+            device.vacation.hum_min  === hum_min &&
+            device.vacation.hum_max  === hum_max) {
+            return;
+        }
+
         deviceControllerCPP.setVacation(temp_min, temp_max, hum_min, hum_max);
 
         device.vacation.temp_min = temp_min;
@@ -392,16 +400,25 @@ I_DeviceController {
         finalizeSettings();
     }
 
+    //! Set time format
+    function setTimeFormat(timeFormat : int) {
+        if (device.setting.timeFormat !== timeFormat) {
+            device.setting.timeFormat = timeFormat;
+            return true;
+        }
+
+        return false;
+    }
+
     //! Set device settings
-    function setSettings(brightness, volume, temperatureUnit, timeFormat, reset, adaptive)
+    function setSettings(brightness, volume, temperatureUnit, adaptive)
     {
         if (!device)
             return;
 
-        var send_data = [brightness, volume, temperatureUnit, timeFormat, reset, adaptive];
+        var send_data = [brightness, volume, temperatureUnit, adaptive];
         var current_data = [device.setting.brightness, device.setting.volume,
-                            device.setting.tempratureUnit, device.setting.timeFormat,
-                            reset, device.setting.adaptiveBrightness]
+                            device.setting.tempratureUnit, device.setting.adaptiveBrightness]
         if (send_data === current_data) {
             return;
         }
@@ -433,10 +450,6 @@ I_DeviceController {
             device.setting.adaptiveBrightness = adaptive;
         }
 
-        if (device.setting.timeFormat !== timeFormat) {
-            device.setting.timeFormat = timeFormat;
-        }
-
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
         }
@@ -448,11 +461,24 @@ I_DeviceController {
     }
 
     function setSettingsServer(settings: var) {
+        if (editMode !== AppSpec.EMDateTime) {
+            if (device.setting.currentTimezone !== settings.currentTimezone)
+                device.setting.currentTimezone = settings.currentTimezone;
+
+            if (device.setting.effectDst !== settings.effectDst)
+                device.setting.effectDst = settings.effectDst;
+
+            if (device.setting.timeFormat !== settings.timeFormat)
+                device.setting.timeFormat = settings.timeFormat;
+
+        } else {
+            console.log("The Date time settings is being edited and cannot be updated by the server.")
+        }
+
         if (editMode !== AppSpec.EMSettings) {
-            setSettings(settings.brightness, settings.speaker, settings.temperatureUnit,
-                        settings.timeFormat, false, settings.brightness_mode)
-            device.setting.currentTimezone = settings.currentTimezone;
-            device.setting.effectDst = settings.effectDst;
+            setSettings(settings.brightness, settings.speaker,
+                        settings.temperatureUnit, settings.brightness_mode);
+
         } else {
             console.log("The system settings is being edited and cannot be updated by the server.")
         }
@@ -731,7 +757,8 @@ I_DeviceController {
     {
         // TODO should be updated to inform the logics
 
-        device._isHold = isHold;
+        if (device._isHold !== isHold)
+            device._isHold = isHold;
     }
 
     function setSystemAccesseoriesServer(settings: var) {
@@ -813,8 +840,8 @@ I_DeviceController {
             console.log("Night mode stopping: revert to model.")
             // revert to model
             if (device)
-                setSettings(device.setting.brightness, device.setting.volume, device.setting.tempratureUnit,
-                            device.setting.timeFormat, false, device.setting.adaptiveBrightness)
+                setSettings(device.setting.brightness, device.setting.volume,
+                            device.setting.tempratureUnit, device.setting.adaptiveBrightness)
 
             var backlight = device.backlight;
             if (backlight && device.nightMode.mode === AppSpec.NMOn) {
@@ -830,8 +857,7 @@ I_DeviceController {
 
     //! Just use for night mode
     function setBrightnessInNightMode(brightness) {
-        var send_data = [brightness, 0, device.setting.tempratureUnit,
-                         device.setting.timeFormat, false, false];
+        var send_data = [brightness, 0, device.setting.tempratureUnit, false];
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }

@@ -538,9 +538,8 @@ QVariantMap DeviceControllerCPP::getMainData()
     return mainData;
 }
 
-void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness) {
-
-
+void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)
+{
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_DTIHeader,
                           m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
                           m_NightModeHeader, m_BacklightRHeader, m_BacklightGHeader, m_BacklightBHeader,
