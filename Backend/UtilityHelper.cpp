@@ -463,7 +463,7 @@ double UtilityHelper::CPUUsage() {
         return -1; // Insufficient data
     }
 
-    double idle = parts[4].toDouble();
+    double idle = parts[3].toDouble();
     double total = 0;
     for (int i = 1; i < parts.size(); ++i)
         total += parts[i].toDouble();
