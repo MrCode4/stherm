@@ -571,7 +571,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     }
 
     // Check update file
-    QFile file(mUpdateDirectory + ("/update.zip"));
+    QFile file(mUpdateDirectory + "/update.zip");
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
 
         auto downloadedData = file.readAll();
@@ -735,7 +735,7 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
         // Checksums match - downloaded app is valid
         // Save the downloaded data
         if (withWrite) {
-            QFile file(mUpdateDirectory + ("/update.zip"));
+            QFile file(mUpdateDirectory + "/update.zip");
             if (!file.open(QIODevice::WriteOnly)) {
                 emit error("Unable to open file for writing in " + mUpdateDirectory);
                 return false;
@@ -770,7 +770,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 qWarning() << "Unable to download updateInfo.json file: " << netReply->errorString();
                 // emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
 
-            } else if (method == m_partialUpdate) {
+            } else if (method == m_partialUpdate || method == m_backdoorUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
                 emit error("Download error: " + netReply->errorString());
             } else {
