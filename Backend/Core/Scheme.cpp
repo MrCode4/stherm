@@ -1124,6 +1124,10 @@ double Scheme::effectiveCurrentHumidity()
     return mCurrentHumidity;
 }
 
+AppSpecCPP::FanMode Scheme::fanMode() const {
+    return mFanMode;
+}
+
 void Scheme::setVacation(const STHERM::Vacation &newVacation)
 {
     mVacation = newVacation;
