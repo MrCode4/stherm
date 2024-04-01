@@ -412,6 +412,9 @@ I_DeviceController {
     }
 
     function finalizeSettings() {
+        if (uiSession)
+            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+
         if (!settingsPush.running)
             settingsPush.start()
     }

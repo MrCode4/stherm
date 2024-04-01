@@ -30,12 +30,6 @@ ApplicationWindow {
     visible: false
     title: qsTr("STherm")
 
-    //! Save the app configuration when the app closed
-    onClosing: {
-        // Save to found path
-        AppCore.defaultRepo.saveToFile(uiSessionId.configFilePath);
-    }
-
     onVisibleChanged: {
         if (visible) {
             _splashLoader.sourceComponent = null;
