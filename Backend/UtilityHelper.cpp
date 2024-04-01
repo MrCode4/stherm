@@ -431,6 +431,7 @@ uint8_t UtilityHelper::packetType(STHERM::PacketType packetType) {
 }
 
 double UtilityHelper::CPUUsage() {
+    #ifdef __unix__
     // Open /proc/stat file
     QFile file("/proc/stat");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -474,6 +475,10 @@ double UtilityHelper::CPUUsage() {
     TRACE << " CPU usage percentage: " << usage;
 
     return usage;
+
+    #endif
+
+    return -1;
 }
 
 QString STHERM::printModeStr(RelayMode mode) {

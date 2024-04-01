@@ -5,6 +5,7 @@
 /* ************************************************************************************************
  * Log properties
  * ************************************************************************************************/
+#ifdef DEBUG_MODE
 static  const QString m_DateTimeHeader        = "DateTime UTC (sec)";
 static  const QString m_DeltaCorrectionHeader = "Delta Correction (F)";
 static  const QString m_DTIHeader             = "Delta Temperature Integrator";
@@ -18,6 +19,7 @@ static  const QString m_BacklightBHeader      = "Backlight - B";
 static  const QString m_LedEffectHeader       = "Backlight - LED effect";
 static  const QString m_CPUUsage              = "CPU Usage (%)";
 static  const QString m_FanStatus             = "Fan status";
+#endif
 
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
@@ -103,6 +105,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mGeneralSystemDatafilePath = QString("/mnt/data/sensor/gsd-%0.csv").arg(QDateTime::currentSecsSinceEpoch());
 
     mIsNightModeRunning = false;
+
+#ifdef DEBUG_MODE
     mLogTimer.setTimerType(Qt::PreciseTimer);
     mLogTimer.start(1000);
     connect(&mLogTimer, &QTimer::timeout, this, [this]() {
@@ -126,6 +130,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         TRACE << "---------------------- End Night Mode Log ----------------------";
     });
+
+#endif
+
 
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
     mBacklightPowerTimer.setSingleShot(false);
@@ -541,6 +548,8 @@ QVariantMap DeviceControllerCPP::getMainData()
 
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)
 {
+#ifdef DEBUG_MODE
+
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_DTIHeader,
                           m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
                           m_NightModeHeader, m_BacklightRHeader, m_BacklightGHeader, m_BacklightBHeader,
@@ -616,7 +625,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(backLightData[2].toInt() / 255.0));
 
             } else if (key == m_LedEffectHeader) {
-                    dataStrList.append(QString::number(backLightData[3].toInt()));
+                dataStrList.append(QString::number(backLightData[3].toInt()));
 
             } else if (key == m_CPUUsage) {
                 dataStrList.append(QString::number(UtilityHelper::CPUUsage()));
@@ -642,4 +651,5 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
     } else {
         TRACE << "nightModeData.csv Failed to open the file for writing/Reading.";
     }
+#endif
 }
