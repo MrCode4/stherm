@@ -115,7 +115,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mLogTimer.setTimerType(Qt::PreciseTimer);
     mLogTimer.start(1000);
     connect(&mLogTimer, &QTimer::timeout, this, [this]() {
-        TRACE << "---------------------- Start Night Mode Log ----------------------";
+        TRACE << "---------------------- Start General System Data Log ----------------------";
 
         auto cpuData = m_system->cpuInformation();
         auto brightness = UtilityHelper::brightness();
@@ -133,7 +133,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         writeGeneralSysData(cpuData, brightness);
 
-        TRACE << "---------------------- End Night Mode Log ----------------------";
+        TRACE << "---------------------- End General System Data Log ----------------------";
     });
 
 #endif
@@ -653,10 +653,10 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
         }
 
         file.close();
-        TRACE << "nightModeData CSV file written successfully.";
+        TRACE << "General System Data (csv) file written successfully in " << mGeneralSystemDatafilePath;
 
     } else {
-        TRACE << "nightModeData.csv Failed to open the file for writing/Reading.";
+        TRACE << "General System Data (csv) Failed to open the file for writing/Reading.";
     }
 #endif
 }
