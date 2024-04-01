@@ -801,9 +801,9 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
         } else if (netReply->property(m_methodProperty).toString() == m_backdoorUpdate) {
 
-                // Check data and prepare to set up.
-                verifyDownloadedFiles(data, true, true);
-                mNetManager->setProperty(m_isBusyDownloader, false);
+            // Check data and prepare to set up.
+            verifyDownloadedFiles(data, true, true);
+            mNetManager->setProperty(m_isBusyDownloader, false);
 
         } else if (netReply->property(m_methodProperty).toString() == m_updateFromServer) { // Partial update (download process) finished.
 

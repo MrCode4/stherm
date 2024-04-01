@@ -84,7 +84,7 @@ BasePageView {
             visible: false;
             font.pointSize: Application.font.pointSize
             color: AppStyle.primaryRed
-            text:  nameTextField.text + "\nisn't found on the server, or perhaps \nthe backdoor.json file is damaged."
+            text:  nameTextField.text + "\ncould not be found on the server."
         }
 
         Rectangle {
