@@ -203,6 +203,8 @@ private:
 
     bool mIsNightModeRunning;
 
+    int mFanSpeed;
+
     //! TEMP, To keep raw temperature.
     double mRawTemperature;
 

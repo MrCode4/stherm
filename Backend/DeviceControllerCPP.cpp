@@ -93,11 +93,16 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mainDataMap.insert("fanSpeed",        0);
     setMainData(mainDataMap);
 
+    // Default value
+    mFanSpeed = 16;
+
     mNightModeTimer.setTimerType(Qt::PreciseTimer);
     mNightModeTimer.setInterval(5000 * 60);
     mNightModeTimer.setSingleShot(true);
     connect(&mNightModeTimer, &QTimer::timeout, this, [this]() {
         _deviceIO->setFanSpeed(0);
+
+        mFanSpeed = 0;
     });
 
     // Thge system prepare the direcories for usage
@@ -262,6 +267,7 @@ void DeviceControllerCPP::nightModeControl(bool start)
 
         setCPUGovernor("ondemand");
         _deviceIO->setFanSpeed(16); //100 / 7
+        mFanSpeed = 16;
     }
 }
 
@@ -409,6 +415,8 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData)
 {
+    mFanSpeed = mainData.value("temperature", mFanSpeed).toDouble();
+
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
     if (isOk){
@@ -631,8 +639,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(UtilityHelper::CPUUsage()));
 
             } else if (key == m_FanStatus) {
-                auto fanMode = m_scheme->fanMode();
-                dataStrList.append((fanMode == AppSpecCPP::FanMode::FMAuto) ? "Auto" : "On");
+                dataStrList.append((mFanSpeed == 0) ? "Off" : "On");
             }
         }
 
