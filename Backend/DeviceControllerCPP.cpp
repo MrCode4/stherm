@@ -19,6 +19,7 @@ static  const QString m_BacklightBHeader      = "Backlight - B";
 static  const QString m_LedEffectHeader       = "Backlight - LED effect";
 static  const QString m_CPUUsage              = "CPU Usage (%)";
 static  const QString m_FanStatus             = "Fan status";
+static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
 
 //! Set CPU governer in the zeus base system
@@ -280,7 +281,7 @@ void DeviceControllerCPP::nightModeControl(bool start)
 
     } else {
         mNightModeTimer.stop();
-        setFanSpeed(16);
+        setFanSpeed(16); // 100 / 7
     }
 }
 
@@ -614,7 +615,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 {
 #ifdef DEBUG_MODE
 
-    QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_DTIHeader,
+    QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
                           m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
                           m_NightModeHeader, m_BacklightRHeader, m_BacklightGHeader, m_BacklightBHeader,
                           m_LedEffectHeader, m_CPUUsage, m_FanStatus};
@@ -696,6 +697,9 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 
             } else if (key == m_FanStatus) {
                 dataStrList.append(isFanON() ? "On" : "Off");
+
+            } else if (key == m_T1) {
+                dataStrList.append(QString::number(mTEMPERATURE_COMPENSATION_T1));
             }
         }
 
