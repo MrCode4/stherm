@@ -117,7 +117,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         TRACE << "Temperature Correction - T1: "<< mTEMPERATURE_COMPENSATION_T1 << "- Fan running: " << isFanON();
     });
-    mTEMPERATURE_COMPENSATION_Timer.start();
 
     // Thge system prepare the direcories for usage
     m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
@@ -449,7 +448,8 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
             // Fan status effect:
             // If the fan is running: Add T1 Correction to the raw temperature.
             // If the fan is not running: Subtract T1 Correction from the raw temperature.
-            dt += (isFanON() ?  -1 : 1) * mTEMPERATURE_COMPENSATION_T1;
+            if (mTEMPERATURE_COMPENSATION_Timer.isActive()) // Check
+                dt += (isFanON() ?  -1 : 1) * mTEMPERATURE_COMPENSATION_T1;
 
             mainData.insert("temperature", tc - dt);
         } else {
@@ -706,4 +706,8 @@ void DeviceControllerCPP::setFanSpeed(int speed, bool sendToIO)
         _deviceIO->setFanSpeed(speed);
 
     mFanSpeed = speed;
+
+    if (!isFanON() && !mTEMPERATURE_COMPENSATION_Timer.isActive()) {
+        mTEMPERATURE_COMPENSATION_Timer.start();
+    }
 }
