@@ -641,6 +641,24 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
             reply->abort();
             downloaderTimer.stop();
             downloaderTimer.disconnect();
+
+        } if (mElapsedTimer.isValid() && secTime >= 5) {
+            double rate = 0;
+            // Adjust smoothing factor (0.1) as needed
+            mDownloadRateEMA = (0.1 * rate) + (0.9 * mDownloadRateEMA);
+
+            auto totalBytes = downloaderTimer.property("totalBytes").toInt();
+            int remainTime = mDownloadRateEMA < 0.001 ? 1000000 : qRound((totalBytes - mDownloadBytesReceived) / mDownloadRateEMA);
+
+            QString unit = remainTime < 60 ? "second" : "minute";
+
+            remainTime = remainTime < 60 ? remainTime : qRound(remainTime / 60.0);
+
+            if (remainTime > 1)
+                unit += "s";
+
+            mRemainingDownloadTime = QString("About %1 %2 remaining").arg(QString::number(remainTime), unit);
+            emit remainingDownloadTimeChanged();
         }
     });
 
@@ -667,12 +685,13 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
         double rate = (bytesReceived - mDownloadBytesReceived) / secTime;
         mDownloadBytesReceived = bytesReceived;
-
         // Adjust smoothing factor (0.2) as needed
         mDownloadRateEMA = (0.2 * rate) + (0.8 * mDownloadRateEMA);
 
         auto remain = bytesTotal - bytesReceived ;
         int remainTime = mDownloadRateEMA < 0.001 ? 1000000 : qRound(remain / mDownloadRateEMA);
+
+        downloaderTimer.setProperty("totalBytes", bytesTotal);
 
         QString unit = remainTime < 60 ? "second" : "minute";
 
