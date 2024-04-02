@@ -35,8 +35,8 @@ QtObject {
         device.schedules.push(newSchedule);
         device.schedulesChanged();
 
-        // Send data to server
-        deviceController.finalizeSettings();
+        // Send data to server and save file
+        deviceController.pushSettings();
     }
 
     //! Remove an schedule
@@ -51,7 +51,7 @@ QtObject {
 //            schedule.destroy();
 
             // Send data to server
-            deviceController.finalizeSettings();
+            deviceController.pushSettings();
         }
     }
 

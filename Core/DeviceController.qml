@@ -344,7 +344,7 @@ I_DeviceController {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
-            finalizeSettings();
+            pushSettings();
         }
     }
 
@@ -357,7 +357,7 @@ I_DeviceController {
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
 
-        finalizeSettings();
+        pushSettings();
     }
 
     //! Set time format
@@ -411,9 +411,13 @@ I_DeviceController {
         }
     }
 
-    function finalizeSettings() {
+    function pushUpdateToServer(){
         if (uiSession)
             AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+    }
+
+    function pushSettings() {
+        pushUpdateToServer();
 
         if (!settingsPush.running)
             settingsPush.start()
@@ -723,7 +727,7 @@ I_DeviceController {
 
         if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
             _pushUpdateInformationCounter++;
-            finalizeSettings();
+            pushUpdateToServer();
         }
 
         //        console.log("--------------- End: updateInformation -------------------")

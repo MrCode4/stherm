@@ -24,14 +24,14 @@ BasePageView {
 
     Component.onCompleted: {
         if (initialSetup) {
-            deviceController.finalizeSettings();
+            deviceController.pushSettings();
         }
     }
 
     Component.onDestruction: {
         if (initialSetup) {
             deviceController.setInitialSetup(false);
-            deviceController.finalizeSettings();
+            deviceController.pushSettings();
         }
     }
 

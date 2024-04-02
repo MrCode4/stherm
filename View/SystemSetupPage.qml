@@ -21,7 +21,7 @@ BasePageView {
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSystemSetup);
 
     Component.onDestruction: {
-        deviceController.finalizeSettings();
+        deviceController.pushSettings();
         deviceController.updateEditMode(AppSpec.EMNone);
     }
 

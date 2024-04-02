@@ -61,7 +61,7 @@ I_PopUp {
                     }
                 }
 
-                uiSession.deviceController.finalizeSettings();
+                uiSession.deviceController.pushSettings();
 
                 delayedClose.start();
             }

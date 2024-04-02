@@ -28,7 +28,7 @@ BasePageView {
 
     Component.onDestruction: {
         if (sendToServer)
-            deviceController.finalizeSettings();
+            deviceController.pushSettings();
 
         deviceController.editMode = AppSpec.EMNone;
     }

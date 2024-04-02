@@ -65,7 +65,7 @@ BasePageView {
         onClicked: {
             applyToModel();
 
-            deviceController.finalizeSettings();
+            deviceController.pushSettings();
 
             //! Make a copy of last applied data to Setting
             makeCopyOfSettings();
@@ -279,7 +279,7 @@ BasePageView {
                                              AppSpec.TempratureUnit.Cel,
                                              true);
             }
-            deviceController.finalizeSettings()
+            deviceController.pushSettings()
         }
     }
 
