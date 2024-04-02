@@ -283,6 +283,8 @@ private:
     //! QElapsedTimer to measure download rate.
     QElapsedTimer mElapsedTimer;
 
+    QTimer downloaderTimer;
+
     qint64 mDownloadBytesReceived;
     double mDownloadRateEMA;
 
