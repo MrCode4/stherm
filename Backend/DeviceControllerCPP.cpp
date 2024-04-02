@@ -1,6 +1,7 @@
 #include "DeviceControllerCPP.h"
 
 #include "LogHelper.h"
+#include "ScreenSaverManager.h"
 
 /* ************************************************************************************************
  * Log properties
@@ -517,6 +518,11 @@ bool DeviceControllerCPP::checkSN()
     TRACE << "checkSN : " << state;
 
     bool snMode = state != 2;
+
+    // Active screen saver
+    if (snMode)
+        ScreenSaverManager::instance()->setAppActive(true);
+
     emit snModeChanged(snMode);
 
     return snMode;

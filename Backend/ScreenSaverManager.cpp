@@ -99,6 +99,9 @@ void ScreenSaverManager::setInactive()
 
 void ScreenSaverManager::setActive()
 {
+    if (!mSetAppActive)
+        return;
+
     setState(State::Running); //! This will start timer and event filter
 
     //! Add event filter
@@ -115,6 +118,11 @@ void ScreenSaverManager::restart()
     } else if (mState != State::Disabled){
         setActive();
     }
+}
+
+void ScreenSaverManager::setAppActive(bool setAppActive)
+{
+    mSetAppActive = setAppActive;
 }
 
 bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
