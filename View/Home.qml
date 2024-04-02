@@ -163,6 +163,10 @@ Control {
             //! Fan
             FanButton {
                 id: _fanButton
+
+                deviceController: uiSession.deviceController
+                appModel: uiSession.appModel
+
                 anchors {
                     left: parent.left
                     bottom: parent.bottom

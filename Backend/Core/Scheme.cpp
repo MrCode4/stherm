@@ -1147,6 +1147,7 @@ void Scheme::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
 }
 void Scheme::fanWork(bool isOn) {
 
+    emit fanWorkChanged(isOn);
     if (isOn) {
         mFanWPHTimer.start(mFanWPH * 60 * 1000);
 

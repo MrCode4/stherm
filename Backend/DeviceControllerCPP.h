@@ -156,6 +156,8 @@ Q_SIGNALS:
 
     void nrfUpdateStarted();
 
+    void fanWorkChanged(bool fanState);
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);

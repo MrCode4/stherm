@@ -86,6 +86,8 @@ signals:
     void setTemperatureChanged();
     void stopWorkRequested();
 
+    void fanWorkChanged(bool fanState);
+
 protected:
     void run() override;
 
