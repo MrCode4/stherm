@@ -55,9 +55,14 @@ BasePageView {
                 // Hide the error label
                 errorLabel.visible = false;
             }
+
+            onAccepted: {
+                findFile();
+            }
         }
 
         ButtonInverted {
+            id: findBtn
 
             Layout.columnSpan: 2
             Layout.alignment: Qt.AlignHCenter
@@ -67,10 +72,7 @@ BasePageView {
             enabled: nameTextField.text.length > 0
 
             onClicked: {
-                if (system)
-                    mainLayout.isFoundBackdoorFile = system.findBackdoorVersion(nameTextField.text);
-
-                errorLabel.visible = !mainLayout.isFoundBackdoorFile;
+                findFile();
             }
         }
 
@@ -186,5 +188,16 @@ BasePageView {
             if (mainLayout.isFoundBackdoorFile && system)
                 system.partialUpdate(true);
         }
+    }
+
+
+    /* Functions
+     * ****************************************************************************************/
+    function findFile() {
+        let fileName = nameTextField.text.endsWith(".zip") ? nameTextField.text : (nameTextField.text + ".zip");
+        if (system)
+            mainLayout.isFoundBackdoorFile = system.findBackdoorVersion(fileName);
+
+        errorLabel.visible = !mainLayout.isFoundBackdoorFile;
     }
 }
