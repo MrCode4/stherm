@@ -415,7 +415,7 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData)
 {
-    mFanSpeed = mainData.value("temperature", mFanSpeed).toDouble();
+    mFanSpeed = mainData.value("fanSpeed", mFanSpeed).toDouble();
 
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
