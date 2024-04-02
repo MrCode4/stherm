@@ -83,19 +83,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
 
-    QVariantMap mainDataMap;
-    mainDataMap.insert("temperature",     0);
-    mainDataMap.insert("humidity",        0);
-    mainDataMap.insert("co2",             0);
-    mainDataMap.insert("etoh",            0);
-    mainDataMap.insert("Tvoc",            0);
-    mainDataMap.insert("iaq",             0);
-    mainDataMap.insert("pressure",        0);
-    mainDataMap.insert("RangeMilliMeter", 0);
-    mainDataMap.insert("brighness",       0);
-    mainDataMap.insert("fanSpeed",        0);
-    setMainData(mainDataMap);
-
     // Default value
     mFanSpeed = 16;
 

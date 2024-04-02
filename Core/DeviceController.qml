@@ -753,6 +753,9 @@ I_DeviceController {
     {
         //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
+        if (!result.temperature)
+            return;
+
         var co2 = result?.iaq ?? 0;
         var co2Id = device?.airQuality(co2) ?? 0;
 
