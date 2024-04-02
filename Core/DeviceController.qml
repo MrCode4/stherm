@@ -707,20 +707,24 @@ I_DeviceController {
     {
         //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
-        var iaq = result?.iaq ?? 0;
-        var co2Id = device?.airQuality(iaq) ?? 0;
+        var co2 = result?.iaq ?? 0;
+        var co2Id = device?.airQuality(co2) ?? 0;
 
         // Fahrenheit is more sensitive than Celsius,
         // so for every one degree change,
         // it needs to be sent to the server.
-        var isNeedToPushToServer = (Math.abs(device.currentHum !== result?.humidity ?? 0) >= 1) ||
-                (Math.abs(device.currentTemp - result?.temperature ?? 0) * 1.8 >= 1.0) ||
-                (device._co2_id !== co2Id);
+        var isVisualTempChangedF = Math.abs(Math.round(device.currentTemp * 1.8 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.8)) > 0
+        var isVisualTempChangedC = Math.abs(Math.round(device.currentTemp * 1.0 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.0)) > 0
+        var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
+        var isCo2IdChanged = device._co2_id !== co2Id;
+        var isNeedToPushToServer = isVisualHumChanged ||
+                isVisualTempChangedC || isVisualTempChangedF ||
+                isCo2IdChanged;
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
-        device.co2 = result?.iaq ?? 0 // use iaq as indicator for air quality
+        device.co2 = co2 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brighness ?? 0
 
         //        device.fan.mode?
