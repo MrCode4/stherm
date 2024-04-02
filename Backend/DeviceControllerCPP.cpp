@@ -701,7 +701,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(isFanON() ? "On" : "Off");
 
             } else if (key == m_T1) {
-                dataStrList.append(QString::number(mTEMPERATURE_COMPENSATION_T1));
+                dataStrList.append(QString::number(mTEMPERATURE_COMPENSATION_T1 * 1.8));
             }
         }
 
