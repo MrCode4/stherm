@@ -116,7 +116,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (2.847697 - mTEMPERATURE_COMPENSATION_T1) / 655.5680515;
         }
 
+#ifdef DEBUG_MODE
         TRACE << "Temperature Correction - T1: "<< mTEMPERATURE_COMPENSATION_T1 << "- Fan running: " << isFanON();
+#endif
     });
     mTEMPERATURE_COMPENSATION_Timer.start();
 
