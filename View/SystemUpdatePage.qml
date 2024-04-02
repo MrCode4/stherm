@@ -81,7 +81,8 @@ BasePageView {
         Rectangle {
 
             visible: system.updateAvailable && changeLogTextArea.text.length > 0
-            height: changeLogTextArea.text.length > 0 ? Math.min(changeLogTextArea.implicitHeight + header.height + 6, root.height * 0.45) : 0
+            height: changeLogTextArea.text.length > 0 ? Math.min(changeLogTextArea.implicitHeight + header.height + 6, root.height * 0.45) -
+                                                        (manualUpdateBtn.visible ? manualUpdateBtn.height * 0.5 : 0): 0
             Layout.fillWidth: true
             Layout.columnSpan: 2
             Layout.rowSpan: 2
@@ -134,10 +135,6 @@ BasePageView {
             }
         }
 
-        FontMetrics {
-            id: fontMetrics
-        }
-
         ItemDelegate {
             Layout.fillWidth: true
             Layout.columnSpan: 2
@@ -176,7 +173,7 @@ BasePageView {
     }
 
     ItemDelegate {
-        anchors.bottom: parent.bottom
+        anchors.bottom: manualUpdateBtn.visible ? manualUpdateBtn.top : parent.bottom
         anchors.left: parent.left
         anchors.leftMargin: root.leftPadding
         anchors.bottomMargin: root.bottomPadding
@@ -206,5 +203,33 @@ BasePageView {
                 lineHeight: 0.5
             }
         }
+    }
+
+    ButtonInverted {
+        id: manualUpdateBtn
+
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: root.bottomPadding
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        visible: uiSession.uiTetsMode || system.testMode
+        leftPadding: 8
+        rightPadding: 8
+        text: "  Manual Update  "
+
+        onClicked: {
+            if (system) {
+                system.getBackdoorInformation();
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/BackdoorUpdatePage.qml", {
+                                                 "uiSession": root.uiSession
+                                             });
+                }
+            }
+        }
+    }
+
+    FontMetrics {
+        id: fontMetrics
     }
 }
