@@ -457,15 +457,15 @@ I_DeviceController {
     }
 
     function pushUpdateToServer(){
-        if (uiSession)
-            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+        if (!settingsPush.running)
+            settingsPush.start()
     }
 
     function pushSettings() {
         pushUpdateToServer();
 
-        if (!settingsPush.running)
-            settingsPush.start()
+        if (uiSession)
+            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
     }
 
     function setSettingsServer(settings: var) {
