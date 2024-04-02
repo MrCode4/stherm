@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
-set (DEBUG_MODE ON)
+option (DEBUG_MODE "Debug mode" OFF)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
     QuickControls2 Multimedia Concurrent
