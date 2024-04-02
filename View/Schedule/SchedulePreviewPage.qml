@@ -597,7 +597,7 @@ BasePageView {
         _root.schedule.repeats = [...internal.scheduleToEdit.repeats];
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
 
-        deviceController.finalizeSettings();
+        deviceController.pushSettings();
 
         if (internal.exitAfterSave) {
             goBack();

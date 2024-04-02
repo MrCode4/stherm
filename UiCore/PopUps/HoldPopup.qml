@@ -67,7 +67,7 @@ Popup {
             onCheckedChanged: {
                 if (device && deviceController && device._isHold !== checked) {
                     deviceController.updateHold(checked)
-                    deviceController.finalizeSettings();
+                    deviceController.pushSettings();
                     delayedCloseTmr.running = true;
                 }
             }

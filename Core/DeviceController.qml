@@ -344,7 +344,7 @@ I_DeviceController {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
-            finalizeSettings();
+            pushSettings();
         }
     }
 
@@ -357,7 +357,7 @@ I_DeviceController {
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
 
-        finalizeSettings();
+        pushSettings();
     }
 
     //! Set time format
@@ -411,9 +411,13 @@ I_DeviceController {
         }
     }
 
-    function finalizeSettings() {
+    function pushUpdateToServer(){
         if (uiSession)
             AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+    }
+
+    function pushSettings() {
+        pushUpdateToServer();
 
         if (!settingsPush.running)
             settingsPush.start()
@@ -684,19 +688,51 @@ I_DeviceController {
     function checkMessages(messages: var) {
     }
 
+    //! Control the push to server with the updateInformation().
+    property int _pushUpdateInformationCounter: 0
+
+    //! Reset the _pushUpdateInformationCounter
+    property Timer _pushUpdateInformationTimer: Timer {
+        repeat: true
+        running: true
+        interval: 60000
+
+        onTriggered: {
+            _pushUpdateInformationCounter = 0;
+        }
+    }
+
     //! Read data from system with getMainData method.
     function updateInformation()
     {
         //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
+        var co2 = result?.iaq ?? 0;
+        var co2Id = device?.airQuality(co2) ?? 0;
+
+        // Fahrenheit is more sensitive than Celsius,
+        // so for every one degree change,
+        // it needs to be sent to the server.
+        var isVisualTempChangedF = Math.abs(Math.round(device.currentTemp * 1.8 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.8)) > 0
+        var isVisualTempChangedC = Math.abs(Math.round(device.currentTemp * 1.0 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.0)) > 0
+        var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
+        var isCo2IdChanged = device._co2_id !== co2Id;
+        var isNeedToPushToServer = isVisualHumChanged ||
+                isVisualTempChangedC || isVisualTempChangedF ||
+                isCo2IdChanged;
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
-        device.co2 = result?.iaq ?? 0 // use iaq as indicator for air quality
+        device.co2 = co2 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brighness ?? 0
 
         //        device.fan.mode?
+
+        if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
+            _pushUpdateInformationCounter++;
+            pushUpdateToServer();
+        }
 
         //        console.log("--------------- End: updateInformation -------------------")
     }

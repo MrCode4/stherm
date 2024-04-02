@@ -43,7 +43,7 @@ BasePageView {
                 deviceController.setRequestedHumidity(humidity)
             }
 
-            deviceController.finalizeSettings();
+            deviceController.pushSettings();
 
             //! Also move out of this Page
             if (_root.StackView.view && _root.StackView.view.depth > 1
