@@ -23,8 +23,7 @@ I_DeviceController {
 
     //! Night mode brighness when screen saver is off.
     property real nightModeBrightness: -1
-    property real targetNightModeBrightness: device.setting.adaptiveBrightness ? Math.min(50, deviceControllerCPP.adaptiveBrightness) :
-                                                                                 Math.min(50, device.setting.brightness);
+    property real targetNightModeBrightness: Math.min(50, (device.setting.adaptiveBrightness ? deviceControllerCPP.adaptiveBrightness : device.setting.brightness))
 
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
