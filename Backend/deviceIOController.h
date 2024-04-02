@@ -93,6 +93,8 @@ signals:
     void tiVersionUpdated();
     void nrfVersionUpdated();
 
+    void adaptiveBrightness(double adaptiveBrightness);
+
 private slots:
     void wtdExec();
     void wiringExec();

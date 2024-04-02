@@ -336,8 +336,10 @@ QString DeviceIOController::getCPUInfo()
 
 bool DeviceIOController::setBrightness(int value)
 {
-    if (m_p->brighness_mode == 1)
+    if (m_p->brighness_mode == 1) {
         value = 255.0 * std::sqrt(m_p->luminosity / 255.0);
+        emit adaptiveBrightness(value / 2.55);
+    }
 
     if (m_p->brightnessValue == value) {
         return true;

@@ -241,6 +241,8 @@ QString UtilityHelper::getCPUInfoOld()
 }
 
 bool UtilityHelper::setBrightness(int value) {
+#ifdef __unix__
+
     QFile brightnessFile("/sys/class/backlight/backlight_display/brightness");
     if (!brightnessFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         TRACE << "Failed to open brightness file.";
@@ -252,6 +254,8 @@ bool UtilityHelper::setBrightness(int value) {
     brightnessFile.close();
 
     TRACE << "Brightness set successfully!" << value;
+
+#endif
     return true;
 }
 

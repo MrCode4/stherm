@@ -65,6 +65,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     m_system = _deviceAPI->system();
 
+    mAdaptiveBrightness = 50;
+
     // todo: initialize with proper value
     mBacklightModelData = QVariantList();
 
@@ -176,6 +178,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         }
     });
 
+    connect(_deviceIO, &DeviceIOController::adaptiveBrightness, this, [this](double adaptiveBrightness) {
+        setAdaptiveBrightness(adaptiveBrightness);
+    });
+
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
 
@@ -269,6 +275,10 @@ void DeviceControllerCPP::nightModeControl(bool start)
         _deviceIO->setFanSpeed(16); //100 / 7
         mFanSpeed = 16;
     }
+}
+
+double DeviceControllerCPP::adaptiveBrightness() {
+    return mAdaptiveBrightness;
 }
 
 bool DeviceControllerCPP::setSettings(QVariantList data)
@@ -457,6 +467,14 @@ void DeviceControllerCPP::checkUpdateMode()
         if (m_system)
             m_system->getUpdate();
     }
+}
+
+void DeviceControllerCPP::setAdaptiveBrightness(const double adaptiveBrightness) {
+    if (mAdaptiveBrightness == adaptiveBrightness)
+        return;
+
+    mAdaptiveBrightness = adaptiveBrightness;
+    emit adaptiveBrightnessChanged();
 }
 
 bool DeviceControllerCPP::checkSN()
