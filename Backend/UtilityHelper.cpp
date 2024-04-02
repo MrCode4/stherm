@@ -241,6 +241,8 @@ QString UtilityHelper::getCPUInfoOld()
 }
 
 bool UtilityHelper::setBrightness(int value) {
+#ifdef __unix__
+
     QFile brightnessFile("/sys/class/backlight/backlight_display/brightness");
     if (!brightnessFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         TRACE << "Failed to open brightness file.";
@@ -252,6 +254,8 @@ bool UtilityHelper::setBrightness(int value) {
     brightnessFile.close();
 
     TRACE << "Brightness set successfully!" << value;
+
+#endif
     return true;
 }
 
@@ -430,6 +434,57 @@ uint8_t UtilityHelper::packetType(STHERM::PacketType packetType) {
     return NONE_Packet;
 }
 
+double UtilityHelper::CPUUsage() {
+    #ifdef __unix__
+    // Open /proc/stat file
+    QFile file("/proc/stat");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return -1; // Error opening file
+
+    // Read all lines from /proc/stat
+    QTextStream in(&file);
+    QString line;
+
+    // Read all data from file and split them
+    auto fileLines = in.readAll().split("\n");
+
+    foreach (auto var, fileLines) {
+        // overall CPU statistics
+        // Find line starting with "cpu "
+        if (var.startsWith("cpu  ")) {
+            line = var;
+            break;
+        }
+    }
+
+    // Close the file
+    file.close();
+
+    line.remove("cpu  ");
+    // Parse CPU stats
+    QStringList parts = line.split(" ");
+    if (parts.size() < 5) {
+        TRACE << "Insufficient data" << parts.size();
+        return -1; // Insufficient data
+    }
+
+    double idle = parts[3].toDouble();
+    double total = 0;
+    for (int i = 1; i < parts.size(); ++i)
+        total += parts[i].toDouble();
+
+    // Calculate CPU usage percentage
+    double usage = 100.0 * (1.0 - idle / total);
+
+    TRACE << " CPU usage percentage: " << usage;
+
+    return usage;
+
+    #endif
+
+    return -1;
+}
+
 QString STHERM::printModeStr(RelayMode mode) {
     return mode == ON ? "On" : (mode == NoWire ? "invalid" : "Off");
 }
@@ -459,3 +514,4 @@ std::vector<std::pair<std::string, int> > STHERM::RelayConfigs::changeStepsSorte
 QString STHERM::RelayConfigs::printStr(){
     return QString("o/b:%0, g:%1, y1:%2, y2:%3, w1:%4, w2:%5, w3:%6").arg(printModeStr(o_b),printModeStr(g),printModeStr(y1),printModeStr(y2),printModeStr(w1),printModeStr(w2),printModeStr(w3));
 }
+

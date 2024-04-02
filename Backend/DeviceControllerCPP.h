@@ -29,6 +29,8 @@ class DeviceControllerCPP  : public QObject
     Q_PROPERTY(QString    swNRF READ  getNRF_SW NOTIFY nrfVersionChanged)
     Q_PROPERTY(QString    hwNRF READ  getNRF_HW NOTIFY nrfVersionChanged)
 
+    Q_PROPERTY(double  adaptiveBrightness READ  adaptiveBrightness NOTIFY adaptiveBrightnessChanged)
+
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
     QML_ELEMENT
@@ -128,7 +130,11 @@ public:
 
     QString getTI_SW() const;
 
+    double adaptiveBrightness();
+
     Q_INVOKABLE void nightModeControl(bool start);
+    Q_INVOKABLE void setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovernerOption);
+
 
 Q_SIGNALS:
     /* Public Signals
@@ -156,6 +162,8 @@ Q_SIGNALS:
 
     void nrfUpdateStarted();
 
+    void adaptiveBrightnessChanged();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
@@ -163,6 +171,12 @@ private:
 
     void startTestMode();
     void checkUpdateMode();
+
+    void setAdaptiveBrightness(const double adaptiveBrightness);
+
+    //! return true: fan is ON
+    //! return false: fan is OFF
+    bool isFanON();
 
 private Q_SLOTS:
     /* Private Slots
@@ -172,6 +186,8 @@ private:
     /* Private Functions
      * ****************************************************************************************/
     void writeGeneralSysData(const QStringList &cpuData, const int &brightness);
+
+    void setFanSpeed(int speed, bool sendToIO = true);
 
 private:
     /* Attributes
@@ -203,8 +219,18 @@ private:
 
     bool mIsNightModeRunning;
 
+    int mFanSpeed;
+
     //! TEMP, To keep raw temperature.
     double mRawTemperature;
+
+    //! percent value
+    double mAdaptiveBrightness;
+
+    QTimer mTEMPERATURE_COMPENSATION_Timer;
+
+    // Unit: Celsius
+    double mTEMPERATURE_COMPENSATION_T1 = 0.2;
 
     //! Temperature correction parameters
     double mDeltaTemperatureIntegrator;
