@@ -173,6 +173,10 @@ private:
 
     void setAdaptiveBrightness(const double adaptiveBrightness);
 
+    //! return true: fan is ON
+    //! return false: fan is OFF
+    bool isFanON();
+
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
@@ -181,6 +185,8 @@ private:
     /* Private Functions
      * ****************************************************************************************/
     void writeGeneralSysData(const QStringList &cpuData, const int &brightness);
+
+    void setFanSpeed(int speed, bool sendToIO = true);
 
 private:
     /* Attributes
@@ -219,6 +225,11 @@ private:
 
     //! percent value
     double mAdaptiveBrightness;
+
+    QTimer mTEMPERATURE_COMPENSATION_Timer;
+
+    // Unit: Celsius
+    double mTEMPERATURE_COMPENSATION_T1 = 0.2;
 
     //! Temperature correction parameters
     double mDeltaTemperatureIntegrator;

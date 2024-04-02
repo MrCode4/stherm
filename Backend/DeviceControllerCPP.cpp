@@ -102,10 +102,22 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mNightModeTimer.setInterval(5000 * 60);
     mNightModeTimer.setSingleShot(true);
     connect(&mNightModeTimer, &QTimer::timeout, this, [this]() {
-        _deviceIO->setFanSpeed(0);
-
-        mFanSpeed = 0;
+        setFanSpeed(0);
     });
+
+    mTEMPERATURE_COMPENSATION_Timer.setTimerType(Qt::PreciseTimer);
+    mTEMPERATURE_COMPENSATION_Timer.setInterval(1000);
+    mTEMPERATURE_COMPENSATION_Timer.setSingleShot(false);
+    connect(&mTEMPERATURE_COMPENSATION_Timer, &QTimer::timeout, this, [this]() {
+        if (isFanON()) {
+            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (0.2 - mTEMPERATURE_COMPENSATION_T1) / 148.4788;
+        } else {
+            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (2.85 - mTEMPERATURE_COMPENSATION_T1) / 655.5680515;
+        }
+
+        TRACE << "Temperature Correction - T1: "<< mTEMPERATURE_COMPENSATION_T1 << "- Fan running: " << isFanON();
+    });
+    mTEMPERATURE_COMPENSATION_Timer.start();
 
     // Thge system prepare the direcories for usage
     m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
@@ -272,8 +284,7 @@ void DeviceControllerCPP::nightModeControl(bool start)
         mNightModeTimer.stop();
 
         setCPUGovernor("ondemand");
-        _deviceIO->setFanSpeed(16); //100 / 7
-        mFanSpeed = 16;
+        setFanSpeed(16);
     }
 }
 
@@ -425,7 +436,7 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData)
 {
-    mFanSpeed = mainData.value("fanSpeed", mFanSpeed).toDouble();
+    setFanSpeed(mainData.value("fanSpeed", mFanSpeed).toInt(), false);
 
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
@@ -435,6 +446,11 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
         double dt = deltaCorrection();
         TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
         if (qAbs(dt) < 10) {
+            // Fan status effect:
+            // If the fan is running: Add T1 Correction to the raw temperature.
+            // If the fan is not running: Subtract T1 Correction from the raw temperature.
+            dt += (isFanON() ?  -1 : 1) * mTEMPERATURE_COMPENSATION_T1;
+
             mainData.insert("temperature", tc - dt);
         } else {
             qWarning() << "dt is greater than 10! check for any error.";
@@ -475,6 +491,11 @@ void DeviceControllerCPP::setAdaptiveBrightness(const double adaptiveBrightness)
 
     mAdaptiveBrightness = adaptiveBrightness;
     emit adaptiveBrightnessChanged();
+}
+
+bool DeviceControllerCPP::isFanON()
+{
+    return mFanSpeed != 0;
 }
 
 bool DeviceControllerCPP::checkSN()
@@ -677,4 +698,12 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
         TRACE << "General System Data (csv) Failed to open the file for writing/Reading.";
     }
 #endif
+}
+
+void DeviceControllerCPP::setFanSpeed(int speed, bool sendToIO)
+{
+    if (sendToIO)
+        _deviceIO->setFanSpeed(speed);
+
+    mFanSpeed = speed;
 }
