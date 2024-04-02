@@ -695,7 +695,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(UtilityHelper::CPUUsage()));
 
             } else if (key == m_FanStatus) {
-                dataStrList.append((mFanSpeed == 0) ? "Off" : "On");
+                dataStrList.append(isFanON() ? "On" : "Off");
             }
         }
 
