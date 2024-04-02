@@ -23,7 +23,7 @@ static  const QString m_FanStatus             = "Fan status";
 
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
-inline void setCPUGovernor(QString governer) {
+inline void setCPUGovernorMode(QString governer) {
 #ifdef __unix__
     QDir cpuDir("/sys/devices/system/cpu/");
     QStringList cpuList = cpuDir.entryList(QStringList() << "cpu[0-9]*");
@@ -247,6 +247,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     if (!sInstance) {
         sInstance = this;
     }
+
+    setFanSpeed(0, false);
 }
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
@@ -274,17 +276,36 @@ void DeviceControllerCPP::nightModeControl(bool start)
     mIsNightModeRunning = start;
 
     if (start) {
-        setCPUGovernor("powersave");
         mNightModeTimer.start();
-
         m_system->cpuInformation();
 
     } else {
         mNightModeTimer.stop();
-
-        setCPUGovernor("ondemand");
         setFanSpeed(16);
     }
+}
+
+void DeviceControllerCPP::setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovernerOption)
+{
+    QString governer;
+    switch (CPUGovernerOption) {
+    case AppSpecCPP::CPUGpowersave:
+        governer = "powersave";
+        break;
+
+    case AppSpecCPP::CPUGondemand:
+        governer = "ondemand";
+        break;
+
+    case AppSpecCPP::CPUGperformance:
+        governer = "performance";
+        break;
+
+    default:
+        break;
+    }
+
+    setCPUGovernorMode(governer);
 }
 
 double DeviceControllerCPP::adaptiveBrightness() {

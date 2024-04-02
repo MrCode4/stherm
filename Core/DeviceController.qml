@@ -67,11 +67,14 @@ I_DeviceController {
                     nightModeBrightness = targetNightModeBrightness;
                 }
 
-            } else {
-               brightnessTimer.stop();
-               setBrightnessInNightMode(5);
-               nightModeBrightness = 5;
+                deviceControllerCPP.setCPUGovernor(AppSpec.CPUGondemand);
 
+            } else {
+                brightnessTimer.stop();
+                setBrightnessInNightMode(5);
+                nightModeBrightness = 5;
+
+                deviceControllerCPP.setCPUGovernor(AppSpec.CPUGpowersave);
             }
         }
     }
@@ -847,6 +850,10 @@ I_DeviceController {
             }
         }
 
+        // Update the cpu governer with the night mode running and screen saver.
+        deviceControllerCPP.setCPUGovernor((device.nightMode._running && ScreenSaverManager.state === ScreenSaverManager.Timeout) ?
+                                               AppSpec.CPUGpowersave :
+                                               AppSpec.CPUGondemand);
         deviceControllerCPP.nightModeControl(device?.nightMode?._running ?? false);
     }
 

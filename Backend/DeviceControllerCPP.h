@@ -133,6 +133,7 @@ public:
     double adaptiveBrightness();
 
     Q_INVOKABLE void nightModeControl(bool start);
+    Q_INVOKABLE void setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovernerOption);
 
 
 Q_SIGNALS:

@@ -19,6 +19,15 @@ public:
     explicit AppSpecCPP(QObject *parent = nullptr);
     static AppSpecCPP *instance();
 
+    enum CPUGovernerOption {
+        CPUGpowersave = 0,
+        CPUGondemand,
+        CPUGperformance,
+        CPUGUnknown
+    };
+    Q_ENUM(CPUGovernerOption)
+
+
     // Useage in QML: ex. AppSpecCPP.Cooling
     enum SystemMode {
         Cooling = 0,
