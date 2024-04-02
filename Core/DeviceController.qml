@@ -65,8 +65,9 @@ I_DeviceController {
                 if (nightModeBrightness !== targetNightModeBrightness) {
                     brightnessTimer.start();
                     nightModeBrightness = targetNightModeBrightness;
-                    deviceControllerCPP.setCPUGovernor(AppSpec.CPUGondemand);
                 }
+
+                deviceControllerCPP.setCPUGovernor(AppSpec.CPUGondemand);
 
             } else {
                 brightnessTimer.stop();

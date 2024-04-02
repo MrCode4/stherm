@@ -289,6 +289,9 @@ void DeviceControllerCPP::nightModeControl(bool start)
 
 void DeviceControllerCPP::setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovernerOption)
 {
+    if (CPUGovernerOption == mCPUGoverner)
+        return;
+
     QString governer;
     switch (CPUGovernerOption) {
     case AppSpecCPP::CPUGpowersave:
@@ -307,7 +310,10 @@ void DeviceControllerCPP::setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovern
         break;
     }
 
-    setCPUGovernorMode(governer);
+    if (!governer.isEmpty()){
+        mCPUGoverner = CPUGovernerOption;
+        setCPUGovernorMode(governer);
+    }
 }
 
 double DeviceControllerCPP::adaptiveBrightness() {
