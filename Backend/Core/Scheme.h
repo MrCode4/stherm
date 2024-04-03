@@ -88,6 +88,8 @@ signals:
 
     void fanWorkChanged(bool fanState);
 
+    void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
+
 protected:
     void run() override;
 

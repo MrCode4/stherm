@@ -38,7 +38,7 @@ ToolButton {
         interval: 500
 
         onTriggered: {
-            logoImage.rotation += 90
+            logoImage.rotation += 90;
         }
     }
 
@@ -50,6 +50,14 @@ ToolButton {
                 rotationTimer.start();
             else
                 rotationTimer.stop()
+        }
+
+        function onCurrentSystemModeChanged(obState: int) {
+            if (obState === AppSpec.Cooling) {
+
+            } else if (obState === AppSpec.Heating) {
+
+            }
         }
     }
 

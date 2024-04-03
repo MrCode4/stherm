@@ -182,6 +182,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(m_scheme, &Scheme::fanWorkChanged, this, &DeviceControllerCPP::fanWorkChanged);
+    connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
 
     if (m_system) {
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {

@@ -404,6 +404,9 @@ void Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
             // sysDelay
             waitLoop(mSystemSetup->systemRunDelay * 60000);
         }
+
+        // Send current system mode into deviceController when is needed
+        emit currentSystemModeChanged(newOb_state);
     }
 }
 

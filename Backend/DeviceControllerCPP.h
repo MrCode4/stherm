@@ -157,6 +157,7 @@ Q_SIGNALS:
     void nrfUpdateStarted();
 
     void fanWorkChanged(bool fanState);
+    void currentSystemModeChanged(bool fanState);
 
 private:
     // update main data and send data to scheme.
