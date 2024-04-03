@@ -22,10 +22,10 @@ ApplicationWindow {
 
     /* Object Properties
      * ****************************************************************************************/
-    x: 0
-    y: 0
-    width: AppStyle.size
-    height: AppStyle.size
+    x: 10
+    y: 6
+    width: AppStyle.size - 2 * x
+    height: AppStyle.size - 2 * y
 
     visible: false
     title: qsTr("STherm")

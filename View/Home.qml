@@ -57,7 +57,6 @@ Control {
     Item {
         id: _itemsToHide
         anchors.fill: parent
-        anchors.margins: 2
         visible: opacity > 0
 
         //! Current temprature item
