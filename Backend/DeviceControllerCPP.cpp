@@ -106,7 +106,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         if (isFanON()) {
             mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (0.2 - mTEMPERATURE_COMPENSATION_T1) / 148.4788;
         } else {
-                mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + ((2.847697 - deltaCorrection()) - mTEMPERATURE_COMPENSATION_T1) / 655.5680515;
+            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + ((2.847697 - deltaCorrection()) - mTEMPERATURE_COMPENSATION_T1) / 655.5680515;
         }
 
 #ifdef DEBUG_MODE
@@ -475,6 +475,9 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
             qWarning() << "dt is greater than 10! check for any error.";
         }
     }
+
+    if (mFanOff)
+        mainData.insert("fanSpeed", 0);
 
     if (_mainData == mainData)
         return;
