@@ -424,20 +424,22 @@ I_DeviceController {
     //! Set device settings
     function setSettings(brightness, volume, temperatureUnit, adaptive)
     {
-        if (!device)
-            return;
+        if (!device){
+            console.log("corrupted device")
+            return false;
+        }
 
         var send_data = [brightness, volume, temperatureUnit, adaptive];
         var current_data = [device.setting.brightness, device.setting.volume,
                             device.setting.tempratureUnit, device.setting.adaptiveBrightness]
-        if (send_data == current_data) {
+        if (send_data.toString() === current_data.toString()) {
             console.log("ignored setings")
-            return;
+            return false;
         }
 
         if (!device.nightMode._running && !deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
-            return;
+            return false;
         }
 
         // Update setting when setSettings is successful.
@@ -456,6 +458,8 @@ I_DeviceController {
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
         }
+
+        return true;
     }
 
     function pushUpdateToServer(){
@@ -486,8 +490,9 @@ I_DeviceController {
         }
 
         if (editMode !== AppSpec.EMSettings) {
-            setSettings(settings.brightness, settings.speaker,
-                        settings.temperatureUnit, settings.brightness_mode);
+            if (!setSettings(settings.brightness, settings.speaker,
+                        settings.temperatureUnit, settings.brightness_mode))
+                console.log("The system settings is not applied from server")
 
         } else {
             console.log("The system settings is being edited and cannot be updated by the server.")
