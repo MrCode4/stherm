@@ -20,6 +20,7 @@ static  const QString m_BacklightBHeader      = "Backlight - B";
 static  const QString m_LedEffectHeader       = "Backlight - LED effect";
 static  const QString m_CPUUsage              = "CPU Usage (%)";
 static  const QString m_FanStatus             = "Fan status";
+static  const QString m_BacklightState        = "Backlight state";
 static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
 
@@ -626,30 +627,29 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
                           m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
-                          m_NightModeHeader, m_LedEffectHeader, m_BacklightRHeader, m_BacklightGHeader,
-                          m_BacklightBHeader, m_CPUUsage, m_FanStatus};
+                          m_NightModeHeader, m_BacklightState, m_BacklightRHeader, m_BacklightGHeader,
+                          m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus};
 
-    for (auto var = 0; var < cpuData.length(); var++) {
-        header.append(QString("Temperature CPU%0").arg(var));
-    }
 
     QFile file(mGeneralSystemDatafilePath);
 
     if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
         QTextStream out(&file);
 
-        QString allData = out.readAll();
-        file.resize(0);
-
         // Check the header
-        auto checkHeader = allData.isEmpty() ? false : allData.split("\n").first().contains(m_DateTimeHeader);
+        auto checkHeader = out.readAll().contains(m_DateTimeHeader);
         if (!checkHeader) {
+
+            for (auto var = 0; var < cpuData.length(); var++) {
+                header.append(QString("Temperature CPU%0").arg(var));
+            }
+
             // Write header
             QStringList headerData;
             foreach (auto field, header) {
                 headerData.append(field);
             }
-            allData.append(headerData.join(",") + "\n");
+            out << (headerData.join(",") + "\n");
         }
 
         // Write data rows
@@ -689,6 +689,9 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
             } else if (key == m_NightModeHeader) {
                 dataStrList.append(mIsNightModeRunning ? "true" : "false");
 
+            } else if (key == m_BacklightState) {
+                dataStrList.append(backLightData[4].toString());
+
             }  else if (key == m_BacklightRHeader) {
                 dataStrList.append(QString::number(backLightData[0].toInt() / 255.0));
 
@@ -699,7 +702,27 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(backLightData[2].toInt() / 255.0));
 
             } else if (key == m_LedEffectHeader) {
-                dataStrList.append(QString::number(backLightData[3].toInt()));
+                auto ledEffectInt = backLightData[3].toInt();
+                QString ledEffect;
+                switch (ledEffectInt) {
+                case STHERM::LED_STABLE:
+                    ledEffect = "Stable";
+                    break;
+
+                case STHERM::LED_FADE:
+                    ledEffect = "FADE";
+                    break;
+
+                case STHERM::LED_BLINK:
+                    ledEffect = "BLINK";
+                    break;
+
+                default:
+                    ledEffect = "No Mode";
+                    break;
+                }
+
+                dataStrList.append(ledEffect);
 
             } else if (key == m_CPUUsage) {
                 dataStrList.append(QString::number(UtilityHelper::CPUUsage()));
@@ -713,13 +736,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
         }
 
         dataStrList.append(cpuData);
-        allData.append(dataStrList.join(","));
-
-        QStringList lines = allData.split("\n");
-
-        foreach (auto line, lines) {
-            out << line << "\n";
-        }
+        out << (dataStrList.join(",")) << "\n";
 
         file.close();
         TRACE << "General System Data (csv) file written successfully in " << mGeneralSystemDatafilePath;
