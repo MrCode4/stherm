@@ -221,6 +221,8 @@ private:
 
     int mFanSpeed;
 
+    bool mFanOff = false;
+
     //! TEMP, To keep raw temperature.
     double mRawTemperature;
 

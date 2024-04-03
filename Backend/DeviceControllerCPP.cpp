@@ -86,12 +86,14 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     // Default value
     mFanSpeed = 16;
+    mFanOff = false;
 
     mNightModeTimer.setTimerType(Qt::PreciseTimer);
     mNightModeTimer.setInterval(5000 * 60);
     mNightModeTimer.setSingleShot(true);
     connect(&mNightModeTimer, &QTimer::timeout, this, [this]() {
         setFanSpeed(0);
+        mFanOff = true;
     });
 
     mTEMPERATURE_COMPENSATION_Timer.setTimerType(Qt::PreciseTimer);
@@ -272,6 +274,7 @@ void DeviceControllerCPP::nightModeControl(bool start)
     } else {
         mNightModeTimer.stop();
         setFanSpeed(16); // 100 / 7
+        mFanOff = false;
     }
 }
 
@@ -509,7 +512,8 @@ void DeviceControllerCPP::setAdaptiveBrightness(const double adaptiveBrightness)
 
 bool DeviceControllerCPP::isFanON()
 {
-    return mFanSpeed != 0;
+//    return mFanSpeed != 0;
+    return !mFanOff;
 }
 
 bool DeviceControllerCPP::checkSN()
