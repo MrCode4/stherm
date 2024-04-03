@@ -71,7 +71,7 @@ I_DeviceController {
 
             } else {
                 brightnessTimer.stop();
-                setBrightnessInNightMode(5);
+                setBrightnessInNightMode(5, device.setting.volume, false);
                 nightModeBrightness = 5;
 
                 deviceControllerCPP.setCPUGovernor(AppSpec.CPUGpowersave);
@@ -93,7 +93,7 @@ I_DeviceController {
         interval: Math.round(3000 / Math.abs(targetNightModeBrightness - 5));
 
         onTriggered: {
-            setBrightnessInNightMode(5 + steps);
+            setBrightnessInNightMode(5 + steps, device.setting.volume, false);
             steps++;
             if (steps > Math.abs(targetNightModeBrightness - 5))
                 stop();
@@ -430,7 +430,8 @@ I_DeviceController {
         var send_data = [brightness, volume, temperatureUnit, adaptive];
         var current_data = [device.setting.brightness, device.setting.volume,
                             device.setting.tempratureUnit, device.setting.adaptiveBrightness]
-        if (send_data === current_data) {
+        if (send_data == current_data) {
+            console.log("ignored setings")
             return;
         }
 
@@ -874,14 +875,14 @@ I_DeviceController {
                 brightness = targetNightModeBrightness;
             }
 
-            setBrightnessInNightMode(brightness);
+            setBrightnessInNightMode(brightness, device.setting.volume, false);
 
         } else {
             console.log("Night mode stopping: revert to model.")
             // revert to model
             if (device)
-                setSettings(device.setting.brightness, device.setting.volume,
-                            device.setting.tempratureUnit, device.setting.adaptiveBrightness)
+                setBrightnessInNightMode(device.setting.brightness, device.setting.volume,
+                                         device.setting.adaptiveBrightness)
 
             var backlight = device.backlight;
             if (backlight && device.nightMode.mode === AppSpec.NMOn) {
@@ -900,8 +901,8 @@ I_DeviceController {
     }
 
     //! Just use for night mode
-    function setBrightnessInNightMode(brightness) {
-        var send_data = [brightness, 0, device.setting.tempratureUnit, false];
+    function setBrightnessInNightMode(brightness, volume, adaptive) {
+        var send_data = [brightness, volume, device.setting.tempratureUnit, adaptive];
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }
