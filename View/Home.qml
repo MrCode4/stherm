@@ -218,6 +218,16 @@ Control {
             font {
                 pointSize: _root.font.pointSize * 0.8
             }
+
+            TapHandler {
+                onTapped: {
+                    if (mainStackView) {
+                        mainStackView.push("qrc:/Stherm/View/ScheduleView.qml", {
+                                               "uiSession": Qt.binding(() => uiSession)
+                                           });
+                    }
+                }
+            }
         }
 
         //! NEXGEN icon
