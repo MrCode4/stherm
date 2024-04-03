@@ -15,12 +15,18 @@ BasePageView {
     //! Setting
     property Setting    setting: uiSession?.appModel?.setting ?? null
 
+    property bool hasChange : false;
+
     //!‌ This timer is used to apply settings to device lively
     property Timer onlineTimer: Timer {
         repeat: false
         running: false
         interval: 50
-        onTriggered: applyToModel()
+        onTriggered: {
+
+            if (applyToModel())
+                hasChange = true;
+        }
 
         function startTimer()
         {
@@ -63,9 +69,11 @@ BasePageView {
         }
 
         onClicked: {
-            applyToModel();
-
-            deviceController.pushSettings();
+            if (applyToModel() || hasChange) {
+                deviceController.pushSettings();
+            } else {
+                console.log("model did not pushed")
+            }
 
             //! Make a copy of last applied data to Setting
             makeCopyOfSettings();
@@ -235,12 +243,13 @@ BasePageView {
     //! Save settings
     function applyToModel() {
         if (deviceController) {
-            deviceController.setSettings(_brightnessSlider.value,
-                                         _speakerSlider.value,
-                                         _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
-                                                                   : AppSpec.TempratureUnit.Cel,
-                                         _adaptiveBrSw.checked);
+            return deviceController.setSettings(_brightnessSlider.value,
+                                                _speakerSlider.value,
+                                                _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
+                                                                          : AppSpec.TempratureUnit.Cel,
+                                                _adaptiveBrSw.checked);
         }
+        return false;
     }
 
     function makeCopyOfSettings()
@@ -274,12 +283,15 @@ BasePageView {
         onAccepted: {
             //! Perform reseting settings
             if (deviceController) {
-                deviceController.setSettings(80,
+                if (deviceController.setSettings(80,
                                              80,
                                              AppSpec.TempratureUnit.Cel,
-                                             true);
+                                             true)){
+                    deviceController.pushSettings()
+                } else {
+                    console.log("settings did not applied")
+                }
             }
-            deviceController.pushSettings()
         }
     }
 
@@ -298,12 +310,14 @@ BasePageView {
                     || setting.volume !== internal.copyOfSettings.volume
                     || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit) {
                 //! Reset to last saved setting
-                deviceController.setSettings(
+                if (!deviceController.setSettings(
                             internal.copyOfSettings.brightness,
                             internal.copyOfSettings.volume,
                             internal.copyOfSettings.tempratureUnit,
                             internal.copyOfSettings.adaptiveBrightness
-                            );
+                            )) {
+                    console.log("could not revert model");
+                }
             }
         }
     }
