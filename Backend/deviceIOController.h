@@ -95,6 +95,8 @@ signals:
 
     void adaptiveBrightness(double adaptiveBrightness);
 
+    void fanStatusUpdated(bool off);
+
 private slots:
     void wtdExec();
     void wiringExec();
@@ -116,7 +118,7 @@ private:
     void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values);
 
     //! Process NRF response
-    void processNRFResponse(STHERM::SIOPacket rxPacket);
+    void processNRFResponse(STHERM::SIOPacket rxPacket, const STHERM::SIOPacket &txPacket);
     bool processNRFQueue();
 
     //! Process TI response

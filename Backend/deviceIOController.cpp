@@ -435,10 +435,10 @@ void DeviceIOController::createNRF()
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
             qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD << m_nRF_queue.size();
+        processNRFResponse(rxPacket, sent);
+        m_nRfConnection->setProperty("busy", false);
         if (!m_nRF_queue.empty())
             m_nRF_queue.pop();
-        processNRFResponse(rxPacket);
-        m_nRfConnection->setProperty("busy", false);
         processNRFQueue();
     });
 
@@ -697,7 +697,7 @@ void DeviceIOController::nRFExec()
     }
 }
 
-void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
+void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const STHERM::SIOPacket &txPacket)
 {
     // checksum the response data
     uint16_t inc_crc_nrf = UtilityHelper::crc16(rxPacket.DataArray, rxPacket.DataLen);
@@ -850,7 +850,14 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 //                    LOG_DEBUG(QString("Error: setSensorData"));
                 //                }
             } break;
-
+            case STHERM::SetFanSpeed:
+            {
+                if (txPacket.CMD == STHERM::SetFanSpeed && txPacket.DataLen == 1) {
+                    emit fanStatusUpdated(txPacket.DataArray[0] == 0);
+                } else {
+                    qWarning() << "incompatible response of setFanSpeed" << txPacket.CMD << txPacket.DataLen;
+                }
+            }
             default:
                 break;
             }

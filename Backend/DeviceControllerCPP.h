@@ -220,8 +220,7 @@ private:
     bool mIsNightModeRunning;
 
     int mFanSpeed;
-
-    bool mFanOff = false;
+    bool mFanOff;
 
     //! TEMP, To keep raw temperature.
     double mRawTemperature;
