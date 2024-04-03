@@ -618,8 +618,8 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
                           m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
-                          m_NightModeHeader, m_BacklightRHeader, m_BacklightGHeader, m_BacklightBHeader,
-                          m_LedEffectHeader, m_CPUUsage, m_FanStatus};
+                          m_NightModeHeader, m_LedEffectHeader, m_BacklightRHeader, m_BacklightGHeader,
+                          m_BacklightBHeader, m_CPUUsage, m_FanStatus};
 
     for (auto var = 0; var < cpuData.length(); var++) {
         header.append(QString("Temperature CPU%0").arg(var));
