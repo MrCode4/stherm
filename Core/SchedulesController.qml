@@ -84,7 +84,8 @@ QtObject {
                 if ((schStartTime > startTime && schStartTime < endTime)
                         || (schEndTime > startTime && schEndTime < endTime)
                         || (startTime > schStartTime && startTime < schEndTime)
-                        || (endTime > schStartTime && endTime < schEndTime)) {
+                        || (endTime > schStartTime && endTime < schEndTime
+                        || (startTime === schStartTime && endTime === schEndTime)) {
                     overlappings.push(element);
                 }
             }
