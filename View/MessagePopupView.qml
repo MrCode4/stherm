@@ -43,6 +43,9 @@ Item {
 
         AlertNotifPopup {
             onClosed: {
+                message.isRead = true;
+                uiSession.deviceController.pushSettings();
+
                 destroy(this);
             }
         }
