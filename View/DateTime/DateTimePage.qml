@@ -22,7 +22,7 @@ BasePageView {
     title: "Date & Time"
 
     Component.onCompleted: {
-        deviceController.editMode = AppSpec.EMDateTime;
+        deviceController.updateEditMode(AppSpec.EMDateTime);
         DateTimeManager.checkAutoUpdateTime();
     }
 
@@ -30,7 +30,7 @@ BasePageView {
         if (sendToServer)
             deviceController.pushSettings();
 
-        deviceController.editMode = AppSpec.EMNone;
+        deviceController.updateEditMode(AppSpec.EMNone);
     }
 
     /* Children
