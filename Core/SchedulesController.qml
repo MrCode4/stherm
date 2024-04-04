@@ -97,7 +97,7 @@ QtObject {
     function findRunningSchedule() {
         let currentSchedule = null;
 
-        if (!device._isHold) {
+        if (!device.isHold) {
             var now = new Date();
 
             device.schedules.forEach(schedule => {
@@ -254,7 +254,7 @@ QtObject {
 
 
     property Timer _checkRunningTimer: Timer {
-        running: !device._isHold && device.schedules.filter(schedule => schedule.enable).length > 0
+        running: !device.isHold && device.schedules.filter(schedule => schedule.enable).length > 0
         repeat: true
         interval: 1000
 
@@ -267,9 +267,9 @@ QtObject {
     property Connections deviceConnections: Connections{
         target: device
 
-        function on_IsHoldChanged() {
-            console.log("device._isHold", device._isHold)
-            if (device._isHold)
+        function onIsHoldChanged() {
+            console.log("device.isHold", device.isHold)
+            if (device.isHold)
                 deviceController.setActivatedSchedule(null);
         }
     }

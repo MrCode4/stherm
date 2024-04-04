@@ -517,7 +517,7 @@ I_DeviceController {
             "current_humidity": device.currentHum.toString(),
             "current_temp": device.currentTemp.toString(),
             "co2_id": device._co2_id + 1,
-            "hold" : device._isHold,
+            "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
             "fan" : {
                 "mode" : device.fan.mode,
@@ -807,8 +807,8 @@ I_DeviceController {
     {
         // TODO should be updated to inform the logics
 
-        if (device._isHold !== isHold)
-            device._isHold = isHold;
+        if (device.isHold !== isHold)
+            device.isHold = isHold;
     }
 
     function setSystemAccesseoriesServer(settings: var) {
