@@ -455,5 +455,8 @@ public:
 
     //! Return Packet Type with packetType enum
     static uint8_t packetType(STHERM::PacketType packetType);
+    
+    //! Calculate the CPU usage
+    static double CPUUsage();
 };
 

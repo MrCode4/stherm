@@ -1,10 +1,32 @@
 #include "DeviceControllerCPP.h"
 
 #include "LogHelper.h"
+#include "ScreenSaverManager.h"
+
+/* ************************************************************************************************
+ * Log properties
+ * ************************************************************************************************/
+#ifdef DEBUG_MODE
+static  const QString m_DateTimeHeader        = "DateTime UTC (sec)";
+static  const QString m_DeltaCorrectionHeader = "Delta Correction (F)";
+static  const QString m_DTIHeader             = "Delta Temperature Integrator";
+static  const QString m_BacklightFactorHeader = "backlightFactor";
+static  const QString m_BrightnessHeader      = "Brightness (%)";
+static  const QString m_RawTemperatureHeader  = "Raw Temperature (F)";
+static  const QString m_NightModeHeader       = "Is Night Mode Running";
+static  const QString m_BacklightRHeader      = "Backlight - R";
+static  const QString m_BacklightGHeader      = "Backlight - G";
+static  const QString m_BacklightBHeader      = "Backlight - B";
+static  const QString m_LedEffectHeader       = "Backlight - LED effect";
+static  const QString m_CPUUsage              = "CPU Usage (%)";
+static  const QString m_FanStatus             = "Fan status";
+static  const QString m_BacklightState        = "Backlight state";
+static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
+#endif
 
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
-inline void setCPUGovernor(QString governer) {
+inline void setCPUGovernorMode(QString governer) {
 #ifdef __unix__
     QDir cpuDir("/sys/devices/system/cpu/");
     QStringList cpuList = cpuDir.entryList(QStringList() << "cpu[0-9]*");
@@ -46,6 +68,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     m_system = _deviceAPI->system();
 
+    mAdaptiveBrightness = 50;
+
     // todo: initialize with proper value
     mBacklightModelData = QVariantList();
 
@@ -61,35 +85,48 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
 
-    QVariantMap mainDataMap;
-    mainDataMap.insert("temperature",     0);
-    mainDataMap.insert("humidity",        0);
-    mainDataMap.insert("co2",             0);
-    mainDataMap.insert("etoh",            0);
-    mainDataMap.insert("Tvoc",            0);
-    mainDataMap.insert("iaq",             0);
-    mainDataMap.insert("pressure",        0);
-    mainDataMap.insert("RangeMilliMeter", 0);
-    mainDataMap.insert("brighness",       0);
-    mainDataMap.insert("fanSpeed",        0);
-    setMainData(mainDataMap);
+    // Default value
+    mFanSpeed = 16;
+    mFanOff = false;
 
     mNightModeTimer.setTimerType(Qt::PreciseTimer);
     mNightModeTimer.setInterval(5000 * 60);
     mNightModeTimer.setSingleShot(true);
     connect(&mNightModeTimer, &QTimer::timeout, this, [this]() {
-        _deviceIO->setFanSpeed(0);
+        setFanSpeed(0);
     });
+
+    connect(_deviceIO, &DeviceIOController::fanStatusUpdated, this, [this](bool fanOff) {
+        mFanOff = fanOff;
+    });
+
+    mTEMPERATURE_COMPENSATION_Timer.setTimerType(Qt::PreciseTimer);
+    mTEMPERATURE_COMPENSATION_Timer.setInterval(1000);
+    mTEMPERATURE_COMPENSATION_Timer.setSingleShot(false);
+    connect(&mTEMPERATURE_COMPENSATION_Timer, &QTimer::timeout, this, [this]() {
+        if (isFanON()) {
+            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (0.2 - mTEMPERATURE_COMPENSATION_T1) / 148.4788;
+        } else {
+            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + ((2.847697 - deltaCorrection()) - mTEMPERATURE_COMPENSATION_T1) / 655.5680515;
+        }
+
+#ifdef DEBUG_MODE
+        TRACE << "Temperature Correction - T1: "<< mTEMPERATURE_COMPENSATION_T1 << "- Fan running: " << isFanON();
+#endif
+    });
+    mTEMPERATURE_COMPENSATION_Timer.start();
 
     // Thge system prepare the direcories for usage
     m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
     mGeneralSystemDatafilePath = QString("/mnt/data/sensor/gsd-%0.csv").arg(QDateTime::currentSecsSinceEpoch());
 
     mIsNightModeRunning = false;
+
+#ifdef DEBUG_MODE
     mLogTimer.setTimerType(Qt::PreciseTimer);
-    mLogTimer.start(10000);
+    mLogTimer.start(1000);
     connect(&mLogTimer, &QTimer::timeout, this, [this]() {
-        TRACE << "---------------------- Start Night Mode Log ----------------------";
+        TRACE << "---------------------- Start General System Data Log ----------------------";
 
         auto cpuData = m_system->cpuInformation();
         auto brightness = UtilityHelper::brightness();
@@ -107,8 +144,11 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         writeGeneralSysData(cpuData, brightness);
 
-        TRACE << "---------------------- End Night Mode Log ----------------------";
+        TRACE << "---------------------- End General System Data Log ----------------------";
     });
+
+#endif
+
 
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
     mBacklightPowerTimer.setSingleShot(false);
@@ -145,6 +185,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         for (const auto &pair : data.toStdMap()) {
             _mainData.insert(pair.first, pair.second);
         }
+    });
+
+    connect(_deviceIO, &DeviceIOController::adaptiveBrightness, this, [this](double adaptiveBrightness) {
+        setAdaptiveBrightness(adaptiveBrightness);
     });
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
@@ -225,21 +269,52 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 //! Handle other power limiting functions
 void DeviceControllerCPP::nightModeControl(bool start)
 {
-    if (start) {
-        setCPUGovernor("powersave");
-        mNightModeTimer.start();
-        mIsNightModeRunning = true;
+    if (mIsNightModeRunning == start)
+        return;
 
+    mIsNightModeRunning = start;
+
+    if (start) {
+        mNightModeTimer.start();
         m_system->cpuInformation();
 
     } else {
         mNightModeTimer.stop();
-        mIsNightModeRunning = false;
+        setFanSpeed(16); // 100 / 7
+    }
+}
 
-        setCPUGovernor("ondemand");
-        _deviceIO->setFanSpeed(16); //100 / 7
+void DeviceControllerCPP::setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovernerOption)
+{
+    if (CPUGovernerOption == mCPUGoverner)
+        return;
+
+    QString governer;
+    switch (CPUGovernerOption) {
+    case AppSpecCPP::CPUGpowersave:
+        governer = "powersave";
+        break;
+
+    case AppSpecCPP::CPUGondemand:
+        governer = "ondemand";
+        break;
+
+    case AppSpecCPP::CPUGperformance:
+        governer = "performance";
+        break;
+
+    default:
+        break;
     }
 
+    if (!governer.isEmpty()){
+        mCPUGoverner = CPUGovernerOption;
+        setCPUGovernorMode(governer);
+    }
+}
+
+double DeviceControllerCPP::adaptiveBrightness() {
+    return mAdaptiveBrightness;
 }
 
 bool DeviceControllerCPP::setSettings(QVariantList data)
@@ -386,6 +461,8 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData)
 {
+    setFanSpeed(mainData.value("fanSpeed", mFanSpeed).toInt(), false);
+
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
     if (isOk){
@@ -394,11 +471,17 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
         double dt = deltaCorrection();
         TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
         if (qAbs(dt) < 10) {
+            // Fan status effect:
+            dt += mTEMPERATURE_COMPENSATION_T1;
+
             mainData.insert("temperature", tc - dt);
         } else {
             qWarning() << "dt is greater than 10! check for any error.";
         }
     }
+
+    if (mFanOff)
+        mainData.insert("fanSpeed", 0);
 
     if (_mainData == mainData)
         return;
@@ -428,12 +511,30 @@ void DeviceControllerCPP::checkUpdateMode()
     }
 }
 
+void DeviceControllerCPP::setAdaptiveBrightness(const double adaptiveBrightness) {
+    if (mAdaptiveBrightness == adaptiveBrightness)
+        return;
+
+    mAdaptiveBrightness = adaptiveBrightness;
+    emit adaptiveBrightnessChanged();
+}
+
+bool DeviceControllerCPP::isFanON()
+{
+    return !mFanOff;
+}
+
 bool DeviceControllerCPP::checkSN()
 {
     auto state = _deviceAPI->checkSN();
     TRACE << "checkSN : " << state;
 
     bool snMode = state != 2;
+
+    // Active screen saver
+    if (snMode)
+        ScreenSaverManager::instance()->setAppActive(true);
+
     emit snModeChanged(snMode);
 
     return snMode;
@@ -523,81 +624,136 @@ QVariantMap DeviceControllerCPP::getMainData()
     return mainData;
 }
 
-void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness) {
-    const QString dateTimeHeader = "DateTime UTC (sec)";
-    const QString deltaCorrectionHeader = "Delta Correction (F)";
-    const QString dtiHeader = "Delta Temperature Integrator";
-    const QString backlightFactorHeader = "backlightFactor";
-    const QString brightnessHeader = "Brightness (%)";
-    const QString rawTemperatureHeader = "Raw Temperature (C)";
-    const QString nightModeHeader = "Is Night Mode Running";
+void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)
+{
+#ifdef DEBUG_MODE
 
-    QStringList header = {dateTimeHeader, deltaCorrectionHeader, dtiHeader,
-                          backlightFactorHeader, brightnessHeader, rawTemperatureHeader, nightModeHeader};
+    QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
+                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
+                          m_NightModeHeader, m_BacklightState, m_BacklightRHeader, m_BacklightGHeader,
+                          m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus};
 
-    for (auto var = 0; var < cpuData.length(); var++) {
-        header.append(QString("Temperature CPU%0").arg(var));
-    }
 
     QFile file(mGeneralSystemDatafilePath);
 
     if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
         QTextStream out(&file);
 
-        QString allData = out.readAll();
-        file.resize(0);
-
         // Check the header
-        auto checkHeader = allData.isEmpty() ? false : allData.split("\n").first().contains(dateTimeHeader);
+        auto checkHeader = out.readAll().contains(m_DateTimeHeader);
         if (!checkHeader) {
+
+            for (auto var = 0; var < cpuData.length(); var++) {
+                header.append(QString("Temperature CPU%0").arg(var));
+            }
+
             // Write header
             QStringList headerData;
             foreach (auto field, header) {
                 headerData.append(field);
             }
-            allData.append(headerData.join(",") + "\n");
+            out << (headerData.join(",") + "\n");
         }
 
         // Write data rows
         QStringList dataStrList;
+        auto backLightData = mBacklightModelData;
+        if (mBacklightTimer.isActive()) {
+            auto color = mBacklightTimer.property("color").value<QVariantList>();
+            if (!color.isEmpty()) {
+                backLightData = color;
+            }
+        }
+
+        // Check backlight data.
+        if (backLightData.size() != 5) {
+            backLightData = QVariantList{-255, -255, -255, -1, "invalid"};
+        }
+
         foreach (auto key, header) {
-            if (key == dateTimeHeader) {
+            if (key == m_DateTimeHeader) {
                 dataStrList.append(QString::number(QDateTime::currentDateTimeUtc().toSecsSinceEpoch()));
 
-            } else if (key == deltaCorrectionHeader) {
+            } else if (key == m_DeltaCorrectionHeader) {
                 dataStrList.append(QString::number(deltaCorrection() * 1.8));
 
-            } else if (key == dtiHeader) {
+            } else if (key == m_DTIHeader) {
                 dataStrList.append(QString::number(mDeltaTemperatureIntegrator));
 
-            } else if (key == backlightFactorHeader) {
+            } else if (key == m_BacklightFactorHeader) {
                 dataStrList.append(QString::number(_deviceIO->backlightFactor()));
 
-            } else if (key == brightnessHeader) {
+            } else if (key == m_BrightnessHeader) {
                 dataStrList.append(QString::number(brightness));
 
-            } else if (key == rawTemperatureHeader) {
-                dataStrList.append(QString::number(mRawTemperature));
+            } else if (key == m_RawTemperatureHeader) {
+                dataStrList.append(QString::number(mRawTemperature * 1.8 + 32));
 
-            } else if (key == nightModeHeader) {
+            } else if (key == m_NightModeHeader) {
                 dataStrList.append(mIsNightModeRunning ? "true" : "false");
-            }
 
+            } else if (key == m_BacklightState) {
+                dataStrList.append(backLightData[4].toString());
+
+            }  else if (key == m_BacklightRHeader) {
+                dataStrList.append(QString::number(backLightData[0].toInt() / 255.0));
+
+            }  else if (key == m_BacklightGHeader) {
+                dataStrList.append(QString::number(backLightData[1].toInt() / 255.0));
+
+            }  else if (key == m_BacklightBHeader) {
+                dataStrList.append(QString::number(backLightData[2].toInt() / 255.0));
+
+            } else if (key == m_LedEffectHeader) {
+                auto ledEffectInt = backLightData[3].toInt();
+                QString ledEffect;
+                switch (ledEffectInt) {
+                case STHERM::LED_STABLE:
+                    ledEffect = "Stable";
+                    break;
+
+                case STHERM::LED_FADE:
+                    ledEffect = "FADE";
+                    break;
+
+                case STHERM::LED_BLINK:
+                    ledEffect = "BLINK";
+                    break;
+
+                default:
+                    ledEffect = "No Mode";
+                    break;
+                }
+
+                dataStrList.append(ledEffect);
+
+            } else if (key == m_CPUUsage) {
+                dataStrList.append(QString::number(UtilityHelper::CPUUsage()));
+
+            } else if (key == m_FanStatus) {
+                dataStrList.append(isFanON() ? "On" : "Off");
+
+            } else if (key == m_T1) {
+                dataStrList.append(QString::number(mTEMPERATURE_COMPENSATION_T1 * 1.8));
+            }
         }
 
         dataStrList.append(cpuData);
-        allData.append(dataStrList.join(","));
-
-        QStringList lines = allData.split("\n");
-
-        foreach (auto line, lines) {
-            out << line << "\n";
-        }
+        out << (dataStrList.join(",")) << "\n";
 
         file.close();
-        TRACE << "nightModeData CSV file written successfully.";
+        TRACE << "General System Data (csv) file written successfully in " << mGeneralSystemDatafilePath;
 
     } else {
-        TRACE << "nightModeData.csv Failed to open the file for writing/Reading.";
+        TRACE << "General System Data (csv) Failed to open the file for writing/Reading.";
     }
+#endif
+}
+
+void DeviceControllerCPP::setFanSpeed(int speed, bool sendToIO)
+{
+    if (sendToIO)
+        _deviceIO->setFanSpeed(speed);
+
+    mFanSpeed = speed;
 }

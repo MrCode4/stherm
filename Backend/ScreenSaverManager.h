@@ -55,6 +55,8 @@ public:
     Q_INVOKABLE void    setActive();
     Q_INVOKABLE void    restart();
 
+    Q_INVOKABLE void    setAppActive(bool setAppActive);
+
     /* Protected/private methods
      * ****************************************************************************************/
 protected:
@@ -94,4 +96,6 @@ private:
      * \details This is useful when press events needs to be delivered to a screen saver view.
      */
     bool                mAutoRestartOnPress = true;
+
+    bool                mSetAppActive = false;
 };

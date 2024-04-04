@@ -14,6 +14,9 @@ I_PopUp {
 
     property DeviceController deviceController
 
+    //! isBackdoor used to install the backdoor updates.
+    property bool isBackdoor: false
+
     /* Object properties
      * ****************************************************************************************/
 
@@ -65,6 +68,6 @@ I_PopUp {
         ScreenSaverManager.setInactive();
 
         // Restart the app.
-        deviceController.deviceControllerCPP.system.updateAndRestart();
+        deviceController.deviceControllerCPP.system.updateAndRestart(isBackdoor);
     }
 }

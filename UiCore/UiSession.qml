@@ -86,17 +86,6 @@ Item {
         }
     }
 
-    //! Save config every 1 minute
-    property Timer saveTimer:   Timer {
-        running: appModel
-        repeat: true
-        interval: 60000
-
-        onTriggered: {
-            AppCore.defaultRepo.saveToFile(root.configFilePath);
-        }
-    }
-
     //! Enable test mode from UI (eg: press 10 times on the FCC ID in About page, ...)
     property bool uiTetsMode: false
 

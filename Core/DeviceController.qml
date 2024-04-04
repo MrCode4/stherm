@@ -21,6 +21,10 @@ I_DeviceController {
 
     property var uiSession
 
+    //! Night mode brighness when screen saver is off.
+    property real nightModeBrightness: -1
+    property real targetNightModeBrightness: Math.min(50, (device.setting.adaptiveBrightness ? deviceControllerCPP.adaptiveBrightness : device.setting.brightness))
+
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
@@ -41,11 +45,58 @@ I_DeviceController {
         function onModeChanged() {
             if (device.nightMode.mode === AppSpec.NMOff) {
                 device.nightMode._running = false;
+                brightnessTimer.stop();
             }
         }
 
         function on_RunningChanged() {
             runNightMode();
+        }
+    }
+
+    //! Manage the night mode with screen saver
+    property Connections nightMode_screenSaverController: Connections {
+        target: ScreenSaverManager
+
+        enabled: device.nightMode._running
+
+        function onStateChanged() {
+            if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
+                if (nightModeBrightness !== targetNightModeBrightness) {
+                    brightnessTimer.start();
+                    nightModeBrightness = targetNightModeBrightness;
+                }
+
+                deviceControllerCPP.setCPUGovernor(AppSpec.CPUGondemand);
+
+            } else {
+                brightnessTimer.stop();
+                setBrightnessInNightMode(5, device.setting.volume, false);
+                nightModeBrightness = 5;
+
+                deviceControllerCPP.setCPUGovernor(AppSpec.CPUGpowersave);
+            }
+        }
+    }
+
+    //! The screen will gradually (within up to 3 seconds) set the screen brightness to targetNightModeBrighness
+    property Timer brightnessTimer: Timer {
+
+        property int steps: 1
+
+        running: false
+        onRunningChanged: {
+            steps = 1;
+        }
+
+        repeat: true
+        interval: Math.round(3000 / Math.abs(targetNightModeBrightness - 5));
+
+        onTriggered: {
+            setBrightnessInNightMode(5 + steps, device.setting.volume, false);
+            steps++;
+            if (steps > Math.abs(targetNightModeBrightness - 5))
+                stop();
         }
     }
 
@@ -344,7 +395,7 @@ I_DeviceController {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
-            finalizeSettings();
+            pushSettings();
         }
     }
 
@@ -357,7 +408,7 @@ I_DeviceController {
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
 
-        finalizeSettings();
+        pushSettings();
     }
 
     //! Set time format
@@ -373,24 +424,22 @@ I_DeviceController {
     //! Set device settings
     function setSettings(brightness, volume, temperatureUnit, adaptive)
     {
-        if (!device)
-            return;
+        if (!device){
+            console.log("corrupted device")
+            return false;
+        }
 
         var send_data = [brightness, volume, temperatureUnit, adaptive];
         var current_data = [device.setting.brightness, device.setting.volume,
                             device.setting.tempratureUnit, device.setting.adaptiveBrightness]
-        if (send_data === current_data) {
-            return;
+        if (send_data.toString() === current_data.toString()) {
+            console.log("ignored setings")
+            return false;
         }
 
-        //  In night mode the brightness, volume and adaptive can not be send to device controller with model values
-        if (device.nightMode._running) {
-            send_data = [50, 0, temperatureUnit, false];
-        }
-
-        if (!deviceControllerCPP.setSettings(send_data)){
+        if (!device.nightMode._running && !deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
-            return;
+            return false;
         }
 
         // Update setting when setSettings is successful.
@@ -409,14 +458,20 @@ I_DeviceController {
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
         }
+
+        return true;
     }
 
-    function finalizeSettings() {
-        if (uiSession)
-            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
-
+    function pushUpdateToServer(){
         if (!settingsPush.running)
             settingsPush.start()
+    }
+
+    function pushSettings() {
+        pushUpdateToServer();
+
+        if (uiSession)
+            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
     }
 
     function setSettingsServer(settings: var) {
@@ -435,8 +490,9 @@ I_DeviceController {
         }
 
         if (editMode !== AppSpec.EMSettings) {
-            setSettings(settings.brightness, settings.speaker,
-                        settings.temperatureUnit, settings.brightness_mode);
+            if (!setSettings(settings.brightness, settings.speaker,
+                        settings.temperatureUnit, settings.brightness_mode))
+                console.log("The system settings is not applied from server")
 
         } else {
             console.log("The system settings is being edited and cannot be updated by the server.")
@@ -684,19 +740,54 @@ I_DeviceController {
     function checkMessages(messages: var) {
     }
 
+    //! Control the push to server with the updateInformation().
+    property int _pushUpdateInformationCounter: 0
+
+    //! Reset the _pushUpdateInformationCounter
+    property Timer _pushUpdateInformationTimer: Timer {
+        repeat: true
+        running: true
+        interval: 60000
+
+        onTriggered: {
+            _pushUpdateInformationCounter = 0;
+        }
+    }
+
     //! Read data from system with getMainData method.
     function updateInformation()
     {
         //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
+        if (!result.temperature)
+            return;
+
+        var co2 = result?.iaq ?? 0;
+        var co2Id = device?.airQuality(co2) ?? 0;
+
+        // Fahrenheit is more sensitive than Celsius,
+        // so for every one degree change,
+        // it needs to be sent to the server.
+        var isVisualTempChangedF = Math.abs(Math.round(device.currentTemp * 1.8 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.8)) > 0
+        var isVisualTempChangedC = Math.abs(Math.round(device.currentTemp * 1.0 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.0)) > 0
+        var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
+        var isCo2IdChanged = device._co2_id !== co2Id;
+        var isNeedToPushToServer = isVisualHumChanged ||
+                isVisualTempChangedC || isVisualTempChangedF ||
+                isCo2IdChanged;
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
-        device.co2 = result?.iaq ?? 0 // use iaq as indicator for air quality
+        device.co2 = co2 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brighness ?? 0
 
         //        device.fan.mode?
+
+        if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
+            _pushUpdateInformationCounter++;
+            pushUpdateToServer();
+        }
 
         //        console.log("--------------- End: updateInformation -------------------")
     }
@@ -775,11 +866,7 @@ I_DeviceController {
     }
 
     function updateNightModeWithBacklight(isOn : bool) {
-        if (isOn) {
-            updateNightMode(AppSpec.NMOff);
-        } else {
-            updateNightMode(AppSpec.NMOn);
-        }
+        updateNightMode(isOn ? AppSpec.NMOff : AppSpec.NMOn);
     }
 
     function runNightMode() {
@@ -787,17 +874,20 @@ I_DeviceController {
             // Apply night mode
             // Set night mode settings
             // LCD should be set to minimum brightness, and ideally disabled.
-            var send_data = [50, 0, device.setting.tempratureUnit, false];
-            if (!deviceControllerCPP.setSettings(send_data)){
-                console.warn("setting failed");
+
+            var brightness = 5;
+            if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
+                brightness = targetNightModeBrightness;
             }
+
+            setBrightnessInNightMode(brightness, device.setting.volume, false);
 
         } else {
             console.log("Night mode stopping: revert to model.")
             // revert to model
             if (device)
-                setSettings(device.setting.brightness, device.setting.volume,
-                            device.setting.tempratureUnit, device.setting.adaptiveBrightness)
+                setBrightnessInNightMode(device.setting.brightness, device.setting.volume,
+                                         device.setting.adaptiveBrightness)
 
             var backlight = device.backlight;
             if (backlight && device.nightMode.mode === AppSpec.NMOn) {
@@ -808,6 +898,18 @@ I_DeviceController {
             }
         }
 
+        // Update the cpu governer with the night mode running and screen saver.
+        deviceControllerCPP.setCPUGovernor((device.nightMode._running && ScreenSaverManager.state === ScreenSaverManager.Timeout) ?
+                                               AppSpec.CPUGpowersave :
+                                               AppSpec.CPUGondemand);
         deviceControllerCPP.nightModeControl(device?.nightMode?._running ?? false);
+    }
+
+    //! Just use for night mode
+    function setBrightnessInNightMode(brightness, volume, adaptive) {
+        var send_data = [brightness, volume, device.setting.tempratureUnit, adaptive];
+        if (!deviceControllerCPP.setSettings(send_data)){
+            console.warn("setting failed");
+        }
     }
 }

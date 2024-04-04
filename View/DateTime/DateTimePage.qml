@@ -22,15 +22,15 @@ BasePageView {
     title: "Date & Time"
 
     Component.onCompleted: {
-        deviceController.editMode = AppSpec.EMDateTime;
+        deviceController.updateEditMode(AppSpec.EMDateTime);
         DateTimeManager.checkAutoUpdateTime();
     }
 
     Component.onDestruction: {
         if (sendToServer)
-            deviceController.finalizeSettings();
+            deviceController.pushSettings();
 
-        deviceController.editMode = AppSpec.EMNone;
+        deviceController.updateEditMode(AppSpec.EMNone);
     }
 
     /* Children

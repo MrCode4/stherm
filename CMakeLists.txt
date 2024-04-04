@@ -3,12 +3,15 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.3.9 LANGUAGES CXX)
+project(Stherm VERSION 0.3.11 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Enable (ON) / Disable (OFF) debug mode to write log file in run time.
+option (DEBUG_MODE "Debug mode" OFF)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
     QuickControls2 Multimedia Concurrent
@@ -182,6 +185,7 @@ qt6_add_qml_module(appStherm
         View/UserGuidePage.qml
         View/ContactContractorPage.qml
         View/NightModePage.qml
+        View/BackdoorUpdatePage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
@@ -379,6 +383,10 @@ qt6_add_qml_module(appStherm
         update_fw_nrf_seamless.sh
         nrf_fw_update.zip
 )
+
+if (DEBUG_MODE)
+    target_compile_definitions(appStherm PRIVATE DEBUG_MODE=${DEBUG_MODE})
+endif()
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

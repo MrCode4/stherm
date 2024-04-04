@@ -86,7 +86,7 @@ Control {
                             ? Utils.fahrenheitToCelsius(value) : value;
                     if (device && device.requestedTemp !== celValue) {
                         uiSession.deviceController.setDesiredTemperature(celValue);
-                        deviceController.finalizeSettings();
+                        deviceController.pushSettings();
                     }
                 }
             }
