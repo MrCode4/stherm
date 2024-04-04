@@ -82,6 +82,7 @@ ApplicationWindow {
 
         //! Load DST effect and then current timezone to DateTimeManager
         //! NOTE: Order of setting effect DST and current timezone is important.
+        //! effectDst waits for the other to be finished, so it should be last
         if (uiSessionId.appModel.setting.currentTimezone !== "") {
             DateTimeManager.currentTimeZone = uiSessionId.appModel.setting.currentTimezone;
         }
