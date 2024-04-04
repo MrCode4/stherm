@@ -37,8 +37,8 @@ ToolButton {
             if (obState === AppSpec.Cooling) {
                 logoImage.source = "qrc:/Stherm/Images/fan-cool.svg";
 
-            } else if (obState === AppSpec.Heating) {
-                logoImage.source = "qrc:/Stherm/Images/fan-cool.svg";
+            } else if (obState === AppSpec.Heating || obState === AppSpec.Emergency) {
+                logoImage.source = "qrc:/Stherm/Images/fan-heat.svg";
 
             } else {
                 logoImage.source = "qrc:/Stherm/Images/fan-on.png";
