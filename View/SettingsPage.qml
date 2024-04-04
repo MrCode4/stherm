@@ -149,13 +149,17 @@ BasePageView {
             }
 
             Label {
+                id: speakerLabel
                 opacity: 0.6
                 Layout.topMargin: 12
                 text: "Speaker"
+
+                visible: false
             }
 
             //! Speaker row
             RowLayout {
+                visible: speakerLabel.visible
                 spacing: 8
 
                 RoniaTextIcon {
@@ -175,6 +179,8 @@ BasePageView {
                     from: 0
                     to: 100
                     value: appModel?.setting?.volume ?? 0
+
+                    enabled: false
                 }
 
                 Label {

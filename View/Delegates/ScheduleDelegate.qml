@@ -138,6 +138,9 @@ ItemDelegate {
 
                 if (schedule && schedule.enable !== checked) {
                     schedule.enable = checked;
+
+                    // Send Data to server when a schedule changed...
+
                 }
             }
         }

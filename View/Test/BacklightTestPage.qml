@@ -34,7 +34,10 @@ BacklightPage {
         onClicked: {
             //! Next page
             if (_root.StackView.view) {
-                _root.StackView.view.push("qrc:/Stherm/View/Test/AudioTestPage.qml", {
+                // _root.StackView.view.push("qrc:/Stherm/View/Test/AudioTestPage.qml", {
+                //                               "uiSession": uiSession
+                //                           })
+                _root.StackView.view.push("qrc:/Stherm/View/Test/InternalSensorTestPage.qml", {
                                               "uiSession": uiSession
                                           })
             }
