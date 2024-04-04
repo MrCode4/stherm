@@ -604,8 +604,6 @@ I_DeviceController {
                                         })
                                 })
 
-        return;
-
         deviceControllerCPP.pushSettingsToServer(send_data)
     }
 
