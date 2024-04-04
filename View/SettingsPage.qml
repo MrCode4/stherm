@@ -136,6 +136,8 @@ BasePageView {
                     to: 100
                     value: appModel?.setting?.brightness ?? 0
 
+                    enabled: !(appModel?.setting?.adaptiveBrightness ?? false)
+
                     onValueChanged: onlineTimer.startTimer();
                 }
 
