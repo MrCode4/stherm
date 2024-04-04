@@ -328,10 +328,6 @@ I_DeviceController {
 
     function updateBacklight(isOn, hue, brightness, shadeIndex)
     {
-        if (isOn === device.backlight.on && hue === device.backlight.hue &&
-                brightness === device.backlight.value && shadeIndex === device.backlight.shadeIndex)
-            return;
-
         var color = device.backlight.backlightFinalColor(shadeIndex, hue, brightness);
 
         if (updateDeviceBacklight(isOn, color)) {
@@ -505,6 +501,10 @@ I_DeviceController {
             console.log("The backlight is being edited and cannot be updated by the server.")
             return;
         }
+
+        if (settings.on === device.backlight.on && settings.hue === device.backlight.hue &&
+                settings.value === device.backlight.value && settings.shadeIndex === device.backlight.shadeIndex)
+            return;
 
         updateBacklight(settings.on, settings.hue, settings.value,
                         settings.shadeIndex)
