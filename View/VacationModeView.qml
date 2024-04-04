@@ -40,7 +40,8 @@ Popup {
         }
     }
 
-    onOpened: deviceController.updateEditMode(AppSpec.EMVacation);
+    onOpened: deviceController.updateEditMode(uiSessionId.showMainWindow ? AppSpec.EMNone :
+                                                                           AppSpec.EMVacation);
 
     onClosed: deviceController.updateEditMode(AppSpec.EMNone);
 
