@@ -45,10 +45,10 @@ BasePageView {
         //! Check if color is modified
         var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
 
-        if (setting && (setting.brightness !== _brightnessSlider.value
-                        || setting.adaptiveBrightness !== _adaptiveBrSw.checked
-                        || setting.volume !== _speakerSlider.value
-                        || setting.tempratureUnit !== selectedTempUnit)) {
+        if (internal.copyOfSettings.brightness !== _brightnessSlider.value
+                || internal.copyOfSettings.adaptiveBrightness !== _adaptiveBrSw.checked
+                || internal.copyOfSettings.volume !== _speakerSlider.value
+                || internal.copyOfSettings.tempratureUnit !== selectedTempUnit) {
             //! This means that changes are occured that are not saved into model
             uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
             uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
@@ -136,7 +136,7 @@ BasePageView {
                     to: 100
                     value: appModel?.setting?.brightness ?? 0
 
-                    enabled: !(appModel?.setting?.adaptiveBrightness ?? false)
+                    enabled: !_adaptiveBrSw.checked
 
                     onValueChanged: onlineTimer.startTimer();
                 }
