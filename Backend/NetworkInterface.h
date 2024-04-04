@@ -179,6 +179,8 @@ private:
      */
     QTimer                  mCheckInternetAccessTmr;
 
+    QTimer                  mSetNoInternetTimer;
+
     /*!
      * \brief cCheckInternetAccessInterval Interval of checking internet access (default: 30 secs)
      */
