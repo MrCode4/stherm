@@ -291,8 +291,8 @@ BasePageView {
         onAccepted: {
             //! Perform reseting settings
             if (deviceController) {
-                if (deviceController.setSettings(80,
-                                             80,
+                if (deviceController.setSettings(AppSpec.defaultBrightness,
+                                             AppSpec.defaultVolume,
                                              AppSpec.TempratureUnit.Cel,
                                              true)){
                     deviceController.pushSettings()

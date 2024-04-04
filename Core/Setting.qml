@@ -9,13 +9,13 @@ import Stherm
 
 QSObject {
     //! Screen brightness: 0 to 100
-    property int        brightness:             80
+    property int        brightness:             AppSpec.defaultBrightness
 
     //! Adaptive brightness
     property bool       adaptiveBrightness:     false
 
     //! Speaker volume: 0 to 100
-    property int        volume:                 80
+    property int        volume:                 AppSpec.defaultVolume
 
     //! Temprature unit
     property int        tempratureUnit:         AppSpec.TempratureUnit.Fah
