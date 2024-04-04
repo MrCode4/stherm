@@ -15,6 +15,8 @@ I_DeviceController {
 
     property SchedulesController schedulesController
 
+    property MessageController   messageController
+
     property int editMode: AppSpec.EMNone
 
     property bool initalSetup: false;
@@ -149,7 +151,7 @@ I_DeviceController {
             setSystemModeServer(settings.mode_id)
             setSchedulesFromServer(settings.schedule)
             setVacationServer(settings.vacation)
-            checkMessages(settings.messages)
+            setMessagesServer(settings.messages)
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
         }
@@ -602,6 +604,7 @@ I_DeviceController {
                                         })
                                 })
 
+        return;
 
         deviceControllerCPP.pushSettingsToServer(send_data)
     }
@@ -737,7 +740,13 @@ I_DeviceController {
             schedulesController.setSchedulesFromServer(serverSchedules);
     }
 
-    function checkMessages(messages: var) {
+    function setMessagesServer(messages: var) {
+        let messagesModel = device.messages;
+        console.log("device.messages: ", device.messages.length)
+
+        // Send messages to message controller.
+        messageController.setMessagesServer(messages);
+
     }
 
     //! Control the push to server with the updateInformation().

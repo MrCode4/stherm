@@ -42,7 +42,41 @@ QtObject {
 
     /* Methods
      * ****************************************************************************************/
-    function addNewMessageFromData(type, message, datetime)
+    function setMessagesServer(messages: var) {
+        // messages uid
+
+        if (!Array.isArray(messages)) {
+            console.log("Invalid server input. Expected arrays (messages).");
+            return;
+        }
+
+
+        let messagesModel = device.messages;
+
+        // Delete messages from model when a cloud message is removed.
+        {}
+
+        messages.forEach(message => {
+                             if (message.message === "")
+                                return;
+
+                             // Find Schedule in the model
+                             var foundMessage = messagesModel.find(messageModel => (message.message === messageModel.message &&
+                                                                                    messageModel.sourceType === Message.SourceType.Server));
+
+                             var messageDatetime = message.datetime === null ? "" : message.datetime;
+                             if (foundMessage && foundMessage.datetime === messageDatetime &&
+                                 foundMessage.type === message.type) {
+                                 foundMessage.isRead = message.isRead;
+
+                             } else { // Check empty message
+                                 let icon = (message.icon === null) ? "" : message.icon;
+                                 addNewMessageFromData(message.type, message.message, message.datetime, message.isRead, icon, Message.SourceType.Server);
+                             }
+                         });
+    }
+
+    function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
     {
         if (!activeAlerts) {
             console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
@@ -54,7 +88,8 @@ QtObject {
         newMessage.type = type;
         newMessage.message = message;
         newMessage.datetime = datetime;
-        newMessage.isRead = false;
+        newMessage.isRead = isRead;
+        newMessage.sourceType = sourceType;
 
         device.messages.push(newMessage);
         device.messagesChanged();
