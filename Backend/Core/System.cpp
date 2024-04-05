@@ -1,7 +1,6 @@
 #include "System.h"
 #include "LogHelper.h"
 #include "UtilityHelper.h"
-#include "NetworkInterface.h"
 
 #include <QProcess>
 #include <QDebug>
