@@ -40,7 +40,7 @@ ScreenSaverManager::State ScreenSaverManager::getState() const
 
 void ScreenSaverManager::setState(const State& newState)
 {
-    TRACE <<mState << newState;
+    TRACE_CHECK(false) <<mState << newState;
     if (mState == newState) {
         return;
     }
@@ -66,7 +66,7 @@ void ScreenSaverManager::setState(const State& newState)
         }
         break;
     case State::Running:
-        TRACE << mScreenSaverTimer.isActive();
+        TRACE_CHECK(false) << mScreenSaverTimer.isActive();
         if (!mScreenSaverTimer.isActive()) {
             mScreenSaverTimer.start();
         }
@@ -102,7 +102,7 @@ void ScreenSaverManager::setInactive()
 
 void ScreenSaverManager::setActive()
 {
-    TRACE << mSetAppActive;
+    TRACE_CHECK(false) << mSetAppActive;
 
     if (!mSetAppActive)
         return;
@@ -117,6 +117,8 @@ void ScreenSaverManager::setActive()
 
 void ScreenSaverManager::restart()
 {
+    TRACE_CHECK(false) << mState;
+
     if (mState == State::Running) {
         mScreenSaverTimer.stop();
         mScreenSaverTimer.start();
@@ -127,7 +129,6 @@ void ScreenSaverManager::restart()
 
 void ScreenSaverManager::setAppActive(bool setAppActive)
 {
-    TRACE << setAppActive;
     mSetAppActive = setAppActive;
 }
 
@@ -164,6 +165,7 @@ bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
     case QEvent::InputMethod:
         if (mState == ScreenSaverManager::State::Running) {
             //! Restart timer
+            TRACE_CHECK(false);
             mScreenSaverTimer.stop();
             mScreenSaverTimer.start();
         }
