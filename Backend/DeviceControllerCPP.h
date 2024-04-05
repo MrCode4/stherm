@@ -162,6 +162,9 @@ Q_SIGNALS:
 
     void nrfUpdateStarted();
 
+    void fanWorkChanged(bool fanState);
+    void currentSystemModeChanged(AppSpecCPP::SystemMode fanState);
+
     void adaptiveBrightnessChanged();
 
 private:

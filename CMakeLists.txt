@@ -348,6 +348,8 @@ qt6_add_qml_module(appStherm
         Images/condition-poor.png
         Images/fan-off.png
         Images/fan-on.png
+        Images/fan-cool.svg
+        Images/fan-heat.svg
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
