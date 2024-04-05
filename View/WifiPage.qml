@@ -345,6 +345,10 @@ BasePageView {
         function onIncorrectWifiPassword(wifi: WifiInfo)
         {
             console.log('incorrect pass for: ', wifi.ssid);
+
+            uiSession.popUps.errorPopup.errorMessage = "incorrect pass for: " + wifi.ssid;
+            uiSession.popUps.errorPopup.open();
+
             //! Incorrect password entered
             if (root.StackView.view && root.StackView.view.currentItem === root) {
                 var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
