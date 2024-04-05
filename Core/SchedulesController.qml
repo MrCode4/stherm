@@ -69,7 +69,10 @@ QtObject {
                 return;
             }
 
-
+            //! what if both has no repeat! or the one has no repeat (means ASAP) is in the others repeats?
+			// write a code if repeats is empty add today or tomorrow based on codition
+			//! what if one schedule for one day has overnight value and has overlap with the one on tomorrow
+			//! we need to break overnight values to keep the following code simple
             //! First check if repeats have at least one similar values
             if (element.repeats.split(",").find((repeatElem, repeatIndex) => {
                                      return repeats.includes(repeatElem);
@@ -77,6 +80,7 @@ QtObject {
                 var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
                 var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
 
+				// this is not helpful in some conditions!
                 if ((schEndTime - schStartTime) < 0) {
                     schEndTime.setDate(schEndTime.getDate() + 1);
                 }
