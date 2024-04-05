@@ -55,6 +55,7 @@ BasePageView {
             { "key": "Contians FCC ID",     "value": "VPYLB1DX" },
             { "key": "IC",                  "value": "LBWA1KL1FX-875" },
             { "key": "Serial No",           "value": system.serialNumber },
+            { "key": "IPv4 Address",        "value": system.ipv4Address },
             { "key": "Custom Name",         "value": "Living Room" },
             { "key": "URL",                 "value": '<a href="nuvehome.com" style="text-decoration:none;color:#44A0FF;">nuvehome.com</a>' },
             { "key": "E-mail",              "value": '<a href="support@nuvehome.com" style="text-decoration:none;color:#44A0FF;">support@nuvehome.com</link>' },

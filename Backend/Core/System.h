@@ -24,6 +24,7 @@ class System : public NetworkWorker
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY logVersionChanged FINAL)
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
     Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY snReady FINAL)
+    Q_PROPERTY(QString ipv4Address            READ ipv4Address             CONSTANT)
     Q_PROPERTY(QString systemUID              READ systemUID               NOTIFY systemUIDChanged FINAL)
     Q_PROPERTY(QString backdoorLog            READ backdoorLog             NOTIFY backdoorLogChanged FINAL)
 
@@ -112,6 +113,8 @@ public:
     QString lastInstalledUpdateDate();
 
     QString serialNumber();
+
+    QString ipv4Address();
 
     QString backdoorLog();
 
