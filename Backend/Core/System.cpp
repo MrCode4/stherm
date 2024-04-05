@@ -1,6 +1,7 @@
 #include "System.h"
 #include "LogHelper.h"
 #include "UtilityHelper.h"
+#include "NetworkInterface.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -472,21 +473,6 @@ QString NUVE::System::lastInstalledUpdateDate()
 QString NUVE::System::serialNumber()
 {
     return QString::fromStdString(mSync->getSN().first);
-}
-
-QString NUVE::System::ipv4Address()
-{
-    for (const QNetworkInterface &netInterface : QNetworkInterface::allInterfaces()) {
-        QNetworkInterface::InterfaceFlags flags = netInterface.flags();
-        if((flags & QNetworkInterface::IsRunning) && !(flags & QNetworkInterface::IsLoopBack)){
-            for (const QNetworkAddressEntry &address : netInterface.addressEntries()) {
-                if(address.ip().protocol() == QAbstractSocket::IPv4Protocol)
-                    return address.ip().toString();
-            }
-        }
-    }
-
-    return "Not available";
 }
 
 QString NUVE::System::backdoorLog()

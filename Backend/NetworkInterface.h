@@ -69,6 +69,7 @@ class NetworkInterface : public QObject
     Q_PROPERTY(WifiInfo* connectedWifi          READ connectedWifi   NOTIFY connectedWifiChanged)
     Q_PROPERTY(bool deviceIsOn                  READ deviceIsOn      NOTIFY deviceIsOnChanged)
     Q_PROPERTY(bool hasInternet                 READ hasInternet     NOTIFY hasInternetChanged)
+    Q_PROPERTY(QString ipv4Address              READ ipv4Address     CONSTANT)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -89,6 +90,8 @@ public:
     bool                deviceIsOn() const { return mDeviceIsOn; }
 
     bool                hasInternet() const { return mHasInternet; }
+
+    QString             ipv4Address() const;
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
     Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);

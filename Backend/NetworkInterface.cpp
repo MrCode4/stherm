@@ -152,6 +152,21 @@ WifiInfo* NetworkInterface::connectedWifi() const
     return (mDeviceIsOn ? mConnectedWifiInfo : nullptr);
 }
 
+QString NetworkInterface::ipv4Address() const
+{
+    for (const QNetworkInterface &netInterface : QNetworkInterface::allInterfaces()) {
+        QNetworkInterface::InterfaceFlags flags = netInterface.flags();
+        if((flags & QNetworkInterface::IsRunning) && !(flags & QNetworkInterface::IsLoopBack)){
+            for (const QNetworkAddressEntry &address : netInterface.addressEntries()) {
+                if(address.ip().protocol() == QAbstractSocket::IPv4Protocol)
+                    return address.ip().toString();
+            }
+        }
+    }
+
+    return "Not available";
+}
+
 void NetworkInterface::refereshWifis(bool forced)
 {
     if (isRunning() || !mDeviceIsOn) {

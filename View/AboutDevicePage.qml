@@ -60,7 +60,7 @@ BasePageView {
             { "key": "E-mail",              "value": '<a href="support@nuvehome.com" style="text-decoration:none;color:#44A0FF;">support@nuvehome.com</link>' },
             { "key": "Software version",    "value": appVesion },
             { "key": "Hardware version",    "value": "01" },
-            { "key": "IPv4 Address",        "value": system.ipv4Address },
+            { "key": "IPv4 Address",        "value": NetworkInterface.ipv4Address },
             { "key": "Restart Device",      "value": "01", "type": "button" },
             { "key": "Update NRF",          "value": "02", "type": "button" },
             { "key": "Exit",                "value": "02", "type": "button" },
