@@ -296,6 +296,7 @@ BasePageView {
                                              AppSpec.TempratureUnit.Cel,
                                              true)){
                     deviceController.pushSettings()
+                    makeCopyOfSettings()
                 } else {
                     console.log("settings did not applied")
                 }
