@@ -172,6 +172,8 @@ Popup {
             //! Date and time
             DateTimeLabel {
                 Layout.alignment: Qt.AlignHCenter
+
+                is12Hour: device.setting.timeFormat === AppSpec.TimeFormat.Hour12
             }
 
             ButtonInverted {

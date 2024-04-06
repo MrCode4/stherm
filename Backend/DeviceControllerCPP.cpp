@@ -422,6 +422,17 @@ void DeviceControllerCPP::stopDevice()
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
 {
+    if (schedule && mSystemSetup->systemMode == AppSpecCPP::Off) {
+        TRACE << "An schedule with name " << schedule->name << "is active while mode is off";
+    } else if (schedule) {
+        TRACE_CHECK(false) << "An schedule with name " << schedule->name
+                           << "is active while mode is off";
+    } else {
+        TRACE_CHECK(false)
+            << "The schedule is inactive, hence the system reverts to its previous mode ("
+            << mSystemSetup->systemMode << ").";
+    }
+
     if (m_scheme)
         m_scheme->setSchedule(schedule);
 }

@@ -13,6 +13,7 @@ BasePageView {
     /* Signals
      * ****************************************************************************************/
     signal accepted()
+    signal updateModel()
 
     /* Property declaration
      * ****************************************************************************************/
@@ -49,6 +50,7 @@ BasePageView {
                 schedule.name = _nameTf.text;
             }
 
+            updateModel();
             backButtonCallback();
         }
     }
@@ -70,6 +72,7 @@ BasePageView {
                 confirmBtn.clicked();
             }
 
+            updateModel();
             _root.accepted();
         }
     }
