@@ -123,7 +123,6 @@ QtObject {
             return overlappings.reduce((accumulator, value) => accumulator.concat(value), []);
         }
 
-        var deviceSchedules = [];
         device.schedules.forEach(function(element, index) {
             if (overlappings.includes(element))
                 return;
@@ -132,71 +131,54 @@ QtObject {
                 return;
             }
 
+            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
+            var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
             let currSchedule = {
                 enable: true,
                 name: element.name,
                 type: element.type,
-                startTime: element.startTime,
-                endTime: element.endTime,
-                repeats: element.repeats,
-                refrenceSchedule: element
+                startTime: schStartTime,
+                endTime: schEndTime,
+                repeats: element.repeats
             };
 
-            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
-            var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
+            // Break the over night schedule (move to next day)
+            var currNightSchedule = null
             if ((schEndTime - schStartTime) < 0) {
-                currSchedule.endTime = "11:59 PM";
+                currSchedule.endTime = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP");
 
-                var currNightSchedule = {
+                currNightSchedule = {
                     enable: true,
                     name: element.name + "- over night",
                     type: element.type,
-                    startTime: "12:00 AM",
-                    endTime: element.endTime,
-                    repeats: nextDayRepeats(element.repeats),
-                    refrenceSchedule: element
+                    startTime: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP"),
+                    endTime: schEndTime,
+                    repeats: nextDayRepeats(element.repeats)
                 };
-
-                deviceSchedules.push(currNightSchedule);
             }
 
-            deviceSchedules.push(currSchedule);
-        });
-
-
-        deviceSchedules.forEach(function(element, index) {
-            console.log(overlappings.length, "schStartTime element.refrenceSchedule", element.refrenceSchedule.name, overlappings.includes(element.refrenceSchedule))
-            if (overlappings.includes(element.refrenceSchedule))
-                return;
-
-            if (element.refrenceSchedule === exclude || !element.refrenceSchedule.enable) {
-                return;
+            const compare = (sch, startTime, endTime) => {
+                return (sch.startTime > startTime && sch.startTime < endTime)
+                    || (sch.endTime > startTime && sch.endTime < endTime)
+                    || (startTime > sch.startTime && startTime < sch.endTime)
+                    || (endTime > sch.startTime && endTime < sch.endTime)
+                    || (startTime === sch.startTime && endTime === sch.endTime)
             }
 
-            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
-            var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
-
-            //! what if both has no repeat! or the one has no repeat (means ASAP) is in the others repeats?
-            // write a code if repeats is empty add today or tomorrow based on codition
-            //! what if one schedule for one day has overnight value and has overlap with the one on tomorrow
-            //! we need to break overnight values to keep the following code simple
-            //! First check if repeats have at least one similar values
-            if (element.repeats.split(",").find((repeatElem, repeatIndex) => {
+            if (currSchedule.repeats.split(",").find((repeatElem, repeatIndex) => {
                                                     return repeats.includes(repeatElem);
-                                                }) || element.repeats.includes("No repeat")) {
-                console.log("test schedule overlap 2 : "
-                            , (schStartTime > startTime && schStartTime < endTime)
-                            , (schEndTime > startTime && schEndTime < endTime)
-                            , (startTime > schStartTime && startTime < schEndTime)
-                            , (endTime > schStartTime && endTime < schEndTime)
-                            , (startTime === schStartTime && endTime === schEndTime));
+                                                })) {
+                if (compare(currSchedule, startTime, endTime)) {
+                    overlappings.push(element);
+                    return;
+                }
+            }
 
-                if ((schStartTime > startTime && schStartTime < endTime)
-                        || (schEndTime > startTime && schEndTime < endTime)
-                        || (startTime > schStartTime && startTime < schEndTime)
-                        || (endTime > schStartTime && endTime < schEndTime)
-                        || (startTime === schStartTime && endTime === schEndTime)) {
-                    overlappings.push(element.refrenceSchedule);
+            if (currNightSchedule && currNightSchedule.repeats.split(",").find((repeatElem, repeatIndex) => {
+                                                         return repeats.includes(repeatElem);
+                                                     })) {
+                if (compare(currNightSchedule, startTime, endTime)) {
+                    overlappings.push(element);
                 }
             }
         });
