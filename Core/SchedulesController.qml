@@ -57,19 +57,110 @@ QtObject {
         }
     }
 
+    function nextDay(currentDay: string) : string {
+        if (currentDay === "No repeat") {
+            return "No repeat";
+
+        } else if (currentDay === "Mo") {
+            return "Tu";
+
+        } else if (currentDay === "Tu") {
+            return "We";
+
+        } else if (currentDay === "We") {
+            return "Th";
+
+        }  else if (currentDay === "Th") {
+            return "Fr";
+
+        } else if (currentDay === "Fr") {
+            return "Sa";
+
+        } else if (currentDay === "Sa") {
+            return "Su";
+
+        }  else if (currentDay === "Su") {
+            return "Mo";
+        }
+    }
+
+    function nextDayRepeats(repeats) {
+        var nextRepeats = [];
+        repeats.split(",").forEach(elem => {
+                        nextRepeats.push(nextDay(elem));
+                        });
+
+        console.log("schStartTime r", nextRepeats.join(","))
+        return nextRepeats.join(",");
+    }
+
     //! Finding overlapping Schedules
     function findOverlappingSchedules(startTime: Date, endTime: Date, repeats, exclude = null)
     {
         if (!device) return [];
 
-        if ((endTime - startTime) < 0) {
-            endTime.setDate(endTime.getDate() + 1);
-        }
         var overlappings = [];
+        if ((endTime - startTime) < 0) { // over night
+            console.log("schStartTime overnight main schedule")
+            overlappings = findOverlappingSchedules(startTime, Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP"), repeats, exclude);
+            overlappings.push(findOverlappingSchedules(Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP"),  endTime, nextDayRepeats(repeats), exclude));
+
+            // send flatten array
+            return overlappings.reduce((accumulator, value) => accumulator.concat(value), []);
+        }
+
+        var deviceSchedules = [];
         device.schedules.forEach(function(element, index) {
             if (element === exclude || !element.enable) {
                 return;
             }
+
+            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
+            var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
+
+            // this is not helpful in some conditions!
+            let currSchedule = {
+                enable: true,
+                name: element.name,
+                type: element.type,
+                startTime: element.startTime,
+                endTime: element.endTime,
+                repeats: element.repeats,
+                refrenceSchedule: element
+            };
+
+            if ((schEndTime - schStartTime) < 0) {
+                currSchedule.endTime = "11:59 PM";
+
+                var currNightSchedule = {
+                    enable: true,
+                    name: element.name + "- over night",
+                    type: element.type,
+                    startTime: "12:00 AM",
+                    endTime: element.endTime,
+                    repeats: nextDayRepeats(element.repeats),
+                    refrenceSchedule: element
+                };
+
+                deviceSchedules.push(currNightSchedule);
+            }
+
+            deviceSchedules.push(currSchedule);
+        });
+
+
+        deviceSchedules.forEach(function(element, index) {
+            console.log("schStartTime element.refrenceSchedule", element.refrenceSchedule.name)
+            if (overlappings.includes(element.refrenceSchedule))
+                return;
+            console.log("schStartTime element.refrenceSchedule2 ", element.refrenceSchedule.name)
+
+            if (element.refrenceSchedule === exclude || !element.refrenceSchedule.enable) {
+                return;
+            }
+
+            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
+            var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
 
             //! what if both has no repeat! or the one has no repeat (means ASAP) is in the others repeats?
 			// write a code if repeats is empty add today or tomorrow based on codition
@@ -78,21 +169,20 @@ QtObject {
             //! First check if repeats have at least one similar values
             if (element.repeats.split(",").find((repeatElem, repeatIndex) => {
                                      return repeats.includes(repeatElem);
-                                 })) {
-                var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
-                var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
-
-				// this is not helpful in some conditions!
-                if ((schEndTime - schStartTime) < 0) {
-                    schEndTime.setDate(schEndTime.getDate() + 1);
-                }
+                                 }) || element.repeats.includes("No repeat")) {
+                console.log("test schedule overlap 2 : "
+                            , (schStartTime > startTime && schStartTime < endTime)
+                            , (schEndTime > startTime && schEndTime < endTime)
+                            , (startTime > schStartTime && startTime < schEndTime)
+                            , (endTime > schStartTime && endTime < schEndTime)
+                            , (startTime === schStartTime && endTime === schEndTime));
 
                 if ((schStartTime > startTime && schStartTime < endTime)
                         || (schEndTime > startTime && schEndTime < endTime)
                         || (startTime > schStartTime && startTime < schEndTime)
-                        || (endTime > schStartTime && endTime < schEndTime
+                        || (endTime > schStartTime && endTime < schEndTime)
                         || (startTime === schStartTime && endTime === schEndTime)) {
-                    overlappings.push(element);
+                    overlappings.push(element.refrenceSchedule);
                 }
             }
         });
@@ -327,9 +417,5 @@ QtObject {
                 deviceController.setActivatedSchedule(null);
             }
         }
-    }
-
-    property Connections deviceControllerConnection: Connections {
-        target: deviceController
     }
 }
