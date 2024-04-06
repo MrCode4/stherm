@@ -105,7 +105,6 @@ QtObject {
                         nextRepeats.push(nextDay(elem));
                         });
 
-        console.log("schStartTime r", nextRepeats.join(","))
         return nextRepeats.join(",");
     }
 
@@ -121,6 +120,14 @@ QtObject {
 
             // return flatten array
             return overlappings.reduce((accumulator, value) => accumulator.concat(value), []);
+        }
+
+        const compare = (sch, startTime, endTime) => {
+            return (sch.startTime > startTime && sch.startTime < endTime)
+                || (sch.endTime > startTime && sch.endTime < endTime)
+                || (startTime > sch.startTime && startTime < sch.endTime)
+                || (endTime > sch.startTime && endTime < sch.endTime)
+                || (startTime === sch.startTime && endTime === sch.endTime)
         }
 
         device.schedules.forEach(function(element, index) {
@@ -157,14 +164,6 @@ QtObject {
                 };
             }
 
-            const compare = (sch, startTime, endTime) => {
-                return (sch.startTime > startTime && sch.startTime < endTime)
-                    || (sch.endTime > startTime && sch.endTime < endTime)
-                    || (startTime > sch.startTime && startTime < sch.endTime)
-                    || (endTime > sch.startTime && endTime < sch.endTime)
-                    || (startTime === sch.startTime && endTime === sch.endTime)
-            }
-
             if (currSchedule.repeats.split(",").find((repeatElem, repeatIndex) => {
                                                     return repeats.includes(repeatElem);
                                                 })) {
@@ -193,7 +192,20 @@ QtObject {
 
         if (!device.isHold &&
                 (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off) {
-            var now = new Date();
+
+            const compare = (sch) => {
+                var currentDate = Qt.formatDate(new Date(), "ddd");
+                currentDate = currentDate.slice(0, -1);
+
+                if (sch.repeats.includes(currentDate)) {
+                     var now = new Date();
+                    if ((now >= sch.startTime) && (now <= sch.endTime)) {
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
 
             var deviceSchedules = [];
             device.schedules.forEach(schedule => {
@@ -227,35 +239,23 @@ QtObject {
                                              };
                                          }
 
-                                         var currentDate = Qt.formatDate(new Date(), "ddd");
-                                         currentDate = currentDate.slice(0, -1);
-
-                                         console.log("findRunningSchedule Timer currNightSchedule.repeats",currSchedule.repeats,  currNightSchedule.repeats)
-                                         if(currSchedule.repeats.includes(currentDate)) {
-
-
-                                             if ((now >= currSchedule.startTime) && (now <= currSchedule.endTime)) {
-                                                 currentSchedule = schedule;
-                                                 return;
-                                             }
+                                         if(compare(currSchedule)) {
+                                             currentSchedule = schedule;
+                                             return;
                                          }
 
-
-                                         if(currNightSchedule && currNightSchedule.repeats.includes(currentDate)) {
-
-
-                                             if ((now >= currNightSchedule.startTime) && (now <= currNightSchedule.endTime)) {
-                                                 currentSchedule = schedule;
-                                             }
+                                         if(currNightSchedule && compare(currNightSchedule)) {
+                                             currentSchedule = schedule;
                                          }
                                      });
         }
 
-        console.log("findRunningSchedule Timer", currentSchedule)
-
         // Disable a 'No repeat' schedule after running one time.
         if (runningSchedule !== currentSchedule && (runningSchedule?.repeats?.includes("No repeat") ?? false)) {
             runningSchedule.enable = false;
+
+            if (!device.isHold &&
+                    (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off)
             runningSchedule.repeats = "No repeat";
         }
 
@@ -387,7 +387,6 @@ QtObject {
 
     //! Check the custom/no repeat schedules.
     function checkNoRepeatSchedule(schedule: ScheduleCPP) {
-        console.log("--- findRunningSchedule checkNoRepeatSchedule")
         if (schedule.type === AppSpec.Custom && schedule.repeats.includes ("No repeat")) {
             var now = new Date();
             var currentDate = Qt.formatDate(now, "ddd");
@@ -397,7 +396,6 @@ QtObject {
                 now.setDate(schStartTime.getDate() + 1);
                 currentDate = Qt.formatDate(now, "ddd");
             }
-            console.log("--- findRunningSchedule checkNoRepeatSchedule", currentDate)
 
             currentDate = currentDate.slice(0, -1);
             schedule.repeats = ("No repeat," + currentDate);
