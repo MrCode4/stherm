@@ -158,7 +158,7 @@ I_DeviceController {
             if (deviceControllerCPP.system.canFetchServer) {
                 settingsPushRetry.failed = false;
                 settingsPushRetry.interval = 5000;
-                settingsPush.settings = false
+                settingsPush.hasSettings = false
             }
         }
 
@@ -180,11 +180,10 @@ I_DeviceController {
         running: false;
         interval: 100;
 
-        property bool settings : false
+        property bool hasSettings : false
 
         onTriggered: {
             pushToServer();
-            settings = false
         }
     }
 
@@ -463,10 +462,18 @@ I_DeviceController {
     }
 
     function pushUpdateToServer(settings: bool){
-        if(settings)
-            settingsPush.settings = true
-        if (!settingsPush.running)
-            settingsPush.start()
+        if (settings)
+            settingsPush.hasSettings = true
+
+        if (settingsPush.running)
+            return;
+
+        if (settingsPushRetry.running)
+            settingsPushRetry.stop();
+        else if (settingsPushRetry.failed)
+            return;
+
+        settingsPush.start()
     }
 
     function pushSettings() {
@@ -609,7 +616,7 @@ I_DeviceController {
                                 })
 
 
-        deviceControllerCPP.pushSettingsToServer(send_data, settingsPush.settings)
+        deviceControllerCPP.pushSettingsToServer(send_data, settingsPush.hasSettings)
     }
 
     function checkQRurl(url: var) {
