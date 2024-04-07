@@ -158,6 +158,7 @@ I_DeviceController {
             if (deviceControllerCPP.system.canFetchServer) {
                 settingsPushRetry.failed = false;
                 settingsPushRetry.interval = 5000;
+                settingsPush.settings = false
             }
         }
 
@@ -179,8 +180,11 @@ I_DeviceController {
         running: false;
         interval: 100;
 
+        property bool settings : false
+
         onTriggered: {
             pushToServer();
+            settings = false
         }
     }
 
@@ -458,13 +462,15 @@ I_DeviceController {
         return true;
     }
 
-    function pushUpdateToServer(){
+    function pushUpdateToServer(settings: bool){
+        if(settings)
+            settingsPush.settings = true
         if (!settingsPush.running)
             settingsPush.start()
     }
 
     function pushSettings() {
-        pushUpdateToServer();
+        pushUpdateToServer(true);
 
         if (uiSession)
             AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
@@ -603,7 +609,7 @@ I_DeviceController {
                                 })
 
 
-        deviceControllerCPP.pushSettingsToServer(send_data)
+        deviceControllerCPP.pushSettingsToServer(send_data, settingsPush.settings)
     }
 
     function checkQRurl(url: var) {
@@ -786,7 +792,7 @@ I_DeviceController {
 
         if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
             _pushUpdateInformationCounter++;
-            pushUpdateToServer();
+            pushUpdateToServer(false);
         }
 
         //        console.log("--------------- End: updateInformation -------------------")

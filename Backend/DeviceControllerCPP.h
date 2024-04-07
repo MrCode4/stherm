@@ -113,7 +113,7 @@ public:
 
     Q_INVOKABLE void checkContractorInfo();
 
-    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
 
     SystemSetup* systemSetup() const;
