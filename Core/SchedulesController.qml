@@ -24,7 +24,7 @@ QtObject {
         // No repeat schedules reset to default value ("No repeat")
         if (device)
             device.schedules.filter(elem => elem.type === AppSpec.Custom).forEach(function(element, index) {
-                if (element.enable) {
+                if (element.enable || !element.repeats.includes("No repeat")) {
                     return;
                 }
 
