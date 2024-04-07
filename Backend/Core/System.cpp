@@ -414,9 +414,9 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     getBackdoorInformation();
 }
 
-void NUVE::System::pushSettingsToServer(const QVariantMap &settings)
+void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
 {
-    setCanFetchServer(false);
+    setCanFetchServer(!hasSettingsChanged);
     mSync->pushSettingsToServer(settings);
 }
 

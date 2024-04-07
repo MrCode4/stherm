@@ -35,7 +35,6 @@ Sync::Sync(QObject *parent) : NetworkWorker(parent),
 
 
     mNetManager = new QNetworkAccessManager();
-    mNetManager->setTransferTimeout(4000);
 
     connect(mNetManager, &QNetworkAccessManager::finished, this,  &Sync::processNetworkReply);
 }
@@ -362,6 +361,7 @@ void Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QS
     // Prepare request
     QNetworkRequest netRequest(mainUrl.resolved(relativeUrl));
     netRequest.setRawHeader("accept", "application/json");
+    netRequest.setTransferTimeout(4000);
 
     if (method != m_getSN) {
         auto data = mSystemUuid + mSerialNumber.toStdString();
@@ -383,6 +383,7 @@ void Sync::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const Q
     QNetworkRequest netRequest(mainUrl.resolved(relativeUrl));
     netRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     netRequest.setRawHeader("accept", "application/json");
+    netRequest.setTransferTimeout(8000);
 
     // set authentication
     {
