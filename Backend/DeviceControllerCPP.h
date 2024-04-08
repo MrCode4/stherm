@@ -193,6 +193,8 @@ private:
 
     void setFanSpeed(int speed, bool sendToIO = true);
 
+    void processBackLightSettings(const QJsonObject &json);
+
 private:
     /* Attributes
      * ****************************************************************************************/

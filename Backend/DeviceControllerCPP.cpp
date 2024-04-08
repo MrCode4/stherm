@@ -577,23 +577,8 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
 
     QJsonObject root = doc.object();
 
-    QStringList requiredKeys = { "red", "green", "blue", "mode", "on" };
-    for (const QString& key : requiredKeys)
-    {
-        if (!root.contains(key))
-        {
-            qCritical() << "Json file" << path << "must contain key:" << key;
-            return;
-        }
-    }
-
-    int r = root["red"].toInt();
-    int g = root["green"].toInt();
-    int b = root["blue"].toInt();
-    int mode = root["mode"].toInt();
-    bool on = root["on"].toBool();
-
-    setBacklight({r, g, b, mode, on}, true);
+    if (path.endsWith("backlight.json"))
+        processBackLightSettings(root);
 }
 
 bool DeviceControllerCPP::checkSN()
@@ -828,4 +813,25 @@ void DeviceControllerCPP::setFanSpeed(int speed, bool sendToIO)
         _deviceIO->setFanSpeed(speed);
 
     mFanSpeed = speed;
+}
+
+void DeviceControllerCPP::processBackLightSettings(const QJsonObject &json)
+{
+    QStringList requiredKeys = { "red", "green", "blue", "mode", "on" };
+    for (const QString& key : requiredKeys)
+    {
+        if (!json.contains(key))
+        {
+            qCritical() << "Backlight json file must contain key:" << key;
+            return;
+        }
+    }
+
+    int r = json["red"].toInt();
+    int g = json["green"].toInt();
+    int b = json["blue"].toInt();
+    int mode = json["mode"].toInt();
+    bool on = json["on"].toBool();
+
+    setBacklight({r, g, b, mode, on}, true);
 }
