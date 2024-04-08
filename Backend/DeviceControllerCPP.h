@@ -184,6 +184,7 @@ private:
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
+    void processBackdoorSettingFile(const QString& path);
 
 private:
     /* Private Functions
@@ -207,6 +208,10 @@ private:
     Scheme      *m_scheme;
 
     NUVE::System *m_system;
+
+    QString m_backdoorPath = "/usr/local/bin/backdoor/";
+    QStringList m_watchFiles = { "backlight.json" };
+    QFileSystemWatcher m_fileSystemWatcher;
 
     QTimer mBacklightTimer;
     QTimer mBacklightPowerTimer;

@@ -73,6 +73,19 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // todo: initialize with proper value
     mBacklightModelData = QVariantList();
 
+    for (const QString& fileName : m_watchFiles)
+    {
+        QString path = m_backdoorPath + fileName;
+        if (!QFileInfo::exists(path))
+        {
+            qCritical() << "Backdoor setting file" << path << "does not exist";
+            continue;
+        }
+
+        m_fileSystemWatcher.addPath(path);
+    }
+    connect(&m_fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &DeviceControllerCPP::processBackdoorSettingFile);
+
     // Update backlight
     mBacklightTimer.setTimerType(Qt::PreciseTimer);
     mBacklightTimer.setSingleShot(true);
@@ -533,6 +546,54 @@ void DeviceControllerCPP::setAdaptiveBrightness(const double adaptiveBrightness)
 bool DeviceControllerCPP::isFanON()
 {
     return !mFanOff;
+}
+
+void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
+{
+    if (!QFileInfo::exists(path))
+    {
+        qCritical() << "Backdoor setting file" << path << "is deleted";
+        return;
+    }
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qCritical() << "Unable to oopen backdoor setting file" << path;
+        return;
+    }
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError jsonError;
+
+    QJsonDocument doc = QJsonDocument::fromJson(data, &jsonError);
+
+    if (jsonError.error != QJsonParseError::NoError)
+    {
+        qCritical() << "Error parsing json file" << path << jsonError.errorString();
+        return;
+    }
+
+    QJsonObject root = doc.object();
+
+    QStringList requiredKeys = { "red", "green", "blue", "mode", "on" };
+    for (const QString& key : requiredKeys)
+    {
+        if (!root.contains(key))
+        {
+            qCritical() << "Json file" << path << "must contain key:" << key;
+            return;
+        }
+    }
+
+    int r = root["red"].toInt();
+    int g = root["green"].toInt();
+    int b = root["blue"].toInt();
+    int mode = root["mode"].toInt();
+    bool on = root["on"].toBool();
+
+    setBacklight({r, g, b, mode, on}, true);
 }
 
 bool DeviceControllerCPP::checkSN()
