@@ -184,7 +184,7 @@ private:
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
-    void processBackdoorSettingFile(const QString& path);
+    void processBackdoorSettingFile(const QString &path);
 
 private:
     /* Private Functions
@@ -193,7 +193,8 @@ private:
 
     void setFanSpeed(int speed, bool sendToIO = true);
 
-    void processBackLightSettings(const QJsonObject &json);
+    QJsonObject processJsonFile(const QString &path, const QStringList &requiredKeys);
+    void processBackLightSettings(const QString &path);
 
 private:
     /* Attributes

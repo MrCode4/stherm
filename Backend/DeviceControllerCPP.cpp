@@ -73,13 +73,18 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // todo: initialize with proper value
     mBacklightModelData = QVariantList();
 
+    if (!QDir().exists(m_backdoorPath))
+        QDir().mkpath(m_backdoorPath);
+
     for (const QString& fileName : m_watchFiles)
     {
         QString path = m_backdoorPath + fileName;
         if (!QFileInfo::exists(path))
         {
-            qCritical() << "Backdoor setting file" << path << "does not exist";
-            continue;
+            QFile file(path);
+            file.open(QIODevice::WriteOnly);
+            file.close();
+            qCritical() << "Backdoor setting file" << path << "does not exist. Created empty .json file";
         }
 
         m_fileSystemWatcher.addPath(path);
@@ -550,35 +555,8 @@ bool DeviceControllerCPP::isFanON()
 
 void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
 {
-    if (!QFileInfo::exists(path))
-    {
-        qCritical() << "Backdoor setting file" << path << "is deleted";
-        return;
-    }
-
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        qCritical() << "Unable to oopen backdoor setting file" << path;
-        return;
-    }
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonParseError jsonError;
-
-    QJsonDocument doc = QJsonDocument::fromJson(data, &jsonError);
-
-    if (jsonError.error != QJsonParseError::NoError)
-    {
-        qCritical() << "Error parsing json file" << path << jsonError.errorString();
-        return;
-    }
-
-    QJsonObject root = doc.object();
-
     if (path.endsWith("backlight.json"))
-        processBackLightSettings(root);
+        processBackLightSettings(path);
 }
 
 bool DeviceControllerCPP::checkSN()
@@ -815,16 +793,55 @@ void DeviceControllerCPP::setFanSpeed(int speed, bool sendToIO)
     mFanSpeed = speed;
 }
 
-void DeviceControllerCPP::processBackLightSettings(const QJsonObject &json)
+QJsonObject DeviceControllerCPP::processJsonFile(const QString &path, const QStringList &requiredKeys)
 {
-    QStringList requiredKeys = { "red", "green", "blue", "mode", "on" };
+    if (!QFileInfo::exists(path))
+    {
+        qCritical() << "Backdoor setting file" << path << "is deleted";
+        return QJsonObject();
+    }
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qCritical() << "Unable to open backdoor setting file" << path;
+        return QJsonObject();
+    }
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError jsonError;
+
+    QJsonDocument doc = QJsonDocument::fromJson(data, &jsonError);
+
+    if (jsonError.error != QJsonParseError::NoError)
+    {
+        qCritical() << "Error parsing json file" << path << jsonError.errorString();
+        return QJsonObject();
+    }
+
+    QJsonObject json = doc.object();
+
     for (const QString& key : requiredKeys)
     {
         if (!json.contains(key))
         {
-            qCritical() << "Backlight json file must contain key:" << key;
-            return;
+            qCritical() << "Backdoor json file" << path << "must contain key:" << key;
+            return QJsonObject();
         }
+    }
+
+    return json;
+}
+
+void DeviceControllerCPP::processBackLightSettings(const QString &path)
+{
+    QJsonObject json = processJsonFile(path, {"red", "green", "blue", "mode", "on"});
+
+    if (json.isEmpty())
+    {
+        // TODO: revert to model
+        return;
     }
 
     int r = json["red"].toInt();
