@@ -59,8 +59,6 @@ BasePageView {
         onClicked: {
             if (!_newSchedulePages.currentItem.nextPage) {
 
-                schedulesController.checkNoRepeatSchedule(_internal.newSchedule);
-
                 //! It's done, save schedule and go back
                 //! First check if this schedule has overlap with other Schedules
                 _internal.overlappingSchedules = schedulesController.findOverlappingSchedules(

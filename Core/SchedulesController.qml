@@ -19,18 +19,6 @@ QtObject {
 
     /* Object properties
      * ****************************************************************************************/
-    Component.onCompleted: {
-
-        // No repeat schedules reset to default value ("No repeat")
-        if (device)
-            device.schedules.filter(elem => elem.type === AppSpec.Custom).forEach(function(element, index) {
-                if (element.enable || !element.repeats.includes("No repeat")) {
-                    return;
-                }
-
-                element.repeats = "No repeat";
-            });
-    }
 
     /* Methods
      * ****************************************************************************************/
@@ -72,11 +60,9 @@ QtObject {
         }
     }
 
+    //! Return next day
     function nextDay(currentDay: string) : string {
-        if (currentDay === "No repeat") {
-            return "No repeat";
-
-        } else if (currentDay === "Mo") {
+        if (currentDay === "Mo") {
             return "Tu";
 
         } else if (currentDay === "Tu") {
@@ -97,8 +83,11 @@ QtObject {
         }  else if (currentDay === "Su") {
             return "Mo";
         }
+
+        return "";
     }
 
+    //! Prepare an string that keeps next days
     function nextDayRepeats(repeats) {
         var nextRepeats = [];
         repeats.split(",").forEach(elem => {
@@ -106,6 +95,30 @@ QtObject {
                         });
 
         return nextRepeats.join(",");
+    }
+
+    //! Find running days with repeat and start time.
+    //! in repeat schedules is same as repeat.
+    function findRunningDays(repeats, schStartTime) {
+        let scheduleRunningDays = repeats;
+
+        if (scheduleRunningDays.length === 0) {
+            // Current date into repeats of schedule.
+            var now = new Date();
+            var currentDate = Qt.formatDate(now, "ddd");
+
+            if(schStartTime - now.getTime() < 0) {
+                let d = new Date();
+                d.setTime(schStartTime);
+                now.setDate(d.getDate() + 1);
+                currentDate = Qt.formatDate(now, "ddd");
+            }
+
+            currentDate = currentDate.slice(0, -1);
+            scheduleRunningDays = currentDate;
+        }
+
+        return scheduleRunningDays;
     }
 
     //! Finding overlapping Schedules
@@ -122,62 +135,78 @@ QtObject {
             return overlappings.reduce((accumulator, value) => accumulator.concat(value), []);
         }
 
+        // lambda compare
+        // Date/Time overlap logics
         const compare = (sch, startTime, endTime) => {
-            return (sch.startTime > startTime && sch.startTime < endTime)
-                || (sch.endTime > startTime && sch.endTime < endTime)
-                || (startTime > sch.startTime && startTime < sch.endTime)
-                || (endTime > sch.startTime && endTime < sch.endTime)
-                || (startTime === sch.startTime && endTime === sch.endTime)
-        }
+
+            // Convert Times to UTC time stamp
+            var startTimeTS = startTime.getTime();
+            var endTimeTS   = endTime.getTime();
+
+            return (sch.startTime > startTimeTS && sch.startTime < endTimeTS)
+                || (sch.endTime > startTimeTS && sch.endTime < endTimeTS)
+                || (startTimeTS > sch.startTime && startTimeTS < sch.endTime)
+                || (endTimeTS > sch.startTime && endTimeTS < sch.endTime)
+                || (startTimeTS === sch.startTime && endTimeTS === sch.endTime);
+        };
+
+        // Schedule run in days.
+        let currentRunningDays = findRunningDays(repeats, startTime.getTime());
 
         device.schedules.forEach(function(element, index) {
-            if (overlappings.includes(element))
-                return;
-
             if (element === exclude || !element.enable) {
                 return;
             }
 
-            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP");
-            var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP");
-            let currSchedule = {
-                enable: true,
-                name: element.name,
-                type: element.type,
-                startTime: schStartTime,
-                endTime: schEndTime,
-                repeats: element.repeats
-            };
+            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP").getTime();
+            var schEndTime = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP").getTime();
 
-            // Break the over night schedule (move to next day)
-            var currNightSchedule = null
-            if ((schEndTime - schStartTime) < 0) {
-                currSchedule.endTime = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP");
+            // **** Prepare the schedule to compare ****
+            let currSchedule = null;
+            let currNightSchedule = null
 
-                currNightSchedule = {
-                    enable: true,
-                    name: element.name + "- over night",
+            let scheduleRunningDays = findRunningDays(element.repeats, schStartTime);
+
+            {
+                currSchedule = {
+                    name: element.name,
                     type: element.type,
-                    startTime: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP"),
+                    startTime: schStartTime,
                     endTime: schEndTime,
-                    repeats: nextDayRepeats(element.repeats)
+                    runningDays: scheduleRunningDays
                 };
-            }
 
-            if (currSchedule.repeats.split(",").find((repeatElem, repeatIndex) => {
-                                                    return repeats.includes(repeatElem);
-                                                })) {
-                if (compare(currSchedule, startTime, endTime)) {
-                    overlappings.push(element);
-                    return;
+                // Break the over night schedule (move to next day)
+                if ((schEndTime - schStartTime) < 0) {
+                    currSchedule.endTime = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP").getTime();
+
+                    currNightSchedule = {
+                        name: element.name + "- over night",
+                        type: element.type,
+                        startTime: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP").getTime(),
+                        endTime: schEndTime,
+                        runningDays: nextDayRepeats(scheduleRunningDays)
+                    };
                 }
             }
 
-            if (currNightSchedule && currNightSchedule.repeats.split(",").find((repeatElem, repeatIndex) => {
-                                                         return repeats.includes(repeatElem);
-                                                     })) {
-                if (compare(currNightSchedule, startTime, endTime)) {
-                    overlappings.push(element);
+            // **** Find schedule overlapping
+            {
+                if (currSchedule.runningDays.split(",").find((dayElem, repeatIndex) => {
+                                                             return currentRunningDays.includes(dayElem);
+                                                         })) {
+                    if (compare(currSchedule, startTime, endTime)) {
+                        overlappings.push(element);
+                        return;
+                    }
+                }
+
+                if (currNightSchedule && currNightSchedule.runningDays.split(",").find((dayElem, repeatIndex) => {
+                                                                                       return currentRunningDays.includes(dayElem);
+                                                                                   })) {
+                    if (compare(currNightSchedule, startTime, endTime)) {
+                        overlappings.push(element);
+                    }
                 }
             }
         });
@@ -193,13 +222,14 @@ QtObject {
         if (!device.isHold &&
                 (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off) {
 
+            // Lambda compare: compare the current schedule time and NOW
             const compare = (sch) => {
                 var currentDate = Qt.formatDate(new Date(), "ddd");
                 currentDate = currentDate.slice(0, -1);
 
-                if (sch.repeats.includes(currentDate)) {
-                     var now = new Date();
-                    if ((now >= sch.startTime) && (now <= sch.endTime)) {
+                if (sch.runningDays.includes(currentDate)) {
+                     var now = new Date().getTime();
+                    if ((now >= sch.startTime.getTime()) && (now <= sch.endTime.getTime())) {
                         return true;
                     }
 
@@ -218,25 +248,36 @@ QtObject {
 
                                          var schStartTime = Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP");
                                          var schEndTime = Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP");
-                                         let currSchedule = {
-                                             type: schedule.type,
-                                             startTime: schStartTime,
-                                             endTime: schEndTime,
-                                             repeats: schedule.repeats
-                                         };
 
-                                         // Calculate over night schedules
-                                         var currNightSchedule = null;
+                                         // Schedule run in days.
+                                         let scheduleRunningDays = findRunningDays(schedule.repeats);
 
-                                         if ((schEndTime - schStartTime) < 0) {
-                                             currSchedule.endTime = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP");
+                                         // **** Prepare the schedule to compare ****
+                                         let currSchedule      = null;
+                                         let currNightSchedule = null;
 
-                                             currNightSchedule = {
+                                         {
+                                             currSchedule = {
                                                  type: schedule.type,
-                                                 startTime: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP"),
+                                                 startTime: schStartTime,
                                                  endTime: schEndTime,
-                                                 repeats: nextDayRepeats(schedule.repeats)
+                                                 runningDays: scheduleRunningDays
                                              };
+
+
+                                             // Calculate over night schedules
+                                             if ((schEndTime - schStartTime) < 0) {
+                                                 currSchedule.endTime = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP").getTime();
+
+                                                 currNightSchedule = {
+                                                     type: schedule.type,
+                                                     startTime: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP").getTime(),
+                                                     endTime: schEndTime,
+
+                                                     // Move running days into next days
+                                                     runningDays: nextDayRepeats(scheduleRunningDays)
+                                                 };
+                                             }
                                          }
 
                                          if(compare(currSchedule)) {
@@ -251,12 +292,8 @@ QtObject {
         }
 
         // Disable a 'No repeat' schedule after running one time.
-        if (runningSchedule !== currentSchedule && (runningSchedule?.repeats?.includes("No repeat") ?? false)) {
+        if (runningSchedule !== currentSchedule && ((runningSchedule?.repeats.length === 0) ?? false)) {
             runningSchedule.enable = false;
-
-            if (!device.isHold &&
-                    (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off)
-            runningSchedule.repeats = "No repeat";
         }
 
         runningSchedule = currentSchedule;
@@ -381,24 +418,6 @@ QtObject {
 
         if (isNeedToUpdate) {
             device.schedulesChanged();
-        }
-    }
-
-
-    //! Check the custom/no repeat schedules.
-    function checkNoRepeatSchedule(schedule: ScheduleCPP) {
-        if (schedule.type === AppSpec.Custom && schedule.repeats.includes ("No repeat")) {
-            var now = new Date();
-            var currentDate = Qt.formatDate(now, "ddd");
-
-            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP");
-            if(schStartTime - now < 0) {
-                now.setDate(schStartTime.getDate() + 1);
-                currentDate = Qt.formatDate(now, "ddd");
-            }
-
-            currentDate = currentDate.slice(0, -1);
-            schedule.repeats = ("No repeat," + currentDate);
         }
     }
 
