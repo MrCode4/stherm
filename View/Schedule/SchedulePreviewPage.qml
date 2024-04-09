@@ -552,14 +552,6 @@ BasePageView {
             return false;
         }
 
-        if (internal.scheduleToEdit.repeats === "") {
-            //! Show an error popup
-            uiSession.popUps.errorPopup.errorMessage = "Repeats can not be empty.";
-            uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
-
-            return false;
-        }
-
         return true;
     }
 

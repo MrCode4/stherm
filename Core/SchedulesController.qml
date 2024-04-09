@@ -99,7 +99,7 @@ QtObject {
 
     //! Find running days with repeat and start time.
     //! in repeat schedules is same as repeat.
-    function findRunningDays(repeats, schStartTime) {
+    function findRunningDays(repeats, schStartTimeStamp) {
         let scheduleRunningDays = repeats;
 
         if (scheduleRunningDays.length === 0) {
@@ -107,15 +107,15 @@ QtObject {
             var now = new Date();
             var currentDate = Qt.formatDate(now, "ddd");
 
-            if(schStartTime - now.getTime() < 0) {
+            if(schStartTimeStamp - now.getTime() < 0) {
                 let d = new Date();
-                d.setTime(schStartTime);
+                d.setTime(schStartTimeStamp);
                 now.setDate(d.getDate() + 1);
                 currentDate = Qt.formatDate(now, "ddd");
             }
 
-            currentDate = currentDate.slice(0, -1);
-            scheduleRunningDays = currentDate;
+            scheduleRunningDays = currentDate.slice(0, -1);
+            console.log("MAK scheduleRunningDays", scheduleRunningDays)
         }
 
         return scheduleRunningDays;
@@ -196,6 +196,7 @@ QtObject {
                                                              return currentRunningDays.includes(dayElem);
                                                          })) {
                     if (compare(currSchedule, startTime, endTime)) {
+                        console.log("scheduleRunningDays com23", currSchedule.runningDays, currentRunningDays )
                         overlappings.push(element);
                         return;
                     }
@@ -205,6 +206,7 @@ QtObject {
                                                                                        return currentRunningDays.includes(dayElem);
                                                                                    })) {
                     if (compare(currNightSchedule, startTime, endTime)) {
+                        console.log("scheduleRunningDays com", currNightSchedule.runningDays, currentRunningDays )
                         overlappings.push(element);
                     }
                 }
@@ -229,7 +231,7 @@ QtObject {
 
                 if (sch.runningDays.includes(currentDate)) {
                      var now = new Date().getTime();
-                    if ((now >= sch.startTime.getTime()) && (now <= sch.endTime.getTime())) {
+                    if ((now >= sch.startTimeStamp) && (now <= sch.endTimeStamp)) {
                         return true;
                     }
 
@@ -246,11 +248,11 @@ QtObject {
                                          return;
 
 
-                                         var schStartTime = Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP");
-                                         var schEndTime = Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP");
+                                         var schStartTimeStamp = Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP").getTime();
+                                         var schEndTimeStamp = Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP").getTime();
 
                                          // Schedule run in days.
-                                         let scheduleRunningDays = findRunningDays(schedule.repeats);
+                                         let scheduleRunningDays = findRunningDays(schedule.repeats, schStartTimeStamp);
 
                                          // **** Prepare the schedule to compare ****
                                          let currSchedule      = null;
@@ -259,20 +261,20 @@ QtObject {
                                          {
                                              currSchedule = {
                                                  type: schedule.type,
-                                                 startTime: schStartTime,
-                                                 endTime: schEndTime,
+                                                 startTimeStamp: schStartTimeStamp,
+                                                 endTimeStamp: schEndTimeStamp,
                                                  runningDays: scheduleRunningDays
                                              };
 
 
                                              // Calculate over night schedules
-                                             if ((schEndTime - schStartTime) < 0) {
+                                             if ((schEndTimeStamp - schStartTimeStamp) < 0) {
                                                  currSchedule.endTime = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP").getTime();
 
                                                  currNightSchedule = {
                                                      type: schedule.type,
-                                                     startTime: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP").getTime(),
-                                                     endTime: schEndTime,
+                                                     startTimeStamp: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP").getTime(),
+                                                     endTimeStamp: schEndTimeStamp,
 
                                                      // Move running days into next days
                                                      runningDays: nextDayRepeats(scheduleRunningDays)
