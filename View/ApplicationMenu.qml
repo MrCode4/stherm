@@ -105,6 +105,14 @@ BasePageView {
                                               });
                     break;
 
+                case "System Update Stage":{
+                    uiSession.uiTetsMode = true;
+                    deviceController.deviceControllerCPP.system.testMode = true;
+                    _root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              });
+                } break;
+
                 case "Test Mode": {
                     uiSession.uiTetsMode = true;
                     _root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {

@@ -124,7 +124,7 @@ ListView {
         //! Show test mode on "Device Information" button
         MouseArea {
             anchors.fill: parent
-            enabled: parent.text === "Device Information"
+            enabled: parent.text === "Device Information" || parent.text === "System Update"
             propagateComposedEvents: true;
 
             pressAndHoldInterval: 10000
@@ -134,7 +134,11 @@ ListView {
             }
 
             onPressAndHold: {
-                root.menuActivated("Test Mode");
+                if (parent.text === "Device Information")
+                    root.menuActivated("Test Mode");
+                if (parent.text === "System Update"){
+                    root.menuActivated("System Update Stage");
+                }
             }
         }
     }
