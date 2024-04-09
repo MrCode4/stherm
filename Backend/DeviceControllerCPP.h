@@ -191,10 +191,12 @@ private:
      * ****************************************************************************************/
     void writeGeneralSysData(const QStringList &cpuData, const int &brightness);
 
-    void setFanSpeed(int speed, bool sendToIO = true);
+    void setFanSpeed(int speed);
 
     QJsonObject processJsonFile(const QString &path, const QStringList &requiredKeys);
     void processBackLightSettings(const QString &path);
+    void processFanSettings(const QString &path);
+    void processBrightnessSettings(const QString &path);
     QByteArray defaultSettings(const QString &path);
 
 private:
@@ -214,13 +216,15 @@ private:
     NUVE::System *m_system;
 
     QString m_backdoorPath = "/usr/local/bin/backdoor/";
-    QStringList m_watchFiles = { "backlight.json" };
+    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" };
     QFileSystemWatcher m_fileSystemWatcher;
 
     QTimer mBacklightTimer;
     QTimer mBacklightPowerTimer;
 
+    // initialized in startup onStartDeviceRequested in qml
     QVariantList mBacklightModelData;
+    QVariantList mSettingsModelData;
 
     QTimer mNightModeTimer;
 
