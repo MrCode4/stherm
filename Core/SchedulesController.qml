@@ -238,13 +238,9 @@ QtObject {
             }
 
             var deviceSchedules = [];
-            device.schedules.forEach(schedule => {
+            device.schedules.every(schedule => {
                                          if (!schedule.enable)
-                                         return;
-
-                                         if (currentSchedule)
-                                         return;
-
+                                         return true;
 
                                          var schStartTimeStamp = Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP").getTime();
                                          var schEndTimeStamp = Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP").getTime();
@@ -283,11 +279,12 @@ QtObject {
                                          //! Compare time and running days to start it.
                                          if(compare(currSchedule)) {
                                              currentSchedule = schedule;
-                                             return;
+                                             return false;
                                          }
 
                                          if(currNightSchedule && compare(currNightSchedule)) {
                                              currentSchedule = schedule;
+                                             return false;
                                          }
                                      });
         }
