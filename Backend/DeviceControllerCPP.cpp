@@ -663,10 +663,14 @@ bool DeviceControllerCPP::checkNRFFirmwareVersion()
         return false;
     }
 
+    TRACE << "NRF  Version: " << nrfSW << " - Application version: " << appVersion;
+
+    // The app version should be higher than 0.3.6 if the nRF SW version is 01.10RC1
     if (nrfSW == "01.10RC1" && appVersion.at(0).toInt() >= 0 &&
         appVersion.at(1).toInt() >= 3 && appVersion.at(2).toInt() >= 6) {
         return true;
 
+        // nRF SW version is not 01.10RC1, app Should not be greater than 0.3.5
     } else if (nrfSW != "01.10RC1" &&  appVersion.at(0).toInt() == 0 &&
                (appVersion.at(1).toInt() < 3 || (appVersion.at(1).toInt() == 3 &&
                                                  appVersion.at(2).toInt() < 6))) {
