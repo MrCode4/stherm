@@ -756,7 +756,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor)
     // It's incorrect if the update process failed,
     // but in that case, the update is available and
     // this property remains hidden.
-    mLastInstalledUpdateDate = QDate::currentDate().toString("dd/MM/yyyy");
+    mLastInstalledUpdateDate = QDate::currentDate().toString("dd MMM yyyy");
     QSettings setting;
     setting.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
 
