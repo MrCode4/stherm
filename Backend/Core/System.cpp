@@ -1021,9 +1021,9 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     }
 
     mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
-    auto releaseDate = latestVersionObj.value(m_ReleaseDate).toString();
+    auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
+    auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
     auto changeLog = latestVersionObj.value(m_ChangeLog).toString();
-
 
     if (mLastInstalledUpdateDate.isEmpty())
         mLastInstalledUpdateDate = mLatestVersionDate;
@@ -1032,10 +1032,10 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
 
     if (mLatestVersionKey  != installableVersionKey ||
-        mLatestVersionDate != releaseDate) {
+        mLatestVersionDate != releaseDateStr) {
 
         mLatestVersionKey  = installableVersionKey;
-        mLatestVersionDate = releaseDate;
+        mLatestVersionDate = releaseDateStr;
 
         emit latestVersionChanged();
 
