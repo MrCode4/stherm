@@ -115,7 +115,6 @@ QtObject {
             }
 
             scheduleRunningDays = currentDate.slice(0, -1);
-            console.log("MAK scheduleRunningDays", scheduleRunningDays)
         }
 
         return scheduleRunningDays;
@@ -196,7 +195,6 @@ QtObject {
                                                              return currentRunningDays.includes(dayElem);
                                                          })) {
                     if (compare(currSchedule, startTime, endTime)) {
-                        console.log("scheduleRunningDays com23", currSchedule.runningDays, currentRunningDays )
                         overlappings.push(element);
                         return;
                     }
@@ -206,7 +204,6 @@ QtObject {
                                                                                        return currentRunningDays.includes(dayElem);
                                                                                    })) {
                     if (compare(currNightSchedule, startTime, endTime)) {
-                        console.log("scheduleRunningDays com", currNightSchedule.runningDays, currentRunningDays )
                         overlappings.push(element);
                     }
                 }
@@ -282,6 +279,7 @@ QtObject {
                                              }
                                          }
 
+                                         //! Compare time and running days to start it.
                                          if(compare(currSchedule)) {
                                              currentSchedule = schedule;
                                              return;
