@@ -652,6 +652,30 @@ bool DeviceControllerCPP::updateNRFFirmware()
     return false;
 }
 
+bool DeviceControllerCPP::checkNRFFirmwareVersion()
+{
+
+    auto nrfSW = getNRF_SW();
+    auto appVersion = qApp->applicationVersion().split(".");
+
+    if (appVersion.length() < 3) {
+        TRACE << "The app version is wrong.";
+        return false;
+    }
+
+    if (nrfSW == "01.10RC1" && appVersion.at(0).toInt() >= 0 &&
+        appVersion.at(1).toInt() >= 3 && appVersion.at(2).toInt() >= 6) {
+        return true;
+
+    } else if (nrfSW != "01.10RC1" &&  appVersion.at(0).toInt() == 0 &&
+               (appVersion.at(1).toInt() < 3 || (appVersion.at(1).toInt() == 3 &&
+                                                 appVersion.at(2).toInt() < 6))) {
+        return true;
+    }
+
+    return false;
+}
+
 QVariantMap DeviceControllerCPP::getMainData()
 {
     auto mainData = _mainData;
