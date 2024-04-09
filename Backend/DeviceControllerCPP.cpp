@@ -557,6 +557,8 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
 {
     if (path.endsWith("backlight.json"))
         processBackLightSettings(path);
+    else
+        qWarning() << "Incompatible backdoor file";
 }
 
 bool DeviceControllerCPP::checkSN()
