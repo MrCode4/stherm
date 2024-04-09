@@ -24,6 +24,15 @@ static  const QString m_BacklightState        = "Backlight state";
 static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
 
+static const QByteArray m_default_backdoor_backlight = R"({
+    "red": 255,
+    "green": 255,
+    "blue": 255,
+    "mode": 0,
+    "on":
+}
+)";
+
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
 inline void setCPUGovernorMode(QString governer) {
@@ -80,12 +89,14 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     for (const QString& fileName : m_watchFiles)
     {
         QString path = m_backdoorPath + fileName;
-        if (!QFileInfo::exists(path))
+        QFile file(path);
+        if (file.open(QIODevice::WriteOnly))
         {
-            QFile file(path);
-            file.open(QIODevice::WriteOnly);
+            file.write(defaultSettings(path));
             file.close();
-            qInfo() << "Backdoor setting file" << path << "does not exist. Created empty .json file";
+            qInfo() << "Backdoor setting file" << path << "reset to default! finalize it to apply.";
+        } else {
+            qCritical() << "Backdoor setting file" << path << "can not be opened to be reset";
         }
 
         m_fileSystemWatcher.addPath(path);
@@ -559,7 +570,7 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
     if (path.endsWith("backlight.json"))
         processBackLightSettings(path);
     else
-        qWarning() << "Incompatible backdoor file";
+        qWarning() << "Incompatible backdoor file, processed nothing";
 }
 
 bool DeviceControllerCPP::checkSN()
@@ -839,19 +850,31 @@ QJsonObject DeviceControllerCPP::processJsonFile(const QString &path, const QStr
 
 void DeviceControllerCPP::processBackLightSettings(const QString &path)
 {
-    QJsonObject json = processJsonFile(path, {"red", "green", "blue", "mode", "on"});
+    QVariantList data = mBacklightModelData;
 
-    if (json.isEmpty())
+    QJsonObject json = processJsonFile(path, {"red", "green", "blue", "mode", "on"});
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
     {
-        // TODO: revert to model
-        return;
+        int r = json["red"].toInt();
+        int g = json["green"].toInt();
+        int b = json["blue"].toInt();
+        int mode = json["mode"].toInt();
+        bool on = json["on"].toBool();
+        data = {r, g, b, mode, on};
     }
 
-    int r = json["red"].toInt();
-    int g = json["green"].toInt();
-    int b = json["blue"].toInt();
-    int mode = json["mode"].toInt();
-    bool on = json["on"].toBool();
+    setBacklight(data, true);
+}
 
-    setBacklight({r, g, b, mode, on}, true);
+QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
+{
+    if (path.endsWith("backlight.json"))
+    {
+        return m_default_backdoor_backlight;
+
+    } else {
+        qWarning() << "Incompatible backdoor file, returning empty values";
+        return "";
+    }
 }

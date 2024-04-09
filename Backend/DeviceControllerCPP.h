@@ -195,6 +195,7 @@ private:
 
     QJsonObject processJsonFile(const QString &path, const QStringList &requiredKeys);
     void processBackLightSettings(const QString &path);
+    QByteArray defaultSettings(const QString &path);
 
 private:
     /* Attributes
