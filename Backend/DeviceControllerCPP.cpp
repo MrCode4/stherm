@@ -655,6 +655,7 @@ bool DeviceControllerCPP::updateNRFFirmware()
 bool DeviceControllerCPP::checkNRFFirmwareVersion()
 {
 
+#ifdef __unix__
     auto nrfSW = getNRF_SW();
     auto appVersion = qApp->applicationVersion().split(".");
 
@@ -678,6 +679,10 @@ bool DeviceControllerCPP::checkNRFFirmwareVersion()
     }
 
     return false;
+
+#endif
+
+    return true;
 }
 
 QVariantMap DeviceControllerCPP::getMainData()
