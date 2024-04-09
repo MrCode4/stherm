@@ -73,8 +73,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // todo: initialize with proper value
     mBacklightModelData = QVariantList();
 
-    if (!QDir().exists(m_backdoorPath))
-        QDir().mkpath(m_backdoorPath);
+    QDir backdoorDir(m_backdoorPath);
+    if (!backdoorDir.exists())
+        backdoorDir.mkpath(m_backdoorPath);
 
     for (const QString& fileName : m_watchFiles)
     {
@@ -84,7 +85,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             QFile file(path);
             file.open(QIODevice::WriteOnly);
             file.close();
-            qCritical() << "Backdoor setting file" << path << "does not exist. Created empty .json file";
+            qInfo() << "Backdoor setting file" << path << "does not exist. Created empty .json file";
         }
 
         m_fileSystemWatcher.addPath(path);
