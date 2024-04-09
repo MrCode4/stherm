@@ -582,10 +582,8 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
         processBackLightSettings(path);
     } else if (path.endsWith("fan.json")) {
         processFanSettings(path);
-
     } else if (path.endsWith("brightness.json")) {
-        return processBrightnessSettings(path);
-
+        processBrightnessSettings(path);
     } else {
         qWarning() << "Incompatible backdoor file, processed nothing";
     }
@@ -915,20 +913,18 @@ void DeviceControllerCPP::processBrightnessSettings(const QString &path)
 
 QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 {
-    if (path.endsWith("backlight.json"))
-    {
+    if (path.endsWith("backlight.json")) {
         return m_default_backdoor_backlight;
 
-    } else if (path.endsWith("fan.json"))
-    {
+    } else if (path.endsWith("fan.json")) {
         return m_default_backdoor_fan;
 
-    } else if (path.endsWith("brightness.json"))
-    {
+    } else if (path.endsWith("brightness.json")) {
         return m_default_backdoor_brightness;
 
     } else {
         qWarning() << "Incompatible backdoor file, returning empty values";
-        return "";
     }
+
+    return "";
 }
