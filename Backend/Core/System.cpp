@@ -872,7 +872,8 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
                 file.close();
             } else {
-                emit alert("The update information fetched corrupted, Contact Administrator!");
+                TRACE << "The update information did not fetched correctly, Try again later!" << data.toStdString().c_str();
+//                emit alert("The update information did not fetched correctly, Try again later!");
             }
 
             // Check the last saved updateInfo.json file
