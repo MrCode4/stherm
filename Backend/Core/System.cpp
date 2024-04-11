@@ -102,6 +102,11 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
 
+    // reformat if it was saved with old format
+    auto oldFormatDate = QDate::fromString(mLastInstalledUpdateDate, "dd/MM/yyyy");
+    if (oldFormatDate.isValid())
+        mLastInstalledUpdateDate = oldFormatDate.toString("dd MMM yyyy");
+
     QTimer::singleShot(2000, this, [=]() {
         checkPartialUpdate(true);
     });
