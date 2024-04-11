@@ -989,11 +989,11 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     mUpdateJsonObject = QJsonDocument::fromJson(file.readAll()).object();
     mUpdateJsonObject.remove("LatestVersion");
 
-    file .close();
-
+    file.close();
 
     updateAvailableVersions(mUpdateJsonObject);
 
+    mHasForceUpdate = false;
     auto installableVersionKey = findForceUpdate(mUpdateJsonObject);
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
 
@@ -1019,9 +1019,9 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
         auto latestVersion = installableVersionKey.split(".");
 
         setUpdateAvailable(true);
+        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
     }
 
-    mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
     auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
     auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
     auto changeLog = latestVersionObj.value(m_ChangeLog).toString();
