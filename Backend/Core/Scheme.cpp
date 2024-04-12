@@ -584,7 +584,7 @@ bool Scheme::internalHeatingLoopStage2()
 
         if (mTiming->s2hold) {
             if (mCurrentTemperature - effectiveTemperature() < 0.5) {
-                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)
+                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->heatStage < 3)
                     || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
                     sendAlertIfNeeded();
                     if (stopWork)
@@ -601,7 +601,7 @@ bool Scheme::internalHeatingLoopStage2()
             }
         } else {
             if (effectiveTemperature() - mCurrentTemperature < 8
-                || (mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)) {
+                || (mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->heatStage < 3)) {
                 if (effectiveTemperature() - mCurrentTemperature < 0.9) {
                     break;
                 } else {
