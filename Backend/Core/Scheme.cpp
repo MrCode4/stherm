@@ -396,22 +396,21 @@ void Scheme::OffLoop()
 void Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
 {
     // we should check if it is changed or not!
-    if (mRelay->setOb_state(newOb_state))
+    if (mRelay->setOb_state(newOb_state) && mSystemSetup->systemType == AppSpecCPP::HeatPump)
     {
-        bool relaysChanged = true;
         sendRelays();
-        if (relaysChanged && !stopWork){
-            // sysDelay
-            waitLoop(mSystemSetup->systemRunDelay * 60000);
-        }
     }
 }
 
 void Scheme::internalCoolingLoopStage1(bool pumpHeat)
 {
-    if (pumpHeat) // how the system type setup get OB Orientatin
-    {
-        updateOBState(AppSpecCPP::Cooling);
+    //    if (pumpHeat) // how the system type setup get OB Orientatin, kept for later
+    // always set but not send relays update if not heat pump internally
+    updateOBState(AppSpecCPP::Cooling);
+
+    if (!stopWork){
+        // sysDelay
+        waitLoop(mSystemSetup->systemRunDelay * 60000);
     }
 
     if (stopWork)
@@ -516,7 +515,14 @@ bool Scheme::internalCoolingLoopStage2()
 
 void Scheme::internalHeatingLoopStage1()
 {
-    // Sys delay
+    if (!stopWork){
+        // sysDelay
+        waitLoop(mSystemSetup->systemRunDelay * 60000);
+    }
+
+    if (stopWork)
+        return;
+
     mRelay->heatingStage1();
     // 5 secs
     emit changeBacklight(heatingColor);
@@ -699,6 +705,12 @@ void Scheme::internalPumpHeatingLoopStage1()
     if (effectiveTemperature() - mCurrentTemperature >= 3) {
         updateOBState(AppSpecCPP::Heating);
 
+        if (!stopWork){
+            // sysDelay
+            waitLoop(mSystemSetup->systemRunDelay * 60000);
+        }
+
+        // check again after wait
         if (stopWork)
             return;
 
@@ -1180,8 +1192,10 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
     mSystemSetup = systemSetup;
 
     // ob_state_ initial value?
-    mRelay->setOb_on_state(mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                              : AppSpecCPP::Heating);
+    mRelay->setOb_on_state(mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump ?
+                               (mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
+                                                                   : AppSpecCPP::Heating) :
+                               AppSpecCPP::Off);
 
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
@@ -1196,7 +1210,12 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
     });
 
     connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [this] {
-        TRACE<< "systemTypeChanged: "<< mSystemSetup->systemType;
+        TRACE<< "systemTypeChanged: "<< mSystemSetup->systemType << mSystemSetup->heatPumpOBState;
+
+        mRelay->setOb_on_state(mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump ?
+                                   (mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
+                                                                       : AppSpecCPP::Heating) :
+                                   AppSpecCPP::Off);
 
         restartWork();
     });
@@ -1206,8 +1225,10 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
         if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
             TRACE << "heatPumpOBStateChanged: " << mSystemSetup->heatPumpOBState
                   << mSystemSetup->systemType;
-        mRelay->setOb_on_state(mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                                  : AppSpecCPP::Heating);
+        mRelay->setOb_on_state(mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump ?
+                                   (mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
+                                                                       : AppSpecCPP::Heating) :
+                                   AppSpecCPP::Off);
     });
 
     connect(mSystemSetup, &SystemSetup::coolStageChanged, this, [this] {
