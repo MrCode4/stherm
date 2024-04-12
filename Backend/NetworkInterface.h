@@ -101,6 +101,7 @@ public:
     Q_INVOKABLE bool    isWifiSaved(WifiInfo* wifiInfo);
     Q_INVOKABLE void    turnOn();
     Q_INVOKABLE void    turnOff();
+    Q_INVOKABLE void    sendLog(const QString& serialNo);
     Q_INVOKABLE void    addConnection(const QString& name,
                                    const QString& ssid,
                                    const QString& ip4,

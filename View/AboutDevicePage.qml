@@ -61,6 +61,7 @@ BasePageView {
             { "key": "Software version",    "value": appVesion },
             { "key": "Hardware version",    "value": "01" },
             { "key": "IPv4 Address",        "value": NetworkInterface.ipv4Address },
+            { "key": "Send Log",            "value": "01", "type": "button" },
             { "key": "Restart Device",      "value": "01", "type": "button" },
             { "key": "Update NRF",          "value": "02", "type": "button" },
             { "key": "Exit",                "value": "02", "type": "button" },
@@ -118,6 +119,19 @@ BasePageView {
                 spacing: 16
 
                 anchors.centerIn: parent
+
+                ButtonInverted {
+                    id: sendLog
+
+                    visible: modelData?.type === "button" && modelData.key === "Send Log"
+                    leftPadding: 8
+                    rightPadding: 8
+                    text: modelData.key
+
+                    onClicked: {
+                        NetworkInterface.sendLog(system.serialNumber)
+                    }
+                }
 
                 ButtonInverted {
                     id: rebootDevice
