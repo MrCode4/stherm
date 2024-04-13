@@ -51,10 +51,17 @@ public:
     ~NmcliInterface();
 
     /*!
-     * \brief isRunning Determines if a process is already running
+     * \brief busyRefreshing returns true if \ref NmcliInterface is busy refreshing lists
      * \return
      */
-    bool    isRunning() const;
+    bool    busyRefreshing() const;
+
+    /*!
+     * \brief busy Returns true if \ref NmcliInterface is busy doing something other than refreshing
+     * wifis list
+     * \return
+     */
+    bool    busy() const;
 
     /*!
      * \brief isDeviceOn
@@ -204,10 +211,14 @@ private slots:
 
 signals:
     /*!
-     * \brief isRunningChanged This signal is emitted when running state of internal \a\b QProcess
-     * is changed
+     * \brief busyRefreshing
      */
-    void    isRunningChanged();
+    void    busyRefreshingChanged();
+
+    /*!
+     * \brief busy
+     */
+    void    busyChanged();
 
     /*!
      * \brief wifisChanged
@@ -242,9 +253,14 @@ private:
     NmcliObserver*      mNmcliObserver;
 
     /*!
-     * \brief mProcess The \a\b QProcess that is used to do everything;
+     * \brief mRefreshProcess The \a\b QProcess that is used to do refreshing
      */
-    QProcess*           mProcess;
+    QProcess*           mRefreshProcess;
+
+    /*!
+     * \brief mWifiProcess is used to do wifi related operations like conneting, disconnecting, etc
+     */
+    QProcess*           mWifiProcess;
 
     /*!
      * \brief mWifiDevice This will hold the name of wifi device. Possible values are wlp2s0,

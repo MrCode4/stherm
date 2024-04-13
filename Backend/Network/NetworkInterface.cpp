@@ -21,8 +21,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
 {
     connect(mNmcliInterface, &NmcliInterface::errorOccured, this,
             &NetworkInterface::onErrorOccured);
-    connect(mNmcliInterface, &NmcliInterface::isRunningChanged, this,
-            &NetworkInterface::isRunningChanged);
+    connect(mNmcliInterface, &NmcliInterface::busyRefreshingChanged, this,
+            &NetworkInterface::busyRefreshingChanged);
     connect(mNmcliInterface, &NmcliInterface::connectedWifiChanged, this,
             &NetworkInterface::connectedWifiChanged);
     connect(mNmcliInterface, &NmcliInterface::wifisChanged, this, &NetworkInterface::wifisChanged);
@@ -85,11 +85,6 @@ NetworkInterface::WifisQmlList NetworkInterface::wifis()
                                       &NetworkInterface::networkAt);
 }
 
-bool NetworkInterface::isRunning()
-{
-    return mNmcliInterface && mNmcliInterface->isRunning();
-}
-
 WifiInfo* NetworkInterface::connectedWifi() const
 {
     return (mNmcliInterface->isDeviceOn() && mNmcliInterface ? mNmcliInterface->connectedWifi() : nullptr);
@@ -112,7 +107,7 @@ QString NetworkInterface::ipv4Address() const
 
 void NetworkInterface::refereshWifis(bool forced)
 {
-    if (isRunning() || !mNmcliInterface->isDeviceOn()) {
+    if (!mNmcliInterface->isDeviceOn()) {
         return;
     }
 
@@ -121,7 +116,7 @@ void NetworkInterface::refereshWifis(bool forced)
 
 void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 {
-    if (!wifiInfo || isRunning() || !mNmcliInterface->isDeviceOn()) {
+    if (!wifiInfo || !mNmcliInterface->isDeviceOn()) {
         return;
     }
 
@@ -131,7 +126,7 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 
 void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 {
-    if (!wifiInfo || isRunning() || !mNmcliInterface->isDeviceOn()) {
+    if (!wifiInfo || !mNmcliInterface->isDeviceOn()) {
         return;
     }
     
@@ -140,7 +135,7 @@ void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 
 void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
 {
-    if (!wifiInfo || isRunning() || !mNmcliInterface->isDeviceOn()) {
+    if (!wifiInfo || !mNmcliInterface->isDeviceOn()) {
         return;
     }
 
@@ -158,7 +153,7 @@ bool NetworkInterface::isWifiSaved(WifiInfo* wifiInfo)
 
 void NetworkInterface::turnOn()
 {
-    if (isRunning() || mNmcliInterface->isDeviceOn()) {
+    if (mNmcliInterface->isDeviceOn()) {
         return;
     }
 
@@ -167,7 +162,7 @@ void NetworkInterface::turnOn()
 
 void NetworkInterface::turnOff()
 {
-    if (isRunning() || !mNmcliInterface->isDeviceOn()) {
+    if (!mNmcliInterface->isDeviceOn()) {
         return;
     }
 
@@ -182,7 +177,7 @@ void NetworkInterface::addConnection(const QString& name,
                                      const QString& security,
                                      const QString& password)
 {
-    if (isRunning() || !mNmcliInterface->isDeviceOn()) {
+    if (!mNmcliInterface->isDeviceOn()) {
         return;
     }
 

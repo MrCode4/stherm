@@ -7,11 +7,20 @@
 NmcliInterface::NmcliInterface(QObject* parent)
     : QObject { parent }
     , mNmcliObserver { new NmcliObserver(this) }
-    , mProcess { new QProcess(this) }
+    , mRefreshProcess { new QProcess(this) }
+    , mWifiProcess { new QProcess(this) }
 {
-    mProcess->setReadChannel(QProcess::StandardOutput);
-    connect(mProcess, &QProcess::stateChanged, this, &NmcliInterface::isRunningChanged);
-    connect(mProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
+    mRefreshProcess->setReadChannel(QProcess::StandardOutput);
+    mWifiProcess->setReadChannel(QProcess::StandardOutput);
+
+    connect(mWifiProcess, &QProcess::stateChanged, this, &NmcliInterface::busyChanged);
+    connect(mRefreshProcess, &QProcess::stateChanged, this, &NmcliInterface::busyRefreshingChanged);
+    connect(mRefreshProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
+        if (exitStatus == QProcess::NormalExit && exitCode != 0) {
+            emit errorOccured(NmcliInterface::Error(exitCode));
+        }
+    });
+    connect(mWifiProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit && exitCode != 0) {
             emit errorOccured(NmcliInterface::Error(exitCode));
         }
@@ -22,15 +31,21 @@ NmcliInterface::NmcliInterface(QObject* parent)
 
 NmcliInterface::~NmcliInterface()
 {
-    if (isRunning()) {
-        mProcess->kill();
+    if (busyRefreshing()) {
+        mRefreshProcess->kill();
     }
 }
 
-bool NmcliInterface::isRunning() const
+bool NmcliInterface::busyRefreshing() const
 {
-    return mProcess && (mProcess->state() == QProcess::Starting
-                        || mProcess->state() == QProcess::Running);
+    return mRefreshProcess && (mRefreshProcess->state() == QProcess::Starting
+                        || mRefreshProcess->state() == QProcess::Running);
+}
+
+bool NmcliInterface::busy() const
+{
+    return mWifiProcess && (mWifiProcess->state() == QProcess::Starting
+                               || mWifiProcess->state() == QProcess::Running);
 }
 
 WifisList& NmcliInterface::getWifis()
@@ -40,11 +55,11 @@ WifisList& NmcliInterface::getWifis()
 
 void NmcliInterface::refreshWifis(bool rescan)
 {
-    if (!mProcess || isRunning()) {
+    if (!mRefreshProcess || busyRefreshing()) {
         return;
     }
 
-    connect(mProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
+    connect(mRefreshProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
             Qt::SingleShotConnection);
 
     const QStringList args = NC_REFERESH_ARGS + NC_PRINT_MODE_ARGS + QStringList({
@@ -55,7 +70,7 @@ void NmcliInterface::refreshWifis(bool rescan)
                                  rescan ? "yes" : "auto"
                              });
 
-    mProcess->start(NC_COMMAND, args);
+    mRefreshProcess->start(NC_COMMAND, args);
 }
 
 bool NmcliInterface::hasWifiProfile(const WifiInfo* wifi)
@@ -77,7 +92,7 @@ bool NmcliInterface::hasWifiProfile(const WifiInfo* wifi)
 
 void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
 {
-    if (!mProcess || isRunning()) {
+    if (!mRefreshProcess || busy()) {
         return;
     }
 
@@ -95,7 +110,7 @@ void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
             password,
         });
 
-        mProcess->start(NC_COMMAND, args);
+        mRefreshProcess->start(NC_COMMAND, args);
     }
 }
 
@@ -114,10 +129,10 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
             wifi->ssid(),
         });
 
-        mProcess->start(NC_COMMAND, args);
+        mRefreshProcess->start(NC_COMMAND, args);
     } else {
         //! Modify its password then connect as saved
-        connect(mProcess, &QProcess::finished, this,
+        connect(mRefreshProcess, &QProcess::finished, this,
             [&, wifi](int exitCode, QProcess::ExitStatus exitStatus) {
                 if (exitStatus == QProcess::NormalExit && exitCode == 0) {
                     //! Perform connection command
@@ -127,7 +142,7 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
                         wifi->ssid(),
                     });
 
-                    mProcess->start(NC_COMMAND, args);
+                    mRefreshProcess->start(NC_COMMAND, args);
                 }
             }, Qt::SingleShotConnection);
 
@@ -139,14 +154,14 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
             password
         });
 
-        mProcess->start(NC_COMMAND, args);
+        mRefreshProcess->start(NC_COMMAND, args);
     }
     return true;
 }
 
 void NmcliInterface::disconnectFromWifi(WifiInfo* wifi)
 {
-    if (!mProcess || isRunning()) {
+    if (!mRefreshProcess || busy()) {
         return;
     }
 
@@ -157,7 +172,7 @@ void NmcliInterface::disconnectFromWifi(WifiInfo* wifi)
         wifi->ssid(),
     });
 
-    mProcess->start(NC_COMMAND, args);
+    mRefreshProcess->start(NC_COMMAND, args);
 }
 
 WifiInfo* NmcliInterface::connectedWifi()
@@ -167,7 +182,7 @@ WifiInfo* NmcliInterface::connectedWifi()
 
 void NmcliInterface::forgetWifi(WifiInfo* wifi)
 {
-    if (!mProcess || isRunning()) {
+    if (!mRefreshProcess || busy()) {
         return;
     }
 
@@ -178,12 +193,12 @@ void NmcliInterface::forgetWifi(WifiInfo* wifi)
         wifi->ssid(),
     });
 
-    mProcess->start(NC_COMMAND, args);
+    mRefreshProcess->start(NC_COMMAND, args);
 }
 
 void NmcliInterface::turnWifiDeviceOn()
 {
-    if (!mProcess || isRunning()) {
+    if (!mRefreshProcess || busy()) {
         return;
     }
 
@@ -194,12 +209,12 @@ void NmcliInterface::turnWifiDeviceOn()
         "on"
     });
 
-    mProcess->start(NC_COMMAND, args);
+    mRefreshProcess->start(NC_COMMAND, args);
 }
 
 void NmcliInterface::turnWifiDeviceOff()
 {
-    if (!mProcess || isRunning()) {
+    if (!mRefreshProcess || busy()) {
         return;
     }
 
@@ -210,7 +225,7 @@ void NmcliInterface::turnWifiDeviceOff()
         "off"
     });
 
-    mProcess->start(NC_COMMAND, args);
+    mRefreshProcess->start(NC_COMMAND, args);
 }
 
 void NmcliInterface::addConnection(const QString& name,
@@ -221,7 +236,7 @@ void NmcliInterface::addConnection(const QString& name,
                                    const QString& security,
                                    const QString& password)
 {
-    if (!mProcess || isRunning()) {
+    if (!mRefreshProcess || busy()) {
         return;
     }
 
@@ -261,13 +276,13 @@ void NmcliInterface::addConnection(const QString& name,
     }
 
     //! Connect to this new connection if successfully added
-    connect(mProcess, &QProcess::finished, this,
+    connect(mRefreshProcess, &QProcess::finished, this,
         [&, name, ssid, password, security](int exitCode, QProcess::ExitStatus exitStatus) {
             if (exitStatus == QProcess::NormalExit && exitCode == 0) {
                 mWifis.push_back(new WifiInfo(false, ssid, "", 100, security));
                 emit wifisChanged();
 
-                mProcess->start(NC_COMMAND, {
+                mRefreshProcess->start(NC_COMMAND, {
                                                 NC_ARG_CONNECTION,
                                                 NC_ARG_UP,
                                                 name
@@ -275,19 +290,19 @@ void NmcliInterface::addConnection(const QString& name,
             }
         }, Qt::SingleShotConnection);
 
-    mProcess->start(NC_COMMAND, args);
+    mRefreshProcess->start(NC_COMMAND, args);
 }
 
 QString NmcliInterface::getConnectedWifiBssid() const
 {
-    //! if mProcess is running use another one. If mProcess is not running use it instead of
+    //! if mRefreshProcess is running use another one. If mRefreshProcess is not running use it instead of
     //! creating a new one.
     QProcess* pr;
-    if (isRunning()) {
+    if (busy()) {
         pr = new QProcess();
         pr->setReadChannel(QProcess::StandardOutput);
     } else {
-        pr = mProcess;
+        pr = mRefreshProcess;
     }
 
     //! nmcli -e no -t -f active,bssid device wifi
@@ -316,7 +331,7 @@ QString NmcliInterface::getConnectedWifiBssid() const
         qDebug() << "nmcli: pr error: " << pr->errorString();
     }
 
-    if (pr != mProcess) {
+    if (pr != mRefreshProcess) {
         pr->deleteLater();
     }
 
@@ -344,12 +359,12 @@ int NmcliInterface::waitLoop(QProcess* process, int timeout) const
 void NmcliInterface::onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode == 0) {
-        QByteArray line = mProcess->readLine();
+        QByteArray line = mRefreshProcess->readLine();
         while (!line.isEmpty() && line != "wifi\n") {
-            line = mProcess->readLine();
+            line = mRefreshProcess->readLine();
         }
 
-        mWifiDevice = mProcess->readLine();
+        mWifiDevice = mRefreshProcess->readLine();
         if (!mWifiDevice.isEmpty()) {
             mWifiDevice.remove(mWifiDevice.size() - 1, 1);
         }
@@ -364,7 +379,7 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
         mWifis.clear();
 
         //! nmcli results are each on one line.do
-        QString line = mProcess->readLine(); //! Holds IN-USE of first wifi info in any
+        QString line = mRefreshProcess->readLine(); //! Holds IN-USE of first wifi info in any
         line.remove(line.length() - 1, 1); //! Remove '\n'
 
         while (!line.isEmpty()) {
@@ -375,25 +390,25 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             parsedWi.setConnected(line.size() > inUseLen ? (line.sliced(inUseLen) == "*") : false );
 
             //! Read BSSID line: it's in this form: BSSID:<bssid>
-            line = mProcess->readLine();
+            line = mRefreshProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int bssidLen = 6; //! Plus one for :
             parsedWi.setBssid(line.size() > bssidLen ? line.sliced(bssidLen) : "");
 
             //! Read SSID line: it's in this form: SSID:<ssid>
-            line = mProcess->readLine();
+            line = mRefreshProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int ssidLen = 5;
             parsedWi.setSsid(line.size() > ssidLen ? line.sliced(ssidLen) : "");
 
             //! Read SIGNAL line: it's in this form: SIGNAL:<signal>
-            line = mProcess->readLine();
+            line = mRefreshProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int signalLen = 7;
             parsedWi.setStrength(line.size() > signalLen ? line.sliced(signalLen).toInt() : 0);
 
             //! Read SECURITY line: it's in this form: SECURITY:<security>
-            line = mProcess->readLine();
+            line = mRefreshProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int securityLen = 9;
             parsedWi.setSecurity(line.size() > securityLen ? line.sliced(securityLen) : "");
@@ -426,7 +441,7 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             }
             mWifis.push_back(wifi);
 
-            line = mProcess->readLine();
+            line = mRefreshProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
         }
 

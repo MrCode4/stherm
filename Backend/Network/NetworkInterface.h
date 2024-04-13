@@ -8,9 +8,8 @@
 #include <QTimer>
 
 #include "WifiInfo.h"
+#include "Nmcli/NmcliInterface.h"
 
-class NmcliInterface;
-class NmcliObserver;
 
 /*!
  * \brief The NetworkInterface class provides an interface to fetch all avialable wifi connections
@@ -23,7 +22,8 @@ class NetworkInterface : public QObject
     Q_OBJECT
 
     Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis           NOTIFY wifisChanged)
-    Q_PROPERTY(bool isRunning                   READ isRunning       NOTIFY isRunningChanged)
+    Q_PROPERTY(bool busyRefreshing              READ busyRefreshing  NOTIFY busyRefreshingChanged)
+    Q_PROPERTY(bool busy                        READ busy            NOTIFY busyChanged)
     Q_PROPERTY(WifiInfo* connectedWifi          READ connectedWifi   NOTIFY connectedWifiChanged)
     Q_PROPERTY(bool deviceIsOn                  READ deviceIsOn      NOTIFY deviceIsOnChanged)
     Q_PROPERTY(bool hasInternet                 READ hasInternet     NOTIFY hasInternetChanged)
@@ -41,7 +41,15 @@ public:
      * ****************************************************************************************/
     WifisQmlList        wifis();
 
-    bool                isRunning();
+    /*!
+     * \brief see \ref NmcliInterface::busyRefreshing()
+     */
+    bool    busyRefreshing() const { return mNmcliInterface && mNmcliInterface->busyRefreshing(); }
+
+    /*!
+     * \brief see \ref NmcliInterface::busy()
+     */
+    bool    busy() const { return mNmcliInterface && mNmcliInterface->busy(); }
 
     WifiInfo*           connectedWifi() const;
 
@@ -87,7 +95,8 @@ private slots:
      * ****************************************************************************************/
 signals:
     void                wifisChanged();
-    void                isRunningChanged();
+    void                busyRefreshingChanged();
+    void                busyChanged();
     void                connectedWifiChanged();
     void                deviceIsOnChanged();
     void                hasInternetChanged();
