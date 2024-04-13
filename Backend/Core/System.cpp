@@ -1020,9 +1020,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     // Compare versions lexicographically
     // installableVersionKey > currentVersion
     if (isVersionNewer(installableVersionKey, currentVersion)) {
-        auto appVersionList = currentVersion.split(".");
-        auto latestVersion = installableVersionKey.split(".");
-
         setUpdateAvailable(true);
         mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
     }
@@ -1031,8 +1028,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
     auto changeLog = latestVersionObj.value(m_ChangeLog).toString();
 
-    if (mLastInstalledUpdateDate.isEmpty())
-        mLastInstalledUpdateDate = mLatestVersionDate;
 
     mLatestVersionChangeLog = "V" + installableVersionKey + ":\n\n" + changeLog;
 
@@ -1042,6 +1037,9 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
         mLatestVersionKey  = installableVersionKey;
         mLatestVersionDate = releaseDateStr;
+
+        if (mLastInstalledUpdateDate.isEmpty())
+            mLastInstalledUpdateDate = mLatestVersionDate;
 
         emit latestVersionChanged();
 
