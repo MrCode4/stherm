@@ -30,6 +30,11 @@ bool NmcliInterface::isRunning() const
                         || mProcess->state() == QProcess::Running);
 }
 
+WifisList NmcliInterface::getWifis() const
+{
+    return mWifis;
+}
+
 void NmcliInterface::refreshWifis(bool rescan)
 {
     if (!mProcess || isRunning()) {
@@ -350,68 +355,83 @@ void NmcliInterface::onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitSta
 void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode == 0) {
-        WifiListMap wifis;
+        //! First backup current wifis intor another list
+        WifisList wifisBackup = mWifis;
+        mWifis.clear();
 
         //! nmcli results are each on one line.do
         QString line = mProcess->readLine(); //! Holds IN-USE of first wifi info in any
         line.remove(line.length() - 1, 1); //! Remove '\n'
 
         while (!line.isEmpty()) {
-            QMap<QString, QVariant> wifi;
+            WifiInfo parsedWi;
 
             //! line is like : IN-USE:* (or no *)
             const int inUseLen = 7; //! Length of 'IN-USE:' string
-            wifi["inUse"] = QVariant(line.size() > inUseLen ? (line.sliced(inUseLen) == "*") : false );
+            parsedWi.setConnected(line.size() > inUseLen ? (line.sliced(inUseLen) == "*") : false );
 
             //! Read BSSID line: it's in this form: BSSID:<bssid>
             line = mProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int bssidLen = 6; //! Plus one for :
-            wifi["bssid"] = line.size() > bssidLen ? line.sliced(bssidLen) : "";
+            parsedWi.setBssid(line.size() > bssidLen ? line.sliced(bssidLen) : "");
 
             //! Read SSID line: it's in this form: SSID:<ssid>
             line = mProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int ssidLen = 5;
-            wifi["ssid"] = line.size() > ssidLen ? line.sliced(ssidLen) : "";
-
-            //! Read MODE line: it's in this form: MODE:<mode>
-            line = mProcess->readLine();
-            line.remove(line.length() - 1, 1); //! Remove '\n'
-            const int modeLen = 5;
-            wifi["mode"] = line.size() > modeLen ? line.sliced(modeLen) : "";
-
-            //! Read CHAN line: it's in this form: CHAN:<chan>
-            line = mProcess->readLine();
-            line.remove(line.length() - 1, 1); //! Remove '\n'
-            const int chanLen = 5;
-            wifi["chan"] = line.size() > chanLen ? line.sliced(chanLen) : "";
-
-            //! Read RATE line: it's in this form: RATE:<rate>
-            line = mProcess->readLine();
-            line.remove(line.length() - 1, 1); //! Remove '\n'
-            const int rateLen = 5;
-            wifi["rate"] = line.size() > rateLen ? line.sliced(rateLen) : "";
+            parsedWi.setSsid(line.size() > ssidLen ? line.sliced(ssidLen) : "");
 
             //! Read SIGNAL line: it's in this form: SIGNAL:<signal>
             line = mProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int signalLen = 7;
-            wifi["signal"] = line.size() > signalLen ? line.sliced(signalLen) : "";
+            parsedWi.setStrength(line.size() > signalLen ? line.sliced(signalLen).toInt() : 0);
 
             //! Read SECURITY line: it's in this form: SECURITY:<security>
             line = mProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int securityLen = 9;
-            wifi["security"] = line.size() > securityLen ? line.sliced(securityLen) : "";
+            parsedWi.setSecurity(line.size() > securityLen ? line.sliced(securityLen) : "");
 
-            wifis.append(wifi);
+            //! Either create a new WifiInfo or update an existing one
+            int indexInBackup = -1;
+            for (int i = 0; i < wifisBackup.length(); ++i) {
+                if (wifisBackup[i]->bssid() == parsedWi.bssid()) {
+                    indexInBackup = i;
+                    break;
+                }
+            }
+
+            WifiInfo* wifi = nullptr;
+            if (indexInBackup > -1) {
+                //! First remove it from wifisBackup
+                wifi = wifisBackup.takeAt(indexInBackup);
+
+                wifi->setConnected(parsedWi.connected());
+                wifi->setSsid(parsedWi.ssid());
+                wifi->setBssid(parsedWi.bssid());
+                wifi->setStrength(parsedWi.strength());
+                wifi->setSecurity(parsedWi.security());
+            } else {
+                wifi = new WifiInfo(parsedWi.connected(),
+                                    parsedWi.ssid(),
+                                    parsedWi.bssid(),
+                                    parsedWi.strength(),
+                                    parsedWi.security());
+            }
+            mWifis.push_back(wifi);
 
             line = mProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
         }
 
-        emit wifiListRefereshed(wifis);
+        //! Delete all the WifiInfo* in wifisBackup
+        for (WifiInfo* wi: wifisBackup) {
+            wi->deleteLater();
+        }
+
+        emit wifisChanged();
     } else {
         emit errorOccured(NmcliInterface::Error(exitCode));
     }

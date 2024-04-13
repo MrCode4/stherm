@@ -7,8 +7,10 @@
 #include <QTimer>
 #include <QVariant>
 
-//! Aliasing wifi info list structure
-using WifiListMap = QList<QMap<QString, QVariant>>;
+#include "../WifiInfo.h"
+
+//! Aliasing wifis list
+using WifisList = QList<WifiInfo*>;
 
 /*!
  * \brief The NmcliInterface class is an interface to hide complexity of interacting with \a \b
@@ -52,6 +54,12 @@ public:
      * \return
      */
     bool    isRunning() const;
+
+    /*!
+     * \brief getWifis Returns the list of wifis to the caller
+     * \return
+     */
+    WifisList getWifis() const;
 
     /*!
      * \brief refreshWifis This method can be used to refresh wifis.
@@ -166,11 +174,16 @@ signals:
     void    isRunningChanged();
 
     /*!
+     * \brief wifisChanged
+     */
+    void    wifisChanged();
+
+    /*!
      * \brief wifiListRefereshed This signal is emitted when wifi list are refereshed carrying out
      * a list of \a\b QMap holding wifi information.
      * \param wifis
      */
-    void    wifiListRefereshed(WifiListMap wifis);
+    void    wifiListRefereshed(WifisList wifis);
 
     /*!
      * \brief wifiConnectionAdded emitted when a new wifi profile is added manuall
@@ -197,9 +210,14 @@ private:
     QString             mWifiDevice;
 
     /*!
+     * \brief mWifis Stores all the retrieved wifis
+     */
+    WifisList           mWifis;
+
+    /*!
      * \brief cWifiInfoFields
      */
-    const QStringList   cWifiListFieldsArg = { "--fields", "IN-USE,BSSID,SSID,MODE,CHAN,RATE,SIGNAL,SECURITY" };
+    const QStringList   cWifiListFieldsArg = { "--fields", "IN-USE,BSSID,SSID,SIGNAL,SECURITY" };
 
     /*!
      * \brief cNmcliPrintMode
