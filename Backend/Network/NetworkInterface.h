@@ -7,52 +7,10 @@
 #include <QNetworkAccessManager>
 #include <QTimer>
 
+#include "WifiInfo.h"
+
 class NmcliInterface;
 class NmcliObserver;
-
-/*!
- * \brief The WifiInfo class holds information of a wifi network
- */
-class WifiInfo : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(bool     connected       MEMBER mConnected       NOTIFY connectedChanged)
-    Q_PROPERTY(bool     isConnecting    MEMBER mIsConnecting    NOTIFY isConnectingChanged)
-    Q_PROPERTY(int      strength        MEMBER mStrength        NOTIFY strengthChanged)
-    Q_PROPERTY(QString  ssid            MEMBER mSsid            NOTIFY ssidChanged)
-    Q_PROPERTY(QString  bssid           MEMBER mBssid           NOTIFY bssidChanged)
-    Q_PROPERTY(QString  security        MEMBER mSecurity        NOTIFY securityChanged)
-    QML_ELEMENT
-
-public:
-    explicit WifiInfo(QObject* parent=nullptr) : QObject(parent) {}
-    WifiInfo(bool connected, const QString& ssid, const QString& bssid, int strength,
-             const QString& security, QObject* parent=nullptr)
-        : QObject(parent)
-        , mConnected (connected)
-        , mStrength(strength)
-        , mSsid(ssid)
-        , mBssid(bssid)
-        , mSecurity(security)
-        , mIsConnecting(false)
-        {
-        };
-
-    bool        mConnected;
-    bool        mIsConnecting;
-    int         mStrength;
-    QString     mSsid;
-    QString     mBssid;
-    QString     mSecurity;
-
-signals:
-    void        connectedChanged();
-    void        strengthChanged();
-    void        ssidChanged();
-    void        bssidChanged();
-    void        securityChanged();
-    void        isConnectingChanged();
-};
 
 /*!
  * \brief The NetworkInterface class provides an interface to fetch all avialable wifi connections
