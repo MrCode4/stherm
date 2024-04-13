@@ -6,6 +6,7 @@
 
 NmcliInterface::NmcliInterface(QObject* parent)
     : QObject { parent }
+    , mNmcliObserver { new NmcliObserver(this) }
     , mProcess { new QProcess(this) }
 {
     mProcess->setReadChannel(QProcess::StandardOutput);
@@ -15,6 +16,8 @@ NmcliInterface::NmcliInterface(QObject* parent)
             emit errorOccured(NmcliInterface::Error(exitCode));
         }
     });
+
+    setupObserver();
 }
 
 NmcliInterface::~NmcliInterface()
@@ -444,12 +447,8 @@ void NmcliInterface::setupObserver()
     connect(mNmcliObserver, &NmcliObserver::wifiDisconnected, this,
             &NmcliInterface::onWifiDisconnected);
     connect(mNmcliObserver, &NmcliObserver::wifiDevicePowerChanged, this, [&]() {
-        bool on = mNmcliObserver->isWifiOn();
-        if (mDeviceIsOn != on) {
-            mDeviceIsOn = on;
-
-            emit deviceIsOnChanged();
-
+        emit deviceIsOnChanged();
+        if (mNmcliObserver->isWifiOn()) {
             refreshWifis();
         }
     });

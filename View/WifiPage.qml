@@ -235,7 +235,7 @@ BasePageView {
 
             //! Manual button
             ButtonInverted {
-                text: _wifisRepeater.currentItem?.wifi.connected ? "Forget" : "Manual"
+                text: _wifisRepeater.currentItem?.wifi?.connected ? "Forget" : "Manual"
                 onClicked: {
                     if (text === "Manual") {
                         if (root.StackView.view) {
@@ -264,7 +264,7 @@ BasePageView {
 
                         //! Check if password for this wifi is saved.
                         if (NetworkInterface.isWifiSaved(wifi)) {
-                            NetworkInterface.connectSavedWifi(wifi);
+                            NetworkInterface.connectWifi(wifi, "");
                         } else {
                             var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
                             var isSaved = NetworkInterface.isWifiSaved(wifi);

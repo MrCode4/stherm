@@ -1,7 +1,7 @@
 #include "WifiInfo.h"
 
 WifiInfo::WifiInfo(QObject *parent)
-    : QObject{parent}
+    : QObject(parent)
 {}
 
 WifiInfo::WifiInfo(bool connected, const QString& ssid, const QString& bssid, int strength, const QString& security, QObject* parent)

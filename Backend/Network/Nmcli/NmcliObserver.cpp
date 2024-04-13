@@ -4,6 +4,7 @@
 
 NmcliObserver::NmcliObserver(QObject *parent)
     : QObject{ parent }
+    , mDeviceIsOn { false }
     , mMonitorProcess { new QProcess(this) }
 {
     //! Initialize monitoring

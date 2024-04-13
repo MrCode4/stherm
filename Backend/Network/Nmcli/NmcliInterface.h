@@ -57,6 +57,12 @@ public:
     bool    isRunning() const;
 
     /*!
+     * \brief isDeviceOn
+     * \return
+     */
+    bool    isDeviceOn() const { return mNmcliObserver->isWifiOn(); }
+
+    /*!
      * \brief getWifis Returns the list of wifis to the caller
      * \return
      */
@@ -255,9 +261,4 @@ private:
      * \brief mConnectedWifi Currently connected wifi
      */
     WifiInfo*           mConnectedWifi;
-
-    /*!
-     * \brief mDeviceIsOn Holds whether wifi device is on or off
-     */
-    bool                mDeviceIsOn;
 };

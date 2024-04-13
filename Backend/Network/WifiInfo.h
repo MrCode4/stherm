@@ -47,10 +47,10 @@ signals:
     void        isConnectingChanged();
 
 private:
-    bool        mConnected;
-    bool        mIsConnecting;
-    int         mStrength;
-    QString     mSsid;
-    QString     mBssid;
-    QString     mSecurity;
+    bool        mConnected = false;
+    bool        mIsConnecting = false;
+    int         mStrength = 0;
+    QString     mSsid = "";
+    QString     mBssid = "";
+    QString     mSecurity = "";
 };
