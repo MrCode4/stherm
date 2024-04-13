@@ -19,7 +19,11 @@ BasePageView {
      * ****************************************************************************************/
     title: "Fan"
 
-    /* Childrent
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMFan);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+
+    /* Children
      * ****************************************************************************************/
     //! Confirm button
     ToolButton {
@@ -36,6 +40,8 @@ BasePageView {
                                                                          AppSpec.FMOff)
                 deviceController.updateFan(fanMode, _hourSliders.value);
             }
+
+            deviceController.pushSettings();
 
             //! Also move out of this Page
             if (_root.StackView.view) {
@@ -134,8 +140,8 @@ BasePageView {
                     Layout.fillWidth: true
                     Layout.rightMargin: 24 * scaleFactor
                     majorTickCount: 1
-                    ticksCount: to / 5
-                    from: 0
+                    ticksCount: (to - from) / 5
+                    from: 5
                     to: 55
                     stepSize: 5
                     value: fan?.workingPerHour ?? 0

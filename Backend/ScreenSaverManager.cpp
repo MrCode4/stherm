@@ -1,4 +1,5 @@
 #include "ScreenSaverManager.h"
+#include "LogHelper.h"
 
 #include <QMouseEvent>
 
@@ -39,6 +40,7 @@ ScreenSaverManager::State ScreenSaverManager::getState() const
 
 void ScreenSaverManager::setState(const State& newState)
 {
+    TRACE_CHECK(false) <<mState << newState;
     if (mState == newState) {
         return;
     }
@@ -64,6 +66,7 @@ void ScreenSaverManager::setState(const State& newState)
         }
         break;
     case State::Running:
+        TRACE_CHECK(false) << mScreenSaverTimer.isActive();
         if (!mScreenSaverTimer.isActive()) {
             mScreenSaverTimer.start();
         }
@@ -99,6 +102,11 @@ void ScreenSaverManager::setInactive()
 
 void ScreenSaverManager::setActive()
 {
+    TRACE_CHECK(false) << mSetAppActive;
+
+    if (!mSetAppActive)
+        return;
+
     setState(State::Running); //! This will start timer and event filter
 
     //! Add event filter
@@ -109,12 +117,19 @@ void ScreenSaverManager::setActive()
 
 void ScreenSaverManager::restart()
 {
+    TRACE_CHECK(false) << mState;
+
     if (mState == State::Running) {
         mScreenSaverTimer.stop();
         mScreenSaverTimer.start();
     } else if (mState != State::Disabled){
         setActive();
     }
+}
+
+void ScreenSaverManager::setAppActive(bool setAppActive)
+{
+    mSetAppActive = setAppActive;
 }
 
 bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
@@ -150,6 +165,7 @@ bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
     case QEvent::InputMethod:
         if (mState == ScreenSaverManager::State::Running) {
             //! Restart timer
+            TRACE_CHECK(false);
             mScreenSaverTimer.stop();
             mScreenSaverTimer.start();
         }

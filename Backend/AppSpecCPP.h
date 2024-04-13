@@ -19,6 +19,15 @@ public:
     explicit AppSpecCPP(QObject *parent = nullptr);
     static AppSpecCPP *instance();
 
+    enum CPUGovernerOption {
+        CPUGpowersave = 0,
+        CPUGondemand,
+        CPUGperformance,
+        CPUGUnknown
+    };
+    Q_ENUM(CPUGovernerOption)
+
+
     // Useage in QML: ex. AppSpecCPP.Cooling
     enum SystemMode {
         Cooling = 0,
@@ -40,10 +49,15 @@ public:
     };
     Q_ENUM(SystemType)
 
+
+    Q_INVOKABLE QString systemTypeString(SystemType systemType);
+    Q_INVOKABLE SystemType systemTypeToEnum(QString systemTypeStr);
+
     enum AccessoriesType
     {
         Humidifier = 0,
         Dehumidifier,
+        ATNone
     };
     Q_ENUM(AccessoriesType)
 
@@ -55,6 +69,9 @@ public:
         None
     };
     Q_ENUM(AccessoriesWireType)
+    Q_INVOKABLE QString accessoriesWireTypeString(AccessoriesWireType wt);
+    Q_INVOKABLE AccessoriesWireType accessoriesWireTypeToEnum(QString wtStr);
+
 
     enum FanMode {
         FMAuto = 0,
@@ -62,6 +79,12 @@ public:
         FMOff
     };
     Q_ENUM(FanMode)
+
+    enum NightMode {
+        NMOn = 0,
+        NMOff
+    };
+    Q_ENUM(NightMode)
 
     //! Schedule Type
     enum ScheduleType {
@@ -72,6 +95,25 @@ public:
         STUnknown
     };
     Q_ENUM(ScheduleType)
+
+    //! Edit Mode
+    enum EditMode {
+        EMSchedule           = 0,
+        EMHold               = 1,
+        EMFan                = 2,
+        EMVacation           = 3,
+        EMRequestedHumidity  = 4,
+        EMDesiredTemperature = 5,
+        EMSensors            = 6,
+        EMSettings           = 7,
+        EMBacklight          = 8,
+        EMSystemSetup        = 9,
+        EMSystemMode         = 10,
+        EMDateTime           = 11,
+
+        EMNone
+    };
+    Q_ENUM(EditMode)
 
 signals:
 

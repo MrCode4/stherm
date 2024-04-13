@@ -71,6 +71,8 @@ public:
 
     void moveToUpdatingMode();
 
+    AppSpecCPP::FanMode fanMode() const;
+
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
@@ -85,6 +87,10 @@ signals:
     void currentTemperatureChanged();
     void setTemperatureChanged();
     void stopWorkRequested();
+
+    void fanWorkChanged(bool fanState);
+
+    void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
 
 protected:
     void run() override;

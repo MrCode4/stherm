@@ -142,6 +142,8 @@ int UtilityHelper::getGpioValue(int pinNumber)
 }
 
 std::string convert_hex_to_string(const std::string& hex_value) {
+
+#ifdef __unix__
     // Remove the "0x" prefix (if present)
     std::string value = hex_value.substr(2);
 
@@ -156,29 +158,48 @@ std::string convert_hex_to_string(const std::string& hex_value) {
     formatted_string << std::setfill('0') << std::setw(8) << std::hex << integer_value;
 
     return formatted_string.str();
+#endif
+
+    return hex_value;
 }
 
-QString UtilityHelper::getCPUInfo() {
-
+QString UtilityHelper::getCPUInfo()
+{
     QFile file("/sys/fsl_otp/HW_OCOTP_CFG1");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         TRACE << "Failed to open the CFG1 file.";
         return NULL;
     }
-
-    auto line = file.readLine().trimmed();
-    QString cfg1 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
+    auto line = file.readLine();
     file.close();
+
+    if (!line.startsWith("0x") || !line.endsWith("\n"))
+    {
+        TRACE << "CFG1 not validated" << line;
+        return NULL;
+    }
+
+    line = line.trimmed();
+    TRACE << "CFG1:" << line;
+    QString cfg1 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
 
     QFile file0("/sys/fsl_otp/HW_OCOTP_CFG0");
     if (!file0.open(QIODevice::ReadOnly | QIODevice::Text)) {
         TRACE << "Failed to open the CFG0 file.";
         return NULL;
     }
-
-    line = file0.readLine().trimmed();
-    QString cfg0 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
+    line = file0.readLine();
     file0.close();
+
+    if (!line.startsWith("0x") || !line.endsWith("\n"))
+    {
+        TRACE << "CFG0 not validated:" << line;
+        return NULL;
+    }
+
+    line = line.trimmed();
+    TRACE << "CFG0:" << line;
+    QString cfg0 = QString::fromStdString(convert_hex_to_string(line.toStdString()));
 
     QString serialNumberHex = cfg1 + cfg0;
 
@@ -220,6 +241,8 @@ QString UtilityHelper::getCPUInfoOld()
 }
 
 bool UtilityHelper::setBrightness(int value) {
+#ifdef __unix__
+
     QFile brightnessFile("/sys/class/backlight/backlight_display/brightness");
     if (!brightnessFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         TRACE << "Failed to open brightness file.";
@@ -231,7 +254,24 @@ bool UtilityHelper::setBrightness(int value) {
     brightnessFile.close();
 
     TRACE << "Brightness set successfully!" << value;
+
+#endif
     return true;
+}
+
+int UtilityHelper::brightness() {
+    QFile brightnessFile("/sys/class/backlight/backlight_display/brightness");
+    if (!brightnessFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        TRACE << "Failed to open brightness file.";
+        return -1;
+    }
+
+    bool isOk;
+    auto brightnessValue = brightnessFile.readLine().toInt(&isOk);
+    if (!isOk)
+        TRACE << "Failed to read brightness value";
+
+    return (isOk ? brightnessValue : -1);
 }
 
 void UtilityHelper::setTimeZone(int offset) {
@@ -394,6 +434,57 @@ uint8_t UtilityHelper::packetType(STHERM::PacketType packetType) {
     return NONE_Packet;
 }
 
+double UtilityHelper::CPUUsage() {
+    #ifdef __unix__
+    // Open /proc/stat file
+    QFile file("/proc/stat");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return -1; // Error opening file
+
+    // Read all lines from /proc/stat
+    QTextStream in(&file);
+    QString line;
+
+    // Read all data from file and split them
+    auto fileLines = in.readAll().split("\n");
+
+    foreach (auto var, fileLines) {
+        // overall CPU statistics
+        // Find line starting with "cpu "
+        if (var.startsWith("cpu  ")) {
+            line = var;
+            break;
+        }
+    }
+
+    // Close the file
+    file.close();
+
+    line.remove("cpu  ");
+    // Parse CPU stats
+    QStringList parts = line.split(" ");
+    if (parts.size() < 5) {
+        TRACE << "Insufficient data" << parts.size();
+        return -1; // Insufficient data
+    }
+
+    double idle = parts[3].toDouble();
+    double total = 0;
+    for (int i = 1; i < parts.size(); ++i)
+        total += parts[i].toDouble();
+
+    // Calculate CPU usage percentage
+    double usage = 100.0 * (1.0 - idle / total);
+
+    TRACE << " CPU usage percentage: " << usage;
+
+    return usage;
+
+    #endif
+
+    return -1;
+}
+
 QString STHERM::printModeStr(RelayMode mode) {
     return mode == ON ? "On" : (mode == NoWire ? "invalid" : "Off");
 }
@@ -423,3 +514,4 @@ std::vector<std::pair<std::string, int> > STHERM::RelayConfigs::changeStepsSorte
 QString STHERM::RelayConfigs::printStr(){
     return QString("o/b:%0, g:%1, y1:%2, y2:%3, w1:%4, w2:%5, w3:%6").arg(printModeStr(o_b),printModeStr(g),printModeStr(y1),printModeStr(y2),printModeStr(w1),printModeStr(w2),printModeStr(w3));
 }
+

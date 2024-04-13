@@ -3,12 +3,15 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.3.4 LANGUAGES CXX)
+project(Stherm VERSION 0.3.13 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Enable (ON) / Disable (OFF) debug mode to write log file in run time.
+option (DEBUG_MODE "Debug mode" OFF)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
     QuickControls2 Multimedia Concurrent
@@ -84,6 +87,7 @@ qt6_add_qml_module(appStherm
         Core/Utils.qml
         Core/DateTimeManager.qml
         Core/ContactContractor.qml
+        Core/NightMode.qml
 
 
         # Primitive Components
@@ -105,6 +109,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/ConfirmPopup.qml
         UiCore/PopUps/SaveDialoge.qml
         UiCore/PopUps/LoadDialoge.qml
+        UiCore/PopUps/UpdatePopup.qml
         UiCore/ShortcutManager.qml
         UiCore/Components/SemiCircleSlider.qml
         UiCore/Components/SystemModeButton.qml
@@ -179,6 +184,8 @@ qt6_add_qml_module(appStherm
         View/AboutDevicePage.qml
         View/UserGuidePage.qml
         View/ContactContractorPage.qml
+        View/NightModePage.qml
+        View/BackdoorUpdatePage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
@@ -341,6 +348,8 @@ qt6_add_qml_module(appStherm
         Images/condition-poor.png
         Images/fan-off.png
         Images/fan-on.png
+        Images/fan-cool.svg
+        Images/fan-heat.svg
         Images/water.png
         Images/Wifi/disconnected.svg
         Images/nexgen.png
@@ -370,7 +379,14 @@ qt6_add_qml_module(appStherm
 
         # Update file
         update.sh
+        update_fw_nrf.sh
+        update_fw_nrf_seamless.sh
+        nrf_fw_update.zip
 )
+
+if (DEBUG_MODE)
+    target_compile_definitions(appStherm PRIVATE DEBUG_MODE=${DEBUG_MODE})
+endif()
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

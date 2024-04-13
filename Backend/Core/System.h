@@ -25,12 +25,15 @@ class System : public NetworkWorker
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
     Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY snReady FINAL)
     Q_PROPERTY(QString systemUID              READ systemUID               NOTIFY systemUIDChanged FINAL)
+    Q_PROPERTY(QString backdoorLog            READ backdoorLog             NOTIFY backdoorLogChanged FINAL)
 
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
+
+    Q_PROPERTY(bool canFetchServer READ canFetchServer WRITE setCanFetchServer NOTIFY canFetchServerChanged FINAL)
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
@@ -57,13 +60,15 @@ public:
     //! Reset device by exiting app and disabling service
     Q_INVOKABLE void stopDevice();
 
+    Q_INVOKABLE bool fetchSettings();
+
     //! Get serial number from server
     std::pair<std::string, bool> getSN(cpuid_t accessUid);
 
     //! Get update
     //! todo: process response packet
     //! TEMP: "022"
-    void getUpdate(QString softwareVersion = "022");
+    bool getUpdate(QString softwareVersion = "022");
 
     //! Send request job to web server
     void requestJob(QString type);
@@ -71,17 +76,24 @@ public:
 
     //! Start the partilally update
     //! if the version is empty, partialUpdate start to install the latest version
-    Q_INVOKABLE void partialUpdate();
+    Q_INVOKABLE void partialUpdate(const bool isBackdoor = false);
     Q_INVOKABLE void partialUpdateByVersion(const QString version);
 
-
-    Q_INVOKABLE void updateAndRestart();
+    Q_INVOKABLE void updateAndRestart(const bool isBackdoor);
 
     //! Get update information from server
     //! notifyUser: Send notification for user when new update is available
     Q_INVOKABLE void getUpdateInformation(bool notifyUser = false);
 
+    Q_INVOKABLE void getBackdoorInformation();
+
     Q_INVOKABLE void wifiConnected(bool hasInternet);
+
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
+
+    void setCanFetchServer(bool canFetch);
+
+    bool canFetchServer();
 
     //! Get Contractor Information
     QVariantMap getContractorInfo();
@@ -100,6 +112,8 @@ public:
     QString lastInstalledUpdateDate();
 
     QString serialNumber();
+
+    QString backdoorLog();
 
     int partialUpdateProgress();
 
@@ -127,11 +141,27 @@ public:
     //! Install update service
     Q_INVOKABLE bool installUpdateService();
 
+    //! Install update service
+    Q_INVOKABLE bool installUpdate_NRF_FW_Service();
+
     //! Mount update directory
     Q_INVOKABLE bool mountUpdateDirectory();
 
     //! Mount Recovery directory
     Q_INVOKABLE bool mountRecoveryDirectory();
+
+    //! Mount nrf fw update directory
+    Q_INVOKABLE bool mountNRF_FW_Directory();
+
+    Q_INVOKABLE QString kernelBuildVersion();
+
+    Q_INVOKABLE QString rootfsBuildTimestamp();
+
+    Q_INVOKABLE bool findBackdoorVersion(const QString fileName);
+
+    QStringList cpuInformation();
+
+    bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
 protected slots:
     //! Process network replay
@@ -139,6 +169,8 @@ protected slots:
 
 signals:
     void snReady();
+    void settingsReady(QVariantMap settings);
+    void pushFailed();
 
     void latestVersionChanged();
     void logVersionChanged();
@@ -148,7 +180,7 @@ signals:
     void lastInstalledUpdateDateChanged();
 
     //! Emit when partially update is ready.
-    void partialUpdateReady();
+    void partialUpdateReady(bool isBackdoor = false);
 
     //! Start download process.
     void downloadStarted();
@@ -169,10 +201,14 @@ signals:
 
     void systemUIDChanged();
 
+    void canFetchServerChanged();
+
+    void backdoorLogChanged();
+
 private:
 
     //! verify dounloaded files and prepare to set up.
-    bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true);
+    bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true, bool isBackdoor = false);
 
 
     //! Check new version from file.
@@ -200,9 +236,8 @@ private:
     void updateAvailableVersions(const QJsonObject updateJsonObject);
 
     //! Check and prepare the system to start download process.
-    void checkAndDownloadPartialUpdate(const QString installingVersion);
+    void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false);
 
-    bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
 private:
     Sync *mSync;
@@ -248,8 +283,22 @@ private:
     //! QElapsedTimer to measure download rate.
     QElapsedTimer mElapsedTimer;
 
+    QTimer downloaderTimer;
+
     qint64 mDownloadBytesReceived;
     double mDownloadRateEMA;
+
+    bool mCanFetchServer = true;
+
+    // Backdoor attributes
+    QJsonObject mBackdoorJsonObject;
+    QString     mBackdoorFileName;
+    QString     mBackdoorLog;
+    QByteArray  mExpectedBackdoorChecksum;
+
+    int mBackdoorRequiredMemory;
+    int mBackdoorUpdateFileSize;
+
 };
 
 } // namespace NUVE

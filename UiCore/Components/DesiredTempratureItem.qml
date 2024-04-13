@@ -43,6 +43,14 @@ Control {
     //! Label width
     readonly property alias     labelWidth: _desiredTempratureLbl.width
 
+
+    onDraggingChanged: {
+        if (dragging)
+            deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
+        else
+            deviceController.updateEditMode(AppSpec.EMNone);
+    }
+
     /* Object properties
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
@@ -78,6 +86,7 @@ Control {
                             ? Utils.fahrenheitToCelsius(value) : value;
                     if (device && device.requestedTemp !== celValue) {
                         uiSession.deviceController.setDesiredTemperature(celValue);
+                        deviceController.pushSettings();
                     }
                 }
             }

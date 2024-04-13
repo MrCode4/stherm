@@ -88,9 +88,21 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(&mNam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
 
         bool hasInternet = reply->error() == QNetworkReply::NoError;
-        setHasInternet(hasInternet);
-
         mNamIsRunning = false;
+
+        if (hasInternet) {
+            mSetNoInternetTimer.stop();
+            setHasInternet(true);
+        } else {
+            TRACE << "check has internet has error" << mHasInternet << mSetNoInternetTimer.isActive() << reply->error();
+            // sending a sooner request when we previously had internet but we get failed
+            if (mHasInternet)
+                QTimer::singleShot(10000, this, &NetworkInterface::checkHasInternet);
+            // setting no Internet after a double time period to let the blip go away
+            if (!mSetNoInternetTimer.isActive())
+                mSetNoInternetTimer.start();
+        }
+
         reply->deleteLater();
     });
 
@@ -98,19 +110,28 @@ NetworkInterface::NetworkInterface(QObject *parent)
     mCheckInternetAccessTmr.setInterval(cCheckInternetAccessInterval);
     connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
     connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
+        mSetNoInternetTimer.stop();
         if (mConnectedWifiInfo) {
             if (!mCheckInternetAccessTmr.isActive()) {
                 mCheckInternetAccessTmr.start();
-
-                checkHasInternet();
             }
+
+            checkHasInternet();
         } else {
             if (mCheckInternetAccessTmr.isActive()) {
                 mCheckInternetAccessTmr.stop();
-
-                setHasInternet(false);
             }
+
+            setHasInternet(false);
         }
+    });
+
+    mSetNoInternetTimer.setInterval(cCheckInternetAccessInterval * 2);
+    mSetNoInternetTimer.setSingleShot(true);
+    connect(&mSetNoInternetTimer, &QTimer::timeout, this, [this](){
+        TRACE << "no internet found during last" << cCheckInternetAccessInterval * 2 / 1000 << "seconds."
+              << "settings no internet";
+        setHasInternet(false);
     });
 }
 
@@ -129,6 +150,21 @@ bool NetworkInterface::isRunning()
 WifiInfo* NetworkInterface::connectedWifi() const
 {
     return (mDeviceIsOn ? mConnectedWifiInfo : nullptr);
+}
+
+QString NetworkInterface::ipv4Address() const
+{
+    for (const QNetworkInterface &netInterface : QNetworkInterface::allInterfaces()) {
+        QNetworkInterface::InterfaceFlags flags = netInterface.flags();
+        if((flags & QNetworkInterface::IsRunning) && !(flags & QNetworkInterface::IsLoopBack)){
+            for (const QNetworkAddressEntry &address : netInterface.addressEntries()) {
+                if(address.ip().protocol() == QAbstractSocket::IPv4Protocol)
+                    return address.ip().toString();
+            }
+        }
+    }
+
+    return "Not available";
 }
 
 void NetworkInterface::refereshWifis(bool forced)

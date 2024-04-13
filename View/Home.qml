@@ -57,7 +57,6 @@ Control {
     Item {
         id: _itemsToHide
         anchors.fill: parent
-        anchors.margins: 2
         visible: opacity > 0
 
         //! Current temprature item
@@ -157,12 +156,16 @@ Control {
                     top: parent.top
                 }
                 // using iaq
-                condition: device.co2 <= AppSpec.airQualityGood ? 0 : device.co2 > AppSpec.airQualityPoor ? 2 : 1
+                condition: device._co2_id
             }
 
             //! Fan
             FanButton {
                 id: _fanButton
+
+                deviceController: uiSession.deviceController
+                appModel: uiSession.appModel
+
                 anchors {
                     left: parent.left
                     bottom: parent.bottom
@@ -199,11 +202,11 @@ Control {
                 id: _dateTimeLbl
                 anchors.centerIn: parent
                 is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+            }
 
-                TapHandler {
-                    onTapped: {
-                        uiSession.popupLayout.displayPopUp(timeFormatPop, true);
-                    }
+            TapHandler {
+                onTapped: {
+                    uiSession.popupLayout.displayPopUp(timeFormatPop, true);
                 }
             }
         }
@@ -217,6 +220,16 @@ Control {
             visible: uiSession.deviceController.currentSchedule
             font {
                 pointSize: _root.font.pointSize * 0.8
+            }
+
+            TapHandler {
+                onTapped: {
+                    if (mainStackView) {
+                        mainStackView.push("qrc:/Stherm/View/ScheduleView.qml", {
+                                               "uiSession": Qt.binding(() => uiSession)
+                                           });
+                    }
+                }
             }
         }
 
@@ -308,12 +321,14 @@ Control {
 
             //! Open a test mode page from home when app start with test mode.
             if (startMode === 0) {
+                uiSession.uiTetsMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
                                        });
 
             } else {
+                deviceController.setInitialSetup(true);
                 //! Open WifiPage
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
@@ -340,6 +355,8 @@ Control {
 
             // Send  check contractor info
             deviceController.deviceControllerCPP.checkContractorInfo();
+
+            deviceController.setInitialSetup(false);
         }
     }
 

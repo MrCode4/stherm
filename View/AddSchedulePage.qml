@@ -82,6 +82,8 @@ BasePageView {
                         _newSchedulePages.push(_preivewPage)
                         return;
                     }
+                } else if (_newSchedulePages.currentItem instanceof ScheduleNamePage) {
+                    _newSchedulePages.currentItem.updateModel();
                 }
 
                 //! Go to next page
@@ -113,7 +115,7 @@ BasePageView {
         ScheduleNamePage {
             readonly property Component nextPage: _typePage
 
-            onScheduleNameChanged: {
+            onUpdateModel: {
                 if (isValid &&_internal.newSchedule.name !== scheduleName) {
                     _internal.newSchedule.name = scheduleName;
                 }
@@ -292,6 +294,7 @@ BasePageView {
         if (schedulesController) {
             schedulesController.saveNewSchedule(_internal.newSchedule);
         }
+        deviceController.pushSettings();
 
         if (root.StackView.view) {
             root.StackView.view.pop();

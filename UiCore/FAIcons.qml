@@ -41,4 +41,6 @@ QtObject {
     readonly property string revert:                            "\uf01e"
     readonly property string download:                          "\uf019"
     readonly property string restart:                           "\uf0e2"
+    readonly property string night:                             "\uf186"
+    readonly property string update:                            "\uf1da"
 }

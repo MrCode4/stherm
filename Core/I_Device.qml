@@ -29,11 +29,13 @@ QSObject {
     //! CO2 Sensor (Air Quality)
     property real           co2:            0.0
 
+    property int           _co2_id: airQuality(co2)
+
     //! TOF: Time of flight (distance sensor)
     property real           tof:            0.0
 
     //!‌ Device is in hold state or not
-    property bool           _isHold:         false
+    property bool          isHold:         false
 
     //! List of all the Messages
     //! List <Message>
@@ -66,6 +68,9 @@ QSObject {
     //! Vacation
     property Vacation       vacation:       Vacation {}
 
+    //! Night Mode
+    property NightMode       nightMode:      NightMode {}
+
     // System setup
     property SystemSetup    systemSetup:    SystemSetup {
         _qsRepo: appModel._qsRepo
@@ -78,4 +83,9 @@ QSObject {
 
     /* Functions
      * ****************************************************************************************/
+
+    //! Air quality
+    function airQuality(co2Value : int) : int {
+        return co2Value < 2.9 ? 0 : co2Value > 4 ? 2 : 1;
+    }
 }

@@ -28,7 +28,7 @@ BasePageView {
         deviceController.deviceControllerCPP.system.testMode = true;
     }
 
-    /* Childrent
+    /* Children
      * ****************************************************************************************/
 
     Timer {

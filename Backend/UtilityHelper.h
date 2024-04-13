@@ -30,6 +30,7 @@ namespace STHERM {
 enum SIOCommand {
     SetConfig = 0x01,
     SetColorRGB,
+    SetFanSpeed,
     InitMcus = 0x21,
     SetChildStatus,
     StartPairing,
@@ -461,6 +462,8 @@ public:
     //! setBrightness, value is a number between 0 and 254
     static bool setBrightness(int value);
 
+    static int brightness();
+
     //! Set time zone
     static void setTimeZone(int offset);
 
@@ -499,5 +502,8 @@ public:
 
     //! Return Packet Type with packetType enum
     static uint8_t packetType(STHERM::PacketType packetType);
+    
+    //! Calculate the CPU usage
+    static double CPUUsage();
 };
 

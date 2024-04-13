@@ -50,6 +50,8 @@ public:
     //! Update paired sensors in TI
     void updateTiDevices();
 
+    bool update_nRF_Firmware();
+
     void updateRelays(STHERM::RelayConfigs relays);
     bool testRelays(QVariantList relaysData);
 
@@ -59,10 +61,22 @@ public:
      * ****************************************************************************************/
 public:
     bool setBacklight(QVariantList data);
+
+    //! 0 for off, percentage
+    bool setFanSpeed(int speed);
     //! TODO handles only the brighness for now
     bool setSettings(QVariantList data);
 
     void sendRelays();
+
+    QString getNRF_HW() const;
+
+    QString getNRF_SW() const;
+
+    QString getTI_HW() const;
+
+    QString getTI_SW() const;
+
 
 signals:
     void mainDataReady(QVariantMap data);
@@ -75,6 +89,13 @@ signals:
     void alert(STHERM::AlertLevel alertLevel,
                STHERM::AlertTypes alertType,
                QString alertMessage = QString());
+
+    void tiVersionUpdated();
+    void nrfVersionUpdated();
+
+    void adaptiveBrightness(double adaptiveBrightness);
+
+    void fanStatusUpdated(bool off);
 
 private slots:
     void wtdExec();
@@ -98,7 +119,7 @@ private:
     void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed = 4000);
 
     //! Process NRF response
-    void processNRFResponse(STHERM::SIOPacket rxPacket);
+    void processNRFResponse(STHERM::SIOPacket rxPacket, const STHERM::SIOPacket &txPacket);
     bool processNRFQueue();
 
     //! Process TI response

@@ -19,6 +19,8 @@ BasePageView {
 
     property bool initialSetup: false
 
+    property bool settingsReady: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Wi-Fi Settings"
@@ -27,12 +29,26 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
+    Timer {
+        id: fetchTimer
+
+        repeat: true
+        running: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && !settingsReady
+        interval: 5000
+
+        onTriggered: {
+            settingsReady = deviceController.deviceControllerCPP.system.fetchSettings();
+        }
+    }
+
     //! Once the network connection is established, the System Types page should automatically open,
     Timer {
+        id: nextPageTimer
+
         property bool once : false
 
         repeat: false
-        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
+        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && settingsReady
         interval: 10000
         onTriggered: {
             once = true;
@@ -56,8 +72,10 @@ BasePageView {
         }
 
         // Enable when the serial number is correctly filled
-        enabled: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0
+        enabled: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && settingsReady
         onClicked: {
+            nextPageTimer.stop();
+            nextPageTimer.once = true;
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                              "uiSession": uiSession,
@@ -327,6 +345,10 @@ BasePageView {
         function onIncorrectWifiPassword(wifi: WifiInfo)
         {
             console.log('incorrect pass for: ', wifi.ssid);
+
+            uiSession.popUps.errorPopup.errorMessage = "incorrect pass for: " + wifi.ssid;
+            uiSession.popUps.errorPopup.open();
+
             //! Incorrect password entered
             if (root.StackView.view && root.StackView.view.currentItem === root) {
                 var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)

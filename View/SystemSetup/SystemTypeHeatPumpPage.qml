@@ -8,7 +8,7 @@ import Stherm
  * SystemTypeHeatPumpPage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -22,11 +22,11 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Confirm button
+    //! Confirm/Next button
     ToolButton {
-        parent: _root.header.contentItem
+        parent: root.header.contentItem
         contentItem: RoniaTextIcon {
-            text: "\uf00c"
+            text: initialSetup ? FAIcons.arrowRight : "\uf00c"
         }
 
         onClicked: {
@@ -36,9 +36,17 @@ BasePageView {
                                                    heatPumpStageLayout.heatPumpStage,
                                                    heatPumpOBStateLayout.heatPumpOBState)
             }
-
-            //! Also move out of this Page
-            goToSystemTypePage();
+            if (initialSetup) {
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+                                                  "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                              });
+                }
+            } else {
+                //! Also move out of this Page
+                goToSystemTypePage();
+            }
         }
     }
 
@@ -143,14 +151,14 @@ BasePageView {
             return;
         }
 
-        if (_root.StackView.view) {
+        if (root.StackView.view) {
             //! Then Page is inside an StackView
-            if (_root.StackView.view.currentItem == _root) {
+            if (root.StackView.view.currentItem == root) {
                 //! Pop twice to get back to SystemSetupPage
-                if (_root.StackView.view.get(_root.StackView.view.depth - 2, StackView.DontLoad) instanceof SystemTypePage) {
-                    _root.StackView.view.pop();
+                if (root.StackView.view.get(root.StackView.view.depth - 2, StackView.DontLoad) instanceof SystemTypePage) {
+                    root.StackView.view.pop();
                 }
-                _root.StackView.view.pop();
+                root.StackView.view.pop();
             }
         }
     }

@@ -15,9 +15,23 @@ BasePageView {
     //! Setting
     property Setting    setting: uiSession?.appModel?.setting ?? null
 
+    property bool       sendToServer: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Date & Time"
+
+    Component.onCompleted: {
+        deviceController.updateEditMode(AppSpec.EMDateTime);
+        DateTimeManager.checkAutoUpdateTime();
+    }
+
+    Component.onDestruction: {
+        if (sendToServer)
+            deviceController.pushSettings();
+
+        deviceController.updateEditMode(AppSpec.EMNone);
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -63,7 +77,7 @@ BasePageView {
                 }
 
                 Label {
-                    readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+                    readonly property bool is12Hour: setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
                     Layout.rightMargin: autoTimeSwh.rightPadding
                     font.letterSpacing: 1.5
@@ -119,7 +133,7 @@ BasePageView {
                 }
 
                 Label {
-                    readonly property bool is12Hour: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+                    readonly property bool is12Hour: setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
                     Layout.rightMargin: autoTimeSwh.rightPadding
                     Layout.fillWidth: true
@@ -153,6 +167,7 @@ BasePageView {
                 onToggled: {
                     if (DateTimeManager.effectDst !== checked) {
                         DateTimeManager.effectDst = checked;
+                        sendToServer = true;
                     }
                 }
             }
@@ -168,14 +183,11 @@ BasePageView {
             Switch {
                 id: hourFortmatSwh
                 enabled: appModel
-                checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
+                checked: setting?.timeFormat === AppSpec.TimeFormat.Hour12
 
                 onToggled: {
-                    if (checked && appModel.setting.timeFormat !== AppSpec.TimeFormat.Hour12) {
-                        appModel.setting.timeFormat = AppSpec.TimeFormat.Hour12;
-                    } else if (!checked && appModel.setting.timeFormat !== AppSpec.TimeFormat.Hour24) {
-                        appModel.setting.timeFormat = AppSpec.TimeFormat.Hour24;
-                    }
+                    if (deviceController.setTimeFormat(checked ? AppSpec.TimeFormat.Hour12 : AppSpec.TimeFormat.Hour24))
+                        sendToServer = true;
                 }
             }
         }
@@ -214,12 +226,11 @@ BasePageView {
 
         SelectTimezonePage {
             onTimezoneSelected: function(timezone) {
-                DateTimeManager.currentTimeZone = timezone;
+                if (DateTimeManager.currentTimeZone.id !== timezone) {
+                    DateTimeManager.currentTimeZone = timezone;
+                    sendToServer = true;
+                }
             }
         }
-    }
-
-    Component.onCompleted: {
-        DateTimeManager.checkAutoUpdateTime();
     }
 }

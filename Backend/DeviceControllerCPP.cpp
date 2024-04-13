@@ -1,7 +1,72 @@
 #include "DeviceControllerCPP.h"
 
 #include "LogHelper.h"
+#include "ScreenSaverManager.h"
 
+/* ************************************************************************************************
+ * Log properties
+ * ************************************************************************************************/
+#ifdef DEBUG_MODE
+static  const QString m_DateTimeHeader        = "DateTime UTC (sec)";
+static  const QString m_DeltaCorrectionHeader = "Delta Correction (F)";
+static  const QString m_DTIHeader             = "Delta Temperature Integrator";
+static  const QString m_BacklightFactorHeader = "backlightFactor";
+static  const QString m_BrightnessHeader      = "Brightness (%)";
+static  const QString m_RawTemperatureHeader  = "Raw Temperature (F)";
+static  const QString m_NightModeHeader       = "Is Night Mode Running";
+static  const QString m_BacklightRHeader      = "Backlight - R";
+static  const QString m_BacklightGHeader      = "Backlight - G";
+static  const QString m_BacklightBHeader      = "Backlight - B";
+static  const QString m_LedEffectHeader       = "Backlight - LED effect";
+static  const QString m_CPUUsage              = "CPU Usage (%)";
+static  const QString m_FanStatus             = "Fan status";
+static  const QString m_BacklightState        = "Backlight state";
+static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
+#endif
+
+static const QByteArray m_default_backdoor_backlight = R"({
+    "red": 255,
+    "green": 255,
+    "blue": 255,
+    "mode": 0,
+    "on": // true
+}
+)";
+
+static const QByteArray m_default_backdoor_brightness = R"({
+    "brightness": // 100
+}
+)";
+
+static const QByteArray m_default_backdoor_fan = R"({
+    "speed": // 100
+}
+)";
+
+
+//! Set CPU governer in the zeus base system
+//! It is strongly dependent on the kernel.
+inline void setCPUGovernorMode(QString governer) {
+#ifdef __unix__
+    QDir cpuDir("/sys/devices/system/cpu/");
+    QStringList cpuList = cpuDir.entryList(QStringList() << "cpu[0-9]*");
+
+    TRACE << "CPU List: =" << cpuList;
+
+    foreach (const QString& cpu, cpuList) {
+        QString governorFile = QString("/sys/devices/system/cpu/%1/cpufreq/scaling_governor").arg(cpu);
+        QFile file(governorFile);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+            QTextStream out(&file);
+            out << governer; // Set CPU governor
+            file.close();
+            TRACE << "Set CPU" << cpu << "governor to " << governer;
+        } else {
+            TRACE << "Failed to set CPU" << cpu << "governor to performance";
+        }
+    }
+#endif
+}
 
 DeviceControllerCPP* DeviceControllerCPP::sInstance = nullptr;
 
@@ -23,8 +88,28 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     m_system = _deviceAPI->system();
 
-    // todo: initialize with proper value
-    mBacklightModelData = QVariantList();
+    mAdaptiveBrightness = 50;
+
+    QDir backdoorDir(m_backdoorPath);
+    if (!backdoorDir.exists())
+        backdoorDir.mkpath(m_backdoorPath);
+
+    for (const QString& fileName : m_watchFiles)
+    {
+        QString path = m_backdoorPath + fileName;
+        QFile file(path);
+        if (file.open(QIODevice::WriteOnly))
+        {
+            file.write(defaultSettings(path));
+            file.close();
+            qInfo() << "Backdoor setting file" << path << "reset to default! finalize it to apply.";
+        } else {
+            qCritical() << "Backdoor setting file" << path << "can not be opened to be reset";
+        }
+
+        m_fileSystemWatcher.addPath(path);
+    }
+    connect(&m_fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &DeviceControllerCPP::processBackdoorSettingFile);
 
     // Update backlight
     mBacklightTimer.setTimerType(Qt::PreciseTimer);
@@ -44,18 +129,70 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
 
-    QVariantMap mainDataMap;
-    mainDataMap.insert("temperature",     0);
-    mainDataMap.insert("humidity",        0);
-    mainDataMap.insert("co2",             0);
-    mainDataMap.insert("etoh",            0);
-    mainDataMap.insert("Tvoc",            0);
-    mainDataMap.insert("iaq",             0);
-    mainDataMap.insert("pressure",        0);
-    mainDataMap.insert("RangeMilliMeter", 0);
-    mainDataMap.insert("brighness",       0);
-    mainDataMap.insert("fanSpeed",        0);
-    setMainData(mainDataMap);
+    // Default value
+    mFanSpeed = 16;
+    mFanOff = false;
+
+    mNightModeTimer.setTimerType(Qt::PreciseTimer);
+    mNightModeTimer.setInterval(5000 * 60);
+    mNightModeTimer.setSingleShot(true);
+    connect(&mNightModeTimer, &QTimer::timeout, this, [this]() {
+        setFanSpeed(0);
+    });
+
+    connect(_deviceIO, &DeviceIOController::fanStatusUpdated, this, [this](bool fanOff) {
+        mFanOff = fanOff;
+    });
+
+    mTEMPERATURE_COMPENSATION_Timer.setTimerType(Qt::PreciseTimer);
+    mTEMPERATURE_COMPENSATION_Timer.setInterval(1000);
+    mTEMPERATURE_COMPENSATION_Timer.setSingleShot(false);
+    connect(&mTEMPERATURE_COMPENSATION_Timer, &QTimer::timeout, this, [this]() {
+        if (isFanON()) {
+            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (0.2 - mTEMPERATURE_COMPENSATION_T1) / 148.4788;
+        } else {
+            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + ((2.847697 - deltaCorrection()) - mTEMPERATURE_COMPENSATION_T1) / 655.5680515;
+        }
+
+#ifdef DEBUG_MODE
+        TRACE << "Temperature Correction - T1: "<< mTEMPERATURE_COMPENSATION_T1 << "- Fan running: " << isFanON();
+#endif
+    });
+    mTEMPERATURE_COMPENSATION_Timer.start();
+
+    // Thge system prepare the direcories for usage
+    m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
+    mGeneralSystemDatafilePath = QString("/mnt/data/sensor/gsd-%0.csv").arg(QDateTime::currentSecsSinceEpoch());
+
+    mIsNightModeRunning = false;
+
+#ifdef DEBUG_MODE
+    mLogTimer.setTimerType(Qt::PreciseTimer);
+    mLogTimer.start(1000);
+    connect(&mLogTimer, &QTimer::timeout, this, [this]() {
+        TRACE << "---------------------- Start General System Data Log ----------------------";
+
+        auto cpuData = m_system->cpuInformation();
+        auto brightness = UtilityHelper::brightness();
+
+        TRACE << "Delta Correction: " << deltaCorrection() <<
+            "- Delta Temperature Integrator: " << mDeltaTemperatureIntegrator <<
+            "- backlightFactor: " << _deviceIO->backlightFactor();
+
+
+        TRACE << "Brightness: " << brightness;
+
+        TRACE << "Raw Temperature: " << mRawTemperature;
+
+        TRACE << "Is night mode running: " << mIsNightModeRunning;
+
+        writeGeneralSysData(cpuData, brightness);
+
+        TRACE << "---------------------- End General System Data Log ----------------------";
+    });
+
+#endif
+
 
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
     mBacklightPowerTimer.setSingleShot(false);
@@ -63,17 +200,39 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(&mBacklightPowerTimer, &QTimer::timeout, this, [this]() {
         mDeltaTemperatureIntegrator *= TEMPERATURE_INTEGRATOR_DECAY_CONSTANT;
         mDeltaTemperatureIntegrator += _deviceIO->backlightFactor();
-        TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "mDeltaTemperatureIntegrator total is " << mDeltaTemperatureIntegrator;
     });
     mBacklightPowerTimer.start();
 
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
         setMainData(data);
     });
+
+    // Update nrf version
+    connect(_deviceIO, &DeviceIOController::nrfVersionUpdated, this, [this]() {
+        emit nrfVersionChanged();
+
+        TRACE << getNRF_SW();
+        if (getNRF_SW() != "01.10-RC1") {
+            TRACE << "start firmware update in 3 seconds";
+            QTimer::singleShot(3000, this, [this]() {updateNRFFirmware();});
+        } else if (!mBacklightModelData.empty()){
+            setBacklight(mBacklightModelData, true);
+        }
+    });
+
+    // Update ti version
+    connect(_deviceIO, &DeviceIOController::tiVersionUpdated, this, [this]() {
+        emit tiVersionChanged();
+    });
+
     connect(_deviceIO, &DeviceIOController::tofDataReady, this, [this](QVariantMap data) {
         for (const auto &pair : data.toStdMap()) {
             _mainData.insert(pair.first, pair.second);
         }
+    });
+
+    connect(_deviceIO, &DeviceIOController::adaptiveBrightness, this, [this](double adaptiveBrightness) {
+        setAdaptiveBrightness(adaptiveBrightness);
     });
 
     connect(_deviceIO, &DeviceIOController::alert, this, [this](STHERM::AlertLevel alertLevel,
@@ -97,10 +256,16 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
-        TRACE_CHECK(false) << "Update backlight." << color << afterColor << mBacklightModelData;
+
 
         if (mBacklightTimer.isActive())
             mBacklightTimer.stop();
+
+        if (mIsNightModeRunning) {
+            return;
+        }
+
+        TRACE_CHECK(false) << "Update backlight." << color << afterColor << mBacklightModelData;
 
         if (color.isEmpty()) {
             TRACE << "restoring color with force " << mBacklightModelData;
@@ -122,6 +287,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(m_scheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
         _deviceIO->updateRelays(relays);
     });
+
+    connect(m_scheme, &Scheme::fanWorkChanged, this, &DeviceControllerCPP::fanWorkChanged);
+    connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
 
     if (m_system) {
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
@@ -159,9 +327,67 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
     return success;
 }
 
+//! TODO
+//! Handle the CPU frequency or governor will be set to minimum speed level.
+//! Handle other power limiting functions
+void DeviceControllerCPP::nightModeControl(bool start)
+{
+    if (mIsNightModeRunning == start)
+        return;
+
+    mIsNightModeRunning = start;
+
+    if (start) {
+        mNightModeTimer.start();
+        m_system->cpuInformation();
+
+    } else {
+        mNightModeTimer.stop();
+        setFanSpeed(16); // 100 / 7
+    }
+}
+
+void DeviceControllerCPP::setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovernerOption)
+{
+    if (CPUGovernerOption == mCPUGoverner)
+        return;
+
+    QString governer;
+    switch (CPUGovernerOption) {
+    case AppSpecCPP::CPUGpowersave:
+        governer = "powersave";
+        break;
+
+    case AppSpecCPP::CPUGondemand:
+        governer = "ondemand";
+        break;
+
+    case AppSpecCPP::CPUGperformance:
+        governer = "performance";
+        break;
+
+    default:
+        break;
+    }
+
+    if (!governer.isEmpty()){
+        mCPUGoverner = CPUGovernerOption;
+        setCPUGovernorMode(governer);
+    }
+}
+
+double DeviceControllerCPP::adaptiveBrightness() {
+    return mAdaptiveBrightness;
+}
+
 bool DeviceControllerCPP::setSettings(QVariantList data)
 {
-    return _deviceIO->setSettings(data);
+    if (_deviceIO->setSettings(data)){
+        mSettingsModelData = data;
+        return true;
+    }
+
+    return false;
 }
 
 void DeviceControllerCPP::setVacation(const double min_Temperature, const double max_Temperature,
@@ -199,6 +425,26 @@ bool DeviceControllerCPP::setTestRelays(QVariantList data)
 void DeviceControllerCPP::sendRelaysBasedOnModel()
 {
     _deviceIO->sendRelays();
+}
+
+QString DeviceControllerCPP::getTI_SW() const
+{
+    return _deviceIO->getTI_SW();
+}
+
+QString DeviceControllerCPP::getTI_HW() const
+{
+    return _deviceIO->getTI_HW();
+}
+
+QString DeviceControllerCPP::getNRF_SW() const
+{
+    return _deviceIO->getNRF_SW();
+}
+
+QString DeviceControllerCPP::getNRF_HW() const
+{
+    return _deviceIO->getNRF_HW();
 }
 
 //! runDevice in Hardware.php
@@ -244,6 +490,17 @@ void DeviceControllerCPP::stopDevice()
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
 {
+    if (schedule && mSystemSetup->systemMode == AppSpecCPP::Off) {
+        TRACE << "An schedule with name " << schedule->name << "is active while mode is off";
+    } else if (schedule) {
+        TRACE_CHECK(false) << "An schedule with name " << schedule->name
+                           << "is active while mode is off";
+    } else {
+        TRACE_CHECK(false)
+            << "The schedule is inactive, hence the system reverts to its previous mode ("
+            << mSystemSetup->systemMode << ").";
+    }
+
     if (m_scheme)
         m_scheme->setSchedule(schedule);
 }
@@ -286,14 +543,22 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
     if (isOk){
+        mRawTemperature = tc;
+
         double dt = deltaCorrection();
         TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
         if (qAbs(dt) < 10) {
+            // Fan status effect:
+            dt += mTEMPERATURE_COMPENSATION_T1;
+
             mainData.insert("temperature", tc - dt);
         } else {
             qWarning() << "dt is greater than 10! check for any error.";
         }
     }
+
+    if (mFanOff)
+        mainData.insert("fanSpeed", 0);
 
     if (_mainData == mainData)
         return;
@@ -315,11 +580,37 @@ void DeviceControllerCPP::checkUpdateMode()
 {
     // check if updated
     bool updateMode = getUpdateMode();
-    if (updateMode) {
+    if (updateMode) { // or intial mode, in this case disable fetching after one time fetching
         //            Run API to get settings from server (sync, getWirings, )
         TRACE << "getting settings from server";
         if (m_system)
             m_system->getUpdate();
+    }
+}
+
+void DeviceControllerCPP::setAdaptiveBrightness(const double adaptiveBrightness) {
+    if (mAdaptiveBrightness == adaptiveBrightness)
+        return;
+
+    mAdaptiveBrightness = adaptiveBrightness;
+    emit adaptiveBrightnessChanged();
+}
+
+bool DeviceControllerCPP::isFanON()
+{
+    return !mFanOff;
+}
+
+void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
+{
+    if (path.endsWith("backlight.json")){
+        processBackLightSettings(path);
+    } else if (path.endsWith("fan.json")) {
+        processFanSettings(path);
+    } else if (path.endsWith("brightness.json")) {
+        processBrightnessSettings(path);
+    } else {
+        qWarning() << "Incompatible backdoor file, processed nothing";
     }
 }
 
@@ -329,6 +620,11 @@ bool DeviceControllerCPP::checkSN()
     TRACE << "checkSN : " << state;
 
     bool snMode = state != 2;
+
+    // Active screen saver
+    if (snMode)
+        ScreenSaverManager::instance()->setAppActive(true);
+
     emit snModeChanged(snMode);
 
     return snMode;
@@ -341,6 +637,11 @@ void DeviceControllerCPP::checkContractorInfo()
     Q_EMIT contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
                                  info.value("logo").toString(), info.value("url").toString(),
                                  info.value("tech").toString());
+}
+
+void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
+{
+    m_system->pushSettingsToServer(settings, hasSettingsChanged);
 }
 
 void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
@@ -361,6 +662,18 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
         return true;
     }
 
+    return false;
+}
+
+bool DeviceControllerCPP::updateNRFFirmware()
+{
+
+    TRACE << "NRF Hardware: " << getNRF_HW() <<
+        "NRF software:" << getNRF_SW();
+    if (m_system->installUpdate_NRF_FW_Service()){
+        emit nrfUpdateStarted();
+        return _deviceIO->update_nRF_Firmware();
+    }
     return false;
 }
 
@@ -399,4 +712,244 @@ QVariantMap DeviceControllerCPP::getMainData()
     }
 
     return mainData;
+}
+
+void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)
+{
+#ifdef DEBUG_MODE
+
+    QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
+                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
+                          m_NightModeHeader, m_BacklightState, m_BacklightRHeader, m_BacklightGHeader,
+                          m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus};
+
+
+    QFile file(mGeneralSystemDatafilePath);
+
+    if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        QTextStream out(&file);
+
+        // Check the header
+        auto checkHeader = out.readAll().contains(m_DateTimeHeader);
+        if (!checkHeader) {
+
+            for (auto var = 0; var < cpuData.length(); var++) {
+                header.append(QString("Temperature CPU%0").arg(var));
+            }
+
+            // Write header
+            QStringList headerData;
+            foreach (auto field, header) {
+                headerData.append(field);
+            }
+            out << (headerData.join(",") + "\n");
+        }
+
+        // Write data rows
+        QStringList dataStrList;
+        auto backLightData = mBacklightModelData;
+        if (mBacklightTimer.isActive()) {
+            auto color = mBacklightTimer.property("color").value<QVariantList>();
+            if (!color.isEmpty()) {
+                backLightData = color;
+            }
+        }
+
+        // Check backlight data.
+        if (backLightData.size() != 5) {
+            backLightData = QVariantList{-255, -255, -255, -1, "invalid"};
+        }
+
+        foreach (auto key, header) {
+            if (key == m_DateTimeHeader) {
+                dataStrList.append(QString::number(QDateTime::currentDateTimeUtc().toSecsSinceEpoch()));
+
+            } else if (key == m_DeltaCorrectionHeader) {
+                dataStrList.append(QString::number(deltaCorrection() * 1.8));
+
+            } else if (key == m_DTIHeader) {
+                dataStrList.append(QString::number(mDeltaTemperatureIntegrator));
+
+            } else if (key == m_BacklightFactorHeader) {
+                dataStrList.append(QString::number(_deviceIO->backlightFactor()));
+
+            } else if (key == m_BrightnessHeader) {
+                dataStrList.append(QString::number(brightness));
+
+            } else if (key == m_RawTemperatureHeader) {
+                dataStrList.append(QString::number(mRawTemperature * 1.8 + 32));
+
+            } else if (key == m_NightModeHeader) {
+                dataStrList.append(mIsNightModeRunning ? "true" : "false");
+
+            } else if (key == m_BacklightState) {
+                dataStrList.append(backLightData[4].toString());
+
+            }  else if (key == m_BacklightRHeader) {
+                dataStrList.append(QString::number(backLightData[0].toInt() / 255.0));
+
+            }  else if (key == m_BacklightGHeader) {
+                dataStrList.append(QString::number(backLightData[1].toInt() / 255.0));
+
+            }  else if (key == m_BacklightBHeader) {
+                dataStrList.append(QString::number(backLightData[2].toInt() / 255.0));
+
+            } else if (key == m_LedEffectHeader) {
+                auto ledEffectInt = backLightData[3].toInt();
+                QString ledEffect;
+                switch (ledEffectInt) {
+                case STHERM::LED_STABLE:
+                    ledEffect = "Stable";
+                    break;
+
+                case STHERM::LED_FADE:
+                    ledEffect = "FADE";
+                    break;
+
+                case STHERM::LED_BLINK:
+                    ledEffect = "BLINK";
+                    break;
+
+                default:
+                    ledEffect = "No Mode";
+                    break;
+                }
+
+                dataStrList.append(ledEffect);
+
+            } else if (key == m_CPUUsage) {
+                dataStrList.append(QString::number(UtilityHelper::CPUUsage()));
+
+            } else if (key == m_FanStatus) {
+                dataStrList.append(isFanON() ? "On" : "Off");
+
+            } else if (key == m_T1) {
+                dataStrList.append(QString::number(mTEMPERATURE_COMPENSATION_T1 * 1.8));
+            }
+        }
+
+        dataStrList.append(cpuData);
+        out << (dataStrList.join(",")) << "\n";
+
+        file.close();
+        TRACE << "General System Data (csv) file written successfully in " << mGeneralSystemDatafilePath;
+
+    } else {
+        TRACE << "General System Data (csv) Failed to open the file for writing/Reading.";
+    }
+#endif
+}
+
+void DeviceControllerCPP::setFanSpeed(int speed)
+{
+    _deviceIO->setFanSpeed(speed);
+
+    mFanSpeed = speed;
+}
+
+QJsonObject DeviceControllerCPP::processJsonFile(const QString &path, const QStringList &requiredKeys)
+{
+    if (!QFileInfo::exists(path))
+    {
+        qCritical() << "Backdoor setting file" << path << "is deleted";
+        return QJsonObject();
+    }
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qCritical() << "Unable to open backdoor setting file" << path;
+        return QJsonObject();
+    }
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError jsonError;
+
+    QJsonDocument doc = QJsonDocument::fromJson(data, &jsonError);
+
+    if (jsonError.error != QJsonParseError::NoError)
+    {
+        qCritical() << "Error parsing json file" << path << jsonError.errorString();
+        return QJsonObject();
+    }
+
+    QJsonObject json = doc.object();
+
+    for (const QString& key : requiredKeys)
+    {
+        if (!json.contains(key))
+        {
+            qCritical() << "Backdoor json file" << path << "must contain key:" << key;
+            return QJsonObject();
+        }
+    }
+
+    return json;
+}
+
+void DeviceControllerCPP::processBackLightSettings(const QString &path)
+{
+    QVariantList data = mBacklightModelData;
+
+    QJsonObject json = processJsonFile(path, {"red", "green", "blue", "mode", "on"});
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
+    {
+        int r = json["red"].toInt();
+        int g = json["green"].toInt();
+        int b = json["blue"].toInt();
+        int mode = json["mode"].toInt();
+        bool on = json["on"].toBool();
+        data = {r, g, b, mode, on};
+    }
+
+    setBacklight(data, true);
+}
+
+void DeviceControllerCPP::processFanSettings(const QString &path)
+{
+    auto speed = mFanSpeed;
+
+    QJsonObject json = processJsonFile(path, {"speed"});
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
+    {
+        speed = json["speed"].toInt();
+    }
+
+    _deviceIO->setFanSpeed(speed);
+}
+
+void DeviceControllerCPP::processBrightnessSettings(const QString &path)
+{
+    auto data = mSettingsModelData;
+
+    QJsonObject json = processJsonFile(path, {"brightness"});
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
+    {
+        data[0] = json["brightness"].toInt();
+        data[3] = false;
+    }
+
+    _deviceIO->setSettings(data);
+}
+
+QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
+{
+    if (path.endsWith("backlight.json")) {
+        return m_default_backdoor_backlight;
+
+    } else if (path.endsWith("fan.json")) {
+        return m_default_backdoor_fan;
+
+    } else if (path.endsWith("brightness.json")) {
+        return m_default_backdoor_brightness;
+
+    } else {
+        qWarning() << "Incompatible backdoor file, returning empty values";
+    }
+
+    return "";
 }

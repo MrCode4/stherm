@@ -22,10 +22,10 @@ ApplicationWindow {
 
     /* Object Properties
      * ****************************************************************************************/
-    x: 0
-    y: 0
-    width: AppStyle.size
-    height: AppStyle.size
+    x: 10
+    y: 6
+    width: AppStyle.size - 2 * x
+    height: AppStyle.size - 2 * y
 
     visible: false
     title: qsTr("STherm")
@@ -76,15 +76,17 @@ ApplicationWindow {
 
         // if any load was successful, write it to recovery
         // defaults also saved.
-        AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath);
+        console.log("Save recovery file: ", AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath));
+
 
 
         //! Load DST effect and then current timezone to DateTimeManager
         //! NOTE: Order of setting effect DST and current timezone is important.
-        DateTimeManager.effectDst = uiSessionId.appModel.setting.effectDst;
+        //! effectDst waits for the other to be finished, so it should be last
         if (uiSessionId.appModel.setting.currentTimezone !== "") {
             DateTimeManager.currentTimeZone = uiSessionId.appModel.setting.currentTimezone;
         }
+        DateTimeManager.effectDst = uiSessionId.appModel.setting.effectDst;
 
         //! set screen saver timeout here. default is 20000
         ScreenSaverManager.screenSaverTimeout = 30000;
@@ -123,6 +125,23 @@ ApplicationWindow {
         {
             if (uiSessionId.appModel.setting.currentTimezone !== DateTimeManager.currentTimeZone.id) {
                uiSessionId.appModel.setting.currentTimezone = DateTimeManager.currentTimeZone.id;
+            }
+        }
+    }
+
+    Connections {
+        target: uiSessionId.appModel.setting
+        function onCurrentTimezoneChanged() {
+
+            if (uiSessionId.appModel.setting.currentTimezone !== DateTimeManager.currentTimeZone.id) {
+                DateTimeManager.currentTimeZone = uiSessionId.appModel.setting.currentTimezone;
+            }
+        }
+
+        function onEffectDstChanged() {
+
+            if (uiSessionId.appModel.setting.effectDst !== DateTimeManager.effectDst) {
+                DateTimeManager.effectDst = uiSessionId.appModel.setting.effectDst;
             }
         }
     }

@@ -40,6 +40,11 @@ Popup {
         }
     }
 
+    onOpened: deviceController.updateEditMode(uiSessionId.showMainWindow ? AppSpec.EMNone :
+                                                                           AppSpec.EMVacation);
+
+    onClosed: deviceController.updateEditMode(AppSpec.EMNone);
+
     Material.theme: Material.Dark
     /* Children
      * ****************************************************************************************/
@@ -89,7 +94,8 @@ Popup {
 
                 vacationModePop.counter--;
                 if (deviceController && vacationModePop.counter <= 0) {
-                     deviceController.setVacationOn(true);
+                    deviceController.setVacationOn(true);
+                    uiSession.showMainWindow = true;
                 }
             }
         }
@@ -123,7 +129,7 @@ Popup {
                     deviceController.setVacationOn(false);
                 }
 
-                uiSession.showMainWindow = true;
+                //uiSession.showMainWindow = true;
             }
         }
 
@@ -166,6 +172,8 @@ Popup {
             //! Date and time
             DateTimeLabel {
                 Layout.alignment: Qt.AlignHCenter
+
+                is12Hour: device.setting.timeFormat === AppSpec.TimeFormat.Hour12
             }
 
             ButtonInverted {

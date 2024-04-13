@@ -5,69 +5,50 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * InstallConfirmationPopup start the update procedure and request user authorization to restart the application..
+ * UpdatePopup: Currently use in nrf update
  * ***********************************************************************************************/
-
 I_PopUp {
+    id: root
+
     /* Property Declaration
      * ****************************************************************************************/
-
-    property DeviceController deviceController
-
-    //! isBackdoor used to install the backdoor updates.
-    property bool isBackdoor: false
 
     /* Object properties
      * ****************************************************************************************/
 
-    title: ""
-    closePolicy: Popup.NoAutoClose
     titleBar: false
 
+    closePolicy: Popup.NoAutoClose
 
-    onOpened: {
-        installUpdate();
-    }
+    enter: Transition {}
+
+    exit: Transition {}
 
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
-        id: mainLay
-
-        anchors.fill: parent
-        anchors.margins: 8
-
+        width: parent?.width ?? 0
+        anchors.centerIn: parent
+        Layout.topMargin: 20
         spacing: 32
 
         RoniaTextIcon {
             id: icon
 
+            Layout.topMargin: 10
             Layout.alignment: Qt.AlignHCenter
             font.pointSize: Style.fontIconSize.largePt * 1.5
             font.weight: 400
-            text: FAIcons.restart
+            text: FAIcons.update
         }
 
         Label {
-            id: restartingLabel
-
             Layout.fillWidth: true
-            Layout.preferredWidth: 250
             font.pointSize: Application.font.pointSize
-            wrapMode: Text.WordWrap
-            text: "Restarting..."
+            text: "      Applying updates,         \n        please wait....      "
             horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+            lineHeight: 1.5
         }
 
-    }
-
-    //! Install update and restart the app.
-    function installUpdate() {
-        // Inactive screen saver
-        ScreenSaverManager.setInactive();
-
-        // Restart the app.
-        deviceController.deviceControllerCPP.system.updateAndRestart(isBackdoor);
     }
 }

@@ -12,6 +12,7 @@
 
 #include <csignal>
 
+#include "LogHelper.h"
 #include "UtilityHelper.h"
 
 void signalHandler(int signal) {
@@ -28,12 +29,36 @@ void signalHandler(int signal) {
 int main(int argc, char *argv[])
 {
     //! Set check internet access url in env, used by NmcliInterface
-    qputenv("NMCLI_INTERNET_ACCESS_URL", "http://test.hvac.z-soft.am");
+    qputenv("NMCLI_INTERNET_ACCESS_URL", "https://devapi.nuvehvac.com/");
 
-    // CPU info example
-    QString cpuid = UtilityHelper::getCPUInfo();
-    qDebug() << "CPU ID: " << cpuid;
 
+// trying multiple times to read validated cpuid, reboot if not successful.
+#ifdef __unix__
+    int counter = 0;
+    while (true)
+#endif
+    {
+        // CPU info example
+        QString cpuid = UtilityHelper::getCPUInfo();
+        qDebug() << "CPU ID: " << cpuid;
+#ifdef __unix__
+        if (counter > 3 || (!cpuid.isNull() && cpuid.length() == 16)) {
+            break;
+        }
+        counter++;
+#endif
+    }
+
+#ifdef __unix__
+    if (counter > 3) {
+        TRACE << "can not read validated uid, rebooting...";
+        QProcess process;
+        QString command = "reboot";
+
+        process.start(command);
+        return 3;
+    }
+#endif
     // Brightness example
     UtilityHelper::setBrightness(200);
 
@@ -48,6 +73,8 @@ int main(int argc, char *argv[])
     QGuiApplication::setOrganizationDomain("SThermOrg");
 
     QCoreApplication::setApplicationVersion(PROJECT_VERSION_STRING);
+
+    qInfo() << "App Version: " << QCoreApplication::applicationVersion();
 
     QGuiApplication app(argc, argv);
 

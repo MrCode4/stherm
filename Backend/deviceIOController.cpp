@@ -64,6 +64,7 @@ public:
     //! 0 normal, 1 adaptive
     uint8_t brighness_mode = 1;
     uint32_t luminosity = 255;
+    uint32_t brightnessValue;
 
     //! unknowns // TODO find unused ones and remove later
     bool pairing = false;
@@ -81,7 +82,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
 {
     // move creating objects here
     m_tiConnection = new UARTConnection(TI_SERIAL_PORT, false, this);
-    m_nRfConnection = new UARTConnection(NRF_SERIAL_PORT, true, this);
+    m_nRfConnection = new UARTConnection(NRF_SERIAL_PORT, false, this);
     m_gpioHandler4 = new GpioHandler(NRF_GPIO_4, this);
     m_gpioHandler5 = new GpioHandler(NRF_GPIO_5, this);
 
@@ -104,7 +105,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
             m_backlightFactorUpdater.start();
         }
         // when it reaches to the target stops and will not print anymore
-        TRACE_CHECK(true) << "backlight factor updated to "  << m_backlightFactor << "with step " << diff / 20 << "and Target " << target;
+        TRACE_CHECK(false) << "backlight factor updated to "  << m_backlightFactor << "with step " << diff / 20 << "and Target " << target;
     });
 }
 
@@ -124,6 +125,8 @@ void DeviceIOController::initialize()
 {
     //! Get device id
     getDeviceID();
+
+    m_p->brightnessValue = UtilityHelper::brightness();
 
     //! Prepare main device
     m_p->MainDevice.address = 0xffffffff; // this address is used in rf comms
@@ -333,10 +336,18 @@ QString DeviceIOController::getCPUInfo()
 
 bool DeviceIOController::setBrightness(int value)
 {
-    if (m_p->brighness_mode == 1)
+    if (m_p->brighness_mode == 1) {
         value = 255.0 * std::sqrt(m_p->luminosity / 255.0);
+        emit adaptiveBrightness(value / 2.55);
+    }
 
-    return UtilityHelper::setBrightness(std::clamp(value, 5, 254));
+    if (m_p->brightnessValue == value) {
+        return true;
+    }
+
+    m_p->brightnessValue = std::clamp(value, 5, 254);
+
+    return UtilityHelper::setBrightness(m_p->brightnessValue);
 }
 
 void DeviceIOController::setTimeZone(int offset)
@@ -418,16 +429,16 @@ void DeviceIOController::createNRF()
     }
 
     connect(m_nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
-        TRACE_CHECK(true) << "NRF Response:   " << data;
+        TRACE_CHECK(false) << "NRF Response:   " << data;
         auto rxPacket = DataParser::deserializeData(data);
-        TRACE_CHECK(true) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+        TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
-            qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD;
-        m_nRF_queue.pop();
-        processNRFResponse(rxPacket);
-
+            qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD << m_nRF_queue.size();
+        processNRFResponse(rxPacket, sent);
         m_nRfConnection->setProperty("busy", false);
+        if (!m_nRF_queue.empty())
+            m_nRF_queue.pop();
         processNRFQueue();
     });
 
@@ -443,7 +454,7 @@ void DeviceIOController::createNRF()
                 m_p->lastTimeSensors = time;
                 m_nRF_queue.push(m_p->SensorPacketBA);
                 bool processed = processNRFQueue();
-                TRACE_CHECK(true) << "request for gpio 4" << processed;
+                TRACE_CHECK(false) << "request for gpio 4" << processed;
                 // check after tiemout if no other request sent
                 m_nRF_timer.start();
             }
@@ -457,7 +468,7 @@ void DeviceIOController::createNRF()
             if (data.length() == 2 && data.at(0) == '0') {
                 m_nRF_queue.push(m_p->TOFPacketBA);
                 bool processed = processNRFQueue();
-                TRACE_CHECK(true) << "request for gpio 5" << processed;
+                TRACE_CHECK(false) << "request for gpio 5" << processed;
             }
         });
     } else {
@@ -486,6 +497,20 @@ void DeviceIOController::updateTiDevices()
     // CO2 sensor
 
     qDebug() << Q_FUNC_INFO << __LINE__ << "Device count:   " << m_p->DeviceID.size();
+}
+
+bool DeviceIOController::update_nRF_Firmware()
+{
+    TRACE_CHECK(true) << "sending get into dfu:"
+                       << (m_nRfConnection && m_nRfConnection->isConnected());
+
+    auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::GetIntoDFU,
+                                               STHERM::PacketType::UARTPacket);
+    m_nRF_queue.push(packet);
+
+    auto result = processNRFQueue();
+    TRACE_CHECK(result) << "sending get into dfu failed or waiting in queue";
+    return result;
 }
 
 void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)
@@ -585,13 +610,28 @@ bool DeviceIOController::setBacklight(QVariantList data)
     return false;
 }
 
+bool DeviceIOController::setFanSpeed(int speed)
+{
+    TRACE_CHECK(false) << "sending fan speed request with data:" << speed
+                       << (m_nRfConnection && m_nRfConnection->isConnected());
+
+    auto packet = DataParser::prepareSIOPacket(STHERM::SIOCommand::SetFanSpeed,
+                                               STHERM::PacketType::UARTPacket,
+                                               {speed});
+    m_nRF_queue.push(packet);
+
+    auto result = processNRFQueue();
+    TRACE_CHECK(result) << "send fan speed request failed or waiting in queue";
+    return result;
+}
+
 bool DeviceIOController::setSettings(QVariantList data)
 {
     if (data.size() <= 0) {
         qWarning() << "data sent is empty";
         return false;
     } else {
-        if (data.size() != 6) {
+        if (data.size() != 4) {
             qWarning() << "data sent is not consistent";
             return false;
         }
@@ -653,11 +693,11 @@ void DeviceIOController::nRFExec()
         m_nRF_queue.push(m_p->SensorPacketBA);
         auto result = processNRFQueue();
 
-        TRACE_CHECK(true) << "GetSensors message finished" << result;
+        TRACE_CHECK(false) << "GetSensors message finished" << result;
     }
 }
 
-void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
+void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const STHERM::SIOPacket &txPacket)
 {
     // checksum the response data
     uint16_t inc_crc_nrf = UtilityHelper::crc16(rxPacket.DataArray, rxPacket.DataLen);
@@ -670,6 +710,9 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
             case STHERM::GetInfo: {
                 int indx_rev = 0;
 
+                NRF_HW = "";
+                NRF_SW = "";
+
                 // TODO: When NRF_HW.clear() called?
                 for (; rxPacket.DataArray[indx_rev] != 0 && indx_rev < sizeof(rxPacket.DataArray); indx_rev++) {
                     NRF_HW.push_back(static_cast<char>(rxPacket.DataArray[indx_rev]));
@@ -681,6 +724,22 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 }
 
                 TRACE << " NRF_HW :" << NRF_HW << " NRF_SW :" << NRF_SW;
+
+                emit nrfVersionUpdated();
+
+            } break;
+
+            case STHERM::GetIntoDFU: {
+                // send actual file to nRF
+                int exitCode = QProcess::execute("/bin/bash", {"-c", "/usr/local/bin/update_fw_nrf_seamless.sh"});
+                TRACE << exitCode;
+
+                // sleep and wait for nRF to restart
+                QThread::msleep(5000);
+
+                // Send GetInfo request to re-initialize communication
+                auto packet = DataParser::prepareSIOPacket(STHERM::GetInfo);
+                m_nRF_queue.push(packet);
 
             } break;
 
@@ -791,7 +850,14 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket)
                 //                    LOG_DEBUG(QString("Error: setSensorData"));
                 //                }
             } break;
-
+            case STHERM::SetFanSpeed:
+            {
+                if (txPacket.CMD == STHERM::SetFanSpeed && txPacket.DataLen == 1) {
+                    emit fanStatusUpdated(txPacket.DataArray[0] == 0);
+                } else {
+                    qWarning() << "incompatible response of setFanSpeed" << txPacket.CMD << txPacket.DataLen;
+                }
+            }
             default:
                 break;
             }
@@ -818,7 +884,7 @@ bool DeviceIOController::processNRFQueue()
     auto packet = m_nRF_queue.front();
 
     if (m_nRfConnection->property("busy").toBool()) {
-        TRACE << "busy with previous one" << packet.CMD;
+        TRACE_CHECK(packet.CMD != STHERM::GetTOF) << "busy with previous one" << packet.CMD << m_nRF_queue.size();
         return false;
     }
 
@@ -830,16 +896,18 @@ bool DeviceIOController::processNRFQueue()
     auto packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff), ThreadSendSize);
 
     if (m_nRfConnection->sendRequest(packetBA)) {
-        if (packet.CMD == STHERM::SIOCommand::GetTOF) {
-            TRACE << "CHECK for TOF values";
+        if (packet.CMD == STHERM::SIOCommand::SetFanSpeed) {
+            TRACE << "CHECK for set fan speed";
+        } else if (packet.CMD == STHERM::SIOCommand::GetTOF) {
+            TRACE_CHECK(false) << "CHECK for TOF values";
         } else if (packet.CMD == STHERM::SIOCommand::GetSensors) {
-            TRACE << "CHECK for Sensor values";
+            TRACE_CHECK(false) << "CHECK for Sensor values";
             m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
-        } else if (packet.CMD == STHERM::SIOCommand::SetColorRGB){
+        } else if (packet.CMD == STHERM::SIOCommand::SetColorRGB) {
             // TODO: blinking with data array [4]
-            TRACE_CHECK(true) << "Data " << packet.DataArray[0] << " " << packet.DataArray[1] << " " << packet.DataArray[2];
+            TRACE_CHECK(false) << "Data " << packet.DataArray[0] << " " << packet.DataArray[1] << " " << packet.DataArray[2];
             double backlightFactor = ((double)packet.DataArray[0] + (double)packet.DataArray[1] + (double)packet.DataArray[2]) / (3.0 * 255.0);
-            TRACE_CHECK(true) << "backlight factor will be updated to " << backlightFactor;
+            TRACE_CHECK(false) << "backlight factor will be updated to " << backlightFactor;
             m_backlightFactorUpdater.setProperty("diff", backlightFactor - m_backlightFactor);
             m_backlightFactorUpdater.setProperty("target", backlightFactor);
             m_backlightFactorUpdater.start();
@@ -1051,6 +1119,8 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
             }
 
             TRACE << "TI_HW: " << TI_HW << " TI_SW: " << TI_SW;
+
+            emit tiVersionUpdated();
 
             sendTIRequest(tp);
 
@@ -1366,6 +1436,26 @@ void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
             TRACE_CHECK(false) << (QString("Error: setBrightness (Brightness: %0)").arg(luminosity));
         }
     }
+}
+
+QString DeviceIOController::getTI_SW() const
+{
+    return TI_SW;
+}
+
+QString DeviceIOController::getTI_HW() const
+{
+    return TI_HW;
+}
+
+QString DeviceIOController::getNRF_SW() const
+{
+    return NRF_SW;
+}
+
+QString DeviceIOController::getNRF_HW() const
+{
+    return NRF_HW;
 }
 
 double DeviceIOController::backlightFactor()

@@ -15,12 +15,18 @@ BasePageView {
     //! Setting
     property Setting    setting: uiSession?.appModel?.setting ?? null
 
+    property bool hasChange : false;
+
     //!‌ This timer is used to apply settings to device lively
     property Timer onlineTimer: Timer {
         repeat: false
         running: false
         interval: 50
-        onTriggered: applyToModel()
+        onTriggered: {
+
+            if (applyToModel())
+                hasChange = true;
+        }
 
         function startTimer()
         {
@@ -30,6 +36,7 @@ BasePageView {
         }
     }
 
+
     /* Object properties
      * ****************************************************************************************/
     title: "Settings"
@@ -37,13 +44,11 @@ BasePageView {
     backButtonCallback: function() {
         //! Check if color is modified
         var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
-        var selectedTimeFormat = _time24FormBtn.checked ? AppSpec.TimeFormat.Hour24 : AppSpec.TimeFormat.Hour12;
 
-        if (setting && (setting.brightness !== _brightnessSlider.value
-                        || setting.adaptiveBrightness !== _adaptiveBrSw.checked
-                        || setting.volume !== _speakerSlider.value
-                        || setting.tempratureUnit !== selectedTempUnit
-                        || setting.timeFormat !== selectedTimeFormat)) {
+        if (internal.copyOfSettings.brightness !== _brightnessSlider.value
+                || internal.copyOfSettings.adaptiveBrightness !== _adaptiveBrSw.checked
+                || internal.copyOfSettings.volume !== _speakerSlider.value
+                || internal.copyOfSettings.tempratureUnit !== selectedTempUnit) {
             //! This means that changes are occured that are not saved into model
             uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
             uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
@@ -64,7 +69,11 @@ BasePageView {
         }
 
         onClicked: {
-            applyToModel();
+            if (applyToModel() || hasChange) {
+                deviceController.pushSettings();
+            } else {
+                console.log("model did not pushed")
+            }
 
             //! Make a copy of last applied data to Setting
             makeCopyOfSettings();
@@ -127,6 +136,8 @@ BasePageView {
                     to: 100
                     value: appModel?.setting?.brightness ?? 0
 
+                    enabled: !_adaptiveBrSw.checked
+
                     onValueChanged: onlineTimer.startTimer();
                 }
 
@@ -138,13 +149,17 @@ BasePageView {
             }
 
             Label {
+                id: speakerLabel
                 opacity: 0.6
                 Layout.topMargin: 12
                 text: "Speaker"
+
+                visible: false
             }
 
             //! Speaker row
             RowLayout {
+                visible: speakerLabel.visible
                 spacing: 8
 
                 RoniaTextIcon {
@@ -164,6 +179,8 @@ BasePageView {
                     from: 0
                     to: 100
                     value: appModel?.setting?.volume ?? 0
+
+                    enabled: false
                 }
 
                 Label {
@@ -217,34 +234,6 @@ BasePageView {
                     text: "\u00b0C"
                     checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
                 }
-
-                //! Time Format
-                Label {
-                    opacity: 0.6
-                    Layout.fillWidth: true
-                    text: "Time Format"
-                }
-
-                //! Use explicit ButtonGroup to avoid time format RadioButtons being mutually exclusive
-                //! with temprature RadioButtons.
-                ButtonGroup {
-                    id: _timeButtonGrp
-                    buttons: [_time24FormBtn, _time12FormBtn]
-                }
-
-                RadioButton {
-                    id: _time24FormBtn
-                    autoExclusive: false
-                    text: "24H"
-                    checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour24
-                }
-
-                RadioButton {
-                    id: _time12FormBtn
-                    autoExclusive: false
-                    text: "12H"
-                    checked: appModel?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
-                }
             }
 
             //! Reset setting Button
@@ -262,15 +251,13 @@ BasePageView {
     //! Save settings
     function applyToModel() {
         if (deviceController) {
-            deviceController.setSettings(_brightnessSlider.value,
-                                         _speakerSlider.value,
-                                         _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
-                                                                   : AppSpec.TempratureUnit.Cel,
-                                         _time24FormBtn.checked ? AppSpec.TimeFormat.Hour24
-                                                                : AppSpec.TimeFormat.Hour12,
-                                         false, //! Reset
-                                         _adaptiveBrSw.checked);
+            return deviceController.setSettings(_brightnessSlider.value,
+                                                _speakerSlider.value,
+                                                _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
+                                                                          : AppSpec.TempratureUnit.Cel,
+                                                _adaptiveBrSw.checked);
         }
+        return false;
     }
 
     function makeCopyOfSettings()
@@ -280,7 +267,6 @@ BasePageView {
             internal.copyOfSettings["adaptiveBrightness"]   = setting.adaptiveBrightness;
             internal.copyOfSettings["volume"]               = setting.volume;
             internal.copyOfSettings["tempratureUnit"]       = setting.tempratureUnit;
-            internal.copyOfSettings["timeFormat"]           = setting.timeFormat;
         }
     }
 
@@ -305,36 +291,42 @@ BasePageView {
         onAccepted: {
             //! Perform reseting settings
             if (deviceController) {
-                deviceController.setSettings(80,
-                                             80,
-                                             AppSpec.TempratureUnit.Cel,
-                                             AppSpec.TimeFormat.Hour24,
-                                             true, //! Reset
-                                             true);
+                if (deviceController.setSettings(AppSpec.defaultBrightness,
+                                             AppSpec.defaultVolume,
+                                             AppSpec.TempratureUnit.Fah,
+                                             false)){
+                    deviceController.pushSettings()
+                    makeCopyOfSettings()
+                } else {
+                    console.log("settings did not applied")
+                }
             }
         }
     }
 
     Component.onCompleted: {
+        deviceController.updateEditMode(AppSpec.EMSettings);
+
         makeCopyOfSettings();
     }
 
     Component.onDestruction: {
+        deviceController.updateEditMode(AppSpec.EMNone);
+
         if (setting) {
             if (setting.brightness !== internal.copyOfSettings.brightness
                     || setting.adaptiveBrightness !== internal.copyOfSettings.adaptiveBrightness
                     || setting.volume !== internal.copyOfSettings.volume
-                    || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit
-                    || setting.timeFormat !== internal.copyOfSettings.timeFormat) {
+                    || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit) {
                 //! Reset to last saved setting
-                deviceController.setSettings(
+                if (!deviceController.setSettings(
                             internal.copyOfSettings.brightness,
                             internal.copyOfSettings.volume,
                             internal.copyOfSettings.tempratureUnit,
-                            internal.copyOfSettings.timeFormat,
-                            false,
                             internal.copyOfSettings.adaptiveBrightness
-                            );
+                            )) {
+                    console.log("could not revert model");
+                }
             }
         }
     }

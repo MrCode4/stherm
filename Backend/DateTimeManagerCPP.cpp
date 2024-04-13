@@ -122,6 +122,9 @@ void DateTimeManagerCPP::setEffectDst(bool newEffectDst)
         return;
     }
 
+    // to wait for when this is called right after timezone from server
+    mProcess.waitForFinished();
+
     //! Also change timezone if needed
     //! If DST is true, change timezone to the original one not considering DST
     if (newEffectDst) {

@@ -24,22 +24,35 @@ public:
     std::pair<std::string, bool> getSN();
 
     QVariantMap getContractorInfo();
-    void getSettings();
+    bool getSettings();
+    void getMessages();
     void getWirings(cpuid_t accessUid);
     void requestJob(QString type);
+
+    void pushSettingsToServer(const QVariantMap &settings);
+    void pushAlertToServer(const QVariantMap &settings);
 
 signals:
     void snReady();
     void wiringReady();
     void contractorInfoReady();
     void settingsLoaded();
+    void settingsReady(QVariantMap settings);
+    void messagesLoaded();
     void requestJobDone();
 
     void alert(QString msg);
 
+    void pushSuccess();
+    void pushFailed();
+
 private slots:
     //! Process network replay
-    void processNetworkReply(QNetworkReply *netReply);
+    void processNetworkReply(QNetworkReply *netReply) override;
+
+protected:
+    void sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
+    void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method) override;
 
 private:
     /* Attributes
@@ -49,7 +62,5 @@ private:
     QVariantMap mContractorInfo;
 
     cpuid_t mSystemUuid;
-
-    void sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
 };
 }

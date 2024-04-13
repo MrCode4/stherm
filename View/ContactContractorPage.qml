@@ -73,12 +73,14 @@ BasePageView {
         //! Request a Tech
         RoniaTextIcon {
             text: FAIcons.briefcase
+            visible: false
         }
 
         ButtonInverted {
             Layout.alignment: Qt.AlignCenter
             font.bold: true
             text: "Request a Tech"
+            visible: false
 
             onClicked: {
                 if (root.StackView.view) {

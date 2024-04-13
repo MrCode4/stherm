@@ -86,16 +86,8 @@ Item {
         }
     }
 
-    //! Save config every 1 minute
-    property Timer saveTimer:   Timer {
-        running: appModel
-        repeat: true
-        interval: 60000
-
-        onTriggered: {
-            AppCore.defaultRepo.saveToFile(root.configFilePath);
-        }
-    }
+    //! Enable test mode from UI (eg: press 10 times on the FCC ID in About page, ...)
+    property bool uiTetsMode: false
 
     Component.onCompleted: deviceController.startDeviceRequested();
 
@@ -105,6 +97,8 @@ Item {
     //! Device controller
     property I_DeviceController deviceController:   DeviceController {
         device: appModel
+        uiSession: root
+        schedulesController: root.schedulesController
     }
 
     //! SensorController instance

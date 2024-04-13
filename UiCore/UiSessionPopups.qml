@@ -80,14 +80,20 @@ Item {
         }
     }
 
+    //! Show when the NRF update started.
+    UpdatePopup {
+        id: updatePopup
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: deviceController.deviceControllerCPP.system
 
-        function onPartialUpdateReady() {
+        function onPartialUpdateReady(isBackdoor : bool) {
             if (downloadingPopup.visible)
                 downloadingPopup.close();
 
+            installConfirmation.isBackdoor = isBackdoor;
             parent.popupLayout.displayPopUp(installConfirmation);
 
             // Active screen saver
@@ -116,6 +122,25 @@ Item {
         function onNotifyNewUpdateAvailable() {
             if (deviceController.deviceControllerCPP.system.updateAvailable)
                 updateNotificationPopup.open();
+        }
+    }
+
+    Connections {
+        target: deviceController.deviceControllerCPP
+
+        function onNrfUpdateStarted() {
+            if (!updatePopup.visible)
+                parent.popupLayout.displayPopUp(updatePopup);
+
+            // Inactive screen saver
+            ScreenSaverManager.setInactive();
+        }
+
+        function onNrfVersionChanged() {
+            updatePopup.close();
+
+            // Active screen saver
+            ScreenSaverManager.setActive();
         }
     }
 }

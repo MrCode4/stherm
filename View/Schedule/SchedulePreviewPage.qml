@@ -228,6 +228,9 @@ BasePageView {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Material.delegateHeight
 
+                // Hide Humudity
+                visible: false
+
                 verticalPadding: 0
                 horizontalPadding: 8
                 contentItem: RowLayout {
@@ -596,6 +599,8 @@ BasePageView {
         _root.schedule.endTime = internal.scheduleToEdit.endTime;
         _root.schedule.repeats = [...internal.scheduleToEdit.repeats];
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
+
+        deviceController.pushSettings();
 
         if (internal.exitAfterSave) {
             goBack();

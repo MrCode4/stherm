@@ -23,6 +23,14 @@ class DeviceControllerCPP  : public QObject
     Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
     Q_PROPERTY(NUVE::System *system MEMBER  m_system NOTIFY systemChanged)
     Q_PROPERTY(DeviceAPI    *deviceAPI MEMBER  _deviceAPI NOTIFY deviceAPIChanged)
+
+    Q_PROPERTY(QString    swTI  READ  getTI_SW  NOTIFY tiVersionChanged)
+    Q_PROPERTY(QString    hwTI  READ  getTI_HW  NOTIFY tiVersionChanged)
+    Q_PROPERTY(QString    swNRF READ  getNRF_SW NOTIFY nrfVersionChanged)
+    Q_PROPERTY(QString    hwNRF READ  getNRF_HW NOTIFY nrfVersionChanged)
+
+    Q_PROPERTY(double  adaptiveBrightness READ  adaptiveBrightness NOTIFY adaptiveBrightnessChanged)
+
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
     QML_ELEMENT
@@ -81,6 +89,8 @@ public:
     //! Set fan to scheme
     Q_INVOKABLE bool setFan(AppSpecCPP::FanMode fanMode, int newFanWPH);
 
+    Q_INVOKABLE bool updateNRFFirmware();
+
     /* Public Functions
      * Read and write data without any UART connection
      * Read and write data directly
@@ -103,11 +113,28 @@ public:
 
     Q_INVOKABLE void checkContractorInfo();
 
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
+
+
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);
 
     //! Reset relays based on model
     Q_INVOKABLE void sendRelaysBasedOnModel();
+
+    QString getNRF_HW() const;
+
+    QString getNRF_SW() const;
+
+    QString getTI_HW() const;
+
+    QString getTI_SW() const;
+
+    double adaptiveBrightness();
+
+    Q_INVOKABLE void nightModeControl(bool start);
+    Q_INVOKABLE void setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovernerOption);
+
 
 Q_SIGNALS:
     /* Public Signals
@@ -130,6 +157,16 @@ Q_SIGNALS:
 
     void startModeChanged(int startMode);
 
+    void tiVersionChanged();
+    void nrfVersionChanged();
+
+    void nrfUpdateStarted();
+
+    void fanWorkChanged(bool fanState);
+    void currentSystemModeChanged(AppSpecCPP::SystemMode fanState);
+
+    void adaptiveBrightnessChanged();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
@@ -138,13 +175,29 @@ private:
     void startTestMode();
     void checkUpdateMode();
 
+    void setAdaptiveBrightness(const double adaptiveBrightness);
+
+    //! return true: fan is ON
+    //! return false: fan is OFF
+    bool isFanON();
+
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
+    void processBackdoorSettingFile(const QString &path);
 
 private:
     /* Private Functions
      * ****************************************************************************************/
+    void writeGeneralSysData(const QStringList &cpuData, const int &brightness);
+
+    void setFanSpeed(int speed);
+
+    QJsonObject processJsonFile(const QString &path, const QStringList &requiredKeys);
+    void processBackLightSettings(const QString &path);
+    void processFanSettings(const QString &path);
+    void processBrightnessSettings(const QString &path);
+    QByteArray defaultSettings(const QString &path);
 
 private:
     /* Attributes
@@ -162,18 +215,51 @@ private:
 
     NUVE::System *m_system;
 
+    QString m_backdoorPath = "/usr/local/bin/backdoor/";
+    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" };
+    QFileSystemWatcher m_fileSystemWatcher;
+
     QTimer mBacklightTimer;
     QTimer mBacklightPowerTimer;
 
+    // initialized in startup onStartDeviceRequested in qml
     QVariantList mBacklightModelData;
+    QVariantList mSettingsModelData;
+
+    QTimer mNightModeTimer;
+
+    //! TODO: Delete when logging is not required
+    QTimer mLogTimer;
+
+    QString mGeneralSystemDatafilePath;
+
+    bool mIsNightModeRunning;
+
+    int mFanSpeed;
+    bool mFanOff;
+
+    //! TEMP, To keep raw temperature.
+    double mRawTemperature;
+
+    //! percent value
+    double mAdaptiveBrightness;
+
+    QTimer mTEMPERATURE_COMPENSATION_Timer;
+
+    // Unit: Celsius
+    double mTEMPERATURE_COMPENSATION_T1 = 0.2;
 
     //! Temperature correction parameters
     double mDeltaTemperatureIntegrator;
     const double TEMPERATURE_INTEGRATOR_DECAY_CONSTANT = 0.99721916;
-    const double TEMPERATURE_COMPENSATION_OFFSET = 0.25;
-    const double TEMPERATURE_COMPENSATION_SCALER = 0.8*3.1/360;
+    // TW - remove the doubled up offset and update the 1F
+    // const double TEMPERATURE_COMPENSATION_OFFSET = 0.25 + 2.0 / 1.8;
+    const double TEMPERATURE_COMPENSATION_OFFSET = 1.0 / 1.8;
+    const double TEMPERATURE_COMPENSATION_SCALER = 0.8 * 3.1 / 360;
     double deltaCorrection()
     {
         return  TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
     }
+
+    AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 };
