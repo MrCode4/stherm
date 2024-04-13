@@ -12,7 +12,7 @@ NmcliInterface::NmcliInterface(QObject* parent)
     connect(mProcess, &QProcess::stateChanged, this, &NmcliInterface::isRunningChanged);
     connect(mProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit && exitCode != 0) {
-            errorOccured(NmcliInterface::Error(exitCode));
+            emit errorOccured(NmcliInterface::Error(exitCode));
         }
     });
 }
@@ -30,7 +30,7 @@ bool NmcliInterface::isRunning() const
                         || mProcess->state() == QProcess::Running);
 }
 
-WifisList NmcliInterface::getWifis() const
+WifisList& NmcliInterface::getWifis()
 {
     return mWifis;
 }
@@ -55,7 +55,7 @@ void NmcliInterface::refreshWifis(bool rescan)
     mProcess->start(NC_COMMAND, args);
 }
 
-bool NmcliInterface::hasWifiProfile(const QString& ssid)
+bool NmcliInterface::hasWifiProfile(const WifiInfo* wifi)
 {
     QProcess process;
     process.setReadChannel(QProcess::StandardOutput);
@@ -66,29 +66,62 @@ bool NmcliInterface::hasWifiProfile(const QString& ssid)
                                   "no",
                                   NC_ARG_CONNECTION,
                                   NC_ARG_SHOW,
-                                  ssid
+                                  wifi->ssid()
                               });
     waitLoop(&process, NC_WAIT_MSEC);
     return process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0;
 }
 
-void NmcliInterface::connectToWifi(const QString& bssid, const QString& password)
+void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
 {
     if (!mProcess || isRunning()) {
         return;
     }
 
     //! First check if connection is saved
-    if (hasWifiProfile(bssid)) {
+    if (hasWifiProfile(wifi)) {
+        connectSavedWifi(wifi, password);
+    } else {
+        //! Perform connection command
+        const QStringList args({
+            NC_ARG_DEVICE,
+            NC_ARG_WIFI,
+            NC_ARG_CONNECT,
+            wifi->ssid(),
+            NC_ARG_PASSWORD,
+            password,
+        });
+
+        mProcess->start(NC_COMMAND, args);
+    }
+}
+
+bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
+{
+    //! It's supposed that this private method is only called on a saved wifi, so no need to check
+    if (!wifi) {
+        return false;
+    }
+
+    if (password.isEmpty()) {
+        //! Perform connection command
+        const QStringList args({
+            NC_ARG_CONNECTION,
+            NC_ARG_UP,
+            wifi->ssid(),
+        });
+
+        mProcess->start(NC_COMMAND, args);
+    } else {
         //! Modify its password then connect as saved
         connect(mProcess, &QProcess::finished, this,
-            [&, bssid](int exitCode, QProcess::ExitStatus exitStatus) {
+            [&, wifi](int exitCode, QProcess::ExitStatus exitStatus) {
                 if (exitStatus == QProcess::NormalExit && exitCode == 0) {
                     //! Perform connection command
                     const QStringList args({
                         NC_ARG_CONNECTION,
                         NC_ARG_UP,
-                        bssid,
+                        wifi->ssid(),
                     });
 
                     mProcess->start(NC_COMMAND, args);
@@ -98,45 +131,17 @@ void NmcliInterface::connectToWifi(const QString& bssid, const QString& password
         const QStringList args({
             NC_ARG_CONNECTION,
             "modify",
-            bssid,
+            wifi->ssid(),
             "802-11-wireless-security.psk",
             password
         });
 
         mProcess->start(NC_COMMAND, args);
-    } else {
-        //! Perform connection command
-        const QStringList args({
-            NC_ARG_DEVICE,
-            NC_ARG_WIFI,
-            NC_ARG_CONNECT,
-            bssid,
-            NC_ARG_PASSWORD,
-            password,
-        });
-
-        mProcess->start(NC_COMMAND, args);
     }
-}
-
-bool NmcliInterface::connectSavedWifi(const QString& ssid, const QString& bssid)
-{
-    if (!hasWifiProfile(ssid)) {
-        return false;
-    }
-
-    //! Perform connection command
-    const QStringList args({
-        NC_ARG_CONNECTION,
-        NC_ARG_UP,
-        ssid,
-    });
-
-    mProcess->start(NC_COMMAND, args);
     return true;
 }
 
-void NmcliInterface::disconnectFromWifi(const QString& ssid)
+void NmcliInterface::disconnectFromWifi(WifiInfo* wifi)
 {
     if (!mProcess || isRunning()) {
         return;
@@ -146,13 +151,13 @@ void NmcliInterface::disconnectFromWifi(const QString& ssid)
     const QStringList args({
         NC_ARG_CONNECTION,
         NC_ARG_DOWN,
-        ssid,
+        wifi->ssid(),
     });
 
     mProcess->start(NC_COMMAND, args);
 }
 
-void NmcliInterface::forgetWifi(const QString& ssid)
+void NmcliInterface::forgetWifi(WifiInfo* wifi)
 {
     if (!mProcess || isRunning()) {
         return;
@@ -162,7 +167,7 @@ void NmcliInterface::forgetWifi(const QString& ssid)
     const QStringList args({
         NC_ARG_CONNECTION,
         NC_ARG_DELETE,
-        ssid,
+        wifi->ssid(),
     });
 
     mProcess->start(NC_COMMAND, args);
@@ -201,12 +206,12 @@ void NmcliInterface::turnWifiDeviceOff()
 }
 
 void NmcliInterface::addConnection(const QString& name,
-                                          const QString& ssid,
-                                          const QString& ip4,
-                                          const QString& gw4,
-                                          const QString& dns,
-                                          const QString& security,
-                                          const QString& password)
+                                   const QString& ssid,
+                                   const QString& ip4,
+                                   const QString& gw4,
+                                   const QString& dns,
+                                   const QString& security,
+                                   const QString& password)
 {
     if (!mProcess || isRunning()) {
         return;

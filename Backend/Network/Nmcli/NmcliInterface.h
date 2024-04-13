@@ -59,7 +59,7 @@ public:
      * \brief getWifis Returns the list of wifis to the caller
      * \return
      */
-    WifisList getWifis() const;
+    WifisList& getWifis();
 
     /*!
      * \brief refreshWifis This method can be used to refresh wifis.
@@ -70,40 +70,29 @@ public:
 
     /*!
      * \brief hasWifiProfile Check if a profile for the given wifi is there (i.e wifi password is saved)
-     * \param ssid The SSID (and not BSSID) of wifi
-     * \param bssid The BSSID to make sure if retrived profile is for this ssid
+     * \param wifi The SSID (and not BSSID) of wifi
+     * \param bssid The BSSID to make sure if retrived profile is for this wifi
      * \return
      */
-    bool    hasWifiProfile(const QString& ssid);
+    bool    hasWifiProfile(const WifiInfo* wifi);
 
     /*!
      * \brief connectToWifi Connects to a wifi network with the given \a bssid (or ssid)
-     * \param bssid
+     * \param wifiInfo
      */
-    void    connectToWifi(const QString& bssid, const QString& password);
-
-    /*!
-     * \brief connectToWifi This is an overloaded method and connects to the given wifi without any
-     * password, if the given \a ssid is not saved into \a\b NetworkManager this returns
-     * immediately otherwise connection process starts
-     * \param ssid The SSID (and not BSSID) of wifi
-     * \param bssid The BSSID of wifi
-     * \return False if wifi profile with this \a ssid doesn't exit
-     * \note This methods uses \ref hasWifiProfile(const QStrig&) to check if \a ssid is saved.
-     */
-    bool    connectSavedWifi(const QString& ssid, const QString& bssid);
+    void    connectToWifi(WifiInfo* wifi, const QString& password = "");
 
     /*!
      * \brief disconnectWifi Disconnects from currently connected wifi
-     * \param ssid The SSID (and not BSSID) of wifi
+     * \param wifi The SSID (and not BSSID) of wifi
      */
-    void    disconnectFromWifi(const QString& ssid);
+    void    disconnectFromWifi(WifiInfo* wifi);
 
     /*!
      * \brief forgetWifi Forgets a wifi
-     * \param ssid The SSID (and not BSSID) of wifi
+     * \param wifi The SSID (and not BSSID) of wifi
      */
-    void    forgetWifi(const QString& ssid);
+    void    forgetWifi(WifiInfo* wifi);
 
     /*!
      * \brief turnWifiDeviceOn Turn on wifi device
@@ -148,6 +137,18 @@ private:
      */
     int     waitLoop(QProcess *process, int timeout = 1000) const;
 
+    /*!
+     * \brief connectToWifi This is an overloaded method and connects to the given wifi without any
+     * password, if the given \a ssid is not saved into \a\b NetworkManager this returns
+     * immediately otherwise connection process starts
+     * \param wifi
+     * \param password If password is not empty, first the wifi profile is modified then connection
+     * is made
+     * \return True if successfull
+     * \note This method should be called on a saved wifi. It doesn't check if wifi is saved
+     */
+    bool    connectSavedWifi(WifiInfo* wifi, const QString& password);
+
 private slots:
     /*!
      * \brief onGetWifiDeviceNameFinished This slot is used to get the name of wifi device and store
@@ -177,13 +178,6 @@ signals:
      * \brief wifisChanged
      */
     void    wifisChanged();
-
-    /*!
-     * \brief wifiListRefereshed This signal is emitted when wifi list are refereshed carrying out
-     * a list of \a\b QMap holding wifi information.
-     * \param wifis
-     */
-    void    wifiListRefereshed(WifisList wifis);
 
     /*!
      * \brief wifiConnectionAdded emitted when a new wifi profile is added manuall
