@@ -88,7 +88,7 @@ QtObject {
     }
 
     //! Prepare an string that keeps next days
-    function nextDayRepeats(repeats) {
+    function nextDayRepeats(repeats: string) {
         var nextRepeats = [];
         repeats.split(",").forEach(elem => {
                         nextRepeats.push(nextDay(elem));
@@ -99,22 +99,17 @@ QtObject {
 
     //! Find running days with repeat and start time.
     //! in repeat schedules is same as repeat.
-    function findRunningDays(repeats, schStartTimeStamp) {
+    function findRunningDays(repeats: string, schStartTime: Date) {
         let scheduleRunningDays = repeats;
 
+        // if no repeat find proper day based on current time
         if (scheduleRunningDays.length === 0) {
-            // Current date into repeats of schedule.
             var now = new Date();
-            var currentDate = Qt.formatDate(now, "ddd");
 
-            if(schStartTimeStamp - now.getTime() < 0) {
-                let d = new Date();
-                d.setTime(schStartTimeStamp);
-                now.setDate(d.getDate() + 1);
-                currentDate = Qt.formatDate(now, "ddd");
-            }
+            if (schStartTime < now)
+                now.setDate(now.getDate() + 1);
 
-            scheduleRunningDays = currentDate.slice(0, -1);
+            scheduleRunningDays = Qt.formatDate(now, "ddd").slice(0, -1);
         }
 
         return scheduleRunningDays;
@@ -123,93 +118,73 @@ QtObject {
     //! Finding overlapping Schedules
     function findOverlappingSchedules(startTime: Date, endTime: Date, repeats, exclude = null)
     {
-        if (!device) return [];
-
         var overlappings = [];
-        if ((endTime - startTime) < 0) { // over night
-            overlappings = findOverlappingSchedules(startTime, Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP"), repeats, exclude);
-            overlappings.push(findOverlappingSchedules(Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP"),  endTime, nextDayRepeats(repeats), exclude));
+
+        if (!device) return overlappings;
+
+        // fix no repeat issue and update repeats
+        let runningDays = findRunningDays(repeats, startTime);
+
+        // over night, break into two schedules and call recursive for each
+        if (endTime < startTime) {
+            overlappings = findOverlappingSchedules(startTime, Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP"), runningDays, exclude);
+            overlappings.push(findOverlappingSchedules(Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP"),  endTime, nextDayRepeats(runningDays), exclude));
 
             // return flatten array
             return overlappings.reduce((accumulator, value) => accumulator.concat(value), []);
         }
 
-        // lambda compare
-        // Date/Time overlap logics
-        // Use time stamp to compare easy.
-        const compare = (sch, startTimeStamp, endTimeStamp) => {
-
-            return (sch.startTimeStamp > startTimeStamp && sch.startTimeStamp < endTimeStamp)
-                || (sch.endTimeStamp > startTimeStamp && sch.endTimeStamp < endTimeStamp)
-                || (startTimeStamp > sch.startTimeStamp && startTimeStamp < sch.endTimeStamp)
-                || (endTimeStamp > sch.startTimeStamp && endTimeStamp < sch.endTimeStamp)
-                || (startTimeStamp === sch.startTimeStamp && endTimeStamp === sch.endTimeStamp);
-        };
-
-        // Convert start and end time to time stamp
-        let startTimeStamp = startTime.getTime();
-        let endTimeStamp   = endTime.getTime();
-
-        // Schedule run in days.
-        let currentRunningDays = findRunningDays(repeats, startTimeStamp);
-
-        device.schedules.forEach(function(element, index) {
-            if (element === exclude || !element.enable) {
+        // copy schedules into a simpler structure and fix the no repeat and overnight logics
+        var currentSchedules = [];
+        device.schedules.forEach(function(schElement, index) {
+            if (schElement === exclude || !schElement.enable) {
                 return;
             }
 
-            var schStartTimeStamp = Date.fromLocaleTimeString(Qt.locale(), element.startTime, "hh:mm AP").getTime();
-            var schEndTimeStamp = Date.fromLocaleTimeString(Qt.locale(), element.endTime, "hh:mm AP").getTime();
+            var schStartTime = Date.fromLocaleTimeString(Qt.locale(), schElement.startTime, "hh:mm AP");
+            var schEndTime = Date.fromLocaleTimeString(Qt.locale(), schElement.endTime, "hh:mm AP");
+            // find the correct running day for no repeat
+            let scheduleRunningDays = findRunningDays(schElement.repeats, schStartTime);
 
-            // **** Prepare the schedule to compare ****
-            let currSchedule = null;
-            let currNightSchedule = null
-
-            let scheduleRunningDays = findRunningDays(element.repeats, schStartTimeStamp);
-
-            {
-                currSchedule = {
-                    name: element.name,
-                    type: element.type,
-                    startTimeStamp: schStartTimeStamp,
-                    endTimeStamp: schEndTimeStamp,
-                    runningDays: scheduleRunningDays
-                };
-
-                // Break the over night schedule (move to next day)
-                if ((schEndTimeStamp - schStartTimeStamp) < 0) {
-                    currSchedule.endTimeStamp = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP").getTime();
-
-                    currNightSchedule = {
-                        name: element.name + "- over night",
-                        type: element.type,
-                        startTimeStamp: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP").getTime(),
-                        endTimeStamp: schEndTimeStamp,
-                        runningDays: nextDayRepeats(scheduleRunningDays)
-                    };
-                }
+            var currentSchedule = {
+                scheduleElement: schElement,
+                startTime: schStartTime,
+                endTime: schEndTime,
+                runningDays: scheduleRunningDays
             }
 
-            // **** Find schedule overlapping
+            // check for overnight
+            if (schEndTime > schStartTime)
             {
-                if (currSchedule.runningDays.split(",").find((dayElem, repeatIndex) => {
-                                                                 return currentRunningDays.includes(dayElem);
-                                                             })) {
-                    if (compare(currSchedule, startTimeStamp, endTimeStamp)) {
-                        overlappings.push(element);
-                        return;
-                    }
-                }
-
-                if (currNightSchedule && currNightSchedule.runningDays.split(",").find((dayElem, repeatIndex) => {
-                                                                                           return currentRunningDays.includes(dayElem);
-                                                                                       })) {
-                    if (compare(currNightSchedule, startTimeStamp, endTimeStamp)) {
-                        overlappings.push(element);
-                    }
-                }
+                currentSchedules.push(currentSchedule)
             }
-        });
+            else // break into with correct running day
+            {
+                currentSchedule.endTime = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP");
+                currentSchedules.push(currentSchedule)
+
+                var currentScheduleNight = {
+                    scheduleElement: schElement,
+                    startTime: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP"),
+                    endTime: schEndTime,
+                    runningDays: nextDayRepeats(scheduleRunningDays)
+                }
+                currentSchedules.push(currentScheduleNight)
+            }
+        })
+
+        // compare if there is any overlapping
+        currentSchedules.forEach(function(currentScheduleElement, index) {
+            if (currentScheduleElement.runningDays.split(",").find((repeatDayElement, repeatIndex) => {
+                                                             return runningDays.includes(repeatDayElement);
+                                                         })) {
+                if ((currentScheduleElement.startTime > startTime && currentScheduleElement.startTime < endTime) ||
+                        (currentScheduleElement.startTime < startTime && currentScheduleElement.endTime > startTime) ||
+                        currentScheduleElement.startTime === startTime) {
+                    overlappings.push(currentScheduleElement.scheduleElement);
+                }
+            };
+        })
 
         return overlappings;
     }
