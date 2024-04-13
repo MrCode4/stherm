@@ -409,6 +409,10 @@ target_link_directories(appStherm PRIVATE
     ${QT_QML_OUTPUT_DIRECTORY}/Ronia
 )
 
+target_include_directories(appStherm PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Network
+)
+
 target_link_libraries(appStherm
     PRIVATE
     Qt6::Quick

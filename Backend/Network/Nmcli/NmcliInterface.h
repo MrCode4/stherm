@@ -7,7 +7,8 @@
 #include <QTimer>
 #include <QVariant>
 
-#include "../WifiInfo.h"
+#include "NmcliObserver.h"
+#include "WifiInfo.h"
 
 //! Aliasing wifis list
 using WifisList = QList<WifiInfo*>;
@@ -89,6 +90,12 @@ public:
     void    disconnectFromWifi(WifiInfo* wifi);
 
     /*!
+     * \brief connectedWifi Returns currently connected wifi
+     * \return
+     */
+    WifiInfo* connectedWifi();
+
+    /*!
      * \brief forgetWifi Forgets a wifi
      * \param wifi The SSID (and not BSSID) of wifi
      */
@@ -149,6 +156,28 @@ private:
      */
     bool    connectSavedWifi(WifiInfo* wifi, const QString& password);
 
+    /*!
+     * \brief setupObserver
+     */
+    void    setupObserver();
+
+    /*!
+     * \brief setConnectedWifi
+     * \param wifi
+     */
+    void    setConnectedWifi(WifiInfo* wifi);
+
+    /*!
+     * \brief onWifiConnected
+     * \param ssid
+     */
+    void    onWifiConnected(const QString& ssid);
+
+    /*!
+     * \brief onWifiDisconnected
+     */
+    void    onWifiDisconnected();
+
 private slots:
     /*!
      * \brief onGetWifiDeviceNameFinished This slot is used to get the name of wifi device and store
@@ -180,10 +209,14 @@ signals:
     void    wifisChanged();
 
     /*!
-     * \brief wifiConnectionAdded emitted when a new wifi profile is added manuall
+     * \brief connectedWifiChanged
      */
-    void    wifiConnectionAdded(QMap<QString, QVariant>);
+    void    connectedWifiChanged();
 
+    /*!
+     * \brief wifiNeedAuthentication
+     */
+    void    wifiNeedAuthentication();
 
     /*!
      * \brief errorOccured This signal is emitted when an error is occured
@@ -191,7 +224,17 @@ signals:
      */
     void    errorOccured(NmcliInterface::Error error);
 
+    /*!
+     * \brief deviceIsOnChanged
+     */
+    void    deviceIsOnChanged();
+
 private:
+    /*!
+     * \brief mObserver
+     */
+    NmcliObserver*      mNmcliObserver;
+
     /*!
      * \brief mProcess The \a\b QProcess that is used to do everything;
      */
@@ -209,12 +252,12 @@ private:
     WifisList           mWifis;
 
     /*!
-     * \brief cWifiInfoFields
+     * \brief mConnectedWifi Currently connected wifi
      */
-    const QStringList   cWifiListFieldsArg = { "--fields", "IN-USE,BSSID,SSID,SIGNAL,SECURITY" };
+    WifiInfo*           mConnectedWifi;
 
     /*!
-     * \brief cNmcliPrintMode
+     * \brief mDeviceIsOn Holds whether wifi device is on or off
      */
-    const QStringList   cPrintModeArg = { "--mode", "multiline", "--terse" };
+    bool                mDeviceIsOn;
 };

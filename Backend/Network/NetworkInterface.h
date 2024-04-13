@@ -32,14 +32,14 @@ class NetworkInterface : public QObject
     QML_ELEMENT
     QML_SINGLETON
 
-    using WifiInfoList = QQmlListProperty<WifiInfo>;
+    using WifisQmlList = QQmlListProperty<WifiInfo>;
 
 public:
     explicit NetworkInterface(QObject *parent = nullptr);
 
     /* Public methods
      * ****************************************************************************************/
-    WifiInfoList        wifis();
+    WifisQmlList        wifis();
 
     bool                isRunning();
 
@@ -52,8 +52,7 @@ public:
     QString             ipv4Address() const;
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
-    Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
-    Q_INVOKABLE void    connectSavedWifi(WifiInfo* wifiInfo);
+    Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password = "");
     Q_INVOKABLE void    disconnectWifi(WifiInfo* wifiInfo);
     Q_INVOKABLE void    forgetWifi(WifiInfo* wifiInfo);
     Q_INVOKABLE bool    isWifiSaved(WifiInfo* wifiInfo);
@@ -71,8 +70,8 @@ public:
     /* Private methods and slots
      * ****************************************************************************************/
 private:
-    static WifiInfo*    networkAt(WifiInfoList* list, qsizetype index);
-    static qsizetype    networkCount(WifiInfoList* list);
+    static WifiInfo*    networkAt(WifisQmlList* list, qsizetype index);
+    static qsizetype    networkCount(WifisQmlList* list);
 
     /*!
      * \brief setHasInternet
@@ -80,17 +79,8 @@ private:
      */
     inline void         setHasInternet(bool hasInternet);
 
-    /*!
-     * \brief setConnectedWifiInfo
-     * \param wifiInfo
-     */
-    inline void         setConnectedWifiInfo(WifiInfo* wifiInfo);
-
 private slots:
     void                onErrorOccured(int error); //! error is: NmcliInterface::Error
-    void                onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis);
-    void                onWifiConnected(const QString& ssid);
-    void                onWifiDisconnected();
     void                checkHasInternet();
 
     /* Signals
@@ -121,11 +111,6 @@ private:
     NmcliInterface*         mNmcliInterface;
 
     /*!
-     * \brief mNmcliObserver
-     */
-    NmcliObserver*          mNmcliObserver;
-
-    /*!
      * \brief mDeviceIsOn Holds whether wifi device is on or off
      */
     bool                    mDeviceIsOn;
@@ -154,9 +139,10 @@ private:
     const QUrl              cCheckInternetAccessUrl;
 
     /*!
-     * \brief mWifiInfos List of all the wifis
+     * \brief mWifiInfos List of all the wifis. This is just a shortcut for accessing
+     * NmcliInterface::wifis
      */
-    QList<WifiInfo*>        mWifiInfos;
+    QList<WifiInfo*>&       mWifiInfos;
 
     /*!
      * \brief mNam QNetworkRequestManager that is used to check internet access
@@ -185,21 +171,4 @@ inline void NetworkInterface::setHasInternet(bool hasInternet)
         mHasInternet = hasInternet;
         emit hasInternetChanged();
     }
-}
-
-inline void NetworkInterface::setConnectedWifiInfo(WifiInfo* wifiInfo)
-{
-    if (mConnectedWifiInfo == wifiInfo) {
-        return;
-    }
-
-    if (mConnectedWifiInfo) {
-        mConnectedWifiInfo->setProperty("connected", false);
-    }
-
-    mConnectedWifiInfo = wifiInfo;
-    if (mConnectedWifiInfo) {
-        mConnectedWifiInfo->setProperty("connected", true);
-    }
-    emit connectedWifiChanged();
 }

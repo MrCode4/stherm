@@ -44,7 +44,7 @@ void NmcliInterface::refreshWifis(bool rescan)
     connect(mProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
             Qt::SingleShotConnection);
 
-    const QStringList args = cWifiListFieldsArg + cPrintModeArg + QStringList({
+    const QStringList args = NC_REFERESH_ARGS + NC_PRINT_MODE_ARGS + QStringList({
                                  NC_ARG_DEVICE,
                                  NC_ARG_WIFI,
                                  NC_ARG_LIST,
@@ -157,6 +157,11 @@ void NmcliInterface::disconnectFromWifi(WifiInfo* wifi)
     mProcess->start(NC_COMMAND, args);
 }
 
+WifiInfo* NmcliInterface::connectedWifi()
+{
+    return mConnectedWifi;
+}
+
 void NmcliInterface::forgetWifi(WifiInfo* wifi)
 {
     if (!mProcess || isRunning()) {
@@ -256,17 +261,8 @@ void NmcliInterface::addConnection(const QString& name,
     connect(mProcess, &QProcess::finished, this,
         [&, name, ssid, password, security](int exitCode, QProcess::ExitStatus exitStatus) {
             if (exitStatus == QProcess::NormalExit && exitCode == 0) {
-                QMap<QString, QVariant> newCon;
-                newCon["inUse"] = false;
-                newCon["bssid"] = "";
-                newCon["ssid"] = ssid;
-                newCon["mode"] = "";
-                newCon["chan"] = "";
-                newCon["rate"] = "";
-                newCon["signal"] = 100;
-                newCon["security"] = security;
-
-                emit wifiConnectionAdded(newCon);
+                mWifis.push_back(new WifiInfo(false, ssid, "", 100, security));
+                emit wifisChanged();
 
                 mProcess->start(NC_COMMAND, {
                                                 NC_ARG_CONNECTION,
@@ -439,5 +435,86 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
         emit wifisChanged();
     } else {
         emit errorOccured(NmcliInterface::Error(exitCode));
+    }
+}
+
+void NmcliInterface::setupObserver()
+{
+    connect(mNmcliObserver, &NmcliObserver::wifiConnected, this, &NmcliInterface::onWifiConnected);
+    connect(mNmcliObserver, &NmcliObserver::wifiDisconnected, this,
+            &NmcliInterface::onWifiDisconnected);
+    connect(mNmcliObserver, &NmcliObserver::wifiDevicePowerChanged, this, [&]() {
+        bool on = mNmcliObserver->isWifiOn();
+        if (mDeviceIsOn != on) {
+            mDeviceIsOn = on;
+
+            emit deviceIsOnChanged();
+
+            refreshWifis();
+        }
+    });
+
+    connect(mNmcliObserver, &NmcliObserver::wifiNeedAuthentication, this,
+            &NmcliInterface::wifiNeedAuthentication);
+
+
+    connect(mNmcliObserver, &NmcliObserver::wifiForgotten, this, [this](const QString& ssid) {
+        if (mConnectedWifi && mConnectedWifi->ssid() == ssid) {
+            setConnectedWifi(nullptr);
+        }
+    });
+
+    connect(mNmcliObserver, &NmcliObserver::wifiIsConnecting, this, [this](const QString ssid) {
+        //! Search for a wifi with this bssid.
+        for (WifiInfo* wifi : mWifis) {
+            if (wifi->ssid() == ssid) {
+                wifi->setIsConnecting(true);
+                return;
+            }
+        }
+    });
+}
+
+void NmcliInterface::setConnectedWifi(WifiInfo* wifiInfo)
+{
+    if (mConnectedWifi == wifiInfo) {
+        return;
+    }
+
+    if (mConnectedWifi) {
+        mConnectedWifi->setConnected(false);
+    }
+
+    mConnectedWifi = wifiInfo;
+    if (mConnectedWifi) {
+        mConnectedWifi->setConnected(true);
+    }
+
+    emit connectedWifiChanged();
+}
+
+void NmcliInterface::onWifiConnected(const QString& ssid)
+{
+    for (WifiInfo* wifi : mWifis) {
+        if (wifi->ssid() == ssid) {
+            wifi->setIsConnecting(false);
+            setConnectedWifi(wifi);
+
+            return;
+        }
+    }
+}
+
+void NmcliInterface::onWifiDisconnected()
+{
+    if (mConnectedWifi) {
+        setConnectedWifi(nullptr);
+    }
+
+    //! Also set isConnecting to false if its true in any WifiInfo
+    for (auto wifi : mWifis) {
+        if (wifi->isConnecting()) {
+            wifi->setIsConnecting(false);
+        }
     }
 }

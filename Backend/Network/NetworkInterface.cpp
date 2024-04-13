@@ -1,7 +1,6 @@
 #include "NetworkInterface.h"
 #include "LogHelper.h"
 #include "Nmcli/NmcliInterface.h"
-#include "Nmcli/NmcliObserver.h"
 
 #include <QNetworkInterface>
 #include <QNetworkRequest>
@@ -12,7 +11,7 @@
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
     , mNmcliInterface { new NmcliInterface(this) }
-    , mNmcliObserver { new NmcliObserver(this) }
+    , mWifiInfos { mNmcliInterface->getWifis() }
     , mConnectedWifiInfo { nullptr }
     , mRequestedToConnectedWifi { nullptr }
     , mDeviceIsOn { false }
@@ -21,68 +20,13 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
                                                           "http://google.com")) }
 {
-    connect(mNmcliInterface, &NmcliInterface::errorOccured, this, &NetworkInterface::onErrorOccured);
-    connect(mNmcliInterface, &NmcliInterface::wifiListRefereshed, this, &NetworkInterface::onWifiListRefreshed);
-    connect(mNmcliInterface, &NmcliInterface::isRunningChanged, this, &NetworkInterface::isRunningChanged);
-    connect(mNmcliObserver, &NmcliObserver::wifiConnected, this, &NetworkInterface::onWifiConnected);
-    connect(mNmcliObserver, &NmcliObserver::wifiDisconnected, this, &NetworkInterface::onWifiDisconnected);
-    connect(mNmcliObserver, &NmcliObserver::wifiDevicePowerChanged, this, [&]() {
-        bool on = mNmcliObserver->isWifiOn();
-        if (mDeviceIsOn != on) {
-            mDeviceIsOn = on;
-
-            emit deviceIsOnChanged();
-            emit wifisChanged();
-            emit connectedWifiChanged();
-        }
-    });
-
-    connect(mNmcliObserver, &NmcliObserver::wifiNeedAuthentication, this, [&](const QString& ssid) {
-        mRequestedToConnectedWifi = nullptr;
-        //! Find wifi with this ssid
-        WifiInfo* wifi;
-        for (WifiInfo* wifi : mWifiInfos) {
-            if (wifi->ssid() == ssid) {
-                emit incorrectWifiPassword(wifi);
-                return;
-            }
-        }
-    });
-
-    connect(mNmcliInterface, &NmcliInterface::wifiConnectionAdded, this, [&](const auto& newCon) {
-        const QString ssid = newCon["ssid"].toString();
-        if (std::find_if(mWifiInfos.begin(), mWifiInfos.end(), [ssid](WifiInfo* a) {
-                return a->ssid() == ssid;
-            }) != mWifiInfos.end()) {
-            return;
-        }
-
-        WifiInfo* newWifi = new WifiInfo(
-            newCon["inUse"].toBool(),
-            newCon["ssid"].toString(),
-            newCon["bssid"].toString(),
-            newCon["signal"].toInt(),
-            newCon["security"].toString()
-            );
-        mWifiInfos.push_back(newWifi);
-        emit wifisChanged();
-    });
-
-    connect(mNmcliObserver, &NmcliObserver::wifiForgotten, this, [this](const QString& ssid) {
-        if (mConnectedWifiInfo && mConnectedWifiInfo->ssid() == ssid) {
-            setConnectedWifiInfo(nullptr);
-        }
-    });
-
-    connect(mNmcliObserver, &NmcliObserver::wifiIsConnecting, this, [this](const QString ssid) {
-        //! Search for a wifi with this bssid.
-        for (WifiInfo* wifi : mWifiInfos) {
-            if (wifi->ssid() == ssid) {
-                wifi->setProperty("isConnecting", true);
-                return;
-            }
-        }
-    });
+    connect(mNmcliInterface, &NmcliInterface::errorOccured, this,
+            &NetworkInterface::onErrorOccured);
+    connect(mNmcliInterface, &NmcliInterface::isRunningChanged, this,
+            &NetworkInterface::isRunningChanged);
+    connect(mNmcliInterface, &NmcliInterface::connectedWifiChanged, this,
+            &NetworkInterface::connectedWifiChanged);
+    connect(mNmcliInterface, &NmcliInterface::wifisChanged, this, &NetworkInterface::wifisChanged);
 
     //! Connecting to QNetworkAccessManager
     connect(&mNam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
@@ -135,7 +79,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     });
 }
 
-NetworkInterface::WifiInfoList NetworkInterface::wifis()
+NetworkInterface::WifisQmlList NetworkInterface::wifis()
 {
     return QQmlListProperty<WifiInfo>(this, nullptr,
                                       &NetworkInterface::networkCount,
@@ -149,7 +93,7 @@ bool NetworkInterface::isRunning()
 
 WifiInfo* NetworkInterface::connectedWifi() const
 {
-    return (mDeviceIsOn ? mConnectedWifiInfo : nullptr);
+    return (mDeviceIsOn && mNmcliInterface ? mNmcliInterface->connectedWifi() : nullptr);
 }
 
 QString NetworkInterface::ipv4Address() const
@@ -183,17 +127,7 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
     }
 
     mRequestedToConnectedWifi = wifiInfo;
-    mNmcliInterface->connectToWifi(wifiInfo->ssid(), password);
-}
-
-void NetworkInterface::connectSavedWifi(WifiInfo* wifiInfo)
-{
-    if (!wifiInfo || isRunning() || !mDeviceIsOn) {
-        return;
-    }
-
-    mRequestedToConnectedWifi = wifiInfo;
-    mNmcliInterface->connectSavedWifi(wifiInfo->ssid(), wifiInfo->bssid());
+    mNmcliInterface->connectToWifi(wifiInfo, password);
 }
 
 void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
@@ -202,7 +136,7 @@ void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
         return;
     }
     
-    mNmcliInterface->disconnectFromWifi(wifiInfo->ssid());
+    mNmcliInterface->disconnectFromWifi(wifiInfo);
 }
 
 void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
@@ -211,7 +145,7 @@ void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
         return;
     }
 
-    mNmcliInterface->forgetWifi(wifiInfo->ssid());
+    mNmcliInterface->forgetWifi(wifiInfo);
 }
 
 bool NetworkInterface::isWifiSaved(WifiInfo* wifiInfo)
@@ -220,7 +154,7 @@ bool NetworkInterface::isWifiSaved(WifiInfo* wifiInfo)
         return false;
     }
 
-    return mNmcliInterface->hasWifiProfile(wifiInfo->ssid());
+    return mNmcliInterface->hasWifiProfile(wifiInfo);
 }
 
 void NetworkInterface::turnOn()
@@ -256,7 +190,7 @@ void NetworkInterface::addConnection(const QString& name,
     mNmcliInterface->addConnection(name, ssid, ip4, gw4, dns, security, password);
 }
 
-WifiInfo* NetworkInterface::networkAt(WifiInfoList* list, qsizetype index)
+WifiInfo* NetworkInterface::networkAt(WifisQmlList* list, qsizetype index)
 {
     if (NetworkInterface* ni = qobject_cast<NetworkInterface*>(list->object)) {
         if (ni->mDeviceIsOn && index >= 0 && index < ni->mWifiInfos.count()) {
@@ -267,7 +201,7 @@ WifiInfo* NetworkInterface::networkAt(WifiInfoList* list, qsizetype index)
     return nullptr;
 }
 
-qsizetype NetworkInterface::networkCount(WifiInfoList* list)
+qsizetype NetworkInterface::networkCount(WifisQmlList* list)
 {
     if (NetworkInterface* ni = qobject_cast<NetworkInterface*>(list->object)) {
         return ni->mDeviceIsOn ? ni->mWifiInfos.count() : 0;
@@ -295,102 +229,5 @@ void NetworkInterface::onErrorOccured(int error)
     default:
         qDebug() << Q_FUNC_INFO << __LINE__ << " nmcli Error: " << error;
         break;
-    }
-}
-
-void NetworkInterface::onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis)
-{
-    //! Find wifis to be deleted.
-    QList<WifiInfo*> toDeleteWifis;
-    for (WifiInfo* wi : mWifiInfos) {
-        auto wiInWifis = std::find_if(wifis.begin(), wifis.end(), [&](const QMap<QString, QVariant>& wf) {
-            return wi->bssid() == wf["bssid"].toString();
-        });
-
-        if (wiInWifis == wifis.end()) {
-            //! This should be deleted
-            toDeleteWifis.push_back(wi);
-        }
-    }
-
-    bool anyWifiConnected = false;
-    //! Wifi list
-    QList<WifiInfo*> wifiInfos;
-
-    for (const auto& wifi : wifis) {
-        const QString bssid = wifi["bssid"].toString();
-
-        //! Check if this bssid is in mWifiInfos
-        auto wiInstance = std::find_if(mWifiInfos.begin(), mWifiInfos.end(), [&](WifiInfo* w) {
-            return w->bssid() == bssid;
-        });
-
-        if (wiInstance == mWifiInfos.end()) {
-            WifiInfo* newWifi = new WifiInfo(
-                                    wifi["inUse"].toBool(),
-                                    wifi["ssid"].toString(),
-                                    wifi["bssid"].toString(),
-                                    wifi["signal"].toInt(),
-                                    wifi["security"].toString()
-                );
-            wifiInfos.push_back(newWifi);
-        } else {
-            (*wiInstance)->setProperty("ssid", wifi["ssid"].toString());
-            (*wiInstance)->setProperty("connected", wifi["inUse"].toBool());
-            (*wiInstance)->setProperty("strength", wifi["signal"].toInt());
-            wifiInfos.push_back((*wiInstance));
-        }
-
-        if (wifi["inUse"].toBool()) {
-            anyWifiConnected = true;
-            mConnectedWifiInfo = wifiInfos.back();
-        }
-    }
-
-    //! Just clear mWifiInfos, don't delete instance as ownership is transfered to js
-    mWifiInfos.clear();
-    mWifiInfos = std::move(wifiInfos);
-
-    if (!anyWifiConnected
-        || std::find(toDeleteWifis.begin(),
-                     toDeleteWifis.end(),
-                     mConnectedWifiInfo) != toDeleteWifis.end()) {
-        mConnectedWifiInfo = nullptr;
-    }
-    emit connectedWifiChanged();
-    emit wifisChanged();
-
-    //! Now delete not needed wifis
-    qDeleteAll(toDeleteWifis);
-}
-
-void NetworkInterface::onWifiConnected(const QString& ssid)
-{
-    if (mRequestedToConnectedWifi && mRequestedToConnectedWifi->bssid() == ssid) {
-        setConnectedWifiInfo(mRequestedToConnectedWifi);
-    } else {
-        mRequestedToConnectedWifi = nullptr;
-        //! Search for a wifi with this bssid.
-        for (WifiInfo* wifi : mWifiInfos) {
-            if (wifi->ssid() == ssid) {
-                setConnectedWifiInfo(wifi);
-                wifi->setProperty("isConnecting", false);
-                return;
-            }
-        }
-    }
-}
-
-void NetworkInterface::onWifiDisconnected()
-{
-    if (mConnectedWifiInfo) {
-        setConnectedWifiInfo(nullptr);
-    }
-
-    //! Also set isConnecting to false if its true in any WifiInfo
-    for (auto wifi : mWifiInfos) {
-        if (wifi->isConnecting()) {
-            wifi->setProperty("isConnecting", false);
-        }
     }
 }
