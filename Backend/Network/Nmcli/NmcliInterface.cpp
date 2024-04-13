@@ -105,7 +105,7 @@ void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
             NC_ARG_DEVICE,
             NC_ARG_WIFI,
             NC_ARG_CONNECT,
-            wifi->ssid(),
+            wifi->bssid(),
             NC_ARG_PASSWORD,
             password,
         });
