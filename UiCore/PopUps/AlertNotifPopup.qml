@@ -49,7 +49,7 @@ I_PopUp {
             Layout.columnSpan: 2
             Layout.fillWidth: true
 
-            textFormat: "MarkdownText"
+            textFormat: Text.MarkdownText
             text: message?.message ?? ""
             wrapMode: "Wrap"
             verticalAlignment: "AlignVCenter"

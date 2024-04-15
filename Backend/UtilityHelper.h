@@ -386,7 +386,7 @@ static QString getAlertTypeString(AlertTypes alertType) {
     case Alert_could_not_set_relay:
         return QString("Could not set relay.");
     case Alert_temperature_not_reach:
-        return QString("System efficiency issue: temperature not reached in 2 hours");
+        return QString("**System efficiency issue:** temperature not reached in 2 hours");
 
     default:
         return QString();
