@@ -243,14 +243,14 @@ void NetworkInterface::turnOff()
 
 void NetworkInterface::sendLog(const QString& serialNo)
 {
-    QString filename = QDateTime::currentDateTime().toString("yyyyMMddhhmmss") + ".log";
+    QString filename = QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
     QString username = "Tony";
     QString password = "zIWIRvgwPd";
     QString serverAddress = "fileserver.nuvehvac.com";
-    QString remotePath = "/home/Tony/logs/" + serialNo;
+    QString remotePath = "/opt/logs/" + serialNo;
 
     // Create log
-    if (QProcess::execute("journalctl > " + filename) != 0)
+    if (QProcess::execute("journalctl -u appStherm > " + filename) != 0)
     {
         qWarning() << "Unable to create log file";
         return;
