@@ -771,8 +771,10 @@ void NUVE::System::updateAndRestart(const bool isBackdoor)
 
     installUpdateService();
 
-    int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-update.service; systemctl start appStherm-update.service"});
-    TRACE << exitCode;
+    QTimer::singleShot(200, this, [=]() {
+        int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-update.service; systemctl start appStherm-update.service"});
+        TRACE << exitCode;
+    });
 #endif
 
 
