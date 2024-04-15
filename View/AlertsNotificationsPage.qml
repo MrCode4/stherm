@@ -8,7 +8,7 @@ import Stherm
  * AlertsNotificationsPage shows a list of alerts and notifications
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Object properties
      * ****************************************************************************************/
@@ -22,9 +22,9 @@ BasePageView {
 
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
-            y: _root.contentItem.y
-            parent: _root
-            height: _root.contentItem.height - 30
+            y: root.contentItem.y
+            parent: root
+            height: root.contentItem.height - 30
         }
 
         anchors.fill: parent
@@ -51,6 +51,8 @@ BasePageView {
     //! This should be shown using popup layout
     AlertNotifPopup {
         id: _alertNotifPop
+
+        uiSession: root.uiSession
         dim: true
         modal: true
     }

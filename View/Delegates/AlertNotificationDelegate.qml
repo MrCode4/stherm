@@ -20,7 +20,7 @@ ItemDelegate {
 
     /* Object properties
      * ****************************************************************************************/
-    text: message?.type === Message.Type.Alert
+    text: (message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert)
           ? "Alert" : (message?.type === Message.Type.Notification ? "Notification"
                                                                    : "Message")
     contentItem: RowLayout {
@@ -28,7 +28,7 @@ ItemDelegate {
         //! Icon
         RoniaTextIcon {
             Layout.alignment: Qt.AlignCenter
-            text: message?.type === Message.Type.Alert
+            text: (message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert)
                   ? "\uf071" // triangle-exclamation icon
                   : (message?.type === Message.Type.Notification
                      ? "\uf0f3" //! bell icon

@@ -7,7 +7,7 @@ import Stherm
  * MessagePopupView listens to MessageController and opens popup when a new message arrives.
  * ***********************************************************************************************/
 Item {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -29,7 +29,7 @@ Item {
             //! popups on top of each other.
 
             //! Create an instance of AlertNotifPopup
-            var newAlertPopup = _messagePopupCompo.createObject(_root, {
+            var newAlertPopup = _messagePopupCompo.createObject(root, {
                                                                     "message": message
                                                                 });
 
@@ -42,6 +42,8 @@ Item {
         id: _messagePopupCompo
 
         AlertNotifPopup {
+            uiSession: root.uiSession
+
             onClosed: {
                 if (message.type === Message.Type.SystemNotification) {
                     messageController.removeMessage(message);

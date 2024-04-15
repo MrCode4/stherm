@@ -13,6 +13,7 @@ QSObject {
         Alert,
         Notification,
         SystemNotification, // like No Wi-Fi connection and No internet connection
+        SystemAlert,        // All alerts that related to contractor
         Error
     }
 
