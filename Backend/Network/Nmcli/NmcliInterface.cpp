@@ -417,11 +417,12 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             const int securityLen = 9;
             parsedWi.setSecurity(line.size() > securityLen ? line.sliced(securityLen) : "");
 
-            //! Skip it if there is a wifi with this bssid in the list
+            //! Skip it if there is a wifi with this bssid in the list or if ssid is an empty string
             auto wiInstance = std::find_if(mWifis.begin(), mWifis.end(), [&parsedWi](WifiInfo* wi) {
                 return wi->bssid() == parsedWi.bssid();
             });
-            if (wiInstance == mWifis.end()) {
+
+            if (wiInstance == mWifis.end() && !parsedWi.ssid().isEmpty()) {
                 //! Either create a new WifiInfo or update an existing one
                 int indexInBackup = -1;
                 for (int i = 0; i < wifisBackup.length(); ++i) {
@@ -493,7 +494,7 @@ void NmcliInterface::setupObserver()
     connect(mNmcliObserver, &NmcliObserver::wifiNeedAuthentication, this, [&](const QString& ssid) {
         for (WifiInfo* wifi : mWifis) {
             if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
-                wifiNeedAuthentication(wifi);
+                emit wifiNeedAuthentication(wifi);
                 return;
             }
         }

@@ -26,6 +26,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(mNmcliInterface, &NmcliInterface::connectedWifiChanged, this,
             &NetworkInterface::connectedWifiChanged);
     connect(mNmcliInterface, &NmcliInterface::wifisChanged, this, &NetworkInterface::wifisChanged);
+    connect(mNmcliInterface, &NmcliInterface::wifiNeedAuthentication, this,
+            &NetworkInterface::incorrectWifiPassword);
 
     //! Connecting to QNetworkAccessManager
     connect(&mNam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
