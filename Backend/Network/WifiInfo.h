@@ -26,6 +26,7 @@ public:
     inline bool     connected()     const { return mConnected;      }
     inline bool     isConnecting()  const { return mIsConnecting ;  }
     inline int      strength()      const { return mStrength;       }
+    inline QString  incorrectSsid() const { return mIncorrectSsid;  }
     inline QString  ssid()          const { return mSsid;           }
     inline QString  bssid()         const { return mBssid;          }
     inline QString  security()      const { return mSecurity;       }
@@ -33,6 +34,7 @@ public:
     void setConnected(bool connected);
     void setIsConnecting(bool isConnecting);
     void setStrength(int strength);
+    void setIncorrectSsid(const QString& incSs);
     void setSsid(const QString& ssid);
     void setBssid(const QString& bssid);
     void setSecurity(const QString& setcurity);
@@ -49,6 +51,7 @@ private:
     bool        mConnected = false;
     bool        mIsConnecting = false;
     int         mStrength = 0;
+    QString     mIncorrectSsid; //! The ssid that has some unsupported chars in it
     QString     mSsid = "";
     QString     mBssid = "";
     QString     mSecurity = "";

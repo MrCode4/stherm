@@ -45,6 +45,11 @@ void WifiInfo::setStrength(int strength)
     emit strengthChanged();
 }
 
+void WifiInfo::setIncorrectSsid(const QString &incSs)
+{
+    mIncorrectSsid = incSs;
+}
+
 void WifiInfo::setSsid(const QString& ssid)
 {
     if (mSsid == ssid) {
