@@ -55,6 +55,7 @@ public:
      * \return
      */
     bool    busyRefreshing() const;
+    void    setBusyRefreshing(bool busy);
 
     /*!
      * \brief busy Returns true if \ref NmcliInterface is busy doing something other than refreshing
@@ -250,31 +251,44 @@ private:
     /*!
      * \brief mObserver
      */
-    NmcliObserver*      mNmcliObserver;
+    NmcliObserver*          mNmcliObserver;
 
     /*!
      * \brief mRefreshProcess The \a\b QProcess that is used to do refreshing
      */
-    QProcess*           mRefreshProcess;
+    QProcess*               mRefreshProcess;
 
     /*!
      * \brief mWifiProcess is used to do wifi related operations like conneting, disconnecting, etc
      */
-    QProcess*           mWifiProcess;
+    QProcess*               mWifiProcess;
 
     /*!
      * \brief mWifiDevice This will hold the name of wifi device. Possible values are wlp2s0,
      * wlp1s0, etc.
      */
-    QString             mWifiDevice;
+    QString                 mWifiDevice;
 
     /*!
      * \brief mWifis Stores all the retrieved wifis
      */
-    WifisList           mWifis;
+    WifisList               mWifis;
 
     /*!
      * \brief mConnectedWifi Currently connected wifi
      */
-    WifiInfo*           mConnectedWifi;
+    WifiInfo*               mConnectedWifi;
+
+    /*!
+     * \brief mBssToCorrectSsidMap Since nmcli doesn't return some wifi ssid names correctly (those
+     * which has some special chars), it's needed to fix those representations with the help of iw
+     * and store them somewhere so it can be used when wifi list refresh finished to correct the
+     * ssid of the wifis in nmcli
+     */
+    QMap<QString, QString>  mBssToCorrectSsidMap;
+
+    /*!
+     * \brief mBusyRefreshing Indicates if it's busy refreshing wifi lists
+     */
+    bool                    mBusyRefreshing = false;
 };

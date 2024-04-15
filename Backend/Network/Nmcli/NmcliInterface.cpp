@@ -2,6 +2,8 @@
 
 #include "Nmcli.h"
 
+#include <QRegularExpression>
+
 //! Methods implementations
 
 NmcliInterface::NmcliInterface(QObject* parent)
@@ -14,7 +16,6 @@ NmcliInterface::NmcliInterface(QObject* parent)
     mWifiProcess->setReadChannel(QProcess::StandardOutput);
 
     connect(mWifiProcess, &QProcess::stateChanged, this, &NmcliInterface::busyChanged);
-    connect(mRefreshProcess, &QProcess::stateChanged, this, &NmcliInterface::busyRefreshingChanged);
     connect(mRefreshProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit && exitCode != 0) {
             emit errorOccured(NmcliInterface::Error(exitCode));
@@ -38,8 +39,17 @@ NmcliInterface::~NmcliInterface()
 
 bool NmcliInterface::busyRefreshing() const
 {
-    return mRefreshProcess && (mRefreshProcess->state() == QProcess::Starting
-                        || mRefreshProcess->state() == QProcess::Running);
+    return mBusyRefreshing;
+}
+
+void NmcliInterface::setBusyRefreshing(bool busy)
+{
+    if (mBusyRefreshing == busy) {
+        return;
+    }
+
+    mBusyRefreshing = busy;
+    emit busyRefreshingChanged();
 }
 
 bool NmcliInterface::busy() const
@@ -58,6 +68,8 @@ void NmcliInterface::refreshWifis(bool rescan)
     if (!mRefreshProcess || busyRefreshing()) {
         return;
     }
+
+    setBusyRefreshing(true);
 
     connect(mRefreshProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
             Qt::SingleShotConnection);
@@ -456,8 +468,10 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             wi->deleteLater();
         }
 
+        setBusyRefreshing(false);
         emit wifisChanged();
     } else {
+        setBusyRefreshing(false);
         emit errorOccured(NmcliInterface::Error(exitCode));
     }
 }
