@@ -238,7 +238,7 @@ signals:
     /*!
      * \brief wifiNeedAuthentication
      */
-    void    wifiNeedAuthentication();
+    void    wifiNeedAuthentication(WifiInfo* wifi);
 
     /*!
      * \brief errorOccured This signal is emitted when an error is occured
