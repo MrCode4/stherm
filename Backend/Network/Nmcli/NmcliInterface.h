@@ -44,6 +44,7 @@ public:
         ConnectDeleteFailed=7,  //! Connection deletion failed.
         NotRunning=8,           //! NetworkManager is not running.
         NotExist=10,            //! Connection, device, or access point does not exist.
+        IWFetchError=11
     };
 
 public:
@@ -192,6 +193,17 @@ private:
      */
     void    onWifiDisconnected();
 
+    /*!
+     * \brief parseBssidToCorrectSsidMap This methods uses iw result to find the correct name of
+     * wifi ssids that have some characters unknown to nmcli
+     */
+    void    parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStatus exitStatus);
+
+    /*!
+     * \brief doRefreshWifi Simply performs the nmcli refresh command
+     */
+    void    doRefreshWifi();
+
 private slots:
     /*!
      * \brief onGetWifiDeviceNameFinished This slot is used to get the name of wifi device and store
@@ -291,4 +303,9 @@ private:
      * \brief mBusyRefreshing Indicates if it's busy refreshing wifi lists
      */
     bool                    mBusyRefreshing = false;
+
+    /*!
+     * \brief mRescanInRefresh Whether rescan should be forced or not
+     */
+    bool                    mRescanInRefresh;
 };

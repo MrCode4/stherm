@@ -69,20 +69,15 @@ void NmcliInterface::refreshWifis(bool rescan)
         return;
     }
 
+    mRescanInRefresh = rescan;
     setBusyRefreshing(true);
 
-    connect(mRefreshProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
-            Qt::SingleShotConnection);
+    //! First update bssid to correct ssid map using iw
+    connect(mRefreshProcess, &QProcess::finished, this,
+            &NmcliInterface::parseBssidToCorrectSsidMap, Qt::SingleShotConnection);
 
-    const QStringList args = NC_REFERESH_ARGS + NC_PRINT_MODE_ARGS + QStringList({
-                                 NC_ARG_DEVICE,
-                                 NC_ARG_WIFI,
-                                 NC_ARG_LIST,
-                                 NC_ARG_RESCAN,
-                                 rescan ? "yes" : "auto"
-                             });
-
-    mRefreshProcess->start(NC_COMMAND, args);
+    NC_DEBUG << "iw process started";
+    mRefreshProcess->start("iw", { "dev", "wlp2s0", "scan" });
 }
 
 bool NmcliInterface::hasWifiProfile(const WifiInfo* wifi)
@@ -291,7 +286,7 @@ void NmcliInterface::addConnection(const QString& name,
     connect(mRefreshProcess, &QProcess::finished, this,
         [&, name, ssid, password, security](int exitCode, QProcess::ExitStatus exitStatus) {
             if (exitStatus == QProcess::NormalExit && exitCode == 0) {
-                mWifis.push_back(new WifiInfo(false, ssid, "", 100, security));
+                // mWifis.push_back(new WifiInfo(false, ssid, "", 100, security));
                 emit wifisChanged();
 
                 mRefreshProcess->start(NC_COMMAND, {
@@ -385,6 +380,7 @@ void NmcliInterface::onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitSta
 
 void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    NC_DEBUG << "nmcli refresh exited with: " << exitCode;
     if (exitCode == 0) {
         //! First backup current wifis intor another list
         WifisList wifisBackup = mWifis;
@@ -412,6 +408,11 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int ssidLen = 5;
             parsedWi.setSsid(line.size() > ssidLen ? line.sliced(ssidLen) : "");
+
+            //! If this BSSID is in mBssToCorrectSsidMap it means that the ssid should be corrected
+            if (mBssToCorrectSsidMap.contains(parsedWi.bssid())) {
+                parsedWi.setSsid(mBssToCorrectSsidMap[parsedWi.bssid()]);
+            }
 
             //! Read SIGNAL line: it's in this form: SIGNAL:<signal>
             line = mRefreshProcess->readLine();
@@ -454,7 +455,8 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
                                         parsedWi.ssid(),
                                         parsedWi.bssid(),
                                         parsedWi.strength(),
-                                        parsedWi.security());
+                                        parsedWi.security()
+                                        );
                 }
                 mWifis.push_back(wifi);
             }
@@ -551,4 +553,109 @@ void NmcliInterface::onWifiDisconnected()
             wifi->setIsConnecting(false);
         }
     }
+}
+
+void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    NC_DEBUG << "iw exited with: " << exitCode;
+    if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
+        setBusyRefreshing(false);
+        emit errorOccured(NmcliInterface::Error::IWFetchError);
+
+        return;
+    }
+
+    //! Clear the map first
+    mBssToCorrectSsidMap.clear();
+
+    QString iwOutStr = mRefreshProcess->readAllStandardOutput();
+
+    //! Regular expression to find BSS and SSID
+    static QRegularExpression bssRegex(R"(BSS ([a-zA-Z0-9]{2}\:)+[a-zA-Z0-9]{2})");
+    static QRegularExpression ssidRegex(R"(SSID\:\s.*)");
+
+    QRegularExpressionMatchIterator bssMatch = bssRegex.globalMatch(iwOutStr);
+    QRegularExpressionMatchIterator ssidMatch = ssidRegex.globalMatch(iwOutStr);
+
+    //! Regular expression to match the hexadecimal representation
+    static QRegularExpression unknownCharsRegex("\\\\x([0-9A-Fa-f]{2})");
+
+    while (bssMatch.hasNext() && ssidMatch.hasNext()) {
+        QString bssid = bssMatch.next().captured();
+        QString ssid = ssidMatch.next().captured();
+
+        //! Find if this ssid contains hex numbers (it probabely contains unknown chars)
+        QRegularExpressionMatchIterator matchIterator = unknownCharsRegex.globalMatch(ssid);
+
+        if (matchIterator.hasNext()) {
+            // find and append all consecutive matches
+            std::map<QString, QString> matchStrs;
+            QString matchStr;
+            QByteArray byteArray;
+            int lastCaptureEnd = -1;
+            int numberOfHexPair = 0; //! For unsopported characters hex value has 3 pair of numbers
+
+            while (matchIterator.hasNext()) {
+                QRegularExpressionMatch match = matchIterator.next();
+                // reset and search for next consecutive
+                if (lastCaptureEnd != -1 && (match.capturedStart() > lastCaptureEnd || numberOfHexPair == 3)) {
+                    numberOfHexPair = 0;
+
+                    // insert current match
+                    if (!matchStr.isEmpty()) {
+                        if (matchStrs.count(matchStr) == 0) {
+                            // insert the equivalent
+                            matchStrs.insert({matchStr, QString::fromUtf8(byteArray)});
+                        }
+                    }
+
+                    matchStr = {};
+                    byteArray = {};
+                }
+
+                numberOfHexPair++;
+                lastCaptureEnd = match.capturedEnd();
+                matchStr.append(match.captured());
+                QString hexString = match.captured(1); // Extract the hexadecimal characters
+                byteArray.append(static_cast<char>(hexString.toInt(nullptr, 16))); // Convert hexadecimal to integer and then to char
+            }
+
+            // insert last match
+            if (!matchStr.isEmpty()) {
+                if (matchStrs.count(matchStr) == 0) {
+                    // insert the equivalent
+                    matchStrs.insert({matchStr, QString::fromUtf8(byteArray)});
+                }
+            }
+
+            for (const QPair<QString, QString>& currMatch : matchStrs) {
+                ssid.replace(currMatch.first, currMatch.second);
+            }
+
+            ssid = ssid.sliced(6);
+            bssid = bssid.sliced(4);
+
+            mBssToCorrectSsidMap[bssid] = ssid;
+        }
+    }
+
+    //! Now perfrom actual refreshing
+    doRefreshWifi();
+}
+
+void NmcliInterface::doRefreshWifi()
+{
+    NC_DEBUG << "refreshing using nmcli";
+    connect(mRefreshProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
+            Qt::SingleShotConnection);
+
+    const QStringList args = NC_REFERESH_ARGS + NC_PRINT_MODE_ARGS + QStringList({
+                                 NC_ARG_DEVICE,
+                                 NC_ARG_WIFI,
+                                 NC_ARG_LIST,
+                                 NC_ARG_RESCAN,
+                                 mRescanInRefresh ? "yes" : "auto"
+                             });
+
+    mRefreshProcess->start(NC_COMMAND, args);
 }

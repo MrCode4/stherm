@@ -37,7 +37,6 @@ public:
     void setBssid(const QString& bssid);
     void setSecurity(const QString& setcurity);
 
-
 signals:
     void        connectedChanged();
     void        strengthChanged();
