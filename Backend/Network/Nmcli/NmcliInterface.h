@@ -206,14 +206,6 @@ private:
 
 private slots:
     /*!
-     * \brief onGetWifiDeviceNameFinished This slot is used to get the name of wifi device and store
-     * it in \a\b mWifiDevice
-     * \param exitCode
-     * \param exitStatus
-     */
-    void    onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
-    /*!
      * \brief onWifiListRefreshFinished This slot is connected to \a\b QProcess::finished() as
      * single-shot in \ref refreshWifis(bool) to get wifi lists and emit \ref
      * wifiListRefereshed(WifiListMap) signal
@@ -274,12 +266,6 @@ private:
      * \brief mWifiProcess is used to do wifi related operations like conneting, disconnecting, etc
      */
     QProcess*               mWifiProcess;
-
-    /*!
-     * \brief mWifiDevice This will hold the name of wifi device. Possible values are wlp2s0,
-     * wlp1s0, etc.
-     */
-    QString                 mWifiDevice;
 
     /*!
      * \brief mWifis Stores all the retrieved wifis

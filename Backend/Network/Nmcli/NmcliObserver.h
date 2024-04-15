@@ -21,6 +21,12 @@ public:
      */
     bool    isWifiOn() const;
 
+    /*!
+     * \brief wifiDevice
+     * \return
+     */
+    QString wifiDevice() const { return mWifiDevice; }
+
 private:
     /*!
      * \brief setDevicePowerState

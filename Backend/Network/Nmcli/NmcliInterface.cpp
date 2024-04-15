@@ -76,8 +76,7 @@ void NmcliInterface::refreshWifis(bool rescan)
     connect(mRefreshProcess, &QProcess::finished, this,
             &NmcliInterface::parseBssidToCorrectSsidMap, Qt::SingleShotConnection);
 
-    NC_DEBUG << "iw process started";
-    mRefreshProcess->start("iw", { "dev", "wlp2s0", "scan" });
+    mRefreshProcess->start("iw", { "dev", mNmcliObserver->wifiDevice(), "scan" });
 }
 
 bool NmcliInterface::hasWifiProfile(const WifiInfo* wifi)
@@ -363,24 +362,8 @@ int NmcliInterface::waitLoop(QProcess* process, int timeout) const
     return loop.exec();
 }
 
-void NmcliInterface::onGetWifiDeviceNameFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    if (exitCode == 0) {
-        QByteArray line = mRefreshProcess->readLine();
-        while (!line.isEmpty() && line != "wifi\n") {
-            line = mRefreshProcess->readLine();
-        }
-
-        mWifiDevice = mRefreshProcess->readLine();
-        if (!mWifiDevice.isEmpty()) {
-            mWifiDevice.remove(mWifiDevice.size() - 1, 1);
-        }
-    }
-}
-
 void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    NC_DEBUG << "nmcli refresh exited with: " << exitCode;
     if (exitCode == 0) {
         //! First backup current wifis intor another list
         WifisList wifisBackup = mWifis;
@@ -557,7 +540,6 @@ void NmcliInterface::onWifiDisconnected()
 
 void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    NC_DEBUG << "iw exited with: " << exitCode;
     if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
         setBusyRefreshing(false);
         emit errorOccured(NmcliInterface::Error::IWFetchError);
@@ -571,18 +553,18 @@ void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStat
     QString iwOutStr = mRefreshProcess->readAllStandardOutput();
 
     //! Regular expression to find BSS and SSID
-    static QRegularExpression bssRegex(R"(BSS ([a-zA-Z0-9]{2}\:)+[a-zA-Z0-9]{2})");
-    static QRegularExpression ssidRegex(R"(SSID\:\s.*)");
+    static QRegularExpression bssSsidRegex(R"((BSS\s([a-zA-Z0-9]{2}\:)+[a-zA-Z0-9]{2})[\s\S]*?(?=SSID\:)(SSID\:\s.*))");
 
-    QRegularExpressionMatchIterator bssMatch = bssRegex.globalMatch(iwOutStr);
-    QRegularExpressionMatchIterator ssidMatch = ssidRegex.globalMatch(iwOutStr);
+    QRegularExpressionMatchIterator bssMatch = bssSsidRegex.globalMatch(iwOutStr);
 
     //! Regular expression to match the hexadecimal representation
     static QRegularExpression unknownCharsRegex("\\\\x([0-9A-Fa-f]{2})");
 
-    while (bssMatch.hasNext() && ssidMatch.hasNext()) {
-        QString bssid = bssMatch.next().captured();
-        QString ssid = ssidMatch.next().captured();
+    while (bssMatch.hasNext()) {
+        QRegularExpressionMatch mch = bssMatch.next();
+
+        QString bssid = mch.captured(1);
+        QString ssid = mch.captured(3);
 
         //! Find if this ssid contains hex numbers (it probabely contains unknown chars)
         QRegularExpressionMatchIterator matchIterator = unknownCharsRegex.globalMatch(ssid);
@@ -635,7 +617,7 @@ void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStat
             ssid = ssid.sliced(6);
             bssid = bssid.sliced(4);
 
-            mBssToCorrectSsidMap[bssid] = ssid;
+            mBssToCorrectSsidMap[bssid.toUpper()] = ssid;
         }
     }
 
@@ -645,7 +627,6 @@ void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStat
 
 void NmcliInterface::doRefreshWifi()
 {
-    NC_DEBUG << "refreshing using nmcli";
     connect(mRefreshProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
             Qt::SingleShotConnection);
 
