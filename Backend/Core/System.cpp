@@ -437,6 +437,7 @@ void NUVE::System::exitManualMode()
     }
 
     mIsManualUpdate = false;
+    emit isManualModeChanged();
 
     QSettings setting;
     setting.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
