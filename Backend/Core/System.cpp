@@ -14,13 +14,14 @@ const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New s
 const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_backdoorUpdate   = QString("backdoorUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
-const QString m_backdoorFromServer= QString("BackdoorFromServer");
+const QString m_backdoorFromServer = QString("BackdoorFromServer");
 
 const QString m_checkInternetConnection = QString("checkInternetConnection");
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
 
 const char m_isBusyDownloader[] = "isBusyDownloader";
+const char m_isResetVersion[]   = "isResetVersion";
 
 constexpr char m_notifyUserProperty[] = "notifyUser";
 
@@ -566,10 +567,10 @@ void NUVE::System::partialUpdate(const bool isBackdoor) {
 
 void NUVE::System::partialUpdateByVersion(const QString version)
 {
-    checkAndDownloadPartialUpdate(version);
+    checkAndDownloadPartialUpdate(version, false, true);
 }
 
-void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor)
+void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor, const bool isResetVersion)
 {
     QString versionAddressInServer;
     int updateFileSize;
@@ -609,7 +610,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         auto downloadedData = file.readAll();
         file.close();
 
-        if (verifyDownloadedFiles(downloadedData, false, isBackdoor))
+        if (verifyDownloadedFiles(downloadedData, false, isBackdoor, isResetVersion))
             return;
         else
             TRACE << "The file update needs to be redownloaded.";
@@ -645,6 +646,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(versionAddressInServer))));
     reply->setProperty(m_methodProperty, isBackdoor ? m_backdoorUpdate : m_partialUpdate);
     mNetManager->setProperty(m_isBusyDownloader, true);
+    mNetManager->setProperty(m_isResetVersion, isResetVersion);
 
     setPartialUpdateProgress(0);
 
@@ -738,7 +740,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
 }
 
-void NUVE::System::updateAndRestart(const bool isBackdoor)
+void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVersion)
 {
     //    // Define source and destination directories
     //    QString destDir = qApp->applicationDirPath();
@@ -787,7 +789,10 @@ void NUVE::System::updateAndRestart(const bool isBackdoor)
     mLastInstalledUpdateDate = QDate::currentDate().toString("dd MMM yyyy");
     QSettings setting;
     setting.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
-    setting.setValue(m_IsManualUpdateSetting, isBackdoor);
+
+    // No need to update mIsManualUpdate
+    mIsManualUpdate = isBackdoor || isResetVersion;
+    setting.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
 
     emit lastInstalledUpdateDateChanged();
 
@@ -806,7 +811,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor)
 
 
 // Checksum verification after download
-bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite, bool isBackdoor) {
+bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite, bool isBackdoor, const bool isResetVersion) {
     QByteArray downloadedChecksum = calculateChecksum(downloadedData);
 
     auto expectedBA = isBackdoor ? mExpectedBackdoorChecksum : m_expectedUpdateChecksum;
@@ -824,7 +829,7 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
             file.close();
         }
 
-        emit partialUpdateReady(isBackdoor);
+        emit partialUpdateReady(isBackdoor, isResetVersion);
 
         return true;
 
@@ -876,7 +881,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
         if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
 
             // Check data and prepare to set up.
-            verifyDownloadedFiles(data);
+            verifyDownloadedFiles(data, true, false, netReply->property(m_isResetVersion).toBool());
             mNetManager->setProperty(m_isBusyDownloader, false);
 
         } else if (netReply->property(m_methodProperty).toString() == m_backdoorUpdate) {

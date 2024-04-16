@@ -207,7 +207,6 @@ BasePageView {
 
     RowLayout {
         id: manulLayout
-
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
