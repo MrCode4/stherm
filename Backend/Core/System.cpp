@@ -1075,7 +1075,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
         emit latestVersionChanged();
 
-        if (notifyUser)
+        if (notifyUser  && !mIsManualUpdate)
             emit notifyNewUpdateAvailable();
     }
 
