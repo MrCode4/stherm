@@ -40,6 +40,7 @@ const QString m_ForceUpdate     = QString("ForceUpdate");
 
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
 const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
+const QString m_IsManualUpdateSetting        = QString("Stherm/IsManualUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 
@@ -99,8 +100,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mountNRF_FW_Directory();
     installUpdate_NRF_FW_Service();
 
+    // Read data from Settings
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
+    mIsManualUpdate          = setting.value(m_IsManualUpdateSetting).toBool();
 
     // reformat if it was saved with old format
     auto oldFormatDate = QDate::fromString(mLastInstalledUpdateDate, "dd/MM/yyyy");
@@ -396,7 +399,7 @@ void NUVE::System::getUpdateInformation(bool notifyUser) {
     QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/updateInfo.json"))));
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
-    reply->setProperty(m_notifyUserProperty, notifyUser);
+    reply->setProperty(m_notifyUserProperty, mIsManualUpdate ? false : notifyUser);
 }
 
 void NUVE::System::getBackdoorInformation() {
@@ -423,6 +426,22 @@ void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSet
 {
     setCanFetchServer(!hasSettingsChanged);
     mSync->pushSettingsToServer(settings);
+}
+
+void NUVE::System::exitManualMode()
+{
+    // Manual mode is false
+    if (!mIsManualUpdate) {
+        return;
+    }
+
+    mIsManualUpdate = false;
+
+    QSettings setting;
+    setting.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
+
+    checkPartialUpdate(true);
+
 }
 
 void NUVE::System::setCanFetchServer(bool canFetch)
@@ -494,6 +513,10 @@ bool NUVE::System::updateAvailable() {
 
 bool NUVE::System::testMode() {
     return mTestMode;
+}
+
+bool NUVE::System::isManualMode() {
+    return mIsManualUpdate;
 }
 
 bool NUVE::System::updateSequenceOnStart()
@@ -764,6 +787,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor)
     mLastInstalledUpdateDate = QDate::currentDate().toString("dd MMM yyyy");
     QSettings setting;
     setting.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
+    setting.setValue(m_IsManualUpdateSetting, isBackdoor);
 
     emit lastInstalledUpdateDateChanged();
 
@@ -1053,7 +1077,8 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     updateLog(mUpdateJsonObject);
     emit logVersionChanged();
 
-    if (mHasForceUpdate) {
+    // Manual update must be exit for force update
+    if (mHasForceUpdate && !mIsManualUpdate) {
         partialUpdate();
     }
 }

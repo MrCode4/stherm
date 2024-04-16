@@ -29,6 +29,7 @@ class System : public NetworkWorker
 
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
+    Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
@@ -90,6 +91,8 @@ public:
     Q_INVOKABLE void wifiConnected(bool hasInternet);
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
+
+    Q_INVOKABLE void exitManualMode();
 
     void setCanFetchServer(bool canFetch);
 
@@ -163,6 +166,8 @@ public:
 
     bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
+    bool isManualMode();
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -204,6 +209,8 @@ signals:
     void canFetchServerChanged();
 
     void backdoorLogChanged();
+
+    void isManualModeChanged();
 
 private:
 
@@ -257,6 +264,8 @@ private:
     QString mLatestVersionDate;
     QString mLatestVersionChangeLog;
     QString mLastInstalledUpdateDate;
+
+    bool mIsManualUpdate;
 
     int mRequiredMemory;
     int mUpdateFileSize;

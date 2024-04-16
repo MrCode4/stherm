@@ -82,7 +82,7 @@ BasePageView {
 
             visible: system.updateAvailable && changeLogTextArea.text.length > 0
             height: changeLogTextArea.text.length > 0 ? Math.min(changeLogTextArea.implicitHeight + header.height + 6, root.height * 0.45) -
-                                                        (manualUpdateBtn.visible ? manualUpdateBtn.height : 0) : 0
+                                                        (manulLayout.visible ? manulLayout.height : 0) : 0
             Layout.fillWidth: true
             Layout.columnSpan: 2
             Layout.rowSpan: 2
@@ -173,7 +173,7 @@ BasePageView {
     }
 
     ItemDelegate {
-        anchors.bottom: manualUpdateBtn.visible ? manualUpdateBtn.top : parent.bottom
+        anchors.bottom: manulLayout.visible ? manulLayout.top : parent.bottom
         anchors.left: parent.left
         anchors.leftMargin: root.leftPadding
         anchors.bottomMargin: root.bottomPadding
@@ -205,26 +205,55 @@ BasePageView {
         }
     }
 
-    ButtonInverted {
-        id: manualUpdateBtn
+    RowLayout {
+        id: manulLayout
 
         anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
         anchors.bottomMargin: root.bottomPadding
-        anchors.horizontalCenter: parent.horizontalCenter
 
-        visible: uiSession.uiTetsMode || system.testMode
-        leftPadding: 8
-        rightPadding: 8
-        text: "  Manual Update  "
+        visible: uiSession.uiTetsMode || system.testMode  || system.isManualUpdate
 
-        onClicked: {
-            if (system) {
-                system.getBackdoorInformation();
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/BackdoorUpdatePage.qml", {
-                                                 "uiSession": root.uiSession
-                                             });
+        ButtonInverted {
+            id: manualUpdateBtn
+
+            Layout.alignment: exitManualUpdateBtn.visible ? Qt.AlignLeft : Qt.AlignHCenter
+
+            visible: uiSession.uiTetsMode || system.testMode
+            leftPadding: 8
+            rightPadding: 8
+            text:"  Manual Update  "
+
+            onClicked: {
+                if (system) {
+                    system.getBackdoorInformation();
+                    if (root.StackView.view) {
+                        root.StackView.view.push("qrc:/Stherm/View/BackdoorUpdatePage.qml", {
+                                                     "uiSession": root.uiSession
+                                                 });
+                    }
                 }
+            }
+        }
+
+        ButtonInverted {
+            id: exitManualUpdateBtn
+
+             Layout.alignment: manualUpdateBtn.visible ? Qt.AlignRight : Qt.AlignHCenter
+
+            visible: system?.isManualUpdate ?? false
+            leftPadding: 8
+            rightPadding: 8
+            text: "Exit manual mode"
+
+            onClicked: {
+                // Exit from manual mode
+
+                if (system) {
+                    system.exitManualMode();
+                }
+
             }
         }
     }
