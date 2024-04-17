@@ -71,6 +71,7 @@ Control {
             anchors.centerIn: parent
             width: parent.width
             height: width / 2
+            visible: !tempSliderDoubleHandle.visible
             enabled: labelVisible && !currentSchedule
             from: minTemprature
             to: maxTemprature
@@ -90,6 +91,18 @@ Control {
                     }
                 }
             }
+        }
+
+        //! Double handle semi circle slider
+        SemiCircleSliderDoubleHandle {
+            id: tempSliderDoubleHandle
+            anchors.centerIn: parent
+            width: parent.width
+            height: width / 2
+            visible: device?.systemSetup?.systemMode === AppSpec.Auto
+            enabled: labelVisible && !currentSchedule
+            from: minTemprature
+            to: maxTemprature
         }
 
         //! Desired temprature label
