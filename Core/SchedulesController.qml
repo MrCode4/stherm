@@ -200,74 +200,26 @@ QtObject {
 
         let currentSchedule = null;
 
-        if (!device.isHold &&
-                (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off) {
+        // it should not be called with these criterias but added for sanity check
+        if (!device.isHold && (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off) {
 
-            // Lambda compare: compare the current schedule time and NOW
-            const compare = (sch) => {
-                var currentDate = Qt.formatDate(new Date(), "ddd");
-                currentDate = currentDate.slice(0, -1);
+            var now = new Date();
+            var currentDate = Qt.formatDate(now, "ddd").slice(0, -1);
 
-                if (sch.runningDays.includes(currentDate)) {
-                     var now = new Date().getTime();
-                    if ((now >= sch.startTimeStamp) && (now <= sch.endTimeStamp)) {
-                        return true;
-                    }
+            // use find!
+            deviceCurrentSchedules.every(schedule => {
+                                             if (!schedule.scheduleElement.enable)
+                                             return true;
 
-                    return false;
-                }
-            }
-
-            var deviceSchedules = [];
-            device.schedules.every(schedule => {
-                                         if (!schedule.enable)
-                                         return true;
-
-                                         var schStartTimeStamp = Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP").getTime();
-                                         var schEndTimeStamp = Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP").getTime();
-
-                                         // Schedule run in days.
-                                         let scheduleRunningDays = findRunningDays(schedule.repeats, schStartTimeStamp);
-
-                                         // **** Prepare the schedule to compare ****
-                                         let currSchedule      = null;
-                                         let currNightSchedule = null;
-
-                                         {
-                                             // Copy the current schedule into currSchedule and change it when necessary
-                                             currSchedule = {
-                                                 type: schedule.type,
-                                                 startTimeStamp: schStartTimeStamp,
-                                                 endTimeStamp: schEndTimeStamp,
-                                                 runningDays: scheduleRunningDays
-                                             };
-
-                                             // Calculate over night schedule
-                                             if ((schEndTimeStamp - schStartTimeStamp) < 0) {
-                                                 currSchedule.endTimeStamp = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP").getTime();
-
-                                                 currNightSchedule = {
-                                                     type: schedule.type,
-                                                     startTimeStamp: Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP").getTime(),
-                                                     endTimeStamp: schEndTimeStamp,
-
-                                                     // Move running days into next days
-                                                     runningDays: nextDayRepeats(scheduleRunningDays)
-                                                 };
+                                             //! Compare time and running days to start it.
+                                             if (schedule.runningDays.includes(currentDate)) {
+                                                 if (now >= schedule.startTime &&
+                                                     now <= schedule.endTime) { // logical compare would be, but in this case we miss one minute for overnight schedules
+                                                     currentSchedule = schedule.scheduleElement;
+                                                     return false;
+                                                 }
                                              }
-                                         }
-
-                                         //! Compare time and running days to start it.
-                                         if(compare(currSchedule)) {
-                                             currentSchedule = schedule;
-                                             return false;
-                                         }
-
-                                         if(currNightSchedule && compare(currNightSchedule)) {
-                                             currentSchedule = schedule;
-                                             return false;
-                                         }
-                                     });
+                                         });
         }
 
         // Disable a 'No repeat' schedule after running one time.

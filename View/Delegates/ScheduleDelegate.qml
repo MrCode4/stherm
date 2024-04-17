@@ -115,11 +115,10 @@ ItemDelegate {
             checked: schedule?.enable ?? false
 
             onToggled: {
-                if (checked) {
+                if (uiSession && schedule && schedule.enable !== checked) {
                     //! First find if there is any overlapping schedules
-                    if (uiSession) {
+                    if (checked) {
 
-                        //! First check if this schedule has overlap with other Schedules
                         internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
                                     Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
                                     Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
@@ -135,9 +134,7 @@ ItemDelegate {
                             return;
                         }
                     }
-                }
 
-                if (schedule && schedule.enable !== checked) {
                     schedule.enable = checked;
 
                     // Send Data to server when a schedule changed...
