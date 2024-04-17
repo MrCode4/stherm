@@ -72,29 +72,8 @@ BasePageView {
         }
 
         onClicked: {
-            //! First check if this schedule has overlap with other Schedules
-            //! Do this only if schedule is enabled (active)
-            if (schedule.enable) {
-                internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
-                            Date.fromLocaleTimeString(Qt.locale(),
-                                                      timeProperty === "start-time" ? selectedTime
-                                                                                    : schedule.startTime,
-                                                      "hh:mm AP"),
-                            Date.fromLocaleTimeString(Qt.locale(),
-                                                      timeProperty === "end-time"  ? selectedTime
-                                                                                   : schedule.endTime,
-                                                      "hh:mm AP"),
-                            schedule.repeats,
-                            schedule);
-
-                if (internal.overlappingSchedules.length > 0) {
-                    //! New schedules overlapps with at least one other Schedule
-                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveTime);
-                    uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
-                    return;
-                }
-            }
-
+            //! we do not need to check if this schedule has overlap with other Schedules
+            //! it will be done before saving it!
             saveTime();
         }
     }
@@ -104,12 +83,6 @@ BasePageView {
         delayed: true
         property: "selectedTime"
         value: _contentLay.selectedTime
-    }
-
-    QtObject {
-        id: internal
-
-        property var overlappingSchedules: []
     }
 
     GridLayout {
@@ -257,14 +230,6 @@ BasePageView {
      * ****************************************************************************************/
     function saveTime()
     {
-        //! If there is overlapping Schedules disable them
-        internal.overlappingSchedules.forEach((element, index) => {
-                                                  element.enable = false;
-                                              });
-
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveTime);
-
-
         if (editMode && schedule) {
             if (timeProperty === "start-time" && schedule.startTime !== selectedTime) {
                 schedule.startTime = selectedTime;
