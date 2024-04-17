@@ -145,7 +145,7 @@ Control {
                 verticalCenter: parent.verticalCenter
                 verticalCenterOffset: labelVerticalOffset
             }
-            font.pointSize: _root.font.pointSize * 0.8
+            font.pointSize: _root.font.pointSize * 0.7
             text: _tempSlider.visible ? Number(_tempSlider.value).toLocaleString(locale, "f", 0)
                                       : tempSliderDoubleHandle.second.value.toFixed(0)
 
@@ -192,7 +192,7 @@ Control {
                 verticalCenter: parent.verticalCenter
                 verticalCenterOffset: labelVerticalOffset
             }
-            font.pointSize: _root.font.pointSize * 0.8
+            font.pointSize: _root.font.pointSize * 0.7
             text: tempSliderDoubleHandle.first.value.toFixed(0)
 
             //! Unit

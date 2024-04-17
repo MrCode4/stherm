@@ -47,6 +47,7 @@ Control {
         //! This is to fix a bug with slider working when there is a popup
         enabled: !uiSession?.popupLayout?.isTherePopup
         anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenterOffset: -8
         height: parent.height / 2. + 8
         width: height * 2
         labelVisible: device?.systemSetup.systemMode !== AppSpecCPP.Off
@@ -72,8 +73,8 @@ Control {
             TapHandler {
                 onTapped: {
                     _root.StackView.view.push("qrc:/Stherm/View/SensorsPage.qml", {
-                                                                      "uiSession": Qt.binding(() => uiSession)
-                                                                  })
+                                                  "uiSession": Qt.binding(() => uiSession)
+                                              })
                 }
             }
         }
@@ -104,7 +105,8 @@ Control {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: centerItems.top
-                bottomMargin: -16
+                bottomMargin: -8
+                horizontalCenterOffset: -6
             }
             enabled: !deviceController.currentSchedule
             hoverEnabled: enabled
@@ -121,42 +123,67 @@ Control {
 
         Item {
             id: centerItems
-            y: _desiredTempItem.height - _airCondItem.height
+            y: _desiredTempItem.height - _airCondItem.height + 8
             anchors {
                 horizontalCenter: parent.horizontalCenter
-                horizontalCenterOffset: 8
+                horizontalCenterOffset: 12
             }
             width: _root.width - 120
-            height: _airCondItem.implicitHeight + _dateTimeHolder.height + 16 * scaleFactor
+            height: _airCondItem.implicitHeight + _dateTimeHolder.height + 34 * scaleFactor
 
-            //! Humidity item
-            CurrentHumidityButton {
-                id: _currHumidLbl
-                anchors {
-                    left: parent.left
-                    top: parent.top
-                    topMargin: -8
-                }
-                device: _root.uiSession.appModel
+            RowLayout {
+                x: -4
+                width: parent.width - 4
+                spacing: 10
 
-                onClicked: {
-                    if (mainStackView && (systemAccessories.accessoriesWireType !== AppSpecCPP.None)) {
-                        mainStackView.push("qrc:/Stherm/View/HumidityPage.qml", {
-                                                      "uiSession": Qt.binding(() => uiSession)
-                                                  })
+                //! Humidity item
+                CurrentHumidityButton {
+                    id: _currHumidLbl
+                    Layout.alignment: Qt.AlignLeading
+                    Layout.leftMargin: -8
+                    device: _root.uiSession.appModel
+
+                    onClicked: {
+                        if (mainStackView && (systemAccessories.accessoriesWireType !== AppSpecCPP.None)) {
+                            mainStackView.push("qrc:/Stherm/View/HumidityPage.qml", {
+                                                   "uiSession": Qt.binding(() => uiSession)
+                                               })
+                        }
                     }
                 }
-            }
 
-            //! Air condition item
-            AirConditionItem {
-                id: _airCondItem
-                anchors {
-                    right: parent.right
-                    top: parent.top
+                Item {
+                    Layout.alignment: Qt.AlignHCenter
+                    implicitWidth: scheduleOnLbl.implicitWidth
+                    implicitHeight: scheduleOnLbl.implicitHeight
+
+                    OnScheduleLabel {
+                        id: scheduleOnLbl
+                        anchors.fill: parent
+                        visible: uiSession.deviceController.currentSchedule
+                        font {
+                            pointSize: _root.font.pointSize * 0.8
+                        }
+
+                        TapHandler {
+                            onTapped: {
+                                if (mainStackView) {
+                                    mainStackView.push("qrc:/Stherm/View/ScheduleView.qml", {
+                                                           "uiSession": Qt.binding(() => uiSession)
+                                                       });
+                                }
+                            }
+                        }
+                    }
                 }
-                // using iaq
-                condition: device._co2_id
+
+                //! Air condition item
+                AirConditionItem {
+                    id: _airCondItem
+                    Layout.alignment: Qt.AlignTrailing
+                    // using iaq
+                    condition: device._co2_id
+                }
             }
 
             //! Fan
@@ -169,6 +196,7 @@ Control {
                 anchors {
                     left: parent.left
                     bottom: parent.bottom
+                    leftMargin: -8
                 }
 
                 onClicked: {
@@ -185,6 +213,7 @@ Control {
                 anchors {
                     right: parent.right
                     bottom: parent.bottom
+                    rightMargin: 8
                 }
                 uiSession: _root.uiSession
             }
@@ -192,8 +221,12 @@ Control {
 
         Item {
             id: _dateTimeHolder
-            y: _desiredTempItem.height + 12 * scaleFactor
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors {
+                bottom: centerItems.bottom
+                horizontalCenter: parent.horizontalCenter
+                bottomMargin: 8
+                horizontalCenterOffset: -8
+            }
             height: _dateTimeLbl.implicitHeight
             width: _dateTimeLbl.maximumWidth
 
@@ -211,28 +244,6 @@ Control {
             }
         }
 
-        OnScheduleLabel {
-            anchors {
-                bottom: _dateTimeHolder.top
-                horizontalCenter: _dateTimeHolder.horizontalCenter
-                bottomMargin: 16
-            }
-            visible: uiSession.deviceController.currentSchedule
-            font {
-                pointSize: _root.font.pointSize * 0.8
-            }
-
-            TapHandler {
-                onTapped: {
-                    if (mainStackView) {
-                        mainStackView.push("qrc:/Stherm/View/ScheduleView.qml", {
-                                               "uiSession": Qt.binding(() => uiSession)
-                                           });
-                    }
-                }
-            }
-        }
-
         //! NEXGEN icon
         OrganizationIcon {
             id: _logo
@@ -243,7 +254,7 @@ Control {
 
             appModel: _root.device
             width: parent.width * 0.5
-            height: parent.height * 0.25
+            height: parent.height * 0.2
 
             TapHandler {
                 onTapped: {
@@ -303,10 +314,10 @@ Control {
         target: uiSession.popUps
 
         function onOpenPageFromHome(item: string) {
-            if (mainStackView) 
+            if (mainStackView)
                 mainStackView.push(item, {
-                                          "uiSession": Qt.binding(() => uiSession)
-                                      });
+                                       "uiSession": Qt.binding(() => uiSession)
+                                   });
         }
     }
 
@@ -338,7 +349,7 @@ Control {
                                        });
                 }
             }
-       }
+        }
     }
 
     Timer {
@@ -402,7 +413,7 @@ Control {
             PropertyChanges {
                 target: _desiredTempItem
                 font.pointSize: Qt.application.font.pointSize * 3
-                labelVerticalOffset: device?.systemSetup?.systemMode === AppSpec.Auto ? -8 : -32
+                labelVerticalOffset: device?.systemSetup?.systemMode === AppSpec.Auto ? -2 : -32
             }
 
             PropertyChanges {
