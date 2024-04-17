@@ -101,14 +101,13 @@ Control {
         //! System mode button
         SystemModeButton {
             id: _systemModeBtn
-            enabled: !deviceController.currentSchedule
-            hoverEnabled: enabled
-
             anchors {
                 horizontalCenter: parent.horizontalCenter
-                horizontalCenterOffset: -_desiredTempItem.labelWidth - 12
+                bottom: centerItems.top
+                bottomMargin: -16
             }
-            y: (_desiredTempItem.height - height) / 2 - 4
+            enabled: !deviceController.currentSchedule
+            hoverEnabled: enabled
             deviceController: uiSession?.deviceController ?? null
 
             onClicked: {
@@ -121,13 +120,14 @@ Control {
         }
 
         Item {
+            id: centerItems
+            y: _desiredTempItem.height - _airCondItem.height
             anchors {
                 horizontalCenter: parent.horizontalCenter
-                bottom: _dateTimeHolder.bottom
                 horizontalCenterOffset: 8
             }
             width: _root.width - 120
-            height: _airCondItem.implicitHeight + _dateTimeHolder.height + 40 * scaleFactor
+            height: _airCondItem.implicitHeight + _dateTimeHolder.height + 16 * scaleFactor
 
             //! Humidity item
             CurrentHumidityButton {
@@ -402,7 +402,7 @@ Control {
             PropertyChanges {
                 target: _desiredTempItem
                 font.pointSize: Qt.application.font.pointSize * 3
-                labelVerticalOffset: -8
+                labelVerticalOffset: device?.systemSetup?.systemMode === AppSpec.Auto ? -8 : -32
             }
 
             PropertyChanges {
