@@ -41,7 +41,7 @@ Control {
     property bool               labelVisible: true
 
     //! Label width
-    readonly property alias     labelWidth: _desiredTempratureLbl.width
+    readonly property alias     labelWidth: firstTempLabel.width
 
 
     onDraggingChanged: {
@@ -136,13 +136,18 @@ Control {
             }
         }
 
-        //! Desired temprature label
+        //! Label to show desired temperature in cooling/heating mode and second temperature in auto
         Label {
-            id: _desiredTempratureLbl
+            id: firstTempLabel
             visible: labelVisible
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: labelVerticalOffset
-            text: Number(_tempSlider.value).toLocaleString(locale, "f", 0)
+            x: device?.systemSetup?.systemMode !== AppSpec.Auto ? (parent.width - width) / 2 : parent.width / 2 + 30
+            anchors {
+                verticalCenter: parent.verticalCenter
+                verticalCenterOffset: labelVerticalOffset
+            }
+            font.pointSize: _root.font.pointSize * 0.8
+            text: _tempSlider.visible ? Number(_tempSlider.value).toLocaleString(locale, "f", 0)
+                                      : tempSliderDoubleHandle.second.value.toFixed(0)
 
             //! Unit
             Label {
@@ -168,6 +173,58 @@ Control {
                             uiSession.popupLayout.displayPopUp(tempUnitPop, true);
                         }
                     }
+                }
+            }
+
+            Behavior on x {
+                SequentialAnimation {
+                    PauseAnimation { duration: 150 }
+                    NumberAnimation { duration: 250 }
+                }
+            }
+        }
+
+        Label {
+            id: secondTempLabel
+            visible: labelVisible && tempSliderDoubleHandle.visible
+            x: device?.systemSetup?.systemMode === AppSpec.Auto ? parent.width / 2 - width - unitLbl.width - 30 : (parent.width - width) / 2
+            anchors {
+                verticalCenter: parent.verticalCenter
+                verticalCenterOffset: labelVerticalOffset
+            }
+            font.pointSize: _root.font.pointSize * 0.8
+            text: tempSliderDoubleHandle.first.value.toFixed(0)
+
+            //! Unit
+            Label {
+                anchors.left: parent.right
+                anchors.top: parent.top
+                opacity: 0.6
+                font {
+                    pointSize: _root.font.pointSize / 2
+                    capitalization: "AllUppercase"
+                }
+                text: `\u00b0${unit}`
+            }
+
+            Item {
+                width: parent.width + unitLbl.width + 8
+                height: parent.height + unitLbl.height
+                anchors.verticalCenter: parent.verticalCenter
+
+                TapHandler {
+                    onTapped: {
+                        if (uiSession) {
+                            uiSession.popupLayout.displayPopUp(tempUnitPop, true);
+                        }
+                    }
+                }
+            }
+
+            Behavior on x {
+                SequentialAnimation {
+                    PauseAnimation { duration: 150 }
+                    NumberAnimation { duration: 250 }
                 }
             }
         }
