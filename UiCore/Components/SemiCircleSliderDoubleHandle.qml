@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Shapes
 
 import Ronia
-import Ronia.impl
+import Ronia.impl 1.0
 import Stherm
 
 /*! ***********************************************************************************************
@@ -13,10 +13,6 @@ Control {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Value of Slider
-    //! \NOTE: Any bindings to this value will be broken, use Connections instead
-    property real           value: 18.0
-
     //! Min value of slider
     property real           from: 18.0
 
@@ -34,6 +30,7 @@ Control {
 
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
+        pressed: firstHandleDh.dragging
         handle: firstHandle
         value: from
 
@@ -48,6 +45,7 @@ Control {
 
     //! Second handle data
     property RangeSliderHandleData second: RangeSliderHandleData {
+        pressed: secondHandleDh.dragging
         handle: secondHandle
         value: to
 
@@ -243,7 +241,7 @@ Control {
                     angle = angle < -170 ? angle + 360 : angle;
                     var diffAngle = angle - startAngle;
                     var newValue = first.value + diffAngle / (firstHandle.angleRange) * Math.abs(to - from);
-                    first.value = Math.max(from, Math.min(to, newValue));
+                    first.setValue(Math.max(from, Math.min(to, newValue)));
 
 
                     startAngle = angle;
@@ -349,7 +347,7 @@ Control {
                     angle = angle < -170 ? angle + 360 : angle;
                     var diffAngle = angle - startAngle;
                     var newValue = second.value + diffAngle / (secondHandle.angleRange) * Math.abs(to - from);
-                    second.value = Math.max(from, Math.min(to, newValue));
+                    second.setValue(Math.max(from, Math.min(to, newValue)));
 
 
                     startAngle = angle;

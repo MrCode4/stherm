@@ -26,10 +26,10 @@ Control {
     property string             unit: (device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property real               minTemprature: device?._minimumTemperature ?? 0
+    property real               minTemprature: device?._minimumTemperature ?? 40
 
     //! Maximum temprature
-    property real               maxTemprature: device?._maximumTemperature ?? 100
+    property real               maxTemprature: device?._maximumTemperature ?? 90
 
     //! Offset of desired temp label
     property int                labelVerticalOffset: -8
@@ -103,6 +103,37 @@ Control {
             enabled: labelVisible && !currentSchedule
             from: minTemprature
             to: maxTemprature
+
+            first.value: device ? Utils.convertedTemperatureClamped(device.autoMinReqTemp,
+                                                                    device.setting.tempratureUnit,
+                                                                    minTemprature,
+                                                                    maxTemprature)
+                                : 60
+            second.value: device ? Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
+                                                                     device.setting.tempratureUnit,
+                                                                     minTemprature,
+                                                                     maxTemprature)
+                                 : 80
+
+            first.onPressedChanged: {
+                if (!device) return;
+
+                if (!first.pressed && first.value.toFixed(2) !== device.autoMinReqTemp.toFixed(2)) {
+                    device.autoMinReqTemp = device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+                            ? Utils.fahrenheitToCelsius(first.value)
+                            : first.value
+                }
+            }
+
+            second.onPressedChanged: {
+                if (!device) return;
+
+                if (!second.pressed && second.value.toFixed(2) !== device.autoMaxReqTemp.toFixed(2)) {
+                    device.autoMaxReqTemp = device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+                            ? Utils.fahrenheitToCelsius(second.value)
+                            : second.value
+                }
+            }
         }
 
         //! Desired temprature label
