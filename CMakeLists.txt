@@ -131,6 +131,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ButtonInverted.qml
         UiCore/Components/OnScheduleLabel.qml
         UiCore/Components/RangeSlider.qml
+        UiCore/Components/SemiCircleSliderDoubleHandle.qml
 
 
         # Views and Widgets
