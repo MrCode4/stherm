@@ -23,20 +23,12 @@ Item {
         target: messageController
         enabled: Boolean(uiSession)
 
-        function onNewMessageReceived(message)
-        {
-            //! \todo This will later be shown using PopUpLayout to be able to show multiple message
-            //! popups on top of each other.
+        function onNewMessageReceived(message: Message) {
+            showMessagePopup(message);
+        }
 
-            //! Create an instance of AlertNotifPopup
-            var newAlertPopup = _messagePopupCompo.createObject(_root, {
-                                                                    "message": message
-                                                                });
-
-            if (newAlertPopup) {
-                //! Ask PopUpLayout to open popup
-                uiSession.popupLayout.displayPopUp(newAlertPopup, false);
-            }
+        function onShowMessage(message: Message) {
+            showMessagePopup(message);
         }
     }
 
@@ -50,6 +42,24 @@ Item {
 
                 destroy(this);
             }
+        }
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+    //! Show message popups
+    function showMessagePopup(message: Message) {
+        //! \todo This will later be shown using PopUpLayout to be able to show multiple message
+        //! popups on top of each other.
+
+        //! Create an instance of AlertNotifPopup
+        var newAlertPopup = _messagePopupCompo.createObject(_root, {
+                                                                "message": message
+                                                            });
+
+        if (newAlertPopup) {
+            //! Ask PopUpLayout to open popup
+            uiSession.popupLayout.displayPopUp(newAlertPopup, false);
         }
     }
 }

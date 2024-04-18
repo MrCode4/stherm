@@ -20,6 +20,9 @@ ItemDelegate {
 
     /* Object properties
      * ****************************************************************************************/
+
+    highlighted: !message.isRead
+
     text: message?.type === Message.Type.Alert
           ? "Alert" : (message?.type === Message.Type.Notification ? "Notification"
                                                                    : "Message")
