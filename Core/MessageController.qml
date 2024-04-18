@@ -69,6 +69,10 @@ QtObject {
                                  foundMessage.type === message.type) {
                                  foundMessage.isRead = message.isRead;
 
+                                 // isRead in the server is wrong. So I set to false the condition.
+                                 if (false && !foundMessage.isRead)
+                                     newMessageReceived(foundMessage);
+
                              } else { // Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
                                  addNewMessageFromData(message.type, message.message, message.datetime, message.isRead, icon, Message.SourceType.Server);
