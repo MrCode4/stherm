@@ -33,8 +33,10 @@ Item {
                                                                     "message": message
                                                                 });
 
-            //! Ask PopUpLayout to open popup
-            uiSession.popupLayout.displayPopUp(newAlertPopup, false);
+            if (newAlertPopup) {
+                //! Ask PopUpLayout to open popup
+                uiSession.popupLayout.displayPopUp(newAlertPopup, false);
+            }
         }
     }
 

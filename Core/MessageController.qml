@@ -31,8 +31,14 @@ QtObject {
 
         onTriggered: {
             activeAlerts = true;
-        }
 
+            // Show messages that isRead is false
+            device.messages.forEach(message => {
+                                    if (!message.isRead) {
+                                            newMessageReceived(message);
+                                        }
+                                    });
+        }
     }
 
     /* Signals
@@ -67,11 +73,8 @@ QtObject {
                              var messageDatetime = message.datetime === null ? "" : message.datetime;
                              if (foundMessage && foundMessage.datetime === messageDatetime &&
                                  foundMessage.type === message.type) {
-                                 foundMessage.isRead = message.isRead;
-
-                                 // isRead in the server is wrong. So I set to false the condition.
-                                 if (false && !foundMessage.isRead)
-                                     newMessageReceived(foundMessage);
+                                 // isRead in the server is wrong. So I use the isRead condition from the local.
+                                 // foundMessage.isRead = message.isRead;
 
                              } else { // Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
