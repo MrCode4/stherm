@@ -35,13 +35,16 @@ Control {
     property int                labelVerticalOffset: -8
 
     //! Holds whether SemiCircleSlider is being dragged
-    readonly property alias     dragging: _tempSlider.pressed
+    readonly property bool      dragging: _tempSlider.pressed || tempSliderDoubleHandle.pressed
+
+    //! Whether labels moving anima, should be enabled
+    property bool               enableAnimations: true
 
     //! Visibility of temprature label
     property bool               labelVisible: true
 
     //! Label width
-    readonly property alias     labelWidth: firstTempLabel.width
+    readonly property alias     labelWidth: rightTempLabel.width
 
 
     onDraggingChanged: {
@@ -138,20 +141,26 @@ Control {
 
         //! Label to show desired temperature in cooling/heating mode and second temperature in auto
         Label {
-            id: firstTempLabel
+            id: rightTempLabel
             visible: labelVisible
-            x: device?.systemSetup?.systemMode !== AppSpec.Auto ? (parent.width - width) / 2 : parent.width / 2 + 30
+            x: device?.systemSetup?.systemMode === AppSpec.Auto
+               ? 3 * parent.width / 4 - width - rightUnitLbl.width + 4
+               : (parent.width - width) / 2
+            opacity: tempSliderDoubleHandle.first.pressed ? 0 : 1.
             anchors {
                 verticalCenter: parent.verticalCenter
-                verticalCenterOffset: labelVerticalOffset
+                verticalCenterOffset: opacity > 0.99 ? labelVerticalOffset : 0
             }
-            font.pointSize: _root.font.pointSize * 0.7
+            font {
+                family: "mono"
+                pointSize: _root.font.pointSize * 0.7
+            }
             text: _tempSlider.visible ? Number(_tempSlider.value).toLocaleString(locale, "f", 0)
                                       : tempSliderDoubleHandle.second.value.toFixed(0)
 
             //! Unit
             Label {
-                id: unitLbl
+                id: rightUnitLbl
                 anchors.left: parent.right
                 anchors.top: parent.top
                 opacity: 0.6
@@ -163,8 +172,8 @@ Control {
             }
 
             Item {
-                width: parent.width + unitLbl.width + 8
-                height: parent.height + unitLbl.height
+                width: parent.width + rightUnitLbl.width + 8
+                height: parent.height + rightUnitLbl.height
                 anchors.verticalCenter: parent.verticalCenter
 
                 TapHandler {
@@ -177,26 +186,35 @@ Control {
             }
 
             Behavior on x {
+                enabled: _root.enableAnimations
                 SequentialAnimation {
                     PauseAnimation { duration: 150 }
                     NumberAnimation { duration: 250 }
                 }
             }
+            Behavior on opacity { NumberAnimation { duration: 100 } }
         }
 
         Label {
-            id: secondTempLabel
+            id: leftTempLabel
             visible: labelVisible && tempSliderDoubleHandle.visible
-            x: device?.systemSetup?.systemMode === AppSpec.Auto ? parent.width / 2 - width - unitLbl.width - 30 : (parent.width - width) / 2
+            x: device?.systemSetup?.systemMode === AppSpec.Auto
+               ? parent.width / 4 - 4
+               : (parent.width - width) / 2
+            opacity: tempSliderDoubleHandle.second.pressed ? 0 : 1.
             anchors {
                 verticalCenter: parent.verticalCenter
-                verticalCenterOffset: labelVerticalOffset
+                verticalCenterOffset: opacity > 0.99 ? labelVerticalOffset : 0
             }
-            font.pointSize: _root.font.pointSize * 0.7
+            font {
+                family: "mono"
+                pointSize: _root.font.pointSize * 0.7
+            }
             text: tempSliderDoubleHandle.first.value.toFixed(0)
 
             //! Unit
             Label {
+                id: leftUnitLbl
                 anchors.left: parent.right
                 anchors.top: parent.top
                 opacity: 0.6
@@ -208,8 +226,8 @@ Control {
             }
 
             Item {
-                width: parent.width + unitLbl.width + 8
-                height: parent.height + unitLbl.height
+                width: parent.width + rightUnitLbl.width + 8
+                height: parent.height + rightUnitLbl.height
                 anchors.verticalCenter: parent.verticalCenter
 
                 TapHandler {
@@ -222,11 +240,13 @@ Control {
             }
 
             Behavior on x {
+                enabled: _root.enableAnimations
                 SequentialAnimation {
                     PauseAnimation { duration: 150 }
                     NumberAnimation { duration: 250 }
                 }
             }
+            Behavior on opacity { NumberAnimation { duration: 100 } }
         }
 
         //! Connections to sync slider with device.

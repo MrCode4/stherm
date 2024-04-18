@@ -47,7 +47,6 @@ Control {
         //! This is to fix a bug with slider working when there is a popup
         enabled: !uiSession?.popupLayout?.isTherePopup
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.horizontalCenterOffset: -8
         height: parent.height / 2. + 8
         width: height * 2
         labelVisible: device?.systemSetup.systemMode !== AppSpecCPP.Off
@@ -414,6 +413,7 @@ Control {
                 target: _desiredTempItem
                 font.pointSize: Qt.application.font.pointSize * 3
                 labelVerticalOffset: device?.systemSetup?.systemMode === AppSpec.Auto ? -2 : -32
+                enableAnimations: true
             }
 
             PropertyChanges {
@@ -430,6 +430,7 @@ Control {
                 target: _desiredTempItem
                 font.pointSize: Qt.application.font.pointSize * 4.8
                 labelVerticalOffset: AppStyle.size / 15
+                enableAnimations: false
             }
 
             PropertyChanges {
@@ -441,14 +442,22 @@ Control {
 
     transitions: [
         Transition {
-            from: "*"
-            to: "*"
+            reversible: true
+            from: "idle"
+            to: "dragging"
 
-            //! First change
-            NumberAnimation {
-                targets: [_desiredTempItem, _itemsToHide]
-                properties: "labelVerticalOffset,font.pointSize,opacity"
-                duration: 250
+            SequentialAnimation {
+                PropertyAnimation {
+                    target: _desiredTempItem
+                    property: "enableAnimations"
+                    duration: 0
+                }
+
+                NumberAnimation {
+                    targets: [_desiredTempItem, _itemsToHide]
+                    properties: "labelVerticalOffset,font.pointSize,opacity"
+                    duration: 250
+                }
             }
         }
     ]
