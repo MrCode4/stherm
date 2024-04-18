@@ -100,27 +100,17 @@ Control {
                 capStyle: ShapePath.RoundCap
                 strokeColor: "transparent"
                 fillGradient: ConicalGradient {
-                    angle: 360
+                    angle: -10
                     centerX: _control.background.shapeWidth / 2
                     centerY: _control.background.shapeHeight
 
                     GradientStop {
-                        position: 0.5 - _control.second.position / 2 - 0.005
+                        position: 0
                         color: true ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
                     }
 
                     GradientStop {
-                        position: 0.5 - _control.second.position / 2 + 0.015
-                        color: true ? Style.primary : Qt.darker(Style.primary, _control.darkerShade)
-                    }
-
-                    GradientStop {
-                        position: 0.5 - _control.first.position / 2 - 0.015
-                        color: true ? Style.primary : Qt.darker(Style.primary, _control.darkerShade)
-                    }
-
-                    GradientStop {
-                        position: 0.5 - _control.first.position / 2 + 0.005
+                        position: 0.55
                         color: true ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
                     }
                 }
@@ -132,6 +122,24 @@ Control {
                     radiusY: background.shapeHeight
                     startAngle: 180
                     sweepAngle: 180
+                }
+            }
+
+            ShapePath {
+                startX: 0
+                startY: background.shapeHeight
+                capStyle: ShapePath.RoundCap
+                fillColor: "transparent"
+                strokeWidth: background.pathWidth
+                strokeColor: Qt.darker(Style.accent, 1.2)
+
+                PathAngleArc {
+                    centerX: background.shapeWidth / 2
+                    centerY: background.shapeHeight
+                    radiusX: (background.shapeWidth - background.pathWidth) / 2
+                    radiusY: background.shapeHeight - background.pathWidth / 2
+                    startAngle: 180 + firstHandle.rotation
+                    sweepAngle: secondHandle.rotation - firstHandle.rotation
                 }
             }
 
@@ -166,6 +174,7 @@ Control {
             var valueRange = Math.abs(to - from);
             return (Math.max((first.value - from) / (valueRange > 0 ? valueRange : 1), 0) * angleRange) % 360
         }
+        enabled: secondHandleDh.dragging ? 0.65 : 1.
 
         Rectangle {
             id: firstHandleCircle
@@ -195,6 +204,7 @@ Control {
                                                                   - _control.background.pathWidth - 24, 2)
             readonly property point center: Qt.point((parent.width + parent.x) / 2, parent.height + parent.y * 2)
 
+            enabled: !secondHandleDh.dragging
             grabPermissions: dragging ? PointerHandler.CanTakeOverFromAnything
                                       : PointerHandler.ApprovesTakeOverByAnything
             target: null //! To handle dragging arbitrarily
@@ -272,6 +282,7 @@ Control {
             var valueRange = Math.abs(to - from);
             return (((second.value - from) / (valueRange > 0 ? valueRange : 1)) * angleRange) % 360
         }
+        enabled: firstHandleDh.dragging ? 0.65 : 1.
 
         Rectangle {
             id: secondHandleCircle
@@ -301,6 +312,7 @@ Control {
                                                                   - _control.background.pathWidth - 24, 2)
             readonly property point center: Qt.point((parent.width + parent.x) / 2, parent.height + parent.y * 2)
 
+            enabled: !firstHandleDh.dragging
             grabPermissions: dragging ? PointerHandler.CanTakeOverFromAnything
                                       : PointerHandler.ApprovesTakeOverByAnything
             target: null //! To handle dragging arbitrarily
