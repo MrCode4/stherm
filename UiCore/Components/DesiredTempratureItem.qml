@@ -139,6 +139,23 @@ Control {
             }
         }
 
+        //! Min and Max temperature labels
+        Label {
+            y: _tempSlider.height
+            x: 28 * scaleFactor
+            opacity: 0.6
+            font.pointSize: Application.font.pointSize * 0.9
+            text: minTemprature
+        }
+
+        Label {
+            y: _tempSlider.height
+            x: parent.width - 28 * scaleFactor - width
+            opacity: 0.6
+            font.pointSize: Application.font.pointSize * 0.9
+            text: maxTemprature
+        }
+
         //! Label to show desired temperature in cooling/heating mode and second temperature in auto
         Label {
             id: rightTempLabel
@@ -149,11 +166,10 @@ Control {
             opacity: tempSliderDoubleHandle.first.pressed ? 0 : 1.
             anchors {
                 verticalCenter: parent.verticalCenter
-                verticalCenterOffset: opacity > 0.99 ? labelVerticalOffset : 0
+                verticalCenterOffset: labelVerticalOffset
             }
             font {
-                family: "mono"
-                pointSize: _root.font.pointSize * 0.7
+                pointSize: _root.font.pointSize * 0.65
             }
             text: _tempSlider.visible ? Number(_tempSlider.value).toLocaleString(locale, "f", 0)
                                       : tempSliderDoubleHandle.second.value.toFixed(0)
@@ -199,16 +215,15 @@ Control {
             id: leftTempLabel
             visible: labelVisible && tempSliderDoubleHandle.visible
             x: device?.systemSetup?.systemMode === AppSpec.Auto
-               ? parent.width / 4 - 4
+               ? parent.width / 4
                : (parent.width - width) / 2
             opacity: tempSliderDoubleHandle.second.pressed ? 0 : 1.
             anchors {
                 verticalCenter: parent.verticalCenter
-                verticalCenterOffset: opacity > 0.99 ? labelVerticalOffset : 0
+                verticalCenterOffset: labelVerticalOffset
             }
             font {
-                family: "mono"
-                pointSize: _root.font.pointSize * 0.7
+                pointSize: _root.font.pointSize * 0.65
             }
             text: tempSliderDoubleHandle.first.value.toFixed(0)
 
