@@ -45,10 +45,10 @@ BasePageView {
         //! Check if color is modified
         var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
 
-        if (setting && (setting.brightness !== _brightnessSlider.value
-                        || setting.adaptiveBrightness !== _adaptiveBrSw.checked
-                        || setting.volume !== _speakerSlider.value
-                        || setting.tempratureUnit !== selectedTempUnit)) {
+        if (internal.copyOfSettings.brightness !== _brightnessSlider.value
+                || internal.copyOfSettings.adaptiveBrightness !== _adaptiveBrSw.checked
+                || internal.copyOfSettings.volume !== _speakerSlider.value
+                || internal.copyOfSettings.tempratureUnit !== selectedTempUnit) {
             //! This means that changes are occured that are not saved into model
             uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
             uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
@@ -136,6 +136,8 @@ BasePageView {
                     to: 100
                     value: appModel?.setting?.brightness ?? 0
 
+                    enabled: !_adaptiveBrSw.checked
+
                     onValueChanged: onlineTimer.startTimer();
                 }
 
@@ -147,13 +149,17 @@ BasePageView {
             }
 
             Label {
+                id: speakerLabel
                 opacity: 0.6
                 Layout.topMargin: 12
                 text: "Speaker"
+
+                visible: false
             }
 
             //! Speaker row
             RowLayout {
+                visible: speakerLabel.visible
                 spacing: 8
 
                 RoniaTextIcon {
@@ -173,6 +179,8 @@ BasePageView {
                     from: 0
                     to: 100
                     value: appModel?.setting?.volume ?? 0
+
+                    enabled: false
                 }
 
                 Label {
@@ -283,11 +291,12 @@ BasePageView {
         onAccepted: {
             //! Perform reseting settings
             if (deviceController) {
-                if (deviceController.setSettings(80,
-                                             80,
-                                             AppSpec.TempratureUnit.Cel,
-                                             true)){
+                if (deviceController.setSettings(AppSpec.defaultBrightness,
+                                             AppSpec.defaultVolume,
+                                             AppSpec.TempratureUnit.Fah,
+                                             false)){
                     deviceController.pushSettings()
+                    makeCopyOfSettings()
                 } else {
                     console.log("settings did not applied")
                 }

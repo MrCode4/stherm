@@ -15,7 +15,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property int testCounter: 0
-    property int allTests:    3
+    property int allTests:    4
 
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system
@@ -59,6 +59,14 @@ BasePageView {
 
             } else {
                 notPassedTests.text += "\nThe Recovery directory can not be mounted."
+            }
+
+            // Test 4 (NRF Version)
+            if (deviceController.deviceControllerCPP.checkNRFFirmwareVersion()) {
+                testCounter++;
+
+            } else {
+                notPassedTests.text += "\nThe nrf version and the app version are not compatible."
             }
         }
     }

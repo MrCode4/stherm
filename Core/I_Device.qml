@@ -35,7 +35,7 @@ QSObject {
     property real           tof:            0.0
 
     //!‌ Device is in hold state or not
-    property bool           _isHold:         false
+    property bool          isHold:         false
 
     //! List of all the Messages
     //! List <Message>

@@ -89,7 +89,7 @@ public:
 
     Q_INVOKABLE void wifiConnected(bool hasInternet);
 
-    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
     void setCanFetchServer(bool canFetch);
 

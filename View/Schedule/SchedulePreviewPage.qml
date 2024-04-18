@@ -228,6 +228,9 @@ BasePageView {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Material.delegateHeight
 
+                // Hide Humudity
+                visible: false
+
                 verticalPadding: 0
                 horizontalPadding: 8
                 contentItem: RowLayout {

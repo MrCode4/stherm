@@ -91,6 +91,8 @@ public:
 
     Q_INVOKABLE bool updateNRFFirmware();
 
+    Q_INVOKABLE bool checkNRFFirmwareVersion();
+
     /* Public Functions
      * Read and write data without any UART connection
      * Read and write data directly
@@ -113,7 +115,7 @@ public:
 
     Q_INVOKABLE void checkContractorInfo();
 
-    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
 
     SystemSetup* systemSetup() const;
@@ -162,6 +164,9 @@ Q_SIGNALS:
 
     void nrfUpdateStarted();
 
+    void fanWorkChanged(bool fanState);
+    void currentSystemModeChanged(AppSpecCPP::SystemMode fanState);
+
     void adaptiveBrightnessChanged();
 
 private:
@@ -181,13 +186,20 @@ private:
 private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
+    void processBackdoorSettingFile(const QString &path);
 
 private:
     /* Private Functions
      * ****************************************************************************************/
     void writeGeneralSysData(const QStringList &cpuData, const int &brightness);
 
-    void setFanSpeed(int speed, bool sendToIO = true);
+    void setFanSpeed(int speed);
+
+    QJsonObject processJsonFile(const QString &path, const QStringList &requiredKeys);
+    void processBackLightSettings(const QString &path);
+    void processFanSettings(const QString &path);
+    void processBrightnessSettings(const QString &path);
+    QByteArray defaultSettings(const QString &path);
 
 private:
     /* Attributes
@@ -205,10 +217,16 @@ private:
 
     NUVE::System *m_system;
 
+    QString m_backdoorPath = "/usr/local/bin/backdoor/";
+    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" };
+    QFileSystemWatcher m_fileSystemWatcher;
+
     QTimer mBacklightTimer;
     QTimer mBacklightPowerTimer;
 
+    // initialized in startup onStartDeviceRequested in qml
     QVariantList mBacklightModelData;
+    QVariantList mSettingsModelData;
 
     QTimer mNightModeTimer;
 

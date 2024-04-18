@@ -24,6 +24,26 @@ static  const QString m_BacklightState        = "Backlight state";
 static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
 
+static const QByteArray m_default_backdoor_backlight = R"({
+    "red": 255,
+    "green": 255,
+    "blue": 255,
+    "mode": 0,
+    "on": // true
+}
+)";
+
+static const QByteArray m_default_backdoor_brightness = R"({
+    "brightness": // 100
+}
+)";
+
+static const QByteArray m_default_backdoor_fan = R"({
+    "speed": // 100
+}
+)";
+
+
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
 inline void setCPUGovernorMode(QString governer) {
@@ -70,8 +90,26 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     mAdaptiveBrightness = 50;
 
-    // todo: initialize with proper value
-    mBacklightModelData = QVariantList();
+    QDir backdoorDir(m_backdoorPath);
+    if (!backdoorDir.exists())
+        backdoorDir.mkpath(m_backdoorPath);
+
+    for (const QString& fileName : m_watchFiles)
+    {
+        QString path = m_backdoorPath + fileName;
+        QFile file(path);
+        if (file.open(QIODevice::WriteOnly))
+        {
+            file.write(defaultSettings(path));
+            file.close();
+            qInfo() << "Backdoor setting file" << path << "reset to default! finalize it to apply.";
+        } else {
+            qCritical() << "Backdoor setting file" << path << "can not be opened to be reset";
+        }
+
+        m_fileSystemWatcher.addPath(path);
+    }
+    connect(&m_fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &DeviceControllerCPP::processBackdoorSettingFile);
 
     // Update backlight
     mBacklightTimer.setTimerType(Qt::PreciseTimer);
@@ -225,6 +263,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         _deviceIO->updateRelays(relays);
     });
 
+    connect(m_scheme, &Scheme::fanWorkChanged, this, &DeviceControllerCPP::fanWorkChanged);
+    connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
+
     if (m_system) {
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
             m_scheme->moveToUpdatingMode();
@@ -316,7 +357,12 @@ double DeviceControllerCPP::adaptiveBrightness() {
 
 bool DeviceControllerCPP::setSettings(QVariantList data)
 {
-    return _deviceIO->setSettings(data);
+    if (_deviceIO->setSettings(data)){
+        mSettingsModelData = data;
+        return true;
+    }
+
+    return false;
 }
 
 void DeviceControllerCPP::setVacation(const double min_Temperature, const double max_Temperature,
@@ -419,6 +465,17 @@ void DeviceControllerCPP::stopDevice()
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
 {
+    if (schedule && mSystemSetup->systemMode == AppSpecCPP::Off) {
+        TRACE << "An schedule with name " << schedule->name << "is active while mode is off";
+    } else if (schedule) {
+        TRACE_CHECK(false) << "An schedule with name " << schedule->name
+                           << "is active while mode is off";
+    } else {
+        TRACE_CHECK(false)
+            << "The schedule is inactive, hence the system reverts to its previous mode ("
+            << mSystemSetup->systemMode << ").";
+    }
+
     if (m_scheme)
         m_scheme->setSchedule(schedule);
 }
@@ -458,8 +515,6 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData)
 {
-    setFanSpeed(mainData.value("fanSpeed", mFanSpeed).toInt(), false);
-
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
     if (isOk){
@@ -521,6 +576,19 @@ bool DeviceControllerCPP::isFanON()
     return !mFanOff;
 }
 
+void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
+{
+    if (path.endsWith("backlight.json")){
+        processBackLightSettings(path);
+    } else if (path.endsWith("fan.json")) {
+        processFanSettings(path);
+    } else if (path.endsWith("brightness.json")) {
+        processBrightnessSettings(path);
+    } else {
+        qWarning() << "Incompatible backdoor file, processed nothing";
+    }
+}
+
 bool DeviceControllerCPP::checkSN()
 {
     auto state = _deviceAPI->checkSN();
@@ -546,9 +614,9 @@ void DeviceControllerCPP::checkContractorInfo()
                                  info.value("tech").toString());
 }
 
-void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings)
+void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
 {
-    m_system->pushSettingsToServer(settings);
+    m_system->pushSettingsToServer(settings, hasSettingsChanged);
 }
 
 void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
@@ -581,6 +649,35 @@ bool DeviceControllerCPP::updateNRFFirmware()
         emit nrfUpdateStarted();
         return _deviceIO->update_nRF_Firmware();
     }
+    return false;
+}
+
+bool DeviceControllerCPP::checkNRFFirmwareVersion()
+{
+#ifdef __unix__
+    auto nrfSW = getNRF_SW();
+    auto appVersion = qApp->applicationVersion().split(".");
+
+    if (appVersion.length() < 3) {
+        qWarning() << "The app version is wrong." << appVersion;
+        return false;
+    }
+
+    if (nrfSW.length() < 3) {
+        qWarning() << "The nrf version is wrong." << nrfSW;
+        return false;
+    }
+
+    TRACE << "NRF  Version: " << nrfSW << " - Application version: " << appVersion;
+
+    bool firmwareUpdated = nrfSW == "01.10-RC1";
+    bool appHasFirmwreUpdate = appVersion.at(0).toInt() >= 0 &&
+                               appVersion.at(1).toInt() >= 3 && appVersion.at(2).toInt() >= 6;
+
+    // The app version should be higher than 0.3.6 if the nRF SW version is 01.10RC1
+    // nRF SW version is not 01.10RC1, app Should not be greater than 0.3.5
+    return  firmwareUpdated == appHasFirmwreUpdate;
+#endif
     return false;
 }
 
@@ -747,10 +844,116 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 #endif
 }
 
-void DeviceControllerCPP::setFanSpeed(int speed, bool sendToIO)
+void DeviceControllerCPP::setFanSpeed(int speed)
 {
-    if (sendToIO)
-        _deviceIO->setFanSpeed(speed);
+    _deviceIO->setFanSpeed(speed);
 
     mFanSpeed = speed;
+}
+
+QJsonObject DeviceControllerCPP::processJsonFile(const QString &path, const QStringList &requiredKeys)
+{
+    if (!QFileInfo::exists(path))
+    {
+        qCritical() << "Backdoor setting file" << path << "is deleted";
+        return QJsonObject();
+    }
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qCritical() << "Unable to open backdoor setting file" << path;
+        return QJsonObject();
+    }
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError jsonError;
+
+    QJsonDocument doc = QJsonDocument::fromJson(data, &jsonError);
+
+    if (jsonError.error != QJsonParseError::NoError)
+    {
+        qCritical() << "Error parsing json file" << path << jsonError.errorString();
+        return QJsonObject();
+    }
+
+    QJsonObject json = doc.object();
+
+    for (const QString& key : requiredKeys)
+    {
+        if (!json.contains(key))
+        {
+            qCritical() << "Backdoor json file" << path << "must contain key:" << key;
+            return QJsonObject();
+        }
+    }
+
+    return json;
+}
+
+void DeviceControllerCPP::processBackLightSettings(const QString &path)
+{
+    QVariantList data = mBacklightModelData;
+
+    QJsonObject json = processJsonFile(path, {"red", "green", "blue", "mode", "on"});
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
+    {
+        int r = json["red"].toInt();
+        int g = json["green"].toInt();
+        int b = json["blue"].toInt();
+        int mode = json["mode"].toInt();
+        bool on = json["on"].toBool();
+        data = {r, g, b, mode, on};
+    }
+
+    setBacklight(data, true);
+}
+
+void DeviceControllerCPP::processFanSettings(const QString &path)
+{
+    auto speed = mFanSpeed;
+
+    QJsonObject json = processJsonFile(path, {"speed"});
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
+    {
+        speed = json["speed"].toInt();
+    }
+
+    _deviceIO->setFanSpeed(speed);
+}
+
+void DeviceControllerCPP::processBrightnessSettings(const QString &path)
+{
+    auto data = mSettingsModelData;
+
+    QJsonObject json = processJsonFile(path, {"brightness"});
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
+    {
+        data[0] = json["brightness"].toInt();
+        data[3] = false;
+    }
+
+    _deviceIO->setSettings(data);
+}
+
+QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
+{
+    if (path.endsWith("backlight.json")) {
+        return m_default_backdoor_backlight;
+
+    } else if (path.endsWith("fan.json")) {
+        return m_default_backdoor_fan;
+
+    } else if (path.endsWith("brightness.json")) {
+        return m_default_backdoor_brightness;
+
+    } else {
+        qWarning() << "Incompatible backdoor file, returning empty values";
+    }
+
+    return "";
 }

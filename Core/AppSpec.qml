@@ -12,6 +12,11 @@ AppSpecCPP {
     property int minStepTempF: 10
     property int minStepHum:   20
 
+    //! Percent
+    property int defaultBrightness: 100
+    //! Percent
+    property int defaultVolume:     50
+
     enum DeviceType {
         DT_IMX6 = 0,
         DT_Sim,

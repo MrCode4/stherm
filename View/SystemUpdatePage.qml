@@ -82,7 +82,7 @@ BasePageView {
 
             visible: system.updateAvailable && changeLogTextArea.text.length > 0
             height: changeLogTextArea.text.length > 0 ? Math.min(changeLogTextArea.implicitHeight + header.height + 6, root.height * 0.45) -
-                                                        (manualUpdateBtn.visible ? manualUpdateBtn.height * 0.5 : 0): 0
+                                                        (manualUpdateBtn.visible ? manualUpdateBtn.height : 0) : 0
             Layout.fillWidth: true
             Layout.columnSpan: 2
             Layout.rowSpan: 2

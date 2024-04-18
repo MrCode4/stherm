@@ -1,0 +1,11 @@
+<svg id="fan" xmlns="http://www.w3.org/2000/svg" width="43.602" height="43.602" viewBox="0 0 43.602 43.602">
+  <g id="Group_27" data-name="Group 27" transform="translate(21.801)">
+    <path id="Path_10" data-name="Path 10" d="M234,36h2.18a10.9,10.9,0,1,1,0,21.8H234V36Z" transform="translate(-234 -36)" fill="#043d51"/>
+  </g>
+  <g id="Group_28" data-name="Group 28" transform="translate(0 8.72)">
+    <path id="Path_11" data-name="Path 11" d="M255.8,196v2.18a10.9,10.9,0,0,1-21.8,0V196h21.8Z" transform="translate(-212.199 -182.919)" fill="#0a9aca"/>
+    <path id="Path_12" data-name="Path 12" d="M74,113.081V110.9a10.9,10.9,0,1,1,21.8,0v2.18H74Z" transform="translate(-74 -100)" fill="#0a9aca"/>
+  </g>
+  <path id="Path_13" data-name="Path 13" d="M151.081,217.8H148.9a10.9,10.9,0,1,1,0-21.8h2.18v21.8Z" transform="translate(-129.28 -174.199)" fill="#043d51"/>
+  <circle id="Ellipse_20" data-name="Ellipse 20" cx="4.5" cy="4.5" r="4.5" transform="translate(17.185 17.185)" fill="#0a9aca" stroke="#043d51" stroke-width="1"/>
+</svg>

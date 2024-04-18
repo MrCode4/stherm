@@ -160,6 +160,7 @@ I_DeviceController {
             if (deviceControllerCPP.system.canFetchServer) {
                 settingsPushRetry.failed = false;
                 settingsPushRetry.interval = 5000;
+                settingsPush.hasSettings = false
             }
         }
 
@@ -180,6 +181,8 @@ I_DeviceController {
         repeat: false;
         running: false;
         interval: 100;
+
+        property bool hasSettings : false
 
         onTriggered: {
             pushToServer();
@@ -330,10 +333,6 @@ I_DeviceController {
 
     function updateBacklight(isOn, hue, brightness, shadeIndex)
     {
-        if (isOn === device.backlight.on && hue === device.backlight.hue &&
-                brightness === device.backlight.value && shadeIndex === device.backlight.shadeIndex)
-            return;
-
         var color = device.backlight.backlightFinalColor(shadeIndex, hue, brightness);
 
         if (updateDeviceBacklight(isOn, color)) {
@@ -464,13 +463,23 @@ I_DeviceController {
         return true;
     }
 
-    function pushUpdateToServer(){
-        if (!settingsPush.running)
-            settingsPush.start()
+    function pushUpdateToServer(settings: bool){
+        if (settings)
+            settingsPush.hasSettings = true
+
+        if (settingsPush.running)
+            return;
+
+        if (settingsPushRetry.running)
+            settingsPushRetry.stop();
+        else if (settingsPushRetry.failed)
+            return;
+
+        settingsPush.start()
     }
 
     function pushSettings() {
-        pushUpdateToServer();
+        pushUpdateToServer(true);
 
         if (uiSession)
             AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
@@ -508,6 +517,10 @@ I_DeviceController {
             return;
         }
 
+        if (settings.on === device.backlight.on && settings.hue === device.backlight.hue &&
+                settings.value === device.backlight.value && settings.shadeIndex === device.backlight.shadeIndex)
+            return;
+
         updateBacklight(settings.on, settings.hue, settings.value,
                         settings.shadeIndex)
     }
@@ -519,7 +532,7 @@ I_DeviceController {
             "current_humidity": device.currentHum.toString(),
             "current_temp": device.currentTemp.toString(),
             "co2_id": device._co2_id + 1,
-            "hold" : device._isHold,
+            "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
             "fan" : {
                 "mode" : device.fan.mode,
@@ -604,7 +617,7 @@ I_DeviceController {
                                         })
                                 })
 
-        deviceControllerCPP.pushSettingsToServer(send_data)
+        deviceControllerCPP.pushSettingsToServer(send_data, settingsPush.hasSettings)
     }
 
     function checkQRurl(url: var) {
@@ -793,7 +806,7 @@ I_DeviceController {
 
         if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
             _pushUpdateInformationCounter++;
-            pushUpdateToServer();
+            pushUpdateToServer(false);
         }
 
         //        console.log("--------------- End: updateInformation -------------------")
@@ -814,8 +827,8 @@ I_DeviceController {
     {
         // TODO should be updated to inform the logics
 
-        if (device._isHold !== isHold)
-            device._isHold = isHold;
+        if (device.isHold !== isHold)
+            device.isHold = isHold;
     }
 
     function setSystemAccesseoriesServer(settings: var) {

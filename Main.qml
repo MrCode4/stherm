@@ -22,10 +22,10 @@ ApplicationWindow {
 
     /* Object Properties
      * ****************************************************************************************/
-    x: 0
-    y: 0
-    width: AppStyle.size
-    height: AppStyle.size
+    x: 10
+    y: 6
+    width: AppStyle.size - 2 * x
+    height: AppStyle.size - 2 * y
 
     visible: false
     title: qsTr("STherm")
@@ -82,6 +82,7 @@ ApplicationWindow {
 
         //! Load DST effect and then current timezone to DateTimeManager
         //! NOTE: Order of setting effect DST and current timezone is important.
+        //! effectDst waits for the other to be finished, so it should be last
         if (uiSessionId.appModel.setting.currentTimezone !== "") {
             DateTimeManager.currentTimeZone = uiSessionId.appModel.setting.currentTimezone;
         }

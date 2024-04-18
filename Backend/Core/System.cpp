@@ -414,9 +414,9 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     getBackdoorInformation();
 }
 
-void NUVE::System::pushSettingsToServer(const QVariantMap &settings)
+void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
 {
-    setCanFetchServer(false);
+    setCanFetchServer(!hasSettingsChanged);
     mSync->pushSettingsToServer(settings);
 }
 
@@ -756,7 +756,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor)
     // It's incorrect if the update process failed,
     // but in that case, the update is available and
     // this property remains hidden.
-    mLastInstalledUpdateDate = QDate::currentDate().toString("dd/MM/yyyy");
+    mLastInstalledUpdateDate = QDate::currentDate().toString("dd MMM yyyy");
     QSettings setting;
     setting.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
 
@@ -872,7 +872,8 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
                 file.close();
             } else {
-                emit alert("The update information fetched corrupted, Contact Administrator!");
+                TRACE << "The update information did not fetched correctly, Try again later!" << data.toStdString().c_str();
+//                emit alert("The update information did not fetched correctly, Try again later!");
             }
 
             // Check the last saved updateInfo.json file
@@ -1021,9 +1022,9 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     }
 
     mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
-    auto releaseDate = latestVersionObj.value(m_ReleaseDate).toString();
+    auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
+    auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
     auto changeLog = latestVersionObj.value(m_ChangeLog).toString();
-
 
     if (mLastInstalledUpdateDate.isEmpty())
         mLastInstalledUpdateDate = mLatestVersionDate;
@@ -1032,10 +1033,10 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
 
 
     if (mLatestVersionKey  != installableVersionKey ||
-        mLatestVersionDate != releaseDate) {
+        mLatestVersionDate != releaseDateStr) {
 
         mLatestVersionKey  = installableVersionKey;
-        mLatestVersionDate = releaseDate;
+        mLatestVersionDate = releaseDateStr;
 
         emit latestVersionChanged();
 

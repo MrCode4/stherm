@@ -25,7 +25,7 @@ public:
 
 #define TRACE \
     qDebug() << QString("%0 - %1  Method: %2 Line: %3 Log: ") \
-                    .arg(QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss"), \
+                    .arg(QDateTime::currentDateTime().toString("dd MMM yyyy hh:mm:ss"), \
                          __FILE__, \
                          __METHOD__) \
                     .arg(__LINE__) \
@@ -38,7 +38,7 @@ public:
 
 #define LOG_PRINT \
     qDebug() << QString("%0 - Log: ") \
-                    .arg(QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss")) \
+                    .arg(QDateTime::currentDateTime().toString("dd MMM yyyy hh:mm:ss")) \
                     .toStdString() \
                     .c_str()
 

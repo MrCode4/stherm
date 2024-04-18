@@ -57,7 +57,6 @@ Control {
     Item {
         id: _itemsToHide
         anchors.fill: parent
-        anchors.margins: 2
         visible: opacity > 0
 
         //! Current temprature item
@@ -163,6 +162,10 @@ Control {
             //! Fan
             FanButton {
                 id: _fanButton
+
+                deviceController: uiSession.deviceController
+                appModel: uiSession.appModel
+
                 anchors {
                     left: parent.left
                     bottom: parent.bottom

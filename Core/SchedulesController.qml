@@ -97,7 +97,8 @@ QtObject {
     function findRunningSchedule() {
         let currentSchedule = null;
 
-        if (!device._isHold) {
+        if (!device.isHold &&
+                (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off) {
             var now = new Date();
 
             device.schedules.forEach(schedule => {
@@ -254,7 +255,8 @@ QtObject {
 
 
     property Timer _checkRunningTimer: Timer {
-        running: !device._isHold && device.schedules.filter(schedule => schedule.enable).length > 0
+        running: (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off &&
+                 !device.isHold && device.schedules.filter(schedule => schedule.enable).length > 0
         repeat: true
         interval: 1000
 
@@ -267,9 +269,9 @@ QtObject {
     property Connections deviceConnections: Connections{
         target: device
 
-        function on_IsHoldChanged() {
-            console.log("device._isHold", device._isHold)
-            if (device._isHold)
+        function onIsHoldChanged() {
+            console.log("device.isHold", device.isHold)
+            if (device.isHold)
                 deviceController.setActivatedSchedule(null);
         }
     }
@@ -281,6 +283,18 @@ QtObject {
 
             deviceController.setActivatedSchedule(null);
             findRunningSchedule();
+        }
+    }
+
+
+    //! Send null schedule when system mode changed to OFF mode
+    property Connections systemSetupConnections: Connections{
+        target: device.systemSetup
+
+        function onSystemModeChanged() {
+            if ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) {
+                deviceController.setActivatedSchedule(null);
+            }
         }
     }
 

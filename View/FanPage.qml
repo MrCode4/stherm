@@ -140,8 +140,8 @@ BasePageView {
                     Layout.fillWidth: true
                     Layout.rightMargin: 24 * scaleFactor
                     majorTickCount: 1
-                    ticksCount: to / 5
-                    from: 0
+                    ticksCount: (to - from) / 5
+                    from: 5
                     to: 55
                     stepSize: 5
                     value: fan?.workingPerHour ?? 0

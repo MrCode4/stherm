@@ -40,7 +40,8 @@ Popup {
         }
     }
 
-    onOpened: deviceController.updateEditMode(AppSpec.EMVacation);
+    onOpened: deviceController.updateEditMode(uiSessionId.showMainWindow ? AppSpec.EMNone :
+                                                                           AppSpec.EMVacation);
 
     onClosed: deviceController.updateEditMode(AppSpec.EMNone);
 
@@ -171,6 +172,8 @@ Popup {
             //! Date and time
             DateTimeLabel {
                 Layout.alignment: Qt.AlignHCenter
+
+                is12Hour: device.setting.timeFormat === AppSpec.TimeFormat.Hour12
             }
 
             ButtonInverted {
