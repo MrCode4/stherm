@@ -182,6 +182,7 @@ QtObject {
         return overlappings;
     }
 
+    //! it should be called after each change ASAP before findRunningSchedule called by timer
     function updateCurrentSchedules() {
         //! copy schedules into a simpler structure and fix the no repeat and overnight logics
         var currentSchedules = [];
