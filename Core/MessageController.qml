@@ -27,22 +27,64 @@ QtObject {
         repeat: false
 
         //! Activation of alerts after 3 minutes of program start.
-        interval: 3 * 60 * 1000
+        interval: 3 * 1000
 
         onTriggered: {
             activeAlerts = true;
-        }
 
+            // Show messages that isRead is false
+            device.messages.forEach(message => {
+                                    if (!message.isRead) {
+                                            newMessageReceived(message);
+                                        }
+                                    });
+        }
     }
 
     /* Signals
      * ****************************************************************************************/
     signal newMessageReceived(Message message)
 
+    signal showMessage(Message message)
 
     /* Methods
      * ****************************************************************************************/
-    function addNewMessageFromData(type, message, datetime)
+    function setMessagesServer(messages: var) {
+        // messages uid
+
+        if (!Array.isArray(messages)) {
+            console.log("Invalid server input. Expected arrays (messages).");
+            return;
+        }
+
+
+        let messagesModel = device.messages;
+
+        // Delete messages from model when a cloud message is removed.
+        {}
+
+        messages.forEach(message => {
+                             if (message.message === "")
+                                return;
+
+                             // Find Schedule in the model
+                             var foundMessage = messagesModel.find(messageModel => (message.message === messageModel.message &&
+                                                                                    messageModel.sourceType === Message.SourceType.Server));
+
+                             var messageDatetime = message.datetime === null ? "" : message.datetime;
+                             if (foundMessage && foundMessage.datetime === messageDatetime &&
+                                 foundMessage.type === message.type) {
+                                 // isRead in the server is wrong. So I use the isRead condition from the local.
+                                 // foundMessage.isRead = message.isRead;
+
+                             } else { // Check empty message
+                                 let icon = (message.icon === null) ? "" : message.icon;
+                                 addNewMessageFromData(message.type, message.message, message.datetime, message.isRead, icon, Message.SourceType.Server);
+                             }
+                         });
+    }
+
+    function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
     {
         if (!activeAlerts) {
             console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
@@ -54,7 +96,8 @@ QtObject {
         newMessage.type = type;
         newMessage.message = message;
         newMessage.datetime = datetime;
-        newMessage.isRead = false;
+        newMessage.isRead = isRead;
+        newMessage.sourceType = sourceType;
 
         device.messages.push(newMessage);
         device.messagesChanged();
