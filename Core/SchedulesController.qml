@@ -100,38 +100,62 @@ QtObject {
         return nextRepeats.join(",");
     }
 
+    //! assuming the data is same and just the time differs between variables
+    function timeInRange(time: Date, schStartTime: Date, schEndTime: Date) {
+        if (schStartTime < schEndTime) { // normal
+            if (time >= schStartTime && time < schEndTime)
+                return true;
+        } else { // overnight
+            if (time >= schStartTime || time < schEndTime)
+                return true;
+        }
+        return false;
+    }
+
     //! Find running days with repeat and start time.
     //! in repeat schedules is same as repeat.
-    function findRunningDays(repeats: string, schStartTime: Date) {
+    function findRunningDays(repeats: string, schStartTime: Date, schEndTime: Date, wasActive: bool ) {
         let scheduleRunningDays = repeats;
 
-        // if no repeat find proper day based on current time
+        // if no repeat find proper day based on current time and active state
         if (scheduleRunningDays.length === 0) {
-            var now = new Date();
+            // scheduleRunningDays get from map
+            var time = new Date();
+            var isActive = timeInRange(time, schStartTime, schEndTime);
 
-            if (schStartTime < now)
-                now.setDate(now.getDate() + 1);
+            if (!wasActive || !isActive){
+                //! if startTime passed in this day!
+                if (schStartTime < time)
+                    time.setDate(time.getDate() + 1);
+            } else {
+                //! if overnight and time is the day after start
+                if (schStartTime > time)
+                    time.setDate(time.getDate() - 1);
+            }
 
-            scheduleRunningDays = Qt.formatDate(now, "ddd").slice(0, -1);
+            scheduleRunningDays = Qt.formatDate(time, "ddd").slice(0, -1);
         }
 
         return scheduleRunningDays;
     }
 
-    //! Finding overlapping Schedules
-    function findOverlappingSchedules(startTime: Date, endTime: Date, repeats, exclude = null)
-    {
+    //! Finding overlapping Schedules, should be called before changing any time critial property
+    function findOverlappingSchedules(startTimeStr, endTimeStr, repeats, exclude = null, active = false) {
         var overlappings = [];
 
         if (!device) return overlappings;
 
+        var startTime = Date.fromLocaleTimeString(Qt.locale(), startTimeStr, "hh:mm AP")
+        var endTime = Date.fromLocaleTimeString(Qt.locale(), endTimeStr, "hh:mm AP")
+
         // fix no repeat issue and update repeats
-        let runningDays = findRunningDays(repeats, startTime);
+        let runningDays = findRunningDays(repeats, startTime, endTime, active);
 
         // over night, break into two schedules and call recursive for each
         if (endTime < startTime) {
-            overlappings = findOverlappingSchedules(startTime, Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP"), runningDays, exclude);
-            overlappings.push(findOverlappingSchedules(Date.fromLocaleTimeString(Qt.locale(), "12:00 AM", "hh:mm AP"),  endTime, nextDayRepeats(runningDays), exclude));
+            // active not important as running days are there for sure (already calculated)
+            overlappings = findOverlappingSchedules(startTimeStr, "11:59 PM", runningDays, exclude);
+            overlappings.push(findOverlappingSchedules("12:00 AM", endTimeStr, nextDayRepeats(runningDays), exclude));
 
             // return flatten array
             return overlappings.reduce((accumulator, value) => accumulator.concat(value), []);
@@ -139,9 +163,11 @@ QtObject {
 
         // compare if there is any overlapping
         deviceCurrentSchedules.forEach(function(currentScheduleElement, index) {
-            if (currentScheduleElement.scheduleElement === exclude || !currentScheduleElement.scheduleElement.enable) {
+            if (currentScheduleElement.scheduleElement === exclude ||
+                    !currentScheduleElement.scheduleElement.enable) {
                 return;
             }
+
             if (currentScheduleElement.runningDays.split(",").find((repeatDayElement, repeatIndex) => {
                                                              return runningDays.includes(repeatDayElement);
                                                          })) {
@@ -157,14 +183,13 @@ QtObject {
     }
 
     function updateCurrentSchedules() {
-        // copy schedules into a simpler structure and fix the no repeat and overnight logics
+        //! copy schedules into a simpler structure and fix the no repeat and overnight logics
         var currentSchedules = [];
         device.schedules.forEach(function(schElement, index) {
             var schStartTime = Date.fromLocaleTimeString(Qt.locale(), schElement.startTime, "hh:mm AP");
             var schEndTime = Date.fromLocaleTimeString(Qt.locale(), schElement.endTime, "hh:mm AP");
             // find the correct running day for no repeat
-            let scheduleRunningDays = findRunningDays(schElement.repeats, schStartTime);
-
+            let scheduleRunningDays = findRunningDays(schElement.repeats, schStartTime, schEndTime, schElement.active);
             var currentSchedule = {
                 scheduleElement: schElement,
                 startTime: schStartTime,
@@ -197,38 +222,41 @@ QtObject {
 
     //! Find current schedule to active it and pass to Scheme to work around
     function findRunningSchedule() {
+        var now = new Date();
+        var currentDate = Qt.formatDate(now, "ddd").slice(0, -1);
 
-        let currentSchedule = null;
+        //! find the active schedule
+        let currentSchedule = deviceCurrentSchedules.find(
+                schedule => {
+                    //! Compare time and running days to start it.
+                    if (schedule.scheduleElement.enable &&
+                        schedule.runningDays.includes(currentDate)) {
+                        if (now >= schedule.startTime && // should be replaced by timeInRange
+                            now <= schedule.endTime) { // logical compare would be, but in this case we miss one minute for overnight schedules
+                            return true;
+                        }
+                    }
 
-        // it should not be called with these criterias but added for sanity check
-        if (!device.isHold && (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off) {
+                    return false;
+                });
 
-            var now = new Date();
-            var currentDate = Qt.formatDate(now, "ddd").slice(0, -1);
+        //! update the active state
+        device.schedules.forEach(function(schElement, index) {
+            var isActive = (schElement === (currentSchedule?.scheduleElement ?? null)) ?? false;
+            // Disable a 'No repeat' schedule after running one time.
+            if (schElement.repeats.length === 0 && schElement.active && !isActive) {
+                schElement.enable = false;
+            }
 
-            // use find!
-            deviceCurrentSchedules.every(schedule => {
-                                             if (!schedule.scheduleElement.enable)
-                                             return true;
+            schElement.active = isActive;
+        })
 
-                                             //! Compare time and running days to start it.
-                                             if (schedule.runningDays.includes(currentDate)) {
-                                                 if (now >= schedule.startTime &&
-                                                     now <= schedule.endTime) { // logical compare would be, but in this case we miss one minute for overnight schedules
-                                                     currentSchedule = schedule.scheduleElement;
-                                                     return false;
-                                                 }
-                                             }
-                                         });
+        // !this function is called even if device is off or hold!
+        if (device.isHold || (device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) {
+            currentSchedule = null;
         }
 
-        // Disable a 'No repeat' schedule after running one time.
-        if (runningSchedule !== currentSchedule && ((runningSchedule?.repeats.length === 0) ?? false)) {
-            runningSchedule.enable = false;
-        }
-
-        runningSchedule = currentSchedule;
-        deviceController.setActivatedSchedule(runningSchedule);
+        deviceController.setActivatedSchedule(currentSchedule?.scheduleElement ?? null);
     }
 
     function formatTime(timeString) {
@@ -353,8 +381,7 @@ QtObject {
     }
 
     property Timer _checkRunningTimer: Timer {
-        running: (device?.systemSetup?.systemMode ?? AppSpec.Off) !== AppSpec.Off &&
-                 !device.isHold && device.schedules.filter(schedule => schedule.enable).length > 0
+        running: device.schedules.filter(schedule => schedule.enable).length > 0
         repeat: true
         interval: 1000
 
@@ -382,7 +409,6 @@ QtObject {
         target: deviceController.currentSchedule
 
         function onEnableChanged() {
-
             deviceController.setActivatedSchedule(null);
             findRunningSchedule();
         }

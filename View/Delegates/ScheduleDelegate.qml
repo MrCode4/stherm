@@ -120,10 +120,8 @@ ItemDelegate {
                     if (checked) {
 
                         internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
-                                    Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
-                                    Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
-                                    schedule.repeats,
-                                    schedule);
+                                    schedule.startTime, schedule.endTime,
+                                    schedule.repeats, schedule);
 
                         if (internal.overlappingSchedules.length > 0) {
                             //! First uncheck this Switch

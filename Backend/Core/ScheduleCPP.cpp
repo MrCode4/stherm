@@ -5,6 +5,7 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
 {
     // Defaults
     enable     = true;
+    active     = false;
     temprature = 18; // Celsius
     humidity   = 0;  // Percentage
 

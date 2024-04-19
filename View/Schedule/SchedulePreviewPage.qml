@@ -561,14 +561,12 @@ BasePageView {
     {
         //! Check overlapping schedules
         internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
-                    Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.startTime, "hh:mm AP"),
-                    Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.endTime, "hh:mm AP"),
-                    internal.scheduleToEdit.repeats,
-                    schedule // Exclude the original of this copy
-                    );
+                    internal.scheduleToEdit.startTime, internal.scheduleToEdit.endTime,
+                    internal.scheduleToEdit.repeats, schedule, // Exclude the original of this copy
+                    schedule.active);
 
+        //! New schedule overlaps with at least one other Schedule
         if (internal.overlappingSchedules.length > 0) {
-            //! New schedules overlapps with at least one other Schedule
             uiSession.popUps.scheduleOverlapPopup.accepted.connect(internal.saveEnabledSchedule);
             uiSession.popUps.scheduleOverlapPopup.rejected.connect(internal.saveDisabledSchedule);
             uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
