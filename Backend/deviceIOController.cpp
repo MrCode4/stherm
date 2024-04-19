@@ -65,7 +65,6 @@ public:
     uint8_t brighness_mode = 1;
     uint32_t luminosity = 255;
     uint32_t brightnessValue;
-    uint32_t targetGradualBrightnessValue;
 
     //! unknowns // TODO find unused ones and remove later
     bool pairing = false;
@@ -115,7 +114,7 @@ DeviceIOController::~DeviceIOController()
     m_wiring_timer.stop();
     m_wtd_timer.stop();
     m_nRF_timer.stop();
-    m_gradualBrightness_timer.stop();
+    m_adaptiveBrightness_timer.stop();
 
     stopReading();
     qWarning() << "Stopped Hvac";
@@ -129,7 +128,6 @@ void DeviceIOController::initialize()
     getDeviceID();
 
     m_p->brightnessValue = UtilityHelper::brightness();
-    m_p->targetGradualBrightnessValue = m_p->brightnessValue;
 
     //! Prepare main device
     m_p->MainDevice.address = 0xffffffff; // this address is used in rf comms
@@ -346,19 +344,7 @@ bool DeviceIOController::setBrightness(int value)
     }
 
     if (m_p->brighness_mode == 1) {
-        value *= std::sqrt(m_p->luminosity / 255.0);
-        value = std::clamp(value, 5, 254);
-
-        if (m_gradualBrightness_timer.isActive())
-        {
-            emit adaptiveBrightness(value / 2.55);
-        }
-        else
-        {
-            m_gradualBrightness_timer.start();
-            m_p->targetGradualBrightnessValue = value;
-            return true;
-        }
+        emit adaptiveBrightness(value / 2.55);
     }
 
     m_p->brightnessValue = value;
@@ -399,18 +385,18 @@ void DeviceIOController::createConnections()
 
     //    start();
 
-    connect(&m_gradualBrightness_timer, &QTimer::timeout, this, [this]() {
-        if (m_p->targetGradualBrightnessValue == m_p->brightnessValue)
+    connect(&m_adaptiveBrightness_timer, &QTimer::timeout, this, [this]() {
+        if (m_p->luminosity == m_p->brightnessValue)
         {
-            m_gradualBrightness_timer.stop();
+            m_adaptiveBrightness_timer.stop();
             return;
         }
 
-        int difference = static_cast<int>(m_p->targetGradualBrightnessValue) - static_cast<int>(m_p->brightnessValue);
+        int difference = static_cast<int>(m_p->luminosity) - static_cast<int>(m_p->brightnessValue);
         int direction = (difference > 0) - (difference < 0);
         setBrightness(m_p->brightnessValue + direction);
     });
-    m_gradualBrightness_timer.setInterval(100);
+    m_adaptiveBrightness_timer.setInterval(100);
 }
 
 void DeviceIOController::createSensor(QString name, QString id) {}
@@ -1441,9 +1427,8 @@ void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
     TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity));
     m_p->luminosity = luminosity;
     if (m_p->brighness_mode == 1) {
-        if (!setBrightness(luminosity)) {
-            TRACE_CHECK(false) << (QString("Error: setBrightness (Brightness: %0)").arg(luminosity));
-        }
+        if (!m_adaptiveBrightness_timer.isActive())
+            m_adaptiveBrightness_timer.start();
     }
 }
 
