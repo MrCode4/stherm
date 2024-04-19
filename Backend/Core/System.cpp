@@ -99,6 +99,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mountNRF_FW_Directory();
     installUpdate_NRF_FW_Service();
 
+    if (!mountDirectory("/mnt/log", "/mnt/log/log"))
+        qWarning() << "unable to create logs folder";
+
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
 
@@ -342,6 +345,42 @@ bool NUVE::System::findBackdoorVersion(const QString fileName)
 
     return false;
 }
+
+void NUVE::System::sendLog(const QString &serialNo)
+{
+    QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
+    QString username = "Tony";
+    QString password = "zIWIRvgwPd";
+    QString serverAddress = "fileserver.nuvehvac.com";
+    QString remotePath = "/opt/logs/" + serialNo;
+    // Create log
+    auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
+    if (exitCode < 0)
+    {
+        qWarning() << "Unable to create log file";
+        return;
+    }
+
+    // Create remote path in case it doesn't exist
+    QString createPath = QString("sshpass -p '%1' ssh %2@%3 'mkdir -p %4'").arg(password, username, serverAddress, remotePath);
+    exitCode = QProcess::execute("/bin/bash", {"-c", createPath});
+    if (exitCode < 0)
+    {
+        qWarning() << "Unable to create server directory";
+        return;
+    }
+
+    // Copy file to remote path
+    QString copyFile = QString("sshpass -p '%1' scp %2 %3@%4:%5/%6").arg(password, filename, username, serverAddress, remotePath, filename);
+    exitCode = QProcess::execute("/bin/bash", {"-c", copyFile});
+
+    if (exitCode < 0)
+    {
+        qWarning() << "Unable to copy file to server";
+        return;
+    }
+}
+
 
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
 {

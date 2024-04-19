@@ -241,36 +241,6 @@ void NetworkInterface::turnOff()
     mNmcliInterface->turnWifiDeviceOff();
 }
 
-void NetworkInterface::sendLog(const QString& serialNo)
-{
-    QString filename = QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
-    QString username = "Tony";
-    QString password = "zIWIRvgwPd";
-    QString serverAddress = "fileserver.nuvehvac.com";
-    QString remotePath = "/opt/logs/" + serialNo;
-
-    // Create log
-    if (QProcess::execute("journalctl -u appStherm > " + filename) != 0)
-    {
-        qWarning() << "Unable to create log file";
-        return;
-    }
-
-    // Create remote path in case it doesn't exist
-    if (QProcess::execute(QString("sshpass -p '%1' ssh %2@%3 'mkdir -p %4'").arg(password, username, serverAddress, remotePath)) != 0)
-    {
-        qWarning() << "Unable to create server directory";
-        return;
-    }
-
-    // Copy file to remote path
-    if (QProcess::execute(QString("sshpass -p '%1' scp %2 %3@%4:%5/%6").arg(password, filename, username, serverAddress, remotePath, filename)) != 0)
-    {
-        qWarning() << "Unable to copy file to server";
-        return;
-    }
-}
-
 void NetworkInterface::addConnection(const QString& name,
                                      const QString& ssid,
                                      const QString& ip4,

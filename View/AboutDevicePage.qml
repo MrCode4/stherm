@@ -129,7 +129,7 @@ BasePageView {
                     text: modelData.key
 
                     onClicked: {
-                        NetworkInterface.sendLog(system.serialNumber)
+                        system.sendLog(system.serialNumber)
                     }
                 }
 

@@ -159,6 +159,8 @@ public:
 
     Q_INVOKABLE bool findBackdoorVersion(const QString fileName);
 
+    Q_INVOKABLE void    sendLog(const QString& serialNo);
+
     QStringList cpuInformation();
 
     bool mountDirectory(const QString targetDirectory, const QString targetFolder);
