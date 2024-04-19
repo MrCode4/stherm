@@ -27,7 +27,7 @@ QtObject {
         repeat: false
 
         //! Activation of alerts after 3 minutes of program start.
-        interval: 3 * 60 * 1000
+        interval: 3 * 1000
 
         onTriggered: {
             activeAlerts = true;
