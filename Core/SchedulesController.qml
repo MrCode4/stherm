@@ -153,6 +153,7 @@ QtObject {
 
         // over night, break into two schedules and call recursive for each
         if (endTime < startTime) {
+            // if no repeat started from yesterday ignore first one! // todo
             // active not important as running days are there for sure (already calculated)
             overlappings = findOverlappingSchedules(startTimeStr, "11:59 PM", runningDays, exclude);
             overlappings.push(findOverlappingSchedules("12:00 AM", endTimeStr, nextDayRepeats(runningDays), exclude));
@@ -174,6 +175,7 @@ QtObject {
                 if ((currentScheduleElement.startTime > startTime && currentScheduleElement.startTime < endTime) ||
                         (currentScheduleElement.startTime < startTime && currentScheduleElement.endTime > startTime) ||
                         currentScheduleElement.startTime === startTime) {
+                    // todo: we need to ignore if the overlapping time is in the past time of no repeat schedule
                     overlappings.push(currentScheduleElement.scheduleElement);
                 }
             };
@@ -279,6 +281,7 @@ QtObject {
     }
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
+    // todo: update with new code!
     function setSchedulesFromServer(serverSchedules: var) {
 
         var modelSchedules = device.schedules;
@@ -382,11 +385,13 @@ QtObject {
     }
 
     property Timer _checkRunningTimer: Timer {
+        // todo: add alias to root for ui need
         running: device.schedules.filter(schedule => schedule.enable).length > 0
         repeat: true
         interval: 1000
 
         onTriggered: {
+            // we may need to run updateCurrentSchedules once before starting this
             findRunningSchedule();
         }
 
