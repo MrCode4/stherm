@@ -362,7 +362,7 @@ void NUVE::System::sendLog(const QString &serialNo)
     }
 
     // Create remote path in case it doesn't exist
-    QString createPath = QString("sshpass -p '%1' ssh %2@%3 'mkdir -p %4'").arg(password, username, serverAddress, remotePath);
+    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh %2@%3 'mkdir -p %4'").arg(password, username, serverAddress, remotePath);
     exitCode = QProcess::execute("/bin/bash", {"-c", createPath});
     if (exitCode < 0)
     {
@@ -370,10 +370,10 @@ void NUVE::System::sendLog(const QString &serialNo)
         return;
     }
 
-    // Copy file to remote path
-    QString copyFile = QString("sshpass -p '%1' scp %2 %3@%4:%5/%6").arg(password, filename, username, serverAddress, remotePath, filename);
-    exitCode = QProcess::execute("/bin/bash", {"-c", copyFile});
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp %2 %3@%4:%5").arg(password, filename, username, serverAddress, remotePath);
 
+    exitCode = QProcess::execute("/bin/bash", {"-c", copyFile});
     if (exitCode < 0)
     {
         qWarning() << "Unable to copy file to server";
