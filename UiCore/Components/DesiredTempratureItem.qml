@@ -240,6 +240,14 @@ Control {
             text: maxTemprature
         }
 
+        //! Cool-to and heat-to label
+        Label {
+            id: coolHeatLbl
+            x: (parent.width - width) / 2
+            font.pointSize: Application.font.pointSize * 0.8
+            font.bold: true
+        }
+
         //! Label to show desired temperature in cooling/heating mode and second temperature in auto
         Label {
             id: rightTempLabel
@@ -368,7 +376,7 @@ Control {
 
             PropertyChanges {
                 target: rightTempLabel
-                x: (rightTempLabel.parent.width - rightTempLabel.width) / 2
+                x: (rightTempLabel.parent.width - rightTempLabel.width - rightUnitLbl.width) / 2
                 visible: labelVisible
                 opacity: 1
                 text: Number(_tempSlider.value).toFixed(0)
@@ -388,6 +396,12 @@ Control {
                 target: tempSliderDoubleHandle
                 visible: false
             }
+
+            PropertyChanges {
+                target: coolHeatLbl
+                opacity: 0
+                y: coolHeatLbl.height
+            }
         },
 
         State {
@@ -403,7 +417,7 @@ Control {
 
             PropertyChanges {
                 target: rightTempLabel
-                x: 3 * rightTempLabel.parent.width / 5
+                x: 3 * rightTempLabel.parent.width / 5 - 16
                 visible: labelVisible
                 opacity: 1
                 text: tempSliderDoubleHandle.second.value.toFixed(0)
@@ -424,6 +438,12 @@ Control {
                 target: tempSliderDoubleHandle
                 visible: true
             }
+
+            PropertyChanges {
+                target: coolHeatLbl
+                opacity: 0
+                y: coolHeatLbl.height
+            }
         },
 
         State {
@@ -440,6 +460,13 @@ Control {
                 target: leftTempLabel
                 visible: labelVisible
                 x: (leftTempLabel.parent.width - leftTempLabel.width - leftUnitLbl.width) / 2
+            }
+
+            PropertyChanges {
+                target: coolHeatLbl
+                opacity: 0.65
+                y: leftTempLabel.y - coolHeatLbl.height
+                text: "Cool to"
             }
         },
 
@@ -459,6 +486,13 @@ Control {
                 target: leftTempLabel
                 visible: false
             }
+
+            PropertyChanges {
+                target: coolHeatLbl
+                opacity: 0.65
+                y: rightTempLabel.y - coolHeatLbl.height
+                text: "Heat to"
+            }
         }
     ]
 
@@ -466,6 +500,7 @@ Control {
         Transition {
             reversible: true
             from: "auto-idle"
+            to: "auto-first-dragging,auto-second-dragging"
 
             SequentialAnimation {
                 PropertyAnimation {
@@ -475,8 +510,8 @@ Control {
                 }
 
                 NumberAnimation {
-                    targets: [leftTempLabel, rightTempLabel]
-                    property: "x"
+                    targets: [leftTempLabel, rightTempLabel, coolHeatLbl]
+                    properties: "x,y,opacity"
                 }
             }
         }
