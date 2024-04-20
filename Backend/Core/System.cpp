@@ -10,6 +10,10 @@
  * Network information
  * ************************************************************************************************/
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
+const QString m_logUsername = "Tony";
+const QString m_logPassword = "zIWIRvgwPd";
+const QString m_logServerAddress = "fileserver.nuvehvac.com";
+const QString m_logPath = "/opt/logs/";
 
 const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_backdoorUpdate   = QString("backdoorUpdate");
@@ -109,7 +113,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
         checkPartialUpdate(true);
     });
 
-    connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::snReady);
+    connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::onSnReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
@@ -125,6 +129,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     // Check: The downloader has been open for more than 30 seconds and has not received any bytes
     downloaderTimer.setTimerType(Qt::PreciseTimer);
     downloaderTimer.setSingleShot(false);
+
+    if (!serialNumber().isEmpty())
+        onSnReady();
 }
 
 NUVE::System::~System()
@@ -346,13 +353,19 @@ bool NUVE::System::findBackdoorVersion(const QString fileName)
     return false;
 }
 
-void NUVE::System::sendLog(const QString &serialNo)
+void NUVE::System::sendLog()
 {
+    if (mLogSender.state() != QProcess::NotRunning || mLogRemoteFolder.isEmpty()){
+        QString error("Previous session is in progress, please try again later.");
+        qWarning() << error << "State is :" << mLogSender.state() << "mLogRemoteFolder" << mLogRemoteFolder;
+        emit alert(error);
+        return;
+    }
+
     QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
-    QString username = "Tony";
-    QString password = "zIWIRvgwPd";
-    QString serverAddress = "fileserver.nuvehvac.com";
-    QString remotePath = "/opt/logs/" + serialNo;
+
+    TRACE << "generating log file in " << filename;
+
     // Create log
     auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
     if (exitCode < 0)
@@ -361,26 +374,12 @@ void NUVE::System::sendLog(const QString &serialNo)
         return;
     }
 
-    // Create remote path in case it doesn't exist
-    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh %2@%3 'mkdir -p %4'").arg(password, username, serverAddress, remotePath);
-    exitCode = QProcess::execute("/bin/bash", {"-c", createPath});
-    if (exitCode < 0)
-    {
-        qWarning() << "Unable to create server directory";
-        return;
-    }
-
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp %2 %3@%4:%5").arg(password, filename, username, serverAddress, remotePath);
-
-    exitCode = QProcess::execute("/bin/bash", {"-c", copyFile});
-    if (exitCode < 0)
-    {
-        qWarning() << "Unable to copy file to server";
-        return;
-    }
+    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp %2 %3@%4:%5").
+                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    TRACE << "sending log to server " << mLogRemoteFolder;
+    mLogSender.start("/bin/bash", {"-c", copyFile});
 }
-
 
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
 {
@@ -942,6 +941,17 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
     }
 
     netReply->deleteLater();
+}
+
+void NUVE::System::onSnReady()
+{
+    emit snReady();
+
+    mLogRemoteFolder = m_logPath + serialNumber();
+    // Create remote path in case it doesn't exist, needed once! with internet access
+    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh %2@%3 'mkdir -p %4'").
+                         arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    mLogSender.start("/bin/bash", {"-c", createPath});
 }
 
 bool NUVE::System::checkUpdateFile(const QByteArray updateData) {

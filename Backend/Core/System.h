@@ -159,7 +159,7 @@ public:
 
     Q_INVOKABLE bool findBackdoorVersion(const QString fileName);
 
-    Q_INVOKABLE void    sendLog(const QString& serialNo);
+    Q_INVOKABLE void sendLog();
 
     QStringList cpuInformation();
 
@@ -168,6 +168,8 @@ public:
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
+
+    void onSnReady();
 
 signals:
     void snReady();
@@ -301,6 +303,8 @@ private:
     int mBackdoorRequiredMemory;
     int mBackdoorUpdateFileSize;
 
+    QProcess mLogSender;
+    QString mLogRemoteFolder;
 };
 
 } // namespace NUVE
