@@ -59,10 +59,10 @@ Control {
     onCurrentScheduleChanged: {
         if (currentSchedule) {
             _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                           device.setting.tempratureUnit);
+                                                                  device.setting.tempratureUnit);
         } else if (device) {
             _tempSlider.value = Utils.convertedTemperatureClamped(device.requestedTemp,
-                                                           device.setting.tempratureUnit);
+                                                                  device.setting.tempratureUnit);
         }
     }
 
@@ -244,10 +244,6 @@ Control {
         Label {
             id: rightTempLabel
             visible: labelVisible
-            x: device?.systemSetup?.systemMode === AppSpec.Auto
-               ? 3 * parent.width / 4 - width - rightUnitLbl.width + 4
-               : (parent.width - width) / 2
-            opacity: tempSliderDoubleHandle.first.pressed ? 0 : 1.
             anchors {
                 verticalCenter: parent.verticalCenter
                 verticalCenterOffset: labelVerticalOffset
@@ -255,8 +251,6 @@ Control {
             font {
                 pointSize: _root.font.pointSize * 0.65
             }
-            text: _tempSlider.visible ? Number(_tempSlider.value).toLocaleString(locale, "f", 0)
-                                      : tempSliderDoubleHandle.second.value.toFixed(0)
 
             //! Unit
             Label {
@@ -284,24 +278,10 @@ Control {
                     }
                 }
             }
-
-            Behavior on x {
-                enabled: _root.enableAnimations
-                SequentialAnimation {
-                    PauseAnimation { duration: 150 }
-                    NumberAnimation { duration: 250 }
-                }
-            }
-            Behavior on opacity { NumberAnimation { duration: 100 } }
         }
 
         Label {
             id: leftTempLabel
-            visible: labelVisible && tempSliderDoubleHandle.visible
-            x: device?.systemSetup?.systemMode === AppSpec.Auto
-               ? parent.width / 4
-               : (parent.width - width) / 2
-            opacity: tempSliderDoubleHandle.second.pressed ? 0 : 1.
             anchors {
                 verticalCenter: parent.verticalCenter
                 verticalCenterOffset: labelVerticalOffset
@@ -337,15 +317,6 @@ Control {
                     }
                 }
             }
-
-            Behavior on x {
-                enabled: _root.enableAnimations
-                SequentialAnimation {
-                    PauseAnimation { duration: 150 }
-                    NumberAnimation { duration: 250 }
-                }
-            }
-            Behavior on opacity { NumberAnimation { duration: 100 } }
         }
 
         //! Connections to sync slider with device.
@@ -357,7 +328,7 @@ Control {
             //! When setDesiredTemperature failed, update slider with previous value.
             function onRequestedTempChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(device.requestedTemp,
-                                                               device.setting.tempratureUnit);
+                                                                      device.setting.tempratureUnit);
             }
         }
 
@@ -367,7 +338,7 @@ Control {
             //! Update slider value (UI) with changed TempratureUnit
             function onUnitChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule?.temprature ?? device.requestedTemp,
-                                                               device.setting.tempratureUnit);
+                                                                      device.setting.tempratureUnit);
             }
         }
 
@@ -377,7 +348,7 @@ Control {
             //! Update slider value (UI) with changed temperature in schedule
             function onTempratureChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                               device.setting.tempratureUnit);
+                                                                      device.setting.tempratureUnit);
             }
         }
     }
@@ -386,4 +357,128 @@ Control {
         id: tempUnitPop
         uiSession: _root.uiSession
     }
+
+    /* States and Transitions
+     * ************************************/
+    state: "non-auto-idle"
+    states: [
+        State {
+            when: device?.systemSetup?.systemMode !== AppSpec.Auto && !_tempSlider.pressed
+            name: "non-auto-idle"
+
+            PropertyChanges {
+                target: rightTempLabel
+                x: (rightTempLabel.parent.width - rightTempLabel.width) / 2
+                visible: labelVisible
+                opacity: 1
+                text: Number(_tempSlider.value).toFixed(0)
+            }
+
+            PropertyChanges {
+                target: leftTempLabel
+                visible: false
+            }
+
+            PropertyChanges {
+                target: _tempSlider
+                visible: true
+            }
+
+            PropertyChanges {
+                target: tempSliderDoubleHandle
+                visible: false
+            }
+        },
+
+        State {
+            extend: "non-auto-idle"
+            when: device?.systemSetup?.systemMode !== AppSpec.Auto && _tempSlider.pressed
+            name: "non-auto-dragging"
+        },
+
+        State {
+            when: device?.systemSetup?.systemMode === AppSpec.Auto
+                  && !tempSliderDoubleHandle.first.pressed && !tempSliderDoubleHandle.second.pressed
+            name: "auto-idle"
+
+            PropertyChanges {
+                target: rightTempLabel
+                x: 3 * rightTempLabel.parent.width / 5
+                visible: labelVisible
+                opacity: 1
+                text: tempSliderDoubleHandle.second.value.toFixed(0)
+            }
+
+            PropertyChanges {
+                target: leftTempLabel
+                visible: labelVisible
+                x: leftTempLabel.parent.width / 4
+            }
+
+            PropertyChanges {
+                target: _tempSlider
+                visible: false
+            }
+
+            PropertyChanges {
+                target: tempSliderDoubleHandle
+                visible: true
+            }
+        },
+
+        State {
+            when: device?.systemSetup?.systemMode === AppSpec.Auto
+                  && tempSliderDoubleHandle.first.pressed && !tempSliderDoubleHandle.second.pressed
+            name: "auto-first-dragging"
+
+            PropertyChanges {
+                target: rightTempLabel
+                visible: false
+            }
+
+            PropertyChanges {
+                target: leftTempLabel
+                visible: labelVisible
+                x: (leftTempLabel.parent.width - leftTempLabel.width - leftUnitLbl.width) / 2
+            }
+        },
+
+        State {
+            when: device?.systemSetup?.systemMode === AppSpec.Auto
+                  && tempSliderDoubleHandle.second.pressed && !tempSliderDoubleHandle.first.pressed
+            name: "auto-second-dragging"
+
+            PropertyChanges {
+                target: rightTempLabel
+                x: (rightTempLabel.parent.width - rightTempLabel.width - rightUnitLbl.width) / 2
+                visible: true
+                text: tempSliderDoubleHandle.second.value.toFixed(0)
+            }
+
+            PropertyChanges {
+                target: leftTempLabel
+                visible: false
+            }
+        }
+    ]
+
+    transitions: [
+        Transition {
+            reversible: true
+            from: "auto-idle"
+
+            SequentialAnimation {
+                PropertyAnimation {
+                    targets: [leftTempLabel, rightTempLabel]
+                    property: "visible"
+                    duration: 0
+                }
+
+                NumberAnimation {
+                    targets: [leftTempLabel, rightTempLabel]
+                    property: "x"
+                }
+            }
+        }
+    ]
 }
