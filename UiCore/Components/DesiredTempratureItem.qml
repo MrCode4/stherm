@@ -104,8 +104,17 @@ Control {
             height: width / 2
             visible: device?.systemSetup?.systemMode === AppSpec.Auto
             enabled: labelVisible && !currentSchedule
+            difference: device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
             from: minTemprature
             to: maxTemprature
+
+            onVisibleChanged: {
+                if (visible) {
+                    //! Set difference
+                    tempSliderDoubleHandle.difference = device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
+                    tempSliderDoubleHandle.updateFirstSecondValues();
+                }
+            }
 
             first.onPressedChanged: {
                 if (!device) return;
@@ -130,6 +139,7 @@ Control {
             //! Use Connections to update first and second values
             Connections {
                 target: device ?? null
+                enabled: tempSliderDoubleHandle.visible
 
                 function onAutoMinReqTempChanged()
                 {
@@ -144,23 +154,28 @@ Control {
 
             Connections {
                 target: device?.setting ?? null
+                enabled: tempSliderDoubleHandle.visible
 
-                function onTempratureUnitChanged()
-                {
-                    tempSliderDoubleHandle.updateFirstSeconValues();
-                }
+                function onTempratureUnitChanged() { updateFirstSecondValuesTmr.restart(); }
             }
 
             Connections {
                 target: _root
+                enabled: tempSliderDoubleHandle.visible
 
-                function onMinTempratureChanged()
-                {
-                    tempSliderDoubleHandle.updateFirstSecondValues();
-                }
+                function onMinTempratureChanged() { updateFirstSecondValuesTmr.restart(); }
 
-                function onMaxTempratureChanged()
-                {
+                function onMaxTempratureChanged() { updateFirstSecondValuesTmr.restart(); }
+            }
+
+            Timer {
+                id: updateFirstSecondValuesTmr
+                interval: 50
+                repeat: false
+                running: false
+                onTriggered: {
+                    //! Set difference
+                    tempSliderDoubleHandle.difference = device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
                     tempSliderDoubleHandle.updateFirstSecondValues();
                 }
             }
@@ -185,7 +200,7 @@ Control {
                                                                  maxTemprature)
             }
 
-            function updateFirstSeconValues()
+            function updateFirstSecondValues()
             {
                 if (!device) return;
 
