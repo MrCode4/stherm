@@ -107,17 +107,6 @@ Control {
             from: minTemprature
             to: maxTemprature
 
-            first.value: device ? Utils.convertedTemperatureClamped(device.autoMinReqTemp,
-                                                                    device.setting.tempratureUnit,
-                                                                    minTemprature,
-                                                                    maxTemprature)
-                                : 60
-            second.value: device ? Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
-                                                                     device.setting.tempratureUnit,
-                                                                     minTemprature,
-                                                                     maxTemprature)
-                                 : 80
-
             first.onPressedChanged: {
                 if (!device) return;
 
@@ -136,6 +125,86 @@ Control {
                             ? Utils.fahrenheitToCelsius(second.value)
                             : second.value
                 }
+            }
+
+            //! Use Connections to update first and second values
+            Connections {
+                target: device ?? null
+
+                function onAutoMinReqTempChanged()
+                {
+                    tempSliderDoubleHandle.updateFirstValue();
+                }
+
+                function onAutoMaxReqTempChanged()
+                {
+                    tempSliderDoubleHandle.updateSecondValue();
+                }
+            }
+
+            Connections {
+                target: device?.setting ?? null
+
+                function onTempratureUnitChanged()
+                {
+                    tempSliderDoubleHandle.updateFirstSeconValues();
+                }
+            }
+
+            Connections {
+                target: _root
+
+                function onMinTempratureChanged()
+                {
+                    tempSliderDoubleHandle.updateFirstSecondValues();
+                }
+
+                function onMaxTempratureChanged()
+                {
+                    tempSliderDoubleHandle.updateFirstSecondValues();
+                }
+            }
+
+            function updateFirstValue()
+            {
+                if (!device) return;
+
+                first.value = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
+                                                                device.setting.tempratureUnit,
+                                                                minTemprature,
+                                                                maxTemprature);
+            }
+
+            function updateSecondValue()
+            {
+                if (!device) return;
+
+                second.value = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
+                                                                 device.setting.tempratureUnit,
+                                                                 minTemprature,
+                                                                 maxTemprature)
+            }
+
+            function updateFirstSeconValues()
+            {
+                if (!device) return;
+
+                //! First calculate new values for handles without setting them
+                const firstValue = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
+                                                                     device.setting.tempratureUnit,
+                                                                     minTemprature,
+                                                                     maxTemprature);
+                const secondValue = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
+                                                                      device.setting.tempratureUnit,
+                                                                      minTemprature,
+                                                                      maxTemprature);
+
+                //! Now first set first.maxValue and second.minValue then update their actual values
+                first.setMaxValue(secondValue - tempSliderDoubleHandle.difference);
+                second.setMinValue(firstValue + tempSliderDoubleHandle.difference);
+
+                first.value = firstValue;
+                second.value = secondValue;
             }
         }
 
@@ -274,7 +343,7 @@ Control {
             function onRequestedTempChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(device.requestedTemp,
                                                                device.setting.tempratureUnit);
-            }            
+            }
         }
 
         Connections {
