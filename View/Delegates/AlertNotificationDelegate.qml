@@ -20,8 +20,9 @@ ItemDelegate {
 
     /* Object properties
      * ****************************************************************************************/
-    text: (message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert)
-          ? "Alert" : (message?.type === Message.Type.Notification ? "Notification"
+    highlighted: !message.isRead
+    text: (message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert) ?
+              "Alert" : (message?.type === Message.Type.Notification ? "Notification"
                                                                    : "Message")
     contentItem: RowLayout {
         spacing: 16
