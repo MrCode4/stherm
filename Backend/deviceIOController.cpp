@@ -386,14 +386,22 @@ void DeviceIOController::createConnections()
     //    start();
 
     connect(&m_adaptiveBrightness_timer, &QTimer::timeout, this, [this]() {
-        if (m_p->luminosity == m_p->brightnessValue)
+        int targetValue = m_p->luminosity;
+        //! This will be brighter in minimum values!
+        //! qRound(255.0 * std::sqrt(m_p->luminosity / 255.0));
+        //! This will be darker in larger values!
+        //! qRound(std::sqrt(m_p->luminosity));
+
+        // clamp to range for better compare!
+        targetValue = std::clamp(targetValue, 5, 254);
+
+        if (targetValue == m_p->brightnessValue)
         {
             m_adaptiveBrightness_timer.stop();
             return;
         }
 
-        int difference = static_cast<int>(m_p->luminosity) - static_cast<int>(m_p->brightnessValue);
-        int direction = (difference > 0) - (difference < 0);
+        int direction = targetValue > m_p->brightnessValue ? 1 : -1;
         setBrightness(m_p->brightnessValue + direction);
     });
     m_adaptiveBrightness_timer.setInterval(100);
@@ -651,9 +659,11 @@ bool DeviceIOController::setSettings(QVariantList data)
             return false;
         }
 
-        m_p->brighness_mode = data.last().toBool() ? 1 : 0;
+        bool adaptive = data.last().toBool();
+        m_p->brighness_mode = adaptive ? 1 : 0;
 
-        if (setBrightness(qRound(data.first().toDouble() * 2.55)))
+        if (setBrightness(adaptive ? m_p->luminosity :
+                              qRound(data.first().toDouble() * 2.55)))
             return true;
         else
             return false;
@@ -1424,8 +1434,9 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
 
 void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
 {
-    TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity));
-    m_p->luminosity = luminosity;
+    TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity)) <<
+        m_p->brighness_mode << m_adaptiveBrightness_timer.isActive();
+    m_p->luminosity = luminosity;  // we can smooth this as well if changes too much
     if (m_p->brighness_mode == 1) {
         if (!m_adaptiveBrightness_timer.isActive())
             m_adaptiveBrightness_timer.start();
