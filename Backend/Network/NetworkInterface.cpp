@@ -23,6 +23,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
             &NetworkInterface::onErrorOccured);
     connect(mNmcliInterface, &NmcliInterface::busyRefreshingChanged, this,
             &NetworkInterface::busyRefreshingChanged);
+    connect(mNmcliInterface, &NmcliInterface::busyChanged, this,
+            &NetworkInterface::busyChanged);
     connect(mNmcliInterface, &NmcliInterface::connectedWifiChanged, this,
             &NetworkInterface::connectedWifiChanged);
     connect(mNmcliInterface, &NmcliInterface::wifisChanged, this, &NetworkInterface::wifisChanged);

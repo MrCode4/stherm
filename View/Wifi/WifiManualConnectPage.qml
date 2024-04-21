@@ -22,7 +22,7 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     ToolButton {
-        enabled: !NetworkInterface.isRunning
+        enabled: !NetworkInterface.busy
         parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.check
@@ -45,9 +45,9 @@ BasePageView {
             target: NetworkInterface
             enabled: false
 
-            function onIsRunningChanged()
+            function onBusyChanged()
             {
-                if (!NetworkInterface.isRunning) {
+                if (!NetworkInterface.busy) {
                     backButtonCallback();
                 }
             }
