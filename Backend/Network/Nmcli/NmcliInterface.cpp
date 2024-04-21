@@ -399,7 +399,7 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             parsedWi.setSsid(line.size() > ssidLen ? line.sliced(ssidLen) : "");
 
             //! If this BSSID is in mBssToCorrectSsidMap it means that the ssid should be corrected
-            if (mBssToCorrectSsidMap.contains(parsedWi.bssid())) {
+            if (mBssToCorrectSsidMap.contains(parsedWi.bssid()) && !parsedWi.ssid().isEmpty()) {
                 //! Store incorrect ssid as it is usefull for data returned from NmcliObserver
                 parsedWi.setIncorrectSsid(parsedWi.ssid());
                 parsedWi.setSsid(mBssToCorrectSsidMap[parsedWi.bssid()]);
