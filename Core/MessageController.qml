@@ -22,18 +22,16 @@ QtObject {
 
     property bool activeAlerts: false
 
+    //! Active alerts after model is loaded
     property Timer activeAlertsTimer: Timer {
-        running: true
+        running: device
         repeat: false
 
-        //! Activation of alerts after 3 minutes of program start.
-        interval: 3 * 1000
+        //! Activation of alerts after 10 seconds of program start.
+        interval: 10 * 1000
 
         onTriggered: {
             activeAlerts = true;
-
-            if (checkWifiConnection())
-                checkInternetConnection();
 
             // Show messages that isRead is false
             device.messages.forEach(message => {
@@ -41,6 +39,19 @@ QtObject {
                                             newMessageReceived(message);
                                         }
                                     });
+        }
+    }
+
+    //! Check wifi/internet after model is loaded
+    property Timer checkInternetTimer: Timer {
+        running: device
+        repeat: false
+
+        interval: 1 * 60 * 1000
+
+        onTriggered: {
+            if (checkWifiConnection())
+                checkInternetConnection();
         }
     }
 
