@@ -412,6 +412,5 @@ ApplicationWindow {
     //! MessagePopupView
     MessagePopupView {
         uiSession: uiSessionId
-        messageController: uiSession?.messageController ?? null
     }
 }

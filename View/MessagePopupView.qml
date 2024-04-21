@@ -15,13 +15,12 @@ Item {
     property UiSession          uiSession
 
     //! MessageController
-    property MessageController  messageController
+    property MessageController  messageController : uiSession.messageController
 
     /* Children
      * ****************************************************************************************/
     Connections {
         target: messageController
-        enabled: Boolean(uiSession)
 
         function onNewMessageReceived(message: Message) {
             showMessagePopup(message);
