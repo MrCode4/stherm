@@ -253,6 +253,8 @@ void NmcliInterface::addConnection(const QString& name,
     QStringList args({
         NC_ARG_CONNECTION,
         NC_ARG_CON_ADD,
+        "ifname",
+        mNmcliObserver->wifiDevice(),
         "type",
         NC_ARG_WIFI,
         "con-name",
@@ -288,7 +290,10 @@ void NmcliInterface::addConnection(const QString& name,
     connect(mWifiProcess, &QProcess::finished, this,
         [&, name, ssid, password, security](int exitCode, QProcess::ExitStatus exitStatus) {
             if (exitStatus == QProcess::NormalExit && exitCode == 0) {
-                // mWifis.push_back(new WifiInfo(false, ssid, "", 100, security));
+                WifiInfo* newWifi = new WifiInfo(false, ssid, "", 100, security);
+                newWifi->setIsConnecting(true);
+                mWifis.push_back(newWifi);
+
                 emit wifisChanged();
 
                 mWifiProcess->start(NC_COMMAND, {
