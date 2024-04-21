@@ -99,6 +99,7 @@ Item {
         device: appModel
         uiSession: root
         schedulesController: root.schedulesController
+        messageController: root.messageController
     }
 
     //! SensorController instance

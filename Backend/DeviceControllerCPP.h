@@ -91,6 +91,8 @@ public:
 
     Q_INVOKABLE bool updateNRFFirmware();
 
+    Q_INVOKABLE bool checkNRFFirmwareVersion();
+
     /* Public Functions
      * Read and write data without any UART connection
      * Read and write data directly
