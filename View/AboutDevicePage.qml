@@ -129,7 +129,9 @@ BasePageView {
                     text: modelData.key
 
                     onClicked: {
+                        logBusyPop.open();
                         system.sendLog()
+                        logBusyPop.close();
                     }
                 }
 
@@ -201,5 +203,28 @@ BasePageView {
 
     FontMetrics {
         id: _fontMetrics
+    }
+
+    Popup {
+        id: logBusyPop
+        parent: Template.Overlay.overlay
+        width: parent.width
+        height: parent.height
+        anchors.centerIn: parent
+        background.opacity: 0.85
+
+        ColumnLayout {
+            anchors.centerIn: parent
+
+            BusyIndicator {
+                Layout.alignment: Qt.AlignCenter
+                running: logBusyPop.visible
+            }
+
+            Label {
+                Layout.alignment: Qt.AlignCenter
+                text: "Please wait..."
+            }
+        }
     }
 }
