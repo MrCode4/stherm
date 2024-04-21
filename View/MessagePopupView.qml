@@ -41,7 +41,7 @@ Item {
             onClosed: {
                 message.isRead = true;
 
-                if (message.type === Message.Type.SystemNotification) {
+                if (messageController && message.type === Message.Type.SystemNotification) {
                     messageController.removeMessage(message);
                 }
 
@@ -60,7 +60,7 @@ Item {
         //! popups on top of each other.
 
         //! Create an instance of AlertNotifPopup
-        var newAlertPopup = _messagePopupCompo.createObject(_root, {
+        var newAlertPopup = _messagePopupCompo.createObject(root, {
                                                                 "message": message
                                                             });
 

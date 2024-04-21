@@ -34,6 +34,7 @@ QtObject {
 
             if (checkWifiConnection())
                 checkInternetConnection();
+
             // Show messages that isRead is false
             device.messages.forEach(message => {
                                     if (!message.isRead) {

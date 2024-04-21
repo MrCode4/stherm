@@ -47,17 +47,9 @@ BasePageView {
 
             onClicked: {
                 //! Show Message in a popup
-                messageController.showMessage(message);
+                if (messageController)
+                    messageController.showMessage(message);
             }
         }
-    }
-
-    //! This should be shown using popup layout
-    AlertNotifPopup {
-        id: _alertNotifPop
-
-        uiSession: root.uiSession
-        dim: true
-        modal: true
     }
 }
