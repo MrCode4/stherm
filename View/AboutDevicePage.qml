@@ -107,8 +107,8 @@ BasePageView {
                             if (root.StackView.view) {
                                 uiSession.uiTetsMode = true;
                                 root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                                              "uiSession": uiSession
-                                                          })
+                                                             "uiSession": uiSession
+                                                         })
                             }
                         }
                     }
@@ -130,8 +130,6 @@ BasePageView {
 
                     onClicked: {
                         logBusyPop.open();
-                        system.sendLog()
-                        logBusyPop.close();
                     }
                 }
 
@@ -208,23 +206,22 @@ BasePageView {
     Popup {
         id: logBusyPop
         parent: Template.Overlay.overlay
-        width: parent.width
-        height: parent.height
+        width: Math.max(implicitWidth, parent.width * 0.5)
+        height: parent.height * 0.5
         anchors.centerIn: parent
-        background.opacity: 0.85
+        modal: true
 
-        ColumnLayout {
-            anchors.centerIn: parent
+        onOpened: {
+            //! Call sendLog()
+            system.sendLog();
+            close();
+        }
 
-            BusyIndicator {
-                Layout.alignment: Qt.AlignCenter
-                running: logBusyPop.visible
-            }
-
-            Label {
-                Layout.alignment: Qt.AlignCenter
-                text: "Please wait..."
-            }
+        contentItem: Label {
+            text: "Preparing log, \nplease wait ..."
+            horizontalAlignment: "AlignHCenter"
+            verticalAlignment: "AlignVCenter"
+            lineHeight: 1.4
         }
     }
 }
