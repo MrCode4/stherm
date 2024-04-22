@@ -141,7 +141,9 @@ private:
     void updateHumifiresState();
 
     //! Find the effective temperature to run the system with found temperature
-    //! based on schedule or vacation settings
+    //! based on schedule or vacation settings and systemMode (auto)
+    //! In auto mode set the effective temperature to the current temperature to shutdown the system
+    //! when mCurrentTemperature is in aut of auto range
     //! return the temperature as Fahrenheit
     double effectiveTemperature();
 
@@ -193,12 +195,19 @@ private:
     double mCurrentHumidity;
     double mSetPointHimidity;
 
-    //! Temperature parameters
+    //! Temperature parameters (Fahrenheit)
     double mCurrentTemperature;
+
+    //! Fahrenheit
     double mSetPointTemperature;
 
+    //! Auto mode properites (Fahrenheit)
     double mAutoMinReqTemp;
     double mAutoMaxReqTemp;
+
+    //! Vacation properites (Fahrenheit)
+    double mVacationMinimumTemperature;
+    double mVacationMaximumTemperature;
 
     //! Fan work per hour (minutes per hour) Range: 0 - 60
     int mFanWPH;

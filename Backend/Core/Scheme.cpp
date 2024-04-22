@@ -31,6 +31,10 @@ const QVariantList heatingColor      = QVariantList{255, 68, 0, STHERM::LedEffec
 const QVariantList emergencyColor    = QVariantList{255, 0, 0, STHERM::LedEffect::LED_BLINK,  "true"};
 const QVariantList emergencyColorS   = QVariantList{255, 0, 0, STHERM::LedEffect::LED_STABLE, "true"};
 
+inline double toFahrenheit(double celsius) {
+    return celsius * 9 / 5 + 32.0;
+}
+
 Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
     mRestarting (false),
@@ -152,10 +156,11 @@ void Scheme::restartWork()
 
 void Scheme::setSetPointTemperature(double newSetPointTemperature)
 {
-    if (qAbs(mSetPointTemperature - newSetPointTemperature) < 0.001)
+    auto newSetPointTemperatureF = toFahrenheit(newSetPointTemperature);
+    if (qAbs(mSetPointTemperature - newSetPointTemperatureF) < 0.001)
         return;
 
-    mSetPointTemperature = newSetPointTemperature;
+    mSetPointTemperature = newSetPointTemperatureF;
 
     TRACE << "mSetPointTemperature changed";
 }
@@ -264,7 +269,7 @@ void Scheme::AutoModeLoop()
 
 void Scheme::CoolingLoop()
 {
-    TRACE_CHECK(true) << "Cooling started " << mSystemSetup->systemType;
+    TRACE_CHECK(false) << "Cooling started " << mSystemSetup->systemType;
 
     bool heatPump = false;
     // s1 time threshold
@@ -275,7 +280,7 @@ void Scheme::CoolingLoop()
         heatPump = true;
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::CoolingOnly: {
-        TRACE << heatPump << mCurrentTemperature << effectiveTemperature();
+        TRACE_CHECK(false) << heatPump << mCurrentTemperature << effectiveTemperature();
         if (mCurrentTemperature - effectiveTemperature() >= 0.9) {
             internalCoolingLoopStage1(heatPump);
         }
@@ -290,7 +295,7 @@ void Scheme::CoolingLoop()
 
 void Scheme::HeatingLoop()
 {
-    TRACE_CHECK(true) << "Heating started " << mSystemSetup->systemType;
+    TRACE_CHECK(false) << "Heating started " << mSystemSetup->systemType;
 
     // update configs and ...
     // s1 & s2 time threshold
@@ -298,7 +303,7 @@ void Scheme::HeatingLoop()
     switch (mSystemSetup->systemType) {
     case AppSpecCPP::SystemType::HeatPump: // emergency as well?
     {
-        TRACE << "HeatPump" << mCurrentTemperature << effectiveTemperature();
+        TRACE_CHECK(false) << "HeatPump" << mCurrentTemperature << effectiveTemperature();
         // get time threshold ETime
         if (mCurrentTemperature < effectiveTemperature()) {
             if (mCurrentTemperature < ET && mSystemSetup->heatPumpEmergency) {
@@ -330,10 +335,10 @@ void Scheme::VacationLoop()
     //TODO
     waitLoop();
 
-    if ((mVacation.minimumTemperature - mCurrentTemperature) > 0.001) {
+    if ((mVacationMinimumTemperature - mCurrentTemperature) > 0.001) {
         HeatingLoop();
 
-    } else if ((mVacation.maximumTemperature - mCurrentTemperature) < 0.001) {
+    } else if ((mVacationMaximumTemperature - mCurrentTemperature) < 0.001) {
         CoolingLoop();
 
     } else {
@@ -960,7 +965,7 @@ void Scheme::setMainData(QVariantMap mainData)
 
     bool isOk;
     double tc = mainData.value("temperature").toDouble(&isOk);
-    double currentTemp = 32.0 + tc * 9 / 5;
+    double currentTemp = toFahrenheit(tc);
 
     if (isOk && currentTemp != mCurrentTemperature) {
         mCurrentTemperature = currentTemp;
@@ -1013,10 +1018,10 @@ void Scheme::updateVacationState()
         }
     }
 
-    if (mVacation.minimumTemperature > mCurrentTemperature) {
+    if (mVacationMinimumTemperature > mCurrentTemperature) {
         realSysMode = AppSpecCPP::SystemMode::Heating;
         //        range = temperature - $current_state['min_temp'];
-    } else if (mVacation.maximumTemperature < mCurrentTemperature) {
+    } else if (mVacationMaximumTemperature < mCurrentTemperature) {
         realSysMode = AppSpecCPP::SystemMode::Cooling;
         //        range = temperature - current_state['max_temp'];
     }
@@ -1095,15 +1100,15 @@ double Scheme::effectiveTemperature()
     double effTemperature = mSetPointTemperature;
 
     if (mSystemSetup->isVacation) {
-        if ((mVacation.minimumTemperature - mCurrentTemperature) > 0.001) {
-            effTemperature = mVacation.minimumTemperature;
+        if ((mVacationMinimumTemperature - mCurrentTemperature) > 0.001) {
+            effTemperature = mVacationMinimumTemperature;
 
-        } else if ((mVacation.maximumTemperature - mCurrentTemperature) < 0.001) {
-            effTemperature = mVacation.maximumTemperature;
+        } else if ((mVacationMaximumTemperature - mCurrentTemperature) < 0.001) {
+            effTemperature = mVacationMaximumTemperature;
         }
 
     } else if (mSchedule) {
-        effTemperature = mSchedule->temprature;
+        effTemperature = toFahrenheit(mSchedule->temprature);
 
     } else if (mSystemSetup->systemMode == AppSpecCPP::SystemMode::Auto) {
         if ((mAutoMinReqTemp - mCurrentTemperature) > 0.001) {
@@ -1111,6 +1116,7 @@ double Scheme::effectiveTemperature()
 
         } else if ((mAutoMaxReqTemp - mCurrentTemperature) < 0.001) {
             effTemperature = mAutoMaxReqTemp;
+
         } else {
             // Set the effective temperature to the current temperature to shutdown the system
             effTemperature = mCurrentTemperature;
@@ -1118,7 +1124,7 @@ double Scheme::effectiveTemperature()
     }
 
     // Convert to F
-    return (32.0 + effTemperature * 9 / 5);
+    return effTemperature;
 }
 
 double Scheme::effectiveCurrentTemperature()
@@ -1142,18 +1148,22 @@ AppSpecCPP::FanMode Scheme::fanMode() const {
 
 void Scheme::setAutoMinReqTemp(const double &min)
 {
-    if (qAbs(mAutoMinReqTemp - min) > 0.001)
-        mAutoMinReqTemp = min;
+    auto minF = 1.8 * min + 32;
+    if (qAbs(mAutoMinReqTemp - minF) > 0.001)
+        mAutoMinReqTemp = minF;
 }
 
 void Scheme::setAutoMaxReqTemp(const double &max)
 {
-    if (qAbs(mAutoMaxReqTemp - max) > 0.001)
-        mAutoMaxReqTemp = max;
+    auto maxF = 1.8 * max + 32;
+    if (qAbs(mAutoMaxReqTemp - maxF) > 0.001)
+        mAutoMaxReqTemp = maxF;
 }
 
 void Scheme::setVacation(const STHERM::Vacation &newVacation)
 {
+    mVacationMinimumTemperature = toFahrenheit(newVacation.minimumTemperature);
+    mVacationMaximumTemperature = toFahrenheit(newVacation.maximumTemperature);
     mVacation = newVacation;
 }
 
