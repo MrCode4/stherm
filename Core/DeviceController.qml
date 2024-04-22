@@ -272,7 +272,9 @@ I_DeviceController {
         deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
-        deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
+        deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour);
+        deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
+        deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
     }
 
     /* Children
