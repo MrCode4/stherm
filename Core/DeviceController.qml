@@ -152,6 +152,23 @@ I_DeviceController {
             checkMessages(settings.messages)
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
+
+            setAutoTemperateFromServer(settings);
+        }
+
+        function setAutoTemperateFromServer (settings) {
+
+            if (!device)
+                return;
+
+            if (settings.hasOwnProperty("auto_temp_low")) {
+                device.autoMinReqTemp = settings.auto_temp_low;
+            }
+
+            if (settings.hasOwnProperty("auto_temp_high")) {
+                device.autoMaxReqTemp = settings.auto_temp_high;
+            }
+
         }
 
         function onCanFetchServerChanged() {
@@ -532,6 +549,8 @@ I_DeviceController {
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
+            "auto_temp_high" : device.autoMaxReqTemp,
+            "auto_temp_low" : device.autoMinReqTemp,
             "fan" : {
                 "mode" : device.fan.mode,
                 "workingPerHour": device.fan.workingPerHour,
