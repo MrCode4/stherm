@@ -144,7 +144,7 @@ QtObject {
         target: deviceController.deviceControllerCPP.system
 
         function onAlert(message: string) {
-            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
+            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
         }
 
         //! Manage update notifications (a message type)
