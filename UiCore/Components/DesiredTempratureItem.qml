@@ -105,6 +105,10 @@ Control {
             visible: device?.systemSetup?.systemMode === AppSpec.Auto
             enabled: labelVisible && !currentSchedule
             difference: device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
+
+            maxAutoMinTemp: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device.setting.tempratureUnit)
+            minAutoMaxTemp: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device.setting.tempratureUnit)
+
             from: minTemprature
             to: maxTemprature
 

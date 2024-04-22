@@ -28,18 +28,28 @@ Control {
     //! Holds whether slider is being dragged
     readonly property bool  pressed: firstHandleDh.dragging || secondHandleDh.dragging
 
+    property real maxAutoMinTemp: AppSpec.maxAutoMinTemp
+    property real minAutoMaxTemp: AppSpec.minAutoMaxTemp
+
+    onMaxAutoMinTempChanged: first.setMaxValue(maxAutoMinTemp);
+    onMinAutoMaxTempChanged: second.settMinValue(minAutoMaxTemp);
+
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
         pressed: firstHandleDh.dragging
         handle: firstHandle
         value: from
 
+        Component.onCompleted: {
+            setMaxValue(maxAutoMinTemp);
+        }
+
         onValueChanged: {
             //! Set position and visualPosition
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set min value of second handler
-            second.setMinValue(value + difference);
+            second.setMinValue(Math.max(minAutoMaxTemp, value + difference));
         }
     }
 
@@ -49,12 +59,16 @@ Control {
         handle: secondHandle
         value: to
 
+        Component.onCompleted: {
+            setMinValue(minAutoMaxTemp);
+        }
+
         onValueChanged: {
             //! Set position and visualPosition
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
-            //! Set max value of second handler
-            first.setMaxValue(value - difference);
+            //! Set max value of first handler
+            first.setMaxValue(Math.min(maxAutoMinTemp, value - difference));
         }
     }
 
