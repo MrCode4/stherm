@@ -1118,12 +1118,17 @@ double Scheme::effectiveTemperature()
             effTemperature = mAutoMaxReqTemp;
 
         } else {
-            // Set the effective temperature to the current temperature to shutdown the system
-            effTemperature = mCurrentTemperature;
+            // Set the effective temperature to the boundary temperature to shutdown the system
+            // todo: Manage the Emergency mode.
+            if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling)
+                effTemperature = mAutoMaxReqTemp;
+            else if (mRelay->currentState() == AppSpecCPP::SystemMode::Heating)
+                effTemperature = mAutoMinReqTemp;
+            else
+                effTemperature = mCurrentTemperature;
         }
     }
 
-    // Convert to F
     return effTemperature;
 }
 
