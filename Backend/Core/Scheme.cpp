@@ -1105,6 +1105,9 @@ double Scheme::effectiveTemperature()
     } else if (mSchedule) {
         effTemperature = mSchedule->temprature;
 
+    } else if (mSystemSetup->systemMode == AppSpecCPP::SystemMode::Auto) {
+
+
     }
 
     // Convert to F
@@ -1128,6 +1131,16 @@ double Scheme::effectiveCurrentHumidity()
 
 AppSpecCPP::FanMode Scheme::fanMode() const {
     return mFanMode;
+}
+
+void Scheme::setAutoMinReqTemp(const double &min)
+{
+    mAutoMinReqTemp = min;
+}
+
+void Scheme::setAutoMaxReqTemp(const double &max)
+{
+    mAutoMaxReqTemp = max;
 }
 
 void Scheme::setVacation(const STHERM::Vacation &newVacation)

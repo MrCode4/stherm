@@ -73,6 +73,10 @@ public:
 
     AppSpecCPP::FanMode fanMode() const;
 
+    //! Set Auto temperature ranges
+    void setAutoMinReqTemp(const double &min);
+    void setAutoMaxReqTemp(const double &max);
+
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
@@ -192,6 +196,9 @@ private:
     //! Temperature parameters
     double mCurrentTemperature;
     double mSetPointTemperature;
+
+    double mAutoMinReqTemp;
+    double mAutoMaxReqTemp;
 
     //! Fan work per hour (minutes per hour) Range: 0 - 60
     int mFanWPH;

@@ -156,21 +156,6 @@ I_DeviceController {
             setAutoTemperateFromServer(settings);
         }
 
-        function setAutoTemperateFromServer (settings) {
-
-            if (!device)
-                return;
-
-            if (settings.hasOwnProperty("auto_temp_low")) {
-                device.autoMinReqTemp = settings.auto_temp_low;
-            }
-
-            if (settings.hasOwnProperty("auto_temp_high")) {
-                device.autoMaxReqTemp = settings.auto_temp_high;
-            }
-
-        }
-
         function onCanFetchServerChanged() {
             if (deviceControllerCPP.system.canFetchServer) {
                 settingsPushRetry.failed = false;
@@ -747,6 +732,45 @@ I_DeviceController {
             setSystemCoolingOnly(settings.coolStage)
         else
             console.warn("System type unknown", settings.type)
+    }
+
+    function setAutoTemperateFromServer (settings) {
+
+        if (!device)
+            return;
+
+        if (settings.hasOwnProperty("auto_temp_low")) {
+            if (device.autoMinReqTemp !== settings.auto_temp_low) {
+                device.autoMinReqTemp = settings.auto_temp_low;
+                deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
+            }
+        }
+
+        if (settings.hasOwnProperty("auto_temp_high")) {
+            if (device.autoMaxReqTemp !== settings.auto_temp_high) {
+                device.autoMaxReqTemp = settings.auto_temp_high;
+                deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
+            }
+        }
+
+    }
+
+    function setAutoMinReqTemp(min) {
+        if (device && device.autoMinReqTemp !== min) {
+            device.autoMinReqTemp = min;
+            deviceControllerCPP.setAutoMinReqTemp(min);
+
+            pushSettings();
+        }
+    }
+
+    function setAutoMaxReqTemp(max) {
+        if (device && device.autoMaxReqTemp !== max) {
+            device.autoMaxReqTemp = max;
+            deviceControllerCPP.setAutoMaxReqTemp(max);
+
+            pushSettings();
+        }
     }
 
     function checkSensors(sensors: var) {

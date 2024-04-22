@@ -640,6 +640,18 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
     return false;
 }
 
+void DeviceControllerCPP::setAutoMinReqTemp(const double min)
+{
+    if (m_scheme)
+        m_scheme->setAutoMinReqTemp(min);
+}
+
+void DeviceControllerCPP::setAutoMaxReqTemp(const double max)
+{
+    if (m_scheme)
+        m_scheme->setAutoMaxReqTemp(max);
+}
+
 bool DeviceControllerCPP::updateNRFFirmware()
 {
 

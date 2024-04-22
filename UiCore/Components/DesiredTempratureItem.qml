@@ -117,24 +117,18 @@ Control {
             }
 
             first.onPressedChanged: {
-                if (!device) return;
-
-                if (!first.pressed && first.value.toFixed(2) !== device.autoMinReqTemp.toFixed(2)) {
-                    device.autoMinReqTemp = device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
-                            ? Utils.fahrenheitToCelsius(first.value)
-                            : first.value;
-                    deviceController.pushSettings();
+                if (deviceController && !first.pressed) {
+                    deviceController.setAutoMinReqTemp(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(first.value)
+                                                       : first.value);
                 }
             }
 
             second.onPressedChanged: {
-                if (!device) return;
-
-                if (!second.pressed && second.value.toFixed(2) !== device.autoMaxReqTemp.toFixed(2)) {
-                    device.autoMaxReqTemp = device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
-                            ? Utils.fahrenheitToCelsius(second.value)
-                            : second.value;
-                    deviceController.pushSettings();
+                if (deviceController && !second.pressed) {
+                    deviceController.setAutoMaxReqTemp(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(second.value)
+                                                       : second.value);
                 }
             }
 
