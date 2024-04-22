@@ -1106,8 +1106,15 @@ double Scheme::effectiveTemperature()
         effTemperature = mSchedule->temprature;
 
     } else if (mSystemSetup->systemMode == AppSpecCPP::SystemMode::Auto) {
+        if ((mAutoMinReqTemp - mCurrentTemperature) > 0.001) {
+            effTemperature = mAutoMinReqTemp;
 
-
+        } else if ((mAutoMaxReqTemp - mCurrentTemperature) < 0.001) {
+            effTemperature = mAutoMaxReqTemp;
+        } else {
+            // Set the effective temperature to the current temperature to shutdown the system
+            effTemperature = mCurrentTemperature;
+        }
     }
 
     // Convert to F
@@ -1135,12 +1142,14 @@ AppSpecCPP::FanMode Scheme::fanMode() const {
 
 void Scheme::setAutoMinReqTemp(const double &min)
 {
-    mAutoMinReqTemp = min;
+    if (qAbs(mAutoMinReqTemp - min) > 0.001)
+        mAutoMinReqTemp = min;
 }
 
 void Scheme::setAutoMaxReqTemp(const double &max)
 {
-    mAutoMaxReqTemp = max;
+    if (qAbs(mAutoMaxReqTemp - max) > 0.001)
+        mAutoMaxReqTemp = max;
 }
 
 void Scheme::setVacation(const STHERM::Vacation &newVacation)
