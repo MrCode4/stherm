@@ -152,13 +152,12 @@ QtObject {
         let runningDays = findRunningDays(repeats, startTime, endTime, active);
 
         var now = new Date();
-        var today = Qt.formatDate(time, "ddd").slice(0, -1);
 
         // over night, break into two schedules and call recursive for each
         if (endTime < startTime) {
             // if no repeat started from yesterday ignore first one! // todo
             // active not important as running days are there for sure (already calculated)
-            if (repeats.length !== 0 || !active || !runningDays.includes(today)) {
+            if (repeats.length !== 0 || !active || now < endTime) {
                 overlappings = findOverlappingSchedules(startTimeStr, "11:59 PM", runningDays, exclude);
             }
             overlappings.push(findOverlappingSchedules("12:00 AM", endTimeStr, nextDayRepeats(runningDays), exclude));
@@ -182,9 +181,7 @@ QtObject {
                         currentScheduleElement.startTime === startTime) {
                     // todo: we need to ignore if the overlapping time is in the past time of no repeat schedule
 
-                    if (!(repeats.length === 0 && currentScheduleElement.runningDays.includes(today) && currentScheduleElement.active &&
-                          (currentScheduleElement.startTime < now && (startTime >= currentScheduleElement.startTime &&
-                                                                      now >= currentScheduleElement.endTime))))
+                    if (!(repeats.length === 0 && currentScheduleElement.active && now < currentScheduleElement.endTime))
                         overlappings.push(currentScheduleElement.scheduleElement);
                 }
             };
