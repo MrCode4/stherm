@@ -826,6 +826,9 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     mIsManualUpdate = isBackdoor || isResetVersion;
     setting.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
 
+    // Write unsaved data to settings
+    setting.sync();
+
     emit lastInstalledUpdateDateChanged();
 
     emit systemUpdating();
