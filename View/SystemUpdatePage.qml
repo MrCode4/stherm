@@ -82,7 +82,7 @@ BasePageView {
 
             visible: system.updateAvailable && changeLogTextArea.text.length > 0
             height: changeLogTextArea.text.length > 0 ? Math.min(changeLogTextArea.implicitHeight + header.height + 6, root.height * 0.45) -
-                                                        (manulLayout.visible ? manulLayout.height : 0) : 0
+                                                        (manualLayout.visible ? manualLayout.height : 0) : 0
             Layout.fillWidth: true
             Layout.columnSpan: 2
             Layout.rowSpan: 2
@@ -173,7 +173,7 @@ BasePageView {
     }
 
     ItemDelegate {
-        anchors.bottom: manulLayout.visible ? manulLayout.top : parent.bottom
+        anchors.bottom: manualLayout.visible ? manualLayout.top : parent.bottom
         anchors.left: parent.left
         anchors.leftMargin: root.leftPadding
         anchors.bottomMargin: root.bottomPadding
@@ -206,7 +206,8 @@ BasePageView {
     }
 
     RowLayout {
-        id: manulLayout
+        id: manualLayout
+
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
@@ -222,7 +223,7 @@ BasePageView {
             visible: uiSession.uiTetsMode || system.testMode
             leftPadding: 8
             rightPadding: 8
-            text:"  Manual Update  "
+            text:"Manual Update"
 
             onClicked: {
                 if (system) {
@@ -239,20 +240,18 @@ BasePageView {
         ButtonInverted {
             id: exitManualUpdateBtn
 
-             Layout.alignment: manualUpdateBtn.visible ? Qt.AlignRight : Qt.AlignHCenter
+            Layout.alignment: manualUpdateBtn.visible ? Qt.AlignRight : Qt.AlignHCenter
 
             visible: system?.isManualUpdate ?? false
             leftPadding: 8
             rightPadding: 8
-            text: "Exit manual mode"
+            text: manualUpdateBtn.visible ? "Exit manual\n mode" : "Exit manual mode"
 
             onClicked: {
                 // Exit from manual mode
-
                 if (system) {
                     system.exitManualMode();
                 }
-
             }
         }
     }
