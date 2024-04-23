@@ -153,7 +153,7 @@ I_DeviceController {
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
-            setAutoTemperateFromServer(settings);
+            setAutoTemperatureFromServer(settings);
         }
 
         function onCanFetchServerChanged() {
@@ -736,10 +736,15 @@ I_DeviceController {
             console.warn("System type unknown", settings.type)
     }
 
-    function setAutoTemperateFromServer (settings) {
+    function setAutoTemperatureFromServer (settings) {
 
         if (!device)
             return;
+
+        if (editMode === AppSpec.EMDesiredTemperature) {
+            console.log("The temperature is being edited and cannot be updated by the server.")
+            return;
+        }
 
         if (settings.hasOwnProperty("auto_temp_low")) {
             if (device.autoMinReqTemp !== settings.auto_temp_low) {
@@ -761,8 +766,6 @@ I_DeviceController {
         if (device && device.autoMinReqTemp !== min) {
             device.autoMinReqTemp = min;
             deviceControllerCPP.setAutoMinReqTemp(min);
-
-            pushSettings();
         }
     }
 
@@ -770,8 +773,6 @@ I_DeviceController {
         if (device && device.autoMaxReqTemp !== max) {
             device.autoMaxReqTemp = max;
             deviceControllerCPP.setAutoMaxReqTemp(max);
-
-            pushSettings();
         }
     }
 

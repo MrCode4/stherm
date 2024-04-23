@@ -1153,14 +1153,14 @@ AppSpecCPP::FanMode Scheme::fanMode() const {
 
 void Scheme::setAutoMinReqTemp(const double &min)
 {
-    auto minF = 1.8 * min + 32;
+    auto minF = toFahrenheit(min);
     if (qAbs(mAutoMinReqTemp - minF) > 0.001)
         mAutoMinReqTemp = minF;
 }
 
 void Scheme::setAutoMaxReqTemp(const double &max)
 {
-    auto maxF = 1.8 * max + 32;
+    auto maxF = toFahrenheit(max);
     if (qAbs(mAutoMaxReqTemp - maxF) > 0.001)
         mAutoMaxReqTemp = maxF;
 }

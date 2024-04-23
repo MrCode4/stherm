@@ -125,6 +125,7 @@ Control {
                     deviceController.setAutoMinReqTemp(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(first.value)
                                                        : first.value);
+                    deviceController.pushSettings();
                 }
             }
 
@@ -133,6 +134,7 @@ Control {
                     deviceController.setAutoMaxReqTemp(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(second.value)
                                                        : second.value);
+                    deviceController.pushSettings();
                 }
             }
 
