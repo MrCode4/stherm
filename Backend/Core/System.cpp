@@ -105,7 +105,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mountNRF_FW_Directory();
     installUpdate_NRF_FW_Service();
 
-    // Read data from Settings
     if (!mountDirectory("/mnt/log", "/mnt/log/log"))
         qWarning() << "unable to create logs folder";
 
