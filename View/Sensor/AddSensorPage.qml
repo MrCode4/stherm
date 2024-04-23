@@ -32,7 +32,7 @@ BasePageView {
 
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSensors);
 
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMSensors, false);
 
     /* Children
      * ****************************************************************************************/

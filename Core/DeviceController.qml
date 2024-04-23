@@ -223,10 +223,12 @@ I_DeviceController {
     property Timer editModeTimer: Timer {
         repeat: false
         running: false
-        interval: 5000
+        interval: 15000
+        property int disableFlags : AppSpec.EMNone;
 
         onTriggered: {
-           root.editMode = AppSpec.EMNone;
+            root.editMode = root.editMode & ~disableFlags;
+            disableFlags = AppSpec.EMNone;
         }
     }
 
@@ -285,14 +287,23 @@ I_DeviceController {
         initalSetup = init;
     }
 
-    function updateEditMode(editMode : int) {
-        if (editMode !== AppSpec.EMNone) {
-            root.editMode = editMode;
+    function updateEditMode(editMode : int, enable = true) {
+
+        if (enable) {
+            root.editMode = root.editMode | editMode; // add flag
             editModeTimer.stop();
 
         } else {
+            editModeTimer.disableFlags = editModeTimer.disableFlags | editMode
+            if (editModeTimer.running)
+                editModeTimer.stop();
             editModeTimer.start();
+//            root.editMode = root.editMode & ~editMode;
         }
+    }
+
+    function editModeEnabled(editMode : int) {
+        return (root.editMode & editMode) !== 0;
     }
 
     function updateDeviceBacklight(isOn, color) : bool
@@ -323,7 +334,7 @@ I_DeviceController {
 
     function updateFanServer(settings : var) {
 
-        if (editMode === AppSpec.EMFan) {
+        if (editModeEnabled(AppSpec.EMFan)) {
             console.log("The fan page is being edited and cannot be updated by the server.")
             return;
         }
@@ -358,7 +369,7 @@ I_DeviceController {
 
     function setVacationServer(settings : var)
     {
-        if (editMode === AppSpec.EMVacation) {
+        if (editModeEnabled(AppSpec.EMVacation)) {
             console.log("The vacation is being edited and cannot be updated by the server.")
             return;
         }
@@ -486,7 +497,7 @@ I_DeviceController {
     }
 
     function setSettingsServer(settings: var) {
-        if (editMode !== AppSpec.EMDateTime) {
+        if (!editModeEnabled(AppSpec.EMDateTime)) {
             if (device.setting.currentTimezone !== settings.currentTimezone)
                 device.setting.currentTimezone = settings.currentTimezone;
 
@@ -500,7 +511,7 @@ I_DeviceController {
             console.log("The Date time settings is being edited and cannot be updated by the server.")
         }
 
-        if (editMode !== AppSpec.EMSettings) {
+        if (!editModeEnabled(AppSpec.EMSettings)) {
             if (!setSettings(settings.brightness, settings.speaker,
                         settings.temperatureUnit, settings.brightness_mode))
                 console.log("The system settings is not applied from server")
@@ -512,7 +523,7 @@ I_DeviceController {
     }
 
     function setBacklightServer(settings: var) {
-        if (editMode === AppSpec.EMBacklight) {
+        if (editModeEnabled(AppSpec.EMBacklight)) {
             console.log("The backlight is being edited and cannot be updated by the server.")
             return;
         }
@@ -625,7 +636,7 @@ I_DeviceController {
     }
 
     function setSystemModeServer(mode_id) {
-        if (editMode === AppSpec.EMSystemMode) {
+        if (editModeEnabled(AppSpec.EMSystemMode)) {
             console.log("The system setup is being edited and cannot be updated (mode_id) by the server.")
         } else {
             var modeInt = parseInt(mode_id) - 1;
@@ -637,7 +648,7 @@ I_DeviceController {
     }
 
     function setDesiredTemperatureFromServer(temperature: real) {
-        if (editMode === AppSpec.EMDesiredTemperature) {
+        if (editModeEnabled(AppSpec.EMDesiredTemperature)) {
             console.log("The temperature is being edited and cannot be updated by the server.")
             return;
         }
@@ -655,7 +666,7 @@ I_DeviceController {
     }
 
     function setRequestedHumidityFromServer(humidity: real) {
-        if (editMode === AppSpec.EMRequestedHumidity) {
+        if (editModeEnabled(AppSpec.EMRequestedHumidity)) {
             console.log("The humidity is being edited and cannot be updated by the server.")
             return;
         }
@@ -708,7 +719,7 @@ I_DeviceController {
 
     function setSystemSetupServer(settings: var) {
 
-        if (editMode === AppSpec.EMSystemSetup) {
+        if (editModeEnabled(AppSpec.EMSystemSetup)) {
             console.log("The system setup is being edited and cannot be updated by the server.")
             return;
         }
@@ -733,7 +744,7 @@ I_DeviceController {
     }
 
     function checkSensors(sensors: var) {
-        if (editMode === AppSpec.EMSensors) {
+        if (editModeEnabled(AppSpec.EMSensors)) {
             console.log("The sensors are being edited and cannot be updated by the server.")
             return;
         }
@@ -743,7 +754,7 @@ I_DeviceController {
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
     function setSchedulesFromServer(serverSchedules: var) {
-        if (editMode === AppSpec.EMSchedule) {
+        if (editModeEnabled(AppSpec.EMSchedule)) {
             console.log("The schedules are being edited and cannot be updated by the server.")
             return;
         }
@@ -816,7 +827,7 @@ I_DeviceController {
     function updateHoldServer(isHold)
     {
 
-        if (editMode === AppSpec.EMHold) {
+        if (editModeEnabled(AppSpec.EMHold)) {
             console.log("The hold page is being edited and cannot be updated by the server.")
             return;
         }
