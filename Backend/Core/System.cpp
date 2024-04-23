@@ -1076,10 +1076,10 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     updateAvailableVersions(mUpdateJsonObject);
 
     mHasForceUpdate = false;
-    auto installableVersionKey = findForceUpdate(mUpdateJsonObject);
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
+    auto installableVersionKey = installLatestVersion ? latestVersionKey : findForceUpdate(mUpdateJsonObject);
 
-    if (installableVersionKey.isEmpty() || installLatestVersion)
+    if (installableVersionKey.isEmpty())
         installableVersionKey = latestVersionKey;
 
 
