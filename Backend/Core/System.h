@@ -292,6 +292,8 @@ private:
     //! System on test mode or not
     bool mTestMode;
 
+    QTimer mFetchActiveTimer;
+
     QTimer mUpdateTimer;
 
     NUVE::cpuid_t mUID;

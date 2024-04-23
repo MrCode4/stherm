@@ -23,7 +23,7 @@ Popup {
 
     onOpened: deviceController.updateEditMode(AppSpec.EMHold);
 
-    onClosed: deviceController.updateEditMode(AppSpec.EMNone);
+    onClosed: deviceController.updateEditMode(AppSpec.EMHold, false);
 
     /* Object properties
      * ****************************************************************************************/

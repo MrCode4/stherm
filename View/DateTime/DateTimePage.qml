@@ -30,7 +30,7 @@ BasePageView {
         if (sendToServer)
             deviceController.pushSettings();
 
-        deviceController.updateEditMode(AppSpec.EMNone);
+        deviceController.updateEditMode(AppSpec.EMDateTime, false);
     }
 
     /* Children

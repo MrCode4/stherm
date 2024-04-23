@@ -90,6 +90,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
+    connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
+        setCanFetchServer(true);
+    });
+
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
         getUpdateInformation(true);
     });
@@ -127,7 +131,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
-        setCanFetchServer(true);
+        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
     });
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
@@ -463,7 +467,16 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 
 void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
 {
-    setCanFetchServer(!hasSettingsChanged);
+    // if timer running and hasSettingsChanged stop to prevent canFetchServer issues
+    if (mFetchActiveTimer.isActive() && hasSettingsChanged) {
+        mFetchActiveTimer.stop();
+    }
+
+    // set when settings changed or no timer is active! otherwise let the timer do the job!
+    if (!mFetchActiveTimer.isActive() || hasSettingsChanged){
+        setCanFetchServer(!hasSettingsChanged);
+    }
+
     mSync->pushSettingsToServer(settings);
 }
 
