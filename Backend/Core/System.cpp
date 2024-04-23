@@ -477,9 +477,6 @@ void NUVE::System::exitManualMode()
 
     mIsManualUpdate = false;
 
-    QSettings setting;
-    setting.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
-
     checkPartialUpdate(false, true);
 }
 
