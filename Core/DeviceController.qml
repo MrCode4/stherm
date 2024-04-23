@@ -291,14 +291,14 @@ I_DeviceController {
 
         if (enable) {
             root.editMode = root.editMode | editMode; // add flag
-            editModeTimer.stop();
+            // remove from disabling flags
+            editModeTimer.disableFlags = editModeTimer.disableFlags & ~editMode
 
-        } else {
+        } else { // add to current disable flags and restart timer
             editModeTimer.disableFlags = editModeTimer.disableFlags | editMode
             if (editModeTimer.running)
                 editModeTimer.stop();
             editModeTimer.start();
-//            root.editMode = root.editMode & ~editMode;
         }
     }
 
