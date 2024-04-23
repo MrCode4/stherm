@@ -480,7 +480,7 @@ void NUVE::System::exitManualMode()
     QSettings setting;
     setting.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
 
-    checkPartialUpdate(true);
+    checkPartialUpdate(false, true);
 }
 
 void NUVE::System::setCanFetchServer(bool canFetch)
@@ -1059,7 +1059,7 @@ QString NUVE::System::systemUID()
     return QString::fromStdString(mUID);
 }
 
-void NUVE::System::checkPartialUpdate(bool notifyUser) {
+void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion) {
 
     // Read the downloaded data
     QFile file(mUpdateFilePath);
@@ -1079,7 +1079,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     auto installableVersionKey = findForceUpdate(mUpdateJsonObject);
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
 
-    if (installableVersionKey.isEmpty())
+    if (installableVersionKey.isEmpty() || installLatestVersion)
         installableVersionKey = latestVersionKey;
 
 
@@ -1129,7 +1129,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     emit logVersionChanged();
 
     // Manual update must be exit for force update
-    if (mHasForceUpdate && !mIsManualUpdate) {
+    if (installLatestVersion || (mHasForceUpdate && !mIsManualUpdate)) {
         partialUpdate();
     }
 }

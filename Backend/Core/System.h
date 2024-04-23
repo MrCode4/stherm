@@ -226,7 +226,8 @@ private:
     //! Check new version from file.
     //! This function call automatically.
     //! notifyUser: Send notification for user when new update is available
-    void checkPartialUpdate(bool notifyUser = false);
+    //! if installLatestVersion set to true, the latest version will be install
+    void checkPartialUpdate(bool notifyUser = false, bool installLatestVersion = false);
 
     void setUpdateAvailable(bool updateAvailable);
 
