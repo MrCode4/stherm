@@ -166,6 +166,7 @@ private:
     QTimer m_wtd_timer;
     QTimer m_wiring_timer;
     QTimer m_nRF_timer;
+    QTimer m_adaptiveBrightness_timer;
 
     QString NRF_HW;
     QString NRF_SW;

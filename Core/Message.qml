@@ -15,10 +15,18 @@ QSObject {
         Error
     }
 
+    enum SourceType {
+        Unknown = 0,
+        Device  = 1,
+        Server  = 2
+    }
+
     /* Property declaration
      * ****************************************************************************************/
     //! Type of Message
     property int        type:       Message.Type.Unknown
+
+    property int        sourceType: Message.SourceType.Device
 
     //! Message text
     property string     message:    ""
@@ -31,4 +39,5 @@ QSObject {
 
     //! Date of arrival
     property string     datetime
+
 }

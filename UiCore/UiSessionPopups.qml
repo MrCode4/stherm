@@ -89,11 +89,12 @@ Item {
     Connections {
         target: deviceController.deviceControllerCPP.system
 
-        function onPartialUpdateReady(isBackdoor : bool) {
+        function onPartialUpdateReady(isBackdoor : bool, isResetToVersion: bool) {
             if (downloadingPopup.visible)
                 downloadingPopup.close();
 
             installConfirmation.isBackdoor = isBackdoor;
+            installConfirmation.isResetToVersion = isResetToVersion;
             parent.popupLayout.displayPopUp(installConfirmation);
 
             // Active screen saver

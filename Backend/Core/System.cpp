@@ -10,17 +10,22 @@
  * Network information
  * ************************************************************************************************/
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
+const QString m_logUsername = "uploadtemp";
+const QString m_logPassword = "oDhjPTDJYkUOvM9";
+const QString m_logServerAddress = "fileserver.nuvehvac.com";
+const QString m_logPath = "/opt/logs/";
 
 const QString m_partialUpdate   = QString("partialUpdate");
 const QString m_backdoorUpdate   = QString("backdoorUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
-const QString m_backdoorFromServer= QString("BackdoorFromServer");
+const QString m_backdoorFromServer = QString("BackdoorFromServer");
 
 const QString m_checkInternetConnection = QString("checkInternetConnection");
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
 
 const char m_isBusyDownloader[] = "isBusyDownloader";
+const char m_isResetVersion[]   = "isResetVersion";
 
 constexpr char m_notifyUserProperty[] = "notifyUser";
 
@@ -40,6 +45,7 @@ const QString m_ForceUpdate     = QString("ForceUpdate");
 
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
 const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
+const QString m_IsManualUpdateSetting        = QString("Stherm/IsManualUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 
@@ -84,6 +90,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
+    connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
+        setCanFetchServer(true);
+    });
+
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
         getUpdateInformation(true);
     });
@@ -99,19 +109,29 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mountNRF_FW_Directory();
     installUpdate_NRF_FW_Service();
 
+    if (!mountDirectory("/mnt/log", "/mnt/log/log"))
+        qWarning() << "unable to create logs folder";
+
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
+    mIsManualUpdate          = setting.value(m_IsManualUpdateSetting, false).toBool();
+    mStartedWithManualUpdate = mIsManualUpdate;
+
+    // reformat if it was saved with old format
+    auto oldFormatDate = QDate::fromString(mLastInstalledUpdateDate, "dd/MM/yyyy");
+    if (oldFormatDate.isValid())
+        mLastInstalledUpdateDate = oldFormatDate.toString("dd MMM yyyy");
 
     QTimer::singleShot(2000, this, [=]() {
         checkPartialUpdate(true);
     });
 
-    connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::snReady);
+    connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::onSnReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
-        setCanFetchServer(true);
+        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
     });
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
@@ -122,6 +142,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     // Check: The downloader has been open for more than 30 seconds and has not received any bytes
     downloaderTimer.setTimerType(Qt::PreciseTimer);
     downloaderTimer.setSingleShot(false);
+
+    if (!serialNumber().isEmpty())
+        onSnReady();
 }
 
 NUVE::System::~System()
@@ -343,6 +366,34 @@ bool NUVE::System::findBackdoorVersion(const QString fileName)
     return false;
 }
 
+void NUVE::System::sendLog()
+{
+    if (mLogSender.state() != QProcess::NotRunning || mLogRemoteFolder.isEmpty()){
+        QString error("Previous session is in progress, please try again later.");
+        qWarning() << error << "State is :" << mLogSender.state() << "mLogRemoteFolder" << mLogRemoteFolder;
+        emit alert(error);
+        return;
+    }
+
+    QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
+
+    TRACE << "generating log file in " << filename;
+
+    // Create log
+    auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
+    if (exitCode < 0)
+    {
+        qWarning() << "Unable to create log file";
+        return;
+    }
+
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp %2 %3@%4:%5").
+                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    TRACE << "sending log to server " << mLogRemoteFolder;
+    mLogSender.start("/bin/bash", {"-c", copyFile});
+}
+
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
 {
 #ifdef __unix__
@@ -391,7 +442,7 @@ void NUVE::System::getUpdateInformation(bool notifyUser) {
     QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/updateInfo.json"))));
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
-    reply->setProperty(m_notifyUserProperty, notifyUser);
+    reply->setProperty(m_notifyUserProperty, mIsManualUpdate ? false : notifyUser);
 }
 
 void NUVE::System::getBackdoorInformation() {
@@ -416,8 +467,29 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 
 void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
 {
-    setCanFetchServer(!hasSettingsChanged);
+    // if timer running and hasSettingsChanged stop to prevent canFetchServer issues
+    if (mFetchActiveTimer.isActive() && hasSettingsChanged) {
+        mFetchActiveTimer.stop();
+    }
+
+    // set when settings changed or no timer is active! otherwise let the timer do the job!
+    if (!mFetchActiveTimer.isActive() || hasSettingsChanged){
+        setCanFetchServer(!hasSettingsChanged);
+    }
+
     mSync->pushSettingsToServer(settings);
+}
+
+void NUVE::System::exitManualMode()
+{
+    // Manual mode is false
+    if (!mStartedWithManualUpdate) {
+        return;
+    }
+
+    mIsManualUpdate = false;
+
+    checkPartialUpdate(false, true);
 }
 
 void NUVE::System::setCanFetchServer(bool canFetch)
@@ -491,6 +563,10 @@ bool NUVE::System::testMode() {
     return mTestMode;
 }
 
+bool NUVE::System::isManualMode() {
+    return mStartedWithManualUpdate;
+}
+
 bool NUVE::System::updateSequenceOnStart()
 {
     QSettings settings;
@@ -538,10 +614,10 @@ void NUVE::System::partialUpdate(const bool isBackdoor) {
 
 void NUVE::System::partialUpdateByVersion(const QString version)
 {
-    checkAndDownloadPartialUpdate(version);
+    checkAndDownloadPartialUpdate(version, false, true);
 }
 
-void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor)
+void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor, const bool isResetVersion)
 {
     QString versionAddressInServer;
     int updateFileSize;
@@ -581,7 +657,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         auto downloadedData = file.readAll();
         file.close();
 
-        if (verifyDownloadedFiles(downloadedData, false, isBackdoor))
+        if (verifyDownloadedFiles(downloadedData, false, isBackdoor, isResetVersion))
             return;
         else
             TRACE << "The file update needs to be redownloaded.";
@@ -617,6 +693,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(versionAddressInServer))));
     reply->setProperty(m_methodProperty, isBackdoor ? m_backdoorUpdate : m_partialUpdate);
     mNetManager->setProperty(m_isBusyDownloader, true);
+    mNetManager->setProperty(m_isResetVersion, isResetVersion);
 
     setPartialUpdateProgress(0);
 
@@ -631,16 +708,24 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     mDownloadRateEMA = 0;
     emit remainingDownloadTimeChanged();
 
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        downloaderTimer.stop();
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [=]() {
+        downloaderTimer.stop();
+    });
+
+    // disconnect any previous session
+    downloaderTimer.disconnect();
 
     // The downloader has been open for more than 30 seconds and has not received any bytes
-
-    connect(&downloaderTimer, &QTimer::timeout, this, [=]() {
+    connect(&downloaderTimer, &QTimer::timeout, reply, [=]() {
         double secTime = mElapsedTimer.elapsed() / 1000.0;
 
         if (mElapsedTimer.isValid() && secTime >= 30) {
             reply->abort();
             downloaderTimer.stop();
-            downloaderTimer.disconnect();
 
         } if (mElapsedTimer.isValid() && secTime >= 5) {
             double rate = 0;
@@ -662,18 +747,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         }
     });
 
-    connect(reply, &QNetworkReply::finished, this, [=]() {
-        downloaderTimer.stop();
-        downloaderTimer.disconnect();
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [=]() {
-        downloaderTimer.stop();
-        downloaderTimer.disconnect();
-    });
-
     downloaderTimer.start(1000);
-
 
     connect(reply, &QNetworkReply::downloadProgress, this, [=] (qint64 bytesReceived, qint64 bytesTotal) {
         double secTime = mElapsedTimer.elapsed() / 1000.0;
@@ -710,7 +784,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
 }
 
-void NUVE::System::updateAndRestart(const bool isBackdoor)
+void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVersion)
 {
     //    // Define source and destination directories
     //    QString destDir = qApp->applicationDirPath();
@@ -760,14 +834,23 @@ void NUVE::System::updateAndRestart(const bool isBackdoor)
     QSettings setting;
     setting.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
 
+    // No need to update mIsManualUpdate
+    mIsManualUpdate = isBackdoor || isResetVersion;
+    setting.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
+
+    // Write unsaved data to settings
+    setting.sync();
+
     emit lastInstalledUpdateDateChanged();
 
     emit systemUpdating();
 
     installUpdateService();
 
-    int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-update.service; systemctl start appStherm-update.service"});
-    TRACE << exitCode;
+    QTimer::singleShot(200, this, [=]() {
+        int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-update.service; systemctl start appStherm-update.service"});
+        TRACE << exitCode;
+    });
 #endif
 
 
@@ -775,7 +858,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor)
 
 
 // Checksum verification after download
-bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite, bool isBackdoor) {
+bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite, bool isBackdoor, const bool isResetVersion) {
     QByteArray downloadedChecksum = calculateChecksum(downloadedData);
 
     auto expectedBA = isBackdoor ? mExpectedBackdoorChecksum : m_expectedUpdateChecksum;
@@ -793,7 +876,7 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
             file.close();
         }
 
-        emit partialUpdateReady(isBackdoor);
+        emit partialUpdateReady(isBackdoor, isResetVersion);
 
         return true;
 
@@ -845,7 +928,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
         if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
 
             // Check data and prepare to set up.
-            verifyDownloadedFiles(data);
+            verifyDownloadedFiles(data, true, false, netReply->property(m_isResetVersion).toBool());
             mNetManager->setProperty(m_isBusyDownloader, false);
 
         } else if (netReply->property(m_methodProperty).toString() == m_backdoorUpdate) {
@@ -903,6 +986,17 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
     }
 
     netReply->deleteLater();
+}
+
+void NUVE::System::onSnReady()
+{
+    emit snReady();
+
+    mLogRemoteFolder = m_logPath + serialNumber();
+    // Create remote path in case it doesn't exist, needed once! with internet access
+    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh %2@%3 'mkdir -p %4'").
+                         arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    mLogSender.start("/bin/bash", {"-c", createPath});
 }
 
 bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
@@ -977,7 +1071,7 @@ QString NUVE::System::systemUID()
     return QString::fromStdString(mUID);
 }
 
-void NUVE::System::checkPartialUpdate(bool notifyUser) {
+void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion) {
 
     // Read the downloaded data
     QFile file(mUpdateFilePath);
@@ -989,13 +1083,13 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     mUpdateJsonObject = QJsonDocument::fromJson(file.readAll()).object();
     mUpdateJsonObject.remove("LatestVersion");
 
-    file .close();
-
+    file.close();
 
     updateAvailableVersions(mUpdateJsonObject);
 
-    auto installableVersionKey = findForceUpdate(mUpdateJsonObject);
+    mHasForceUpdate = false;
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
+    auto installableVersionKey = installLatestVersion ? latestVersionKey : findForceUpdate(mUpdateJsonObject);
 
     if (installableVersionKey.isEmpty())
         installableVersionKey = latestVersionKey;
@@ -1015,19 +1109,14 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     // Compare versions lexicographically
     // installableVersionKey > currentVersion
     if (isVersionNewer(installableVersionKey, currentVersion)) {
-        auto appVersionList = currentVersion.split(".");
-        auto latestVersion = installableVersionKey.split(".");
-
         setUpdateAvailable(true);
+        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
     }
 
-    mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
     auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
     auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
     auto changeLog = latestVersionObj.value(m_ChangeLog).toString();
 
-    if (mLastInstalledUpdateDate.isEmpty())
-        mLastInstalledUpdateDate = mLatestVersionDate;
 
     mLatestVersionChangeLog = "V" + installableVersionKey + ":\n\n" + changeLog;
 
@@ -1038,9 +1127,12 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
         mLatestVersionKey  = installableVersionKey;
         mLatestVersionDate = releaseDateStr;
 
+        if (mLastInstalledUpdateDate.isEmpty())
+            mLastInstalledUpdateDate = mLatestVersionDate;
+
         emit latestVersionChanged();
 
-        if (notifyUser)
+        if (notifyUser  && !mIsManualUpdate)
             emit notifyNewUpdateAvailable();
     }
 
@@ -1048,7 +1140,8 @@ void NUVE::System::checkPartialUpdate(bool notifyUser) {
     updateLog(mUpdateJsonObject);
     emit logVersionChanged();
 
-    if (mHasForceUpdate) {
+    // Manual update must be exit for force update
+    if (installLatestVersion || (mHasForceUpdate && !mIsManualUpdate)) {
         partialUpdate();
     }
 }

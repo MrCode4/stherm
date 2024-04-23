@@ -6,7 +6,7 @@
 
 #include "LogHelper.h"
 
-const double ET                      = 40;                 // 4.5 C
+const double ET                      = 40;                 // 40 F or 4.5 C
 const double ET_STAGE2               = 3.5;
 const double HPT                     = 60;                // 15 C
 const double HUM_MAX                 = 70;
@@ -281,7 +281,7 @@ void Scheme::CoolingLoop()
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::CoolingOnly: {
         TRACE_CHECK(false) << heatPump << mCurrentTemperature << effectiveTemperature();
-        if (mCurrentTemperature - effectiveTemperature() >= 0.9) {
+        if (mCurrentTemperature - effectiveTemperature() >= STAGE1_ON_RANGE) {
             internalCoolingLoopStage1(heatPump);
         }
     } break;
@@ -318,7 +318,7 @@ void Scheme::HeatingLoop()
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::HeatingOnly:
         TRACE << "Conventional" << mCurrentTemperature << effectiveTemperature();
-        if (effectiveTemperature() - mCurrentTemperature >= 0.9) {
+        if (effectiveTemperature() - mCurrentTemperature >= STAGE1_ON_RANGE) {
             internalHeatingLoopStage1();
         }
         break;
@@ -344,11 +344,11 @@ void Scheme::VacationLoop()
     } else {
             switch (mSystemSetup->systemMode) {
             case AppSpecCPP::SystemMode::Cooling: {
-                if (effectiveTemperature() - mCurrentTemperature < 1) {
+                if (effectiveTemperature() - mCurrentTemperature < STAGE1_OFF_RANGE) {
                     // mCurrentSysMode = AppSpecCPP::SystemMode::Cooling;
                     CoolingLoop();
 
-                } else if (effectiveTemperature() - mCurrentTemperature < 0.9) {
+                } else if (effectiveTemperature() - mCurrentTemperature < STAGE1_ON_RANGE) {
                     // mCurrentSysMode = AppSpecCPP::SystemMode::Off;
                     OffLoop();
 
@@ -359,10 +359,10 @@ void Scheme::VacationLoop()
             } break;
 
             case AppSpecCPP::SystemMode::Heating: {
-                if (mCurrentTemperature - effectiveTemperature() < 0.5) {
+                if (mCurrentTemperature - effectiveTemperature() < STAGE1_OFF_RANGE) {
                     HeatingLoop();
 
-                } else if (mCurrentTemperature - effectiveTemperature() < 0.9) {
+                } else if (mCurrentTemperature - effectiveTemperature() < STAGE1_ON_RANGE) {
                     OffLoop();
 
                 }  else {
@@ -372,10 +372,10 @@ void Scheme::VacationLoop()
             } break;
 
             default: {
-                if (effectiveTemperature() - mCurrentTemperature > 0.9) {
+                if (effectiveTemperature() - mCurrentTemperature > STAGE1_ON_RANGE) {
                     HeatingLoop();
 
-                } else if (mCurrentTemperature - effectiveTemperature() > 0.9) {
+                } else if (mCurrentTemperature - effectiveTemperature() > STAGE1_ON_RANGE) {
                     CoolingLoop();
 
                 }
@@ -401,22 +401,21 @@ void Scheme::OffLoop()
 void Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
 {
     // we should check if it is changed or not!
-    if (mRelay->setOb_state(newOb_state))
+    if (mRelay->setOb_state(newOb_state) && mSystemSetup->systemType == AppSpecCPP::HeatPump)
     {
-        bool relaysChanged = true;
         sendRelays();
-        if (relaysChanged && !stopWork){
-            // sysDelay
-            waitLoop(mSystemSetup->systemRunDelay * 60000);
-        }
     }
 }
 
 void Scheme::internalCoolingLoopStage1(bool pumpHeat)
 {
-    if (pumpHeat) // how the system type setup get OB Orientatin
-    {
-        updateOBState(AppSpecCPP::Cooling);
+    //    if (pumpHeat) // how the system type setup get OB Orientatin, kept for later
+    // always set but not send relays update if not heat pump internally
+    updateOBState(AppSpecCPP::Cooling);
+
+    if (!stopWork){
+        // sysDelay
+        waitLoop(mSystemSetup->systemRunDelay * 60000);
     }
 
     if (stopWork)
@@ -434,7 +433,7 @@ void Scheme::internalCoolingLoopStage1(bool pumpHeat)
     sendRelays();
     waitLoop(RELAYS_WAIT_MS);
 
-    while (effectiveTemperature() - mCurrentTemperature < 1) {
+    while (effectiveTemperature() - mCurrentTemperature < STAGE1_OFF_RANGE) {
         TRACE << mCurrentTemperature << effectiveTemperature() << mRelay->relays().y2
               << mSystemSetup->coolStage << mTiming->s1uptime.elapsed()
               << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
@@ -480,13 +479,13 @@ bool Scheme::internalCoolingLoopStage2()
     while (!stopWork) {
         TRACE << mTiming->s2hold << effectiveTemperature() << mCurrentTemperature;
         if (mTiming->s2hold) {
-            if (effectiveTemperature() - mCurrentTemperature < 1) {
+            if (effectiveTemperature() - mCurrentTemperature < STAGE1_OFF_RANGE) {
                 sendAlertIfNeeded();
             } else {
                 return false;
             }
         } else {
-            if (mCurrentTemperature - effectiveTemperature() > 0.9) {
+            if (mCurrentTemperature - effectiveTemperature() > STAGE1_ON_RANGE) {
                 sendAlertIfNeeded();
             } else {
                 break;
@@ -521,7 +520,14 @@ bool Scheme::internalCoolingLoopStage2()
 
 void Scheme::internalHeatingLoopStage1()
 {
-    // Sys delay
+    if (!stopWork){
+        // sysDelay
+        waitLoop(mSystemSetup->systemRunDelay * 60000);
+    }
+
+    if (stopWork)
+        return;
+
     mRelay->heatingStage1();
     // 5 secs
     emit changeBacklight(heatingColor);
@@ -535,7 +541,7 @@ void Scheme::internalHeatingLoopStage1()
     sendRelays();
     waitLoop(RELAYS_WAIT_MS);
 
-    while (mCurrentTemperature - effectiveTemperature() < 0.5) {
+    while (mCurrentTemperature - effectiveTemperature() < STAGE1_OFF_RANGE) {
         TRACE_CHECK(true) << mRelay->relays().w2 << mSystemSetup->heatStage
                           << mTiming->s1uptime.isValid() << mTiming->s1uptime.elapsed();
         if (mRelay->relays().w2 != STHERM::RelayMode::NoWire && mSystemSetup->heatStage >= 2) {
@@ -582,9 +588,9 @@ bool Scheme::internalHeatingLoopStage2()
         TRACE << mCurrentTemperature << effectiveTemperature() << mTiming->s2hold;
 
         if (mTiming->s2hold) {
-            if (mCurrentTemperature - effectiveTemperature() < 0.5) {
-                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)
-                    || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) {
+            if (mCurrentTemperature - effectiveTemperature() < STAGE1_OFF_RANGE) {
+                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->heatStage < 3)
+                    || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) { // this is valid for sure, checking for sanity
                     sendAlertIfNeeded();
                     if (stopWork)
                         break;
@@ -600,8 +606,8 @@ bool Scheme::internalHeatingLoopStage2()
             }
         } else {
             if (effectiveTemperature() - mCurrentTemperature < 8
-                || (mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->coolStage < 3)) {
-                if (effectiveTemperature() - mCurrentTemperature < 0.9) {
+                || (mRelay->relays().w3 == STHERM::RelayMode::NoWire || mSystemSetup->heatStage < 3)) {
+                if (effectiveTemperature() - mCurrentTemperature < STAGE1_ON_RANGE) {
                     break;
                 } else {
                     sendAlertIfNeeded();
@@ -662,7 +668,7 @@ bool Scheme::internalHeatingLoopStage3()
     while (!stopWork) {
         TRACE << mCurrentTemperature << effectiveTemperature() << mTiming->s3hold;
         if (mTiming->s3hold) {
-            if (mCurrentTemperature - effectiveTemperature() < 0.5) {
+            if (mCurrentTemperature - effectiveTemperature() < STAGE1_OFF_RANGE) {
                 sendAlertIfNeeded();
             } else {
                 return false;
@@ -704,6 +710,12 @@ void Scheme::internalPumpHeatingLoopStage1()
     if (effectiveTemperature() - mCurrentTemperature >= 3) {
         updateOBState(AppSpecCPP::Heating);
 
+        if (!stopWork){
+            // sysDelay
+            waitLoop(mSystemSetup->systemRunDelay * 60000);
+        }
+
+        // check again after wait
         if (stopWork)
             return;
 
@@ -719,7 +731,7 @@ void Scheme::internalPumpHeatingLoopStage1()
         sendRelays();
         waitLoop(RELAYS_WAIT_MS);
 
-        while (mCurrentTemperature - effectiveTemperature() < 0.9) {
+        while (mCurrentTemperature - effectiveTemperature() < STAGE1_ON_RANGE) {
             TRACE << mCurrentTemperature << effectiveTemperature() << mRelay->relays().y2
                   << mSystemSetup->heatStage << mTiming->s1uptime.elapsed()
                   << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
@@ -767,13 +779,13 @@ bool Scheme::internalPumpHeatingLoopStage2()
         TRACE << mCurrentTemperature << effectiveTemperature() << mTiming->s2hold;
 
         if (mTiming->s2hold) {
-            if (mCurrentTemperature - effectiveTemperature() < 0.5) {
+            if (mCurrentTemperature - effectiveTemperature() < STAGE1_OFF_RANGE) {
                 sendAlertIfNeeded();
             } else {
                 return false;
             }
         } else {
-            if (effectiveTemperature() - mCurrentTemperature > 0.9) {
+            if (effectiveTemperature() - mCurrentTemperature > STAGE1_ON_RANGE) {
                 sendAlertIfNeeded();
             } else {
                 break;
@@ -1217,8 +1229,10 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
     mSystemSetup = systemSetup;
 
     // ob_state_ initial value?
-    mRelay->setOb_on_state(mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                              : AppSpecCPP::Heating);
+    mRelay->setOb_on_state(mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump ?
+                               (mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
+                                                                   : AppSpecCPP::Heating) :
+                               AppSpecCPP::Off);
 
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
@@ -1233,7 +1247,12 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
     });
 
     connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [this] {
-        TRACE<< "systemTypeChanged: "<< mSystemSetup->systemType;
+        TRACE<< "systemTypeChanged: "<< mSystemSetup->systemType << mSystemSetup->heatPumpOBState;
+
+        mRelay->setOb_on_state(mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump ?
+                                   (mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
+                                                                       : AppSpecCPP::Heating) :
+                                   AppSpecCPP::Off);
 
         restartWork();
     });
@@ -1243,8 +1262,10 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
         if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
             TRACE << "heatPumpOBStateChanged: " << mSystemSetup->heatPumpOBState
                   << mSystemSetup->systemType;
-        mRelay->setOb_on_state(mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                                  : AppSpecCPP::Heating);
+        mRelay->setOb_on_state(mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump ?
+                                   (mSystemSetup->heatPumpOBState == 0 ? AppSpecCPP::Cooling
+                                                                       : AppSpecCPP::Heating) :
+                                   AppSpecCPP::Off);
     });
 
     connect(mSystemSetup, &SystemSetup::coolStageChanged, this, [this] {

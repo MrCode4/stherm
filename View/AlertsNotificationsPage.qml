@@ -10,6 +10,9 @@ import Stherm
 BasePageView {
     id: _root
 
+    //! MessageController
+    property MessageController  messageController: uiSession.messageController
+
     /* Object properties
      * ****************************************************************************************/
     title: "Alerts/Notifications"
@@ -19,6 +22,8 @@ BasePageView {
     //! A list of all the alerts/notifications of app
     ListView {
         id: _alnoListV
+
+        spacing: 4
 
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
@@ -42,16 +47,8 @@ BasePageView {
 
             onClicked: {
                 //! Show Message in a popup
-                _alertNotifPop.message = message;
-                _alertNotifPop.open();
+                messageController.showMessage(message);
             }
         }
-    }
-
-    //! This should be shown using popup layout
-    AlertNotifPopup {
-        id: _alertNotifPop
-        dim: true
-        modal: true
     }
 }

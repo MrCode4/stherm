@@ -61,6 +61,7 @@ BasePageView {
             { "key": "Software version",    "value": appVesion },
             { "key": "Hardware version",    "value": "01" },
             { "key": "IPv4 Address",        "value": NetworkInterface.ipv4Address },
+            { "key": "Send Log",            "value": "01", "type": "button" },
             { "key": "Restart Device",      "value": "01", "type": "button" },
             { "key": "Update NRF",          "value": "02", "type": "button" },
             { "key": "Exit",                "value": "02", "type": "button" },
@@ -106,8 +107,8 @@ BasePageView {
                             if (root.StackView.view) {
                                 uiSession.uiTetsMode = true;
                                 root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                                              "uiSession": uiSession
-                                                          })
+                                                             "uiSession": uiSession
+                                                         })
                             }
                         }
                     }
@@ -118,6 +119,19 @@ BasePageView {
                 spacing: 16
 
                 anchors.centerIn: parent
+
+                ButtonInverted {
+                    id: sendLog
+
+                    visible: modelData?.type === "button" && modelData.key === "Send Log"
+                    leftPadding: 8
+                    rightPadding: 8
+                    text: modelData.key
+
+                    onClicked: {
+                        logBusyPop.open();
+                    }
+                }
 
                 ButtonInverted {
                     id: rebootDevice
@@ -187,5 +201,27 @@ BasePageView {
 
     FontMetrics {
         id: _fontMetrics
+    }
+
+    Popup {
+        id: logBusyPop
+        parent: Template.Overlay.overlay
+        width: Math.max(implicitWidth, parent.width * 0.5)
+        height: parent.height * 0.5
+        anchors.centerIn: parent
+        modal: true
+
+        onOpened: {
+            //! Call sendLog()
+            system.sendLog();
+            close();
+        }
+
+        contentItem: Label {
+            text: "Preparing log, \nplease wait ..."
+            horizontalAlignment: "AlignHCenter"
+            verticalAlignment: "AlignVCenter"
+            lineHeight: 1.4
+        }
     }
 }
