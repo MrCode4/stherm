@@ -32,7 +32,7 @@ Control {
     property real minAutoMaxTemp: AppSpec.minAutoMaxTemp
 
     onMaxAutoMinTempChanged: first.setMaxValue(maxAutoMinTemp);
-    onMinAutoMaxTempChanged: second.settMinValue(minAutoMaxTemp);
+    onMinAutoMaxTempChanged: second.setMinValue(minAutoMaxTemp);
 
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {

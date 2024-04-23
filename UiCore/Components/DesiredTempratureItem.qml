@@ -106,8 +106,8 @@ Control {
             enabled: labelVisible && !currentSchedule
             difference: device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
 
-            maxAutoMinTemp: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device.setting.tempratureUnit)
-            minAutoMaxTemp: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device.setting.tempratureUnit)
+            maxAutoMinTemp: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
+            minAutoMaxTemp: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
 
             from: minTemprature
             to: maxTemprature
