@@ -111,7 +111,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
-    mIsManualUpdate          = setting.value(m_IsManualUpdateSetting).toBool();
+    mIsManualUpdate          = setting.value(m_IsManualUpdateSetting, false).toBool();
+    mStartedWithManualUpdate = mIsManualUpdate;
 
     // reformat if it was saved with old format
     auto oldFormatDate = QDate::fromString(mLastInstalledUpdateDate, "dd/MM/yyyy");
@@ -470,18 +471,16 @@ void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSet
 void NUVE::System::exitManualMode()
 {
     // Manual mode is false
-    if (!mIsManualUpdate) {
+    if (!mStartedWithManualUpdate) {
         return;
     }
 
     mIsManualUpdate = false;
-    emit isManualModeChanged();
 
     QSettings setting;
     setting.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
 
     checkPartialUpdate(true);
-
 }
 
 void NUVE::System::setCanFetchServer(bool canFetch)
@@ -556,7 +555,7 @@ bool NUVE::System::testMode() {
 }
 
 bool NUVE::System::isManualMode() {
-    return mIsManualUpdate;
+    return mStartedWithManualUpdate;
 }
 
 bool NUVE::System::updateSequenceOnStart()

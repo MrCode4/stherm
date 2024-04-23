@@ -271,6 +271,7 @@ private:
     QString mLastInstalledUpdateDate;
 
     bool mIsManualUpdate;
+    bool mStartedWithManualUpdate;
 
     int mRequiredMemory;
     int mUpdateFileSize;
