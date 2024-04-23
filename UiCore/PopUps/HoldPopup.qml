@@ -53,6 +53,10 @@ Popup {
             checkable: true
             text: "Off"
             checked: !(device?.isHold ?? false)
+
+            onClicked: {
+                delayedCloseTmr.start();
+            }
         }
 
         Button {
@@ -68,8 +72,11 @@ Popup {
                 if (device && deviceController && device.isHold !== checked) {
                     deviceController.updateHold(checked)
                     deviceController.pushSettings();
-                    delayedCloseTmr.running = true;
                 }
+            }
+
+            onClicked: {
+                delayedCloseTmr.start();
             }
         }
     }
