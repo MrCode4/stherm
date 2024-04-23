@@ -29,6 +29,7 @@ class System : public NetworkWorker
 
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
+    Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
@@ -79,7 +80,7 @@ public:
     Q_INVOKABLE void partialUpdate(const bool isBackdoor = false);
     Q_INVOKABLE void partialUpdateByVersion(const QString version);
 
-    Q_INVOKABLE void updateAndRestart(const bool isBackdoor);
+    Q_INVOKABLE void updateAndRestart(const bool isBackdoor, const bool isResetVersion = false);
 
     //! Get update information from server
     //! notifyUser: Send notification for user when new update is available
@@ -90,6 +91,8 @@ public:
     Q_INVOKABLE void wifiConnected(bool hasInternet);
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
+
+    Q_INVOKABLE void exitManualMode();
 
     void setCanFetchServer(bool canFetch);
 
@@ -165,6 +168,8 @@ public:
 
     bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
+    bool isManualMode();
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -184,7 +189,7 @@ signals:
     void lastInstalledUpdateDateChanged();
 
     //! Emit when partially update is ready.
-    void partialUpdateReady(bool isBackdoor = false);
+    void partialUpdateReady(bool isBackdoor = false, bool isResetToVersion = false);
 
     //! Start download process.
     void downloadStarted();
@@ -209,16 +214,20 @@ signals:
 
     void backdoorLogChanged();
 
+    void isManualModeChanged();
+
 private:
 
     //! verify dounloaded files and prepare to set up.
-    bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true, bool isBackdoor = false);
+    bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true,
+                               bool isBackdoor = false, const bool isResetVersion = false);
 
 
     //! Check new version from file.
     //! This function call automatically.
     //! notifyUser: Send notification for user when new update is available
-    void checkPartialUpdate(bool notifyUser = false);
+    //! if installLatestVersion set to true, the latest version will be install
+    void checkPartialUpdate(bool notifyUser = false, bool installLatestVersion = false);
 
     void setUpdateAvailable(bool updateAvailable);
 
@@ -240,7 +249,7 @@ private:
     void updateAvailableVersions(const QJsonObject updateJsonObject);
 
     //! Check and prepare the system to start download process.
-    void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false);
+    void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false, const bool isResetVersion = false);
 
 
 private:
@@ -261,6 +270,9 @@ private:
     QString mLatestVersionDate;
     QString mLatestVersionChangeLog;
     QString mLastInstalledUpdateDate;
+
+    bool mIsManualUpdate;
+    bool mStartedWithManualUpdate;
 
     int mRequiredMemory;
     int mUpdateFileSize;
