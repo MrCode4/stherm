@@ -621,6 +621,7 @@ I_DeviceController {
     }
 
     function checkQRurl(url: var) {
+        root.device.contactContractor.technicianURL = url;
     }
 
     function setSystemModeServer(mode_id) {
