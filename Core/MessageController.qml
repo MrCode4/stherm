@@ -71,9 +71,6 @@ QtObject {
             return;
         }
 
-
-        let messagesModel = device.messages;
-
         // Delete messages from model when a cloud message is removed.
         {}
 
@@ -82,7 +79,7 @@ QtObject {
                                 return;
 
                              // Find Schedule in the model
-                             var foundMessage = messagesModel.find(messageModel => (message.message === messageModel.message &&
+                             var foundMessage = device.messages.find(messageModel => (message.message === messageModel.message &&
                                                                                     messageModel.sourceType === Message.SourceType.Server));
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
