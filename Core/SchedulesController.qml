@@ -210,6 +210,10 @@ QtObject {
         var currentSchedules = [];
         device.schedules.forEach(function(schElement, index) {
             var schStartTime = Date.fromLocaleTimeString(Qt.locale(), schElement.startTime, "hh:mm AP");
+            // if no repeat started ignore the startTime and get now as start to skip gone time
+            if (schElement.repeats.length === 0 && schElement.active) {
+                schStartTime = new Date();
+            }
             var schEndTime = Date.fromLocaleTimeString(Qt.locale(), schElement.endTime, "hh:mm AP");
             // find the correct running day for no repeat
             let scheduleRunningDays = findRunningDays(schElement.repeats, schStartTime, schEndTime, schElement.active);
