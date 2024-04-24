@@ -134,7 +134,8 @@ QtObject {
     {
         var msgIndex = device.messages.findIndex((element, index) => element === message);
         if (msgIndex > -1) {
-            var msgToRemove = device.messages.splice(msgIndex, 1)[0];
+            var msgToRemove = device.messages.splice(msgIndex, 1);
+            device.messagesChanged();
             // may cause crash
             //            msgToRemove.destroy();
         }
