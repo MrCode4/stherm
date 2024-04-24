@@ -263,7 +263,7 @@ struct AQ_TH_PR_thld {
         fan_high      = 4200;
         fan_low       = 3800;
         light_low     = 0;
-        light_hight   = 1000000000;
+        light_high   = 1000000;
     }
 
     uint16_t pressure_high;  ///< Pressure threshold high (up to 1200 hPa)
@@ -279,7 +279,7 @@ struct AQ_TH_PR_thld {
     uint16_t fan_high;
     uint16_t fan_low;
     uint16_t light_low;
-    int light_hight;
+    int light_high;
 };
 
 /**

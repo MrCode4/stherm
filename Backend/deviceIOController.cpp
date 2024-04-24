@@ -1314,7 +1314,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_Low,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low));
 
-    } else if (luminosity > m_p->throlds_aq.light_hight) {
+    } else if (luminosity > m_p->throlds_aq.light_high) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_High,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High));
     }

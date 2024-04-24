@@ -236,6 +236,8 @@ QtObject {
                          alertType : int,
                          alertMessage : string) {
 
+            console.log("Alert: ", alertLevel, alertType, alertMessage);
+
             //! Watch some sensor alerts
             switch (alertType) {
             case AppSpec.Alert_temp_low:
@@ -258,6 +260,8 @@ QtObject {
 
             case AppSpec.Alert_fan_High:
             case AppSpec.Alert_fan_low: {
+                // Return temporary
+                return;
                 if (fanWatcher.running)
                     return;
 
@@ -278,7 +282,6 @@ QtObject {
                 break;
             }
 
-            console.log("Alert: ", alertLevel, alertType, alertMessage);
             addNewMessageFromData(Message.Type.Alert, alertMessage, (new Date()).toLocaleString());
 
         }
