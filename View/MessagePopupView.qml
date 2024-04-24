@@ -7,7 +7,7 @@ import Stherm
  * MessagePopupView listens to MessageController and opens popup when a new message arrives.
  * ***********************************************************************************************/
 Item {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -15,26 +15,19 @@ Item {
     property UiSession          uiSession
 
     //! MessageController
-    property MessageController  messageController
+    property MessageController  messageController : uiSession.messageController
 
     /* Children
      * ****************************************************************************************/
     Connections {
         target: messageController
-        enabled: Boolean(uiSession)
 
-        function onNewMessageReceived(message)
-        {
-            //! \todo This will later be shown using PopUpLayout to be able to show multiple message
-            //! popups on top of each other.
+        function onNewMessageReceived(message: Message) {
+            showMessagePopup(message);
+        }
 
-            //! Create an instance of AlertNotifPopup
-            var newAlertPopup = _messagePopupCompo.createObject(_root, {
-                                                                    "message": message
-                                                                });
-
-            //! Ask PopUpLayout to open popup
-            uiSession.popupLayout.displayPopUp(newAlertPopup, false);
+        function onShowMessage(message: Message) {
+            showMessagePopup(message);
         }
     }
 
@@ -42,9 +35,37 @@ Item {
         id: _messagePopupCompo
 
         AlertNotifPopup {
+            uiSession: root.uiSession
+
             onClosed: {
+                message.isRead = true;
+
+                if (messageController && message.type === Message.Type.SystemNotification) {
+                    messageController.removeMessage(message);
+                }
+
+                uiSession.deviceController.pushSettings();
+
                 destroy(this);
             }
+        }
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+    //! Show message popups
+    function showMessagePopup(message: Message) {
+        //! \todo This will later be shown using PopUpLayout to be able to show multiple message
+        //! popups on top of each other.
+
+        //! Create an instance of AlertNotifPopup
+        var newAlertPopup = _messagePopupCompo.createObject(root, {
+                                                                "message": message
+                                                            });
+
+        if (newAlertPopup) {
+            //! Ask PopUpLayout to open popup
+            uiSession.popupLayout.displayPopUp(newAlertPopup, false);
         }
     }
 }

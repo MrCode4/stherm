@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QString>
+#include "AppSpecCPP.h"
 
 
 #include "php/include/parameter_definitions.h"
@@ -251,17 +252,23 @@ struct AQ_TH_PR_thld {
     AQ_TH_PR_thld() {
         pressure_high = 1200;
         c02_high      = 2000;
+        c02_low       = 0;
         Tvoc_high     = 50;
         etoh_high     = 70;
         iaq_high      = 40;
-        temp_high     = 60;
+        temp_high     = 125;
         temp_low      = -40;
-        humidity_high = 80;
-        humidity_low  = 10;
+        humidity_high = 100;
+        humidity_low  = 0;
+        fan_high      = 4200;
+        fan_low       = 3800;
+        light_low     = 0;
+        light_high   = 1000000;
     }
 
     uint16_t pressure_high;  ///< Pressure threshold high (up to 1200 hPa)
     uint16_t c02_high;       ///< CO2 threshold high (400 to 5000 ppm)
+    uint16_t c02_low;       ///< CO2 threshold high (400 to 5000 ppm)
     uint8_t Tvoc_high;       ///< TVOC threshold high (0.1 to 10+ mg/m^3)
     uint8_t etoh_high;       ///< ETOH threshold high (up to 20 ppm)
     uint8_t iaq_high;        ///< IAQ threshold high (1 to 5)
@@ -269,6 +276,10 @@ struct AQ_TH_PR_thld {
     int8_t temp_low;         ///< Temperature threshold low (as low as -128�C)
     uint8_t humidity_high;   ///< Humidity threshold high (up to 100%)
     uint8_t humidity_low;    ///< Humidity threshold low (as low as 0%)
+    uint16_t fan_high;
+    uint16_t fan_low;
+    uint16_t light_low;
+    int light_high;
 };
 
 /**
@@ -327,24 +338,46 @@ struct SensorConfigThresholds {
     int max_alert_value;//in 100ms increments
 };
 
-/**
- * @brief Enumeration for alert types.
- */
-enum AlertTypes
-{
-    Alert_temp_high = 1,// +127 max
-    Alert_temp_low, // -128 low
-    Alert_Tvoc_high, // 255 max (tvoc value range 0.1 to 10+ mg/m^3 value is divided by 10.0)
-    Alert_etoh_high, //up to 20ppm
-    Alert_iaq_high, //1 to 5
-    Alert_humidity_high,// up to 100%
-    Alert_humidity_low,//as low as 0%
-    Alert_pressure_high, //up to 1200 hPa
-    Alert_c02_high,//400 to 5000ppm
-    Alert_wiring_not_connected,
-    Alert_could_not_set_relay,
-    NO_ALlert
-};
+
+static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
+    switch (alertType) {
+    case AppSpecCPP::Alert_temp_high:
+    case AppSpecCPP::Alert_temp_low:
+        return QString("Temperature Sensor Malfunction\nPlease contact your contractor.");
+    case AppSpecCPP::Alert_Tvoc_high:
+        return QString("Tvoc is high");
+    case AppSpecCPP::Alert_etoh_high:
+        return QString("etoh is high");
+
+    case AppSpecCPP::Alert_iaq_high:
+    case AppSpecCPP::Alert_iaq_low:
+    case AppSpecCPP::Alert_c02_low:
+        return QString("Air Quality Sensor Malfunction\nPlease contact your contractor.");
+
+    case AppSpecCPP::Alert_fan_High:
+    case AppSpecCPP::Alert_fan_low:
+        return QString("Fan Malfunction\nPlease contact your contractor.");
+
+    case AppSpecCPP::Alert_humidity_high:
+    case AppSpecCPP::Alert_humidity_low:
+        return QString("Humidity Sensor Malfunction\nPlease contact your contractor.");
+    case AppSpecCPP::Alert_pressure_high:
+        return QString("Pressure is high");
+    case AppSpecCPP::Alert_wiring_not_connected:
+        return QString("Wiring is not connected.");
+    case AppSpecCPP::Alert_could_not_set_relay:
+        return QString("Could not set relay.");
+    case AppSpecCPP::Alert_temperature_not_reach:
+        return QString("**System efficiency issue:** temperature not reached in 2 hours");
+
+    case AppSpecCPP::Alert_Light_High:
+    case AppSpecCPP::Alert_Light_Low:
+        return QString("The light sensor stops working or works not properly providing not normal data");
+
+    default:
+        return QString();
+    }
+}
 
 /**
  * @brief Enumeration for alert levels.

@@ -91,6 +91,11 @@ public:
 
     Q_INVOKABLE bool updateNRFFirmware();
 
+    Q_INVOKABLE bool checkNRFFirmwareVersion();
+
+    Q_INVOKABLE void setAutoMinReqTemp(const double min);
+    Q_INVOKABLE void setAutoMaxReqTemp(const double max);
+
     /* Public Functions
      * Read and write data without any UART connection
      * Read and write data directly
@@ -142,7 +147,7 @@ Q_SIGNALS:
 
     //! Send alert to ui
     void alert(STHERM::AlertLevel alertLevel,
-               STHERM::AlertTypes alertType,
+               AppSpecCPP::AlertTypes alertType,
                QString alertMessage = QString());
 
     void systemSetupChanged();

@@ -21,7 +21,7 @@ BasePageView {
 
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMFan);
 
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMNone);
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMFan, false);
 
     /* Children
      * ****************************************************************************************/

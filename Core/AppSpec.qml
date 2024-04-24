@@ -12,6 +12,14 @@ AppSpecCPP {
     property int minStepTempF: 10
     property int minStepHum:   20
 
+    //! Maximum value of first temperature handler (left) in auto mode
+    //! Celcius
+    property real maxAutoMinTemp: 29.4444
+
+    //! Minimum value of second temperature handler (right) in auto mode
+    //! Celcius
+    property real minAutoMaxTemp: 15.5556
+
     //! Percent
     property int defaultBrightness: 100
     //! Percent
@@ -143,4 +151,10 @@ AppSpecCPP {
 
         return newSchedule;
     }
+
+    //! airQuality <= 1.0
+    readonly property real airQualityGood: 1.0
+
+    //! airQuality > 3.0
+    readonly property real airQualityPoor: 3.0
 }

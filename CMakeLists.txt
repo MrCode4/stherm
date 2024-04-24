@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.3.13 LANGUAGES CXX)
+project(Stherm VERSION 0.3.14 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -131,6 +131,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ButtonInverted.qml
         UiCore/Components/OnScheduleLabel.qml
         UiCore/Components/RangeSlider.qml
+        UiCore/Components/SemiCircleSliderDoubleHandle.qml
 
 
         # Views and Widgets

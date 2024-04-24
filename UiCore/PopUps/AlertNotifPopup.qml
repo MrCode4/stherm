@@ -8,22 +8,25 @@ import Stherm
  * AlertNotifPopup provides a popup for showing and alert or notification
  * ***********************************************************************************************/
 I_PopUp {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
     //! Popup Message
     property Message    message
 
+    //! UiSession: To open an item from home
+    property UiSession          uiSession
+
     /* Object properties
      * ****************************************************************************************/
-    title: message ? (message.type === Message.Type.Alert
+    title: message ? ((message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert)
                       ? "Alert" : (message.type === Message.Type.Notification
                                    ? "Notification"
                                    : "Message")
                       ) : ""
     icon: message ? (message.icon === ""
-                     ? (message.type === Message.Type.Alert
+                     ? ((message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert)
                         ? FAIcons.triangleExclamation
                         : (message.type === Message.Type.Error ? FAIcons.circleXmark
                                                                : FAIcons.bell)
@@ -34,12 +37,64 @@ I_PopUp {
 
     /* Children
      * ****************************************************************************************/
-    Label {
+
+    width: 350
+
+    GridLayout {
         anchors.fill: parent
-        textFormat: "MarkdownText"
-        text: message?.message ?? ""
-        wrapMode: "Wrap"
-        verticalAlignment: "AlignVCenter"
-        horizontalAlignment: "AlignHCenter"
+        rows: 2
+        columns: 2
+
+        Label {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+
+            textFormat: Text.MarkdownText
+            text: message?.message ?? ""
+            wrapMode: "Wrap"
+            verticalAlignment: "AlignVCenter"
+            horizontalAlignment: "AlignHCenter"
+        }
+
+
+        ButtonInverted {
+            id: okButton
+
+            Layout.alignment: message.type === Message.Type.Alert ? Qt.AlignRight : Qt.AlignLeft
+            Layout.columnSpan: message.type === Message.Type.Alert ? 2 : 1
+
+            Layout.preferredWidth: conatactContractorButton.width
+            Layout.preferredHeight: conatactContractorButton.height
+
+            leftPadding: 8
+            rightPadding: 8
+            text: "    OK    "
+            font.pointSize: Qt.application.font.pointSize * 0.8
+            visible: (message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert)
+
+            onClicked: {
+                close()
+            }
+        }
+
+        ButtonInverted {
+            id: conatactContractorButton
+            Layout.alignment: Qt.AlignRight
+
+            leftPadding: 8
+            rightPadding: 8
+            text: "Conatact\nContractor"
+            font.pointSize: Qt.application.font.pointSize * 0.8
+
+            visible: message.type === Message.Type.SystemAlert
+
+            onClicked: {
+                close();
+
+                //! Open ContactContractorPage
+                uiSession.popUps.openPageFromHome("qrc:/Stherm/View/ContactContractorPage.qml");
+
+            }
+        }
     }
 }

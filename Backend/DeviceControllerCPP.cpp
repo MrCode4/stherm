@@ -120,6 +120,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setBacklight(colorData, true);
     });
 
+    connect(m_scheme, &Scheme::alert, this, [this]() {
+        emit alert(STHERM::AlertLevel::LVL_Emergency,
+                   AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
+    });
+
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
 
@@ -229,6 +235,26 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setAdaptiveBrightness(adaptiveBrightness);
     });
 
+    connect(_deviceIO, &DeviceIOController::alert, this, [this](STHERM::AlertLevel alertLevel,
+                                                                AppSpecCPP::AlertTypes alertType,
+                                                                QString alertMessage) {
+        emit alert(alertLevel,
+                   alertType,
+                   alertMessage);
+
+        // To monitor alert type like off the system
+        switch (alertType) {
+        case AppSpecCPP::Alert_humidity_high:
+        case AppSpecCPP::Alert_humidity_low:
+        case AppSpecCPP::Alert_temp_high:
+        case AppSpecCPP::Alert_temp_low:
+            // mSystemSetup->systemMode = AppSpecCPP::SystemMode::Off;
+            break;
+        default:
+            break;
+        }
+    });
+
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
 
@@ -271,16 +297,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             m_scheme->moveToUpdatingMode();
         });
     }
-
-    connect(_deviceIO,
-            &DeviceIOController::alert,
-            this,
-            [this](STHERM::AlertLevel alertLevel,
-                   STHERM::AlertTypes alertType,
-                   QString alertMessage) {
-                emit alert(alertLevel, alertType, alertMessage);
-            });
-
 
     //! Set sInstance to this
     if (!sInstance) {
@@ -640,6 +656,18 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
     return false;
 }
 
+void DeviceControllerCPP::setAutoMinReqTemp(const double min)
+{
+    if (m_scheme)
+        m_scheme->setAutoMinReqTemp(min);
+}
+
+void DeviceControllerCPP::setAutoMaxReqTemp(const double max)
+{
+    if (m_scheme)
+        m_scheme->setAutoMaxReqTemp(max);
+}
+
 bool DeviceControllerCPP::updateNRFFirmware()
 {
 
@@ -649,6 +677,35 @@ bool DeviceControllerCPP::updateNRFFirmware()
         emit nrfUpdateStarted();
         return _deviceIO->update_nRF_Firmware();
     }
+    return false;
+}
+
+bool DeviceControllerCPP::checkNRFFirmwareVersion()
+{
+#ifdef __unix__
+    auto nrfSW = getNRF_SW();
+    auto appVersion = qApp->applicationVersion().split(".");
+
+    if (appVersion.length() < 3) {
+        qWarning() << "The app version is wrong." << appVersion;
+        return false;
+    }
+
+    if (nrfSW.length() < 3) {
+        qWarning() << "The nrf version is wrong." << nrfSW;
+        return false;
+    }
+
+    TRACE << "NRF  Version: " << nrfSW << " - Application version: " << appVersion;
+
+    bool firmwareUpdated = nrfSW == "01.10-RC1";
+    bool appHasFirmwreUpdate = appVersion.at(0).toInt() >= 0 &&
+                               appVersion.at(1).toInt() >= 3 && appVersion.at(2).toInt() >= 6;
+
+    // The app version should be higher than 0.3.6 if the nRF SW version is 01.10RC1
+    // nRF SW version is not 01.10RC1, app Should not be greater than 0.3.5
+    return  firmwareUpdated == appHasFirmwreUpdate;
+#endif
     return false;
 }
 

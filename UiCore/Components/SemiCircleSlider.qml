@@ -35,6 +35,8 @@ Control {
     rightInset: 0
     topInset: 0
     bottomInset: 0
+    onFromChanged: value = Math.max(from, value)
+    onToChanged: value = Math.min(to, value)
     background: Item {
         readonly property int pathWidth: 14 * scaleFactor
         readonly property real shapeWidth: shapeHeight * 2

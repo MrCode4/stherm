@@ -58,11 +58,11 @@ BasePageView {
 
         onClicked: {
             if (!_newSchedulePages.currentItem.nextPage) {
+
                 //! It's done, save schedule and go back
                 //! First check if this schedule has overlap with other Schedules
                 _internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
-                            Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.startTime, "hh:mm AP"),
-                            Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.endTime, "hh:mm AP"),
+                            _internal.newSchedule.startTime, _internal.newSchedule.endTime,
                             _internal.newSchedule.repeats);
 
                 if (_internal.overlappingSchedules.length > 0) {
@@ -74,7 +74,6 @@ BasePageView {
                     saveSchedule();
                 }
             } else {
-
                 // if sensors are empty we skip this page!
                 if (_newSchedulePages.currentItem instanceof ScheduleRepeatPage) {
                     if (device?._sensors.length === 0) {

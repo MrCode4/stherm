@@ -71,8 +71,7 @@ BasePageView {
         Image {
             id: qrCodeImage
 
-            property string url: (system.serialNumber.length > 0) ?
-                                     appModel.contactContractor.technicianURL + system.serialNumber : ""
+            property string url: appModel.contactContractor.technicianURL
 
             x: (parent.width - width) / 2
             width: parent.width

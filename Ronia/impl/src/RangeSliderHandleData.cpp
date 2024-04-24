@@ -11,11 +11,11 @@ qreal RangeSliderHandleData::getValue() const
 
 void RangeSliderHandleData::setValue(qreal newValue)
 {
-    if (qFuzzyCompare(mValue, newValue) || (newValue > mMaxValue || newValue < mMinValue)) {
+    if (qFuzzyCompare(mValue, newValue)) {
         return;
     }
 
-    mValue = newValue;
+    mValue = qMax(mMinValue, qMin(newValue, mMaxValue));
     emit valueChanged();
 }
 

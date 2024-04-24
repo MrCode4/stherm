@@ -98,22 +98,50 @@ public:
 
     //! Edit Mode
     enum EditMode {
-        EMSchedule           = 0,
-        EMHold               = 1,
-        EMFan                = 2,
-        EMVacation           = 3,
-        EMRequestedHumidity  = 4,
-        EMDesiredTemperature = 5,
-        EMSensors            = 6,
-        EMSettings           = 7,
-        EMBacklight          = 8,
-        EMSystemSetup        = 9,
-        EMSystemMode         = 10,
-        EMDateTime           = 11,
-
-        EMNone
+        EMNone               = 0,
+        EMSchedule           = 1 << 0,
+        EMHold               = 1 << 1,
+        EMFan                = 1 << 2,
+        EMVacation           = 1 << 3,
+        EMRequestedHumidity  = 1 << 4,
+        EMDesiredTemperature = 1 << 5,
+        EMSensors            = 1 << 6,
+        EMSettings           = 1 << 7,
+        EMBacklight          = 1 << 8,
+        EMSystemSetup        = 1 << 9,
+        EMSystemMode         = 1 << 10,
+        EMDateTime           = 1 << 11,
     };
     Q_ENUM(EditMode)
+
+
+    /**
+ * @brief Enumeration for alert types.
+ */
+    enum AlertTypes
+    {
+        Alert_temp_high = 1,// +127 max
+        Alert_temp_low, // -128 low
+        Alert_Tvoc_high, // 255 max (tvoc value range 0.1 to 10+ mg/m^3 value is divided by 10.0)
+        Alert_etoh_high, //up to 20ppm
+        Alert_iaq_high, //1 to 5
+        Alert_iaq_low, //1 to 5
+        Alert_humidity_high,// up to 100%
+        Alert_humidity_low,//as low as 0%
+        Alert_pressure_high, //up to 1200 hPa
+        Alert_c02_high,//400 to 5000ppm
+        Alert_c02_low,//400 to 5000ppm
+        Alert_fan_High,// 4200 RPM
+        Alert_fan_low,// 3800 RPM
+        Alert_wiring_not_connected,
+        Alert_could_not_set_relay,
+        Alert_temperature_not_reach,
+        Alert_Light_High,
+        Alert_Light_Low,
+        NO_ALlert
+    };
+    Q_ENUM(AlertTypes)
+
 
 signals:
 

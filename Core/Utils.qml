@@ -15,12 +15,18 @@ QtObject {
         return (toUnit === AppSpec.TempratureUnit.Fah) ? 32 + 1.8 * celsiusTemp : celsiusTemp;
     }
 
-    function convertedTemperatureClamped(celsiusTemp: real, toUnit: int) : real {
+    function convertedTemperatureClamped(celsiusTemp: real, toUnit: int, min=null, max=null) : real {
+        if (min === null || min === undefined)
+            min = (toUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minimumTemperatureF : AppSpec.minimumTemperatureC)
+
+        if (max === null || max === undefined)
+            max = (toUnit === AppSpec.TempratureUnit.Fah ? AppSpec.maximumTemperatureF : AppSpec.maximumTemperatureC)
+
         if (toUnit === AppSpec.TempratureUnit.Fah) {
             var fahTemp = 32 + 1.8 * celsiusTemp;
-            return Math.min(Math.max(fahTemp, AppSpec.minimumTemperatureF), AppSpec.maximumTemperatureF);
+            return Math.min(Math.max(fahTemp, min), max);
         } else {
-            return Math.min(Math.max(celsiusTemp, AppSpec.minimumTemperatureC), AppSpec.maximumTemperatureC);
+            return Math.min(Math.max(celsiusTemp, min), max);
         }
     }
 

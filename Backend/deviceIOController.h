@@ -87,7 +87,7 @@ signals:
 
     //! Send alert to controller
     void alert(STHERM::AlertLevel alertLevel,
-               STHERM::AlertTypes alertType,
+               AppSpecCPP::AlertTypes alertType,
                QString alertMessage = QString());
 
     void tiVersionUpdated();
@@ -115,7 +115,8 @@ private:
     void nrfConfiguration();
 
     //! Check alerts with AQ_TH_PR_vals
-    void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values);
+    //! fanSpeed default is 4000 to avoid any related alerts.
+    void checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed = 4000, const uint32_t luminosity = 100);
 
     //! Process NRF response
     void processNRFResponse(STHERM::SIOPacket rxPacket, const STHERM::SIOPacket &txPacket);
@@ -166,6 +167,7 @@ private:
     QTimer m_wtd_timer;
     QTimer m_wiring_timer;
     QTimer m_nRF_timer;
+    QTimer m_adaptiveBrightness_timer;
 
     QString NRF_HW;
     QString NRF_SW;

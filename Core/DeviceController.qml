@@ -15,6 +15,8 @@ I_DeviceController {
 
     property SchedulesController schedulesController
 
+    property MessageController   messageController
+
     property int editMode: AppSpec.EMNone
 
     property bool initalSetup: false;
@@ -103,14 +105,6 @@ I_DeviceController {
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
-        function onAlert(alertLevel : int,
-                         alertType : int,
-                         alertMessage : string) {
-
-            console.log("Alert: ", alertLevel, alertType, alertMessage);
-
-        }
-
         function onContractorInfoUpdated(brandName, phoneNumber, iconUrl, url,  techUrl) {
 
             console.log("onContractorInfoUpdated: ", brandName, phoneNumber, iconUrl, url, techUrl);
@@ -149,9 +143,11 @@ I_DeviceController {
             setSystemModeServer(settings.mode_id)
             setSchedulesFromServer(settings.schedule)
             setVacationServer(settings.vacation)
-            checkMessages(settings.messages)
+            setMessagesServer(settings.messages)
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
+
+            setAutoTemperatureFromServer(settings);
         }
 
         function onCanFetchServerChanged() {
@@ -221,10 +217,12 @@ I_DeviceController {
     property Timer editModeTimer: Timer {
         repeat: false
         running: false
-        interval: 5000
+        interval: 15000
+        property int disableFlags : AppSpec.EMNone;
 
         onTriggered: {
-           root.editMode = AppSpec.EMNone;
+            root.editMode = root.editMode & ~disableFlags;
+            disableFlags = AppSpec.EMNone;
         }
     }
 
@@ -270,7 +268,9 @@ I_DeviceController {
         deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
-        deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
+        deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour);
+        deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
+        deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
     }
 
     /* Children
@@ -283,14 +283,23 @@ I_DeviceController {
         initalSetup = init;
     }
 
-    function updateEditMode(editMode : int) {
-        if (editMode !== AppSpec.EMNone) {
-            root.editMode = editMode;
-            editModeTimer.stop();
+    function updateEditMode(editMode : int, enable = true) {
 
-        } else {
+        if (enable) {
+            root.editMode = root.editMode | editMode; // add flag
+            // remove from disabling flags
+            editModeTimer.disableFlags = editModeTimer.disableFlags & ~editMode
+
+        } else { // add to current disable flags and restart timer
+            editModeTimer.disableFlags = editModeTimer.disableFlags | editMode
+            if (editModeTimer.running)
+                editModeTimer.stop();
             editModeTimer.start();
         }
+    }
+
+    function editModeEnabled(editMode : int) {
+        return (root.editMode & editMode) !== 0;
     }
 
     function updateDeviceBacklight(isOn, color) : bool
@@ -321,7 +330,7 @@ I_DeviceController {
 
     function updateFanServer(settings : var) {
 
-        if (editMode === AppSpec.EMFan) {
+        if (editModeEnabled(AppSpec.EMFan)) {
             console.log("The fan page is being edited and cannot be updated by the server.")
             return;
         }
@@ -356,7 +365,7 @@ I_DeviceController {
 
     function setVacationServer(settings : var)
     {
-        if (editMode === AppSpec.EMVacation) {
+        if (editModeEnabled(AppSpec.EMVacation)) {
             console.log("The vacation is being edited and cannot be updated by the server.")
             return;
         }
@@ -484,7 +493,7 @@ I_DeviceController {
     }
 
     function setSettingsServer(settings: var) {
-        if (editMode !== AppSpec.EMDateTime) {
+        if (!editModeEnabled(AppSpec.EMDateTime)) {
             if (device.setting.currentTimezone !== settings.currentTimezone)
                 device.setting.currentTimezone = settings.currentTimezone;
 
@@ -498,7 +507,7 @@ I_DeviceController {
             console.log("The Date time settings is being edited and cannot be updated by the server.")
         }
 
-        if (editMode !== AppSpec.EMSettings) {
+        if (!editModeEnabled(AppSpec.EMSettings)) {
             if (!setSettings(settings.brightness, settings.speaker,
                         settings.temperatureUnit, settings.brightness_mode))
                 console.log("The system settings is not applied from server")
@@ -510,7 +519,7 @@ I_DeviceController {
     }
 
     function setBacklightServer(settings: var) {
-        if (editMode === AppSpec.EMBacklight) {
+        if (editModeEnabled(AppSpec.EMBacklight)) {
             console.log("The backlight is being edited and cannot be updated by the server.")
             return;
         }
@@ -532,6 +541,8 @@ I_DeviceController {
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
+            "auto_temp_high" : device.autoMaxReqTemp,
+            "auto_temp_low" : device.autoMinReqTemp,
             "fan" : {
                 "mode" : device.fan.mode,
                 "workingPerHour": device.fan.workingPerHour,
@@ -615,15 +626,15 @@ I_DeviceController {
                                         })
                                 })
 
-
         deviceControllerCPP.pushSettingsToServer(send_data, settingsPush.hasSettings)
     }
 
     function checkQRurl(url: var) {
+        root.device.contactContractor.technicianURL = url;
     }
 
     function setSystemModeServer(mode_id) {
-        if (editMode === AppSpec.EMSystemMode) {
+        if (editModeEnabled(AppSpec.EMSystemMode)) {
             console.log("The system setup is being edited and cannot be updated (mode_id) by the server.")
         } else {
             var modeInt = parseInt(mode_id) - 1;
@@ -635,7 +646,7 @@ I_DeviceController {
     }
 
     function setDesiredTemperatureFromServer(temperature: real) {
-        if (editMode === AppSpec.EMDesiredTemperature) {
+        if (editModeEnabled(AppSpec.EMDesiredTemperature)) {
             console.log("The temperature is being edited and cannot be updated by the server.")
             return;
         }
@@ -653,7 +664,7 @@ I_DeviceController {
     }
 
     function setRequestedHumidityFromServer(humidity: real) {
-        if (editMode === AppSpec.EMRequestedHumidity) {
+        if (editModeEnabled(AppSpec.EMRequestedHumidity)) {
             console.log("The humidity is being edited and cannot be updated by the server.")
             return;
         }
@@ -706,7 +717,7 @@ I_DeviceController {
 
     function setSystemSetupServer(settings: var) {
 
-        if (editMode === AppSpec.EMSystemSetup) {
+        if (editModeEnabled(AppSpec.EMSystemSetup)) {
             console.log("The system setup is being edited and cannot be updated by the server.")
             return;
         }
@@ -730,8 +741,48 @@ I_DeviceController {
             console.warn("System type unknown", settings.type)
     }
 
+    function setAutoTemperatureFromServer (settings) {
+
+        if (!device)
+            return;
+
+        if (editModeEnabled(AppSpec.EMDesiredTemperature)) {
+            console.log("The temperature is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        if (settings.hasOwnProperty("auto_temp_low")) {
+            if (device.autoMinReqTemp !== settings.auto_temp_low) {
+                device.autoMinReqTemp = settings.auto_temp_low;
+                deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
+            }
+        }
+
+        if (settings.hasOwnProperty("auto_temp_high")) {
+            if (device.autoMaxReqTemp !== settings.auto_temp_high) {
+                device.autoMaxReqTemp = settings.auto_temp_high;
+                deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
+            }
+        }
+
+    }
+
+    function setAutoMinReqTemp(min) {
+        if (device && device.autoMinReqTemp !== min) {
+            device.autoMinReqTemp = min;
+            deviceControllerCPP.setAutoMinReqTemp(min);
+        }
+    }
+
+    function setAutoMaxReqTemp(max) {
+        if (device && device.autoMaxReqTemp !== max) {
+            device.autoMaxReqTemp = max;
+            deviceControllerCPP.setAutoMaxReqTemp(max);
+        }
+    }
+
     function checkSensors(sensors: var) {
-        if (editMode === AppSpec.EMSensors) {
+        if (editModeEnabled(AppSpec.EMSensors)) {
             console.log("The sensors are being edited and cannot be updated by the server.")
             return;
         }
@@ -741,7 +792,7 @@ I_DeviceController {
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
     function setSchedulesFromServer(serverSchedules: var) {
-        if (editMode === AppSpec.EMSchedule) {
+        if (editModeEnabled(AppSpec.EMSchedule)) {
             console.log("The schedules are being edited and cannot be updated by the server.")
             return;
         }
@@ -750,7 +801,13 @@ I_DeviceController {
             schedulesController.setSchedulesFromServer(serverSchedules);
     }
 
-    function checkMessages(messages: var) {
+    function setMessagesServer(messages: var) {
+        let messagesModel = device.messages;
+        console.log("device.messages: ", device.messages.length)
+
+        // Send messages to message controller.
+        messageController.setMessagesServer(messages);
+
     }
 
     //! Control the push to server with the updateInformation().
@@ -808,7 +865,7 @@ I_DeviceController {
     function updateHoldServer(isHold)
     {
 
-        if (editMode === AppSpec.EMHold) {
+        if (editModeEnabled(AppSpec.EMHold)) {
             console.log("The hold page is being edited and cannot be updated by the server.")
             return;
         }
