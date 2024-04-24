@@ -559,6 +559,10 @@ BasePageView {
     //! saving as enabled or disabled.
     function checkOverlappings()
     {
+        // disabled, no need to check
+        if (!schedule.enable)
+            return false;
+
         //! Check overlapping schedules
         internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
                     internal.scheduleToEdit.startTime, internal.scheduleToEdit.endTime,
