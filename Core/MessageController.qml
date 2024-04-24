@@ -174,6 +174,33 @@ QtObject {
         }
     }
 
+    //! Temperature sensor watcher
+    property Timer temperatureWatcher: Timer {
+        interval: 5 * 60 * 1000
+        repeat: false
+        running: false
+    }
+
+    //! fan sensor watcher
+    property Timer fanWatcher: Timer {
+        interval: 2 * 60 * 60 * 1000
+        repeat: false
+        running: false
+    }
+
+    //! Humidity sensor watcher
+    property Timer humidityWatcher: Timer {
+        interval: 5 * 60 * 1000
+        repeat: false
+        running: false
+    }
+    //! Light sensor watcher
+    property Timer lightWatcher: Timer {
+        interval: 24 * 60 * 60 * 1000
+        repeat: false
+        running: false
+    }
+
 
     //! Check air quility
     property Connections airConditionWatcherCon: Connections {
@@ -207,6 +234,48 @@ QtObject {
         function onAlert(alertLevel : int,
                          alertType : int,
                          alertMessage : string) {
+
+            //! Watch some sensor alerts
+            switch (alertType) {
+            case AppSpec.Alert_temp_low:
+            case AppSpec.Alert_temp_high: {
+                if (temperatureWatcher.running)
+                    return;
+
+                temperatureWatcher.start();
+
+            } break;
+
+            case AppSpec.Alert_humidity_high:
+            case AppSpec.Alert_humidity_low: {
+                if (humidityWatcher.running)
+                    return;
+
+                humidityWatcher.start();
+
+            } break;
+
+            case AppSpec.Alert_fan_High:
+            case AppSpec.Alert_fan_low: {
+                if (fanWatcher.running)
+                    return;
+
+                fanWatcher.start();
+
+            } break;
+
+            case AppSpec.Alert_Light_High:
+            case AppSpec.Alert_Light_Low: {
+                if (lightWatcher.running)
+                    return;
+
+                lightWatcher.start();
+
+            } break;
+
+            default:
+                break;
+            }
 
             console.log("Alert: ", alertLevel, alertType, alertMessage);
             addNewMessageFromData(Message.Type.Alert, alertMessage, (new Date()).toLocaleString());

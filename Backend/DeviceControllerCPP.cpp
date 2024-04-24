@@ -122,8 +122,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::alert, this, [this]() {
         emit alert(STHERM::AlertLevel::LVL_Emergency,
-                   STHERM::AlertTypes::Alert_temperature_not_reach,
-                   STHERM::getAlertTypeString(STHERM::Alert_temperature_not_reach));
+                   AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
     });
 
     // TODO should be loaded later for accounting previous session
@@ -236,17 +236,18 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(_deviceIO, &DeviceIOController::alert, this, [this](STHERM::AlertLevel alertLevel,
-                                                                STHERM::AlertTypes alertType,
+                                                                AppSpecCPP::AlertTypes alertType,
                                                                 QString alertMessage) {
         emit alert(alertLevel,
                    alertType,
                    alertMessage);
 
+        // To monitor alert type like off the system
         switch (alertType) {
-        case STHERM::Alert_humidity_high:
-        case STHERM::Alert_humidity_low:
-        case STHERM::Alert_temp_high:
-        case STHERM::Alert_temp_low:
+        case AppSpecCPP::Alert_humidity_high:
+        case AppSpecCPP::Alert_humidity_low:
+        case AppSpecCPP::Alert_temp_high:
+        case AppSpecCPP::Alert_temp_low:
             // mSystemSetup->systemMode = AppSpecCPP::SystemMode::Off;
             break;
         default:

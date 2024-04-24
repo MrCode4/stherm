@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QString>
+#include "AppSpecCPP.h"
 
 
 #include "php/include/parameter_definitions.h"
@@ -261,6 +262,8 @@ struct AQ_TH_PR_thld {
         humidity_low  = 0;
         fan_high      = 4200;
         fan_low       = 3800;
+        light_low     = 0;
+        light_hight   = 1000000000;
     }
 
     uint16_t pressure_high;  ///< Pressure threshold high (up to 1200 hPa)
@@ -275,6 +278,8 @@ struct AQ_TH_PR_thld {
     uint8_t humidity_low;    ///< Humidity threshold low (as low as 0%)
     uint16_t fan_high;
     uint16_t fan_low;
+    uint16_t light_low;
+    int light_hight;
 };
 
 /**
@@ -333,60 +338,41 @@ struct SensorConfigThresholds {
     int max_alert_value;//in 100ms increments
 };
 
-/**
- * @brief Enumeration for alert types.
- */
-enum AlertTypes
-{
-    Alert_temp_high = 1,// +127 max
-    Alert_temp_low, // -128 low
-    Alert_Tvoc_high, // 255 max (tvoc value range 0.1 to 10+ mg/m^3 value is divided by 10.0)
-    Alert_etoh_high, //up to 20ppm
-    Alert_iaq_high, //1 to 5
-    Alert_iaq_low, //1 to 5
-    Alert_humidity_high,// up to 100%
-    Alert_humidity_low,//as low as 0%
-    Alert_pressure_high, //up to 1200 hPa
-    Alert_c02_high,//400 to 5000ppm
-    Alert_c02_low,//400 to 5000ppm
-    Alert_fan_High,// 4200 RPM
-    Alert_fan_low,// 3800 RPM
-    Alert_wiring_not_connected,
-    Alert_could_not_set_relay,
-    Alert_temperature_not_reach,
-    NO_ALlert
-};
 
-static QString getAlertTypeString(AlertTypes alertType) {
+static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
     switch (alertType) {
-    case Alert_temp_high:
-    case Alert_temp_low:
+    case AppSpecCPP::Alert_temp_high:
+    case AppSpecCPP::Alert_temp_low:
         return QString("Temperature Sensor Malfunction\nPlease contact your contractor.");
-    case Alert_Tvoc_high:
+    case AppSpecCPP::Alert_Tvoc_high:
         return QString("Tvoc is high");
-    case Alert_etoh_high:
+    case AppSpecCPP::Alert_etoh_high:
         return QString("etoh is high");
 
-    case Alert_iaq_high:
-    case Alert_iaq_low:
-    case Alert_c02_low:
+    case AppSpecCPP::Alert_iaq_high:
+    case AppSpecCPP::Alert_iaq_low:
+    case AppSpecCPP::Alert_c02_low:
         return QString("Air Quality Sensor Malfunction\nPlease contact your contractor.");
 
-    case Alert_fan_High:
-    case Alert_fan_low:
+    case AppSpecCPP::Alert_fan_High:
+    case AppSpecCPP::Alert_fan_low:
         return QString("Fan Malfunction\nPlease contact your contractor.");
 
-    case Alert_humidity_high:
-    case Alert_humidity_low:
+    case AppSpecCPP::Alert_humidity_high:
+    case AppSpecCPP::Alert_humidity_low:
         return QString("Humidity Sensor Malfunction\nPlease contact your contractor.");
-    case Alert_pressure_high:
+    case AppSpecCPP::Alert_pressure_high:
         return QString("Pressure is high");
-    case Alert_wiring_not_connected:
+    case AppSpecCPP::Alert_wiring_not_connected:
         return QString("Wiring is not connected.");
-    case Alert_could_not_set_relay:
+    case AppSpecCPP::Alert_could_not_set_relay:
         return QString("Could not set relay.");
-    case Alert_temperature_not_reach:
+    case AppSpecCPP::Alert_temperature_not_reach:
         return QString("**System efficiency issue:** temperature not reached in 2 hours");
+
+    case AppSpecCPP::Alert_Light_High:
+    case AppSpecCPP::Alert_Light_Low:
+        return QString("The light sensor stops working or works not properly providing not normal data");
 
     default:
         return QString();

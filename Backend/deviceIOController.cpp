@@ -868,7 +868,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
                 checkTOFRangeValue(RangeMilliMeter);
                 checkTOFLuminosity(Luminosity);
 
-                checkMainDataAlert(mainDataValues, fanSpeed);
+                checkMainDataAlert(mainDataValues, fanSpeed, Luminosity);
 
                 // todo
                 //                if (!setSensorData(main_dev, rx_packet.DataArray, rx_packet.DataLen)) {
@@ -1054,7 +1054,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                 switch (rxPacket.ACK) {
                 case STHERM::ERROR_WIRING_NOT_CONNECTED: {
                     m_p->wait_for_wiring_check = true;
-                    emit alert(STHERM::LVL_Emergency, STHERM::Alert_wiring_not_connected);
+                    emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_wiring_not_connected);
                     LOG_DEBUG("ERROR_WIRING_NOT_CONNECTED");
                     LOG_DEBUG("~" + QString::number(rxPacket.DataLen));
                     // Pepare Wiring_check command when all wires not broke
@@ -1106,7 +1106,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                 }
 
                 if (!checkRelayVaidation()) { // Broken a wire
-                    emit alert(STHERM::LVL_Emergency, STHERM::Alert_wiring_not_connected);
+                    emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_wiring_not_connected);
                     // TODO relays_in_l = relays_in;
                     LOG_DEBUG("Check_Wiring : Wiring is disrupted");
                 } else {
@@ -1261,54 +1261,62 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
     return m_tiConnection->sendRequest(packetBA);
 }
 
-void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed)
+void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed, const uint32_t luminosity)
 {
     if (values.temp > m_p->throlds_aq.temp_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_high,
-                   STHERM::getAlertTypeString(STHERM::Alert_temp_high));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high));
 
     } else if (values.temp < m_p->throlds_aq.temp_low) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_temp_low,
-                   STHERM::getAlertTypeString(STHERM::Alert_temp_low));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_low,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low));
 
     } else if (values.humidity > m_p->throlds_aq.humidity_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_high,
-                   STHERM::getAlertTypeString(STHERM::Alert_humidity_high));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
 
     } else if (values.humidity < m_p->throlds_aq.humidity_low) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_humidity_low,
-                   STHERM::getAlertTypeString(STHERM::Alert_humidity_low));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_low,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low));
 
     } else if (values.pressure > m_p->throlds_aq.pressure_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_pressure_high,
-                   STHERM::getAlertTypeString(STHERM::Alert_pressure_high));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_pressure_high,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_pressure_high));
 
     } else if (values.c02 > m_p->throlds_aq.c02_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_c02_high,
-                   STHERM::getAlertTypeString(STHERM::Alert_c02_high));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_high,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_high));
     } else if (values.c02 < m_p->throlds_aq.c02_low) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_c02_low,
-                   STHERM::getAlertTypeString(STHERM::Alert_c02_low));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_low,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_low));
 
     } else if (values.Tvoc > m_p->throlds_aq.Tvoc_high * 1000) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_Tvoc_high,
-                   STHERM::getAlertTypeString(STHERM::Alert_Tvoc_high));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Tvoc_high,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_Tvoc_high));
 
     } else if (values.etoh > m_p->throlds_aq.etoh_high * 100) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_etoh_high,
-                   STHERM::getAlertTypeString(STHERM::Alert_etoh_high));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_etoh_high,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_etoh_high));
 
     } else if (values.iaq > m_p->throlds_aq.iaq_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_iaq_high,
-                   STHERM::getAlertTypeString(STHERM::Alert_iaq_high));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_iaq_high,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
 
     } else if (fanSpeed > m_p->throlds_aq.fan_high) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_fan_High,
-                   STHERM::getAlertTypeString(STHERM::Alert_fan_High));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_High,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High));
 
     }  else if (fanSpeed < m_p->throlds_aq.fan_low) {
-        emit alert(STHERM::LVL_Emergency, STHERM::Alert_fan_low,
-                   STHERM::getAlertTypeString(STHERM::Alert_fan_low));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_low,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low));
+
+    }  else if (luminosity < m_p->throlds_aq.light_low) {
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_Low,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low));
+
+    } else if (luminosity > m_p->throlds_aq.light_hight) {
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_High,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High));
     }
 }
 
