@@ -85,16 +85,16 @@ QtObject {
                              var foundMessage = messagesModel.find(messageModel => (message.message === messageModel.message &&
                                                                                     messageModel.sourceType === Message.SourceType.Server));
 
+                             var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
                              var messageDatetime = message.datetime === null ? "" : message.datetime;
                              if (foundMessage && foundMessage.datetime === messageDatetime &&
-                                 foundMessage.type === message.type) {
+                                 foundMessage.type === type) {
                                  // isRead in the server is wrong. So I use the isRead condition from the local.
                                  // foundMessage.isRead = message.isRead;
 
                              } else { // Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
-                                 addNewMessageFromData((message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type,
-                                                       message.message, message.datetime, message.isRead, icon, Message.SourceType.Server);
+                                 addNewMessageFromData(type, message.message, message.datetime, message.isRead, icon, Message.SourceType.Server);
                              }
                          });
     }
