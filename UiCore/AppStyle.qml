@@ -49,7 +49,7 @@ QtObject {
         readonly property string save:              "\ue053"
         readonly property string saveAs:            "\ue182"
         readonly property string load:              "\uf093"
-        readonly property string check:             "\uf058"
+        readonly property string check:             "\uf336"
     }
 
 
