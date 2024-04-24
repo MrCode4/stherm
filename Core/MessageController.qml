@@ -175,33 +175,33 @@ QtObject {
         }
     }
 
-    //! Temperature sensor watcher
+    //! Temperature sensor watcher (5 minutes)
     property Timer temperatureWatcher: Timer {
         interval: 5 * 60 * 1000
         repeat: false
         running: false
     }
 
-    //! fan sensor watcher
+    //! fan sensor watcher (2 hours)
     property Timer fanWatcher: Timer {
         interval: 2 * 60 * 60 * 1000
         repeat: false
         running: false
     }
 
-    //! Humidity sensor watcher
+    //! Humidity sensor watcher (5 minutes)
     property Timer humidityWatcher: Timer {
         interval: 5 * 60 * 1000
         repeat: false
         running: false
     }
-    //! Light sensor watcher
+
+    //! Light sensor watcher (24 hours)
     property Timer lightWatcher: Timer {
         interval: 24 * 60 * 60 * 1000
         repeat: false
         running: false
     }
-
 
     //! Check air quility
     property Connections airConditionWatcherCon: Connections {
