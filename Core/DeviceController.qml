@@ -754,7 +754,7 @@ I_DeviceController {
         if (!device)
             return;
 
-        if (editMode === AppSpec.EMDesiredTemperature) {
+        if (editModeEnabled(AppSpec.EMDesiredTemperature)) {
             console.log("The temperature is being edited and cannot be updated by the server.")
             return;
         }
