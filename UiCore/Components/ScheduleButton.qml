@@ -11,7 +11,8 @@ ToolButton {
 
     /* Property declaration
      * ****************************************************************************************/
-    property I_Device device
+    //! Reference to UiSession
+    property UiSession              uiSession
 
     /* Object properties
      * ****************************************************************************************/
@@ -27,7 +28,7 @@ ToolButton {
             anchors.bottom: parent.bottom
             anchors.margins: 5
 
-            visible: device.schedules.filter(sch => sch.enable).length > 0
+            visible: uiSession.messageController.runningScheduleEnabled
             font.weight: 400
             font.pointSize: Style.fontIconSize.smallPt
             color: "#3495eb"

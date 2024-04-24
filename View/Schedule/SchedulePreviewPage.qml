@@ -590,7 +590,7 @@ BasePageView {
         _root.schedule.repeats = [...internal.scheduleToEdit.repeats];
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
 
-        // emit changed
+        // Emit schedule changed to call updateCurrentSchedules function in schedule controller.
         device.schedulesChanged();
 
         deviceController.pushSettings();
