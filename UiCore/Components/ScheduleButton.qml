@@ -28,7 +28,7 @@ ToolButton {
             anchors.bottom: parent.bottom
             anchors.margins: 5
 
-            visible: uiSession.messageController.runningScheduleEnabled
+            visible: uiSession?.schedulesController?.runningScheduleEnabled ?? false
             font.weight: 400
             font.pointSize: Style.fontIconSize.smallPt
             color: "#3495eb"
