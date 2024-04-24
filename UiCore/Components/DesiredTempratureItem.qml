@@ -26,10 +26,10 @@ Control {
     property string             unit: (device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property real               minTemprature: device?._minimumTemperature ?? 40
+    property real               minTemprature: deviceController?._minimumTemperature ?? 40
 
     //! Maximum temprature
-    property real               maxTemprature: device?._maximumTemperature ?? 90
+    property real               maxTemprature: deviceController?._maximumTemperature ?? 90
 
     //! Offset of desired temp label
     property int                labelVerticalOffset: -8
