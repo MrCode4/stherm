@@ -105,14 +105,6 @@ I_DeviceController {
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
-        function onAlert(alertLevel : int,
-                         alertType : int,
-                         alertMessage : string) {
-
-            console.log("Alert: ", alertLevel, alertType, alertMessage);
-
-        }
-
         function onContractorInfoUpdated(brandName, phoneNumber, iconUrl, url,  techUrl) {
 
             console.log("onContractorInfoUpdated: ", brandName, phoneNumber, iconUrl, url, techUrl);

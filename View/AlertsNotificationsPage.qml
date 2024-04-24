@@ -8,7 +8,7 @@ import Stherm
  * AlertsNotificationsPage shows a list of alerts and notifications
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     //! MessageController
     property MessageController  messageController: uiSession.messageController
@@ -27,9 +27,9 @@ BasePageView {
 
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
-            y: _root.contentItem.y
-            parent: _root
-            height: _root.contentItem.height - 30
+            y: root.contentItem.y
+            parent: root
+            height: root.contentItem.height - 30
         }
 
         anchors.fill: parent
@@ -47,7 +47,8 @@ BasePageView {
 
             onClicked: {
                 //! Show Message in a popup
-                messageController.showMessage(message);
+                if (messageController)
+                    messageController.showMessage(message);
             }
         }
     }

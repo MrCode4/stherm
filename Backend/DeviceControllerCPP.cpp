@@ -120,6 +120,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setBacklight(colorData, true);
     });
 
+    connect(m_scheme, &Scheme::alert, this, [this]() {
+        emit alert(STHERM::AlertLevel::LVL_Emergency,
+                   AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
+    });
+
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
 
@@ -229,6 +235,26 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setAdaptiveBrightness(adaptiveBrightness);
     });
 
+    connect(_deviceIO, &DeviceIOController::alert, this, [this](STHERM::AlertLevel alertLevel,
+                                                                AppSpecCPP::AlertTypes alertType,
+                                                                QString alertMessage) {
+        emit alert(alertLevel,
+                   alertType,
+                   alertMessage);
+
+        // To monitor alert type like off the system
+        switch (alertType) {
+        case AppSpecCPP::Alert_humidity_high:
+        case AppSpecCPP::Alert_humidity_low:
+        case AppSpecCPP::Alert_temp_high:
+        case AppSpecCPP::Alert_temp_low:
+            // mSystemSetup->systemMode = AppSpecCPP::SystemMode::Off;
+            break;
+        default:
+            break;
+        }
+    });
+
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
 
@@ -271,16 +297,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             m_scheme->moveToUpdatingMode();
         });
     }
-
-    connect(_deviceIO,
-            &DeviceIOController::alert,
-            this,
-            [this](STHERM::AlertLevel alertLevel,
-                   STHERM::AlertTypes alertType,
-                   QString alertMessage) {
-                emit alert(alertLevel, alertType, alertMessage);
-            });
-
 
     //! Set sInstance to this
     if (!sInstance) {

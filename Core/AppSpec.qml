@@ -143,4 +143,10 @@ AppSpecCPP {
 
         return newSchedule;
     }
+
+    //! airQuality <= 1.0
+    readonly property real airQualityGood: 1.0
+
+    //! airQuality > 3.0
+    readonly property real airQualityPoor: 3.0
 }

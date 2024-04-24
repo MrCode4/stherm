@@ -144,7 +144,7 @@ Q_SIGNALS:
 
     //! Send alert to ui
     void alert(STHERM::AlertLevel alertLevel,
-               STHERM::AlertTypes alertType,
+               AppSpecCPP::AlertTypes alertType,
                QString alertMessage = QString());
 
     void systemSetupChanged();
