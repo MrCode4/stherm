@@ -146,6 +146,8 @@ I_DeviceController {
             setMessagesServer(settings.messages)
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
+
+            setAutoTemperatureFromServer(settings);
         }
 
         function onCanFetchServerChanged() {
@@ -266,7 +268,9 @@ I_DeviceController {
         deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
-        deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour)
+        deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour);
+        deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
+        deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
     }
 
     /* Children
@@ -537,6 +541,8 @@ I_DeviceController {
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
+            "auto_temp_high" : device.autoMaxReqTemp,
+            "auto_temp_low" : device.autoMinReqTemp,
             "fan" : {
                 "mode" : device.fan.mode,
                 "workingPerHour": device.fan.workingPerHour,
@@ -733,6 +739,46 @@ I_DeviceController {
             setSystemCoolingOnly(settings.coolStage)
         else
             console.warn("System type unknown", settings.type)
+    }
+
+    function setAutoTemperatureFromServer (settings) {
+
+        if (!device)
+            return;
+
+        if (editModeEnabled(AppSpec.EMDesiredTemperature)) {
+            console.log("The temperature is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        if (settings.hasOwnProperty("auto_temp_low")) {
+            if (device.autoMinReqTemp !== settings.auto_temp_low) {
+                device.autoMinReqTemp = settings.auto_temp_low;
+                deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
+            }
+        }
+
+        if (settings.hasOwnProperty("auto_temp_high")) {
+            if (device.autoMaxReqTemp !== settings.auto_temp_high) {
+                device.autoMaxReqTemp = settings.auto_temp_high;
+                deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
+            }
+        }
+
+    }
+
+    function setAutoMinReqTemp(min) {
+        if (device && device.autoMinReqTemp !== min) {
+            device.autoMinReqTemp = min;
+            deviceControllerCPP.setAutoMinReqTemp(min);
+        }
+    }
+
+    function setAutoMaxReqTemp(max) {
+        if (device && device.autoMaxReqTemp !== max) {
+            device.autoMaxReqTemp = max;
+            deviceControllerCPP.setAutoMaxReqTemp(max);
+        }
     }
 
     function checkSensors(sensors: var) {

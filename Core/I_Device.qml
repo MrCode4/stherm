@@ -17,6 +17,12 @@ QSObject {
     //! Requested Temperature (Cel)
     property real           requestedTemp:  22.22 // 72 F
 
+    //! Requested Min temperature in auto mode (Cel)
+    property real           autoMinReqTemp: 21.1111 // 70 F
+
+    //! Requested Max temperature in auto mode (Cel)
+    property real           autoMaxReqTemp: 23.3333 // 74 F
+
     //! Current Temperature (Cel)
     property real           currentTemp:    18.0
 
