@@ -591,6 +591,7 @@ BasePageView {
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
 
         // emit changed
+        device.schedulesChanged();
 
         deviceController.pushSettings();
 
