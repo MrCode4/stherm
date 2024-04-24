@@ -93,7 +93,8 @@ QtObject {
 
                              } else { // Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
-                                 addNewMessageFromData(message.type, message.message, message.datetime, message.isRead, icon, Message.SourceType.Server);
+                                 addNewMessageFromData((message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type,
+                                                       message.message, message.datetime, message.isRead, icon, Message.SourceType.Server);
                              }
                          });
     }
