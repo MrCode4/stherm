@@ -177,9 +177,25 @@ QtObject {
             if (currentScheduleElement.runningDays.split(",").find((repeatDayElement, repeatIndex) => {
                                                              return runningDays.includes(repeatDayElement);
                                                          })) {
-                if ((currentScheduleElement.startTime > startTime && currentScheduleElement.startTime < endTime) ||
-                        (currentScheduleElement.startTime < startTime && currentScheduleElement.endTime > startTime) ||
-                        currentScheduleElement.startTime === startTime) {
+                var currentStartTime = currentScheduleElement.startTime;
+                // if the current schedule is an active no repeat schedule ignore the past times
+                if (currentScheduleElement.scheduleElement.repeats.length === 0 &&
+                        currentScheduleElement.scheduleElement.active) {
+                    var now = new Date();
+                    var today = Qt.formatDate(now, "ddd").slice(0, -1);
+                    // if today is repeat
+                    if (today === currentScheduleElement.runningDays)
+                        currentStartTime = now;
+                    // else if today is next day ignore
+                    else if (today === nextDayRepeats(currentScheduleElement.runningDays))
+                        return;
+                    // else, ....keep going, no need to do anything
+                    // else if (currentScheduleElement.runningDays === nextDay(today));
+                }
+
+                if ((currentStartTime > startTime && currentStartTime < endTime) ||
+                        (currentStartTime < startTime && currentScheduleElement.endTime > startTime) ||
+                        currentStartTime === startTime) {
                     overlappings.push(currentScheduleElement.scheduleElement);
                 }
             };
