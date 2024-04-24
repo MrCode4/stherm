@@ -148,20 +148,19 @@ QtObject {
         if (!device) return overlappings;
 
         var startTime = Date.fromLocaleTimeString(Qt.locale(), startTimeStr, "hh:mm AP")
+        // if no repeat started ignore the startTime and get now as start to skip gone time
+        if (repeats.length === 0 && active) {
+            startTime = new Date();
+        }
         var endTime = Date.fromLocaleTimeString(Qt.locale(), endTimeStr, "hh:mm AP")
 
         // fix no repeat issue and update repeats
         let runningDays = findRunningDays(repeats, startTime, endTime, active);
 
-        var now = new Date();
-
         // over night, break into two schedules and call recursive for each
         if (endTime < startTime) {
-            // if no repeat started from yesterday ignore first one! // todo
             // active not important as running days are there for sure (already calculated)
-            if (repeats.length !== 0 || !active || now < endTime) {
-                overlappings = findOverlappingSchedules(startTimeStr, "11:59 PM", runningDays, exclude);
-            }
+            overlappings = findOverlappingSchedules(startTimeStr, "11:59 PM", runningDays, exclude);
             overlappings.push(findOverlappingSchedules("12:00 AM", endTimeStr, nextDayRepeats(runningDays), exclude));
 
             // return flatten array
@@ -181,10 +180,7 @@ QtObject {
                 if ((currentScheduleElement.startTime > startTime && currentScheduleElement.startTime < endTime) ||
                         (currentScheduleElement.startTime < startTime && currentScheduleElement.endTime > startTime) ||
                         currentScheduleElement.startTime === startTime) {
-                    // todo: we need to ignore if the overlapping time is in the past time of no repeat schedule
-
-                    if (!(repeats.length === 0 && currentScheduleElement.active && now < currentScheduleElement.endTime))
-                        overlappings.push(currentScheduleElement.scheduleElement);
+                    overlappings.push(currentScheduleElement.scheduleElement);
                 }
             };
         })
@@ -289,7 +285,6 @@ QtObject {
     }
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
-    // todo: update with new code!
     function setSchedulesFromServer(serverSchedules: var) {
 
         var modelSchedules = device.schedules;
