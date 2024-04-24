@@ -59,10 +59,14 @@ Control {
     onCurrentScheduleChanged: {
         if (currentSchedule) {
             _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                                  device.setting.tempratureUnit);
+                                                                  device.setting.tempratureUnit,
+                                                                  minTemprature,
+                                                                  maxTemprature);
         } else if (device) {
             _tempSlider.value = Utils.convertedTemperatureClamped(device.requestedTemp,
-                                                                  device.setting.tempratureUnit);
+                                                                  device.setting.tempratureUnit,
+                                                                  minTemprature,
+                                                                  maxTemprature);
         }
     }
 
@@ -80,7 +84,13 @@ Control {
             to: maxTemprature
 
             //! Note: this binding will be broken use Connections instead
-            value: Utils.convertedTemperatureClamped(currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0), device.setting.tempratureUnit)
+            value: {
+                var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
+                return Utils.convertedTemperatureClamped(tmp,
+                                                         device.setting.tempratureUnit,
+                                                         minTemprature,
+                                                         maxTemprature);
+            }
 
             //! Use onPressed instead of on value changed so value is only applied to device when
             //! Dragging is finished
@@ -338,7 +348,9 @@ Control {
             //! When setDesiredTemperature failed, update slider with previous value.
             function onRequestedTempChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(device.requestedTemp,
-                                                                      device.setting.tempratureUnit);
+                                                                      device.setting.tempratureUnit,
+                                                                      minTemprature,
+                                                                      maxTemprature);
             }
         }
 
@@ -348,7 +360,9 @@ Control {
             //! Update slider value (UI) with changed TempratureUnit
             function onUnitChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule?.temprature ?? device.requestedTemp,
-                                                                      device.setting.tempratureUnit);
+                                                                      device.setting.tempratureUnit,
+                                                                      minTemprature,
+                                                                      maxTemprature);
             }
         }
 
@@ -358,7 +372,9 @@ Control {
             //! Update slider value (UI) with changed temperature in schedule
             function onTempratureChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                                      device.setting.tempratureUnit);
+                                                                      device.setting.tempratureUnit,
+                                                                      minTemprature,
+                                                                      maxTemprature);
             }
         }
     }
