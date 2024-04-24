@@ -48,7 +48,7 @@ Control {
         if (dragging)
             deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
         else
-            deviceController.updateEditMode(AppSpec.EMNone);
+            deviceController.updateEditMode(AppSpec.EMDesiredTemperature, false);
     }
 
     /* Object properties
