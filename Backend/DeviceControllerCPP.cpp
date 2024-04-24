@@ -238,7 +238,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceIO, &DeviceIOController::alert, this, [this](STHERM::AlertLevel alertLevel,
                                                                 STHERM::AlertTypes alertType,
                                                                 QString alertMessage) {
-        emit alert(STHERM::AlertLevel::LVL_Emergency,
+        emit alert(alertLevel,
                    alertType,
                    alertMessage);
 
@@ -296,16 +296,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             m_scheme->moveToUpdatingMode();
         });
     }
-
-    connect(_deviceIO,
-            &DeviceIOController::alert,
-            this,
-            [this](STHERM::AlertLevel alertLevel,
-                   STHERM::AlertTypes alertType,
-                   QString alertMessage) {
-                emit alert(alertLevel, alertType, alertMessage);
-            });
-
 
     //! Set sInstance to this
     if (!sInstance) {
