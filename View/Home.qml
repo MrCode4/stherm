@@ -281,7 +281,7 @@ Control {
                 bottom: parent.bottom
             }
 
-            device: _root.device
+            uiSession: _root.uiSession
             onClicked: {
                 //! Push ScheduleView to StackView
                 if (mainStackView) {

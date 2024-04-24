@@ -19,6 +19,8 @@ QtObject {
 
     property var deviceCurrentSchedules: [];
 
+    //! Run the timer schedule and update ui
+    property bool runningScheduleEnabled: device.schedules.filter(schedule => schedule.enable).length > 0
 
     /* Object properties
      * ****************************************************************************************/
@@ -391,13 +393,12 @@ QtObject {
     }
 
     property Timer _checkRunningTimer: Timer {
-        // todo: add alias to root for ui need
-        running: device.schedules.filter(schedule => schedule.enable).length > 0
+
+        running: runningScheduleEnabled
         repeat: true
         interval: 1000
 
         onTriggered: {
-            // we may need to run updateCurrentSchedules once before starting this
             findRunningSchedule();
         }
 
