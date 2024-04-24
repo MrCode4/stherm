@@ -349,8 +349,8 @@ enum AlertTypes
     Alert_pressure_high, //up to 1200 hPa
     Alert_c02_high,//400 to 5000ppm
     Alert_c02_low,//400 to 5000ppm
-    Alert_fan_High,// 3800 RPM
-    Alert_fan_low,//4200 RPM
+    Alert_fan_High,// 4200 RPM
+    Alert_fan_low,// 3800 RPM
     Alert_wiring_not_connected,
     Alert_could_not_set_relay,
     Alert_temperature_not_reach,
