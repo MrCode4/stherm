@@ -19,7 +19,7 @@ BasePageView {
     property ScheduleCPP    schedule
 
     //! Repeats are always valid
-    readonly property bool  isValid: repeats.length > 0
+    readonly property bool  isValid: true
 
     property bool editMode: false
 
@@ -60,31 +60,10 @@ BasePageView {
         }
 
         onClicked: {
-            //! First check if this schedule has overlap with other Schedules
-            //! Do this only if schedule is enabled (active)
-            if (schedule.enable) {
-                internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
-                            Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
-                            Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
-                            repeats,
-                            schedule);
-
-                if (internal.overlappingSchedules.length > 0) {
-                    //! New schedules overlapps with at least one other Schedule
-                    uiSession.popUps.scheduleOverlapPopup.accepted.connect(saveRepeat);
-                    uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
-                    return;
-                }
-            }
-
+            //! we do not need to check if this schedule has overlap with other Schedules
+            //! it will be done before saving it!
             saveRepeat();
         }
-    }
-
-    QtObject {
-        id: internal
-
-        property var overlappingSchedules: []
     }
 
     GridLayout {
@@ -113,6 +92,7 @@ BasePageView {
 
     onScheduleChanged: {
         if (schedule) {
+
             _moBtn.checked = Boolean(schedule.repeats.includes("Mo"));
             _tuBtn.checked = Boolean(schedule.repeats.includes("Tu"));
             _weBtn.checked = Boolean(schedule.repeats.includes("We"));
@@ -127,13 +107,6 @@ BasePageView {
      * ****************************************************************************************/
     function saveRepeat()
     {
-        //! If there is overlapping Schedules disable them
-        internal.overlappingSchedules.forEach((element, index) => {
-                                                  element.enable = false;
-                                              });
-
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(saveRepeat);
-
         if (schedule && schedule.repeats !== repeats) {
             schedule.repeats = repeats;
         }

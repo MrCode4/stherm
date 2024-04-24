@@ -89,7 +89,7 @@ ItemDelegate {
                 spacing: 1
 
                 Repeater {
-                    model: schedule?.repeats.split(",") ?? 0
+                    model: schedule?.repeats.length > 0 ? schedule.repeats.split(",") : ["No repeat"]
                     delegate: Label {
                         font: _fontMetric.font
                         Layout.alignment: Qt.AlignTop
@@ -115,15 +115,13 @@ ItemDelegate {
             checked: schedule?.enable ?? false
 
             onToggled: {
-                if (checked) {
+                if (uiSession && schedule && schedule.enable !== checked) {
                     //! First find if there is any overlapping schedules
-                    if (uiSession) {
-                        //! First check if this schedule has overlap with other Schedules
+                    if (checked) {
+
                         internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
-                                    Date.fromLocaleTimeString(Qt.locale(), schedule.startTime, "hh:mm AP"),
-                                    Date.fromLocaleTimeString(Qt.locale(), schedule.endTime, "hh:mm AP"),
-                                    schedule.repeats,
-                                    schedule);
+                                    schedule.startTime, schedule.endTime,
+                                    schedule.repeats, schedule);
 
                         if (internal.overlappingSchedules.length > 0) {
                             //! First uncheck this Switch
@@ -134,9 +132,7 @@ ItemDelegate {
                             return;
                         }
                     }
-                }
 
-                if (schedule && schedule.enable !== checked) {
                     schedule.enable = checked;
 
                     // Send Data to server when a schedule changed...

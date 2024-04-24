@@ -348,7 +348,7 @@ BasePageView {
                         Layout.alignment: Qt.AlignRight
 
                         Repeater {
-                            model: scheduleToDisplay?.repeats ? scheduleToDisplay.repeats.split(",") : 0
+                            model: scheduleToDisplay?.repeats.length > 0 ? scheduleToDisplay.repeats.split(",") : ["No repeat"]
                             delegate: Label {
                                 Layout.alignment: Qt.AlignTop
                                 text: modelData
@@ -552,14 +552,6 @@ BasePageView {
             return false;
         }
 
-        if (internal.scheduleToEdit.repeats === "") {
-            //! Show an error popup
-            uiSession.popUps.errorPopup.errorMessage = "Repeats can not be empty.";
-            uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
-
-            return false;
-        }
-
         return true;
     }
 
@@ -567,16 +559,18 @@ BasePageView {
     //! saving as enabled or disabled.
     function checkOverlappings()
     {
+        // disabled, no need to check
+        if (!schedule.enable)
+            return false;
+
         //! Check overlapping schedules
         internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
-                    Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.startTime, "hh:mm AP"),
-                    Date.fromLocaleTimeString(Qt.locale(), internal.scheduleToEdit.endTime, "hh:mm AP"),
-                    internal.scheduleToEdit.repeats,
-                    schedule // Exclude the original of this copy
-                    );
+                    internal.scheduleToEdit.startTime, internal.scheduleToEdit.endTime,
+                    internal.scheduleToEdit.repeats, schedule, // Exclude the original of this copy
+                    schedule.active);
 
+        //! New schedule overlaps with at least one other Schedule
         if (internal.overlappingSchedules.length > 0) {
-            //! New schedules overlapps with at least one other Schedule
             uiSession.popUps.scheduleOverlapPopup.accepted.connect(internal.saveEnabledSchedule);
             uiSession.popUps.scheduleOverlapPopup.rejected.connect(internal.saveDisabledSchedule);
             uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
@@ -599,6 +593,9 @@ BasePageView {
         _root.schedule.endTime = internal.scheduleToEdit.endTime;
         _root.schedule.repeats = [...internal.scheduleToEdit.repeats];
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
+
+        // Emit schedule changed to call updateCurrentSchedules function in schedule controller.
+        device.schedulesChanged();
 
         deviceController.pushSettings();
 

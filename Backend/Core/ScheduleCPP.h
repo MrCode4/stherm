@@ -21,6 +21,7 @@ class ScheduleCPP : public QSObjectCpp
     Q_PROPERTY(double humidity   MEMBER humidity   NOTIFY humidityChanged FINAL)
 
     Q_PROPERTY(bool enable  MEMBER enable  NOTIFY enableChanged FINAL)
+    Q_PROPERTY(bool active  MEMBER active  NOTIFY activeChanged FINAL)
 
     QML_ELEMENT
 
@@ -51,6 +52,8 @@ public:
     //! Whether this ScheduleCPP is active or not
     bool enable;
 
+    bool active;
+
 signals:
     void nameChanged();
     void typeChanged();
@@ -61,4 +64,5 @@ signals:
     void tempratureChanged();
     void humidityChanged();
     void enableChanged();
+    void activeChanged();
 };
