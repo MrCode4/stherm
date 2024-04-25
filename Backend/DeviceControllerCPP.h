@@ -66,6 +66,9 @@ public:
     //!
     Q_INVOKABLE QVariantMap getMainData();
 
+    //!
+    Q_INVOKABLE void exportMainData();
+
     //! set backlight using uart and respond the success, data should have 5 items
     //! including r, g, b, mode (0 for ui, 1 will be send internally), on/off
     //! isScheme: is true when the backlight set from scheme and false for model

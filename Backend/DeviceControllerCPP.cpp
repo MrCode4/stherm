@@ -746,6 +746,27 @@ QVariantMap DeviceControllerCPP::getMainData()
     return mainData;
 }
 
+void DeviceControllerCPP::exportMainData()
+{
+    QFile file("export.csv");
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qWarning() << "Unable to open file for writing";
+        return;
+    }
+
+    QTextStream output(&file);
+
+    output << "Key,Value\n";
+
+    QVariantMap result = getMainData();
+
+    for (auto it = result.begin(); it != result.end(); ++it)
+    {
+        output << it.key() << "," << it.value().toString() << "\n";
+    }
+}
+
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)
 {
 #ifdef DEBUG_MODE
