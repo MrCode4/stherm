@@ -71,7 +71,7 @@ Item {
     function closeAllPopups()
     {
         _internal.popupQueue.forEach((popup) => {
-                                         if (popup instanceof Popup) {
+                                         if (!(popup instanceof AlertNotifPopup) && popup instanceof Popup) {
                                              popup.close();
                                          }
                                      })
