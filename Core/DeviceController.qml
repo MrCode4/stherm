@@ -907,10 +907,6 @@ I_DeviceController {
         return deviceControllerCPP.getMainData();
     }
 
-    function exportTestData() {
-        deviceControllerCPP.exportMainData();
-    }
-
     function setActivatedSchedule(schedule: ScheduleCPP) {
 
         if (root.currentSchedule === schedule)

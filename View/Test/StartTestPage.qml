@@ -26,6 +26,8 @@ BasePageView {
 
     Component.onCompleted: {
         deviceController.deviceControllerCPP.system.testMode = true;
+        deviceController.deviceControllerCPP.clearTestResults()
+        deviceController.deviceControllerCPP.writeTestResult("Test name", "Test Result", "Description")
     }
 
     /* Children
@@ -40,33 +42,37 @@ BasePageView {
             // Test 1
             if (system.installUpdateService()) {
                 testCounter++;
-
+                deviceController.deviceControllerCPP.writeTestResult("Update service", true)
             } else {
                 notPassedTests.text += "\nThe Update service can not be installed."
+                deviceController.deviceControllerCPP.writeTestResult("Update service", false, "The Update service can not be installed")
             }
 
             // Test 2
             if (system.mountUpdateDirectory()) {
                 testCounter++;
-
+                deviceController.deviceControllerCPP.writeTestResult("Mount update directory", true)
             } else {
                 notPassedTests.text += "\nThe Update directory can not be mounted."
+                deviceController.deviceControllerCPP.writeTestResult("Mount update directory", false, "The Update directory can not be mounted")
             }
 
             // Test 3
             if (system.mountRecoveryDirectory()) {
                 testCounter++;
-
+                deviceController.deviceControllerCPP.writeTestResult("Mount recovery directory", true)
             } else {
                 notPassedTests.text += "\nThe Recovery directory can not be mounted."
+                deviceController.deviceControllerCPP.writeTestResult("Mount update directory", false, "The Recovery directory can not be mounted")
             }
 
             // Test 4 (NRF Version)
             if (deviceController.deviceControllerCPP.checkNRFFirmwareVersion()) {
                 testCounter++;
-
+                deviceController.deviceControllerCPP.writeTestResult("NRF compatibility", true)
             } else {
                 notPassedTests.text += "\nThe nrf version and the app version are not compatible."
+                deviceController.deviceControllerCPP.writeTestResult("NRF compatibility", false, "The nrf version and the app version are not compatible")
             }
         }
     }

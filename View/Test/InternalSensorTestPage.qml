@@ -18,7 +18,6 @@ BasePageView {
 
     Component.onCompleted: {
         root.model = deviceController.getTestData();
-        deviceController.exportTestData();
     }
 
     /* Children

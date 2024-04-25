@@ -24,6 +24,9 @@ Popup {
     //! Whether header bar is visible or not
     property bool                       titleBar:           true
 
+    //! Whether the x (close) button is visible or not
+    property bool                       closeButtonVisible: true
+
     //! Title of popup
     property string                     title:              "Popup"
 
@@ -82,7 +85,9 @@ Popup {
             }
 
             ToolButton {
+                visible: _popup.closeButtonVisible
                 Layout.rightMargin: -_popup.rightPadding + 4
+
                 contentItem: RoniaTextIcon {
                     font.pointSize: Application.font.pointSize * 1.2
                     text: FAIcons.xmark

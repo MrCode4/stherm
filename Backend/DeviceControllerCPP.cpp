@@ -746,25 +746,31 @@ QVariantMap DeviceControllerCPP::getMainData()
     return mainData;
 }
 
-void DeviceControllerCPP::exportMainData()
+void DeviceControllerCPP::clearTestResults()
 {
-    QFile file("export.csv");
-    if (!file.open(QIODevice::WriteOnly))
+    QFile file("test_results.csv");
+
+    if (file.exists() && !file.remove())
+        qWarning() << "Unable to delete file" << file.fileName();
+}
+
+void DeviceControllerCPP::writeTestResult(const QString &testName, const QString& testResult, const QString &description)
+{
+    QFile file("test_results.csv");
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append))
     {
-        qWarning() << "Unable to open file for writing";
+        qWarning() << "Unable to open file" << file.fileName() << "for writing";
         return;
     }
 
     QTextStream output(&file);
+    output << testName << "," << testResult << "," << description << "\n";
+}
 
-    output << "Key,Value\n";
-
-    QVariantMap result = getMainData();
-
-    for (auto it = result.begin(); it != result.end(); ++it)
-    {
-        output << it.key() << "," << it.value().toString() << "\n";
-    }
+void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResult, const QString &description)
+{
+    writeTestResult(testName, testResult?"PASS":"FAIL", description);
 }
 
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)
