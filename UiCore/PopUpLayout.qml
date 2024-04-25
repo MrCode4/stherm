@@ -55,12 +55,12 @@ Item {
 
         if (hightPriority) {
             //! Disply it right away
-            _internal.popupQueue.push(popup);
+            _internal.popupQueue.unshift(popup);
             _internal.popupQueueChanged();
             popup.open();
         } else {
             //! Push it back to the queue
-            _internal.popupQueue.push(popup);
+            _internal.popupQueue.unshift(popup);
             _internal.popupQueueChanged();
             if (_internal.popupQueue.length === 1) {
                 popup.open();
