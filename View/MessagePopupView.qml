@@ -29,6 +29,14 @@ Item {
         function onShowMessage(message: Message) {
             showMessagePopup(message);
         }
+
+        function onShowWifiInternetAlert(message: string, dateTime: string) {
+            wifiInternetConnectionAlert.message.message = message;
+            wifiInternetConnectionAlert.message.datetime = dateTime;
+
+            //! Ask PopUpLayout to open popup
+            uiSession.popupLayout.displayPopUp(wifiInternetConnectionAlert);
+        }
     }
 
     Component {
@@ -49,6 +57,18 @@ Item {
         }
     }
 
+    //! Witi and Internet connection alerts
+    AlertNotifPopup {
+        id: wifiInternetConnectionAlert
+
+        uiSession: root.uiSession
+
+        message: Message {
+            type: Message.Type.SystemNotification
+        }
+
+    }
+
     /* Functions
      * ****************************************************************************************/
     //! Show message popups
@@ -66,7 +86,7 @@ Item {
 
         if (newAlertPopup) {
             //! Ask PopUpLayout to open popup
-            uiSession.popupLayout.displayPopUp(newAlertPopup, false);
+            uiSession.popupLayout.displayPopUp(newAlertPopup);
         }
     }
 }

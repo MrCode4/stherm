@@ -60,7 +60,7 @@ Item {
             popup.open();
         } else {
             //! Push it back to the queue
-            _internal.popupQueue.unshift(popup);
+            _internal.popupQueue.push(popup);
             _internal.popupQueueChanged();
             if (_internal.popupQueue.length === 1) {
                 popup.open();

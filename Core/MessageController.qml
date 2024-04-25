@@ -62,6 +62,9 @@ QtObject {
 
     signal showMessage(Message message)
 
+    //! Show wifi/Internet connection alert.
+    signal showWifiInternetAlert(message: string, dateTime: string)
+
     /* Methods
      * ****************************************************************************************/
     function setMessagesServer(messages: var) {
@@ -304,7 +307,7 @@ QtObject {
     function checkWifiConnection() : bool {
         if (!NetworkInterface.connectedWifi) {
             var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
-            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+            showWifiInternetAlert(message, (new Date()).toLocaleString());
             return false;
         }
 
@@ -314,7 +317,7 @@ QtObject {
     function checkInternetConnection() : bool {
         if (!NetworkInterface.hasInternet) {
             var message = "No internet connection. Please check your internet connection.";
-            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+            showWifiInternetAlert(message, (new Date()).toLocaleString());
             return false;
         }
         return true;
