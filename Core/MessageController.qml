@@ -35,7 +35,7 @@ QtObject {
 
             // Show messages that isRead is false
             device.messages.forEach(message => {
-                                    if (!message.isRead) {
+                                    if (!(message?.isRead ?? true)) {
                                             newMessageReceived(message);
                                         }
                                     });
@@ -43,6 +43,7 @@ QtObject {
     }
 
     //! Check wifi/internet after model is loaded
+    //! And start it when wifi or Internet disconnected
     property Timer checkInternetTimer: Timer {
         running: device
         repeat: false
@@ -158,17 +159,22 @@ QtObject {
         target: NetworkInterface
 
         function onHasInternetChanged() {
-           checkInternetConnection();
+            //! If wifi is connected, internet will be check after one minute.
+           if (NetworkInterface.connectedWifi)
+               checkInternetTimer.restart();
         }
 
         function onConnectedWifiChanged() {
-            checkWifiConnection();
+                 checkInternetTimer.restart();
         }
  
         //! wrong password alert.
         function onIncorrectWifiPassword() {
             var message = "Wrong password, please try again.";
             addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+
+            // After password is wrong, Wifi and internet check afetr one minute.
+            checkInternetTimer.restart();
         }
     }
 
