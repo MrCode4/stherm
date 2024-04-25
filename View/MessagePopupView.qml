@@ -38,13 +38,11 @@ Item {
             uiSession: root.uiSession
 
             onClosed: {
-                message.isRead = true;
-
-                if (messageController && message.type === Message.Type.SystemNotification) {
-                    messageController.removeMessage(message);
+                if (messageController && message && message.type !== Message.Type.SystemNotification) {
+                    message.isRead = true;
+                    uiSession.deviceController.pushSettings();
                 }
 
-                uiSession.deviceController.pushSettings();
 
                 destroy(this);
             }

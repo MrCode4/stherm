@@ -104,16 +104,27 @@ QtObject {
             return;
         }
 
-        var newMessage = QSSerializer.createQSObject("Message", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
-        newMessage._qsRepo = AppCore.defaultRepo;
+        var newMessage;
+        if (type === Message.Type.SystemNotification) {
+            // To avoid saving to file
+            newMessage = QSSerializer.createQSObject("Message", ["Stherm", "QtQuickStream"])
+            newMessage._qsRepo = null;
+
+        } else {
+            newMessage = QSSerializer.createQSObject("Message", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
+            newMessage._qsRepo = AppCore.defaultRepo;
+        }
+
         newMessage.type = type;
         newMessage.message = message;
         newMessage.datetime = datetime;
         newMessage.isRead = isRead;
         newMessage.sourceType = sourceType;
 
-        device.messages.push(newMessage);
-        device.messagesChanged();
+        if (type !== Message.Type.SystemNotification) {
+            device.messages.push(newMessage);
+            device.messagesChanged();
+        }
 
         newMessageReceived(newMessage);
     }
