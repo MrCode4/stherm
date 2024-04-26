@@ -16,9 +16,7 @@ BasePageView {
 
     title: "Internal Sensor Test"
 
-    Component.onCompleted: {
-        root.model = deviceController.getTestData();
-    }
+    Component.onCompleted: root.model = deviceController.getTestData();
 
     /* Children
      * ****************************************************************************************/

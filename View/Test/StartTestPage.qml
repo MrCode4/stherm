@@ -15,7 +15,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property int testCounter: 0
-    property int allTests:    4
+    property int allTests:    5
 
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system
@@ -74,6 +74,35 @@ BasePageView {
                 notPassedTests.text += "\nThe nrf version and the app version are not compatible."
                 deviceController.deviceControllerCPP.writeTestResult("NRF compatibility", false, "The nrf version and the app version are not compatible")
             }
+
+            // Test 5 (Sensors)
+            let sensorData = deviceController.deviceControllerCPP.getMainData()
+            for (let key in sensorData) {
+                let value = sensorData[key]
+
+                if (key === "RangeMilliMeter") {
+                    writeSensorResult(key, value, 0, 1000)
+                } else if (key === "Tvoc") {
+                    writeSensorResult(key, value, 0, 100)
+                } else if (key === "brighness") {
+                    writeSensorResult(key, value, 0, 100)
+                } else if (key === "co2") {
+                    writeSensorResult(key, value, 0, 50)
+                } else if (key === "etoh") {
+                    writeSensorResult(key, value, 0, 100)
+                } else if (key === "fanSpeed") {
+                    writeSensorResult(key, value, 4000, 6000)
+                } else if (key === "humidity") {
+                    writeSensorResult(key, value, 0, 100)
+                } else if (key === "pressure") {
+                    writeSensorResult(key, value, 0, 100)
+                } else if (key === "Tvoc") {
+                    writeSensorResult(key, value, 0, 100)
+                } else if (key === "temperature") {
+                    writeSensorResult(key, value, -20, 50)
+                }
+            }
+            testCounter++;
         }
     }
 
@@ -131,5 +160,11 @@ BasePageView {
                                          "uiSession": uiSession
                                      })
         }
+    }
+
+    function writeSensorResult(key, value, min, max) {
+        let result = (value >= min && value <= max)
+        let description = "%1 must be between %2 and %3. Value: %4".arg(key).arg(min).arg(max).arg(value)
+        deviceController.deviceControllerCPP.writeTestResult(key, result, description)
     }
 }

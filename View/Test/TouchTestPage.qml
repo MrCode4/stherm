@@ -54,7 +54,7 @@ BasePageView {
     InfoPopup {
         id: infoPopup
         message: "Touch test"
-        detailMessage: "Test needs to be completed in " + seconds + " seconds"
+        detailMessage: "Test needs to be<br>completed in " + seconds + " seconds"
         visible: true
 
         property int seconds: 5

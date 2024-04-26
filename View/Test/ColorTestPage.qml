@@ -22,6 +22,31 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+
+    function nextPage() {
+        if (root.StackView.view) {
+            root.StackView.view.push("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
+                                          "uiSession": uiSession
+                                      })
+        }
+    }
+
+    ConfirmPopup {
+        id: popup
+        closeButtonVisible: false
+        closePolicy: Popup.NoAutoClose
+        message: "Color test"
+        detailMessage: "Did you see any dicoloration<br>or dead pixels?"
+        onAccepted: {
+            deviceController.deviceControllerCPP.writeTestResult("Color test", false, "The display is discolored or has dead pixels")
+            nextPage()
+        }
+        onRejected: {
+            deviceController.deviceControllerCPP.writeTestResult("Color test", true)
+            nextPage()
+        }
+    }
+
     //! Next button (loads ColorTestPage)
     ToolButton {
         parent: root.header.contentItem
@@ -29,15 +54,7 @@ BasePageView {
             text: FAIcons.arrowRight
             color: headerColor
         }
-
-        onClicked: {
-            //! Load next page
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
-                                              "uiSession": uiSession
-                                          })
-            }
-        }
+        onClicked: popup.open()
     }
 
     TapHandler {

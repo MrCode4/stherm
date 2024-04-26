@@ -770,7 +770,8 @@ void DeviceControllerCPP::writeTestResult(const QString &testName, const QString
 
 void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResult, const QString &description)
 {
-    writeTestResult(testName, testResult?"PASS":"FAIL", description);
+    QString result = testResult?"PASS":"FAIL";
+    writeTestResult(testName, result, description);
 }
 
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)
