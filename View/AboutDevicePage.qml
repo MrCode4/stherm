@@ -134,8 +134,19 @@ BasePageView {
                 }
 
                 ButtonInverted {
-                    visible: ((modelData.key === "Restart Device" || modelData.key === "Update NRF")) && system.testMode
-                    text: (modelData.key === "Restart Device") ? "Exit" : "Forget Device"
+                    visible: (modelData.key === "Restart Device") && system.testMode
+                    text:  "Exit"
+                    leftPadding: 8
+                    rightPadding: 8
+
+                    onClicked: {
+                        buttonCallbacks(text);
+                    }
+                }
+
+                ButtonInverted {
+                    visible: (modelData.key === "Restart Device") && system.testMode
+                    text: "Forget Device"
                     leftPadding: 8
                     rightPadding: 8
 
