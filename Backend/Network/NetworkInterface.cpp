@@ -12,9 +12,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
     , mNmcliInterface { new NmcliInterface(this) }
     , mWifiInfos { mNmcliInterface->getWifis() }
-    , mConnectedWifiInfo { nullptr }
     , mRequestedToConnectedWifi { nullptr }
-    , mHasInternet { false }
+    , mHasInternet { true }
     , mNamIsRunning { false }
     , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
                                                           "http://google.com")) }
@@ -58,7 +57,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
     connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
         mSetNoInternetTimer.stop();
-        if (mConnectedWifiInfo) {
+        auto connectedWifiInfo = connectedWifi();
+        if (connectedWifiInfo) {
             if (!mCheckInternetAccessTmr.isActive()) {
                 mCheckInternetAccessTmr.start();
             }
@@ -210,7 +210,8 @@ qsizetype NetworkInterface::networkCount(WifisQmlList* list)
 
 void NetworkInterface::checkHasInternet()
 {
-    if (!mConnectedWifiInfo) {
+    auto connectedWifiInfo = connectedWifi();
+    if (!connectedWifiInfo) {
         setHasInternet(false);
     } else if (!mNamIsRunning) {
         QNetworkRequest request(cCheckInternetAccessUrl);

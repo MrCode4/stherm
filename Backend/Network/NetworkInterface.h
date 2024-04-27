@@ -164,11 +164,6 @@ private:
     bool                    mNamIsRunning;
 
     /*!
-     * \brief mConnectedWifiInfo Currently connected wifi
-     */
-    WifiInfo*               mConnectedWifiInfo;
-
-    /*!
      * \brief mRequestedToConnectedWifi The wifi that is requested to connect to
      */
     WifiInfo*               mRequestedToConnectedWifi;
