@@ -93,7 +93,7 @@ int NUVE::Hardware::getStartMode()
     // then check the start mode of the device, to see if this is the first run
     // TODO the getstartmode exe would read export, then read GPIO90, and return 0 if high, and 1 if low
     // if == 0, set in device config, then return
-    uint32_t sm = UtilityHelper::getStartMode();
+    int sm = UtilityHelper::getStartMode();
 
     LOG_DEBUG(QString("start mode started : %0").arg(sm));
 
