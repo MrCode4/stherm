@@ -33,12 +33,15 @@ QtObject {
         onTriggered: {
             activeAlerts = true;
 
-            // Show messages that isRead is false
-            device.messages.forEach(message => {
-                                    if (!(message?.isRead ?? true)) {
-                                            newMessageReceived(message);
-                                        }
-                                    });
+            // Remove the ability to show unread alerts
+            if (false) {
+                // Show messages that isRead is false
+                device.messages.forEach(message => {
+                                            if (!(message?.isRead ?? true)) {
+                                                newMessageReceived(message);
+                                            }
+                                        });
+            }
         }
     }
 
