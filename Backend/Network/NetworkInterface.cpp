@@ -1,6 +1,7 @@
 #include "NetworkInterface.h"
 #include "LogHelper.h"
 #include "Nmcli/NmcliInterface.h"
+#include<QAbstractNetworkCache>
 
 #include <QNetworkInterface>
 #include <QNetworkRequest>
@@ -57,6 +58,11 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
     connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
         mSetNoInternetTimer.stop();
+        if (mNam.cache()){
+            mNam.cache()->clear();
+        }
+        mNam.clearAccessCache();
+        mNam.clearConnectionCache();
         auto connectedWifiInfo = connectedWifi();
         if (connectedWifiInfo) {
             if (!mCheckInternetAccessTmr.isActive()) {
