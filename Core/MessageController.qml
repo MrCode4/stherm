@@ -125,7 +125,7 @@ QtObject {
         newMessage.sourceType = sourceType;
 
         if (type !== Message.Type.SystemNotification) {
-            device.messages.push(newMessage);
+            device.messages.unshift(newMessage);
             device.messagesChanged();
         }
 
