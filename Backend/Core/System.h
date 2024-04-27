@@ -176,6 +176,8 @@ protected slots:
 
     void onSnReady();
 
+    void createLogDirectoryOnServer();
+
 signals:
     void snReady();
     void settingsReady(QVariantMap settings);

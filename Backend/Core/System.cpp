@@ -143,6 +143,22 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     downloaderTimer.setTimerType(Qt::PreciseTimer);
     downloaderTimer.setSingleShot(false);
 
+    connect(&mLogSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+        qWarning() << "process has encountered an error:" << error << mLogSender.readAllStandardError();
+    });
+    connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
+        if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
+            qWarning() << "process did not exit cleanly" << exitCode << exitStatus << mLogSender.readAllStandardError()
+                       << mLogSender.readAllStandardOutput();
+            return;
+        }
+        auto initialized = mLogSender.property("initialized");
+        if (!initialized.isValid() || !initialized.toBool()){
+            TRACE << "Folder created in server successfully";
+            mLogSender.setProperty("initialized", true);
+        }
+    });
+
     if (!serialNumber().isEmpty())
         onSnReady();
 }
@@ -387,8 +403,17 @@ void NUVE::System::sendLog()
         return;
     }
 
+
+    auto initialized = mLogSender.property("initialized");
+    if (!initialized.isValid() || !initialized.toBool()){
+        qWarning() << "Folder was not created successfully, trying again...";
+        createLogDirectoryOnServer();
+        emit alert("Server is not ready, try again later!");
+        return;
+    }
+
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp %2 %3@%4:%5").
+    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
@@ -992,9 +1017,14 @@ void NUVE::System::onSnReady()
 {
     emit snReady();
 
+    createLogDirectoryOnServer();
+}
+
+void NUVE::System::createLogDirectoryOnServer()
+{
     mLogRemoteFolder = m_logPath + serialNumber();
     // Create remote path in case it doesn't exist, needed once! with internet access
-    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh %2@%3 'mkdir -p %4'").
+    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
                          arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     mLogSender.start("/bin/bash", {"-c", createPath});
 }
