@@ -36,6 +36,8 @@ Item {
             if (popupQueue.length > 0) {
                 popupQueue[0].open();
             }
+
+            activeScreenSaver();
         }
     }
 
@@ -66,6 +68,8 @@ Item {
                 popup.open();
             }
         }
+
+        activeScreenSaver();
     }
 
     function closeAllPopups()
@@ -75,5 +79,18 @@ Item {
                                              popup.close();
                                          }
                                      })
+    }
+
+    //! Alerts must be seen from a distance by the user
+    function activeScreenSaver() {
+        let alertNotifPopup = _internal.popupQueue.find(popup => (popup instanceof AlertNotifPopup));
+
+        //! This function does not cause problems for TOF and system events.
+        if (alertNotifPopup) {
+            ScreenSaverManager.setInactive();
+        } else {
+            ScreenSaverManager.setActive();
+
+        }
     }
 }
