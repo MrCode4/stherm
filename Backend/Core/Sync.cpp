@@ -175,6 +175,19 @@ void Sync::pushAlertToServer(const QVariantMap &settings)
     sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/alerts")), requestData, m_setAlerts);
 }
 
+void Sync::ForgetDevice()
+{
+    mHasClient = false;
+    mSerialNumber = QString();
+
+    // Save the serial number in settings
+    QSettings setting;
+    setting.setValue(m_HasClientSetting, mHasClient);
+    setting.setValue(m_SerialNumberSetting, mSerialNumber);
+
+    emit snReady();
+}
+
 void Sync::processNetworkReply(QNetworkReply *netReply)
 {
     NetworkWorker::processNetworkReply(netReply);

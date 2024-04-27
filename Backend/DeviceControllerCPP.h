@@ -141,6 +141,8 @@ public:
     Q_INVOKABLE void setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovernerOption);
 
 
+    Q_INVOKABLE void forgetDevice();
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/

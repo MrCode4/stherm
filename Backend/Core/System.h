@@ -170,6 +170,9 @@ public:
 
     bool isManualMode();
 
+    //! Forget device and reboot it
+    Q_INVOKABLE void ForgetDevice();
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);

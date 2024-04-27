@@ -17,6 +17,9 @@ struct DeviceConfig
     void load();
     void save();
 
+    //! Forget Device
+    void ForgetDevice();
+
     uint32_t soft_v;
     uint32_t hard_v;
     uint32_t mode;

@@ -32,6 +32,8 @@ public:
     void pushSettingsToServer(const QVariantMap &settings);
     void pushAlertToServer(const QVariantMap &settings);
 
+    void ForgetDevice();
+
 signals:
     void snReady();
     void wiringReady();
