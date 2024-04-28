@@ -36,7 +36,7 @@ int DeviceAPI::checkSN()
     auto sn_config = m_system->getSN(_uid);
     if (!sn_config.second) {
 
-        qWarning() << "serial number empty: ";
+        qWarning() << "serial number empty: " << sn_config.first.c_str();
 
         // Staring first time setup
         m_hardware->setDefaultValues(_uid);
