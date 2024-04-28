@@ -286,8 +286,9 @@ I_DeviceController {
 
     function setInitialSetup(init: bool) {
         initialSetup = init;
+        //! we set to false elsewhere! i.e., in system
         if (init)
-            deviceControllerCPP.system.setIsInitialSetup(init);
+            deviceControllerCPP.system.setIsInitialSetup(true);
     }
 
     function updateEditMode(editMode : int, enable = true) {

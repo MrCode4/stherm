@@ -12,6 +12,7 @@ I_PopUp {
 
     /* Property Declaration
      * ****************************************************************************************/
+    //! in mandatory update user just can confirm updating! can not close or ignore!
     property bool mandatoryUpdate: false
 
     /* Object properties

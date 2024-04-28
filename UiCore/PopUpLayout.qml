@@ -73,6 +73,7 @@ Item {
     function closeAllPopups()
     {
         _internal.popupQueue.forEach((popup) => {
+                                         //! Avoid to close the UpdateNotificationPopup on mandatory update mode
                                          if (popup instanceof Popup && (!mandatoryUpdate || !(popup instanceof UpdateNotificationPopup))) {
                                              popup.close();
                                          }

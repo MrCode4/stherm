@@ -457,7 +457,7 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 
     mUpdateTimer.start();
 
-    // When is initial setup do not update Information!
+    // When is initial setup, skip update Information as we want to wait until its complete!
     if (!mIsInitialSetup)
         getUpdateInformation(true);
 
@@ -1146,6 +1146,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
             emit notifyNewUpdateAvailable();
     }
 
+    //! to enable checking update normally after first time checked!
     setIsInitialSetup(false);
 
     // Check all logs

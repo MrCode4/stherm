@@ -69,7 +69,7 @@ Item {
 
         function onShowHome()
         {
-            //! Avoid to close the SystemUpdatePage force update mode
+            //! Avoid to close the SystemUpdatePage on mandatory update mode
             if (!uiSession.deviceController.mandatoryUpdate || !(_mainStackView.currentItem instanceof SystemUpdatePage))
                 _mainStackView.pop(null) //! Pop all items except the first one which is _mainViewSw
 
