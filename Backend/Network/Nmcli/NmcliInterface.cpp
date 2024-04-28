@@ -11,6 +11,7 @@ NmcliInterface::NmcliInterface(QObject* parent)
     , mNmcliObserver { new NmcliObserver(this) }
     , mRefreshProcess { new QProcess(this) }
     , mWifiProcess { new QProcess(this) }
+    , mConnectedWifi { nullptr }
 {
     mRefreshProcess->setReadChannel(QProcess::StandardOutput);
     mWifiProcess->setReadChannel(QProcess::StandardOutput);
