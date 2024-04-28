@@ -24,6 +24,9 @@
 #define NC_ARG_FIELDS       "--fields"
 #define NC_WAIT_MSEC        500
 
+#define NC_REFERESH_ARGS    QStringList({ "--fields", "IN-USE,BSSID,SSID,SIGNAL,SECURITY" })
+#define NC_PRINT_MODE_ARGS  QStringList({ "--mode", "multiline", "--terse" })
+
 //! Some macros for messages recieved from nmcli
 #define NC_MSG_DEVICE_OFF               QString(": unavailable")
 #define NC_MSG_USING_CONNECTION         QString(": using connection ")

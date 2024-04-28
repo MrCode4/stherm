@@ -175,6 +175,19 @@ void Sync::pushAlertToServer(const QVariantMap &settings)
     sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/alerts")), requestData, m_setAlerts);
 }
 
+void Sync::ForgetDevice()
+{
+    mHasClient = false;
+    mSerialNumber = QString();
+    mContractorInfo = QVariantMap {};
+
+    // Save the serial number in settings
+    QSettings setting;
+    setting.setValue(m_HasClientSetting, mHasClient);
+    setting.setValue(m_SerialNumberSetting, mSerialNumber);
+    setting.setValue(m_ContractorSettings, mContractorInfo);
+}
+
 void Sync::processNetworkReply(QNetworkReply *netReply)
 {
     NetworkWorker::processNetworkReply(netReply);
@@ -323,7 +336,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
         if (method == m_getSN) {
             Q_EMIT snReady();
             QString error = "Unable to fetch the device serial number, Please check your internet connection: ";
-            emit alert(error + errorString);
+//            emit alert(error + errorString);
             qWarning() << error << errorString ;
         } else if (method == m_getContractorInfo) {
             Q_EMIT contractorInfoReady();

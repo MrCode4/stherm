@@ -14,6 +14,7 @@ I_PopUp {
      * ****************************************************************************************/
 
     property System system
+    property bool cancelEnable: true
 
     /* Object properties
      * ****************************************************************************************/
@@ -73,7 +74,7 @@ I_PopUp {
 
             Layout.alignment: Qt.AlignHCenter
             font.bold: true
-            visible: mainLay.counter > 0
+            visible: cancelEnable && mainLay.counter > 0
             text: "Cancel"
 
             onClicked: {
