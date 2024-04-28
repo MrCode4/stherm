@@ -261,9 +261,10 @@ void Scheme::resetDelays()
 
 void Scheme::AutoModeLoop()
 {
-    if (mCurrentTemperature > effectiveTemperature()) {
+    auto effectiveTemp = effectiveTemperature();
+    if (mCurrentTemperature > effectiveTemp) {
         CoolingLoop();
-    } else if (mCurrentTemperature < effectiveTemperature()) {
+    } else if (mCurrentTemperature < effectiveTemp) {
         HeatingLoop();
     }
 }
@@ -281,8 +282,9 @@ void Scheme::CoolingLoop()
         heatPump = true;
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::CoolingOnly: {
+        auto effectiveTemp = effectiveTemperature();
         TRACE_CHECK(false) << heatPump << mCurrentTemperature << effectiveTemperature();
-        if (mCurrentTemperature - effectiveTemperature() >= STAGE1_ON_RANGE) {
+        if (mCurrentTemperature - effectiveTemp >= STAGE1_ON_RANGE) {
             internalCoolingLoopStage1(heatPump);
         }
     } break;

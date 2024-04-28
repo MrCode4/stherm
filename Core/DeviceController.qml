@@ -356,6 +356,9 @@ I_DeviceController {
 
     function updateFan(mode: int, workingPerHour: int)
     {
+        if (device.fan.mode === mode && device.fan.workingPerHour === workingPerHour)
+            return;
+
         if (deviceControllerCPP?.setFan(mode, workingPerHour) ?? false) {
             // Update model
             device.fan.mode = mode;
