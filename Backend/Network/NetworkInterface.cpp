@@ -14,7 +14,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , mNmcliInterface { new NmcliInterface(this) }
     , mWifiInfos { mNmcliInterface->getWifis() }
     , mRequestedToConnectedWifi { nullptr }
-    , mHasInternet { true }
+    , mHasInternet { false }
     , mNamIsRunning { false }
     , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
                                                           "http://google.com")) }
