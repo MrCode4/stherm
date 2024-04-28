@@ -150,10 +150,9 @@ QtObject {
     {
         var msgIndex = device.messages.findIndex((element, index) => element === message);
         if (msgIndex > -1) {
-            var msgToRemove = device.messages.splice(msgIndex, 1);
+            // We can not destroy spliced object because it will cause a crash
+            device.messages.splice(msgIndex, 1);
             device.messagesChanged();
-            // may cause crash
-            //            msgToRemove.destroy();
         }
     }
 
@@ -182,7 +181,7 @@ QtObject {
         }
 
         function onConnectedWifiChanged() {
-                 checkInternetTimer.restart();
+            checkInternetTimer.restart();
         }
  
         //! wrong password alert.
@@ -225,7 +224,7 @@ QtObject {
 
     //! Check air quility
     property Connections airConditionWatcherCon: Connections {
-        target: uiSession.appModel
+        target: device
 
         function onCo2Changed() {
             if (device.co2 > AppSpec.airQualityPoor) {
