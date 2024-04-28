@@ -62,8 +62,8 @@ BasePageView {
             { "key": "Hardware version",    "value": "01" },
             { "key": "IPv4 Address",        "value": NetworkInterface.ipv4Address },
             { "key": "Send Log",            "value": "01", "type": "button"},
-            { "key": "Update NRF",          "value": "01", "type": "button", "visible": system.testMode },
             { "key": "Restart Device",      "value": "01", "type": "button" },
+            { "key": "Exit",                "value": "01", "type": "button", "visible": system.testMode },
         ]
         delegate: Item {
             width: ListView.view.width
@@ -121,9 +121,8 @@ BasePageView {
 
                 visible: modelData?.type === "button"
 
+                // main button of the row from model
                 ButtonInverted {
-                    id: sendLog
-
                     leftPadding: 8
                     rightPadding: 8
                     text: modelData.key
@@ -133,9 +132,10 @@ BasePageView {
                     }
                 }
 
+                //! additional button if available
                 ButtonInverted {
                     visible: (modelData.key === "Restart Device") && system.testMode
-                    text:  "Exit"
+                    text:  "Update NRF"
                     leftPadding: 8
                     rightPadding: 8
 
@@ -144,8 +144,9 @@ BasePageView {
                     }
                 }
 
+                //! additional button if available
                 ButtonInverted {
-                    visible: (modelData.key === "Restart Device") && system.testMode
+                    visible: (modelData.key === "Exit") && system.testMode
                     text: "Forget Device"
                     leftPadding: 8
                     rightPadding: 8
