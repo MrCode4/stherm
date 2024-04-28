@@ -164,6 +164,8 @@ BasePageView {
 
         if (key === "Forget Device") {
             deviceController.deviceControllerCPP.forgetDevice();
+            rebootPopup.cancelEnable = false;
+            rebootPopup.open();
 
         } else if (key === "Exit") {
             exitPopup.open();
@@ -172,6 +174,7 @@ BasePageView {
             deviceController.deviceControllerCPP.updateNRFFirmware();
 
         } else if (key === "Restart Device") {
+            rebootPopup.cancelEnable = true;
             rebootPopup.open();
 
         } else if (key === "Send Log") {

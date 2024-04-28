@@ -595,7 +595,6 @@ bool NUVE::System::isManualMode() {
 void NUVE::System::ForgetDevice()
 {
     mSync->ForgetDevice();
-    rebootDevice();
 }
 
 bool NUVE::System::updateSequenceOnStart()
@@ -1028,10 +1027,12 @@ void NUVE::System::onSnReady()
 
 void NUVE::System::createLogDirectoryOnServer()
 {
-    if (serialNumber().isEmpty())
+    auto sn = serialNumber();
+    // Check serial number
+    if (sn.isEmpty())
         return;
 
-    mLogRemoteFolder = m_logPath + serialNumber();
+    mLogRemoteFolder = m_logPath + sn;
     // Create remote path in case it doesn't exist, needed once! with internet access
     QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
                          arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);

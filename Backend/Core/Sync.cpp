@@ -179,13 +179,13 @@ void Sync::ForgetDevice()
 {
     mHasClient = false;
     mSerialNumber = QString();
+    mContractorInfo = QVariantMap {};
 
     // Save the serial number in settings
     QSettings setting;
     setting.setValue(m_HasClientSetting, mHasClient);
     setting.setValue(m_SerialNumberSetting, mSerialNumber);
-
-    emit snReady();
+    setting.setValue(m_ContractorSettings, mContractorInfo);
 }
 
 void Sync::processNetworkReply(QNetworkReply *netReply)
