@@ -384,6 +384,8 @@ Control {
                 // disable fetching sn again
                 startupSN.enabled = false;
                 snChecker.enabled = false;
+
+                deviceController.deviceControllerCPP.system.getUpdateInformation(true);
             }
         }
     }

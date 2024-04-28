@@ -170,6 +170,9 @@ public:
 
     bool isManualMode();
 
+    Q_INVOKABLE bool isInitialSetup();
+    Q_INVOKABLE void setIsInitialSetup(bool isInitailSetup);
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -289,6 +292,8 @@ private:
     bool mUpdateAvailable;
 
     bool mHasForceUpdate;
+
+    bool mIsInitialSetup;
 
     
     //! System on test mode or not
