@@ -594,10 +594,13 @@ bool NUVE::System::isManualMode() {
 
 void NUVE::System::ForgetDevice()
 {
+    mLastInstalledUpdateDate = {};
+    mIsManualUpdate = false;
+
     QSettings settings;
     settings.setValue(m_updateOnStartKey, false);
-    settings.setValue(m_InstalledUpdateDateSetting, {});
-    settings.setValue(m_IsManualUpdateSetting, false);
+    settings.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
+    settings.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
 
     mSync->ForgetDevice();
 }

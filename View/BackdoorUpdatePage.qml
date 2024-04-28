@@ -73,7 +73,7 @@ BasePageView {
 
                 Layout.alignment: Qt.AlignVCenter
                 font.bold: true
-                text: "   Find  "
+                text: "  Find  "
 
                 enabled: nameTextField.text.length > 0
 
@@ -89,7 +89,7 @@ BasePageView {
 
                 leftPadding: 8
                 rightPadding: 8
-                text: "By version"
+                text: "By Version"
 
                 onClicked: {
                     if (root.StackView.view) {

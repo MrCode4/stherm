@@ -170,7 +170,7 @@ public:
 
     bool isManualMode();
 
-    //! Forget device and reboot it
+    //! Forget device settings and sync settings
     Q_INVOKABLE void ForgetDevice();
 
 protected slots:
