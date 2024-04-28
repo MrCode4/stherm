@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.3.14 LANGUAGES CXX)
+project(Stherm VERSION 0.4.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
