@@ -81,6 +81,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mSync(sync),
     mUpdateAvailable (false),
     mHasForceUpdate(false),
+    mIsInitialSetup(false),
     mTestMode(false)
 {
 
@@ -122,10 +123,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     if (oldFormatDate.isValid())
         mLastInstalledUpdateDate = oldFormatDate.toString("dd MMM yyyy");
 
-    QTimer::singleShot(2000, this, [=]() {
-        checkPartialUpdate(true);
-    });
-
     connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::onSnReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
@@ -142,6 +139,22 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     // Check: The downloader has been open for more than 30 seconds and has not received any bytes
     downloaderTimer.setTimerType(Qt::PreciseTimer);
     downloaderTimer.setSingleShot(false);
+
+    connect(&mLogSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+        qWarning() << "process has encountered an error:" << error << mLogSender.readAllStandardError();
+    });
+    connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
+        if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
+            qWarning() << "process did not exit cleanly" << exitCode << exitStatus << mLogSender.readAllStandardError()
+                       << mLogSender.readAllStandardOutput();
+            return;
+        }
+        auto initialized = mLogSender.property("initialized");
+        if (!initialized.isValid() || !initialized.toBool()){
+            TRACE << "Folder created in server successfully";
+            mLogSender.setProperty("initialized", true);
+        }
+    });
 
     if (!serialNumber().isEmpty())
         onSnReady();
@@ -387,8 +400,17 @@ void NUVE::System::sendLog()
         return;
     }
 
+
+    auto initialized = mLogSender.property("initialized");
+    if (!initialized.isValid() || !initialized.toBool()){
+        qWarning() << "Folder was not created successfully, trying again...";
+        createLogDirectoryOnServer();
+        emit alert("Server is not ready, try again later!");
+        return;
+    }
+
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp %2 %3@%4:%5").
+    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
@@ -460,7 +482,9 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 
     mUpdateTimer.start();
 
-    getUpdateInformation(true);
+    // When is initial setup, skip update Information as we want to wait until its complete!
+    if (!mIsInitialSetup)
+        getUpdateInformation(true);
 
     getBackdoorInformation();
 }
@@ -565,6 +589,16 @@ bool NUVE::System::testMode() {
 
 bool NUVE::System::isManualMode() {
     return mStartedWithManualUpdate;
+}
+
+bool NUVE::System::isInitialSetup()
+{
+    return mIsInitialSetup;
+}
+
+void NUVE::System::setIsInitialSetup(bool isInitailSetup)
+{
+    mIsInitialSetup = isInitailSetup;
 }
 
 bool NUVE::System::updateSequenceOnStart()
@@ -992,9 +1026,14 @@ void NUVE::System::onSnReady()
 {
     emit snReady();
 
+    createLogDirectoryOnServer();
+}
+
+void NUVE::System::createLogDirectoryOnServer()
+{
     mLogRemoteFolder = m_logPath + serialNumber();
     // Create remote path in case it doesn't exist, needed once! with internet access
-    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh %2@%3 'mkdir -p %4'").
+    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
                          arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     mLogSender.start("/bin/bash", {"-c", createPath});
 }
@@ -1106,12 +1145,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     auto currentVersion = qApp->applicationVersion();
 
 
-    // Compare versions lexicographically
-    // installableVersionKey > currentVersion
-    if (isVersionNewer(installableVersionKey, currentVersion)) {
-        setUpdateAvailable(true);
-        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
-    }
 
     auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
     auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
@@ -1131,10 +1164,20 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
             mLastInstalledUpdateDate = mLatestVersionDate;
 
         emit latestVersionChanged();
+    }
+
+    // Compare versions lexicographically
+    // installableVersionKey > currentVersion
+    if (isVersionNewer(installableVersionKey, currentVersion)) {
+        setUpdateAvailable(true);
+        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
 
         if (notifyUser  && !mIsManualUpdate)
             emit notifyNewUpdateAvailable();
     }
+
+    //! to enable checking update normally after first time checked!
+    setIsInitialSetup(false);
 
     // Check all logs
     updateLog(mUpdateJsonObject);
