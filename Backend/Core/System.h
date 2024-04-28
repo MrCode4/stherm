@@ -173,6 +173,9 @@ public:
     Q_INVOKABLE bool isInitialSetup();
     Q_INVOKABLE void setIsInitialSetup(bool isInitailSetup);
 
+    //! Forget device settings and sync settings
+    Q_INVOKABLE void ForgetDevice();
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);

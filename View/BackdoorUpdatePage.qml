@@ -61,18 +61,43 @@ BasePageView {
             }
         }
 
-        ButtonInverted {
-            id: findBtn
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter
 
             Layout.columnSpan: 2
-            Layout.alignment: Qt.AlignHCenter
-            font.bold: true
-            text: "   Find  "
+            spacing: mainLayout.columnSpacing
 
-            enabled: nameTextField.text.length > 0
 
-            onClicked: {
-                findFile();
+            ButtonInverted {
+                id: findBtn
+
+                Layout.alignment: Qt.AlignVCenter
+                font.bold: true
+                text: "  Find  "
+
+                enabled: nameTextField.text.length > 0
+
+                onClicked: {
+                    findFile();
+                }
+            }
+
+            ButtonInverted {
+                id: installVersion
+
+                Layout.alignment: Qt.AlignVCenter
+
+                leftPadding: 8
+                rightPadding: 8
+                text: "By Version"
+
+                onClicked: {
+                    if (root.StackView.view) {
+                        root.StackView.view.push("qrc:/Stherm/View/Test/SystemUpdateOnTestModePage.qml", {
+                                                     "uiSession": root.uiSession
+                                                 });
+                    }
+                }
             }
         }
 

@@ -92,8 +92,8 @@ BasePageView {
             id: _tempSlider
             Layout.fillWidth: true
 
-            from: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minimumTemperatureF : AppSpec.minimumTemperatureC) ?? AppSpec.minimumTemperatureF
-            to: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.maximumTemperatureF : AppSpec.maximumTemperatureC) ?? AppSpec.maximumTemperatureF
+            from: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.vacationMinimumTemperatureF : AppSpec.minimumTemperatureC) ?? AppSpec.vacationMinimumTemperatureC
+            to: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.vacationMaximumTemperatureF : AppSpec.maximumTemperatureC) ?? AppSpec.vacationMaximumTemperatureC
 
             first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit)
             second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit)

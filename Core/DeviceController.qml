@@ -993,4 +993,13 @@ I_DeviceController {
             console.warn("setting failed");
         }
     }
+
+    function forgetDevice()
+    {
+        // Remove the save files from the directory.
+        QSFileIO.removeFile(uiSession.recoveryConfigFilePath);
+        QSFileIO.removeFile(uiSession.configFilePath);
+
+        deviceControllerCPP.forgetDevice();
+    }
 }

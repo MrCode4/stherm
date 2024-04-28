@@ -46,6 +46,9 @@ public:
         return QString::fromStdString(_uid);
     }
 
+    //! Forget device configs
+    void ForgetDevice();
+
 signals:
     void uidChanged();
 

@@ -140,6 +140,8 @@ public:
     Q_INVOKABLE void nightModeControl(bool start);
     Q_INVOKABLE void setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovernerOption);
 
+    //! Forget device and system settings
+    Q_INVOKABLE void forgetDevice();
 
 Q_SIGNALS:
     /* Public Signals
