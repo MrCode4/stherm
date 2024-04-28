@@ -336,7 +336,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
         if (method == m_getSN) {
             Q_EMIT snReady();
             QString error = "Unable to fetch the device serial number, Please check your internet connection: ";
-            emit alert(error + errorString);
+//            emit alert(error + errorString);
             qWarning() << error << errorString ;
         } else if (method == m_getContractorInfo) {
             Q_EMIT contractorInfoReady();

@@ -60,9 +60,3 @@ void NUVE::DeviceConfig::save()
     config.setValue("uid", QString::fromStdString(uid));
     config.setValue("serial_number", QString::fromStdString(serial_number));
 }
-
-void NUVE::DeviceConfig::ForgetDevice() {
-    uid = "";
-    serial_number = "";
-    save();
-}

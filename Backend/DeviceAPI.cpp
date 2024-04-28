@@ -65,5 +65,5 @@ NUVE::Timing* DeviceAPI::timing() {
 }
 
 void DeviceAPI::ForgetDevice() {
-    m_deviceConfig.ForgetDevice();
+    m_deviceConfig.initialise("");
 }

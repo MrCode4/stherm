@@ -163,7 +163,7 @@ BasePageView {
     function buttonCallbacks(key: string) {
 
         if (key === "Forget Device") {
-            deviceController.deviceControllerCPP.forgetDevice();
+            deviceController.forgetDevice();
             rebootPopup.cancelEnable = false;
             rebootPopup.open();
 
