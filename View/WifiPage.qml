@@ -91,7 +91,7 @@ BasePageView {
         Switch {
             id: _wifiOnOffSw
 
-            enabled: false && !NetworkInterface.isRunning
+            enabled: false && !NetworkInterface.busyRefreshing
             visible: false
             checked: NetworkInterface.deviceIsOn
             onToggled: {
@@ -112,14 +112,14 @@ BasePageView {
             ToolButton {
                 id: _refereshBtn
                 anchors.centerIn: parent
-                visible: !NetworkInterface.isRunning
+                visible: !NetworkInterface.busyRefreshing
                 contentItem: RoniaTextIcon {
                     text: "\uf2f9" //! rotate-right
                 }
 
                 onClicked: {
                     //! Force refresh
-                    if (NetworkInterface.deviceIsOn && !NetworkInterface.isRunning) {
+                    if (NetworkInterface.deviceIsOn && !NetworkInterface.busyRefreshing) {
                         NetworkInterface.refereshWifis(true);
                     }
                 }
@@ -132,7 +132,7 @@ BasePageView {
                     margins: 4
                 }
                 visible: running
-                running: NetworkInterface.isRunning
+                running: NetworkInterface.busyRefreshing
             }
         }
     }
@@ -235,7 +235,7 @@ BasePageView {
 
             //! Manual button
             ButtonInverted {
-                text: _wifisRepeater.currentItem?.wifi.connected ? "Forget" : "Manual"
+                text: _wifisRepeater.currentItem?.wifi?.connected ? "Forget" : "Manual"
                 onClicked: {
                     if (text === "Manual") {
                         if (root.StackView.view) {
@@ -264,7 +264,7 @@ BasePageView {
 
                         //! Check if password for this wifi is saved.
                         if (NetworkInterface.isWifiSaved(wifi)) {
-                            NetworkInterface.connectSavedWifi(wifi);
+                            NetworkInterface.connectWifi(wifi, "");
                         } else {
                             var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
                             var isSaved = NetworkInterface.isWifiSaved(wifi);
