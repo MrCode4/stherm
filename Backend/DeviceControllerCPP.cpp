@@ -705,8 +705,9 @@ bool DeviceControllerCPP::checkNRFFirmwareVersion()
     TRACE << "NRF  Version: " << nrfSW << " - Application version: " << appVersion;
 
     bool firmwareUpdated = nrfSW == "01.10-RC1";
-    bool appHasFirmwreUpdate = appVersion.at(0).toInt() >= 0 &&
-                               appVersion.at(1).toInt() >= 3 && appVersion.at(2).toInt() >= 6;
+    bool appHasFirmwreUpdate = appVersion.at(0).toInt() > 0 ||
+                               (appVersion.at(0).toInt() == 0 && appVersion.at(1).toInt() > 3) ||
+                               (appVersion.at(0).toInt() == 0 && appVersion.at(1).toInt() == 3 && appVersion.at(2).toInt() >= 6);
 
     // The app version should be higher than 0.3.6 if the nRF SW version is 01.10RC1
     // nRF SW version is not 01.10RC1, app Should not be greater than 0.3.5
