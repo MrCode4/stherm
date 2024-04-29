@@ -7,52 +7,9 @@
 #include <QNetworkAccessManager>
 #include <QTimer>
 
-class NmcliInterface;
-class NmcliObserver;
+#include "WifiInfo.h"
+#include "Nmcli/NmcliInterface.h"
 
-/*!
- * \brief The WifiInfo class holds information of a wifi network
- */
-class WifiInfo : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(bool     connected       MEMBER mConnected       NOTIFY connectedChanged)
-    Q_PROPERTY(bool     isConnecting    MEMBER mIsConnecting    NOTIFY isConnectingChanged)
-    Q_PROPERTY(int      strength        MEMBER mStrength        NOTIFY strengthChanged)
-    Q_PROPERTY(QString  ssid            MEMBER mSsid            NOTIFY ssidChanged)
-    Q_PROPERTY(QString  bssid           MEMBER mBssid           NOTIFY bssidChanged)
-    Q_PROPERTY(QString  security        MEMBER mSecurity        NOTIFY securityChanged)
-    QML_ELEMENT
-
-public:
-    explicit WifiInfo(QObject* parent=nullptr) : QObject(parent) {}
-    WifiInfo(bool connected, const QString& ssid, const QString& bssid, int strength,
-             const QString& security, QObject* parent=nullptr)
-        : QObject(parent)
-        , mConnected (connected)
-        , mStrength(strength)
-        , mSsid(ssid)
-        , mBssid(bssid)
-        , mSecurity(security)
-        , mIsConnecting(false)
-        {
-        };
-
-    bool        mConnected;
-    bool        mIsConnecting;
-    int         mStrength;
-    QString     mSsid;
-    QString     mBssid;
-    QString     mSecurity;
-
-signals:
-    void        connectedChanged();
-    void        strengthChanged();
-    void        ssidChanged();
-    void        bssidChanged();
-    void        securityChanged();
-    void        isConnectingChanged();
-};
 
 /*!
  * \brief The NetworkInterface class provides an interface to fetch all avialable wifi connections
@@ -65,7 +22,8 @@ class NetworkInterface : public QObject
     Q_OBJECT
 
     Q_PROPERTY(QQmlListProperty<WifiInfo> wifis READ wifis           NOTIFY wifisChanged)
-    Q_PROPERTY(bool isRunning                   READ isRunning       NOTIFY isRunningChanged)
+    Q_PROPERTY(bool busyRefreshing              READ busyRefreshing  NOTIFY busyRefreshingChanged)
+    Q_PROPERTY(bool busy                        READ busy            NOTIFY busyChanged)
     Q_PROPERTY(WifiInfo* connectedWifi          READ connectedWifi   NOTIFY connectedWifiChanged)
     Q_PROPERTY(bool deviceIsOn                  READ deviceIsOn      NOTIFY deviceIsOnChanged)
     Q_PROPERTY(bool hasInternet                 READ hasInternet     NOTIFY hasInternetChanged)
@@ -74,16 +32,24 @@ class NetworkInterface : public QObject
     QML_ELEMENT
     QML_SINGLETON
 
-    using WifiInfoList = QQmlListProperty<WifiInfo>;
+    using WifisQmlList = QQmlListProperty<WifiInfo>;
 
 public:
     explicit NetworkInterface(QObject *parent = nullptr);
 
     /* Public methods
      * ****************************************************************************************/
-    WifiInfoList        wifis();
+    WifisQmlList        wifis();
 
-    bool                isRunning();
+    /*!
+     * \brief see \ref NmcliInterface::busyRefreshing()
+     */
+    bool    busyRefreshing() const { return mNmcliInterface && mNmcliInterface->busyRefreshing(); }
+
+    /*!
+     * \brief see \ref NmcliInterface::busy()
+     */
+    bool    busy() const { return mNmcliInterface && mNmcliInterface->busy(); }
 
     WifiInfo*           connectedWifi() const;
 
@@ -94,8 +60,7 @@ public:
     QString             ipv4Address() const;
 
     Q_INVOKABLE void    refereshWifis(bool forced = false);
-    Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password);
-    Q_INVOKABLE void    connectSavedWifi(WifiInfo* wifiInfo);
+    Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password = "");
     Q_INVOKABLE void    disconnectWifi(WifiInfo* wifiInfo);
     Q_INVOKABLE void    forgetWifi(WifiInfo* wifiInfo);
     Q_INVOKABLE bool    isWifiSaved(WifiInfo* wifiInfo);
@@ -113,8 +78,8 @@ public:
     /* Private methods and slots
      * ****************************************************************************************/
 private:
-    static WifiInfo*    networkAt(WifiInfoList* list, qsizetype index);
-    static qsizetype    networkCount(WifiInfoList* list);
+    static WifiInfo*    networkAt(WifisQmlList* list, qsizetype index);
+    static qsizetype    networkCount(WifisQmlList* list);
 
     /*!
      * \brief setHasInternet
@@ -122,24 +87,16 @@ private:
      */
     inline void         setHasInternet(bool hasInternet);
 
-    /*!
-     * \brief setConnectedWifiInfo
-     * \param wifiInfo
-     */
-    inline void         setConnectedWifiInfo(WifiInfo* wifiInfo);
-
 private slots:
     void                onErrorOccured(int error); //! error is: NmcliInterface::Error
-    void                onWifiListRefreshed(const QList<QMap<QString, QVariant>>& wifis);
-    void                onWifiConnected(const QString& ssid);
-    void                onWifiDisconnected();
     void                checkHasInternet();
 
     /* Signals
      * ****************************************************************************************/
 signals:
     void                wifisChanged();
-    void                isRunningChanged();
+    void                busyRefreshingChanged();
+    void                busyChanged();
     void                connectedWifiChanged();
     void                deviceIsOnChanged();
     void                hasInternetChanged();
@@ -161,11 +118,6 @@ private:
      * \brief mNmcliInterface An instance of NmcliInterface
      */
     NmcliInterface*         mNmcliInterface;
-
-    /*!
-     * \brief mNmcliObserver
-     */
-    NmcliObserver*          mNmcliObserver;
 
     /*!
      * \brief mDeviceIsOn Holds whether wifi device is on or off
@@ -196,9 +148,10 @@ private:
     const QUrl              cCheckInternetAccessUrl;
 
     /*!
-     * \brief mWifiInfos List of all the wifis
+     * \brief mWifiInfos List of all the wifis. This is just a shortcut for accessing
+     * NmcliInterface::wifis
      */
-    QList<WifiInfo*>        mWifiInfos;
+    QList<WifiInfo*>&       mWifiInfos;
 
     /*!
      * \brief mNam QNetworkRequestManager that is used to check internet access
@@ -209,11 +162,6 @@ private:
      *  \brief mNamIsRunning Whether mNam is running a request
      */
     bool                    mNamIsRunning;
-
-    /*!
-     * \brief mConnectedWifiInfo Currently connected wifi
-     */
-    WifiInfo*               mConnectedWifiInfo;
 
     /*!
      * \brief mRequestedToConnectedWifi The wifi that is requested to connect to
@@ -227,21 +175,4 @@ inline void NetworkInterface::setHasInternet(bool hasInternet)
         mHasInternet = hasInternet;
         emit hasInternetChanged();
     }
-}
-
-inline void NetworkInterface::setConnectedWifiInfo(WifiInfo* wifiInfo)
-{
-    if (mConnectedWifiInfo == wifiInfo) {
-        return;
-    }
-
-    if (mConnectedWifiInfo) {
-        mConnectedWifiInfo->setProperty("connected", false);
-    }
-
-    mConnectedWifiInfo = wifiInfo;
-    if (mConnectedWifiInfo) {
-        mConnectedWifiInfo->setProperty("connected", true);
-    }
-    emit connectedWifiChanged();
 }

@@ -17,9 +17,13 @@ BasePageView {
 
     property string installedVesion: ""
 
+    property bool mandatoryUpdate: deviceController.mandatoryUpdate;
+
     /* Object properties
      * ****************************************************************************************/
     title: "System Update"
+
+    backButtonVisible: !mandatoryUpdate
 
     //! Send request to get update information from server
     Component.onCompleted: {

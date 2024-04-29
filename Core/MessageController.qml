@@ -33,16 +33,20 @@ QtObject {
         onTriggered: {
             activeAlerts = true;
 
-            // Show messages that isRead is false
-            device.messages.forEach(message => {
-                                    if (!message.isRead) {
-                                            newMessageReceived(message);
-                                        }
-                                    });
+            // Remove the ability to show unread alerts
+            if (false) {
+                // Show messages that isRead is false
+                device.messages.forEach(message => {
+                                            if (!(message?.isRead ?? true)) {
+                                                newMessageReceived(message);
+                                            }
+                                        });
+            }
         }
     }
 
     //! Check wifi/internet after model is loaded
+    //! And start it when wifi or Internet disconnected
     property Timer checkInternetTimer: Timer {
         running: device
         repeat: false
@@ -60,6 +64,9 @@ QtObject {
     signal newMessageReceived(Message message)
 
     signal showMessage(Message message)
+
+    //! Show wifi/Internet connection alert.
+    signal showWifiInternetAlert(message: string, dateTime: string)
 
     /* Methods
      * ****************************************************************************************/
@@ -103,16 +110,27 @@ QtObject {
             return;
         }
 
-        var newMessage = QSSerializer.createQSObject("Message", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
-        newMessage._qsRepo = AppCore.defaultRepo;
+        var newMessage;
+        if (type === Message.Type.SystemNotification) {
+            // To avoid saving to file
+            newMessage = QSSerializer.createQSObject("Message", ["Stherm", "QtQuickStream"])
+            newMessage._qsRepo = null;
+
+        } else {
+            newMessage = QSSerializer.createQSObject("Message", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
+            newMessage._qsRepo = AppCore.defaultRepo;
+        }
+
         newMessage.type = type;
         newMessage.message = message;
         newMessage.datetime = datetime;
         newMessage.isRead = isRead;
         newMessage.sourceType = sourceType;
 
-        device.messages.push(newMessage);
-        device.messagesChanged();
+        if (type !== Message.Type.SystemNotification) {
+            device.messages.unshift(newMessage);
+            device.messagesChanged();
+        }
 
         newMessageReceived(newMessage);
     }
@@ -132,10 +150,9 @@ QtObject {
     {
         var msgIndex = device.messages.findIndex((element, index) => element === message);
         if (msgIndex > -1) {
-            var msgToRemove = device.messages.splice(msgIndex, 1);
+            // We can not destroy spliced object because it will cause a crash
+            device.messages.splice(msgIndex, 1);
             device.messagesChanged();
-            // may cause crash
-            //            msgToRemove.destroy();
         }
     }
 
@@ -158,17 +175,22 @@ QtObject {
         target: NetworkInterface
 
         function onHasInternetChanged() {
-           checkInternetConnection();
+            //! If wifi is connected, internet will be check after one minute.
+           if (NetworkInterface.connectedWifi)
+               checkInternetTimer.restart();
         }
 
         function onConnectedWifiChanged() {
-            checkWifiConnection();
+            checkInternetTimer.restart();
         }
  
         //! wrong password alert.
         function onIncorrectWifiPassword() {
             var message = "Wrong password, please try again.";
             addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+
+            // After password is wrong, Wifi and internet check afetr one minute.
+            checkInternetTimer.restart();
         }
     }
 
@@ -202,7 +224,7 @@ QtObject {
 
     //! Check air quility
     property Connections airConditionWatcherCon: Connections {
-        target: uiSession.appModel
+        target: device
 
         function onCo2Changed() {
             if (device.co2 > AppSpec.airQualityPoor) {
@@ -287,7 +309,7 @@ QtObject {
     function checkWifiConnection() : bool {
         if (!NetworkInterface.connectedWifi) {
             var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
-            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+            showWifiInternetAlert(message, (new Date()).toLocaleString());
             return false;
         }
 
@@ -297,7 +319,7 @@ QtObject {
     function checkInternetConnection() : bool {
         if (!NetworkInterface.hasInternet) {
             var message = "No internet connection. Please check your internet connection.";
-            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+            showWifiInternetAlert(message, (new Date()).toLocaleString());
             return false;
         }
         return true;

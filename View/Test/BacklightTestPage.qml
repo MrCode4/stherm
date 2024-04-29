@@ -31,27 +31,15 @@ BacklightPage {
             //                               "uiSession": uiSession
             //                           })
 
-            // Skip Internal Sensor Test because it is added at the beginning as an automated test
-            //_root.StackView.view.push("qrc:/Stherm/View/Test/InternalSensorTestPage.qml", {
-            //                              "uiSession": uiSession
-            //                          })
-
-            if (deviceController.startMode !== 0) {
-                _root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
-                                             "uiSession": uiSession
+            _root.StackView.view.push("qrc:/Stherm/View/Test/InternalSensorTestPage.qml", {
+                                          "uiSession": uiSession
                                          })
-            } else {
-                //! Test mode enabled with GPIO as there is no ti board connected
-                _root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
-                                              "uiSession": uiSession
-                                          })
-            }
         }
     }
 
     ConfirmPopup {
         id: popup
-        closeButtonVisible: false
+        closeButtonEnabled: false
         closePolicy: Popup.NoAutoClose
         message: "Backlight test"
         detailMessage: "Was the backlight working as<br>expected when adjusting the values"

@@ -29,6 +29,14 @@ Item {
         function onShowMessage(message: Message) {
             showMessagePopup(message);
         }
+
+        function onShowWifiInternetAlert(message: string, dateTime: string) {
+            wifiInternetConnectionAlert.message.message = message;
+            wifiInternetConnectionAlert.message.datetime = dateTime;
+
+            //! Ask PopUpLayout to open popup
+            uiSession.popupLayout.displayPopUp(wifiInternetConnectionAlert);
+        }
     }
 
     Component {
@@ -38,17 +46,27 @@ Item {
             uiSession: root.uiSession
 
             onClosed: {
-                message.isRead = true;
-
-                if (messageController && message.type === Message.Type.SystemNotification) {
-                    messageController.removeMessage(message);
+                if (messageController && message && message.type !== Message.Type.SystemNotification) {
+                    message.isRead = true;
+                    uiSession.deviceController.pushSettings();
                 }
 
-                uiSession.deviceController.pushSettings();
 
                 destroy(this);
             }
         }
+    }
+
+    //! Witi and Internet connection alerts
+    AlertNotifPopup {
+        id: wifiInternetConnectionAlert
+
+        uiSession: root.uiSession
+
+        message: Message {
+            type: Message.Type.SystemNotification
+        }
+
     }
 
     /* Functions
@@ -58,6 +76,9 @@ Item {
         //! \todo This will later be shown using PopUpLayout to be able to show multiple message
         //! popups on top of each other.
 
+        if (!message)
+            return;
+
         //! Create an instance of AlertNotifPopup
         var newAlertPopup = _messagePopupCompo.createObject(root, {
                                                                 "message": message
@@ -65,7 +86,7 @@ Item {
 
         if (newAlertPopup) {
             //! Ask PopUpLayout to open popup
-            uiSession.popupLayout.displayPopUp(newAlertPopup, false);
+            uiSession.popupLayout.displayPopUp(newAlertPopup);
         }
     }
 }

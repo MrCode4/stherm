@@ -24,9 +24,6 @@ Popup {
     //! Whether header bar is visible or not
     property bool                       titleBar:           true
 
-    //! Whether the x (close) button is visible or not
-    property bool                       closeButtonVisible: true
-
     //! Title of popup
     property string                     title:              "Popup"
 
@@ -38,6 +35,8 @@ Popup {
 
     //! Popup content item
     default property list<QtObject>     contents
+
+    property bool closeButtonEnabled: true
 
     /* Object Properties
      * ****************************************************************************************/
@@ -85,9 +84,8 @@ Popup {
             }
 
             ToolButton {
-                visible: _popup.closeButtonVisible
                 Layout.rightMargin: -_popup.rightPadding + 4
-
+                visible: closeButtonEnabled
                 contentItem: RoniaTextIcon {
                     font.pointSize: Application.font.pointSize * 1.2
                     text: FAIcons.xmark

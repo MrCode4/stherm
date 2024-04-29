@@ -27,7 +27,7 @@ I_PopUp {
     /* Object properties
      * ****************************************************************************************/
     title: ""
-    closeButtonVisible: false
+    closeButtonEnabled: false
     closePolicy: Popup.NoAutoClose
 
     /* Children

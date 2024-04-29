@@ -14,6 +14,8 @@ Item {
     //! Is there any popup
     readonly property bool isTherePopup: _internal.popupQueue.length > 0
 
+    property bool mandatoryUpdate: false
+
     /* Children
      * ****************************************************************************************/
     QtObject {
@@ -36,6 +38,8 @@ Item {
             if (popupQueue.length > 0) {
                 popupQueue[0].open();
             }
+
+            checkScreenSaver();
         }
     }
 
@@ -55,7 +59,7 @@ Item {
 
         if (hightPriority) {
             //! Disply it right away
-            _internal.popupQueue.push(popup);
+            _internal.popupQueue.unshift(popup);
             _internal.popupQueueChanged();
             popup.open();
         } else {
@@ -66,14 +70,32 @@ Item {
                 popup.open();
             }
         }
+
+        checkScreenSaver();
     }
 
     function closeAllPopups()
     {
         _internal.popupQueue.forEach((popup) => {
-                                         if (popup instanceof Popup) {
+                                         //! Avoid to close the UpdateNotificationPopup on mandatory update mode
+                                         //! Avoid to close the AlertNotifPopup
+                                         if (!(popup instanceof AlertNotifPopup) && popup instanceof Popup &&
+                                                (!mandatoryUpdate || !(popup instanceof UpdateNotificationPopup))) {
                                              popup.close();
                                          }
                                      })
+    }
+
+    //! Alerts must be seen from a distance by the user
+    function checkScreenSaver() {
+        let alertNotifPopup = _internal.popupQueue.find(popup => (popup instanceof AlertNotifPopup));
+
+        //! This function should not cause problems for TOF and system events.
+        if (alertNotifPopup) {
+            ScreenSaverManager.setInactive();
+        } else {
+            ScreenSaverManager.setActive();
+
+        }
     }
 }

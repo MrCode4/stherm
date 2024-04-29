@@ -29,7 +29,7 @@ ToolButton {
             anchors.margins: 2
 
             visible: uiSession?.schedulesController?.runningScheduleEnabled ?? false
-            color: white
+            color: "white"
             width: parent.width / 2 - 2
             height: width
             radius: width / 2

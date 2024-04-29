@@ -61,15 +61,14 @@ BasePageView {
             { "key": "Software version",    "value": appVesion },
             { "key": "Hardware version",    "value": "01" },
             { "key": "IPv4 Address",        "value": NetworkInterface.ipv4Address },
-            { "key": "Send Log",            "value": "01", "type": "button" },
+            { "key": "Send Log",            "value": "01", "type": "button"},
             { "key": "Restart Device",      "value": "01", "type": "button" },
-            { "key": "Update NRF",          "value": "02", "type": "button" },
-            { "key": "Exit",                "value": "02", "type": "button" },
+            { "key": "Exit",                "value": "01", "type": "button", "visible": system.testMode },
         ]
         delegate: Item {
             width: ListView.view.width
             height: visible ? Style.delegateHeight * 0.8 : 0
-            visible: (modelData.key !== "Exit" && modelData.key !== "Update NRF" ) || system.testMode;
+            visible: modelData?.visible ?? true
 
             RowLayout {
                 id: textContent
@@ -120,69 +119,69 @@ BasePageView {
 
                 anchors.centerIn: parent
 
-                ButtonInverted {
-                    id: sendLog
+                visible: modelData?.type === "button"
 
-                    visible: modelData?.type === "button" && modelData.key === "Send Log"
+                // main button of the row from model
+                ButtonInverted {
                     leftPadding: 8
                     rightPadding: 8
                     text: modelData.key
 
                     onClicked: {
-                        logBusyPop.open();
+                        buttonCallbacks(modelData.key);
                     }
                 }
 
+                //! additional button if available
                 ButtonInverted {
-                    id: rebootDevice
-
-                    visible: modelData?.type === "button" && modelData.key === "Restart Device"
+                    visible: (modelData.key === "Restart Device") && system.testMode
+                    text:  "Update NRF"
                     leftPadding: 8
                     rightPadding: 8
-                    text: modelData.key
 
                     onClicked: {
-                        rebootPopup.open();
+                        buttonCallbacks(text);
                     }
                 }
 
+                //! additional button if available
                 ButtonInverted {
-                    id: installVersion
-
-                    visible: rebootDevice.visible && deviceController.deviceControllerCPP.system.testMode
+                    visible: (modelData.key === "Exit") && system.testMode
+                    text: "Forget Device"
                     leftPadding: 8
                     rightPadding: 8
-                    text: "Reset to version"
 
                     onClicked: {
-                        if (root.StackView.view) {
-                            root.StackView.view.push("qrc:/Stherm/View/Test/SystemUpdateOnTestModePage.qml", {
-                                                         "uiSession": root.uiSession
-                                                     });
-                        }
+                        buttonCallbacks(text);
                     }
                 }
             }
 
-            ButtonInverted {
-
-                anchors.centerIn: parent
-
-                visible: modelData?.type === "button" && (modelData.key === "Exit" || modelData.key === "Update NRF")
-                leftPadding: 8
-                rightPadding: 8
-                text: "   " + modelData.key + "   "
-
-                onClicked: {
-                    if (modelData.key === "Exit")
-                        exitPopup.open();
-                    else if (modelData.key === "Update NRF")
-                        deviceController.deviceControllerCPP.updateNRFFirmware();
-                }
-            }
         }
     }
 
+    //! Button callbacks
+    function buttonCallbacks(key: string) {
+
+        if (key === "Forget Device") {
+            deviceController.forgetDevice();
+            rebootPopup.cancelEnable = false;
+            rebootPopup.open();
+
+        } else if (key === "Exit") {
+            exitPopup.open();
+
+        } else if (key === "Update NRF") {
+            deviceController.deviceControllerCPP.updateNRFFirmware();
+
+        } else if (key === "Restart Device") {
+            rebootPopup.cancelEnable = true;
+            rebootPopup.open();
+
+        } else if (key === "Send Log") {
+            logBusyPop.open();
+        }
+    }
 
     //! Reboot popup with count down timer to send reboot request to system
     RebootDevicePopup {

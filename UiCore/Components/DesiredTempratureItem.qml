@@ -484,7 +484,7 @@ Control {
                 target: coolHeatLbl
                 opacity: 0.65
                 y: leftTempLabel.y - coolHeatLbl.height
-                text: "Cool to"
+                text: "Heat to"
             }
         },
 
@@ -509,7 +509,7 @@ Control {
                 target: coolHeatLbl
                 opacity: 0.65
                 y: rightTempLabel.y - coolHeatLbl.height
-                text: "Heat to"
+                text: "Cool to"
             }
         }
     ]

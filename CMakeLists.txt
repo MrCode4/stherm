@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.3.14 LANGUAGES CXX)
+project(Stherm VERSION 0.4.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -327,13 +327,13 @@ qt6_add_qml_module(appStherm
         Backend/Device/SystemAccessories.h
         Backend/Device/SystemAccessories.cpp
 
-        Backend/Nmcli/Nmcli.h
-        Backend/Nmcli/NmcliObserver.h
-        Backend/Nmcli/NmcliObserver.cpp
-        Backend/Nmcli/NmcliInterface.h
-        Backend/Nmcli/NmcliInterface.cpp
-        Backend/NetworkInterface.h
-        Backend/NetworkInterface.cpp
+        Backend/Network/Nmcli/Nmcli.h
+        Backend/Network/Nmcli/NmcliObserver.h
+        Backend/Network/Nmcli/NmcliObserver.cpp
+        Backend/Network/Nmcli/NmcliInterface.h
+        Backend/Network/Nmcli/NmcliInterface.cpp
+        Backend/Network/NetworkInterface.h
+        Backend/Network/NetworkInterface.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
@@ -385,6 +385,7 @@ qt6_add_qml_module(appStherm
         update_fw_nrf.sh
         update_fw_nrf_seamless.sh
         nrf_fw_update.zip
+        SOURCES Backend/Network/WifiInfo.h Backend/Network/WifiInfo.cpp
 )
 
 if (DEBUG_MODE)
@@ -409,6 +410,10 @@ target_compile_definitions(appStherm PRIVATE
 
 target_link_directories(appStherm PRIVATE
     ${QT_QML_OUTPUT_DIRECTORY}/Ronia
+)
+
+target_include_directories(appStherm PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Network
 )
 
 target_link_libraries(appStherm

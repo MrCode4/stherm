@@ -23,7 +23,7 @@ I_PopUp {
     /* Object properties
      * ****************************************************************************************/
     title: "Test failed"
-    closeButtonVisible: false
+    closeButtonEnabled: false
     closePolicy: Popup.NoAutoClose
 
     /* Children

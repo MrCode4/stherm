@@ -19,9 +19,14 @@ I_DeviceController {
 
     property int editMode: AppSpec.EMNone
 
-    property bool initalSetup: false;
+    property bool initialSetup: false;
 
-    property var uiSession
+    //! mandatory update
+    //! Set to true when in initial setup exist new update
+    //! more usage in future like force update with permission
+    property bool mandatoryUpdate: false;
+
+    property var  uiSession
 
     //! Night mode brighness when screen saver is off.
     property real nightModeBrightness: -1
@@ -197,7 +202,7 @@ I_DeviceController {
 
     property Timer  settingsLoader: Timer {
         repeat: true;
-        running: !initalSetup;
+        running: !initialSetup;
         interval: 5000;
         onTriggered:
         {
@@ -280,7 +285,10 @@ I_DeviceController {
      * ****************************************************************************************/
 
     function setInitialSetup(init: bool) {
-        initalSetup = init;
+        initialSetup = init;
+        //! we set to false elsewhere! i.e., in system
+        if (init)
+            deviceControllerCPP.system.setIsInitialSetup(true);
     }
 
     function updateEditMode(editMode : int, enable = true) {
@@ -356,6 +364,9 @@ I_DeviceController {
 
     function updateFan(mode: int, workingPerHour: int)
     {
+        if (device.fan.mode === mode && device.fan.workingPerHour === workingPerHour)
+            return;
+
         if (deviceControllerCPP?.setFan(mode, workingPerHour) ?? false) {
             // Update model
             device.fan.mode = mode;
@@ -981,5 +992,14 @@ I_DeviceController {
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }
+    }
+
+    function forgetDevice()
+    {
+        // Remove the save files from the directory.
+        QSFileIO.removeFile(uiSession.recoveryConfigFilePath);
+        QSFileIO.removeFile(uiSession.configFilePath);
+
+        deviceControllerCPP.forgetDevice();
     }
 }

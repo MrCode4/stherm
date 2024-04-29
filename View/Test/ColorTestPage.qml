@@ -33,7 +33,7 @@ BasePageView {
 
     ConfirmPopup {
         id: popup
-        closeButtonVisible: false
+        closeButtonEnabled: false
         closePolicy: Popup.NoAutoClose
         message: "Color test"
         detailMessage: "Did you see any dicoloration<br>or dead pixels?"
