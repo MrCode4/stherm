@@ -21,7 +21,7 @@ BasePageView {
     property real tvocMin: 0
     property real tvocMax: 100
     property real brighnessMin: 0
-    property real brighnessMax: 1
+    property real brighnessMax: 100
     property real co2Min: 0
     property real co2Max: 1000
     property real etohMin: 0
@@ -30,6 +30,8 @@ BasePageView {
     property real fanSpeedMax: 6000
     property real humidityMin: 0
     property real humidityMax: 100
+    property real iaqMin: 0
+    property real iaqMax: 100
     property real pressureMin: 0
     property real pressureMax: 100
     property real temperatureMin: -20
@@ -60,6 +62,8 @@ BasePageView {
                 writeSensorResult(key, value, fanSpeedMin, fanSpeedMax)
             } else if (key === "humidity") {
                 writeSensorResult(key, value, humidityMin, humidityMax)
+            } else if (key === "iaq") {
+                writeSensorResult(key, value, iaqMin, iaqMax)
             } else if (key === "pressure") {
                 writeSensorResult(key, value, pressureMin, pressureMax)
             } else if (key === "temperature") {
@@ -162,7 +166,7 @@ BasePageView {
             readOnly: !overrideBtn.checked
             Layout.preferredHeight: 50
             text: readOnly ? (root.model?.temperature.toFixed(3)  ?? "") : text
-            color: (root.model?.temperature >= temperatureMin && root.model?.temperature <= temperatureMax) ? Material.foreground : Material.testFailColor
+            color: (root.model?.temperature >= temperatureMin && root.model?.temperature <= temperatureMax) ? Material.foreground : Style.testFailColor
 
             validator: DoubleValidator {
                 top: 40
@@ -183,7 +187,7 @@ BasePageView {
         Label {
             text:root.model?.humidity  ?? "NaN"
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.humidity >= humidityMin && root.model?.humidity <= humidityMax) ? Material.foreground : Material.testFailColor
+            color: (root.model?.humidity >= humidityMin && root.model?.humidity <= humidityMax) ? Material.foreground : Style.testFailColor
         }
 
         Label {
@@ -193,7 +197,7 @@ BasePageView {
         Label {
             text: (root.model?.RangeMilliMeter > 0) ? ("ON (" + root.model.RangeMilliMeter + ")") : "OFF"
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.RangeMilliMeter >= rangeMilliMeterMin && root.model?.RangeMilliMeter <= rangeMilliMeterMax) ? Material.foreground : Material.testFailColor
+            color: (root.model?.RangeMilliMeter >= rangeMilliMeterMin && root.model?.RangeMilliMeter <= rangeMilliMeterMax) ? Material.foreground : Style.testFailColor
         }
 
         Label {
@@ -203,7 +207,7 @@ BasePageView {
         Label {
             text:root.model?.brighness  ?? ""
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.brighness >= brighnessMin && root.model?.brighness <= brighnessMax) ? Material.foreground : Material.testFailColor
+            color: (root.model?.brighness >= brighnessMin && root.model?.brighness <= brighnessMax) ? Material.foreground : Style.testFailColor
         }
 
         Label {
@@ -213,7 +217,7 @@ BasePageView {
         Label {
             text:root.model?.iaq  ?? ""
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.co2 >= co2Min && root.model?.co2 <= co2Max) ? Material.foreground : Material.testFailColor
+            color: (root.model?.iaq >= iaqMin && root.model?.iaq <= iaqMax) ? Material.foreground : Style.testFailColor
         }
 
         Label {
@@ -223,7 +227,7 @@ BasePageView {
         Label {
             text:root.model?.fanSpeed  ?? ""
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.fanSpeed >= fanSpeedMin && root.model?.fanSpeed <= fanSpeedMax) ? Material.foreground : Material.testFailColor
+            color: (root.model?.fanSpeed >= fanSpeedMin && root.model?.fanSpeed <= fanSpeedMax) ? Material.foreground : Style.testFailColor
         }
     }
 }
