@@ -273,16 +273,25 @@ Control {
             }
 
             //! Unit
-            Label {
+            Row {
                 id: rightUnitLbl
                 anchors.left: parent.right
                 anchors.top: parent.top
                 opacity: 0.6
-                font {
-                    pointSize: _root.font.pointSize / 2
-                    capitalization: "AllUppercase"
+
+                Label {
+                    y: parent.height / 9
+                    font.pointSize: Application.font.pointSize
+                    text: "\u00b0"
                 }
-                text: `\u00b0${unit}`
+
+                Label {
+                    font {
+                        pointSize: _root.font.pointSize / 2
+                        capitalization: "AllUppercase"
+                    }
+                    text: `${unit}`
+                }
             }
 
             Item {
@@ -312,16 +321,25 @@ Control {
             text: tempSliderDoubleHandle.first.value.toFixed(0)
 
             //! Unit
-            Label {
+            Row {
                 id: leftUnitLbl
                 anchors.left: parent.right
                 anchors.top: parent.top
                 opacity: 0.6
-                font {
-                    pointSize: _root.font.pointSize / 2
-                    capitalization: "AllUppercase"
+
+                Label {
+                    y: parent.height / 9
+                    font.pointSize: Application.font.pointSize
+                    text: "\u00b0"
                 }
-                text: `\u00b0${unit}`
+
+                Label {
+                    font {
+                        pointSize: _root.font.pointSize / 2
+                        capitalization: "AllUppercase"
+                    }
+                    text: `${unit}`
+                }
             }
 
             Item {
