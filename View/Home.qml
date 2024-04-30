@@ -432,7 +432,7 @@ Control {
             PropertyChanges {
                 target: _desiredTempItem
                 font.pointSize: Qt.application.font.pointSize * 4.8
-                labelVerticalOffset: AppStyle.size / 10
+                labelVerticalOffset: _desiredTempItem.height / 2
                 enableAnimations: false
             }
 
