@@ -957,7 +957,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 if (isInitialSetup() && method == m_partialUpdate) {
                     static int i = 0;
                     i++;
-                    if (i > 2) {
+                    if (i > 5) {
                         // After retry 2 times, the update back to normal state.
                         setIsInitialSetup(false);
                         emit updateChecked();
