@@ -386,14 +386,17 @@ Control {
         id: startupSN
         target: deviceController.deviceControllerCPP
 
-        function onSnModeChanged(snMode: bool) {
-            // snMode != 2
-            if (snMode) {
+        function onSnModeChanged(snMode: int) {
+            // snMode === 1 or 0
+            if (snMode !== 2) {
                 // should be done by timer as can cause crash
                 startupTimer.start()
                 // disable fetching sn again
                 startupSN.enabled = false;
                 snChecker.enabled = false;
+
+                //! Setting is ready in device or not
+                uiSession.settingsReady = (snMode === 0);
             }
         }
     }

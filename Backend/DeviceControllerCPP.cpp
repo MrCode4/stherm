@@ -622,7 +622,7 @@ bool DeviceControllerCPP::checkSN()
     if (snMode)
         ScreenSaverManager::instance()->setAppActive(true);
 
-    emit snModeChanged(snMode);
+    emit snModeChanged(state);
 
     return snMode;
 }
