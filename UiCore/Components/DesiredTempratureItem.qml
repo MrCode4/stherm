@@ -418,7 +418,7 @@ Control {
             PropertyChanges {
                 target: coolHeatLbl
                 opacity: 0
-                y: coolHeatLbl.height
+                y: -coolHeatLbl.height
             }
         },
 
@@ -426,6 +426,13 @@ Control {
             extend: "non-auto-idle"
             when: device?.systemSetup?.systemMode !== AppSpec.Auto && _tempSlider.pressed
             name: "non-auto-dragging"
+
+            PropertyChanges {
+                target: coolHeatLbl
+                opacity: 0.65
+                y: leftTempLabel.y - coolHeatLbl.height
+                text: device?.systemSetup?.systemMode === AppSpec.Heating ? "Heat to" : "Cool to"
+            }
         },
 
         State {
