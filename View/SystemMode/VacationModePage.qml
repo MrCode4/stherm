@@ -17,14 +17,10 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property Setting setting: appModel.setting
+    property Setting            setting: appModel.setting
 
     //! System Accessories use in humidity control.
-    property SystemAccessories systemAccessories: appModel.systemSetup.systemAccessories
-
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
-
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMVacation, false);
+    property SystemAccessories  systemAccessories: appModel.systemSetup.systemAccessories
 
     /* Object properties
      * ****************************************************************************************/
@@ -35,6 +31,10 @@ BasePageView {
             _root.StackView.view.pop();
         }
     }
+
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMVacation, false);
 
     /* Children
      * ****************************************************************************************/
@@ -92,14 +92,21 @@ BasePageView {
             id: _tempSlider
             Layout.fillWidth: true
 
-            from: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.vacationMinimumTemperatureF : AppSpec.minimumTemperatureC) ?? AppSpec.vacationMinimumTemperatureC
-            to: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.vacationMaximumTemperatureF : AppSpec.maximumTemperatureC) ?? AppSpec.vacationMaximumTemperatureC
+            from: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
+                       AppSpec.vacationMinimumTemperatureF : AppSpec.vacationMinimumTemperatureC) ??
+                  AppSpec.vacationMinimumTemperatureC
+            to: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
+                     AppSpec.vacationMaximumTemperatureF : AppSpec.vacationMaximumTemperatureC) ??
+                AppSpec.vacationMaximumTemperatureC
 
             first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit)
             second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit)
             difference: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
 
             labelSuffix: "\u00b0" + (setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
+            showMinMax: true
+            fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
+            toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
         }
 
         //! Humidity
@@ -130,6 +137,7 @@ BasePageView {
             difference: AppSpec.minStepHum
             labelSuffix: "%"
             visible: systemAccessories.accessoriesWireType !== AppSpecCPP.None
+            showMinMax: true
         }
     }
 }
