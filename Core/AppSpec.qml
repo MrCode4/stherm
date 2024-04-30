@@ -164,4 +164,7 @@ AppSpecCPP {
 
     //! airQuality > 3.0
     readonly property real airQualityPoor: 3.0
+
+    //! Air quality alert threshold
+    readonly property real airQualityAlertThreshold: 10.0
 }

@@ -121,9 +121,11 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(m_scheme, &Scheme::alert, this, [this]() {
-        emit alert(STHERM::AlertLevel::LVL_Emergency,
-                   AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
+        TRACE << STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach);
+        // TODO
+        // emit alert(STHERM::AlertLevel::LVL_Emergency,
+        //            AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
+        //            STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
     });
 
     // TODO should be loaded later for accounting previous session
@@ -622,7 +624,11 @@ bool DeviceControllerCPP::checkSN()
     if (snMode)
         ScreenSaverManager::instance()->setAppActive(true);
 
-    emit snModeChanged(snMode);
+    // System is no need update in snMode === 0
+    if (state == 0)
+        m_system->setIsInitialSetup(false);
+
+    emit snModeChanged(state);
 
     return snMode;
 }

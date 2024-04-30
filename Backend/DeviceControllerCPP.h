@@ -160,7 +160,7 @@ Q_SIGNALS:
 
     void contractorInfoUpdated(QString brandName, QString phoneNumber, QString iconUrl, QString url, QString techUrl);
 
-    void snModeChanged(bool snMode);
+    void snModeChanged(int snMode);
 
     void startModeChanged(int startMode);
 

@@ -359,6 +359,16 @@ Control {
         interval: 100
 
         onTriggered: {
+
+            // Settings fetch from server at least once before show home
+            // Wait for WIFI page to fetch settings and show home here.
+            if(!uiSession.settingsReady) {
+                interval = 4000;
+                restart();
+
+                return;
+            }
+
             // Active the screen saver
             ScreenSaverManager.setActive();
 
@@ -376,16 +386,18 @@ Control {
         id: startupSN
         target: deviceController.deviceControllerCPP
 
-        function onSnModeChanged(snMode: bool) {
-            // snMode != 2
-            if (snMode) {
+        function onSnModeChanged(snMode: int) {
+            // snMode === 1 or 0
+            if (snMode !== 2) {
+                //! Setting is ready in device or not
+                uiSession.settingsReady = (snMode === 0);
+
                 // should be done by timer as can cause crash
                 startupTimer.start()
                 // disable fetching sn again
                 startupSN.enabled = false;
                 snChecker.enabled = false;
 
-                deviceController.deviceControllerCPP.system.getUpdateInformation(true);
             }
         }
     }

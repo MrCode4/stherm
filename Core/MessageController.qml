@@ -105,11 +105,15 @@ QtObject {
 
     function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
     {
+        if (message.length === 0) {
+            console.log("addNewMessageFromData: The message is empty!")
+           return;
+        }
+
         if (!activeAlerts) {
             console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
         }
-
         var newMessage;
         if (type === Message.Type.SystemNotification) {
             // To avoid saving to file
@@ -196,21 +200,21 @@ QtObject {
 
     //! Temperature sensor watcher (5 minutes)
     property Timer temperatureWatcher: Timer {
-        interval: 5 * 60 * 1000
+        interval: 15 * 60 * 1000
         repeat: false
         running: false
     }
 
     //! fan sensor watcher (2 hours)
     property Timer fanWatcher: Timer {
-        interval: 2 * 60 * 60 * 1000
+        interval: 5 * 60 * 60 * 1000
         repeat: false
         running: false
     }
 
     //! Humidity sensor watcher (5 minutes)
     property Timer humidityWatcher: Timer {
-        interval: 5 * 60 * 1000
+        interval: 15 * 60 * 1000
         repeat: false
         running: false
     }
@@ -227,7 +231,7 @@ QtObject {
         target: device
 
         function onCo2Changed() {
-            if (device.co2 > AppSpec.airQualityPoor) {
+            if (device.co2 > AppSpec.airQualityAlertThreshold) {
                 airConditionWatcher.start();
 
             } else {
@@ -257,13 +261,21 @@ QtObject {
 
             console.log("Alert: ", alertLevel, alertType, alertMessage);
 
+            var messageType = Message.Type.Alert;
+
             //! Watch some sensor alerts
             switch (alertType) {
+            case AppSpec.Alert_temperature_not_reach: {
+                messageType = Message.Type.SystemAlert;
+
+            } break
+
             case AppSpec.Alert_temp_low:
             case AppSpec.Alert_temp_high: {
                 if (temperatureWatcher.running)
                     return;
 
+                messageType = Message.Type.SystemAlert;
                 temperatureWatcher.start();
 
             } break;
@@ -273,17 +285,20 @@ QtObject {
                 if (humidityWatcher.running)
                     return;
 
+                messageType = Message.Type.SystemAlert;
                 humidityWatcher.start();
 
             } break;
 
             case AppSpec.Alert_fan_High:
             case AppSpec.Alert_fan_low: {
+                // TODO: The fan speed is wrong in the main data.
                 // Return temporary
                 return;
                 if (fanWatcher.running)
                     return;
 
+                messageType = Message.Type.SystemAlert;
                 fanWatcher.start();
 
             } break;
@@ -301,7 +316,7 @@ QtObject {
                 break;
             }
 
-            addNewMessageFromData(Message.Type.Alert, alertMessage, (new Date()).toLocaleString());
+            addNewMessageFromData(messageType, alertMessage, (new Date()).toLocaleString());
 
         }
     }

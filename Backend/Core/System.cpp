@@ -536,6 +536,7 @@ QVariantMap NUVE::System::getContractorInfo() {
 
 QStringList NUVE::System::availableVersions()
 {
+    std::sort(mAvailableVersions.begin(), mAvailableVersions.end(), isVersionNewer);
     return mAvailableVersions;
 }
 
@@ -952,6 +953,24 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             } else if (method == m_partialUpdate || method == m_backdoorUpdate) {
                 mNetManager->setProperty(m_isBusyDownloader, false);
                 emit error("Download error: " + netReply->errorString());
+
+                if (isInitialSetup() && method == m_partialUpdate) {
+                    static int i = 0;
+                    i++;
+                    if (i > 5) {
+                        // After retry 2 times, the update back to normal state.
+                        setIsInitialSetup(false);
+                        emit updateNoChecked();
+
+                    } else {
+                        // In initial setup, retry when an error occurred.
+                        QTimer::singleShot(10000, this, [this]() {
+                                getUpdateInformation(true);
+
+                        });
+                    }
+                }
+
             } else {
                 qWarning() << "Network/request Error: " << netReply->errorString() << method;
             }
@@ -1040,6 +1059,9 @@ void NUVE::System::onSnReady()
     emit snReady();
 
     createLogDirectoryOnServer();
+    
+    //! Get update information when Serial number is ready.
+    getUpdateInformation(true);
 }
 
 void NUVE::System::createLogDirectoryOnServer()
@@ -1190,12 +1212,15 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
         setUpdateAvailable(true);
         mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
 
-        if (notifyUser  && !mIsManualUpdate)
+        if (!mHasForceUpdate && notifyUser  && !mIsManualUpdate)
             emit notifyNewUpdateAvailable();
     }
 
     //! to enable checking update normally after first time checked!
-    setIsInitialSetup(false);
+    if (!mUpdateAvailable) {
+        setIsInitialSetup(false);
+        emit updateNoChecked();
+    }
 
     // Check all logs
     updateLog(mUpdateJsonObject);
@@ -1205,6 +1230,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     if (installLatestVersion || (mHasForceUpdate && !mIsManualUpdate)) {
         partialUpdate();
     }
+
 }
 
 void NUVE::System::updateAvailableVersions(const QJsonObject updateJsonObject)
