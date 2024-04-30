@@ -105,6 +105,11 @@ QtObject {
 
     function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
     {
+        if (message.length === 0) {
+            console.log("addNewMessageFromData: The message is empty!")
+           return;
+        }
+
         if (!activeAlerts) {
             console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
