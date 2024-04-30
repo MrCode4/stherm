@@ -24,6 +24,12 @@ Item {
     //! Color of handles
     property color handleColor
 
+    //! Another limitation for from
+    property real fromValueCeil: Number.MIN_VALUE
+
+    //! Another limitation for to
+    property real toValueFloor: Number.MAX_VALUE
+
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
         handle: firstHandle
@@ -34,7 +40,7 @@ Item {
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set min value of second handler
-            sliderHandles.second.setMinValue(value + difference);
+            sliderHandles.second.setMinValue(Math.max(toValueFloor, value + difference));
         }
     }
 
@@ -48,7 +54,7 @@ Item {
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set max value of second handler
-            sliderHandles.first.setMaxValue(value - difference);
+            sliderHandles.first.setMaxValue(Math.min(fromValueCeil, value - difference));
         }
     }
 
@@ -104,7 +110,8 @@ Item {
                                                       )
                                           );
 
-                    var newValue = newPos * (to - from) + from; //! Assuming that to is bigger than from
+                    var newValue = Math.min(fromValueCeil,
+                                            newPos * (to - from) + from); //! Assuming that to is bigger than from
                     if (sliderHandles.first.value !== newValue) {
                         sliderHandles.first.setValue(newValue); //! Use setter to avoid breaking bindings
                     }
@@ -156,7 +163,8 @@ Item {
                                                       )
                                           );
 
-                    var newValue = newPos * (to - from) + from //! Assuming that to is bigger than from
+                    var newValue = Math.max(toValueFloor,
+                                            newPos * (to - from) + from); //! Assuming that to is bigger than from
                     if (sliderHandles.second.value !== newValue) {
                         sliderHandles.second.setValue(newValue); //! Use setter to avoid breaking bindings
                     }

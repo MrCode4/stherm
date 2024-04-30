@@ -16,6 +16,8 @@ Control {
     readonly property bool horizontal: orientation === Qt.Horizontal
     property alias first: handles.first
     property alias second: handles.second
+    property alias fromValueCeil: handles.fromValueCeil
+    property alias toValueFloor: handles.toValueFloor
 
     background: Rectangle {
         x: control.leftPadding + (control.horizontal ? 0 : (control.availableWidth - width) / 2)
