@@ -305,6 +305,9 @@ QtObject {
 
             case AppSpec.Alert_Light_High:
             case AppSpec.Alert_Light_Low: {
+                //! silented for now!
+                return;
+
                 if (lightWatcher.running)
                     return;
 
