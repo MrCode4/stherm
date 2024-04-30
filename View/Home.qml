@@ -384,8 +384,6 @@ Control {
                 // disable fetching sn again
                 startupSN.enabled = false;
                 snChecker.enabled = false;
-
-                deviceController.deviceControllerCPP.system.getUpdateInformation(true);
             }
         }
     }
@@ -394,6 +392,9 @@ Control {
     Connections {
         id: snChecker
         target: NetworkInterface
+
+        //! Must be enable after initial setup completed.
+        enabled: !deviceController.initialSetup
 
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {

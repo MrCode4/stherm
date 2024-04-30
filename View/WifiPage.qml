@@ -17,9 +17,14 @@ BasePageView {
         return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.ssid !== "");
     }
 
+    property System system: deviceController.deviceControllerCPP.system
+
     property bool initialSetup: false
 
     property bool settingsReady: false
+
+    //! Check update for first time
+    property bool checkedUpdate: false;
 
     /* Object properties
      * ****************************************************************************************/
@@ -33,11 +38,11 @@ BasePageView {
         id: fetchTimer
 
         repeat: true
-        running: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && !settingsReady
+        running: initialSetup && system.serialNumber.length > 0 && !settingsReady
         interval: 5000
 
         onTriggered: {
-            settingsReady = deviceController.deviceControllerCPP.system.fetchSettings();
+            settingsReady = system.fetchSettings();
         }
     }
 
@@ -48,7 +53,7 @@ BasePageView {
         property bool once : false
 
         repeat: false
-        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && settingsReady
+        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && settingsReady && checkedUpdate
         interval: 10000
         onTriggered: {
             once = true;
@@ -72,7 +77,7 @@ BasePageView {
         }
 
         // Enable when the serial number is correctly filled
-        enabled: initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && settingsReady
+        enabled: initialSetup && system.serialNumber.length > 0 && settingsReady && checkedUpdate
         onClicked: {
             nextPageTimer.stop();
             nextPageTimer.once = true;
@@ -361,6 +366,18 @@ BasePageView {
                                              "minPasswordLength": minPasswordLength,
                                          })
             }
+        }
+    }
+
+    //! Change checkedUpdate when update checked in the initial setup
+    Connections {
+        target: system
+
+        enabled: initialSetup && !checkedUpdate
+
+        //! Check update
+        function onUpdateChecked() {
+            checkedUpdate = true;
         }
     }
 
