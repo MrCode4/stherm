@@ -100,6 +100,7 @@ BasePageView {
             difference: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
 
             labelSuffix: "\u00b0" + (setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
+            showMinMax: true
         }
 
         //! Humidity
