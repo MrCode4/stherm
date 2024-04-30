@@ -257,6 +257,8 @@ QtObject {
 
             console.log("Alert: ", alertLevel, alertType, alertMessage);
 
+            var messageType = Message.Type.Alert;
+
             //! Watch some sensor alerts
             switch (alertType) {
             case AppSpec.Alert_temp_low:
@@ -264,6 +266,7 @@ QtObject {
                 if (temperatureWatcher.running)
                     return;
 
+                messageType = Message.Type.SystemAlert;
                 temperatureWatcher.start();
 
             } break;
@@ -273,17 +276,20 @@ QtObject {
                 if (humidityWatcher.running)
                     return;
 
+                messageType = Message.Type.SystemAlert;
                 humidityWatcher.start();
 
             } break;
 
             case AppSpec.Alert_fan_High:
             case AppSpec.Alert_fan_low: {
+                // TODO: The fan speed is wrong in the main data.
                 // Return temporary
                 return;
                 if (fanWatcher.running)
                     return;
 
+                messageType = Message.Type.SystemAlert;
                 fanWatcher.start();
 
             } break;
@@ -301,7 +307,7 @@ QtObject {
                 break;
             }
 
-            addNewMessageFromData(Message.Type.Alert, alertMessage, (new Date()).toLocaleString());
+            addNewMessageFromData(messageType, alertMessage, (new Date()).toLocaleString());
 
         }
     }

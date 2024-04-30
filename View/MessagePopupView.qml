@@ -86,8 +86,7 @@ Item {
     function showMessagePopup(message: Message) {
         //! \todo This will later be shown using PopUpLayout to be able to show multiple message
         //! popups on top of each other.
-
-        if (!message || !messagesShown.includes(message.message))
+        if (!message || messagesShown.includes(message.message))
             return;
 
         //! Create an instance of AlertNotifPopup
