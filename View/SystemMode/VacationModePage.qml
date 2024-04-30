@@ -17,14 +17,10 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property Setting setting: appModel.setting
+    property Setting            setting: appModel.setting
 
     //! System Accessories use in humidity control.
-    property SystemAccessories systemAccessories: appModel.systemSetup.systemAccessories
-
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
-
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMVacation, false);
+    property SystemAccessories  systemAccessories: appModel.systemSetup.systemAccessories
 
     /* Object properties
      * ****************************************************************************************/
@@ -35,6 +31,10 @@ BasePageView {
             _root.StackView.view.pop();
         }
     }
+
+    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
+
+    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMVacation, false);
 
     /* Children
      * ****************************************************************************************/
@@ -101,6 +101,8 @@ BasePageView {
 
             labelSuffix: "\u00b0" + (setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
             showMinMax: true
+            fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
+            toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
         }
 
         //! Humidity
@@ -131,6 +133,7 @@ BasePageView {
             difference: AppSpec.minStepHum
             labelSuffix: "%"
             visible: systemAccessories.accessoriesWireType !== AppSpecCPP.None
+            showMinMax: true
         }
     }
 }
