@@ -22,6 +22,9 @@ Control {
     //! Difference between first and second values
     property real           difference: 2
 
+    //! Show grey section
+    property bool           showGreySection: true
+
     //! Difference between two values
     readonly property real  darkerShade: 3.8
 
@@ -146,7 +149,7 @@ Control {
                 capStyle: ShapePath.RoundCap
                 fillColor: "transparent"
                 strokeWidth: background.pathWidth
-                strokeColor: Qt.darker(Style.accent, 1.2)
+                strokeColor: showGreySection ? Qt.darker(Style.accent, 1.2) : "transparent"
 
                 PathAngleArc {
                     centerX: background.shapeWidth / 2
@@ -189,7 +192,7 @@ Control {
             var valueRange = Math.abs(to - from);
             return (Math.max((first.value - from) / (valueRange > 0 ? valueRange : 1), 0) * angleRange) % 360
         }
-        enabled: secondHandleDh.dragging ? 0.65 : 1.
+        opacity: secondHandleDh.dragging ? 0.65 : 1.
 
         Rectangle {
             id: firstHandleCircle
@@ -297,7 +300,7 @@ Control {
             var valueRange = Math.abs(to - from);
             return (((second.value - from) / (valueRange > 0 ? valueRange : 1)) * angleRange) % 360
         }
-        enabled: firstHandleDh.dragging ? 0.65 : 1.
+        opacity: firstHandleDh.dragging ? 0.65 : 1.
 
         Rectangle {
             id: secondHandleCircle

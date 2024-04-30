@@ -413,6 +413,7 @@ Control {
             PropertyChanges {
                 target: tempSliderDoubleHandle
                 visible: false
+                showGreySection: true
             }
 
             PropertyChanges {
@@ -462,6 +463,7 @@ Control {
             PropertyChanges {
                 target: tempSliderDoubleHandle
                 visible: true
+                showGreySection: true
             }
 
             PropertyChanges {
@@ -493,6 +495,11 @@ Control {
                 y: leftTempLabel.y - coolHeatLbl.height
                 text: "Heat to"
             }
+
+            PropertyChanges {
+                target: tempSliderDoubleHandle
+                showGreySection: false
+            }
         },
 
         State {
@@ -517,6 +524,11 @@ Control {
                 opacity: 0.65
                 y: rightTempLabel.y - coolHeatLbl.height
                 text: "Cool to"
+            }
+
+            PropertyChanges {
+                target: tempSliderDoubleHandle
+                showGreySection: false
             }
         }
     ]
