@@ -227,7 +227,7 @@ QtObject {
         target: device
 
         function onCo2Changed() {
-            if (device.co2 > AppSpec.airQualityPoor) {
+            if (device.co2 > AppSpec.airQualityAlertThreshold) {
                 airConditionWatcher.start();
 
             } else {
