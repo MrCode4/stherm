@@ -121,6 +121,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(m_scheme, &Scheme::alert, this, [this]() {
+        TRACE << STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach);
         // TODO
         // emit alert(STHERM::AlertLevel::LVL_Emergency,
         //            AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
