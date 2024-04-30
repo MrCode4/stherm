@@ -18,7 +18,7 @@ Item {
     property MessageController  messageController : uiSession.messageController
 
     //! Keep the show/open messages
-    property var messagesShown: []
+    property var messagesShowing: []
 
     /* Children
      * ****************************************************************************************/
@@ -55,10 +55,10 @@ Item {
                 }
 
                 //! Remove when the alert closed by user.
-                var msgIndex = messagesShown.findIndex((element, index) => element === message.message);
+                var msgIndex = messagesShowing.findIndex((element, index) => element === message.message);
                 if (msgIndex > -1) {
                     //! Remove from messages shown
-                    messagesShown.splice(msgIndex, 1);
+                    messagesShowing.splice(msgIndex, 1);
                     messagesShownChanged();
                 }
 
@@ -67,8 +67,7 @@ Item {
         }
     }
 
-    //! Witi and Internet connection alerts
-    //! This object protected
+    //! Wifi and Internet connection alerts
     AlertNotifPopup {
         id: wifiInternetConnectionAlert
 
@@ -86,7 +85,7 @@ Item {
     function showMessagePopup(message: Message) {
         //! \todo This will later be shown using PopUpLayout to be able to show multiple message
         //! popups on top of each other.
-        if (!message || messagesShown.includes(message.message))
+        if (!message || messagesShowing.includes(message.message))
             return;
 
         //! Create an instance of AlertNotifPopup
@@ -95,7 +94,7 @@ Item {
                                                             });
 
         if (newAlertPopup) {
-            messagesShown.push(message.message);
+            messagesShowing.push(message.message);
 
             //! Ask PopUpLayout to open popup
             uiSession.popupLayout.displayPopUp(newAlertPopup);

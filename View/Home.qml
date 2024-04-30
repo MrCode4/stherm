@@ -360,7 +360,7 @@ Control {
 
         onTriggered: {
 
-            // Settings fetch from server at least once before shoe home
+            // Settings fetch from server at least once before show home
             // Wait for WIFI page to fetch settings and show home here.
             if(!uiSession.settingsReady) {
                 interval = 4000;

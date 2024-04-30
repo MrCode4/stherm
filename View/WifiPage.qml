@@ -374,7 +374,7 @@ BasePageView {
         enabled: initialSetup && !checkedUpdate
 
         //! Check update
-        function onUpdateChecked() {
+        function onUpdateNoChecked() {
             checkedUpdate = true;
         }
     }

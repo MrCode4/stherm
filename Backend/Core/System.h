@@ -224,7 +224,7 @@ signals:
 
     void isManualModeChanged();
 
-    void updateChecked();
+    void updateNoChecked();
 
 private:
 

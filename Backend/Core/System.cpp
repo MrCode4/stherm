@@ -960,7 +960,7 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                     if (i > 5) {
                         // After retry 2 times, the update back to normal state.
                         setIsInitialSetup(false);
-                        emit updateChecked();
+                        emit updateNoChecked();
 
                     } else {
                         // In initial setup, retry when an error occurred.
@@ -1217,7 +1217,10 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     }
 
     //! to enable checking update normally after first time checked!
-    setIsInitialSetup(false);
+    if (!mUpdateAvailable) {
+        setIsInitialSetup(false);
+        emit updateNoChecked();
+    }
 
     // Check all logs
     updateLog(mUpdateJsonObject);
@@ -1228,7 +1231,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
         partialUpdate();
     }
 
-    emit updateChecked();
 }
 
 void NUVE::System::updateAvailableVersions(const QJsonObject updateJsonObject)
