@@ -21,8 +21,6 @@ BasePageView {
 
     property bool initialSetup: false
 
-    property bool settingsReady: false
-
     //! Check update for first time
     property bool checkedUpdate: false;
 
@@ -38,11 +36,11 @@ BasePageView {
         id: fetchTimer
 
         repeat: true
-        running: initialSetup && system.serialNumber.length > 0 && !settingsReady
+        running: initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady
         interval: 5000
 
         onTriggered: {
-            settingsReady = system.fetchSettings();
+            uiSession.settingsReady = system.fetchSettings();
         }
     }
 
@@ -53,7 +51,7 @@ BasePageView {
         property bool once : false
 
         repeat: false
-        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && settingsReady && checkedUpdate
+        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
         interval: 10000
         onTriggered: {
             once = true;
@@ -77,7 +75,7 @@ BasePageView {
         }
 
         // Enable when the serial number is correctly filled
-        enabled: initialSetup && system.serialNumber.length > 0 && settingsReady && checkedUpdate
+        enabled: initialSetup && system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
         onClicked: {
             nextPageTimer.stop();
             nextPageTimer.once = true;

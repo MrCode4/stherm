@@ -359,6 +359,16 @@ Control {
         interval: 100
 
         onTriggered: {
+
+            // Settings fetch from server at least once before shoe home
+            // Wait for WIFI page to fetch settings and show home here.
+            if(!uiSession.settingsReady) {
+                interval = 4000;
+                restart();
+
+                return;
+            }
+
             // Active the screen saver
             ScreenSaverManager.setActive();
 
@@ -392,9 +402,6 @@ Control {
     Connections {
         id: snChecker
         target: NetworkInterface
-
-        //! Must be enable after initial setup completed.
-        enabled: !deviceController.initialSetup
 
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {

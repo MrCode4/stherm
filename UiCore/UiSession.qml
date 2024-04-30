@@ -47,6 +47,9 @@ Item {
     // Logged in user level
     property int                userLevel:      UiSession.UserLevel.USER
 
+    //! Settings fetch from server at least once
+    property bool               settingsReady: false
+
     //! To switch between main window and vacation page
     property bool               showMainWindow: true
 
