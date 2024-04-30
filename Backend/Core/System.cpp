@@ -142,6 +142,11 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     connect(&mLogSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
         qWarning() << "process has encountered an error:" << error << mLogSender.readAllStandardError();
+
+        auto initialized = mLogSender.property("initialized");
+        if (initialized.isValid() && initialized.toBool()){
+            emit alert("Log is not sent, Please try again!");
+        }
     });
     connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
@@ -405,7 +410,7 @@ void NUVE::System::sendLog()
     if (!initialized.isValid() || !initialized.toBool()){
         qWarning() << "Folder was not created successfully, trying again...";
         createLogDirectoryOnServer();
-        emit alert("Server is not ready, try again later!");
+        emit alert("There is an error, Please try again!");
         return;
     }
 

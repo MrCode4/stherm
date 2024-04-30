@@ -179,7 +179,10 @@ BasePageView {
             rebootPopup.open();
 
         } else if (key === "Send Log") {
-            logBusyPop.open();
+            if (NetworkInterface.hasInternet)
+                logBusyPop.open();
+            else
+                system.alert("No Internet, Please check your connection before sending log.")
         }
     }
 
