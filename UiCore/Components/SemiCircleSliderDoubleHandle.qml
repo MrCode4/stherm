@@ -28,11 +28,12 @@ Control {
     //! Holds whether slider is being dragged
     readonly property bool  pressed: firstHandleDh.dragging || secondHandleDh.dragging
 
-    property real maxAutoMinTemp: AppSpec.maxAutoMinTemp
-    property real minAutoMaxTemp: AppSpec.minAutoMaxTemp
+    //! Some other limitations for first and second values
+    property real firstValueCeil: AppSpec.maxAutoMinTemp
+    property real secondValueFloor: AppSpec.minAutoMaxTemp
 
-    onMaxAutoMinTempChanged: first.setMaxValue(maxAutoMinTemp);
-    onMinAutoMaxTempChanged: second.setMinValue(minAutoMaxTemp);
+    onFirstValueCeilChanged: first.setMaxValue(firstValueCeil);
+    onSecondValueFloorChanged: second.setMinValue(secondValueFloor);
 
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
@@ -41,7 +42,7 @@ Control {
         value: from
 
         Component.onCompleted: {
-            setMaxValue(maxAutoMinTemp);
+            setMaxValue(firstValueCeil);
         }
 
         onValueChanged: {
@@ -49,7 +50,7 @@ Control {
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set min value of second handler
-            second.setMinValue(Math.max(minAutoMaxTemp, value + difference));
+            second.setMinValue(Math.max(secondValueFloor, value + difference));
         }
     }
 
@@ -60,7 +61,7 @@ Control {
         value: to
 
         Component.onCompleted: {
-            setMinValue(minAutoMaxTemp);
+            setMinValue(secondValueFloor);
         }
 
         onValueChanged: {
@@ -68,7 +69,7 @@ Control {
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set max value of first handler
-            first.setMaxValue(Math.min(maxAutoMinTemp, value - difference));
+            first.setMaxValue(Math.min(firstValueCeil, value - difference));
         }
     }
 
@@ -265,7 +266,7 @@ Control {
                     angle = angle < -170 ? angle + 360 : angle;
                     var diffAngle = angle - startAngle;
                     var newValue = first.value + diffAngle / (firstHandle.angleRange) * Math.abs(to - from);
-                    first.setValue(Math.max(from, Math.min(to, newValue)));
+                    first.setValue(Math.max(from, Math.min(firstValueCeil, to, newValue)));
 
 
                     startAngle = angle;
@@ -373,7 +374,7 @@ Control {
                     angle = angle < -170 ? angle + 360 : angle;
                     var diffAngle = angle - startAngle;
                     var newValue = second.value + diffAngle / (secondHandle.angleRange) * Math.abs(to - from);
-                    second.setValue(Math.max(from, Math.min(to, newValue)));
+                    second.setValue(Math.max(secondValueFloor, from, Math.min(to, newValue)));
 
 
                     startAngle = angle;

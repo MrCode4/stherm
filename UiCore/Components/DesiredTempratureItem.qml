@@ -116,8 +116,8 @@ Control {
             enabled: labelVisible && !currentSchedule
             difference: device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
 
-            maxAutoMinTemp: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
-            minAutoMaxTemp: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
+            firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
+            secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
 
             from: minTemprature
             to: maxTemprature
@@ -227,8 +227,8 @@ Control {
                                                                       maxTemprature);
 
                 //! Now first set first.maxValue and second.minValue then update their actual values
-                first.setMaxValue(secondValue - tempSliderDoubleHandle.difference);
-                second.setMinValue(firstValue + tempSliderDoubleHandle.difference);
+                first.setMaxValue(Math.min(firstValueCeil, secondValue - tempSliderDoubleHandle.difference));
+                second.setMinValue(Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference));
 
                 first.value = firstValue;
                 second.value = secondValue;

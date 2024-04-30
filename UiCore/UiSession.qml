@@ -45,7 +45,7 @@ Item {
 
 
     // Logged in user level
-    property int                userLevel:      UiSession.UserLevel.USER
+    property int                userLevel:      UiSession.UserLevel.DEVELOPER
 
     //! To switch between main window and vacation page
     property bool               showMainWindow: true
