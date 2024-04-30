@@ -1303,9 +1303,8 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
 
     } else if (fanSpeed > m_p->throlds_aq.fan_high) {
-        TRACE << "Fan speed is more than 4200, alert is disabled.";
-        // emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_High,
-                   // STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High));
+        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_High,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High));
 
     }  else if (fanSpeed < m_p->throlds_aq.fan_low) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_low,
