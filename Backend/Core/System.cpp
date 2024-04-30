@@ -536,6 +536,7 @@ QVariantMap NUVE::System::getContractorInfo() {
 
 QStringList NUVE::System::availableVersions()
 {
+    std::sort(mAvailableVersions.begin(), mAvailableVersions.end(), isVersionNewer);
     return mAvailableVersions;
 }
 
