@@ -25,10 +25,10 @@ Item {
     property color handleColor
 
     //! Another limitation for from
-    property real fromValueCeil: Number.MIN_VALUE
+    property real fromValueCeil: to
 
     //! Another limitation for to
-    property real toValueFloor: Number.MAX_VALUE
+    property real toValueFloor: from
 
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
