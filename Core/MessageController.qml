@@ -109,7 +109,6 @@ QtObject {
             console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
         }
-
         var newMessage;
         if (type === Message.Type.SystemNotification) {
             // To avoid saving to file
@@ -261,6 +260,11 @@ QtObject {
 
             //! Watch some sensor alerts
             switch (alertType) {
+            case AppSpec.Alert_temperature_not_reach: {
+                messageType = Message.Type.SystemAlert;
+
+            } break
+
             case AppSpec.Alert_temp_low:
             case AppSpec.Alert_temp_high: {
                 if (temperatureWatcher.running)
