@@ -203,7 +203,7 @@ QtObject {
 
     //! fan sensor watcher (2 hours)
     property Timer fanWatcher: Timer {
-        interval: 2 * 60 * 60 * 1000
+        interval: 5 * 60 * 60 * 1000
         repeat: false
         running: false
     }
