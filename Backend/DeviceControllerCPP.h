@@ -231,6 +231,7 @@ private:
 
     // initialized in startup onStartDeviceRequested in qml
     QVariantList mBacklightModelData;
+    QVariantList mBacklightActualData;  // for logging purpose
     QVariantList mSettingsModelData;
 
     QTimer mNightModeTimer;

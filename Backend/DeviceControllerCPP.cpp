@@ -316,6 +316,7 @@ bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
     if (success && !isScheme) {
         mBacklightModelData = data;
     }
+    mBacklightActualData = data;
 
     return success;
 }
@@ -792,7 +793,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 
         // Write data rows
         QStringList dataStrList;
-        auto backLightData = mBacklightModelData;
+        auto backLightData = mBacklightActualData;
         if (mBacklightTimer.isActive()) {
             auto color = mBacklightTimer.property("color").value<QVariantList>();
             if (!color.isEmpty()) {
