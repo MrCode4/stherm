@@ -20,6 +20,12 @@ BasePageView {
         color: "black"
     }
 
+    onVisibleChanged: {
+        if (visible) {
+            infoPopup.open()
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
 
@@ -31,18 +37,45 @@ BasePageView {
         }
     }
 
+    InfoPopup {
+        id: infoPopup
+        message: "Color test"
+        detailMessage: "The screen will change colors<br>between white, blue, green,<br>red and black"
+        visible: true
+
+        onAccepted: {
+            timer.start()
+            timer.colorIndex = 0
+            root.state = "white"
+        }
+    }
+
     ConfirmPopup {
-        id: popup
+        id: confirmPopup1
         closeButtonEnabled: false
         closePolicy: Popup.NoAutoClose
         message: "Color test"
         detailMessage: "Did you see any dicoloration<br>or dead pixels?"
         onAccepted: {
-            deviceController.deviceControllerCPP.writeTestResult("Color test", false, "The display is discolored or has dead pixels")
-            nextPage()
+            confirmPopup2.open()
         }
         onRejected: {
             deviceController.deviceControllerCPP.writeTestResult("Color test", true)
+            nextPage()
+        }
+    }
+
+    ConfirmPopup {
+        id: confirmPopup2
+        closeButtonEnabled: false
+        closePolicy: Popup.NoAutoClose
+        message: "Color test"
+        detailMessage: "Retry test?"
+        onAccepted: {
+            infoPopup.open()
+        }
+        onRejected: {
+            deviceController.deviceControllerCPP.writeTestResult("Color test", false, "The display is discolored or has dead pixels")
             nextPage()
         }
     }
@@ -54,10 +87,31 @@ BasePageView {
             text: FAIcons.arrowRight
             color: headerColor
         }
-        onClicked: popup.open()
+        enabled: false
     }
 
-    TapHandler {
+    Timer {
+        id: timer
+        interval: 1000
+        property var colors: ["white", "blue", "green", "red", "black"]
+        property int colorIndex: 0
+        property int cycleTimes: 2
+
+        onTriggered: {
+            root.state = colors[colorIndex % colors.length]
+            colorIndex++
+
+            if (colorIndex === cycleTimes*colors.length + 1) {
+                timer.stop()
+                confirmPopup1.open()
+            }
+        }
+
+        repeat: true
+        running: false
+    }
+
+    /*TapHandler {
         onTapped: {
             switch(root.state) {
             case "black":
@@ -77,7 +131,7 @@ BasePageView {
                 break;
             }
         }
-    }
+    }*/
 
     /* States and Transitions
      * ****************************************************************************************/

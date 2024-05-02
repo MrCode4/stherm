@@ -16,14 +16,14 @@ BasePageView {
 
     title: "Internal Sensor Test"
 
-    property real rangeMilliMeterMin: 0
-    property real rangeMilliMeterMax: 1000
+    property real rangeMilliMeterMin: 60
+    property real rangeMilliMeterMax: 70
     property real tvocMin: 0
     property real tvocMax: 100
     property real brighnessMin: 0
     property real brighnessMax: 100
     property real co2Min: 0
-    property real co2Max: 1000
+    property real co2Max: 1
     property real etohMin: 0
     property real etohMax: 100
     property real fanSpeedMin: 4000
