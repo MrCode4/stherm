@@ -753,14 +753,6 @@ QVariantMap DeviceControllerCPP::getMainData()
     return mainData;
 }
 
-void DeviceControllerCPP::clearTestResults()
-{
-    QFile file("test_results.csv");
-
-    if (file.exists() && !file.remove())
-        qWarning() << "Unable to delete file" << file.fileName();
-}
-
 void DeviceControllerCPP::writeTestResult(const QString &testName, const QString& testResult, const QString &description)
 {
     QFile file("test_results.csv");
@@ -777,8 +769,29 @@ void DeviceControllerCPP::writeTestResult(const QString &testName, const QString
 
 void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResult, const QString &description)
 {
+    mAllTestsPassed &= testResult;
     QString result = testResult?"PASS":"FAIL";
     writeTestResult(testName, result, description);
+}
+
+void DeviceControllerCPP::beginTesting()
+{
+    QFile file("test_results.csv");
+    mAllTestsPassed = true;
+
+    if (file.exists() && !file.remove())
+    {
+        qWarning() << "Unable to delete file" << file.fileName();
+        return;
+    }
+
+    writeTestResult("Test name", QString("Test Result"), "Description");
+}
+
+void DeviceControllerCPP::finalizeTesting()
+{
+    QString result = mAllTestsPassed?"PASS":"FAIL";
+    QFile::rename("test_results.csv", QString("%1_%2.csv").arg(_deviceAPI->uid()).arg(result));
 }
 
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)

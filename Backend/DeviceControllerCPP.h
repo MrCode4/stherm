@@ -67,11 +67,10 @@ public:
     Q_INVOKABLE QVariantMap getMainData();
 
     //!
-    Q_INVOKABLE void clearTestResults();
-
-    //!
     Q_INVOKABLE void writeTestResult(const QString& testName, const QString& testResult, const QString& description="");
     Q_INVOKABLE void writeTestResult(const QString& testName, bool testResult, const QString& description="");
+    Q_INVOKABLE void beginTesting();
+    Q_INVOKABLE void finalizeTesting();
 
     //! set backlight using uart and respond the success, data should have 5 items
     //! including r, g, b, mode (0 for ui, 1 will be send internally), on/off
@@ -274,6 +273,9 @@ private:
     {
         return  TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
     }
+
+    // Testing
+    bool mAllTestsPassed = true;
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 };

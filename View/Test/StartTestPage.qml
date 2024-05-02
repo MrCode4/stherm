@@ -26,8 +26,7 @@ BasePageView {
 
     Component.onCompleted: {
         deviceController.deviceControllerCPP.system.testMode = true;
-        deviceController.deviceControllerCPP.clearTestResults()
-        deviceController.deviceControllerCPP.writeTestResult("Test name", "Test Result", "Description")
+        deviceController.deviceControllerCPP.beginTesting()
     }
 
     /* Children

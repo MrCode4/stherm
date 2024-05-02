@@ -143,14 +143,14 @@ BacklightPage {
         property int btnIndex: 0
 
         onTriggered: {
-            if (btnIndex === _root.shadeButtons.length)
+            if (btnIndex === shadeButtons.count)
             {
                 buttonTimer.stop()
                 confirmPopup1.open()
                 return
             }
 
-            _root.shadeButtons[buttonTimer.btnIndex].checked = true
+            _root.setCurrentColor(btnIndex)
             _root.applyOnline()
             buttonTimer.btnIndex++
         }

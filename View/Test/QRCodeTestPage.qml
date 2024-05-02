@@ -31,6 +31,7 @@ BasePageView {
 
         onClicked: {
             //! Finish test, add delay to set relays
+            deviceController.deviceControllerCPP.finalizeTesting()
             uiSession.showHome();
         }
     }

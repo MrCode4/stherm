@@ -42,7 +42,7 @@ BasePageView {
 
     property alias colorSlider: _colorSlider
     property alias brightnessSlider: _brSlider
-    property alias shadeButtons: _shadeButtonsGrp.buttons
+    property alias shadeButtons: _shadeButtonsRepeater
     property alias backlightSwitch: _backlightOnOffSw
 
     /* Object properties
