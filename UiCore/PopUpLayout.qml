@@ -32,6 +32,9 @@ Item {
 
                 popupQueue.splice(pIndx, 1);
                 popupQueueChanged();
+            } else {
+                console.log("unknown error: ", "isTherePopup : ", isTherePopup, "Length: ", _internal.popupQueue.length)
+                // reevaluate and break the bind?
             }
 
             //! Show next popup in the queue if any
