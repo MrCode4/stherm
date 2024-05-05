@@ -37,6 +37,9 @@ Item {
             wifiInternetConnectionAlert.message.message = message;
             wifiInternetConnectionAlert.message.datetime = dateTime;
 
+            if (wifiInternetConnectionAlert.visible)
+                return;
+
             //! Ask PopUpLayout to open popup
             uiSession.popupLayout.displayPopUp(wifiInternetConnectionAlert);
         }
@@ -70,6 +73,7 @@ Item {
     //! Wifi and Internet connection alerts
     AlertNotifPopup {
         id: wifiInternetConnectionAlert
+        objectName: "InternetPopup"
 
         uiSession: root.uiSession
 
