@@ -136,6 +136,8 @@ QtObject {
             device.messagesChanged();
         }
 
+        AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+
         newMessageReceived(newMessage);
     }
 
