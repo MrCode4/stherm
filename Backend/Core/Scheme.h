@@ -116,9 +116,9 @@ private:
     void EmergencyLoop();
     void OffLoop();
 
-    void updateOBState(AppSpecCPP::SystemMode newOb_state);
+    bool updateOBState(AppSpecCPP::SystemMode newOb_state);
 
-    void internalCoolingLoopStage1(bool pumpHeat);
+    void internalCoolingLoopStage1();
     bool internalCoolingLoopStage2();
 
     void internalHeatingLoopStage1();
