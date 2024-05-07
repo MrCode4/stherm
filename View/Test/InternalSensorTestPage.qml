@@ -26,7 +26,7 @@ BasePageView {
     property real co2Max: 1
     property real etohMin: 0
     property real etohMax: 100
-    property real fanSpeedMin: 4000
+    property real fanSpeedMin: 3800
     property real fanSpeedMax: 6000
     property real humidityMin: 0
     property real humidityMax: 100
