@@ -51,8 +51,9 @@ BacklightPage {
         visible: true
 
         onAccepted: {
-            colorTimer.value = 0
             colorTimer.start()
+            colorTimer.value = 0
+            colorTimer.triggered()
         }
     }
 
@@ -88,19 +89,20 @@ BacklightPage {
 
     Timer {
         id: colorTimer
-        interval: 1000
+        interval: 2000
         repeat: true
         running: false
 
         property int value: 0
-        property int intervals: 10
+        property int intervals: 3
 
         onTriggered: {
-            if (colorTimer.value === colorTimer.intervals + 1)
+            if (colorTimer.value === colorTimer.intervals)
             {
                 colorTimer.stop()
                 brightnessTimer.value = 0
                 brightnessTimer.start()
+                brightnessTimer.triggered()
                 return
             }
 
@@ -112,12 +114,12 @@ BacklightPage {
 
     Timer {
         id: brightnessTimer
-        interval: 1000
+        interval: 2000
         repeat: true
         running: false
 
         property int value: 0
-        property int intervals: 10
+        property int intervals: 2
 
         onTriggered: {
             if (brightnessTimer.value === brightnessTimer.intervals + 1)
@@ -125,6 +127,7 @@ BacklightPage {
                 brightnessTimer.stop()
                 buttonTimer.btnIndex = 0
                 buttonTimer.start()
+                buttonTimer.triggered()
                 return
             }
 
@@ -136,14 +139,14 @@ BacklightPage {
 
     Timer {
         id: buttonTimer
-        interval: 1000
+        interval: 2000
         repeat: true
         running: false
 
         property int btnIndex: 0
 
         onTriggered: {
-            if (btnIndex === shadeButtons.count)
+            if (btnIndex === 1)
             {
                 buttonTimer.stop()
                 confirmPopup1.open()
