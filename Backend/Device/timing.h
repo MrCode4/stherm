@@ -13,6 +13,7 @@ struct Timing
 
     QElapsedTimer       totUptime;
     QElapsedTimer       s1uptime;
+    QElapsedTimer       s1Offtime;
     QElapsedTimer       uptime;
     QElapsedTimer       s2uptime;
     QElapsedTimer       s2Offtime;
