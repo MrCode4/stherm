@@ -196,7 +196,7 @@ QtObject {
             showWifiInternetAlert(message, (new Date()).toLocaleString());
 
             // After password is wrong, Wifi and internet check afetr one minute.
-            checkInternetTimer.restart();
+            // checkInternetTimer.restart(); // disabled for now!
         }
     }
 
