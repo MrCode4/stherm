@@ -44,9 +44,10 @@ BasePageView {
         visible: true
 
         onAccepted: {
+            root.state = "white"
             timer.start()
             timer.colorIndex = 0
-            root.state = "white"
+            timer.triggered()
         }
     }
 
@@ -93,45 +94,32 @@ BasePageView {
     Timer {
         id: timer
         interval: 1000
-        property var colors: ["white", "blue", "green", "red", "black"]
-        property int colorIndex: 0
-        property int cycleTimes: 2
-
-        onTriggered: {
-            root.state = colors[colorIndex % colors.length]
-            colorIndex++
-
-            if (colorIndex === cycleTimes*colors.length + 1) {
-                timer.stop()
-                confirmPopup1.open()
-            }
-        }
-
         repeat: true
         running: false
-    }
 
-    /*TapHandler {
-        onTapped: {
-            switch(root.state) {
-            case "black":
-                root.state = "white";
-                break;
-            case "white":
-                root.state = "blue";
-                break;
-            case "blue":
-                root.state = "green";
-                break;
-            case "green":
-                root.state = "red";
-                break;
-            case "red":
-                root.state = "black";
-                break;
+        property var colors: ["blue", "green", "red", "black", "white"]
+        property int colorIndex: 0
+
+        onTriggered: {
+            root.state = colors[colorIndex]
+            colorIndex++
+
+            if (colorIndex === colors.length) {
+                timer.stop()
+                timer2.start()
             }
         }
-    }*/
+    }
+
+    Timer {
+        id: timer2
+        interval: 5000
+
+        repeat: false
+        running: false
+
+        onTriggered: confirmPopup1.open()
+    }
 
     /* States and Transitions
      * ****************************************************************************************/
