@@ -11,6 +11,7 @@ struct Timing
 {
     Timing() = default;
 
+    QElapsedTimer       totUptime;
     QElapsedTimer       s1uptime;
     QElapsedTimer       uptime;
     QElapsedTimer       s2uptime;

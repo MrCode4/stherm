@@ -29,7 +29,8 @@ int DeviceAPI::checkSN()
     // Check serial number
     // serial number already set, starting normally
     if (m_deviceConfig.serial_number != "") {
-        return 1;
+        m_deviceConfig.start_mode = 0;
+        return 0;
     }
 
     // can take some time in the initial usage, but not blocking ui as the WiFi is not connected for sure

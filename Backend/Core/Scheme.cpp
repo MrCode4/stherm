@@ -72,7 +72,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mLogTimer.setInterval(30000);
     mLogTimer.connect(&mLogTimer, &QTimer::timeout, this, [=]() {
 
-        LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------";
+        LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
         LOG_CHECK(isRunning() && mSystemSetup) << "systemMode: " << mSystemSetup->systemMode << "systemType: " << mSystemSetup->systemType;
         LOG_CHECK(isRunning() && mSystemSetup) << "systemRunDelay: " << mSystemSetup->systemRunDelay << "isVacation: " << mSystemSetup->isVacation;
         LOG_CHECK(isRunning() && mSystemSetup) << "heatStage: "  << mSystemSetup->heatStage << "coolStage: " << mSystemSetup->coolStage;
@@ -180,8 +180,7 @@ void Scheme::run()
 {
     TRACE << "-- startWork is running." << QThread::currentThreadId();
 
-    QElapsedTimer timer;
-    timer.start();
+    mTiming->totUptime.start();
 
     if (!mSystemSetup) {
         TRACE << "-- mSystemSetup is not ready.";
@@ -244,7 +243,7 @@ void Scheme::run()
         waitLoop(RELAYS_WAIT_MS, ctNone);
     }
 
-    TRACE << "-- startWork Stopped. working time(ms): " << timer.elapsed();
+    TRACE << "-- startWork Stopped. working time(ms): " << mTiming->totUptime.elapsed();
 }
 
 void Scheme::updateParameters()

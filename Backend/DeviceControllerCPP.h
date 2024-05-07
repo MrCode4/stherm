@@ -166,7 +166,7 @@ Q_SIGNALS:
 
     void contractorInfoUpdated(QString brandName, QString phoneNumber, QString iconUrl, QString url, QString techUrl);
 
-    void snModeChanged(bool snMode);
+    void snModeChanged(int snMode);
 
     void startModeChanged(int startMode);
 
@@ -237,6 +237,7 @@ private:
 
     // initialized in startup onStartDeviceRequested in qml
     QVariantList mBacklightModelData;
+    QVariantList mBacklightActualData;  // for logging purpose
     QVariantList mSettingsModelData;
 
     QTimer mNightModeTimer;

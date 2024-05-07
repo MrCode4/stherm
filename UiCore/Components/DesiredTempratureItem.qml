@@ -116,8 +116,8 @@ Control {
             enabled: labelVisible && !currentSchedule
             difference: device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
 
-            maxAutoMinTemp: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
-            minAutoMaxTemp: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
+            firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
+            secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
 
             from: minTemprature
             to: maxTemprature
@@ -227,8 +227,8 @@ Control {
                                                                       maxTemprature);
 
                 //! Now first set first.maxValue and second.minValue then update their actual values
-                first.setMaxValue(secondValue - tempSliderDoubleHandle.difference);
-                second.setMinValue(firstValue + tempSliderDoubleHandle.difference);
+                first.setMaxValue(Math.min(firstValueCeil, secondValue - tempSliderDoubleHandle.difference));
+                second.setMinValue(Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference));
 
                 first.value = firstValue;
                 second.value = secondValue;
@@ -273,16 +273,25 @@ Control {
             }
 
             //! Unit
-            Label {
+            Row {
                 id: rightUnitLbl
                 anchors.left: parent.right
                 anchors.top: parent.top
                 opacity: 0.6
-                font {
-                    pointSize: _root.font.pointSize / 2
-                    capitalization: "AllUppercase"
+
+                Label {
+                    y: parent.height / 9
+                    font.pointSize: Application.font.pointSize
+                    text: "\u00b0"
                 }
-                text: `\u00b0${unit}`
+
+                Label {
+                    font {
+                        pointSize: _root.font.pointSize / 2
+                        capitalization: "AllUppercase"
+                    }
+                    text: `${unit}`
+                }
             }
 
             Item {
@@ -312,16 +321,25 @@ Control {
             text: tempSliderDoubleHandle.first.value.toFixed(0)
 
             //! Unit
-            Label {
+            Row {
                 id: leftUnitLbl
                 anchors.left: parent.right
                 anchors.top: parent.top
                 opacity: 0.6
-                font {
-                    pointSize: _root.font.pointSize / 2
-                    capitalization: "AllUppercase"
+
+                Label {
+                    y: parent.height / 9
+                    font.pointSize: Application.font.pointSize
+                    text: "\u00b0"
                 }
-                text: `\u00b0${unit}`
+
+                Label {
+                    font {
+                        pointSize: _root.font.pointSize / 2
+                        capitalization: "AllUppercase"
+                    }
+                    text: `${unit}`
+                }
             }
 
             Item {
@@ -413,12 +431,13 @@ Control {
             PropertyChanges {
                 target: tempSliderDoubleHandle
                 visible: false
+                showGreySection: true
             }
 
             PropertyChanges {
                 target: coolHeatLbl
                 opacity: 0
-                y: coolHeatLbl.height
+                y: -coolHeatLbl.height
             }
         },
 
@@ -426,6 +445,13 @@ Control {
             extend: "non-auto-idle"
             when: device?.systemSetup?.systemMode !== AppSpec.Auto && _tempSlider.pressed
             name: "non-auto-dragging"
+
+            PropertyChanges {
+                target: coolHeatLbl
+                opacity: 0.65
+                y: leftTempLabel.y - coolHeatLbl.height
+                text: device?.systemSetup?.systemMode === AppSpec.Heating ? "Heat to" : "Cool to"
+            }
         },
 
         State {
@@ -455,6 +481,7 @@ Control {
             PropertyChanges {
                 target: tempSliderDoubleHandle
                 visible: true
+                showGreySection: true
             }
 
             PropertyChanges {
@@ -486,6 +513,11 @@ Control {
                 y: leftTempLabel.y - coolHeatLbl.height
                 text: "Heat to"
             }
+
+            PropertyChanges {
+                target: tempSliderDoubleHandle
+                showGreySection: false
+            }
         },
 
         State {
@@ -510,6 +542,11 @@ Control {
                 opacity: 0.65
                 y: rightTempLabel.y - coolHeatLbl.height
                 text: "Cool to"
+            }
+
+            PropertyChanges {
+                target: tempSliderDoubleHandle
+                showGreySection: false
             }
         }
     ]

@@ -22,17 +22,21 @@ Control {
     //! Difference between first and second values
     property real           difference: 2
 
+    //! Show grey section
+    property bool           showGreySection: true
+
     //! Difference between two values
     readonly property real  darkerShade: 3.8
 
     //! Holds whether slider is being dragged
     readonly property bool  pressed: firstHandleDh.dragging || secondHandleDh.dragging
 
-    property real maxAutoMinTemp: AppSpec.maxAutoMinTemp
-    property real minAutoMaxTemp: AppSpec.minAutoMaxTemp
+    //! Some other limitations for first and second values
+    property real firstValueCeil: AppSpec.maxAutoMinTemp
+    property real secondValueFloor: AppSpec.minAutoMaxTemp
 
-    onMaxAutoMinTempChanged: first.setMaxValue(maxAutoMinTemp);
-    onMinAutoMaxTempChanged: second.setMinValue(minAutoMaxTemp);
+    onFirstValueCeilChanged: first.setMaxValue(firstValueCeil);
+    onSecondValueFloorChanged: second.setMinValue(secondValueFloor);
 
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
@@ -41,7 +45,7 @@ Control {
         value: from
 
         Component.onCompleted: {
-            setMaxValue(maxAutoMinTemp);
+            setMaxValue(firstValueCeil);
         }
 
         onValueChanged: {
@@ -49,7 +53,7 @@ Control {
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set min value of second handler
-            second.setMinValue(Math.max(minAutoMaxTemp, value + difference));
+            second.setMinValue(Math.max(secondValueFloor, value + difference));
         }
     }
 
@@ -60,7 +64,7 @@ Control {
         value: to
 
         Component.onCompleted: {
-            setMinValue(minAutoMaxTemp);
+            setMinValue(secondValueFloor);
         }
 
         onValueChanged: {
@@ -68,7 +72,7 @@ Control {
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set max value of first handler
-            first.setMaxValue(Math.min(maxAutoMinTemp, value - difference));
+            first.setMaxValue(Math.min(firstValueCeil, value - difference));
         }
     }
 
@@ -145,7 +149,7 @@ Control {
                 capStyle: ShapePath.RoundCap
                 fillColor: "transparent"
                 strokeWidth: background.pathWidth
-                strokeColor: Qt.darker(Style.accent, 1.2)
+                strokeColor: showGreySection ? Qt.darker(Style.accent, 1.2) : "transparent"
 
                 PathAngleArc {
                     centerX: background.shapeWidth / 2
@@ -188,7 +192,7 @@ Control {
             var valueRange = Math.abs(to - from);
             return (Math.max((first.value - from) / (valueRange > 0 ? valueRange : 1), 0) * angleRange) % 360
         }
-        enabled: secondHandleDh.dragging ? 0.65 : 1.
+        opacity: secondHandleDh.dragging ? 0.65 : 1.
 
         Rectangle {
             id: firstHandleCircle
@@ -265,7 +269,7 @@ Control {
                     angle = angle < -170 ? angle + 360 : angle;
                     var diffAngle = angle - startAngle;
                     var newValue = first.value + diffAngle / (firstHandle.angleRange) * Math.abs(to - from);
-                    first.setValue(Math.max(from, Math.min(to, newValue)));
+                    first.setValue(Math.max(from, Math.min(firstValueCeil, to, newValue)));
 
 
                     startAngle = angle;
@@ -296,7 +300,7 @@ Control {
             var valueRange = Math.abs(to - from);
             return (((second.value - from) / (valueRange > 0 ? valueRange : 1)) * angleRange) % 360
         }
-        enabled: firstHandleDh.dragging ? 0.65 : 1.
+        opacity: firstHandleDh.dragging ? 0.65 : 1.
 
         Rectangle {
             id: secondHandleCircle
@@ -373,7 +377,7 @@ Control {
                     angle = angle < -170 ? angle + 360 : angle;
                     var diffAngle = angle - startAngle;
                     var newValue = second.value + diffAngle / (secondHandle.angleRange) * Math.abs(to - from);
-                    second.setValue(Math.max(from, Math.min(to, newValue)));
+                    second.setValue(Math.max(secondValueFloor, from, Math.min(to, newValue)));
 
 
                     startAngle = angle;

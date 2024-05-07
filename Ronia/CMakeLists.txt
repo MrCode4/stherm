@@ -36,6 +36,8 @@ qt_add_qml_module(RoniaStyle
         TextField.qml
         Slider.qml
         ScrollIndicator.qml
+        ComboBox.qml
+
         LimitedRangeSlider.qml
 )
 

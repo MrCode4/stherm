@@ -47,7 +47,7 @@ QtObject {
 
     //! Maximum and Minimum temperature in Celsius
     property real               _minimumTemperatureC: Math.floor(Utils.fahrenheitToCelsius(_minimumTemperatureF))
-    property real               _maximumTemperatureC: Math.ceil(Utils.fahrenheitToCelsius(_maximumTemperatureF))
+    property real               _maximumTemperatureC: Math.floor(Utils.fahrenheitToCelsius(_maximumTemperatureF))
 
     //! Actual values of minimum and maximum temperatures based on temperature unit
     property real               _minimumTemperature:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah

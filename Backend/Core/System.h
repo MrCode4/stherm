@@ -224,6 +224,8 @@ signals:
 
     void isManualModeChanged();
 
+    void updateNoChecked();
+
 private:
 
     //! verify dounloaded files and prepare to set up.
