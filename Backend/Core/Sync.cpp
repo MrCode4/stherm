@@ -342,7 +342,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                             } else {
                                 TRACE << "Invalid date format! cpp set last_update:";
                             }
-                            if (!dateTimeObject.isValid() || mLastPushTime >= dateTimeObject) {
+                            if (!mLastPushTime.isNull() && (!dateTimeObject.isValid() || mLastPushTime >= dateTimeObject)) {
                                 errorString = "Received settings has invalid date last_update: " + dateTimeObject.toString();
                                 Q_EMIT invalidSettingsReceived();
 
