@@ -318,10 +318,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
             m_scheme->moveToUpdatingMode();
         });
-    }
 
-    // Thge system prepare the direcories for usage
-    m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
+        // Thge system prepare the direcories for usage
+        m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
+    }
 
     // save data to csv file
     // update the timer intervals when sample rate changed.
@@ -1062,14 +1062,17 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
     auto directoryHasSpace = m_system->checkDirectorySpaces("/mnt/data/sensor");
 
-    const QString filePath = "/mnt/data/sensor/sensorData.csv";
+    QString filePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sensorData.csv";
     const QString dateTimeHeader = "DateTime UTC (sec)";
+
+#ifdef __unix__
+    filePath = "/mnt/data/sensor/sensorData.csv";
+#endif
 
     const QStringList header = {dateTimeHeader, temperatreKey, humidityKey,
                                 co2Key, etohKey, TvocKey,
                                 iaqKey, pressureKey, RangeMilliMeterKey,
                                 brightnessKey, fanSpeedKey};
-
     QFile file(filePath);
 
     if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
