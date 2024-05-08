@@ -61,6 +61,7 @@ private:
      * ****************************************************************************************/
     bool mHasClient;
     QString mSerialNumber;
+    QDateTime mLastPushTime;
     QVariantMap mContractorInfo;
 
     cpuid_t mSystemUuid;
