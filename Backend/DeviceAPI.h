@@ -49,6 +49,8 @@ public:
     //! Forget device configs
     void ForgetDevice();
 
+    NUVE::DeviceConfig deviceConfig() const;
+
 signals:
     void uidChanged();
 

@@ -68,3 +68,8 @@ NUVE::Timing* DeviceAPI::timing() {
 void DeviceAPI::ForgetDevice() {
     m_deviceConfig.initialise("");
 }
+
+NUVE::DeviceConfig DeviceAPI::deviceConfig() const
+{
+    return m_deviceConfig;
+}

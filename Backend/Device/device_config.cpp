@@ -20,6 +20,9 @@ void NUVE::DeviceConfig::init()
 
     // DELETE FROM current_stage WHERE 1=1; INSERT INTO current_stage(mode,stage,timestamp,blink_mode,s2offtime) VALUES(0,0,current_timestamp,0,current_timestamp - interval '5 minute')", true);
 
+    // Save a record every minute
+    sampleRate = 1;
+
     soft_v = swVer;
     hard_v = hwVer;
     mode = 1;
@@ -51,6 +54,10 @@ void NUVE::DeviceConfig::load()
     QSettings config("/usr/local/bin/device_config.ini", QSettings::IniFormat);
     uid = config.value("uid").toString().toStdString();
     serial_number = config.value("serial_number").toString().toStdString();
+    bool ok;
+    auto sr = config.value("sampleRate").toInt(&ok);
+    if (ok)
+        sampleRate = sr;
 }
 
 void NUVE::DeviceConfig::save()
@@ -59,4 +66,5 @@ void NUVE::DeviceConfig::save()
 
     config.setValue("uid", QString::fromStdString(uid));
     config.setValue("serial_number", QString::fromStdString(serial_number));
+    config.setValue("sampleRate", QString::number(sampleRate));
 }

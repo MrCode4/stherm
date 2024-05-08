@@ -17,6 +17,9 @@ struct DeviceConfig
     void load();
     void save();
 
+    // sampleRate use to save sensor data (minutes per record)
+    uint8_t  sampleRate;
+
     uint32_t soft_v;
     uint32_t hard_v;
     uint32_t mode;
