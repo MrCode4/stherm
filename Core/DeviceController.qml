@@ -28,7 +28,7 @@ I_DeviceController {
 
     property var  uiSession
 
-    //! Night mode brighness when screen saver is off.
+    //! Night mode brightness when screen saver is off.
     property real nightModeBrightness: -1
     property real targetNightModeBrightness: Math.min(50, (device.setting.adaptiveBrightness ? deviceControllerCPP.adaptiveBrightness : device.setting.brightness))
 
@@ -86,7 +86,7 @@ I_DeviceController {
         }
     }
 
-    //! The screen will gradually (within up to 3 seconds) set the screen brightness to targetNightModeBrighness
+    //! The screen will gradually (within up to 3 seconds) set the screen brightness to targetNightModebrightness
     property Timer brightnessTimer: Timer {
 
         property int steps: 1
@@ -861,7 +861,7 @@ I_DeviceController {
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = co2 // use iaq as indicator for air quality
-        //        device.setting.brightness = result?.brighness ?? 0
+        //        device.setting.brightness = result?.brightness ?? 0
 
         //        device.fan.mode?
 

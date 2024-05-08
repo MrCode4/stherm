@@ -64,7 +64,7 @@ public:
 
     //! 0 for off, percentage
     bool setFanSpeed(int speed);
-    //! TODO handles only the brighness for now
+    //! TODO handles only the brightness for now
     bool setSettings(QVariantList data);
 
     void sendRelays();

@@ -142,7 +142,7 @@ BasePageView {
         }
 
         Label {
-            text:root.model?.brighness  ?? ""
+            text:root.model?.brightness  ?? ""
             Layout.preferredWidth:  temperatureField.width
         }
 
