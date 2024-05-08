@@ -108,6 +108,12 @@ bool Sync::getSettings()
         loop.quit();
     });
 
+    // Quit from loop and change success to 'true'
+    connect(this, &NUVE::Sync::invalidSettingsReceived, &loop, [&loop] {
+        loop.setProperty("success", true);
+        loop.quit();
+    });
+
     loop.exec(QEventLoop::ExcludeSocketNotifiers);
     return loop.property("success").toBool();
 }
@@ -338,6 +344,8 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                             }
                             if (!dateTimeObject.isValid() || mLastPushTime >= dateTimeObject) {
                                 errorString = "Received settings has invalid date last_update: " + dateTimeObject.toString();
+                                Q_EMIT invalidSettingsReceived();
+
                             } else {
                                 Q_EMIT settingsReady(object.toVariantMap());
                             }
