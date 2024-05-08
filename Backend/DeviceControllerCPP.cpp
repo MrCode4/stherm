@@ -24,21 +24,6 @@ static  const QString m_BacklightState        = "Backlight state";
 static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
 
-/* ************************************************************************************************
- * Main data keys
- * ************************************************************************************************/
-const QString temperatreKey = QString("temperature");
-const QString humidityKey   = QString("humidity");
-const QString co2Key        = QString("co2");
-const QString etohKey       = QString("etoh");
-const QString TvocKey       = QString("Tvoc");
-const QString iaqKey        = QString("iaq");
-const QString pressureKey   = QString("pressure");
-const QString RangeMilliMeterKey   = QString("RangeMilliMeter");
-const QString brightnessKey = QString("brightness");
-const QString fanSpeedKey   = QString("fanSpeed");
-
-
 
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,

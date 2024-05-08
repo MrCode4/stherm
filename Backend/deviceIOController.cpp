@@ -779,8 +779,8 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
                        sizeof(Luminosity));
 
                 QVariantMap resultMap;
-                resultMap.insert("RangeMilliMeter", RangeMilliMeter);
-                resultMap.insert("brightness", Luminosity);
+                resultMap.insert(RangeMilliMeterKey, RangeMilliMeter);
+                resultMap.insert(brightnessKey, Luminosity);
                 emit tofDataReady(resultMap);
 
                 checkTOFRangeValue(RangeMilliMeter);
@@ -847,16 +847,16 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
 
                 // Prepare data and send to ui
                 QVariantMap mainDataMap;
-                mainDataMap.insert("temperature",     mainDataValues.temp);
-                mainDataMap.insert("humidity",        mainDataValues.humidity);
-                mainDataMap.insert("co2",             mainDataValues.c02);
-                mainDataMap.insert("etoh",            mainDataValues.etoh);
-                mainDataMap.insert("Tvoc",            mainDataValues.Tvoc);
-                mainDataMap.insert("iaq",             mainDataValues.iaq);
-                mainDataMap.insert("pressure",        mainDataValues.pressure);
-                mainDataMap.insert("RangeMilliMeter", RangeMilliMeter);
-                mainDataMap.insert("brightness",       Luminosity);
-                mainDataMap.insert("fanSpeed",        fanSpeed);
+                mainDataMap.insert(temperatreKey,     mainDataValues.temp);
+                mainDataMap.insert(humidityKey,        mainDataValues.humidity);
+                mainDataMap.insert(co2Key,             mainDataValues.c02);
+                mainDataMap.insert(etohKey,            mainDataValues.etoh);
+                mainDataMap.insert(TvocKey,            mainDataValues.Tvoc);
+                mainDataMap.insert(iaqKey,             mainDataValues.iaq);
+                mainDataMap.insert(pressureKey,        mainDataValues.pressure);
+                mainDataMap.insert(RangeMilliMeterKey, RangeMilliMeter);
+                mainDataMap.insert(brightnessKey,       Luminosity);
+                mainDataMap.insert(fanSpeedKey,        fanSpeed);
 
                 emit mainDataReady(mainDataMap);
 
