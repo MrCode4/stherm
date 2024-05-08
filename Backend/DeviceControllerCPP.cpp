@@ -573,23 +573,24 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 }
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
-{    if (addToData) {
+{
+    if (addToData) {
+        //! Insert data to main data.
         for (const auto &pair : mainData.toStdMap()) {
             _mainData.insert(pair.first, pair.second);
         }
 
     } else {
-
         bool isOk;
         double tc = mainData.value(temperatreKey).toDouble(&isOk);
         if (isOk){
             mRawTemperature = tc;
 
             double dt = deltaCorrection();
+            // Fan status effect:
+            dt += mTEMPERATURE_COMPENSATION_T1;
             TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
             if (qAbs(dt) < 10) {
-                // Fan status effect:
-                dt += mTEMPERATURE_COMPENSATION_T1;
                 tc -= dt;
 
                 mainData.insert(temperatreKey, tc);
@@ -599,7 +600,7 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
         }
 
         if (mFanOff)
-            mainData.insert("fanSpeed", 0);
+            mainData.insert(fanSpeedKey, 0);
 
         if (_mainData == mainData)
             return;
