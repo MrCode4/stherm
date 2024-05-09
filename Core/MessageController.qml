@@ -193,10 +193,10 @@ QtObject {
         //! wrong password alert.
         function onIncorrectWifiPassword() {
             var message = "Wrong password, please try again.";
-            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+            showWifiInternetAlert(message, (new Date()).toLocaleString());
 
             // After password is wrong, Wifi and internet check afetr one minute.
-            checkInternetTimer.restart();
+            // checkInternetTimer.restart(); // disabled for now!
         }
     }
 

@@ -24,6 +24,12 @@ const QString m_HasClientSetting = QString("NUVE/SerialNumberClient");
 const QString m_ContractorSettings = QString("NUVE/Contractor");
 const QString m_requestJob      = QString("requestJob");
 
+inline QDateTime updateTimeStringToTime(const QString &timeStr) {
+    QString format = "yyyy-MM-dd HH:mm:ss";
+
+    return QDateTime::fromString(timeStr, format);
+}
+
 Sync::Sync(QObject *parent) : NetworkWorker(parent),
     mHasClient(false)
 {
@@ -98,6 +104,12 @@ bool Sync::getSettings()
     QEventLoop loop;
     connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit);
     connect(this, &NUVE::Sync::settingsReady, &loop, [&loop] {
+        loop.setProperty("success", true);
+        loop.quit();
+    });
+
+    // Quit from loop and change success to 'true'
+    connect(this, &NUVE::Sync::invalidSettingsReceived, &loop, [&loop] {
         loop.setProperty("success", true);
         loop.quit();
     });
@@ -207,9 +219,22 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
         switch (netReply->operation()) {
         case QNetworkAccessManager::PostOperation: {
-            TRACE << method << dataRaw << jsonDocObj << dataValue << dataValue.isObject() << jsonDoc.toJson().toStdString().c_str();
+            TRACE_CHECK(false) << method << dataRaw << jsonDocObj << dataValue << dataValue.isObject() << jsonDoc.toJson().toStdString().c_str();
 
             if (method == m_setSettings) {
+                // get the last update
+                auto dateString = jsonDocObj.value("data").toObject().value("setting").toObject().value("last_update");
+                TRACE << "cpp set last_update:" << dateString;
+                QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
+
+                if (dateTimeObject.isValid()) {
+                    // Use the dateTimeObject here with time information
+                    TRACE << "Date with time cpp set last_update: " << dateTimeObject << dateTimeObject.toString() ;
+                    mLastPushTime = dateTimeObject;
+                } else {
+                    TRACE << "Invalid date format! cpp set last_update:";
+                }
+
                 Q_EMIT pushSuccess();
             }
 
@@ -306,7 +331,25 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                     if (data.isObject()){
                         auto object = data.toObject();
                         if (object.value("sn").toString() == mSerialNumber){
-                            Q_EMIT settingsReady(object.toVariantMap());
+                            auto dateString = object.value("setting").toObject().value("last_update");
+                            TRACE << "cpp last_update:" << dateString;
+                            QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
+
+                            if (dateTimeObject.isValid()) {
+                                // Use the dateTimeObject here with time information
+                                TRACE << "Date with time cpp set last_update: " << dateTimeObject << dateTimeObject.toString()
+                                           << (mLastPushTime > dateTimeObject) << (mLastPushTime == dateTimeObject) << (mLastPushTime < dateTimeObject) ;
+                            } else {
+                                TRACE << "Invalid date format! cpp set last_update:";
+                            }
+                            if (!mLastPushTime.isNull() && (!dateTimeObject.isValid() || mLastPushTime >= dateTimeObject)) {
+                                errorString = "Received settings has invalid date last_update: " + dateTimeObject.toString();
+                                Q_EMIT invalidSettingsReceived();
+
+                            } else {
+                                Q_EMIT settingsReady(object.toVariantMap());
+                            }
+
                             break;
                         } else {
                             errorString = "Received settings belong to another device: " + mSerialNumber + ", " + object.value("sn").toString();

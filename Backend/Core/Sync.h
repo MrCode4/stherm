@@ -43,6 +43,10 @@ signals:
     void messagesLoaded();
     void requestJobDone();
 
+    //! Received settings that are invalid and do not require updating the model.
+    //! But The request for settings (getSettings) retrieval was successful.
+    void invalidSettingsReceived();
+
     void alert(QString msg);
 
     void pushSuccess();
@@ -61,6 +65,7 @@ private:
      * ****************************************************************************************/
     bool mHasClient;
     QString mSerialNumber;
+    QDateTime mLastPushTime;
     QVariantMap mContractorInfo;
 
     cpuid_t mSystemUuid;
