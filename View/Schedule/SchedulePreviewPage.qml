@@ -490,7 +490,7 @@ BasePageView {
             schedule.enable = true;
 
             //! Perform saving (and disconnecting from ScheduleOverlapPopup's signal
-            saveScheduleAndDisconnectScheduleOverlapPopup()
+            saveScheduleAndDisconnectScheduleOverlapPopup();
         }
 
         //! Makes editing schedule saved and disabled
@@ -596,6 +596,9 @@ BasePageView {
 
         // Emit schedule changed to call updateCurrentSchedules function in schedule controller.
         device.schedulesChanged();
+
+        //Displays a toast message for enabled schedule
+        uiSession.toastManager.showToast(schedulesController.prepareToastMessage(schedule));
 
         deviceController.pushSettings();
 

@@ -292,7 +292,12 @@ BasePageView {
     {
         if (schedulesController) {
             schedulesController.saveNewSchedule(_internal.newSchedule);
+
+            //If the schedule is enabled, show a proper toast message
+            if(_internal.newSchedule.enable === true)
+                uiSession.toastManager.showToast(schedulesController.prepareToastMessage(_internal.newSchedule));
         }
+
         deviceController.pushSettings();
 
         if (root.StackView.view) {

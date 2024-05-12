@@ -407,6 +407,70 @@ QtObject {
         }
     }
 
+    //Prepares a toast message to be shown upon addition or activation of a Schedule
+    function prepareToastMessage(sch:ScheduleCPP):string{
+        //Hold the prepared message which will be returned
+        var toastMessage;
+
+        //Preparing some DateTime related variables
+        var now = new Date();
+        var currentDate = Qt.formatDate(now, "ddd").slice(0, -1);
+        var scStartTime = Date.fromLocaleTimeString(Qt.locale(), sch.startTime, "hh:mm AP");
+        var scEndTime = Date.fromLocaleTimeString(Qt.locale(), sch.endTime, "hh:mm AP");
+        let runningDays = findRunningDays(sch.repeats, scStartTime, scEndTime, false);
+
+        //checks if the schecule is currently running
+        if (runningDays.includes(currentDate) && timeInRange(now,scStartTime,scEndTime)) {
+            toastMessage = sch.name + " is already running!";
+        }
+        //otherwise, calculates the remaining time until the nearest time the schedule planned to run
+        else{
+            //first day from now on which the schedule is planned for
+            var firstRunningDay=new Date(findNextDayofWeek(now,runningDays));
+
+            //Setting time as planned
+            firstRunningDay.setHours(scStartTime.getHours());
+            firstRunningDay.setMinutes(scStartTime.getMinutes());
+
+            //Calcules the remaining time from now on
+            var timeDifference = (firstRunningDay-now) ;
+
+            // Formats the remaining time properly for displaying
+            var minutes= Math.floor(timeDifference / 1000 / 60);
+            var hours= Math.floor(minutes / 60);
+            var days=Math.floor(hours / 24);
+
+            minutes = minutes % 60;
+            hours = hours % 24;
+
+            //The remaining time as proper message
+            toastMessage = sch.name + " will start in " + ((days > 0) ? (days + " days ") : " ") + hours +" hours " + minutes + " minutes ";
+        }
+        return toastMessage;
+    }
+
+    //Checks the repeating days of a schedule and finds the first day from now on
+    function findNextDayofWeek(currentDate,targetDays):Date{
+        var runningDays=targetDays.split(",");
+
+        //Iterating over week days
+        for (var i = 1; i <= 7; ++i) {
+            var nextDate = new Date(currentDate);
+
+            //Add one day to the current day in each iteration until a scheduled day is found
+            nextDate.setDate(currentDate.getDate() + i);
+
+            //Checks if the considered day is among the repeating days
+            if (runningDays.includes(Qt.formatDate(nextDate, "ddd").slice(0, -1))){
+
+                //returns the found date
+                return nextDate;
+            }
+        }
+
+        return null;
+    }
+
     property Timer _checkRunningTimer: Timer {
 
         running: runningScheduleEnabled

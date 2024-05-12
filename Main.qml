@@ -149,6 +149,7 @@ ApplicationWindow {
     UiSession {
         id: uiSessionId
         popupLayout: popUpLayoutId
+        toastManager:toastManagerId
     }
 
     StackLayout {
@@ -414,5 +415,21 @@ ApplicationWindow {
     //! MessagePopupView
     MessagePopupView {
         uiSession: uiSessionId
+    }
+
+    //ToastManager component for managing and displaying registered toasts
+    ToastManager{
+        id: toastManagerId
+        toastComponent:toastViewId
+    }
+
+    //Toast view for displaying toast messages
+    Toast{
+        id:toastViewId
+        width: parent.width - 40
+        height: 55
+        anchors.bottom:parent.bottom
+        anchors.bottomMargin: 15
+        anchors.horizontalCenter:parent.horizontalCenter
     }
 }
