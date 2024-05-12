@@ -253,6 +253,7 @@ private:
 
     //! Check force updates
     //! Return last force update version that in greater than current version, otherwise returns empty string
+    //! If test mode is true, and exist a new stage force update, device will be update to new stage force update.
     QString findForceUpdate(const QJsonObject updateJsonObject);
 
     //! Update Available versions

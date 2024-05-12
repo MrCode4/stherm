@@ -1171,6 +1171,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     updateAvailableVersions(mUpdateJsonObject);
 
+    // UpdatemHasForceUpdate in the findForceUpdate function.
     mHasForceUpdate = false;
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
     auto installableVersionKey = installLatestVersion ? latestVersionKey : findForceUpdate(mUpdateJsonObject);
@@ -1215,7 +1216,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     // installableVersionKey > currentVersion
     if (isVersionNewer(installableVersionKey, currentVersion)) {
         setUpdateAvailable(true);
-        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool() && !latestVersionObj.value(m_Staging).toBool();
 
         if (!mHasForceUpdate && notifyUser  && !mIsManualUpdate)
             emit notifyNewUpdateAvailable();
@@ -1299,7 +1299,8 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
     foreach (auto keyVersion, versions) {
         if (isVersionNewer(keyVersion, currentVersion)) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
-            if (obj.value(m_ForceUpdate).toBool() && !obj.value(m_Staging).toBool()) {
+            if (obj.value(m_ForceUpdate).toBool() && (mTestMode || !obj.value(m_Staging).toBool())) {
+                mHasForceUpdate = true;
                 return keyVersion;
             }
         }
