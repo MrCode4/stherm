@@ -498,6 +498,8 @@ void NmcliInterface::setupObserver()
     });
 
     connect(mNmcliObserver, &NmcliObserver::wifiNeedAuthentication, this, [&](const QString& ssid) {
+        if (ssid.isEmpty()) return;
+
         for (WifiInfo* wifi : mWifis) {
             if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
                 emit wifiNeedAuthentication(wifi);
