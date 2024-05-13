@@ -20,6 +20,9 @@ ApplicationWindow {
 
     property string     currentFile: uiSessionId.currentFile
 
+    //! deviceControllerCPP: Use in initialization of app
+    property DeviceControllerCPP deviceControllerCPP: uiSessionId.deviceController.deviceControllerCPP
+
     /* Object Properties
      * ****************************************************************************************/
     x: 10
@@ -51,18 +54,22 @@ ApplicationWindow {
         // Bind appModel to qsRootObject to capture loaded model from configuration.
         uiSessionId.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
 
-        if (uiSessionId.deviceController.deviceControllerCPP.checkUpdateMode()) {
+        // Remove saved files after restart and update the app and get settings from server
+        // to fix any errors that may have occurred after updating the app.
+        if (deviceControllerCPP.checkUpdateMode()) {
             QSFileIO.removeFile(uiSessionId.configFilePath);
             QSFileIO.removeFile(uiSessionId.recoveryConfigFilePath);
             QSFileIO.removeFile("sthermConfig.QQS.json");
 
             // Load app with defaults
+            console.info("Load the app with default settings");
             AppCore.defaultRepo.initRootObject("Device");
 
             // Update setting with server
-            uiSessionId.settingsReady = uiSessionId.deviceController.deviceControllerCPP.system.fetchSettings();
+            uiSessionId.settingsReady = deviceControllerCPP.system.fetchSettings();
 
         } else {
+            // Load model from the file after initialize setup, normal restart, etc...
 
             // Load the file
             // check if not exist uiSessionId.configFilePath
@@ -80,7 +87,6 @@ ApplicationWindow {
                 console.info("recovery Config file succesfully loaded.");
 
             } else {
-                console.info("Load the app with default settings");
                 AppCore.defaultRepo.initRootObject("Device");
             }
 

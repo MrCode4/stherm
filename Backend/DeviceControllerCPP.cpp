@@ -626,6 +626,7 @@ bool DeviceControllerCPP::checkSN()
         ScreenSaverManager::instance()->setAppActive(true);
 
     // System is no need update in snMode === 0
+    // After forget device state can not be zero (0)
     if (state == 0)
         m_system->setIsInitialSetup(false);
 
