@@ -45,7 +45,7 @@ ApplicationWindow {
         }
     }
 
-    //! Create defualt repo and root object to save and load
+    //! Create default repo and root object to save and load
     Component.onCompleted: {
 
         // Create and prepare DefaultRepo and RootModel as root.
