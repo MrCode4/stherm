@@ -332,6 +332,9 @@ private:
 
     QProcess mLogSender;
     QString mLogRemoteFolder;
+
+    // Stage or unstage force update that is newer than current version
+    QString mEarlierForceUpdateKey;
 };
 
 } // namespace NUVE

@@ -58,6 +58,10 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 //! return true when version1 > version2
 //! return false when version1 <= version2
 bool isVersionNewer(const QString& version1, const QString& version2) {
+
+    if (version1.isEmpty() || version2.isEmpty())
+        return false;
+
     QStringList parts1 = version1.split('.');
     QStringList parts2 = version2.split('.');
 
@@ -1171,10 +1175,18 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     updateAvailableVersions(mUpdateJsonObject);
 
-    // UpdatemHasForceUpdate in the findForceUpdate function.
+    // Update mHasForceUpdate in the findForceUpdate function.
     mHasForceUpdate = false;
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
     auto installableVersionKey = installLatestVersion ? latestVersionKey : findForceUpdate(mUpdateJsonObject);
+
+    // If the mLatestForceUpdateKey is newer than installableVersionKey (includes force unstage update)
+    // mLatestForceUpdateKey install first.
+    if (isVersionNewer(latestVersionKey, mEarlierForceUpdateKey)) {
+        installableVersionKey = mEarlierForceUpdateKey;
+        // Force install this version.
+        mHasForceUpdate = true;
+    }
 
     if (installableVersionKey.isEmpty())
         installableVersionKey = latestVersionKey;
@@ -1189,8 +1201,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
-
-
 
     auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
     auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
@@ -1289,24 +1299,37 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
         versions.removeOne("LatestVersion");
 
 
+    mEarlierForceUpdateKey = QString();
+
     // Last force update.
     std::sort(versions.begin(), versions.end(), isVersionNewer);
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
+    QString latestVersionKey;
 
-    // return the last force update that is greater than the current version
     foreach (auto keyVersion, versions) {
         if (isVersionNewer(keyVersion, currentVersion)) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
-            if (obj.value(m_ForceUpdate).toBool() && (mTestMode || !obj.value(m_Staging).toBool())) {
-                mHasForceUpdate = true;
-                return keyVersion;
+            auto isForce =  obj.value(m_ForceUpdate).toBool();
+
+            if (isForce) {
+                // Update latest version key (The earlie force version)
+                mEarlierForceUpdateKey = keyVersion;
+
+                // Update the last force update that is greater than the current version
+                if (latestVersionKey.isEmpty() && (mTestMode || !obj.value(m_Staging).toBool())) {
+                    mHasForceUpdate = true;
+                    latestVersionKey = keyVersion;
+                }
             }
+
+        } else {
+            break;
         }
     }
 
-    return QString();
+    return latestVersionKey;
 }
 
 void NUVE::System::rebootDevice()
