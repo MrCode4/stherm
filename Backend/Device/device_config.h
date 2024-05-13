@@ -17,8 +17,11 @@ struct DeviceConfig
     void load();
     void save();
 
+    //! Set the sample rate (maybe from server)
+    void setSampleRate(const uint32_t &sr);
+
     // sampleRate use to save sensor data (minutes per record)
-    uint8_t  sampleRate;
+    uint32_t  sampleRate;
 
     uint32_t soft_v;
     uint32_t hard_v;

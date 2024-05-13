@@ -20,7 +20,8 @@ void NUVE::DeviceConfig::init()
 
     // DELETE FROM current_stage WHERE 1=1; INSERT INTO current_stage(mode,stage,timestamp,blink_mode,s2offtime) VALUES(0,0,current_timestamp,0,current_timestamp - interval '5 minute')", true);
 
-    // Save a record every minute
+    // Save a record every 1 minute
+    // loaded at startup if exits in config! changing this in runtime.
     sampleRate = 1;
 
     soft_v = swVer;
@@ -47,6 +48,14 @@ void NUVE::DeviceConfig::init()
     humidifier_id = 3;
     hum_wiring = "";
     system_type = 1;
+}
+
+void NUVE::DeviceConfig::setSampleRate(const uint32_t& sr) {
+    if (sampleRate == sr)
+        return;
+
+    sampleRate = sr;
+    save();
 }
 
 void NUVE::DeviceConfig::load()

@@ -143,6 +143,10 @@ public:
     //! Forget device and system settings
     Q_INVOKABLE void forgetDevice();
 
+    //! TODO
+    //! Maybe call from server
+    Q_INVOKABLE void setSampleRate(const int sampleRate);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -214,12 +218,13 @@ private:
     // Store the raw main data
     QVariantMap _rawMainData;
 
-    // To avoid the first deviation in the average
 
     QVariantMap _mainData;
     QVariantMap _mainData_override;
     bool _override_by_file = false;
     double _temperatureLast = 0.0;
+
+    // To avoid the first deviation in the average
     bool _isFirstDataReceived = false;
 
     DeviceIOController *_deviceIO;

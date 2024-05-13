@@ -316,6 +316,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     auto sampleRate = _deviceAPI->deviceConfig().sampleRate;
     mSaveSensorDataTimer.setTimerType(Qt::PreciseTimer);
+    // TODO: check start condition
     mSaveSensorDataTimer.start(sampleRate * 60 * 1000);
 
 
@@ -327,6 +328,17 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
 
+void DeviceControllerCPP::setSampleRate(const int sampleRate) {
+    _deviceAPI->setSampleRate(sampleRate);
+
+    if (mSaveSensorDataTimer.isActive()) {
+        mSaveSensorDataTimer.stop();
+
+        auto sr = _deviceAPI->deviceConfig().sampleRate;
+        // TODO: check start condition
+        mSaveSensorDataTimer.start(sr * 60 * 1000);
+    }
+}
 
 bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {

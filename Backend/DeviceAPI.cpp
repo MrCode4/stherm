@@ -69,7 +69,14 @@ void DeviceAPI::ForgetDevice() {
     m_deviceConfig.initialise("");
 }
 
-NUVE::DeviceConfig DeviceAPI::deviceConfig() const
+const NUVE::DeviceConfig &DeviceAPI::deviceConfig() const
 {
     return m_deviceConfig;
+}
+
+void DeviceAPI::setSampleRate(const int sampleRate) {
+    if (sampleRate < 0)
+        return;
+
+    m_deviceConfig.setSampleRate(sampleRate);
 }
