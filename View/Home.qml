@@ -330,8 +330,11 @@ Control {
             // Temp
             deviceController.startMode = startMode;
 
+            let serialNumberOk = deviceController.deviceControllerCPP.checkSN()
+            let contractorInfoOk = deviceController.deviceControllerCPP.checkContractorInfo()
+
             //! Open a test mode page from home when app start with test mode.
-            if (startMode === 0) {
+            if (startMode === 0 || (serialNumberOk && contractorInfoOk)) {
                 uiSession.uiTetsMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
