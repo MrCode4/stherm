@@ -51,32 +51,46 @@ ApplicationWindow {
         // Bind appModel to qsRootObject to capture loaded model from configuration.
         uiSessionId.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
 
-        // Load the file
-        // check if not exist uiSessionId.configFilePath
-        // then load from relative path (sthermConfig.QSS.json)), and remove it
-        if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath)) {
-            console.info("Load the config file: ", uiSessionId.configFilePath);
-            console.info("Config file succesfully loaded.");
+        if (uiSessionId.deviceController.deviceControllerCPP.checkUpdateMode()) {
+            QSFileIO.removeFile(uiSessionId.configFilePath);
+            QSFileIO.removeFile(uiSessionId.recoveryConfigFilePath);
+            QSFileIO.removeFile("sthermConfig.QQS.json");
 
-        } else if (AppCore.defaultRepo.loadFromFile("sthermConfig.QQS.json")) {
-            console.info("Load the config file: sthermConfig.QQS.json");
-            console.info("old Config file succesfully loaded.");
+            // Load app with defaults
+            AppCore.defaultRepo.initRootObject("Device");
 
-        } else if (AppCore.defaultRepo.loadFromFile(uiSessionId.recoveryConfigFilePath)) {
-            console.info("Load the config file:", uiSessionId.recoveryConfigFilePath);
-            console.info("recovery Config file succesfully loaded.");
+            // Update setting with server
+            uiSessionId.settingsReady = uiSessionId.deviceController.deviceControllerCPP.system.fetchSettings();
 
         } else {
-            console.info("Load the app with default settings");
-            AppCore.defaultRepo.initRootObject("Device");
+
+            // Load the file
+            // check if not exist uiSessionId.configFilePath
+            // then load from relative path (sthermConfig.QSS.json)), and remove it
+            if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath)) {
+                console.info("Load the config file: ", uiSessionId.configFilePath);
+                console.info("Config file succesfully loaded.");
+
+            } else if (AppCore.defaultRepo.loadFromFile("sthermConfig.QQS.json")) {
+                console.info("Load the config file: sthermConfig.QQS.json");
+                console.info("old Config file succesfully loaded.");
+
+            } else if (AppCore.defaultRepo.loadFromFile(uiSessionId.recoveryConfigFilePath)) {
+                console.info("Load the config file:", uiSessionId.recoveryConfigFilePath);
+                console.info("recovery Config file succesfully loaded.");
+
+            } else {
+                console.info("Load the app with default settings");
+                AppCore.defaultRepo.initRootObject("Device");
+            }
+
+            // Remove the relative file from the directory.
+            QSFileIO.removeFile("sthermConfig.QQS.json");
+
+            // if any load was successful, write it to recovery
+            // defaults also saved.
+            console.log("Save recovery file: ", AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath));
         }
-
-        // Remove the relative file from the directory.
-        QSFileIO.removeFile("sthermConfig.QQS.json");
-
-        // if any load was successful, write it to recovery
-        // defaults also saved.
-        console.log("Save recovery file: ", AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath));
 
 
 
