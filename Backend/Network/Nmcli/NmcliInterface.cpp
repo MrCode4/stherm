@@ -519,8 +519,19 @@ void NmcliInterface::setupObserver()
 
 
     connect(mNmcliObserver, &NmcliObserver::wifiForgotten, this, [this](const QString& ssid) {
+        if (ssid.isEmpty()) {
+            return;
+        }
+
+        for (WifiInfo* wifi : mWifis) {
+            if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
+                wifi->setIsSaved(false);
+            }
+        }
+
         if (mConnectedWifi && (mConnectedWifi->ssid() == ssid
                                || mConnectedWifi->incorrectSsid() == ssid)) {
+            mConnectedWifi->setIsSaved(false);
             setConnectedWifi(nullptr);
         }
     });
