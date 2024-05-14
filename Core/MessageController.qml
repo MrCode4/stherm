@@ -233,6 +233,11 @@ QtObject {
         target: device
 
         function onCo2Changed() {
+            if (airConditionWatcher.sleep) {
+                airConditionWatcher.notify = (device.co2 > AppSpec.airQualityAlertThreshold);
+                return;
+            }
+
             if (device.co2 > AppSpec.airQualityAlertThreshold) {
                 airConditionWatcher.start();
 
@@ -243,14 +248,31 @@ QtObject {
     }
 
     property Timer airConditionWatcher: Timer {
+        property bool sleep: false
+
+        // To start the airConditionWatcher after sleep time
+        // The onCo2Changed slot may not be called after 24 hours
+        property bool notify: false
+
         repeat: false
         running: false
 
-        interval: 3 * 60 * 60 * 1000
+        interval: (sleep ? 24 : 3) * 60 * 60 * 1000
 
         onTriggered: {
-            var message = "Poor air quality detected. Please ventilate the room.";
-            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
+            if (sleep) {
+                sleep = false;
+
+                // Check time of alert
+                if (notify)
+                    start();
+
+            } else {
+                var message = "Poor air quality detected. Please ventilate the room.";
+                addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
+                sleep = true;
+                start();
+            }
         }
     }
 
