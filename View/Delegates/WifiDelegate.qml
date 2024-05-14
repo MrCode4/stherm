@@ -13,6 +13,7 @@ Control {
     /* Signals
      * ****************************************************************************************/
     signal clicked()
+    signal forgetClicked()
 
     /* Property declaration
      * ****************************************************************************************/
@@ -96,6 +97,19 @@ Control {
                 implicitHeight: 0
                 visible: wifi?.isConnecting ?? false
                 running: visible
+            }
+
+            ToolButton {
+                id: forgetBtn
+                Layout.alignment: Qt.AlignCenter
+                visible: wifi.isSaved && !wifi.connected
+                contentItem: RoniaTextIcon {
+                    font.pointSize: Style.fontIconSize.normalPt
+                    color: _root.Material.foreground
+                    text: FAIcons.xmark
+                }
+
+                onClicked: forgetClicked()
             }
         }
 

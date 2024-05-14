@@ -226,6 +226,8 @@ BasePageView {
                         onClicked: {
                             _wifisRepeater.currentIndex = index;
                         }
+
+                        onForgetClicked: NetworkInterface.forgetWifi(wifi);
                     }
                 }
             }
