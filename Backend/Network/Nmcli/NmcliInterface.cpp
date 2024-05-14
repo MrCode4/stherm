@@ -1,7 +1,7 @@
 #include "NmcliInterface.h"
-
 #include "Nmcli.h"
 
+#include <QDir>
 #include <QRegularExpression>
 
 //! Methods implementations
@@ -291,7 +291,7 @@ void NmcliInterface::addConnection(const QString& name,
     connect(mWifiProcess, &QProcess::finished, this,
         [&, name, ssid, password, security](int exitCode, QProcess::ExitStatus exitStatus) {
             if (exitStatus == QProcess::NormalExit && exitCode == 0) {
-                WifiInfo* newWifi = new WifiInfo(false, ssid, "", 100, security);
+                WifiInfo* newWifi = new WifiInfo(false, false, ssid, "", 100, security);
                 newWifi->setIsConnecting(true);
                 mWifis.push_back(newWifi);
 
@@ -374,6 +374,9 @@ int NmcliInterface::waitLoop(QProcess* process, int timeout) const
 void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode == 0) {
+        //! Use a QDir to check if a profile for a wifi network exists.
+        QDir consDir("/etc/NetworkManager/system-connections/");
+
         //! Holds currently connected wifi
         WifiInfo* currentWifi = nullptr;
 
@@ -411,6 +414,12 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
                 parsedWi.setSsid(mBssToCorrectSsidMap[parsedWi.bssid()]);
             }
 
+            //! Check if a profile for wifi this wifi connection exists.
+            if (consDir.exists(parsedWi.ssid() + QString(".nmconnection"))
+                || consDir.exists(parsedWi.incorrectSsid() + QString(".nmconnection"))) {
+                parsedWi.setIsSaved(true);
+            }
+
             //! Read SIGNAL line: it's in this form: SIGNAL:<signal>
             line = mRefreshProcess->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
@@ -444,6 +453,7 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
                     wifi = wifisBackup.takeAt(indexInBackup);
 
                     wifi->setConnected(parsedWi.connected());
+                    wifi->setIsSaved(parsedWi.isSaved());
                     wifi->setIncorrectSsid(parsedWi.incorrectSsid());
                     wifi->setSsid(parsedWi.ssid());
                     wifi->setBssid(parsedWi.bssid());
@@ -451,6 +461,7 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
                     wifi->setSecurity(parsedWi.security());
                 } else {
                     wifi = new WifiInfo(parsedWi.connected(),
+                                        parsedWi.isSaved(),
                                         parsedWi.ssid(),
                                         parsedWi.bssid(),
                                         parsedWi.strength(),
