@@ -227,7 +227,13 @@ BasePageView {
                             _wifisRepeater.currentIndex = index;
                         }
 
-                        onForgetClicked: NetworkInterface.forgetWifi(wifi);
+                        onForgetClicked: {
+                            if (uiSession) {
+                                //! Ask for forgeting this wifi
+                                _forgetDlg.wifiToForget = wifi;
+                                uiSession.popupLayout.displayPopUp(_forgetDlg, true);
+                            }
+                        }
                     }
                 }
             }
