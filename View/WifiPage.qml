@@ -172,6 +172,7 @@ BasePageView {
         //! Available networks Label
         Label {
             id: _availLbl
+            visible: _wifisRepeater.model.length > 0
             opacity: 0.7
             font.pointSize: Application.font.pointSize * 0.8
             text: "Available Networks"
