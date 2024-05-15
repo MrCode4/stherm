@@ -181,4 +181,9 @@ private:
 
     double m_backlightFactor = 0.0;
     QTimer m_backlightFactorUpdater;
+
+    QElapsedTimer m_TemperatureAlertET;
+    QElapsedTimer m_HumidityAlertET;
+    QElapsedTimer m_FanAlertET;
+    QElapsedTimer m_LightAlertET;
 };

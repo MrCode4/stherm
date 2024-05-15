@@ -22,6 +22,15 @@ QtObject {
 
     property bool activeAlerts: false
 
+    readonly property int alertInterval: 24 * 60 * 60 * 1000
+
+    //! Keep the last read
+    //! map <message, last read time>
+    property var lastRead: ([])
+
+    //! Keep the show/open messages
+    property var messagesShowing: []
+
     //! Active alerts after model is loaded
     property Timer activeAlertsTimer: Timer {
         running: device
@@ -200,44 +209,11 @@ QtObject {
         }
     }
 
-    //! Temperature sensor watcher (5 minutes)
-    property Timer temperatureWatcher: Timer {
-        interval: 15 * 60 * 1000
-        repeat: false
-        running: false
-    }
-
-    //! fan sensor watcher (2 hours)
-    property Timer fanWatcher: Timer {
-        interval: 5 * 60 * 60 * 1000
-        repeat: false
-        running: false
-    }
-
-    //! Humidity sensor watcher (5 minutes)
-    property Timer humidityWatcher: Timer {
-        interval: 15 * 60 * 1000
-        repeat: false
-        running: false
-    }
-
-    //! Light sensor watcher (24 hours)
-    property Timer lightWatcher: Timer {
-        interval: 24 * 60 * 60 * 1000
-        repeat: false
-        running: false
-    }
-
     //! Check air quility
     property Connections airConditionWatcherCon: Connections {
         target: device
 
         function onCo2Changed() {
-            if (airConditionWatcher.sleep) {
-                airConditionWatcher.notify = (device.co2 > AppSpec.airQualityAlertThreshold);
-                return;
-            }
-
             if (device.co2 > AppSpec.airQualityAlertThreshold) {
                 airConditionWatcher.start();
 
@@ -248,33 +224,24 @@ QtObject {
     }
 
     property Timer airConditionWatcher: Timer {
-        property bool sleep: false
-
-        // To start the airConditionWatcher after sleep time
-        // The onCo2Changed slot may not be called after 24 hours
-        property bool notify: false
-
         repeat: false
         running: false
 
-        interval: (sleep ? 24 : 3) * 60 * 60 * 1000
+        interval: 3 * 60 * 60 * 1000
 
         onTriggered: {
-            if (sleep) {
-                sleep = false;
-
-                // Send alert when notify is true
-                if (!notify) {
-                    return;
-                }
-
-            }
-
             var message = "Poor air quality detected. Please ventilate the room.";
-            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
 
-            sleep = true;
-            start();
+            var now = (new Date()).getTime();
+
+            if (messagesShowing.includes(message))
+                return;
+
+            if (Object.keys(lastRead).includes(message) &&
+                    (now - lastRead[message]) < alertInterval)
+                return;
+
+            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
         }
     }
 
@@ -287,6 +254,15 @@ QtObject {
 
             console.log("Alert: ", alertLevel, alertType, alertMessage);
 
+            if (messagesShowing.includes(alertMessage))
+                return;
+
+            var now = (new Date()).getTime();
+
+            if (Object.keys(lastRead).includes(alertMessage) &&
+                    (now - lastRead[alertMessage]) < alertInterval)
+                return;
+
             var messageType = Message.Type.Alert;
 
             //! Watch some sensor alerts
@@ -298,21 +274,13 @@ QtObject {
 
             case AppSpec.Alert_temp_low:
             case AppSpec.Alert_temp_high: {
-                if (temperatureWatcher.running)
-                    return;
-
                 messageType = Message.Type.SystemAlert;
-                temperatureWatcher.start();
 
             } break;
 
             case AppSpec.Alert_humidity_high:
             case AppSpec.Alert_humidity_low: {
-                if (humidityWatcher.running)
-                    return;
-
                 messageType = Message.Type.SystemAlert;
-                humidityWatcher.start();
 
             } break;
 
@@ -321,11 +289,8 @@ QtObject {
                 // TODO: The fan speed is wrong in the main data.
                 // Return temporary
                 return;
-                if (fanWatcher.running)
-                    return;
 
                 messageType = Message.Type.SystemAlert;
-                fanWatcher.start();
 
             } break;
 
@@ -333,11 +298,6 @@ QtObject {
             case AppSpec.Alert_Light_Low: {
                 //! silented for now!
                 return;
-
-                if (lightWatcher.running)
-                    return;
-
-                lightWatcher.start();
 
             } break;
 
@@ -367,5 +327,23 @@ QtObject {
             return false;
         }
         return true;
+    }
+
+    function addShowingMessage(message: string) {
+        messagesShowing.push(message);
+        messagesShowingChanged();
+    }
+
+    function removeShowingMessage(message: string) {
+        //! Remove when the alert closed by user.
+        var msgIndex = messagesShowing.findIndex((element, index) => element === message);
+        if (msgIndex > -1) {
+            //! Remove from messages shown
+            messagesShowing.splice(msgIndex, 1);
+            messagesShowingChanged();
+        }
+
+        var now = (new Date()).getTime();
+        lastRead[message] = now;
     }
 }
