@@ -263,16 +263,18 @@ QtObject {
             if (sleep) {
                 sleep = false;
 
-                // Check time of alert
-                if (notify)
-                    start();
+                // Send alert when notify is true
+                if (!notify) {
+                    return;
+                }
 
             } else {
-                var message = "Poor air quality detected. Please ventilate the room.";
-                addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
                 sleep = true;
                 start();
             }
+
+            var message = "Poor air quality detected. Please ventilate the room.";
+            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
         }
     }
 
