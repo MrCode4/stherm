@@ -634,15 +634,13 @@ bool DeviceControllerCPP::checkSN()
     return snMode;
 }
 
-bool DeviceControllerCPP::checkContractorInfo()
+void DeviceControllerCPP::checkContractorInfo()
 {
     auto info = m_system->getContractorInfo();
 
     Q_EMIT contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
                                  info.value("logo").toString(), info.value("url").toString(),
                                  info.value("tech").toString());
-
-    return !info.isEmpty();
 }
 
 void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)

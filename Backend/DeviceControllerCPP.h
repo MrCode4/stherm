@@ -122,7 +122,7 @@ public:
 
     Q_INVOKABLE bool checkSN();
 
-    Q_INVOKABLE bool checkContractorInfo();
+    Q_INVOKABLE void checkContractorInfo();
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
