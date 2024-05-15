@@ -268,13 +268,13 @@ QtObject {
                     return;
                 }
 
-            } else {
-                sleep = true;
-                start();
             }
 
             var message = "Poor air quality detected. Please ventilate the room.";
             addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
+
+            sleep = true;
+            start();
         }
     }
 
