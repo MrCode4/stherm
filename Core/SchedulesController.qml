@@ -426,14 +426,14 @@ QtObject {
         //otherwise, calculates the remaining time until the nearest time the schedule planned to run
         else{
             //first day from now on which the schedule is planned for
-            var firstRunningDay=new Date(findNextDayofWeek(now,runningDays));
+            var firstRunningDay=new Date(findNextDayofWeek(sch.startTime, runningDays));
 
             //Setting time as planned
             firstRunningDay.setHours(scStartTime.getHours());
             firstRunningDay.setMinutes(scStartTime.getMinutes());
 
             //Calcules the remaining time from now on
-            var timeDifference = (firstRunningDay-now) ;
+            var timeDifference = (firstRunningDay - now) ;
 
             // Formats the remaining time properly for displaying
             var minutes= Math.floor(timeDifference / 1000 / 60);
@@ -444,18 +444,30 @@ QtObject {
             hours = hours % 24;
 
             //The remaining time as proper message
-            toastMessage = sch.name + " will start in " + ((days > 0) ? (days + " days ") : " ") + hours +" hours " + minutes + " minutes ";
+            toastMessage = sch.name + " will start in "
+                    + ((days > 0) ? (days + " day" + (days > 1 ? "s " : " ")) : " ")
+                    + ((hours > 0) ? (hours + " hour" + (hours > 1 ? "s " : " ")) : " ")
+                    + minutes + " minutes ";
         }
         return toastMessage;
     }
 
     //Checks the repeating days of a schedule and finds the first day from now on
-    function findNextDayofWeek(currentDate,targetDays):Date{
+    function findNextDayofWeek(schStartTime, targetDays):Date
+    {
+        const schStartDtm = Date.fromLocaleTimeString(Qt.locale(), schStartTime, "hh:mm AP");
+        const currentDate = new Date;
         var runningDays=targetDays.split(",");
 
+        //! Check if start time has passed now. If it's not passed, next day of week might be the current day!
+        //! For example when start time is 17:00 and now is 16:00 (schedule will start in one hour
+        //! and next day of run is now)
+        var startTimePassedNow = schStartDtm < currentDate;
+
         //Iterating over week days
-        for (var i = 1; i <= 7; ++i) {
-            var nextDate = new Date(currentDate);
+        var i = startTimePassedNow ? 1 : 0;
+        for (; i <= 7; ++i) {
+            var nextDate = new Date;
 
             //Add one day to the current day in each iteration until a scheduled day is found
             nextDate.setDate(currentDate.getDate() + i);
