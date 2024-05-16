@@ -426,10 +426,7 @@ ApplicationWindow {
     //Toast view for displaying toast messages
     Toast{
         id:toastViewId
-        width: parent.width - 40
-        height: 55
-        anchors.bottom:parent.bottom
-        anchors.bottomMargin: 15
-        anchors.horizontalCenter:parent.horizontalCenter
+        x: (parent.width - width) / 2
+        y: parent.height - height - 16
     }
 }

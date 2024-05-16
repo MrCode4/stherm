@@ -1,4 +1,5 @@
 import QtQuick
+
 import Ronia
 
 /*! ***********************************************************************************************
@@ -7,39 +8,24 @@ import Ronia
  * ************************************************************************************************/
 
 //Root element which is a simple rounded and bordered rectangle
-Rectangle {
-    color: "gray"
-    radius: 10
-    border.width: 1
-    border.color: "lightgray"
-    opacity: 0 // Initially hidden
-
+Popup {
     property string message: "" // The toast message
 
-    Text {
-        anchors.centerIn: parent
+    horizontalPadding: 12
+    font.pointSize: Application.font.pointSize * 0.9
+    background: Rectangle {
+        color: Style.disabledColor
+        radius: height / 2
+        border.width: 1
+        border.color: Qt.lighter(color, 1.25)
+    }
+
+    contentItem: Label {
         text: message
-        color: "white"
-        font: _fontMetric.font
-    }
-
-    FontMetrics {
-        id: _fontMetric
-        font.pointSize: font.pointSize * 0.9
-    }
-
-    // Makes the toast element visible and displays the current toast message
-    function open(){
-        opacity=1.0;
-    }
-
-    //Hides the toast element after the specified duration in ToastManager
-    function close(){
-        opacity=0.0;
-    }
-
-    //Applys a simple fade-in/fade-out animation to the toast component
-    Behavior on opacity {
-        NumberAnimation{duration: 1000}
+        maximumLineCount: 2
+        wrapMode: "Wrap"
+        elide: "ElideRight"
+        verticalAlignment: "AlignVCenter"
+        horizontalAlignment: "AlignHCenter"
     }
 }
