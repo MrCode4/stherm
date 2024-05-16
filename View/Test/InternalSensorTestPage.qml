@@ -89,7 +89,13 @@ BasePageView {
         onClicked: {
             writeSensorData()
 
-            if (deviceController.startMode !== 0) {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
+                                              "uiSession": uiSession
+                                          })
+            }
+
+            /*if (deviceController.startMode !== 0) {
                 //! Next page
                 if (root.StackView.view) {
                     root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
@@ -103,7 +109,7 @@ BasePageView {
                                                   "uiSession": uiSession
                                               })
                 }
-            }
+            }*/
         }
     }
 

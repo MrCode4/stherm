@@ -32,6 +32,28 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
+    function nextPage() {
+        if (root.StackView.view) {
+
+            let serialNumberOk = deviceController.deviceControllerCPP.checkSN()
+
+            serialNumberOk = false
+
+            if (serialNumberOk) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+            }
+            else {
+                root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+            }
+        }
+    }
+
     Timer {
         id: fetchTimer
 
@@ -55,12 +77,7 @@ BasePageView {
         interval: 10000
         onTriggered: {
             once = true;
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
-            }
+            nextPage();
         }
     }
 
@@ -79,12 +96,7 @@ BasePageView {
         onClicked: {
             nextPageTimer.stop();
             nextPageTimer.once = true;
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                             "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                         });
-            }
+            nextPage();
         }
     }
 

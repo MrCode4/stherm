@@ -22,6 +22,13 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
+    InfoPopup {
+        id: infoPopup
+        message: "QR Code"
+        detailMessage: "Serial number is not valid.<br>Please rescan."
+        visible: false
+    }
+
     //! Finish button
     ToolButton {
         parent: root.header.contentItem
@@ -30,9 +37,25 @@ BasePageView {
         }
 
         onClicked: {
+            if (root.StackView.view) {
+
+                let serialNumberOk = deviceController.deviceControllerCPP.checkSN()
+
+                if (serialNumberOk) {
+                    deviceController.deviceControllerCPP.finalizeTesting()
+                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                           "uiSession": uiSession,
+                                           "backButtonVisible": false,
+                                           "initialSetup": true
+                                       });
+                }
+                else {
+                    infoPopup.open()
+                }
+            }
+
             //! Finish test, add delay to set relays
-            deviceController.deviceControllerCPP.finalizeTesting()
-            uiSession.showHome();
+            //uiSession.showHome();
         }
     }
 
