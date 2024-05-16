@@ -792,7 +792,20 @@ void DeviceControllerCPP::beginTesting()
         return;
     }
 
+    QString uid = _deviceAPI->uid();
+    QString sw = QCoreApplication::applicationVersion();
+    QString qt = qVersion();
+    QString nrf = getNRF_SW();
+    QString kernel = m_system->kernelBuildVersion();
+    QString ti = getTI_SW();
+
     writeTestResult("Test name", QString("Test Result"), "Description");
+    writeTestResult("UID", !uid.isEmpty(), uid);
+    writeTestResult("SW version", !sw.isEmpty(), sw);
+    writeTestResult("QT version", !qt.isEmpty(), qt);
+    writeTestResult("NRF version", !nrf.isEmpty(), nrf);
+    writeTestResult("Kernel version", !kernel.isEmpty(), kernel);
+    writeTestResult("TI version", !ti.isEmpty(), ti);
 }
 
 void DeviceControllerCPP::finalizeTesting()
