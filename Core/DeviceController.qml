@@ -497,9 +497,12 @@ I_DeviceController {
     }
 
     function pushSettings() {
-        pushUpdateToServer(true);
+        // we should not push before we fetch at least once successfully
+        if (deviceControllerCPP.system.fetchSuccessOnce)
+            pushUpdateToServer(true);
 
-        if (uiSession)
+        // we should not save before the app completely loaded
+        if (uiSession && uiSession.currentFile.length > 0)
             AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
     }
 

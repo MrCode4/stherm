@@ -458,7 +458,10 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
 bool NUVE::System::getUpdate(QString softwareVersion)
 {
     if (mCanFetchServer) {
-        return mSync->getSettings();
+        if (mSync->getSettings()){
+            setProperty("hasFetchSuccessOnce", true);
+            return true;
+        }
     }
 
     return false;
@@ -618,6 +621,11 @@ void NUVE::System::ForgetDevice()
     settings.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
 
     mSync->ForgetDevice();
+}
+
+bool NUVE::System::hasFetchSuccessOnce() const
+{
+    return property("hasFetchSuccessOnce").toBool();
 }
 
 bool NUVE::System::updateSequenceOnStart()
