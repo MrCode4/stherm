@@ -134,7 +134,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
         QSettings settings;
-        settings.setValue("m_updateOnStartKey", true);
+        settings.setValue(m_updateOnStartKey, true);
     });
 
     // Check: The downloader has been open for more than 30 seconds and has not received any bytes
@@ -459,7 +459,10 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
 bool NUVE::System::getUpdate(QString softwareVersion)
 {
     if (mCanFetchServer) {
-        return mSync->getSettings();
+        if (mSync->getSettings()){
+            setProperty("hasFetchSuccessOnce", true);
+            return true;
+        }
     }
 
     return false;
@@ -621,13 +624,21 @@ void NUVE::System::ForgetDevice()
     mSync->ForgetDevice();
 }
 
+bool NUVE::System::hasFetchSuccessOnce() const
+{
+    return property("hasFetchSuccessOnce").toBool();
+}
+
 bool NUVE::System::updateSequenceOnStart()
 {
     QSettings settings;
     auto update = settings.value(m_updateOnStartKey);
+    // TODO remove later
+    auto updateOld = settings.value("m_updateOnStartKey");
     settings.setValue(m_updateOnStartKey, false);
+    settings.setValue("m_updateOnStartKey", false);
 
-    return update.isValid() && update.toBool();
+    return (update.isValid() && update.toBool()) || (updateOld.isValid() && updateOld.toBool());
 }
 
 bool NUVE::System::hasForceUpdate()

@@ -347,6 +347,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                                 Q_EMIT invalidSettingsReceived();
 
                             } else {
+                                mLastPushTime = dateTimeObject;
                                 Q_EMIT settingsReady(object.toVariantMap());
                             }
 
