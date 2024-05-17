@@ -56,7 +56,8 @@ ApplicationWindow {
 
         // Remove saved files after restart and update the app and get settings from server
         // to fix any errors that may have occurred after updating the app.
-        if (deviceControllerCPP.checkUpdateMode()) {
+        // TODO we need a way to detect if we should remove the file
+        if (deviceControllerCPP.checkUpdateMode() && false) {
             QSFileIO.removeFile(uiSessionId.configFilePath);
             QSFileIO.removeFile(uiSessionId.recoveryConfigFilePath);
             QSFileIO.removeFile("sthermConfig.QQS.json");
