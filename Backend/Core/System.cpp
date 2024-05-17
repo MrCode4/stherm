@@ -59,9 +59,6 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 //! return false when version1 <= version2
 bool isVersionNewer(const QString& version1, const QString& version2) {
 
-    if (version1.isEmpty() || version2.isEmpty())
-        return false;
-
     QStringList parts1 = version1.split('.');
     QStringList parts2 = version2.split('.');
 
@@ -1180,14 +1177,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
     auto installableVersionKey = installLatestVersion ? latestVersionKey : findForceUpdate(mUpdateJsonObject);
 
-    // If the mLatestForceUpdateKey is newer than installableVersionKey (includes force unstage update)
-    // mLatestForceUpdateKey install first.
-    if (isVersionNewer(latestVersionKey, mEarlierForceUpdateKey)) {
-        installableVersionKey = mEarlierForceUpdateKey;
-        // Force install this version.
-        mHasForceUpdate = true;
-    }
-
     if (installableVersionKey.isEmpty())
         installableVersionKey = latestVersionKey;
 
@@ -1298,10 +1287,6 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
     if (versions.contains("LatestVersion"))
         versions.removeOne("LatestVersion");
 
-
-    mEarlierForceUpdateKey = QString();
-
-    // Last force update.
     std::sort(versions.begin(), versions.end(), isVersionNewer);
 
     // Check version (app and latest)
@@ -1314,16 +1299,12 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
             auto isForce =  obj.value(m_ForceUpdate).toBool();
 
             if (isForce) {
-                // Update latest version key (The earlie force version)
-                mEarlierForceUpdateKey = keyVersion;
-
-                // Update the last force update that is greater than the current version
-                if (latestVersionKey.isEmpty() && (mTestMode || !obj.value(m_Staging).toBool())) {
+                // Update the earlier force update that is greater than the current version
+                if (mTestMode || !obj.value(m_Staging).toBool()) {
                     mHasForceUpdate = true;
                     latestVersionKey = keyVersion;
                 }
             }
-
         } else {
             break;
         }

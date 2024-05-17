@@ -252,8 +252,7 @@ private:
     void updateLog(const QJsonObject updateJsonObject);
 
     //! Check force updates
-    //! Return last force update version that in greater than current version, otherwise returns empty string
-    //! If test mode is true, and exist a new stage force update, device will be update to new stage force update.
+    //! Return first force update version (consider test mode and stage) that in greater than current version, otherwise returns empty string
     QString findForceUpdate(const QJsonObject updateJsonObject);
 
     //! Update Available versions
@@ -332,9 +331,6 @@ private:
 
     QProcess mLogSender;
     QString mLogRemoteFolder;
-
-    // Stage or unstage force update that is newer than current version
-    QString mEarlierForceUpdateKey;
 };
 
 } // namespace NUVE
