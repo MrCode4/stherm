@@ -481,7 +481,7 @@ I_DeviceController {
         return true;
     }
 
-    function pushUpdateToServer(settings: bool){        
+    function pushUpdateToServer(settings: bool){
         if (settings)
             settingsPush.hasSettings = true
 

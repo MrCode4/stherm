@@ -583,6 +583,8 @@ bool DeviceControllerCPP::checkUpdateMode()
     if (updateMode) { // or intial mode, in this case disable fetching after one time fetching
         //            Run API to get settings from server (sync, getWirings, )
         TRACE << "getting settings from server";
+        //if (m_system)
+        //    m_system->getUpdate();
     }
 
     return updateMode;
