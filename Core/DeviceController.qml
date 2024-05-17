@@ -485,7 +485,8 @@ I_DeviceController {
         if (settings)
             settingsPush.hasSettings = true
 
-        if (settingsPush.running)
+        // we should not push before we fetch at least once successfully
+        if (settingsPush.running || !deviceControllerCPP.system.fetchSuccessOnce)
             return;
 
         if (settingsPushRetry.running)
@@ -497,9 +498,7 @@ I_DeviceController {
     }
 
     function pushSettings() {
-        // we should not push before we fetch at least once successfully
-        if (deviceControllerCPP.system.fetchSuccessOnce)
-            pushUpdateToServer(true);
+        pushUpdateToServer(true);
 
         // we should not save before the app completely loaded
         if (uiSession && uiSession.currentFile.length > 0)
@@ -870,6 +869,7 @@ I_DeviceController {
 
         if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
             _pushUpdateInformationCounter++;
+
             pushUpdateToServer(false);
         }
 

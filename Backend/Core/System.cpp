@@ -133,7 +133,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
         QSettings settings;
-        settings.setValue("m_updateOnStartKey", true);
+        settings.setValue(m_updateOnStartKey, true);
     });
 
     // Check: The downloader has been open for more than 30 seconds and has not received any bytes
@@ -632,9 +632,12 @@ bool NUVE::System::updateSequenceOnStart()
 {
     QSettings settings;
     auto update = settings.value(m_updateOnStartKey);
+    // TODO remove later
+    auto updateOld = settings.value("m_updateOnStartKey");
     settings.setValue(m_updateOnStartKey, false);
+    settings.setValue("m_updateOnStartKey", false);
 
-    return update.isValid() && update.toBool();
+    return (update.isValid() && update.toBool()) || (updateOld.isValid() && updateOld.toBool());
 }
 
 bool NUVE::System::hasForceUpdate()

@@ -208,6 +208,13 @@ QSRepositoryCpp {
             }
 
             var fileObjects = JSON.parse(jsonString);
+
+            // Check root object
+            if(!fileObjects.hasOwnProperty("root") || !fileObjects.root) {
+                console.log("[QSRepo] The root object is corrupted, aborting");
+                return false;
+            }
+
             return loadRepo(fileObjects);
 
         } catch (e) {
