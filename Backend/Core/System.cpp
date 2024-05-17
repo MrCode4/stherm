@@ -1316,7 +1316,7 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
                     latestVersionKey = keyVersion;
                 }
             }
-        } else {
+        } else { // to skip checking further versions which all are lower!
             break;
         }
     }
