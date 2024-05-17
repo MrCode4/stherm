@@ -65,6 +65,8 @@ ApplicationWindow {
             console.info("Load the app with default settings");
             AppCore.defaultRepo.initRootObject("Device");
 
+            uiSessionId.currentFile = "Update Device";
+
             // Update setting with server
             uiSessionId.settingsReady = deviceControllerCPP.system.fetchSettings();
 
@@ -77,17 +79,21 @@ ApplicationWindow {
             if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath)) {
                 console.info("Load the config file: ", uiSessionId.configFilePath);
                 console.info("Config file succesfully loaded.");
+                uiSessionId.currentFile = uiSessionId.configFilePath;
 
             } else if (AppCore.defaultRepo.loadFromFile("sthermConfig.QQS.json")) {
                 console.info("Load the config file: sthermConfig.QQS.json");
                 console.info("old Config file succesfully loaded.");
+                uiSessionId.currentFile = "sthermConfig.QQS.json";
 
             } else if (AppCore.defaultRepo.loadFromFile(uiSessionId.recoveryConfigFilePath)) {
                 console.info("Load the config file:", uiSessionId.recoveryConfigFilePath);
                 console.info("recovery Config file succesfully loaded.");
+                uiSessionId.currentFile = uiSessionId.recoveryConfigFilePath;
 
             } else {
                 AppCore.defaultRepo.initRootObject("Device");
+                uiSessionId.currentFile = "Device";
             }
 
             // Remove the relative file from the directory.

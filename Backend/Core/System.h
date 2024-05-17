@@ -30,6 +30,8 @@ class System : public NetworkWorker
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
+    Q_PROPERTY(bool fetchSuccessOnce   READ hasFetchSuccessOnce  FINAL)
+
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
@@ -175,6 +177,8 @@ public:
 
     //! Forget device settings and sync settings
     Q_INVOKABLE void ForgetDevice();
+
+    bool hasFetchSuccessOnce() const;
 
 protected slots:
     //! Process network replay
