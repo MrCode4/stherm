@@ -256,7 +256,7 @@ private:
     void updateLog(const QJsonObject updateJsonObject);
 
     //! Check force updates
-    //! Return last force update version that in greater than current version, otherwise returns empty string
+    //! Return first force update version (consider test mode and stage) that in greater than current version, otherwise returns empty string
     QString findForceUpdate(const QJsonObject updateJsonObject);
 
     //! Update Available versions
