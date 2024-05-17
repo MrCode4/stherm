@@ -390,7 +390,7 @@ Control {
             // snMode === 1 or 0
             if (snMode !== 2) {
                 //! Setting is ready in device or not
-                if (!uiSessionId.settingsReady)
+                if (!uiSession.settingsReady)
                     uiSession.settingsReady = (snMode === 0);
 
                 // should be done by timer as can cause crash
