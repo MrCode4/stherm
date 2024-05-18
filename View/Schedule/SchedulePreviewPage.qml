@@ -598,7 +598,8 @@ BasePageView {
         device.schedulesChanged();
 
         //Displays a toast message for enabled schedule
-        uiSession.toastManager.showToast(schedulesController.prepareToastMessage(schedule));
+        if (schedule.enable)
+            uiSession.toastManager.showToast(schedulesController.prepareToastMessage(schedule));
 
         deviceController.pushSettings();
 
