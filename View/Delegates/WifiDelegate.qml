@@ -102,7 +102,7 @@ Control {
             ToolButton {
                 id: forgetBtn
                 Layout.alignment: Qt.AlignCenter
-                visible: wifi.isSaved && !wifi.connected
+                visible: (wifi?.isSaved && !wifi?.connected) ?? false
                 contentItem: RoniaTextIcon {
                     font.pointSize: Style.fontIconSize.normalPt
                     color: _root.Material.foreground
