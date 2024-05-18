@@ -83,7 +83,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mUpdateAvailable (false),
     mHasForceUpdate(false),
     mIsInitialSetup(false),
-    mTestMode(false)
+    mTestMode(false),
+    mIsNightModeRunning(false)
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -489,13 +490,15 @@ void NUVE::System::wifiConnected(bool hasInternet) {
         return;
     }
 
-    mUpdateTimer.start();
 
     // When is initial setup, skip update Information as we want to wait until its complete!
     if (!mIsInitialSetup)
         getUpdateInformation(true);
 
-    getBackdoorInformation();
+    if (!mIsNightModeRunning) {
+        mUpdateTimer.start();
+        getBackdoorInformation();
+    }
 }
 
 void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
@@ -627,6 +630,20 @@ void NUVE::System::ForgetDevice()
 bool NUVE::System::hasFetchSuccessOnce() const
 {
     return property("hasFetchSuccessOnce").toBool();
+}
+
+void NUVE::System::setNightModeRunning(const bool running) {
+    if (mIsNightModeRunning == running)
+        return;
+
+    mIsNightModeRunning = running;
+
+    if (mIsNightModeRunning) {
+        mUpdateTimer.stop();
+
+    } else {
+        mUpdateTimer.start();
+    }
 }
 
 bool NUVE::System::updateSequenceOnStart()

@@ -331,6 +331,8 @@ void DeviceControllerCPP::nightModeControl(bool start)
 
     mIsNightModeRunning = start;
 
+    m_system->setNightModeRunning(start);
+
     if (start) {
         mNightModeTimer.start();
         m_system->cpuInformation();
