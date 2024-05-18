@@ -542,15 +542,20 @@ void NmcliInterface::setupObserver()
         }
     });
 
-
     connect(mNmcliObserver, &NmcliObserver::wifiForgotten, this, [this](const QString& ssid) {
         if (ssid.isEmpty()) {
             return;
         }
 
-        for (WifiInfo* wifi : mWifis) {
-            if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
-                wifi->setIsSaved(false);
+        auto forgottenWifi = std::find_if(mWifis.cbegin(), mWifis.cend(), [&](WifiInfo* w) {
+            return w->ssid() == ssid || w->incorrectSsid() == ssid;
+        });
+        if (forgottenWifi != mWifis.end()) {
+            (*forgottenWifi)->setIsSaved(false);
+
+            if ((*forgottenWifi)->strength() < 0) { //! NOTE: Convention for saved non-in-range wifi
+                mWifis.erase(forgottenWifi);
+                emit wifisChanged();
             }
         }
 
