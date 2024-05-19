@@ -131,7 +131,7 @@ private:
     void sendAlertIfNeeded();
 
     //! Send relays into ti
-    void sendRelays();
+    void sendRelays(bool forceSend = false);
 
     //! Update vacation mode
     void updateVacationState();
@@ -200,7 +200,7 @@ private:
     double mSetPointHimidity;
 
     //! Temperature parameters (Fahrenheit)
-    double mCurrentTemperature;
+    double mCurrentTemperature = 20 * 1.8 + 32;
 
     //! Fahrenheit
     double mSetPointTemperature;
