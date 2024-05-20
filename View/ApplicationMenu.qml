@@ -106,7 +106,7 @@ BasePageView {
                     break;
 
                 case "System Update Stage":{
-                    uiSession.uiTetsMode = true;
+                    uiSession.uiTestMode = true;
                     deviceController.deviceControllerCPP.system.testMode = true;
                     _root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
@@ -114,7 +114,7 @@ BasePageView {
                 } break;
 
                 case "Test Mode": {
-                    uiSession.uiTetsMode = true;
+                    uiSession.uiTestMode = true;
                     _root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });

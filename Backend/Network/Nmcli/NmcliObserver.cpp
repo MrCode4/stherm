@@ -132,7 +132,7 @@ void NmcliObserver::onMonitorProcessReadReady()
                 if (message == NC_MSG_DISCONNECTED) {
                     //! Wifi is disconnected
                     emit wifiDisconnected();
-                } else if (message == NC_MSG_CONNECTION_FAILED) {
+                } else if (message == NC_MSG_CONNECTION_FAILED && !mConnectingWifiSsid.isEmpty()) {
                     //! Need authentication
                     emit wifiNeedAuthentication(mConnectingWifiSsid);
                     mConnectingWifiSsid = "";

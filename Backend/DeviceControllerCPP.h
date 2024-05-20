@@ -149,6 +149,7 @@ public:
     //! Forget device and system settings
     Q_INVOKABLE void forgetDevice();
 
+    Q_INVOKABLE bool checkUpdateMode();
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -186,7 +187,6 @@ private:
     static DeviceControllerCPP* sInstance;
 
     void startTestMode();
-    void checkUpdateMode();
 
     void setAdaptiveBrightness(const double adaptiveBrightness);
 
