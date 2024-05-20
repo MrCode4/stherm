@@ -41,7 +41,7 @@ BasePageView {
 
                 let serialNumberOk = deviceController.deviceControllerCPP.checkSN()
 
-                if (serialNumberOk) {
+                if (system.serialNumber.length > 0) {
                     deviceController.deviceControllerCPP.finalizeTesting()
                     root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
                                            "uiSession": uiSession,

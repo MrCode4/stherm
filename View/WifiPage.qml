@@ -21,8 +21,6 @@ BasePageView {
 
     property bool initialSetup: false
 
-    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
-
     //! Check update for first time
     property bool checkedUpdate: false;
 
@@ -36,12 +34,7 @@ BasePageView {
 
     function nextPage() {
         if (root.StackView.view) {
-
-            let serialNumberOk = deviceController.deviceControllerCPP.checkSN()
-
-            serialNumberOk = false
-
-            if (serialNumberOk) {
+            if (system.serialNumber.length > 0) {
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                               "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
@@ -57,20 +50,20 @@ BasePageView {
         }
     }
 
-    Timer {
+    /*Timer {
         id: fetchTimer
 
         repeat: true
-        running: initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady
+        running: initialSetup && !uiSession.settingsReady
         interval: 5000
 
         onTriggered: {
             uiSession.settingsReady = system.fetchSettings();
         }
-    }
+    }*/
 
     //! Once the network connection is established, the System Types page should automatically open,
-    Timer {
+    /*Timer {
         id: nextPageTimer
 
         property bool once : false
@@ -82,7 +75,7 @@ BasePageView {
             once = true;
             nextPage();
         }
-    }
+    }*/
 
     //! Next button
     ToolButton {
@@ -94,11 +87,11 @@ BasePageView {
             text: FAIcons.arrowRight
         }
 
-        // Enable when the serial number is correctly filled
-        enabled: initialSetupReady
+        // Enable when wifi is connected
+        enabled: _connectedWifiDelegate.visible
         onClicked: {
-            nextPageTimer.stop();
-            nextPageTimer.once = true;
+            //nextPageTimer.stop();
+            //nextPageTimer.once = true;
             nextPage();
         }
     }
