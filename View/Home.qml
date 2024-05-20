@@ -107,6 +107,8 @@ Control {
                 bottomMargin: -8
                 horizontalCenterOffset: -6
             }
+
+            visible: !deviceController.currentSchedule
             enabled: !deviceController.currentSchedule
             hoverEnabled: enabled
             deviceController: uiSession?.deviceController ?? null
