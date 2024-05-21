@@ -412,8 +412,11 @@ Control {
 
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {
-                if (deviceController.startMode !== 0 && deviceController.startMode !== -1){
+                if (deviceController.startMode !== -1){
                     deviceController.deviceControllerCPP.checkSN();
+
+                    // Send  check contractor info
+                    deviceController.deviceControllerCPP.checkContractorInfo();
                 }
             }
         }
