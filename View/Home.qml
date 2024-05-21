@@ -330,20 +330,8 @@ Control {
             // Temp
             deviceController.startMode = startMode;
 
-            deviceController.setInitialSetup(true);
-            //! Open WifiPage
-            if (mainStackView) {
-                mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
-                                       "uiSession": uiSession,
-                                       "backButtonVisible": false,
-                                       "initialSetup": true
-                                   });
-            }
-
-            /*let serialNumberOk = deviceController.deviceControllerCPP.checkSN()
-
             //! Open a test mode page from home when app start with test mode.
-            if (startMode === 0 || !serialNumberOk) {
+            if (startMode === 0 || system.serialNumber.length == 0) {
                 uiSession.uiTestMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
@@ -360,7 +348,7 @@ Control {
                                            "initialSetup": true
                                        });
                 }
-            }*/
+            }
         }
     }
 

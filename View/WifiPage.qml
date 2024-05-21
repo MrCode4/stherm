@@ -21,6 +21,8 @@ BasePageView {
 
     property bool initialSetup: false
 
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
+
     //! Check update for first time
     property bool checkedUpdate: false;
 
@@ -32,38 +34,20 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    function nextPage() {
-        if (root.StackView.view) {
-            if (system.serialNumber.length > 0) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
-            }
-            else {
-                uiSession.uiTestMode = true;
-                root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
-            }
-        }
-    }
-
-    /*Timer {
+    Timer {
         id: fetchTimer
 
         repeat: true
-        running: initialSetup && !uiSession.settingsReady
+        running: initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady
         interval: 5000
 
         onTriggered: {
             uiSession.settingsReady = system.fetchSettings();
         }
-    }*/
+    }
 
     //! Once the network connection is established, the System Types page should automatically open,
-    /*Timer {
+    Timer {
         id: nextPageTimer
 
         property bool once : false
@@ -73,9 +57,14 @@ BasePageView {
         interval: 10000
         onTriggered: {
             once = true;
-            nextPage();
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+            }
         }
-    }*/
+    }
 
     //! Next button
     ToolButton {
@@ -87,12 +76,17 @@ BasePageView {
             text: FAIcons.arrowRight
         }
 
-        // Enable when wifi is connected
-        enabled: _connectedWifiDelegate.visible
+        // Enable when the serial number is correctly filled
+        enabled: initialSetupReady
         onClicked: {
-            //nextPageTimer.stop();
-            //nextPageTimer.once = true;
-            nextPage();
+            nextPageTimer.stop();
+            nextPageTimer.once = true;
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                         });
+            }
         }
     }
 
