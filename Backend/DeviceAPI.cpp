@@ -32,15 +32,19 @@ int DeviceAPI::runDevice()
 
 int DeviceAPI::checkSN()
 {
+
+    // can take some time in the initial usage and restart, but not blocking ui as the WiFi is not connected for sure
+    auto sn_config = m_system->getSN(_uid);
+
     // Check serial number
     // serial number already set, starting normally
     if (m_deviceConfig.serial_number != "") {
         m_deviceConfig.start_mode = 0;
+        m_deviceConfig.serial_number = sn_config.first;
+        m_deviceConfig.save();
+
         return 0;
     }
-
-    // can take some time in the initial usage, but not blocking ui as the WiFi is not connected for sure
-    auto sn_config = m_system->getSN(_uid);
     if (!sn_config.second) {
 
         qWarning() << "serial number empty: " << sn_config.first.c_str();
