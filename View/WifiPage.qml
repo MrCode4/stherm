@@ -34,6 +34,27 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
+    function nextPage() {
+            if (root.StackView.view) {
+                nextPageTimer.stop();
+                nextPageTimer.once = true;
+                if (system.serialNumber.length > 0) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                                  "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                              });
+                }
+                else {
+                    uiSession.uiTestMode = true;
+                    root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                                                  "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                              });
+                }
+            }
+        }
+
+
     Timer {
         id: fetchTimer
 
@@ -55,15 +76,7 @@ BasePageView {
         repeat: false
         running: !once && initialSetupReady
         interval: 10000
-        onTriggered: {
-            once = true;
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
-            }
-        }
+        onTriggered: nextPage()
     }
 
     //! Next button
@@ -78,16 +91,7 @@ BasePageView {
 
         // Enable when the serial number is correctly filled
         enabled: initialSetupReady
-        onClicked: {
-            nextPageTimer.stop();
-            nextPageTimer.once = true;
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                             "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                         });
-            }
-        }
+        onClicked: nextPage()
     }
 
     RowLayout {
