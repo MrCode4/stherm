@@ -416,7 +416,7 @@ void NUVE::System::sendLog()
     }
 
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
@@ -1090,7 +1090,7 @@ void NUVE::System::createLogDirectoryOnServer()
 
     mLogRemoteFolder = m_logPath + sn;
     // Create remote path in case it doesn't exist, needed once! with internet access
-    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
+    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
                          arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     mLogSender.start("/bin/bash", {"-c", createPath});
 }
