@@ -165,7 +165,6 @@ ToolButton {
         onTriggered: {
             systemDelayCounter--;
         }
-
     }
 
     Connections {
