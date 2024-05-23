@@ -134,12 +134,14 @@ I_DeviceController {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {
+            // This is not a settings section, the QR URL is just part of the information
+            checkQRurl(settings.qr_url);
+
             if (!deviceControllerCPP.system.canFetchServer || settingsPush.running || settingsPushRetry.running) {
                 console.log("We have some changes that not applied on the server.")
                 return;
             }
 
-            checkQRurl(settings.qr_url)
             updateHoldServer(settings.hold)
             updateFanServer(settings.fan)
             setSettingsServer(settings.setting)
