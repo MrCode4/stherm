@@ -28,10 +28,43 @@ ToolButton {
         sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
         sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
         source: "qrc:/Stherm/Images/fan-on.png"
+
+        //! Animation for rotatin
+        Behavior on rotation {
+            enabled: fanAnimation.running
+            NumberAnimation
+            {
+                duration: fanAnimation.interval
+            }
+        }
+    }
+
+    //! Timer for fan animatin
+    Timer {
+        id: fanAnimation
+
+        interval: 250
+        running: false
+        repeat: true
+
+        onTriggered: {
+            logoImage.rotation += 45;
+        }
     }
 
     Connections {
         target: deviceController.deviceControllerCPP
+
+        //! Animate the fan image
+        function onFanWorkChanged(fanState: bool) {
+            if (fanState) {
+                fanAnimation.start();
+
+            } else {
+                fanAnimation.stop();
+                logoImage.rotation = 0;
+            }
+        }
 
         function onCurrentSystemModeChanged(state: int) {
             if (state === AppSpec.Cooling) {
