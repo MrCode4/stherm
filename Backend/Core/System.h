@@ -228,6 +228,8 @@ signals:
 
     void isManualModeChanged();
 
+    void fetchSettingsWithNewSN();
+
     void updateNoChecked();
 
 private:

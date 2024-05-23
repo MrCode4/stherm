@@ -52,6 +52,8 @@ signals:
     void pushSuccess();
     void pushFailed();
 
+    void fetchSettingsWithNewSN();
+
 private slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply) override;

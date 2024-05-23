@@ -262,6 +262,16 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
                     if (!mSerialNumber.isEmpty() && sn != mSerialNumber){
                         emit alert("The serial number does not match the last one.");
+
+                        if (mHasClient) {
+                            // Update SN for get settings
+                            mSerialNumber = sn;
+                            // Force to update with new settings
+                            mLastPushTime = QDateTime();
+                            // Fetch with new serial number
+                            emit fetchSettingsWithNewSN();
+                        }
+
                         TRACE << "The serial number does not match the last one." << mSerialNumber << sn;
                     } else if (sn.isEmpty()) {
                         emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");

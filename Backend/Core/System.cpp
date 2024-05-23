@@ -92,6 +92,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
+    connect(mSync, &NUVE::Sync::fetchSettingsWithNewSN, this, &NUVE::System::fetchSettingsWithNewSN);
+
     connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
         setCanFetchServer(true);
     });

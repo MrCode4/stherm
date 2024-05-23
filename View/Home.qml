@@ -405,22 +405,28 @@ Control {
         }
     }
 
-    //! checkSN when the internet is connected.
+    //! Force the app to fetch again with new serial number
     Connections {
-        id: snChecker
-        target: NetworkInterface
+        target: uiSession.popUps
 
-        function onHasInternetChanged() {
-            if (NetworkInterface.hasInternet) {
-                if (deviceController.startMode !== -1){
-                    deviceController.deviceControllerCPP.checkSN();
-
-                    // Send  check contractor info
-                    deviceController.deviceControllerCPP.checkContractorInfo();
-                }
-            }
+        function onFetchSettingsWithNewSN() {
+            uiSession.settingsReady = false;
         }
     }
+
+    //! checkSN when the internet is connected.
+       Connections {
+           id: snChecker
+           target: NetworkInterface
+
+           function onHasInternetChanged() {
+               if (NetworkInterface.hasInternet) {
+                   if (deviceController.startMode !== 0 && deviceController.startMode !== -1){
+                       deviceController.deviceControllerCPP.checkSN();
+                   }
+               }
+           }
+       }
 
     /* States and Transitions
      * ****************************************************************************************/
