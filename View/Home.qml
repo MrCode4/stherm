@@ -407,7 +407,7 @@ Control {
 
     //! Force the app to fetch again with new serial number
     Connections {
-        target: uiSession.popUps
+        target: deviceController.deviceControllerCPP.system
 
         function onFetchSettingsWithNewSN() {
             uiSession.settingsReady = false;
