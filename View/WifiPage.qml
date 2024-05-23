@@ -258,8 +258,38 @@ BasePageView {
 
             Item { Layout.fillWidth: true }
 
+            ToolButton {
+                checkable: false
+                checked: false
+                implicitWidth: 64
+                implicitHeight: implicitWidth
+                icon.width: 50
+                icon.height: 50
+
+                contentItem: RoniaTextIcon {
+                    anchors.fill: parent
+                    font.pointSize: Style.fontIconSize.largePt
+                    Layout.alignment: Qt.AlignLeft
+                    text: FAIcons.circleInfo
+                }
+
+                onClicked: {
+                    root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
+                                                 "uiSession": Qt.binding(() => uiSession)
+                                             })
+
+                }
+            }
+
+            Item { Layout.fillWidth: true }
+            Item {
+                visible: !connectBtn.visible
+                Layout.fillWidth: true
+            }
+
             //! Connect/Disconnect button
             ButtonInverted {
+                id: connectBtn
                 visible: _wifisRepeater.currentItem?.wifi ?? false
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
 
