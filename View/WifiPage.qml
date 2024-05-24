@@ -261,6 +261,7 @@ BasePageView {
             ToolButton {
                 checkable: false
                 checked: false
+                visible: initialSetup
                 implicitWidth: 64
                 implicitHeight: implicitWidth
                 icon.width: 50
