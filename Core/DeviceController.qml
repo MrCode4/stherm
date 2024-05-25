@@ -524,7 +524,7 @@ I_DeviceController {
 
         if (!editModeEnabled(AppSpec.EMSettings)) {
             if (!setSettings(settings.brightness, settings.speaker,
-                        settings.temperatureUnit, settings.brightness_mode))
+                        device.setting.tempratureUnit, settings.brightness_mode))
                 console.log("The system settings is not applied from server")
 
         } else {
@@ -572,7 +572,7 @@ I_DeviceController {
                 "brightness": device.setting.brightness,
                 "brightness_mode": device.setting.adaptiveBrightness ? 1 : 0,
                 "speaker": device.setting.volume,
-                "temperatureUnit": device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 1 : 0,
+                "temperatureUnit": 0, // Always celsius
                 "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour24 ? 1 : 0,
                 "currentTimezone": device.setting.currentTimezone.length > 0 ? device.setting.currentTimezone : "UTC",
                 "effectDst": device.setting.effectDst,
