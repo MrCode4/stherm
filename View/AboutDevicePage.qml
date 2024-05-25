@@ -104,7 +104,7 @@ BasePageView {
                         if (root.testCounter === 10) {
                             root.testCounter = 0;
                             if (root.StackView.view) {
-                                uiSession.uiTetsMode = true;
+                                uiSession.uiTestMode = true;
                                 root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                              "uiSession": uiSession
                                                          })

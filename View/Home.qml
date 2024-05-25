@@ -332,7 +332,7 @@ Control {
 
             //! Open a test mode page from home when app start with test mode.
             if (startMode === 0) {
-                uiSession.uiTetsMode = true;
+                uiSession.uiTestMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
@@ -390,7 +390,8 @@ Control {
             // snMode === 1 or 0
             if (snMode !== 2) {
                 //! Setting is ready in device or not
-                uiSession.settingsReady = (snMode === 0);
+                if (!uiSession.settingsReady)
+                    uiSession.settingsReady = (snMode === 0);
 
                 // should be done by timer as can cause crash
                 startupTimer.start()

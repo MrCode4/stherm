@@ -30,6 +30,8 @@ class System : public NetworkWorker
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
+    Q_PROPERTY(bool fetchSuccessOnce   READ hasFetchSuccessOnce  FINAL)
+
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
@@ -179,6 +181,8 @@ public:
     //! Forget device settings and sync settings
     Q_INVOKABLE void ForgetDevice();
 
+    bool hasFetchSuccessOnce() const;
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -255,7 +259,7 @@ private:
     void updateLog(const QJsonObject updateJsonObject);
 
     //! Check force updates
-    //! Return last force update version that in greater than current version, otherwise returns empty string
+    //! Return first force update version (consider test mode and stage) that in greater than current version, otherwise returns empty string
     QString findForceUpdate(const QJsonObject updateJsonObject);
 
     //! Update Available versions

@@ -233,7 +233,7 @@ void Scheme::run()
             //        int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
             //        mRelay->fanWorkTime(mFanWPH, fanWork);
 
-            sendRelays();
+            sendRelays(true);
         }
 
         if (stopWork)
@@ -887,9 +887,9 @@ void Scheme::sendAlertIfNeeded()
     }
 }
 
-void Scheme::sendRelays()
+void Scheme::sendRelays(bool forceSend)
 {
-    if (stopWork)
+    if (!forceSend && stopWork)
         return;
 
     auto relaysConfig = mRelay->relays();

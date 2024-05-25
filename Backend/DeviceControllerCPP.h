@@ -147,6 +147,7 @@ public:
     //! Maybe call from server
     Q_INVOKABLE void setSampleRate(const int sampleRate);
 
+    Q_INVOKABLE bool checkUpdateMode();
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -184,7 +185,6 @@ private:
     static DeviceControllerCPP* sInstance;
 
     void startTestMode();
-    void checkUpdateMode();
 
     void setAdaptiveBrightness(const double adaptiveBrightness);
 

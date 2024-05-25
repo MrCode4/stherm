@@ -58,6 +58,7 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 //! return true when version1 > version2
 //! return false when version1 <= version2
 bool isVersionNewer(const QString& version1, const QString& version2) {
+
     QStringList parts1 = version1.split('.');
     QStringList parts2 = version2.split('.');
 
@@ -133,7 +134,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
         QSettings settings;
-        settings.setValue("m_updateOnStartKey", true);
+        settings.setValue(m_updateOnStartKey, true);
     });
 
     // Check: The downloader has been open for more than 30 seconds and has not received any bytes
@@ -458,7 +459,10 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
 bool NUVE::System::getUpdate(QString softwareVersion)
 {
     if (mCanFetchServer) {
-        return mSync->getSettings();
+        if (mSync->getSettings()){
+            setProperty("hasFetchSuccessOnce", true);
+            return true;
+        }
     }
 
     return false;
@@ -620,13 +624,21 @@ void NUVE::System::ForgetDevice()
     mSync->ForgetDevice();
 }
 
+bool NUVE::System::hasFetchSuccessOnce() const
+{
+    return property("hasFetchSuccessOnce").toBool();
+}
+
 bool NUVE::System::updateSequenceOnStart()
 {
     QSettings settings;
     auto update = settings.value(m_updateOnStartKey);
+    // TODO remove later
+    auto updateOld = settings.value("m_updateOnStartKey");
     settings.setValue(m_updateOnStartKey, false);
+    settings.setValue("m_updateOnStartKey", false);
 
-    return update.isValid() && update.toBool();
+    return (update.isValid() && update.toBool()) || (updateOld.isValid() && updateOld.toBool());
 }
 
 bool NUVE::System::hasForceUpdate()
@@ -1171,6 +1183,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     updateAvailableVersions(mUpdateJsonObject);
 
+    // Update mHasForceUpdate in the findForceUpdate function.
     mHasForceUpdate = false;
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
     auto installableVersionKey = installLatestVersion ? latestVersionKey : findForceUpdate(mUpdateJsonObject);
@@ -1188,8 +1201,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
-
-
 
     auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
     auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
@@ -1215,7 +1226,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     // installableVersionKey > currentVersion
     if (isVersionNewer(installableVersionKey, currentVersion)) {
         setUpdateAvailable(true);
-        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
 
         if (!mHasForceUpdate && notifyUser  && !mIsManualUpdate)
             emit notifyNewUpdateAvailable();
@@ -1288,24 +1298,30 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
     if (versions.contains("LatestVersion"))
         versions.removeOne("LatestVersion");
 
-
-    // Last force update.
     std::sort(versions.begin(), versions.end(), isVersionNewer);
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
+    QString latestVersionKey;
 
-    // return the last force update that is greater than the current version
     foreach (auto keyVersion, versions) {
         if (isVersionNewer(keyVersion, currentVersion)) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
-            if (obj.value(m_ForceUpdate).toBool()) {
-                return keyVersion;
+            auto isForce =  obj.value(m_ForceUpdate).toBool();
+
+            if (isForce) {
+                // Update the earlier force update that is greater than the current version
+                if (mTestMode || !obj.value(m_Staging).toBool()) {
+                    mHasForceUpdate = true;
+                    latestVersionKey = keyVersion;
+                }
             }
+        } else { // to skip checking further versions which all are lower!
+            break;
         }
     }
 
-    return QString();
+    return latestVersionKey;
 }
 
 void NUVE::System::rebootDevice()

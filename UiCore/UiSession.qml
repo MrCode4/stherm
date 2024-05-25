@@ -90,7 +90,8 @@ Item {
     }
 
     //! Enable test mode from UI (eg: press 10 times on the FCC ID in About page, ...)
-    property bool uiTetsMode: false
+    //! Not used for now! maybe usefull for later
+    property bool uiTestMode: false
 
     Component.onCompleted: deviceController.startDeviceRequested();
 

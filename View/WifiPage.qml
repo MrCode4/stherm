@@ -21,6 +21,8 @@ BasePageView {
 
     property bool initialSetup: false
 
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
+
     //! Check update for first time
     property bool checkedUpdate: false;
 
@@ -51,7 +53,7 @@ BasePageView {
         property bool once : false
 
         repeat: false
-        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
+        running: !once && initialSetupReady
         interval: 10000
         onTriggered: {
             once = true;
@@ -75,7 +77,7 @@ BasePageView {
         }
 
         // Enable when the serial number is correctly filled
-        enabled: initialSetup && system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
+        enabled: initialSetupReady
         onClicked: {
             nextPageTimer.stop();
             nextPageTimer.once = true;
@@ -349,9 +351,7 @@ BasePageView {
         {
             console.log('incorrect pass for: ', wifi.ssid);
 
-            uiSession.popUps.errorPopup.errorMessage = "incorrect pass for: " + wifi.ssid;
-            uiSession.popUps.errorPopup.open();
-
+            // TODO: manage push
             //! Incorrect password entered
             if (root.StackView.view && root.StackView.view.currentItem === root) {
                 var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
