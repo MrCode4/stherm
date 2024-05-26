@@ -943,7 +943,6 @@ void Scheme::sendRelays(bool forceSend)
         lastConfigs = relaysConfig;
     }
 
-    emit fanWorkChanged(lastConfigs.g == STHERM::ON);
     emit currentSystemModeChanged(mRelay->currentState());
 
     TRACE_CHECK(false) << "finished";

@@ -291,7 +291,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         _deviceIO->updateRelays(relays);
     });
 
-    connect(m_scheme, &Scheme::fanWorkChanged, this, &DeviceControllerCPP::fanWorkChanged);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
 
     if (m_system) {
@@ -299,6 +298,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             m_scheme->moveToUpdatingMode();
         });
     }
+
+    connect(_deviceIO, &DeviceIOController::relayUpdatedSuccessfully, this, [this](STHERM::RelayConfigs relays) {
+        emit fanWorkChanged(relays.g == STHERM::ON);
+    });
 
     //! Set sInstance to this
     if (!sInstance) {

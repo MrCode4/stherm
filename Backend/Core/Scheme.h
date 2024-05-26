@@ -96,8 +96,6 @@ signals:
     void setTemperatureChanged();
     void stopWorkRequested();
 
-    void fanWorkChanged(bool fanState);
-
     void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
 
 protected:
