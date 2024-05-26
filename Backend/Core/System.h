@@ -180,7 +180,7 @@ public:
 
     bool hasFetchSuccessOnce() const;
 
-    //! Manage quit/night mode in system
+    //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);
 
 
