@@ -234,12 +234,14 @@ BasePageView {
         }
 
         RowLayout {
-            Layout.fillWidth: true
+            // Layout.fillWidth: true
             Layout.leftMargin: 8
             Layout.rightMargin: 8
+            Layout.preferredWidth: root.width
 
             //! Manual button
             ButtonInverted {
+                 Layout.alignment: Qt.AlignLeft
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Forget" : "Manual"
                 onClicked: {
                     if (text === "Manual") {
@@ -256,12 +258,13 @@ BasePageView {
                 }
             }
 
-            Item { Layout.fillWidth: true }
-
             ToolButton {
                 checkable: false
                 checked: false
                 visible: initialSetup
+                // Layout.alignment: Qt.AlignCenter
+                // Warning
+                anchors.centerIn: parent
                 implicitWidth: 64
                 implicitHeight: implicitWidth
                 icon.width: 50
@@ -282,15 +285,10 @@ BasePageView {
                 }
             }
 
-            Item { Layout.fillWidth: true }
-            Item {
-                visible: !connectBtn.visible
-                Layout.fillWidth: true
-            }
-
             //! Connect/Disconnect button
             ButtonInverted {
                 id: connectBtn
+                 Layout.alignment: Qt.AlignRight
                 visible: _wifisRepeater.currentItem?.wifi ?? false
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
 
