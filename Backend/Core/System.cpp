@@ -98,10 +98,11 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     });
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
-        getUpdateInformation(true);
+        if (!mIsNightModeRunning)
+            getUpdateInformation(true);
     });
 
-    mUpdateTimer.setInterval(6 * 60 * 60 * 1000); // each 12 hours
+    mUpdateTimer.setInterval(6 * 60 * 60 * 1000); // each 6 hours
     mUpdateDirectory = qApp->applicationDirPath();
 
     // Install update service
@@ -638,13 +639,7 @@ void NUVE::System::setNightModeRunning(const bool running) {
     mIsNightModeRunning = running;
 
     if (mIsNightModeRunning) {
-
         cpuInformation();
-        mUpdateTimer.stop();
-
-    } else {
-        getUpdateInformation(true);
-        mUpdateTimer.start();
     }
 }
 
