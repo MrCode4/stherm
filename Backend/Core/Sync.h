@@ -52,7 +52,7 @@ signals:
     void pushSuccess();
     void pushFailed();
 
-    void fetchSettingsWithNewSN();
+    void serialNumberChanged();
 
 private slots:
     //! Process network replay

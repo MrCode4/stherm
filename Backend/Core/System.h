@@ -228,7 +228,7 @@ signals:
 
     void isManualModeChanged();
 
-    void fetchSettingsWithNewSN();
+    void serialNumberChanged();
 
     void updateNoChecked();
 

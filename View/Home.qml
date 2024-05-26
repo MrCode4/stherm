@@ -409,23 +409,23 @@ Control {
     Connections {
         target: deviceController.deviceControllerCPP.system
 
-        function onFetchSettingsWithNewSN() {
+        function onSerialNumberChanged() {
             uiSession.settingsReady = false;
         }
     }
 
     //! checkSN when the internet is connected.
        Connections {
-           id: snChecker
-           target: NetworkInterface
+        id: snChecker
+        target: NetworkInterface
 
-           function onHasInternetChanged() {
-               if (NetworkInterface.hasInternet) {
-                   if (deviceController.startMode !== 0 && deviceController.startMode !== -1){
-                       deviceController.deviceControllerCPP.checkSN();
-                   }
-               }
-           }
+        function onHasInternetChanged() {
+            if (NetworkInterface.hasInternet) {
+                if (deviceController.startMode !== 0 && deviceController.startMode !== -1) {
+                    deviceController.deviceControllerCPP.checkSN();
+                }
+            }
+        }
        }
 
     /* States and Transitions
