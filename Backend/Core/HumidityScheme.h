@@ -4,6 +4,7 @@
 #include <QThread>
 
 #include "Relay.h"
+#include "ScheduleCPP.h"
 #include "SystemSetup.h"
 
 /*! ***********************************************************************************************
@@ -31,6 +32,8 @@ private:
     Relay*  mRelay;
 
     SystemSetup *mSystemSetup = nullptr;
+    ScheduleCPP* mSchedule = nullptr;
+
      bool stopWork;
 };
 

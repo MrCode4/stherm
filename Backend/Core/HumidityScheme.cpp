@@ -57,11 +57,18 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
 
-        restartWork();
+        //! Maybe neet for off mode
+        // restartWork();
     });
 
     connect(mSystemSetup, &SystemSetup::isVacationChanged, this, [this] {
         TRACE<< "isVacationChanged: "<< mSystemSetup->isVacation;
+
+        restartWork();
+    });
+
+    connect(mSystemSetup->systemAccessories, &SystemAccessories::accessoriesChanged, this, [this] {
+        TRACE<< "systemAccessories changed: "<< mSystemSetup->isVacation;
 
         restartWork();
     });
