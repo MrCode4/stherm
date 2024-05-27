@@ -126,6 +126,8 @@ public:
 
     bool testMode();
 
+    bool has_sshPass();
+
     /*!
      * \brief updateSequenceOnStart gets if the app just updated and set the state false so this happens only once
      * remember to call this only in one place on startup so you can manage better
@@ -231,6 +233,8 @@ signals:
     void backdoorLogChanged();
 
     void isManualModeChanged();
+
+    void serialNumberChanged();
 
     void updateNoChecked();
 
