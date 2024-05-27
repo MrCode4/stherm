@@ -410,7 +410,7 @@ Control {
         target: deviceController.deviceControllerCPP.system
 
         function onSerialNumberChanged() {
-            console.log("initialSetup: ", deviceController.initialSetup)
+            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup)
             uiSession.settingsReady = false;
         }
     }
