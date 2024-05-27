@@ -180,6 +180,10 @@ public:
 
     bool hasFetchSuccessOnce() const;
 
+    //! Manage quiet/night mode in system
+    void setNightModeRunning(const bool running);
+
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -307,6 +311,8 @@ private:
     
     //! System on test mode or not
     bool mTestMode;
+
+    bool mIsNightModeRunning;
 
     QTimer mFetchActiveTimer;
 

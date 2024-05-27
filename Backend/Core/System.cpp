@@ -83,7 +83,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mUpdateAvailable (false),
     mHasForceUpdate(false),
     mIsInitialSetup(false),
-    mTestMode(false)
+    mTestMode(false),
+    mIsNightModeRunning(false)
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -97,10 +98,11 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     });
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
-        getUpdateInformation(true);
+        if (!mIsNightModeRunning)
+            getUpdateInformation(true);
     });
 
-    mUpdateTimer.setInterval(12 * 60 * 60 * 1000); // each 12 hours
+    mUpdateTimer.setInterval(6 * 60 * 60 * 1000); // each 6 hours
     mUpdateDirectory = qApp->applicationDirPath();
 
     // Install update service
@@ -490,12 +492,13 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     }
 
     mUpdateTimer.start();
+    if (!mIsNightModeRunning) {
+        // When is initial setup, skip update Information as we want to wait until its complete!
+        if (!mIsInitialSetup)
+            getUpdateInformation(true);
 
-    // When is initial setup, skip update Information as we want to wait until its complete!
-    if (!mIsInitialSetup)
-        getUpdateInformation(true);
-
-    getBackdoorInformation();
+        getBackdoorInformation();
+    }
 }
 
 void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
@@ -627,6 +630,17 @@ void NUVE::System::ForgetDevice()
 bool NUVE::System::hasFetchSuccessOnce() const
 {
     return property("hasFetchSuccessOnce").toBool();
+}
+
+void NUVE::System::setNightModeRunning(const bool running) {
+    if (mIsNightModeRunning == running)
+        return;
+
+    mIsNightModeRunning = running;
+
+    if (mIsNightModeRunning) {
+        cpuInformation();
+    }
 }
 
 bool NUVE::System::updateSequenceOnStart()
