@@ -162,30 +162,6 @@ STHERM::SIOPacket DataParser::prepareSIOPacket(STHERM::SIOCommand cmd, STHERM::P
     return txPacket;
 }
 
-STHERM::RelayConfigs DataParser::getRelaysFromPacket(const STHERM::SIOPacket& txPacket)
-{
-    STHERM::RelayConfigs relayConfig;
-
-    if (txPacket.DataLen < RELAY_OUT_CNT) {
-        return relayConfig;
-    }
-
-    int i = 0;
-    relayConfig.o_b   = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-    relayConfig.w3    = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-    relayConfig.w2    = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-    relayConfig.w1    = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-    relayConfig.acc1p = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-    relayConfig.acc1n = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-    relayConfig.g     = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-    relayConfig.y1    = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-    relayConfig.y2    = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-    relayConfig.acc2  = txPacket.DataArray[i++] == 1 ? STHERM::ON : STHERM::OFF;
-
-    return relayConfig;
-
-}
-
 STHERM::SIOPacket DataParser::deserializeData(const QByteArray &serializeData)
 {
     TRACE_CHECK(false) << serializeData;

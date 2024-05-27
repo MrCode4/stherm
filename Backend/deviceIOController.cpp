@@ -1050,7 +1050,7 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                 TRACE_CHECK(false) << "***** Ti  - Start SetRelay *****";
                 m_p->relays_in_l = m_p->relays_in;
 
-                emit relayUpdatedSuccessfully(DataParser::getRelaysFromPacket(rxPacket));
+                emit relayUpdatedSuccessfully(m_p->mRelaysIn);
                 TRACE_CHECK(false) << "***** Ti  - SetRelay finished *****";
             } else {
                 switch (rxPacket.ACK) {
