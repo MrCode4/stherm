@@ -18,6 +18,8 @@ ItemDelegate {
     //! index of this delegate in model/view
     property int        delegateIndex: -1
 
+    property string dateTimeText: message.datetime ? (Date.fromLocaleString(message.datetime).toLocaleString(locale, " (dd MMM yyyy h:mm AP)")) :
+                                                     ""
     /* Object properties
      * ****************************************************************************************/
     highlighted: !message.isRead
@@ -25,7 +27,7 @@ ItemDelegate {
               "Alert" : (message?.type === Message.Type.Notification ? "Notification"
                                                                    : "Message")
     contentItem: RowLayout {
-        spacing: 16
+        spacing: 6
         //! Icon
         RoniaTextIcon {
             Layout.alignment: Qt.AlignCenter
@@ -37,10 +39,20 @@ ItemDelegate {
         }
 
         Label {
+            id: messageTypeLabel
+
+            Layout.leftMargin: 10
             Layout.alignment: Qt.AlignCenter
-            Layout.fillWidth: true
             text: _root.text
             elide: "ElideRight"
+        }
+
+        Label {
+            Layout.alignment: Qt.AlignCenter
+            Layout.fillWidth: true
+            text: _root.dateTimeText
+            elide: Qt.ElideRight
+            font.pixelSize: messageTypeLabel.font.pixelSize - 2
         }
     }
     //! Change background based on read/not-read state

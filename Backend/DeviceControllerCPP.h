@@ -175,6 +175,10 @@ Q_SIGNALS:
 
     void adaptiveBrightnessChanged();
 
+    //! Forward signals from Scheme and send to UI
+    void startSystemDelayCountdown(AppSpecCPP::SystemMode mode, int delay);
+    void stopSystemDelayCountdown();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
