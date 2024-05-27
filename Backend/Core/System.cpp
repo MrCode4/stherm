@@ -491,12 +491,12 @@ void NUVE::System::wifiConnected(bool hasInternet) {
         return;
     }
 
+    mUpdateTimer.start();
     if (!mIsNightModeRunning) {
         // When is initial setup, skip update Information as we want to wait until its complete!
         if (!mIsInitialSetup)
             getUpdateInformation(true);
 
-        mUpdateTimer.start();
         getBackdoorInformation();
     }
 }
