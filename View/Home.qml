@@ -410,12 +410,13 @@ Control {
         target: deviceController.deviceControllerCPP.system
 
         function onSerialNumberChanged() {
+            console.log("initialSetup: ", deviceController.initialSetup)
             uiSession.settingsReady = false;
         }
     }
 
     //! checkSN when the internet is connected.
-       Connections {
+    Connections {
         id: snChecker
         target: NetworkInterface
 
@@ -426,7 +427,7 @@ Control {
                 }
             }
         }
-       }
+    }
 
     /* States and Transitions
      * ****************************************************************************************/

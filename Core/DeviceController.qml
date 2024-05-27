@@ -523,6 +523,9 @@ I_DeviceController {
         }
 
         if (!editModeEnabled(AppSpec.EMSettings)) {
+            // The server interprets temperature data based on the displayed unit (Celsius or Fahrenheit).
+            // To maintain accurate control and prevent misinterpretations,
+            // the unit should be permanently set to Celsius.
             if (!setSettings(settings.brightness, settings.speaker,
                         device.setting.tempratureUnit, settings.brightness_mode))
                 console.log("The system settings is not applied from server")
@@ -573,10 +576,7 @@ I_DeviceController {
                 "brightness_mode": device.setting.adaptiveBrightness ? 1 : 0,
                 "speaker": device.setting.volume,
 
-                // The server interprets temperature data based on the displayed unit (Celsius or Fahrenheit).
-                // To maintain accurate control and prevent misinterpretations,
-                // the unit should be permanently set to Celsius.
-                "temperatureUnit": 0, // Always celsius
+                "temperatureUnit": 0, // Always celsius (see setSettings in setSettingsServer function)
                 "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour24 ? 1 : 0,
                 "currentTimezone": device.setting.currentTimezone.length > 0 ? device.setting.currentTimezone : "UTC",
                 "effectDst": device.setting.effectDst,
