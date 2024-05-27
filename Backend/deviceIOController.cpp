@@ -23,6 +23,9 @@
 
 #define WIRING_CHECK_TIME 600 // ms
 
+const char* mCurrentRequestKey = "currentRequest";
+const char* mSentRelaysDataKey = "sentRelaysData";
+
 class DeviceIOPrivate
 {
 public:
@@ -1050,7 +1053,13 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
                 TRACE_CHECK(false) << "***** Ti  - Start SetRelay *****";
                 m_p->relays_in_l = m_p->relays_in;
 
-                emit relayUpdatedSuccessfully(m_p->mRelaysIn);
+                auto relays = m_p->mRelaysIn;
+                if (m_tiConnection->property(mSentRelaysDataKey).isValid()) {
+                    relays = m_tiConnection->property(mSentRelaysDataKey).value<STHERM::RelayConfigs>();
+                }
+
+                emit relayUpdatedSuccessfully(relays);
+
                 TRACE_CHECK(false) << "***** Ti  - SetRelay finished *****";
             } else {
                 switch (rxPacket.ACK) {
@@ -1254,6 +1263,13 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 
     if (txPacket.CMD == STHERM::SetRelay || txPacket.CMD == STHERM::Check_Wiring) {
         m_p->wait_relay_response = true;
+    }
+    m_tiConnection->setProperty(mCurrentRequestKey, txPacket.CMD);
+
+    // Store relays that must be updated based on the server's response to the current SetRelay request.
+    if (txPacket.CMD == STHERM::SetRelay) {
+        auto relays = DataParser::getRelaysFromPacket(txPacket);
+        m_tiConnection->setProperty(mSentRelaysDataKey, QVariant::fromValue(relays));
     }
 
     //! prepare for request
