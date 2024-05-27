@@ -198,7 +198,7 @@ private:
     double mSetPointHimidity;
 
     //! Temperature parameters (Fahrenheit)
-    double mCurrentTemperature = 20 * 1.8 + 32;
+    double mCurrentTemperature;
 
     //! Fahrenheit
     double mSetPointTemperature;
