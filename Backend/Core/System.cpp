@@ -164,6 +164,19 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
         }
     });
 
+    if (!has_sshPass()) {
+        TRACE << "sshpass was not in /usr/bin";
+        QFile sshpass_local("/usr/local/bin/sshpass");
+        if (sshpass_local.exists()) {
+            TRACE << "sshpass copying to /usr/bin";
+            auto success = sshpass_local.copy("/usr/bin/sshpass");
+            TRACE_CHECK(success) << "copy sshpass successfuly";
+            TRACE_CHECK(!success) << "failed to copy sshpass";
+        } else {
+            TRACE << "sshpass is not in /usr/local/bin either";
+        }
+    }
+
     if (!serialNumber().isEmpty())
         onSnReady();
 }
@@ -597,6 +610,13 @@ bool NUVE::System::updateAvailable() {
 
 bool NUVE::System::testMode() {
     return mTestMode;
+}
+
+bool NUVE::System::has_sshPass()
+{
+    QFileInfo sshPass("/usr/bin/sshpass");
+
+    return sshPass.exists();
 }
 
 bool NUVE::System::isManualMode() {

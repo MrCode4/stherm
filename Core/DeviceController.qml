@@ -575,7 +575,6 @@ I_DeviceController {
                 "brightness": device.setting.brightness,
                 "brightness_mode": device.setting.adaptiveBrightness ? 1 : 0,
                 "speaker": device.setting.volume,
-
                 "temperatureUnit": 0, // Always celsius (see setSettings in setSettingsServer function)
                 "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour24 ? 1 : 0,
                 "currentTimezone": device.setting.currentTimezone.length > 0 ? device.setting.currentTimezone : "UTC",
