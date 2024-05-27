@@ -19,6 +19,9 @@ ToolButton {
     //! Reference to Fan
     property Fan    fan: appModel.fan
 
+    //! Used to blink fan
+    property real systemDelayCounter: -1
+
     /* Object properties
      * ****************************************************************************************/
     checkable: false
@@ -52,6 +55,19 @@ ToolButton {
         }
     }
 
+
+    //! blink during countdown
+    //! CHECK, when fan is ON
+    Timer {
+        interval: 500
+        running: systemDelayCounter >= 0
+        repeat: true
+        onTriggered: {
+            systemDelayCounter -= 500;
+            logoImage.visible = !logoImage.visible
+        }
+    }
+
     Connections {
         target: deviceController.deviceControllerCPP
 
@@ -77,6 +93,16 @@ ToolButton {
                 logoImage.source = "qrc:/Stherm/Images/fan-on.png";
             }
         }
+
+        function onStartSystemDelayCountdown(mode: int, delay: int) {
+            systemDelayCounter = delay;
+        }
+
+        function onStopSystemDelayCountdown() {
+            systemDelayCounter = -1;
+            logoImage.visible = true;
+        }
     }
+
 
 }

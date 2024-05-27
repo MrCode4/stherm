@@ -107,6 +107,8 @@ Control {
                 bottomMargin: -8
                 horizontalCenterOffset: -6
             }
+
+            visible: !deviceController.currentSchedule
             enabled: !deviceController.currentSchedule
             hoverEnabled: enabled
             deviceController: uiSession?.deviceController ?? null
@@ -403,6 +405,16 @@ Control {
         }
     }
 
+    //! Force the app to fetch again with new serial number
+    Connections {
+        target: deviceController.deviceControllerCPP.system
+
+        function onSerialNumberChanged() {
+            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup)
+            uiSession.settingsReady = false;
+        }
+    }
+
     //! checkSN when the internet is connected.
     Connections {
         id: snChecker
@@ -410,7 +422,7 @@ Control {
 
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {
-                if (deviceController.startMode !== 0 && deviceController.startMode !== -1){
+                if (deviceController.startMode !== 0 && deviceController.startMode !== -1) {
                     deviceController.deviceControllerCPP.checkSN();
                 }
             }

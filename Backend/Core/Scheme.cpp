@@ -291,7 +291,8 @@ void Scheme::CoolingLoop()
             bool obUpdated = updateOBState(AppSpecCPP::Cooling);
             if (heatPump && obUpdated && !stopWork){
                 // sysDelay
-                waitLoop(mSystemSetup->systemRunDelay * 60000, ctMode);
+                runSystemDelay(AppSpecCPP::Cooling);
+
             } else if (mTiming->s1Offtime.isValid() && mTiming->s1Offtime.elapsed() < 2 * 60 * 1000) {
                 waitLoop(RELAYS_WAIT_MS, ctMode);
 
@@ -540,7 +541,7 @@ void Scheme::internalHeatingLoopStage1()
 {
     if (!stopWork){
         // sysDelay
-        waitLoop(mSystemSetup->systemRunDelay * 60000, ctMode);
+        runSystemDelay(AppSpecCPP::Heating);
     }
 
     if (stopWork)
@@ -731,7 +732,7 @@ void Scheme::internalPumpHeatingLoopStage1()
 
         if (obUpdated && !stopWork){
             // sysDelay
-            waitLoop(mSystemSetup->systemRunDelay * 60000, ctMode);
+            runSystemDelay(AppSpecCPP::Heating);
 
         } else if (mTiming->s1Offtime.isValid() &&
                    mTiming->s1Offtime.elapsed() < 2 * 60 * 1000){
@@ -1215,6 +1216,15 @@ void Scheme::setAutoMaxReqTemp(const double &max)
         mAutoMaxReqTemp = maxF;
 }
 
+void Scheme::runSystemDelay(AppSpecCPP::SystemMode mode)
+{
+    auto sysDelay = mSystemSetup->systemRunDelay * 60000;
+
+    emit startSystemDelayCountdown(mode, sysDelay);
+    waitLoop(sysDelay, ctMode);
+    emit stopSystemDelayCountdown();
+}
+
 void Scheme::setVacation(const STHERM::Vacation &newVacation)
 {
     mVacationMinimumTemperature = toFahrenheit(newVacation.minimumTemperature);
@@ -1313,6 +1323,8 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
         if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatingOnly)
             TRACE << "heatStageChanged: " << mSystemSetup->heatStage;
     });
+
+    // Just log the change
     connect(mSystemSetup, &SystemSetup::systemRunDelayChanged, this, [this] {
         TRACE << "systemRunDelayChanged: " << mSystemSetup->systemRunDelay
               << mSystemSetup->systemType;

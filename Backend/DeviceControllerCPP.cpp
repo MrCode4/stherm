@@ -291,6 +291,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         _deviceIO->updateRelays(relays);
     });
 
+    connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
+    connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
 
     if (m_system) {
@@ -334,9 +336,10 @@ void DeviceControllerCPP::nightModeControl(bool start)
 
     mIsNightModeRunning = start;
 
+    m_system->setNightModeRunning(start);
+
     if (start) {
         mNightModeTimer.start();
-        m_system->cpuInformation();
 
     } else {
         mNightModeTimer.stop();
