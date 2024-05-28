@@ -1270,7 +1270,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high));
             m_TemperatureAlertET.restart();
 
-    } else if (!m_TemperatureAlertET.isValid()) {
+        } else if (!m_TemperatureAlertET.isValid()) {
             m_TemperatureAlertET.start();
         }
 
@@ -1291,8 +1291,8 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
     // Manage humidity alerts
     if (values.humidity > m_p->throlds_aq.humidity_high) {
         if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
             m_HumidityAlertET.restart();
 
         } else if (!m_HumidityAlertET.isValid()) {
@@ -1324,7 +1324,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
             m_FanAlertET.start();
         }
 
-    }  else if (fanSpeed < m_p->throlds_aq.fan_low) {
+    } else if (fanSpeed < m_p->throlds_aq.fan_low) {
         if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_low,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low));
