@@ -31,6 +31,9 @@ public:
     //! In OLD Code: ti: Line 494-515 / NRF: Line 1068-1089
     static STHERM::SIOPacket deserializeData(const QByteArray &serializeData);
 
+    //! Get Relays from packet
+    static STHERM::RelayConfigs getRelaysFromPacket(const STHERM::SIOPacket &txPacket);
+
 private:
     STHERM::AQ_TH_PR_vals AQTHPRFromBytes(const QByteArray &bytes);
 };

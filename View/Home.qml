@@ -104,13 +104,11 @@ Control {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: centerItems.top
-                bottomMargin: -8
-                horizontalCenterOffset: -6
+                bottomMargin: 8
+                // To align with schedule ON button
+                horizontalCenterOffset: isSchedule ? -15 : -6
             }
 
-            visible: !deviceController.currentSchedule
-            enabled: !deviceController.currentSchedule
-            hoverEnabled: enabled
             deviceController: uiSession?.deviceController ?? null
 
             onClicked: {

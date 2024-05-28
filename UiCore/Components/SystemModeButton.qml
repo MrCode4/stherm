@@ -17,6 +17,8 @@ ToolButton {
     //! I_Device
     property I_Device               device: deviceController?.device ?? null
 
+    property bool isSchedule: deviceController.currentSchedule
+
     property bool showCountdownLabel: systemDelayCounter > -1
 
     property int systemDelayCounter: -1
@@ -28,6 +30,12 @@ ToolButton {
     implicitWidth: Math.max(56, _coolingStateItem.implicitWidth) + leftPadding + rightPadding
     implicitHeight: implicitWidth
     padding: 10
+
+    clickable: enabled && !isSchedule
+    enabled: visible
+    visible: showCountdownLabel || !isSchedule
+    hoverEnabled: enabled && !isSchedule
+
 
     /* Children
      * ****************************************************************************************/
@@ -138,6 +146,7 @@ ToolButton {
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideMiddle
             visible: opacity > 0
+            enabled: visible
             opacity: showCountdownLabel ? 1. : 0.
 
             Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -182,8 +191,8 @@ ToolButton {
     }
 
     state: {
-        if (deviceController.currentSchedule)
-            return "auto";
+        if (isSchedule)
+            return "";
 
         switch(device?.systemSetup?.systemMode) {
         case AppSpecCPP.Off:

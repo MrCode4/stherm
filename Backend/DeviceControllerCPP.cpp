@@ -293,8 +293,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
     connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
-
-    connect(m_scheme, &Scheme::fanWorkChanged, this, &DeviceControllerCPP::fanWorkChanged);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
 
     if (m_system) {
@@ -302,6 +300,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             m_scheme->moveToUpdatingMode();
         });
     }
+
+    connect(_deviceIO, &DeviceIOController::relaysUpdated, this, [this](STHERM::RelayConfigs relays) {
+        emit fanWorkChanged(relays.g == STHERM::ON);
+    });
 
     //! Set sInstance to this
     if (!sInstance) {

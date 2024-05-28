@@ -134,6 +134,7 @@ ItemDelegate {
                     }
 
                     schedule.enable = checked;
+                    uiSession.appModel.schedulesChanged();
 
                     // Send Data to server when a schedule changed...
                     uiSession.deviceController.pushSettings();
