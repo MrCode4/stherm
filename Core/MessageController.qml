@@ -234,6 +234,7 @@ QtObject {
 
             var now = (new Date()).getTime();
 
+            console.log("Air condition alert ", message)
             if (messagesShowing.includes(message))
                 return;
 

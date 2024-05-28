@@ -1272,6 +1272,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         } else if (!m_TemperatureAlertET.isValid()) {
             m_TemperatureAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high);
         }
 
     } else if (values.temp < m_p->throlds_aq.temp_low) {
@@ -1282,6 +1283,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         } else if (!m_TemperatureAlertET.isValid()) {
             m_TemperatureAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low);
         }
 
     } else {
@@ -1297,6 +1299,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         } else if (!m_HumidityAlertET.isValid()) {
             m_HumidityAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high);
         }
 
     } else if (values.humidity < m_p->throlds_aq.humidity_low) {
@@ -1307,6 +1310,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         } else if (!m_HumidityAlertET.isValid()) {
             m_HumidityAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low);
         }
 
     } else {
@@ -1322,6 +1326,8 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         } else if (!m_FanAlertET.isValid()) {
             m_FanAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High);
+
         }
 
     } else if (fanSpeed < m_p->throlds_aq.fan_low) {
@@ -1332,6 +1338,8 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         } else if (!m_FanAlertET.isValid()) {
             m_FanAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low);
+
         }
 
     } else {
@@ -1347,6 +1355,8 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         } else if (!m_LightAlertET.isValid()) {
             m_LightAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low);
+
         }
 
     } else if (luminosity > m_p->throlds_aq.light_high) {
@@ -1357,6 +1367,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         } else if (!m_LightAlertET.isValid()) {
             m_LightAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High);
         }
 
     } else {
