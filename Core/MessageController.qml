@@ -108,6 +108,11 @@ QtObject {
 
     function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
     {
+        if (device.setting.muteNotifications && type === Message.Type.Notification) {
+            console.log("addNewMessageFromData: Ignored notifications due to settings.")
+            return;
+        }
+
         if (message.length === 0) {
             console.log("addNewMessageFromData: The message is empty!")
            return;
@@ -170,6 +175,9 @@ QtObject {
         target: deviceController.deviceControllerCPP.system
 
         function onAlert(message: string) {
+            if (device.setting.muteAlerts)
+                return false;
+
             addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
         }
 
@@ -200,6 +208,9 @@ QtObject {
  
         //! wrong password alert.
         function onIncorrectWifiPassword() {
+            if (device.setting.muteAlerts)
+                return;
+
             var message = "Wrong password, please try again.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
 
@@ -257,6 +268,9 @@ QtObject {
         interval: 3 * 60 * 60 * 1000
 
         onTriggered: {
+            if (device.setting.muteAlerts)
+                return;
+
             var message = "Poor air quality detected. Please ventilate the room.";
             addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
         }
@@ -265,6 +279,7 @@ QtObject {
     property Connections  deviceControllerConnection: Connections {
         target: deviceController.deviceControllerCPP
 
+        // Sensor malfunction alerts (Crucial alerts)
         function onAlert(alertLevel : int,
                          alertType : int,
                          alertMessage : string) {
@@ -335,6 +350,9 @@ QtObject {
     }
 
     function checkWifiConnection() : bool {
+        if (device.setting.muteAlerts)
+            return false;
+
         if (!NetworkInterface.connectedWifi) {
             var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
@@ -345,6 +363,9 @@ QtObject {
     }
 
     function checkInternetConnection() : bool {
+        if (device.setting.muteAlerts)
+            return false;
+
         if (!NetworkInterface.hasInternet) {
             var message = "No internet connection. Please check your internet connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());

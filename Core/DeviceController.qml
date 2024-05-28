@@ -443,11 +443,21 @@ I_DeviceController {
     }
 
     //! Set device settings
-    function setSettings(brightness, volume, temperatureUnit, adaptive)
+    function setSettings(brightness, volume, temperatureUnit, adaptive, muteAlerts, muteNotifications)
     {
         if (!device){
             console.log("corrupted device")
             return false;
+        }
+
+        // Mute alerts update locally.
+        if (device.setting.muteAlerts !== muteAlerts) {
+            device.setting.muteAlerts = muteAlerts;
+        }
+
+        // Mute notifications update locally.
+        if (device.setting.muteNotifications !== muteNotifications) {
+            device.setting.muteNotifications = muteNotifications;
         }
 
         var send_data = [brightness, volume, temperatureUnit, adaptive];
@@ -527,7 +537,8 @@ I_DeviceController {
             // To maintain accurate control and prevent misinterpretations,
             // the unit should be permanently set to Celsius.
             if (!setSettings(settings.brightness, settings.speaker,
-                        device.setting.tempratureUnit, settings.brightness_mode))
+                        device.setting.tempratureUnit, settings.brightness_mode,
+                             device.setting.muteAlerts, device.setting.muteNotifications))
                 console.log("The system settings is not applied from server")
 
         } else {

@@ -210,6 +210,55 @@ BasePageView {
                 }
             }
 
+            //! Mute alerts
+            RowLayout {
+                Layout.topMargin: 12
+
+                Label {
+                    opacity: 0.6
+                    Layout.fillWidth: true
+                    text: "Alerts"
+
+                    Label {
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: -20
+                        anchors.left: parent.left
+                        Layout.fillWidth: true
+                        font.pointSize: Qt.application.font.pointSize * 0.6
+                        text: "(Turning off is not recommended)"
+                    }
+                }
+
+                Switch {
+                    id: muteAlertsSw
+                    checked: appModel?.setting?.muteAlerts ?? false
+
+                    onCheckedChanged: {
+                        onlineTimer.startTimer()
+                    }
+                }
+            }
+
+            //! Mute notifications
+            RowLayout {
+                Layout.topMargin: 12
+
+                Label {
+                    opacity: 0.6
+                    Layout.fillWidth: true
+                    text: "Notifications"
+                }
+
+                Switch {
+                    id: muteNotificationsSw
+                    checked: appModel?.setting?.muteNotifications ?? false
+
+                    onCheckedChanged: {
+                        onlineTimer.startTimer()
+                    }
+                }
+            }
+
             //! Temprature unit
             GridLayout {
                 Layout.topMargin: 12
@@ -255,7 +304,9 @@ BasePageView {
                                                 _speakerSlider.value,
                                                 _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
                                                                           : AppSpec.TempratureUnit.Cel,
-                                                _adaptiveBrSw.checked);
+                                                _adaptiveBrSw.checked,
+                                                muteAlertsSw.checked,
+                                                muteNotificationsSw.checked);
         }
         return false;
     }
@@ -294,7 +345,7 @@ BasePageView {
                 if (deviceController.setSettings(AppSpec.defaultBrightness,
                                              AppSpec.defaultVolume,
                                              AppSpec.TempratureUnit.Fah,
-                                             false)){
+                                             false, false, false)){
                     deviceController.pushSettings()
                     makeCopyOfSettings()
                 } else {
@@ -323,8 +374,9 @@ BasePageView {
                             internal.copyOfSettings.brightness,
                             internal.copyOfSettings.volume,
                             internal.copyOfSettings.tempratureUnit,
-                            internal.copyOfSettings.adaptiveBrightness
-                            )) {
+                            internal.copyOfSettings.adaptiveBrightness,
+                            internal.copyOfSettings.muteAlerts,
+                            internal.copyOfSettings.muteNotifications)) {
                     console.log("could not revert model");
                 }
             }
