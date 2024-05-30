@@ -411,6 +411,7 @@ QtObject {
     function prepareToastMessage(sch:ScheduleCPP):string{
         //Hold the prepared message which will be returned
         var toastMessage;
+        var toastDetail;
 
         //Preparing some DateTime related variables
         var now = new Date();
@@ -421,7 +422,8 @@ QtObject {
 
         //checks if the schecule is currently running
         if (runningDays.includes(currentDate) && timeInRange(now,scStartTime,scEndTime)) {
-            toastMessage = sch.name + " is already running!";
+            toastMessage = sch.name;
+            toastDetail = " is already running!";
         }
         //otherwise, calculates the remaining time until the nearest time the schedule planned to run
         else{
@@ -444,12 +446,13 @@ QtObject {
             hours = hours % 24;
 
             //The remaining time as proper message
-            toastMessage = sch.name + " will start in "
+            toastMessage = sch.name;
+            toastDetail = " will start in "
                     + ((days > 0) ? (days + " day" + (days > 1 ? "s " : " ")) : " ")
                     + ((hours > 0) ? (hours + " hour" + (hours > 1 ? "s " : " ")) : " ")
                     + minutes + " minutes ";
         }
-        return toastMessage;
+        return { "message": toastMessage, "detail": toastDetail };
     }
 
     //Checks the repeating days of a schedule and finds the first day from now on
