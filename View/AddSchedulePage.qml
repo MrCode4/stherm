@@ -295,7 +295,8 @@ BasePageView {
 
             //If the schedule is enabled, show a proper toast message
             if(_internal.newSchedule.enable === true)
-                uiSession.toastManager.showToast(schedulesController.prepareToastMessage(_internal.newSchedule));
+                var dt = schedulesController.prepareToastMessage(_internal.newSchedule);
+                uiSession.toastManager.showToast(dt.message, dt.detail);
         }
 
         deviceController.pushSettings();
