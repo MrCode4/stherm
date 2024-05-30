@@ -56,11 +56,11 @@ BasePageView {
 
             if (sn.length > 0) {
                 //! Finish test, add delay to set relays
-
-            } else {
                 deviceController.deviceControllerCPP.testFinished();
                 rebootPopup.open();
-                // infoPopup.open();
+
+            } else {
+                infoPopup.open();
             }
         }
     }
