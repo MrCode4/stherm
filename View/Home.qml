@@ -32,6 +32,7 @@ Control {
     //! System Accessories use in humidity control.
     property SystemAccessories systemAccessories: device.systemSetup.systemAccessories
 
+    property System system: deviceController.deviceControllerCPP.system
 
     /* Object properties
      * ****************************************************************************************/
