@@ -134,12 +134,14 @@ I_DeviceController {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {
+            // This is not a settings section, the QR URL is just part of the information
+            checkQRurl(settings.qr_url);
+
             if (!deviceControllerCPP.system.canFetchServer || settingsPush.running || settingsPushRetry.running) {
                 console.log("We have some changes that not applied on the server.")
                 return;
             }
 
-            checkQRurl(settings.qr_url)
             updateHoldServer(settings.hold)
             updateFanServer(settings.fan)
             setSettingsServer(settings.setting)
@@ -521,8 +523,11 @@ I_DeviceController {
         }
 
         if (!editModeEnabled(AppSpec.EMSettings)) {
+            // The server interprets temperature data based on the displayed unit (Celsius or Fahrenheit).
+            // To maintain accurate control and prevent misinterpretations,
+            // the unit should be permanently set to Celsius.
             if (!setSettings(settings.brightness, settings.speaker,
-                        settings.temperatureUnit, settings.brightness_mode))
+                        device.setting.tempratureUnit, settings.brightness_mode))
                 console.log("The system settings is not applied from server")
 
         } else {
@@ -570,7 +575,7 @@ I_DeviceController {
                 "brightness": device.setting.brightness,
                 "brightness_mode": device.setting.adaptiveBrightness ? 1 : 0,
                 "speaker": device.setting.volume,
-                "temperatureUnit": device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 1 : 0,
+                "temperatureUnit": 0, // Always celsius (see setSettings in setSettingsServer function)
                 "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour24 ? 1 : 0,
                 "currentTimezone": device.setting.currentTimezone.length > 0 ? device.setting.currentTimezone : "UTC",
                 "effectDst": device.setting.effectDst,

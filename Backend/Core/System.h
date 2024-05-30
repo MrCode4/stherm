@@ -126,6 +126,8 @@ public:
 
     bool testMode();
 
+    bool has_sshPass();
+
     /*!
      * \brief updateSequenceOnStart gets if the app just updated and set the state false so this happens only once
      * remember to call this only in one place on startup so you can manage better
@@ -180,6 +182,10 @@ public:
 
     bool hasFetchSuccessOnce() const;
 
+    //! Manage quiet/night mode in system
+    void setNightModeRunning(const bool running);
+
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -227,6 +233,8 @@ signals:
     void backdoorLogChanged();
 
     void isManualModeChanged();
+
+    void serialNumberChanged();
 
     void updateNoChecked();
 
@@ -307,6 +315,8 @@ private:
     
     //! System on test mode or not
     bool mTestMode;
+
+    bool mIsNightModeRunning;
 
     QTimer mFetchActiveTimer;
 

@@ -83,7 +83,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mUpdateAvailable (false),
     mHasForceUpdate(false),
     mIsInitialSetup(false),
-    mTestMode(false)
+    mTestMode(false),
+    mIsNightModeRunning(false)
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -92,15 +93,18 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
+    connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
+
     connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
         setCanFetchServer(true);
     });
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
-        getUpdateInformation(true);
+        if (!mIsNightModeRunning)
+            getUpdateInformation(true);
     });
 
-    mUpdateTimer.setInterval(12 * 60 * 60 * 1000); // each 12 hours
+    mUpdateTimer.setInterval(6 * 60 * 60 * 1000); // each 6 hours
     mUpdateDirectory = qApp->applicationDirPath();
 
     // Install update service
@@ -161,6 +165,19 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
             mLogSender.setProperty("initialized", true);
         }
     });
+
+    if (!has_sshPass()) {
+        TRACE << "sshpass was not in /usr/bin";
+        QFile sshpass_local("/usr/local/bin/sshpass");
+        if (sshpass_local.exists()) {
+            TRACE << "sshpass copying to /usr/bin";
+            auto success = sshpass_local.copy("/usr/bin/sshpass");
+            TRACE_CHECK(success) << "copy sshpass successfuly";
+            TRACE_CHECK(!success) << "failed to copy sshpass";
+        } else {
+            TRACE << "sshpass is not in /usr/local/bin either";
+        }
+    }
 
     if (!serialNumber().isEmpty())
         onSnReady();
@@ -416,7 +433,7 @@ void NUVE::System::sendLog()
     }
 
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
@@ -490,12 +507,13 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     }
 
     mUpdateTimer.start();
+    if (!mIsNightModeRunning) {
+        // When is initial setup, skip update Information as we want to wait until its complete!
+        if (!mIsInitialSetup)
+            getUpdateInformation(true);
 
-    // When is initial setup, skip update Information as we want to wait until its complete!
-    if (!mIsInitialSetup)
-        getUpdateInformation(true);
-
-    getBackdoorInformation();
+        getBackdoorInformation();
+    }
 }
 
 void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
@@ -597,6 +615,13 @@ bool NUVE::System::testMode() {
     return mTestMode;
 }
 
+bool NUVE::System::has_sshPass()
+{
+    QFileInfo sshPass("/usr/bin/sshpass");
+
+    return sshPass.exists();
+}
+
 bool NUVE::System::isManualMode() {
     return mStartedWithManualUpdate;
 }
@@ -627,6 +652,17 @@ void NUVE::System::ForgetDevice()
 bool NUVE::System::hasFetchSuccessOnce() const
 {
     return property("hasFetchSuccessOnce").toBool();
+}
+
+void NUVE::System::setNightModeRunning(const bool running) {
+    if (mIsNightModeRunning == running)
+        return;
+
+    mIsNightModeRunning = running;
+
+    if (mIsNightModeRunning) {
+        cpuInformation();
+    }
 }
 
 bool NUVE::System::updateSequenceOnStart()
@@ -1090,7 +1126,7 @@ void NUVE::System::createLogDirectoryOnServer()
 
     mLogRemoteFolder = m_logPath + sn;
     // Create remote path in case it doesn't exist, needed once! with internet access
-    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
+    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
                          arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     mLogSender.start("/bin/bash", {"-c", createPath});
 }

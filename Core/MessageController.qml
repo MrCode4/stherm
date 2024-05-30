@@ -55,7 +55,8 @@ QtObject {
 
         onTriggered: {
             if (checkWifiConnection())
-                checkInternetConnection();
+                if(checkInternetConnection())
+                    closeWifiInternetAlert();
         }
     }
 
@@ -67,6 +68,8 @@ QtObject {
 
     //! Show wifi/Internet connection alert.
     signal showWifiInternetAlert(message: string, dateTime: string)
+
+    signal closeWifiInternetAlert();
 
     /* Methods
      * ****************************************************************************************/
@@ -184,6 +187,11 @@ QtObject {
             //! If wifi is connected, internet will be check after one minute.
            if (NetworkInterface.connectedWifi)
                checkInternetTimer.restart();
+
+           if (NetworkInterface.hasInternet) {
+               // Close the alert
+               closeWifiInternetAlert();
+           }
         }
 
         function onConnectedWifiChanged() {

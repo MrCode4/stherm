@@ -591,7 +591,7 @@ BasePageView {
         _root.schedule.humidity = internal.scheduleToEdit.humidity;
         _root.schedule.startTime = internal.scheduleToEdit.startTime;
         _root.schedule.endTime = internal.scheduleToEdit.endTime;
-        _root.schedule.repeats = [...internal.scheduleToEdit.repeats];
+        _root.schedule.repeats = internal.scheduleToEdit.repeats;
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
 
         // Emit schedule changed to call updateCurrentSchedules function in schedule controller.
