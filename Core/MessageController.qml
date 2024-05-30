@@ -93,6 +93,13 @@ QtObject {
                                                                                     messageModel.sourceType === Message.SourceType.Server));
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
+
+                             if (device.setting.muteAlerts && (type === Message.Type.SystemAlert ||
+                                                               type === Message.Type.Alert)) {
+                                 console.log("setMessagesServer: Ignored server alerts due to settings.")
+                                 return;
+                             }
+
                              var messageDatetime = message.datetime === null ? "" : message.datetime;
                              if (foundMessage && foundMessage.datetime === messageDatetime &&
                                  foundMessage.type === type) {
