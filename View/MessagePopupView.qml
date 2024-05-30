@@ -43,6 +43,12 @@ Item {
             //! Ask PopUpLayout to open popup
             uiSession.popupLayout.displayPopUp(wifiInternetConnectionAlert);
         }
+
+        //! Close wifi alert
+        function onCloseWifiInternetAlert() {
+            if (wifiInternetConnectionAlert.visible)
+                wifiInternetConnectionAlert.close();
+        }
     }
 
     Component {

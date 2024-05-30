@@ -9,6 +9,6 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     temprature = 18; // Celsius
     humidity   = 0;  // Percentage
 
-    // Defualt: Away
+    // default: Away
     type = 0;
 }

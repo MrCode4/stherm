@@ -30,6 +30,8 @@ class System : public NetworkWorker
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
+    Q_PROPERTY(bool fetchSuccessOnce   READ hasFetchSuccessOnce  FINAL)
+
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
@@ -124,6 +126,8 @@ public:
 
     bool testMode();
 
+    bool has_sshPass();
+
     /*!
      * \brief updateSequenceOnStart gets if the app just updated and set the state false so this happens only once
      * remember to call this only in one place on startup so you can manage better
@@ -176,6 +180,12 @@ public:
     //! Forget device settings and sync settings
     Q_INVOKABLE void ForgetDevice();
 
+    bool hasFetchSuccessOnce() const;
+
+    //! Manage quiet/night mode in system
+    void setNightModeRunning(const bool running);
+
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -224,6 +234,8 @@ signals:
 
     void isManualModeChanged();
 
+    void serialNumberChanged();
+
     void updateNoChecked();
 
 private:
@@ -252,7 +264,7 @@ private:
     void updateLog(const QJsonObject updateJsonObject);
 
     //! Check force updates
-    //! Return last force update version that in greater than current version, otherwise returns empty string
+    //! Return first force update version (consider test mode and stage) that in greater than current version, otherwise returns empty string
     QString findForceUpdate(const QJsonObject updateJsonObject);
 
     //! Update Available versions
@@ -303,6 +315,8 @@ private:
     
     //! System on test mode or not
     bool mTestMode;
+
+    bool mIsNightModeRunning;
 
     QTimer mFetchActiveTimer;
 

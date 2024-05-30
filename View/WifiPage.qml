@@ -26,6 +26,8 @@ BasePageView {
 
     property bool initialSetup: false
 
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
+
     //! Check update for first time
     property bool checkedUpdate: false;
 
@@ -56,15 +58,15 @@ BasePageView {
         property bool once : false
 
         repeat: false
-        running: !once && initialSetup && deviceController.deviceControllerCPP.system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
+        running: !once && initialSetupReady
         interval: 10000
         onTriggered: {
             once = true;
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                              "uiSession": uiSession,
+                                             "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
-                                          });
+                                         });
             }
         }
     }
@@ -80,7 +82,7 @@ BasePageView {
         }
 
         // Enable when the serial number is correctly filled
-        enabled: initialSetup && system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
+        enabled: initialSetupReady
         onClicked: {
             nextPageTimer.stop();
             nextPageTimer.once = true;
@@ -281,13 +283,14 @@ BasePageView {
             }
         }
 
-        RowLayout {
+        Item {
             Layout.fillWidth: true
-            Layout.leftMargin: 8
-            Layout.rightMargin: 8
+            Layout.preferredHeight: Style.button.buttonHeight
 
             //! Manual button
             ButtonInverted {
+                anchors.left: parent.left
+                anchors.leftMargin: 8
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Forget" : "Manual"
                 onClicked: {
                     if (text === "Manual") {
@@ -304,10 +307,36 @@ BasePageView {
                 }
             }
 
-            Item { Layout.fillWidth: true }
+            ToolButton {
+                anchors.centerIn: parent
+
+                checkable: false
+                checked: false
+                visible: initialSetup
+                implicitWidth: 64
+                implicitHeight: implicitWidth
+                icon.width: 50
+                icon.height: 50
+
+                contentItem: RoniaTextIcon {
+                    anchors.fill: parent
+                    font.pointSize: Style.fontIconSize.largePt
+                    Layout.alignment: Qt.AlignLeft
+                    text: FAIcons.circleInfo
+                }
+
+                onClicked: {
+                    root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
+                                                 "uiSession": Qt.binding(() => uiSession)
+                                             })
+
+                }
+            }
 
             //! Connect/Disconnect button
             ButtonInverted {
+                anchors.right: parent.right
+                anchors.rightMargin: 8
                 visible: _wifisRepeater.currentItem?.wifi ?? false
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
 
@@ -399,9 +428,7 @@ BasePageView {
         {
             console.log('incorrect pass for: ', wifi.ssid);
 
-            uiSession.popUps.errorPopup.errorMessage = "incorrect pass for: " + wifi.ssid;
-            uiSession.popUps.errorPopup.open();
-
+            // TODO: manage push
             //! Incorrect password entered
             if (root.StackView.view && root.StackView.view.currentItem === root) {
                 var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)

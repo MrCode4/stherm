@@ -291,7 +291,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         _deviceIO->updateRelays(relays);
     });
 
-    connect(m_scheme, &Scheme::fanWorkChanged, this, &DeviceControllerCPP::fanWorkChanged);
+    connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
+    connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
 
     if (m_system) {
@@ -299,6 +300,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             m_scheme->moveToUpdatingMode();
         });
     }
+
+    connect(_deviceIO, &DeviceIOController::relaysUpdated, this, [this](STHERM::RelayConfigs relays) {
+        emit fanWorkChanged(relays.g == STHERM::ON);
+    });
 
     //! Set sInstance to this
     if (!sInstance) {
@@ -331,9 +336,10 @@ void DeviceControllerCPP::nightModeControl(bool start)
 
     mIsNightModeRunning = start;
 
+    m_system->setNightModeRunning(start);
+
     if (start) {
         mNightModeTimer.start();
-        m_system->cpuInformation();
 
     } else {
         mNightModeTimer.stop();
@@ -479,7 +485,7 @@ void DeviceControllerCPP::startDevice()
         return;
     }
 
-    checkUpdateMode();
+    // checkUpdateMode();
 }
 
 void DeviceControllerCPP::stopDevice()
@@ -576,16 +582,18 @@ void DeviceControllerCPP::startTestMode()
         m_system->setTestMode(true);
 }
 
-void DeviceControllerCPP::checkUpdateMode()
+bool DeviceControllerCPP::checkUpdateMode()
 {
     // check if updated
     bool updateMode = getUpdateMode();
     if (updateMode) { // or intial mode, in this case disable fetching after one time fetching
         //            Run API to get settings from server (sync, getWirings, )
         TRACE << "getting settings from server";
-        if (m_system)
-            m_system->getUpdate();
+        //if (m_system)
+        //    m_system->getUpdate();
     }
+
+    return updateMode;
 }
 
 void DeviceControllerCPP::setAdaptiveBrightness(const double adaptiveBrightness) {
@@ -626,6 +634,7 @@ bool DeviceControllerCPP::checkSN()
         ScreenSaverManager::instance()->setAppActive(true);
 
     // System is no need update in snMode === 0
+    // After forget device state can not be zero (0)
     if (state == 0)
         m_system->setIsInitialSetup(false);
 
