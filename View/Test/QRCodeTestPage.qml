@@ -2,6 +2,7 @@ import QtQuick
 
 import Ronia
 import Stherm
+import QtQuick.Templates as Template
 
 /*! ***********************************************************************************************
  * QRCodeTestPage: Generate a QR code based on {"hv":"01","uid":"000000000000000"} string
@@ -22,10 +23,17 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
+    //! Reboot popup with count down timer to send reboot request to system
+    RebootDevicePopup {
+        id: rebootPopup
+        system: root.system
+        anchors.centerIn: Template.Overlay.overlay
+    }
+
     InfoPopup {
         id: infoPopup
         message: "QR Code"
-        detailMessage: "Serial number is not valid.<br>Please rescan."
+        detailMessage: "Serial number is not valid.<br>Please try again."
         visible: false
     }
 
@@ -37,24 +45,22 @@ BasePageView {
         }
 
         onClicked: {
-            if (root.StackView.view) {
-                if (system.serialNumber.length > 0) {
-                    deviceController.deviceControllerCPP.finalizeTesting()
-                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
-                                           "uiSession": uiSession,
-                                           "backButtonVisible": false,
-                                           "initialSetup": true
-                                       });
-                }
-                else {
-                    // infoPopup.open();
-                    deviceController.deviceControllerCPP.testFinished()
+            var sn = system.serialNumber;
 
-                }
+            if (sn.length === 0) {
+                //! Get SN with uid.
+                var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
+                system.getSN(uid);
             }
 
-            //! Finish test, add delay to set relays
-            //uiSession.showHome();
+            if (sn.length > 0) {
+                //! Finish test, add delay to set relays
+                deviceController.deviceControllerCPP.testFinished();
+                rebootPopup.open();
+
+            } else {
+                infoPopup.open();
+            }
         }
     }
 

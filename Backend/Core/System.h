@@ -68,6 +68,10 @@ public:
     //! Get serial number from server
     std::pair<std::string, bool> getSN(cpuid_t accessUid);
 
+    //! Get serial number from server, call from QML and return serial number
+    //! Some signals are block in this function.
+    Q_INVOKABLE QString getSN(QString accessUid);
+
     //! Get update
     //! todo: process response packet
     //! TEMP: "022"

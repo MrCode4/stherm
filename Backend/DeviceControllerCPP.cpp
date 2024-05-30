@@ -818,21 +818,15 @@ void DeviceControllerCPP::beginTesting()
     writeTestResult("TI version", !ti.isEmpty(), ti);
 }
 
-void DeviceControllerCPP::finalizeTesting()
-{
-    QString result = mAllTestsPassed?"PASS":"FAIL";
-    QFile::rename("test_results.csv", QString("%1_%2.csv").arg(_deviceAPI->uid()).arg(result));
-}
-
 void DeviceControllerCPP::testFinished()
 {
-    finalizeTesting();
+    QString result = mAllTestsPassed ? "PASS" : "FAIL";
+    QFile::rename("test_results.csv", QString("%1_%2.csv").arg(_deviceAPI->uid()).arg(result));
 
     QSettings settings;
     settings.setValue(m_RestartAfetrSNTestMode, true);
 
     TRACE << "testFinished";
-    m_system->rebootDevice();
 }
 
 bool DeviceControllerCPP::getSNTestMode() {

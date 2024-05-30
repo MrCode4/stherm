@@ -34,27 +34,6 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    function nextPage() {
-            if (root.StackView.view) {
-                nextPageTimer.stop();
-                nextPageTimer.once = true;
-                if (system.serialNumber.length > 0) {
-                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                                  "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                              });
-                }
-                else {
-                    uiSession.uiTestMode = true;
-                    root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                                  "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                              });
-                }
-            }
-        }
-
-
     Timer {
         id: fetchTimer
 
@@ -411,4 +390,19 @@ BasePageView {
     }
 
     onSortedWifisChanged: _wifisRepeater.currentIndexChanged();
+
+    /* Functions
+     * ****************************************************************************************/
+
+    function nextPage() {
+        if (root.StackView.view) {
+            nextPageTimer.once = true;
+            if (system.serialNumber.length > 0) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                         });
+            }
+        }
+    }
 }
