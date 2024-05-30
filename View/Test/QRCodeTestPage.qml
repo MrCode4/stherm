@@ -27,6 +27,7 @@ BasePageView {
     RebootDevicePopup {
         id: rebootPopup
         system: root.system
+        infoText: "Serial number is ready.\nRestarting Device..."
         anchors.centerIn: Template.Overlay.overlay
     }
 
@@ -55,11 +56,11 @@ BasePageView {
 
             if (sn.length > 0) {
                 //! Finish test, add delay to set relays
-                deviceController.deviceControllerCPP.testFinished();
-                rebootPopup.open();
 
             } else {
-                infoPopup.open();
+                deviceController.deviceControllerCPP.testFinished();
+                rebootPopup.open();
+                // infoPopup.open();
             }
         }
     }

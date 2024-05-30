@@ -479,6 +479,7 @@ QString NUVE::System::getSN(QString accessUid)
     auto response = mSync->getSN(accessUid.toStdString(), false);
     if (response.second)
         setUID(accessUid.toStdString());
+
     return QString::fromStdString(response.first);
 }
 

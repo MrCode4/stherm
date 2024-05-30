@@ -171,7 +171,7 @@ BasePageView {
             id: temperatureField
             readOnly: !overrideBtn.checked
             Layout.preferredHeight: 50
-            text: readOnly ? (root.model?.temperature.toFixed(3)  ?? "") : text
+            text: readOnly ? (root.model?.temperature?.toFixed(3)  ?? "") : text
             color: (root.model?.temperature >= temperatureMin && root.model?.temperature <= temperatureMax) ? Material.foreground : Style.testFailColor
 
             validator: DoubleValidator {
