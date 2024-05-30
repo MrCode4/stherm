@@ -429,10 +429,16 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             });
 
             //! Check if wifi is saved
+            //! NOTE: When a wifi password is entered incorrectly the connection is added in the
+            //! NetworkManager but the seenBssids is empty so only comparing bssid causes this wifi
+            //! not to be displayed as saved wifi. This is why the second condition is added.
+            //! This might cause bugs in hidden networks.
             auto conProfileIter = std::find_if(mConProfiles.cbegin(),
                                                mConProfiles.cend(),
                                                [&parsedWi](const ConnectionProfile& cp) {
-                                                   return cp.seenBssids.contains(parsedWi.bssid());
+                                                   return cp.seenBssids.contains(parsedWi.bssid())
+                                                          || (cp.seenBssids.isEmpty()
+                                                              && cp.ssid == parsedWi.ssid());
                                                });
 
             if (conProfileIter != mConProfiles.end()) {
@@ -542,6 +548,10 @@ void NmcliInterface::setupObserver()
 
         for (WifiInfo* wifi : mWifis) {
             if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
+                //! This wifi is now saved if it wasn't previously
+                if (!wifi->isSaved()) {
+                    wifi->setIsSaved(true);
+                }
                 emit wifiNeedAuthentication(wifi);
                 return;
             }
