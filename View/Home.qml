@@ -328,11 +328,14 @@ Control {
         enabled: !uiSession.debug
 
         function onStartModeChanged(startMode: int) {
+            if (uiSession.uiTestMode)
+                return;
+
             // Temp
             deviceController.startMode = startMode;
 
             //! Open a test mode page from home when app start with test mode.
-            if (startMode === 0 || system.serialNumber.length == 0) {
+            if (startMode === 0) {
                 uiSession.uiTestMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
@@ -406,11 +409,21 @@ Control {
 
     //! Force the app to fetch again with new serial number
     Connections {
-        target: deviceController.deviceControllerCPP.system
+        target: system
 
         function onSerialNumberChanged() {
             console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup)
             uiSession.settingsReady = false;
+        }
+
+        function onTestModeStarted() {
+            console.log("netReply->error()netReply->error()s")
+            uiSession.uiTestMode = true;
+            deviceController.startMode = 0;
+            if (mainStackView)
+                mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                                       "uiSession": Qt.binding(() => uiSession)
+                                   });
         }
     }
 
@@ -422,6 +435,7 @@ Control {
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {
                 if (deviceController.startMode !== 0 && deviceController.startMode !== -1) {
+                    console.log("check SNsss")
                     deviceController.deviceControllerCPP.checkSN();
                 }
             }

@@ -279,6 +279,10 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
                     mSerialNumber = sn;
 
+
+                    if (mSerialNumber.isEmpty())
+                        emit testModeStarted();
+
                     // Save the serial number in settings
                     QSettings setting;
                     setting.setValue(m_HasClientSetting, mHasClient);
@@ -389,6 +393,10 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
     if (!errorString.isEmpty()){
         if (method == m_getSN) {
             Q_EMIT snReady();
+
+            if (netReply->error() == QNetworkReply::ContentNotFoundError)
+                emit testModeStarted();
+
             QString error = "Unable to fetch the device serial number, Please check your internet connection: ";
 //            emit alert(error + errorString);
             qWarning() << error << errorString ;

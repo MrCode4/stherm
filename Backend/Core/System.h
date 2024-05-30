@@ -238,6 +238,8 @@ signals:
 
     void updateNoChecked();
 
+    void testModeStarted();
+
 private:
 
     //! verify dounloaded files and prepare to set up.

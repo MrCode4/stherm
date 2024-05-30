@@ -54,6 +54,8 @@ signals:
 
     void serialNumberChanged();
 
+    void testModeStarted();
+
 private slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply) override;
