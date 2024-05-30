@@ -508,10 +508,6 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
 
         //! Add all other connection profiles that are not already added in the list of wifis
         for (const auto& p : mConProfiles) {
-            if (p.seenBssids == "") {
-                //! This is probabley added after an incorrect password, do not add it
-                continue;
-            }
             mWifis.push_back(
                 new WifiInfo(false,
                              true, //! is saved
