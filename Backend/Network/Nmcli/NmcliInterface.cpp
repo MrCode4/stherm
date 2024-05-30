@@ -359,7 +359,7 @@ int NmcliInterface::waitLoop(QProcess* process, int timeout) const
     // connect signal for handling stopWork
     connect(process, &QProcess::finished, &loop, [&loop]() {
         loop.exit();
-    }, Qt::SingleShotConnection);
+    });
 
     if (timeout == 0) {
         return 0;
@@ -491,15 +491,14 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             line.remove(line.length() - 1, 1); //! Remove '\n'
         }
 
+        setConnectedWifi(currentWifi);
+
         //! Delete all the WifiInfo* in wifisBackup
         for (WifiInfo* wi: wifisBackup) {
             wi->deleteLater();
         }
 
         setBusyRefreshing(false);
-        if (currentWifi != nullptr) {
-            setConnectedWifi(currentWifi);
-        }
 
         //! Add all other connection profiles that are not already added in the list of wifis
         for (const auto& p : mConProfiles) {
