@@ -19,7 +19,7 @@ DeviceAPI::DeviceAPI(QObject *parent)
 
 #else
     // Use in test
-    _uid = m_deviceConfig.uid;
+    _uid = "2f0581d4d9656744";
 #endif
 
     m_system->setUID(_uid);

@@ -47,7 +47,9 @@ BasePageView {
                                        });
                 }
                 else {
-                    infoPopup.open()
+                    // infoPopup.open();
+                    deviceController.deviceControllerCPP.testFinished()
+
                 }
             }
 

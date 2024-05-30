@@ -23,6 +23,7 @@ static  const QString m_FanStatus             = "Fan status";
 static  const QString m_BacklightState        = "Backlight state";
 static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
+static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
@@ -821,6 +822,26 @@ void DeviceControllerCPP::finalizeTesting()
 {
     QString result = mAllTestsPassed?"PASS":"FAIL";
     QFile::rename("test_results.csv", QString("%1_%2.csv").arg(_deviceAPI->uid()).arg(result));
+}
+
+void DeviceControllerCPP::testFinished()
+{
+    finalizeTesting();
+
+    QSettings settings;
+    settings.setValue(m_RestartAfetrSNTestMode, true);
+
+    TRACE << "testFinished";
+    m_system->rebootDevice();
+}
+
+bool DeviceControllerCPP::getSNTestMode() {
+    QSettings settings;
+    auto snTestMode = settings.value(m_RestartAfetrSNTestMode, false).toBool();
+    settings.setValue(m_RestartAfetrSNTestMode, false);
+
+    TRACE << "testFinishedsnTestMode" << snTestMode;
+    return snTestMode;
 }
 
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)

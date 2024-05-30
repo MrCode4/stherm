@@ -392,7 +392,13 @@ Control {
 
         function onSnModeChanged(snMode: int) {
             // snMode === 1 or 0
-            if (snMode !== 2) {
+            var snTestMode = deviceController.deviceControllerCPP.getSNTestMode();
+            if (snMode !== 2 || snTestMode) {
+
+                // Fetch is not necessary (sn is not ready.)
+                if (snTestMode)
+                    uiSession.settingsReady = true;
+
                 //! Setting is ready in device or not
                 if (!uiSession.settingsReady)
                     uiSession.settingsReady = (snMode === 0);
@@ -417,7 +423,7 @@ Control {
         }
 
         function onTestModeStarted() {
-            console.log("netReply->error()netReply->error()s")
+            console.log("Test mode started due to serial number issues.")
             uiSession.uiTestMode = true;
             deviceController.startMode = 0;
             if (mainStackView)

@@ -70,7 +70,10 @@ public:
     Q_INVOKABLE void writeTestResult(const QString& testName, const QString& testResult, const QString& description="");
     Q_INVOKABLE void writeTestResult(const QString& testName, bool testResult, const QString& description="");
     Q_INVOKABLE void beginTesting();
+
     Q_INVOKABLE void finalizeTesting();
+    Q_INVOKABLE void testFinished();
+    Q_INVOKABLE bool getSNTestMode();
 
     //! set backlight using uart and respond the success, data should have 5 items
     //! including r, g, b, mode (0 for ui, 1 will be send internally), on/off
@@ -150,6 +153,7 @@ public:
     Q_INVOKABLE void forgetDevice();
 
     Q_INVOKABLE bool checkUpdateMode();
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
