@@ -35,8 +35,8 @@ Sync::Sync(QObject *parent) : NetworkWorker(parent),
 {
 
     QSettings setting;
-    // mHasClient            = setting.value(m_HasClientSetting).toBool();
-    // mSerialNumber         = setting.value(m_SerialNumberSetting).toString();
+    mHasClient            = setting.value(m_HasClientSetting).toBool();
+    mSerialNumber         = setting.value(m_SerialNumberSetting).toString();
     mContractorInfo       = setting.value(m_ContractorSettings).toMap();
 
 

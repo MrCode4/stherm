@@ -441,7 +441,6 @@ Control {
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {
                 if (deviceController.startMode !== 0 && deviceController.startMode !== -1) {
-                    console.log("check SNsss")
                     deviceController.deviceControllerCPP.checkSN();
                 }
             }
