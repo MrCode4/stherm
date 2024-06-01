@@ -134,6 +134,7 @@ ItemDelegate {
                     }
 
                     schedule.enable = checked;
+                    uiSession.appModel.schedulesChanged();
 
                     //Shows a proper toast message upon activation of a schedule
                     if(schedule.enable === true) {

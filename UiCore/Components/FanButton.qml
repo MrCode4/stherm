@@ -19,6 +19,9 @@ ToolButton {
     //! Reference to Fan
     property Fan    fan: appModel.fan
 
+    //! Used to blink fan
+    property real systemDelayCounter: -1
+
     /* Object properties
      * ****************************************************************************************/
     checkable: false
@@ -28,10 +31,56 @@ ToolButton {
         sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
         sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
         source: "qrc:/Stherm/Images/fan-on.png"
+
+        //! Animation for rotatin
+        Behavior on rotation {
+            enabled: fanAnimation.running
+            NumberAnimation
+            {
+                duration: fanAnimation.interval
+            }
+        }
+    }
+
+    //! Timer for fan animatin
+    Timer {
+        id: fanAnimation
+
+        interval: 250
+        running: false
+        repeat: true
+
+        onTriggered: {
+            logoImage.rotation += 45;
+        }
+    }
+
+
+    //! blink during countdown
+    //! CHECK, when fan is ON
+    Timer {
+        interval: 500
+        running: systemDelayCounter >= 0
+        repeat: true
+        onTriggered: {
+            systemDelayCounter -= 500;
+            logoImage.visible = !logoImage.visible
+        }
     }
 
     Connections {
         target: deviceController.deviceControllerCPP
+
+        //! Animate the fan image
+        function onFanWorkChanged(fanState: bool) {
+            if (fanState) {
+                fanAnimation.start();
+
+            } else {
+                fanAnimation.stop();
+                logoImage.rotation = 0;
+            }
+        }
 
         function onCurrentSystemModeChanged(state: int) {
             if (state === AppSpec.Cooling) {
@@ -44,6 +93,16 @@ ToolButton {
                 logoImage.source = "qrc:/Stherm/Images/fan-on.png";
             }
         }
+
+        function onStartSystemDelayCountdown(mode: int, delay: int) {
+            systemDelayCounter = delay;
+        }
+
+        function onStopSystemDelayCountdown() {
+            systemDelayCounter = -1;
+            logoImage.visible = true;
+        }
     }
+
 
 }

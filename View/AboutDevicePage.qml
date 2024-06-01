@@ -55,11 +55,11 @@ BasePageView {
             { "key": "Contians FCC ID",     "value": "VPYLB1DX" },
             { "key": "IC",                  "value": "LBWA1KL1FX-875" },
             { "key": "Serial No",           "value": system.serialNumber },
+            { "key": "Software version",    "value": appVesion },
+            { "key": "Hardware version",    "value": "01" },
             { "key": "Custom Name",         "value": "Living Room" },
             { "key": "URL",                 "value": '<a href="nuvehome.com" style="text-decoration:none;color:#44A0FF;">nuvehome.com</a>' },
             { "key": "E-mail",              "value": '<a href="support@nuvehome.com" style="text-decoration:none;color:#44A0FF;">support@nuvehome.com</link>' },
-            { "key": "Software version",    "value": appVesion },
-            { "key": "Hardware version",    "value": "01" },
             { "key": "IPv4 Address",        "value": NetworkInterface.ipv4Address },
             { "key": "Send Log",            "value": "01", "type": "button"},
             { "key": "Restart Device",      "value": "01", "type": "button" },
@@ -104,7 +104,7 @@ BasePageView {
                         if (root.testCounter === 10) {
                             root.testCounter = 0;
                             if (root.StackView.view) {
-                                uiSession.uiTetsMode = true;
+                                uiSession.uiTestMode = true;
                                 root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                              "uiSession": uiSession
                                                          })

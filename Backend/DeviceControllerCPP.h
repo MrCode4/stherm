@@ -143,6 +143,7 @@ public:
     //! Forget device and system settings
     Q_INVOKABLE void forgetDevice();
 
+    Q_INVOKABLE bool checkUpdateMode();
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -174,13 +175,16 @@ Q_SIGNALS:
 
     void adaptiveBrightnessChanged();
 
+    //! Forward signals from Scheme and send to UI
+    void startSystemDelayCountdown(AppSpecCPP::SystemMode mode, int delay);
+    void stopSystemDelayCountdown();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData);
     static DeviceControllerCPP* sInstance;
 
     void startTestMode();
-    void checkUpdateMode();
 
     void setAdaptiveBrightness(const double adaptiveBrightness);
 

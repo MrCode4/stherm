@@ -104,11 +104,11 @@ Control {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: centerItems.top
-                bottomMargin: -8
-                horizontalCenterOffset: -6
+                bottomMargin: 8
+                // To align with schedule ON button
+                horizontalCenterOffset: isSchedule ? -15 : -6
             }
-            enabled: !deviceController.currentSchedule
-            hoverEnabled: enabled
+
             deviceController: uiSession?.deviceController ?? null
 
             onClicked: {
@@ -332,7 +332,7 @@ Control {
 
             //! Open a test mode page from home when app start with test mode.
             if (startMode === 0) {
-                uiSession.uiTetsMode = true;
+                uiSession.uiTestMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
@@ -390,7 +390,8 @@ Control {
             // snMode === 1 or 0
             if (snMode !== 2) {
                 //! Setting is ready in device or not
-                uiSession.settingsReady = (snMode === 0);
+                if (!uiSession.settingsReady)
+                    uiSession.settingsReady = (snMode === 0);
 
                 // should be done by timer as can cause crash
                 startupTimer.start()
@@ -402,6 +403,16 @@ Control {
         }
     }
 
+    //! Force the app to fetch again with new serial number
+    Connections {
+        target: deviceController.deviceControllerCPP.system
+
+        function onSerialNumberChanged() {
+            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup)
+            uiSession.settingsReady = false;
+        }
+    }
+
     //! checkSN when the internet is connected.
     Connections {
         id: snChecker
@@ -409,7 +420,7 @@ Control {
 
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {
-                if (deviceController.startMode !== 0 && deviceController.startMode !== -1){
+                if (deviceController.startMode !== 0 && deviceController.startMode !== -1) {
                     deviceController.deviceControllerCPP.checkSN();
                 }
             }

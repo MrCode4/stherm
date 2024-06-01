@@ -217,14 +217,14 @@ BasePageView {
         anchors.right: parent.right
         anchors.bottomMargin: root.bottomPadding
 
-        visible: uiSession.uiTetsMode || system.testMode  || system.isManualUpdate
+        visible: system.testMode || system.isManualUpdate
 
         ButtonInverted {
             id: manualUpdateBtn
 
             Layout.alignment: exitManualUpdateBtn.visible ? Qt.AlignLeft : Qt.AlignHCenter
 
-            visible: uiSession.uiTetsMode || system.testMode
+            visible: system.testMode
             leftPadding: 8
             rightPadding: 8
             text:"Manual Update"

@@ -47,9 +47,9 @@ public:
     //    rgb_vals RGBm, RGBm_last;
 
     //! wirings and relays
-    QList<uint8_t> relays_in;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
     STHERM::RelayConfigs mRelaysIn;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
-    QList<uint8_t> relays_in_l; // Fill in set relay command
+    STHERM::RelayConfigs mRelaysOut;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
+    STHERM::RelayConfigs mRelaysOutLast;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
     QList<uint8_t> WiringState;
 
     //! main device
@@ -1048,7 +1048,9 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
         case STHERM::SetRelay: {
             if (rxPacket.ACK == STHERM::ERROR_NO) {
                 TRACE_CHECK(false) << "***** Ti  - Start SetRelay *****";
-                m_p->relays_in_l = m_p->relays_in;
+                m_p->mRelaysOutLast = m_p->mRelaysOut;
+                emit relaysUpdated(m_p->mRelaysOutLast);
+
                 TRACE_CHECK(false) << "***** Ti  - SetRelay finished *****";
             } else {
                 switch (rxPacket.ACK) {
@@ -1252,6 +1254,11 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 
     if (txPacket.CMD == STHERM::SetRelay || txPacket.CMD == STHERM::Check_Wiring) {
         m_p->wait_relay_response = true;
+    }
+
+    // Store relays that must be updated based on the server's response to the current SetRelay request.
+    if (txPacket.CMD == STHERM::SetRelay) {
+        m_p->mRelaysOut = DataParser::getRelaysFromPacket(txPacket);
     }
 
     //! prepare for request

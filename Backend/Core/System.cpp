@@ -58,6 +58,7 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 //! return true when version1 > version2
 //! return false when version1 <= version2
 bool isVersionNewer(const QString& version1, const QString& version2) {
+
     QStringList parts1 = version1.split('.');
     QStringList parts2 = version2.split('.');
 
@@ -82,7 +83,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mUpdateAvailable (false),
     mHasForceUpdate(false),
     mIsInitialSetup(false),
-    mTestMode(false)
+    mTestMode(false),
+    mIsNightModeRunning(false)
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -91,15 +93,18 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
+    connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
+
     connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
         setCanFetchServer(true);
     });
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
-        getUpdateInformation(true);
+        if (!mIsNightModeRunning)
+            getUpdateInformation(true);
     });
 
-    mUpdateTimer.setInterval(12 * 60 * 60 * 1000); // each 12 hours
+    mUpdateTimer.setInterval(6 * 60 * 60 * 1000); // each 6 hours
     mUpdateDirectory = qApp->applicationDirPath();
 
     // Install update service
@@ -133,7 +138,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
         QSettings settings;
-        settings.setValue("m_updateOnStartKey", true);
+        settings.setValue(m_updateOnStartKey, true);
     });
 
     // Check: The downloader has been open for more than 30 seconds and has not received any bytes
@@ -160,6 +165,19 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
             mLogSender.setProperty("initialized", true);
         }
     });
+
+    if (!has_sshPass()) {
+        TRACE << "sshpass was not in /usr/bin";
+        QFile sshpass_local("/usr/local/bin/sshpass");
+        if (sshpass_local.exists()) {
+            TRACE << "sshpass copying to /usr/bin";
+            auto success = sshpass_local.copy("/usr/bin/sshpass");
+            TRACE_CHECK(success) << "copy sshpass successfuly";
+            TRACE_CHECK(!success) << "failed to copy sshpass";
+        } else {
+            TRACE << "sshpass is not in /usr/local/bin either";
+        }
+    }
 
     if (!serialNumber().isEmpty())
         onSnReady();
@@ -415,7 +433,7 @@ void NUVE::System::sendLog()
     }
 
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
@@ -458,7 +476,10 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
 bool NUVE::System::getUpdate(QString softwareVersion)
 {
     if (mCanFetchServer) {
-        return mSync->getSettings();
+        if (mSync->getSettings()){
+            setProperty("hasFetchSuccessOnce", true);
+            return true;
+        }
     }
 
     return false;
@@ -486,12 +507,13 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     }
 
     mUpdateTimer.start();
+    if (!mIsNightModeRunning) {
+        // When is initial setup, skip update Information as we want to wait until its complete!
+        if (!mIsInitialSetup)
+            getUpdateInformation(true);
 
-    // When is initial setup, skip update Information as we want to wait until its complete!
-    if (!mIsInitialSetup)
-        getUpdateInformation(true);
-
-    getBackdoorInformation();
+        getBackdoorInformation();
+    }
 }
 
 void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
@@ -593,6 +615,13 @@ bool NUVE::System::testMode() {
     return mTestMode;
 }
 
+bool NUVE::System::has_sshPass()
+{
+    QFileInfo sshPass("/usr/bin/sshpass");
+
+    return sshPass.exists();
+}
+
 bool NUVE::System::isManualMode() {
     return mStartedWithManualUpdate;
 }
@@ -620,13 +649,32 @@ void NUVE::System::ForgetDevice()
     mSync->ForgetDevice();
 }
 
+bool NUVE::System::hasFetchSuccessOnce() const
+{
+    return property("hasFetchSuccessOnce").toBool();
+}
+
+void NUVE::System::setNightModeRunning(const bool running) {
+    if (mIsNightModeRunning == running)
+        return;
+
+    mIsNightModeRunning = running;
+
+    if (mIsNightModeRunning) {
+        cpuInformation();
+    }
+}
+
 bool NUVE::System::updateSequenceOnStart()
 {
     QSettings settings;
     auto update = settings.value(m_updateOnStartKey);
+    // TODO remove later
+    auto updateOld = settings.value("m_updateOnStartKey");
     settings.setValue(m_updateOnStartKey, false);
+    settings.setValue("m_updateOnStartKey", false);
 
-    return update.isValid() && update.toBool();
+    return (update.isValid() && update.toBool()) || (updateOld.isValid() && updateOld.toBool());
 }
 
 bool NUVE::System::hasForceUpdate()
@@ -1078,7 +1126,7 @@ void NUVE::System::createLogDirectoryOnServer()
 
     mLogRemoteFolder = m_logPath + sn;
     // Create remote path in case it doesn't exist, needed once! with internet access
-    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
+    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
                          arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     mLogSender.start("/bin/bash", {"-c", createPath});
 }
@@ -1171,6 +1219,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     updateAvailableVersions(mUpdateJsonObject);
 
+    // Update mHasForceUpdate in the findForceUpdate function.
     mHasForceUpdate = false;
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
     auto installableVersionKey = installLatestVersion ? latestVersionKey : findForceUpdate(mUpdateJsonObject);
@@ -1188,8 +1237,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
-
-
 
     auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
     auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
@@ -1215,7 +1262,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     // installableVersionKey > currentVersion
     if (isVersionNewer(installableVersionKey, currentVersion)) {
         setUpdateAvailable(true);
-        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
 
         if (!mHasForceUpdate && notifyUser  && !mIsManualUpdate)
             emit notifyNewUpdateAvailable();
@@ -1288,24 +1334,30 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
     if (versions.contains("LatestVersion"))
         versions.removeOne("LatestVersion");
 
-
-    // Last force update.
     std::sort(versions.begin(), versions.end(), isVersionNewer);
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
+    QString latestVersionKey;
 
-    // return the last force update that is greater than the current version
     foreach (auto keyVersion, versions) {
         if (isVersionNewer(keyVersion, currentVersion)) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
-            if (obj.value(m_ForceUpdate).toBool()) {
-                return keyVersion;
+            auto isForce =  obj.value(m_ForceUpdate).toBool();
+
+            if (isForce) {
+                // Update the earlier force update that is greater than the current version
+                if (mTestMode || !obj.value(m_Staging).toBool()) {
+                    mHasForceUpdate = true;
+                    latestVersionKey = keyVersion;
+                }
             }
+        } else { // to skip checking further versions which all are lower!
+            break;
         }
     }
 
-    return QString();
+    return latestVersionKey;
 }
 
 void NUVE::System::rebootDevice()
