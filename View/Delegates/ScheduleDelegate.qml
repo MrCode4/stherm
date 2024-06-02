@@ -209,6 +209,8 @@ ItemDelegate {
             var dt = schedulesController.prepareToastMessage(schedule);
             uiSession.toastManager.showToast(dt.message, dt.detail);
         }
+
+        uiSession.appModel.schedulesChanged();
     }
 }
 
