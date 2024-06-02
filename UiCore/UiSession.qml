@@ -72,6 +72,9 @@ Item {
     //! managing popups
     property PopUpLayout        popupLayout
 
+    //Manages displaying toast messages requested from different parts of the app
+    property ToastManager toastManager:ToastManager
+
     //! app core, will be created in main.qml onCompleted function
     property I_Device           appModel
 
@@ -130,6 +133,7 @@ Item {
     signal sigHidePanel (I_Panel panel);
     signal sigShowPopUp (I_PopUp popUp);
     signal sigHidePopUp (I_PopUp popUp);
+    signal requestShowToast(string message);
     signal showHome(); //! This signal can be emitted to request going back to Home
 
     /* Signal Handlers
@@ -175,5 +179,5 @@ Item {
 
         popUpQueue.push(popUp);
         sigShowPopUp(popUp);
-    }
+    }    
 }

@@ -136,6 +136,12 @@ ItemDelegate {
                     schedule.enable = checked;
                     uiSession.appModel.schedulesChanged();
 
+                    //Shows a proper toast message upon activation of a schedule
+                    if(schedule.enable === true) {
+                        var dt = schedulesController.prepareToastMessage(schedule);
+                        uiSession.toastManager.showToast(dt.message, dt.detail);
+                    }
+
                     // Send Data to server when a schedule changed...
                     uiSession.deviceController.pushSettings();
                 }
@@ -195,9 +201,16 @@ ItemDelegate {
 
         if (schedule?.enable === false) {
             schedule.enable = true;
+
             // Send Data to server when a schedule changed...
             uiSession.deviceController.pushSettings();
+
+            //Shows a proper toast message upon activation of a schedule
+            var dt = schedulesController.prepareToastMessage(schedule);
+            uiSession.toastManager.showToast(dt.message, dt.detail);
         }
+
+        uiSession.appModel.schedulesChanged();
     }
 }
 
