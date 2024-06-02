@@ -5,7 +5,8 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * CurrentTempratureLabel shows current temprature in Fahrenheit or Celsius
+ * TempratureLabel shows temprature in Fahrenheit or Celsius
+ * Temperature default if current temperature
  * ***********************************************************************************************/
 Control {
     id: _root
@@ -15,9 +16,14 @@ Control {
     //! Holds current unit of temprature (Fahrenheit or Celsius)
     property string     unit: (device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
+    property real temperature: device?.currentTemp ?? 0
+
+    property bool showCurrentTemperature: true
+
     //! \todo: add a property to get a ref to a temprature model
     //! I_Device
     property I_Device   device
+
 
     /* Object properties
      * ****************************************************************************************/
@@ -29,13 +35,12 @@ Control {
         columnSpacing: 0
         rowSpacing: 0
         columns: 2
-        //! Current temprature
+        //! Temprature
         Label {
             font {
                 pointSize: Qt.application.font.pointSize * 1.5
             }
-            text: Number(Utils.convertedTemperature(device?.currentTemp ?? 0,
-                                                      device?.setting?.tempratureUnit))
+            text: Number(Utils.convertedTemperature(temperature, device?.setting?.tempratureUnit))
                         .toLocaleString(locale, "f", 0)
         }
 
@@ -51,9 +56,11 @@ Control {
             text: `\u00b0${unit}`
         }
 
-        //!
+        //! Current label
         Label {
             Layout.columnSpan: 2
+
+            visible: showCurrentTemperature
             font.pointSize: Application.font.pointSize * 0.7
             opacity: 0.6
             text: "Current"

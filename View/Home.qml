@@ -60,7 +60,7 @@ Control {
         visible: opacity > 0
 
         //! Current temprature item
-        CurrentTempratureLabel {
+        TempratureLabel {
             id: _currentTempLbl
             anchors {
                 left: parent.left

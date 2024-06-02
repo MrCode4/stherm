@@ -235,6 +235,36 @@ Control {
             }
         }
 
+        //! Selected temprature item
+        TempratureLabel {
+            id: tempLbl
+
+            anchors.right: parent.right
+            anchors.rightMargin: 16 * scaleFactor
+            anchors.top: parent.top
+
+
+
+            showCurrentTemperature: false
+            visible: dragging
+            z: 1
+            device: _root.uiSession.appModel
+
+            // Show the pressed slider value
+            temperature: {
+                if (_tempSlider.pressed) {
+                    return _tempSlider.value.toFixed(0);
+
+                } else if (tempSliderDoubleHandle.first.pressed) {
+                    return tempSliderDoubleHandle.first.value.toFixed(0);
+
+                } else if (tempSliderDoubleHandle.second.pressed) {
+                    return tempSliderDoubleHandle.second.value.toFixed(0);
+                }
+                return "";
+            }
+        }
+
         //! Min and Max temperature labels
         Label {
             y: _tempSlider.height
