@@ -420,17 +420,18 @@ QtObject {
         var currentDate = Qt.formatDate(now, "ddd").slice(0, -1);
         var scStartTime = Date.fromLocaleTimeString(Qt.locale(), sch.startTime, "hh:mm AP");
         var scEndTime = Date.fromLocaleTimeString(Qt.locale(), sch.endTime, "hh:mm AP");
-        let runningDays = findRunningDays(sch.repeats, scStartTime, scEndTime, false);
+        let runningDays = findRunningDays(sch.repeats, scStartTime, scEndTime, sch.active);
 
-        //checks if the schecule is currently running
-        if (runningDays.includes(currentDate) && timeInRange(now,scStartTime,scEndTime)) {
+        // checks if the schecule is currently running
+        let currentRunningDays = (scStartTime > scEndTime && scEndTime > now) ? nextDayRepeats(runningDays) : runningDays;
+        if (currentRunningDays.includes(currentDate) && timeInRange(now, scStartTime, scEndTime)) {
             toastMessage = sch.name;
             toastDetail = " is already running!";
         }
         //otherwise, calculates the remaining time until the nearest time the schedule planned to run
         else{
             //first day from now on which the schedule is planned for
-            var firstRunningDay=new Date(findNextDayofWeek(sch.startTime, runningDays));
+            var firstRunningDay = new Date(findNextDayofWeek(sch.startTime, runningDays));
 
             //Setting time as planned
             firstRunningDay.setHours(scStartTime.getHours());
@@ -462,7 +463,7 @@ QtObject {
     {
         const schStartDtm = Date.fromLocaleTimeString(Qt.locale(), schStartTime, "hh:mm AP");
         const currentDate = new Date;
-        var runningDays=targetDays.split(",");
+        var runningDays = targetDays.split(",");
 
         //! Check if start time has passed now. If it's not passed, next day of week might be the current day!
         //! For example when start time is 17:00 and now is 16:00 (schedule will start in one hour
