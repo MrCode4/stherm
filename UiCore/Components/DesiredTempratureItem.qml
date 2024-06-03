@@ -78,7 +78,6 @@ Control {
             anchors.centerIn: parent
             width: parent.width
             height: width / 2
-            visible: !tempSliderDoubleHandle.visible
             enabled: labelVisible && !currentSchedule
             from: minTemprature
             to: maxTemprature
@@ -112,7 +111,6 @@ Control {
             anchors.centerIn: parent
             width: parent.width
             height: width / 2
-            visible: device?.systemSetup?.systemMode === AppSpec.Auto
             enabled: labelVisible && !currentSchedule
             difference: device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
 
@@ -242,8 +240,6 @@ Control {
             anchors.right: parent.right
             anchors.rightMargin: 16 * scaleFactor
             anchors.top: parent.top
-
-
 
             showCurrentTemperature: false
             visible: dragging
@@ -444,7 +440,7 @@ Control {
     state: "non-auto-idle"
     states: [
         State {
-            when: device?.systemSetup?.systemMode !== AppSpec.Auto && !_tempSlider.pressed
+            when: (device?.systemSetup?.systemMode !== AppSpec.Auto && !_tempSlider.pressed) || currentSchedule
             name: "non-auto-idle"
 
             PropertyChanges {
@@ -480,7 +476,7 @@ Control {
 
         State {
             extend: "non-auto-idle"
-            when: device?.systemSetup?.systemMode !== AppSpec.Auto && _tempSlider.pressed
+            when: (device?.systemSetup?.systemMode !== AppSpec.Auto && _tempSlider.pressed)
             name: "non-auto-dragging"
 
             PropertyChanges {
@@ -493,7 +489,7 @@ Control {
 
         State {
             when: device?.systemSetup?.systemMode === AppSpec.Auto
-                  && !tempSliderDoubleHandle.first.pressed && !tempSliderDoubleHandle.second.pressed
+                  && !tempSliderDoubleHandle.first.pressed && !tempSliderDoubleHandle.second.pressed && !currentSchedule
             name: "auto-idle"
 
             PropertyChanges {
@@ -512,12 +508,12 @@ Control {
 
             PropertyChanges {
                 target: _tempSlider
-                visible: false
+                visible: currentSchedule
             }
 
             PropertyChanges {
                 target: tempSliderDoubleHandle
-                visible: true
+                visible: !currentSchedule
                 showGreySection: true
             }
 
@@ -555,6 +551,11 @@ Control {
                 target: tempSliderDoubleHandle
                 showGreySection: false
             }
+
+            PropertyChanges {
+                target: _tempSlider
+                visible: false
+            }
         },
 
         State {
@@ -579,6 +580,11 @@ Control {
                 opacity: 0.65
                 y: rightTempLabel.y - coolHeatLbl.height
                 text: "Cool to"
+            }
+
+            PropertyChanges {
+                target: _tempSlider
+                visible: false
             }
 
             PropertyChanges {
