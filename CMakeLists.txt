@@ -132,6 +132,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/OnScheduleLabel.qml
         UiCore/Components/RangeSlider.qml
         UiCore/Components/SemiCircleSliderDoubleHandle.qml
+        UiCore/Components/RoniaTumbler.qml
 
 
         # Views and Widgets
