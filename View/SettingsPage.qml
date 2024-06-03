@@ -230,8 +230,8 @@ BasePageView {
                 }
 
                 Switch {
-                    id: muteAlertsSw
-                    checked: appModel?.setting?.muteAlerts ?? false
+                    id: enabledAlertsSw
+                    checked: appModel?.setting?.enabledAlerts ?? false
 
                     onCheckedChanged: {
                         onlineTimer.startTimer()
@@ -250,8 +250,8 @@ BasePageView {
                 }
 
                 Switch {
-                    id: muteNotificationsSw
-                    checked: appModel?.setting?.muteNotifications ?? false
+                    id: enabledNotificationsSw
+                    checked: appModel?.setting?.enabledNotifications ?? false
 
                     onCheckedChanged: {
                         onlineTimer.startTimer()
@@ -305,8 +305,8 @@ BasePageView {
                                                 _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
                                                                           : AppSpec.TempratureUnit.Cel,
                                                 _adaptiveBrSw.checked,
-                                                muteAlertsSw.checked,
-                                                muteNotificationsSw.checked);
+                                                enabledAlertsSw.checked,
+                                                enabledNotificationsSw.checked);
         }
         return false;
     }
@@ -375,8 +375,8 @@ BasePageView {
                             internal.copyOfSettings.volume,
                             internal.copyOfSettings.tempratureUnit,
                             internal.copyOfSettings.adaptiveBrightness,
-                            internal.copyOfSettings.muteAlerts,
-                            internal.copyOfSettings.muteNotifications)) {
+                            internal.copyOfSettings.enabledAlerts,
+                            internal.copyOfSettings.enabledNotifications)) {
                     console.log("could not revert model");
                 }
             }

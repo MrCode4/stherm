@@ -94,7 +94,7 @@ QtObject {
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
 
-                             if (device.setting.muteAlerts && (type === Message.Type.SystemAlert ||
+                             if (!device.setting.enabledAlerts && (type === Message.Type.SystemAlert ||
                                                                type === Message.Type.Alert)) {
                                  console.log("setMessagesServer: Ignored server alerts due to settings.")
                                  return;
@@ -115,7 +115,7 @@ QtObject {
 
     function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
     {
-        if (device.setting.muteNotifications && type === Message.Type.Notification) {
+        if (!device.setting.enabledNotifications && type === Message.Type.Notification) {
             console.log("addNewMessageFromData: Ignored notifications due to settings.")
             return;
         }
@@ -182,7 +182,7 @@ QtObject {
         target: deviceController.deviceControllerCPP.system
 
         function onAlert(message: string) {
-            if (device.setting.muteAlerts)
+            if (!device.setting.enabledAlerts)
                 return false;
 
             addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
@@ -215,7 +215,7 @@ QtObject {
  
         //! wrong password alert.
         function onIncorrectWifiPassword() {
-            if (device.setting.muteAlerts)
+            if (!device.setting.enabledAlerts)
                 return;
 
             var message = "Wrong password, please try again.";
@@ -275,7 +275,7 @@ QtObject {
         interval: 3 * 60 * 60 * 1000
 
         onTriggered: {
-            if (device.setting.muteAlerts)
+            if (!device.setting.enabledAlerts)
                 return;
 
             var message = "Poor air quality detected. Please ventilate the room.";
@@ -357,7 +357,7 @@ QtObject {
     }
 
     function checkWifiConnection() : bool {
-        if (device.setting.muteAlerts)
+        if (!device.setting.enabledAlerts)
             return false;
 
         if (!NetworkInterface.connectedWifi) {
@@ -370,7 +370,7 @@ QtObject {
     }
 
     function checkInternetConnection() : bool {
-        if (device.setting.muteAlerts)
+        if (!device.setting.enabledAlerts)
             return false;
 
         if (!NetworkInterface.hasInternet) {
