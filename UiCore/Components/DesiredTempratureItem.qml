@@ -252,16 +252,23 @@ Control {
 
             // Show the pressed slider value
             temperature: {
+                var temp = 0.0;
+
                 if (_tempSlider.pressed) {
-                    return _tempSlider.value.toFixed(0);
+                    temp = _tempSlider.value.toFixed(0);
 
                 } else if (tempSliderDoubleHandle.first.pressed) {
-                    return tempSliderDoubleHandle.first.value.toFixed(0);
+                    temp = tempSliderDoubleHandle.first.value.toFixed(0);
 
                 } else if (tempSliderDoubleHandle.second.pressed) {
-                    return tempSliderDoubleHandle.second.value.toFixed(0);
+                    temp = tempSliderDoubleHandle.second.value.toFixed(0);
                 }
-                return "";
+
+                // The slider value is currently converted to the selected unit.
+                // However, we need to convert it to Celsius.
+                temp = device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? Utils.fahrenheitToCelsius(temp) : temp;
+
+                return temp;
             }
         }
 
