@@ -51,9 +51,9 @@ BacklightPage {
         visible: true
 
         onAccepted: {
-            colorTimer.start()
-            colorTimer.value = 0
-            colorTimer.triggered()
+            buttonTimer.btnIndex = 0
+            buttonTimer.start()
+            buttonTimer.triggered()
         }
     }
 
@@ -91,7 +91,7 @@ BacklightPage {
         id: colorTimer
         interval: 2000
         repeat: true
-        running: false
+        running: false   // this timer disabled for now as we just test first shade index
 
         property int value: 0
         property int intervals: 3
@@ -116,7 +116,7 @@ BacklightPage {
         id: brightnessTimer
         interval: 2000
         repeat: true
-        running: false
+        running: false // this timer disabled for now as we just test first shade index
 
         property int value: 0
         property int intervals: 2

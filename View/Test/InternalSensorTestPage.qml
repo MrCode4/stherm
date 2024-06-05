@@ -78,6 +78,26 @@ BasePageView {
         deviceController.deviceControllerCPP.writeTestResult(key, result, description)
     }
 
+    function nextPage(){
+        writeSensorData()
+
+        if (deviceController.startMode !== 0) {
+            //! Next page
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
+                                             "uiSession": uiSession
+                                         })
+            }
+        } else {
+            //! Test mode enabled with GPIO as there is no ti board connected
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
+                                              "uiSession": uiSession
+                                          })
+            }
+        }
+    }
+
     //! Next button
     ToolButton {
         id: nextBtn
@@ -86,31 +106,7 @@ BasePageView {
             text: FAIcons.arrowRight
         }
 
-        onClicked: {
-            writeSensorData()
-
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
-                                              "uiSession": uiSession
-                                          })
-            }
-
-            /*if (deviceController.startMode !== 0) {
-                //! Next page
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
-                                                 "uiSession": uiSession
-                                             })
-                }
-            } else {
-                //! Test mode enabled with GPIO as there is no ti board connected
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
-                                                  "uiSession": uiSession
-                                              })
-                }
-            }*/
-        }
+        onClicked: nextPage()
     }
 
     //! override button
@@ -158,6 +154,15 @@ BasePageView {
         }
     }
 
+    //! timer for updating values
+    Timer {
+        interval: 100
+        repeat: false
+        running: temperatureField.valid && humidityField.valid && tofField.valid &&
+                 ambientField.valid && co2Field.valid && fanField.valid
+        onTriggered: nextPage()
+    }
+
     //! items
     GridLayout {
         anchors.fill: parent
@@ -169,10 +174,13 @@ BasePageView {
 
         TextField {
             id: temperatureField
+
+            property bool valid : (root.model?.temperature >= temperatureMin && root.model?.temperature <= temperatureMax) ?? false
+
             readOnly: !overrideBtn.checked
             Layout.preferredHeight: 50
             text: readOnly ? (root.model?.temperature?.toFixed(3)  ?? "") : text
-            color: (root.model?.temperature >= temperatureMin && root.model?.temperature <= temperatureMax) ? Material.foreground : Style.testFailColor
+            color:  valid ? Material.foreground : Style.testFailColor
 
             validator: DoubleValidator {
                 top: 40
@@ -191,9 +199,13 @@ BasePageView {
         }
 
         Label {
-            text:root.model?.humidity  ?? "NaN"
+            id: humidityField
+
+            property bool valid : (root.model?.humidity >= humidityMin && root.model?.humidity <= humidityMax) ?? false
+
+            text: root.model?.humidity  ?? "NaN"
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.humidity >= humidityMin && root.model?.humidity <= humidityMax) ? Material.foreground : Style.testFailColor
+            color: valid ? Material.foreground : Style.testFailColor
         }
 
         Label {
@@ -201,9 +213,13 @@ BasePageView {
         }
 
         Label {
-            text: (root.model?.RangeMilliMeter > 0) ? ("ON (" + root.model.RangeMilliMeter + ")") : "OFF"
+            id: tofField
+
+            property bool valid : (root.model?.RangeMilliMeter >= rangeMilliMeterMin && root.model?.RangeMilliMeter <= rangeMilliMeterMax) ?? false
+
+            text: (root.model?.RangeMilliMeter > 0 && root.model?.RangeMilliMeter < 1000) ? ("ON (" + root.model.RangeMilliMeter + ")") : "OFF"
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.RangeMilliMeter >= rangeMilliMeterMin && root.model?.RangeMilliMeter <= rangeMilliMeterMax) ? Material.foreground : Style.testFailColor
+            color: valid ? Material.foreground : Style.testFailColor
         }
 
         Label {
@@ -211,9 +227,13 @@ BasePageView {
         }
 
         Label {
+            id: ambientField
+
+            property bool valid : (root.model?.brighness >= brighnessMin && root.model?.brighness <= brighnessMax) ?? false
+
             text:root.model?.brighness  ?? ""
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.brighness >= brighnessMin && root.model?.brighness <= brighnessMax) ? Material.foreground : Style.testFailColor
+            color: valid ? Material.foreground : Style.testFailColor
         }
 
         Label {
@@ -221,9 +241,13 @@ BasePageView {
         }
 
         Label {
+            id: co2Field
+
+            property bool valid : (root.model?.iaq >= iaqMin && root.model?.iaq <= iaqMax) ?? false
+
             text:root.model?.iaq  ?? ""
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.iaq >= iaqMin && root.model?.iaq <= iaqMax) ? Material.foreground : Style.testFailColor
+            color: valid ? Material.foreground : Style.testFailColor
         }
 
         Label {
@@ -231,9 +255,13 @@ BasePageView {
         }
 
         Label {
-            text:root.model?.fanSpeed  ?? ""
+            id: fanField
+
+            property bool valid : (root.model?.fanSpeed >= fanSpeedMin && root.model?.fanSpeed <= fanSpeedMax) ?? false
+
+            text: root.model?.fanSpeed  ?? ""
             Layout.preferredWidth:  temperatureField.width
-            color: (root.model?.fanSpeed >= fanSpeedMin && root.model?.fanSpeed <= fanSpeedMax) ? Material.foreground : Style.testFailColor
+            color: valid ? Material.foreground : Style.testFailColor
         }
     }
 }
