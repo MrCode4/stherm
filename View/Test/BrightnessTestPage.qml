@@ -17,7 +17,7 @@ BasePageView {
     title: "Brightness Test"
     headerColor: "black"
     background: Rectangle {
-        color: "black"
+        color: "white"
     }
 
     onVisibleChanged: {
