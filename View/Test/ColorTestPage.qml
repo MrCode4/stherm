@@ -31,7 +31,7 @@ BasePageView {
 
     function nextPage() {
         if (root.StackView.view) {
-            root.StackView.view.push("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
+            root.StackView.view.push("qrc:/Stherm/View/Test/BrightnessTestPage.qml", {
                                           "uiSession": uiSession
                                       })
         }
@@ -40,11 +40,11 @@ BasePageView {
     InfoPopup {
         id: infoPopup
         message: "Color test"
-        detailMessage: "The screen will change colors<br>between white, blue, green,<br>red and black"
+        detailMessage: "The screen will change colors<br>between blue, green,<br>red and black"
         visible: true
 
         onAccepted: {
-            root.state = "white"
+            root.state = "black"
             timer.start()
             timer.colorIndex = 0
             timer.triggered()
@@ -97,7 +97,7 @@ BasePageView {
         repeat: true
         running: false
 
-        property var colors: ["blue", "green", "red", "black", "white"]
+        property var colors: ["blue", "green", "red", "black"]
         property int colorIndex: 0
 
         onTriggered: {

@@ -198,6 +198,7 @@ qt6_add_qml_module(appStherm
         # Test
         View/Test/TouchTestPage.qml
         View/Test/ColorTestPage.qml
+        View/Test/BrightnessTestPage.qml
         View/Test/BacklightTestPage.qml
         View/Test/AudioTestPage.qml
         View/Test/InternalSensorTestPage.qml
