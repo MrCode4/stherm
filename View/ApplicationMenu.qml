@@ -33,7 +33,7 @@ BasePageView {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               })
                     break
-                case "Alerts/Notifications":
+                case "Alerts/Messages":
                     _root.StackView.view.push("qrc:/Stherm/View/AlertsNotificationsPage.qml", {
                                                   "uiSession": Qt.binding(() => uiSession)
                                               });
