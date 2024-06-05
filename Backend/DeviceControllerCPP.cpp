@@ -818,6 +818,16 @@ void DeviceControllerCPP::beginTesting()
     writeTestResult("TI version", !ti.isEmpty(), ti);
 }
 
+void DeviceControllerCPP::testBrightness(int value)
+{
+    _deviceIO->setBrightnessTest(value);
+}
+
+void DeviceControllerCPP::stopTestBrightness()
+{
+    _deviceIO->setBrightnessTest(0, false);
+}
+
 void DeviceControllerCPP::testFinished()
 {
     QString result = mAllTestsPassed ? "PASS" : "FAIL";

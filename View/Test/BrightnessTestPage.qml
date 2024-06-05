@@ -87,6 +87,7 @@ BasePageView {
         }
 
         onClicked: {
+            deviceController.deviceControllerCPP.stopTestBrightness()
             timer.stop()
             confirmPopup1.open()
         }
@@ -106,7 +107,7 @@ BasePageView {
             else
                 brightness += 9
 
-            // change brightness
+            deviceController.deviceControllerCPP.testBrightness(brightness)
         }
     }
 }
