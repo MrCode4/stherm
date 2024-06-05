@@ -64,7 +64,7 @@ public:
     //! 0 normal, 1 adaptive
     uint8_t brighness_mode = 0;
     uint32_t luminosity = 255;
-    uint32_t brightnessValue;
+    uint32_t brightnessValue = 255;
 
     //! unknowns // TODO find unused ones and remove later
     bool pairing = false;
@@ -680,9 +680,9 @@ void DeviceIOController::setBrightnessTest(int brightness, bool test)
 
     bool adaptive = test;
     m_p->brighness_mode = test ? 0 : property("adaptive").toInt();
-    m_p->brightnessValue = test ? brightness : property("brightness").toInt();
+    brightness = test ? brightness : property("brightness").toInt();
 
-    setBrightness(m_p->brightnessValue);
+    setBrightness(brightness);
 }
 
 void DeviceIOController::wtdExec()

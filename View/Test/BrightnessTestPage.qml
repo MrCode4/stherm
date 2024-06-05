@@ -40,7 +40,7 @@ BasePageView {
     InfoPopup {
         id: infoPopup
         message: "Brightness test"
-        detailMessage: "The Brightness level will vary from low to high every 3 seconds."
+        detailMessage: "The Brightness level will vary<br>from low to high every 3 seconds."
         visible: true
 
         onAccepted: {
@@ -53,7 +53,7 @@ BasePageView {
         closeButtonEnabled: false
         closePolicy: Popup.NoAutoClose
         message: "Brightness test"
-        detailMessage: "Did you see any issue in low light or high light?"
+        detailMessage: "Did you see any issue<br>in low light or high light?"
         onAccepted: {
             confirmPopup2.open()
         }
