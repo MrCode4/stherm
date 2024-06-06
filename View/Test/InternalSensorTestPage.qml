@@ -81,7 +81,8 @@ BasePageView {
     function nextPage(){
         writeSensorData()
 
-        if (deviceController.startMode !== 0) {
+        // show relays test always for now
+        if (deviceController.startMode !== 0 || true) {
             //! Next page
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
@@ -148,17 +149,17 @@ BasePageView {
     Timer {
         interval: 1000
         repeat: true
-        running: !overrideBtn.checked
+        running: root.visible && !overrideBtn.checked
         onTriggered: {
           root.model = deviceController.getTestData();
         }
     }
 
-    //! timer for updating values
+    //! timer for next page
     Timer {
         interval: 100
         repeat: false
-        running: temperatureField.valid && humidityField.valid && tofField.valid &&
+        running: root.visible && temperatureField.valid && humidityField.valid && tofField.valid &&
                  ambientField.valid && co2Field.valid && fanField.valid
         onTriggered: nextPage()
     }

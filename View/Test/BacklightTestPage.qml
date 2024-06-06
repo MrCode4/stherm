@@ -62,7 +62,7 @@ BacklightPage {
         closeButtonEnabled: false
         closePolicy: Popup.NoAutoClose
         message: "Backlight test"
-        detailMessage: "Was the backlight working as<br>expected when adjusting the values"
+        detailMessage: "Are all LEDS on,<br>at the same brightness and colour?"
         onAccepted: {
             deviceController.deviceControllerCPP.writeTestResult("Backlight test", true)
             nextPage()

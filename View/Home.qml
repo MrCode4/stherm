@@ -339,7 +339,8 @@ Control {
                 uiSession.uiTestMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                           "uiSession": Qt.binding(() => uiSession)
+                                           "uiSession": Qt.binding(() => uiSession),
+                                           "backButtonVisible" : false
                                        });
 
             } else {
@@ -424,7 +425,8 @@ Control {
             deviceController.startMode = 0;
             if (mainStackView)
                 mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                       "uiSession": Qt.binding(() => uiSession)
+                                       "uiSession": Qt.binding(() => uiSession),
+                                       "backButtonVisible" : false
                                    });
         }
     }

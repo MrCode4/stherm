@@ -40,6 +40,43 @@ WiringPage {
     /* Children
      * ****************************************************************************************/
 
+    onVisibleChanged: {
+        if (visible) {
+            isR   = false
+            isC   = false
+            isG   = false
+            isY1  = false
+            isY2  = false
+            isT2  = false
+            isW1  = false
+            isW2  = false
+            isW3  = false
+            isOB  = false
+            isT1p = false
+            isT1n = false
+            infoPopup.open()
+        }
+    }
+
+    InfoPopup {
+        id: infoPopup
+        message: "Relay test"
+        detailMessage: "The Relays will switch<br>one by one every second."
+        visible: true
+
+        onAccepted: {
+            timer.start()
+        }
+    }
+
+    function nextPage() {
+        if (root.StackView.view) {
+            root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
+                                          "uiSession": uiSession
+                                      })
+        }
+    }
+
     Timer {
         id: testTimer
 
@@ -79,6 +116,9 @@ WiringPage {
             } else {
                 // finished all relays
                 stop();
+
+                confirmPopup1.open();
+
                 // we can restart from first if we do not stop
                 counter = 1;
             }
@@ -86,6 +126,35 @@ WiringPage {
     }
 
 
+    ConfirmPopup {
+        id: confirmPopup1
+        closeButtonEnabled: false
+        closePolicy: Popup.NoAutoClose
+        message: "Relay test"
+        detailMessage: "Are all relay LEDs switching?"
+        onAccepted: {
+            deviceController.deviceControllerCPP.writeTestResult("Relay test", true)
+            nextPage()
+        }
+        onRejected: {
+            confirmPopup2.open()
+        }
+    }
+
+    ConfirmPopup {
+        id: confirmPopup2
+        closeButtonEnabled: false
+        closePolicy: Popup.NoAutoClose
+        message: "Relay test"
+        detailMessage: "Retry test?"
+        onAccepted: {
+            infoPopup.open()
+        }
+        onRejected: {
+            deviceController.deviceControllerCPP.writeTestResult("Relay test", false, "The backlight is not functioning properly")
+            nextPage()
+        }
+    }
 
     //! Next button
    ToolButton {
@@ -96,13 +165,7 @@ WiringPage {
 
        onClicked: {
            testTimer.stop();
-
-           //! Next page
-           if (root.StackView.view) {
-               root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
-                                             "uiSession": uiSession
-                                         })
-           }
+           confirmPopup1.open();
        }
    }
 }
