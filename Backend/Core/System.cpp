@@ -181,6 +181,13 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     if (!serialNumber().isEmpty())
         onSnReady();
+
+    mFetchContractorInfoTimer.setTimerType(Qt::PreciseTimer);
+    mFetchContractorInfoTimer.setInterval(1.1 * 60 * 60 * 1000);
+
+    connect(&mFetchContractorInfoTimer, &QTimer::timeout, this, [=]() {
+        getContractorInfo();
+    });
 }
 
 NUVE::System::~System()
@@ -503,9 +510,11 @@ void NUVE::System::getBackdoorInformation() {
 void NUVE::System::wifiConnected(bool hasInternet) {
     if (!hasInternet) {
         mUpdateTimer.stop();
+        mFetchContractorInfoTimer.stop();
         return;
     }
 
+    mFetchContractorInfoTimer.start();;
     mUpdateTimer.start();
     if (!mIsNightModeRunning) {
         // When is initial setup, skip update Information as we want to wait until its complete!

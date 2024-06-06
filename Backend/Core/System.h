@@ -322,6 +322,8 @@ private:
 
     QTimer mUpdateTimer;
 
+    QTimer mFetchContractorInfoTimer;
+
     NUVE::cpuid_t mUID;
 
     //! QElapsedTimer to measure download rate.
