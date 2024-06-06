@@ -278,7 +278,7 @@ Control {
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/ApplicationMenu.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
-                                       });
+                                       }, StackView.Immediate);
 
                 }
             }
@@ -296,7 +296,8 @@ Control {
                 //! Push ScheduleView to StackView
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/ScheduleView.qml", {
-                                           "uiSession": Qt.binding(() => uiSession)
+                                           "uiSession": Qt.binding(() => uiSession),
+                                           "visible": true
                                        });
                 }
             }
