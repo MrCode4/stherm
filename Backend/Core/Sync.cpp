@@ -195,6 +195,10 @@ void Sync::pushAutoSettingsToServer(const double& auto_temp_low, const double& a
     requestDataObj["auto_temp_low"] = auto_temp_low;
     requestDataObj["auto_temp_high"] = auto_temp_high;
 
+    // Temp
+    requestDataObj["mode"] = "auto";
+    requestDataObj["is_active"] = true;
+
     QJsonDocument jsonDocument(requestDataObj);
 
     QByteArray requestData = jsonDocument.toJson();
