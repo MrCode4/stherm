@@ -185,6 +185,7 @@ public:
     //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);
 
+    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
 protected slots:
     //! Process network replay
@@ -197,6 +198,7 @@ protected slots:
 signals:
     void snReady();
     void settingsReady(QVariantMap settings);
+    void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void pushFailed();
 
     void latestVersionChanged();

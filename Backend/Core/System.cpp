@@ -131,6 +131,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::onSnReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
+    connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, &NUVE::System::autoModeSettingsReady);
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
         mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
@@ -529,6 +530,21 @@ void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSet
     }
 
     mSync->pushSettingsToServer(settings);
+}
+
+void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
+{
+    // if timer running and hasSettingsChanged stop to prevent canFetchServer issues
+    if (mFetchActiveTimer.isActive()) {
+        mFetchActiveTimer.stop();
+    }
+
+    // set when settings changed or no timer is active! otherwise let the timer do the job!
+    if (!mFetchActiveTimer.isActive()){
+        setCanFetchServer(false);
+    }
+
+    mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
 
 void NUVE::System::exitManualMode()
