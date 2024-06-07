@@ -28,11 +28,17 @@ private:
     //! Restart the worker thread
     void restartWork();
 
+    //! Vacation loop
+    void VacationLoop();
+
 private:
     Relay*  mRelay;
 
     SystemSetup *mSystemSetup = nullptr;
     ScheduleCPP* mSchedule = nullptr;
+
+    AppSpecCPP::AccessoriesType     mAccessoriesType;
+    AppSpecCPP::AccessoriesWireType mAccessoriesWireType;
 
      bool stopWork;
 };

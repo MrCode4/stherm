@@ -10,7 +10,11 @@ HumidityScheme::HumidityScheme(QObject *parent) :
 
 void HumidityScheme::run()
 {
+    // Vacation has a higher priority compared to other processes.
+    if (mSystemSetup->isVacation) {
+        VacationLoop();
 
+    }
 }
 
 void HumidityScheme::restartWork()
@@ -68,10 +72,18 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
     });
 
     connect(mSystemSetup->systemAccessories, &SystemAccessories::accessoriesChanged, this, [this] {
-        TRACE<< "AccessoriesType: "<< mSystemSetup->systemAccessories->getAccessoriesType();
+        mAccessoriesType = mSystemSetup->systemAccessories->getAccessoriesType();
+        TRACE<< "Accessories Type: "<< mAccessoriesType;
 
-        TRACE<< "AccessoriesType: "<< mSystemSetup->systemAccessories->getAccessoriesWireType();
+
+        mAccessoriesWireType = mSystemSetup->systemAccessories->getAccessoriesWireType();
+        TRACE<< "Accessories Wire Type: "<< mAccessoriesWireType;
 
         restartWork();
     });
+}
+
+void HumidityScheme::VacationLoop()
+{
+
 }
