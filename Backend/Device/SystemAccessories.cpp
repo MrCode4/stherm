@@ -14,3 +14,13 @@ void SystemAccessories::setSystemAccessories(AppSpecCPP::AccessoriesType accesso
     emit accessoriesChanged();
 
 }
+
+AppSpecCPP::AccessoriesType SystemAccessories::getAccessoriesType() const
+{
+    return mAccessoriesType;
+}
+
+AppSpecCPP::AccessoriesWireType SystemAccessories::getAccessoriesWireType() const
+{
+    return mAccessoriesWireType;
+}

@@ -68,7 +68,9 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
     });
 
     connect(mSystemSetup->systemAccessories, &SystemAccessories::accessoriesChanged, this, [this] {
-        TRACE<< "systemAccessories changed: "<< mSystemSetup->isVacation;
+        TRACE<< "AccessoriesType: "<< mSystemSetup->systemAccessories->getAccessoriesType();
+
+        TRACE<< "AccessoriesType: "<< mSystemSetup->systemAccessories->getAccessoriesWireType();
 
         restartWork();
     });
