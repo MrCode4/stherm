@@ -35,7 +35,10 @@ public:
     void ForgetDevice();
 
     bool getAutoModeSetings();
+
+    //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
+
 signals:
     void snReady();
     void wiringReady();
