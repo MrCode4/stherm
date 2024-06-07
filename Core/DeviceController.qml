@@ -154,7 +154,13 @@ I_DeviceController {
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
-            setAutoTemperatureFromServer(settings);
+        }
+
+        //! Update the auto mode settings with the fetch signal.
+        function onAutoModeSettingsReady(settings, isValid) {
+            if (isValid) {
+                setAutoTemperatureFromServer(settings);
+            }
         }
 
         function onCanFetchServerChanged() {
