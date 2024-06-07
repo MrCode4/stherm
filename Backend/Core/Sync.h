@@ -34,12 +34,15 @@ public:
 
     void ForgetDevice();
 
+    bool getAutoModeSetings();
+    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 signals:
     void snReady();
     void wiringReady();
     void contractorInfoReady();
     void settingsLoaded();
     void settingsReady(QVariantMap settings);
+    void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void messagesLoaded();
     void requestJobDone();
 
