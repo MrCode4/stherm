@@ -139,17 +139,13 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
         setProperty(m_pushMainSettings, false);
 
-        if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
-            mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
-
+        startFetchActiveTimer();
     });
 
     connect(mSync, &NUVE::Sync::autoModePush, this, [this](bool isSuccess) {
         setProperty(m_pushAutoModeSettings, false);
 
-        if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
-            mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
-
+        startFetchActiveTimer();
     });
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
@@ -202,6 +198,18 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 NUVE::System::~System()
 {
     delete mNetManager;
+}
+
+bool NUVE::System::startFetchActiveTimer()
+{
+    if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
+        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
+
+    else
+        TRACE_CHECK(false) << "Can not start fetch timer, main settings pushing: "
+                           << property(m_pushMainSettings).toBool()
+                           << "Auto mode settings pushing: "
+                           <<property(m_pushAutoModeSettings).toBool();
 }
 
 bool NUVE::System::installUpdateService()

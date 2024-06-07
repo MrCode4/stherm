@@ -275,6 +275,8 @@ private:
     //! Check and prepare the system to start download process.
     void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false, const bool isResetVersion = false);
 
+    //! Check the pushing progress and start the fetch timer.
+    bool startFetchActiveTimer();
 
 private:
     Sync *mSync;
