@@ -140,12 +140,15 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
         setProperty(m_pushMainSettings, false);
 
         startFetchActiveTimer();
+        emit pushSuccess();
     });
 
     connect(mSync, &NUVE::Sync::autoModePush, this, [this](bool isSuccess) {
         setProperty(m_pushAutoModeSettings, false);
 
         startFetchActiveTimer();
+
+        emit autoModePush(isSuccess);
     });
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
@@ -552,7 +555,7 @@ void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSet
         setCanFetchServer(!hasSettingsChanged);
     }
 
-    setProperty(m_pushMainSettings, true);
+    setProperty(m_pushMainSettings, hasSettingsChanged);
     mSync->pushSettingsToServer(settings);
 }
 
