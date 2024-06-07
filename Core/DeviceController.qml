@@ -565,8 +565,8 @@ I_DeviceController {
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
-            "auto_temp_high" : device.autoMaxReqTemp,
-            "auto_temp_low" : device.autoMinReqTemp,
+            // "auto_temp_high" : device.autoMaxReqTemp,
+            // "auto_temp_low" : device.autoMinReqTemp,
             "fan" : {
                 "mode" : device.fan.mode,
                 "workingPerHour": device.fan.workingPerHour,
