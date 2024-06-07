@@ -55,6 +55,8 @@ signals:
     void pushSuccess();
     void pushFailed();
 
+    void autoModePush(bool isSuccess);
+
     void serialNumberChanged();
 
 private slots:

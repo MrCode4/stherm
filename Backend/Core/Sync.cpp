@@ -274,9 +274,10 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
                 Q_EMIT pushSuccess();
 
-            } else if (method == m_getAutoModeSettings) {
+            } else if (method == m_setAutoModeSettings) {
 
-                TRACE << "Auto mode settings pushed to server: " << m_getAutoModeSettings;
+                TRACE << "Auto mode settings pushed to server: " << m_setAutoModeSettings;
+                Q_EMIT autoModePush(true);
             }
 
 
@@ -478,6 +479,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
         } else if (method == m_setAutoModeSettings) {
             QString error = "Unable to push the auto mode settings to server, Please check your internet connection: ";
             qWarning() << error << errorString;
+            Q_EMIT autoModePush(false);
 
         } else {
             QString error = "unknown method in sync processNetworkReply ";

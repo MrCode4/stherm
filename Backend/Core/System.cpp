@@ -49,6 +49,9 @@ const QString m_IsManualUpdateSetting        = QString("Stherm/IsManualUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 
+const char* m_pushMainSettings     = "pushMainSettings";
+const char* m_pushAutoModeSettings = "pushAutoModeSettings";
+
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
@@ -96,7 +99,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
 
     connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
-        setCanFetchServer(true);
+            setCanFetchServer(true);
     });
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
@@ -134,7 +137,19 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, &NUVE::System::autoModeSettingsReady);
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
-        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
+        setProperty(m_pushMainSettings, false);
+
+        if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
+            mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
+
+    });
+
+    connect(mSync, &NUVE::Sync::autoModePush, this, [this](bool isSuccess) {
+        setProperty(m_pushAutoModeSettings, false);
+
+        if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
+            mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
+
     });
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
@@ -529,6 +544,7 @@ void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSet
         setCanFetchServer(!hasSettingsChanged);
     }
 
+    setProperty(m_pushMainSettings, true);
     mSync->pushSettingsToServer(settings);
 }
 
@@ -544,6 +560,7 @@ void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const d
         setCanFetchServer(false);
     }
 
+    setProperty(m_pushAutoModeSettings, true);
     mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
 

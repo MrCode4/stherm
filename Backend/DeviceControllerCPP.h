@@ -144,6 +144,8 @@ public:
     Q_INVOKABLE void forgetDevice();
 
     Q_INVOKABLE bool checkUpdateMode();
+
+    Q_INVOKABLE void pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high);
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/

@@ -657,6 +657,11 @@ void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings, bool
     m_system->pushSettingsToServer(settings, hasSettingsChanged);
 }
 
+void DeviceControllerCPP::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
+{
+    m_system->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
+}
+
 void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
 {
     if (_mainData_override == mainDataOverride)
