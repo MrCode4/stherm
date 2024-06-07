@@ -26,7 +26,7 @@ BasePageView {
     property real co2Max: 1
     property real etohMin: 0
     property real etohMax: 100
-    property real fanSpeedMin: 3800
+    property real fanSpeedMin: 3500
     property real fanSpeedMax: 6000
     property real humidityMin: 0
     property real humidityMax: 100
@@ -86,15 +86,17 @@ BasePageView {
             //! Next page
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
-                                             "uiSession": uiSession
+                                             "uiSession": uiSession,
+                                             "backButtonVisible" : backButtonVisible
                                          })
             }
         } else {
             //! Test mode enabled with GPIO as there is no ti board connected
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
-                                              "uiSession": uiSession
-                                          })
+                                             "uiSession": uiSession,
+                                             "backButtonVisible" : backButtonVisible
+                                         })
             }
         }
     }
@@ -107,7 +109,10 @@ BasePageView {
             text: FAIcons.arrowRight
         }
 
-        onClicked: nextPage()
+        onClicked: {
+            backButtonVisible = true;
+            nextPage()
+        }
     }
 
     //! override button
@@ -161,7 +166,10 @@ BasePageView {
         repeat: false
         running: root.visible && temperatureField.valid && humidityField.valid && tofField.valid &&
                  ambientField.valid && co2Field.valid && fanField.valid
-        onTriggered: nextPage()
+        onTriggered: {
+            backButtonVisible = false;
+            nextPage()
+        }
     }
 
     //! items

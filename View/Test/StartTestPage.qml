@@ -78,7 +78,7 @@ BasePageView {
 
     Timer {
         id: nextPageTimer
-        interval: 10000
+        interval: 3000
         repeat: false
         running: testCounter === allTests
 
@@ -127,7 +127,8 @@ BasePageView {
         //! Load next page
         if (root.StackView.view) {
             root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
-                                         "uiSession": uiSession
+                                         "uiSession": uiSession,
+                                         "backButtonVisible" : backButtonVisible
                                      })
         }
     }

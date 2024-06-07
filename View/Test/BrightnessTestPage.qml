@@ -32,8 +32,25 @@ BasePageView {
     function nextPage() {
         if (root.StackView.view) {
             root.StackView.view.push("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
-                                          "uiSession": uiSession
-                                      })
+                                         "uiSession": uiSession,
+                                         "backButtonVisible" : backButtonVisible
+                                     })
+        }
+    }
+
+    Item {
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.topMargin: header.height
+
+        TapHandler {
+            onTapped: {
+                deviceController.deviceControllerCPP.stopTestBrightness()
+                timer.stop()
+                confirmPopup1.open()
+            }
         }
     }
 
@@ -58,6 +75,7 @@ BasePageView {
             confirmPopup2.open()
         }
         onRejected: {
+            backButtonVisible = false;
             deviceController.deviceControllerCPP.writeTestResult("Brightness test", true)
             nextPage()
         }
@@ -73,6 +91,7 @@ BasePageView {
             infoPopup.open()
         }
         onRejected: {
+            backButtonVisible = true;
             deviceController.deviceControllerCPP.writeTestResult("Brightness test", false, "The display is discolored or has dead pixels")
             nextPage()
         }

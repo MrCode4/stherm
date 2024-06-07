@@ -37,13 +37,15 @@ BasePageView {
         timer.stop()
         if (_root.StackView.view) {
             _root.StackView.view.push("qrc:/Stherm/View/Test/ColorTestPage.qml", {
-                                          "uiSession": uiSession
+                                          "uiSession": uiSession,
+                                          "backButtonVisible" : backButtonVisible
                                       })
         }
     }
 
     onPointsStateChanged: {
         if (pointsState === "1,1,1,1,1,1,1,1,1") {
+            backButtonVisible = false;
             deviceController.deviceControllerCPP.writeTestResult("Touch test", true)
             nextPage()
         }
@@ -70,6 +72,7 @@ BasePageView {
         errorMessage: "Touch test failed"
         onRetryClicked: infoPopup.open()
         onContinueClicked: {
+            backButtonVisible = true;
             deviceController.deviceControllerCPP.writeTestResult("Touch test", false, "The touchscreen is not working or it failed to register within " + infoPopup.seconds + " seconds")
             nextPage()
         }

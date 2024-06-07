@@ -42,18 +42,18 @@ WiringPage {
 
     onVisibleChanged: {
         if (visible) {
-            isR   = false
-            isC   = false
-            isG   = false
-            isY1  = false
-            isY2  = false
-            isT2  = false
-            isW1  = false
-            isW2  = false
-            isW3  = false
-            isOB  = false
-            isT1p = false
-            isT1n = false
+            wiring.isR   = false
+            wiring.isC   = false
+            wiring.isG   = false
+            wiring.isY1  = false
+            wiring.isY2  = false
+            wiring.isT2  = false
+            wiring.isW1  = false
+            wiring.isW2  = false
+            wiring.isW3  = false
+            wiring.isOB  = false
+            wiring.isT1p = false
+            wiring.isT1n = false
             infoPopup.open()
         }
     }
@@ -65,15 +65,18 @@ WiringPage {
         visible: true
 
         onAccepted: {
-            timer.start()
+            testTimer.counter = 0;
+            testTimer.finalStep = false;
+            testTimer.start()
         }
     }
 
     function nextPage() {
         if (root.StackView.view) {
             root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
-                                          "uiSession": uiSession
-                                      })
+                                         "uiSession": uiSession,
+                                         "backButtonVisible" : backButtonVisible
+                                     })
         }
     }
 
@@ -81,13 +84,14 @@ WiringPage {
         id: testTimer
 
         property int counter : 0
+        property bool finalStep : false
 
-        interval: 1000
+        interval: 100
         repeat: true
-        running: true
+        running: false
 
         onTriggered: {
-            counter++;
+            counter = counter + 2;
 
             if (counter < 3) {
                 wiring.isR = !wiring.isR
@@ -117,14 +121,27 @@ WiringPage {
                 // finished all relays
                 stop();
 
-                confirmPopup1.open();
-
-                // we can restart from first if we do not stop
-                counter = 1;
+                if (finalStep)
+                    confirmPopup1.open();
+                else
+                    testTimerReset.start();
             }
         }
     }
 
+    Timer {
+        id: testTimerReset
+
+        interval: 2000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            testTimer.counter = 0;
+            testTimer.finalStep = true;
+            testTimer.start()
+        }
+    }
 
     ConfirmPopup {
         id: confirmPopup1
@@ -133,6 +150,7 @@ WiringPage {
         message: "Relay test"
         detailMessage: "Are all relay LEDs switching?"
         onAccepted: {
+            backButtonVisible = false;
             deviceController.deviceControllerCPP.writeTestResult("Relay test", true)
             nextPage()
         }
@@ -151,6 +169,7 @@ WiringPage {
             infoPopup.open()
         }
         onRejected: {
+            backButtonVisible = true;
             deviceController.deviceControllerCPP.writeTestResult("Relay test", false, "The backlight is not functioning properly")
             nextPage()
         }
@@ -165,6 +184,7 @@ WiringPage {
 
        onClicked: {
            testTimer.stop();
+           testTimerReset.stop()
            confirmPopup1.open();
        }
    }

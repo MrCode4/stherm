@@ -39,8 +39,9 @@ BacklightPage {
             //                           })
 
             _root.StackView.view.push("qrc:/Stherm/View/Test/InternalSensorTestPage.qml", {
-                                          "uiSession": uiSession
-                                         })
+                                          "uiSession": uiSession,
+                                          "backButtonVisible" : backButtonVisible
+                                      })
         }
     }
 
@@ -64,6 +65,7 @@ BacklightPage {
         message: "Backlight test"
         detailMessage: "Are all LEDS on,<br>at the same brightness and colour?"
         onAccepted: {
+            backButtonVisible = false;
             deviceController.deviceControllerCPP.writeTestResult("Backlight test", true)
             nextPage()
         }
@@ -82,6 +84,7 @@ BacklightPage {
             infoPopup.open()
         }
         onRejected: {
+            backButtonVisible = true;
             deviceController.deviceControllerCPP.writeTestResult("Backlight test", false, "The backlight is not functioning properly")
             nextPage()
         }
