@@ -163,25 +163,44 @@ I_DeviceController {
             }
         }
 
+        //! Update the auto mode settings with the fetch signal.
+        function onAutoModePush(isSuccess: bool) {
+            settingsPush.hasAutoModeSettings = !isSuccess;
+
+            if (!isSuccess) {
+                managePushFailure();
+            }
+        }
+
         function onCanFetchServerChanged() {
             if (deviceControllerCPP.system.canFetchServer) {
                 settingsPushRetry.failed = false;
                 settingsPushRetry.interval = 5000;
                 settingsPush.hasSettings = false
+                settingsPush.hasAutoModeSettings = false;
             }
+        }
+
+        function onPushSuccess() {
+            settingsPush.hasSettings = false;
         }
 
         function onPushFailed() {
-            if (settingsPushRetry.failed) {
-                settingsPushRetry.interval = settingsPushRetry.interval *2;
-                if (settingsPushRetry.interval > 60000)
-                    settingsPushRetry.interval = 60000;
-            } else {
-                settingsPushRetry.failed = true;
-            }
-
-            settingsPushRetry.start()
+            managePushFailure();
         }
+
+    }
+
+    function managePushFailure() {
+        if (settingsPushRetry.failed) {
+            settingsPushRetry.interval = settingsPushRetry.interval *2;
+            if (settingsPushRetry.interval > 60000)
+                settingsPushRetry.interval = 60000;
+        } else {
+            settingsPushRetry.failed = true;
+        }
+
+        settingsPushRetry.start()
     }
 
     property Timer  settingsPush: Timer {
@@ -189,10 +208,17 @@ I_DeviceController {
         running: false;
         interval: 100;
 
+        property bool hasSensorDataChanges : false
+
         property bool hasSettings : false
+        property bool hasAutoModeSettings : false
 
         onTriggered: {
-            pushToServer();
+            if (hasSettings || hasSensorDataChanges)
+                pushToServer();
+
+            if (hasAutoModeSettings)
+                pushAutoModeSettingsToServer();
         }
     }
 
@@ -489,7 +515,7 @@ I_DeviceController {
         return true;
     }
 
-    function pushUpdateToServer(settings: bool){
+    function pushUpdateToServer(settings: bool) {
         if (settings)
             settingsPush.hasSettings = true
 
@@ -503,6 +529,12 @@ I_DeviceController {
             return;
 
         settingsPush.start()
+    }
+
+    //! Push auto settings to server
+    function pushAutoModeSettings() {
+        settingsPush.hasAutoModeSettings = true;
+        pushUpdateToServer(false);
     }
 
     function pushSettings() {
@@ -554,6 +586,10 @@ I_DeviceController {
 
         updateBacklight(settings.on, settings.hue, settings.value,
                         settings.shadeIndex)
+    }
+
+    function pushAutoModeSettingsToServer() {
+        deviceControllerCPP.pushAutoSettingsToServer(device.autoMinReqTemp, device.autoMaxReqTemp)
     }
 
     function pushToServer() {
@@ -881,7 +917,11 @@ I_DeviceController {
         if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
             _pushUpdateInformationCounter++;
 
+            settingsPush.hasSensorDataChanges = true;
             pushUpdateToServer(false);
+
+        } else {
+            settingsPush.hasSensorDataChanges = false;
         }
 
         //        console.log("--------------- End: updateInformation -------------------")
