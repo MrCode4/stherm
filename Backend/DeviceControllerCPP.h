@@ -118,6 +118,8 @@ public:
 
     Q_INVOKABLE void checkContractorInfo();
 
+    //! settings: main data
+    //! hasSettingsChanged: push due to settings changes.
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
 

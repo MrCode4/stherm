@@ -185,6 +185,7 @@ public:
     //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);
 
+    //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
 protected slots:
@@ -239,6 +240,10 @@ signals:
     void serialNumberChanged();
 
     void updateNoChecked();
+
+    void autoModePush(bool isSuccess);
+
+    void pushSuccess();
 
 private:
 
