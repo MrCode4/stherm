@@ -57,7 +57,6 @@ Control {
     /* Object properties
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
-        console.log("++++__--__", currentSchedule, state)
         if (currentSchedule) {
             _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
                                                                   device.setting.tempratureUnit,
