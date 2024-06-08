@@ -438,14 +438,29 @@ Control {
 
     /* States and Transitions
      * ************************************/
-    state: "non-auto-idle"
-    onStateChanged: console.log("++++", device?.systemSetup?.systemMode, currentSchedule, _tempSlider.pressed, state)
+    state: {
+        if (currentSchedule) return "non-auto-idle";
+
+        if (device?.systemSetup?.systemMode === AppSpec.Auto) {
+            if (tempSliderDoubleHandle.first.pressed && !tempSliderDoubleHandle.second.pressed) {
+                return "auto-first-dragging";
+            } else if (!tempSliderDoubleHandle.first.pressed && tempSliderDoubleHandle.second.pressed){
+                return "auto-second-dragging";
+            } else {
+                return "auto-idle";
+            }
+        } else {
+            if (_tempSlider.pressed) {
+                return "non-auto-dragging";
+            } else {
+                return "non-auto-idle";
+            }
+        }
+    }
+
     states: [
         State {
-            when: ((device?.systemSetup?.systemMode ?? AppSpecCPP.Off) !== AppSpecCPP.Auto && !_tempSlider.pressed) || currentSchedule
             name: "non-auto-idle"
-
-//            onWhenChanged: console.log("__--__", currentSchedule, device?.systemSetup?.systemMode ?? 756)
 
             PropertyChanges {
                 target: rightTempLabel
@@ -480,7 +495,6 @@ Control {
 
         State {
             extend: "non-auto-idle"
-            when: ((device?.systemSetup?.systemMode ?? AppSpecCPP.Off) !== AppSpec.Auto && _tempSlider.pressed)
             name: "non-auto-dragging"
 
             PropertyChanges {
@@ -492,8 +506,6 @@ Control {
         },
 
         State {
-            when: (device?.systemSetup?.systemMode ?? AppSpecCPP.Off) === AppSpec.Auto
-                  && !tempSliderDoubleHandle.first.pressed && !tempSliderDoubleHandle.second.pressed && currentSchedule == null
             name: "auto-idle"
 
             PropertyChanges {
@@ -529,8 +541,6 @@ Control {
         },
 
         State {
-            when: (device?.systemSetup?.systemMode ?? AppSpecCPP.Off) === AppSpec.Auto
-                  && tempSliderDoubleHandle.first.pressed && !tempSliderDoubleHandle.second.pressed
             name: "auto-first-dragging"
 
             PropertyChanges {
@@ -563,8 +573,6 @@ Control {
         },
 
         State {
-            when: (device?.systemSetup?.systemMode ?? AppSpecCPP.Off) === AppSpec.Auto
-                  && tempSliderDoubleHandle.second.pressed && !tempSliderDoubleHandle.first.pressed
             name: "auto-second-dragging"
 
             PropertyChanges {
