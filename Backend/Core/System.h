@@ -245,13 +245,11 @@ signals:
 
     void updateNoChecked();
 
-<<<<<<< update_auto_api
     void autoModePush(bool isSuccess);
 
     void pushSuccess();
-=======
+
     void testModeStarted();
->>>>>>> master
 
 private:
 
