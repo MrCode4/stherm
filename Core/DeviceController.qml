@@ -191,18 +191,6 @@ I_DeviceController {
 
     }
 
-    function managePushFailure() {
-        if (settingsPushRetry.failed) {
-            settingsPushRetry.interval = settingsPushRetry.interval *2;
-            if (settingsPushRetry.interval > 60000)
-                settingsPushRetry.interval = 60000;
-        } else {
-            settingsPushRetry.failed = true;
-        }
-
-        settingsPushRetry.start()
-    }
-
     property Timer  settingsPush: Timer {
         repeat: false;
         running: false;
@@ -1048,12 +1036,23 @@ I_DeviceController {
         }
     }
 
-    function forgetDevice()
-    {
+    function forgetDevice() {
         // Remove the save files from the directory.
         QSFileIO.removeFile(uiSession.recoveryConfigFilePath);
         QSFileIO.removeFile(uiSession.configFilePath);
 
         deviceControllerCPP.forgetDevice();
+    }
+
+    function managePushFailure() {
+        if (settingsPushRetry.failed) {
+            settingsPushRetry.interval = settingsPushRetry.interval *2;
+            if (settingsPushRetry.interval > 60000)
+                settingsPushRetry.interval = 60000;
+        } else {
+            settingsPushRetry.failed = true;
+        }
+
+        settingsPushRetry.start()
     }
 }

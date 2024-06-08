@@ -203,11 +203,10 @@ NUVE::System::~System()
     delete mNetManager;
 }
 
-bool NUVE::System::startFetchActiveTimer()
+void NUVE::System::startFetchActiveTimer()
 {
     if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
         mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
-
     else
         TRACE_CHECK(false) << "Can not start fetch timer, main settings pushing: "
                            << property(m_pushMainSettings).toBool()

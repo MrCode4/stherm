@@ -125,7 +125,7 @@ bool Sync::getSettings()
 
 bool Sync::getAutoModeSetings() {
     if (mSerialNumber.isEmpty()) {
-        qWarning()   << "Sn is not ready! can not get settings!";
+        qWarning()   << "Sn is not ready! can not get auto mode settings!";
         return false;
     }
 
@@ -195,7 +195,7 @@ void Sync::pushAutoSettingsToServer(const double& auto_temp_low, const double& a
     requestDataObj["auto_temp_low"] = auto_temp_low;
     requestDataObj["auto_temp_high"] = auto_temp_high;
 
-    // Temp
+    // Temporary, has no effect
     requestDataObj["mode"] = "auto";
     requestDataObj["is_active"] = true;
 
