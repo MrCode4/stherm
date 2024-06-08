@@ -84,6 +84,15 @@ BasePageView {
         }
     }
 
+    //! Disable Next button, just for consistency
+    ToolButton {
+        parent: root.header.contentItem
+        contentItem: RoniaTextIcon {
+            text: FAIcons.arrowRight
+        }
+        enabled: false
+    }
+
     Timer {
         id: timer
         interval: 1000

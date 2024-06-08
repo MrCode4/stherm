@@ -85,6 +85,7 @@ BacklightPage {
         }
     }
 
+    //! Timer to update the shade index and apply the model.
     Timer {
         id: buttonTimer
         interval: 2000
@@ -104,5 +105,15 @@ BacklightPage {
             _root.applyOnline()
             buttonTimer.btnIndex++
         }
+    }
+
+    //! Disable Next button, just for consistency
+    ToolButton {
+        parent: _root.header.contentItem
+        contentItem: RoniaTextIcon {
+            text: FAIcons.arrowRight
+        }
+
+        enabled: false
     }
 }
