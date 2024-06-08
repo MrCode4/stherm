@@ -23,6 +23,7 @@ static  const QString m_FanStatus             = "Fan status";
 static  const QString m_BacklightState        = "Backlight state";
 static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
+static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
@@ -259,8 +260,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
-
-
         if (mBacklightTimer.isActive())
             mBacklightTimer.stop();
 
@@ -469,7 +468,6 @@ void DeviceControllerCPP::startDevice()
     _deviceAPI->runDevice();
 
     int startMode = getStartMode();
-
     emit startModeChanged(startMode);
 
     // Start with delay to ensure the model loaded.
@@ -785,6 +783,103 @@ QVariantMap DeviceControllerCPP::getMainData()
     }
 
     return mainData;
+}
+
+void DeviceControllerCPP::writeTestResult(const QString &testName, const QString& testResult, const QString &description)
+{
+    QFile file("test_results.csv");
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        qWarning() << "Unable to open file" << file.fileName() << "for writing";
+        return;
+    }
+
+    QTextStream output(&file);
+    output << testName << "," << testResult << "," << description << "\n";
+}
+
+void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResult, const QString &description)
+{
+    mAllTestsPassed.append(testResult);
+    QString result = testResult ? "PASS" : "FAIL";
+    writeTestResult(testName, result, description);
+}
+
+void DeviceControllerCPP::beginTesting()
+{
+    QFile file("test_results.csv");
+    mAllTestsPassed.clear();
+
+    if (file.exists() && !file.remove())
+    {
+        qWarning() << "Unable to delete file" << file.fileName();
+        return;
+    }
+
+    QString uid = _deviceAPI->uid();
+    QString sw = QCoreApplication::applicationVersion();
+    QString qt = qVersion();
+    QString nrf = getNRF_SW();
+    QString kernel = m_system->kernelBuildVersion();
+    QString ti = getTI_SW();
+
+    writeTestResult("Test name", QString("Test Result"), "Description");
+    writeTestResult("UID", !uid.isEmpty(), uid);
+    writeTestResult("SW version", !sw.isEmpty(), sw);
+    writeTestResult("QT version", !qt.isEmpty(), qt);
+    writeTestResult("NRF version", !nrf.isEmpty(), nrf);
+    writeTestResult("Kernel version", !kernel.isEmpty(), kernel);
+    writeTestResult("TI version", !ti.isEmpty(), ti);
+}
+
+void DeviceControllerCPP::testBrightness(int value)
+{
+    _deviceIO->setBrightnessTest(value);
+}
+
+void DeviceControllerCPP::stopTestBrightness()
+{
+    _deviceIO->setBrightnessTest(0, false);
+}
+
+void DeviceControllerCPP::testFinished()
+{
+    if (!QFileInfo::exists("test_results.csv")) {
+        TRACE << "test_results.csv not exists. So can not wite the test file.";
+
+        return;
+    }
+
+    QString result = mAllTestsPassed.contains(false) ? "FAIL" : "PASS";
+    QString newFileName = QString("%1_%2.csv").arg(_deviceAPI->uid(), result);
+
+    // Remove the file if exists
+    if (QFileInfo::exists(newFileName)) {
+        if (!QFile::remove(newFileName)) {
+            TRACE << "Could not remove the file: " << newFileName;
+        }
+    }
+
+    if (QFile::rename("test_results.csv", newFileName)) {
+        TRACE << "Could not create the file: " << newFileName;
+    }
+
+    // disabled it for now!
+    if (false) {
+        QSettings settings;
+        settings.setValue(m_RestartAfetrSNTestMode, true);
+    }
+
+    TRACE << "testFinished";
+}
+
+bool DeviceControllerCPP::getSNTestMode() {
+    QSettings settings;
+    auto snTestMode = settings.value(m_RestartAfetrSNTestMode, false).toBool();
+    settings.setValue(m_RestartAfetrSNTestMode, false);
+
+    TRACE << "testFinishedsnTestMode" << snTestMode;
+    return snTestMode;
 }
 
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)

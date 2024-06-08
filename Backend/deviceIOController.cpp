@@ -62,9 +62,9 @@ public:
     std::vector<STHERM::SensorConfigThresholds> throlds;
 
     //! 0 normal, 1 adaptive
-    uint8_t brighness_mode = 1;
+    uint8_t brighness_mode = 0;
     uint32_t luminosity = 255;
-    uint32_t brightnessValue;
+    uint32_t brightnessValue = 255;
 
     //! unknowns // TODO find unused ones and remove later
     bool pairing = false;
@@ -668,6 +668,20 @@ bool DeviceIOController::setSettings(QVariantList data)
         else
             return false;
     }
+}
+
+void DeviceIOController::setBrightnessTest(int brightness, bool test)
+{
+    if (test && !property("test").toBool()){
+        setProperty("adaptive", m_p->brighness_mode);
+        setProperty("brightness", m_p->brightnessValue);
+    }
+    setProperty("test", test);
+
+    m_p->brighness_mode = test ? 0 : property("adaptive").toInt();
+    brightness = test ? brightness : property("brightness").toInt();
+
+    setBrightness(brightness);
 }
 
 void DeviceIOController::wtdExec()

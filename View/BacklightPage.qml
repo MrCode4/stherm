@@ -40,6 +40,8 @@ BasePageView {
         }
     }
 
+    property alias backlightSwitch: _backlightOnOffSw
+
     /* Object properties
      * ****************************************************************************************/
     title: "Backlight"

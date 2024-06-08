@@ -32,6 +32,7 @@ Control {
     //! System Accessories use in humidity control.
     property SystemAccessories systemAccessories: device.systemSetup.systemAccessories
 
+    property System system: deviceController.deviceControllerCPP.system
 
     /* Object properties
      * ****************************************************************************************/
@@ -327,6 +328,9 @@ Control {
         enabled: !uiSession.debug
 
         function onStartModeChanged(startMode: int) {
+            if (uiSession.uiTestMode)
+                return;
+
             // Temp
             deviceController.startMode = startMode;
 
@@ -335,7 +339,8 @@ Control {
                 uiSession.uiTestMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                           "uiSession": Qt.binding(() => uiSession)
+                                           "uiSession": Qt.binding(() => uiSession),
+                                           "backButtonVisible" : false
                                        });
 
             } else {
@@ -388,7 +393,9 @@ Control {
 
         function onSnModeChanged(snMode: int) {
             // snMode === 1 or 0
-            if (snMode !== 2) {
+            var snTestMode = deviceController.deviceControllerCPP.getSNTestMode();
+            if (snMode !== 2 || snTestMode) {
+
                 //! Setting is ready in device or not
                 if (!uiSession.settingsReady)
                     uiSession.settingsReady = (snMode === 0);
@@ -405,11 +412,22 @@ Control {
 
     //! Force the app to fetch again with new serial number
     Connections {
-        target: deviceController.deviceControllerCPP.system
+        target: system
 
         function onSerialNumberChanged() {
             console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup)
             uiSession.settingsReady = false;
+        }
+
+        function onTestModeStarted() {
+            console.log("Test mode started due to serial number issues.")
+            uiSession.uiTestMode = true;
+            deviceController.startMode = 0;
+            if (mainStackView)
+                mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                                       "uiSession": Qt.binding(() => uiSession),
+                                       "backButtonVisible" : false
+                                   });
         }
     }
 

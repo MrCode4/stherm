@@ -66,6 +66,17 @@ public:
     //!
     Q_INVOKABLE QVariantMap getMainData();
 
+    //!
+    Q_INVOKABLE void writeTestResult(const QString& testName, const QString& testResult, const QString& description="");
+    Q_INVOKABLE void writeTestResult(const QString& testName, bool testResult, const QString& description="");
+    Q_INVOKABLE void beginTesting();
+
+    Q_INVOKABLE void testBrightness(int value);
+    Q_INVOKABLE void stopTestBrightness();
+
+    Q_INVOKABLE void testFinished();
+    Q_INVOKABLE bool getSNTestMode();
+
     //! set backlight using uart and respond the success, data should have 5 items
     //! including r, g, b, mode (0 for ui, 1 will be send internally), on/off
     //! isScheme: is true when the backlight set from scheme and false for model
@@ -146,7 +157,7 @@ public:
     Q_INVOKABLE bool checkUpdateMode();
 
     Q_INVOKABLE void wifiConnected(bool hasInternet);
-
+    
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -277,6 +288,9 @@ private:
     {
         return  TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
     }
+
+    // Testing
+    QList<bool> mAllTestsPassed ;
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 };

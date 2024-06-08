@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.4.6 LANGUAGES CXX)
+project(Stherm VERSION 0.4.6.4 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -199,6 +199,7 @@ qt6_add_qml_module(appStherm
         # Test
         View/Test/TouchTestPage.qml
         View/Test/ColorTestPage.qml
+        View/Test/BrightnessTestPage.qml
         View/Test/BacklightTestPage.qml
         View/Test/AudioTestPage.qml
         View/Test/InternalSensorTestPage.qml
@@ -231,6 +232,8 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/RebootDevicePopup.qml
         UiCore/PopUps/ResetDevicePopup.qml
         UiCore/PopUps/UpdateNotificationPopup.qml
+        UiCore/PopUps/InfoPopup.qml
+        UiCore/PopUps/TestFailedPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
