@@ -286,7 +286,7 @@ private:
     }
 
     // Testing
-    bool mAllTestsPassed = true;
+    bool mAllTestsPassed = false;
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 };

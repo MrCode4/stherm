@@ -260,8 +260,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
-
-
         if (mBacklightTimer.isActive())
             mBacklightTimer.stop();
 
@@ -774,8 +772,7 @@ void DeviceControllerCPP::writeTestResult(const QString &testName, const QString
 {
     QFile file("test_results.csv");
 
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Append))
-    {
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
         qWarning() << "Unable to open file" << file.fileName() << "for writing";
         return;
     }
@@ -794,7 +791,7 @@ void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResu
 void DeviceControllerCPP::beginTesting()
 {
     QFile file("test_results.csv");
-    mAllTestsPassed = true;
+    mAllTestsPassed = false;
 
     if (file.exists() && !file.remove())
     {
@@ -845,7 +842,7 @@ void DeviceControllerCPP::testFinished()
     }
 
     // disabled it for now!
-    if (false){
+    if (false) {
         QSettings settings;
         settings.setValue(m_RestartAfetrSNTestMode, true);
     }
