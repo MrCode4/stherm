@@ -396,7 +396,6 @@ BasePageView {
 
     function nextPage() {
         if (root.StackView.view) {
-            nextPageTimer.stop();
             nextPageTimer.once = true;
             if (system.serialNumber.length > 0) {
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
