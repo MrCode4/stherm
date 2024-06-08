@@ -6,7 +6,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * ExitConfirmPopup prompts user to confirm exiting when changes are not saved.
+ * InfoPopup prompts user to confirm the test process.
  * ***********************************************************************************************/
 I_PopUp {
     id: root
