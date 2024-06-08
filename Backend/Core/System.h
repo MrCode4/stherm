@@ -189,6 +189,8 @@ public:
     //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);
 
+    //! Push auto mode settings to server
+    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
 protected slots:
     //! Process network replay
@@ -201,6 +203,7 @@ protected slots:
 signals:
     void snReady();
     void settingsReady(QVariantMap settings);
+    void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void pushFailed();
 
     void latestVersionChanged();
@@ -242,7 +245,13 @@ signals:
 
     void updateNoChecked();
 
+<<<<<<< update_auto_api
+    void autoModePush(bool isSuccess);
+
+    void pushSuccess();
+=======
     void testModeStarted();
+>>>>>>> master
 
 private:
 
@@ -279,6 +288,8 @@ private:
     //! Check and prepare the system to start download process.
     void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false, const bool isResetVersion = false);
 
+    //! Check the pushing progress and start the fetch timer.
+    void startFetchActiveTimer();
 
 private:
     Sync *mSync;

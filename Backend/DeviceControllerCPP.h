@@ -129,6 +129,8 @@ public:
 
     Q_INVOKABLE void checkContractorInfo();
 
+    //! settings: main data
+    //! hasSettingsChanged: push due to settings changes.
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
 
@@ -156,8 +158,12 @@ public:
 
     Q_INVOKABLE bool checkUpdateMode();
 
+<<<<<<< update_auto_api
+    Q_INVOKABLE void pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high);
+=======
     Q_INVOKABLE void wifiConnected(bool hasInternet);
     
+>>>>>>> master
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/

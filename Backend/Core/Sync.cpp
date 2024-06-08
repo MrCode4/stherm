@@ -15,8 +15,10 @@ const QString m_getSN             = QString("getSN");
 const QString m_getContractorInfo = QString("getContractorInfo");
 const QString m_getContractorLogo = QString("getContractorLogo");
 const QString m_getSettings = QString("getSettings");
+const QString m_getAutoModeSettings = QString("getAutoModeSettings");
 const QString m_getMessages = QString("getMessages");
 const QString m_setSettings = QString("setSettings");
+const QString m_setAutoModeSettings = QString("setAutoModeSettings");
 const QString m_setAlerts = QString("setAlerts");
 const QString m_getWirings = QString("getWirings");
 const QString m_SerialNumberSetting = QString("NUVE/SerialNumber");
@@ -118,6 +120,27 @@ bool Sync::getSettings()
     });
 
     loop.exec(QEventLoop::ExcludeSocketNotifiers);
+
+    getAutoModeSetings();
+
+    return loop.property("success").toBool();
+}
+
+bool Sync::getAutoModeSetings() {
+    if (mSerialNumber.isEmpty()) {
+        qWarning()   << "Sn is not ready! can not get auto mode settings!";
+        return false;
+    }
+
+    sendGetRequest(m_domainUrl, QUrl(QString("/api/sync/autoMode?sn=%0").arg(mSerialNumber)), m_getAutoModeSettings);
+
+    QEventLoop loop;
+    connect(this, &NUVE::Sync::autoModeSettingsReady, &loop, [&loop](QVariantMap settings, bool isValid) {
+        loop.setProperty("success", isValid);
+        loop.quit();
+    });
+
+    loop.exec(QEventLoop::ExcludeSocketNotifiers);
     return loop.property("success").toBool();
 }
 
@@ -167,6 +190,24 @@ void Sync::pushSettingsToServer(const QVariantMap &settings)
 
 
     sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/update")), requestData, m_setSettings);
+}
+
+void Sync::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
+{
+    QJsonObject requestDataObj;
+    requestDataObj["auto_temp_low"] = auto_temp_low;
+    requestDataObj["auto_temp_high"] = auto_temp_high;
+
+    // Temporary, has no effect
+    requestDataObj["mode"] = "auto";
+    requestDataObj["is_active"] = true;
+
+    QJsonDocument jsonDocument(requestDataObj);
+
+    QByteArray requestData = jsonDocument.toJson();
+
+
+    sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/autoMode?sn=%0").arg(mSerialNumber)), requestData, m_setAutoModeSettings);
 }
 
 void Sync::pushAlertToServer(const QVariantMap &settings)
@@ -239,7 +280,13 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                 }
 
                 Q_EMIT pushSuccess();
+
+            } else if (method == m_setAutoModeSettings) {
+
+                TRACE << "Auto mode settings pushed to server: " << m_setAutoModeSettings;
+                Q_EMIT autoModePush(true);
             }
+
 
         } break;
         case QNetworkAccessManager::GetOperation: {
@@ -385,6 +432,20 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
             } else if (method == m_getWirings) {
                 TRACE ;
                 Q_EMIT wiringReady();
+
+            } else if (method == m_getAutoModeSettings) {
+                TRACE_CHECK(true) << jsonDoc.toJson().toStdString().c_str();
+                if (jsonDoc.isObject()) {
+                    auto data = jsonDoc.object().value("data");
+                    if (data.isObject()) {
+                        auto object = data.toObject();
+                        Q_EMIT autoModeSettingsReady(object.toVariantMap(), true);
+
+                    } else {
+                        errorString = "Received settings corrupted";
+                        break;
+                    }
+                }
             }
         } break;
 
@@ -427,6 +488,16 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
             QString error = "Unable to push the settings to server, Please check your internet connection: ";
             qWarning() << error << errorString;
             Q_EMIT pushFailed();
+
+        } else if (method == m_getAutoModeSettings) {
+            qWarning() << m_getAutoModeSettings << errorString;
+            Q_EMIT autoModeSettingsReady(QVariantMap(), false);
+
+        } else if (method == m_setAutoModeSettings) {
+            QString error = "Unable to push the auto mode settings to server, Please check your internet connection: ";
+            qWarning() << error << errorString;
+            Q_EMIT autoModePush(false);
+
         } else {
             QString error = "unknown method in sync processNetworkReply ";
             qWarning() << method << error << errorString ;

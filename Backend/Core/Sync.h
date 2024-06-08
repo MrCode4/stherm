@@ -34,12 +34,18 @@ public:
 
     void ForgetDevice();
 
+    bool getAutoModeSetings();
+
+    //! Push auto mode settings to server
+    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
+
 signals:
     void snReady();
     void wiringReady();
     void contractorInfoReady();
     void settingsLoaded();
     void settingsReady(QVariantMap settings);
+    void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void messagesLoaded();
     void requestJobDone();
 
@@ -51,6 +57,8 @@ signals:
 
     void pushSuccess();
     void pushFailed();
+
+    void autoModePush(bool isSuccess);
 
     void serialNumberChanged();
 

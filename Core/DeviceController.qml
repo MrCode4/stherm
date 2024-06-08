@@ -158,7 +158,22 @@ I_DeviceController {
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
-            setAutoTemperatureFromServer(settings);
+        }
+
+        //! Update the auto mode settings with the fetch signal.
+        function onAutoModeSettingsReady(settings, isValid) {
+            if (isValid) {
+                setAutoTemperatureFromServer(settings);
+            }
+        }
+
+        //! Update the auto mode settings with the fetch signal.
+        function onAutoModePush(isSuccess: bool) {
+            settingsPush.hasAutoModeSettings = !isSuccess;
+
+            if (!isSuccess) {
+                managePushFailure();
+            }
         }
 
         function onCanFetchServerChanged() {
@@ -166,20 +181,18 @@ I_DeviceController {
                 settingsPushRetry.failed = false;
                 settingsPushRetry.interval = 5000;
                 settingsPush.hasSettings = false
+                settingsPush.hasAutoModeSettings = false;
             }
+        }
+
+        function onPushSuccess() {
+            settingsPush.hasSettings = false;
         }
 
         function onPushFailed() {
-            if (settingsPushRetry.failed) {
-                settingsPushRetry.interval = settingsPushRetry.interval *2;
-                if (settingsPushRetry.interval > 60000)
-                    settingsPushRetry.interval = 60000;
-            } else {
-                settingsPushRetry.failed = true;
-            }
-
-            settingsPushRetry.start()
+            managePushFailure();
         }
+
     }
 
     property Timer  settingsPush: Timer {
@@ -187,10 +200,17 @@ I_DeviceController {
         running: false;
         interval: 100;
 
+        property bool hasSensorDataChanges : false
+
         property bool hasSettings : false
+        property bool hasAutoModeSettings : false
 
         onTriggered: {
-            pushToServer();
+            if (hasSettings || hasSensorDataChanges)
+                pushToServer();
+
+            if (hasAutoModeSettings)
+                pushAutoModeSettingsToServer();
         }
     }
 
@@ -487,7 +507,7 @@ I_DeviceController {
         return true;
     }
 
-    function pushUpdateToServer(settings: bool){
+    function pushUpdateToServer(settings: bool) {
         if (settings)
             settingsPush.hasSettings = true
 
@@ -501,6 +521,12 @@ I_DeviceController {
             return;
 
         settingsPush.start()
+    }
+
+    //! Push auto settings to server
+    function pushAutoModeSettings() {
+        settingsPush.hasAutoModeSettings = true;
+        pushUpdateToServer(false);
     }
 
     function pushSettings() {
@@ -554,6 +580,10 @@ I_DeviceController {
                         settings.shadeIndex)
     }
 
+    function pushAutoModeSettingsToServer() {
+        deviceControllerCPP.pushAutoSettingsToServer(device.autoMinReqTemp, device.autoMaxReqTemp)
+    }
+
     function pushToServer() {
         var send_data = {
             "temp": device.requestedTemp,
@@ -563,8 +593,8 @@ I_DeviceController {
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
-            "auto_temp_high" : device.autoMaxReqTemp,
-            "auto_temp_low" : device.autoMinReqTemp,
+            // "auto_temp_high" : device.autoMaxReqTemp,
+            // "auto_temp_low" : device.autoMinReqTemp,
             "fan" : {
                 "mode" : device.fan.mode,
                 "workingPerHour": device.fan.workingPerHour,
@@ -879,7 +909,11 @@ I_DeviceController {
         if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
             _pushUpdateInformationCounter++;
 
+            settingsPush.hasSensorDataChanges = true;
             pushUpdateToServer(false);
+
+        } else {
+            settingsPush.hasSensorDataChanges = false;
         }
 
         //        console.log("--------------- End: updateInformation -------------------")
@@ -1006,12 +1040,23 @@ I_DeviceController {
         }
     }
 
-    function forgetDevice()
-    {
+    function forgetDevice() {
         // Remove the save files from the directory.
         QSFileIO.removeFile(uiSession.recoveryConfigFilePath);
         QSFileIO.removeFile(uiSession.configFilePath);
 
         deviceControllerCPP.forgetDevice();
+    }
+
+    function managePushFailure() {
+        if (settingsPushRetry.failed) {
+            settingsPushRetry.interval = settingsPushRetry.interval *2;
+            if (settingsPushRetry.interval > 60000)
+                settingsPushRetry.interval = 60000;
+        } else {
+            settingsPushRetry.failed = true;
+        }
+
+        settingsPushRetry.start()
     }
 }
