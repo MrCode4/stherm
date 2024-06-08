@@ -678,7 +678,6 @@ void DeviceIOController::setBrightnessTest(int brightness, bool test)
     }
     setProperty("test", test);
 
-    bool adaptive = test;
     m_p->brighness_mode = test ? 0 : property("adaptive").toInt();
     brightness = test ? brightness : property("brightness").toInt();
 
