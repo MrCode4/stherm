@@ -10,11 +10,10 @@ import Stherm
 BasePageView {
     id: root
 
-    /* Object properties
+    /* Property Declaration
      * ****************************************************************************************/
     property var model: ({})
 
-    title: "Internal Sensor Test"
 
     property real rangeMilliMeterMin: 60
     property real rangeMilliMeterMax: 70
@@ -37,9 +36,26 @@ BasePageView {
     property real temperatureMin: -20
     property real temperatureMax: 50
 
-    Component.onCompleted: root.model = deviceController.getTestData();
+    //! autoNext to disable next timer when use back button in the next page
+    property bool autoNext: true
 
-    /* Children
+    /* Object properties
+     * ****************************************************************************************/
+    title: "Internal Sensor Test"
+
+    Component.onCompleted: {
+        autoNext = true;
+        model = deviceController.getTestData();
+    }
+
+    //! Repeat the test when the page is visible.
+    onVisibleChanged: {
+        if (!visible) {
+            autoNext = false;
+        }
+    }
+
+    /* Functions
      * ****************************************************************************************/
 
     function writeSensorData() {
@@ -101,6 +117,9 @@ BasePageView {
         }
     }
 
+    /* Children
+     * ****************************************************************************************/
+
     //! Next button
     ToolButton {
         id: nextBtn
@@ -111,7 +130,7 @@ BasePageView {
 
         onClicked: {
             backButtonVisible = true;
-            nextPage()
+            nextPage();
         }
     }
 
@@ -128,9 +147,9 @@ BasePageView {
         checked: false
         onToggled: {
             if (checked)
-                temperatureField.forceActiveFocus()
+                temperatureField.forceActiveFocus();
             else
-                deviceController.setTestData(model.temperature, true)
+                deviceController.setTestData(model.temperature, true);
         }
     }
 
@@ -164,8 +183,9 @@ BasePageView {
     Timer {
         interval: 100
         repeat: false
-        running: root.visible && temperatureField.valid && humidityField.valid && tofField.valid &&
-                 ambientField.valid && co2Field.valid && fanField.valid
+        running: root.visible && root.autoNext && temperatureField.valid &&
+                 humidityField.valid && tofField.valid && ambientField.valid &&
+                 co2Field.valid && fanField.valid
         onTriggered: {
             backButtonVisible = false;
             nextPage()
