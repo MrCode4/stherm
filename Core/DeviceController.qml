@@ -126,7 +126,7 @@ I_DeviceController {
         target: NetworkInterface
 
         function onHasInternetChanged() {
-            deviceControllerCPP.system.wifiConnected(NetworkInterface.hasInternet);
+            deviceControllerCPP.wifiConnected(NetworkInterface.hasInternet);
         }
     }
 
