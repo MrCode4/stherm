@@ -17,11 +17,6 @@ BacklightPage {
     title: "Backlight Test"
     isTest: true
     backlightSwitch.checked: true
-    // hasShades: false
-
-    // onUnshadedColorChanged: {
-        //! Apply selected color to device immediately
-    // }
 
     onVisibleChanged: {
         if (visible) {
@@ -91,56 +86,6 @@ BacklightPage {
     }
 
     Timer {
-        id: colorTimer
-        interval: 2000
-        repeat: true
-        running: false   // this timer disabled for now as we just test first shade index
-
-        property int value: 0
-        property int intervals: 3
-
-        onTriggered: {
-            if (colorTimer.value === colorTimer.intervals)
-            {
-                colorTimer.stop()
-                brightnessTimer.value = 0
-                brightnessTimer.start()
-                brightnessTimer.triggered()
-                return
-            }
-
-            _root.colorSlider.value = colorTimer.value / colorTimer.intervals
-            _root.applyOnline()
-            colorTimer.value++
-        }
-    }
-
-    Timer {
-        id: brightnessTimer
-        interval: 2000
-        repeat: true
-        running: false // this timer disabled for now as we just test first shade index
-
-        property int value: 0
-        property int intervals: 2
-
-        onTriggered: {
-            if (brightnessTimer.value === brightnessTimer.intervals + 1)
-            {
-                brightnessTimer.stop()
-                buttonTimer.btnIndex = 0
-                buttonTimer.start()
-                buttonTimer.triggered()
-                return
-            }
-
-            _root.brightnessSlider.value = brightnessTimer.value / brightnessTimer.intervals
-            _root.applyOnline()
-            brightnessTimer.value++
-        }
-    }
-
-    Timer {
         id: buttonTimer
         interval: 2000
         repeat: true
@@ -149,8 +94,7 @@ BacklightPage {
         property int btnIndex: 0
 
         onTriggered: {
-            if (btnIndex === 1)
-            {
+            if (btnIndex === 1) {
                 buttonTimer.stop()
                 confirmPopup1.open()
                 return
