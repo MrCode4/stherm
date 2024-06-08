@@ -22,10 +22,7 @@ I_PopUp {
      * ****************************************************************************************/
     title: message ? ((message.type === Message.Type.Alert ||
                        message.type === Message.Type.SystemAlert ||
-                       message.type === Message.Type.SystemNotification) ? "Alert" :
-                                                                    (message.type === Message.Type.Notification
-                                                                     ? "Notification"
-                                                                     : "Message")
+                       message.type === Message.Type.SystemNotification) ? "Alert" : "Message"
                       ) : ""
     icon: message ? (message.icon === ""
                      ? ((message.type === Message.Type.Alert ||

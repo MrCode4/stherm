@@ -47,7 +47,6 @@ set_source_files_properties(
     UiCore/AppStyle.qml
     UiCore/FAIcons.qml
     Core/DateTimeManager.qml
-
     PROPERTIES
         QT_QML_SINGLETON_TYPE True
 )
@@ -88,6 +87,7 @@ qt6_add_qml_module(appStherm
         Core/DateTimeManager.qml
         Core/ContactContractor.qml
         Core/NightMode.qml
+        Core/ToastManager.qml
 
 
         # Primitive Components
@@ -132,6 +132,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/OnScheduleLabel.qml
         UiCore/Components/RangeSlider.qml
         UiCore/Components/SemiCircleSliderDoubleHandle.qml
+        UiCore/Components/Toast.qml
         UiCore/Components/RoniaTumbler.qml
 
 

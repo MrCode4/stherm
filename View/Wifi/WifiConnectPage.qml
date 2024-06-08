@@ -45,8 +45,8 @@ BasePageView {
             ToolButton {
                 id: _connectBtn
                 anchors.fill: parent
-                visible: !NetworkInterface.isRunning
-                enabled: _passwordTf.acceptableInput && !NetworkInterface.isRunning
+                visible: !NetworkInterface.busy
+                enabled: _passwordTf.acceptableInput && !NetworkInterface.busy
                 contentItem: RoniaTextIcon {
                     text: FAIcons.link
                 }
@@ -61,7 +61,7 @@ BasePageView {
             BusyIndicator {
                 anchors.fill: parent
                 anchors.margins: 4
-                visible: NetworkInterface.isRunning
+                visible: NetworkInterface.busy
                 running: visible
             }
         }

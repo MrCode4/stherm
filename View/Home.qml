@@ -278,7 +278,7 @@ Control {
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/ApplicationMenu.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
-                                       });
+                                       }, StackView.Immediate);
 
                 }
             }
