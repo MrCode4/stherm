@@ -12,7 +12,7 @@
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
 const QString m_logUsername = "uploadtemp";
 const QString m_logPassword = "oDhjPTDJYkUOvM9";
-const QString m_logServerAddress = "fileserver.nuvehvac.com";
+const QString m_logServerAddress = "logs.nuvehvac.com";
 const QString m_logPath = "/opt/logs/";
 
 const QString m_partialUpdate   = QString("partialUpdate");
@@ -136,6 +136,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, &NUVE::System::autoModeSettingsReady);
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
+    connect(mSync, &NUVE::Sync::testModeStarted, this, &NUVE::System::testModeStarted);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
         setProperty(m_pushMainSettings, false);
 
@@ -497,6 +498,15 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
     if (response.second)
         setUID(accessUid);
     return response;
+}
+
+QString NUVE::System::getSN(QString accessUid)
+{
+    auto response = mSync->getSN(accessUid.toStdString(), false);
+    if (response.second)
+        setUID(accessUid.toStdString());
+
+    return QString::fromStdString(response.first);
 }
 
 bool NUVE::System::getUpdate(QString softwareVersion)

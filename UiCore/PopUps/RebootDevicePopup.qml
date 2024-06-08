@@ -16,6 +16,8 @@ I_PopUp {
     property System system
     property bool cancelEnable: true
 
+    property string infoText: "Restarting Device..."
+
     /* Object properties
      * ****************************************************************************************/
     titleBar: false
@@ -61,7 +63,7 @@ I_PopUp {
         Label {
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * (mainLay.counter > 0 ? 1.5 : 0.9)
-            text: mainLay.counter > 0 ? mainLay.counter : "Restarting Device..."
+            text: mainLay.counter > 0 ? mainLay.counter : infoText
             horizontalAlignment: Text.AlignHCenter
         }
 

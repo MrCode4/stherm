@@ -67,6 +67,8 @@ public:
     //! TODO handles only the brighness for now
     bool setSettings(QVariantList data);
 
+    void setBrightnessTest(int brightness, bool test = true);
+
     void sendRelays();
 
     QString getNRF_HW() const;

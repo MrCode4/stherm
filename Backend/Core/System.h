@@ -68,6 +68,10 @@ public:
     //! Get serial number from server
     std::pair<std::string, bool> getSN(cpuid_t accessUid);
 
+    //! Get serial number from server, call from QML and return serial number
+    //! Some signals are block in this function.
+    Q_INVOKABLE QString getSN(QString accessUid);
+
     //! Get update
     //! todo: process response packet
     //! TEMP: "022"
@@ -90,11 +94,11 @@ public:
 
     Q_INVOKABLE void getBackdoorInformation();
 
-    Q_INVOKABLE void wifiConnected(bool hasInternet);
-
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
     Q_INVOKABLE void exitManualMode();
+
+    void wifiConnected(bool hasInternet);
 
     void setCanFetchServer(bool canFetch);
 
@@ -241,9 +245,13 @@ signals:
 
     void updateNoChecked();
 
+<<<<<<< update_auto_api
     void autoModePush(bool isSuccess);
 
     void pushSuccess();
+=======
+    void testModeStarted();
+>>>>>>> master
 
 private:
 

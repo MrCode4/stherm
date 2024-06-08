@@ -82,7 +82,7 @@ BasePageView {
             visible: _tempSlider.pressed
             timeout: Number.MAX_VALUE
             delay: 0
-            text: _tempSlider.value
+            text: _tempSlider.value.toFixed(0)
         }
     }
 }

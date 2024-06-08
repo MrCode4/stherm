@@ -26,6 +26,8 @@ const QString m_HasClientSetting = QString("NUVE/SerialNumberClient");
 const QString m_ContractorSettings = QString("NUVE/Contractor");
 const QString m_requestJob      = QString("requestJob");
 
+const char* m_notifyGetSN       = "notifyGetSN";
+
 inline QDateTime updateTimeStringToTime(const QString &timeStr) {
     QString format = "yyyy-MM-dd HH:mm:ss";
 
@@ -52,9 +54,10 @@ void Sync::setUID(cpuid_t accessUid)
     mSystemUuid = accessUid;
 }
 
-std::pair<std::string, bool> Sync::getSN(cpuid_t accessUid)
+std::pair<std::string, bool> Sync::getSN(cpuid_t accessUid, bool notifyUser)
 {
-    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSn?uid=%0").arg(accessUid.c_str())), m_getSN);
+    auto netReply = sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSn?uid=%0").arg(accessUid.c_str())), m_getSN);
+    netReply->setProperty(m_notifyGetSN, notifyUser);
 
     // Return Serial number when serial number already exist.
     if (!mSerialNumber.isEmpty() && mHasClient)
@@ -326,6 +329,11 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
                     mSerialNumber = sn;
 
+
+                    auto notifyUser = netReply->property(m_notifyGetSN).toBool();
+                    if (mSerialNumber.isEmpty() && notifyUser)
+                        emit testModeStarted();
+
                     // Save the serial number in settings
                     QSettings setting;
                     setting.setValue(m_HasClientSetting, mHasClient);
@@ -450,6 +458,11 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
     if (!errorString.isEmpty()){
         if (method == m_getSN) {
             Q_EMIT snReady();
+
+            auto notifyUser = netReply->property(m_notifyGetSN).toBool();
+            if (notifyUser && netReply->error() == QNetworkReply::ContentNotFoundError)
+                emit testModeStarted();
+
             QString error = "Unable to fetch the device serial number, Please check your internet connection: ";
 //            emit alert(error + errorString);
             qWarning() << error << errorString ;
@@ -494,7 +507,7 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
     netReply->deleteLater();
 }
 
-void Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method)
+QNetworkReply* Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method)
 {
     // Prepare request
     QNetworkRequest netRequest(mainUrl.resolved(relativeUrl));
@@ -513,6 +526,8 @@ void Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QS
     QNetworkReply *netReply = mNetManager->get(netRequest);
     netReply->setProperty(m_methodProperty, method);
     //    netReply->ignoreSslErrors();
+
+    return netReply;
 }
 
 void Sync::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method)

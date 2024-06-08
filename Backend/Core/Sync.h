@@ -19,7 +19,7 @@ public:
 
     void setUID(cpuid_t accessUid);
     //! Get serial number and if has client from server if not fetched or saved
-    std::pair<std::string, bool> getSN(cpuid_t accessUid);
+    std::pair<std::string, bool> getSN(cpuid_t accessUid, bool notifyUser = true);
     //! returns last fetched from save or server
     std::pair<std::string, bool> getSN();
 
@@ -62,12 +62,14 @@ signals:
 
     void serialNumberChanged();
 
+    void testModeStarted();
+
 private slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply) override;
 
 protected:
-    void sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
+    QNetworkReply* sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
     void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method) override;
 
 private:
