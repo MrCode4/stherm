@@ -24,7 +24,7 @@ I_PopUp {
                        message.type === Message.Type.SystemAlert ||
                        message.type === Message.Type.SystemNotification) ? "Alert" :
                                                                     (message.type === Message.Type.Notification
-                                                                     ? "Notification"
+                                                                     ? "Message"
                                                                      : "Message")
                       ) : ""
     icon: message ? (message.icon === ""
