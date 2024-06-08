@@ -84,16 +84,6 @@ BasePageView {
         }
     }
 
-    //! Next button (loads ColorTestPage)
-    ToolButton {
-        parent: root.header.contentItem
-        contentItem: RoniaTextIcon {
-            text: FAIcons.arrowRight
-            color: headerColor
-        }
-        enabled: false
-    }
-
     Timer {
         id: timer
         interval: 1000
