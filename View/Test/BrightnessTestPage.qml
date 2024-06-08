@@ -97,7 +97,7 @@ BasePageView {
         }
     }
 
-    //! Next button (loads ColorTestPage)
+    //! Next button
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {

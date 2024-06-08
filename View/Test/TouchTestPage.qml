@@ -34,7 +34,7 @@ BasePageView {
     property string pointsState : "0,0,0,0,0,0,0,0,0"
 
     function nextPage() {
-        timer.stop()
+        failurePopuptimer.stop()
         if (_root.StackView.view) {
             _root.StackView.view.push("qrc:/Stherm/View/Test/ColorTestPage.qml", {
                                           "uiSession": uiSession,
@@ -62,7 +62,7 @@ BasePageView {
         property int seconds: 5
 
         onAccepted: {
-            timer.start()
+            failurePopuptimer.start()
             _root.pointsState = "0,0,0,0,0,0,0,0,0"
         }
     }
@@ -79,7 +79,7 @@ BasePageView {
     }
 
     Timer {
-        id: timer
+        id: failurePopuptimer
         interval: infoPopup.seconds * 1000
         onTriggered: failPopup.open()
         repeat: false
