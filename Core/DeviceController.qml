@@ -110,13 +110,17 @@ I_DeviceController {
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
+        // adding version so we can force the image to refresh the content
+        property int version : 0;
+
         function onContractorInfoUpdated(brandName, phoneNumber, iconUrl, url,  techUrl) {
 
-            console.log("onContractorInfoUpdated: ", brandName, phoneNumber, iconUrl, url, techUrl);
+            version++;
+            console.log("onContractorInfoUpdated: ", brandName, phoneNumber, iconUrl, url, techUrl, version);
 
             root.device.contactContractor.brandName     = brandName
             root.device.contactContractor.phoneNumber   = phoneNumber
-            root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl
+            root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl + "?version=" + version
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
         }
