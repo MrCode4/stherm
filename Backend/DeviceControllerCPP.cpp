@@ -787,7 +787,7 @@ void DeviceControllerCPP::writeTestResult(const QString &testName, const QString
 void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResult, const QString &description)
 {
     mAllTestsPassed &= testResult;
-    QString result = testResult?"PASS":"FAIL";
+    QString result = testResult ? "PASS" : "FAIL";
     writeTestResult(testName, result, description);
 }
 
@@ -831,7 +831,18 @@ void DeviceControllerCPP::stopTestBrightness()
 void DeviceControllerCPP::testFinished()
 {
     QString result = mAllTestsPassed ? "PASS" : "FAIL";
-    QFile::rename("test_results.csv", QString("%1_%2.csv").arg(_deviceAPI->uid()).arg(result));
+    QString newFileName = QString("%1_%2.csv").arg(_deviceAPI->uid(), result);
+
+    // Remove the file if exists
+    if (QFileInfo::exists(newFileName)) {
+        if (!QFile::remove(newFileName)) {
+            TRACE << "Could not remove the file: " << newFileName;
+        }
+    }
+
+    if (QFile::rename("test_results.csv", newFileName)) {
+        TRACE << "Could not create the file: " << newFileName;
+    }
 
     // disabled it for now!
     if (false){
