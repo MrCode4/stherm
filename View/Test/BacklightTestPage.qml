@@ -105,13 +105,4 @@ BacklightPage {
             buttonTimer.btnIndex++
         }
     }
-
-    //! Next button
-    ToolButton {
-        parent: _root.header.contentItem
-        contentItem: RoniaTextIcon {
-            text: FAIcons.arrowRight
-        }
-        enabled: false
-    }
 }
