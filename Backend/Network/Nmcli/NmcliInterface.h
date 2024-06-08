@@ -10,6 +10,16 @@
 #include "NmcliObserver.h"
 #include "WifiInfo.h"
 
+struct ConnectionProfile {
+    ConnectionProfile(const QString& s, const QString& bs) : ssid(s), seenBssids(bs) {}
+
+    QString ssid;
+    QString seenBssids;
+};
+
+//! Profiles list
+using ProfilesList = QList<ConnectionProfile>;
+
 //! Aliasing wifis list
 using WifisList = QList<WifiInfo*>;
 
@@ -200,6 +210,11 @@ private:
     void    parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStatus exitStatus);
 
     /*!
+     * \brief refreshProfiles
+     */
+    void    updateSavedWifis();
+
+    /*!
      * \brief doRefreshWifi Simply performs the nmcli refresh command
      */
     void    doRefreshWifi();
@@ -271,6 +286,11 @@ private:
      * \brief mWifis Stores all the retrieved wifis
      */
     WifisList               mWifis;
+
+    /*!
+     * \brief mSavedWifis This is the list of all the wifi profile saved by NetworkManager
+     */
+    ProfilesList            mConProfiles;
 
     /*!
      * \brief mConnectedWifi Currently connected wifi

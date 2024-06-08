@@ -14,7 +14,12 @@ BasePageView {
      * ****************************************************************************************/
     readonly property var sortedWifis: {
         var wifis = Array.from(NetworkInterface.wifis);
-        return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.ssid !== "");
+        return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.strength > -1);
+    }
+
+    readonly property var savedNonInRangeWifis: {
+        var wifis = Array.from(NetworkInterface.wifis);
+        return wifis.filter((element, index) => element.strength < 0 && element.ssid !== "");
     }
 
     property System system: deviceController.deviceControllerCPP.system
@@ -152,6 +157,7 @@ BasePageView {
         //! Available networks Label
         Label {
             id: _availLbl
+            visible: _wifisRepeater.model.length > 0
             opacity: 0.7
             font.pointSize: Application.font.pointSize * 0.8
             text: "Available Networks"
@@ -210,6 +216,50 @@ BasePageView {
                         delegateIndex: index
                         onClicked: {
                             _wifisRepeater.currentIndex = index;
+                        }
+
+                        onForgetClicked: {
+                            if (uiSession) {
+                                //! Ask for forgeting this wifi
+                                _forgetDlg.wifiToForget = wifi;
+                                uiSession.popupLayout.displayPopUp(_forgetDlg, true);
+                            }
+                        }
+                    }
+                }
+
+                //! Saved networks Label
+                Label {
+                    visible: savedNonInRangeWifis.length > 0
+                    opacity: 0.7
+                    font.pointSize: Application.font.pointSize * 0.8
+                    text: "Saved Networks"
+                }
+
+                ColumnLayout {
+                    width: parent.width
+                    spacing: 8
+
+                    Repeater {
+                        model: savedNonInRangeWifis
+                        delegate: WifiDelegate {
+                            required property var modelData
+                            required property int index
+
+                            Layout.fillWidth: true
+
+                            focus: false
+                            focusPolicy: Qt.NoFocus
+                            hoverEnabled: false
+                            wifi: (modelData instanceof WifiInfo) ? modelData : null
+
+                            onForgetClicked: {
+                                if (uiSession) {
+                                    //! Ask for forgeting this wifi
+                                    _forgetDlg.wifiToForget = wifi;
+                                    uiSession.popupLayout.displayPopUp(_forgetDlg, true);
+                                }
+                            }
                         }
                     }
                 }

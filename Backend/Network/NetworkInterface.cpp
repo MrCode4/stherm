@@ -19,6 +19,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
                                                           "http://google.com")) }
 {
+    connect(mNmcliInterface, &NmcliInterface::deviceIsOnChanged, this,
+            &NetworkInterface::deviceIsOnChanged);
     connect(mNmcliInterface, &NmcliInterface::errorOccured, this,
             &NetworkInterface::onErrorOccured);
     connect(mNmcliInterface, &NmcliInterface::busyRefreshingChanged, this,

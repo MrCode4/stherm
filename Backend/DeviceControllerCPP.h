@@ -156,6 +156,8 @@ public:
 
     Q_INVOKABLE bool checkUpdateMode();
 
+    Q_INVOKABLE void wifiConnected(bool hasInternet);
+    
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -244,6 +246,8 @@ private:
 
     QTimer mBacklightTimer;
     QTimer mBacklightPowerTimer;
+
+    QTimer mFetchContractorInfoTimer;
 
     // initialized in startup onStartDeviceRequested in qml
     QVariantList mBacklightModelData;
