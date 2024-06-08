@@ -204,6 +204,7 @@ BasePageView {
                 Switch {
                     id: _adaptiveBrSw
                     checked: false && (appModel?.setting?.adaptiveBrightness ?? false)
+                    enabled: false
 
                     onCheckedChanged: {
                         onlineTimer.startTimer()
