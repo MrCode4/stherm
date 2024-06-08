@@ -26,6 +26,12 @@ BasePageView {
         }
     }
 
+    Component.onDestruction: {
+        // Stop the test
+        deviceController.deviceControllerCPP.stopTestBrightness()
+        brightnessTimer.stop()
+    }
+
     /* Children
      * ****************************************************************************************/
 
@@ -48,7 +54,7 @@ BasePageView {
         TapHandler {
             onTapped: {
                 deviceController.deviceControllerCPP.stopTestBrightness()
-                timer.stop()
+                brightnessTimer.stop()
                 confirmPopup1.open()
             }
         }
@@ -61,7 +67,7 @@ BasePageView {
         visible: true
 
         onAccepted: {
-            timer.start()
+            brightnessTimer.start()
         }
     }
 
@@ -106,13 +112,15 @@ BasePageView {
 
         onClicked: {
             deviceController.deviceControllerCPP.stopTestBrightness()
-            timer.stop()
+            brightnessTimer.stop()
             confirmPopup1.open()
         }
     }
 
+    //! Timer to change the brightness and apply to device for testing
     Timer {
-        id: timer
+        id: brightnessTimer
+
         interval: 100
         repeat: true
         running: false
