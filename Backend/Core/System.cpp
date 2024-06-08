@@ -514,7 +514,7 @@ void NUVE::System::wifiConnected(bool hasInternet) {
         return;
     }
 
-    mFetchContractorInfoTimer.start();;
+    mFetchContractorInfoTimer.start();
     mUpdateTimer.start();
     if (!mIsNightModeRunning) {
         // When is initial setup, skip update Information as we want to wait until its complete!

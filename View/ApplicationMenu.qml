@@ -29,8 +29,8 @@ BasePageView {
     BasePageView {
         id: innerPage
 
-     /* Object properties
-     * ****************************************************************************************/
+        /* Object properties
+         * ****************************************************************************************/
 
         backButtonCallback: function() {
             if (root.StackView.view) {

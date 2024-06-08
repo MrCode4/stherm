@@ -296,8 +296,7 @@ Control {
                 //! Push ScheduleView to StackView
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/ScheduleView.qml", {
-                                           "uiSession": Qt.binding(() => uiSession),
-                                           "visible": true
+                                           "uiSession": Qt.binding(() => uiSession)
                                        });
                 }
             }
