@@ -44,13 +44,16 @@ BasePageView {
     title: "Internal Sensor Test"
 
     Component.onCompleted: {
-        autoNext = true;
         model = deviceController.getTestData();
     }
 
     //! Repeat the test when the page is visible.
     onVisibleChanged: {
-        if (!visible) {
+        if (visible) {
+            if (!overrideBtn.checked)
+                updatingModelTimer.start();
+
+        }  else {
             autoNext = false;
         }
     }
@@ -171,11 +174,14 @@ BasePageView {
 
     //! timer for updating values
     Timer {
+        id: updatingModelTimer
+
         interval: 1000
         repeat: true
         running: root.visible && !overrideBtn.checked
         onTriggered: {
-          root.model = deviceController.getTestData();
+            root.model = deviceController.getTestData();
+            autoNext = true;
         }
     }
 
