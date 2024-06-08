@@ -462,7 +462,6 @@ void DeviceControllerCPP::startDevice()
     _deviceAPI->runDevice();
 
     int startMode = getStartMode();
-
     emit startModeChanged(startMode);
 
     // Start with delay to ensure the model loaded.
@@ -783,7 +782,7 @@ void DeviceControllerCPP::writeTestResult(const QString &testName, const QString
 
 void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResult, const QString &description)
 {
-    mAllTestsPassed &= testResult;
+    mAllTestsPassed.append(testResult);
     QString result = testResult ? "PASS" : "FAIL";
     writeTestResult(testName, result, description);
 }
@@ -791,7 +790,7 @@ void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResu
 void DeviceControllerCPP::beginTesting()
 {
     QFile file("test_results.csv");
-    mAllTestsPassed = false;
+    mAllTestsPassed.clear();
 
     if (file.exists() && !file.remove())
     {
@@ -827,7 +826,13 @@ void DeviceControllerCPP::stopTestBrightness()
 
 void DeviceControllerCPP::testFinished()
 {
-    QString result = mAllTestsPassed ? "PASS" : "FAIL";
+    if (!QFileInfo::exists("test_results.csv")) {
+        TRACE << "test_results.csv not exists. So can not wite the test file.";
+
+        return;
+    }
+
+    QString result = mAllTestsPassed.contains(false) ? "FAIL" : "PASS";
     QString newFileName = QString("%1_%2.csv").arg(_deviceAPI->uid(), result);
 
     // Remove the file if exists

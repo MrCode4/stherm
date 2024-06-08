@@ -286,7 +286,7 @@ private:
     }
 
     // Testing
-    bool mAllTestsPassed = false;
+    QList<bool> mAllTestsPassed ;
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 };
