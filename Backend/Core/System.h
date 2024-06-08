@@ -90,11 +90,11 @@ public:
 
     Q_INVOKABLE void getBackdoorInformation();
 
-    Q_INVOKABLE void wifiConnected(bool hasInternet);
-
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
     Q_INVOKABLE void exitManualMode();
+
+    void wifiConnected(bool hasInternet);
 
     void setCanFetchServer(bool canFetch);
 

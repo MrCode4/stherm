@@ -43,7 +43,7 @@ ListView {
         },
         {
             "icon": FAIcons.bellExclamation,
-            "text": "Alerts/Notifications"
+            "text": "Alerts/Messages"
         },
         {
             "icon": FAIcons.calendarDays,

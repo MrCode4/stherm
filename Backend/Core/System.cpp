@@ -12,7 +12,7 @@
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
 const QString m_logUsername = "uploadtemp";
 const QString m_logPassword = "oDhjPTDJYkUOvM9";
-const QString m_logServerAddress = "fileserver.nuvehvac.com";
+const QString m_logServerAddress = "logs.nuvehvac.com";
 const QString m_logPath = "/opt/logs/";
 
 const QString m_partialUpdate   = QString("partialUpdate");
