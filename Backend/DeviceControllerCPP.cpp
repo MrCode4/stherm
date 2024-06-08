@@ -833,8 +833,11 @@ void DeviceControllerCPP::testFinished()
     QString result = mAllTestsPassed ? "PASS" : "FAIL";
     QFile::rename("test_results.csv", QString("%1_%2.csv").arg(_deviceAPI->uid()).arg(result));
 
-    QSettings settings;
-    settings.setValue(m_RestartAfetrSNTestMode, true);
+    // disabled it for now!
+    if (false){
+        QSettings settings;
+        settings.setValue(m_RestartAfetrSNTestMode, true);
+    }
 
     TRACE << "testFinished";
 }

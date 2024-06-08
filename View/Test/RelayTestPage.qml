@@ -61,7 +61,7 @@ WiringPage {
     InfoPopup {
         id: infoPopup
         message: "Relay test"
-        detailMessage: "The Relays will switch<br>one by one every second."
+        detailMessage: "All relays will switch on<br>then, switch off after 2 seconds."
         visible: true
 
         onAccepted: {
