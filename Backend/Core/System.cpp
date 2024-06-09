@@ -167,18 +167,33 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
         auto initialized = mLogSender.property("initialized");
         if (initialized.isValid() && initialized.toBool()){
             emit alert("Log is not sent, Please try again!");
+        } else {
+            createLogDirectoryOnServer();
         }
     });
     connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
+        bool success = true;
         if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
             qWarning() << "process did not exit cleanly" << exitCode << exitStatus << mLogSender.readAllStandardError()
                        << mLogSender.readAllStandardOutput();
-            return;
+            success = false;
         }
+
         auto initialized = mLogSender.property("initialized");
         if (!initialized.isValid() || !initialized.toBool()){
-            TRACE << "Folder created in server successfully";
-            mLogSender.setProperty("initialized", true);
+            if (success){
+                TRACE << "Folder created in server successfully";
+                mLogSender.setProperty("initialized", true);
+                sendLog();
+            } else {
+                createLogDirectoryOnServer();
+            }
+        } else {
+            if (success) {
+                emit alert("Log is sent!");
+            } else {
+                emit alert("Log is not sent, Please try again!");
+            }
         }
     });
 
@@ -431,10 +446,17 @@ bool NUVE::System::findBackdoorVersion(const QString fileName)
 
 void NUVE::System::sendLog()
 {
-    if (mLogSender.state() != QProcess::NotRunning || mLogRemoteFolder.isEmpty()){
+    if (mLogSender.state() != QProcess::NotRunning){
         QString error("Previous session is in progress, please try again later.");
-        qWarning() << error << "State is :" << mLogSender.state() << "mLogRemoteFolder" << mLogRemoteFolder;
+        qWarning() << error << "State is :" << mLogSender.state();
         emit alert(error);
+        return;
+    }
+
+    auto initialized = mLogSender.property("initialized");
+    if (!initialized.isValid() || !initialized.toBool()){
+        qWarning() << "Folder was not created successfully, trying again...";
+        createLogDirectoryOnServer(); // will call the sendLog if successful
         return;
     }
 
@@ -446,16 +468,9 @@ void NUVE::System::sendLog()
     auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
     if (exitCode < 0)
     {
-        qWarning() << "Unable to create log file";
-        return;
-    }
-
-
-    auto initialized = mLogSender.property("initialized");
-    if (!initialized.isValid() || !initialized.toBool()){
-        qWarning() << "Folder was not created successfully, trying again...";
-        createLogDirectoryOnServer();
-        emit alert("There is an error, Please try again!");
+        QString error("Unable to create log file.");
+        qWarning() << error << exitCode;
+        emit alert(error);
         return;
     }
 
@@ -1163,8 +1178,6 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 void NUVE::System::onSnReady()
 {
     emit snReady();
-
-    createLogDirectoryOnServer();
     
     //! Get update information when Serial number is ready.
     getUpdateInformation(true);
@@ -1174,8 +1187,25 @@ void NUVE::System::createLogDirectoryOnServer()
 {
     auto sn = serialNumber();
     // Check serial number
-    if (sn.isEmpty())
+    if (sn.isEmpty()){
+        QString error("Serial number empty! can not create log folder!");
+        qWarning() << error;
+        emit alert(error);
         return;
+    }
+
+    int tryCount = mLogSender.property("tryCount").toInt();
+    if (tryCount < 3) {
+        tryCount++;
+        mLogSender.setProperty("tryCount", tryCount);
+    } else {
+        QString error("Can not create log folder! Try again later.");
+        qWarning() << error;
+        emit alert(error);
+        tryCount = 0; // reset the counter for next time!
+        mLogSender.setProperty("tryCount", tryCount);
+        return;
+    }
 
     mLogRemoteFolder = m_logPath + sn;
     // Create remote path in case it doesn't exist, needed once! with internet access
