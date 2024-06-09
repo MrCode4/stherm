@@ -736,7 +736,7 @@ void NmcliInterface::updateSavedWifis()
     };
     mRefreshProcess->start(NC_COMMAND, args);
 
-    waitLoop(mRefreshProcess, 500);
+    waitLoop(mRefreshProcess, 2000);
 
     QString line = mRefreshProcess->readLine(); //! Holds IN-USE of first wifi info in any
 
@@ -760,7 +760,7 @@ void NmcliInterface::updateSavedWifis()
                                                    NC_ARG_SHOW,
                                                    connectionName,
                                                });
-            waitLoop(&conProcess, 500);
+            waitLoop(&conProcess, 2000);
 
             if (conProcess.exitCode() == 0) {
                 QString ssid = conProcess.readLine();
