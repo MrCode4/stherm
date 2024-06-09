@@ -107,12 +107,13 @@ BacklightPage {
         }
     }
 
-    //! Disable Next button, just for consistency
+    //! Next button, disabled for now, kept for consistency
     ToolButton {
         parent: _root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.arrowRight
         }
+        onClicked: nextPage()
 
         enabled: false
     }
