@@ -717,7 +717,7 @@ void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStat
     }
 
     //! Get the list of wifi connections
-    updateSavedWifis();
+    doRefreshWifi();
 }
 
 void NmcliInterface::updateSavedWifis()
