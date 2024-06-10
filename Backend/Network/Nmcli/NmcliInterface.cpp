@@ -365,7 +365,11 @@ int NmcliInterface::waitLoop(QProcess* process, int timeout) const
         return 0;
     } else if (timeout > 0) {
         // quit will exit with, same as exit(ChangeType::CurrentTemperature)
-        QTimer::singleShot(timeout, &loop, &QEventLoop::quit);
+        QTimer::singleShot(timeout, &loop, [&loop, process](){
+            if (process->state() != QProcess::NotRunning) {
+                process->terminate();
+            }
+        });
     }
 
     return loop.exec();
@@ -717,7 +721,7 @@ void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStat
     }
 
     //! Get the list of wifi connections
-    doRefreshWifi();
+    updateSavedWifis();
 }
 
 void NmcliInterface::updateSavedWifis()
@@ -736,7 +740,7 @@ void NmcliInterface::updateSavedWifis()
     };
     mRefreshProcess->start(NC_COMMAND, args);
 
-    waitLoop(mRefreshProcess, 2000);
+    waitLoop(mRefreshProcess, 1000);
 
     QString line = mRefreshProcess->readLine(); //! Holds IN-USE of first wifi info in any
 
@@ -760,22 +764,25 @@ void NmcliInterface::updateSavedWifis()
                                                    NC_ARG_SHOW,
                                                    connectionName,
                                                });
-            waitLoop(&conProcess, 2000);
+            waitLoop(&conProcess, 1000);
 
             if (conProcess.exitCode() == 0) {
                 QString ssid = conProcess.readLine();
                 ssid.remove(ssid.length() - 1, 1); //! Remove '\n'
 
+                // can have only one bssid or be empty or have multiple values separated by comma delimiter
                 QString seenBssids = conProcess.readLine();
                 seenBssids.remove(seenBssids.length() - 1, 1); //! Remove '\n'
 
                 mConProfiles.emplace_back(ssid, seenBssids);
+            } else {
+                NC_WARN << conProcess.exitCode() << conProcess.readAll();
             }
 
             line = mRefreshProcess->readLine();
         }
     } else {
-        NC_CRITICAL << mRefreshProcess->readAll();
+        NC_WARN << mRefreshProcess->readAll();
     }
 
     //! Now refresh wifis

@@ -37,4 +37,5 @@
 
 //! Printing macros
 #define NC_DEBUG            qDebug() << "NMCLI: " << Q_FUNC_INFO << __LINE__
+#define NC_WARN             qWarning() << "NMCLI: " << Q_FUNC_INFO << __LINE__
 #define NC_CRITICAL         qCritical() << "NMCLI: " << Q_FUNC_INFO << __LINE__
