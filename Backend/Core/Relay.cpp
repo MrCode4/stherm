@@ -178,6 +178,13 @@ void Relay::setDehumidifierState(const bool on) {
     mRelay.hum_wiring = on ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
 }
 
+void Relay::updateHumidityWiring(AppSpecCPP::AccessoriesWireType mAccessoriesWireType)
+{
+    mRelay.acc2  = (mAccessoriesWireType == AppSpecCPP::T2PWRD)  ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.acc1p = (mAccessoriesWireType == AppSpecCPP::T1PWRD)  ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.acc1n = (mAccessoriesWireType == AppSpecCPP::T1Short) ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+}
+
 AppSpecCPP::SystemMode Relay::getOb_state() const
 {
     return ob_state;
@@ -200,10 +207,13 @@ void Relay::setAllOff()
 {
     mRelay.y1    = STHERM::RelayMode::OFF;
     mRelay.y2    = STHERM::RelayMode::OFF;
-    mRelay.acc2  = STHERM::RelayMode::OFF;
     mRelay.w1    = STHERM::RelayMode::OFF;
     mRelay.w2    = STHERM::RelayMode::OFF;
     mRelay.w3    = STHERM::RelayMode::OFF;
+
+    // Humidifire/Dehumidifier relays
+    // TODO: Move out
+    mRelay.acc2  = STHERM::RelayMode::OFF;
     mRelay.acc1p = STHERM::RelayMode::OFF;
     mRelay.acc1n = STHERM::RelayMode::OFF;
 
@@ -400,8 +410,11 @@ void Relay::setFanMode(bool on)
 
 void Relay::updateFan()
 {
-    // The fan operates if it's set to 'on' using either WPH or if either Y1 or W1 is activated.
-    if (mFanOn || mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON) {
+    // The fan operates:
+    //    if it's set to 'on' using either WPH or if either Y1 or W1 is activated.
+    //   if at least one of the Humidity wirings is ON
+    if (mFanOn || mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON ||
+        mRelay.acc2 == STHERM::ON || mRelay.acc1n == STHERM::ON || mRelay.acc1p == STHERM::ON) {
         fanOn();
 
     } else {

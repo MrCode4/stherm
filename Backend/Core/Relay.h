@@ -64,6 +64,9 @@ public:
     //! Update Dehumidifier state
     void setDehumidifierState(const bool on);
 
+    //! Update the Humidity (humidifier/dehumidifier) wiring.
+    void updateHumidityWiring(AppSpecCPP::AccessoriesWireType mAccessoriesWireType);
+
     AppSpecCPP::SystemMode getOb_on_state() const;
     void setOb_on_state(const AppSpecCPP::SystemMode &newOb_on_state);
 
