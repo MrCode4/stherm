@@ -76,6 +76,8 @@ public:
      */
     bool    busy() const;
 
+    void    setBusy(bool busy);
+
     /*!
      * \brief isDeviceOn
      * \return
@@ -321,6 +323,11 @@ private:
      * \brief mBusyRefreshing Indicates if it's busy refreshing wifi lists
      */
     bool                    mBusyRefreshing = false;
+
+    /*!
+     * \brief mBusy
+     */
+    bool                    mBusy = false;
 
     /*!
      * \brief mRescanInRefresh Whether rescan should be forced or not

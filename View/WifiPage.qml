@@ -274,6 +274,7 @@ BasePageView {
             ButtonInverted {
                 anchors.left: parent.left
                 anchors.leftMargin: 8
+                enabled: !NetworkInterface.busy
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Forget" : "Manual"
                 onClicked: {
                     if (text === "Manual") {
@@ -320,6 +321,7 @@ BasePageView {
             ButtonInverted {
                 anchors.right: parent.right
                 anchors.rightMargin: 8
+                enabled: !NetworkInterface.busy
                 visible: _wifisRepeater.currentItem?.wifi ?? false
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
 
@@ -332,10 +334,9 @@ BasePageView {
                             NetworkInterface.connectWifi(wifi, "");
                         } else {
                             var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
-                            var isSaved = NetworkInterface.isWifiSaved(wifi);
 
                             //! Open connect page
-                            if (root.StackView.view) {
+                            if (root.StackView.view && _wifisRepeater.currentItem) {
                                 //! Note: it's better to stop wifi refreshing to prevent any deleted
                                 //! object access issues
                                 root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
@@ -347,8 +348,11 @@ BasePageView {
                         }
                     } else {
                         //! Disconnect from this wifi
-                        NetworkInterface.disconnectWifi(_wifisRepeater.currentItem.wifi);
+                        if (_wifisRepeater.currentItem)
+                            NetworkInterface.disconnectWifi(_wifisRepeater.currentItem.wifi);
                     }
+
+                    _wifisRepeater.currentIndex = -2;
                 }
             }
         }

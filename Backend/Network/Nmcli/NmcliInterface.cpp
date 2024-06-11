@@ -17,7 +17,6 @@ NmcliInterface::NmcliInterface(QObject* parent)
     mRefreshProcess->setReadChannel(QProcess::StandardOutput);
     mWifiProcess->setReadChannel(QProcess::StandardOutput);
 
-    connect(mWifiProcess, &QProcess::stateChanged, this, &NmcliInterface::busyChanged);
     connect(mRefreshProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit && exitCode != 0) {
             emit errorOccured(NmcliInterface::Error(exitCode));
@@ -62,8 +61,17 @@ void NmcliInterface::setBusyRefreshing(bool busy)
 
 bool NmcliInterface::busy() const
 {
-    return mWifiProcess && (mWifiProcess->state() == QProcess::Starting
-                               || mWifiProcess->state() == QProcess::Running);
+    return mBusy;
+}
+
+void NmcliInterface::setBusy(bool busy)
+{
+    if (mBusy == busy) {
+        return;
+    }
+
+    mBusy = busy;
+    emit busyChanged();
 }
 
 WifisList& NmcliInterface::getWifis()
@@ -106,14 +114,16 @@ bool NmcliInterface::hasWifiProfile(const WifiInfo* wifi)
 
 void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
 {
-    if (!mWifiProcess || busy()) {
+    if (!wifi || wifi->isConnecting() || wifi->connected() || !mWifiProcess || busy()) {
         return;
     }
+
 
     //! First check if connection is saved
     if (hasWifiProfile(wifi)) {
         connectSavedWifi(wifi, password);
     } else {
+        setBusy(true);
         //! Perform connection command
         const QStringList args({
             NC_ARG_DEVICE,
@@ -124,6 +134,9 @@ void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
             password,
         });
 
+        connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+                setBusy(false);
+            }, Qt::SingleShotConnection);
         mWifiProcess->start(NC_COMMAND, args);
     }
 }
@@ -135,6 +148,8 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
         return false;
     }
 
+    setBusy(true);
+
     if (password.isEmpty()) {
         //! Perform connection command
         const QStringList args({
@@ -143,6 +158,9 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
             wifi->ssid(),
         });
 
+        connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+                setBusy(false);
+            }, Qt::SingleShotConnection);
         mWifiProcess->start(NC_COMMAND, args);
     } else {
         //! Modify its password then connect as saved
@@ -156,7 +174,13 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
                         wifi->ssid(),
                     });
 
+                    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+                            setBusy(false);
+                        }, Qt::SingleShotConnection);
+
                     mWifiProcess->start(NC_COMMAND, args);
+                } else {
+                    setBusy(false);
                 }
             }, Qt::SingleShotConnection);
 
@@ -175,9 +199,11 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
 
 void NmcliInterface::disconnectFromWifi(WifiInfo* wifi)
 {
-    if (!mWifiProcess || busy()) {
+    if (!wifi || !wifi->connected() || !mWifiProcess || busy()) {
         return;
     }
+
+    setBusy(true);
 
     //! Perform disconnect command
     const QStringList args({
@@ -185,6 +211,10 @@ void NmcliInterface::disconnectFromWifi(WifiInfo* wifi)
         NC_ARG_DOWN,
         wifi->ssid(),
     });
+
+    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+            setBusy(false);
+        }, Qt::SingleShotConnection);
 
     mWifiProcess->start(NC_COMMAND, args);
 }
@@ -196,16 +226,21 @@ WifiInfo* NmcliInterface::connectedWifi()
 
 void NmcliInterface::forgetWifi(WifiInfo* wifi)
 {
-    if (!mWifiProcess || busy()) {
+    if (!wifi || !wifi->isSaved() || !mWifiProcess || busy()) {
         return;
     }
 
+    setBusy(true);
     //! Perform disconnect command
     const QStringList args({
         NC_ARG_CONNECTION,
         NC_ARG_DELETE,
         wifi->ssid(),
     });
+
+    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+            setBusy(false);
+        }, Qt::SingleShotConnection);
 
     mWifiProcess->start(NC_COMMAND, args);
 }
@@ -216,12 +251,18 @@ void NmcliInterface::turnWifiDeviceOn()
         return;
     }
 
+    setBusy(true);
+
     //! Perform connection command
     const QStringList args({
         NC_ARG_RADIO,
         NC_ARG_WIFI,
         "on"
     });
+
+    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+            setBusy(false);
+        }, Qt::SingleShotConnection);
 
     mWifiProcess->start(NC_COMMAND, args);
 }
@@ -232,12 +273,18 @@ void NmcliInterface::turnWifiDeviceOff()
         return;
     }
 
+    setBusy(true);
+
     //! Perform connection command
     const QStringList args({
         NC_ARG_RADIO,
         NC_ARG_WIFI,
         "off"
     });
+
+    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+            setBusy(false);
+        }, Qt::SingleShotConnection);
 
     mWifiProcess->start(NC_COMMAND, args);
 }
@@ -253,6 +300,8 @@ void NmcliInterface::addConnection(const QString& name,
     if (!mWifiProcess || busy()) {
         return;
     }
+
+    setBusy(true);
 
     //! Perform connection command
     QStringList args({
@@ -301,11 +350,17 @@ void NmcliInterface::addConnection(const QString& name,
 
                 emit wifisChanged();
 
+                connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+                        setBusy(false);
+                    }, Qt::SingleShotConnection);
+
                 mWifiProcess->start(NC_COMMAND, {
                                                 NC_ARG_CONNECTION,
                                                 NC_ARG_UP,
                                                 name
                                             });
+            } else {
+                setBusy(false);
             }
         }, Qt::SingleShotConnection);
 
@@ -564,7 +619,8 @@ void NmcliInterface::setupObserver()
         if (ssid.isEmpty()) return;
 
         for (WifiInfo* wifi : mWifis) {
-            if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
+            if ((wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) && !wifi->connected()
+                && !wifi->isConnecting()) {
                 //! This wifi is now saved if it wasn't previously
                 if (!wifi->isSaved()) {
                     wifi->setIsSaved(true);
