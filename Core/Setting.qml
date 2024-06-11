@@ -18,10 +18,10 @@ QSObject {
     //! turn off the Alerts (excluding the embedded sensor malfunctions related ones)
     //! Note: The Embedded sensor malfunction related alerts are crucial
     //! so they should not be affected when User turns off the Alerts
-    property bool       enabledAlerts:            false
+    property bool       enabledAlerts:            true
 
     //! Turn off the notifications
-    property bool       enabledNotifications:     false
+    property bool       enabledNotifications:     true
 
     //! Speaker volume: 0 to 100
     property int        volume:                 AppSpec.defaultVolume
