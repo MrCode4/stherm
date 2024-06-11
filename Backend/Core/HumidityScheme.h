@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QThread>
 
+#include "DeviceAPI.h"
 #include "Relay.h"
 #include "ScheduleCPP.h"
 #include "SystemSetup.h"
@@ -14,8 +15,9 @@
 class HumidityScheme : public QThread
 {
     Q_OBJECT
+
 public:
-    explicit HumidityScheme(QObject *parent = nullptr);
+    explicit HumidityScheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
 
     void setSystemSetup(SystemSetup *systemSetup);
 
@@ -31,8 +33,15 @@ private:
     //! Vacation loop
     void VacationLoop();
 
+    //! Auto mode loop used in schedule
+    void AutoModeLoop();
+
+    void setVacation(const STHERM::Vacation &newVacation);
+
+
 private:
     Relay*  mRelay;
+    DeviceAPI *mDeviceAPI;
 
     SystemSetup *mSystemSetup = nullptr;
     ScheduleCPP* mSchedule = nullptr;
@@ -40,6 +49,10 @@ private:
     AppSpecCPP::AccessoriesType     mAccessoriesType;
     AppSpecCPP::AccessoriesWireType mAccessoriesWireType;
 
-     bool stopWork;
+    //! Vacation properites (Percentage)
+    double mVacationMinimumHumidity;
+    double mVacationMaximumHumidity;
+
+    bool stopWork;
 };
 

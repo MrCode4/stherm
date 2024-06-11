@@ -84,6 +84,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , _deviceAPI(new DeviceAPI(this))
     , mSystemSetup(nullptr)
     , m_scheme(new Scheme(_deviceAPI, this))
+    , m_HumidityScheme(new m_HumidityScheme(_deviceAPI, this))
 {
 
     m_system = _deviceAPI->system();
@@ -403,6 +404,10 @@ void DeviceControllerCPP::setVacation(const double min_Temperature, const double
     // Update vacations in scheme
     if (m_scheme)
         m_scheme->setVacation(vacation);
+
+    // Update vacations in HumidityScheme
+    if (m_HumidityScheme)
+        m_HumidityScheme->setVacation(vacation);
 }
 
 void DeviceControllerCPP::setRequestedTemperature(const double temperature)

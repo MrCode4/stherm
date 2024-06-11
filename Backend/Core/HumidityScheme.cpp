@@ -1,7 +1,8 @@
 #include "HumidityScheme.h"
 #include "LogHelper.h"
 
-HumidityScheme::HumidityScheme(QObject *parent) :
+HumidityScheme::HumidityScheme(DeviceAPI* deviceAPI, QObject *parent) :
+    mDeviceAPI(deviceAPI),
     stopWork(true),
     QThread{parent}
 {
@@ -86,4 +87,15 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
 void HumidityScheme::VacationLoop()
 {
 
+}
+
+void HumidityScheme::AutoModeLoop()
+{
+
+}
+
+void HumidityScheme::setVacation(const STHERM::Vacation &newVacation)
+{
+    mVacationMinimumHumidity = newVacation.minimumHumidity;
+    mVacationMaximumHumidity = newVacation.maximumHumidity;
 }

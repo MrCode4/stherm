@@ -8,6 +8,7 @@
 #include "DeviceAPI.h"
 #include "deviceIOController.h"
 #include "Core/Scheme.h"
+#include "HumidityScheme.h"
 #include "Device/SystemSetup.h"
 
 class ScheduleCPP;
@@ -219,6 +220,7 @@ private:
 
     SystemSetup *mSystemSetup;
     Scheme      *m_scheme;
+    HumidityScheme *m_HumidityScheme;
 
     NUVE::System *m_system;
 
