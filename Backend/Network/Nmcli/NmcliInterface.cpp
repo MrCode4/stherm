@@ -73,7 +73,7 @@ WifisList& NmcliInterface::getWifis()
 
 void NmcliInterface::refreshWifis(bool rescan)
 {
-    if (!mRefreshProcess || busyRefreshing()) {
+    if (!mRefreshProcess || busyRefreshing() || mRefreshProcess->state() != QProcess::NotRunning) {
         return;
     }
 
@@ -657,9 +657,10 @@ void NmcliInterface::onWifiDisconnected()
 void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-        setBusyRefreshing(false);
         emit errorOccured(NmcliInterface::Error::IWFetchError);
 
+        NC_DEBUG << "Error iw scan, aborting refresh";
+        setBusyRefreshing(false);
         return;
     }
 
@@ -754,7 +755,13 @@ void NmcliInterface::doRefreshWifi()
                                  mRescanInRefresh ? "yes" : "auto"
                              });
 
-    mRefreshProcess->start(NC_COMMAND, args);
+    if (mRefreshProcess->state() == QProcess::NotRunning) {
+        mRefreshProcess->start(NC_COMMAND, args);
+    } else {
+        disconnect(mRefreshProcess, &QProcess::finished,
+                   this, &NmcliInterface::onWifiListRefreshFinished);
+        setBusyRefreshing(false);
+    }
 }
 
 void NmcliInterface::scanConProfiles()
