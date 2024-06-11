@@ -780,6 +780,10 @@ void NmcliInterface::updateConProfilesList(int exitCode, QProcess::ExitStatus ex
 {
     if (QProcess* updateProc = qobject_cast<QProcess*>(QObject::sender())) {
         if (updateProc->exitCode() == 0 && updateProc->exitStatus() == QProcess::NormalExit) {
+            //! Copy mConProfiles to aviod requesting for connections that already exists
+            auto conProfilesBak = mConProfiles;
+            mConProfiles.clear();
+
             QProcess conProcess;
 
             QString line = updateProc->readLine();
@@ -791,12 +795,12 @@ void NmcliInterface::updateConProfilesList(int exitCode, QProcess::ExitStatus ex
                 }
 
                 //! If a connection with this name is already in the list of profiles, skip it
-                auto wi = std::find_if(mConProfiles.begin(), mConProfiles.end(),
+                auto wi = std::find_if(conProfilesBak.begin(), conProfilesBak.end(),
                                        [&](ConnectionProfile p) {
                                            return conName == p.ssid;
                                        });
 
-                if (wi == mConProfiles.end()) {
+                if (wi == conProfilesBak.end()) {
                     //! Get profile info of this connection
                     conProcess.start(NC_COMMAND, {
                                                      "--get-values",
@@ -821,8 +825,11 @@ void NmcliInterface::updateConProfilesList(int exitCode, QProcess::ExitStatus ex
                             mConProfiles.emplace_back(ssid, seenBssids);
                         }
                     } else {
-                        NC_WARN << conProcess.exitCode() << conProcess.readAll();
+                        NC_WARN << conProcess.exitCode() << conProcess.readAll() << conName;
                     }
+                } else {
+                    //! The connection already exists, push it to mConProfiles
+                    mConProfiles.push_back(*wi);
                 }
 
                 line = updateProc->readLine();
