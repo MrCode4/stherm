@@ -404,8 +404,6 @@ void Scheme::VacationLoop()
         }
     }
 
-    updateHumifiresState();
-
     waitLoop(-1);
 }
 

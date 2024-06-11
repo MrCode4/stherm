@@ -21,6 +21,11 @@ public:
 
     void setSystemSetup(SystemSetup *systemSetup);
 
+    void setVacation(const STHERM::Vacation &newVacation);
+
+    //! Set schedule
+    void setSchedule(ScheduleCPP *newSchedule);
+
 protected:
     void run() override;
 
@@ -36,10 +41,6 @@ private:
     //! Auto mode loop used in schedule
     void AutoModeLoop();
 
-    void setVacation(const STHERM::Vacation &newVacation);
-
-    //! Set schedule
-    void setSchedule(ScheduleCPP *newSchedule);
 
 private:
     Relay*  mRelay;
@@ -54,6 +55,9 @@ private:
     //! Vacation properites (Percentage)
     double mVacationMinimumHumidity;
     double mVacationMaximumHumidity;
+
+    //! Humidity parameters (Percentage)
+    double mCurrentHumidity = 30;
 
     bool stopWork;
 };

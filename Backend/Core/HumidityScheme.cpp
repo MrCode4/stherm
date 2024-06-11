@@ -89,7 +89,12 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
 
 void HumidityScheme::VacationLoop()
 {
+    if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
 
+    } else if ((mVacationMaximumHumidity - mCurrentHumidity) < 0.001) {
+
+       // Fan On
+    }
 }
 
 void HumidityScheme::AutoModeLoop()
