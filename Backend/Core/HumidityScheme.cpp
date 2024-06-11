@@ -15,6 +15,9 @@ void HumidityScheme::run()
     if (mSystemSetup->isVacation) {
         VacationLoop();
 
+    } else if (mSchedule) { // Schedule moves the app to auto mode and use the schedule property (humidity)
+        AutoModeLoop();
+
     }
 }
 
@@ -98,4 +101,12 @@ void HumidityScheme::setVacation(const STHERM::Vacation &newVacation)
 {
     mVacationMinimumHumidity = newVacation.minimumHumidity;
     mVacationMaximumHumidity = newVacation.maximumHumidity;
+}
+
+void HumidityScheme::setSchedule(ScheduleCPP *newSchedule)
+{
+    if (mSchedule == newSchedule)
+        return;
+
+    mSchedule = newSchedule;
 }

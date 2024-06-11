@@ -38,6 +38,8 @@ private:
 
     void setVacation(const STHERM::Vacation &newVacation);
 
+    //! Set schedule
+    void setSchedule(ScheduleCPP *newSchedule);
 
 private:
     Relay*  mRelay;

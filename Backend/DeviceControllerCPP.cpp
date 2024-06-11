@@ -508,6 +508,9 @@ void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
 
     if (m_scheme)
         m_scheme->setSchedule(schedule);
+
+    if (m_HumidityScheme)
+        m_HumidityScheme->setSchedule(schedule);
 }
 
 int DeviceControllerCPP::getStartMode()
