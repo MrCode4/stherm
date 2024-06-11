@@ -121,13 +121,13 @@ QtObject {
         // Check Alerts with enabledAlerts in settings
         if (!device.setting.enabledAlerts && (type === Message.Type.SystemNotification ||
                                        type === Message.Type.Alert)) {
-            console.log("addNewMessageFromData: Ignore alerts due to settings.")
+            console.log("Ignore alerts due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
         }
 
         // Check Notifications with enabledNotifications in settings
         if (!device.setting.enabledNotifications && type === Message.Type.Notification) {
-            console.log("addNewMessageFromData: Ignore notifications due to settings.")
+            console.log("Ignore notifications due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
         }
 
