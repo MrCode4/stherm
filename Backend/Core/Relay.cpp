@@ -211,14 +211,17 @@ void Relay::setAllOff()
     mRelay.w2    = STHERM::RelayMode::OFF;
     mRelay.w3    = STHERM::RelayMode::OFF;
 
-    // Humidifire/Dehumidifier relays
-    // TODO: Move out
-    mRelay.acc2  = STHERM::RelayMode::OFF;
-    mRelay.acc1p = STHERM::RelayMode::OFF;
-    mRelay.acc1n = STHERM::RelayMode::OFF;
 
     current_state = AppSpecCPP::SystemMode::Off;
 
+}
+
+void Relay::setAllHumidityWiringsOff()
+{
+    // Humidifire/Dehumidifier relays
+    mRelay.acc2  = STHERM::RelayMode::OFF;
+    mRelay.acc1p = STHERM::RelayMode::OFF;
+    mRelay.acc1n = STHERM::RelayMode::OFF;
 }
 
 //! OBSOLETE

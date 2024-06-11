@@ -32,6 +32,9 @@ public:
     void updateStates();
     void setAllOff();
 
+    //! All humidity wiring set to off
+    void setAllHumidityWiringsOff();
+
     //! OBSOLETE
     bool heatingStage0();
     bool heatingStage1(bool heatpump = false);
