@@ -306,7 +306,7 @@ BasePageView {
                                                 _speakerSlider.value,
                                                 _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
                                                                           : AppSpec.TempratureUnit.Cel,
-                                                (_adaptiveBrSw.checked && false)),
+                                                (_adaptiveBrSw.checked && false),
                                                 enabledAlertsSw.checked,
                                                 enabledNotificationsSw.checked);
         }

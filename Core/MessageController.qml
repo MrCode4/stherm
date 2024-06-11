@@ -94,12 +94,6 @@ QtObject {
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
 
-                             if (!device.setting.enabledAlerts && (type === Message.Type.SystemAlert ||
-                                                               type === Message.Type.Alert)) {
-                                 console.log("setMessagesServer: Ignored server alerts due to settings.")
-                                 return;
-                             }
-
                              var messageDatetime = message.datetime === null ? "" : message.datetime;
                              if (foundMessage && foundMessage.datetime === messageDatetime &&
                                  foundMessage.type === type) {
@@ -115,10 +109,6 @@ QtObject {
 
     function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
     {
-        if (!device.setting.enabledNotifications && type === Message.Type.Notification) {
-            console.log("addNewMessageFromData: Ignored notifications due to settings.")
-            return;
-        }
 
         if (message.length === 0) {
             console.log("addNewMessageFromData: The message is empty!")
@@ -129,6 +119,20 @@ QtObject {
             console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
         }
+
+        // Check Alerts with enabledAlerts in settings
+        if (!device.setting.enabledAlerts && (type === Message.Type.SystemNotification ||
+                                       type === Message.Type.Alert)) {
+            console.log("addNewMessageFromData: Ignore alerts due to settings.")
+            return;
+        }
+
+        // Check Notifications with enabledNotifications in settings
+        if (!device.setting.enabledNotifications && type === Message.Type.Notification) {
+            console.log("addNewMessageFromData: Ignore notifications due to settings.")
+            return;
+        }
+
         var newMessage;
         if (type === Message.Type.SystemNotification) {
             // To avoid saving to file
@@ -182,9 +186,6 @@ QtObject {
         target: deviceController.deviceControllerCPP.system
 
         function onAlert(message: string) {
-            if (!device.setting.enabledAlerts)
-                return false;
-
             addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
         }
 
@@ -275,9 +276,6 @@ QtObject {
         interval: 3 * 60 * 60 * 1000
 
         onTriggered: {
-            if (!device.setting.enabledAlerts)
-                return;
-
             var message = "Poor air quality detected. Please ventilate the room.";
             addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
         }
@@ -286,7 +284,6 @@ QtObject {
     property Connections  deviceControllerConnection: Connections {
         target: deviceController.deviceControllerCPP
 
-        // Sensor malfunction alerts (Crucial alerts)
         function onAlert(alertLevel : int,
                          alertType : int,
                          alertMessage : string) {
@@ -311,6 +308,13 @@ QtObject {
                 temperatureWatcher.start();
 
             } break;
+
+            case AppSpec.Alert_iaq_high:
+            case AppSpec.Alert_iaq_low:
+            case AppSpec.Alert_c02_low: {
+                messageType = Message.Type.SystemAlert;
+
+            } break
 
             case AppSpec.Alert_humidity_high:
             case AppSpec.Alert_humidity_low: {
@@ -357,8 +361,10 @@ QtObject {
     }
 
     function checkWifiConnection() : bool {
+
+        // Wifi message type is SystemNotification, so related to alerts
         if (!device.setting.enabledAlerts)
-            return false;
+            return NetworkInterface.connectedWifi;
 
         if (!NetworkInterface.connectedWifi) {
             var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
@@ -370,8 +376,9 @@ QtObject {
     }
 
     function checkInternetConnection() : bool {
+        // Wifi message type is SystemNotification, so related to alerts
         if (!device.setting.enabledAlerts)
-            return false;
+            return NetworkInterface.hasInternet;
 
         if (!NetworkInterface.hasInternet) {
             var message = "No internet connection. Please check your internet connection.";
