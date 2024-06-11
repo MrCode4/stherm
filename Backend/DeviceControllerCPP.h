@@ -66,6 +66,17 @@ public:
     //!
     Q_INVOKABLE QVariantMap getMainData();
 
+    //!
+    Q_INVOKABLE void writeTestResult(const QString& testName, const QString& testResult, const QString& description="");
+    Q_INVOKABLE void writeTestResult(const QString& testName, bool testResult, const QString& description="");
+    Q_INVOKABLE void beginTesting();
+
+    Q_INVOKABLE void testBrightness(int value);
+    Q_INVOKABLE void stopTestBrightness();
+
+    Q_INVOKABLE void testFinished();
+    Q_INVOKABLE bool getSNTestMode();
+
     //! set backlight using uart and respond the success, data should have 5 items
     //! including r, g, b, mode (0 for ui, 1 will be send internally), on/off
     //! isScheme: is true when the backlight set from scheme and false for model
@@ -118,6 +129,8 @@ public:
 
     Q_INVOKABLE void checkContractorInfo();
 
+    //! settings: main data
+    //! hasSettingsChanged: push due to settings changes.
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
 
@@ -144,6 +157,11 @@ public:
     Q_INVOKABLE void forgetDevice();
 
     Q_INVOKABLE bool checkUpdateMode();
+
+    Q_INVOKABLE void pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high);
+
+    Q_INVOKABLE void wifiConnected(bool hasInternet);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -233,6 +251,8 @@ private:
     QTimer mBacklightTimer;
     QTimer mBacklightPowerTimer;
 
+    QTimer mFetchContractorInfoTimer;
+
     // initialized in startup onStartDeviceRequested in qml
     QVariantList mBacklightModelData;
     QVariantList mBacklightActualData;  // for logging purpose
@@ -272,6 +292,9 @@ private:
     {
         return  TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
     }
+
+    // Testing
+    QList<bool> mAllTestsPassed ;
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 };

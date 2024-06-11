@@ -37,6 +37,32 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
+    //! Info icon
+    ToolButton {
+        parent: root.header.contentItem
+
+        checkable: false
+        checked: false
+        visible: initialSetup
+        implicitWidth: 64
+        implicitHeight: implicitWidth
+        icon.width: 50
+        icon.height: 50
+
+        contentItem: RoniaTextIcon {
+            anchors.fill: parent
+            font.pointSize: Style.fontIconSize.largePt
+            text: FAIcons.circleInfo
+        }
+
+        onClicked: {
+            root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
+                                         "uiSession": Qt.binding(() => uiSession)
+                                     })
+
+        }
+    }
+
     //! Start a timer once they are in technician page and check hasClient (checkSN) every 30 seconds
     Timer {
         repeat: true
@@ -82,8 +108,10 @@ BasePageView {
         }
 
         Label {
+            horizontalAlignment: Qt.AlignHCenter
             x: (parent.width - width) / 2
-            text: "Please Follow the link"
+            font.pointSize: Application.font.pointSize * 0.9
+            text: "For any issues or questions, please contact\nour tech support by calling\n(855) OWN-NUVE or (855) 696-6883."
         }
     }
 }

@@ -31,6 +31,7 @@ QtObject {
     property color      rippleColor:                    Qt.alpha(foreground, 0.125)
     property color      highlightedRippleColor:         Qt.alpha(accent, 0.24)
     property color      linkColor:                      "#44A0FF"
+    property color      testFailColor:                  "#800000"
 
     //! App specific shades of main colors
     property color      green:      "#4EAC55"

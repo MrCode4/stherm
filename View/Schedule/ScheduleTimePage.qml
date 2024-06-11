@@ -112,7 +112,8 @@ BasePageView {
 
             readonly property real delegateHeight: _hourTumbler.availableHeight / _hourTumbler.visibleItemCount
 
-            Tumbler {
+
+            RoniaTumbler {
                 id: _hourTumbler
                 anchors.fill: parent
                 currentIndex: 0
@@ -151,7 +152,7 @@ BasePageView {
 
             readonly property real delegateHeight: _minuteTumbler.availableHeight / _minuteTumbler.visibleItemCount
 
-            Tumbler {
+            RoniaTumbler {
                 id: _minuteTumbler
                 anchors.fill: parent
                 currentIndex: 0

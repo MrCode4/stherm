@@ -192,6 +192,7 @@ BasePageView {
 
             //! Adaptive brightness
             RowLayout {
+                visible: false
                 Layout.topMargin: 12
 
                 Label {
@@ -202,7 +203,8 @@ BasePageView {
 
                 Switch {
                     id: _adaptiveBrSw
-                    checked: appModel?.setting?.adaptiveBrightness ?? false
+                    checked: false && (appModel?.setting?.adaptiveBrightness ?? false)
+                    enabled: false
 
                     onCheckedChanged: {
                         onlineTimer.startTimer()
@@ -304,7 +306,7 @@ BasePageView {
                                                 _speakerSlider.value,
                                                 _tempFarenUnitBtn.checked ? AppSpec.TempratureUnit.Fah
                                                                           : AppSpec.TempratureUnit.Cel,
-                                                _adaptiveBrSw.checked,
+                                                (_adaptiveBrSw.checked && false)),
                                                 enabledAlertsSw.checked,
                                                 enabledNotificationsSw.checked);
         }

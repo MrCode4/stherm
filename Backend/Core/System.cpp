@@ -12,7 +12,7 @@
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
 const QString m_logUsername = "uploadtemp";
 const QString m_logPassword = "oDhjPTDJYkUOvM9";
-const QString m_logServerAddress = "fileserver.nuvehvac.com";
+const QString m_logServerAddress = "logs.nuvehvac.com";
 const QString m_logPath = "/opt/logs/";
 
 const QString m_partialUpdate   = QString("partialUpdate");
@@ -48,6 +48,9 @@ const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
 const QString m_IsManualUpdateSetting        = QString("Stherm/IsManualUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
+
+const char* m_pushMainSettings     = "pushMainSettings";
+const char* m_pushAutoModeSettings = "pushAutoModeSettings";
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -96,7 +99,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
 
     connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
-        setCanFetchServer(true);
+            setCanFetchServer(true);
     });
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
@@ -131,9 +134,22 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::onSnReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
+    connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, &NUVE::System::autoModeSettingsReady);
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
+    connect(mSync, &NUVE::Sync::testModeStarted, this, &NUVE::System::testModeStarted);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
-        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
+        setProperty(m_pushMainSettings, false);
+
+        startFetchActiveTimer();
+        emit pushSuccess();
+    });
+
+    connect(mSync, &NUVE::Sync::autoModePush, this, [this](bool isSuccess) {
+        setProperty(m_pushAutoModeSettings, false);
+
+        startFetchActiveTimer();
+
+        emit autoModePush(isSuccess);
     });
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
@@ -151,18 +167,33 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
         auto initialized = mLogSender.property("initialized");
         if (initialized.isValid() && initialized.toBool()){
             emit alert("Log is not sent, Please try again!");
+        } else {
+            createLogDirectoryOnServer();
         }
     });
     connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
+        bool success = true;
         if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
             qWarning() << "process did not exit cleanly" << exitCode << exitStatus << mLogSender.readAllStandardError()
                        << mLogSender.readAllStandardOutput();
-            return;
+            success = false;
         }
+
         auto initialized = mLogSender.property("initialized");
         if (!initialized.isValid() || !initialized.toBool()){
-            TRACE << "Folder created in server successfully";
-            mLogSender.setProperty("initialized", true);
+            if (success){
+                TRACE << "Folder created in server successfully";
+                mLogSender.setProperty("initialized", true);
+                sendLog();
+            } else {
+                createLogDirectoryOnServer();
+            }
+        } else {
+            if (success) {
+                emit alert("Log is sent!");
+            } else {
+                emit alert("Log is not sent, Please try again!");
+            }
         }
     });
 
@@ -186,6 +217,17 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 NUVE::System::~System()
 {
     delete mNetManager;
+}
+
+void NUVE::System::startFetchActiveTimer()
+{
+    if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
+        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
+    else
+        TRACE_CHECK(false) << "Can not start fetch timer, main settings pushing: "
+                           << property(m_pushMainSettings).toBool()
+                           << "Auto mode settings pushing: "
+                           <<property(m_pushAutoModeSettings).toBool();
 }
 
 bool NUVE::System::installUpdateService()
@@ -404,10 +446,17 @@ bool NUVE::System::findBackdoorVersion(const QString fileName)
 
 void NUVE::System::sendLog()
 {
-    if (mLogSender.state() != QProcess::NotRunning || mLogRemoteFolder.isEmpty()){
+    if (mLogSender.state() != QProcess::NotRunning){
         QString error("Previous session is in progress, please try again later.");
-        qWarning() << error << "State is :" << mLogSender.state() << "mLogRemoteFolder" << mLogRemoteFolder;
+        qWarning() << error << "State is :" << mLogSender.state();
         emit alert(error);
+        return;
+    }
+
+    auto initialized = mLogSender.property("initialized");
+    if (!initialized.isValid() || !initialized.toBool()){
+        qWarning() << "Folder was not created successfully, trying again...";
+        createLogDirectoryOnServer(); // will call the sendLog if successful
         return;
     }
 
@@ -419,16 +468,9 @@ void NUVE::System::sendLog()
     auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
     if (exitCode < 0)
     {
-        qWarning() << "Unable to create log file";
-        return;
-    }
-
-
-    auto initialized = mLogSender.property("initialized");
-    if (!initialized.isValid() || !initialized.toBool()){
-        qWarning() << "Folder was not created successfully, trying again...";
-        createLogDirectoryOnServer();
-        emit alert("There is an error, Please try again!");
+        QString error("Unable to create log file.");
+        qWarning() << error << exitCode;
+        emit alert(error);
         return;
     }
 
@@ -471,6 +513,15 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
     if (response.second)
         setUID(accessUid);
     return response;
+}
+
+QString NUVE::System::getSN(QString accessUid)
+{
+    auto response = mSync->getSN(accessUid.toStdString(), false);
+    if (response.second)
+        setUID(accessUid.toStdString());
+
+    return QString::fromStdString(response.first);
 }
 
 bool NUVE::System::getUpdate(QString softwareVersion)
@@ -528,7 +579,24 @@ void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSet
         setCanFetchServer(!hasSettingsChanged);
     }
 
+    setProperty(m_pushMainSettings, hasSettingsChanged);
     mSync->pushSettingsToServer(settings);
+}
+
+void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
+{
+    // if timer running and hasSettingsChanged stop to prevent canFetchServer issues
+    if (mFetchActiveTimer.isActive()) {
+        mFetchActiveTimer.stop();
+    }
+
+    // set when settings changed or no timer is active! otherwise let the timer do the job!
+    if (!mFetchActiveTimer.isActive()){
+        setCanFetchServer(false);
+    }
+
+    setProperty(m_pushAutoModeSettings, true);
+    mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
 
 void NUVE::System::exitManualMode()
@@ -1110,8 +1178,6 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 void NUVE::System::onSnReady()
 {
     emit snReady();
-
-    createLogDirectoryOnServer();
     
     //! Get update information when Serial number is ready.
     getUpdateInformation(true);
@@ -1121,8 +1187,25 @@ void NUVE::System::createLogDirectoryOnServer()
 {
     auto sn = serialNumber();
     // Check serial number
-    if (sn.isEmpty())
+    if (sn.isEmpty()){
+        QString error("Serial number empty! can not create log folder!");
+        qWarning() << error;
+        emit alert(error);
         return;
+    }
+
+    int tryCount = mLogSender.property("tryCount").toInt();
+    if (tryCount < 3) {
+        tryCount++;
+        mLogSender.setProperty("tryCount", tryCount);
+    } else {
+        QString error("Can not create log folder! Try again later.");
+        qWarning() << error;
+        emit alert(error);
+        tryCount = 0; // reset the counter for next time!
+        mLogSender.setProperty("tryCount", tryCount);
+        return;
+    }
 
     mLogRemoteFolder = m_logPath + sn;
     // Create remote path in case it doesn't exist, needed once! with internet access
