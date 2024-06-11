@@ -214,7 +214,7 @@ struct RelayConfigs
                 w3 == rc.w3 &&
                 o_b == rc.o_b &&
                 acc1n == rc.acc1n &&
-                acc1n == rc.acc1p);
+                acc1p == rc.acc1p);
     }
 
     //! we can not change multiple relays at once! so we need to find change steps to send with some delays,
