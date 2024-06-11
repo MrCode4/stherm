@@ -347,7 +347,7 @@ BasePageView {
                 if (deviceController.setSettings(AppSpec.defaultBrightness,
                                              AppSpec.defaultVolume,
                                              AppSpec.TempratureUnit.Fah,
-                                             false, false, false)){
+                                             false, true, true)) {
                     deviceController.pushSettings()
                     makeCopyOfSettings()
                 } else {

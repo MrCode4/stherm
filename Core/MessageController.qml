@@ -93,7 +93,6 @@ QtObject {
                                                                                     messageModel.sourceType === Message.SourceType.Server));
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
-
                              var messageDatetime = message.datetime === null ? "" : message.datetime;
                              if (foundMessage && foundMessage.datetime === messageDatetime &&
                                  foundMessage.type === type) {
@@ -109,7 +108,6 @@ QtObject {
 
     function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
     {
-
         if (message.length === 0) {
             console.log("addNewMessageFromData: The message is empty!")
            return;
