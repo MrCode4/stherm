@@ -6,6 +6,7 @@
 #include <QProcess>
 #include <QTimer>
 #include <QVariant>
+#include <QFileSystemWatcher>
 
 #include "NmcliObserver.h"
 #include "WifiInfo.h"
@@ -210,14 +211,19 @@ private:
     void    parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStatus exitStatus);
 
     /*!
-     * \brief refreshProfiles
-     */
-    void    updateSavedWifis();
-
-    /*!
      * \brief doRefreshWifi Simply performs the nmcli refresh command
      */
     void    doRefreshWifi();
+
+    /*!
+     * \brief scanConProfiles Use nmcli to get the list of connections
+     */
+    void    scanConProfiles();
+
+    /*!
+     * \brief initializeConProfilesWatcher
+     */
+    void    initializeConProfilesWatcher();
 
 private slots:
     /*!
@@ -228,6 +234,12 @@ private slots:
      * \param exitStatus
      */
     void    onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+    /*!
+     * \brief updateConProfilesList Updates connection profiles list from result of th process
+     * started in \ref scanConProfiles()
+     */
+    void    updateConProfilesList(int exitCode, QProcess::ExitStatus exitStatus);
 
 signals:
     /*!
@@ -314,4 +326,10 @@ private:
      * \brief mRescanInRefresh Whether rescan should be forced or not
      */
     bool                    mRescanInRefresh;
+
+    /*!
+     * \brief mConProfilesWatcher This watcher is used to get notified about changes in the wifi
+     * connection profiles (only add and remove)
+     */
+    QFileSystemWatcher*     mConProfilesWatcher;
 };
