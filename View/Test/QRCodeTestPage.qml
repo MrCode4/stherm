@@ -85,7 +85,6 @@ BasePageView {
     ToolButton {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 5
 
         checkable: false
         checked: false
