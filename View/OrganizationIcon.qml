@@ -14,7 +14,6 @@ Item {
     property I_Device appModel
 
     Image {
-
         anchors.centerIn: parent
         fillMode: Image.PreserveAspectFit
         source: appModel.contactContractor.iconSource

@@ -490,7 +490,7 @@ BasePageView {
             schedule.enable = true;
 
             //! Perform saving (and disconnecting from ScheduleOverlapPopup's signal
-            saveScheduleAndDisconnectScheduleOverlapPopup()
+            saveScheduleAndDisconnectScheduleOverlapPopup();
         }
 
         //! Makes editing schedule saved and disabled
@@ -591,11 +591,17 @@ BasePageView {
         _root.schedule.humidity = internal.scheduleToEdit.humidity;
         _root.schedule.startTime = internal.scheduleToEdit.startTime;
         _root.schedule.endTime = internal.scheduleToEdit.endTime;
-        _root.schedule.repeats = [...internal.scheduleToEdit.repeats];
+        _root.schedule.repeats = internal.scheduleToEdit.repeats;
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
 
         // Emit schedule changed to call updateCurrentSchedules function in schedule controller.
         device.schedulesChanged();
+
+        //Displays a toast message for enabled schedule
+        if (schedule.enable) {
+            var dt = schedulesController.prepareToastMessage(schedule);
+            uiSession.toastManager.showToast(dt.message, dt.detail);
+        }
 
         deviceController.pushSettings();
 

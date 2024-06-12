@@ -22,12 +22,69 @@ BasePageView {
         deviceController.deviceControllerCPP.system.testMode = true;
     }
 
+    onVisibleChanged: {
+        if (visible) {
+            infoPopup.open()
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
 
     property string pointsState : "0,0,0,0,0,0,0,0,0"
 
+    function nextPage() {
+        failurePopuptimer.stop()
+        if (_root.StackView.view) {
+            _root.StackView.view.push("qrc:/Stherm/View/Test/ColorTestPage.qml", {
+                                          "uiSession": uiSession,
+                                          "backButtonVisible" : backButtonVisible
+                                      })
+        }
+    }
+
+    onPointsStateChanged: {
+        if (pointsState === "1,1,1,1,1,1,1,1,1") {
+            backButtonVisible = false;
+            deviceController.deviceControllerCPP.writeTestResult("Touch test", true)
+            nextPage()
+        }
+    }
+
     property var points: ({})
+
+    InfoPopup {
+        id: infoPopup
+        message: "Touch test"
+        detailMessage: "Test needs to be<br>completed in " + seconds + " seconds"
+        visible: true
+
+        property int seconds: 5
+
+        onAccepted: {
+            failurePopuptimer.start()
+            _root.pointsState = "0,0,0,0,0,0,0,0,0"
+        }
+    }
+
+    TestFailedPopup {
+        id: failPopup
+        errorMessage: "Touch test failed"
+        onRetryClicked: infoPopup.open()
+        onContinueClicked: {
+            backButtonVisible = true;
+            deviceController.deviceControllerCPP.writeTestResult("Touch test", false, "The touchscreen is not working or it failed to register within " + infoPopup.seconds + " seconds")
+            nextPage()
+        }
+    }
+
+    Timer {
+        id: failurePopuptimer
+        interval: infoPopup.seconds * 1000
+        onTriggered: failPopup.open()
+        repeat: false
+        running: false
+    }
 
     //! Next button (loads ColorTestPage)
     ToolButton {
@@ -36,14 +93,7 @@ BasePageView {
             text: FAIcons.arrowRight
         }
         enabled: pointsState === "1,1,1,1,1,1,1,1,1"
-        onClicked: {
-            //! Load next page
-            if (_root.StackView.view) {
-                _root.StackView.view.push("qrc:/Stherm/View/Test/ColorTestPage.qml", {
-                                              "uiSession": uiSession
-                                          })
-            }
-        }
+        onClicked: nextPage()
     }
 
     GridLayout {

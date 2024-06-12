@@ -67,6 +67,8 @@ public:
     //! TODO handles only the brightness for now
     bool setSettings(QVariantList data);
 
+    void setBrightnessTest(int brightness, bool test = true);
+
     void sendRelays();
 
     QString getNRF_HW() const;
@@ -96,6 +98,8 @@ signals:
     void adaptiveBrightness(double adaptiveBrightness);
 
     void fanStatusUpdated(bool off);
+
+    void relaysUpdated(STHERM::RelayConfigs relays);
 
 private slots:
     void wtdExec();

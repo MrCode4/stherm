@@ -15,11 +15,11 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Alerts/Notifications"
+    title: "Alerts/Messages"
 
     /* Children
      * ****************************************************************************************/
-    //! A list of all the alerts/notifications of app
+    //! A list of all the alerts/Messages of app
     ListView {
         id: _alnoListV
 

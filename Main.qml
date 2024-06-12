@@ -176,6 +176,7 @@ ApplicationWindow {
     UiSession {
         id: uiSessionId
         popupLayout: popUpLayoutId
+        toastManager:toastManagerId
     }
 
     StackLayout {
@@ -277,7 +278,9 @@ ApplicationWindow {
             //! Increase key height and keyboard height
             VirtualKeyboardSettings.locale = "en_US";
 
+            //! Documents in KeyboardStyle QML Type
             keyboard.style.keyPanel = keyboardKeyCompo;
+            keyboard.style.spaceKeyPanel = spaceStyleCompo;
             keyboard.style.keyboardDesignHeight = keyboard.style.keyboardDesignHeight * 1.3
             keyboard.style.keyboardHeight = keyboard.style.keyboardDesignHeight / 3.8;
         }
@@ -411,6 +414,31 @@ ApplicationWindow {
          }
     }
 
+    //! Style of space key in virtual keyboard
+    Component {
+        id: spaceStyleCompo
+
+        KeyPanel {
+            id: keypanel
+
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 2
+                color: Qt.darker("#4F5B62", keypanel.control.pressed ? 1.1 : 1);
+                radius: 4
+
+                Text {
+                    anchors.centerIn: parent
+                    font.family: Application.font.family
+                    font.pixelSize: Application.font.pixelSize * 0.8
+                    font.capitalization: keypanel.control.uppercased ? Font.AllUppercase : Font.MixedCase
+                    color: Qt.darker(Style.foreground, keypanel.control.pressed ? 1.5 : 1)
+                    text: "English"
+                }
+            }
+        }
+    }
+
     //! SplashScreen Loader
     Loader {
         id: _splashLoader
@@ -441,5 +469,18 @@ ApplicationWindow {
     //! MessagePopupView
     MessagePopupView {
         uiSession: uiSessionId
+    }
+
+    //ToastManager component for managing and displaying registered toasts
+    ToastManager{
+        id: toastManagerId
+        toastComponent:toastViewId
+    }
+
+    //Toast view for displaying toast messages
+    Toast{
+        id:toastViewId
+        x: (parent.width - width) / 2
+        y: parent.height - height - 16
     }
 }

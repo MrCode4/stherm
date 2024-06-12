@@ -68,6 +68,10 @@ public:
     //! Get serial number from server
     std::pair<std::string, bool> getSN(cpuid_t accessUid);
 
+    //! Get serial number from server, call from QML and return serial number
+    //! Some signals are block in this function.
+    Q_INVOKABLE QString getSN(QString accessUid);
+
     //! Get update
     //! todo: process response packet
     //! TEMP: "022"
@@ -90,11 +94,11 @@ public:
 
     Q_INVOKABLE void getBackdoorInformation();
 
-    Q_INVOKABLE void wifiConnected(bool hasInternet);
-
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
     Q_INVOKABLE void exitManualMode();
+
+    void wifiConnected(bool hasInternet);
 
     void setCanFetchServer(bool canFetch);
 
@@ -125,6 +129,8 @@ public:
     bool updateAvailable();
 
     bool testMode();
+
+    bool has_sshPass();
 
     /*!
      * \brief updateSequenceOnStart gets if the app just updated and set the state false so this happens only once
@@ -183,6 +189,12 @@ public:
 
     bool hasFetchSuccessOnce() const;
 
+    //! Manage quiet/night mode in system
+    void setNightModeRunning(const bool running);
+
+    //! Push auto mode settings to server
+    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
+
 protected slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply);
@@ -194,6 +206,7 @@ protected slots:
 signals:
     void snReady();
     void settingsReady(QVariantMap settings);
+    void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void pushFailed();
 
     void latestVersionChanged();
@@ -231,7 +244,15 @@ signals:
 
     void isManualModeChanged();
 
+    void serialNumberChanged();
+
     void updateNoChecked();
+
+    void autoModePush(bool isSuccess);
+
+    void pushSuccess();
+
+    void testModeStarted();
 
 private:
 
@@ -268,6 +289,8 @@ private:
     //! Check and prepare the system to start download process.
     void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false, const bool isResetVersion = false);
 
+    //! Check the pushing progress and start the fetch timer.
+    void startFetchActiveTimer();
 
 private:
     Sync *mSync;
@@ -310,6 +333,8 @@ private:
     
     //! System on test mode or not
     bool mTestMode;
+
+    bool mIsNightModeRunning;
 
     QTimer mFetchActiveTimer;
 
