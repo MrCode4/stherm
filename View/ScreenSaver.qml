@@ -75,6 +75,48 @@ Popup {
                     text: `\u00b0${unit}`
                 }
             }
+
+            RowLayout {
+                Layout.alignment: Qt.AlignCenter
+
+
+                spacing: 10
+                Image {
+                    id: swUpdateIcon
+
+                    visible: deviceController.deviceControllerCPP.system.updateAvailable
+                    fillMode: Image.PreserveAspectFit
+                    source: AppSpec.swUpdateIcon
+                    sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+                    sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+
+                    cache: true
+                }
+
+                Image {
+                    id: alertIcon
+
+                    visible: false
+                    fillMode: Image.PreserveAspectFit
+                    source: AppSpec.alertIcon
+                    sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+                    sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+
+                    cache: true
+                }
+
+                Image {
+                    id: messageIcon
+
+                    visible: false
+                    fillMode: Image.PreserveAspectFit
+                    source: AppSpec.messageIcon
+                    sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+                    sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+
+                    cache: true
+                }
+            }
         }
 
         //! Spacer

@@ -167,4 +167,13 @@ AppSpecCPP {
 
     //! Air quality alert threshold
     readonly property real airQualityAlertThreshold: 10.0
+
+    //! Icon for show notification when a software update is available
+    readonly property string swUpdateIcon: "qrc:/Stherm/Images/icons8-installing-updates-50.png"
+
+    //! Icon for show notification when an alert is available (Use in the screen saver page)
+    readonly property string alertIcon: "qrc:/Stherm/Images/icons8-error-48.png"
+
+    //! Icon for show notification when a message is available (Use in the screen saver page)
+    readonly property string messageIcon: "qrc:/Stherm/Images/icons8-installing-updates-50.png"
 }
