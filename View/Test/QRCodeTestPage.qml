@@ -81,4 +81,31 @@ BasePageView {
         sourceSize.height: height
         fillMode: Image.PreserveAspectFit
     }
+
+    ToolButton {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 5
+
+        checkable: false
+        checked: false
+        visible: true
+        implicitWidth: 64
+        implicitHeight: implicitWidth
+        icon.width: 50
+        icon.height: 50
+
+        contentItem: RoniaTextIcon {
+            anchors.fill: parent
+            font.pointSize: Style.fontIconSize.largePt
+            text: FAIcons.circleInfo
+        }
+
+        onClicked: {
+            root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
+                                         "uiSession": Qt.binding(() => uiSession)
+                                     })
+
+        }
+    }
 }
