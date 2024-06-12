@@ -12,8 +12,11 @@ Popup {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! UiSession
+    property UiSession uiSession
+
     //! Reference to I_DeviceController
-    property I_DeviceController     deviceController
+    property I_DeviceController     deviceController: uiSession.deviceController
 
     //! Reference to I_Device
     property I_Device               device: deviceController?.device ?? null
@@ -79,7 +82,6 @@ Popup {
             RowLayout {
                 Layout.alignment: Qt.AlignCenter
 
-
                 spacing: 10
                 Image {
                     id: swUpdateIcon
@@ -96,7 +98,7 @@ Popup {
                 Image {
                     id: alertIcon
 
-                    visible: false
+                    visible: uiSession.hasOpenedAlerts
                     fillMode: Image.PreserveAspectFit
                     source: AppSpec.alertIcon
                     sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
@@ -108,7 +110,7 @@ Popup {
                 Image {
                     id: messageIcon
 
-                    visible: false
+                    visible: uiSession.hasOpenedMessages
                     fillMode: Image.PreserveAspectFit
                     source: AppSpec.messageIcon
                     sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
