@@ -180,6 +180,11 @@ void Relay::setDehumidifierState(const bool on) {
 
 void Relay::updateHumidityWiring(AppSpecCPP::AccessoriesWireType mAccessoriesWireType)
 {
+    if (mAccessoriesWireType == AppSpecCPP::None) {
+        setAllHumidityWiringsOff();
+        return;
+    }
+
     mRelay.acc2  = (mAccessoriesWireType == AppSpecCPP::T2PWRD)  ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
     mRelay.acc1p = (mAccessoriesWireType == AppSpecCPP::T1PWRD)  ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
     mRelay.acc1n = (mAccessoriesWireType == AppSpecCPP::T1Short) ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;

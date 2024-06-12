@@ -41,6 +41,9 @@ private:
     //! Auto mode loop used in schedule
     void AutoModeLoop();
 
+    //! Update relays but not sent to device.
+    //! None sets the humidity wirings to off.
+    void updateRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType = AppSpecCPP::None);
 
 private:
     Relay*  mRelay;

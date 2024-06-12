@@ -83,17 +83,52 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
         mAccessoriesWireType = mSystemSetup->systemAccessories->getAccessoriesWireType();
         TRACE<< "Accessories Wire Type: "<< mAccessoriesWireType;
 
-        restartWork();
+        if (mAccessoriesWireType == AppSpecCPP::None) {
+            stopWork = true;
+
+        } else {
+            restartWork();
+        }
     });
 }
 
 void HumidityScheme::VacationLoop()
 {
-    if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
+    // In vacation range
+    if ((mVacationMaximumHumidity - mCurrentHumidity) > 0.001 &&
+        (mVacationMinimumHumidity - mCurrentHumidity) < 0.001) {
+        updateRelays();
+        return;
+    }
 
-    } else if ((mVacationMaximumHumidity - mCurrentHumidity) < 0.001) {
+    if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
-       // Fan On
+        if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
+            if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling) {
+                updateRelays();
+
+            } else {
+
+                // Humidity loop
+                while ((mVacationMaximumHumidity - mCurrentHumidity) > 0.001) {
+                    updateRelays(mAccessoriesWireType);
+                }
+
+                // Exit from loop and Off the humidity wiring.
+                updateRelays();
+            }
+
+
+        }
+
+        // Dehumidifiers can only reduce humidity, and may not be able to consistently maintain the desired vacation humidity range.
+        // you can be confident that a dehumidifier will always lower the humidity to mVacationMaximumHumidity
+    } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier &&
+               (mVacationMaximumHumidity - mCurrentHumidity) < 0.001 && (mVacationMinimumHumidity - mCurrentHumidity) < 0.001 ) {
+        updateRelays(mAccessoriesWireType);
+
+    } else {
+        updateRelays();
     }
 }
 
@@ -114,4 +149,9 @@ void HumidityScheme::setSchedule(ScheduleCPP *newSchedule)
         return;
 
     mSchedule = newSchedule;
+}
+
+void HumidityScheme::updateRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType)
+{
+    mRelay->updateHumidityWiring(accessoriesWireType);
 }
