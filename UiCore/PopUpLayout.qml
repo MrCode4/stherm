@@ -42,7 +42,7 @@ Item {
                 popupQueue[0].open();
             }
 
-            checkScreenSaver();
+            // checkScreenSaver();
         }
     }
 
@@ -74,7 +74,7 @@ Item {
             }
         }
 
-        checkScreenSaver();
+        // checkScreenSaver();
     }
 
     function closeAllPopups()
@@ -90,6 +90,7 @@ Item {
     }
 
     //! Alerts must be seen from a distance by the user
+    //! Unused
     function checkScreenSaver() {
         let alertNotifPopup = _internal.popupQueue.find(popup => (popup instanceof AlertNotifPopup));
 
