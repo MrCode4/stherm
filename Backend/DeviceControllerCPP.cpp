@@ -865,7 +865,7 @@ void DeviceControllerCPP::testFinished()
         }
     }
 
-    if (QFile::rename("test_results.csv", newFileName)) {
+    if (!QFile::rename("test_results.csv", newFileName)) {
         TRACE << "Could not create the file: " << newFileName;
     }
 
@@ -883,7 +883,7 @@ bool DeviceControllerCPP::getSNTestMode() {
     auto snTestMode = settings.value(m_RestartAfetrSNTestMode, false).toBool();
     settings.setValue(m_RestartAfetrSNTestMode, false);
 
-    TRACE << "testFinishedsnTestMode" << snTestMode;
+    TRACE << "snTestMode" << snTestMode;
     return snTestMode;
 }
 
