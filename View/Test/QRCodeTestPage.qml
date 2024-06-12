@@ -46,6 +46,9 @@ BasePageView {
         }
 
         onClicked: {
+            //! Finish test, add delay to set relays
+            deviceController.deviceControllerCPP.testFinished();
+
             var sn = system.serialNumber;
 
             if (sn.length === 0) {
@@ -55,8 +58,6 @@ BasePageView {
             }
 
             if (sn.length > 0) {
-                //! Finish test, add delay to set relays
-                deviceController.deviceControllerCPP.testFinished();
                 rebootPopup.open();
 
             } else {
