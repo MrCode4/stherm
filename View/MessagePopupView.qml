@@ -26,6 +26,8 @@ Item {
                                                                            element.type === Message.Type.SystemAlert ||
                                                                            element.type === Message.Type.SystemNotification));
 
+        uiSession.hasOpenedAlerts = msgAlertIndex > -1;
+
         console.log("hasOpenedAlerts ", uiSession.hasOpenedAlerts, msgAlertIndex)
 
         var msgMessageIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Notification));
