@@ -104,7 +104,6 @@ BasePageView {
             root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
                                          "uiSession": Qt.binding(() => uiSession)
                                      })
-
         }
     }
 }
