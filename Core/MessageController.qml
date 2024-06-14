@@ -360,29 +360,26 @@ QtObject {
 
     function checkWifiConnection() : bool {
 
-        // Wifi message type is SystemNotification, so related to alerts
-        if (!device.setting.enabledAlerts)
-            return NetworkInterface.connectedWifi;
+        var connectedWifi = NetworkInterface.connectedWifi;
 
-        if (!NetworkInterface.connectedWifi) {
+        // Wifi message type is SystemNotification, so related to alerts
+        if (device.setting.enabledAlerts && !connectedWifi) {
             var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
-            return false;
         }
 
-        return true;
+        return NetworkInterface.connectedWifi;
     }
 
     function checkInternetConnection() : bool {
-        // Wifi message type is SystemNotification, so related to alerts
-        if (!device.setting.enabledAlerts)
-            return NetworkInterface.hasInternet;
+        var hasInternet = NetworkInterface.connectedWifi;
 
-        if (!NetworkInterface.hasInternet) {
+        // Wifi message type is SystemNotification, so related to alerts
+        if (device.setting.enabledAlerts && !hasInternet) {
             var message = "No internet connection. Please check your internet connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
-            return false;
         }
-        return true;
+
+        return hasInternet;
     }
 }
