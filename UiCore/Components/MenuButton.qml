@@ -21,6 +21,8 @@ ToolButton {
     contentItem: Item {
 
         //! Red box
+        //! Use an icon instead for updates.
+        //! It might also be useful for other notifications in the future.
         Rectangle {
             id: notificationRect
 
