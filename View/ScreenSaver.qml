@@ -103,7 +103,7 @@ Popup {
                 Image {
                     id: alertIcon
 
-                    visible: uiSession.hasOpenedAlerts
+                    visible: uiSession.hasUnreadAlerts
                     fillMode: Image.PreserveAspectFit
                     source: AppSpec.alertIcon
                     sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
@@ -115,7 +115,7 @@ Popup {
                 Image {
                     id: messageIcon
 
-                    visible: uiSession.hasOpenedMessages
+                    visible: uiSession.hasUnreadMessages
                     fillMode: Image.PreserveAspectFit
                     source: AppSpec.messageIcon
                     sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt

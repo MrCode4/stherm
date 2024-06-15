@@ -60,6 +60,8 @@ QtObject {
         }
     }
 
+    Component.onCompleted: device.messagesChanged()
+
     /* Signals
      * ****************************************************************************************/
     signal newMessageReceived(Message message)
@@ -86,11 +88,11 @@ QtObject {
 
         messages.forEach(message => {
                              if (message.message === "")
-                                return;
+                             return;
 
                              // Find Schedule in the model
                              var foundMessage = device.messages.find(messageModel => (message.message === messageModel.message &&
-                                                                                    messageModel.sourceType === Message.SourceType.Server));
+                                                                                      messageModel.sourceType === Message.SourceType.Server));
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
                              var messageDatetime = message.datetime === null ? "" : message.datetime;
@@ -110,7 +112,7 @@ QtObject {
     {
         if (message.length === 0) {
             console.log("addNewMessageFromData: The message is empty!")
-           return;
+            return;
         }
 
         if (!activeAlerts) {
@@ -118,17 +120,36 @@ QtObject {
             return;
         }
 
+        // notifyUser: Save message to model and hide from the user's view
+        var notifyUser = true;
+
+        var modifiedIsRead = isRead;
+
         // Check Alerts with enabledAlerts in settings
         if (!device.setting.enabledAlerts && (type === Message.Type.SystemNotification ||
-                                       type === Message.Type.Alert)) {
-            console.log("Ignore alerts due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
-            return;
+                                              type === Message.Type.Alert)) {
+            // Temporary, can mark messages received from the server as "read" to prevent their display upon alerts re-enablement.
+            if (sourceType === Message.SourceType.Server) {
+                notifyUser = false;
+                modifiedIsRead = true;
+
+            } else {
+                console.log("Ignore alerts due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
+                return;
+            }
         }
 
         // Check Notifications with enabledNotifications in settings
         if (!device.setting.enabledNotifications && type === Message.Type.Notification) {
-            console.log("Ignore notifications due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
-            return;
+            // Temporary, can mark messages received from the server as "read" to prevent their display upon notification re-enablement.
+            if (sourceType === Message.SourceType.Server) {
+                notifyUser = false;
+                modifiedIsRead = true;
+
+            } else {
+                console.log("Ignore notifications due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
+                return;
+            }
         }
 
         var newMessage;
@@ -145,7 +166,7 @@ QtObject {
         newMessage.type = type;
         newMessage.message = message;
         newMessage.datetime = datetime;
-        newMessage.isRead = isRead;
+        newMessage.isRead = modifiedIsRead;
         newMessage.sourceType = sourceType;
 
         if (type !== Message.Type.SystemNotification) {
@@ -155,7 +176,8 @@ QtObject {
 
         AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
 
-        newMessageReceived(newMessage);
+        if (notifyUser)
+            newMessageReceived(newMessage);
     }
 
     function addNewMessage(message: Message)
@@ -199,19 +221,19 @@ QtObject {
 
         function onHasInternetChanged() {
             //! If wifi is connected, internet will be check after one minute.
-           if (NetworkInterface.connectedWifi)
-               checkInternetTimer.restart();
+            if (NetworkInterface.connectedWifi)
+                checkInternetTimer.restart();
 
-           if (NetworkInterface.hasInternet) {
-               // Close the alert
-               closeWifiInternetAlert();
-           }
+            if (NetworkInterface.hasInternet) {
+                // Close the alert
+                closeWifiInternetAlert();
+            }
         }
 
         function onConnectedWifiChanged() {
             checkInternetTimer.restart();
         }
- 
+
         //! wrong password alert.
         function onIncorrectWifiPassword() {
             if (!device.setting.enabledAlerts)

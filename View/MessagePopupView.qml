@@ -20,20 +20,6 @@ Item {
     //! Keep the show/open messages
     property var messagesShowing: []
 
-    //! It should be moved to messageController, I did in old branch
-    onMessagesShowingChanged: {
-        var msgAlertIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Alert ||
-                                                                           element.type === Message.Type.SystemAlert ||
-                                                                           element.type === Message.Type.SystemNotification));
-
-        uiSession.hasOpenedAlerts = msgAlertIndex > -1;
-
-        console.log("hasOpenedAlerts ", uiSession.hasOpenedAlerts, msgAlertIndex)
-
-        var msgMessageIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Notification));
-        uiSession.hasOpenedMessages = msgMessageIndex > -1;
-    }
-
     /* Children
      * ****************************************************************************************/
     Connections {
@@ -95,6 +81,9 @@ Item {
                     messagesShowingChanged();
                 }
 
+                // Message Updated
+                uiSession.appModel.messagesChanged();
+
                 destroy(this);
             }
         }
@@ -109,6 +98,24 @@ Item {
 
         message: Message {
             type: Message.Type.SystemNotification
+        }
+
+        onOpened: {
+            checkUnreadMessages();
+        }
+
+        onClosed: {
+            messageController.closeWifiInternetAlert();
+            checkUnreadMessages();
+        }
+    }
+
+    //! TODO: Move to messsage controller
+    property Connections  messagesDevice: Connections {
+        target: uiSession.appModel
+
+        function onMessagesChanged() {
+            checkUnreadMessages();
         }
     }
 
@@ -137,6 +144,38 @@ Item {
 
             //! Ask PopUpLayout to open popup
             uiSession.popupLayout.displayPopUp(newAlertPopup);
+        }
+    }
+
+
+    //! Check unread messages and Update the uisseion parameters
+    //! TODO: move to messageController
+    function checkUnreadMessages() {
+
+        // Check unread messages
+        var msgAlertIndex = uiSession.appModel.messages.findIndex((element, index) => (element.type === Message.Type.Alert ||
+                                                                           element.type === Message.Type.SystemAlert ||
+                                                                           element.type === Message.Type.SystemNotification) && !element.isRead);
+
+        uiSession.hasUnreadAlerts = msgAlertIndex > -1;
+
+        // Wifi alerts (and maybe another types in future) are not yet supported in the model.
+        if (!uiSession.hasUnreadAlerts) {
+            msgAlertIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Alert ||
+                                                                           element.type === Message.Type.SystemAlert ||
+                                                                           element.type === Message.Type.SystemNotification));
+
+            uiSession.hasUnreadAlerts = msgAlertIndex > -1;
+        }
+
+        // Check notifications
+        var msgMessageIndex = uiSession.appModel.messages.findIndex((element, index) => (element.type === Message.Type.Notification) && !element.isRead);
+        uiSession.hasUnreadMessages = msgMessageIndex > -1;
+
+        //! To manage the messages that not exist in the model
+        if (! uiSession.hasUnreadMessages) {
+            msgMessageIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Notification));
+            uiSession.hasUnreadMessages = msgMessageIndex > -1;
         }
     }
 }
