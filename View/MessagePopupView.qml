@@ -151,6 +151,16 @@ Item {
     //! Check unread messages and Update the uisseion parameters
     //! TODO: move to messageController
     function checkUnreadMessages() {
+        existUnreadAlerts();
+        existUnreadMessages();
+    }
+
+    //! Exist unread alerts?
+    function existUnreadAlerts() {
+        if (!uiSession.appModel.setting.enabledAlerts) {
+            uiSession.hasUnreadAlerts = false;
+            return;
+        }
 
         // Check unread messages
         var msgAlertIndex = uiSession.appModel.messages.findIndex((element, index) => (element.type === Message.Type.Alert ||
@@ -166,6 +176,15 @@ Item {
                                                                            element.type === Message.Type.SystemNotification));
 
             uiSession.hasUnreadAlerts = msgAlertIndex > -1;
+        }
+    }
+
+    //! Exist unread messages?
+    function existUnreadMessages() {
+
+        if (!uiSession.appModel.setting.enabledNotifications) {
+            uiSession.hasUnreadAlerts = false;
+            return;
         }
 
         // Check notifications

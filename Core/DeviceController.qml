@@ -479,11 +479,24 @@ I_DeviceController {
         // Mute alerts update locally.
         if (device.setting.enabledAlerts !== enabledAlerts) {
             device.setting.enabledAlerts = enabledAlerts;
+            if (enabledAlerts)
+                // To call checkUnreadMessages function from MessagePopupView,
+                // TODO: Call this function from messageController
+                device.messagesChanged();
+            else
+                uiSession.hasUnreadAlerts = false
         }
 
         // Mute notifications update locally.
         if (device.setting.enabledNotifications !== enabledNotifications) {
             device.setting.enabledNotifications = enabledNotifications;
+
+            if (enabledNotifications)
+                // To call checkUnreadMessages function from MessagePopupView,
+                // TODO: Call this function from messageController
+                device.messagesChanged();
+            else
+                uiSession.hasUnreadMessages = false
         }
 
         var send_data = [brightness, volume, temperatureUnit, adaptive];
