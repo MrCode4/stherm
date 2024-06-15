@@ -63,9 +63,6 @@ public:
     //! Set requested Temperature
     void setSetPointTemperature(double newSetPointTemperature);
 
-    //! Set requested Humidity
-    void setRequestedHumidity(double newHumidity);
-
     //! Restart the worker thread
     void restartWork();
 

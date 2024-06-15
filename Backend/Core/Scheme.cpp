@@ -166,16 +166,6 @@ void Scheme::setSetPointTemperature(double newSetPointTemperature)
     TRACE << "mSetPointTemperature changed";
 }
 
-void Scheme::setRequestedHumidity(double newHumidity)
-{
-    if (qAbs(mSetPointHimidity - newHumidity) < 0.001)
-        return;
-
-    mSetPointHimidity = newHumidity;
-
-    // Restart is not necessary
-}
-
 void Scheme::run()
 {
     TRACE << "-- startWork is running." << QThread::currentThreadId();
