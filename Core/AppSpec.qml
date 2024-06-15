@@ -175,5 +175,5 @@ AppSpecCPP {
     readonly property string alertIcon: "qrc:/Stherm/Images/icons8-error-48.png"
 
     //! Icon for show notification when a message is available (Use in the screen saver page)
-    readonly property string messageIcon: "qrc:/Stherm/Images/icons8-installing-updates-50.png"
+    readonly property string messageIcon: "qrc:/Stherm/Images/icons8-message-50.png"
 }
