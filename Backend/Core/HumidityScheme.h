@@ -50,6 +50,9 @@ private:
     //! None sets the humidity wirings to off.
     void updateRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType = AppSpecCPP::None);
 
+    //! Check the humidity range from vacation
+    bool checkVacationRange();
+
 private:
     Relay*  mRelay;
     DeviceAPI *mDeviceAPI;
