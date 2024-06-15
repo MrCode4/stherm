@@ -24,17 +24,6 @@ class Scheme : public QThread
 public:
     explicit Scheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
 
-    enum ChangeType {
-        ctNone               = 0,
-        ctCurrentTemperature = 1 << 0,
-        ctSetTemperature     = 1 << 1,
-        ctMode               = 1 << 2,
-        ctDefault            = ctSetTemperature | ctMode,
-        ctAll                = ctDefault | ctCurrentTemperature,
-    };
-    Q_ENUM(ChangeType)
-    Q_DECLARE_FLAGS(ChangeTypes, ChangeType);
-
     void stop();
     ~Scheme();
 
@@ -135,7 +124,7 @@ private:
 
     //! To monitor data change: current temperature, set temperature, mode
     //! use low values for timeout in exit cases as it might had abrupt changes previously
-    int waitLoop(int timeout = 10000, ChangeTypes overrideModes = ChangeType::ctAll);
+    int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll);
 
     //! Update humidifire and dehumidifire after changes: mode, set point humidity,
     //! current humidity, and humidifier Id
@@ -224,5 +213,3 @@ private:
 
     void fanWork(bool isOn);
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(Scheme::ChangeTypes)

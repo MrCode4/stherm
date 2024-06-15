@@ -230,7 +230,7 @@ void Scheme::run()
             break;
 
         // all should be off! we can assert here
-        waitLoop(RELAYS_WAIT_MS, ctNone);
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
     }
 
     TRACE << "-- startWork Stopped. working time(ms): " << mTiming->totUptime.elapsed();
@@ -281,9 +281,9 @@ void Scheme::CoolingLoop()
             bool obUpdated = updateOBState(AppSpecCPP::Cooling);
             if (heatPump && obUpdated && !stopWork){
                 // sysDelay
-                waitLoop(mSystemSetup->systemRunDelay * 60000, ctMode);
+                waitLoop(mSystemSetup->systemRunDelay * 60000, AppSpecCPP::ctMode);
             } else if (mTiming->s1Offtime.isValid() && mTiming->s1Offtime.elapsed() < 2 * 60 * 1000) {
-                waitLoop(RELAYS_WAIT_MS, ctMode);
+                waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
 
                 if (stopWork)
                     break;
@@ -406,7 +406,7 @@ void Scheme::EmergencyLoop()
 void Scheme::OffLoop()
 {
     //TODO
-    waitLoop(-1, ctMode);
+    waitLoop(-1, AppSpecCPP::ctMode);
 }
 
 bool Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
@@ -435,7 +435,7 @@ void Scheme::internalCoolingLoopStage1()
     mTiming->s2hold = false;
     mTiming->alerts = false;
     sendRelays();
-    waitLoop(RELAYS_WAIT_MS, ctNone);
+    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
     while (effectiveTemperature() - mCurrentTemperature < STAGE1_OFF_RANGE) {
         TRACE << mCurrentTemperature << effectiveTemperature() << mRelay->relays().y2
@@ -460,7 +460,7 @@ void Scheme::internalCoolingLoopStage1()
         if (stopWork)
             break;
 
-        waitLoop(RELAYS_WAIT_MS, ctMode);
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
 
         if (stopWork)
             break;
@@ -528,7 +528,7 @@ void Scheme::internalHeatingLoopStage1()
 {
     if (!stopWork){
         // sysDelay
-        waitLoop(mSystemSetup->systemRunDelay * 60000, ctMode);
+        waitLoop(mSystemSetup->systemRunDelay * 60000, AppSpecCPP::ctMode);
     }
 
     if (stopWork)
@@ -545,7 +545,7 @@ void Scheme::internalHeatingLoopStage1()
     mTiming->alerts = false;
     // not sending?
     sendRelays();
-    waitLoop(RELAYS_WAIT_MS, ctNone);
+    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
     while (mCurrentTemperature - effectiveTemperature() < STAGE1_OFF_RANGE) {
         TRACE_CHECK(true) << mRelay->relays().w2 << mSystemSetup->heatStage
@@ -567,7 +567,7 @@ void Scheme::internalHeatingLoopStage1()
             break;
 
         // TODO should we wait for temp update before new loop?
-        waitLoop(RELAYS_WAIT_MS, ctMode);
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
 
         if (stopWork)
             break;
@@ -589,7 +589,7 @@ bool Scheme::internalHeatingLoopStage2()
     emit changeBacklight(heatingColor);
     mTiming->s2uptime.restart();
     sendRelays();
-    waitLoop(RELAYS_WAIT_MS, ctNone);
+    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
     while (!stopWork) {
         TRACE << mCurrentTemperature << effectiveTemperature() << mTiming->s2hold;
@@ -640,7 +640,7 @@ bool Scheme::internalHeatingLoopStage2()
         if (stopWork)
             break;
 
-        waitLoop(RELAYS_WAIT_MS, ctMode);
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
     }
 
     TRACE << mCurrentTemperature << effectiveTemperature() << "finished stage 2 heat" << stopWork;
@@ -719,11 +719,11 @@ void Scheme::internalPumpHeatingLoopStage1()
 
         if (obUpdated && !stopWork){
             // sysDelay
-            waitLoop(mSystemSetup->systemRunDelay * 60000, ctMode);
+            waitLoop(mSystemSetup->systemRunDelay * 60000, AppSpecCPP::ctMode);
 
         } else if (mTiming->s1Offtime.isValid() &&
                    mTiming->s1Offtime.elapsed() < 2 * 60 * 1000){
-            waitLoop(RELAYS_WAIT_MS, ctMode);
+            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
 
             if (stopWork)
                 break;
@@ -745,7 +745,7 @@ void Scheme::internalPumpHeatingLoopStage1()
         mTiming->s2hold = false;
         mTiming->alerts = false;
         sendRelays();
-        waitLoop(RELAYS_WAIT_MS, ctNone);
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
         while (mCurrentTemperature - effectiveTemperature() < STAGE1_ON_RANGE) {
             TRACE << mCurrentTemperature << effectiveTemperature() << mRelay->relays().y2
@@ -772,7 +772,7 @@ void Scheme::internalPumpHeatingLoopStage1()
             if (stopWork)
                 break;
 
-            waitLoop(RELAYS_WAIT_MS, ctMode);
+            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
 
             if (stopWork)
                 break;
@@ -844,14 +844,14 @@ void Scheme::EmergencyHeating()
     // 5 Sec
     emit changeBacklight(emergencyColor, emergencyColorS);
     sendRelays();
-    waitLoop(RELAYS_WAIT_MS, ctNone);
+    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
     bool stage2 = false;
     while (mCurrentTemperature < HPT) {
         if (!stage2 && mCurrentTemperature < ET - ET_STAGE2) {
             mRelay->emergencyHeating2();
             sendRelays();
-            waitLoop(RELAYS_WAIT_MS, ctNone);
+            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             stage2 = true;
         }
     }
@@ -859,7 +859,7 @@ void Scheme::EmergencyHeating()
     emit changeBacklight();
     mRelay->turnOffEmergencyHeating();
     sendRelays();
-    waitLoop(RELAYS_WAIT_MS, ctNone);
+    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
     internalPumpHeatingLoopStage1();
 }
@@ -923,7 +923,7 @@ void Scheme::sendRelays(bool forceSend)
             // Update relays
             if (step.second != 0) {
                 emit updateRelays(lastConfigs);
-                waitLoop(RELAYS_WAIT_MS, ctNone);
+                waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
         }
     } else { // Update relays
@@ -936,25 +936,25 @@ void Scheme::sendRelays(bool forceSend)
     TRACE_CHECK(false) << "finished";
 }
 
-int Scheme::waitLoop(int timeout, Scheme::ChangeTypes overrideModes)
+int Scheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
 {
     QEventLoop loop;
     // connect signal for handling stopWork
-    if (overrideModes.testFlag(ChangeType::ctCurrentTemperature)){
+    if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctCurrentTemperature)){
         connect(this, &Scheme::currentTemperatureChanged, &loop, [&loop]() {
-            loop.exit(ChangeType::ctCurrentTemperature);
+            loop.exit(AppSpecCPP::ChangeType::ctCurrentTemperature);
         });
     }
 
-    if (overrideModes.testFlag(ChangeType::ctSetTemperature)){
+    if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctSetTemperature)){
         connect(this, &Scheme::setTemperatureChanged, &loop, [&loop]() {
-            loop.exit(ChangeType::ctSetTemperature);
+            loop.exit(AppSpecCPP::ChangeType::ctSetTemperature);
         });
     }
 
-    if (overrideModes.testFlag(ChangeType::ctMode)){
+    if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctMode)){
         connect(this, &Scheme::stopWorkRequested, &loop, [&loop]() {
-            loop.exit(ChangeType::ctMode);
+            loop.exit(AppSpecCPP::ChangeType::ctMode);
         });
     }
 
