@@ -48,6 +48,9 @@ void HumidityScheme::run()
         if (mSystemSetup->isVacation) {
             VacationLoop();
 
+        } else if (mSystemSetup->systemMode == AppSpecCPP::SystemMode::Off) {
+            OffLoop();
+
         } else {
             normalLoop();
 
@@ -102,11 +105,7 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
 
-        // Stop when system mode is off
-        if (mSystemSetup->systemMode == AppSpecCPP::SystemMode::Off)
-            stopWork = true;
-        else
-            restartWork();
+        restartWork();
     });
 
     connect(mSystemSetup, &SystemSetup::isVacationChanged, this, [this] {
@@ -130,6 +129,11 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
             restartWork();
         }
     });
+}
+
+void HumidityScheme::OffLoop()
+{
+    waitLoop(-1, AppSpecCPP::ctMode);
 }
 
 void HumidityScheme::VacationLoop()

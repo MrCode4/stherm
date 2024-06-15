@@ -66,6 +66,8 @@ private:
     //! use low values for timeout in exit cases as it might had abrupt changes previously
     int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll);
 
+    void OffLoop();
+
 private:
     Relay*  mRelay;
     DeviceAPI *mDeviceAPI;
