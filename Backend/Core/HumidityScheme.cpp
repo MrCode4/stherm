@@ -132,6 +132,33 @@ void HumidityScheme::VacationLoop()
     }
 }
 
+void HumidityScheme::normalLoop()
+{
+    if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
+        while (mCurrentHumidity - mSetPointHumidity > 10) {
+            updateRelays(mAccessoriesWireType);
+
+        }
+
+        updateRelays();
+
+    } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
+
+        if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling) {
+            updateRelays();
+
+        } else {
+            while (mCurrentHumidity - mSetPointHumidity < 10) {
+                updateRelays(mAccessoriesWireType);
+
+            }
+
+            updateRelays();
+        }
+    }
+
+}
+
 void HumidityScheme::AutoModeLoop()
 {
 
@@ -149,6 +176,15 @@ void HumidityScheme::setSchedule(ScheduleCPP *newSchedule)
         return;
 
     mSchedule = newSchedule;
+}
+
+void HumidityScheme::setRequestedHumidity(const double &setPointHumidity)
+{
+    if (qAbs(mSetPointHumidity - setPointHumidity) < 0.001) {
+        return;
+    }
+
+    mSetPointHumidity = setPointHumidity;
 }
 
 void HumidityScheme::updateRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType)

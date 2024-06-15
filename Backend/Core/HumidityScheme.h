@@ -26,6 +26,8 @@ public:
     //! Set schedule
     void setSchedule(ScheduleCPP *newSchedule);
 
+    void setRequestedHumidity(const double& setPointHumidity);
+
 protected:
     void run() override;
 
@@ -37,6 +39,9 @@ private:
 
     //! Vacation loop
     void VacationLoop();
+
+    //! Normal loop
+    void normalLoop();
 
     //! Auto mode loop used in schedule
     void AutoModeLoop();
@@ -58,6 +63,8 @@ private:
     //! Vacation properites (Percentage)
     double mVacationMinimumHumidity;
     double mVacationMaximumHumidity;
+
+    double mSetPointHumidity;
 
     //! Humidity parameters (Percentage)
     double mCurrentHumidity = 30;
