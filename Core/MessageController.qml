@@ -372,7 +372,7 @@ QtObject {
     }
 
     function checkInternetConnection() : bool {
-        var hasInternet = NetworkInterface.connectedWifi;
+        var hasInternet = NetworkInterface.hasInternet;
 
         // Wifi message type is SystemNotification, so related to alerts
         if (device.setting.enabledAlerts && !hasInternet) {
