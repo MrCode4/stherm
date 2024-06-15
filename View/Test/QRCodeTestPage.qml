@@ -38,6 +38,24 @@ BasePageView {
         visible: false
     }
 
+    //! ConfirmPopup to ask: "Have you printed the system UID?"
+    ConfirmPopup {
+        id: printConfirmPopup
+
+        message: "Print System UID"
+        detailMessage: "Have you printed the system UID?"
+        visible: false
+
+        onAccepted: {
+            if (system.serialNumber.length > 0) {
+                rebootPopup.open();
+
+            }  else {
+                infoPopup.open();
+            }
+        }
+    }
+
     //! Finish button
     ToolButton {
         parent: root.header.contentItem
@@ -54,13 +72,10 @@ BasePageView {
             if (sn.length === 0) {
                 //! Get SN with uid.
                 var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
-                system.getSN(uid);
+                system.getSN_QML(uid);
             }
 
-            if (sn.length > 0) {
-                rebootPopup.open();
-
-            } else {
+            if (sn.length === 0) {
                 infoPopup.open();
             }
         }
@@ -106,4 +121,32 @@ BasePageView {
                                      })
         }
     }
+
+    //! Check print after 5 second from request.
+    Timer {
+        id: printCheckTimer
+
+        interval: 5000
+        running: root.visible && system.serialNumber.length > 0 &&
+                 !rebootPopup.visible && !printConfirmPopup.visible
+
+        repeat: true
+
+        onTriggered: {
+            // JUST check, always true in this scope
+            if (system.serialNumber.length > 0) {
+                infoPopup.close();
+                printConfirmPopup.open();
+            }
+        }
+    }
+
+    //! Remove
+    // Connections {
+    //     target: system
+
+    //     function onSerialNumberChanged() {
+    //         printCheckTimer.start();
+    //     }
+    // }
 }
