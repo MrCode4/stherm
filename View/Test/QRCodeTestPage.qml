@@ -45,7 +45,7 @@ BasePageView {
     ConfirmPopup {
         id: printConfirmPopup
 
-        message: "Print System UID"
+        message: "Print SN Label"
         detailMessage: "Have you printed out the SN label?"
         visible: false
 
