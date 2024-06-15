@@ -183,7 +183,7 @@ Item {
     function existUnreadMessages() {
 
         if (!uiSession.appModel.setting.enabledNotifications) {
-            uiSession.hasUnreadAlerts = false;
+            uiSession.hasUnreadMessages = false;
             return;
         }
 
