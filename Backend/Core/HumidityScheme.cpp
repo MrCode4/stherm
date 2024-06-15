@@ -96,8 +96,10 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
 
-        //! Maybe neet for off mode
-        // restartWork();
+        if (mSystemSetup->systemMode == AppSpecCPP::SystemMode::Off)
+            stopWork = true;
+        else
+            restartWork();
     });
 
     connect(mSystemSetup, &SystemSetup::isVacationChanged, this, [this] {
