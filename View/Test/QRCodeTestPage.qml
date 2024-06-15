@@ -38,15 +38,21 @@ BasePageView {
         visible: false
     }
 
-    //! ConfirmPopup to ask: "Have you printed the system UID?"
+    //! ConfirmPopup to ask: "Have you printed the SN label?"
+    //! The testFinished function is executed.
+    //! If the serial number (SN) is available, a reboot popup is displayed.
+    //! Otherwise, an informational popup is presented.
     ConfirmPopup {
         id: printConfirmPopup
 
         message: "Print System UID"
-        detailMessage: "Have you printed the system UID?"
+        detailMessage: "Have you printed out the SN label?"
         visible: false
 
         onAccepted: {
+            //! To ensure test finished called at least once
+            deviceController.deviceControllerCPP.testFinished();
+
             if (system.serialNumber.length > 0) {
                 rebootPopup.open();
 
@@ -64,20 +70,15 @@ BasePageView {
         }
 
         onClicked: {
-            //! Finish test, add delay to set relays
-            deviceController.deviceControllerCPP.testFinished();
-
             var sn = system.serialNumber;
 
             if (sn.length === 0) {
-                //! Get SN with uid.
+                //! Retrieve Serial Number (SN) using UID and await response
                 var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
                 system.getSN_QML(uid);
             }
 
-            if (sn.length === 0) {
-                infoPopup.open();
-            }
+            printConfirmPopup.open();
         }
     }
 
@@ -122,7 +123,11 @@ BasePageView {
         }
     }
 
-    //! Check print after 5 second from request.
+    //! The timer will be start when
+    //!   SerialNumber is ready so the user can print sn
+    //!   All popups hidden.
+    //! 5-second timer starts to ensure the user has sufficient time to see and potentially scan the QR code.
+    //! The timer open printConfirmPopup
     Timer {
         id: printCheckTimer
 
@@ -140,13 +145,4 @@ BasePageView {
             }
         }
     }
-
-    //! Remove
-    // Connections {
-    //     target: system
-
-    //     function onSerialNumberChanged() {
-    //         printCheckTimer.start();
-    //     }
-    // }
 }
