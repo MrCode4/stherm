@@ -40,6 +40,9 @@ protected:
     void run() override;
 
 signals:
+     void currentHumidityChanged();
+    void setHumidityChanged();
+    void stopWorkRequested();
 
 private:
 
@@ -59,6 +62,9 @@ private:
     //! Return the effective humidity
     double effectiveHumidity();
 
+    //! To monitor data change: current Humidity, set Humidity, mode
+    //! use low values for timeout in exit cases as it might had abrupt changes previously
+    int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll);
 
 private:
     Relay*  mRelay;

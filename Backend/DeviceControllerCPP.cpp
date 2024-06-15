@@ -84,7 +84,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , _deviceAPI(new DeviceAPI(this))
     , mSystemSetup(nullptr)
     , m_scheme(new Scheme(_deviceAPI, this))
-    , m_HumidityScheme(new m_HumidityScheme(_deviceAPI, this))
+    , m_HumidityScheme(new HumidityScheme(_deviceAPI, this))
 {
 
     m_system = _deviceAPI->system();

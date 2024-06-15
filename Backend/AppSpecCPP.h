@@ -24,8 +24,10 @@ public:
         ctCurrentTemperature = 1 << 0,
         ctSetTemperature     = 1 << 1,
         ctMode               = 1 << 2,
-        ctDefault            = ctSetTemperature | ctMode,
-        ctAll                = ctDefault | ctCurrentTemperature,
+        ctCurrentHumidity    = 1 << 3,
+        ctSetHumidity        = 1 << 4,
+        ctDefault            = ctSetTemperature | ctMode | ctCurrentHumidity,
+        ctAll                = ctDefault | ctCurrentTemperature | ctCurrentHumidity,
     };
     Q_ENUM(ChangeType)
     Q_DECLARE_FLAGS(ChangeTypes, ChangeType);

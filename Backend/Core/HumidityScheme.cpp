@@ -1,6 +1,11 @@
 #include "HumidityScheme.h"
 #include "LogHelper.h"
 
+#include <QTimer>
+
+
+const double RELAYS_WAIT_MS = 500;
+
 HumidityScheme::HumidityScheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
     stopWork(true),
@@ -19,6 +24,7 @@ void HumidityScheme::stop()
     TRACE << "stopping HVAC (Humidity control)" ;
 
     stopWork = true;
+    emit stopWorkRequested();
 
     // Stop worker.
     terminate();
@@ -72,7 +78,7 @@ void HumidityScheme::restartWork()
             Qt::SingleShotConnection);
 
         stopWork = true;
-        // emit stopWorkRequested();
+        emit stopWorkRequested();
         this->wait(QDeadlineTimer(1000, Qt::PreciseTimer));
 
     } else {
@@ -96,6 +102,7 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
 
+        // Stop when system mode is off
         if (mSystemSetup->systemMode == AppSpecCPP::SystemMode::Off)
             stopWork = true;
         else
@@ -259,7 +266,6 @@ void HumidityScheme::updateRelays(AppSpecCPP::AccessoriesWireType accessoriesWir
     mRelay->updateHumidityWiring(accessoriesWireType);
 }
 
-
 double HumidityScheme::effectiveHumidity()
 {
     double effHumidity = mSetPointHumidity;
@@ -278,4 +284,36 @@ double HumidityScheme::effectiveHumidity()
     }
 
     return effHumidity ;
+}
+
+int HumidityScheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
+{
+    QEventLoop loop;
+    // connect signal for handling stopWork
+    if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctCurrentHumidity)){
+        connect(this, &HumidityScheme::currentHumidityChanged, &loop, [&loop]() {
+            loop.exit(AppSpecCPP::ChangeType::ctCurrentHumidity);
+        });
+    }
+
+    if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctSetHumidity)){
+        connect(this, &HumidityScheme::setHumidityChanged, &loop, [&loop]() {
+            loop.exit(AppSpecCPP::ChangeType::ctSetHumidity);
+        });
+    }
+
+    if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctMode)){
+        connect(this, &HumidityScheme::stopWorkRequested, &loop, [&loop]() {
+            loop.exit(AppSpecCPP::ChangeType::ctMode);
+        });
+    }
+
+    if (timeout == 0) {
+        return 0;
+    } else if (timeout > 0) {
+        // quit will exit with, same as exit(ChangeType::CurrentTemperature)
+        QTimer::singleShot(timeout, &loop, &QEventLoop::quit);
+    }
+
+    return loop.exec();
 }
