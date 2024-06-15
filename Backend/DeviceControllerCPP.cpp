@@ -418,8 +418,8 @@ void DeviceControllerCPP::setRequestedTemperature(const double temperature)
 
 void DeviceControllerCPP::setRequestedHumidity(const double humidity)
 {
-    if (m_scheme)
-        m_scheme->setRequestedHumidity(humidity);
+    if (m_HumidityScheme)
+        m_HumidityScheme->setRequestedHumidity(humidity);
 }
 
 bool DeviceControllerCPP::setTestRelays(QVariantList data)
