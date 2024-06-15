@@ -15,8 +15,8 @@ void HumidityScheme::run()
     if (mSystemSetup->isVacation) {
         VacationLoop();
 
-    } else if (mSchedule) { // Schedule moves the app to auto mode and use the schedule property (humidity)
-        AutoModeLoop();
+    } else {
+        normalLoop();
 
     }
 }
@@ -157,7 +157,7 @@ bool HumidityScheme::checkVacationRange() {
 void HumidityScheme::normalLoop()
 {
     if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
-        while (mCurrentHumidity - mSetPointHumidity > 10) {
+        while (mCurrentHumidity - effectiveHumidity() > 10) {
             // Exit from loop
             if (stopWork) {
                 break;
@@ -167,7 +167,7 @@ void HumidityScheme::normalLoop()
 
         }
 
-        if (mCurrentHumidity - mSetPointHumidity <= 10)
+        if (mCurrentHumidity - effectiveHumidity() <= 10)
             updateRelays();
 
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
@@ -177,7 +177,7 @@ void HumidityScheme::normalLoop()
             updateRelays();
 
         } else {
-            while (mCurrentHumidity - mSetPointHumidity < 10) {
+            while (mCurrentHumidity - effectiveHumidity() < 10) {
                 // Exit from loop
                 if (stopWork) {
                     break;
@@ -187,7 +187,7 @@ void HumidityScheme::normalLoop()
 
             }
 
-            if (mCurrentHumidity - mSetPointHumidity >= 10)
+            if (mCurrentHumidity - effectiveHumidity() >= 10)
                 updateRelays();
         }
 
@@ -228,4 +228,25 @@ void HumidityScheme::setRequestedHumidity(const double &setPointHumidity)
 void HumidityScheme::updateRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType)
 {
     mRelay->updateHumidityWiring(accessoriesWireType);
+}
+
+
+double HumidityScheme::effectiveHumidity()
+{
+    double effHumidity = mSetPointHumidity;
+
+    if (mSystemSetup->isVacation) {
+        if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
+            effHumidity  = mVacationMinimumHumidity;
+
+        } else if ((mVacationMaximumHumidity - mCurrentHumidity) < 0.001) {
+            effHumidity  = mVacationMaximumHumidity;
+        }
+
+    } else if (mSchedule) {
+        effHumidity  = mSchedule->humidity;
+
+    }
+
+    return effHumidity ;
 }

@@ -53,6 +53,9 @@ private:
     //! Check the humidity range from vacation
     bool checkVacationRange();
 
+    //! Return the effective humidity
+    double effectiveHumidity();
+
 private:
     Relay*  mRelay;
     DeviceAPI *mDeviceAPI;
