@@ -221,7 +221,7 @@ struct RelayConfigs
     //! the rules are simple, first turn off relays, then turn on
     //! turning off orders is from highest proprity to lowest, and turning on is vice versa
     //! priorities is as follow first O/B, then G, then Relay power from low to high stages
-    //! accessories relays are not considered yet! // TODO
+    //! TODO: CHECK order of accessories relays
     std::vector<std::pair<std::string, int>> changeStepsSorted(const RelayConfigs &newState);
 
     QString printStr();
