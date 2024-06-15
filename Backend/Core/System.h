@@ -202,7 +202,10 @@ protected slots:
 
 signals:
     void snReady();
+
     void settingsReady(QVariantMap settings);
+    void appDataReady(QVariantMap settings);
+
     void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void pushFailed();
 
