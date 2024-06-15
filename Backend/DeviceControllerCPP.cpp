@@ -470,6 +470,7 @@ void DeviceControllerCPP::startDevice()
     QTimer::singleShot(5000, this, [this]() {
         TRACE << "starting scheme";
         m_scheme->restartWork();
+        m_HumidityScheme->restartWork();
     });
 
     if (startMode == 0) {
@@ -491,6 +492,7 @@ void DeviceControllerCPP::stopDevice()
 {
     _deviceIO->stopReading();
     m_scheme->stop();
+    m_HumidityScheme->stop();
 }
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)

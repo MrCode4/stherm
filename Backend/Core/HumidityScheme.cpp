@@ -30,13 +30,25 @@ void HumidityScheme::stop()
 
 void HumidityScheme::run()
 {
-    // Vacation has a higher priority compared to other processes.
-    if (mSystemSetup->isVacation) {
-        VacationLoop();
+    TRACE << "-- startWork is running fro Humidity control." << QThread::currentThreadId();
 
-    } else {
-        normalLoop();
+    if (!mSystemSetup) {
+        TRACE << "-- mSystemSetup is not ready.";
+        return;
+    }
 
+    while (!stopWork) {
+        // Vacation has a higher priority compared to other processes.
+        if (mSystemSetup->isVacation) {
+            VacationLoop();
+
+        } else {
+            normalLoop();
+
+        }
+
+        if (stopWork)
+            break;
     }
 }
 

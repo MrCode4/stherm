@@ -30,14 +30,18 @@ public:
 
     void setRequestedHumidity(const double& setPointHumidity);
 
+    //! Stop the Humidity control
+    void stop();
+
+    //! Restart the worker thread
+    void restartWork();
+
 protected:
     void run() override;
 
 signals:
 
 private:
-    //! Restart the worker thread
-    void restartWork();
 
     //! Vacation loop
     void VacationLoop();
@@ -55,8 +59,6 @@ private:
     //! Return the effective humidity
     double effectiveHumidity();
 
-    //! Stop the Humidity control
-    void stop();
 
 private:
     Relay*  mRelay;
