@@ -19,6 +19,8 @@ class HumidityScheme : public QThread
 public:
     explicit HumidityScheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
 
+    ~HumidityScheme();
+
     void setSystemSetup(SystemSetup *systemSetup);
 
     void setVacation(const STHERM::Vacation &newVacation);
@@ -43,9 +45,6 @@ private:
     //! Normal loop
     void normalLoop();
 
-    //! Auto mode loop used in schedule
-    void AutoModeLoop();
-
     //! Update relays but not sent to device.
     //! None sets the humidity wirings to off.
     void updateRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType = AppSpecCPP::None);
@@ -55,6 +54,9 @@ private:
 
     //! Return the effective humidity
     double effectiveHumidity();
+
+    //! Stop the Humidity control
+    void stop();
 
 private:
     Relay*  mRelay;

@@ -9,6 +9,25 @@ HumidityScheme::HumidityScheme(DeviceAPI* deviceAPI, QObject *parent) :
     mRelay = Relay::instance();
 }
 
+HumidityScheme::~HumidityScheme()
+{
+    stop();
+}
+
+void HumidityScheme::stop()
+{
+    TRACE << "stopping HVAC (Humidity control)" ;
+
+    stopWork = true;
+
+    // Stop worker.
+    terminate();
+    TRACE << "terminated HVAC (Humidity control)" ;
+    wait();
+
+    TRACE << "stopped HVAC (Humidity control)" ;
+}
+
 void HumidityScheme::run()
 {
     // Vacation has a higher priority compared to other processes.
@@ -103,6 +122,7 @@ void HumidityScheme::VacationLoop()
     if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
         if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
+            // Set off the humidity relays in cooling mode
             if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling) {
                 updateRelays();
 
@@ -172,7 +192,7 @@ void HumidityScheme::normalLoop()
 
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
-        // Set off the humidity wiring in cooling mode
+        // Set off the humidity relays in cooling mode
         if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling) {
             updateRelays();
 
@@ -194,11 +214,6 @@ void HumidityScheme::normalLoop()
     } else {
         TRACE << "Wrong Accessories Type";
     }
-
-}
-
-void HumidityScheme::AutoModeLoop()
-{
 
 }
 
