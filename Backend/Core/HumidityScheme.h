@@ -19,9 +19,6 @@ public:
 
     void setVacation(const STHERM::Vacation &newVacation);
 
-    //! Set schedule
-    void setSchedule(ScheduleCPP *newSchedule);
-
     void setRequestedHumidity(const double& setPointHumidity);
 
     //! Stop the Humidity control

@@ -1053,14 +1053,6 @@ void Scheme::updateVacationState()
     mRealSysMode = realSysMode;
 }
 
-void Scheme::setSchedule(ScheduleCPP *newSchedule)
-{
-    if (mSchedule == newSchedule)
-        return;
-
-    mSchedule = newSchedule;
-}
-
 void Scheme::moveToUpdatingMode()
 {
     mRestarting = true;

@@ -41,8 +41,6 @@ public:
 
     void setVacation(const STHERM::Vacation &newVacation);
 
-    void setSchedule(ScheduleCPP *newSchedule);
-
     void moveToUpdatingMode();
 
     AppSpecCPP::FanMode fanMode() const;
@@ -131,8 +129,6 @@ private:
     AppSpecCPP::SystemMode mCurrentSysMode;
 
     AppSpecCPP::SystemMode mRealSysMode;
-
-    ScheduleCPP* mSchedule = nullptr;
 
     struct STHERM::Vacation mVacation;
 

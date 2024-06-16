@@ -58,6 +58,14 @@ void BaseScheme::setMainData(QVariantMap mainData)
     }
 }
 
+void BaseScheme::setSchedule(ScheduleCPP *newSchedule)
+{
+    if (mSchedule == newSchedule)
+        return;
+
+    mSchedule = newSchedule;
+}
+
 int BaseScheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
 {
     return 0;

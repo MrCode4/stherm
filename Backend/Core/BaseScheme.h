@@ -29,6 +29,9 @@ public:
 
     void setMainData(QVariantMap mainData);
 
+    //! Set schedule
+    void setSchedule(ScheduleCPP *newSchedule);
+
 signals:
     void stopWorkRequested();
 
@@ -64,7 +67,7 @@ protected:
     double mCurrentTemperature = 20 * 1.8 + 32;
 
     //! Humidity parameters (Percentage)
-    double mCurrentHumidity = 30;
+    double mCurrentHumidity = 10;
 
     bool stopWork;
 

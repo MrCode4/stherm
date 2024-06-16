@@ -303,14 +303,6 @@ void HumidityScheme::setVacation(const STHERM::Vacation &newVacation)
     mVacationMaximumHumidity = newVacation.maximumHumidity;
 }
 
-void HumidityScheme::setSchedule(ScheduleCPP *newSchedule)
-{
-    if (mSchedule == newSchedule)
-        return;
-
-    mSchedule = newSchedule;
-}
-
 void HumidityScheme::setRequestedHumidity(const double &setPointHumidity)
 {
     if (qAbs(mSetPointHumidity - setPointHumidity) < 0.001) {
