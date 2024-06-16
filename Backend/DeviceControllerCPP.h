@@ -272,4 +272,6 @@ private:
     }
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
+
+    STHERM::RelayConfigs lastConfigs;
 };

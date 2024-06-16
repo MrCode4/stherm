@@ -67,6 +67,8 @@ public:
     void setAutoMinReqTemp(const double &min);
     void setAutoMaxReqTemp(const double &max);
 
+    void setCanSendRelays(const bool& csr);
+
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
@@ -80,11 +82,16 @@ signals:
 
     void currentTemperatureChanged();
     void setTemperatureChanged();
+
+    //! Emit when we need exit from wait loop
     void stopWorkRequested();
 
     void fanWorkChanged(bool fanState);
 
     void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
+
+    void sendRelayIsRunning(const bool& isRunning);
+    void canSendRelay();
 
 protected:
     void run() override;
@@ -210,6 +217,8 @@ private:
     STHERM::RelayConfigs lastConfigs;
 
     bool debugMode = true;
+
+    bool mCanSendRelay;
 
     void fanWork(bool isOn);
 };

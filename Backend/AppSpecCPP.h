@@ -26,6 +26,7 @@ public:
         ctMode               = 1 << 2,
         ctCurrentHumidity    = 1 << 3,
         ctSetHumidity        = 1 << 4,
+        ctSendRelay          = 1 << 5,
         ctDefault            = ctSetTemperature | ctMode | ctCurrentHumidity,
         ctAll                = ctDefault | ctCurrentTemperature | ctCurrentHumidity,
     };

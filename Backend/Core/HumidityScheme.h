@@ -36,6 +36,8 @@ public:
     //! Restart the worker thread
     void restartWork();
 
+    void setCanSendRelays(const bool& csr);
+
 protected:
     void run() override;
 
@@ -43,6 +45,12 @@ signals:
      void currentHumidityChanged();
     void setHumidityChanged();
     void stopWorkRequested();
+
+    void sendRelayIsRunning(const bool& isRunning);
+    void canSendRelay();
+
+    //! Send relay to DeviceIOController and update relays into ti board.
+    void updateRelays(STHERM::RelayConfigs);
 
 private:
 
@@ -68,6 +76,10 @@ private:
 
     void OffLoop();
 
+
+    void sendRelays(bool forceSend);
+
+
 private:
     Relay*  mRelay;
     DeviceAPI *mDeviceAPI;
@@ -88,5 +100,11 @@ private:
     double mCurrentHumidity = 30;
 
     bool stopWork;
+
+    bool mCanSendRelay;
+
+    bool debugMode;
+
+    STHERM::RelayConfigs lastConfigs;
 };
 

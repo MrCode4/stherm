@@ -294,6 +294,14 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(m_scheme, &Scheme::fanWorkChanged, this, &DeviceControllerCPP::fanWorkChanged);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
+    connect(m_scheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        m_HumidityScheme->setCanSendRelays(!isRunning);
+    });
+
+    connect(m_HumidityScheme, &HumidityScheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        m_scheme->setCanSendRelays(!isRunning);
+    });
+
 
     if (m_system) {
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {

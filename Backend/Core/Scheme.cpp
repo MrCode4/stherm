@@ -38,6 +38,7 @@ inline double toFahrenheit(double celsius) {
 Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
     mRestarting (false),
+    mCanSendRelay(true),
     QThread (parent)
 {
     stopWork = true;
@@ -882,11 +883,18 @@ void Scheme::sendRelays(bool forceSend)
 
     auto relaysConfig = mRelay->relays();
 
+    if (lastConfigs == relaysConfig) {
+        TRACE_CHECK(false) << "no change";
+        return;
+    }
+
+    if (!mCanSendRelay) {
+        waitLoop(-1, AppSpecCPP::ctSendRelay);
+    }
+
+    emit sendRelayIsRunning(true);
+
     if (debugMode) {
-        if (lastConfigs == relaysConfig) {
-            TRACE_CHECK(false) << "no change";
-            return;
-        }
         auto steps = lastConfigs.changeStepsSorted(relaysConfig);
         for (int var = 0; var < steps.size(); ++var) {
             auto step = steps.at(var);
@@ -934,6 +942,8 @@ void Scheme::sendRelays(bool forceSend)
     emit currentSystemModeChanged(mRelay->currentState());
 
     TRACE_CHECK(false) << "finished";
+
+    emit sendRelayIsRunning(false);
 }
 
 int Scheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
@@ -955,6 +965,12 @@ int Scheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
     if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctMode)){
         connect(this, &Scheme::stopWorkRequested, &loop, [&loop]() {
             loop.exit(AppSpecCPP::ChangeType::ctMode);
+        });
+    }
+
+    if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctSendRelay)){
+        connect(this, &Scheme::canSendRelay, &loop, [&loop]() {
+            loop.exit(AppSpecCPP::ChangeType::ctSendRelay);
         });
     }
 
@@ -1201,6 +1217,15 @@ void Scheme::setAutoMaxReqTemp(const double &max)
     auto maxF = toFahrenheit(max);
     if (qAbs(mAutoMaxReqTemp - maxF) > 0.001)
         mAutoMaxReqTemp = maxF;
+}
+
+void Scheme::setCanSendRelays(const bool &csr)
+{
+    mCanSendRelay = csr;
+
+    if (mCanSendRelay) {
+        emit canSendRelay();
+    }
 }
 
 void Scheme::setVacation(const STHERM::Vacation &newVacation)

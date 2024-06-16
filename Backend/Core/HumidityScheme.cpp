@@ -9,9 +9,13 @@ const double RELAYS_WAIT_MS = 500;
 HumidityScheme::HumidityScheme(DeviceAPI* deviceAPI, QObject *parent) :
     mDeviceAPI(deviceAPI),
     stopWork(true),
+    mCanSendRelay(true),
+    debugMode(true),
     QThread{parent}
 {
     mRelay = Relay::instance();
+
+    debugMode = RELAYS_WAIT_MS != 0;
 }
 
 HumidityScheme::~HumidityScheme()
@@ -58,6 +62,9 @@ void HumidityScheme::run()
 
         if (stopWork)
             break;
+
+        // all should be off! we can assert here
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
     }
 }
 
@@ -89,6 +96,15 @@ void HumidityScheme::restartWork()
         stopWork = false;
         // mLogTimer.start();
         this->start();
+    }
+}
+
+void HumidityScheme::setCanSendRelays(const bool &csr)
+{
+    mCanSendRelay = csr;
+
+    if (mCanSendRelay) {
+        emit canSendRelay();
     }
 }
 
@@ -134,6 +150,74 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
 void HumidityScheme::OffLoop()
 {
     waitLoop(-1, AppSpecCPP::ctMode);
+}
+
+void HumidityScheme::sendRelays(bool forceSend)
+{
+    if (!forceSend && stopWork)
+        return;
+
+    auto relaysConfig = mRelay->relays();
+
+    if (lastConfigs == relaysConfig) {
+        TRACE_CHECK(false) << "no change";
+        return;
+    }
+
+    if (!mCanSendRelay) {
+        waitLoop(-1, AppSpecCPP::ctSendRelay);
+    }
+
+    emit sendRelayIsRunning(true);
+
+    if (debugMode) {
+        auto steps = lastConfigs.changeStepsSorted(relaysConfig);
+        for (int var = 0; var < steps.size(); ++var) {
+            auto step = steps.at(var);
+            TRACE << step.first.c_str() << step.second;
+            if (step.first == "o/b"){
+                lastConfigs.o_b = relaysConfig.o_b;
+                TRACE << relaysConfig.o_b;
+            }
+            else if (step.first == "g"){
+                lastConfigs.g = relaysConfig.g;
+                TRACE << relaysConfig.g;
+            }
+            else if (step.first == "y1"){
+                lastConfigs.y1 = relaysConfig.y1;
+                TRACE << relaysConfig.y1;
+            }
+            else if (step.first == "y2"){
+                lastConfigs.y2 = relaysConfig.y2;
+                TRACE << relaysConfig.y2;
+            }
+            else if (step.first == "w1"){
+                lastConfigs.w1 = relaysConfig.w1;
+                TRACE << relaysConfig.w1;
+            }
+            else if (step.first == "w2"){
+                lastConfigs.w2 = relaysConfig.w2;
+                TRACE << relaysConfig.w2;
+            }
+            else if (step.first == "w3"){
+                lastConfigs.w3 = relaysConfig.w3;
+                TRACE << relaysConfig.w3;
+            }
+
+            // Update relays
+            if (step.second != 0) {
+                emit updateRelays(lastConfigs);
+                waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+            }
+        }
+    } else { // Update relays
+        emit updateRelays(relaysConfig);
+        lastConfigs = relaysConfig;
+    }
+
+    TRACE_CHECK(false) << "finished";
+
+    emit sendRelayIsRunning(false);
 }
 
 void HumidityScheme::VacationLoop()
@@ -309,6 +393,12 @@ int HumidityScheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
     if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctMode)){
         connect(this, &HumidityScheme::stopWorkRequested, &loop, [&loop]() {
             loop.exit(AppSpecCPP::ChangeType::ctMode);
+        });
+    }
+
+    if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctSendRelay)){
+        connect(this, &HumidityScheme::canSendRelay, &loop, [&loop]() {
+            loop.exit(AppSpecCPP::ChangeType::ctSendRelay);
         });
     }
 
