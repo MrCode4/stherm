@@ -439,7 +439,7 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
     if (exitCode == 0) {
         //! Indexes of the connection profile that are in range and should not be added to the
         //! wifi list anymore
-        QList<int> alreadyAddedConProfiles;
+        QMap<QString, bool> alreadyAddedConProfiles;
 
         //! Holds currently connected wifi
         WifiInfo* currentWifi = nullptr;
@@ -501,18 +501,17 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             //! not to be displayed as saved wifi. This is why the second condition is added.
             //! This might cause bugs in hidden networks.
             ConnectionProfile* conProfileForThis = nullptr;
-            for (int i = 0; i < mConProfiles.length(); ++i) {
-                if (alreadyAddedConProfiles.contains(i)) {
+            for (ConnectionProfile& cp : mConProfiles) {
+                if (alreadyAddedConProfiles.contains(cp.ssid)) {
                     //! It's already added to wifis
                     continue;
                 }
 
-                const ConnectionProfile& cp = mConProfiles.at(i);
                 if (cp.seenBssids.contains(parsedWi.bssid())
                     || (cp.seenBssids.isEmpty()
                         && cp.ssid == parsedWi.ssid())) {
-                    alreadyAddedConProfiles.append(i);
-                    conProfileForThis = &mConProfiles[i];
+                    alreadyAddedConProfiles[cp.ssid] = true;
+                    conProfileForThis = &cp;
                 }
             }
 
@@ -577,16 +576,15 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
         }
 
         //! Add all other connection profiles that are not already added in the list of wifis
-        for (int i = 0; i < mConProfiles.length(); ++i) {
-            if (alreadyAddedConProfiles.contains(i)) {
+        for (ConnectionProfile& cp : mConProfiles) {
+            if (alreadyAddedConProfiles.contains(cp.ssid)) {
                 continue;
             }
 
-            const ConnectionProfile& p = mConProfiles.at(i);
             mWifis.push_back(
                 new WifiInfo(false,
                              true, //! is saved
-                             p.ssid,
+                             cp.ssid,
                              "",
                              -1, //! Strength=-1 so they are distinguishable from in-range wifis
                              "",
@@ -821,6 +819,11 @@ void NmcliInterface::doRefreshWifi()
 
 void NmcliInterface::scanConProfiles()
 {
+    if (mBusyUpdatingConProfiles) {
+        return;
+    }
+    mBusyUpdatingConProfiles = true;
+
     QProcess* updateProc = new QProcess(this);
 
     connect(updateProc, &QProcess::finished, this, &NmcliInterface::updateConProfilesList);
@@ -903,6 +906,8 @@ void NmcliInterface::updateConProfilesList(int exitCode, QProcess::ExitStatus ex
         //! Delete updateProc
         updateProc->deleteLater();
     }
+
+    mBusyUpdatingConProfiles = false;
 }
 
 void NmcliInterface::initializeConProfilesWatcher()

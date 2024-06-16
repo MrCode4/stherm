@@ -335,6 +335,11 @@ private:
     bool                    mRescanInRefresh;
 
     /*!
+     * \brief mBusyUpdatingConProfiles If connection profiles are already getting updated.
+     */
+    bool                    mBusyUpdatingConProfiles = false;
+
+    /*!
      * \brief mConProfilesWatcher This watcher is used to get notified about changes in the wifi
      * connection profiles (only add and remove)
      */
