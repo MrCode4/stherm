@@ -53,7 +53,7 @@ public:
 
     WifiInfo*           connectedWifi() const;
 
-    bool                deviceIsOn() const { return mDeviceIsOn; }
+    bool                deviceIsOn() const { return mNmcliInterface->isDeviceOn(); }
 
     bool                hasInternet() const { return mHasInternet; }
 
@@ -118,11 +118,6 @@ private:
      * \brief mNmcliInterface An instance of NmcliInterface
      */
     NmcliInterface*         mNmcliInterface;
-
-    /*!
-     * \brief mDeviceIsOn Holds whether wifi device is on or off
-     */
-    bool                    mDeviceIsOn;
 
     /*!
      * \brief mHasInternet Holds whether there is a wifi connection AND it has full internet access

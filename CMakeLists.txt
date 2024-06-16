@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.4.5 LANGUAGES CXX)
+project(Stherm VERSION 0.9.2 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -47,7 +47,6 @@ set_source_files_properties(
     UiCore/AppStyle.qml
     UiCore/FAIcons.qml
     Core/DateTimeManager.qml
-
     PROPERTIES
         QT_QML_SINGLETON_TYPE True
 )
@@ -88,6 +87,7 @@ qt6_add_qml_module(appStherm
         Core/DateTimeManager.qml
         Core/ContactContractor.qml
         Core/NightMode.qml
+        Core/ToastManager.qml
 
 
         # Primitive Components
@@ -114,7 +114,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/SemiCircleSlider.qml
         UiCore/Components/SystemModeButton.qml
         UiCore/Components/DateTimeLabel.qml
-        UiCore/Components/CurrentTempratureLabel.qml
+        UiCore/Components/TempratureLabel.qml
         UiCore/Components/DesiredTempratureItem.qml
         UiCore/Components/AirConditionItem.qml
         UiCore/Components/FanButton.qml
@@ -132,6 +132,8 @@ qt6_add_qml_module(appStherm
         UiCore/Components/OnScheduleLabel.qml
         UiCore/Components/RangeSlider.qml
         UiCore/Components/SemiCircleSliderDoubleHandle.qml
+        UiCore/Components/Toast.qml
+        UiCore/Components/RoniaTumbler.qml
 
 
         # Views and Widgets
@@ -198,6 +200,7 @@ qt6_add_qml_module(appStherm
         # Test
         View/Test/TouchTestPage.qml
         View/Test/ColorTestPage.qml
+        View/Test/BrightnessTestPage.qml
         View/Test/BacklightTestPage.qml
         View/Test/AudioTestPage.qml
         View/Test/InternalSensorTestPage.qml
@@ -230,6 +233,8 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/RebootDevicePopup.qml
         UiCore/PopUps/ResetDevicePopup.qml
         UiCore/PopUps/UpdateNotificationPopup.qml
+        UiCore/PopUps/InfoPopup.qml
+        UiCore/PopUps/TestFailedPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml

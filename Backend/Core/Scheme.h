@@ -51,6 +51,8 @@ public:
     void setAutoMinReqTemp(const double &min);
     void setAutoMaxReqTemp(const double &max);
 
+    void runSystemDelay(AppSpecCPP::SystemMode mode);
+
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
@@ -61,9 +63,14 @@ signals:
 
     void setTemperatureChanged();
 
-    void fanWorkChanged(bool fanState);
-
     void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
+
+    //! Start system delay timer in ui to show in home page
+    //! delay: miliseconds
+    void startSystemDelayCountdown(AppSpecCPP::SystemMode mode, int delay);
+
+    //! stop system delay timer
+    void stopSystemDelayCountdown();
 
 protected:
     void run() override;

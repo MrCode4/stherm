@@ -110,13 +110,17 @@ I_DeviceController {
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
+        // adding version so we can force the image to refresh the content
+        property int version : 0;
+
         function onContractorInfoUpdated(brandName, phoneNumber, iconUrl, url,  techUrl) {
 
-            console.log("onContractorInfoUpdated: ", brandName, phoneNumber, iconUrl, url, techUrl);
+            version++;
+            console.log("onContractorInfoUpdated: ", brandName, phoneNumber, iconUrl, url, techUrl, version);
 
             root.device.contactContractor.brandName     = brandName
             root.device.contactContractor.phoneNumber   = phoneNumber
-            root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl
+            root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl + "?version=" + version
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
         }
@@ -126,7 +130,7 @@ I_DeviceController {
         target: NetworkInterface
 
         function onHasInternetChanged() {
-            deviceControllerCPP.system.wifiConnected(NetworkInterface.hasInternet);
+            deviceControllerCPP.wifiConnected(NetworkInterface.hasInternet);
         }
     }
 
@@ -134,12 +138,14 @@ I_DeviceController {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {
+            // This is not a settings section, the QR URL is just part of the information
+            checkQRurl(settings.qr_url);
+
             if (!deviceControllerCPP.system.canFetchServer || settingsPush.running || settingsPushRetry.running) {
                 console.log("We have some changes that not applied on the server.")
                 return;
             }
 
-            checkQRurl(settings.qr_url)
             updateHoldServer(settings.hold)
             updateFanServer(settings.fan)
             setSettingsServer(settings.setting)
@@ -152,7 +158,22 @@ I_DeviceController {
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
-            setAutoTemperatureFromServer(settings);
+        }
+
+        //! Update the auto mode settings with the fetch signal.
+        function onAutoModeSettingsReady(settings, isValid) {
+            if (isValid) {
+                setAutoTemperatureFromServer(settings);
+            }
+        }
+
+        //! Update the auto mode settings with the fetch signal.
+        function onAutoModePush(isSuccess: bool) {
+            settingsPush.hasAutoModeSettings = !isSuccess;
+
+            if (!isSuccess) {
+                managePushFailure();
+            }
         }
 
         function onCanFetchServerChanged() {
@@ -160,20 +181,18 @@ I_DeviceController {
                 settingsPushRetry.failed = false;
                 settingsPushRetry.interval = 5000;
                 settingsPush.hasSettings = false
+                settingsPush.hasAutoModeSettings = false;
             }
+        }
+
+        function onPushSuccess() {
+            settingsPush.hasSettings = false;
         }
 
         function onPushFailed() {
-            if (settingsPushRetry.failed) {
-                settingsPushRetry.interval = settingsPushRetry.interval *2;
-                if (settingsPushRetry.interval > 60000)
-                    settingsPushRetry.interval = 60000;
-            } else {
-                settingsPushRetry.failed = true;
-            }
-
-            settingsPushRetry.start()
+            managePushFailure();
         }
+
     }
 
     property Timer  settingsPush: Timer {
@@ -181,10 +200,17 @@ I_DeviceController {
         running: false;
         interval: 100;
 
+        property bool hasSensorDataChanges : false
+
         property bool hasSettings : false
+        property bool hasAutoModeSettings : false
 
         onTriggered: {
-            pushToServer();
+            if (hasSettings || hasSensorDataChanges)
+                pushToServer();
+
+            if (hasAutoModeSettings)
+                pushAutoModeSettingsToServer();
         }
     }
 
@@ -481,7 +507,7 @@ I_DeviceController {
         return true;
     }
 
-    function pushUpdateToServer(settings: bool){
+    function pushUpdateToServer(settings: bool) {
         if (settings)
             settingsPush.hasSettings = true
 
@@ -495,6 +521,12 @@ I_DeviceController {
             return;
 
         settingsPush.start()
+    }
+
+    //! Push auto settings to server
+    function pushAutoModeSettings() {
+        settingsPush.hasAutoModeSettings = true;
+        pushUpdateToServer(false);
     }
 
     function pushSettings() {
@@ -521,8 +553,11 @@ I_DeviceController {
         }
 
         if (!editModeEnabled(AppSpec.EMSettings)) {
+            // The server interprets temperature data based on the displayed unit (Celsius or Fahrenheit).
+            // To maintain accurate control and prevent misinterpretations,
+            // the unit should be permanently set to Celsius.
             if (!setSettings(settings.brightness, settings.speaker,
-                        settings.temperatureUnit, settings.brightness_mode))
+                        device.setting.tempratureUnit, settings.brightness_mode))
                 console.log("The system settings is not applied from server")
 
         } else {
@@ -545,6 +580,10 @@ I_DeviceController {
                         settings.shadeIndex)
     }
 
+    function pushAutoModeSettingsToServer() {
+        deviceControllerCPP.pushAutoSettingsToServer(device.autoMinReqTemp, device.autoMaxReqTemp)
+    }
+
     function pushToServer() {
         var send_data = {
             "temp": device.requestedTemp,
@@ -554,8 +593,8 @@ I_DeviceController {
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
-            "auto_temp_high" : device.autoMaxReqTemp,
-            "auto_temp_low" : device.autoMinReqTemp,
+            // "auto_temp_high" : device.autoMaxReqTemp,
+            // "auto_temp_low" : device.autoMinReqTemp,
             "fan" : {
                 "mode" : device.fan.mode,
                 "workingPerHour": device.fan.workingPerHour,
@@ -570,7 +609,7 @@ I_DeviceController {
                 "brightness": device.setting.brightness,
                 "brightness_mode": device.setting.adaptiveBrightness ? 1 : 0,
                 "speaker": device.setting.volume,
-                "temperatureUnit": device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? 1 : 0,
+                "temperatureUnit": 0, // Always celsius (see setSettings in setSettingsServer function)
                 "timeFormat": device.setting.timeFormat === AppSpec.TimeFormat.Hour24 ? 1 : 0,
                 "currentTimezone": device.setting.currentTimezone.length > 0 ? device.setting.currentTimezone : "UTC",
                 "effectDst": device.setting.effectDst,
@@ -870,7 +909,11 @@ I_DeviceController {
         if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
             _pushUpdateInformationCounter++;
 
+            settingsPush.hasSensorDataChanges = true;
             pushUpdateToServer(false);
+
+        } else {
+            settingsPush.hasSensorDataChanges = false;
         }
 
         //        console.log("--------------- End: updateInformation -------------------")
@@ -997,12 +1040,23 @@ I_DeviceController {
         }
     }
 
-    function forgetDevice()
-    {
+    function forgetDevice() {
         // Remove the save files from the directory.
         QSFileIO.removeFile(uiSession.recoveryConfigFilePath);
         QSFileIO.removeFile(uiSession.configFilePath);
 
         deviceControllerCPP.forgetDevice();
+    }
+
+    function managePushFailure() {
+        if (settingsPushRetry.failed) {
+            settingsPushRetry.interval = settingsPushRetry.interval *2;
+            if (settingsPushRetry.interval > 60000)
+                settingsPushRetry.interval = 60000;
+        } else {
+            settingsPushRetry.failed = true;
+        }
+
+        settingsPushRetry.start()
     }
 }

@@ -14,7 +14,12 @@ BasePageView {
      * ****************************************************************************************/
     readonly property var sortedWifis: {
         var wifis = Array.from(NetworkInterface.wifis);
-        return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.ssid !== "");
+        return wifis.sort((a, b) => b.strength - a.strength).filter((element, index) => element.strength > -1);
+    }
+
+    readonly property var savedNonInRangeWifis: {
+        var wifis = Array.from(NetworkInterface.wifis);
+        return wifis.filter((element, index) => element.strength < 0 && element.ssid !== "");
     }
 
     property System system: deviceController.deviceControllerCPP.system
@@ -55,15 +60,7 @@ BasePageView {
         repeat: false
         running: !once && initialSetupReady
         interval: 10000
-        onTriggered: {
-            once = true;
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
-            }
-        }
+        onTriggered: nextPage()
     }
 
     //! Next button
@@ -78,16 +75,7 @@ BasePageView {
 
         // Enable when the serial number is correctly filled
         enabled: initialSetupReady
-        onClicked: {
-            nextPageTimer.stop();
-            nextPageTimer.once = true;
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                             "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                         });
-            }
-        }
+        onClicked: nextPage()
     }
 
     RowLayout {
@@ -169,6 +157,7 @@ BasePageView {
         //! Available networks Label
         Label {
             id: _availLbl
+            visible: _wifisRepeater.model.length > 0
             opacity: 0.7
             font.pointSize: Application.font.pointSize * 0.8
             text: "Available Networks"
@@ -228,18 +217,63 @@ BasePageView {
                         onClicked: {
                             _wifisRepeater.currentIndex = index;
                         }
+
+                        onForgetClicked: {
+                            if (uiSession) {
+                                //! Ask for forgeting this wifi
+                                _forgetDlg.wifiToForget = wifi;
+                                uiSession.popupLayout.displayPopUp(_forgetDlg, true);
+                            }
+                        }
+                    }
+                }
+
+                //! Saved networks Label
+                Label {
+                    visible: savedNonInRangeWifis.length > 0
+                    opacity: 0.7
+                    font.pointSize: Application.font.pointSize * 0.8
+                    text: "Saved Networks"
+                }
+
+                ColumnLayout {
+                    width: parent.width
+                    spacing: 8
+
+                    Repeater {
+                        model: savedNonInRangeWifis
+                        delegate: WifiDelegate {
+                            required property var modelData
+                            required property int index
+
+                            Layout.fillWidth: true
+
+                            focus: false
+                            focusPolicy: Qt.NoFocus
+                            hoverEnabled: false
+                            wifi: (modelData instanceof WifiInfo) ? modelData : null
+
+                            onForgetClicked: {
+                                if (uiSession) {
+                                    //! Ask for forgeting this wifi
+                                    _forgetDlg.wifiToForget = wifi;
+                                    uiSession.popupLayout.displayPopUp(_forgetDlg, true);
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
-        RowLayout {
+        Item {
             Layout.fillWidth: true
-            Layout.leftMargin: 8
-            Layout.rightMargin: 8
+            Layout.preferredHeight: Style.button.buttonHeight
 
             //! Manual button
             ButtonInverted {
+                anchors.left: parent.left
+                anchors.leftMargin: 8
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Forget" : "Manual"
                 onClicked: {
                     if (text === "Manual") {
@@ -256,10 +290,36 @@ BasePageView {
                 }
             }
 
-            Item { Layout.fillWidth: true }
+            ToolButton {
+                anchors.centerIn: parent
+
+                checkable: false
+                checked: false
+                visible: initialSetup
+                implicitWidth: 64
+                implicitHeight: implicitWidth
+                icon.width: 50
+                icon.height: 50
+
+                contentItem: RoniaTextIcon {
+                    anchors.fill: parent
+                    font.pointSize: Style.fontIconSize.largePt
+                    Layout.alignment: Qt.AlignLeft
+                    text: FAIcons.circleInfo
+                }
+
+                onClicked: {
+                    root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
+                                                 "uiSession": Qt.binding(() => uiSession)
+                                             })
+
+                }
+            }
 
             //! Connect/Disconnect button
             ButtonInverted {
+                anchors.right: parent.right
+                anchors.rightMargin: 8
                 visible: _wifisRepeater.currentItem?.wifi ?? false
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
 
@@ -380,4 +440,19 @@ BasePageView {
     }
 
     onSortedWifisChanged: _wifisRepeater.currentIndexChanged();
+
+    /* Functions
+     * ****************************************************************************************/
+
+    function nextPage() {
+        if (root.StackView.view) {
+            nextPageTimer.once = true;
+            if (system.serialNumber.length > 0) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                         });
+            }
+        }
+    }
 }
