@@ -152,24 +152,32 @@ void HumidityScheme::sendRelays(bool forceSend)
         waitLoop(-1, AppSpecCPP::ctSendRelay);
     }
 
+    // Get changed relays, relays maybe changed in the Temperature scheme.
+    relaysConfig = mRelay->relays();
+
     emit sendRelayIsRunning(true);
 
     if (debugMode) {
         auto steps = lastConfigs.changeStepsSorted(relaysConfig);
-        for (int var = 0; var < steps.size(); ++var) {
+        for (int var = 0; var < steps.size(); var++) {
             auto step = steps.at(var);
             TRACE << step.first.c_str() << step.second;
-            if (step.first == "acc2"){
+            if (step.first == "g"){
+                lastConfigs.g = relaysConfig.g;
+                TRACE << relaysConfig.g;
+
+            } else if (step.first == "acc2"){
                 lastConfigs.acc2 = relaysConfig.acc2;
                 TRACE << relaysConfig.acc2;
-            }
-            else if (step.first == "acc1p"){
+
+            } else if (step.first == "acc1p"){
                 lastConfigs.acc1p = relaysConfig.acc1p;
                 TRACE << relaysConfig.acc1p;
-            }
-            else if (step.first == "acc1n"){
+
+            } else if (step.first == "acc1n"){
                 lastConfigs.acc1n = relaysConfig.acc1n;
-                TRACE << relaysConfig.acc1n;
+                TRACE << relaysConfig.acc1n << relaysConfig.acc1p;
+
             } else {
                 // To ignore Temperature relays
                 continue;
@@ -180,11 +188,13 @@ void HumidityScheme::sendRelays(bool forceSend)
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
         }
+
     } else { // Update relays
         emit updateRelays(relaysConfig);
-        lastConfigs = relaysConfig;
     }
 
+    // To ensure the temperature relays updated.
+    lastConfigs = relaysConfig;
     TRACE_CHECK(false) << "finished";
 
     emit sendRelayIsRunning(false);

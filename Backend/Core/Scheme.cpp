@@ -907,6 +907,9 @@ void Scheme::sendRelays(bool forceSend)
         waitLoop(-1, AppSpecCPP::ctSendRelay);
     }
 
+    // Get changed relays, relays maybe changed in the Humidity scheme.
+    relaysConfig = mRelay->relays();
+
     emit sendRelayIsRunning(true);
 
     if (debugMode) {
@@ -954,8 +957,10 @@ void Scheme::sendRelays(bool forceSend)
         }
     } else { // Update relays
         emit updateRelays(relaysConfig);
-        lastConfigs = relaysConfig;
     }
+
+    // To ensure the humidity relays updated.
+    lastConfigs = relaysConfig;
 
     emit currentSystemModeChanged(mRelay->currentState());
 
