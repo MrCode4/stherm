@@ -64,10 +64,10 @@ protected:
     QVariantMap _mainData;
 
     //! Temperature parameters (Fahrenheit)
-    double mCurrentTemperature = 20 * 1.8 + 32;
+    double mCurrentTemperature;
 
     //! Humidity parameters (Percentage)
-    double mCurrentHumidity = 10;
+    double mCurrentHumidity;
 
     bool stopWork;
 
