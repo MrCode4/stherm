@@ -797,22 +797,20 @@ void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStat
 
 void NmcliInterface::doRefreshWifi()
 {
-    connect(mRefreshProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
-            Qt::SingleShotConnection);
-
-    const QStringList args = NC_REFERESH_ARGS + NC_PRINT_MODE_ARGS + QStringList({
-                                 NC_ARG_DEVICE,
-                                 NC_ARG_WIFI,
-                                 NC_ARG_LIST,
-                                 NC_ARG_RESCAN,
-                                 mRescanInRefresh ? "yes" : "auto"
-                             });
-
     if (mRefreshProcess->state() == QProcess::NotRunning) {
+        connect(mRefreshProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
+                Qt::SingleShotConnection);
+
+        const QStringList args = NC_REFERESH_ARGS + NC_PRINT_MODE_ARGS + QStringList({
+                                     NC_ARG_DEVICE,
+                                     NC_ARG_WIFI,
+                                     NC_ARG_LIST,
+                                     NC_ARG_RESCAN,
+                                     mRescanInRefresh ? "yes" : "auto"
+                                 });
+
         mRefreshProcess->start(NC_COMMAND, args);
     } else {
-        disconnect(mRefreshProcess, &QProcess::finished,
-                   this, &NmcliInterface::onWifiListRefreshFinished);
         setBusyRefreshing(false);
     }
 }

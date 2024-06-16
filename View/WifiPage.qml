@@ -254,6 +254,10 @@ BasePageView {
                             wifi: (modelData instanceof WifiInfo) ? modelData : null
 
                             onForgetClicked: {
+                                if (NetworkInterface.busy) {
+                                    return;
+                                }
+
                                 if (uiSession) {
                                     //! Ask for forgeting this wifi
                                     _forgetDlg.wifiToForget = wifi;
