@@ -50,6 +50,7 @@ void HumidityScheme::run()
 
         }
 
+        updateAccessoriesRelays();
         sendRelays(true);
         if (stopWork)
             break;
@@ -211,28 +212,23 @@ void HumidityScheme::VacationLoop()
     if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
         if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
-            // Set off the humidity relays in cooling mode
-            if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling) {
-                updateAccessoriesRelays();
-
-            } else {
-
-                // Humidity loop
-                while ((mVacationMaximumHumidity - mCurrentHumidity) > 0.001 && (mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
-                    // Exit from loop
-                    if (stopWork) {
-                        break;
-                    }
-
-                    updateAccessoriesRelays(mAccessoriesWireType);
+            // Humidity loop
+            while ((mVacationMaximumHumidity - mCurrentHumidity) > 0.001 && (mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
+                // Exit from loop
+                if (stopWork) {
+                    break;
                 }
 
-                // Exit from loop and Off the humidity wiring.
-                if ((mVacationMaximumHumidity - mCurrentHumidity) < 0.001)
-                    updateAccessoriesRelays();
+                // Set off the humidity relays in cooling mode
+                if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling)
+                    break;
+
+                updateAccessoriesRelays(mAccessoriesWireType);
             }
 
-
+            // Exit from loop and Off the humidity wiring.
+            if ((mVacationMaximumHumidity - mCurrentHumidity) < 0.001)
+                updateAccessoriesRelays();
         }
 
         // Dehumidifiers can only reduce humidity, and may not be able to consistently maintain the desired vacation humidity range.
@@ -281,21 +277,17 @@ void HumidityScheme::normalLoop()
 
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
-        TRACE << "Humidi" << mRelay->currentState() << mCurrentHumidity << effectiveHumidity() << stopWork;
-        // Set off the humidity relays in cooling mode
-        if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling) {
-            updateAccessoriesRelays();
-
-        } else {
-            while (mCurrentHumidity - effectiveHumidity() < 10) {
-                // Exit from loop
-                if (stopWork) {
-                    break;
-                }
-
-                updateAccessoriesRelays(mAccessoriesWireType);
-
+        while (mCurrentHumidity - effectiveHumidity() < 10) {
+            // Exit from loop
+            if (stopWork) {
+                break;
             }
+
+            // Set off the humidity relays in cooling mode
+            if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling)
+                break;
+
+            updateAccessoriesRelays(mAccessoriesWireType);
 
             if (mCurrentHumidity - effectiveHumidity() >= 10)
                 updateAccessoriesRelays();
