@@ -50,6 +50,7 @@ void HumidityScheme::run()
 
         }
 
+        sendRelays(true);
         if (stopWork)
             break;
 
@@ -98,6 +99,8 @@ void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
     if (mSystemSetup) {
         mSystemSetup->disconnect(this);
     }
+
+    mSystemSetup = systemSetup;
 
     connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
         TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
@@ -268,6 +271,7 @@ void HumidityScheme::normalLoop()
 
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
+        TRACE << "Humidi" << mRelay->currentState() << mCurrentHumidity << effectiveHumidity() << stopWork;
         // Set off the humidity relays in cooling mode
         if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling) {
             updateAccessoriesRelays();
@@ -319,6 +323,8 @@ void HumidityScheme::setRequestedHumidity(const double &setPointHumidity)
 void HumidityScheme::updateAccessoriesRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType)
 {
     mRelay->updateHumidityWiring(accessoriesWireType);
+
+    sendRelays();
 }
 
 double HumidityScheme::effectiveHumidity()

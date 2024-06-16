@@ -302,6 +302,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         m_scheme->setCanSendRelays(!isRunning);
     });
 
+    connect(m_HumidityScheme, &HumidityScheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
+        _deviceIO->updateRelays(relays);
+    });
 
     if (m_system) {
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
@@ -562,6 +565,8 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
     // Set system setp
     m_scheme->setSystemSetup(mSystemSetup);
+
+    m_HumidityScheme->setSystemSetup(mSystemSetup);
 
     emit systemSetupChanged();
 }
