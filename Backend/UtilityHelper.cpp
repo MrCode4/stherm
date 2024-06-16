@@ -517,6 +517,8 @@ std::vector<std::pair<std::string, int> > STHERM::RelayConfigs::changeStepsSorte
 }
 
 QString STHERM::RelayConfigs::printStr(){
-    return QString("o/b:%0, g:%1, y1:%2, y2:%3, w1:%4, w2:%5, w3:%6").arg(printModeStr(o_b),printModeStr(g),printModeStr(y1),printModeStr(y2),printModeStr(w1),printModeStr(w2),printModeStr(w3));
+    return QString("o/b:%0, g:%1, y1:%2, y2:%3, w1:%4, w2:%5, w3:%6, acc2:%7, acc1n:%8, acc1p:%9").
+        arg(printModeStr(o_b),printModeStr(g),printModeStr(y1),printModeStr(y2),printModeStr(w1),printModeStr(w2),printModeStr(w3),
+            printModeStr(acc2), printModeStr(acc1n), printModeStr(acc1p));
 }
 
