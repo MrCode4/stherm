@@ -274,9 +274,12 @@ BasePageView {
             ButtonInverted {
                 anchors.left: parent.left
                 anchors.leftMargin: 8
-                enabled: !NetworkInterface.busy
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Forget" : "Manual"
                 onClicked: {
+                    if (NetworkInterface.busy) {
+                        return;
+                    }
+
                     if (text === "Manual") {
                         if (root.StackView.view) {
                             root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiManualConnectPage.qml");
@@ -321,11 +324,14 @@ BasePageView {
             ButtonInverted {
                 anchors.right: parent.right
                 anchors.rightMargin: 8
-                enabled: !NetworkInterface.busy
                 visible: _wifisRepeater.currentItem?.wifi ?? false
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
 
                 onClicked: {
+                    if (NetworkInterface.busy) {
+                        return;
+                    }
+
                     if (text === "Connect") {
                         var wifi = _wifisRepeater.currentItem.wifi;
 
@@ -417,7 +423,7 @@ BasePageView {
 
             // TODO: manage push
             //! Incorrect password entered
-            if (root.StackView.view && root.StackView.view.currentItem === root) {
+            if (root.StackView.view && root.StackView.view.busy === false && root.StackView.view.currentItem === root) {
                 var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
 
                 //! Note: it's better to stop wifi refreshing to prevent any deleted
