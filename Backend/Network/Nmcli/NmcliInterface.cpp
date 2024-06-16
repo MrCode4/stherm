@@ -619,8 +619,7 @@ void NmcliInterface::setupObserver()
         if (ssid.isEmpty()) return;
 
         for (WifiInfo* wifi : mWifis) {
-            if ((wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) && !wifi->connected()
-                && !wifi->isConnecting()) {
+            if ((wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) && !wifi->connected()) {
                 //! This wifi is now saved if it wasn't previously
                 if (!wifi->isSaved()) {
                     wifi->setIsSaved(true);
