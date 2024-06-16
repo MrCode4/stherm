@@ -595,6 +595,9 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData)
 
     if (m_scheme)
         m_scheme->setMainData(getMainData());
+
+    if (m_HumidityScheme)
+        m_HumidityScheme->setMainData(getMainData());
 }
 
 void DeviceControllerCPP::startTestMode()
@@ -705,6 +708,9 @@ void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
 
     if (m_scheme)
         m_scheme->setMainData(getMainData());
+
+    if (m_HumidityScheme)
+        m_HumidityScheme->setMainData(getMainData());
 }
 
 bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
