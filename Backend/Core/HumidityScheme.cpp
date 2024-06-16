@@ -3,19 +3,9 @@
 
 #include <QTimer>
 
-
-const double RELAYS_WAIT_MS = 500;
-
 HumidityScheme::HumidityScheme(DeviceAPI* deviceAPI, QObject *parent) :
-    mDeviceAPI(deviceAPI),
-    stopWork(true),
-    mCanSendRelay(true),
-    debugMode(true),
-    QThread{parent}
+    BaseScheme(deviceAPI, parent)
 {
-    mRelay = Relay::instance();
-
-    debugMode = RELAYS_WAIT_MS != 0;
 }
 
 HumidityScheme::~HumidityScheme()
@@ -96,15 +86,6 @@ void HumidityScheme::restartWork()
         stopWork = false;
         // mLogTimer.start();
         this->start();
-    }
-}
-
-void HumidityScheme::setCanSendRelays(const bool &csr)
-{
-    mCanSendRelay = csr;
-
-    if (mCanSendRelay) {
-        emit canSendRelay();
     }
 }
 
@@ -224,7 +205,7 @@ void HumidityScheme::VacationLoop()
 {
     // In vacation range
     if (checkVacationRange()) {
-        updateRelays();
+        updateAccessoriesRelays();
         return;
     }
 
@@ -233,7 +214,7 @@ void HumidityScheme::VacationLoop()
         if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
             // Set off the humidity relays in cooling mode
             if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling) {
-                updateRelays();
+                updateAccessoriesRelays();
 
             } else {
 
@@ -244,12 +225,12 @@ void HumidityScheme::VacationLoop()
                         break;
                     }
 
-                    updateRelays(mAccessoriesWireType);
+                    updateAccessoriesRelays(mAccessoriesWireType);
                 }
 
                 // Exit from loop and Off the humidity wiring.
                 if ((mVacationMaximumHumidity - mCurrentHumidity) < 0.001)
-                    updateRelays();
+                    updateAccessoriesRelays();
             }
 
 
@@ -266,15 +247,15 @@ void HumidityScheme::VacationLoop()
                 break;
             }
 
-            updateRelays(mAccessoriesWireType);
+            updateAccessoriesRelays(mAccessoriesWireType);
         }
 
         if (mVacationMaximumHumidity >= mCurrentHumidity && mVacationMinimumHumidity >= mCurrentHumidity) {
-            updateRelays();
+            updateAccessoriesRelays();
         }
 
     } else {
-        updateRelays();
+        updateAccessoriesRelays();
     }
 }
 
@@ -292,18 +273,18 @@ void HumidityScheme::normalLoop()
                 break;
             }
 
-            updateRelays(mAccessoriesWireType);
+            updateAccessoriesRelays(mAccessoriesWireType);
 
         }
 
         if (mCurrentHumidity - effectiveHumidity() <= 10)
-            updateRelays();
+            updateAccessoriesRelays();
 
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
         // Set off the humidity relays in cooling mode
         if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling) {
-            updateRelays();
+            updateAccessoriesRelays();
 
         } else {
             while (mCurrentHumidity - effectiveHumidity() < 10) {
@@ -312,12 +293,12 @@ void HumidityScheme::normalLoop()
                     break;
                 }
 
-                updateRelays(mAccessoriesWireType);
+                updateAccessoriesRelays(mAccessoriesWireType);
 
             }
 
             if (mCurrentHumidity - effectiveHumidity() >= 10)
-                updateRelays();
+                updateAccessoriesRelays();
         }
 
     } else {
@@ -349,7 +330,7 @@ void HumidityScheme::setRequestedHumidity(const double &setPointHumidity)
     mSetPointHumidity = setPointHumidity;
 }
 
-void HumidityScheme::updateRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType)
+void HumidityScheme::updateAccessoriesRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType)
 {
     mRelay->updateHumidityWiring(accessoriesWireType);
 }

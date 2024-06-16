@@ -23,7 +23,6 @@ const double ALERT_TIME              = 120;
 const double CHANGE_STAGE_TIME       = 40;
 const double CHANGE_STAGE_TIME_WO_OB = 10;
 const double S2OFF_TIME              = 2;
-const double RELAYS_WAIT_MS          = 500;
 
 // Status backlight color
 const QVariantList coolingColor      = QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE, "true"};
@@ -36,13 +35,9 @@ inline double toFahrenheit(double celsius) {
 }
 
 Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
-    mDeviceAPI(deviceAPI),
     mRestarting (false),
-    mCanSendRelay(true),
-    QThread (parent)
+    BaseScheme (deviceAPI, parent)
 {
-    stopWork = true;
-    debugMode = RELAYS_WAIT_MS != 0;
 
     mTiming = mDeviceAPI->timing();
     mRelay  = Relay::instance();
@@ -87,7 +82,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QObject *parent) :
         LOG_CHECK(isRunning() && mFanHourTimer.isActive()) << "fan on 1 hour stage finishes in " << mFanHourTimer.remainingTime() / 60000 << "minutes";
         LOG_CHECK(isRunning() && mFanWPHTimer.isActive()) << "fan on stage finishes in " << mFanWPHTimer.remainingTime() / 60000 << "minutes";
         LOG_CHECK(isRunning()) << "Current Temperature : " << effectiveCurrentTemperature() << "Effective Set Temperature: " << effectiveTemperature();
-        LOG_CHECK(isRunning() && false) << "Current Humidity : " << effectiveCurrentHumidity() << "Effective Set Humidity: " << effectiveHumidity();
+        // LOG_CHECK(isRunning() && false) << "Current Humidity : " << effectiveCurrentHumidity() << "Effective Set Humidity: " << effectiveHumidity();
         LOG_CHECK(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
         LOG_CHECK(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";
     });
@@ -354,44 +349,44 @@ void Scheme::VacationLoop()
         CoolingLoop();
 
     } else if (false) { // TODO
-            switch (mSystemSetup->systemMode) {
-            case AppSpecCPP::SystemMode::Cooling: {
-                if (effectiveTemperature() - mCurrentTemperature < STAGE1_OFF_RANGE) {
-                    // mCurrentSysMode = AppSpecCPP::SystemMode::Cooling;
-                    CoolingLoop();
+        switch (mSystemSetup->systemMode) {
+        case AppSpecCPP::SystemMode::Cooling: {
+            if (effectiveTemperature() - mCurrentTemperature < STAGE1_OFF_RANGE) {
+                // mCurrentSysMode = AppSpecCPP::SystemMode::Cooling;
+                CoolingLoop();
 
-                } else if (effectiveTemperature() - mCurrentTemperature < STAGE1_ON_RANGE) {
-                    // mCurrentSysMode = AppSpecCPP::SystemMode::Off;
-                    waitLoop();
+            } else if (effectiveTemperature() - mCurrentTemperature < STAGE1_ON_RANGE) {
+                // mCurrentSysMode = AppSpecCPP::SystemMode::Off;
+                waitLoop();
 
-                } else {
-                    HeatingLoop();
-                }
+            } else {
+                HeatingLoop();
+            }
 
-            } break;
+        } break;
 
-            case AppSpecCPP::SystemMode::Heating: {
-                if (mCurrentTemperature - effectiveTemperature() < STAGE1_OFF_RANGE) {
-                    HeatingLoop();
+        case AppSpecCPP::SystemMode::Heating: {
+            if (mCurrentTemperature - effectiveTemperature() < STAGE1_OFF_RANGE) {
+                HeatingLoop();
 
-                } else if (mCurrentTemperature - effectiveTemperature() < STAGE1_ON_RANGE) {
-                    waitLoop();
+            } else if (mCurrentTemperature - effectiveTemperature() < STAGE1_ON_RANGE) {
+                waitLoop();
 
-                }  else {
-                    CoolingLoop();
-                }
+            }  else {
+                CoolingLoop();
+            }
 
-            } break;
+        } break;
 
-            default: {
-                if (effectiveTemperature() - mCurrentTemperature > STAGE1_ON_RANGE) {
-                    HeatingLoop();
+        default: {
+            if (effectiveTemperature() - mCurrentTemperature > STAGE1_ON_RANGE) {
+                HeatingLoop();
 
-                } else if (mCurrentTemperature - effectiveTemperature() > STAGE1_ON_RANGE) {
-                    CoolingLoop();
+            } else if (mCurrentTemperature - effectiveTemperature() > STAGE1_ON_RANGE) {
+                CoolingLoop();
 
-                }
-            } break;
+            }
+        } break;
         }
     }
 
@@ -984,64 +979,14 @@ int Scheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
     return loop.exec();
 }
 
-double Scheme::currentHumidity() const
-{
-    return mCurrentHumidity;
-}
-
-void Scheme::setCurrentHumidity(double newCurrentHumidity)
-{
-    if (mCurrentHumidity != newCurrentHumidity)
-        return;
-
-    mCurrentHumidity = newCurrentHumidity;
-
-    updateHumifiresState();
-}
-
-double Scheme::setPointHimidity() const
-{
-    return mSetPointHimidity;
-}
-
-void Scheme::setSetPointHimidity(double newSetPointHimidity)
-{
-    mSetPointHimidity = newSetPointHimidity;
-}
-
-void Scheme::setMainData(QVariantMap mainData)
-{
-    if (_mainData == mainData)
-        return;
-
-    _mainData = mainData;
-
-    bool isOk;
-    double tc = mainData.value("temperature").toDouble(&isOk);
-    double currentTemp = toFahrenheit(tc);
-
-    if (isOk) {
-        // meaningful change
-        if (qAbs(currentTemp - mCurrentTemperature) > 0.1)
-            emit currentTemperatureChanged();
-        mCurrentTemperature = currentTemp;
-    }
-
-    double currentHumidity = mainData.value("humidity").toDouble(&isOk);
-
-    if (isOk) {
-        setCurrentHumidity(currentHumidity);
-    }
-}
-
 //TODO
 void Scheme::updateVacationState()
 {
     if (stopWork)
-       return;
+        return;
 
     if (mRealSysMode != AppSpecCPP::SystemMode::Vacation)
-       return; // we can also assert as this should not happen
+        return; // we can also assert as this should not happen
 
     TRACE << "mCurrentSysMode " << mCurrentSysMode;
     AppSpecCPP::SystemMode realSysMode = AppSpecCPP::SystemMode::Off;
@@ -1080,57 +1025,9 @@ void Scheme::updateVacationState()
         //        range = temperature - current_state['max_temp'];
     }
 
-    updateHumifiresState();
-
     // Update current system mode
     mCurrentSysMode = realSysMode;
     mRealSysMode = realSysMode;
-}
-
-// TODO
-void Scheme::updateHumifiresState()
-{
-    if (stopWork)
-        return;
-
-    TRACE << "HumidifierId " << mHumidifierId << mSystemSetup;
-
-    if (!mSystemSetup || mHumidifierId == 3)
-        return;
-
-    if (mSystemSetup->isVacation) {
-        qDebug() << Q_FUNC_INFO << __LINE__ << mRealSysMode;
-        if (mHumidifierId == 1) {
-            mRelay->setHumidifierState(mCurrentHumidity < mVacation.minimumHumidity);
-
-        } else if (mHumidifierId == 2) {
-            mRelay->setDehumidifierState(mCurrentHumidity > mVacation.maximumHumidity);
-        }
-
-    } else {
-        double max_hum = HUM_MAX;
-        double min_hum = HUM_MIN;
-
-        if (mSetPointHimidity + HUM_STEP < max_hum)
-            max_hum = mSetPointHimidity + HUM_STEP;
-
-        if (mSetPointHimidity - HUM_STEP > min_hum)
-            min_hum = mSetPointHimidity - HUM_STEP;
-
-        if (mHumidifierId == 1) {
-            if (mCurrentHumidity < mSetPointHimidity) // on
-                mRelay->setHumidifierState(true);
-
-            else if (mCurrentHumidity >= max_hum)    // off
-                mRelay->setHumidifierState(false);
-
-        } else if (mHumidifierId == 2) { // dehumidifier
-            if (mCurrentHumidity > mSetPointHimidity)
-                mRelay->setDehumidifierState(true);
-            else if (mCurrentHumidity <= min_hum)
-                mRelay->setDehumidifierState(false);
-        }
-    }
 }
 
 void Scheme::setSchedule(ScheduleCPP *newSchedule)
@@ -1191,16 +1088,6 @@ double Scheme::effectiveCurrentTemperature()
     return mCurrentTemperature;
 }
 
-double Scheme::effectiveHumidity()
-{
-    return mSetPointHimidity;
-}
-
-double Scheme::effectiveCurrentHumidity()
-{
-    return mCurrentHumidity;
-}
-
 AppSpecCPP::FanMode Scheme::fanMode() const {
     return mFanMode;
 }
@@ -1217,15 +1104,6 @@ void Scheme::setAutoMaxReqTemp(const double &max)
     auto maxF = toFahrenheit(max);
     if (qAbs(mAutoMaxReqTemp - maxF) > 0.001)
         mAutoMaxReqTemp = maxF;
-}
-
-void Scheme::setCanSendRelays(const bool &csr)
-{
-    mCanSendRelay = csr;
-
-    if (mCanSendRelay) {
-        emit canSendRelay();
-    }
 }
 
 void Scheme::setVacation(const STHERM::Vacation &newVacation)
@@ -1335,16 +1213,6 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
         if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatPump)
             TRACE << "heatPumpEmergencyChanged: " << mSystemSetup->heatPumpEmergency;
     });
-}
-
-void Scheme::setHumidifierId(const int &humidifierId)
-{
-    if (mHumidifierId != humidifierId)
-        return;
-
-    mHumidifierId = humidifierId;
-    updateHumifiresState();
-
 }
 
 AppSpecCPP::SystemMode Scheme::getCurrentSysMode() const

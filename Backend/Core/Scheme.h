@@ -1,15 +1,10 @@
 #pragma once
 
-#include <QThread>
 #include <QVariantMap>
 #include <QTimer>
 
-#include "Core/Relay.h"
-#include "Device/SystemSetup.h"
-#include "DeviceAPI.h"
-#include "ScheduleCPP.h"
+#include "BaseScheme.h"
 #include "UtilityHelper.h"
-#include "AppSpecCPP.h"
 #include "include/timing.h"
 
 /*! ***********************************************************************************************
@@ -17,7 +12,7 @@
  * todo: Add another properties.
  * ************************************************************************************************/
 
-class Scheme : public QThread
+class Scheme : public BaseScheme
 {
     Q_OBJECT
 
@@ -30,24 +25,13 @@ public:
     AppSpecCPP::SystemMode getCurrentSysMode() const;
     void setCurrentSysMode(AppSpecCPP::SystemMode newSysMode);
 
-    void setMainData(QVariantMap mainData);
-
-    //! Update Humidifier Id
-    void setHumidifierId(const int &humidifierId);
-
-
     //! Setter and getter for set point humidity.
     double setPointHimidity() const;
     void setSetPointHimidity(double newSetPointHimidity);
 
-    //! Setter and getter for set current humidity.
-    //! Update from setMainData.
-    double currentHumidity() const;
-    void setCurrentHumidity(double newCurrentHumidity);
-    
     void setFan(AppSpecCPP::FanMode fanMode, int newFanWPH);
 
-    void setSystemSetup(SystemSetup* systemSetup);
+    void setSystemSetup(SystemSetup* systemSetup) override;
 
     //! Set requested Temperature
     void setSetPointTemperature(double newSetPointTemperature);
@@ -67,31 +51,19 @@ public:
     void setAutoMinReqTemp(const double &min);
     void setAutoMaxReqTemp(const double &max);
 
-    void setCanSendRelays(const bool& csr);
-
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
     void changeBacklight(QVariantList colorData = QVariantList(),
                          QVariantList colorDataAfter = QVariantList());
 
-    //! Send relay to DeviceIOController and update relays into ti board.
-    void updateRelays(STHERM::RelayConfigs);
-
     void alert();
 
-    void currentTemperatureChanged();
     void setTemperatureChanged();
-
-    //! Emit when we need exit from wait loop
-    void stopWorkRequested();
 
     void fanWorkChanged(bool fanState);
 
     void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
-
-    void sendRelayIsRunning(const bool& isRunning);
-    void canSendRelay();
 
 protected:
     void run() override;
@@ -131,11 +103,7 @@ private:
 
     //! To monitor data change: current temperature, set temperature, mode
     //! use low values for timeout in exit cases as it might had abrupt changes previously
-    int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll);
-
-    //! Update humidifire and dehumidifire after changes: mode, set point humidity,
-    //! current humidity, and humidifier Id
-    void updateHumifiresState();
+    int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll) override;
 
     //! Find the effective temperature to run the system with found temperature
     //! based on schedule or vacation settings and systemMode (auto)
@@ -147,20 +115,11 @@ private:
     //! find the currentTemperature based on source sensor or any overriding rule!
     double effectiveCurrentTemperature();
 
-
-    //! Find the effective humidity to run the system with found humidity
-    //! based on schedule or vacation settings
-    double effectiveHumidity();
-
-    //! find the currentHumidity based on source sensor or any overriding rule!
-    double effectiveCurrentHumidity();
+    void fanWork(bool isOn);
 
 private:
     /* Attributes
      * ****************************************************************************************/
-    DeviceAPI *mDeviceAPI;
-
-    QVariantMap _mainData;
 
     AppSpecCPP::SystemMode mCurrentSysMode;
 
@@ -170,10 +129,7 @@ private:
 
     struct STHERM::Vacation mVacation;
 
-    SystemSetup *mSystemSetup = nullptr;
-
     NUVE::Timing* mTiming;
-    Relay*  mRelay;
 
     QTimer mUpdatingTimer;
 
@@ -187,13 +143,6 @@ private:
     QTimer mLogTimer;
 
     int mHumidifierId;
-
-    //! Humidity parameters
-    double mCurrentHumidity;
-    double mSetPointHimidity;
-
-    //! Temperature parameters (Fahrenheit)
-    double mCurrentTemperature = 20 * 1.8 + 32;
 
     //! Fahrenheit
     double mSetPointTemperature;
@@ -210,15 +159,6 @@ private:
     int mFanWPH;
     AppSpecCPP::FanMode mFanMode;
 
-    bool stopWork;
     bool isVacation;
     bool mRestarting;
-
-    STHERM::RelayConfigs lastConfigs;
-
-    bool debugMode = true;
-
-    bool mCanSendRelay;
-
-    void fanWork(bool isOn);
 };

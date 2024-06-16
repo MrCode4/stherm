@@ -1,18 +1,12 @@
 #pragma once
 
-#include <QObject>
-#include <QThread>
-
-#include "DeviceAPI.h"
-#include "Relay.h"
-#include "ScheduleCPP.h"
-#include "SystemSetup.h"
+#include "BaseScheme.h"
 
 /*! ***********************************************************************************************
  * This class controls the humidity.
  * ************************************************************************************************/
 
-class HumidityScheme : public QThread
+class HumidityScheme : public BaseScheme
 {
     Q_OBJECT
 
@@ -21,7 +15,7 @@ public:
 
     ~HumidityScheme();
 
-    void setSystemSetup(SystemSetup *systemSetup);
+    void setSystemSetup(SystemSetup *systemSetup) override;
 
     void setVacation(const STHERM::Vacation &newVacation);
 
@@ -36,21 +30,11 @@ public:
     //! Restart the worker thread
     void restartWork();
 
-    void setCanSendRelays(const bool& csr);
-
 protected:
     void run() override;
 
 signals:
-     void currentHumidityChanged();
     void setHumidityChanged();
-    void stopWorkRequested();
-
-    void sendRelayIsRunning(const bool& isRunning);
-    void canSendRelay();
-
-    //! Send relay to DeviceIOController and update relays into ti board.
-    void updateRelays(STHERM::RelayConfigs);
 
 private:
 
@@ -62,7 +46,7 @@ private:
 
     //! Update relays but not sent to device.
     //! None sets the humidity wirings to off.
-    void updateRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType = AppSpecCPP::None);
+    void updateAccessoriesRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType = AppSpecCPP::None);
 
     //! Check the humidity range from vacation
     bool checkVacationRange();
@@ -72,7 +56,7 @@ private:
 
     //! To monitor data change: current Humidity, set Humidity, mode
     //! use low values for timeout in exit cases as it might had abrupt changes previously
-    int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll);
+    int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll) override;
 
     void OffLoop();
 
@@ -81,11 +65,6 @@ private:
 
 
 private:
-    Relay*  mRelay;
-    DeviceAPI *mDeviceAPI;
-
-    SystemSetup *mSystemSetup = nullptr;
-    ScheduleCPP* mSchedule = nullptr;
 
     AppSpecCPP::AccessoriesType     mAccessoriesType;
     AppSpecCPP::AccessoriesWireType mAccessoriesWireType;
@@ -96,15 +75,5 @@ private:
 
     double mSetPointHumidity;
 
-    //! Humidity parameters (Percentage)
-    double mCurrentHumidity = 30;
-
-    bool stopWork;
-
-    bool mCanSendRelay;
-
-    bool debugMode;
-
-    STHERM::RelayConfigs lastConfigs;
 };
 
