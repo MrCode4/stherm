@@ -941,6 +941,9 @@ void Scheme::sendRelays(bool forceSend)
             else if (step.first == "w3"){
                 lastConfigs.w3 = relaysConfig.w3;
                 TRACE << relaysConfig.w3;
+            } else {
+                // To ignore humidity relays
+                continue;
             }
 
             // Update relays

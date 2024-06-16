@@ -156,35 +156,21 @@ void HumidityScheme::sendRelays(bool forceSend)
         for (int var = 0; var < steps.size(); ++var) {
             auto step = steps.at(var);
             TRACE << step.first.c_str() << step.second;
-            if (step.first == "o/b"){
-                lastConfigs.o_b = relaysConfig.o_b;
-                TRACE << relaysConfig.o_b;
+            if (step.first == "acc2"){
+                lastConfigs.acc2 = relaysConfig.acc2;
+                TRACE << relaysConfig.acc2;
             }
-            else if (step.first == "g"){
-                lastConfigs.g = relaysConfig.g;
-                TRACE << relaysConfig.g;
+            else if (step.first == "acc1p"){
+                lastConfigs.acc1p = relaysConfig.acc1p;
+                TRACE << relaysConfig.acc1p;
             }
-            else if (step.first == "y1"){
-                lastConfigs.y1 = relaysConfig.y1;
-                TRACE << relaysConfig.y1;
+            else if (step.first == "acc1n"){
+                lastConfigs.acc1n = relaysConfig.acc1n;
+                TRACE << relaysConfig.acc1n;
+            } else {
+                // To ignore Temperature relays
+                continue;
             }
-            else if (step.first == "y2"){
-                lastConfigs.y2 = relaysConfig.y2;
-                TRACE << relaysConfig.y2;
-            }
-            else if (step.first == "w1"){
-                lastConfigs.w1 = relaysConfig.w1;
-                TRACE << relaysConfig.w1;
-            }
-            else if (step.first == "w2"){
-                lastConfigs.w2 = relaysConfig.w2;
-                TRACE << relaysConfig.w2;
-            }
-            else if (step.first == "w3"){
-                lastConfigs.w3 = relaysConfig.w3;
-                TRACE << relaysConfig.w3;
-            }
-
             // Update relays
             if (step.second != 0) {
                 emit updateRelays(lastConfigs);
