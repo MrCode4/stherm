@@ -224,6 +224,7 @@ void HumidityScheme::VacationLoop()
                     break;
 
                 updateAccessoriesRelays(mAccessoriesWireType);
+                waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
 
             // Exit from loop and Off the humidity wiring.
@@ -243,6 +244,7 @@ void HumidityScheme::VacationLoop()
             }
 
             updateAccessoriesRelays(mAccessoriesWireType);
+            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
         }
 
         if (mVacationMaximumHumidity >= mCurrentHumidity && mVacationMinimumHumidity >= mCurrentHumidity) {
@@ -269,7 +271,7 @@ void HumidityScheme::normalLoop()
             }
 
             updateAccessoriesRelays(mAccessoriesWireType);
-
+            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
         }
 
         if (mCurrentHumidity - effectiveHumidity() <= 10)
@@ -291,6 +293,8 @@ void HumidityScheme::normalLoop()
 
             if (mCurrentHumidity - effectiveHumidity() >= 10)
                 updateAccessoriesRelays();
+
+            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
         }
 
     } else {
