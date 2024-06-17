@@ -30,6 +30,8 @@ class System : public NetworkWorker
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
+    Q_PROPERTY(bool fetchSuccessOnce   READ hasFetchSuccessOnce  FINAL)
+
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
@@ -66,6 +68,10 @@ public:
     //! Get serial number from server
     std::pair<std::string, bool> getSN(cpuid_t accessUid);
 
+    //! Get serial number from server, call from QML and return serial number
+    //! Some signals are block in this function.
+    Q_INVOKABLE QString getSN_QML(QString accessUid);
+
     //! Get update
     //! todo: process response packet
     //! TEMP: "022"
@@ -88,11 +94,11 @@ public:
 
     Q_INVOKABLE void getBackdoorInformation();
 
-    Q_INVOKABLE void wifiConnected(bool hasInternet);
-
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
     Q_INVOKABLE void exitManualMode();
+
+    void wifiConnected(bool hasInternet);
 
     void setCanFetchServer(bool canFetch);
 
@@ -123,6 +129,8 @@ public:
     bool updateAvailable();
 
     bool testMode();
+
+    bool has_sshPass();
 
     /*!
      * \brief updateSequenceOnStart gets if the app just updated and set the state false so this happens only once
@@ -168,6 +176,9 @@ public:
 
     bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
+    //! Check: the directory is valid and has minimum free space
+    bool checkDirectorySpaces(const QString directory, const uint32_t minimumSizeBytes = 400000000);
+
     bool isManualMode();
 
     Q_INVOKABLE bool isInitialSetup();
@@ -175,6 +186,14 @@ public:
 
     //! Forget device settings and sync settings
     Q_INVOKABLE void ForgetDevice();
+
+    bool hasFetchSuccessOnce() const;
+
+    //! Manage quiet/night mode in system
+    void setNightModeRunning(const bool running);
+
+    //! Push auto mode settings to server
+    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
 protected slots:
     //! Process network replay
@@ -186,7 +205,11 @@ protected slots:
 
 signals:
     void snReady();
+
     void settingsReady(QVariantMap settings);
+    void appDataReady(QVariantMap settings);
+
+    void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void pushFailed();
 
     void latestVersionChanged();
@@ -224,7 +247,15 @@ signals:
 
     void isManualModeChanged();
 
+    void serialNumberChanged();
+
     void updateNoChecked();
+
+    void autoModePush(bool isSuccess);
+
+    void pushSuccess();
+
+    void testModeStarted();
 
 private:
 
@@ -252,7 +283,7 @@ private:
     void updateLog(const QJsonObject updateJsonObject);
 
     //! Check force updates
-    //! Return last force update version that in greater than current version, otherwise returns empty string
+    //! Return first force update version (consider test mode and stage) that in greater than current version, otherwise returns empty string
     QString findForceUpdate(const QJsonObject updateJsonObject);
 
     //! Update Available versions
@@ -261,6 +292,8 @@ private:
     //! Check and prepare the system to start download process.
     void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false, const bool isResetVersion = false);
 
+    //! Check the pushing progress and start the fetch timer.
+    void startFetchActiveTimer();
 
 private:
     Sync *mSync;
@@ -303,6 +336,8 @@ private:
     
     //! System on test mode or not
     bool mTestMode;
+
+    bool mIsNightModeRunning;
 
     QTimer mFetchActiveTimer;
 

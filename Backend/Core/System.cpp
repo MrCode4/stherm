@@ -12,7 +12,7 @@
 const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
 const QString m_logUsername = "uploadtemp";
 const QString m_logPassword = "oDhjPTDJYkUOvM9";
-const QString m_logServerAddress = "fileserver.nuvehvac.com";
+const QString m_logServerAddress = "logs.nuvehvac.com";
 const QString m_logPath = "/opt/logs/";
 
 const QString m_partialUpdate   = QString("partialUpdate");
@@ -49,6 +49,9 @@ const QString m_IsManualUpdateSetting        = QString("Stherm/IsManualUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 
+const char* m_pushMainSettings     = "pushMainSettings";
+const char* m_pushAutoModeSettings = "pushAutoModeSettings";
+
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
@@ -58,6 +61,7 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
 //! return true when version1 > version2
 //! return false when version1 <= version2
 bool isVersionNewer(const QString& version1, const QString& version2) {
+
     QStringList parts1 = version1.split('.');
     QStringList parts2 = version2.split('.');
 
@@ -82,7 +86,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mUpdateAvailable (false),
     mHasForceUpdate(false),
     mIsInitialSetup(false),
-    mTestMode(false)
+    mTestMode(false),
+    mIsNightModeRunning(false)
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -91,15 +96,18 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
+    connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
+
     connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
-        setCanFetchServer(true);
+            setCanFetchServer(true);
     });
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
-        getUpdateInformation(true);
+        if (!mIsNightModeRunning)
+            getUpdateInformation(true);
     });
 
-    mUpdateTimer.setInterval(12 * 60 * 60 * 1000); // each 12 hours
+    mUpdateTimer.setInterval(6 * 60 * 60 * 1000); // each 6 hours
     mUpdateDirectory = qApp->applicationDirPath();
 
     // Install update service
@@ -126,14 +134,28 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::onSnReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
+    connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
+    connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, &NUVE::System::autoModeSettingsReady);
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
+    connect(mSync, &NUVE::Sync::testModeStarted, this, &NUVE::System::testModeStarted);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
-        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
+        setProperty(m_pushMainSettings, false);
+
+        startFetchActiveTimer();
+        emit pushSuccess();
+    });
+
+    connect(mSync, &NUVE::Sync::autoModePush, this, [this](bool isSuccess) {
+        setProperty(m_pushAutoModeSettings, false);
+
+        startFetchActiveTimer();
+
+        emit autoModePush(isSuccess);
     });
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
         QSettings settings;
-        settings.setValue("m_updateOnStartKey", true);
+        settings.setValue(m_updateOnStartKey, true);
     });
 
     // Check: The downloader has been open for more than 30 seconds and has not received any bytes
@@ -146,20 +168,48 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
         auto initialized = mLogSender.property("initialized");
         if (initialized.isValid() && initialized.toBool()){
             emit alert("Log is not sent, Please try again!");
+        } else {
+            createLogDirectoryOnServer();
         }
     });
     connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
+        bool success = true;
         if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
             qWarning() << "process did not exit cleanly" << exitCode << exitStatus << mLogSender.readAllStandardError()
                        << mLogSender.readAllStandardOutput();
-            return;
+            success = false;
         }
+
         auto initialized = mLogSender.property("initialized");
         if (!initialized.isValid() || !initialized.toBool()){
-            TRACE << "Folder created in server successfully";
-            mLogSender.setProperty("initialized", true);
+            if (success){
+                TRACE << "Folder created in server successfully";
+                mLogSender.setProperty("initialized", true);
+                sendLog();
+            } else {
+                createLogDirectoryOnServer();
+            }
+        } else {
+            if (success) {
+                emit alert("Log is sent!");
+            } else {
+                emit alert("Log is not sent, Please try again!");
+            }
         }
     });
+
+    if (!has_sshPass()) {
+        TRACE << "sshpass was not in /usr/bin";
+        QFile sshpass_local("/usr/local/bin/sshpass");
+        if (sshpass_local.exists()) {
+            TRACE << "sshpass copying to /usr/bin";
+            auto success = sshpass_local.copy("/usr/bin/sshpass");
+            TRACE_CHECK(success) << "copy sshpass successfuly";
+            TRACE_CHECK(!success) << "failed to copy sshpass";
+        } else {
+            TRACE << "sshpass is not in /usr/local/bin either";
+        }
+    }
 
     if (!serialNumber().isEmpty())
         onSnReady();
@@ -168,6 +218,17 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 NUVE::System::~System()
 {
     delete mNetManager;
+}
+
+void NUVE::System::startFetchActiveTimer()
+{
+    if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
+        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
+    else
+        TRACE_CHECK(false) << "Can not start fetch timer, main settings pushing: "
+                           << property(m_pushMainSettings).toBool()
+                           << "Auto mode settings pushing: "
+                           <<property(m_pushAutoModeSettings).toBool();
 }
 
 bool NUVE::System::installUpdateService()
@@ -386,10 +447,17 @@ bool NUVE::System::findBackdoorVersion(const QString fileName)
 
 void NUVE::System::sendLog()
 {
-    if (mLogSender.state() != QProcess::NotRunning || mLogRemoteFolder.isEmpty()){
+    if (mLogSender.state() != QProcess::NotRunning){
         QString error("Previous session is in progress, please try again later.");
-        qWarning() << error << "State is :" << mLogSender.state() << "mLogRemoteFolder" << mLogRemoteFolder;
+        qWarning() << error << "State is :" << mLogSender.state();
         emit alert(error);
+        return;
+    }
+
+    auto initialized = mLogSender.property("initialized");
+    if (!initialized.isValid() || !initialized.toBool()){
+        qWarning() << "Folder was not created successfully, trying again...";
+        createLogDirectoryOnServer(); // will call the sendLog if successful
         return;
     }
 
@@ -401,21 +469,14 @@ void NUVE::System::sendLog()
     auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
     if (exitCode < 0)
     {
-        qWarning() << "Unable to create log file";
-        return;
-    }
-
-
-    auto initialized = mLogSender.property("initialized");
-    if (!initialized.isValid() || !initialized.toBool()){
-        qWarning() << "Folder was not created successfully, trying again...";
-        createLogDirectoryOnServer();
-        emit alert("There is an error, Please try again!");
+        QString error("Unable to create log file.");
+        qWarning() << error << exitCode;
+        emit alert(error);
         return;
     }
 
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("/usr/local/bin/sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
@@ -455,10 +516,22 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
     return response;
 }
 
+QString NUVE::System::getSN_QML(QString accessUid)
+{
+    auto response = mSync->getSN(accessUid.toStdString(), false);
+    if (response.second)
+        setUID(accessUid.toStdString());
+
+    return QString::fromStdString(response.first);
+}
+
 bool NUVE::System::getUpdate(QString softwareVersion)
 {
     if (mCanFetchServer) {
-        return mSync->getSettings();
+        if (mSync->getSettings()){
+            setProperty("hasFetchSuccessOnce", true);
+            return true;
+        }
     }
 
     return false;
@@ -486,12 +559,13 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     }
 
     mUpdateTimer.start();
+    if (!mIsNightModeRunning) {
+        // When is initial setup, skip update Information as we want to wait until its complete!
+        if (!mIsInitialSetup)
+            getUpdateInformation(true);
 
-    // When is initial setup, skip update Information as we want to wait until its complete!
-    if (!mIsInitialSetup)
-        getUpdateInformation(true);
-
-    getBackdoorInformation();
+        getBackdoorInformation();
+    }
 }
 
 void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
@@ -506,7 +580,24 @@ void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSet
         setCanFetchServer(!hasSettingsChanged);
     }
 
+    setProperty(m_pushMainSettings, hasSettingsChanged);
     mSync->pushSettingsToServer(settings);
+}
+
+void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
+{
+    // if timer running and hasSettingsChanged stop to prevent canFetchServer issues
+    if (mFetchActiveTimer.isActive()) {
+        mFetchActiveTimer.stop();
+    }
+
+    // set when settings changed or no timer is active! otherwise let the timer do the job!
+    if (!mFetchActiveTimer.isActive()){
+        setCanFetchServer(false);
+    }
+
+    setProperty(m_pushAutoModeSettings, true);
+    mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
 
 void NUVE::System::exitManualMode()
@@ -593,6 +684,13 @@ bool NUVE::System::testMode() {
     return mTestMode;
 }
 
+bool NUVE::System::has_sshPass()
+{
+    QFileInfo sshPass("/usr/bin/sshpass");
+
+    return sshPass.exists();
+}
+
 bool NUVE::System::isManualMode() {
     return mStartedWithManualUpdate;
 }
@@ -620,13 +718,32 @@ void NUVE::System::ForgetDevice()
     mSync->ForgetDevice();
 }
 
+bool NUVE::System::hasFetchSuccessOnce() const
+{
+    return property("hasFetchSuccessOnce").toBool();
+}
+
+void NUVE::System::setNightModeRunning(const bool running) {
+    if (mIsNightModeRunning == running)
+        return;
+
+    mIsNightModeRunning = running;
+
+    if (mIsNightModeRunning) {
+        cpuInformation();
+    }
+}
+
 bool NUVE::System::updateSequenceOnStart()
 {
     QSettings settings;
     auto update = settings.value(m_updateOnStartKey);
+    // TODO remove later
+    auto updateOld = settings.value("m_updateOnStartKey");
     settings.setValue(m_updateOnStartKey, false);
+    settings.setValue("m_updateOnStartKey", false);
 
-    return update.isValid() && update.toBool();
+    return (update.isValid() && update.toBool()) || (updateOld.isValid() && updateOld.toBool());
 }
 
 bool NUVE::System::hasForceUpdate()
@@ -1062,8 +1179,6 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 void NUVE::System::onSnReady()
 {
     emit snReady();
-
-    createLogDirectoryOnServer();
     
     //! Get update information when Serial number is ready.
     getUpdateInformation(true);
@@ -1073,12 +1188,29 @@ void NUVE::System::createLogDirectoryOnServer()
 {
     auto sn = serialNumber();
     // Check serial number
-    if (sn.isEmpty())
+    if (sn.isEmpty()){
+        QString error("Serial number empty! can not create log folder!");
+        qWarning() << error;
+        emit alert(error);
         return;
+    }
+
+    int tryCount = mLogSender.property("tryCount").toInt();
+    if (tryCount < 3) {
+        tryCount++;
+        mLogSender.setProperty("tryCount", tryCount);
+    } else {
+        QString error("Can not create log folder! Try again later.");
+        qWarning() << error;
+        emit alert(error);
+        tryCount = 0; // reset the counter for next time!
+        mLogSender.setProperty("tryCount", tryCount);
+        return;
+    }
 
     mLogRemoteFolder = m_logPath + sn;
     // Create remote path in case it doesn't exist, needed once! with internet access
-    QString createPath = QString("/usr/local/bin/sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
+    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
                          arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     mLogSender.start("/bin/bash", {"-c", createPath});
 }
@@ -1171,6 +1303,7 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     updateAvailableVersions(mUpdateJsonObject);
 
+    // Update mHasForceUpdate in the findForceUpdate function.
     mHasForceUpdate = false;
     auto latestVersionKey = findLatestVersion(mUpdateJsonObject);
     auto installableVersionKey = installLatestVersion ? latestVersionKey : findForceUpdate(mUpdateJsonObject);
@@ -1188,8 +1321,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
-
-
 
     auto releaseDate = QDate::fromString(latestVersionObj.value(m_ReleaseDate).toString(), "d/M/yyyy");
     auto releaseDateStr = releaseDate.isValid() ? releaseDate.toString("dd MMM yyyy") : latestVersionObj.value(m_ReleaseDate).toString();
@@ -1215,7 +1346,6 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     // installableVersionKey > currentVersion
     if (isVersionNewer(installableVersionKey, currentVersion)) {
         setUpdateAvailable(true);
-        mHasForceUpdate = latestVersionObj.value(m_ForceUpdate).toBool();
 
         if (!mHasForceUpdate && notifyUser  && !mIsManualUpdate)
             emit notifyNewUpdateAvailable();
@@ -1288,24 +1418,30 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
     if (versions.contains("LatestVersion"))
         versions.removeOne("LatestVersion");
 
-
-    // Last force update.
     std::sort(versions.begin(), versions.end(), isVersionNewer);
 
     // Check version (app and latest)
     auto currentVersion = qApp->applicationVersion();
+    QString latestVersionKey;
 
-    // return the last force update that is greater than the current version
     foreach (auto keyVersion, versions) {
         if (isVersionNewer(keyVersion, currentVersion)) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
-            if (obj.value(m_ForceUpdate).toBool()) {
-                return keyVersion;
+            auto isForce =  obj.value(m_ForceUpdate).toBool();
+
+            if (isForce) {
+                // Update the earlier force update that is greater than the current version
+                if (mTestMode || !obj.value(m_Staging).toBool()) {
+                    mHasForceUpdate = true;
+                    latestVersionKey = keyVersion;
+                }
             }
+        } else { // to skip checking further versions which all are lower!
+            break;
         }
     }
 
-    return QString();
+    return latestVersionKey;
 }
 
 void NUVE::System::rebootDevice()
@@ -1397,4 +1533,15 @@ QStringList NUVE::System::cpuInformation() {
     }
 
     return cpuTempList;
+}
+
+bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t minimumSizeBytes)
+{
+#ifdef __unix__
+    QStorageInfo storageInfo (directory);
+
+    return (storageInfo.isValid() && storageInfo.bytesFree() >= minimumSizeBytes);
+#endif
+
+    return true;
 }

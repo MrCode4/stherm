@@ -64,9 +64,12 @@ QtObject {
 
         onTriggered: {
             if (checkWifiConnection())
-                checkInternetConnection();
+                if(checkInternetConnection())
+                    closeWifiInternetAlert();
         }
     }
+
+    Component.onCompleted: device.messagesChanged()
 
     /* Signals
      * ****************************************************************************************/
@@ -76,6 +79,8 @@ QtObject {
 
     //! Show wifi/Internet connection alert.
     signal showWifiInternetAlert(message: string, dateTime: string)
+
+    signal closeWifiInternetAlert();
 
     /* Methods
      * ****************************************************************************************/
@@ -92,11 +97,11 @@ QtObject {
 
         messages.forEach(message => {
                              if (message.message === "")
-                                return;
+                             return;
 
                              // Find Schedule in the model
                              var foundMessage = device.messages.find(messageModel => (message.message === messageModel.message &&
-                                                                                    messageModel.sourceType === Message.SourceType.Server));
+                                                                                      messageModel.sourceType === Message.SourceType.Server));
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
                              var messageDatetime = message.datetime === null ? "" : message.datetime;
@@ -116,13 +121,46 @@ QtObject {
     {
         if (message.length === 0) {
             console.log("addNewMessageFromData: The message is empty!")
-           return;
+            return;
         }
 
         if (!activeAlerts) {
             console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
         }
+
+        // notifyUser: Save message to model and hide from the user's view
+        var notifyUser = true;
+
+        var modifiedIsRead = isRead;
+
+        // Check Alerts with enabledAlerts in settings
+        if (!device.setting.enabledAlerts && (type === Message.Type.SystemNotification ||
+                                              type === Message.Type.Alert)) {
+            // Temporary, can mark messages received from the server as "read" to prevent their display upon alerts re-enablement.
+            if (sourceType === Message.SourceType.Server) {
+                notifyUser = false;
+                modifiedIsRead = true;
+
+            } else {
+                console.log("Ignore alerts due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
+                return;
+            }
+        }
+
+        // Check Notifications with enabledNotifications in settings
+        if (!device.setting.enabledNotifications && type === Message.Type.Notification) {
+            // Temporary, can mark messages received from the server as "read" to prevent their display upon notification re-enablement.
+            if (sourceType === Message.SourceType.Server) {
+                notifyUser = false;
+                modifiedIsRead = true;
+
+            } else {
+                console.log("Ignore notifications due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
+                return;
+            }
+        }
+
         var newMessage;
         if (type === Message.Type.SystemNotification) {
             // To avoid saving to file
@@ -137,7 +175,7 @@ QtObject {
         newMessage.type = type;
         newMessage.message = message;
         newMessage.datetime = datetime;
-        newMessage.isRead = isRead;
+        newMessage.isRead = modifiedIsRead;
         newMessage.sourceType = sourceType;
 
         if (type !== Message.Type.SystemNotification) {
@@ -147,7 +185,8 @@ QtObject {
 
         AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
 
-        newMessageReceived(newMessage);
+        if (notifyUser)
+            newMessageReceived(newMessage);
     }
 
     function addNewMessage(message: Message)
@@ -191,16 +230,24 @@ QtObject {
 
         function onHasInternetChanged() {
             //! If wifi is connected, internet will be check after one minute.
-           if (NetworkInterface.connectedWifi)
-               checkInternetTimer.restart();
+            if (NetworkInterface.connectedWifi)
+                checkInternetTimer.restart();
+
+            if (NetworkInterface.hasInternet) {
+                // Close the alert
+                closeWifiInternetAlert();
+            }
         }
 
         function onConnectedWifiChanged() {
             checkInternetTimer.restart();
         }
- 
+
         //! wrong password alert.
         function onIncorrectWifiPassword() {
+            if (!device.setting.enabledAlerts)
+                return;
+
             var message = "Wrong password, please try again.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
 
@@ -279,6 +326,13 @@ QtObject {
 
             } break;
 
+            case AppSpec.Alert_iaq_high:
+            case AppSpec.Alert_iaq_low:
+            case AppSpec.Alert_c02_low: {
+                messageType = Message.Type.SystemAlert;
+
+            } break
+
             case AppSpec.Alert_humidity_high:
             case AppSpec.Alert_humidity_low: {
                 messageType = Message.Type.SystemAlert;
@@ -311,33 +365,47 @@ QtObject {
         }
     }
 
+    property Connections  messagesDevice: Connections {
+        target: device
+
+        function onMessagesChanged() {
+            checkUnreadMessages();
+        }
+    }
+
     function checkWifiConnection() : bool {
-        if (!NetworkInterface.connectedWifi) {
+
+        var connectedWifi = NetworkInterface.connectedWifi;
+
+        // Wifi message type is SystemNotification, so related to alerts
+        if (device.setting.enabledAlerts && !connectedWifi) {
             var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
-            return false;
         }
 
-        return true;
+        return connectedWifi;
     }
 
     function checkInternetConnection() : bool {
-        if (!NetworkInterface.hasInternet) {
+        var hasInternet = NetworkInterface.hasInternet;
+
+        // Wifi message type is SystemNotification, so related to alerts
+        if (device.setting.enabledAlerts && !hasInternet) {
             var message = "No internet connection. Please check your internet connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
-            return false;
         }
-        return true;
+
+        return hasInternet;
     }
 
-    function addShowingMessage(message: string) {
+    function addShowingMessage(message: Message) {
         messagesShowing.push(message);
         messagesShowingChanged();
     }
 
-    function removeShowingMessage(message: string) {
+    function removeShowingMessage(message: Message) {
         //! Remove when the alert closed by user.
-        var msgIndex = messagesShowing.findIndex((element, index) => element === message);
+        var msgIndex = messagesShowing.findIndex((element, index) => element.message === message.message);
         if (msgIndex > -1) {
             //! Remove from messages shown
             messagesShowing.splice(msgIndex, 1);
@@ -345,6 +413,55 @@ QtObject {
         }
 
         var now = (new Date()).getTime();
-        lastRead[message] = now;
+        lastRead[message.message] = now;
+    }
+
+    //! Check unread messages and Update the uisseion parameters
+    function checkUnreadMessages() {
+        existUnreadAlerts();
+        existUnreadMessages();
+    }
+
+    //! Exist unread alerts?
+    function existUnreadAlerts() {
+        if (!uiSession.appModel.setting.enabledAlerts) {
+            uiSession.hasUnreadAlerts = false;
+            return;
+        }
+
+        // Check unread messages
+        var msgAlertIndex = device.messages.findIndex((element, index) => (element.type === Message.Type.Alert ||
+                                                                           element.type === Message.Type.SystemAlert ||
+                                                                           element.type === Message.Type.SystemNotification) && !element.isRead);
+
+        uiSession.hasUnreadAlerts = msgAlertIndex > -1;
+
+        // Wifi alerts (and maybe another types in future) are not yet supported in the model.
+        if (!uiSession.hasUnreadAlerts) {
+            msgAlertIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Alert ||
+                                                                           element.type === Message.Type.SystemAlert ||
+                                                                           element.type === Message.Type.SystemNotification));
+
+            uiSession.hasUnreadAlerts = msgAlertIndex > -1;
+        }
+    }
+
+    //! Exist unread messages?
+    function existUnreadMessages() {
+
+        if (!device.setting.enabledNotifications) {
+            uiSession.hasUnreadMessages = false;
+            return;
+        }
+
+        // Check notifications
+        var msgMessageIndex = device.messages.findIndex((element, index) => (element.type === Message.Type.Notification) && !element.isRead);
+        uiSession.hasUnreadMessages = msgMessageIndex > -1;
+
+        //! To manage the messages that not exist in the model
+        if (! uiSession.hasUnreadMessages) {
+            msgMessageIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Notification));
+            uiSession.hasUnreadMessages = msgMessageIndex > -1;
+        }
     }
 }

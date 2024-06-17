@@ -34,8 +34,9 @@ BasePageView {
             timer.stop();
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/Test/StartTestPage.qml", {
-                                              "uiSession": uiSession
-                                          })
+                                             "uiSession": uiSession,
+                                             "backButtonVisible" : backButtonVisible
+                                         })
             }
         }
     }
@@ -101,7 +102,7 @@ BasePageView {
 
         running: false
         repeat: false
-        interval: 10000
+        interval: 5000
 
         onTriggered: {
             root.StackView.view.push("qrc:/Stherm/View/Test/StartTestPage.qml", {

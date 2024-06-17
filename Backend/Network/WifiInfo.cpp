@@ -4,9 +4,16 @@ WifiInfo::WifiInfo(QObject *parent)
     : QObject(parent)
 {}
 
-WifiInfo::WifiInfo(bool connected, const QString& ssid, const QString& bssid, int strength, const QString& security, QObject* parent)
+WifiInfo::WifiInfo(bool connected,
+                   bool isSaved,
+                   const QString& ssid,
+                   const QString& bssid,
+                   int strength,
+                   const QString& security,
+                   QObject* parent)
     : QObject(parent)
-    , mConnected (connected)
+    , mConnected(connected)
+    , mIsSaved(isSaved)
     , mStrength(strength)
     , mSsid(ssid)
     , mBssid(bssid)
@@ -33,6 +40,16 @@ void WifiInfo::setIsConnecting(bool isConnecting)
 
     mIsConnecting = isConnecting;
     emit isConnectingChanged();
+}
+
+void WifiInfo::setIsSaved(bool isSaved)
+{
+    if (mIsSaved == isSaved) {
+        return;
+    }
+
+    mIsSaved = isSaved;
+    emit isSavedChanged();
 }
 
 void WifiInfo::setStrength(int strength)

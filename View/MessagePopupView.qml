@@ -39,6 +39,17 @@ Item {
 
             //! Ask PopUpLayout to open popup
             uiSession.popupLayout.displayPopUp(wifiInternetConnectionAlert);
+
+            messageController.addShowingMessage(wifiInternetConnectionAlert.message);
+        }
+
+        //! Close wifi alert
+        function onCloseWifiInternetAlert() {
+            if (wifiInternetConnectionAlert.visible)
+                wifiInternetConnectionAlert.close();
+
+            //! Remove from messages shown
+            messageController.removeShowingMessage(wifiInternetConnectionAlert.message);
         }
     }
 
@@ -54,7 +65,10 @@ Item {
                     uiSession.deviceController.pushSettings();
                 }
 
-                messageController.removeShowingMessage(message.message);
+                messageController.removeShowingMessage(message);
+
+                // Message Updated
+                uiSession.appModel.messagesChanged();
 
                 destroy(this);
             }
@@ -72,7 +86,15 @@ Item {
             type: Message.Type.SystemNotification
         }
 
-    }
+        onOpened: {
+            messageController.checkUnreadMessages();
+        }
+
+        onClosed: {
+            messageController.closeWifiInternetAlert();
+            messageController.checkUnreadMessages();
+        }
+    }  
 
     /* Functions
      * ****************************************************************************************/
@@ -80,8 +102,13 @@ Item {
     function showMessagePopup(message: Message) {
         //! \todo This will later be shown using PopUpLayout to be able to show multiple message
         //! popups on top of each other.
-        if (!message || messageController.messagesShowing.includes(message.message))
+        if (!message)
             return;
+
+        var msgIndex = messageController.messagesShowing.findIndex((element, index) => element.message === message.message);
+        if (msgIndex > -1) {
+            return;
+        }
 
         //! Create an instance of AlertNotifPopup
         var newAlertPopup = _messagePopupCompo.createObject(root, {
@@ -89,7 +116,7 @@ Item {
                                                             });
 
         if (newAlertPopup) {
-            messageController.addShowingMessage(message.message);
+            messageController.addShowingMessage(message);
 
             //! Ask PopUpLayout to open popup
             uiSession.popupLayout.displayPopUp(newAlertPopup);

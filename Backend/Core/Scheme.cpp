@@ -233,7 +233,7 @@ void Scheme::run()
             //        int fanWork = QDateTime::currentSecsSinceEpoch() - mTiming->fan_time.toSecsSinceEpoch() - mFanWPH - 1;
             //        mRelay->fanWorkTime(mFanWPH, fanWork);
 
-            sendRelays();
+            sendRelays(true);
         }
 
         if (stopWork)
@@ -284,6 +284,7 @@ void Scheme::CoolingLoop()
         auto effectiveTemp = effectiveTemperature();
         TRACE_CHECK(false) << heatPump << mCurrentTemperature << effectiveTemperature();
 
+        bool hasDelay = false;
         while (mCurrentTemperature - effectiveTemp >= STAGE1_ON_RANGE) {
 
             //    if (pumpHeat) // how the system type setup get OB Orientatin, kept for later
@@ -291,14 +292,23 @@ void Scheme::CoolingLoop()
             bool obUpdated = updateOBState(AppSpecCPP::Cooling);
             if (heatPump && obUpdated && !stopWork){
                 // sysDelay
-                waitLoop(mSystemSetup->systemRunDelay * 60000, ctMode);
+                runSystemDelay(AppSpecCPP::Cooling);
+
             } else if (mTiming->s1Offtime.isValid() && mTiming->s1Offtime.elapsed() < 2 * 60 * 1000) {
+                if (!hasDelay) {
+                    hasDelay = true;
+                    emit startSystemDelayCountdown(AppSpecCPP::Cooling, 2 * 60 * 1000 - mTiming->s1Offtime.elapsed());
+                }
                 waitLoop(RELAYS_WAIT_MS, ctMode);
 
-                if (stopWork)
-                    break;
+                if (!stopWork)
+                    continue;
+            }
 
-                continue;
+            // Stop countdown
+            if (hasDelay) {
+                emit stopSystemDelayCountdown();
+                hasDelay = false;
             }
 
             // check again after wait
@@ -540,7 +550,7 @@ void Scheme::internalHeatingLoopStage1()
 {
     if (!stopWork){
         // sysDelay
-        waitLoop(mSystemSetup->systemRunDelay * 60000, ctMode);
+        runSystemDelay(AppSpecCPP::Heating);
     }
 
     if (stopWork)
@@ -726,21 +736,31 @@ bool Scheme::internalHeatingLoopStage3()
 
 void Scheme::internalPumpHeatingLoopStage1()
 {
+    bool hasDelay = false;
     while (effectiveTemperature() - mCurrentTemperature >= STAGE1_ON_RANGE) {
         auto obUpdated = updateOBState(AppSpecCPP::Heating);
 
         if (obUpdated && !stopWork){
             // sysDelay
-            waitLoop(mSystemSetup->systemRunDelay * 60000, ctMode);
+            runSystemDelay(AppSpecCPP::Heating);
 
         } else if (mTiming->s1Offtime.isValid() &&
                    mTiming->s1Offtime.elapsed() < 2 * 60 * 1000){
+            if (!hasDelay) {
+                hasDelay = true;
+                emit startSystemDelayCountdown(AppSpecCPP::Heating, 2 * 60 * 1000 - mTiming->s1Offtime.elapsed());
+            }
+
             waitLoop(RELAYS_WAIT_MS, ctMode);
 
-            if (stopWork)
-                break;
+            if (!stopWork)
+                continue;
+        }
 
-            continue;
+        // Stop countdown
+        if (hasDelay) {
+            emit stopSystemDelayCountdown();
+            hasDelay = false;
         }
 
         // check again after wait
@@ -887,9 +907,9 @@ void Scheme::sendAlertIfNeeded()
     }
 }
 
-void Scheme::sendRelays()
+void Scheme::sendRelays(bool forceSend)
 {
-    if (stopWork)
+    if (!forceSend && stopWork)
         return;
 
     auto relaysConfig = mRelay->relays();
@@ -1215,6 +1235,15 @@ void Scheme::setAutoMaxReqTemp(const double &max)
         mAutoMaxReqTemp = maxF;
 }
 
+void Scheme::runSystemDelay(AppSpecCPP::SystemMode mode)
+{
+    auto sysDelay = mSystemSetup->systemRunDelay * 60000;
+
+    emit startSystemDelayCountdown(mode, sysDelay);
+    waitLoop(sysDelay, ctMode);
+    emit stopSystemDelayCountdown();
+}
+
 void Scheme::setVacation(const STHERM::Vacation &newVacation)
 {
     mVacationMinimumTemperature = toFahrenheit(newVacation.minimumTemperature);
@@ -1240,7 +1269,6 @@ void Scheme::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
 }
 void Scheme::fanWork(bool isOn) {
 
-    emit fanWorkChanged(isOn);
     if (isOn) {
         mFanWPHTimer.start(mFanWPH * 60 * 1000);
 
@@ -1314,6 +1342,8 @@ void Scheme::setSystemSetup(SystemSetup *systemSetup)
         if (mSystemSetup->systemType == AppSpecCPP::SystemType::HeatingOnly)
             TRACE << "heatStageChanged: " << mSystemSetup->heatStage;
     });
+
+    // Just log the change
     connect(mSystemSetup, &SystemSetup::systemRunDelayChanged, this, [this] {
         TRACE << "systemRunDelayChanged: " << mSystemSetup->systemRunDelay
               << mSystemSetup->systemType;

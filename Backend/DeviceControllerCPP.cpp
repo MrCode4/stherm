@@ -23,6 +23,8 @@ static  const QString m_FanStatus             = "Fan status";
 static  const QString m_BacklightState        = "Backlight state";
 static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
+static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
+
 
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
@@ -206,6 +208,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mBacklightPowerTimer.start();
 
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
+        // To avoid the first deviation in the average
+        if (!_isFirstDataReceived) {
+            _rawMainData = data;
+            _isFirstDataReceived = true;
+        }
+
         setMainData(data);
     });
 
@@ -228,9 +236,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(_deviceIO, &DeviceIOController::tofDataReady, this, [this](QVariantMap data) {
-        for (const auto &pair : data.toStdMap()) {
-            _mainData.insert(pair.first, pair.second);
-        }
+        setMainData(data, true);
     });
 
     connect(_deviceIO, &DeviceIOController::adaptiveBrightness, this, [this](double adaptiveBrightness) {
@@ -258,8 +264,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
-
-
 
         if (mBacklightTimer.isActive())
             mBacklightTimer.stop();
@@ -291,23 +295,60 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         _deviceIO->updateRelays(relays);
     });
 
-    connect(m_scheme, &Scheme::fanWorkChanged, this, &DeviceControllerCPP::fanWorkChanged);
+    connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
+    connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
 
     if (m_system) {
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
             m_scheme->moveToUpdatingMode();
         });
+
+        // Thge system prepare the direcories for usage
+        m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
     }
+
+    connect(_deviceIO, &DeviceIOController::relaysUpdated, this, [this](STHERM::RelayConfigs relays) {
+        emit fanWorkChanged(relays.g == STHERM::ON);
+    });
+
+    // save data to csv file
+    // update the timer intervals when sample rate changed.
+    connect(&mSaveSensorDataTimer, &QTimer::timeout, this, [this]() {
+        writeSensorData(_mainData);
+    });
+
+    auto sampleRate = _deviceAPI->deviceConfig().sampleRate;
+    mSaveSensorDataTimer.setTimerType(Qt::PreciseTimer);
+    // TODO: check start condition
+    mSaveSensorDataTimer.start(sampleRate * 60 * 1000);
+
 
     //! Set sInstance to this
     if (!sInstance) {
         sInstance = this;
     }
+
+    // Check contractor info
+    mFetchContractorInfoTimer.setInterval(1.1 * 60 * 60 * 1000);
+    connect(&mFetchContractorInfoTimer, &QTimer::timeout, this, [=]() {
+        checkContractorInfo();
+    });
 }
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
 
+void DeviceControllerCPP::setSampleRate(const int sampleRate) {
+    _deviceAPI->setSampleRate(sampleRate);
+
+    if (mSaveSensorDataTimer.isActive()) {
+        mSaveSensorDataTimer.stop();
+
+        auto sr = _deviceAPI->deviceConfig().sampleRate;
+        // TODO: check start condition
+        mSaveSensorDataTimer.start(sr * 60 * 1000);
+    }
+}
 
 bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {
@@ -331,9 +372,10 @@ void DeviceControllerCPP::nightModeControl(bool start)
 
     mIsNightModeRunning = start;
 
+    m_system->setNightModeRunning(start);
+
     if (start) {
         mNightModeTimer.start();
-        m_system->cpuInformation();
 
     } else {
         mNightModeTimer.stop();
@@ -457,7 +499,6 @@ void DeviceControllerCPP::startDevice()
     _deviceAPI->runDevice();
 
     int startMode = getStartMode();
-
     emit startModeChanged(startMode);
 
     // Start with delay to ensure the model loaded.
@@ -479,7 +520,7 @@ void DeviceControllerCPP::startDevice()
         return;
     }
 
-    checkUpdateMode();
+    // checkUpdateMode();
 }
 
 void DeviceControllerCPP::stopDevice()
@@ -538,32 +579,57 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
     emit systemSetupChanged();
 }
 
-void DeviceControllerCPP::setMainData(QVariantMap mainData)
+void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
 {
-    bool isOk;
-    double tc = mainData.value("temperature").toDouble(&isOk);
-    if (isOk){
-        mRawTemperature = tc;
+    if (addToData) {
+        //! Insert data to main data.
+        for (const auto &pair : mainData.toStdMap()) {
+            _mainData.insert(pair.first, pair.second);
+        }
 
-        double dt = deltaCorrection();
-        TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
-        if (qAbs(dt) < 10) {
+    } else {
+        bool isOk;
+        double tc = mainData.value(temperatreKey).toDouble(&isOk);
+        if (isOk){
+            mRawTemperature = tc;
+
+            double dt = deltaCorrection();
             // Fan status effect:
             dt += mTEMPERATURE_COMPENSATION_T1;
+            TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
+            if (qAbs(dt) < 10) {
+                tc -= dt;
 
-            mainData.insert("temperature", tc - dt);
-        } else {
-            qWarning() << "dt is greater than 10! check for any error.";
+                mainData.insert(temperatreKey, tc);
+            } else {
+                qWarning() << "dt is greater than 10! check for any error.";
+            }
         }
+
+        if (mFanOff)
+            mainData.insert(fanSpeedKey, 0);
+
+        if (_mainData == mainData)
+            return;
+
+        _mainData = mainData;
+
+        // Average of the last two temperature and humidity
+        // Get temperature from _rawMainData
+        auto rt = _rawMainData.value(temperatreKey, tc).toDouble(&isOk);
+
+        if (isOk)
+            _mainData.insert(temperatreKey, (tc + rt) / 2);
+
+        auto mh = mainData.value(humidityKey, 0.0).toDouble();
+        // Get humidity from _rawMainData
+        auto rh = _rawMainData.value(humidityKey, mh).toDouble(&isOk);
+
+        if (isOk)
+            _mainData.insert(humidityKey, (mh + rh) / 2);
+
+        _rawMainData = mainData;
     }
-
-    if (mFanOff)
-        mainData.insert("fanSpeed", 0);
-
-    if (_mainData == mainData)
-        return;
-
-    _mainData = mainData;
 
     if (m_scheme)
         m_scheme->setMainData(getMainData());
@@ -576,15 +642,29 @@ void DeviceControllerCPP::startTestMode()
         m_system->setTestMode(true);
 }
 
-void DeviceControllerCPP::checkUpdateMode()
+bool DeviceControllerCPP::checkUpdateMode()
 {
     // check if updated
     bool updateMode = getUpdateMode();
     if (updateMode) { // or intial mode, in this case disable fetching after one time fetching
         //            Run API to get settings from server (sync, getWirings, )
         TRACE << "getting settings from server";
-        if (m_system)
-            m_system->getUpdate();
+        //if (m_system)
+        //    m_system->getUpdate();
+    }
+
+    return updateMode;
+}
+
+void DeviceControllerCPP::wifiConnected(bool hasInternet)
+{
+    m_system->wifiConnected(hasInternet);
+
+    if (hasInternet) {
+        mFetchContractorInfoTimer.start();
+
+    } else {
+        mFetchContractorInfoTimer.stop();
     }
 }
 
@@ -626,6 +706,7 @@ bool DeviceControllerCPP::checkSN()
         ScreenSaverManager::instance()->setAppActive(true);
 
     // System is no need update in snMode === 0
+    // After forget device state can not be zero (0)
     if (state == 0)
         m_system->setIsInitialSetup(false);
 
@@ -646,6 +727,11 @@ void DeviceControllerCPP::checkContractorInfo()
 void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
 {
     m_system->pushSettingsToServer(settings, hasSettingsChanged);
+}
+
+void DeviceControllerCPP::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
+{
+    m_system->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
 
 void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
@@ -758,6 +844,103 @@ QVariantMap DeviceControllerCPP::getMainData()
     }
 
     return mainData;
+}
+
+void DeviceControllerCPP::writeTestResult(const QString &testName, const QString& testResult, const QString &description)
+{
+    QFile file("test_results.csv");
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        qWarning() << "Unable to open file" << file.fileName() << "for writing";
+        return;
+    }
+
+    QTextStream output(&file);
+    output << testName << "," << testResult << "," << description << "\n";
+}
+
+void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResult, const QString &description)
+{
+    mAllTestsPassed.append(testResult);
+    QString result = testResult ? "PASS" : "FAIL";
+    writeTestResult(testName, result, description);
+}
+
+void DeviceControllerCPP::beginTesting()
+{
+    QFile file("test_results.csv");
+    mAllTestsPassed.clear();
+
+    if (file.exists() && !file.remove())
+    {
+        qWarning() << "Unable to delete file" << file.fileName();
+        return;
+    }
+
+    QString uid = _deviceAPI->uid();
+    QString sw = QCoreApplication::applicationVersion();
+    QString qt = qVersion();
+    QString nrf = getNRF_SW();
+    QString kernel = m_system->kernelBuildVersion();
+    QString ti = getTI_SW();
+
+    writeTestResult("Test name", QString("Test Result"), "Description");
+    writeTestResult("UID", !uid.isEmpty(), uid);
+    writeTestResult("SW version", !sw.isEmpty(), sw);
+    writeTestResult("QT version", !qt.isEmpty(), qt);
+    writeTestResult("NRF version", !nrf.isEmpty(), nrf);
+    writeTestResult("Kernel version", !kernel.isEmpty(), kernel);
+    writeTestResult("TI version", !ti.isEmpty(), ti);
+}
+
+void DeviceControllerCPP::testBrightness(int value)
+{
+    _deviceIO->setBrightnessTest(value);
+}
+
+void DeviceControllerCPP::stopTestBrightness()
+{
+    _deviceIO->setBrightnessTest(0, false);
+}
+
+void DeviceControllerCPP::testFinished()
+{
+    if (!QFileInfo::exists("test_results.csv")) {
+        TRACE << "test_results.csv not exists. So can not wite the test file.";
+
+        return;
+    }
+
+    QString result = mAllTestsPassed.contains(false) ? "FAIL" : "PASS";
+    QString newFileName = QString("%1_%2.csv").arg(_deviceAPI->uid(), result);
+
+    // Remove the file if exists
+    if (QFileInfo::exists(newFileName)) {
+        if (!QFile::remove(newFileName)) {
+            TRACE << "Could not remove the file: " << newFileName;
+        }
+    }
+
+    if (!QFile::rename("test_results.csv", newFileName)) {
+        TRACE << "Could not create the file: " << newFileName;
+    }
+
+    // disabled it for now!
+    if (false) {
+        QSettings settings;
+        settings.setValue(m_RestartAfetrSNTestMode, true);
+    }
+
+    TRACE << "testFinished";
+}
+
+bool DeviceControllerCPP::getSNTestMode() {
+    QSettings settings;
+    auto snTestMode = settings.value(m_RestartAfetrSNTestMode, false).toBool();
+    settings.setValue(m_RestartAfetrSNTestMode, false);
+
+    TRACE << "snTestMode" << snTestMode;
+    return snTestMode;
 }
 
 void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const int& brightness)
@@ -998,4 +1181,68 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
     }
 
     return "";
+}
+
+void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
+    auto directoryHasSpace = m_system->checkDirectorySpaces("/mnt/data/sensor");
+
+    QString filePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sensorData.csv";
+    const QString dateTimeHeader = "DateTime UTC (sec)";
+
+#ifdef __unix__
+    filePath = "/mnt/data/sensor/sensorData.csv";
+#endif
+
+    const QStringList header = {dateTimeHeader, temperatreKey, humidityKey,
+                                co2Key, etohKey, TvocKey,
+                                iaqKey, pressureKey, RangeMilliMeterKey,
+                                brightnessKey, fanSpeedKey};
+    QFile file(filePath);
+
+    if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        QTextStream out(&file);
+
+        QString allData = out.readAll();
+        file.resize(0);
+
+        // Check the header
+        auto checkHeader = allData.isEmpty() ? false : allData.split("\n").first().contains(dateTimeHeader);
+        if (!checkHeader) {
+            // Write header
+            QStringList data;
+            foreach (auto field, header) {
+                data.append(field);
+            }
+            allData.append(data.join(",") + "\n");
+        }
+
+        // Write data rows
+        QStringList dataStrList;
+        dataStrList.append(QString::number(QDateTime::currentDateTimeUtc().toSecsSinceEpoch()));
+        foreach (auto key, header) {
+            if (key == dateTimeHeader)
+                continue;
+
+            dataStrList.append(QString::number(data.value(key, NAN).toDouble()));
+        }
+
+        allData.append(dataStrList.join(","));
+
+        QStringList lines = allData.split("\n");
+
+        // Remove the first data line from the file
+        if (!directoryHasSpace && lines.count() > 1) {
+            lines.remove(1);
+        }
+
+        foreach (auto line, lines) {
+            out << line << "\n";
+        }
+
+        file.close();
+        TRACE << "CSV file written successfully.";
+
+    } else {
+        TRACE << "Failed to open the file for writing/Reading.";
+    }
 }

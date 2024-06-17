@@ -9,6 +9,8 @@ T.ToolButton {
 
     property int touchMargin: 0
 
+    property bool clickable: true
+
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
@@ -49,8 +51,9 @@ T.ToolButton {
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
-            color: control.pressed ? (control.checked || control.highlighted ? Style.highlightedRippleColor : Style.rippleColor)
-                                   : (control.checked || control.highlighted ? Style.highlightedRippleColor : "transparent")
+            color: !control.clickable ? "transparent" :
+                                        control.pressed ? (control.checked || control.highlighted ? Style.highlightedRippleColor : Style.rippleColor)
+                                                        : (control.checked || control.highlighted ? Style.highlightedRippleColor : "transparent")
         }
     }
 }

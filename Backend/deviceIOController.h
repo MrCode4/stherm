@@ -64,8 +64,10 @@ public:
 
     //! 0 for off, percentage
     bool setFanSpeed(int speed);
-    //! TODO handles only the brighness for now
+    //! TODO handles only the brightness for now
     bool setSettings(QVariantList data);
+
+    void setBrightnessTest(int brightness, bool test = true);
 
     void sendRelays();
 
@@ -96,6 +98,8 @@ signals:
     void adaptiveBrightness(double adaptiveBrightness);
 
     void fanStatusUpdated(bool off);
+
+    void relaysUpdated(STHERM::RelayConfigs relays);
 
 private slots:
     void wtdExec();

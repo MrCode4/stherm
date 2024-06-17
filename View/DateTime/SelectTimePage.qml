@@ -59,7 +59,7 @@ BasePageView {
 
         ColumnLayout {
             spacing: 16
-            Tumbler {
+            RoniaTumbler {
                 id: hourTumbler
 
                 property string hour: {
@@ -89,7 +89,7 @@ BasePageView {
 
         ColumnLayout {
             spacing: 16
-            Tumbler {
+            RoniaTumbler {
                 id: minuteTumbler
 
                 property string minute: (currentIndex < 10 ? "0" : "") + currentIndex

@@ -32,6 +32,7 @@ Control {
     //! System Accessories use in humidity control.
     property SystemAccessories systemAccessories: device.systemSetup.systemAccessories
 
+    property System system: deviceController.deviceControllerCPP.system
 
     /* Object properties
      * ****************************************************************************************/
@@ -60,7 +61,7 @@ Control {
         visible: opacity > 0
 
         //! Current temprature item
-        CurrentTempratureLabel {
+        TempratureLabel {
             id: _currentTempLbl
             anchors {
                 left: parent.left
@@ -104,11 +105,11 @@ Control {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: centerItems.top
-                bottomMargin: -8
-                horizontalCenterOffset: -6
+                bottomMargin: 8
+                // To align with schedule ON button
+                horizontalCenterOffset: isSchedule ? -15 : -6
             }
-            enabled: !deviceController.currentSchedule
-            hoverEnabled: enabled
+
             deviceController: uiSession?.deviceController ?? null
 
             onClicked: {
@@ -278,7 +279,7 @@ Control {
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/ApplicationMenu.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
-                                       });
+                                       }, StackView.Immediate);
 
                 }
             }
@@ -327,6 +328,9 @@ Control {
         enabled: !uiSession.debug
 
         function onStartModeChanged(startMode: int) {
+            if (uiSession.uiTestMode)
+                return;
+
             // Temp
             deviceController.startMode = startMode;
 
@@ -335,7 +339,8 @@ Control {
                 uiSession.uiTestMode = true;
                 if (mainStackView)
                     mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                           "uiSession": Qt.binding(() => uiSession)
+                                           "uiSession": Qt.binding(() => uiSession),
+                                           "backButtonVisible" : false
                                        });
 
             } else {
@@ -388,9 +393,12 @@ Control {
 
         function onSnModeChanged(snMode: int) {
             // snMode === 1 or 0
-            if (snMode !== 2) {
+            var snTestMode = deviceController.deviceControllerCPP.getSNTestMode();
+            if (snMode !== 2 || snTestMode) {
+
                 //! Setting is ready in device or not
-                uiSession.settingsReady = (snMode === 0);
+                if (!uiSession.settingsReady)
+                    uiSession.settingsReady = (snMode === 0);
 
                 // should be done by timer as can cause crash
                 startupTimer.start()
@@ -402,6 +410,29 @@ Control {
         }
     }
 
+    //! Force the app to fetch again with new serial number
+    Connections {
+        target: system
+
+        function onSerialNumberChanged() {
+            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup)
+            uiSession.settingsReady = false;
+        }
+
+        function onTestModeStarted() {
+            if (uiSession.uiTestMode)
+                return;
+            console.log("Test mode started due to serial number issues.")
+            uiSession.uiTestMode = true;
+            deviceController.startMode = 0;
+            if (mainStackView)
+                mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                                       "uiSession": Qt.binding(() => uiSession),
+                                       "backButtonVisible" : false
+                                   });
+        }
+    }
+
     //! checkSN when the internet is connected.
     Connections {
         id: snChecker
@@ -409,7 +440,7 @@ Control {
 
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {
-                if (deviceController.startMode !== 0 && deviceController.startMode !== -1){
+                if (deviceController.startMode !== 0 && deviceController.startMode !== -1) {
                     deviceController.deviceControllerCPP.checkSN();
                 }
             }

@@ -17,16 +17,31 @@ ToolButton {
     //! I_Device
     property I_Device               device: deviceController?.device ?? null
 
+    property bool isSchedule: deviceController.currentSchedule
+
+    property bool showCountdownLabel: systemDelayCounter > -1
+
+    property int systemDelayCounter: -1
+
+    property int realMode: AppSpec.Cooling
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: _coolingStateItem.implicitWidth + leftPadding + rightPadding
+    implicitWidth: Math.max(56, _coolingStateItem.implicitWidth) + leftPadding + rightPadding
     implicitHeight: implicitWidth
     padding: 10
+
+    clickable: enabled && !isSchedule
+    enabled: visible
+    visible: showCountdownLabel || !isSchedule
+    hoverEnabled: enabled && !isSchedule
+
 
     /* Children
      * ****************************************************************************************/
     Item {
+        id: mainItem
+
         anchors.fill: parent
 
         //! Label for OFF state
@@ -68,6 +83,7 @@ ToolButton {
                 Layout.alignment: Qt.AlignCenter
                 font.pointSize: Application.font.pointSize * 0.75
                 text: "Heating"
+                visible: !showCountdownLabel
             }
 
             Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -90,6 +106,7 @@ ToolButton {
                 Layout.alignment: Qt.AlignCenter
                 font.pointSize: Application.font.pointSize * 0.75
                 text: "Cooling"
+                visible: !showCountdownLabel
             }
 
             Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -112,19 +129,70 @@ ToolButton {
                 Layout.alignment: Qt.AlignCenter
                 font.pointSize: Application.font.pointSize * 0.75
                 text: "Auto"
+                visible: !showCountdownLabel
             }
 
             Behavior on opacity { NumberAnimation { duration: 200 } }
         }
+
+        Label {
+            id: countdownLabel
+
+            anchors.bottom: mainItem.bottom
+            anchors.bottomMargin: -10
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            font.pointSize: Application.font.pointSize * 0.65
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideMiddle
+            visible: opacity > 0
+            enabled: visible
+            opacity: showCountdownLabel ? 1. : 0.
+
+            Behavior on opacity { NumberAnimation { duration: 200 } }
+
+            text: {
+
+                var text = "Cooling"
+
+                if (realMode === AppSpec.Heating) {
+                    text = "Heating";
+                }
+
+                text += " will start in\n";
+                text += (systemDelayCounter + " secs");
+
+                return text;
+            }
+        }
     }
 
-    FontMetrics {
-        id: _sizeMetric
+    Timer {
+        interval: 1000
+        running: systemDelayCounter > -1
+        repeat: true
+        onTriggered: {
+            systemDelayCounter--;
+        }
+    }
+
+    Connections {
+        target: deviceController.deviceControllerCPP
+
+        function onStartSystemDelayCountdown(mode: int, delay: int) {
+            realMode = mode;
+            // Convert miliseconds to secs
+            systemDelayCounter = delay / 1000;
+        }
+
+        function onStopSystemDelayCountdown() {
+            systemDelayCounter = -1;
+        }
     }
 
     state: {
-        if (deviceController.currentSchedule)
-            return "auto";
+        if (isSchedule)
+            return "";
 
         switch(device?.systemSetup?.systemMode) {
         case AppSpecCPP.Off:

@@ -1,7 +1,7 @@
 #include "NmcliInterface.h"
-
 #include "Nmcli.h"
 
+#include <QDir>
 #include <QRegularExpression>
 
 //! Methods implementations
@@ -291,7 +291,7 @@ void NmcliInterface::addConnection(const QString& name,
     connect(mWifiProcess, &QProcess::finished, this,
         [&, name, ssid, password, security](int exitCode, QProcess::ExitStatus exitStatus) {
             if (exitStatus == QProcess::NormalExit && exitCode == 0) {
-                WifiInfo* newWifi = new WifiInfo(false, ssid, "", 100, security);
+                WifiInfo* newWifi = new WifiInfo(false, false, ssid, "", 100, security);
                 newWifi->setIsConnecting(true);
                 mWifis.push_back(newWifi);
 
@@ -428,6 +428,32 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
                 return wi->bssid() == parsedWi.bssid();
             });
 
+            //! Check if wifi is saved
+            //! NOTE: When a wifi password is entered incorrectly the connection is added in the
+            //! NetworkManager but the seenBssids is empty so only comparing bssid causes this wifi
+            //! not to be displayed as saved wifi. This is why the second condition is added.
+            //! This might cause bugs in hidden networks.
+            auto conProfileIter = std::find_if(mConProfiles.cbegin(),
+                                               mConProfiles.cend(),
+                                               [&parsedWi](const ConnectionProfile& cp) {
+                                                   return cp.seenBssids.contains(parsedWi.bssid())
+                                                          || (cp.seenBssids.isEmpty()
+                                                              && cp.ssid == parsedWi.ssid());
+                                               });
+
+            if (conProfileIter != mConProfiles.end()) {
+                //! This wifi is saved.
+                parsedWi.setIsSaved(true);
+
+                if (parsedWi.ssid().isEmpty()) {
+                    //! This is probably a hidden network. Check if saved.
+                    parsedWi.setSsid(conProfileIter->ssid);
+                }
+
+                //! Remove conProfileIter from mConProfiles
+                mConProfiles.erase(conProfileIter);
+            }
+
             if (wiInstance == mWifis.end() && !parsedWi.ssid().isEmpty()) {
                 //! Either create a new WifiInfo or update an existing one
                 int indexInBackup = -1;
@@ -444,6 +470,7 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
                     wifi = wifisBackup.takeAt(indexInBackup);
 
                     wifi->setConnected(parsedWi.connected());
+                    wifi->setIsSaved(parsedWi.isSaved());
                     wifi->setIncorrectSsid(parsedWi.incorrectSsid());
                     wifi->setSsid(parsedWi.ssid());
                     wifi->setBssid(parsedWi.bssid());
@@ -451,6 +478,7 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
                     wifi->setSecurity(parsedWi.security());
                 } else {
                     wifi = new WifiInfo(parsedWi.connected(),
+                                        parsedWi.isSaved(),
                                         parsedWi.ssid(),
                                         parsedWi.bssid(),
                                         parsedWi.strength(),
@@ -469,15 +497,29 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             line.remove(line.length() - 1, 1); //! Remove '\n'
         }
 
+        setConnectedWifi(currentWifi);
+
         //! Delete all the WifiInfo* in wifisBackup
         for (WifiInfo* wi: wifisBackup) {
             wi->deleteLater();
         }
 
         setBusyRefreshing(false);
-        if (currentWifi != nullptr) {
-            setConnectedWifi(currentWifi);
+
+        //! Add all other connection profiles that are not already added in the list of wifis
+        for (const auto& p : mConProfiles) {
+            mWifis.push_back(
+                new WifiInfo(false,
+                             true, //! is saved
+                             p.ssid,
+                             "",
+                             -1, //! Strength=-1 so they are distinguishable from in-range wifis
+                             "",
+                             this
+                             ));
         }
+        mConProfiles.clear();
+
         emit wifisChanged();
     } else {
         setBusyRefreshing(false);
@@ -498,18 +540,40 @@ void NmcliInterface::setupObserver()
     });
 
     connect(mNmcliObserver, &NmcliObserver::wifiNeedAuthentication, this, [&](const QString& ssid) {
+        if (ssid.isEmpty()) return;
+
         for (WifiInfo* wifi : mWifis) {
             if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
+                //! This wifi is now saved if it wasn't previously
+                if (!wifi->isSaved()) {
+                    wifi->setIsSaved(true);
+                }
                 emit wifiNeedAuthentication(wifi);
                 return;
             }
         }
     });
 
-
     connect(mNmcliObserver, &NmcliObserver::wifiForgotten, this, [this](const QString& ssid) {
+        if (ssid.isEmpty()) {
+            return;
+        }
+
+        auto forgottenWifi = std::find_if(mWifis.cbegin(), mWifis.cend(), [&](WifiInfo* w) {
+            return w->ssid() == ssid || w->incorrectSsid() == ssid;
+        });
+        if (forgottenWifi != mWifis.end()) {
+            (*forgottenWifi)->setIsSaved(false);
+
+            if ((*forgottenWifi)->strength() < 0) { //! NOTE: Convention for saved non-in-range wifi
+                mWifis.erase(forgottenWifi);
+                emit wifisChanged();
+            }
+        }
+
         if (mConnectedWifi && (mConnectedWifi->ssid() == ssid
                                || mConnectedWifi->incorrectSsid() == ssid)) {
+            mConnectedWifi->setIsSaved(false);
             setConnectedWifi(nullptr);
         }
     });
@@ -652,7 +716,69 @@ void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStat
         }
     }
 
-    //! Now perfrom actual refreshing
+    //! Get the list of wifi connections
+    doRefreshWifi();
+}
+
+void NmcliInterface::updateSavedWifis()
+{
+    mConProfiles.clear();
+
+    //! First get the list of all saved connections
+    const QStringList args = QStringList {
+        NC_ARG_GET_VALUES,
+        "NAME",
+        "-m",
+        "multiline",
+        "--escape",
+        "no",
+        NC_ARG_CONNECTION,
+    };
+    mRefreshProcess->start(NC_COMMAND, args);
+
+    waitLoop(mRefreshProcess, 2000);
+
+    QString line = mRefreshProcess->readLine(); //! Holds IN-USE of first wifi info in any
+
+    if (mRefreshProcess->exitCode() == 0) {
+        QProcess conProcess;
+
+        while (!line.isEmpty()) {
+            QString connectionName = line.sliced(5, line.length() - 5 - 1);
+
+            if (mBssToCorrectSsidMap.contains(connectionName)) {
+                connectionName = mBssToCorrectSsidMap[connectionName];
+            }
+
+            //! Get profile info of this connection
+            conProcess.start(NC_COMMAND, {
+                                                   "--get-values",
+                                                   "802-11-wireless.ssid,802-11-wireless.seen-bssids",
+                                                   "--escape",
+                                                   "no",
+                                                   NC_ARG_CONNECTION,
+                                                   NC_ARG_SHOW,
+                                                   connectionName,
+                                               });
+            waitLoop(&conProcess, 2000);
+
+            if (conProcess.exitCode() == 0) {
+                QString ssid = conProcess.readLine();
+                ssid.remove(ssid.length() - 1, 1); //! Remove '\n'
+
+                QString seenBssids = conProcess.readLine();
+                seenBssids.remove(seenBssids.length() - 1, 1); //! Remove '\n'
+
+                mConProfiles.emplace_back(ssid, seenBssids);
+            }
+
+            line = mRefreshProcess->readLine();
+        }
+    } else {
+        NC_CRITICAL << mRefreshProcess->readAll();
+    }
+
+    //! Now refresh wifis
     doRefreshWifi();
 }
 

@@ -20,6 +20,9 @@ ApplicationWindow {
 
     property string     currentFile: uiSessionId.currentFile
 
+    //! deviceControllerCPP: Use in initialization of app
+    property DeviceControllerCPP deviceControllerCPP: uiSessionId.deviceController.deviceControllerCPP
+
     /* Object Properties
      * ****************************************************************************************/
     x: 10
@@ -42,7 +45,7 @@ ApplicationWindow {
         }
     }
 
-    //! Create defualt repo and root object to save and load
+    //! Create default repo and root object to save and load
     Component.onCompleted: {
 
         // Create and prepare DefaultRepo and RootModel as root.
@@ -51,32 +54,56 @@ ApplicationWindow {
         // Bind appModel to qsRootObject to capture loaded model from configuration.
         uiSessionId.appModel = Qt.binding(function() { return AppCore.defaultRepo.qsRootObject;});
 
-        // Load the file
-        // check if not exist uiSessionId.configFilePath
-        // then load from relative path (sthermConfig.QSS.json)), and remove it
-        if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath)) {
-            console.info("Load the config file: ", uiSessionId.configFilePath);
-            console.info("Config file succesfully loaded.");
+        // Remove saved files after restart and update the app and get settings from server
+        // to fix any errors that may have occurred after updating the app.
+        // TODO we need a way to detect if we should remove the file
+        if (deviceControllerCPP.checkUpdateMode() && false) {
+            QSFileIO.removeFile(uiSessionId.configFilePath);
+            QSFileIO.removeFile(uiSessionId.recoveryConfigFilePath);
+            QSFileIO.removeFile("sthermConfig.QQS.json");
 
-        } else if (AppCore.defaultRepo.loadFromFile("sthermConfig.QQS.json")) {
-            console.info("Load the config file: sthermConfig.QQS.json");
-            console.info("old Config file succesfully loaded.");
-
-        } else if (AppCore.defaultRepo.loadFromFile(uiSessionId.recoveryConfigFilePath)) {
-            console.info("Load the config file:", uiSessionId.recoveryConfigFilePath);
-            console.info("recovery Config file succesfully loaded.");
-
-        } else {
+            // Load app with defaults
             console.info("Load the app with default settings");
             AppCore.defaultRepo.initRootObject("Device");
+
+            uiSessionId.currentFile = "Update Device";
+
+            // Update setting with server
+            uiSessionId.settingsReady = deviceControllerCPP.system.fetchSettings();
+
+        } else {
+            // Load model from the file after initialize setup, normal restart, etc...
+
+            // Load the file
+            // check if not exist uiSessionId.configFilePath
+            // then load from relative path (sthermConfig.QSS.json)), and remove it
+            if (AppCore.defaultRepo.loadFromFile(uiSessionId.configFilePath)) {
+                console.info("Load the config file: ", uiSessionId.configFilePath);
+                console.info("Config file succesfully loaded.");
+                uiSessionId.currentFile = uiSessionId.configFilePath;
+
+            } else if (AppCore.defaultRepo.loadFromFile("sthermConfig.QQS.json")) {
+                console.info("Load the config file: sthermConfig.QQS.json");
+                console.info("old Config file succesfully loaded.");
+                uiSessionId.currentFile = "sthermConfig.QQS.json";
+
+            } else if (AppCore.defaultRepo.loadFromFile(uiSessionId.recoveryConfigFilePath)) {
+                console.info("Load the config file:", uiSessionId.recoveryConfigFilePath);
+                console.info("recovery Config file succesfully loaded.");
+                uiSessionId.currentFile = uiSessionId.recoveryConfigFilePath;
+
+            } else {
+                AppCore.defaultRepo.initRootObject("Device");
+                uiSessionId.currentFile = "Device";
+            }
+
+            // Remove the relative file from the directory.
+            QSFileIO.removeFile("sthermConfig.QQS.json");
+
+            // if any load was successful, write it to recovery
+            // defaults also saved.
+            console.log("Save recovery file: ", AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath));
         }
-
-        // Remove the relative file from the directory.
-        QSFileIO.removeFile("sthermConfig.QQS.json");
-
-        // if any load was successful, write it to recovery
-        // defaults also saved.
-        console.log("Save recovery file: ", AppCore.defaultRepo.saveToFile(uiSessionId.recoveryConfigFilePath));
 
 
 
@@ -149,6 +176,7 @@ ApplicationWindow {
     UiSession {
         id: uiSessionId
         popupLayout: popUpLayoutId
+        toastManager:toastManagerId
     }
 
     StackLayout {
@@ -200,8 +228,9 @@ ApplicationWindow {
         id: _screenSaver
         anchors.centerIn: parent
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
-        deviceController: uiSessionId.deviceController
-        device: uiSessionId.appModel
+
+        uiSession: uiSessionId
+
         onOpened: uiSessionId.showHome();
     }
 
@@ -250,7 +279,9 @@ ApplicationWindow {
             //! Increase key height and keyboard height
             VirtualKeyboardSettings.locale = "en_US";
 
+            //! Documents in KeyboardStyle QML Type
             keyboard.style.keyPanel = keyboardKeyCompo;
+            keyboard.style.spaceKeyPanel = spaceStyleCompo;
             keyboard.style.keyboardDesignHeight = keyboard.style.keyboardDesignHeight * 1.3
             keyboard.style.keyboardHeight = keyboard.style.keyboardDesignHeight / 3.8;
         }
@@ -384,6 +415,31 @@ ApplicationWindow {
          }
     }
 
+    //! Style of space key in virtual keyboard
+    Component {
+        id: spaceStyleCompo
+
+        KeyPanel {
+            id: keypanel
+
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 2
+                color: Qt.darker("#4F5B62", keypanel.control.pressed ? 1.1 : 1);
+                radius: 4
+
+                Text {
+                    anchors.centerIn: parent
+                    font.family: Application.font.family
+                    font.pixelSize: Application.font.pixelSize * 0.8
+                    font.capitalization: keypanel.control.uppercased ? Font.AllUppercase : Font.MixedCase
+                    color: Qt.darker(Style.foreground, keypanel.control.pressed ? 1.5 : 1)
+                    text: "English"
+                }
+            }
+        }
+    }
+
     //! SplashScreen Loader
     Loader {
         id: _splashLoader
@@ -414,5 +470,18 @@ ApplicationWindow {
     //! MessagePopupView
     MessagePopupView {
         uiSession: uiSessionId
+    }
+
+    //ToastManager component for managing and displaying registered toasts
+    ToastManager{
+        id: toastManagerId
+        toastComponent:toastViewId
+    }
+
+    //Toast view for displaying toast messages
+    Toast{
+        id:toastViewId
+        x: (parent.width - width) / 2
+        y: parent.height - height - 16
     }
 }

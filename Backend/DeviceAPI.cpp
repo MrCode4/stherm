@@ -14,7 +14,13 @@ DeviceAPI::DeviceAPI(QObject *parent)
     , m_hardware(
           new NUVE::Hardware(m_deviceConfig, m_timing, m_currentStage, m_sensors, *m_system, this))
 {
+#ifdef __unix__
     _uid = UtilityHelper::getCPUInfo().toStdString();
+
+#else
+    // Use in test
+    _uid = m_deviceConfig.uid;
+#endif
 
     m_system->setUID(_uid);
 }
@@ -37,7 +43,7 @@ int DeviceAPI::checkSN()
     auto sn_config = m_system->getSN(_uid);
     if (!sn_config.second) {
 
-        qWarning() << "serial number empty: " << sn_config.first.c_str();
+        qWarning() << "serial number(SN) with false has_client, SN: " << sn_config.first.c_str();
 
         // Staring first time setup
         m_hardware->setDefaultValues(_uid);
@@ -67,4 +73,16 @@ NUVE::Timing* DeviceAPI::timing() {
 
 void DeviceAPI::ForgetDevice() {
     m_deviceConfig.initialise("");
+}
+
+const NUVE::DeviceConfig &DeviceAPI::deviceConfig() const
+{
+    return m_deviceConfig;
+}
+
+void DeviceAPI::setSampleRate(const int sampleRate) {
+    if (sampleRate < 0)
+        return;
+
+    m_deviceConfig.setSampleRate(sampleRate);
 }

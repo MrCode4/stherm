@@ -19,7 +19,7 @@ public:
 
     void setUID(cpuid_t accessUid);
     //! Get serial number and if has client from server if not fetched or saved
-    std::pair<std::string, bool> getSN(cpuid_t accessUid);
+    std::pair<std::string, bool> getSN(cpuid_t accessUid, bool notifyUser = true);
     //! returns last fetched from save or server
     std::pair<std::string, bool> getSN();
 
@@ -34,12 +34,24 @@ public:
 
     void ForgetDevice();
 
+    bool getAutoModeSetings();
+
+    //! Push auto mode settings to server
+    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
+
 signals:
     void snReady();
     void wiringReady();
     void contractorInfoReady();
     void settingsLoaded();
+
+    //! Settings data
     void settingsReady(QVariantMap settings);
+
+    //! Parse non-settings data, to update immediately
+    void appDataReady(QVariantMap data);
+
+    void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void messagesLoaded();
     void requestJobDone();
 
@@ -52,12 +64,18 @@ signals:
     void pushSuccess();
     void pushFailed();
 
+    void autoModePush(bool isSuccess);
+
+    void serialNumberChanged();
+
+    void testModeStarted();
+
 private slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply) override;
 
 protected:
-    void sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
+    QNetworkReply* sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
     void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method) override;
 
 private:

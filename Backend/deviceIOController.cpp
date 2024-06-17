@@ -47,9 +47,9 @@ public:
     //    rgb_vals RGBm, RGBm_last;
 
     //! wirings and relays
-    QList<uint8_t> relays_in;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
     STHERM::RelayConfigs mRelaysIn;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
-    QList<uint8_t> relays_in_l; // Fill in set relay command
+    STHERM::RelayConfigs mRelaysOut;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
+    STHERM::RelayConfigs mRelaysOutLast;   // Fill from get_dynamic1, <relay_state> (0 OR 1)
     QList<uint8_t> WiringState;
 
     //! main device
@@ -62,9 +62,9 @@ public:
     std::vector<STHERM::SensorConfigThresholds> throlds;
 
     //! 0 normal, 1 adaptive
-    uint8_t brighness_mode = 1;
+    uint8_t brightness_mode = 0;
     uint32_t luminosity = 255;
-    uint32_t brightnessValue;
+    uint32_t brightnessValue = 255;
 
     //! unknowns // TODO find unused ones and remove later
     bool pairing = false;
@@ -343,7 +343,7 @@ bool DeviceIOController::setBrightness(int value)
         return true;
     }
 
-    if (m_p->brighness_mode == 1) {
+    if (m_p->brightness_mode == 1) {
         emit adaptiveBrightness(value / 2.55);
     }
 
@@ -660,7 +660,7 @@ bool DeviceIOController::setSettings(QVariantList data)
         }
 
         bool adaptive = data.last().toBool();
-        m_p->brighness_mode = adaptive ? 1 : 0;
+        m_p->brightness_mode = adaptive ? 1 : 0;
 
         if (setBrightness(adaptive ? m_p->luminosity :
                               qRound(data.first().toDouble() * 2.55)))
@@ -668,6 +668,20 @@ bool DeviceIOController::setSettings(QVariantList data)
         else
             return false;
     }
+}
+
+void DeviceIOController::setBrightnessTest(int brightness, bool test)
+{
+    if (test && !property("test").toBool()){
+        setProperty("adaptive", m_p->brightness_mode);
+        setProperty("brightness", m_p->brightnessValue);
+    }
+    setProperty("test", test);
+
+    m_p->brightness_mode = test ? 0 : property("adaptive").toInt();
+    brightness = test ? brightness : property("brightness").toInt();
+
+    setBrightness(brightness);
 }
 
 void DeviceIOController::wtdExec()
@@ -779,8 +793,8 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
                        sizeof(Luminosity));
 
                 QVariantMap resultMap;
-                resultMap.insert("RangeMilliMeter", RangeMilliMeter);
-                resultMap.insert("brighness", Luminosity);
+                resultMap.insert(RangeMilliMeterKey, RangeMilliMeter);
+                resultMap.insert(brightnessKey, Luminosity);
                 emit tofDataReady(resultMap);
 
                 checkTOFRangeValue(RangeMilliMeter);
@@ -847,16 +861,16 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
 
                 // Prepare data and send to ui
                 QVariantMap mainDataMap;
-                mainDataMap.insert("temperature",     mainDataValues.temp);
-                mainDataMap.insert("humidity",        mainDataValues.humidity);
-                mainDataMap.insert("co2",             mainDataValues.c02);
-                mainDataMap.insert("etoh",            mainDataValues.etoh);
-                mainDataMap.insert("Tvoc",            mainDataValues.Tvoc);
-                mainDataMap.insert("iaq",             mainDataValues.iaq);
-                mainDataMap.insert("pressure",        mainDataValues.pressure);
-                mainDataMap.insert("RangeMilliMeter", RangeMilliMeter);
-                mainDataMap.insert("brighness",       Luminosity);
-                mainDataMap.insert("fanSpeed",        fanSpeed);
+                mainDataMap.insert(temperatreKey,     mainDataValues.temp);
+                mainDataMap.insert(humidityKey,        mainDataValues.humidity);
+                mainDataMap.insert(co2Key,             mainDataValues.c02);
+                mainDataMap.insert(etohKey,            mainDataValues.etoh);
+                mainDataMap.insert(TvocKey,            mainDataValues.Tvoc);
+                mainDataMap.insert(iaqKey,             mainDataValues.iaq);
+                mainDataMap.insert(pressureKey,        mainDataValues.pressure);
+                mainDataMap.insert(RangeMilliMeterKey, RangeMilliMeter);
+                mainDataMap.insert(brightnessKey,       Luminosity);
+                mainDataMap.insert(fanSpeedKey,        fanSpeed);
 
                 emit mainDataReady(mainDataMap);
 
@@ -1048,7 +1062,9 @@ void DeviceIOController::processTIResponse(STHERM::SIOPacket rxPacket)
         case STHERM::SetRelay: {
             if (rxPacket.ACK == STHERM::ERROR_NO) {
                 TRACE_CHECK(false) << "***** Ti  - Start SetRelay *****";
-                m_p->relays_in_l = m_p->relays_in;
+                m_p->mRelaysOutLast = m_p->mRelaysOut;
+                emit relaysUpdated(m_p->mRelaysOutLast);
+
                 TRACE_CHECK(false) << "***** Ti  - SetRelay finished *****";
             } else {
                 switch (rxPacket.ACK) {
@@ -1252,6 +1268,11 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 
     if (txPacket.CMD == STHERM::SetRelay || txPacket.CMD == STHERM::Check_Wiring) {
         m_p->wait_relay_response = true;
+    }
+
+    // Store relays that must be updated based on the server's response to the current SetRelay request.
+    if (txPacket.CMD == STHERM::SetRelay) {
+        m_p->mRelaysOut = DataParser::getRelaysFromPacket(txPacket);
     }
 
     //! prepare for request
@@ -1551,9 +1572,9 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
 void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
 {
     TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity)) <<
-        m_p->brighness_mode << m_adaptiveBrightness_timer.isActive();
+        m_p->brightness_mode << m_adaptiveBrightness_timer.isActive();
     m_p->luminosity = luminosity;  // we can smooth this as well if changes too much
-    if (m_p->brighness_mode == 1) {
+    if (m_p->brightness_mode == 1) {
         if (!m_adaptiveBrightness_timer.isActive())
             m_adaptiveBrightness_timer.start();
     }

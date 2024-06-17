@@ -20,13 +20,14 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    title: message ? ((message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert)
-                      ? "Alert" : (message.type === Message.Type.Notification
-                                   ? "Notification"
-                                   : "Message")
+    title: message ? ((message.type === Message.Type.Alert ||
+                       message.type === Message.Type.SystemAlert ||
+                       message.type === Message.Type.SystemNotification) ? "Alert" : "Message"
                       ) : ""
     icon: message ? (message.icon === ""
-                     ? ((message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert)
+                     ? ((message.type === Message.Type.Alert ||
+                         message.type === Message.Type.SystemAlert ||
+                         message.type === Message.Type.SystemNotification)
                         ? FAIcons.triangleExclamation
                         : (message.type === Message.Type.Error ? FAIcons.circleXmark
                                                                : FAIcons.bell)
