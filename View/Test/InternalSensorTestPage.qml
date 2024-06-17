@@ -19,8 +19,8 @@ BasePageView {
     property real rangeMilliMeterMax: 70
     property real tvocMin: 0
     property real tvocMax: 100
-    property real brighnessMin: 0
-    property real brighnessMax: 100
+    property real brightnessMin: 0
+    property real brightnessMax: 100
     property real co2Min: 0
     property real co2Max: 1
     property real etohMin: 0
@@ -72,8 +72,8 @@ BasePageView {
                 writeSensorResult(key, value, rangeMilliMeterMin, rangeMilliMeterMax, true)
             } else if (key === "Tvoc") {
                 writeSensorResult(key, value, tvocMin, tvocMax, false)
-            } else if (key === "brighness") {
-                writeSensorResult(key, value, brighnessMin, brighnessMax, true)
+            } else if (key === "brightness") {
+                writeSensorResult(key, value, brightnessMin, brightnessMax, true)
             } else if (key === "co2") {
                 writeSensorResult(key, value, co2Min, co2Max, false)
             } else if (key === "etoh") {
@@ -265,9 +265,9 @@ BasePageView {
         Label {
             id: ambientField
 
-            property bool valid : (root.model?.brighness >= brighnessMin && root.model?.brighness <= brighnessMax) ?? false
+            property bool valid : (root.model?.brightness >= brightnessMin && root.model?.brightness <= brightnessMax) ?? false
 
-            text:root.model?.brighness  ?? ""
+            text:root.model?.brightness  ?? ""
             Layout.preferredWidth:  temperatureField.width
             color: valid ? Material.foreground : Style.testFailColor
         }

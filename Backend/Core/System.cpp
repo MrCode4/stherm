@@ -1534,3 +1534,14 @@ QStringList NUVE::System::cpuInformation() {
 
     return cpuTempList;
 }
+
+bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t minimumSizeBytes)
+{
+#ifdef __unix__
+    QStorageInfo storageInfo (directory);
+
+    return (storageInfo.isValid() && storageInfo.bytesFree() >= minimumSizeBytes);
+#endif
+
+    return true;
+}

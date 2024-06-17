@@ -176,6 +176,9 @@ public:
 
     bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
+    //! Check: the directory is valid and has minimum free space
+    bool checkDirectorySpaces(const QString directory, const uint32_t minimumSizeBytes = 400000000);
+
     bool isManualMode();
 
     Q_INVOKABLE bool isInitialSetup();
