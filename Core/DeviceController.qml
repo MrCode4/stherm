@@ -138,9 +138,6 @@ I_DeviceController {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {
-            // This is not a settings section, the QR URL is just part of the information
-            checkQRurl(settings.qr_url);
-
             if (!deviceControllerCPP.system.canFetchServer || settingsPush.running || settingsPushRetry.running) {
                 console.log("We have some changes that not applied on the server.")
                 return;
@@ -154,10 +151,15 @@ I_DeviceController {
             setSystemModeServer(settings.mode_id)
             setSchedulesFromServer(settings.schedule)
             setVacationServer(settings.vacation)
-            setMessagesServer(settings.messages)
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
+        }
+
+        function onAppDataReady(data) {
+            // This is not a settings section, the QR URL is just part of the information
+            checkQRurl(data.qr_url);
+            setMessagesServer(data.messages)
         }
 
         //! Update the auto mode settings with the fetch signal.
@@ -477,11 +479,24 @@ I_DeviceController {
         // Mute alerts update locally.
         if (device.setting.enabledAlerts !== enabledAlerts) {
             device.setting.enabledAlerts = enabledAlerts;
+            if (enabledAlerts)
+                // To call checkUnreadMessages function from MessagePopupView,
+                // TODO: Call this function from messageController
+                device.messagesChanged();
+            else
+                uiSession.hasUnreadAlerts = false
         }
 
         // Mute notifications update locally.
         if (device.setting.enabledNotifications !== enabledNotifications) {
             device.setting.enabledNotifications = enabledNotifications;
+
+            if (enabledNotifications)
+                // To call checkUnreadMessages function from MessagePopupView,
+                // TODO: Call this function from messageController
+                device.messagesChanged();
+            else
+                uiSession.hasUnreadMessages = false
         }
 
         var send_data = [brightness, volume, temperatureUnit, adaptive];
