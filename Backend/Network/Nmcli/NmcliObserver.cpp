@@ -130,7 +130,7 @@ void NmcliObserver::onMonitorProcessReadReady()
                 }
 
                 if (message == NC_MSG_DISCONNECTED
-                    || message == "Networkmanager is now in the 'disconnected' state") {
+                    || message == NC_MSG_DISCONNECT_STATE) {
                     //! Wifi is disconnected
                     emit wifiDisconnected();
                 } else if (message == NC_MSG_CONNECTION_FAILED && !mConnectingWifiSsid.isEmpty()) {
