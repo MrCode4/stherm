@@ -43,7 +43,7 @@ BasePageView {
         id: fetchTimer
 
         repeat: true
-        running: initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady
+        running: root.visible && initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady
         interval: 5000
 
         onTriggered: {
@@ -58,7 +58,7 @@ BasePageView {
         property bool once : false
 
         repeat: false
-        running: !once && initialSetupReady
+        running: !once && root.visible && initialSetupReady
         interval: 10000
         onTriggered: nextPage()
     }

@@ -42,7 +42,7 @@ Item {
                 popupQueue[0].open();
             }
 
-            checkScreenSaver();
+            // checkScreenSaver();
         }
     }
 
@@ -74,7 +74,7 @@ Item {
             }
         }
 
-        checkScreenSaver();
+        // checkScreenSaver();
     }
 
     function closeAllPopups()
@@ -90,6 +90,10 @@ Item {
     }
 
     //! Alerts must be seen from a distance by the user
+    //! Unused
+    //! The screensaver remains active even when an AlertNotifPopup instance exists.
+    //! We display some icons on the screensaver page when an AlertNotifPopup instance exists,
+    //! so we need to disable this functionality for now.
     function checkScreenSaver() {
         let alertNotifPopup = _internal.popupQueue.find(popup => (popup instanceof AlertNotifPopup));
 

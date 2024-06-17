@@ -25,6 +25,7 @@ static  const QString m_T1                    = "Temperature compensation T1 (F)
 #endif
 static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
+
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
     "green": 255,
@@ -207,6 +208,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mBacklightPowerTimer.start();
 
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
+        // To avoid the first deviation in the average
+        if (!_isFirstDataReceived) {
+            _rawMainData = data;
+            _isFirstDataReceived = true;
+        }
+
         setMainData(data);
     });
 
@@ -229,9 +236,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(_deviceIO, &DeviceIOController::tofDataReady, this, [this](QVariantMap data) {
-        for (const auto &pair : data.toStdMap()) {
-            _mainData.insert(pair.first, pair.second);
-        }
+        setMainData(data, true);
     });
 
     connect(_deviceIO, &DeviceIOController::adaptiveBrightness, this, [this](double adaptiveBrightness) {
@@ -298,11 +303,26 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
             m_scheme->moveToUpdatingMode();
         });
+
+        // Thge system prepare the direcories for usage
+        m_system->mountDirectory("/mnt/data", "/mnt/data/sensor");
     }
 
     connect(_deviceIO, &DeviceIOController::relaysUpdated, this, [this](STHERM::RelayConfigs relays) {
         emit fanWorkChanged(relays.g == STHERM::ON);
     });
+
+    // save data to csv file
+    // update the timer intervals when sample rate changed.
+    connect(&mSaveSensorDataTimer, &QTimer::timeout, this, [this]() {
+        writeSensorData(_mainData);
+    });
+
+    auto sampleRate = _deviceAPI->deviceConfig().sampleRate;
+    mSaveSensorDataTimer.setTimerType(Qt::PreciseTimer);
+    // TODO: check start condition
+    mSaveSensorDataTimer.start(sampleRate * 60 * 1000);
+
 
     //! Set sInstance to this
     if (!sInstance) {
@@ -318,6 +338,17 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
 
+void DeviceControllerCPP::setSampleRate(const int sampleRate) {
+    _deviceAPI->setSampleRate(sampleRate);
+
+    if (mSaveSensorDataTimer.isActive()) {
+        mSaveSensorDataTimer.stop();
+
+        auto sr = _deviceAPI->deviceConfig().sampleRate;
+        // TODO: check start condition
+        mSaveSensorDataTimer.start(sr * 60 * 1000);
+    }
+}
 
 bool DeviceControllerCPP::setBacklight(QVariantList data, bool isScheme)
 {
@@ -548,32 +579,57 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
     emit systemSetupChanged();
 }
 
-void DeviceControllerCPP::setMainData(QVariantMap mainData)
+void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
 {
-    bool isOk;
-    double tc = mainData.value("temperature").toDouble(&isOk);
-    if (isOk){
-        mRawTemperature = tc;
+    if (addToData) {
+        //! Insert data to main data.
+        for (const auto &pair : mainData.toStdMap()) {
+            _mainData.insert(pair.first, pair.second);
+        }
 
-        double dt = deltaCorrection();
-        TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
-        if (qAbs(dt) < 10) {
+    } else {
+        bool isOk;
+        double tc = mainData.value(temperatreKey).toDouble(&isOk);
+        if (isOk){
+            mRawTemperature = tc;
+
+            double dt = deltaCorrection();
             // Fan status effect:
             dt += mTEMPERATURE_COMPENSATION_T1;
+            TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
+            if (qAbs(dt) < 10) {
+                tc -= dt;
 
-            mainData.insert("temperature", tc - dt);
-        } else {
-            qWarning() << "dt is greater than 10! check for any error.";
+                mainData.insert(temperatreKey, tc);
+            } else {
+                qWarning() << "dt is greater than 10! check for any error.";
+            }
         }
+
+        if (mFanOff)
+            mainData.insert(fanSpeedKey, 0);
+
+        if (_mainData == mainData)
+            return;
+
+        _mainData = mainData;
+
+        // Average of the last two temperature and humidity
+        // Get temperature from _rawMainData
+        auto rt = _rawMainData.value(temperatreKey, tc).toDouble(&isOk);
+
+        if (isOk)
+            _mainData.insert(temperatreKey, (tc + rt) / 2);
+
+        auto mh = mainData.value(humidityKey, 0.0).toDouble();
+        // Get humidity from _rawMainData
+        auto rh = _rawMainData.value(humidityKey, mh).toDouble(&isOk);
+
+        if (isOk)
+            _mainData.insert(humidityKey, (mh + rh) / 2);
+
+        _rawMainData = mainData;
     }
-
-    if (mFanOff)
-        mainData.insert("fanSpeed", 0);
-
-    if (_mainData == mainData)
-        return;
-
-    _mainData = mainData;
 
     if (m_scheme)
         m_scheme->setMainData(getMainData());
@@ -865,7 +921,7 @@ void DeviceControllerCPP::testFinished()
         }
     }
 
-    if (QFile::rename("test_results.csv", newFileName)) {
+    if (!QFile::rename("test_results.csv", newFileName)) {
         TRACE << "Could not create the file: " << newFileName;
     }
 
@@ -883,7 +939,7 @@ bool DeviceControllerCPP::getSNTestMode() {
     auto snTestMode = settings.value(m_RestartAfetrSNTestMode, false).toBool();
     settings.setValue(m_RestartAfetrSNTestMode, false);
 
-    TRACE << "testFinishedsnTestMode" << snTestMode;
+    TRACE << "snTestMode" << snTestMode;
     return snTestMode;
 }
 
@@ -1125,4 +1181,68 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
     }
 
     return "";
+}
+
+void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
+    auto directoryHasSpace = m_system->checkDirectorySpaces("/mnt/data/sensor");
+
+    QString filePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sensorData.csv";
+    const QString dateTimeHeader = "DateTime UTC (sec)";
+
+#ifdef __unix__
+    filePath = "/mnt/data/sensor/sensorData.csv";
+#endif
+
+    const QStringList header = {dateTimeHeader, temperatreKey, humidityKey,
+                                co2Key, etohKey, TvocKey,
+                                iaqKey, pressureKey, RangeMilliMeterKey,
+                                brightnessKey, fanSpeedKey};
+    QFile file(filePath);
+
+    if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        QTextStream out(&file);
+
+        QString allData = out.readAll();
+        file.resize(0);
+
+        // Check the header
+        auto checkHeader = allData.isEmpty() ? false : allData.split("\n").first().contains(dateTimeHeader);
+        if (!checkHeader) {
+            // Write header
+            QStringList data;
+            foreach (auto field, header) {
+                data.append(field);
+            }
+            allData.append(data.join(",") + "\n");
+        }
+
+        // Write data rows
+        QStringList dataStrList;
+        dataStrList.append(QString::number(QDateTime::currentDateTimeUtc().toSecsSinceEpoch()));
+        foreach (auto key, header) {
+            if (key == dateTimeHeader)
+                continue;
+
+            dataStrList.append(QString::number(data.value(key, NAN).toDouble()));
+        }
+
+        allData.append(dataStrList.join(","));
+
+        QStringList lines = allData.split("\n");
+
+        // Remove the first data line from the file
+        if (!directoryHasSpace && lines.count() > 1) {
+            lines.remove(1);
+        }
+
+        foreach (auto line, lines) {
+            out << line << "\n";
+        }
+
+        file.close();
+        TRACE << "CSV file written successfully.";
+
+    } else {
+        TRACE << "Failed to open the file for writing/Reading.";
+    }
 }

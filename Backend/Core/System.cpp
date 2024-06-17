@@ -134,6 +134,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::onSnReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
+    connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, &NUVE::System::autoModeSettingsReady);
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
     connect(mSync, &NUVE::Sync::testModeStarted, this, &NUVE::System::testModeStarted);
@@ -515,7 +516,7 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
     return response;
 }
 
-QString NUVE::System::getSN(QString accessUid)
+QString NUVE::System::getSN_QML(QString accessUid)
 {
     auto response = mSync->getSN(accessUid.toStdString(), false);
     if (response.second)
@@ -1532,4 +1533,15 @@ QStringList NUVE::System::cpuInformation() {
     }
 
     return cpuTempList;
+}
+
+bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t minimumSizeBytes)
+{
+#ifdef __unix__
+    QStorageInfo storageInfo (directory);
+
+    return (storageInfo.isValid() && storageInfo.bytesFree() >= minimumSizeBytes);
+#endif
+
+    return true;
 }

@@ -228,8 +228,9 @@ ApplicationWindow {
         id: _screenSaver
         anchors.centerIn: parent
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
-        deviceController: uiSessionId.deviceController
-        device: uiSessionId.appModel
+
+        uiSession: uiSessionId
+
         onOpened: uiSessionId.showHome();
     }
 

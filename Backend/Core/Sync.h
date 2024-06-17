@@ -44,7 +44,13 @@ signals:
     void wiringReady();
     void contractorInfoReady();
     void settingsLoaded();
+
+    //! Settings data
     void settingsReady(QVariantMap settings);
+
+    //! Parse non-settings data, to update immediately
+    void appDataReady(QVariantMap data);
+
     void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void messagesLoaded();
     void requestJobDone();
