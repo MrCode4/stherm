@@ -35,6 +35,9 @@ Item {
     //! menu and update page in menu
     property bool             hasUpdateNotification: false
 
+    property bool             hasUnreadAlerts: false
+    property bool             hasUnreadMessages: false
+
     //! Config file path
     readonly property string  configFilePath:   "/usr/local/bin/sthermConfig.QQS.json"
 

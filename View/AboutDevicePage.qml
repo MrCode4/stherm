@@ -95,10 +95,9 @@ BasePageView {
             }
 
             //! to start test mode Easter Egg
-            MouseArea {
+            TapHandler {
                 enabled: textContent.visible
-                anchors.fill: parent
-                onClicked: {
+                onTapped: {
                     if (index === 1) {
                         root.testCounter++;
                         if (root.testCounter === 10) {
