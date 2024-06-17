@@ -12,8 +12,11 @@ Popup {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! UiSession
+    property UiSession uiSession
+
     //! Reference to I_DeviceController
-    property I_DeviceController     deviceController
+    property I_DeviceController     deviceController: uiSession.deviceController
 
     //! Reference to I_Device
     property I_Device               device: deviceController?.device ?? null
@@ -25,6 +28,11 @@ Popup {
 
     /* Object properties
      * ****************************************************************************************/
+
+    // ScrerenSaver popup needs to be positioned on the topmost layer for optimal visibility.
+    // Although 1 technically works, 10 is chosen for redundancy as a safety measure.
+    z: 10
+
     implicitHeight: AppStyle.size
     implicitWidth: AppStyle.size
     closePolicy: Popup.NoAutoClose
@@ -73,6 +81,47 @@ Popup {
                         capitalization: "AllUppercase"
                     }
                     text: `\u00b0${unit}`
+                }
+            }
+
+            RowLayout {
+                Layout.alignment: Qt.AlignCenter
+
+                spacing: 10
+                Image {
+                    id: swUpdateIcon
+
+                    visible: deviceController.deviceControllerCPP.system.updateAvailable
+                    fillMode: Image.PreserveAspectFit
+                    source: AppSpec.swUpdateIcon
+                    sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+                    sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+
+                    cache: true
+                }
+
+                Image {
+                    id: alertIcon
+
+                    visible: uiSession.hasUnreadAlerts
+                    fillMode: Image.PreserveAspectFit
+                    source: AppSpec.alertIcon
+                    sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+                    sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+
+                    cache: true
+                }
+
+                Image {
+                    id: messageIcon
+
+                    visible: uiSession.hasUnreadMessages
+                    fillMode: Image.PreserveAspectFit
+                    source: AppSpec.messageIcon
+                    sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+                    sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
+
+                    cache: true
                 }
             }
         }

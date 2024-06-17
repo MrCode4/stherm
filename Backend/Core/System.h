@@ -70,7 +70,7 @@ public:
 
     //! Get serial number from server, call from QML and return serial number
     //! Some signals are block in this function.
-    Q_INVOKABLE QString getSN(QString accessUid);
+    Q_INVOKABLE QString getSN_QML(QString accessUid);
 
     //! Get update
     //! todo: process response packet
@@ -176,6 +176,9 @@ public:
 
     bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
+    //! Check: the directory is valid and has minimum free space
+    bool checkDirectorySpaces(const QString directory, const uint32_t minimumSizeBytes = 400000000);
+
     bool isManualMode();
 
     Q_INVOKABLE bool isInitialSetup();
@@ -202,7 +205,10 @@ protected slots:
 
 signals:
     void snReady();
+
     void settingsReady(QVariantMap settings);
+    void appDataReady(QVariantMap settings);
+
     void autoModeSettingsReady(QVariantMap settings, bool isValid);
     void pushFailed();
 

@@ -416,6 +416,9 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                                 Q_EMIT settingsReady(object.toVariantMap());
                             }
 
+                            // Transmit Non-Configuration Data to UI and Update Model on Server Response
+                            emit appDataReady(object.toVariantMap());
+
                             break;
                         } else {
                             errorString = "Received settings belong to another device: " + mSerialNumber + ", " + object.value("sn").toString();

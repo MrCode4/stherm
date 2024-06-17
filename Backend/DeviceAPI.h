@@ -49,6 +49,10 @@ public:
     //! Forget device configs
     void ForgetDevice();
 
+    const NUVE::DeviceConfig& deviceConfig() const;
+
+    void setSampleRate(const int sampleRate);
+
 signals:
     void uidChanged();
 

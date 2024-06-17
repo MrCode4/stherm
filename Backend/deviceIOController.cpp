@@ -62,7 +62,7 @@ public:
     std::vector<STHERM::SensorConfigThresholds> throlds;
 
     //! 0 normal, 1 adaptive
-    uint8_t brighness_mode = 0;
+    uint8_t brightness_mode = 0;
     uint32_t luminosity = 255;
     uint32_t brightnessValue = 255;
 
@@ -343,7 +343,7 @@ bool DeviceIOController::setBrightness(int value)
         return true;
     }
 
-    if (m_p->brighness_mode == 1) {
+    if (m_p->brightness_mode == 1) {
         emit adaptiveBrightness(value / 2.55);
     }
 
@@ -660,7 +660,7 @@ bool DeviceIOController::setSettings(QVariantList data)
         }
 
         bool adaptive = data.last().toBool();
-        m_p->brighness_mode = adaptive ? 1 : 0;
+        m_p->brightness_mode = adaptive ? 1 : 0;
 
         if (setBrightness(adaptive ? m_p->luminosity :
                               qRound(data.first().toDouble() * 2.55)))
@@ -673,12 +673,12 @@ bool DeviceIOController::setSettings(QVariantList data)
 void DeviceIOController::setBrightnessTest(int brightness, bool test)
 {
     if (test && !property("test").toBool()){
-        setProperty("adaptive", m_p->brighness_mode);
+        setProperty("adaptive", m_p->brightness_mode);
         setProperty("brightness", m_p->brightnessValue);
     }
     setProperty("test", test);
 
-    m_p->brighness_mode = test ? 0 : property("adaptive").toInt();
+    m_p->brightness_mode = test ? 0 : property("adaptive").toInt();
     brightness = test ? brightness : property("brightness").toInt();
 
     setBrightness(brightness);
@@ -793,8 +793,8 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
                        sizeof(Luminosity));
 
                 QVariantMap resultMap;
-                resultMap.insert("RangeMilliMeter", RangeMilliMeter);
-                resultMap.insert("brighness", Luminosity);
+                resultMap.insert(RangeMilliMeterKey, RangeMilliMeter);
+                resultMap.insert(brightnessKey, Luminosity);
                 emit tofDataReady(resultMap);
 
                 checkTOFRangeValue(RangeMilliMeter);
@@ -861,16 +861,16 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
 
                 // Prepare data and send to ui
                 QVariantMap mainDataMap;
-                mainDataMap.insert("temperature",     mainDataValues.temp);
-                mainDataMap.insert("humidity",        mainDataValues.humidity);
-                mainDataMap.insert("co2",             mainDataValues.c02);
-                mainDataMap.insert("etoh",            mainDataValues.etoh);
-                mainDataMap.insert("Tvoc",            mainDataValues.Tvoc);
-                mainDataMap.insert("iaq",             mainDataValues.iaq);
-                mainDataMap.insert("pressure",        mainDataValues.pressure);
-                mainDataMap.insert("RangeMilliMeter", RangeMilliMeter);
-                mainDataMap.insert("brighness",       Luminosity);
-                mainDataMap.insert("fanSpeed",        fanSpeed);
+                mainDataMap.insert(temperatreKey,     mainDataValues.temp);
+                mainDataMap.insert(humidityKey,        mainDataValues.humidity);
+                mainDataMap.insert(co2Key,             mainDataValues.c02);
+                mainDataMap.insert(etohKey,            mainDataValues.etoh);
+                mainDataMap.insert(TvocKey,            mainDataValues.Tvoc);
+                mainDataMap.insert(iaqKey,             mainDataValues.iaq);
+                mainDataMap.insert(pressureKey,        mainDataValues.pressure);
+                mainDataMap.insert(RangeMilliMeterKey, RangeMilliMeter);
+                mainDataMap.insert(brightnessKey,       Luminosity);
+                mainDataMap.insert(fanSpeedKey,        fanSpeed);
 
                 emit mainDataReady(mainDataMap);
 
@@ -1484,9 +1484,9 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
 void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
 {
     TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity)) <<
-        m_p->brighness_mode << m_adaptiveBrightness_timer.isActive();
+        m_p->brightness_mode << m_adaptiveBrightness_timer.isActive();
     m_p->luminosity = luminosity;  // we can smooth this as well if changes too much
-    if (m_p->brighness_mode == 1) {
+    if (m_p->brightness_mode == 1) {
         if (!m_adaptiveBrightness_timer.isActive())
             m_adaptiveBrightness_timer.start();
     }

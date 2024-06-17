@@ -157,6 +157,10 @@ public:
     //! Forget device and system settings
     Q_INVOKABLE void forgetDevice();
 
+    //! TODO
+    //! Maybe call from server
+    Q_INVOKABLE void setSampleRate(const int sampleRate);
+
     Q_INVOKABLE bool checkUpdateMode();
 
     Q_INVOKABLE void pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high);
@@ -200,7 +204,7 @@ Q_SIGNALS:
 
 private:
     // update main data and send data to scheme.
-    void setMainData(QVariantMap mainData);
+    void setMainData(QVariantMap mainData, bool addToData = false);
     static DeviceControllerCPP* sInstance;
 
     void startTestMode();
@@ -210,6 +214,8 @@ private:
     //! return true: fan is ON
     //! return false: fan is OFF
     bool isFanON();
+
+    void writeSensorData(const QVariantMap &data);
 
 private Q_SLOTS:
     /* Private Slots
@@ -232,10 +238,17 @@ private:
 private:
     /* Attributes
      * ****************************************************************************************/
+    // Store the raw main data
+    QVariantMap _rawMainData;
+
+
     QVariantMap _mainData;
     QVariantMap _mainData_override;
     bool _override_by_file = false;
     double _temperatureLast = 0.0;
+
+    // To avoid the first deviation in the average
+    bool _isFirstDataReceived = false;
 
     DeviceIOController *_deviceIO;
     DeviceAPI *_deviceAPI;
@@ -264,6 +277,7 @@ private:
 
     //! TODO: Delete when logging is not required
     QTimer mLogTimer;
+    QTimer mSaveSensorDataTimer;
 
     QString mGeneralSystemDatafilePath;
 

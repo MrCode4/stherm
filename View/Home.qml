@@ -420,6 +420,8 @@ Control {
         }
 
         function onTestModeStarted() {
+            if (uiSession.uiTestMode)
+                return;
             console.log("Test mode started due to serial number issues.")
             uiSession.uiTestMode = true;
             deviceController.startMode = 0;

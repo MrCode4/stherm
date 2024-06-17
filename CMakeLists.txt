@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.9.2 LANGUAGES CXX)
+project(Stherm VERSION 0.9.2.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -365,6 +365,9 @@ qt6_add_qml_module(appStherm
         Images/nexgen.png
         Images/nuve-icon.png
         Images/medley.png
+        Images/icons8-error-48.png
+        Images/icons8-installing-updates-50.png
+        Images/icons8-message-50.png
         Images/lee_s.png
         Images/Wifi/wifi.png
         Images/Wifi/wifi-good.png
