@@ -117,6 +117,20 @@ QtObject {
             console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
         }
+
+        // Check Alerts with enabledAlerts in settings
+        if (!device.setting.enabledAlerts && (type === Message.Type.SystemNotification ||
+                                       type === Message.Type.Alert)) {
+            console.log("Ignore alerts due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
+            return;
+        }
+
+        // Check Notifications with enabledNotifications in settings
+        if (!device.setting.enabledNotifications && type === Message.Type.Notification) {
+            console.log("Ignore notifications due to settings: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
+            return;
+        }
+
         var newMessage;
         if (type === Message.Type.SystemNotification) {
             // To avoid saving to file
@@ -200,6 +214,9 @@ QtObject {
  
         //! wrong password alert.
         function onIncorrectWifiPassword() {
+            if (!device.setting.enabledAlerts)
+                return;
+
             var message = "Wrong password, please try again.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
 
@@ -290,6 +307,13 @@ QtObject {
 
             } break;
 
+            case AppSpec.Alert_iaq_high:
+            case AppSpec.Alert_iaq_low:
+            case AppSpec.Alert_c02_low: {
+                messageType = Message.Type.SystemAlert;
+
+            } break
+
             case AppSpec.Alert_humidity_high:
             case AppSpec.Alert_humidity_low: {
                 if (humidityWatcher.running)
@@ -335,21 +359,27 @@ QtObject {
     }
 
     function checkWifiConnection() : bool {
-        if (!NetworkInterface.connectedWifi) {
+
+        var connectedWifi = NetworkInterface.connectedWifi;
+
+        // Wifi message type is SystemNotification, so related to alerts
+        if (device.setting.enabledAlerts && !connectedWifi) {
             var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
-            return false;
         }
 
-        return true;
+        return NetworkInterface.connectedWifi;
     }
 
     function checkInternetConnection() : bool {
-        if (!NetworkInterface.hasInternet) {
+        var hasInternet = NetworkInterface.hasInternet;
+
+        // Wifi message type is SystemNotification, so related to alerts
+        if (device.setting.enabledAlerts && !hasInternet) {
             var message = "No internet connection. Please check your internet connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
-            return false;
         }
-        return true;
+
+        return hasInternet;
     }
 }
