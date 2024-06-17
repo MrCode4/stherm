@@ -30,7 +30,7 @@ Popup {
      * ****************************************************************************************/
 
     // ScrerenSaver popup needs to be positioned on the topmost layer for optimal visibility.
-    // Although 1 technically works, I chose 10 for redundancy as a safety measure.
+    // Although 1 technically works, 10 is chosen for redundancy as a safety measure.
     z: 10
 
     implicitHeight: AppStyle.size
