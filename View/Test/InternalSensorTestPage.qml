@@ -62,39 +62,40 @@ BasePageView {
      * ****************************************************************************************/
 
     function writeSensorData() {
-        let sensorData = deviceController.deviceControllerCPP.getMainData()
+        //! TODO can be empty, we may insert empty value for each key to save it in report
+        let sensorData = model;
 
         for (let key in sensorData) {
             let value = sensorData[key]
 
             if (key === "RangeMilliMeter") {
-                writeSensorResult(key, value, rangeMilliMeterMin, rangeMilliMeterMax)
+                writeSensorResult(key, value, rangeMilliMeterMin, rangeMilliMeterMax, true)
             } else if (key === "Tvoc") {
-                writeSensorResult(key, value, tvocMin, tvocMax)
+                writeSensorResult(key, value, tvocMin, tvocMax, false)
             } else if (key === "brighness") {
-                writeSensorResult(key, value, brighnessMin, brighnessMax)
+                writeSensorResult(key, value, brighnessMin, brighnessMax, true)
             } else if (key === "co2") {
-                writeSensorResult(key, value, co2Min, co2Max)
+                writeSensorResult(key, value, co2Min, co2Max, false)
             } else if (key === "etoh") {
-                writeSensorResult(key, value, etohMin, etohMax)
+                writeSensorResult(key, value, etohMin, etohMax, false)
             } else if (key === "fanSpeed") {
-                writeSensorResult(key, value, fanSpeedMin, fanSpeedMax)
+                writeSensorResult(key, value, fanSpeedMin, fanSpeedMax, true)
             } else if (key === "humidity") {
-                writeSensorResult(key, value, humidityMin, humidityMax)
+                writeSensorResult(key, value, humidityMin, humidityMax, true)
             } else if (key === "iaq") {
-                writeSensorResult(key, value, iaqMin, iaqMax)
+                writeSensorResult(key, value, iaqMin, iaqMax, true)
             } else if (key === "pressure") {
-                writeSensorResult(key, value, pressureMin, pressureMax)
+                writeSensorResult(key, value, pressureMin, pressureMax, false)
             } else if (key === "temperature") {
-                writeSensorResult(key, value, temperatureMin, temperatureMax)
+                writeSensorResult(key, value, temperatureMin, temperatureMax, true)
             }
         }
     }
 
-    function writeSensorResult(key, value, min, max) {
+    function writeSensorResult(key, value, min, max, compare) {
         let result = (value >= min && value <= max)
-        let description = "%1 must be between %2 and %3. Value: %4".arg(key).arg(min).arg(max).arg(value)
-        deviceController.deviceControllerCPP.writeTestResult(key, result, description)
+        let description = "%1(%5) must be between %2 and %3. Value: %4".arg(key).arg(min).arg(max).arg(value).arg(compare ? "used" : "not used")
+        deviceController.deviceControllerCPP.writeTestResult(key, compare ? result : true, description)
     }
 
     function nextPage(){

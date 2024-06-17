@@ -516,7 +516,7 @@ std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
     return response;
 }
 
-QString NUVE::System::getSN(QString accessUid)
+QString NUVE::System::getSN_QML(QString accessUid)
 {
     auto response = mSync->getSN(accessUid.toStdString(), false);
     if (response.second)
