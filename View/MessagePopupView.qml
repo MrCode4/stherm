@@ -90,7 +90,7 @@ Item {
         onClosed: {
             messageController.closeWifiInternetAlert();
         }
-    }  
+    }
 
     /* Functions
      * ****************************************************************************************/
