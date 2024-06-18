@@ -17,9 +17,6 @@ Item {
     //! MessageController
     property MessageController  messageController : uiSession.messageController
 
-    //! Keep the show/open messages
-    property var messagesShowing: []
-
     /* Children
      * ****************************************************************************************/
     Connections {
@@ -43,8 +40,7 @@ Item {
             //! Ask PopUpLayout to open popup
             uiSession.popupLayout.displayPopUp(wifiInternetConnectionAlert);
 
-            messagesShowing.push(wifiInternetConnectionAlert.message);
-            messagesShowingChanged();
+            messageController.addShowingMessage(wifiInternetConnectionAlert.message);
         }
 
         //! Close wifi alert
@@ -53,11 +49,7 @@ Item {
                 wifiInternetConnectionAlert.close();
 
             //! Remove from messages shown
-            var msgIndex = messagesShowing.findIndex((element, index) => element === wifiInternetConnectionAlert.message);
-            if (msgIndex > -1) {
-                messagesShowing.splice(msgIndex, 1);
-                messagesShowingChanged();
-            }
+            messageController.removeShowingMessage(wifiInternetConnectionAlert.message);
         }
     }
 
@@ -73,13 +65,8 @@ Item {
                     uiSession.deviceController.pushSettings();
                 }
 
-                //! Remove when the alert closed by user.
-                var msgIndex = messagesShowing.findIndex((element, index) => element.message === message.message);
-                if (msgIndex > -1) {
-                    //! Remove from messages shown
-                    messagesShowing.splice(msgIndex, 1);
-                    messagesShowingChanged();
-                }
+                // Remove message from showing messages
+                messageController.removeShowingMessage(message);
 
                 // Message Updated
                 uiSession.appModel.messagesChanged();
@@ -100,22 +87,8 @@ Item {
             type: Message.Type.SystemNotification
         }
 
-        onOpened: {
-            checkUnreadMessages();
-        }
-
         onClosed: {
             messageController.closeWifiInternetAlert();
-            checkUnreadMessages();
-        }
-    }
-
-    //! TODO: Move to messsage controller
-    property Connections  messagesDevice: Connections {
-        target: uiSession.appModel
-
-        function onMessagesChanged() {
-            checkUnreadMessages();
         }
     }
 
@@ -128,7 +101,7 @@ Item {
         if (!message)
             return;
 
-        var msgIndex = messagesShowing.findIndex((element, index) => element.message === message.message);
+        var msgIndex = messageController.messagesShowing.findIndex((element, index) => element.message === message.message);
         if (msgIndex > -1) {
             return;
         }
@@ -139,62 +112,10 @@ Item {
                                                             });
 
         if (newAlertPopup) {
-            messagesShowing.push(message);
-            messagesShowingChanged();
+            messageController.addShowingMessage(message);
 
             //! Ask PopUpLayout to open popup
             uiSession.popupLayout.displayPopUp(newAlertPopup);
-        }
-    }
-
-
-    //! Check unread messages and Update the uisseion parameters
-    //! TODO: move to messageController
-    function checkUnreadMessages() {
-        existUnreadAlerts();
-        existUnreadMessages();
-    }
-
-    //! Exist unread alerts?
-    function existUnreadAlerts() {
-        if (!uiSession.appModel.setting.enabledAlerts) {
-            uiSession.hasUnreadAlerts = false;
-            return;
-        }
-
-        // Check unread messages
-        var msgAlertIndex = uiSession.appModel.messages.findIndex((element, index) => (element.type === Message.Type.Alert ||
-                                                                           element.type === Message.Type.SystemAlert ||
-                                                                           element.type === Message.Type.SystemNotification) && !element.isRead);
-
-        uiSession.hasUnreadAlerts = msgAlertIndex > -1;
-
-        // Wifi alerts (and maybe another types in future) are not yet supported in the model.
-        if (!uiSession.hasUnreadAlerts) {
-            msgAlertIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Alert ||
-                                                                           element.type === Message.Type.SystemAlert ||
-                                                                           element.type === Message.Type.SystemNotification));
-
-            uiSession.hasUnreadAlerts = msgAlertIndex > -1;
-        }
-    }
-
-    //! Exist unread messages?
-    function existUnreadMessages() {
-
-        if (!uiSession.appModel.setting.enabledNotifications) {
-            uiSession.hasUnreadMessages = false;
-            return;
-        }
-
-        // Check notifications
-        var msgMessageIndex = uiSession.appModel.messages.findIndex((element, index) => (element.type === Message.Type.Notification) && !element.isRead);
-        uiSession.hasUnreadMessages = msgMessageIndex > -1;
-
-        //! To manage the messages that not exist in the model
-        if (! uiSession.hasUnreadMessages) {
-            msgMessageIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Notification));
-            uiSession.hasUnreadMessages = msgMessageIndex > -1;
         }
     }
 }

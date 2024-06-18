@@ -1284,60 +1284,148 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 
 void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed, const uint32_t luminosity)
 {
+    // Manage temperature alerts
     if (values.temp > m_p->throlds_aq.temp_high) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high));
+        if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high));
+            m_TemperatureAlertET.restart();
+
+        } else if (!m_TemperatureAlertET.isValid()) {
+            m_TemperatureAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high);
+        }
 
     } else if (values.temp < m_p->throlds_aq.temp_low) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_low,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low));
+        if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_low,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low));
+            m_TemperatureAlertET.restart();
 
-    } else if (values.humidity > m_p->throlds_aq.humidity_high) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
+        } else if (!m_TemperatureAlertET.isValid()) {
+            m_TemperatureAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low);
+        }
+
+    } else {
+        m_TemperatureAlertET.invalidate();
+    }
+
+    // Manage humidity alerts
+    if (values.humidity > m_p->throlds_aq.humidity_high) {
+        if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
+            m_HumidityAlertET.restart();
+
+        } else if (!m_HumidityAlertET.isValid()) {
+            m_HumidityAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high);
+        }
 
     } else if (values.humidity < m_p->throlds_aq.humidity_low) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_low,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low));
+        if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_low,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low));
+            m_HumidityAlertET.restart();
 
-    } else if (values.pressure > m_p->throlds_aq.pressure_high) {
+        } else if (!m_HumidityAlertET.isValid()) {
+            m_HumidityAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low);
+        }
+
+    } else {
+        m_HumidityAlertET.invalidate();
+    }
+
+    // Manage fan alerts
+    if (fanSpeed > m_p->throlds_aq.fan_high) {
+        if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_High,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High));
+            m_FanAlertET.restart();
+
+        } else if (!m_FanAlertET.isValid()) {
+            m_FanAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High);
+
+        }
+
+    } else if (fanSpeed < m_p->throlds_aq.fan_low) {
+        if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_low,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low));
+            m_FanAlertET.restart();
+
+        } else if (!m_FanAlertET.isValid()) {
+            m_FanAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low);
+
+        }
+
+    } else {
+        m_FanAlertET.invalidate();
+    }
+
+    // Manage light alerts
+    if (luminosity < m_p->throlds_aq.light_low) {
+        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 24 * 60 * 60 * 1000) {
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_Low,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low));
+            m_LightAlertET.restart();
+
+        } else if (!m_LightAlertET.isValid()) {
+            m_LightAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low);
+
+        }
+
+    } else if (luminosity > m_p->throlds_aq.light_high) {
+        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 24 * 60 * 60 * 1000) {
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_High,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High));
+            m_LightAlertET.restart();
+
+        } else if (!m_LightAlertET.isValid()) {
+            m_LightAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High);
+        }
+
+    } else {
+        m_LightAlertET.invalidate();
+    }
+
+    if (values.pressure > m_p->throlds_aq.pressure_high) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_pressure_high,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_pressure_high));
+    }
 
-    } else if (values.c02 > m_p->throlds_aq.c02_high) {
+    if (values.c02 > m_p->throlds_aq.c02_high) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_high,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_high));
+
     } else if (values.c02 < m_p->throlds_aq.c02_low) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_low,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_low));
 
-    } else if (values.Tvoc > m_p->throlds_aq.Tvoc_high * 1000) {
+    }
+
+    if (values.Tvoc > m_p->throlds_aq.Tvoc_high * 1000) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Tvoc_high,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_Tvoc_high));
 
-    } else if (values.etoh > m_p->throlds_aq.etoh_high * 100) {
+    }
+
+    if (values.etoh > m_p->throlds_aq.etoh_high * 100) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_etoh_high,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_etoh_high));
 
-    } else if (values.iaq > m_p->throlds_aq.iaq_high) {
+    }
+
+    if (values.iaq > m_p->throlds_aq.iaq_high) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_iaq_high,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
 
-    } else if (fanSpeed > m_p->throlds_aq.fan_high) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_High,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High));
-
-    }  else if (fanSpeed < m_p->throlds_aq.fan_low) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_low,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low));
-
-    }  else if (luminosity < m_p->throlds_aq.light_low) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_Low,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low));
-
-    } else if (luminosity > m_p->throlds_aq.light_high) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_High,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High));
     }
 }
 

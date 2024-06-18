@@ -22,6 +22,17 @@ QtObject {
 
     property bool activeAlerts: false
 
+    //! alertInterval: Reshow specific alerts every 24 hours (if exist),
+    //! but only if they haven't been displayed in the past 24 hours.
+    readonly property int alertInterval: 24 * 60 * 60 * 1000
+
+    //! Keep the last read
+    //! map <message, last read time>
+    property var lastRead: ([])
+
+    //! Keep the show/open messages
+    property var messagesShowing: []
+
     //! Active alerts after model is loaded
     property Timer activeAlertsTimer: Timer {
         running: device
@@ -73,7 +84,7 @@ QtObject {
 
     signal closeWifiInternetAlert();
 
-    /* Methods
+    /* Functions
      * ****************************************************************************************/
     function setMessagesServer(messages: var) {
         // messages uid
@@ -201,6 +212,9 @@ QtObject {
         }
     }
 
+    /* Property Declarations
+     * ****************************************************************************************/
+
     // To add system alerts into messages.
     property Connections sytemConnections: Connections {
         target: deviceController.deviceControllerCPP.system
@@ -247,34 +261,6 @@ QtObject {
         }
     }
 
-    //! Temperature sensor watcher (5 minutes)
-    property Timer temperatureWatcher: Timer {
-        interval: 15 * 60 * 1000
-        repeat: false
-        running: false
-    }
-
-    //! fan sensor watcher (2 hours)
-    property Timer fanWatcher: Timer {
-        interval: 5 * 60 * 60 * 1000
-        repeat: false
-        running: false
-    }
-
-    //! Humidity sensor watcher (5 minutes)
-    property Timer humidityWatcher: Timer {
-        interval: 15 * 60 * 1000
-        repeat: false
-        running: false
-    }
-
-    //! Light sensor watcher (24 hours)
-    property Timer lightWatcher: Timer {
-        interval: 24 * 60 * 60 * 1000
-        repeat: false
-        running: false
-    }
-
     //! Check air quility
     property Connections airConditionWatcherCon: Connections {
         target: device
@@ -297,6 +283,16 @@ QtObject {
 
         onTriggered: {
             var message = "Poor air quality detected. Please ventilate the room.";
+
+            console.log("Air condition alert ", message)
+            if (messagesShowing.find(element => message === element.message))
+                return;
+
+            var now = (new Date()).getTime();
+            if (Object.keys(lastRead).includes(message) &&
+                    (now - lastRead[message]) < alertInterval)
+                return;
+
             addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
         }
     }
@@ -310,6 +306,16 @@ QtObject {
 
             console.log("Alert: ", alertLevel, alertType, alertMessage);
 
+            if (messagesShowing.find(element => alertMessage === element.message))
+                return;
+
+            var now = (new Date()).getTime();
+
+            // Check message time interval (24 hours for now)
+            if (Object.keys(lastRead).includes(alertMessage) &&
+                    (now - lastRead[alertMessage]) < alertInterval)
+                return;
+
             var messageType = Message.Type.Alert;
 
             //! Watch some sensor alerts
@@ -321,11 +327,7 @@ QtObject {
 
             case AppSpec.Alert_temp_low:
             case AppSpec.Alert_temp_high: {
-                if (temperatureWatcher.running)
-                    return;
-
                 messageType = Message.Type.SystemAlert;
-                temperatureWatcher.start();
 
             } break;
 
@@ -338,11 +340,7 @@ QtObject {
 
             case AppSpec.Alert_humidity_high:
             case AppSpec.Alert_humidity_low: {
-                if (humidityWatcher.running)
-                    return;
-
                 messageType = Message.Type.SystemAlert;
-                humidityWatcher.start();
 
             } break;
 
@@ -351,11 +349,8 @@ QtObject {
                 // TODO: The fan speed is wrong in the main data.
                 // Return temporary
                 return;
-                if (fanWatcher.running)
-                    return;
 
                 messageType = Message.Type.SystemAlert;
-                fanWatcher.start();
 
             } break;
 
@@ -363,11 +358,6 @@ QtObject {
             case AppSpec.Alert_Light_Low: {
                 //! silented for now!
                 return;
-
-                if (lightWatcher.running)
-                    return;
-
-                lightWatcher.start();
 
             } break;
 
@@ -380,6 +370,31 @@ QtObject {
         }
     }
 
+    property Connections  messagesDevice: Connections {
+        target: device
+
+        function onMessagesChanged() {
+            checkUnreadMessages();
+        }
+    }
+
+    //! To update unread messages and alerts when settings changed.
+    property Connections  settingDevice: Connections {
+        target: device.setting
+
+        function onEnabledNotificationsChanged() {
+            existUnreadMessages();
+        }
+
+        function onEnabledAlertsChanged() {
+            existUnreadAlerts();
+        }
+    }
+
+
+    /* Functions
+     * ****************************************************************************************/
+
     function checkWifiConnection() : bool {
 
         var connectedWifi = NetworkInterface.connectedWifi;
@@ -390,7 +405,7 @@ QtObject {
             showWifiInternetAlert(message, (new Date()).toLocaleString());
         }
 
-        return NetworkInterface.connectedWifi;
+        return connectedWifi;
     }
 
     function checkInternetConnection() : bool {
@@ -403,5 +418,77 @@ QtObject {
         }
 
         return hasInternet;
+    }
+
+    function addShowingMessage(message: Message) {
+        messagesShowing.push(message);
+        messagesShowingChanged();
+
+        checkUnreadMessages();
+    }
+
+    function removeShowingMessage(message: Message) {
+        //! Remove when the alert closed by user.
+        var msgIndex = messagesShowing.findIndex((element, index) => element.message === message.message);
+        if (msgIndex > -1) {
+            //! Remove from messages shown
+            messagesShowing.splice(msgIndex, 1);
+            messagesShowingChanged();
+        }
+
+        checkUnreadMessages();
+
+        // Update time
+        var now = (new Date()).getTime();
+        lastRead[message.message] = now;
+    }
+
+    //! Check unread messages and Update the uisseion parameters
+    function checkUnreadMessages() {
+        existUnreadAlerts();
+        existUnreadMessages();
+    }
+
+    //! Exist unread alerts?
+    function existUnreadAlerts() {
+        if (!device.setting.enabledAlerts) {
+            uiSession.hasUnreadAlerts = false;
+            return;
+        }
+
+        // Check unread messages
+        var msgAlertIndex = device.messages.findIndex((element, index) => (element.type === Message.Type.Alert ||
+                                                                           element.type === Message.Type.SystemAlert ||
+                                                                           element.type === Message.Type.SystemNotification) && !element.isRead);
+
+        uiSession.hasUnreadAlerts = msgAlertIndex > -1;
+
+        // Wifi alerts (and maybe another types in future) are not yet supported in the model.
+        if (!uiSession.hasUnreadAlerts) {
+            msgAlertIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Alert ||
+                                                                           element.type === Message.Type.SystemAlert ||
+                                                                           element.type === Message.Type.SystemNotification));
+
+            uiSession.hasUnreadAlerts = msgAlertIndex > -1;
+        }
+    }
+
+    //! Exist unread messages?
+    function existUnreadMessages() {
+
+        if (!device.setting.enabledNotifications) {
+            uiSession.hasUnreadMessages = false;
+            return;
+        }
+
+        // Check notifications
+        var msgMessageIndex = device.messages.findIndex((element, index) => (element.type === Message.Type.Notification) && !element.isRead);
+        uiSession.hasUnreadMessages = msgMessageIndex > -1;
+
+        //! To manage the messages that not exist in the model
+        if (! uiSession.hasUnreadMessages) {
+            msgMessageIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Notification));
+            uiSession.hasUnreadMessages = msgMessageIndex > -1;
+        }
     }
 }
