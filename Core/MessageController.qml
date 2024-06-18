@@ -84,7 +84,7 @@ QtObject {
 
     signal closeWifiInternetAlert();
 
-    /* Methods
+    /* Functions
      * ****************************************************************************************/
     function setMessagesServer(messages: var) {
         // messages uid
@@ -211,6 +211,9 @@ QtObject {
             device.messagesChanged();
         }
     }
+
+    /* Property Declarations
+     * ****************************************************************************************/
 
     // To add system alerts into messages.
     property Connections sytemConnections: Connections {
