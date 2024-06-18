@@ -22,6 +22,8 @@ QtObject {
 
     property bool activeAlerts: false
 
+    //! alertInterval: Reshow specific alerts every 24 hours (if exist),
+    //! but only if they haven't been displayed in the past 24 hours.
     readonly property int alertInterval: 24 * 60 * 60 * 1000
 
     //! Keep the last read
@@ -279,12 +281,12 @@ QtObject {
         onTriggered: {
             var message = "Poor air quality detected. Please ventilate the room.";
 
-            var now = (new Date()).getTime();
 
             console.log("Air condition alert ", message)
-            if (messagesShowing.includes(message))
+            if (messagesShowing.find(element => message === element.message))
                 return;
 
+            var now = (new Date()).getTime();
             if (Object.keys(lastRead).includes(message) &&
                     (now - lastRead[message]) < alertInterval)
                 return;
@@ -302,11 +304,12 @@ QtObject {
 
             console.log("Alert: ", alertLevel, alertType, alertMessage);
 
-            if (messagesShowing.includes(alertMessage))
+            if (messagesShowing.find(element => alertMessage === element.message))
                 return;
 
             var now = (new Date()).getTime();
 
+            // Check message time interval (24 hours for now)
             if (Object.keys(lastRead).includes(alertMessage) &&
                     (now - lastRead[alertMessage]) < alertInterval)
                 return;
@@ -373,6 +376,23 @@ QtObject {
         }
     }
 
+    //! To update unread messages and alerts when settings changed.
+    property Connections  settingDevice: Connections {
+        target: device.setting
+
+        function onEnabledNotificationsChanged() {
+            existUnreadMessages();
+        }
+
+        function onEnabledAlertsChanged() {
+            existUnreadAlerts()();
+        }
+    }
+
+
+    /* Functions
+     * ****************************************************************************************/
+
     function checkWifiConnection() : bool {
 
         var connectedWifi = NetworkInterface.connectedWifi;
@@ -401,6 +421,8 @@ QtObject {
     function addShowingMessage(message: Message) {
         messagesShowing.push(message);
         messagesShowingChanged();
+
+        checkUnreadMessages();
     }
 
     function removeShowingMessage(message: Message) {
@@ -412,6 +434,9 @@ QtObject {
             messagesShowingChanged();
         }
 
+        checkUnreadMessages();
+
+        // Update time
         var now = (new Date()).getTime();
         lastRead[message.message] = now;
     }
@@ -424,7 +449,7 @@ QtObject {
 
     //! Exist unread alerts?
     function existUnreadAlerts() {
-        if (!uiSession.appModel.setting.enabledAlerts) {
+        if (!device.setting.enabledAlerts) {
             uiSession.hasUnreadAlerts = false;
             return;
         }

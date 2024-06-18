@@ -65,6 +65,7 @@ Item {
                     uiSession.deviceController.pushSettings();
                 }
 
+                // Remove message from showing messages
                 messageController.removeShowingMessage(message);
 
                 // Message Updated
@@ -86,13 +87,8 @@ Item {
             type: Message.Type.SystemNotification
         }
 
-        onOpened: {
-            messageController.checkUnreadMessages();
-        }
-
         onClosed: {
             messageController.closeWifiInternetAlert();
-            messageController.checkUnreadMessages();
         }
     }  
 
