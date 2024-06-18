@@ -213,7 +213,7 @@ void HumidityScheme::VacationLoop()
 
         if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
             // Humidity loop
-            while ((mVacationMaximumHumidity - mCurrentHumidity) > 0.001 && (mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
+            while ((mCurrentHumidity - mVacationMaximumHumidity) < 0.001) {
                 // Exit from loop
                 if (stopWork) {
                     break;
@@ -226,33 +226,25 @@ void HumidityScheme::VacationLoop()
                 updateAccessoriesRelays(mAccessoriesWireType);
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
-
-            // Exit from loop and Off the humidity wiring.
-            if ((mVacationMaximumHumidity - mCurrentHumidity) < 0.001)
-                updateAccessoriesRelays();
         }
 
         // Dehumidifiers can only reduce humidity, and may not be able to consistently maintain the desired vacation humidity range.
         // you can be confident that a dehumidifier will always lower the humidity to mVacationMaximumHumidity
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
-        // Dehumidifier loop
-        // mVacationMinimumHumidity < mCurrentHumidity Just  check but not important
-        while (mVacationMaximumHumidity < mCurrentHumidity && mVacationMinimumHumidity < mCurrentHumidity) {
-            // Exit from loop
-            if (stopWork) {
-                break;
+        if (mCurrentHumidity - mVacationMaximumHumidity > 0.001) {
+
+            // Dehumidifier loop
+            // mVacationMinimumHumidity < mCurrentHumidity Just  check but not important
+            while (mVacationMinimumHumidity - mCurrentHumidity < 0.001) {
+                // Exit from loop
+                if (stopWork) {
+                    break;
+                }
+
+                updateAccessoriesRelays(mAccessoriesWireType);
+                waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
-
-            updateAccessoriesRelays(mAccessoriesWireType);
-            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
         }
-
-        if (mVacationMaximumHumidity >= mCurrentHumidity && mVacationMinimumHumidity >= mCurrentHumidity) {
-            updateAccessoriesRelays();
-        }
-
-    } else {
-        updateAccessoriesRelays();
     }
 }
 
@@ -264,6 +256,7 @@ bool HumidityScheme::checkVacationRange() {
 void HumidityScheme::normalLoop()
 {
     if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
+
         while (mCurrentHumidity - effectiveHumidity() > 10) {
             // Exit from loop
             if (stopWork) {
@@ -273,9 +266,6 @@ void HumidityScheme::normalLoop()
             updateAccessoriesRelays(mAccessoriesWireType);
             waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
         }
-
-        if (mCurrentHumidity - effectiveHumidity() <= 10)
-            updateAccessoriesRelays();
 
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
@@ -290,9 +280,6 @@ void HumidityScheme::normalLoop()
                 break;
 
             updateAccessoriesRelays(mAccessoriesWireType);
-
-            if (mCurrentHumidity - effectiveHumidity() >= 10)
-                updateAccessoriesRelays();
 
             waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
         }
