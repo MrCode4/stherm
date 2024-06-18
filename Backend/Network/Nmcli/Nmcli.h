@@ -33,8 +33,10 @@
 #define NC_MSG_CONNECTION_FAILED        QString(": connection failed")
 #define NC_MSG_CONNECTED                QString(" is now the primary connection")
 #define NC_MSG_DISCONNECTED             QString(": disconnected")
+#define NC_MSG_DISCONNECT_STATE         QString("Networkmanager is now in the 'disconnected' state")
 #define NC_MSG_WIFI_PROFILE_REMOVED     QString(": connection profile removed")
 
 //! Printing macros
 #define NC_DEBUG            qDebug() << "NMCLI: " << Q_FUNC_INFO << __LINE__
+#define NC_WARN             qWarning() << "NMCLI: " << Q_FUNC_INFO << __LINE__
 #define NC_CRITICAL         qCritical() << "NMCLI: " << Q_FUNC_INFO << __LINE__

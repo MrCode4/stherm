@@ -254,6 +254,10 @@ BasePageView {
                             wifi: (modelData instanceof WifiInfo) ? modelData : null
 
                             onForgetClicked: {
+                                if (NetworkInterface.busy) {
+                                    return;
+                                }
+
                                 if (uiSession) {
                                     //! Ask for forgeting this wifi
                                     _forgetDlg.wifiToForget = wifi;
@@ -276,6 +280,10 @@ BasePageView {
                 anchors.leftMargin: 8
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Forget" : "Manual"
                 onClicked: {
+                    if (NetworkInterface.busy) {
+                        return;
+                    }
+
                     if (text === "Manual") {
                         if (root.StackView.view) {
                             root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiManualConnectPage.qml");
@@ -324,6 +332,10 @@ BasePageView {
                 text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
 
                 onClicked: {
+                    if (NetworkInterface.busy) {
+                        return;
+                    }
+
                     if (text === "Connect") {
                         var wifi = _wifisRepeater.currentItem.wifi;
 
@@ -332,10 +344,9 @@ BasePageView {
                             NetworkInterface.connectWifi(wifi, "");
                         } else {
                             var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
-                            var isSaved = NetworkInterface.isWifiSaved(wifi);
 
                             //! Open connect page
-                            if (root.StackView.view) {
+                            if (root.StackView.view && _wifisRepeater.currentItem) {
                                 //! Note: it's better to stop wifi refreshing to prevent any deleted
                                 //! object access issues
                                 root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
@@ -347,8 +358,11 @@ BasePageView {
                         }
                     } else {
                         //! Disconnect from this wifi
-                        NetworkInterface.disconnectWifi(_wifisRepeater.currentItem.wifi);
+                        if (_wifisRepeater.currentItem)
+                            NetworkInterface.disconnectWifi(_wifisRepeater.currentItem.wifi);
                     }
+
+                    _wifisRepeater.currentIndex = -2;
                 }
             }
         }
@@ -413,7 +427,7 @@ BasePageView {
 
             // TODO: manage push
             //! Incorrect password entered
-            if (root.StackView.view && root.StackView.view.currentItem === root) {
+            if (root.StackView.view && root.StackView.view.busy === false && root.StackView.view.currentItem === root) {
                 var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
 
                 //! Note: it's better to stop wifi refreshing to prevent any deleted
