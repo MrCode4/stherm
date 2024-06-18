@@ -284,7 +284,6 @@ QtObject {
         onTriggered: {
             var message = "Poor air quality detected. Please ventilate the room.";
 
-
             console.log("Air condition alert ", message)
             if (messagesShowing.find(element => message === element.message))
                 return;
@@ -388,7 +387,7 @@ QtObject {
         }
 
         function onEnabledAlertsChanged() {
-            existUnreadAlerts()();
+            existUnreadAlerts();
         }
     }
 
