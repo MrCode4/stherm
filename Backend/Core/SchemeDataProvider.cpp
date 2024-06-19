@@ -85,5 +85,9 @@ STHERM::Vacation SchemeDataProvider::vacation() const
 
 void SchemeDataProvider::setVacation(const STHERM::Vacation &newVacation)
 {
+    if (mVacation == newVacation)
+        return;
+
     mVacation = newVacation;
+    emit vacationChanged();
 }
