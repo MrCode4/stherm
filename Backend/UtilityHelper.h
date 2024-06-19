@@ -150,6 +150,14 @@ struct Vacation {
     double minimumHumidity;
     double maximumHumidity;
     bool   isEnable;
+
+    bool operator == (const Vacation& vacation) {
+        return (minimumTemperature == vacation.minimumTemperature &&
+                maximumTemperature == vacation.maximumTemperature &&
+                minimumHumidity    == vacation.minimumHumidity &&
+                maximumHumidity    == vacation.maximumHumidity &&
+                isEnable           == vacation.isEnable);
+    }
 };
 
 /**
