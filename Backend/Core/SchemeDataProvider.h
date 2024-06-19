@@ -23,7 +23,12 @@ public:
     /* Public Functions
      * ****************************************************************************************/
 
+    //! Set main data to update current temperature and current humidity
     void setMainData(QVariantMap mainData);
+
+    //! The system setup, currentHumidity, currentTemperature, schedule and vacation can only be changed through the DeviceController,
+    //! ensuring that both the scheme and humidity scheme can only use it, not modify it directly.
+
 
     SystemSetup *systemSetup() const;
     void setSystemSetup(SystemSetup *systemSetup);
