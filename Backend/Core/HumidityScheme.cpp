@@ -1,10 +1,11 @@
 #include "HumidityScheme.h"
 #include "LogHelper.h"
+#include "SchemeDataProvider.h"
 
 #include <QTimer>
 
-HumidityScheme::HumidityScheme(DeviceAPI* deviceAPI, QObject *parent) :
-    BaseScheme(deviceAPI, parent)
+HumidityScheme::HumidityScheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDataProvider, QObject *parent) :
+    BaseScheme(deviceAPI, schemeDataProvider, parent)
 {
 }
 
@@ -32,17 +33,17 @@ void HumidityScheme::run()
 {
     TRACE << "-- startWork is running fro Humidity control." << QThread::currentThreadId();
 
-    if (!mSystemSetup) {
-        TRACE << "-- mSystemSetup is not ready.";
+    if (!mDataProvider.data()->systemSetup()) {
+        TRACE << "-- SystemSetup is not ready.";
         return;
     }
 
     while (!stopWork) {
         // Vacation has a higher priority compared to other processes.
-        if (mSystemSetup->isVacation) {
+        if (mDataProvider.data()->systemSetup()->isVacation) {
             VacationLoop();
 
-        } else if (mSystemSetup->systemMode == AppSpecCPP::SystemMode::Off) {
+        } else if (mDataProvider.data()->systemSetup()->systemMode == AppSpecCPP::SystemMode::Off) {
             OffLoop();
 
         } else {
@@ -91,36 +92,28 @@ void HumidityScheme::restartWork()
     }
 }
 
-void HumidityScheme::setSystemSetup(SystemSetup *systemSetup)
+void HumidityScheme::setSystemSetup()
 {
-    TRACE << systemSetup << mSystemSetup;
-    if (!systemSetup || mSystemSetup == systemSetup)
-        return;
+    const auto sys = mDataProvider.data()->systemSetup();
 
-    if (mSystemSetup) {
-        mSystemSetup->disconnect(this);
-    }
-
-    mSystemSetup = systemSetup;
-
-    connect(mSystemSetup, &SystemSetup::systemModeChanged, this, [this] {
-        TRACE<< "systemModeChanged: "<< mSystemSetup->systemMode;
+    connect(sys, &SystemSetup::systemModeChanged, this, [=] {
+        TRACE<< "systemModeChanged: "<< sys->systemMode;
 
         restartWork();
     });
 
-    connect(mSystemSetup, &SystemSetup::isVacationChanged, this, [this] {
-        TRACE<< "isVacationChanged: "<< mSystemSetup->isVacation;
+    connect(sys, &SystemSetup::isVacationChanged, this, [=] {
+        TRACE<< "isVacationChanged: "<< sys->isVacation;
 
         restartWork();
     });
 
-    connect(mSystemSetup->systemAccessories, &SystemAccessories::accessoriesChanged, this, [this] {
-        mAccessoriesType = mSystemSetup->systemAccessories->getAccessoriesType();
+    connect(sys->systemAccessories, &SystemAccessories::accessoriesChanged, this, [=] {
+        mAccessoriesType = sys->systemAccessories->getAccessoriesType();
         TRACE<< "Accessories Type: "<< mAccessoriesType;
 
 
-        mAccessoriesWireType = mSystemSetup->systemAccessories->getAccessoriesWireType();
+        mAccessoriesWireType = sys->systemAccessories->getAccessoriesWireType();
         TRACE<< "Accessories Wire Type: "<< mAccessoriesWireType;
 
         if (mAccessoriesWireType == AppSpecCPP::None) {
@@ -211,9 +204,9 @@ void HumidityScheme::VacationLoop()
 
     if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
-        if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
+        if ((mVacationMinimumHumidity - mDataProvider.data()->currentHumidity()) > 0.001) {
             // Humidity loop
-            while ((mCurrentHumidity - mVacationMaximumHumidity) < 0.001) {
+            while ((mDataProvider.data()->currentHumidity() - mVacationMaximumHumidity) < 0.001) {
                 // Exit from loop
                 if (stopWork) {
                     break;
@@ -231,11 +224,11 @@ void HumidityScheme::VacationLoop()
         // Dehumidifiers can only reduce humidity, and may not be able to consistently maintain the desired vacation humidity range.
         // you can be confident that a dehumidifier will always lower the humidity to mVacationMaximumHumidity
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
-        if (mCurrentHumidity - mVacationMaximumHumidity > 0.001) {
+        if (mDataProvider.data()->currentHumidity() - mVacationMaximumHumidity > 0.001) {
 
             // Dehumidifier loop
-            // mVacationMinimumHumidity < mCurrentHumidity Just  check but not important
-            while (mVacationMinimumHumidity - mCurrentHumidity < 0.001) {
+            // mVacationMinimumHumidity < mDataProvider.data()->currentHumidity() Just  check but not important
+            while (mVacationMinimumHumidity - mDataProvider.data()->currentHumidity() < 0.001) {
                 // Exit from loop
                 if (stopWork) {
                     break;
@@ -249,15 +242,16 @@ void HumidityScheme::VacationLoop()
 }
 
 bool HumidityScheme::checkVacationRange() {
-    return (mVacationMaximumHumidity - mCurrentHumidity) > 0.001 &&
-           (mVacationMinimumHumidity - mCurrentHumidity) < 0.001;
+    auto currentHumidity = mDataProvider.data()->currentHumidity();
+    return (mVacationMaximumHumidity - currentHumidity) > 0.001 &&
+           (mVacationMinimumHumidity - currentHumidity) < 0.001;
 }
 
 void HumidityScheme::normalLoop()
 {
     if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
 
-        while (mCurrentHumidity - effectiveHumidity() > 10) {
+        while (mDataProvider.data()->currentHumidity() - effectiveHumidity() > 10) {
             // Exit from loop
             if (stopWork) {
                 break;
@@ -269,7 +263,7 @@ void HumidityScheme::normalLoop()
 
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
-        while (mCurrentHumidity - effectiveHumidity() < 10) {
+        while (mDataProvider.data()->currentHumidity() - effectiveHumidity() < 10) {
             // Exit from loop
             if (stopWork) {
                 break;
@@ -290,10 +284,11 @@ void HumidityScheme::normalLoop()
 
 }
 
-void HumidityScheme::setVacation(const STHERM::Vacation &newVacation)
+void HumidityScheme::setVacation()
 {
-    mVacationMinimumHumidity = newVacation.minimumHumidity;
-    mVacationMaximumHumidity = newVacation.maximumHumidity;
+    auto vacation = mDataProvider.data()->vacation();
+    mVacationMinimumHumidity = vacation.minimumHumidity;
+    mVacationMaximumHumidity = vacation.maximumHumidity;
 }
 
 void HumidityScheme::setRequestedHumidity(const double &setPointHumidity)
@@ -316,16 +311,17 @@ double HumidityScheme::effectiveHumidity()
 {
     double effHumidity = mSetPointHumidity;
 
-    if (mSystemSetup->isVacation) {
-        if ((mVacationMinimumHumidity - mCurrentHumidity) > 0.001) {
+    auto currentHumidity = mDataProvider.data()->currentHumidity();
+    if (mDataProvider.data()->systemSetup()->isVacation) {
+        if ((mVacationMinimumHumidity - currentHumidity) > 0.001) {
             effHumidity  = mVacationMinimumHumidity;
 
-        } else if ((mVacationMaximumHumidity - mCurrentHumidity) < 0.001) {
+        } else if ((mVacationMaximumHumidity - currentHumidity) < 0.001) {
             effHumidity  = mVacationMaximumHumidity;
         }
 
-    } else if (mSchedule) {
-        effHumidity  = mSchedule->humidity;
+    } else if (mDataProvider.data()->schedule()) {
+        effHumidity  = mDataProvider.data()->schedule()->humidity;
 
     }
 

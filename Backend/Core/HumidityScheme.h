@@ -11,13 +11,15 @@ class HumidityScheme : public BaseScheme
     Q_OBJECT
 
 public:
-    explicit HumidityScheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
+    explicit HumidityScheme(DeviceAPI *deviceAPI, QSharedPointer<SchemeDataProvider> schemeDataProvider,
+                            QObject *parent = nullptr);
 
     ~HumidityScheme();
 
-    void setSystemSetup(SystemSetup *systemSetup) override;
+    void setSystemSetup() override;
 
-    void setVacation(const STHERM::Vacation &newVacation);
+    //! Update vacation data
+    void setVacation() override;
 
     void setRequestedHumidity(const double& setPointHumidity);
 
@@ -25,7 +27,7 @@ public:
     void stop();
 
     //! Restart the worker thread
-    void restartWork();
+    void restartWork() override;
 
 protected:
     void run() override;
