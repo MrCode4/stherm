@@ -12,11 +12,11 @@ NmcliInterface::NmcliInterface(QObject* parent)
     , mRefreshProcess { new QProcess(this) }
     , mWifiProcess { new QProcess(this) }
     , mConnectedWifi { nullptr }
+    , mConProfilesWatcher { new QFileSystemWatcher(this) }
 {
     mRefreshProcess->setReadChannel(QProcess::StandardOutput);
     mWifiProcess->setReadChannel(QProcess::StandardOutput);
 
-    connect(mWifiProcess, &QProcess::stateChanged, this, &NmcliInterface::busyChanged);
     connect(mRefreshProcess, &QProcess::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit && exitCode != 0) {
             emit errorOccured(NmcliInterface::Error(exitCode));
@@ -29,6 +29,9 @@ NmcliInterface::NmcliInterface(QObject* parent)
     });
 
     setupObserver();
+
+    initializeConProfilesWatcher();
+    scanConProfiles();
 }
 
 NmcliInterface::~NmcliInterface()
@@ -58,8 +61,17 @@ void NmcliInterface::setBusyRefreshing(bool busy)
 
 bool NmcliInterface::busy() const
 {
-    return mWifiProcess && (mWifiProcess->state() == QProcess::Starting
-                               || mWifiProcess->state() == QProcess::Running);
+    return mBusy;
+}
+
+void NmcliInterface::setBusy(bool busy)
+{
+    if (mBusy == busy) {
+        return;
+    }
+
+    mBusy = busy;
+    emit busyChanged();
 }
 
 WifisList& NmcliInterface::getWifis()
@@ -69,7 +81,7 @@ WifisList& NmcliInterface::getWifis()
 
 void NmcliInterface::refreshWifis(bool rescan)
 {
-    if (!mRefreshProcess || busyRefreshing()) {
+    if (!mRefreshProcess || busyRefreshing() || mRefreshProcess->state() != QProcess::NotRunning) {
         return;
     }
 
@@ -102,14 +114,16 @@ bool NmcliInterface::hasWifiProfile(const WifiInfo* wifi)
 
 void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
 {
-    if (!mWifiProcess || busy()) {
+    if (!wifi || wifi->isConnecting() || wifi->connected() || !mWifiProcess || busy()) {
         return;
     }
+
 
     //! First check if connection is saved
     if (hasWifiProfile(wifi)) {
         connectSavedWifi(wifi, password);
     } else {
+        setBusy(true);
         //! Perform connection command
         const QStringList args({
             NC_ARG_DEVICE,
@@ -120,6 +134,9 @@ void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
             password,
         });
 
+        connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+                setBusy(false);
+            }, Qt::SingleShotConnection);
         mWifiProcess->start(NC_COMMAND, args);
     }
 }
@@ -131,6 +148,8 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
         return false;
     }
 
+    setBusy(true);
+
     if (password.isEmpty()) {
         //! Perform connection command
         const QStringList args({
@@ -139,6 +158,9 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
             wifi->ssid(),
         });
 
+        connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+                setBusy(false);
+            }, Qt::SingleShotConnection);
         mWifiProcess->start(NC_COMMAND, args);
     } else {
         //! Modify its password then connect as saved
@@ -152,7 +174,13 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
                         wifi->ssid(),
                     });
 
+                    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+                            setBusy(false);
+                        }, Qt::SingleShotConnection);
+
                     mWifiProcess->start(NC_COMMAND, args);
+                } else {
+                    setBusy(false);
                 }
             }, Qt::SingleShotConnection);
 
@@ -171,9 +199,11 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
 
 void NmcliInterface::disconnectFromWifi(WifiInfo* wifi)
 {
-    if (!mWifiProcess || busy()) {
+    if (!wifi || !wifi->connected() || !mWifiProcess || busy()) {
         return;
     }
+
+    setBusy(true);
 
     //! Perform disconnect command
     const QStringList args({
@@ -181,6 +211,10 @@ void NmcliInterface::disconnectFromWifi(WifiInfo* wifi)
         NC_ARG_DOWN,
         wifi->ssid(),
     });
+
+    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+            setBusy(false);
+        }, Qt::SingleShotConnection);
 
     mWifiProcess->start(NC_COMMAND, args);
 }
@@ -192,16 +226,21 @@ WifiInfo* NmcliInterface::connectedWifi()
 
 void NmcliInterface::forgetWifi(WifiInfo* wifi)
 {
-    if (!mWifiProcess || busy()) {
+    if (!wifi || !wifi->isSaved() || !mWifiProcess || busy()) {
         return;
     }
 
+    setBusy(true);
     //! Perform disconnect command
     const QStringList args({
         NC_ARG_CONNECTION,
         NC_ARG_DELETE,
         wifi->ssid(),
     });
+
+    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+            setBusy(false);
+        }, Qt::SingleShotConnection);
 
     mWifiProcess->start(NC_COMMAND, args);
 }
@@ -212,12 +251,18 @@ void NmcliInterface::turnWifiDeviceOn()
         return;
     }
 
+    setBusy(true);
+
     //! Perform connection command
     const QStringList args({
         NC_ARG_RADIO,
         NC_ARG_WIFI,
         "on"
     });
+
+    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+            setBusy(false);
+        }, Qt::SingleShotConnection);
 
     mWifiProcess->start(NC_COMMAND, args);
 }
@@ -228,12 +273,18 @@ void NmcliInterface::turnWifiDeviceOff()
         return;
     }
 
+    setBusy(true);
+
     //! Perform connection command
     const QStringList args({
         NC_ARG_RADIO,
         NC_ARG_WIFI,
         "off"
     });
+
+    connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+            setBusy(false);
+        }, Qt::SingleShotConnection);
 
     mWifiProcess->start(NC_COMMAND, args);
 }
@@ -249,6 +300,8 @@ void NmcliInterface::addConnection(const QString& name,
     if (!mWifiProcess || busy()) {
         return;
     }
+
+    setBusy(true);
 
     //! Perform connection command
     QStringList args({
@@ -297,11 +350,17 @@ void NmcliInterface::addConnection(const QString& name,
 
                 emit wifisChanged();
 
+                connect(mWifiProcess, &QProcess::finished, this, [&](auto code, auto status){
+                        setBusy(false);
+                    }, Qt::SingleShotConnection);
+
                 mWifiProcess->start(NC_COMMAND, {
                                                 NC_ARG_CONNECTION,
                                                 NC_ARG_UP,
                                                 name
                                             });
+            } else {
+                setBusy(false);
             }
         }, Qt::SingleShotConnection);
 
@@ -365,7 +424,11 @@ int NmcliInterface::waitLoop(QProcess* process, int timeout) const
         return 0;
     } else if (timeout > 0) {
         // quit will exit with, same as exit(ChangeType::CurrentTemperature)
-        QTimer::singleShot(timeout, &loop, &QEventLoop::quit);
+        QTimer::singleShot(timeout, &loop, [&loop, process](){
+            if (process->state() != QProcess::NotRunning) {
+                process->terminate();
+            }
+        });
     }
 
     return loop.exec();
@@ -374,6 +437,10 @@ int NmcliInterface::waitLoop(QProcess* process, int timeout) const
 void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode == 0) {
+        //! Indexes of the connection profile that are in range and should not be added to the
+        //! wifi list anymore
+        QMap<QString, bool> alreadyAddedConProfiles;
+
         //! Holds currently connected wifi
         WifiInfo* currentWifi = nullptr;
 
@@ -433,25 +500,29 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             //! NetworkManager but the seenBssids is empty so only comparing bssid causes this wifi
             //! not to be displayed as saved wifi. This is why the second condition is added.
             //! This might cause bugs in hidden networks.
-            auto conProfileIter = std::find_if(mConProfiles.cbegin(),
-                                               mConProfiles.cend(),
-                                               [&parsedWi](const ConnectionProfile& cp) {
-                                                   return cp.seenBssids.contains(parsedWi.bssid())
-                                                          || (cp.seenBssids.isEmpty()
-                                                              && cp.ssid == parsedWi.ssid());
-                                               });
+            ConnectionProfile* conProfileForThis = nullptr;
+            for (ConnectionProfile& cp : mConProfiles) {
+                if (alreadyAddedConProfiles.contains(cp.ssid)) {
+                    //! It's already added to wifis
+                    continue;
+                }
 
-            if (conProfileIter != mConProfiles.end()) {
+                if (cp.seenBssids.contains(parsedWi.bssid())
+                    || (cp.seenBssids.isEmpty()
+                        && cp.ssid == parsedWi.ssid())) {
+                    alreadyAddedConProfiles[cp.ssid] = true;
+                    conProfileForThis = &cp;
+                }
+            }
+
+            if (conProfileForThis) {
                 //! This wifi is saved.
                 parsedWi.setIsSaved(true);
 
                 if (parsedWi.ssid().isEmpty()) {
                     //! This is probably a hidden network. Check if saved.
-                    parsedWi.setSsid(conProfileIter->ssid);
+                    parsedWi.setSsid(conProfileForThis->ssid);
                 }
-
-                //! Remove conProfileIter from mConProfiles
-                mConProfiles.erase(conProfileIter);
             }
 
             if (wiInstance == mWifis.end() && !parsedWi.ssid().isEmpty()) {
@@ -504,21 +575,24 @@ void NmcliInterface::onWifiListRefreshFinished(int exitCode, QProcess::ExitStatu
             wi->deleteLater();
         }
 
-        setBusyRefreshing(false);
-
         //! Add all other connection profiles that are not already added in the list of wifis
-        for (const auto& p : mConProfiles) {
+        for (ConnectionProfile& cp : mConProfiles) {
+            if (alreadyAddedConProfiles.contains(cp.ssid)) {
+                continue;
+            }
+
             mWifis.push_back(
                 new WifiInfo(false,
                              true, //! is saved
-                             p.ssid,
+                             cp.ssid,
                              "",
                              -1, //! Strength=-1 so they are distinguishable from in-range wifis
                              "",
                              this
                              ));
         }
-        mConProfiles.clear();
+
+        setBusyRefreshing(false);
 
         emit wifisChanged();
     } else {
@@ -543,7 +617,7 @@ void NmcliInterface::setupObserver()
         if (ssid.isEmpty()) return;
 
         for (WifiInfo* wifi : mWifis) {
-            if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
+            if ((wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) && !wifi->connected()) {
                 //! This wifi is now saved if it wasn't previously
                 if (!wifi->isSaved()) {
                     wifi->setIsSaved(true);
@@ -636,9 +710,10 @@ void NmcliInterface::onWifiDisconnected()
 void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-        setBusyRefreshing(false);
         emit errorOccured(NmcliInterface::Error::IWFetchError);
 
+        NC_DEBUG << "Error iw scan, aborting refresh";
+        setBusyRefreshing(false);
         return;
     }
 
@@ -720,11 +795,38 @@ void NmcliInterface::parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStat
     doRefreshWifi();
 }
 
-void NmcliInterface::updateSavedWifis()
+void NmcliInterface::doRefreshWifi()
 {
-    mConProfiles.clear();
+    if (mRefreshProcess->state() == QProcess::NotRunning) {
+        connect(mRefreshProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
+                Qt::SingleShotConnection);
 
-    //! First get the list of all saved connections
+        const QStringList args = NC_REFERESH_ARGS + NC_PRINT_MODE_ARGS + QStringList({
+                                     NC_ARG_DEVICE,
+                                     NC_ARG_WIFI,
+                                     NC_ARG_LIST,
+                                     NC_ARG_RESCAN,
+                                     mRescanInRefresh ? "yes" : "auto"
+                                 });
+
+        mRefreshProcess->start(NC_COMMAND, args);
+    } else {
+        setBusyRefreshing(false);
+    }
+}
+
+void NmcliInterface::scanConProfiles()
+{
+    if (mBusyUpdatingConProfiles) {
+        return;
+    }
+    mBusyUpdatingConProfiles = true;
+
+    QProcess* updateProc = new QProcess(this);
+
+    connect(updateProc, &QProcess::finished, this, &NmcliInterface::updateConProfilesList);
+
+    //! Get the list of all saved connections
     const QStringList args = QStringList {
         NC_ARG_GET_VALUES,
         "NAME",
@@ -734,66 +836,87 @@ void NmcliInterface::updateSavedWifis()
         "no",
         NC_ARG_CONNECTION,
     };
-    mRefreshProcess->start(NC_COMMAND, args);
-
-    waitLoop(mRefreshProcess, 2000);
-
-    QString line = mRefreshProcess->readLine(); //! Holds IN-USE of first wifi info in any
-
-    if (mRefreshProcess->exitCode() == 0) {
-        QProcess conProcess;
-
-        while (!line.isEmpty()) {
-            QString connectionName = line.sliced(5, line.length() - 5 - 1);
-
-            if (mBssToCorrectSsidMap.contains(connectionName)) {
-                connectionName = mBssToCorrectSsidMap[connectionName];
-            }
-
-            //! Get profile info of this connection
-            conProcess.start(NC_COMMAND, {
-                                                   "--get-values",
-                                                   "802-11-wireless.ssid,802-11-wireless.seen-bssids",
-                                                   "--escape",
-                                                   "no",
-                                                   NC_ARG_CONNECTION,
-                                                   NC_ARG_SHOW,
-                                                   connectionName,
-                                               });
-            waitLoop(&conProcess, 2000);
-
-            if (conProcess.exitCode() == 0) {
-                QString ssid = conProcess.readLine();
-                ssid.remove(ssid.length() - 1, 1); //! Remove '\n'
-
-                QString seenBssids = conProcess.readLine();
-                seenBssids.remove(seenBssids.length() - 1, 1); //! Remove '\n'
-
-                mConProfiles.emplace_back(ssid, seenBssids);
-            }
-
-            line = mRefreshProcess->readLine();
-        }
-    } else {
-        NC_CRITICAL << mRefreshProcess->readAll();
-    }
-
-    //! Now refresh wifis
-    doRefreshWifi();
+    updateProc->start(NC_COMMAND, args);
 }
 
-void NmcliInterface::doRefreshWifi()
+void NmcliInterface::updateConProfilesList(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    connect(mRefreshProcess, &QProcess::finished, this, &NmcliInterface::onWifiListRefreshFinished,
-            Qt::SingleShotConnection);
+    if (QProcess* updateProc = qobject_cast<QProcess*>(QObject::sender())) {
+        if (updateProc->exitCode() == 0 && updateProc->exitStatus() == QProcess::NormalExit) {
+            //! Copy mConProfiles to aviod requesting for connections that already exists
+            auto conProfilesBak = mConProfiles;
+            mConProfiles.clear();
 
-    const QStringList args = NC_REFERESH_ARGS + NC_PRINT_MODE_ARGS + QStringList({
-                                 NC_ARG_DEVICE,
-                                 NC_ARG_WIFI,
-                                 NC_ARG_LIST,
-                                 NC_ARG_RESCAN,
-                                 mRescanInRefresh ? "yes" : "auto"
-                             });
+            QProcess conProcess;
 
-    mRefreshProcess->start(NC_COMMAND, args);
+            QString line = updateProc->readLine();
+            while (!line.isEmpty()) {
+                QString conName = line.sliced(5, line.length() - 5 - 1);
+
+                if (mBssToCorrectSsidMap.contains(conName)) {
+                    conName = mBssToCorrectSsidMap[conName];
+                }
+
+                //! If a connection with this name is already in the list of profiles, skip it
+                auto wi = std::find_if(conProfilesBak.begin(), conProfilesBak.end(),
+                                       [&](ConnectionProfile p) {
+                                           return conName == p.ssid;
+                                       });
+
+                if (wi == conProfilesBak.end()) {
+                    //! Get profile info of this connection
+                    conProcess.start(NC_COMMAND, {
+                                                     "--get-values",
+                                                     "802-11-wireless.ssid,802-11-wireless.seen-bssids",
+                                                     "--escape",
+                                                     "no",
+                                                     NC_ARG_CONNECTION,
+                                                     NC_ARG_SHOW,
+                                                     conName,
+                                                 });
+                    waitLoop(&conProcess, 1000);
+
+                    if (conProcess.exitCode() == 0) {
+                        QString ssid = conProcess.readLine();
+                        ssid.remove(ssid.length() - 1, 1); //! Remove '\n'
+
+                        // can have only one bssid or be empty or have multiple values separated by comma delimiter
+                        QString seenBssids = conProcess.readLine();
+                        seenBssids.remove(seenBssids.length() - 1, 1); //! Remove '\n'
+
+                        if (!ssid.isEmpty() || !seenBssids.isEmpty()) {
+                            mConProfiles.emplace_back(ssid, seenBssids);
+                        }
+                    } else {
+                        NC_WARN << conProcess.exitCode() << conProcess.readAll() << conName;
+                    }
+                } else {
+                    //! The connection already exists, push it to mConProfiles
+                    mConProfiles.push_back(*wi);
+                }
+
+                line = updateProc->readLine();
+            }
+        } else {
+            NC_WARN << updateProc->readAll();
+        }
+
+        //! Delete updateProc
+        updateProc->deleteLater();
+    }
+
+    mBusyUpdatingConProfiles = false;
+}
+
+void NmcliInterface::initializeConProfilesWatcher()
+{
+    if (!mConProfilesWatcher) {
+        return;
+    }
+
+    mConProfilesWatcher->addPath("/etc/NetworkManager/system-connections");
+
+    connect(mConProfilesWatcher, &QFileSystemWatcher::directoryChanged, this, [&](const QString& path) {
+        scanConProfiles();
+    });
 }

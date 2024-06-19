@@ -1256,9 +1256,9 @@ void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
         }
 
         file.close();
-        TRACE << "CSV file written successfully.";
+        TRACE_CHECK(false) << "CSV file written successfully.";
 
     } else {
-        TRACE << "Failed to open the file for writing/Reading.";
+        TRACE << "Failed to open the file for writing/Reading." << directoryHasSpace;
     }
 }

@@ -128,7 +128,7 @@ void NetworkInterface::refereshWifis(bool forced)
 
 void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 {
-    if (!wifiInfo || !mNmcliInterface->isDeviceOn()) {
+    if (!wifiInfo || wifiInfo->connected() || wifiInfo->isConnecting() || mNmcliInterface->busy()) {
         return;
     }
 
@@ -138,7 +138,7 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 
 void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 {
-    if (!wifiInfo || !mNmcliInterface->isDeviceOn()) {
+    if (!wifiInfo || !wifiInfo->connected() || mNmcliInterface->busy()) {
         return;
     }
     
