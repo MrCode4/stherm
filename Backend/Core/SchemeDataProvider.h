@@ -48,6 +48,9 @@ public:
     void setSetPointTemperature(const double &newSetPointTemperature);
     double setPointTemperature() const;
 
+    void setRequestedHumidity(const double &setPointHumidity);
+    double setPointHumidity() const;
+
 signals:
 
     /* Public Signals
@@ -57,6 +60,8 @@ signals:
     void systemSetupChanged();
     void scheduleChanged();
     void vacationChanged();
+    void setTemperatureChanged();
+    void setHumidityChanged();
 
 private:
     /* Attributes
@@ -76,6 +81,8 @@ private:
 
     //! Fahrenheit
     double mSetPointTemperature;
+
+    double mSetPointHumidity;
 
     struct STHERM::Vacation mVacation;
 };

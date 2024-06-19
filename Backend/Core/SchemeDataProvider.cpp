@@ -92,18 +92,36 @@ void SchemeDataProvider::setVacation(const STHERM::Vacation &newVacation)
     emit vacationChanged();
 }
 
-void SchemeDataProvider::setSetPointTemperature(double newSetPointTemperature)
+void SchemeDataProvider::setSetPointTemperature(const double& newSetPointTemperature)
 {
     auto newSetPointTemperatureF = UtilityHelper::toFahrenheit(newSetPointTemperature);
     if (qAbs(mSetPointTemperature - newSetPointTemperatureF) < 0.001)
         return;
 
     mSetPointTemperature = newSetPointTemperatureF;
+    emit setTemperatureChanged();
 
-    TRACE << "mSetPointTemperature changed to " << mSetPointTemperature;
+    TRACE << "SetPointTemperature (F) changed to " << mSetPointTemperature;
 }
 
 double SchemeDataProvider::setPointTemperature() const
 {
     return mSetPointTemperature;
+}
+
+void SchemeDataProvider::setRequestedHumidity(const double &setPointHumidity)
+{
+    if (qAbs(mSetPointHumidity - setPointHumidity) < 0.001) {
+        return;
+    }
+
+    mSetPointHumidity = setPointHumidity;
+    emit setHumidityChanged();
+
+    TRACE << "SetPointHumidity (%) changed to " << mSetPointHumidity;
+}
+
+double SchemeDataProvider::setPointHumidity() const
+{
+    return mSetPointHumidity;
 }

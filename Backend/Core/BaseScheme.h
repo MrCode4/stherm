@@ -48,7 +48,11 @@ signals:
 
     void currentTemperatureChanged();
 
+    void setTemperatureChanged();
+
     void currentHumidityChanged();
+
+    void setHumidityChanged();
 
 protected:
     //! To monitor data change: current Humidity, set Humidity, mode

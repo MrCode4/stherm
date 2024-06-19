@@ -32,9 +32,6 @@ public:
 protected:
     void run() override;
 
-signals:
-    void setHumidityChanged();
-
 private:
 
     //! Vacation loop
@@ -71,8 +68,6 @@ private:
     //! Vacation properites (Percentage)
     double mVacationMinimumHumidity;
     double mVacationMaximumHumidity;
-
-    double mSetPointHumidity;
 
 };
 

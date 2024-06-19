@@ -291,15 +291,6 @@ void HumidityScheme::setVacation()
     mVacationMaximumHumidity = vacation.maximumHumidity;
 }
 
-void HumidityScheme::setRequestedHumidity(const double &setPointHumidity)
-{
-    if (qAbs(mSetPointHumidity - setPointHumidity) < 0.001) {
-        return;
-    }
-
-    mSetPointHumidity = setPointHumidity;
-}
-
 void HumidityScheme::updateAccessoriesRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType)
 {
     mRelay->updateHumidityWiring(accessoriesWireType);
@@ -309,7 +300,7 @@ void HumidityScheme::updateAccessoriesRelays(AppSpecCPP::AccessoriesWireType acc
 
 double HumidityScheme::effectiveHumidity()
 {
-    double effHumidity = mSetPointHumidity;
+    double effHumidity = mDataProvider->setPointHumidity();
 
     auto currentHumidity = mDataProvider.data()->currentHumidity();
     if (mDataProvider.data()->systemSetup()->isVacation) {

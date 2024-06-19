@@ -53,8 +53,6 @@ signals:
 
     void alert();
 
-    void setTemperatureChanged();
-
     void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
 
     //! Start system delay timer in ui to show in home page
@@ -66,8 +64,6 @@ signals:
 
 protected:
     void run() override;
-
-private slots:
 
 private:
     void updateParameters();

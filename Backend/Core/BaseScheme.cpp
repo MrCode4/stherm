@@ -19,6 +19,8 @@ BaseScheme::BaseScheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> 
     connect(mDataProvider.data(), &SchemeDataProvider::systemSetupChanged, this, &BaseScheme::setSystemSetup);
     connect(mDataProvider.data(), &SchemeDataProvider::vacationChanged, this, &BaseScheme::setVacation);
     connect(mDataProvider.data(), &SchemeDataProvider::scheduleChanged, this, &BaseScheme::restartWork);
+    connect(mDataProvider.data(), &SchemeDataProvider::setTemperatureChanged, this, &BaseScheme::setTemperatureChanged);
+    connect(mDataProvider.data(), &SchemeDataProvider::setHumidityChanged, this, &BaseScheme::setHumidityChanged);
 }
 
 
