@@ -12,6 +12,8 @@
 
 const double RELAYS_WAIT_MS = 500;
 
+class SchemeDataProvider;
+
 /*! ***********************************************************************************************
  * BaseScheme class to use in Humidity and temperature class.
  * ************************************************************************************************/
@@ -21,16 +23,19 @@ class BaseScheme : public QThread
     Q_OBJECT
 
 public:
-    explicit BaseScheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
+    explicit BaseScheme(DeviceAPI *deviceAPI, QSharedPointer<SchemeDataProvider> sharedData,
+                        QObject *parent = nullptr);
+
+
+    virtual void setSystemSetup() = 0;
+
+    //! Restart the worker thread
+    virtual void restartWork() = 0;
+
+    virtual void setVacation() = 0;
 
     void setCanSendRelays(const bool& csr);
 
-    virtual void setSystemSetup(SystemSetup *systemSetup);
-
-    void setMainData(QVariantMap mainData);
-
-    //! Set schedule
-    void setSchedule(ScheduleCPP *newSchedule);
 
 signals:
     void stopWorkRequested();
@@ -50,24 +55,13 @@ protected:
     //! use low values for timeout in exit cases as it might had abrupt changes previously
     virtual int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll);
 
-    //! Convert Celcius to Fahrenheit
-    double toFahrenheit(double celsius);
-
 protected:
+    QSharedPointer<SchemeDataProvider> mDataProvider;
+
     Relay*  mRelay;
     DeviceAPI *mDeviceAPI;
-    SystemSetup *mSystemSetup = nullptr;
-    ScheduleCPP* mSchedule = nullptr;
 
     STHERM::RelayConfigs lastConfigs;
-
-    QVariantMap _mainData;
-
-    //! Temperature parameters (Fahrenheit)
-    double mCurrentTemperature;
-
-    //! Humidity parameters (Percentage)
-    double mCurrentHumidity;
 
     bool stopWork;
 
@@ -75,4 +69,3 @@ protected:
 
     bool debugMode;
 };
-
