@@ -150,17 +150,6 @@ void Scheme::restartWork()
     }
 }
 
-void Scheme::setSetPointTemperature(double newSetPointTemperature)
-{
-    auto newSetPointTemperatureF = UtilityHelper::toFahrenheit(newSetPointTemperature);
-    if (qAbs(mSetPointTemperature - newSetPointTemperatureF) < 0.001)
-        return;
-
-    mSetPointTemperature = newSetPointTemperatureF;
-
-    TRACE << "mSetPointTemperature changed";
-}
-
 void Scheme::run()
 {
     TRACE << "-- startWork is running." << QThread::currentThreadId();
@@ -1067,7 +1056,7 @@ void Scheme::moveToUpdatingMode()
 
 double Scheme::effectiveTemperature()
 {
-    double effTemperature = mSetPointTemperature;
+    double effTemperature = mDataProvider->setPointTemperature();
 
     if (mDataProvider.data()->systemSetup()->isVacation) {
         if ((mVacationMinimumTemperature - mDataProvider.data()->currentTemperature()) > 0.001) {

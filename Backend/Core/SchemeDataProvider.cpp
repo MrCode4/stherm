@@ -91,3 +91,19 @@ void SchemeDataProvider::setVacation(const STHERM::Vacation &newVacation)
     mVacation = newVacation;
     emit vacationChanged();
 }
+
+void SchemeDataProvider::setSetPointTemperature(double newSetPointTemperature)
+{
+    auto newSetPointTemperatureF = UtilityHelper::toFahrenheit(newSetPointTemperature);
+    if (qAbs(mSetPointTemperature - newSetPointTemperatureF) < 0.001)
+        return;
+
+    mSetPointTemperature = newSetPointTemperatureF;
+
+    TRACE << "mSetPointTemperature changed to " << mSetPointTemperature;
+}
+
+double SchemeDataProvider::setPointTemperature() const
+{
+    return mSetPointTemperature;
+}

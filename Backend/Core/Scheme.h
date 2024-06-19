@@ -30,9 +30,6 @@ public:
 
     void setSystemSetup() override;
 
-    //! Set requested Temperature
-    void setSetPointTemperature(double newSetPointTemperature);
-
     //! Restart the worker thread
     void restartWork() override;
 
@@ -139,11 +136,6 @@ private:
 
     //! to log vital informations
     QTimer mLogTimer;
-
-    int mHumidifierId;
-
-    //! Fahrenheit
-    double mSetPointTemperature;
 
     //! Auto mode properites (Fahrenheit)
     double mAutoMinReqTemp;

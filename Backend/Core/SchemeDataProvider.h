@@ -26,7 +26,8 @@ public:
     //! Set main data to update current temperature and current humidity
     void setMainData(QVariantMap mainData);
 
-    //! The system setup, currentHumidity, currentTemperature, schedule and vacation can only be changed through the DeviceController,
+    //! The system setup, currentHumidity, currentTemperature, schedule, setPointTemperature
+    //!  and vacation can only be changed through the DeviceController,
     //! ensuring that both the scheme and humidity scheme can only use it, not modify it directly.
 
 
@@ -43,6 +44,9 @@ public:
 
     STHERM::Vacation vacation() const;
     void setVacation(const STHERM::Vacation &newVacation);
+
+    void setSetPointTemperature(const double &newSetPointTemperature);
+    double setPointTemperature() const;
 
 signals:
 
@@ -69,6 +73,9 @@ private:
 
     //! Temperature parameters (Fahrenheit)
     double mCurrentTemperature;
+
+    //! Fahrenheit
+    double mSetPointTemperature;
 
     struct STHERM::Vacation mVacation;
 };
