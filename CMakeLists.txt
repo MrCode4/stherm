@@ -307,6 +307,8 @@ qt6_add_qml_module(appStherm
         Backend/Core/HumidityScheme.h
         Backend/Core/BaseScheme.h
         Backend/Core/BaseScheme.cpp
+        Backend/Core/SchemeDataProvider.h
+        Backend/Core/SchemeDataProvider.cpp
         Backend/LogHelper.h
 
         Backend/DeviceAPI.h
