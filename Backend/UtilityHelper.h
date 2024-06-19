@@ -491,5 +491,8 @@ public:
     
     //! Calculate the CPU usage
     static double CPUUsage();
+
+    //! Convert Celcius to Fahrenheit
+    static double toFahrenheit(double celsius);
 };
 

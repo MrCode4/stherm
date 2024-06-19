@@ -20,6 +20,10 @@
 // Minimum packet length
 #define PacketMinLength 5
 
+double UtilityHelper::toFahrenheit(double celsius) {
+    return celsius * 9 / 5 + 32.0;
+}
+
 bool UtilityHelper::configurePins(int gpio)
 {
     TRACE << gpio;
