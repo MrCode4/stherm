@@ -4,12 +4,9 @@
 #include <QTimer>
 
 #include "BaseScheme.h"
-#include "UtilityHelper.h"
-#include "include/timing.h"
 
 /*! ***********************************************************************************************
- * THis class manage Vacation data.
- * todo: Add another properties.
+ * This class manage temperature loops.
  * ************************************************************************************************/
 
 class Scheme : public BaseScheme
@@ -17,7 +14,7 @@ class Scheme : public BaseScheme
     Q_OBJECT
 
 public:
-    explicit Scheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
+    explicit Scheme(DeviceAPI *deviceAPI, QSharedPointer<SchemeDataProvider> schemeDataProvider, QObject *parent = nullptr);
 
     void stop();
     ~Scheme();
@@ -31,15 +28,15 @@ public:
 
     void setFan(AppSpecCPP::FanMode fanMode, int newFanWPH);
 
-    void setSystemSetup(SystemSetup* systemSetup) override;
+    void setSystemSetup() override;
 
     //! Set requested Temperature
     void setSetPointTemperature(double newSetPointTemperature);
 
     //! Restart the worker thread
-    void restartWork();
+    void restartWork() override;
 
-    void setVacation(const STHERM::Vacation &newVacation);
+    void setVacation() override;
 
     void moveToUpdatingMode();
 
@@ -129,8 +126,6 @@ private:
     AppSpecCPP::SystemMode mCurrentSysMode;
 
     AppSpecCPP::SystemMode mRealSysMode;
-
-    struct STHERM::Vacation mVacation;
 
     NUVE::Timing* mTiming;
 
