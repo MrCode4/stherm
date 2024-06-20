@@ -51,7 +51,7 @@ void HumidityScheme::run()
 
         }
 
-        updateAccessoriesRelays();
+        turnOffAccessoriesRelays();
         sendRelays(true);
         if (stopWork)
             break;
@@ -146,9 +146,6 @@ void HumidityScheme::sendRelays(bool forceSend)
         waitLoop(-1, AppSpecCPP::ctSendRelay);
     }
 
-    // Get changed relays, relays maybe changed in the Temperature scheme.
-    relaysConfig = mRelay->relays();
-
     emit sendRelayIsRunning(true);
 
     if (debugMode) {
@@ -198,7 +195,7 @@ void HumidityScheme::VacationLoop()
 {
     // In vacation range
     if (checkVacationRange()) {
-        updateAccessoriesRelays();
+        turnOffAccessoriesRelays();
         return;
     }
 
@@ -251,31 +248,37 @@ void HumidityScheme::normalLoop()
 {
     if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
 
-        while (mDataProvider.data()->currentHumidity() - effectiveHumidity() > 10) {
-            // Exit from loop
-            if (stopWork) {
-                break;
-            }
+        if (mDataProvider.data()->currentHumidity() > effectiveSetHumidity()) {
 
-            updateAccessoriesRelays(mAccessoriesWireType);
-            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+            while (effectiveSetHumidity() - mDataProvider.data()->currentHumidity() < 10) {
+                // Exit from loop
+                if (stopWork) {
+                    break;
+                }
+
+                updateAccessoriesRelays(mAccessoriesWireType);
+                waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+            }
         }
 
     } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
-        while (mDataProvider.data()->currentHumidity() - effectiveHumidity() < 10) {
-            // Exit from loop
-            if (stopWork) {
-                break;
+        if (mDataProvider.data()->currentHumidity() < effectiveSetHumidity()) {
+
+            while (mDataProvider.data()->currentHumidity() - effectiveSetHumidity() < 10) {
+                // Exit from loop
+                if (stopWork) {
+                    break;
+                }
+
+                // Set off the humidity relays in cooling mode
+                if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling)
+                    break;
+
+                updateAccessoriesRelays(mAccessoriesWireType);
+
+                waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
-
-            // Set off the humidity relays in cooling mode
-            if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling)
-                break;
-
-            updateAccessoriesRelays(mAccessoriesWireType);
-
-            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
         }
 
     } else {
@@ -298,25 +301,11 @@ void HumidityScheme::updateAccessoriesRelays(AppSpecCPP::AccessoriesWireType acc
     sendRelays();
 }
 
-double HumidityScheme::effectiveHumidity()
+void HumidityScheme::turnOffAccessoriesRelays()
 {
-    double effHumidity = mDataProvider->setPointHumidity();
+    mRelay->updateHumidityWiring(AppSpecCPP::None);
 
-    auto currentHumidity = mDataProvider.data()->currentHumidity();
-    if (mDataProvider.data()->systemSetup()->isVacation) {
-        if ((mVacationMinimumHumidity - currentHumidity) > 0.001) {
-            effHumidity  = mVacationMinimumHumidity;
-
-        } else if ((mVacationMaximumHumidity - currentHumidity) < 0.001) {
-            effHumidity  = mVacationMaximumHumidity;
-        }
-
-    } else if (mDataProvider.data()->schedule()) {
-        effHumidity  = mDataProvider.data()->schedule()->humidity;
-
-    }
-
-    return effHumidity ;
+    sendRelays();
 }
 
 int HumidityScheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)

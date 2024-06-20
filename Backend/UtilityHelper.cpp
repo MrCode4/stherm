@@ -508,7 +508,6 @@ std::vector<std::pair<std::string, int> > STHERM::RelayConfigs::changeStepsSorte
     transitions.push_back({"w2", factor(w2, newState.w2, 4)});
     transitions.push_back({"w3", factor(w3, newState.w3, 5)});
 
-    // CHECK ORDER
     transitions.push_back({"acc2", factor(acc2, newState.acc2, 6)});
     transitions.push_back({"acc1p", factor(acc1p, newState.acc1p, 7)});
     transitions.push_back({"acc1n", factor(acc1n, newState.acc1n, 8)});

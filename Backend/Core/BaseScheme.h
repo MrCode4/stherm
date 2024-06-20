@@ -16,6 +16,8 @@ class SchemeDataProvider;
 
 /*! ***********************************************************************************************
  * BaseScheme class to use in Humidity and temperature class.
+ * TODO: Move some Scheme attributes to SchemeDataProvider (e.g. mVacationMinimumTemperature,
+ * mVacationMaximumTemperature, mAutoMaxReqTemp, ...)
  * ************************************************************************************************/
 
 class BaseScheme : public QThread
@@ -58,6 +60,9 @@ protected:
     //! To monitor data change: current Humidity, set Humidity, mode
     //! use low values for timeout in exit cases as it might had abrupt changes previously
     virtual int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll);
+
+    //! Return the effective humidity
+    double effectiveSetHumidity();
 
 protected:
     QSharedPointer<SchemeDataProvider> mDataProvider;

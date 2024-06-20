@@ -81,7 +81,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK(isRunning() && mFanHourTimer.isActive()) << "fan on 1 hour stage finishes in " << mFanHourTimer.remainingTime() / 60000 << "minutes";
         LOG_CHECK(isRunning() && mFanWPHTimer.isActive()) << "fan on stage finishes in " << mFanWPHTimer.remainingTime() / 60000 << "minutes";
         LOG_CHECK(isRunning()) << "Current Temperature : " << effectiveCurrentTemperature() << "Effective Set Temperature: " << effectiveTemperature();
-        LOG_CHECK(isRunning() && false) << "Current Humidity : " << mDataProvider.data()->currentHumidity() << "Effective Set Humidity: " /*<< effectiveHumidity()*/;
+        LOG_CHECK(isRunning()) << "Current Humidity : " << mDataProvider.data()->currentHumidity() << "Effective Set Humidity: " << effectiveSetHumidity();
         LOG_CHECK(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
         LOG_CHECK(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";
     });
@@ -346,46 +346,8 @@ void Scheme::VacationLoop()
     } else if ((mVacationMaximumTemperature - mDataProvider.data()->currentTemperature()) < 0.001) {
         CoolingLoop();
 
-    } else if (false) { // TODO
-        switch (mDataProvider.data()->systemSetup()->systemMode) {
-        case AppSpecCPP::SystemMode::Cooling: {
-            if (effectiveTemperature() - mDataProvider.data()->currentTemperature() < STAGE1_OFF_RANGE) {
-                // mCurrentSysMode = AppSpecCPP::SystemMode::Cooling;
-                CoolingLoop();
-
-            } else if (effectiveTemperature() - mDataProvider.data()->currentTemperature() < STAGE1_ON_RANGE) {
-                // mCurrentSysMode = AppSpecCPP::SystemMode::Off;
-                waitLoop();
-
-            } else {
-                HeatingLoop();
-            }
-
-        } break;
-
-        case AppSpecCPP::SystemMode::Heating: {
-            if (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
-                HeatingLoop();
-
-            } else if (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_ON_RANGE) {
-                waitLoop();
-
-            }  else {
-                CoolingLoop();
-            }
-
-        } break;
-
-        default: {
-            if (effectiveTemperature() - mDataProvider.data()->currentTemperature() > STAGE1_ON_RANGE) {
-                HeatingLoop();
-
-            } else if (mDataProvider.data()->currentTemperature() - effectiveTemperature() > STAGE1_ON_RANGE) {
-                CoolingLoop();
-
-            }
-        } break;
-        }
+    } else {
+        TRACE << "The conditions for the vacation loop (Temperature scheme) are not met.";
     }
 
     waitLoop(-1);
@@ -894,9 +856,6 @@ void Scheme::sendRelays(bool forceSend)
     if (!mCanSendRelay) {
         waitLoop(-1, AppSpecCPP::ctSendRelay);
     }
-
-    // Get changed relays, relays maybe changed in the Humidity scheme.
-    relaysConfig = mRelay->relays();
 
     emit sendRelayIsRunning(true);
 

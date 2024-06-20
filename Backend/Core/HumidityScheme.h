@@ -40,15 +40,15 @@ private:
     //! Normal loop
     void normalLoop();
 
-    //! Update relays but not sent to device.
+    //! Update relays.
     //! None sets the humidity wirings to off.
-    void updateAccessoriesRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType = AppSpecCPP::None);
+    void updateAccessoriesRelays(AppSpecCPP::AccessoriesWireType accessoriesWireType);
+
+    //! Sets the humidity wirings to off.
+    void turnOffAccessoriesRelays();
 
     //! Check the humidity range from vacation
     bool checkVacationRange();
-
-    //! Return the effective humidity
-    double effectiveHumidity();
 
     //! To monitor data change: current Humidity, set Humidity, mode
     //! use low values for timeout in exit cases as it might had abrupt changes previously

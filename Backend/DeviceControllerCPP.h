@@ -321,6 +321,4 @@ private:
     QList<bool> mAllTestsPassed ;
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
-
-    STHERM::RelayConfigs lastConfigs;   
 };
