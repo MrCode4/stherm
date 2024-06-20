@@ -244,7 +244,7 @@ void HumidityScheme::VacationLoop()
         }
     }
 
-    TRACE << "END VacationLoop.";
+    TRACE << "END VacationLoop, current relay state:" << mRelay->currentState();
 }
 
 bool HumidityScheme::checkVacationRange() {
@@ -298,7 +298,7 @@ void HumidityScheme::normalLoop()
         TRACE << "Wrong Accessories Type";
     }
 
-    TRACE << "END normalLoop.";
+    TRACE << "END normalLoop, current relay state:" << mRelay->currentState();
 }
 
 void HumidityScheme::setVacation()

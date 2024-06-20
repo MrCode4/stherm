@@ -44,6 +44,7 @@ double BaseScheme::effectiveSetHumidity() const
 
     auto currentHumidity = mDataProvider.data()->currentHumidity();
 
+    // will not happen for now, in vacation it is handled internally
     if (mDataProvider.data()->systemSetup()->isVacation) {
         double vacationMinimumHumidity = mDataProvider->vacation().minimumHumidity;
         double vacationMaximumHumidity = mDataProvider->vacation().maximumHumidity;
@@ -60,6 +61,6 @@ double BaseScheme::effectiveSetHumidity() const
 
     }
 
-    return effHumidity ;
+    return effHumidity;
 }
 
