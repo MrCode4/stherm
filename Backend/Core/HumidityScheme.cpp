@@ -51,12 +51,13 @@ void HumidityScheme::run()
 
         }
 
+        // all should be off
+        // Turn off the humidity relays
         turnOffAccessoriesRelays();
         sendRelays(true);
         if (stopWork)
             break;
 
-        // all should be off! we can assert here
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
     }
 }
@@ -195,9 +196,15 @@ void HumidityScheme::VacationLoop()
 {
     // In vacation range
     if (checkVacationRange()) {
+        TRACE << "VacationLoop: Vacation in range";
         turnOffAccessoriesRelays();
         return;
     }
+
+    TRACE << "Start VacationLoop, AccessoriesType: " << mAccessoriesType <<
+        " - mVacationMinimumHumidity" << mVacationMinimumHumidity <<
+        " - mVacationMaximumHumidity" << mVacationMaximumHumidity <<
+        " - currentHumidity" <<mDataProvider.data()->currentHumidity();
 
     if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
 
@@ -236,6 +243,8 @@ void HumidityScheme::VacationLoop()
             }
         }
     }
+
+    TRACE << "END VacationLoop.";
 }
 
 bool HumidityScheme::checkVacationRange() {
@@ -246,6 +255,10 @@ bool HumidityScheme::checkVacationRange() {
 
 void HumidityScheme::normalLoop()
 {
+    TRACE << "AccessoriesType: " << mAccessoriesType <<
+        " - currentHumidity: " << mDataProvider->currentHumidity() <<
+        " - effectiveSetHumidity: " << effectiveSetHumidity();
+
     if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
 
         if (mDataProvider.data()->currentHumidity() > effectiveSetHumidity()) {
@@ -285,6 +298,7 @@ void HumidityScheme::normalLoop()
         TRACE << "Wrong Accessories Type";
     }
 
+    TRACE << "END normalLoop.";
 }
 
 void HumidityScheme::setVacation()
