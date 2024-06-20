@@ -62,7 +62,7 @@ protected:
     virtual int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll);
 
     //! Return the effective humidity
-    double effectiveSetHumidity();
+    double effectiveSetHumidity() const;
 
 protected:
     QSharedPointer<SchemeDataProvider> mDataProvider;

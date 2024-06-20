@@ -38,7 +38,7 @@ int BaseScheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
     return 0;
 }
 
-double BaseScheme::effectiveSetHumidity()
+double BaseScheme::effectiveSetHumidity() const
 {
     double effHumidity = mDataProvider->setPointHumidity();
 
