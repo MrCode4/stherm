@@ -110,14 +110,12 @@ void HumidityScheme::setSystemSetup()
     });
 
     connect(sys->systemAccessories, &SystemAccessories::accessoriesChanged, this, [=] {
-        mAccessoriesType = sys->systemAccessories->getAccessoriesType();
-        TRACE<< "Accessories Type: "<< mAccessoriesType;
+        TRACE<< "Accessories Type: "<< mDataProvider->getAccessoriesType();
 
 
-        mAccessoriesWireType = sys->systemAccessories->getAccessoriesWireType();
-        TRACE<< "Accessories Wire Type: "<< mAccessoriesWireType;
+        TRACE<< "Accessories Wire Type: "<< mDataProvider->getAccessoriesWireType();
 
-        if (mAccessoriesWireType == AppSpecCPP::None) {
+        if (mDataProvider->getAccessoriesWireType() == AppSpecCPP::None) {
             stopWork = true;
 
         } else {
@@ -201,12 +199,12 @@ void HumidityScheme::VacationLoop()
         return;
     }
 
-    TRACE << "Start VacationLoop, AccessoriesType: " << mAccessoriesType <<
+    TRACE << "Start VacationLoop, AccessoriesType: " << mDataProvider->getAccessoriesType() <<
         " - mVacationMinimumHumidity" << mVacationMinimumHumidity <<
         " - mVacationMaximumHumidity" << mVacationMaximumHumidity <<
         " - currentHumidity" <<mDataProvider.data()->currentHumidity();
 
-    if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
+    if (mDataProvider->getAccessoriesType() == AppSpecCPP::AccessoriesType::Humidifier) {
 
         if ((mVacationMinimumHumidity - mDataProvider.data()->currentHumidity()) > 0.001) {
             // Humidity loop
@@ -220,14 +218,14 @@ void HumidityScheme::VacationLoop()
                 if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling)
                     break;
 
-                updateAccessoriesRelays(mAccessoriesWireType);
+                updateAccessoriesRelays(mDataProvider->getAccessoriesWireType());
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
         }
 
         // Dehumidifiers can only reduce humidity, and may not be able to consistently maintain the desired vacation humidity range.
         // you can be confident that a dehumidifier will always lower the humidity to mVacationMaximumHumidity
-    } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
+    } else if (mDataProvider->getAccessoriesType() == AppSpecCPP::AccessoriesType::Dehumidifier) {
         if (mDataProvider.data()->currentHumidity() - mVacationMaximumHumidity > 0.001) {
 
             // Dehumidifier loop
@@ -238,7 +236,7 @@ void HumidityScheme::VacationLoop()
                     break;
                 }
 
-                updateAccessoriesRelays(mAccessoriesWireType);
+                updateAccessoriesRelays(mDataProvider->getAccessoriesWireType());
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
         }
@@ -255,11 +253,11 @@ bool HumidityScheme::checkVacationRange() {
 
 void HumidityScheme::normalLoop()
 {
-    TRACE << "AccessoriesType: " << mAccessoriesType <<
+    TRACE << "AccessoriesType: " << mDataProvider->getAccessoriesType() <<
         " - currentHumidity: " << mDataProvider->currentHumidity() <<
         " - effectiveSetHumidity: " << effectiveSetHumidity();
 
-    if (mAccessoriesType == AppSpecCPP::AccessoriesType::Dehumidifier) {
+    if (mDataProvider->getAccessoriesType() == AppSpecCPP::AccessoriesType::Dehumidifier) {
 
         if (mDataProvider.data()->currentHumidity() > effectiveSetHumidity()) {
 
@@ -269,12 +267,12 @@ void HumidityScheme::normalLoop()
                     break;
                 }
 
-                updateAccessoriesRelays(mAccessoriesWireType);
+                updateAccessoriesRelays(mDataProvider->getAccessoriesWireType());
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
         }
 
-    } else if (mAccessoriesType == AppSpecCPP::AccessoriesType::Humidifier) {
+    } else if (mDataProvider->getAccessoriesType() == AppSpecCPP::AccessoriesType::Humidifier) {
 
         if (mDataProvider.data()->currentHumidity() < effectiveSetHumidity()) {
 
@@ -288,14 +286,14 @@ void HumidityScheme::normalLoop()
                 if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling)
                     break;
 
-                updateAccessoriesRelays(mAccessoriesWireType);
+                updateAccessoriesRelays(mDataProvider->getAccessoriesWireType());
 
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
             }
         }
 
     } else {
-        TRACE << "Wrong Accessories Type";
+        TRACE << "Wrong Accessories Type" << mDataProvider->getAccessoriesType();
     }
 
     TRACE << "END normalLoop, current relay state:" << mRelay->currentState();

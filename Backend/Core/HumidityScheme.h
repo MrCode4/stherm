@@ -62,9 +62,6 @@ private:
 
 private:
 
-    AppSpecCPP::AccessoriesType     mAccessoriesType;
-    AppSpecCPP::AccessoriesWireType mAccessoriesWireType;
-
     //! Vacation properites (Percentage)
     double mVacationMinimumHumidity;
     double mVacationMaximumHumidity;

@@ -1,4 +1,5 @@
 #include "SystemAccessories.h"
+#include "LogHelper.h"
 
 SystemAccessories::SystemAccessories(QSObjectCpp *parent) :
     QSObjectCpp{parent}
@@ -7,12 +8,15 @@ SystemAccessories::SystemAccessories(QSObjectCpp *parent) :
 }
 
 void SystemAccessories::setSystemAccessories(AppSpecCPP::AccessoriesType accessoriesType, AppSpecCPP::AccessoriesWireType wireType) {
-    mAccessoriesType  = accessoriesType;
 
-    mAccessoriesWireType = wireType;
+    if (mAccessoriesType     != accessoriesType ||
+        mAccessoriesWireType != wireType) {
 
-    emit accessoriesChanged();
+        mAccessoriesType  = accessoriesType;
+        mAccessoriesWireType = wireType;
 
+        emit accessoriesChanged();
+    }
 }
 
 AppSpecCPP::AccessoriesType SystemAccessories::getAccessoriesType() const

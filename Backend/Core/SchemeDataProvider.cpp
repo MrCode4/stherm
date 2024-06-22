@@ -48,6 +48,17 @@ void SchemeDataProvider::setSystemSetup(SystemSetup *systemSetup)
     emit systemSetupChanged();
 }
 
+AppSpecCPP::AccessoriesType SchemeDataProvider::getAccessoriesType() const
+{
+    return mSystemSetup->systemAccessories->getAccessoriesType();
+}
+
+AppSpecCPP::AccessoriesWireType SchemeDataProvider::getAccessoriesWireType() const
+{
+    return mSystemSetup->systemAccessories->getAccessoriesWireType();
+}
+
+
 void SchemeDataProvider::setSchedule(ScheduleCPP *newSchedule)
 {
     if (mSchedule == newSchedule)

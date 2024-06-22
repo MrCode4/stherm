@@ -51,6 +51,10 @@ public:
     void setRequestedHumidity(const double &setPointHumidity);
     double setPointHumidity() const;
 
+    AppSpecCPP::AccessoriesType getAccessoriesType() const;
+
+    AppSpecCPP::AccessoriesWireType getAccessoriesWireType() const;
+
 signals:
 
     /* Public Signals
@@ -74,10 +78,10 @@ private:
     ScheduleCPP* mSchedule = nullptr;
 
     //! Humidity parameters (Percentage)
-    double mCurrentHumidity;
+    double mCurrentHumidity = 58;
 
     //! Temperature parameters (Fahrenheit)
-    double mCurrentTemperature;
+    double mCurrentTemperature = 20 * 1.8 +32;
 
     //! Fahrenheit
     double mSetPointTemperature;
