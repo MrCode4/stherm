@@ -350,7 +350,10 @@ static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
     switch (alertType) {
     case AppSpecCPP::Alert_temp_high:
     case AppSpecCPP::Alert_temp_low:
-        return QString("Temperature Sensor Malfunction\nPlease contact your contractor.");
+    case AppSpecCPP::Alert_humidity_high:
+    case AppSpecCPP::Alert_humidity_low:
+        return QString("Temperature and Humidity sensor malfunction.  Please contact your contractor.");
+
     case AppSpecCPP::Alert_Tvoc_high:
         return QString("Tvoc is high");
     case AppSpecCPP::Alert_etoh_high:
@@ -365,9 +368,6 @@ static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
     case AppSpecCPP::Alert_fan_low:
         return QString("Fan Malfunction\nPlease contact your contractor.");
 
-    case AppSpecCPP::Alert_humidity_high:
-    case AppSpecCPP::Alert_humidity_low:
-        return QString("Humidity Sensor Malfunction\nPlease contact your contractor.");
     case AppSpecCPP::Alert_pressure_high:
         return QString("Pressure is high");
     case AppSpecCPP::Alert_wiring_not_connected:
