@@ -78,10 +78,10 @@ private:
     ScheduleCPP* mSchedule = nullptr;
 
     //! Humidity parameters (Percentage)
-    double mCurrentHumidity = 58;
+    double mCurrentHumidity;
 
     //! Temperature parameters (Fahrenheit)
-    double mCurrentTemperature = 20 * 1.8 +32;
+    double mCurrentTemperature;
 
     //! Fahrenheit
     double mSetPointTemperature;
