@@ -26,6 +26,8 @@ static  const QString m_T1                    = "Temperature compensation T1 (F)
 #endif
 static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
+static  const char*   m_SensorDataRecived  = "SensorDataRecived";
+
 
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
@@ -140,6 +142,23 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         //            STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
     });
 
+    mSensorDataRecievedTimer.setInterval(15 * 60 * 1000);
+    mSensorDataRecievedTimer.setTimerType(Qt::PreciseTimer);
+    mSensorDataRecievedTimer.setSingleShot(false);
+    mSensorDataRecievedTimer.setProperty(m_SensorDataRecived, false);
+    mSensorDataRecievedTimer.start();
+
+    connect(&mSensorDataRecievedTimer, &QTimer::timeout, this, [this]() {
+        if (!mSensorDataRecievedTimer.property(m_SensorDataRecived).toBool())
+            emit alert(STHERM::AlertLevel::LVL_Emergency,
+                       AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
+
+        // Set to false (the mainDataReady might not be called)
+        mSensorDataRecievedTimer.setProperty(m_SensorDataRecived, false);
+
+    });
+
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
 
@@ -222,6 +241,19 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         if (!_isFirstDataReceived) {
             _rawMainData = data;
             _isFirstDataReceived = true;
+        }
+
+        // Check humidity and temperature sensor data.
+        if (!data.contains(temperatreKey) || !data.contains(humidityKey)) {
+            // If last m_SensorDataRecived status is true so we need restart the timer
+            if (mSensorDataRecievedTimer.property(m_SensorDataRecived).toBool())
+                mSensorDataRecievedTimer.start();
+
+            mSensorDataRecievedTimer.setProperty(m_SensorDataRecived, false);
+
+        } else {
+            mSensorDataRecievedTimer.setProperty(m_SensorDataRecived, true);
+
         }
 
         setMainData(data);

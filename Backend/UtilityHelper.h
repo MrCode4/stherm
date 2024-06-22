@@ -352,6 +352,7 @@ static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
     case AppSpecCPP::Alert_temp_low:
     case AppSpecCPP::Alert_humidity_high:
     case AppSpecCPP::Alert_humidity_low:
+    case AppSpecCPP::Alert_temperature_not_reach:
         return QString("Temperature and Humidity sensor malfunction.  Please contact your contractor.");
 
     case AppSpecCPP::Alert_Tvoc_high:
@@ -374,8 +375,6 @@ static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
         return QString("Wiring is not connected.");
     case AppSpecCPP::Alert_could_not_set_relay:
         return QString("Could not set relay.");
-    case AppSpecCPP::Alert_temperature_not_reach:
-        return QString("**System efficiency issue:** temperature not reached in 2 hours");
 
     case AppSpecCPP::Alert_Light_High:
     case AppSpecCPP::Alert_Light_Low:
