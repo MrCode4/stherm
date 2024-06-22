@@ -436,3 +436,13 @@ STHERM::RelayConfigs Relay::relays() {
 
     return mRelay;
 }
+
+STHERM::RelayConfigs Relay::relaysLast()
+{
+    return mRelayLast;
+}
+
+void Relay::setRelaysLast(STHERM::RelayConfigs last)
+{
+    mRelayLast = last;
+}

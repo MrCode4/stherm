@@ -70,8 +70,6 @@ protected:
     Relay*  mRelay;
     DeviceAPI *mDeviceAPI;
 
-    STHERM::RelayConfigs lastConfigs;
-
     bool stopWork;
 
     bool mCanSendRelay;

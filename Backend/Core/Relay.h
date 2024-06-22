@@ -53,6 +53,8 @@ public:
 
 
     STHERM::RelayConfigs relays();
+    STHERM::RelayConfigs relaysLast();
+    void setRelaysLast(STHERM::RelayConfigs last);
 
     bool turnOffEmergencyHeating();
 
@@ -91,6 +93,7 @@ private:
     static Relay* mInstance;
 
     STHERM::RelayConfigs mRelay;
+    STHERM::RelayConfigs mRelayLast;
 
     AppSpecCPP::SystemMode before_state;
     AppSpecCPP::SystemMode current_state;

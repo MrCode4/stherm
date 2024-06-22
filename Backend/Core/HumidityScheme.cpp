@@ -135,6 +135,7 @@ void HumidityScheme::sendRelays(bool forceSend)
         return;
 
     auto relaysConfig = mRelay->relays();
+    auto lastConfigs = mRelay->relaysLast();
 
     if (lastConfigs == relaysConfig) {
         TRACE_CHECK(false) << "no change";
@@ -144,6 +145,9 @@ void HumidityScheme::sendRelays(bool forceSend)
     if (!mCanSendRelay) {
         waitLoop(-1, AppSpecCPP::ctSendRelay);
     }
+
+    // To ensure the temperature relays updated.
+    mRelay->setRelaysLast(relaysConfig);
 
     emit sendRelayIsRunning(true);
 
@@ -183,8 +187,6 @@ void HumidityScheme::sendRelays(bool forceSend)
         emit updateRelays(relaysConfig);
     }
 
-    // To ensure the temperature relays updated.
-    lastConfigs = relaysConfig;
     TRACE_CHECK(false) << "finished";
 
     emit sendRelayIsRunning(false);
