@@ -521,16 +521,22 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
 
 void Sync::checkFirmwareUpdate(QJsonObject settings)
 {
+    QString fwVersion;
+
     if (settings.contains(m_firmwareUpdateKey) &&
         settings.value(m_firmwareUpdateKey).isObject()) {
         auto fwUpdateObj = settings.value(m_firmwareUpdateKey).toObject();
         auto fwUpdateVersion = fwUpdateObj.value(m_firmwareImageKey).toString();
 
-        if (fwUpdateVersion != qApp->applicationVersion() &&
-            fwUpdateObj.value(m_firmwareForceUpdateKey).toBool()) {
-            emit updateFirmwareFromServer(fwUpdateVersion);
+        // Check force update effect
+        if (true /*&&
+            fwUpdateObj.value(m_firmwareForceUpdateKey).toBool()*/) {
+            fwVersion = fwUpdateVersion;
         }
     }
+
+    emit updateFirmwareFromServer(fwVersion);
+
 }
 
 QNetworkReply* Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method)

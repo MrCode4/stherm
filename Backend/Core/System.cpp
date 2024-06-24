@@ -26,6 +26,7 @@ const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.
 
 const char m_isBusyDownloader[] = "isBusyDownloader";
 const char m_isResetVersion[]   = "isResetVersion";
+const char m_isFWServerVersion[]   = "isFWServerVersion";
 
 constexpr char m_notifyUserProperty[] = "notifyUser";
 
@@ -45,7 +46,8 @@ const QString m_ForceUpdate     = QString("ForceUpdate");
 
 const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
 const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
-const QString m_IsManualUpdateSetting        = QString("Stherm/IsManualUpdate");
+const QString m_IsManualUpdateSetting      = QString("Stherm/IsManualUpdate");
+const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 
@@ -126,6 +128,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mIsManualUpdate          = setting.value(m_IsManualUpdateSetting, false).toBool();
     mStartedWithManualUpdate = mIsManualUpdate;
 
+    mStartedWithFWServerUpdate = setting.value(m_IsFWServerUpdateSetting, false).toBool();
+
     // reformat if it was saved with old format
     auto oldFormatDate = QDate::fromString(mLastInstalledUpdateDate, "dd/MM/yyyy");
     if (oldFormatDate.isValid())
@@ -154,7 +158,17 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     });
 
     connect(mSync, &NUVE::Sync::updateFirmwareFromServer, this, [this](QString version) {
-        partialUpdateByVersion(version);
+        if (!version.isEmpty()) {
+            // Check with current version
+            if (version != qApp->applicationVersion()) {
+                // Install with isResetVersion = true so after install the mStartedWithFWServerUpdate will be true.
+                checkAndDownloadPartialUpdate(version, false, false, true);
+            }
+
+        } else if (mStartedWithFWServerUpdate) {
+            // Install the latest version, and exit from fw server update
+            checkPartialUpdate(false, true);
+        }
     });
 
     connect(this, &NUVE::System::systemUpdating, this, [this](){
@@ -796,7 +810,8 @@ void NUVE::System::partialUpdateByVersion(const QString version)
     checkAndDownloadPartialUpdate(version, false, true);
 }
 
-void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor, const bool isResetVersion)
+void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor,
+                                                 const bool isResetVersion, const bool isFWServerVersion)
 {
     QString versionAddressInServer;
     int updateFileSize;
@@ -873,6 +888,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     reply->setProperty(m_methodProperty, isBackdoor ? m_backdoorUpdate : m_partialUpdate);
     mNetManager->setProperty(m_isBusyDownloader, true);
     mNetManager->setProperty(m_isResetVersion, isResetVersion);
+    mNetManager->setProperty(m_isFWServerVersion, isFWServerVersion);
 
     setPartialUpdateProgress(0);
 
@@ -963,7 +979,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
 }
 
-void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVersion)
+void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVersion, const bool isFWServerVersion)
 {
     //    // Define source and destination directories
     //    QString destDir = qApp->applicationDirPath();
@@ -1016,6 +1032,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     // No need to update mIsManualUpdate
     mIsManualUpdate = isBackdoor || isResetVersion;
     setting.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
+    setting.setValue(m_IsFWServerUpdateSetting, isFWServerVersion);
 
     // Write unsaved data to settings
     setting.sync();
@@ -1037,7 +1054,8 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
 
 
 // Checksum verification after download
-bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite, bool isBackdoor, const bool isResetVersion) {
+bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite, bool isBackdoor,
+                                         const bool isResetVersion, const bool isFWServerVersion) {
     QByteArray downloadedChecksum = calculateChecksum(downloadedData);
 
     auto expectedBA = isBackdoor ? mExpectedBackdoorChecksum : m_expectedUpdateChecksum;
@@ -1055,7 +1073,7 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
             file.close();
         }
 
-        emit partialUpdateReady(isBackdoor, isResetVersion);
+        emit partialUpdateReady(isBackdoor, isResetVersion, isFWServerVersion);
 
         return true;
 
@@ -1125,7 +1143,9 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
         if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
 
             // Check data and prepare to set up.
-            verifyDownloadedFiles(data, true, false, netReply->property(m_isResetVersion).toBool());
+            verifyDownloadedFiles(data, true, false, netReply->property(m_isResetVersion).toBool(),
+                                  netReply->property(m_isFWServerVersion).toBool());
+
             mNetManager->setProperty(m_isBusyDownloader, false);
 
         } else if (netReply->property(m_methodProperty).toString() == m_backdoorUpdate) {

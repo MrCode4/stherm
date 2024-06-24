@@ -93,12 +93,13 @@ Item {
     Connections {
         target: system
 
-        function onPartialUpdateReady(isBackdoor : bool, isResetToVersion: bool) {
+        function onPartialUpdateReady(isBackdoor : bool, isResetToVersion: bool, isFWServerVersion: bool) {
             if (downloadingPopup.visible)
                 downloadingPopup.close();
 
             installConfirmation.isBackdoor = isBackdoor;
             installConfirmation.isResetToVersion = isResetToVersion;
+            installConfirmation.isResetToVersion = isFWServerVersion;
             parent.popupLayout.displayPopUp(installConfirmation);
 
             // Active screen saver
