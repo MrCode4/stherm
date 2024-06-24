@@ -1,31 +1,32 @@
 #include "NetworkWorker.h"
-#include "LogHelper.h"
 #include "NetworkManager.h"
 
-NetworkWorker::NetworkWorker(QObject *parent) : QObject(parent)
+NetworkWorker::NetworkWorker(QObject *parent)
+    : QObject(parent)
 {
-
 }
 
-QByteArray NetworkWorker::preparePacket(QString className, QString method, QJsonArray params)
+QNetworkReply* NetworkWorker::get(const QNetworkRequest& request)
 {
-    QJsonObject requestData;
-    requestData["request"] = QJsonObject{
-        {"class", className},
-        {"method", method},
-        {"params", params}
-    };
-
-    requestData["user"] = QJsonObject{
-        {"lang_id", 0},
-        {"user_id", 0},
-        {"type_id", 0},
-        {"host_id", 0},
-        {"region_id", 0},
-        {"token", ""}
-    };
-
-    QJsonDocument jsonDocument(requestData);
-
-    return jsonDocument.toJson();
+    QNetworkReply* reply = NetworkManager::instance()->get(request);
+    connect(reply, &QNetworkReply::finished, this,  &NetworkWorker::onRequestFinished);
+    return reply;
 }
+
+
+QNetworkReply* NetworkWorker::post(const QNetworkRequest& request, const QByteArray& data)
+{
+    QNetworkReply* reply = NetworkManager::instance()->post(request, data);
+    connect(reply, &QNetworkReply::finished, this,  &NetworkWorker::onRequestFinished);
+    return reply;
+}
+
+
+void NetworkWorker::onRequestFinished()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    processNetworkReply(reply);
+    reply->deleteLater();
+}
+
+void NetworkWorker::processNetworkReply(QNetworkReply*) {}

@@ -14,14 +14,14 @@ class NetworkWorker : public QObject
     Q_OBJECT
 
 public:
-    /* Public Constructors & Destructor
-     * ****************************************************************************************/
+    NetworkWorker(QObject *parent = nullptr);        
 
-    NetworkWorker(QObject *parent = nullptr);
+    QNetworkReply* get(const QNetworkRequest& request);
+    QNetworkReply* post(const QNetworkRequest& request, const QByteArray& data);
 
-    /* Public Functions
-     * ****************************************************************************************/
+protected:
+    virtual void processNetworkReply(QNetworkReply* reply);
 
-    //! Prepare post request data
-    virtual QByteArray preparePacket(QString className, QString method, QJsonArray params);
+private slots:
+    void onRequestFinished();
 };

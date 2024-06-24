@@ -1,6 +1,5 @@
 #include "Sync.h"
 #include "LogHelper.h"
-#include "NetworkManager.h"
 
 #include <QImage>
 #include <QUrl>
@@ -165,6 +164,29 @@ void Sync::getWirings(cpuid_t accessUid)
     loop.exec();
 }
 
+QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
+{
+    QJsonObject requestData;
+    requestData["request"] = QJsonObject{
+        {"class", className},
+        {"method", method},
+        {"params", params}
+    };
+
+    requestData["user"] = QJsonObject{
+        {"lang_id", 0},
+        {"user_id", 0},
+        {"type_id", 0},
+        {"host_id", 0},
+        {"region_id", 0},
+        {"token", ""}
+    };
+
+    QJsonDocument jsonDocument(requestData);
+
+    return jsonDocument.toJson();
+}
+
 void Sync::requestJob(QString type)
 {
     QJsonArray paramsArray;
@@ -240,14 +262,12 @@ void Sync::ForgetDevice()
     setting.setValue(m_ContractorSettings, mContractorInfo);
 }
 
-void Sync::processNetworkReply()
+void Sync::processNetworkReply(QNetworkReply* reply)
 {
-    QNetworkReply* netReply = qobject_cast<QNetworkReply*>(sender());
+    QString errorString = reply->error() == QNetworkReply::NoError ? "" : reply->errorString();
+    auto method = reply->property(m_methodProperty).toString();
 
-    QString errorString = netReply->error() == QNetworkReply::NoError ? "" : netReply->errorString();
-    auto method = netReply->property(m_methodProperty).toString();
-
-    QByteArray dataRaw = netReply->readAll();
+    QByteArray dataRaw = reply->readAll();
     const QJsonDocument jsonDoc = QJsonDocument::fromJson(dataRaw);
     const QJsonObject jsonDocObj = jsonDoc.object();
     if (errorString.isEmpty() && !jsonDocObj.contains("data") && method != m_getContractorLogo) {
@@ -257,7 +277,7 @@ void Sync::processNetworkReply()
     if (errorString.isEmpty()) {
         auto dataValue = jsonDocObj.value("data");
 
-        switch (netReply->operation()) {
+        switch (reply->operation()) {
         case QNetworkAccessManager::PostOperation: {
             TRACE_CHECK(false) << method << dataRaw << jsonDocObj << dataValue << dataValue.isObject() << jsonDoc.toJson().toStdString().c_str();
 
@@ -286,7 +306,7 @@ void Sync::processNetworkReply()
 
         } break;
         case QNetworkAccessManager::GetOperation: {
-            TRACE << dataValue.isObject() << netReply->property(m_methodProperty).toString();
+            TRACE << dataValue.isObject() << reply->property(m_methodProperty).toString();
             TRACE_CHECK(method != m_getContractorLogo && method != m_getSettings) << dataRaw << jsonDocObj;
 
             if (method == m_getSN) {
@@ -326,7 +346,7 @@ void Sync::processNetworkReply()
                     mSerialNumber = sn;
 
 
-                    auto notifyUser = netReply->property(m_notifyGetSN).toBool();
+                    auto notifyUser = reply->property(m_notifyGetSN).toBool();
                     if (mSerialNumber.isEmpty() && notifyUser)
                         emit testModeStarted();
 
@@ -370,9 +390,8 @@ void Sync::processNetworkReply()
                     } else {
                         // what if gets error, should we return immadiately?
                         QNetworkRequest dlRequest(logo);
-                        QNetworkReply *netReply = NetworkManager::instance()->get(dlRequest);
+                        QNetworkReply *netReply = get(dlRequest);
                         netReply->setProperty(m_methodProperty, m_getContractorLogo);
-                        connect(netReply, &QNetworkReply::finished, this,  &Sync::processNetworkReply);
                     }
                 } else {
                     errorString = "Wrong contractor info fetched from server";
@@ -459,8 +478,8 @@ void Sync::processNetworkReply()
         if (method == m_getSN) {
             Q_EMIT snReady();
 
-            auto notifyUser = netReply->property(m_notifyGetSN).toBool();
-            if (notifyUser && netReply->error() == QNetworkReply::ContentNotFoundError)
+            auto notifyUser = reply->property(m_notifyGetSN).toBool();
+            if (notifyUser && reply->error() == QNetworkReply::ContentNotFoundError)
                 emit testModeStarted();
 
             QString error = "Unable to fetch the device serial number, Please check your internet connection: ";
@@ -502,9 +521,7 @@ void Sync::processNetworkReply()
             QString error = "unknown method in sync processNetworkReply ";
             qWarning() << method << error << errorString ;
         }
-    }
-
-    netReply->deleteLater();
+    }    
 }
 
 QNetworkReply* Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method)
@@ -523,10 +540,8 @@ QNetworkReply* Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl
 
 
     // Post a request
-    QNetworkReply *netReply = NetworkManager::instance()->get(netRequest);
+    QNetworkReply *netReply = get(netRequest);
     netReply->setProperty(m_methodProperty, method);
-    //    netReply->ignoreSslErrors();
-    connect(netReply, &QNetworkReply::finished, this,  &Sync::processNetworkReply);
     return netReply;
 }
 
@@ -547,9 +562,7 @@ void Sync::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const Q
     }
 
     // Post a request
-    QNetworkReply *netReply = NetworkManager::instance()->post(netRequest, postData);
+    QNetworkReply *netReply = post(netRequest, postData);
     netReply->setProperty(m_methodProperty, method);
-    connect(netReply, &QNetworkReply::finished, this,  &Sync::processNetworkReply);
-    //    netReply->ignoreSslErrors();
 }
 }

@@ -70,13 +70,13 @@ signals:
 
     void testModeStarted();
 
-private slots:
-    //! Process network replay
-    void processNetworkReply();
-
 protected:
     QNetworkReply* sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
     void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method);
+    void processNetworkReply(QNetworkReply* reply) override;
+
+private:
+    QByteArray preparePacket(QString className, QString method, QJsonArray params);
 
 private:
     /* Attributes
