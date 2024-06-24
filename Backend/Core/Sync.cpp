@@ -526,7 +526,7 @@ void Sync::checkFirmwareUpdate(QJsonObject settings)
     if (settings.contains(m_firmwareUpdateKey) &&
         settings.value(m_firmwareUpdateKey).isObject()) {
         auto fwUpdateObj = settings.value(m_firmwareUpdateKey).toObject();
-        auto fwUpdateVersion = fwUpdateObj.value(m_firmwareImageKey).toString();
+        auto fwUpdateVersion = fwUpdateObj.value(m_firmwareImageKey).toString("");
 
         // Check force update effect
         if (true /*&&
@@ -536,7 +536,6 @@ void Sync::checkFirmwareUpdate(QJsonObject settings)
     }
 
     emit updateFirmwareFromServer(fwVersion);
-
 }
 
 QNetworkReply* Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method)

@@ -157,6 +157,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
         emit autoModePush(isSuccess);
     });
 
+    // Update the device with the version received from the server.
     connect(mSync, &NUVE::Sync::updateFirmwareFromServer, this, [this](QString version) {
         if (!version.isEmpty()) {
             // Check with current version
