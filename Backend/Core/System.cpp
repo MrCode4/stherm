@@ -153,6 +153,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
         emit autoModePush(isSuccess);
     });
 
+    connect(mSync, &NUVE::Sync::updateFirmwareFromServer, this, [this](QString version) {
+        partialUpdateByVersion(version);
+    });
+
     connect(this, &NUVE::System::systemUpdating, this, [this](){
         QSettings settings;
         settings.setValue(m_updateOnStartKey, true);

@@ -26,6 +26,10 @@ const QString m_HasClientSetting = QString("NUVE/SerialNumberClient");
 const QString m_ContractorSettings = QString("NUVE/Contractor");
 const QString m_requestJob      = QString("requestJob");
 
+const QString m_firmwareUpdateKey      = QString("firmware");
+const QString m_firmwareImageKey       = QString("firmware-image");
+const QString m_firmwareForceUpdateKey = QString("force-update");
+
 const char* m_notifyGetSN       = "notifyGetSN";
 
 inline QDateTime updateTimeStringToTime(const QString &timeStr) {
@@ -422,6 +426,8 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                             // Transmit Non-Configuration Data to UI and Update Model on Server Response
                             emit appDataReady(object.toVariantMap());
 
+                            checkFirmwareUpdate(object);
+
                             break;
                         } else {
                             errorString = "Received settings belong to another device: " + mSerialNumber + ", " + object.value("sn").toString();
@@ -513,6 +519,20 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
     netReply->deleteLater();
 }
 
+void Sync::checkFirmwareUpdate(QJsonObject settings)
+{
+    if (settings.contains(m_firmwareUpdateKey) &&
+        settings.value(m_firmwareUpdateKey).isObject()) {
+        auto fwUpdateObj = settings.value(m_firmwareUpdateKey).toObject();
+        auto fwUpdateVersion = fwUpdateObj.value(m_firmwareImageKey).toString();
+
+        if (fwUpdateVersion != qApp->applicationVersion() &&
+            fwUpdateObj.value(m_firmwareForceUpdateKey).toBool()) {
+            emit updateFirmwareFromServer(fwUpdateVersion);
+        }
+    }
+}
+
 QNetworkReply* Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method)
 {
     // Prepare request
@@ -558,3 +578,4 @@ void Sync::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const Q
     //    netReply->ignoreSslErrors();
 }
 }
+

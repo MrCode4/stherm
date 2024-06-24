@@ -75,9 +75,14 @@ signals:
 
     void testModeStarted();
 
+    void updateFirmwareFromServer(QString version);
+
 private slots:
     //! Process network replay
     void processNetworkReply(QNetworkReply *netReply) override;
+
+    //! Check firmware update with getSettings reply
+    void checkFirmwareUpdate(QJsonObject settings);
 
 protected:
     QNetworkReply* sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
