@@ -197,7 +197,7 @@ public:
 
 protected slots:
     //! Process network replay
-    void processNetworkReply(QNetworkReply *netReply);
+    void processNetworkReply();
 
     void onSnReady();
 

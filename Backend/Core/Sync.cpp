@@ -1,5 +1,6 @@
 #include "Sync.h"
 #include "LogHelper.h"
+#include "NetworkManager.h"
 
 #include <QImage>
 #include <QUrl>
@@ -34,19 +35,14 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
     return QDateTime::fromString(timeStr, format);
 }
 
-Sync::Sync(QObject *parent) : NetworkWorker(parent),
-    mHasClient(false)
+Sync::Sync(QObject *parent)
+    : NetworkWorker(parent)
+    , mHasClient(false)
 {
-
     QSettings setting;
     mHasClient            = setting.value(m_HasClientSetting).toBool();
     mSerialNumber         = setting.value(m_SerialNumberSetting).toString();
     mContractorInfo       = setting.value(m_ContractorSettings).toMap();
-
-
-    mNetManager = new QNetworkAccessManager();
-
-    connect(mNetManager, &QNetworkAccessManager::finished, this,  &Sync::processNetworkReply);
 }
 
 void Sync::setUID(cpuid_t accessUid)
@@ -244,9 +240,9 @@ void Sync::ForgetDevice()
     setting.setValue(m_ContractorSettings, mContractorInfo);
 }
 
-void Sync::processNetworkReply(QNetworkReply *netReply)
+void Sync::processNetworkReply()
 {
-    NetworkWorker::processNetworkReply(netReply);
+    QNetworkReply* netReply = qobject_cast<QNetworkReply*>(sender());
 
     QString errorString = netReply->error() == QNetworkReply::NoError ? "" : netReply->errorString();
     auto method = netReply->property(m_methodProperty).toString();
@@ -374,8 +370,9 @@ void Sync::processNetworkReply(QNetworkReply *netReply)
                     } else {
                         // what if gets error, should we return immadiately?
                         QNetworkRequest dlRequest(logo);
-                        QNetworkReply *netReply = mNetManager->get(dlRequest);
+                        QNetworkReply *netReply = NetworkManager::instance()->get(dlRequest);
                         netReply->setProperty(m_methodProperty, m_getContractorLogo);
+                        connect(netReply, &QNetworkReply::finished, this,  &Sync::processNetworkReply);
                     }
                 } else {
                     errorString = "Wrong contractor info fetched from server";
@@ -526,10 +523,10 @@ QNetworkReply* Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl
 
 
     // Post a request
-    QNetworkReply *netReply = mNetManager->get(netRequest);
+    QNetworkReply *netReply = NetworkManager::instance()->get(netRequest);
     netReply->setProperty(m_methodProperty, method);
     //    netReply->ignoreSslErrors();
-
+    connect(netReply, &QNetworkReply::finished, this,  &Sync::processNetworkReply);
     return netReply;
 }
 
@@ -550,8 +547,9 @@ void Sync::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const Q
     }
 
     // Post a request
-    QNetworkReply *netReply = mNetManager->post(netRequest, postData);
+    QNetworkReply *netReply = NetworkManager::instance()->post(netRequest, postData);
     netReply->setProperty(m_methodProperty, method);
+    connect(netReply, &QNetworkReply::finished, this,  &Sync::processNetworkReply);
     //    netReply->ignoreSslErrors();
 }
 }

@@ -72,11 +72,11 @@ signals:
 
 private slots:
     //! Process network replay
-    void processNetworkReply(QNetworkReply *netReply) override;
+    void processNetworkReply();
 
 protected:
     QNetworkReply* sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
-    void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method) override;
+    void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method);
 
 private:
     /* Attributes
