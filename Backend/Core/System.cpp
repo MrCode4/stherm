@@ -89,7 +89,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
     mHasForceUpdate(false),
     mIsInitialSetup(false),
     mTestMode(false),
-    mIsNightModeRunning(false)
+    mIsNightModeRunning(false),
+    mRestarting(false)
 {
 
     mNetManager = new QNetworkAccessManager();
@@ -159,6 +160,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
     // Update the device with the version received from the server.
     connect(mSync, &NUVE::Sync::updateFirmwareFromServer, this, [this](QString version) {
+        // Downloader is busy ...
+        if (downloaderTimer.isActive() || mRestarting)
+            return;
+
         if (!version.isEmpty()) {
             // Check with current version
             if (version != qApp->applicationVersion()) {
@@ -1040,6 +1045,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
 
     emit lastInstalledUpdateDateChanged();
 
+    mRestarting = true;
     emit systemUpdating();
 
     installUpdateService();
@@ -1477,6 +1483,8 @@ void NUVE::System::rebootDevice()
 #ifdef __unix__
     QProcess process;
     QString command = "reboot";
+
+    mRestarting = true;
 
     process.start(command);
     process.waitForFinished();

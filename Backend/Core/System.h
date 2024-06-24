@@ -343,6 +343,8 @@ private:
 
     bool mIsNightModeRunning;
 
+    bool mRestarting;
+
     QTimer mFetchActiveTimer;
 
     QTimer mUpdateTimer;
