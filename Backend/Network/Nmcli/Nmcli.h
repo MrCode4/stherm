@@ -61,6 +61,10 @@ public:
 
 private:
     int waitLoop(QProcess* process, uint timeout) const;
+    void preExec(QProcess* process, const QString& command, const QStringList& args, const QString& cmdline);
+    void postExec(QProcess* process, ExitedCallback callback, const QString& logline);
+
+private:
     QList<QProcess*> mProcesses;
 };
 

@@ -1,10 +1,9 @@
 #include "NmcliObserver.h"
 
-#include "Nmcli.h"
-
 NmcliObserver::NmcliObserver(QObject *parent)
     : QObject{ parent }
     , mDeviceIsOn { false }
+    , mCliMonitor(new NmCli(this))
     , mMonitorProcess { new QProcess(this) }
 {
     //! Initialize monitoring

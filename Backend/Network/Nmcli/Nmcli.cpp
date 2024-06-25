@@ -1,6 +1,8 @@
 #include "Nmcli.h"
 #include <QEventLoop>
 #include <QTimer>
+#include <QUuid>
+#include <QDebug>
 
 int Cli::waitLoop(QProcess* process, uint timeout) const
 {
@@ -20,36 +22,51 @@ int Cli::waitLoop(QProcess* process, uint timeout) const
     return loop.exec();
 }
 
+void Cli::preExec(QProcess* process, const QString& command, const QStringList& args, const QString& logline)
+{
+    qInfo() << "STARTING: " + logline;
+    mProcesses.append(process);
+    process->setReadChannel(QProcess::StandardOutput);
+    connect(process, &QProcess::started, this, [this, logline] () {
+        qInfo() << "STARTED: " + logline;
+    });
+    process->start(command, args);
+}
+
+void Cli::postExec(QProcess* process, ExitedCallback callback, const QString& logline)
+{
+    mProcesses.removeOne(process);
+    qInfo() << "FINISHED: " + logline;
+    if (process->exitCode() != 0 || process->exitStatus() != QProcess::NormalExit) {
+        qWarning() << "ERROR: " + logline + " --> " << process->exitCode() << " / " << process->errorString();
+    }
+    if (callback) {
+        callback(process);
+    }
+    emit finished(process->exitCode(), process->exitStatus());
+}
+
 void Cli::execSync(const QString& command, const QStringList& args, ExitedCallback callback, uint timeout)
 {
     if (timeout <= 0) {
         timeout = NC_WAIT_MSEC;
     }
 
+    QString logline = QUuid::createUuid().toString() + "#" + command + args.join(' ');
+
     QProcess process;
-    mProcesses.append(&process);
-    process.setReadChannel(QProcess::StandardOutput);
-    process.start(command, args);
+    preExec(&process, command, args, logline);
     waitLoop(&process, timeout);
-    mProcesses.removeOne(&process);
-    if (callback) {
-        callback(&process);
-    }
-    emit finished(process.exitCode(), process.exitStatus());
+    postExec(&process, callback, logline);
 }
 
 void Cli::execAsync(const QString& command, const QStringList& args, ExitedCallback callback)
 {
+    QString logline = QUuid::createUuid().toString() + "#" + command + args.join(' ');
     QProcess* process = new QProcess;
-    mProcesses.append(process);
-    process->setReadChannel(QProcess::StandardOutput);
-    process->start(command, args);
-    connect(process, &QProcess::finished, this, [this, process, callback](int exitCode, QProcess::ExitStatus exitStatus) {
-        mProcesses.removeOne(process);
-        if (callback) {
-            callback(process);
-        }
-        emit finished(process->exitCode(), process->exitStatus());
+    preExec(process, command, args, logline);
+    connect(process, &QProcess::finished, this, [this, process, callback, logline](int exitCode, QProcess::ExitStatus exitStatus) {
+        postExec(process, callback, logline);
         delete process;
     });
 }
