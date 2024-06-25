@@ -1,34 +1,33 @@
 #include "NmcliObserver.h"
+#include <QDebug>
+#include "Nmcli.h"
 
 NmcliObserver::NmcliObserver(QObject *parent)
     : QObject{ parent }
     , mDeviceIsOn { false }
-    , mCliMonitor(new NmCli(this))
-    , mMonitorProcess { new QProcess(this) }
+    , mCliCommon { new NmCli(this) }
+    , mCliMonitor { new NmCli(this) }
 {
-    //! Initialize monitoring
-    mMonitorProcess->setReadChannel(QProcess::StandardOutput);
-
     //! This lambda gets wifi device name and starts monitoring
-    auto startMonitor = [&](int exitCode, QProcess::ExitStatus exitStatus) {
-        if (exitStatus == QProcess::NormalExit && exitCode == 0) {
+    auto startMonitor = [&](QProcess* process) {
+        if (process->exitStatus() == QProcess::NormalExit && process->exitCode() == 0) {
             //! Get wifi device name
-            QByteArray line = mMonitorProcess->readLine();
+            QByteArray line = process->readLine();
             while (!line.isEmpty() && line != "wifi\n") {
-                line = mMonitorProcess->readLine();
+                line = process->readLine();
             }
 
-            mWifiDevice = mMonitorProcess->readLine();
+            mWifiDevice = process->readLine();
             if (!mWifiDevice.isEmpty()) {
                 mWifiDevice.remove(mWifiDevice.size() - 1, 1);
 
                 //! Start monitoring
                 NC_DEBUG << "Network monitoring started";
 
-                connect(mMonitorProcess, &QProcess::readyReadStandardOutput, this,
-                        &NmcliObserver::onMonitorProcessReadReady);
-
-                mMonitorProcess->start(NC_COMMAND, { "monitor" });
+                mCliMonitor->startMonitoring([&](QProcess* process) {
+                    connect(process, &QProcess::readyReadStandardOutput, this,
+                            &NmcliObserver::onMonitorProcessReadReady);
+                });
 
                 //! Get device enable state
                 getDevicePowerState();
@@ -38,23 +37,13 @@ NmcliObserver::NmcliObserver(QObject *parent)
 
         NC_CRITICAL << "No wifi device is found. Wifi will not function";
     };
-    connect(mMonitorProcess, &QProcess::finished, this, startMonitor,Qt::SingleShotConnection);
-
-    //! Get wifi device name
-    mMonitorProcess->start(NC_COMMAND, {
-                                           NC_ARG_GET_VALUES,
-                                           "GENERAL.TYPE,GENERAL.DEVICE",
-                                           NC_ARG_DEVICE,
-                                           NC_ARG_SHOW,
-                                       });
+    mCliCommon->getWifiDeviceName(startMonitor);
 }
 
 NmcliObserver::~NmcliObserver()
 {
-    if (mMonitorProcess && (mMonitorProcess->state() == QProcess::Starting
-                            || mMonitorProcess->state() == QProcess::Running)) {
-        mMonitorProcess->kill();
-    }
+    mCliCommon->kill();
+    mCliMonitor->kill();
 }
 
 bool NmcliObserver::isWifiOn() const
@@ -74,27 +63,22 @@ void NmcliObserver::setDevicePowerState(bool isOn)
 
 void NmcliObserver::getDevicePowerState()
 {
-    QProcess* process = new QProcess(this);
-
-    //! Check wifi device on/off state
-    connect(process, &QProcess::finished, this, [this, process](int exitCode, QProcess::ExitStatus) {
-            if (exitCode == 0) {
-                setDevicePowerState(process->readLine().contains("enabled"));
-            }
-            process->deleteLater();
-        }, Qt::SingleShotConnection);
-
-    process->start(NC_COMMAND, {
-                                   NC_ARG_GET_VALUES,
-                                   "WIFI",
-                                   NC_ARG_GENERAL,
-                                   "status",
-                               });
+    mCliCommon->getDevicePowerState([this] (QProcess* process) {
+        if (process->exitCode() == 0) {
+            setDevicePowerState(process->readLine().contains("enabled"));
+        }
+    });
 }
 
 void NmcliObserver::onMonitorProcessReadReady()
 {
-    QString message = mMonitorProcess->readLine();
+    auto process = qobject_cast<QProcess*>(sender());
+    if (!process) {
+        qWarning() << "onMonitorProcessReadReady: invalid process instance";
+        return;
+    }
+
+    QString message = process->readLine();
     message.chop(1); //! Discard \n
     while(!message.isEmpty()) {
         if (message.endsWith(NC_MSG_CONNECTED)) {
@@ -140,7 +124,7 @@ void NmcliObserver::onMonitorProcessReadReady()
             }
         }
 
-        message = mMonitorProcess->readLine();
+        message = process->readLine();
         message.chop(1); //! Discard \n
     }
 }

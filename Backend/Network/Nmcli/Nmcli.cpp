@@ -60,15 +60,18 @@ void Cli::execSync(const QString& command, const QStringList& args, ExitedCallba
     postExec(&process, callback, logline);
 }
 
-void Cli::execAsync(const QString& command, const QStringList& args, ExitedCallback callback)
+void Cli::execAsync(const QString& command, const QStringList& args, ExitedCallback callback, InitCallback init)
 {
     QString logline = QUuid::createUuid().toString() + "#" + command + args.join(' ');
     QProcess* process = new QProcess;
+    if (init) {
+        init(process);
+    }
     preExec(process, command, args, logline);
     connect(process, &QProcess::finished, this, [this, process, callback, logline](int exitCode, QProcess::ExitStatus exitStatus) {
         postExec(process, callback, logline);
         delete process;
-    });
+    }, Qt::SingleShotConnection);
 }
 
 void Cli::kill()
@@ -128,6 +131,33 @@ void NmCli::scanConnectionProfiles(ExitedCallback callback)
         NC_ARG_CONNECTION,
     };
     execAsync(NC_COMMAND, args, callback);
+}
+
+void NmCli::getDevicePowerState(ExitedCallback callback)
+{
+    const QStringList args = QStringList {
+        NC_ARG_GET_VALUES,
+        "WIFI",
+        NC_ARG_GENERAL,
+        "status",
+    };
+    execAsync(NC_COMMAND, args, callback);
+}
+
+void NmCli::getWifiDeviceName(ExitedCallback callback)
+{
+    const QStringList args = QStringList {
+        NC_ARG_GET_VALUES,
+        "GENERAL.TYPE,GENERAL.DEVICE",
+        NC_ARG_DEVICE,
+        NC_ARG_SHOW,
+    };
+    execAsync(NC_COMMAND, args, callback);
+}
+
+void NmCli::startMonitoring(InitCallback callback)
+{
+    execAsync(NC_COMMAND, { "monitor" }, nullptr, callback);
 }
 
 void NmCli::addConnection(

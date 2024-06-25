@@ -89,7 +89,7 @@ private:
     /*!
      * \brief mMonitorProcess This process is used to monitor nmcli for changes in network
      */
-    QProcess*           mMonitorProcess;
+    NmCli*           mCliCommon;
     NmCli*           mCliMonitor;
 
     /*!

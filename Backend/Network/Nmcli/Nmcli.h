@@ -48,6 +48,7 @@ class Cli : public QObject {
     Q_OBJECT
 
 public:
+    using InitCallback = std::function<void (QProcess* process)>;
     using ExitedCallback = std::function<void (QProcess* process)>;
     explicit Cli(QObject* parent = nullptr) : QObject(parent) {}
 
@@ -56,7 +57,7 @@ signals:
 
 public:
     void execSync(const QString& command, const QStringList& args, ExitedCallback callback, uint timeout);
-    void execAsync(const QString& command, const QStringList& args, ExitedCallback callback);
+    void execAsync(const QString& command, const QStringList& args, ExitedCallback callback, InitCallback init = nullptr);
     void kill();
 
 private:
@@ -79,6 +80,9 @@ public:
     void turnWifiDeviceOff(ExitedCallback callback);
     void refreshWifi(bool rescan, ExitedCallback callback);
     void scanConnectionProfiles(ExitedCallback callback);
+    void getDevicePowerState(ExitedCallback callback);
+    void getWifiDeviceName(ExitedCallback callback);
+    void startMonitoring(InitCallback callback);
     void addConnection(
         const QString& deviceMac,
         const QString& name,
