@@ -339,6 +339,7 @@ qt6_add_qml_module(appStherm
         Backend/Device/SystemAccessories.cpp
 
         Backend/Network/Nmcli/Nmcli.h
+        Backend/Network/Nmcli/Nmcli.cpp
         Backend/Network/Nmcli/NmcliObserver.h
         Backend/Network/Nmcli/NmcliObserver.cpp
         Backend/Network/Nmcli/NmcliInterface.h

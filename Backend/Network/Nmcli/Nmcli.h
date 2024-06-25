@@ -1,6 +1,9 @@
 #pragma once
 
 #include <QtDebug>
+#include <QObject>
+#include <QProcess>
+#include <QList>
 
 #define NC_COMMAND          "nmcli"
 #define NC_ARG_DEVICE       "device"
@@ -40,3 +43,55 @@
 #define NC_DEBUG            qDebug() << "NMCLI: " << Q_FUNC_INFO << __LINE__
 #define NC_WARN             qWarning() << "NMCLI: " << Q_FUNC_INFO << __LINE__
 #define NC_CRITICAL         qCritical() << "NMCLI: " << Q_FUNC_INFO << __LINE__
+
+class Cli : public QObject {
+    Q_OBJECT
+
+public:
+    using ExitedCallback = std::function<void (QProcess* process)>;
+    explicit Cli(QObject* parent = nullptr) : QObject(parent) {}
+
+signals:
+    void finished(int exitCode, QProcess::ExitStatus exitStatus);
+
+public:
+    void execSync(const QString& command, const QStringList& args, ExitedCallback callback, uint timeout);
+    void execAsync(const QString& command, const QStringList& args, ExitedCallback callback);
+    void kill();
+
+private:
+    int waitLoop(QProcess* process, uint timeout) const;
+    QList<QProcess*> mProcesses;
+};
+
+class NmCli : public Cli
+{
+    Q_OBJECT
+
+public:
+    explicit NmCli(QObject* parent = nullptr) : Cli(parent) {}
+
+    void turnWifiDeviceOn(ExitedCallback callback);
+    void turnWifiDeviceOff(ExitedCallback callback);
+    void refreshWifi(bool rescan, ExitedCallback callback);
+    void scanConnectionProfiles(ExitedCallback callback);
+    void addConnection(
+        const QString& deviceMac,
+        const QString& name,
+        const QString& ssid,
+        const QString& ip4,
+        const QString& gw4,
+        const QString& dns,
+        const QString& security,
+        const QString& password,
+        ExitedCallback callback);
+
+    void getProfileInfoByName(const QString& connName, std::function<void (const QString&, const QString&)> callback);
+    QString getConnectedWifiBssid();
+    bool hasWifiProfile(const QString& ssid);
+
+    void connectToUnsavedWifi(const QString& bssid, const QString& password, ExitedCallback callback);
+    void connectToSavedWifi(const QString& ssid, const QString& password, ExitedCallback callback);
+    void disconnectFromWifi(const QString& ssid, ExitedCallback callback);
+    void forgetWifi(const QString& ssid, ExitedCallback callback);
+};
