@@ -291,6 +291,8 @@ qt6_add_qml_module(appStherm
         Backend/UtilityHelper.h
         Backend/UtilityHelper.cpp
 
+        Backend/Core/ProcessExecutor.h
+        Backend/Core/ProcessExecutor.cpp
         Backend/Core/Relay.h
         Backend/Core/Relay.cpp
         Backend/Core/Scheme.h

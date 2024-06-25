@@ -16,12 +16,12 @@ NmcliInterface::NmcliInterface(QObject* parent)
     , mCliWifi(new NmCli(this))
     , mCliProfiles(new NmCli(this))
 {
-    connect(mCliRefresh, &Cli::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
+    connect(mCliRefresh, &ProcessExecutor::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit && exitCode != 0) {
             emit errorOccured(NmcliInterface::Error(exitCode));
         }
     });
-    connect(mCliWifi, &Cli::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
+    connect(mCliWifi, &ProcessExecutor::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit && exitCode != 0) {
             emit errorOccured(NmcliInterface::Error(exitCode));
         }

@@ -1,9 +1,5 @@
 #pragma once
-
-#include <QtDebug>
-#include <QObject>
-#include <QProcess>
-#include <QList>
+#include "Core/ProcessExecutor.h"
 
 #define NC_COMMAND          "nmcli"
 #define NC_ARG_DEVICE       "device"
@@ -44,37 +40,13 @@
 #define NC_WARN             qWarning() << "NMCLI: " << Q_FUNC_INFO << __LINE__
 #define NC_CRITICAL         qCritical() << "NMCLI: " << Q_FUNC_INFO << __LINE__
 
-class Cli : public QObject {
-    Q_OBJECT
 
-public:
-    using InitCallback = std::function<void (QProcess* process)>;
-    using ExitedCallback = std::function<void (QProcess* process)>;
-    explicit Cli(QObject* parent = nullptr) : QObject(parent) {}
-
-signals:
-    void finished(int exitCode, QProcess::ExitStatus exitStatus);
-
-public:
-    void execSync(const QString& command, const QStringList& args, ExitedCallback callback, uint timeout);
-    void execAsync(const QString& command, const QStringList& args, ExitedCallback callback, InitCallback init = nullptr);
-    void kill();
-
-private:
-    int waitLoop(QProcess* process, uint timeout) const;
-    void preExec(QProcess* process, const QString& command, const QStringList& args, const QString& cmdline);
-    void postExec(QProcess* process, ExitedCallback callback, const QString& logline);
-
-private:
-    QList<QProcess*> mProcesses;
-};
-
-class NmCli : public Cli
+class NmCli : public ProcessExecutor
 {
     Q_OBJECT
 
 public:
-    explicit NmCli(QObject* parent = nullptr) : Cli(parent) {}
+    explicit NmCli(QObject* parent = nullptr) : ProcessExecutor(parent) {}
 
     void turnWifiDeviceOn(ExitedCallback callback);
     void turnWifiDeviceOff(ExitedCallback callback);
