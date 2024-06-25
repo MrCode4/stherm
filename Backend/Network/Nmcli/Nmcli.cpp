@@ -6,6 +6,10 @@
 
 int Cli::waitLoop(QProcess* process, uint timeout) const
 {
+    if (timeout <= 0) {
+        timeout = NC_WAIT_MSEC;
+    }
+
     QEventLoop loop;
     // connect signal for handling stopWork
     connect(process, &QProcess::finished, &loop, [&loop]() {
@@ -47,13 +51,8 @@ void Cli::postExec(QProcess* process, ExitedCallback callback, const QString& lo
 }
 
 void Cli::execSync(const QString& command, const QStringList& args, ExitedCallback callback, uint timeout)
-{
-    if (timeout <= 0) {
-        timeout = NC_WAIT_MSEC;
-    }
-
-    QString logline = QUuid::createUuid().toString() + "#" + command + args.join(' ');
-
+{   
+    QString logline = QUuid::createUuid().toString() + "# " + command + " " + args.join(' ');
     QProcess process;
     preExec(&process, command, args, logline);
     waitLoop(&process, timeout);
@@ -62,7 +61,7 @@ void Cli::execSync(const QString& command, const QStringList& args, ExitedCallba
 
 void Cli::execAsync(const QString& command, const QStringList& args, ExitedCallback callback, InitCallback init)
 {
-    QString logline = QUuid::createUuid().toString() + "#" + command + args.join(' ');
+    QString logline = QUuid::createUuid().toString() + "# " + command + " " + args.join(' ');
     QProcess* process = new QProcess;
     if (init) {
         init(process);
