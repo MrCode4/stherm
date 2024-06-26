@@ -967,11 +967,13 @@ I_DeviceController {
     }
 
     function setSystemAccesseoriesServer(settings: var) {
-        setSystemAccesseories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
+        device.systemSetup.systemAccessories.setSystemAccessories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
     }
 
     function setSystemAccesseories(accType: int, wireType: int) {
         device.systemSetup.systemAccessories.setSystemAccessories(accType, wireType);
+
+        pushSettings();
     }
     
     function testRelays(relays) {
