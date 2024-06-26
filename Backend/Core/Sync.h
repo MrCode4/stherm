@@ -77,6 +77,9 @@ protected:
 
 private:
     QByteArray preparePacket(QString className, QString method, QJsonArray params);
+    //! Used as a simple mutex to ensure only 1 getSettings and getAutoSettings requests
+    QMutex getSettingsMutex;
+    bool getSettingsRequested = false;
 
 private:
     /* Attributes
