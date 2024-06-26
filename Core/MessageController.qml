@@ -26,8 +26,11 @@ QtObject {
     //! but only if they haven't been displayed in the past 24 hours.
     readonly property int alertInterval: 24 * 60 * 60 * 1000
 
-    // Weekly
+    //! Weekly: Use in air condition
     readonly property int weeklyAlertInterval: 7 * 24 * 60 * 60 * 1000
+
+    //! 6 Hours: Used in Temperature and humidity sensor
+    readonly property int sixHoursAlertInterval: 6 * 60 * 60 * 1000
 
     //! Keep the last read
     //! map <message, last read time>
@@ -190,6 +193,9 @@ QtObject {
         if (type !== Message.Type.SystemNotification) {
             device.messages.unshift(newMessage);
             device.messagesChanged();
+
+            // Send messages to server
+            deviceController.pushSettings();
         }
 
         AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
@@ -313,30 +319,22 @@ QtObject {
 
             console.log("Alert: ", alertLevel, alertType, alertMessage);
 
+            var retriggerInterval = alertInterval;
             if (messagesShowing.find(element => alertMessage === element.message))
-                return;
-
-            var now = (new Date()).getTime();
-
-            // Check message time interval (24 hours for now)
-            if (Object.keys(lastRead).includes(alertMessage) &&
-                    (now - lastRead[alertMessage]) < alertInterval)
                 return;
 
             var messageType = Message.Type.Alert;
 
             //! Watch some sensor alerts
             switch (alertType) {
+            case AppSpec.Alert_humidity_high:
+            case AppSpec.Alert_humidity_low:
+            case AppSpec.Alert_temp_low:
+            case AppSpec.Alert_temp_high:
             case AppSpec.Alert_temperature_not_reach: {
                 messageType = Message.Type.SystemAlert;
-
+                retriggerInterval = sixHoursAlertInterval;
             } break
-
-            case AppSpec.Alert_temp_low:
-            case AppSpec.Alert_temp_high: {
-                messageType = Message.Type.SystemAlert;
-
-            } break;
 
             case AppSpec.Alert_iaq_high:
             case AppSpec.Alert_iaq_low:
@@ -344,12 +342,6 @@ QtObject {
                 messageType = Message.Type.SystemAlert;
 
             } break
-
-            case AppSpec.Alert_humidity_high:
-            case AppSpec.Alert_humidity_low: {
-                messageType = Message.Type.SystemAlert;
-
-            } break;
 
             case AppSpec.Alert_fan_High:
             case AppSpec.Alert_fan_low: {
@@ -371,6 +363,13 @@ QtObject {
             default:
                 break;
             }
+
+            var now = (new Date()).getTime();
+
+            // Check message time interval
+            if (Object.keys(lastRead).includes(alertMessage) &&
+                    (now - lastRead[alertMessage]) < retriggerInterval)
+                return;
 
             addNewMessageFromData(messageType, alertMessage, (new Date()).toLocaleString());
 
