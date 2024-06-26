@@ -1,5 +1,5 @@
 #include "NmcliObserver.h"
-#include <QDebug>
+#include "LogHelper.h"
 #include "Nmcli.h"
 
 NmcliObserver::NmcliObserver(QObject *parent)
@@ -81,6 +81,7 @@ void NmcliObserver::onMonitorProcessReadReady()
     QString message = process->readLine();
     message.chop(1); //! Discard \n
     while(!message.isEmpty()) {
+        TRACE << "MONITOR, LINE: " << message;
         if (message.endsWith(NC_MSG_CONNECTED)) {
             //! Connected to a wifi
             QString connectedWifiSsid = message.sliced(1, message.length() - NC_MSG_CONNECTED.length() - 2);

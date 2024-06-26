@@ -93,7 +93,7 @@ void NmCli::addConnection(
     //! Perform connection command
     QStringList args({
         NC_ARG_CONNECTION,
-        NC_ARG_CON_ADD,
+        NC_ARG_ADD,
         "ifname",
         deviceMac,
         "type",
@@ -260,7 +260,7 @@ void NmCli::connectToSavedWifi(const QString& ssid, const QString& password, Exi
 
         const QStringList args({
             NC_ARG_CONNECTION,
-            "modify",
+            NC_ARG_MODIFY,
             ssid,
             "802-11-wireless-security.psk",
             password

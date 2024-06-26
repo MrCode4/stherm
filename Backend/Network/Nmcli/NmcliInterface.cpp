@@ -108,17 +108,7 @@ void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
     if (hasWifiProfile(wifi)) {
         connectSavedWifi(wifi, password);
     } else {
-        setBusy(true);        
-        //! Perform connection command
-        const QStringList args({
-            NC_ARG_DEVICE,
-            NC_ARG_WIFI,
-            NC_ARG_CONNECT,
-            wifi->bssid(),
-            NC_ARG_PASSWORD,
-            password,
-        });
-
+        setBusy(true);                
         mCliWifi->connectToUnsavedWifi(wifi->bssid(), password, [this] (QProcess*) {
             setBusy(false);
         });

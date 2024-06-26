@@ -8,7 +8,8 @@
 #define NC_ARG_GENERAL      "general"
 #define NC_ARG_CONNECTION   "connection"
 
-#define NC_ARG_CON_ADD      "add"
+#define NC_ARG_ADD          "add"
+#define NC_ARG_MODIFY       "modify"
 #define NC_ARG_WIFI         "wifi"
 #define NC_ARG_LIST         "list"
 #define NC_ARG_CONNECT      "connect"
@@ -37,6 +38,7 @@
 
 //! Printing macros
 #define NC_DEBUG            qDebug() << "NMCLI: " << Q_FUNC_INFO << __LINE__
+#define NC_INFO             qInfo() << "NMCLI: " << Q_FUNC_INFO << __LINE__
 #define NC_WARN             qWarning() << "NMCLI: " << Q_FUNC_INFO << __LINE__
 #define NC_CRITICAL         qCritical() << "NMCLI: " << Q_FUNC_INFO << __LINE__
 

@@ -3,7 +3,7 @@
 #include <QTimer>
 #include <QUuid>
 #include <QDebug>
-
+#include "LogHelper.h"
 
 int ProcessExecutor::waitLoop(QProcess* process, uint timeout) const
 {
@@ -29,11 +29,11 @@ int ProcessExecutor::waitLoop(QProcess* process, uint timeout) const
 
 void ProcessExecutor::preExec(QProcess* process, const QString& command, const QStringList& args, const QString& logline)
 {
-    qInfo() << "STARTING: " + logline;
+    TRACE << "STARTING: " + logline;
     mProcesses.append(process);
     process->setReadChannel(QProcess::StandardOutput);
     connect(process, &QProcess::started, this, [this, logline] () {
-        qInfo() << "STARTED: " + logline;
+        TRACE << "STARTED: " + logline;
     });
     process->start(command, args);
 }
@@ -41,9 +41,9 @@ void ProcessExecutor::preExec(QProcess* process, const QString& command, const Q
 void ProcessExecutor::postExec(QProcess* process, ExitedCallback callback, const QString& logline)
 {
     mProcesses.removeOne(process);
-    qInfo() << "FINISHED: " + logline;
+    TRACE << "FINISHED: " + logline;
     if (process->exitCode() != 0 || process->exitStatus() != QProcess::NormalExit) {
-        qWarning() << "ERROR: " + logline + " --> " << process->exitCode() << " / " << process->errorString();
+        TRACE << "ERROR: " + logline + " --> " << process->exitCode() << " / " << process->errorString();
     }
     if (callback) {
         callback(process);
