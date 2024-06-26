@@ -26,6 +26,9 @@ QtObject {
     //! but only if they haven't been displayed in the past 24 hours.
     readonly property int alertInterval: 24 * 60 * 60 * 1000
 
+    // Weekly
+    readonly property int weeklyAlertInterval: 7 * 24 * 60 * 60 * 1000
+
     //! Keep the last read
     //! map <message, last read time>
     property var lastRead: ([])
@@ -294,7 +297,7 @@ QtObject {
 
             var now = (new Date()).getTime();
             if (Object.keys(lastRead).includes(message) &&
-                    (now - lastRead[message]) < alertInterval)
+                    (now - lastRead[message]) < weeklyAlertInterval)
                 return;
 
             addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
