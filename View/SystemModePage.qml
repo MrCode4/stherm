@@ -56,7 +56,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Cooling
-            enabled: coolAvailable
+            enabled: coolAvailable && device?.systemSetup.systemMode !== AppSpecCPP.ForceOff
             text: "Cooling"
 
             onClicked: {
@@ -72,7 +72,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Heating
-            enabled: heatAvailable
+            enabled: heatAvailable && device?.systemSetup.systemMode !== AppSpecCPP.ForceOff
             text: "Heating"
 
             onClicked: {
@@ -88,7 +88,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Auto
-            enabled: coolAvailable && heatAvailable
+            enabled: coolAvailable && heatAvailable && device?.systemSetup.systemMode !== AppSpecCPP.ForceOff
             text: "Auto"
 
             onClicked: {
@@ -105,6 +105,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.isVacation
+            enabled: device?.systemSetup.systemMode !== AppSpecCPP.ForceOff
             text: "Vacation"
 
             onClicked: {
@@ -121,7 +122,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemSetup.systemMode === AppSpecCPP.Off
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Off || device?.systemSetup.systemMode === AppSpecCPP.ForceOff
             text: "OFF"
 
             onClicked: {

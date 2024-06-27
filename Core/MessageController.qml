@@ -334,14 +334,14 @@ QtObject {
             case AppSpec.Alert_temperature_not_reach: {
                 messageType = Message.Type.SystemAlert;
                 retriggerInterval = sixHoursAlertInterval;
-            } break
+            } break;
 
             case AppSpec.Alert_iaq_high:
             case AppSpec.Alert_iaq_low:
             case AppSpec.Alert_c02_low: {
                 messageType = Message.Type.SystemAlert;
 
-            } break
+            } break;
 
             case AppSpec.Alert_fan_High:
             case AppSpec.Alert_fan_low: {

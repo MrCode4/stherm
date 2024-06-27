@@ -62,7 +62,8 @@ public:
         Auto,
         Vacation,
         Off,
-        Emergency
+        Emergency,
+        ForceOff // Set the system mode to OFF and user can not change it
     };
     Q_ENUM(SystemMode)
 
@@ -84,7 +85,6 @@ public:
     {
         Humidifier = 0,
         Dehumidifier,
-        ATNone
     };
     Q_ENUM(AccessoriesType)
 
@@ -93,7 +93,8 @@ public:
         T1PWRD = 0,
         T1Short,
         T2PWRD,
-        None
+        None,
+        AWTForceOFF
     };
     Q_ENUM(AccessoriesWireType)
     Q_INVOKABLE QString accessoriesWireTypeString(AccessoriesWireType wt);

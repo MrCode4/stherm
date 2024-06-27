@@ -113,6 +113,23 @@ I_DeviceController {
         // adding version so we can force the image to refresh the content
         property int version : 0;
 
+        //! Set system mode to auto when
+        //! return the system to Auto mode with the default temp range from 68F to 76F.
+        function onExitForceOffSystem() {
+            setAutoMinReqTemp(20);
+            setAutoMaxReqTemp(24.444);
+            setSystemModeTo(AppSpec.Auto);
+
+            device.systemSetup.systemAccessories.backToLastState();
+            pushSettings();
+        }
+
+        //! Force off the system (Temperature and humidity)
+        function onForceOffSystem() {
+            setSystemModeTo(AppSpec.ForceOff);
+            setSystemAccesseories(device.systemSetup.systemAccessories.accessoriesType, AppSpecCPP.AWTForceOFF);
+        }
+
         function onContractorInfoUpdated(brandName, phoneNumber, iconUrl, url,  techUrl) {
 
             version++;
@@ -449,7 +466,7 @@ I_DeviceController {
         if (systemMode === AppSpecCPP.Vacation) {
             setVacationOn(true);
 
-        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
+        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.ForceOff) {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;

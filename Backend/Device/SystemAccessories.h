@@ -28,6 +28,8 @@ public:
 
     AppSpecCPP::AccessoriesWireType getAccessoriesWireType() const;
 
+    Q_INVOKABLE void backToLastState();
+
 signals:
     void accessoriesChanged();
 
@@ -36,4 +38,8 @@ private:
     // The humidifier and dehumidifier cannot be activated simultaneously.
     AppSpecCPP::AccessoriesType     mAccessoriesType;
     AppSpecCPP::AccessoriesWireType mAccessoriesWireType;
+
+    // Last accessories
+    AppSpecCPP::AccessoriesType     mLastAccessoriesType;
+    AppSpecCPP::AccessoriesWireType mLastAccessoriesWireType;
 };

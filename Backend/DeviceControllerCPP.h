@@ -204,6 +204,14 @@ Q_SIGNALS:
     void startSystemDelayCountdown(AppSpecCPP::SystemMode mode, int delay);
     void stopSystemDelayCountdown();
 
+    void pushSettings();
+
+    //! The system set to off when humidity or temperature sensors malfunction
+    void forceOffSystem();
+
+    //! Exit from Force off mode when the sensors work properly
+    void exitForceOffSystem();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData, bool addToData = false);
