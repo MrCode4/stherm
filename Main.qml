@@ -69,7 +69,7 @@ ApplicationWindow {
             uiSessionId.currentFile = "Update Device";
 
             // Update setting with server
-            uiSessionId.settingsReady = deviceControllerCPP.system.fetchSettings();
+            deviceControllerCPP.system.fetchSettings();
 
         } else {
             // Load model from the file after initialize setup, normal restart, etc...
@@ -170,6 +170,13 @@ ApplicationWindow {
             if (uiSessionId.appModel.setting.effectDst !== DateTimeManager.effectDst) {
                 DateTimeManager.effectDst = uiSessionId.appModel.setting.effectDst;
             }
+        }
+    }
+
+    Connections {
+        target: deviceControllerCPP.system
+        function onAreSettingsFetchedChanged(yes) {
+            uiSessionId.settingsReady = yes;
         }
     }
 

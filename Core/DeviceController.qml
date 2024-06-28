@@ -232,9 +232,9 @@ I_DeviceController {
         repeat: true;
         running: !initialSetup;
         interval: 5000;
-        onTriggered:
-        {
-            if (!deviceControllerCPP.system.fetchSettings()) {
+        onTriggered: {
+            deviceControllerCPP.system.fetchSettings();
+            if (!deviceControllerCPP.system.areSettingsFetched) {
                 var intervalNew = interval * 2;
                 if (intervalNew > 60000)
                     intervalNew = 60000;

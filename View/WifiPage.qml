@@ -47,7 +47,7 @@ BasePageView {
         interval: 5000
 
         onTriggered: {
-            uiSession.settingsReady = system.fetchSettings();
+            system.fetchSettings();
         }
     }
 
@@ -450,6 +450,10 @@ BasePageView {
         //! Check update
         function onUpdateNoChecked() {
             checkedUpdate = true;
+        }
+
+        function onAreSettingsFetchedChanged(yes) {
+            uiSession.settingsReady = yes;
         }
     }
 
