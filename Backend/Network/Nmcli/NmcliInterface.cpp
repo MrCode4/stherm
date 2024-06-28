@@ -228,28 +228,6 @@ QString NmcliInterface::getConnectedWifiBssid() const
     return mCliWifi->getConnectedWifiBssid();
 }
 
-int NmcliInterface::waitLoop(QProcess* process, int timeout) const
-{
-    QEventLoop loop;
-    // connect signal for handling stopWork
-    connect(process, &QProcess::finished, &loop, [&loop]() {
-        loop.exit();
-    });
-
-    if (timeout == 0) {
-        return 0;
-    } else if (timeout > 0) {
-        // quit will exit with, same as exit(ChangeType::CurrentTemperature)
-        QTimer::singleShot(timeout, &loop, [&loop, process](){
-            if (process->state() != QProcess::NotRunning) {
-                process->terminate();
-            }
-        });
-    }
-
-    return loop.exec();
-}
-
 void NmcliInterface::onWifiListRefreshFinished(QProcess* process)
 {
     if (process->exitCode() == 0) {

@@ -166,14 +166,6 @@ public:
     QString getConnectedWifiBssid() const;
 
 private:
-   /*!
-     * \brief waitLoop
-     * \param process
-     * \param timeout
-     * \return
-     */
-    int     waitLoop(QProcess *process, int timeout = 1000) const;
-
     /*!
      * \brief connectToWifi This is an overloaded method and connects to the given wifi without any
      * password, if the given \a ssid is not saved into \a\b NetworkManager this returns
