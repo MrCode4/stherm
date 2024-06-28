@@ -14,7 +14,8 @@ const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
 const char *cNotifyGetSN = "notifyGetSN";
 
-inline QDateTime updateTimeStringToTime(const QString &timeStr) {
+inline QDateTime updateTimeStringToTime(const QString &timeStr)
+{
     QString format = "yyyy-MM-dd HH:mm:ss";
 
     return QDateTime::fromString(timeStr, format);

@@ -1,4 +1,5 @@
 #include "NetworkWorker.h"
+
 #include "NetworkManager.h"
 
 NetworkWorker::NetworkWorker(QObject *parent)
