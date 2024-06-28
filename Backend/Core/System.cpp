@@ -705,7 +705,7 @@ void NUVE::System::setIsInitialSetup(bool isInitailSetup)
     mIsInitialSetup = isInitailSetup;
 }
 
-void NUVE::System::ForgetDevice()
+void NUVE::System::forgetDevice()
 {
     mLastInstalledUpdateDate = {};
     mIsManualUpdate = false;
@@ -716,7 +716,7 @@ void NUVE::System::ForgetDevice()
     settings.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
     settings.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
 
-    mSync->ForgetDevice();
+    mSync->forgetDevice();
 }
 
 bool NUVE::System::hasFetchSuccessOnce() const

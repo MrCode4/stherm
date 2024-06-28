@@ -47,7 +47,7 @@ public:
     }
 
     //! Forget device configs
-    void ForgetDevice();
+    void forgetDevice();
 
     const NUVE::DeviceConfig& deviceConfig() const;
 

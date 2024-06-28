@@ -437,8 +437,8 @@ void DeviceControllerCPP::setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovern
 
 void DeviceControllerCPP::forgetDevice()
 {
-    _deviceAPI->ForgetDevice();
-    m_system->ForgetDevice();
+    _deviceAPI->forgetDevice();
+    m_system->forgetDevice();
 }
 
 double DeviceControllerCPP::adaptiveBrightness() {

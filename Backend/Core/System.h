@@ -180,7 +180,7 @@ public:
     Q_INVOKABLE void setIsInitialSetup(bool isInitailSetup);
 
     //! Forget device settings and sync settings
-    Q_INVOKABLE void ForgetDevice();
+    Q_INVOKABLE void forgetDevice();
 
     bool hasFetchSuccessOnce() const;
 
