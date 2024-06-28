@@ -13,18 +13,22 @@ namespace NUVE {
 class Sync : public NetworkWorker
 {
     Q_OBJECT
+    using ResponseCallback = std::function<void (QNetworkReply* reply, const QByteArray& rawData, QJsonObject& data)>;
 
 public:
     Sync(QObject *parent = nullptr);
 
     void setUID(cpuid_t accessUid);
-    //! Get serial number and if has client from server if not fetched or saved
-    std::pair<std::string, bool> getSN(cpuid_t accessUid, bool notifyUser = true);
     //! returns last fetched from save or server
-    std::pair<std::string, bool> getSN();
+    QString getSerialNumber() const;
+    bool hasClient() const;
+    //! Get serial number and if has client from server if not fetched or saved
+    void fetchSerialNumber(cpuid_t accessUid, bool notifyUser = true);
 
-    QVariantMap getContractorInfo();
-    bool getSettings();
+    QVariantMap getContractorInfo() const;
+    void fetchContractorInfo();
+    void fetchContractorLogo(const QString& url);
+    void fetchSettings();
     void getMessages();
     void getWirings(cpuid_t accessUid);
     void requestJob(QString type);
@@ -34,21 +38,20 @@ public:
 
     void ForgetDevice();
 
-    bool getAutoModeSetings();
+    void fetchAutoModeSetings();
 
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
 signals:
-    //! Send when SN is ready !!!
-    void snReady();
+    void settingsFetched(bool success);
+    void serialNumberReady();
 
     //! Use snFinished signal to exit from sn loop
     void snFinished();
 
     void wiringReady();
     void contractorInfoReady();
-    void settingsLoaded();
 
     //! Settings data
     void settingsReady(QVariantMap settings);
@@ -56,13 +59,10 @@ signals:
     //! Parse non-settings data, to update immediately
     void appDataReady(QVariantMap data);
 
-    void autoModeSettingsReady(QVariantMap settings, bool isValid);
+    void autoModeSettingsReady(const QVariantMap& settings, bool isValid);
+    void autoModeSettingsFetched();
     void messagesLoaded();
     void requestJobDone();
-
-    //! Received settings that are invalid and do not require updating the model.
-    //! But The request for settings (getSettings) retrieval was successful.
-    void invalidSettingsReceived();
 
     void alert(QString msg);
 
@@ -76,24 +76,20 @@ signals:
     void testModeStarted();
 
 protected:
-    QNetworkReply* sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
-    void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method);
     void processNetworkReply(QNetworkReply* reply) override;
 
 private:
     QByteArray preparePacket(QString className, QString method, QJsonArray params);
-    //! Used as a simple mutex to ensure only 1 getSettings and getAutoSettings requests
-    QMutex getSettingsMutex;
-    bool getSettingsRequested = false;
+    QNetworkRequest prepareApiRequest(const QString& endpoint, bool setAuth = true);
+    QNetworkReply* callGetApi(const QString& endpoint, ResponseCallback callback = nullptr, bool setAuth = true);
+    QNetworkReply* callPostApi(const QString& endpoint, const QByteArray &postData, ResponseCallback callback = nullptr);
 
 private:
-    /* Attributes
-     * ****************************************************************************************/
+    QHash <QString, ResponseCallback> mCallbacks;
     bool mHasClient;
     QString mSerialNumber;
     QDateTime mLastPushTime;
     QVariantMap mContractorInfo;
-
     cpuid_t mSystemUuid;
 };
 }

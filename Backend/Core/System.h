@@ -27,6 +27,7 @@ class System : public NetworkWorker
     Q_PROPERTY(QString systemUID              READ systemUID               NOTIFY systemUIDChanged FINAL)
     Q_PROPERTY(QString backdoorLog            READ backdoorLog             NOTIFY backdoorLogChanged FINAL)
 
+    Q_PROPERTY(bool areSettingsFetched  READ areSettingsFetched   NOTIFY areSettingsFetchedChanged FINAL)
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
@@ -40,7 +41,7 @@ class System : public NetworkWorker
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
-    QML_ELEMENT
+    QML_ELEMENT   
 
 public:
     /* Public Constructors & Destructor
@@ -63,23 +64,16 @@ public:
     //! Reset device by exiting app and disabling service
     Q_INVOKABLE void stopDevice();
 
-    Q_INVOKABLE bool fetchSettings();
+    Q_INVOKABLE void fetchSettings();
+
+    bool hasClient() const;
+    bool areSettingsFetched() const;
 
     //! Get serial number from server
-    std::pair<std::string, bool> getSN(cpuid_t accessUid);
-
-    //! Get serial number from server, call from QML and return serial number
-    //! Some signals are block in this function.
-    Q_INVOKABLE QString getSN_QML(QString accessUid);
-
-    //! Get update
-    //! todo: process response packet
-    //! TEMP: "022"
-    bool getUpdate(QString softwareVersion = "022");
+    Q_INVOKABLE void fetchSerialNumber(cpuid_t accessUid);
 
     //! Send request job to web server
     void requestJob(QString type);
-
 
     //! Start the partilally update
     //! if the version is empty, partialUpdate start to install the latest version
@@ -105,7 +99,8 @@ public:
     bool canFetchServer();
 
     //! Get Contractor Information
-    QVariantMap getContractorInfo();
+    QVariantMap getContractorInfo() const;
+    void fetchContractorInfo();
 
     //! Getters
     QStringList availableVersions();
@@ -195,8 +190,8 @@ public:
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
-protected slots:  
-    void onSnReady();
+protected slots:
+    void onSerialNumberReady();
     void createLogDirectoryOnServer();
 
 protected:
@@ -204,11 +199,12 @@ protected:
 
 signals:
     void snReady();
-
+    void areSettingsFetchedChanged(bool success);
+    void contractorInfoReady();
     void settingsReady(QVariantMap settings);
     void appDataReady(QVariantMap settings);
 
-    void autoModeSettingsReady(QVariantMap settings, bool isValid);
+    void autoModeSettingsReady(const QVariantMap& settings, bool isValid);
     void pushFailed();
 
     void latestVersionChanged();
@@ -297,6 +293,7 @@ private:
 private:
     Sync *mSync;
 
+    bool mAreSettingsFetched;
     QJsonObject mUpdateJsonObject;
 
     QByteArray m_expectedUpdateChecksum;

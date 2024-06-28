@@ -40,10 +40,11 @@ int DeviceAPI::checkSN()
     }
 
     // can take some time in the initial usage, but not blocking ui as the WiFi is not connected for sure
-    auto sn_config = m_system->getSN(_uid);
-    if (!sn_config.second) {
+    m_system->fetchSerialNumber(_uid);
+    auto serialNumber = m_system->serialNumber();
+    if (!m_system->hasClient()) {
 
-        qWarning() << "serial number(SN) with false has_client, SN: " << sn_config.first.c_str();
+        qWarning() << "serial number(SN) with false has_client, SN: " << serialNumber;
 
         // Staring first time setup
         m_hardware->setDefaultValues(_uid);
@@ -51,12 +52,12 @@ int DeviceAPI::checkSN()
         return 2;
     }
 
-    TRACE << "serial number : " << QString::fromStdString(sn_config.first);
+    TRACE << "serial number : " << serialNumber;
 
     // staring normally, but defaults not set
     m_timing.setDefaultValues();
     m_currentStage.timestamp = NUVE::current_timestamp();
-    m_deviceConfig.serial_number = sn_config.first;
+    m_deviceConfig.serial_number = serialNumber.toStdString();
     m_deviceConfig.start_mode = 1;
     m_deviceConfig.save();
     return 1;

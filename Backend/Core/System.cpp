@@ -85,15 +85,21 @@ bool isVersionNewer(const QString& version1, const QString& version2) {
 NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     : NetworkWorker(parent)
     , mSync(sync)
+    , mAreSettingsFetched(false)
     , mUpdateAvailable (false)
     , mHasForceUpdate(false)
     , mIsInitialSetup(false)
     , mTestMode(false)
-    , mIsNightModeRunning(false)
+    , mIsNightModeRunning(false)   
 {
     mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
+    connect(mSync, &NUVE::Sync::settingsFetched, this, [this](bool success) {
+        mAreSettingsFetched = success;
+        emit areSettingsFetchedChanged(success);
+    });
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
+    connect(mSync, &NUVE::Sync::contractorInfoReady, this, &NUVE::System::contractorInfoReady);
 
     connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
             setCanFetchServer(true);
@@ -128,11 +134,15 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     if (oldFormatDate.isValid())
         mLastInstalledUpdateDate = oldFormatDate.toString("dd MMM yyyy");
 
-    connect(mSync, &NUVE::Sync::snReady, this, &NUVE::System::onSnReady);
+    connect(mSync, &NUVE::Sync::serialNumberReady, this, &NUVE::System::onSerialNumberReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
     connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
-    connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, &NUVE::System::autoModeSettingsReady);
+
+    connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, [this](const QVariantMap& settings, bool isValid) {
+        setProperty("hasFetchSuccessOnce", true);
+        emit autoModeSettingsReady(settings, isValid);
+    });
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
     connect(mSync, &NUVE::Sync::testModeStarted, this, &NUVE::System::testModeStarted);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
@@ -209,12 +219,14 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     }
 
     if (!serialNumber().isEmpty())
-        onSnReady();
+        onSerialNumberReady();
 }
 
 NUVE::System::~System()
 {
 }
+
+bool NUVE::System::areSettingsFetched() const {return mAreSettingsFetched;}
 
 void NUVE::System::startFetchActiveTimer()
 {
@@ -504,33 +516,15 @@ void NUVE::System::setUpdateAvailable(bool updateAvailable) {
     emit updateAvailableChanged();
 }
 
-std::pair<std::string, bool> NUVE::System::getSN(NUVE::cpuid_t accessUid)
+bool NUVE::System::hasClient() const {return mSync->hasClient();}
+
+void NUVE::System::fetchSerialNumber(NUVE::cpuid_t accessUid)
 {
-    auto response = mSync->getSN(accessUid);
-    if (response.second)
+    mSync->fetchSerialNumber(accessUid);
+
+    if (mSync->hasClient()) {
         setUID(accessUid);
-    return response;
-}
-
-QString NUVE::System::getSN_QML(QString accessUid)
-{
-    auto response = mSync->getSN(accessUid.toStdString(), false);
-    if (response.second)
-        setUID(accessUid.toStdString());
-
-    return QString::fromStdString(response.first);
-}
-
-bool NUVE::System::getUpdate(QString softwareVersion)
-{
-    if (mCanFetchServer) {
-        if (mSync->getSettings()){
-            setProperty("hasFetchSuccessOnce", true);
-            return true;
-        }
     }
-
-    return false;
 }
 
 void NUVE::System::getUpdateInformation(bool notifyUser) {
@@ -627,8 +621,13 @@ bool NUVE::System::canFetchServer()
     return mCanFetchServer;
 }
 
-QVariantMap NUVE::System::getContractorInfo() {
+QVariantMap NUVE::System::getContractorInfo() const
+{
     return mSync->getContractorInfo();
+}
+
+void NUVE::System::fetchContractorInfo() {
+    mSync->fetchContractorInfo();
 }
 
 QStringList NUVE::System::availableVersions()
@@ -665,7 +664,7 @@ QString NUVE::System::lastInstalledUpdateDate()
 
 QString NUVE::System::serialNumber()
 {
-    return QString::fromStdString(mSync->getSN().first);
+    return mSync->getSerialNumber();
 }
 
 QString NUVE::System::backdoorLog()
@@ -710,6 +709,7 @@ void NUVE::System::ForgetDevice()
 {
     mLastInstalledUpdateDate = {};
     mIsManualUpdate = false;
+    mAreSettingsFetched = false;
 
     QSettings settings;
     settings.setValue(m_updateOnStartKey, false);
@@ -1173,7 +1173,7 @@ void NUVE::System::processNetworkReply(QNetworkReply* reply)
     }
 }
 
-void NUVE::System::onSnReady()
+void NUVE::System::onSerialNumberReady()
 {
     //! Get update information when Serial number is ready.
     getUpdateInformation(true);
@@ -1469,9 +1469,11 @@ void NUVE::System::stopDevice()
 #endif
 }
 
-bool NUVE::System::fetchSettings()
+void NUVE::System::fetchSettings()
 {
-    return getUpdate();
+    if (mCanFetchServer) {
+        mSync->fetchSettings();
+    }
 }
 
 QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
