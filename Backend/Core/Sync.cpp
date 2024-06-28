@@ -97,17 +97,22 @@ void Sync::processNetworkReply(QNetworkReply *reply)
     QJsonObject data;
 
     if (reply->error() != QNetworkReply::NoError) {
-        TRACE << "API ERROR (" << reply->url().url() << ") : " << reply->errorString();
+        TRACE << "API ERROR (" << endpoint << ") # code: "<< reply->error() << ", message: " << reply->errorString();
     }
     else {
         rawData = reply->readAll();
         if (reply->property("IsBinaryData").isValid() == false) {
             const QJsonObject jsonDocObj = QJsonDocument::fromJson(rawData).object();
+
+            if (reply->property("noContentLog").isValid() == false) {
+                TRACE << "API RESPONSE (" << endpoint << ") : " << jsonDocObj;
+            }
+
             if (jsonDocObj.contains("data")) {
                 data = jsonDocObj.value("data").toObject();
             }
             else {
-                TRACE << "API ERROR (" << reply->url().url() << ") : " << " Reponse contains no data object";
+                TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object";
             }
         }
     }
@@ -210,6 +215,7 @@ void Sync::fetchContractorInfo()
 
             if (data.isEmpty() || !brandValue.isString() || brandValue.toString().isEmpty()) {
                 TRACE << "Wrong contractor info fetched from server";
+                emit contractorInfoReady();
                 return;
             }
 
@@ -276,45 +282,45 @@ void Sync::fetchSettings()
                 TRACE << "Received settings corrupted: " + mSerialNumber;
             }
         }
-        else {
-            if (data.value("sn").toString() == mSerialNumber) {
-                auto dateString = data.value("setting").toObject().value("last_update");
-                TRACE << "cpp last_update:" << dateString;
-                QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
+        else if (data.value("sn").toString() == mSerialNumber) {
+            auto dateString = data.value("setting").toObject().value("last_update");
+            TRACE << "cpp last_update:" << dateString;
+            QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
 
-                if (dateTimeObject.isValid()) {
-                    // Use the dateTimeObject here with time information
-                    TRACE << "Date with time cpp set last_update: " << dateTimeObject
-                          << dateTimeObject.toString() << (mLastPushTime > dateTimeObject)
-                          << (mLastPushTime == dateTimeObject)
-                          << (mLastPushTime < dateTimeObject);
-                }
-                else {
-                    TRACE << "Invalid date format! cpp set last_update:";
-                }
-
-                if (!mLastPushTime.isNull() && (!dateTimeObject.isValid() || mLastPushTime >= dateTimeObject)) {
-                    TRACE << "Received settings has invalid date last_update: " + dateTimeObject.toString();
-
-                }
-                else {
-                    mLastPushTime = dateTimeObject;
-                    emit settingsReady(data.toVariantMap());
-                }
-
-                // Transmit Non-Configuration Data to UI and Update Model on Server
-                // Response
-                emit appDataReady(data.toVariantMap());
+            if (dateTimeObject.isValid()) {
+                // Use the dateTimeObject here with time information
+                TRACE << "Date with time cpp set last_update: " << dateTimeObject
+                      << dateTimeObject.toString() << (mLastPushTime > dateTimeObject)
+                      << (mLastPushTime == dateTimeObject)
+                      << (mLastPushTime < dateTimeObject);
             }
             else {
-                TRACE << "Received settings belong to another device: " + mSerialNumber + ", " + data.value("sn").toString();
+                TRACE << "Invalid date format! cpp set last_update:";
             }
+
+            if (!mLastPushTime.isNull() && (!dateTimeObject.isValid() || mLastPushTime >= dateTimeObject)) {
+                TRACE << "Received settings has invalid date last_update: " + dateTimeObject.toString();
+            }
+            else {
+                mLastPushTime = dateTimeObject;
+                emit settingsReady(data.toVariantMap());
+            }
+
+            // Transmit Non-Configuration Data to UI and Update Model on Server
+            // Response
+            emit appDataReady(data.toVariantMap());
+        }
+        else {
+            TRACE << "Received settings belong to another device: " + mSerialNumber + ", " + data.value("sn").toString();
         }
 
         fetchAutoModeSetings();
     };
 
-    callGetApi(cBaseUrl + QString("api/sync/getSettings?sn=%0").arg(mSerialNumber), callback);
+    auto reply = callGetApi(cBaseUrl + QString("api/sync/getSettings?sn=%0").arg(mSerialNumber), callback);
+    if (reply) {
+        reply->setProperty("noContentLog", true);
+    }
 }
 
 void Sync::fetchAutoModeSetings()
@@ -332,7 +338,7 @@ void Sync::fetchAutoModeSetings()
     callGetApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), callback);
 }
 
-void Sync::getMessages()
+void Sync::fetchMessages()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get messages!";
@@ -346,7 +352,7 @@ void Sync::getMessages()
     callGetApi(cBaseUrl + QString("api/sync/messages?sn=%0").arg(mSerialNumber), callback);
 }
 
-void Sync::getWirings(cpuid_t accessUid)
+void Sync::fetchWirings(cpuid_t accessUid)
 {
     auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &) {
         emit wiringReady();

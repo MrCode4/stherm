@@ -23,7 +23,7 @@ class System : public NetworkWorker
     Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY logVersionChanged FINAL)
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
-    Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY snReady FINAL)
+    Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY serialNumberReady FINAL)
     Q_PROPERTY(QString systemUID              READ systemUID               NOTIFY systemUIDChanged FINAL)
     Q_PROPERTY(QString backdoorLog            READ backdoorLog             NOTIFY backdoorLogChanged FINAL)
 
@@ -198,7 +198,7 @@ protected:
     void processNetworkReply(QNetworkReply* reply) override;
 
 signals:
-    void snReady();
+    void serialNumberReady();
     void areSettingsFetchedChanged(bool success);
     void contractorInfoReady();
     void settingsReady(QVariantMap settings);

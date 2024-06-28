@@ -1175,6 +1175,8 @@ void NUVE::System::processNetworkReply(QNetworkReply* reply)
 
 void NUVE::System::onSerialNumberReady()
 {
+    emit serialNumberReady();
+    
     //! Get update information when Serial number is ready.
     getUpdateInformation(true);
 }
