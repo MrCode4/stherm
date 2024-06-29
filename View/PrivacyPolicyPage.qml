@@ -17,6 +17,10 @@ BasePageView {
 
     property bool testMode: false
 
+    property System system: deviceController.deviceControllerCPP.system
+
+    property bool isPrivacyAccepted: false
+
 
     /* Object properties
      * ****************************************************************************************/
@@ -26,6 +30,9 @@ BasePageView {
     backButtonVisible: !testMode
 
     Component.onCompleted: {
+
+        isPrivacyAccepted: system.isPrivacyAccepted();
+
         //! Load privacy policy text
         privacyPolicyLabel.text = AppSpec.readFromFile(":/Stherm/Resources/privacyPolicy.md");
 
@@ -46,6 +53,8 @@ BasePageView {
         enabled: privacyPolicyChbox.checked
 
         onClicked: {
+            system.savePrivacyAcceptance(privacyPolicyChbox.checked);
+
             //! Load next page
             if (root.StackView.view) {
                 if (testMode) {
@@ -184,11 +193,13 @@ BasePageView {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
 
-        enabled: privacyFlick.isRead && termsflick.isRead
+        enabled: isPrivacyAccepted || (privacyFlick.isRead && termsflick.isRead)
         CheckBox {
             id: privacyPolicyChbox
             Layout.leftMargin: -leftPadding
             focusPolicy: Qt.TabFocus
+
+            checked: isPrivacyAccepted
         }
 
         Label {

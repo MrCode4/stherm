@@ -20,6 +20,8 @@ const QString m_backdoorUpdate   = QString("backdoorUpdate");
 const QString m_updateFromServer= QString("UpdateFromServer");
 const QString m_backdoorFromServer = QString("BackdoorFromServer");
 
+const QString m_privacyConditionAccepted = QString("privacyConditionAccepted");
+
 const QString m_checkInternetConnection = QString("checkInternetConnection");
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
@@ -615,6 +617,18 @@ void NUVE::System::exitManualMode()
     mIsManualUpdate = false;
 
     checkPartialUpdate(false, true);
+}
+
+void NUVE::System::savePrivacyAcceptance(bool accepted)
+{
+    QSettings settings;
+    settings.setValue(m_privacyConditionAccepted, accepted);
+}
+
+bool NUVE::System::isPrivacyAccepted()
+{
+    QSettings settings;
+    return settings.value(m_privacyConditionAccepted).toBool();
 }
 
 void NUVE::System::setCanFetchServer(bool canFetch)
@@ -1548,3 +1562,5 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
 
     return true;
 }
+
+
