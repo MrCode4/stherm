@@ -166,6 +166,7 @@ public:
         Alert_temperature_not_reach,
         Alert_Light_High,
         Alert_Light_Low,
+        Alert_Efficiency_Issue,
         NO_ALlert
     };
     Q_ENUM(AlertTypes)

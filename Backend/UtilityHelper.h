@@ -398,6 +398,9 @@ static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
     case AppSpecCPP::Alert_Light_Low:
         return QString("The light sensor stops working or works not properly providing not normal data");
 
+    case AppSpecCPP::Alert_Efficiency_Issue:
+        return QString("**System Efficiency Issue:**/n The system is unable to reach the set temperature.");
+
     default:
         return QString();
     }

@@ -365,6 +365,12 @@ QtObject {
 
             } break;
 
+            case AppSpec.Alert_Efficiency_Issue: {
+                messageType = Message.Type.SystemAlert;
+                retriggerInterval = weeklyAlertInterval;
+
+            } break;
+
             default:
                 break;
             }
