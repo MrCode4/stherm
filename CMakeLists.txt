@@ -134,6 +134,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/SemiCircleSliderDoubleHandle.qml
         UiCore/Components/Toast.qml
         UiCore/Components/RoniaTumbler.qml
+        UiCore/Components/ExpandableItem.qml
 
 
         # Views and Widgets
@@ -189,6 +190,7 @@ qt6_add_qml_module(appStherm
         View/ContactContractorPage.qml
         View/NightModePage.qml
         View/BackdoorUpdatePage.qml
+        View/PrivacyPolicyPage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
