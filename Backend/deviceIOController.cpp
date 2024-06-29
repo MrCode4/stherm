@@ -1424,7 +1424,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
     // Manage light alerts
     if (luminosity < m_p->throlds_aq.light_low) {
-        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 24 * 60 * 60 * 1000) {
+        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 10 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_Low,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low));
             m_LightAlertET.restart();
@@ -1436,7 +1436,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
         }
 
     } else if (luminosity > m_p->throlds_aq.light_high) {
-        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 24 * 60 * 60 * 1000) {
+        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 10 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_High,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High));
             m_LightAlertET.restart();

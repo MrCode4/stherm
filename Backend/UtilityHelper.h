@@ -270,7 +270,7 @@ struct AQ_TH_PR_thld {
         fan_high      = 3800 * 1.2;
         fan_low       = 3800 * 0.8;
         light_low     = 0;
-        light_high   = 1000000;
+        light_high   = 25000;
 
         Temperature_Working_Range_High = 125;
         Temperature_Working_Range_Low   = -40;
@@ -396,10 +396,10 @@ static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
 
     case AppSpecCPP::Alert_Light_High:
     case AppSpecCPP::Alert_Light_Low:
-        return QString("The light sensor stops working or works not properly providing not normal data");
+        return QString("Ambient sensor malfunction.\nPlease contact your contractor.");
 
     case AppSpecCPP::Alert_Efficiency_Issue:
-        return QString("**System Efficiency Issue:**/n The system is unable to reach the set temperature.");
+        return QString("**System Efficiency Issue:**\nThe system is unable to reach the set temperature.");
 
     default:
         return QString();

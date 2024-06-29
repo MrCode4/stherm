@@ -360,8 +360,9 @@ QtObject {
 
             case AppSpec.Alert_Light_High:
             case AppSpec.Alert_Light_Low: {
-                //! silented for now!
-                return;
+                // TODO: Turn off the adaptive brightness.
+                messageType = Message.Type.SystemAlert;
+                retriggerInterval = weeklyAlertInterval;
 
             } break;
 
