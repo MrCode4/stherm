@@ -20,6 +20,10 @@
 // Minimum packet length
 #define PacketMinLength 5
 
+double UtilityHelper::toFahrenheit(double celsius) {
+    return celsius * 9 / 5 + 32.0;
+}
+
 bool UtilityHelper::configurePins(int gpio)
 {
     TRACE << gpio;
@@ -504,6 +508,10 @@ std::vector<std::pair<std::string, int> > STHERM::RelayConfigs::changeStepsSorte
     transitions.push_back({"w2", factor(w2, newState.w2, 4)});
     transitions.push_back({"w3", factor(w3, newState.w3, 5)});
 
+    transitions.push_back({"acc2", factor(acc2, newState.acc2, 6)});
+    transitions.push_back({"acc1p", factor(acc1p, newState.acc1p, 7)});
+    transitions.push_back({"acc1n", factor(acc1n, newState.acc1n, 8)});
+
     std::sort(transitions.begin(), transitions.end(), [&](const std::pair<std::string, int> &a, const std::pair<std::string, int> &b) {
         return a.second < b.second;
     });
@@ -512,6 +520,8 @@ std::vector<std::pair<std::string, int> > STHERM::RelayConfigs::changeStepsSorte
 }
 
 QString STHERM::RelayConfigs::printStr(){
-    return QString("o/b:%0, g:%1, y1:%2, y2:%3, w1:%4, w2:%5, w3:%6").arg(printModeStr(o_b),printModeStr(g),printModeStr(y1),printModeStr(y2),printModeStr(w1),printModeStr(w2),printModeStr(w3));
+    return QString("o/b:%0, g:%1, y1:%2, y2:%3, w1:%4, w2:%5, w3:%6, acc2:%7, acc1n:%8, acc1p:%9").
+        arg(printModeStr(o_b),printModeStr(g),printModeStr(y1),printModeStr(y2),printModeStr(w1),printModeStr(w2),printModeStr(w3),
+            printModeStr(acc2), printModeStr(acc1n), printModeStr(acc1p));
 }
 

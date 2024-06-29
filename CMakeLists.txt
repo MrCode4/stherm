@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.9.3 LANGUAGES CXX)
+project(Stherm VERSION 0.9.3.3 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -303,6 +303,12 @@ qt6_add_qml_module(appStherm
         Backend/Core/Sync.cpp
         Backend/Core/NetworkWorker.h
         Backend/Core/NetworkWorker.cpp
+        Backend/Core/HumidityScheme.cpp
+        Backend/Core/HumidityScheme.h
+        Backend/Core/BaseScheme.h
+        Backend/Core/BaseScheme.cpp
+        Backend/Core/SchemeDataProvider.h
+        Backend/Core/SchemeDataProvider.cpp
         Backend/LogHelper.h
 
         Backend/DeviceAPI.h

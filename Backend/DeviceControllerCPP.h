@@ -8,6 +8,7 @@
 #include "DeviceAPI.h"
 #include "deviceIOController.h"
 #include "Core/Scheme.h"
+#include "HumidityScheme.h"
 #include "Device/SystemSetup.h"
 
 class ScheduleCPP;
@@ -253,7 +254,16 @@ private:
     DeviceAPI *_deviceAPI;
 
     SystemSetup *mSystemSetup;
+
+    //! Create a shared instance of SchemeDataProvider to
+    //! provide data for scheme and HumidittScheme
+    QSharedPointer<SchemeDataProvider> mSchemeDataProvider;
+
+    //! Object to manage temperature control
     Scheme      *m_scheme;
+
+    //! Object to manage humidity control
+    HumidityScheme *m_HumidityScheme;
 
     NUVE::System *m_system;
 
