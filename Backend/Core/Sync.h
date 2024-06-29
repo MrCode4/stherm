@@ -40,7 +40,12 @@ public:
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
 signals:
+    //! Send when SN is ready !!!
     void snReady();
+
+    //! Use snFinished signal to exit from sn loop
+    void snFinished();
+
     void wiringReady();
     void contractorInfoReady();
     void settingsLoaded();

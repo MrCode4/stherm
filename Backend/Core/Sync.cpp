@@ -59,7 +59,7 @@ std::pair<std::string, bool> Sync::getSN(cpuid_t accessUid, bool notifyUser)
         return getSN();
 
     QEventLoop loop;
-    connect(this, &NUVE::Sync::snReady, &loop, &QEventLoop::quit);
+    connect(this, &NUVE::Sync::snFinished, &loop, &QEventLoop::quit);
 
     loop.exec();
 
@@ -345,17 +345,20 @@ void Sync::processNetworkReply(QNetworkReply* reply)
 
                     mSerialNumber = sn;
 
-
                     auto notifyUser = reply->property(m_notifyGetSN).toBool();
                     if (mSerialNumber.isEmpty() && notifyUser)
                         emit testModeStarted();
+
+                    // Send sn ready signal to get software update.
+                    if (!mSerialNumber.isEmpty())
+                        Q_EMIT snReady();
 
                     // Save the serial number in settings
                     QSettings setting;
                     setting.setValue(m_HasClientSetting, mHasClient);
                     setting.setValue(m_SerialNumberSetting, mSerialNumber);
 
-                    Q_EMIT snReady();
+                    Q_EMIT snFinished();
                 } else {
                     errorString = "No serial number has returned by server";
                 }
@@ -476,7 +479,7 @@ void Sync::processNetworkReply(QNetworkReply* reply)
 
     if (!errorString.isEmpty()){
         if (method == m_getSN) {
-            Q_EMIT snReady();
+            Q_EMIT snFinished();
 
             auto notifyUser = reply->property(m_notifyGetSN).toBool();
             if (notifyUser && reply->error() == QNetworkReply::ContentNotFoundError)

@@ -34,6 +34,8 @@ Item {
             wifiInternetConnectionAlert.message.message = message;
             wifiInternetConnectionAlert.message.datetime = dateTime;
 
+            console.log("Show wifi Internet Alert: ", message);
+
             if (wifiInternetConnectionAlert.visible)
                 return;
 
@@ -47,6 +49,8 @@ Item {
         function onCloseWifiInternetAlert() {
             if (wifiInternetConnectionAlert.visible)
                 wifiInternetConnectionAlert.close();
+
+            console.log("Close wifi Internet Alert:", wifiInternetConnectionAlert.message.message);
 
             //! Remove from messages shown
             messageController.removeShowingMessage(wifiInternetConnectionAlert.message);

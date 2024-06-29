@@ -71,7 +71,11 @@ QtObject {
         }
     }
 
-    Component.onCompleted: device.messagesChanged()
+    Component.onCompleted: {
+        // Filter out null/undefined messages from file data.
+        device.messages = device.messages.filter(message => message !== null && message !== undefined);
+        device.messagesChanged()
+    }
 
     /* Signals
      * ****************************************************************************************/
@@ -443,7 +447,7 @@ QtObject {
         lastRead[message.message] = now;
     }
 
-    //! Check unread messages and Update the uisseion parameters
+    //! Check unread messages and Update the uiSession parameters (hasUnreadAlerts and hasUnreadMessages)
     function checkUnreadMessages() {
         existUnreadAlerts();
         existUnreadMessages();
@@ -463,7 +467,7 @@ QtObject {
 
         uiSession.hasUnreadAlerts = msgAlertIndex > -1;
 
-        // Wifi alerts (and maybe another types in future) are not yet supported in the model.
+        // Wifi alerts (and maybe another types in future) which not yet supported in the model.
         if (!uiSession.hasUnreadAlerts) {
             msgAlertIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Alert ||
                                                                            element.type === Message.Type.SystemAlert ||
@@ -486,7 +490,7 @@ QtObject {
         uiSession.hasUnreadMessages = msgMessageIndex > -1;
 
         //! To manage the messages that not exist in the model
-        if (! uiSession.hasUnreadMessages) {
+        if (!uiSession.hasUnreadMessages) {
             msgMessageIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Notification));
             uiSession.hasUnreadMessages = msgMessageIndex > -1;
         }

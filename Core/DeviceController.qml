@@ -867,7 +867,6 @@ I_DeviceController {
     }
 
     function setMessagesServer(messages: var) {
-        let messagesModel = device.messages;
         console.log("device.messages: ", device.messages.length)
 
         // Send messages to message controller.

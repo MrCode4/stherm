@@ -556,7 +556,12 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 
     mUpdateTimer.start();
     if (!mIsNightModeRunning) {
-        // When is initial setup, skip update Information as we want to wait until its complete!
+
+        // In initial setup process should not trigger the getUpdateInformation function immediately.
+        // Instead, we wait until the serial number of the device is available.
+        // Once the serial number is ready, the onSnReady signal is emitted,
+        // prompting the call to getUpdateInformation.
+        // This ensures information is updated only after the device is fully initialized.
         if (!mIsInitialSetup)
             getUpdateInformation(true);
 
@@ -1170,8 +1175,6 @@ void NUVE::System::processNetworkReply(QNetworkReply* reply)
 
 void NUVE::System::onSnReady()
 {
-    emit snReady();
-    
     //! Get update information when Serial number is ready.
     getUpdateInformation(true);
 }
