@@ -143,7 +143,7 @@ void NmCli::getProfileInfoByName(const QString& connName, std::function<void (co
         connName,
     };
 
-    auto onFinished = [&] (QProcess* process) {
+    auto onFinished = [this, connName, callback] (QProcess* process) {
         if (process->exitStatus() == QProcess::NormalExit && process->exitCode() == 0) {
             QString ssid = process->readLine();
             ssid.remove(ssid.length() - 1, 1); //! Remove '\n'
@@ -175,7 +175,7 @@ QString NmCli::getConnectedWifiBssid()
         NC_ARG_WIFI,
     };
 
-    auto onFinished = [&](QProcess* pr) {
+    auto onFinished = [&wifiName](QProcess* pr) {
         if (pr->exitStatus() == QProcess::NormalExit && !pr->exitCode()) {
             QByteArray line = pr->readLine();
             while (!line.isEmpty()) {
@@ -208,7 +208,7 @@ bool NmCli::hasWifiProfile(const QString& ssid)
         ssid
     };
 
-    auto onFinished = [&](QProcess* process) {
+    auto onFinished = [&hasProfile](QProcess* process) {
         hasProfile = process->exitStatus() == QProcess::NormalExit && process->exitCode() == 0;
     };
 

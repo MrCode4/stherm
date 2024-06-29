@@ -88,7 +88,7 @@ void NmcliInterface::refreshWifis(bool rescan)
     setBusyRefreshing(true);
 
     //! First update bssid to correct ssid map using iw
-    mCliRefresh->execAsync("iw", { "dev", mNmcliObserver->wifiDevice(), "scan" }, [&] (QProcess* process) {
+    mCliRefresh->execAsync("iw", { "dev", mNmcliObserver->wifiDevice(), "scan" }, [this] (QProcess* process) {
         parseBssidToCorrectSsidMap(process);
     });
 }
@@ -124,7 +124,7 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
 
     setBusy(true);
 
-    mCliWifi->connectToSavedWifi(wifi->ssid(), password, [&] (QProcess*) {
+    mCliWifi->connectToSavedWifi(wifi->ssid(), password, [this] (QProcess*) {
         setBusy(false);
     });
 
@@ -140,7 +140,7 @@ void NmcliInterface::disconnectFromWifi(WifiInfo* wifi)
     setBusy(true);
 
     //! Perform disconnect command
-    mCliWifi->disconnectFromWifi(wifi->ssid(), [&] (QProcess*) {
+    mCliWifi->disconnectFromWifi(wifi->ssid(), [this] (QProcess*) {
         setBusy(false);
     });
 }
@@ -158,7 +158,7 @@ void NmcliInterface::forgetWifi(WifiInfo* wifi)
 
     setBusy(true);
     //! Perform disconnect command
-    mCliWifi->forgetWifi(wifi->ssid(), [&] (QProcess*) {
+    mCliWifi->forgetWifi(wifi->ssid(), [this] (QProcess*) {
         setBusy(false);
     });
 }
@@ -172,7 +172,7 @@ void NmcliInterface::turnWifiDeviceOn()
     setBusy(true);
 
     //! Perform connection command
-    mCliWifi->turnWifiDeviceOn([&] (QProcess*) {
+    mCliWifi->turnWifiDeviceOn([this] (QProcess*) {
         setBusy(false);
     });
 }
@@ -186,7 +186,7 @@ void NmcliInterface::turnWifiDeviceOff()
     setBusy(true);
 
     //! Perform connection command
-    mCliWifi->turnWifiDeviceOff([&] (QProcess*) {
+    mCliWifi->turnWifiDeviceOff([this] (QProcess*) {
         setBusy(false);
     });
 }
@@ -206,13 +206,13 @@ void NmcliInterface::addConnection(const QString& name,
     setBusy(true);
 
     //! Connect to this new connection if successfully added
-    auto onFinished = [&] (QProcess* process) {
+    auto onFinished = [this, name, ssid, security] (QProcess* process) {
         if (process->exitStatus() == QProcess::NormalExit && process->exitCode() == 0) {
             WifiInfo* newWifi = new WifiInfo(false, false, ssid, "", 100, security);
             newWifi->setIsConnecting(true);
             mWifis.push_back(newWifi);
             emit wifisChanged();
-            mCliWifi->connectToSavedWifi(name, "", [&] (QProcess*) {
+            mCliWifi->connectToSavedWifi(name, "", [this] (QProcess*) {
                 setBusy(false);
             });
         } else {
@@ -592,7 +592,7 @@ void NmcliInterface::parseBssidToCorrectSsidMap(QProcess* process)
 void NmcliInterface::doRefreshWifi()
 {
     if (busyRefreshing()) {
-        mCliRefresh->refreshWifi(mRescanInRefresh, [&] (QProcess* process) {
+        mCliRefresh->refreshWifi(mRescanInRefresh, [this] (QProcess* process) {
             onWifiListRefreshFinished(process);
         });
     }
@@ -605,7 +605,7 @@ void NmcliInterface::scanConProfiles()
     }
     mBusyUpdatingConProfiles = true;
 
-    mCliProfiles->scanConnectionProfiles([&](QProcess* process) {
+    mCliProfiles->scanConnectionProfiles([this](QProcess* process) {
         updateConProfilesList(process);
     });
 }
@@ -635,7 +635,7 @@ void NmcliInterface::updateConProfilesList(QProcess* process)
 
             if (wi == conProfilesBak.end()) {
                 //! Get profile info of this connection
-                mCliCommon->getProfileInfoByName(conName, [&] (const QString& ssid, const QString& seenBssids) {
+                mCliCommon->getProfileInfoByName(conName, [this] (const QString& ssid, const QString& seenBssids) {
                     if (!ssid.isEmpty() || !seenBssids.isEmpty()) {
                         mConProfiles.emplace_back(ssid, seenBssids);
                     }
@@ -662,7 +662,7 @@ void NmcliInterface::initializeConProfilesWatcher()
 
     mConProfilesWatcher->addPath("/etc/NetworkManager/system-connections");
 
-    connect(mConProfilesWatcher, &QFileSystemWatcher::directoryChanged, this, [&](const QString& path) {
+    connect(mConProfilesWatcher, &QFileSystemWatcher::directoryChanged, this, [this](const QString& path) {
         scanConProfiles();
     });
 }

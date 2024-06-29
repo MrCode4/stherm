@@ -9,7 +9,7 @@ NmcliObserver::NmcliObserver(QObject *parent)
     , mCliMonitor { new NmCli(this) }
 {
     //! This lambda gets wifi device name and starts monitoring
-    auto startMonitor = [&](QProcess* process) {
+    auto startMonitor = [this](QProcess* process) {
         if (process->exitStatus() == QProcess::NormalExit && process->exitCode() == 0) {
             //! Get wifi device name
             QByteArray line = process->readLine();
@@ -24,7 +24,7 @@ NmcliObserver::NmcliObserver(QObject *parent)
                 //! Start monitoring
                 NC_DEBUG << "Network monitoring started";
 
-                mCliMonitor->startMonitoring([&](QProcess* process) {
+                mCliMonitor->startMonitoring([this](QProcess* process) {
                     connect(process, &QProcess::readyReadStandardOutput, this,
                             &NmcliObserver::onMonitorProcessReadReady);
                 });
