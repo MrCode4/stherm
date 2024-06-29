@@ -94,31 +94,45 @@ QVariantMap Sync::getContractorInfo()
 
 bool Sync::getSettings()
 {
-    if (mSerialNumber.isEmpty()) {
-        qWarning()   << "Sn is not ready! can not get settings!";
+    QMutexLocker locker(&getSettingsMutex);
+    bool returnval = false;
+
+    if (getSettingsRequested) {
+        TRACE_CHECK(true) << "skipping getSettings request due to previously active one";
         return false;
     }
+    getSettingsRequested = true;
+    locker.unlock();    // Let waiting threads exit
 
-    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSettings?sn=%0").arg(mSerialNumber)), m_getSettings);
+    if (mSerialNumber.isEmpty()) {
+        qWarning()   << "Sn is not ready! can not get settings!";
+    }
+    else {
+        sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSettings?sn=%0").arg(mSerialNumber)), m_getSettings);
 
-    QEventLoop loop;
-    connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit);
-    connect(this, &NUVE::Sync::settingsReady, &loop, [&loop] {
-        loop.setProperty("success", true);
-        loop.quit();
-    });
+        QEventLoop loop;
+        connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit);
+        connect(this, &NUVE::Sync::settingsReady, &loop, [&loop] {
+            loop.setProperty("success", true);
+            loop.quit();
+        });
 
-    // Quit from loop and change success to 'true'
-    connect(this, &NUVE::Sync::invalidSettingsReceived, &loop, [&loop] {
-        loop.setProperty("success", true);
-        loop.quit();
-    });
+        // Quit from loop and change success to 'true'
+        connect(this, &NUVE::Sync::invalidSettingsReceived, &loop, [&loop] {
+            loop.setProperty("success", true);
+            loop.quit();
+        });
 
-    loop.exec(QEventLoop::ExcludeSocketNotifiers);
+        loop.exec(QEventLoop::ExcludeSocketNotifiers);
 
-    getAutoModeSetings();
+        if (getAutoModeSetings()) {
+            returnval = loop.property("success").toBool();
+        }
+    }
 
-    return loop.property("success").toBool();
+    locker.relock();
+    getSettingsRequested = false;
+    return returnval;
 }
 
 bool Sync::getAutoModeSetings() {
