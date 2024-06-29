@@ -463,10 +463,10 @@ BasePageView {
         if (root.StackView.view) {
             nextPageTimer.once = true;
             if (system.serialNumber.length > 0) {
-                mainStackView.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
-                                       "uiSession": Qt.binding(() => uiSession),
-                                       "initialSetup": root.initialSetup
-                                   });
+                root.StackView.view.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
+                                             "uiSession": Qt.binding(() => uiSession),
+                                             "initialSetup": root.initialSetup
+                                         });
             }
         }
     }

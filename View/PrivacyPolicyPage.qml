@@ -208,7 +208,7 @@ BasePageView {
             font.pointSize: Application.font.pointSize * 0.85
             textFormat: Text.StyledText
             linkColor: Material.foreground
-            verticalAlignment: "AlignVCenter"
+            verticalAlignment: Text.AlignVCenter
             text: '<p>I agree to <b><a>Privacy Policy</a></b> and <b><a>Terms of use</a></b>.</p>'
 
             TapHandler {

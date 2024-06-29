@@ -1562,5 +1562,3 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
 
     return true;
 }
-
-
