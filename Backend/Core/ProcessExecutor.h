@@ -15,7 +15,9 @@ class ProcessExecutor : public QObject {
     Q_OBJECT
 
 public:
+    // do not delete the pointer! its owned by the main caller
     using InitCallback = std::function<void (QProcess* process)>;
+    // do not delete the pointer! its owned by the main caller
     using ExitedCallback = std::function<void (QProcess* process)>;
     explicit ProcessExecutor(QObject* parent = nullptr) : QObject(parent) {}
 
