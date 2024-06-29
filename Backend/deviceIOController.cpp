@@ -38,6 +38,7 @@ public:
     bool wait_for_wiring_check = true;
     bool wiring_check_f = false;
     bool wait_relay_response = false;
+    bool mIsNightModeRunning = false;
 
     STHERM::SIOPacket SensorPacketBA;
     STHERM::SIOPacket TOFPacketBA;
@@ -1394,7 +1395,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
     }
 
     // Manage fan alerts
-    if (fanSpeed > m_p->throlds_aq.fan_high) {
+   /* if (fanSpeed > m_p->throlds_aq.fan_high) {
         if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_High,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High));
@@ -1406,7 +1407,10 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         }
 
-    } else if (fanSpeed < m_p->throlds_aq.fan_low) {
+    } else */
+    // If the RPM is below the Predefined threshold and
+    // the device is not in Quite mode.
+    if (!m_p->mIsNightModeRunning && fanSpeed < m_p->throlds_aq.fan_low) {
         if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_low,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low));
@@ -1658,4 +1662,11 @@ QString DeviceIOController::getNRF_HW() const
 double DeviceIOController::backlightFactor()
 {
     return m_backlightFactor;
+}
+
+void DeviceIOController::setNightModeRunning(const bool running) {
+    if (m_p->mIsNightModeRunning == running)
+        return;
+
+    m_p->mIsNightModeRunning = running;
 }

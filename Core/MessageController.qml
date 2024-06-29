@@ -29,6 +29,9 @@ QtObject {
     //! Weekly: Use in air condition
     readonly property int weeklyAlertInterval: 7 * 24 * 60 * 60 * 1000
 
+    //! 24 Hours: Used in fan alert
+    readonly property int dailyAlertInterval: 24 * 60 * 60 * 1000
+
     //! 6 Hours: Used in Temperature and humidity sensor
     readonly property int sixHoursAlertInterval: 6 * 60 * 60 * 1000
 
@@ -355,6 +358,7 @@ QtObject {
                 return;
 
                 messageType = Message.Type.SystemAlert;
+                retriggerInterval = dailyAlertInterval;
 
             } break;
 

@@ -268,7 +268,7 @@ struct AQ_TH_PR_thld {
         humidity_high = 80;
         humidity_low  = 0;
         fan_high      = 3800 * 1.2;
-        fan_low       = 3800 * 0.8;
+        fan_low       = 700;
         light_low     = 0;
         light_high   = 25000;
 

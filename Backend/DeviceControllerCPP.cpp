@@ -390,6 +390,8 @@ void DeviceControllerCPP::nightModeControl(bool start)
 
     m_system->setNightModeRunning(start);
 
+    _deviceIO->setNightModeRunning(start);
+
     if (start) {
         mNightModeTimer.start();
 

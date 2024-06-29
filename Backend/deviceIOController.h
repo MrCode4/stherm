@@ -79,6 +79,7 @@ public:
 
     QString getTI_SW() const;
 
+    void setNightModeRunning(const bool running);
 
     //! Start TOF sensor reading
     void startTOFGpioHandler();
@@ -111,11 +112,9 @@ signals:
 
     void relaysUpdated(STHERM::RelayConfigs relays);
 
-    //! The system set to off when humidity or temperature sensors malfunction
-    void forceOffSystem();
-
-    //! Exit from Force off mode when the sensors work properly
-    void exitForceOffSystem();
+    //! The system set to off when humidity or temperature sensors malfunction, so send true
+    //! Exit from Force off mode when the sensors work properly, so send false
+    void forceOffSystem(bool forceOff = false);
 
 private slots:
     void wtdExec();
