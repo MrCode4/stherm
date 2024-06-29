@@ -386,6 +386,9 @@ qt6_add_qml_module(appStherm
         Images/Locations/other.svg
         Images/Locations/upstairs.svg
 
+        Resources/privacyPolicy.md
+        Resources/termOfUse.md
+
         # Update file
         update.sh
         update_fw_nrf.sh
