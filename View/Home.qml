@@ -338,9 +338,9 @@ Control {
             if (startMode === 0) {
                 uiSession.uiTestMode = true;
                 if (mainStackView)
-                    mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                    mainStackView.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
                                            "uiSession": Qt.binding(() => uiSession),
-                                           "backButtonVisible" : false
+                                           "testMode" : true
                                        });
 
             } else {
