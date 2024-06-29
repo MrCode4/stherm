@@ -175,9 +175,9 @@ QString NmCli::getConnectedWifiBssid()
         NC_ARG_WIFI,
     };
 
-    auto onFinished = [&wifiName](QProcess* pr) {
-        if (pr->exitStatus() == QProcess::NormalExit && !pr->exitCode()) {
-            QByteArray line = pr->readLine();
+    auto onFinished = [&wifiName](QProcess* process) {
+        if (process->exitStatus() == QProcess::NormalExit && !process->exitCode()) {
+            QByteArray line = process->readLine();
             while (!line.isEmpty()) {
                 if (line.startsWith("yes:")) {
                     QString bssid = line.sliced(QString("yes:").length());
@@ -185,10 +185,10 @@ QString NmCli::getConnectedWifiBssid()
                     wifiName = bssid;
                     return;
                 }
-                line = pr->readLine();
+                line = process->readLine();
             }
         } else {
-            qDebug() << "nmcli: pr error: " << pr->errorString();
+            qDebug() << "nmcli: pr error: " << process->errorString();
         }
     };
     execSync(NC_COMMAND, arg, onFinished, NC_WAIT_MSEC);
@@ -244,7 +244,7 @@ void NmCli::connectToSavedWifi(const QString& ssid, const QString& password, Exi
         execAsync(NC_COMMAND, args, callback);
     } else {
         //! Modify its password then connect as saved
-        auto onFinished = [&] (QProcess* process) {
+        auto onFinished = [this, ssid, callback] (QProcess* process) {
             if (process->exitStatus() == QProcess::NormalExit && process->exitCode() == 0) {
                 //! Perform connection command
                 const QStringList args({
