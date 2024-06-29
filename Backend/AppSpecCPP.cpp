@@ -96,7 +96,10 @@ QVariant AppSpecCPP::readFromFile(const QString& fileUrl)
 {
     QFile file(fileUrl);
     if (file.open(QFile::ReadOnly)) {
-        return file.readAll();
+        auto fileContent = file.readAll();
+        file.close();
+
+        return fileContent;
 
     } else {
         qWarning() << "Error in opening file " << fileUrl << ": " << file.errorString();

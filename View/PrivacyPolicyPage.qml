@@ -31,17 +31,25 @@ BasePageView {
 
     Component.onCompleted: {
 
-        isPrivacyAccepted: system.isPrivacyAccepted();
-
-        //! Load privacy policy text
-        privacyPolicyLabel.text = AppSpec.readFromFile(":/Stherm/Resources/privacyPolicy.md");
-
-        //! Load terms of usae text
-        termsUsageLabel.text = AppSpec.readFromFile(":/Stherm/Resources/termOfUse.md");
+        isPrivacyAccepted = system.isPrivacyAccepted();
     }
 
     /* Children
      * ****************************************************************************************/
+
+    Timer {
+        interval: 4500
+        running: true
+        repeat: false
+
+        onTriggered: {
+            //! Load privacy policy text
+            privacyPolicyLabel.text = AppSpec.readFromFile(":/Stherm/Resources/privacyPolicy.md");
+
+            //! Load terms of usae text
+            termsUsageLabel.text = AppSpec.readFromFile(":/Stherm/Resources/termOfUse.md");
+        }
+    }
 
     //! Next button (loads StartTestPage)
     ToolButton {
