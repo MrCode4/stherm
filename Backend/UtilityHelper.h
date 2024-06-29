@@ -263,9 +263,9 @@ struct AQ_TH_PR_thld {
         Tvoc_high     = 50;
         etoh_high     = 70;
         iaq_high      = 40;
-        temp_high     = 125;
-        temp_low      = -40;
-        humidity_high = 100;
+        temp_high     = 37.78;
+        temp_low      = 4.44;
+        humidity_high = 80;
         humidity_low  = 0;
         fan_high      = 3800 * 1.2;
         fan_low       = 3800 * 0.8;
@@ -279,8 +279,8 @@ struct AQ_TH_PR_thld {
     uint8_t Tvoc_high;       ///< TVOC threshold high (0.1 to 10+ mg/m^3)
     uint8_t etoh_high;       ///< ETOH threshold high (up to 20 ppm)
     uint8_t iaq_high;        ///< IAQ threshold high (1 to 5)
-    int8_t temp_high;        ///< Temperature threshold high (up to +127�C)
-    int8_t temp_low;         ///< Temperature threshold low (as low as -128�C)
+    double  temp_high;        ///< Temperature threshold high (up to +100 F)
+    double  temp_low;         ///< Temperature threshold low (as low as 40F)
     uint8_t humidity_high;   ///< Humidity threshold high (up to 100%)
     uint8_t humidity_low;    ///< Humidity threshold low (as low as 0%)
     uint16_t fan_high;
