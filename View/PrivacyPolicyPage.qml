@@ -201,7 +201,9 @@ BasePageView {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
 
-        enabled: isPrivacyAccepted || (privacyFlick.isRead && termsflick.isRead)
+        enabled: (privacyPolicyLabel.text.length > 0 && termsUsageLabel.text.length > 0) &&
+                 (isPrivacyAccepted || (privacyFlick.isRead && termsflick.isRead))
+
         CheckBox {
             id: privacyPolicyChbox
             Layout.leftMargin: -leftPadding
