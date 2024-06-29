@@ -5,6 +5,8 @@
 #include <QDebug>
 #include "LogHelper.h"
 
+#define LOG_PROC_EVENTS false
+
 int ProcessExecutor::waitLoop(QProcess* process, uint timeout) const
 {
     if (timeout <= 0) {
@@ -29,11 +31,11 @@ int ProcessExecutor::waitLoop(QProcess* process, uint timeout) const
 
 void ProcessExecutor::preExec(QProcess* process, const QString& command, const QStringList& args, const QString& logline)
 {
-    TRACE << "STARTING: " + logline;
+    TRACE_CHECK(LOG_PROC_EVENTS) << "STARTING: " + logline;
     mProcesses.append(process);
     process->setReadChannel(QProcess::StandardOutput);
     connect(process, &QProcess::started, this, [this, logline] () {
-        TRACE << "STARTED: " + logline;
+        TRACE_CHECK(LOG_PROC_EVENTS) << "STARTED: " + logline;
     });
     process->start(command, args);
 }
@@ -41,7 +43,7 @@ void ProcessExecutor::preExec(QProcess* process, const QString& command, const Q
 void ProcessExecutor::postExec(QProcess* process, ExitedCallback callback, const QString& logline)
 {
     mProcesses.removeOne(process);
-    TRACE << "FINISHED: " + logline;
+    TRACE_CHECK(LOG_PROC_EVENTS) << "FINISHED: " + logline;
     if (process->exitCode() != 0 || process->exitStatus() != QProcess::NormalExit) {
         TRACE << "ERROR: " + logline + " --> " << process->exitCode() << " / " << process->errorString();
     }
