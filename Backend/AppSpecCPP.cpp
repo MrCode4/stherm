@@ -1,5 +1,6 @@
 #include "AppSpecCPP.h"
 #include <QQmlEngine>
+#include <QFile>
 
 AppSpecCPP::AppSpecCPP(QObject *parent)
     : QObject{parent}
@@ -89,4 +90,17 @@ AppSpecCPP::AccessoriesWireType AppSpecCPP::accessoriesWireTypeToEnum(QString wt
     }
 
     return None;
+}
+
+QVariant AppSpecCPP::readFromFile(const QString& fileUrl)
+{
+    QFile file(fileUrl);
+    if (file.open(QFile::ReadOnly)) {
+        return file.readAll();
+
+    } else {
+        qWarning() << "Error in opening file " << fileUrl << ": " << file.errorString();
+    }
+
+    return QVariant();
 }
