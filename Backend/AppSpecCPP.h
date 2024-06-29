@@ -148,13 +148,13 @@ public:
  */
     enum AlertTypes
     {
-        Alert_temp_high = 1,// +127 max
-        Alert_temp_low, // -128 low
+        Alert_temp_high = 1,// +37.78 max
+        Alert_temp_low, // 4.44 low
         Alert_Tvoc_high, // 255 max (tvoc value range 0.1 to 10+ mg/m^3 value is divided by 10.0)
         Alert_etoh_high, //up to 20ppm
         Alert_iaq_high, //1 to 5
         Alert_iaq_low, //1 to 5
-        Alert_humidity_high,// up to 100%
+        Alert_humidity_high,// up to 80%
         Alert_humidity_low,//as low as 0%
         Alert_pressure_high, //up to 1200 hPa
         Alert_c02_high,//400 to 5000ppm

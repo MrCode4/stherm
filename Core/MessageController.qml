@@ -330,7 +330,12 @@ QtObject {
             case AppSpec.Alert_humidity_high:
             case AppSpec.Alert_humidity_low:
             case AppSpec.Alert_temp_low:
-            case AppSpec.Alert_temp_high:
+            case AppSpec.Alert_temp_high: {
+                messageType = Message.Type.SystemAlert;
+                retriggerInterval = weeklyAlertInterval;
+
+            } break;
+
             case AppSpec.Alert_temperature_not_reach: {
                 messageType = Message.Type.SystemAlert;
                 retriggerInterval = sixHoursAlertInterval;

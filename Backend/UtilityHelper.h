@@ -359,9 +359,17 @@ struct SensorConfigThresholds {
 static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
     switch (alertType) {
     case AppSpecCPP::Alert_temp_high:
+        return QString("Temperature is very high.");
+
     case AppSpecCPP::Alert_temp_low:
+        return QString("Temperature is very low.");
+
     case AppSpecCPP::Alert_humidity_high:
+        return QString("Humidity is very high.");
+
     case AppSpecCPP::Alert_humidity_low:
+        return QString("Humidity is very low.");
+
     case AppSpecCPP::Alert_temperature_not_reach:
         return QString("Temperature and Humidity sensor malfunction.  Please contact your contractor.");
 
