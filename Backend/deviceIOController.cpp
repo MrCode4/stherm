@@ -23,6 +23,9 @@
 
 #define WIRING_CHECK_TIME 600 // ms
 
+
+static  const char*   m_ValidSensorDataReceived  = "ValidSensorDataReceived";
+
 class DeviceIOPrivate
 {
 public:
@@ -106,6 +109,27 @@ DeviceIOController::DeviceIOController(QObject *parent)
         }
         // when it reaches to the target stops and will not print anymore
         TRACE_CHECK(false) << "backlight factor updated to "  << m_backlightFactor << "with step " << diff / 20 << "and Target " << target;
+    });
+
+    mSensorDataRecievedTimer.setInterval(15 * 60 * 1000);
+    mSensorDataRecievedTimer.setTimerType(Qt::PreciseTimer);
+    mSensorDataRecievedTimer.setSingleShot(false);
+    mSensorDataRecievedTimer.setProperty(m_ValidSensorDataReceived, false);
+    mSensorDataRecievedTimer.start();
+
+    connect(&mSensorDataRecievedTimer, &QTimer::timeout, this, [this]() {
+        if (!mSensorDataRecievedTimer.property(m_ValidSensorDataReceived).toBool()) {
+            emit alert(STHERM::AlertLevel::LVL_Emergency,
+                       AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
+
+        }
+
+        emit forceOffSystem(!mSensorDataRecievedTimer.property(m_ValidSensorDataReceived).toBool());
+
+        // Set to false (the mainDataReady might not be called)
+        mSensorDataRecievedTimer.setProperty(m_ValidSensorDataReceived, false);
+
     });
 }
 
@@ -1298,58 +1322,75 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 
 void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed, const uint32_t luminosity)
 {
-    // Manage temperature alerts
-    if (values.temp > m_p->throlds_aq.temp_high) {
-        if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
-            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high));
-            m_TemperatureAlertET.restart();
+    bool isSensorDataWrong = values.temp     > m_p->throlds_aq.Temperature_Working_Range_High ||
+                             values.temp     < m_p->throlds_aq.Temperature_Working_Range_Low  ||
+                             values.humidity > m_p->throlds_aq.Humidity_Working_Range_High    ||
+                             values.humidity < m_p->throlds_aq.Humidity_Working_Range_Low;
 
-        } else if (!m_TemperatureAlertET.isValid()) {
-            m_TemperatureAlertET.start();
-            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high);
-        }
-
-    } else if (values.temp < m_p->throlds_aq.temp_low) {
-        if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
-            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_low,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low));
-            m_TemperatureAlertET.restart();
-
-        } else if (!m_TemperatureAlertET.isValid()) {
-            m_TemperatureAlertET.start();
-            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low);
-        }
-
-    } else {
-        m_TemperatureAlertET.invalidate();
+    if (isSensorDataWrong) {
+        // Check humidity and temperature sensor data.
+        // If last m_SensorDataRecived status is true so we need restart the timer
+        if (mSensorDataRecievedTimer.property(m_ValidSensorDataReceived).toBool())
+            mSensorDataRecievedTimer.start();
     }
 
-    // Manage humidity alerts
-    if (values.humidity > m_p->throlds_aq.humidity_high) {
-        if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
-            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
-            m_HumidityAlertET.restart();
+    mSensorDataRecievedTimer.setProperty(m_ValidSensorDataReceived, !isSensorDataWrong);
 
-        } else if (!m_HumidityAlertET.isValid()) {
-            m_HumidityAlertET.start();
-            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high);
+
+    if (!isSensorDataWrong) {
+        // Manage temperature alerts
+        if (values.temp > m_p->throlds_aq.temp_high) {
+            if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
+                emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
+                           STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high));
+                m_TemperatureAlertET.restart();
+
+            } else if (!m_TemperatureAlertET.isValid()) {
+                m_TemperatureAlertET.start();
+                TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high);
+            }
+
+        } else if (values.temp < m_p->throlds_aq.temp_low) {
+            if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
+                emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_low,
+                           STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low));
+                m_TemperatureAlertET.restart();
+
+            } else if (!m_TemperatureAlertET.isValid()) {
+                m_TemperatureAlertET.start();
+                TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low);
+            }
+
+        } else {
+            m_TemperatureAlertET.invalidate();
         }
 
-    } else if (values.humidity < m_p->throlds_aq.humidity_low) {
-        if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
-            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_low,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low));
-            m_HumidityAlertET.restart();
+        // Manage humidity alerts
+        if (values.humidity > m_p->throlds_aq.humidity_high) {
+            if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
+                emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
+                           STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
+                m_HumidityAlertET.restart();
 
-        } else if (!m_HumidityAlertET.isValid()) {
-            m_HumidityAlertET.start();
-            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low);
+            } else if (!m_HumidityAlertET.isValid()) {
+                m_HumidityAlertET.start();
+                TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high);
+            }
+
+        } else if (values.humidity < m_p->throlds_aq.humidity_low) {
+            if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
+                emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_low,
+                           STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low));
+                m_HumidityAlertET.restart();
+
+            } else if (!m_HumidityAlertET.isValid()) {
+                m_HumidityAlertET.start();
+                TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low);
+            }
+
+        } else {
+            m_HumidityAlertET.invalidate();
         }
-
-    } else {
-        m_HumidityAlertET.invalidate();
     }
 
     // Manage fan alerts

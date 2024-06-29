@@ -111,6 +111,12 @@ signals:
 
     void relaysUpdated(STHERM::RelayConfigs relays);
 
+    //! The system set to off when humidity or temperature sensors malfunction
+    void forceOffSystem();
+
+    //! Exit from Force off mode when the sensors work properly
+    void exitForceOffSystem();
+
 private slots:
     void wtdExec();
     void wiringExec();
@@ -200,4 +206,8 @@ private:
     QElapsedTimer m_HumidityAlertET;
     QElapsedTimer m_FanAlertET;
     QElapsedTimer m_LightAlertET;
+
+
+    //! It checks whether the humidity and temperature data is received or not.
+    QTimer mSensorDataRecievedTimer;
 };

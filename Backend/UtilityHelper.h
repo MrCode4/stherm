@@ -271,6 +271,11 @@ struct AQ_TH_PR_thld {
         fan_low       = 3800 * 0.8;
         light_low     = 0;
         light_high   = 1000000;
+
+        Temperature_Working_Range_High = 125;
+        Temperature_Working_Range_Low   = -40;
+        Humidity_Working_Range_High     = 100;
+        Humidity_Working_Range_Low      = 0;
     }
 
     uint16_t pressure_high;  ///< Pressure threshold high (up to 1200 hPa)
@@ -287,6 +292,11 @@ struct AQ_TH_PR_thld {
     uint16_t fan_low;
     uint16_t light_low;
     int light_high;
+
+    double Temperature_Working_Range_High; ///< Celcius
+    double Temperature_Working_Range_Low; ///< Celcius
+    double Humidity_Working_Range_High; ///< Percent
+    double Humidity_Working_Range_Low; ///< Percent
 };
 
 /**

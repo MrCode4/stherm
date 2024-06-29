@@ -297,9 +297,6 @@ private:
     QTimer mLogTimer;
     QTimer mSaveSensorDataTimer;
 
-    //! It checks whether the humidity and temperature data is received or not.
-    QTimer mSensorDataRecievedTimer;
-
     QString mGeneralSystemDatafilePath;
 
     bool mIsNightModeRunning;
