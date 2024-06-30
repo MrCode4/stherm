@@ -75,13 +75,16 @@ signals:
 
     void testModeStarted();
 
-private slots:
-    //! Process network replay
-    void processNetworkReply(QNetworkReply *netReply) override;
-
 protected:
     QNetworkReply* sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
-    void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method) override;
+    void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method);
+    void processNetworkReply(QNetworkReply* reply) override;
+
+private:
+    QByteArray preparePacket(QString className, QString method, QJsonArray params);
+    //! Used as a simple mutex to ensure only 1 getSettings and getAutoSettings requests
+    QMutex getSettingsMutex;
+    bool getSettingsRequested = false;
 
 private:
     /* Attributes

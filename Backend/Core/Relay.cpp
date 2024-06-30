@@ -178,6 +178,18 @@ void Relay::setDehumidifierState(const bool on) {
     mRelay.hum_wiring = on ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
 }
 
+void Relay::updateHumidityWiring(AppSpecCPP::AccessoriesWireType mAccessoriesWireType)
+{
+    if (mAccessoriesWireType == AppSpecCPP::None) {
+        setAllHumidityWiringsOff();
+        return;
+    }
+
+    mRelay.acc2  = (mAccessoriesWireType == AppSpecCPP::T2PWRD)  ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.acc1p = (mAccessoriesWireType == AppSpecCPP::T1PWRD)  ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.acc1n = (mAccessoriesWireType == AppSpecCPP::T1Short) ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+}
+
 AppSpecCPP::SystemMode Relay::getOb_state() const
 {
     return ob_state;
@@ -200,15 +212,21 @@ void Relay::setAllOff()
 {
     mRelay.y1    = STHERM::RelayMode::OFF;
     mRelay.y2    = STHERM::RelayMode::OFF;
-    mRelay.acc2  = STHERM::RelayMode::OFF;
     mRelay.w1    = STHERM::RelayMode::OFF;
     mRelay.w2    = STHERM::RelayMode::OFF;
     mRelay.w3    = STHERM::RelayMode::OFF;
-    mRelay.acc1p = STHERM::RelayMode::OFF;
-    mRelay.acc1n = STHERM::RelayMode::OFF;
+
 
     current_state = AppSpecCPP::SystemMode::Off;
 
+}
+
+void Relay::setAllHumidityWiringsOff()
+{
+    // Humidifire/Dehumidifier relays
+    mRelay.acc2  = STHERM::RelayMode::OFF;
+    mRelay.acc1p = STHERM::RelayMode::OFF;
+    mRelay.acc1n = STHERM::RelayMode::OFF;
 }
 
 //! OBSOLETE
@@ -400,8 +418,11 @@ void Relay::setFanMode(bool on)
 
 void Relay::updateFan()
 {
-    // The fan operates if it's set to 'on' using either WPH or if either Y1 or W1 is activated.
-    if (mFanOn || mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON) {
+    // The fan operates:
+    //    if it's set to 'on' using either WPH or if either Y1 or W1 is activated.
+    //   if at least one of the Humidity wirings is ON
+    if (mFanOn || mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON ||
+        mRelay.acc2 == STHERM::ON || mRelay.acc1n == STHERM::ON || mRelay.acc1p == STHERM::ON) {
         fanOn();
 
     } else {
@@ -414,4 +435,14 @@ STHERM::RelayConfigs Relay::relays() {
     updateFan();
 
     return mRelay;
+}
+
+STHERM::RelayConfigs Relay::relaysLast()
+{
+    return mRelayLast;
+}
+
+void Relay::setRelaysLast(STHERM::RelayConfigs last)
+{
+    mRelayLast = last;
 }

@@ -1,0 +1,66 @@
+#include "BaseScheme.h"
+
+#include "SchemeDataProvider.h"
+
+BaseScheme::BaseScheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> sharedData, QObject *parent) :
+    mDeviceAPI(deviceAPI),
+    stopWork(true),
+    mCanSendRelay(true),
+    debugMode(true),
+    mDataProvider(sharedData),
+    QThread{parent}
+{
+    mRelay = Relay::instance();
+
+    debugMode = RELAYS_WAIT_MS != 0;
+
+    connect(mDataProvider.data(), &SchemeDataProvider::currentHumidityChanged, this, &BaseScheme::currentHumidityChanged);
+    connect(mDataProvider.data(), &SchemeDataProvider::currentTemperatureChanged, this, &BaseScheme::currentTemperatureChanged);
+    connect(mDataProvider.data(), &SchemeDataProvider::systemSetupChanged, this, &BaseScheme::setSystemSetup);
+    connect(mDataProvider.data(), &SchemeDataProvider::vacationChanged, this, &BaseScheme::setVacation);
+    connect(mDataProvider.data(), &SchemeDataProvider::scheduleChanged, this, &BaseScheme::restartWork);
+    connect(mDataProvider.data(), &SchemeDataProvider::setTemperatureChanged, this, &BaseScheme::setTemperatureChanged);
+    connect(mDataProvider.data(), &SchemeDataProvider::setHumidityChanged, this, &BaseScheme::setHumidityChanged);
+}
+
+
+void BaseScheme::setCanSendRelays(const bool &csr)
+{
+    mCanSendRelay = csr;
+
+    if (mCanSendRelay) {
+        emit canSendRelay();
+    }
+}
+
+int BaseScheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
+{
+    return 0;
+}
+
+double BaseScheme::effectiveSetHumidity() const
+{
+    double effHumidity = mDataProvider->setPointHumidity();
+
+    auto currentHumidity = mDataProvider.data()->currentHumidity();
+
+    // will not happen for now, in vacation it is handled internally
+    if (mDataProvider.data()->systemSetup()->isVacation) {
+        double vacationMinimumHumidity = mDataProvider->vacation().minimumHumidity;
+        double vacationMaximumHumidity = mDataProvider->vacation().maximumHumidity;
+
+        if ((vacationMinimumHumidity - currentHumidity) > 0.001) {
+            effHumidity  = vacationMinimumHumidity;
+
+        } else if ((vacationMaximumHumidity - currentHumidity) < 0.001) {
+            effHumidity  = vacationMaximumHumidity;
+        }
+
+    } else if (mDataProvider.data()->schedule()) {
+        effHumidity  = mDataProvider.data()->schedule()->humidity;
+
+    }
+
+    return effHumidity;
+}
+

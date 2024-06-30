@@ -1,6 +1,7 @@
 #include "DeviceControllerCPP.h"
 
 #include "LogHelper.h"
+#include "SchemeDataProvider.h"
 #include "ScreenSaverManager.h"
 
 /* ************************************************************************************************
@@ -85,7 +86,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , _deviceIO(new DeviceIOController(this))
     , _deviceAPI(new DeviceAPI(this))
     , mSystemSetup(nullptr)
-    , m_scheme(new Scheme(_deviceAPI, this))
+    , mSchemeDataProvider(new SchemeDataProvider(this))
+    , m_scheme(new Scheme(_deviceAPI, mSchemeDataProvider, this))
+    , m_HumidityScheme(new HumidityScheme(_deviceAPI, mSchemeDataProvider, this))
 {
 
     m_system = _deviceAPI->system();
@@ -298,6 +301,17 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
     connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
+    connect(m_scheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        m_HumidityScheme->setCanSendRelays(!isRunning);
+    });
+
+    connect(m_HumidityScheme, &HumidityScheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        m_scheme->setCanSendRelays(!isRunning);
+    });
+
+    connect(m_HumidityScheme, &HumidityScheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
+        _deviceIO->updateRelays(relays);
+    });
 
     if (m_system) {
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
@@ -442,21 +456,21 @@ void DeviceControllerCPP::setVacation(const double min_Temperature, const double
     vacation.minimumHumidity    = min_Humidity;
     vacation.maximumHumidity    = max_Humidity;
 
-    // Update vacations in scheme
-    if (m_scheme)
-        m_scheme->setVacation(vacation);
+    // Update vacations
+    if (!mSchemeDataProvider.isNull())
+        mSchemeDataProvider->setVacation(vacation);
 }
 
 void DeviceControllerCPP::setRequestedTemperature(const double temperature)
 {
-    if (m_scheme)
-        m_scheme->setSetPointTemperature(temperature);
+    if (!mSchemeDataProvider.isNull())
+        mSchemeDataProvider->setSetPointTemperature(temperature);
 }
 
 void DeviceControllerCPP::setRequestedHumidity(const double humidity)
 {
-    if (m_scheme)
-        m_scheme->setRequestedHumidity(humidity);
+    if (!mSchemeDataProvider.isNull())
+        mSchemeDataProvider->setRequestedHumidity(humidity);
 }
 
 bool DeviceControllerCPP::setTestRelays(QVariantList data)
@@ -506,6 +520,7 @@ void DeviceControllerCPP::startDevice()
     QTimer::singleShot(5000, this, [this]() {
         TRACE << "starting scheme";
         m_scheme->restartWork();
+        m_HumidityScheme->restartWork();
     });
 
     if (startMode == 0) {
@@ -527,6 +542,7 @@ void DeviceControllerCPP::stopDevice()
 {
     _deviceIO->stopReading();
     m_scheme->stop();
+    m_HumidityScheme->stop();
 }
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
@@ -542,8 +558,8 @@ void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
             << mSystemSetup->systemMode << ").";
     }
 
-    if (m_scheme)
-        m_scheme->setSchedule(schedule);
+    if (!mSchemeDataProvider.isNull())
+        mSchemeDataProvider->setSchedule(schedule);
 }
 
 int DeviceControllerCPP::getStartMode()
@@ -574,7 +590,7 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
     mSystemSetup = systemSetup;
 
     // Set system setp
-    m_scheme->setSystemSetup(mSystemSetup);
+    mSchemeDataProvider->setSystemSetup(mSystemSetup);
 
     emit systemSetupChanged();
 }
@@ -631,8 +647,8 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
         _rawMainData = mainData;
     }
 
-    if (m_scheme)
-        m_scheme->setMainData(getMainData());
+    if (!mSchemeDataProvider.isNull())
+        mSchemeDataProvider->setMainData(getMainData());
 }
 
 void DeviceControllerCPP::startTestMode()
@@ -741,8 +757,8 @@ void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
 
     _mainData_override = mainDataOverride;
 
-    if (m_scheme)
-        m_scheme->setMainData(getMainData());
+    if (!mSchemeDataProvider.isNull())
+        mSchemeDataProvider->setMainData(getMainData());
 }
 
 bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
@@ -839,8 +855,8 @@ QVariantMap DeviceControllerCPP::getMainData()
     double currentTemp = mainData.value("temperature").toDouble(&isOk);
     if (isOk && currentTemp != _temperatureLast) {
         _temperatureLast = currentTemp;
-        if (m_scheme)
-            m_scheme->setMainData(mainData);
+        if (mSchemeDataProvider.isNull())
+            mSchemeDataProvider->setMainData(mainData);
     }
 
     return mainData;

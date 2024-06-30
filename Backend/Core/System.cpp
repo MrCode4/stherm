@@ -1,6 +1,7 @@
 #include "System.h"
 #include "LogHelper.h"
 #include "UtilityHelper.h"
+#include "NetworkManager.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -83,19 +84,15 @@ bool isVersionNewer(const QString& version1, const QString& version2) {
     return false;  // versions are equal
 }
 
-NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
-    mSync(sync),
-    mUpdateAvailable (false),
-    mHasForceUpdate(false),
-    mIsInitialSetup(false),
-    mTestMode(false),
-    mIsNightModeRunning(false)
+NUVE::System::System(NUVE::Sync *sync, QObject *parent)
+    : NetworkWorker(parent)
+    , mSync(sync)
+    , mUpdateAvailable (false)
+    , mHasForceUpdate(false)
+    , mIsInitialSetup(false)
+    , mTestMode(false)
+    , mIsNightModeRunning(false)
 {
-
-    mNetManager = new QNetworkAccessManager();
-
-    connect(mNetManager, &QNetworkAccessManager::finished, this,  &System::processNetworkReply);
-
     mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
 
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
@@ -219,7 +216,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent) : NetworkWorker(parent),
 
 NUVE::System::~System()
 {
-    delete mNetManager;
 }
 
 void NUVE::System::startFetchActiveTimer()
@@ -541,7 +537,7 @@ bool NUVE::System::getUpdate(QString softwareVersion)
 
 void NUVE::System::getUpdateInformation(bool notifyUser) {
     // Fetch the file from web location
-    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/updateInfo.json"))));
+    QNetworkReply* reply = get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/updateInfo.json"))));
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
     reply->setProperty(m_notifyUserProperty, mIsManualUpdate ? false : notifyUser);
@@ -549,7 +545,7 @@ void NUVE::System::getUpdateInformation(bool notifyUser) {
 
 void NUVE::System::getBackdoorInformation() {
     // Fetch the backdoor file from web location
-    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/manual_update/files_info.json"))));
+    QNetworkReply* reply = get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/manual_update/files_info.json"))));
     TRACE << "backdoor information - URL: " << reply->url().toString();
     reply->setProperty(m_methodProperty, m_backdoorFromServer);
 }
@@ -870,7 +866,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         }
     }
 
-    if (mNetManager->property(m_isBusyDownloader).toBool()) {
+    if (this->property(m_isBusyDownloader).toBool()) {
         // To open progress bar.
         emit downloadStarted();
         return;
@@ -879,10 +875,11 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     emit downloadStarted();
 
     // Fetch the file from web location
-    QNetworkReply* reply = mNetManager->get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(versionAddressInServer))));
+    QNetworkReply* reply = get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(versionAddressInServer))));
     reply->setProperty(m_methodProperty, isBackdoor ? m_backdoorUpdate : m_partialUpdate);
-    mNetManager->setProperty(m_isBusyDownloader, true);
-    mNetManager->setProperty(m_isResetVersion, isResetVersion);
+
+    this->setProperty(m_isBusyDownloader, true);
+    this->setProperty(m_isResetVersion, isResetVersion);
 
     setPartialUpdateProgress(0);
 
@@ -1079,21 +1076,19 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
     return false;
 }
 
-void NUVE::System::processNetworkReply(QNetworkReply *netReply)
+void NUVE::System::processNetworkReply(QNetworkReply* reply)
 {
-    NetworkWorker::processNetworkReply(netReply);
+    if (reply->error() != QNetworkReply::NoError) {
+        if (reply->operation() == QNetworkAccessManager::GetOperation) {
 
-    if (netReply->error() != QNetworkReply::NoError) {
-        if (netReply->operation() == QNetworkAccessManager::GetOperation) {
-
-            auto method  = netReply->property(m_methodProperty).toString();
+            auto method  = reply->property(m_methodProperty).toString();
             if ( method == m_updateFromServer) {
-                qWarning() << "Unable to download updateInfo.json file: " << netReply->errorString();
+                qWarning() << "Unable to download updateInfo.json file: " << reply->errorString();
                 // emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
 
             } else if (method == m_partialUpdate || method == m_backdoorUpdate) {
-                mNetManager->setProperty(m_isBusyDownloader, false);
-                emit error("Download error: " + netReply->errorString());
+                this->setProperty(m_isBusyDownloader, false);
+                emit error("Download error: " + reply->errorString());
 
                 if (isInitialSetup() && method == m_partialUpdate) {
                     static int i = 0;
@@ -1113,38 +1108,37 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
                 }
 
             } else {
-                qWarning() << "Network/request Error: " << netReply->errorString() << method;
+                qWarning() << "Network/request Error: " << reply->errorString() << method;
             }
         }
 
-        netReply->deleteLater();
         return;
     }
 
-    QByteArray data = netReply->readAll();
+    QByteArray data = reply->readAll();
     const QJsonDocument doc = QJsonDocument::fromJson(data);
     const QJsonObject obj = doc.object();
 
-    switch (netReply->operation()) {
+    switch (reply->operation()) {
     case QNetworkAccessManager::PostOperation: {
 
     } break;
     case QNetworkAccessManager::GetOperation: {
 
         // Partial update (download process) finished.
-        if (netReply->property(m_methodProperty).toString() == m_partialUpdate) {
+        if (reply->property(m_methodProperty).toString() == m_partialUpdate) {
 
             // Check data and prepare to set up.
-            verifyDownloadedFiles(data, true, false, netReply->property(m_isResetVersion).toBool());
-            mNetManager->setProperty(m_isBusyDownloader, false);
+            verifyDownloadedFiles(data, true, false, reply->property(m_isResetVersion).toBool());
+            this->setProperty(m_isBusyDownloader, false);
 
-        } else if (netReply->property(m_methodProperty).toString() == m_backdoorUpdate) {
+        } else if (reply->property(m_methodProperty).toString() == m_backdoorUpdate) {
 
             // Check data and prepare to set up.
             verifyDownloadedFiles(data, true, true);
-            mNetManager->setProperty(m_isBusyDownloader, false);
+            this->setProperty(m_isBusyDownloader, false);
 
-        } else if (netReply->property(m_methodProperty).toString() == m_updateFromServer) { // Partial update (download process) finished.
+        } else if (reply->property(m_methodProperty).toString() == m_updateFromServer) { // Partial update (download process) finished.
 
             TRACE << mUpdateFilePath;
             // Save the downloaded data
@@ -1167,9 +1161,9 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
             }
 
             // Check the last saved updateInfo.json file
-            checkPartialUpdate(netReply->property(m_notifyUserProperty).toBool());
+            checkPartialUpdate(reply->property(m_notifyUserProperty).toBool());
 
-        }  else if (netReply->property(m_methodProperty).toString() == m_backdoorFromServer) {
+        }  else if (reply->property(m_methodProperty).toString() == m_backdoorFromServer) {
 
             // Save the downloaded data
             QFile file(qApp->applicationDirPath() + "/files_info.json");
@@ -1191,8 +1185,6 @@ void NUVE::System::processNetworkReply(QNetworkReply *netReply)
 
         break;
     }
-
-    netReply->deleteLater();
 }
 
 void NUVE::System::onSnReady()

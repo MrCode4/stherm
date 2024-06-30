@@ -32,6 +32,9 @@ public:
     void updateStates();
     void setAllOff();
 
+    //! All humidity wiring set to off
+    void setAllHumidityWiringsOff();
+
     //! OBSOLETE
     bool heatingStage0();
     bool heatingStage1(bool heatpump = false);
@@ -50,6 +53,8 @@ public:
 
 
     STHERM::RelayConfigs relays();
+    STHERM::RelayConfigs relaysLast();
+    void setRelaysLast(STHERM::RelayConfigs last);
 
     bool turnOffEmergencyHeating();
 
@@ -63,6 +68,9 @@ public:
 
     //! Update Dehumidifier state
     void setDehumidifierState(const bool on);
+
+    //! Update the Humidity (humidifier/dehumidifier) wiring.
+    void updateHumidityWiring(AppSpecCPP::AccessoriesWireType mAccessoriesWireType);
 
     AppSpecCPP::SystemMode getOb_on_state() const;
     void setOb_on_state(const AppSpecCPP::SystemMode &newOb_on_state);
@@ -85,6 +93,7 @@ private:
     static Relay* mInstance;
 
     STHERM::RelayConfigs mRelay;
+    STHERM::RelayConfigs mRelayLast;
 
     AppSpecCPP::SystemMode before_state;
     AppSpecCPP::SystemMode current_state;

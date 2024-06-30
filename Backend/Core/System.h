@@ -198,13 +198,12 @@ public:
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
-protected slots:
-    //! Process network replay
-    void processNetworkReply(QNetworkReply *netReply);
-
+protected slots:  
     void onSnReady();
-
     void createLogDirectoryOnServer();
+
+protected:
+    void processNetworkReply(QNetworkReply* reply) override;
 
 signals:
     void snReady();

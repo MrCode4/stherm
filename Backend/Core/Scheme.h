@@ -1,39 +1,20 @@
 #pragma once
 
-#include <QThread>
 #include <QVariantMap>
 #include <QTimer>
 
-#include "Core/Relay.h"
-#include "Device/SystemSetup.h"
-#include "DeviceAPI.h"
-#include "ScheduleCPP.h"
-#include "UtilityHelper.h"
-#include "AppSpecCPP.h"
-#include "include/timing.h"
+#include "BaseScheme.h"
 
 /*! ***********************************************************************************************
- * THis class manage Vacation data.
- * todo: Add another properties.
+ * This class manage temperature loops.
  * ************************************************************************************************/
 
-class Scheme : public QThread
+class Scheme : public BaseScheme
 {
     Q_OBJECT
 
 public:
-    explicit Scheme(DeviceAPI *deviceAPI, QObject *parent = nullptr);
-
-    enum ChangeType {
-        ctNone               = 0,
-        ctCurrentTemperature = 1 << 0,
-        ctSetTemperature     = 1 << 1,
-        ctMode               = 1 << 2,
-        ctDefault            = ctSetTemperature | ctMode,
-        ctAll                = ctDefault | ctCurrentTemperature,
-    };
-    Q_ENUM(ChangeType)
-    Q_DECLARE_FLAGS(ChangeTypes, ChangeType);
+    explicit Scheme(DeviceAPI *deviceAPI, QSharedPointer<SchemeDataProvider> schemeDataProvider, QObject *parent = nullptr);
 
     void stop();
     ~Scheme();
@@ -41,37 +22,18 @@ public:
     AppSpecCPP::SystemMode getCurrentSysMode() const;
     void setCurrentSysMode(AppSpecCPP::SystemMode newSysMode);
 
-    void setMainData(QVariantMap mainData);
-
-    //! Update Humidifier Id
-    void setHumidifierId(const int &humidifierId);
-
-
     //! Setter and getter for set point humidity.
     double setPointHimidity() const;
     void setSetPointHimidity(double newSetPointHimidity);
 
-    //! Setter and getter for set current humidity.
-    //! Update from setMainData.
-    double currentHumidity() const;
-    void setCurrentHumidity(double newCurrentHumidity);
-    
     void setFan(AppSpecCPP::FanMode fanMode, int newFanWPH);
 
-    void setSystemSetup(SystemSetup* systemSetup);
-
-    //! Set requested Temperature
-    void setSetPointTemperature(double newSetPointTemperature);
-
-    //! Set requested Humidity
-    void setRequestedHumidity(double newHumidity);
+    void setSystemSetup() override;
 
     //! Restart the worker thread
-    void restartWork();
+    void restartWork() override;
 
-    void setVacation(const STHERM::Vacation &newVacation);
-
-    void setSchedule(ScheduleCPP *newSchedule);
+    void setVacation() override;
 
     void moveToUpdatingMode();
 
@@ -89,14 +51,7 @@ signals:
     void changeBacklight(QVariantList colorData = QVariantList(),
                          QVariantList colorDataAfter = QVariantList());
 
-    //! Send relay to DeviceIOController and update relays into ti board.
-    void updateRelays(STHERM::RelayConfigs);
-
     void alert();
-
-    void currentTemperatureChanged();
-    void setTemperatureChanged();
-    void stopWorkRequested();
 
     void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
 
@@ -109,8 +64,6 @@ signals:
 
 protected:
     void run() override;
-
-private slots:
 
 private:
     void updateParameters();
@@ -145,11 +98,7 @@ private:
 
     //! To monitor data change: current temperature, set temperature, mode
     //! use low values for timeout in exit cases as it might had abrupt changes previously
-    int waitLoop(int timeout = 10000, ChangeTypes overrideModes = ChangeType::ctAll);
-
-    //! Update humidifire and dehumidifire after changes: mode, set point humidity,
-    //! current humidity, and humidifier Id
-    void updateHumifiresState();
+    int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll) override;
 
     //! Find the effective temperature to run the system with found temperature
     //! based on schedule or vacation settings and systemMode (auto)
@@ -161,33 +110,17 @@ private:
     //! find the currentTemperature based on source sensor or any overriding rule!
     double effectiveCurrentTemperature();
 
-
-    //! Find the effective humidity to run the system with found humidity
-    //! based on schedule or vacation settings
-    double effectiveHumidity();
-
-    //! find the currentHumidity based on source sensor or any overriding rule!
-    double effectiveCurrentHumidity();
+    void fanWork(bool isOn);
 
 private:
     /* Attributes
      * ****************************************************************************************/
-    DeviceAPI *mDeviceAPI;
-
-    QVariantMap _mainData;
 
     AppSpecCPP::SystemMode mCurrentSysMode;
 
     AppSpecCPP::SystemMode mRealSysMode;
 
-    ScheduleCPP* mSchedule = nullptr;
-
-    struct STHERM::Vacation mVacation;
-
-    SystemSetup *mSystemSetup = nullptr;
-
     NUVE::Timing* mTiming;
-    Relay*  mRelay;
 
     QTimer mUpdatingTimer;
 
@@ -199,18 +132,6 @@ private:
 
     //! to log vital informations
     QTimer mLogTimer;
-
-    int mHumidifierId;
-
-    //! Humidity parameters
-    double mCurrentHumidity;
-    double mSetPointHimidity;
-
-    //! Temperature parameters (Fahrenheit)
-    double mCurrentTemperature;
-
-    //! Fahrenheit
-    double mSetPointTemperature;
 
     //! Auto mode properites (Fahrenheit)
     double mAutoMinReqTemp;
@@ -224,15 +145,6 @@ private:
     int mFanWPH;
     AppSpecCPP::FanMode mFanMode;
 
-    bool stopWork;
     bool isVacation;
     bool mRestarting;
-
-    STHERM::RelayConfigs lastConfigs;
-
-    bool debugMode = true;
-
-    void fanWork(bool isOn);
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(Scheme::ChangeTypes)

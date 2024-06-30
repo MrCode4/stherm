@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QObject>
-#include <QProcess>
+#include "Nmcli.h"
 
 /*!
  * \brief The NmcliObserver class monitors changes to the system network manager using \a\b nmcli
@@ -89,7 +89,8 @@ private:
     /*!
      * \brief mMonitorProcess This process is used to monitor nmcli for changes in network
      */
-    QProcess*           mMonitorProcess;
+    NmCli*           mCliCommon;
+    NmCli*           mCliMonitor;
 
     /*!
      * \brief mDeviceIsOn

@@ -150,6 +150,14 @@ struct Vacation {
     double minimumHumidity;
     double maximumHumidity;
     bool   isEnable;
+
+    bool operator == (const Vacation& vacation) {
+        return (minimumTemperature == vacation.minimumTemperature &&
+                maximumTemperature == vacation.maximumTemperature &&
+                minimumHumidity    == vacation.minimumHumidity &&
+                maximumHumidity    == vacation.maximumHumidity &&
+                isEnable           == vacation.isEnable);
+    }
 };
 
 /**
@@ -214,14 +222,13 @@ struct RelayConfigs
                 w3 == rc.w3 &&
                 o_b == rc.o_b &&
                 acc1n == rc.acc1n &&
-                acc1n == rc.acc1p);
+                acc1p == rc.acc1p);
     }
 
     //! we can not change multiple relays at once! so we need to find change steps to send with some delays,
     //! the rules are simple, first turn off relays, then turn on
     //! turning off orders is from highest proprity to lowest, and turning on is vice versa
     //! priorities is as follow first O/B, then G, then Relay power from low to high stages
-    //! accessories relays are not considered yet! // TODO
     std::vector<std::pair<std::string, int>> changeStepsSorted(const RelayConfigs &newState);
 
     QString printStr();
@@ -491,5 +498,8 @@ public:
     
     //! Calculate the CPU usage
     static double CPUUsage();
+
+    //! Convert Celcius to Fahrenheit
+    static double toFahrenheit(double celsius);
 };
 
