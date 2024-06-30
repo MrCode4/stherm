@@ -98,9 +98,6 @@ public:
 
     Q_INVOKABLE void exitManualMode();
 
-    Q_INVOKABLE void savePrivacyAcceptance(bool accepted);
-    Q_INVOKABLE bool isPrivacyAccepted();
-
     void wifiConnected(bool hasInternet);
 
     void setCanFetchServer(bool canFetch);

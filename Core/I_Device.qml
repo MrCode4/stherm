@@ -87,6 +87,9 @@ QSObject {
         _qsRepo: appModel._qsRepo
     }
 
+    //! Private policy and terms of use
+    property UserPolicyTerms userPolicyTerms: UserPolicyTerms {}
+
     /* Functions
      * ****************************************************************************************/
 

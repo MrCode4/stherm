@@ -88,6 +88,7 @@ qt6_add_qml_module(appStherm
         Core/ContactContractor.qml
         Core/NightMode.qml
         Core/ToastManager.qml
+        Core/UserPolicyTerms.qml
 
 
         # Primitive Components

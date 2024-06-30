@@ -19,9 +19,6 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
 
-    property bool isPrivacyAccepted: false
-
-
     /* Object properties
      * ****************************************************************************************/
 
@@ -29,27 +26,8 @@ BasePageView {
 
     backButtonVisible: !testMode
 
-    Component.onCompleted: {
-
-        isPrivacyAccepted = system.isPrivacyAccepted();
-    }
-
     /* Children
      * ****************************************************************************************/
-
-    Timer {
-        interval: 4500
-        running: true
-        repeat: false
-
-        onTriggered: {
-            //! Load privacy policy text
-            privacyPolicyLabel.text = AppSpec.readFromFile(":/Stherm/Resources/privacyPolicy.md");
-
-            //! Load terms of usae text
-            termsUsageLabel.text = AppSpec.readFromFile(":/Stherm/Resources/termOfUse.md");
-        }
-    }
 
     //! Next button (loads StartTestPage)
     ToolButton {
@@ -61,17 +39,17 @@ BasePageView {
         enabled: privacyPolicyChbox.checked
 
         onClicked: {
-            system.savePrivacyAcceptance(privacyPolicyChbox.checked);
-
-            //! Load next page
+            //! Save accepted version and Load the next page
             if (root.StackView.view) {
                 if (testMode) {
+                    appModel.userPolicyTerms.acceptedVersionOnTestMode = appModel.userPolicyTerms.currentVersion;
                     root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                  "uiSession": Qt.binding(() => uiSession),
                                                  "backButtonVisible" : false
                                              });
 
                 } else {
+                    appModel.userPolicyTerms.acceptedVersion = appModel.userPolicyTerms.currentVersion;
                     root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                                  "uiSession": uiSession,
                                                  "initialSetup": root.initialSetup
@@ -92,7 +70,7 @@ BasePageView {
         maxHeight: root.height * 0.55
 
         isExpanded: true
-        title: "Privacy Policy"
+        title: "Privacy Policy V. + appModel.userPolicyTerms.currentVersion
 
         onIsExpandedChanged: {
             termsOfUseExpand.isExpanded = !isExpanded;
@@ -126,6 +104,8 @@ BasePageView {
                 Label {
                     id: privacyPolicyLabel
                     anchors.fill: parent
+
+                    text: appModel.userPolicyTerms.privacyPolicy
                     leftPadding: 4;
                     rightPadding: 4
                     background: null
@@ -145,7 +125,7 @@ BasePageView {
         anchors.top: privacyPolicyExpand.bottom
         anchors.topMargin: 10
         isExpanded: false
-        title: "Term Of Use"
+        title: "Term Of Use V. + appModel.userPolicyTerms.currentVersion
         width: parent.width
         maxHeight: root.height * 0.55
 
@@ -183,6 +163,8 @@ BasePageView {
                 Label {
                     id: termsUsageLabel
                     anchors.fill: parent
+
+                    text: appModel.userPolicyTerms.termsOfUse
                     leftPadding: 4;
                     rightPadding: 4
                     background: null
@@ -202,14 +184,14 @@ BasePageView {
         anchors.bottomMargin: 10
 
         enabled: (privacyPolicyLabel.text.length > 0 && termsUsageLabel.text.length > 0) &&
-                 (isPrivacyAccepted || (privacyFlick.isRead && termsflick.isRead))
+                 (privacyFlick.isRead && termsflick.isRead)
 
         CheckBox {
             id: privacyPolicyChbox
             Layout.leftMargin: -leftPadding
             focusPolicy: Qt.TabFocus
 
-            checked: isPrivacyAccepted
+            checked: false
         }
 
         Label {
