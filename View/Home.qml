@@ -342,7 +342,7 @@ Control {
                     // If a specific version has been accepted only once in test mode,
                     // display the VersionInformationPage.
                     // Otherwise, display the PrivacyPolicyPage for acceptance.
-                    if (appModel.userPolicyTerms.acceptedVersion === appModel.userPolicyTerms.acceptedVersionOnTestMode) {
+                    if (appModel.userPolicyTerms.acceptedVersionOnTestMode=== appModel.userPolicyTerms.currentVersion) {
                         root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                      "uiSession": Qt.binding(() => uiSession),
                                                      "backButtonVisible" : false
