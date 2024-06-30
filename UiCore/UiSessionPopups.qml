@@ -99,7 +99,7 @@ Item {
 
             installConfirmation.isBackdoor = isBackdoor;
             installConfirmation.isResetToVersion = isResetToVersion;
-            installConfirmation.isResetToVersion = isFWServerVersion;
+            installConfirmation.isFWServerVersion = isFWServerVersion;
             parent.popupLayout.displayPopUp(installConfirmation);
 
             // Active screen saver

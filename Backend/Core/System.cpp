@@ -167,13 +167,19 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             // Check with current version
             if (version != qApp->applicationVersion()) {
                 TRACE << "Install firmware version from server " << version;
-                checkAndDownloadPartialUpdate(version, false, false, true);
+                // We'll try to install the requested version, but if it's unavailable,
+                // we keep the current version
+                // If a version has been installed manually (manual version),
+                // the current version will be retained and server updates will not overwrite it.
+
+                if (!mStartedWithManualUpdate)
+                    checkAndDownloadPartialUpdate(version, false, false, true);
             }
 
         } else if (mStartedWithFWServerUpdate) {
             // Install the latest version, and exit from fw server update
             TRACE << "Install latest version";
-            // checkPartialUpdate(false, true);
+            checkPartialUpdate(false, true);
         }
     });
 
@@ -831,6 +837,11 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         updateFileSize = mBackdoorUpdateFileSize;
 
     } else {
+        if (!mUpdateJsonObject.contains(installingVersion)) {
+            TRACE << "Requested version is not available, version: " << installingVersion;
+            return;
+        }
+
         auto versionObj = mUpdateJsonObject.value(installingVersion).toObject();
         versionAddressInServer = versionObj.value(m_Address).toString();
 
