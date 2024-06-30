@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 0.9.3 LANGUAGES CXX)
+project(Stherm VERSION 0.9.5 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -291,18 +291,28 @@ qt6_add_qml_module(appStherm
         Backend/UtilityHelper.h
         Backend/UtilityHelper.cpp
 
+        Backend/Core/ProcessExecutor.h
+        Backend/Core/ProcessExecutor.cpp
         Backend/Core/Relay.h
         Backend/Core/Relay.cpp
         Backend/Core/Scheme.h
         Backend/Core/Scheme.cpp
         Backend/Core/ScheduleCPP.h
         Backend/Core/ScheduleCPP.cpp
+        Backend/Core/NetworkManager.h
+        Backend/Core/NetworkManager.cpp
+        Backend/Core/NetworkWorker.h
+        Backend/Core/NetworkWorker.cpp
         Backend/Core/System.h
         Backend/Core/System.cpp
         Backend/Core/Sync.h
-        Backend/Core/Sync.cpp
-        Backend/Core/NetworkWorker.h
-        Backend/Core/NetworkWorker.cpp
+        Backend/Core/Sync.cpp        
+        Backend/Core/HumidityScheme.cpp
+        Backend/Core/HumidityScheme.h
+        Backend/Core/BaseScheme.h
+        Backend/Core/BaseScheme.cpp
+        Backend/Core/SchemeDataProvider.h
+        Backend/Core/SchemeDataProvider.cpp
         Backend/LogHelper.h
 
         Backend/DeviceAPI.h
@@ -331,6 +341,7 @@ qt6_add_qml_module(appStherm
         Backend/Device/SystemAccessories.cpp
 
         Backend/Network/Nmcli/Nmcli.h
+        Backend/Network/Nmcli/Nmcli.cpp
         Backend/Network/Nmcli/NmcliObserver.h
         Backend/Network/Nmcli/NmcliObserver.cpp
         Backend/Network/Nmcli/NmcliInterface.h

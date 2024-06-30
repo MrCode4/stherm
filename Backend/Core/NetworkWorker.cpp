@@ -1,64 +1,32 @@
 #include "NetworkWorker.h"
-#include "LogHelper.h"
+#include "NetworkManager.h"
 
-NetworkWorker::NetworkWorker(QObject *parent) : QObject(parent)
+NetworkWorker::NetworkWorker(QObject *parent)
+    : QObject(parent)
 {
-    mNetManager = new QNetworkAccessManager();
-
-    connect(mNetManager, &QNetworkAccessManager::finished, this,  &NetworkWorker::processNetworkReply);
-
 }
 
-QByteArray NetworkWorker::preparePacket(QString className, QString method, QJsonArray params)
+QNetworkReply* NetworkWorker::get(const QNetworkRequest& request)
 {
-    QJsonObject requestData;
-    requestData["request"] = QJsonObject{
-        {"class", className},
-        {"method", method},
-        {"params", params}
-    };
-
-    requestData["user"] = QJsonObject{
-        {"lang_id", 0},
-        {"user_id", 0},
-        {"type_id", 0},
-        {"host_id", 0},
-        {"region_id", 0},
-        {"token", ""}
-    };
-
-    QJsonDocument jsonDocument(requestData);
-
-    return jsonDocument.toJson();
+    QNetworkReply* reply = NetworkManager::instance()->get(request);
+    connect(reply, &QNetworkReply::finished, this,  &NetworkWorker::onRequestFinished);
+    return reply;
 }
 
-void NetworkWorker::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl,
-                                    const QByteArray &postData, const QString &method)
-{
-    // Prepare request
-    QNetworkRequest netRequest(mainUrl.resolved(relativeUrl));
-    netRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    // Post a request
-    QNetworkReply *netReply = mNetManager->post(netRequest, postData);
-    netReply->setProperty(m_methodProperty, method);
-    //    connect(netReply, &QNetworkReply::finished, )
-    //    netReply->ignoreSslErrors();
+QNetworkReply* NetworkWorker::post(const QNetworkRequest& request, const QByteArray& data)
+{
+    QNetworkReply* reply = NetworkManager::instance()->post(request, data);
+    connect(reply, &QNetworkReply::finished, this,  &NetworkWorker::onRequestFinished);
+    return reply;
 }
 
-void NetworkWorker::processNetworkReply(QNetworkReply *netReply)
-{
-    // Handle Errors
-    if (netReply->error() != QNetworkReply::NoError) {
-        qDebug() << Q_FUNC_INFO <<__LINE__<< netReply->error()<<netReply->errorString();
-        const auto errdoc= QJsonDocument::fromJson(netReply->readAll());
-        const QJsonObject errObj = errdoc.object();
-        QStringList errMsg = errObj.value("non_field_errors").toVariant().toStringList();
-        TRACE << errdoc.toJson().toStdString().c_str();
-        // Remove url from error.
-        QString error = netReply->errorString().remove(netReply->request().url().toString());
-        //        emit logInError(errMsg.isEmpty() ? error : errMsg.join("\n"));
 
-        return;
-    }
+void NetworkWorker::onRequestFinished()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    processNetworkReply(reply);
+    reply->deleteLater();
 }
+
+void NetworkWorker::processNetworkReply(QNetworkReply*) {}

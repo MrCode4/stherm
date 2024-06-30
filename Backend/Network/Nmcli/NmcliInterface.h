@@ -18,6 +18,8 @@ struct ConnectionProfile {
     QString seenBssids;
 };
 
+class NmCli;
+
 //! Profiles list
 using ProfilesList = QList<ConnectionProfile>;
 
@@ -164,14 +166,6 @@ public:
     QString getConnectedWifiBssid() const;
 
 private:
-   /*!
-     * \brief waitLoop
-     * \param process
-     * \param timeout
-     * \return
-     */
-    int     waitLoop(QProcess *process, int timeout = 1000) const;
-
     /*!
      * \brief connectToWifi This is an overloaded method and connects to the given wifi without any
      * password, if the given \a ssid is not saved into \a\b NetworkManager this returns
@@ -210,7 +204,7 @@ private:
      * \brief parseBssidToCorrectSsidMap This methods uses iw result to find the correct name of
      * wifi ssids that have some characters unknown to nmcli
      */
-    void    parseBssidToCorrectSsidMap(int exitCode, QProcess::ExitStatus exitStatus);
+    void    parseBssidToCorrectSsidMap(QProcess* process);
 
     /*!
      * \brief doRefreshWifi Simply performs the nmcli refresh command
@@ -232,16 +226,15 @@ private slots:
      * \brief onWifiListRefreshFinished This slot is connected to \a\b QProcess::finished() as
      * single-shot in \ref refreshWifis(bool) to get wifi lists and emit \ref
      * wifiListRefereshed(WifiListMap) signal
-     * \param exitCode
-     * \param exitStatus
+     * \param QProcess
      */
-    void    onWifiListRefreshFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void    onWifiListRefreshFinished(QProcess* process);
 
     /*!
      * \brief updateConProfilesList Updates connection profiles list from result of th process
      * started in \ref scanConProfiles()
      */
-    void    updateConProfilesList(int exitCode, QProcess::ExitStatus exitStatus);
+    void    updateConProfilesList(QProcess* process);
 
 signals:
     /*!
@@ -286,15 +279,19 @@ private:
      */
     NmcliObserver*          mNmcliObserver;
 
+    NmCli*  mCliCommon;
+    NmCli*  mCliProfiles;
+
     /*!
-     * \brief mRefreshProcess The \a\b QProcess that is used to do refreshing
+     * \brief mCliRefresh The \a\b QProcess that is used to do refreshing
      */
-    QProcess*               mRefreshProcess;
+    NmCli*  mCliRefresh;
 
     /*!
      * \brief mWifiProcess is used to do wifi related operations like conneting, disconnecting, etc
      */
-    QProcess*               mWifiProcess;
+    NmCli*  mCliWifi;
+
 
     /*!
      * \brief mWifis Stores all the retrieved wifis

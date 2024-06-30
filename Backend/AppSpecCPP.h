@@ -32,6 +32,20 @@ public:
     explicit AppSpecCPP(QObject *parent = nullptr);
     static AppSpecCPP *instance();
 
+    enum ChangeType {
+        ctNone               = 0,
+        ctCurrentTemperature = 1 << 0,
+        ctSetTemperature     = 1 << 1,
+        ctMode               = 1 << 2,
+        ctCurrentHumidity    = 1 << 3,
+        ctSetHumidity        = 1 << 4,
+        ctSendRelay          = 1 << 5,
+        ctDefault            = ctSetTemperature | ctMode | ctCurrentHumidity,
+        ctAll                = ctDefault | ctCurrentTemperature | ctCurrentHumidity,
+    };
+    Q_ENUM(ChangeType)
+    Q_DECLARE_FLAGS(ChangeTypes, ChangeType);
+
     enum CPUGovernerOption {
         CPUGpowersave = 0,
         CPUGondemand,
@@ -163,3 +177,5 @@ private:
     static AppSpecCPP *mInstance;
 
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(AppSpecCPP::ChangeTypes)

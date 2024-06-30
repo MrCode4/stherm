@@ -1,27 +1,31 @@
 #pragma once
 
 #include <QObject>
-#include <QtNetwork>
+
 
 /*! ***********************************************************************************************
- * Interface class to manage network requests.
+ * singletone class to manage network requests.
  * ************************************************************************************************/
 
-constexpr char m_methodProperty[] = "method";
+class QNetworkRequest;
+class QNetworkReply;
+class QNetworkAccessManager;
 
-class NetworkWorker : public QObject
+class NetworkManager : public QObject
 {
     Q_OBJECT
+    NetworkManager(QObject* parent = nullptr);
 
 public:
-    NetworkWorker(QObject *parent = nullptr);        
+    static NetworkManager* instance();
 
     QNetworkReply* get(const QNetworkRequest& request);
     QNetworkReply* post(const QNetworkRequest& request, const QByteArray& data);
 
-protected:
-    virtual void processNetworkReply(QNetworkReply* reply);
-
 private slots:
-    void onRequestFinished();
+    void processNetworkReply(QNetworkReply *netReply);
+
+private:
+    static NetworkManager* sMe;
+    QNetworkAccessManager *mNetManager;
 };

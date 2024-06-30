@@ -24,6 +24,10 @@ public:
     Q_INVOKABLE void setSystemAccessories(AppSpecCPP::AccessoriesType accessoriesType,
                                           AppSpecCPP::AccessoriesWireType wireType);
 
+    AppSpecCPP::AccessoriesType getAccessoriesType() const;
+
+    AppSpecCPP::AccessoriesWireType getAccessoriesWireType() const;
+
 signals:
     void accessoriesChanged();
 
