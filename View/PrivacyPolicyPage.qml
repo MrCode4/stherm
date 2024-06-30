@@ -70,7 +70,7 @@ BasePageView {
         maxHeight: root.height * 0.55
 
         isExpanded: true
-        title: "Privacy Policy V. + appModel.userPolicyTerms.currentVersion
+        title: "Privacy Policy V. " + appModel.userPolicyTerms.currentVersion
 
         onIsExpandedChanged: {
             termsOfUseExpand.isExpanded = !isExpanded;
@@ -125,7 +125,7 @@ BasePageView {
         anchors.top: privacyPolicyExpand.bottom
         anchors.topMargin: 10
         isExpanded: false
-        title: "Term Of Use V. + appModel.userPolicyTerms.currentVersion
+        title: "Term Of Use V. " + appModel.userPolicyTerms.currentVersion
         width: parent.width
         maxHeight: root.height * 0.55
 
