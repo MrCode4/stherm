@@ -18,8 +18,11 @@ I_PopUp {
 
     property string infoText: "Restarting Device..."
 
+    signal startAction();
+
     /* Object properties
      * ****************************************************************************************/
+    title: "   Restart Device   "
     titleBar: false
 
     closePolicy: Popup.NoAutoClose
@@ -45,7 +48,7 @@ I_PopUp {
         Label {
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * 1.5
-            text: "   Restart Device   "
+            text: root.title
             horizontalAlignment: Text.AlignHCenter
             lineHeight: 1.5
         }
@@ -92,8 +95,8 @@ I_PopUp {
             onTriggered: {
 
                 mainLay.counter--;
-                if (system && mainLay.counter <= 0) {
-                    system.rebootDevice();
+                if (mainLay.counter <= 0) {
+                    startAction();
                 }
             }
         }
