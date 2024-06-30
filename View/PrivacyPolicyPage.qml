@@ -24,6 +24,9 @@ BasePageView {
 
     title: "Privacy Policy and Terms Of Use"
 
+    // to fit the title in page
+    titleHeadeingLevel: 4
+
     backButtonVisible: !testMode
 
     /* Children
@@ -56,6 +59,7 @@ BasePageView {
                                              });
                 }
 
+                AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
             }
         }
     }
@@ -201,7 +205,7 @@ BasePageView {
             textFormat: Text.StyledText
             linkColor: Material.foreground
             verticalAlignment: Text.AlignVCenter
-            text: '<p>I agree to <b><a>Privacy Policy</a></b> and <b><a>Terms of use</a></b>.</p>'
+            text: '<p>I agree to <b><a>Privacy Policy</a></b> and<br><b><a>Terms of use</a></b>.</p>'
 
             TapHandler {
                 onTapped: {

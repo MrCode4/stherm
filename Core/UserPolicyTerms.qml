@@ -14,7 +14,7 @@ QSObject {
     property string termsOfUse:    AppSpec.readFromFile(":/Stherm/Resources/termOfUse.md");
 
     // Use one version for both (privacyPolicy and termsOfUse) for now
-    property string currentVersion: "0.0.1"
+    property string currentVersion: "1"
 
     //! Accepted in normal mode
     property string acceptedVersion: ""
