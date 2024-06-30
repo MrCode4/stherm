@@ -158,18 +158,22 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     // Update the device with the version received from the server.
     connect(mSync, &NUVE::Sync::updateFirmwareFromServer, this, [this](QString version) {
         // Downloader is busy ...
-        if (downloaderTimer.isActive() || mRestarting)
+        if (downloaderTimer.isActive() || mRestarting) {
+            TRACE << "Ignore firmware update (received from server)";
             return;
+        }
 
         if (!version.isEmpty()) {
             // Check with current version
             if (version != qApp->applicationVersion()) {
+                TRACE << "Install firmware version from server " << version;
                 checkAndDownloadPartialUpdate(version, false, false, true);
             }
 
         } else if (mStartedWithFWServerUpdate) {
             // Install the latest version, and exit from fw server update
-            checkPartialUpdate(false, true);
+            TRACE << "Install latest version";
+            // checkPartialUpdate(false, true);
         }
     });
 
@@ -634,6 +638,11 @@ void NUVE::System::exitManualMode()
     mIsManualUpdate = false;
 
     checkPartialUpdate(false, true);
+}
+
+bool NUVE::System::isFWServerUpdate()
+{
+    return mStartedWithFWServerUpdate;
 }
 
 void NUVE::System::setCanFetchServer(bool canFetch)
@@ -1367,12 +1376,14 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
         emit latestVersionChanged();
     }
 
+    bool manualUpdateInstalled = mIsManualUpdate || mStartedWithFWServerUpdate;
+
     // Compare versions lexicographically
     // installableVersionKey > currentVersion
     if (isVersionNewer(installableVersionKey, currentVersion)) {
         setUpdateAvailable(true);
 
-        if (!mHasForceUpdate && notifyUser  && !mIsManualUpdate)
+        if (!mHasForceUpdate && notifyUser  && !manualUpdateInstalled)
             emit notifyNewUpdateAvailable();
     }
 
@@ -1387,10 +1398,9 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     emit logVersionChanged();
 
     // Manual update must be exit for force update
-    if (installLatestVersion || (mHasForceUpdate && !mIsManualUpdate)) {
+    if (installLatestVersion || (mHasForceUpdate && !manualUpdateInstalled)) {
         partialUpdate();
     }
-
 }
 
 void NUVE::System::updateAvailableVersions(const QJsonObject updateJsonObject)
@@ -1484,6 +1494,7 @@ void NUVE::System::rebootDevice()
     QByteArray result = process.readAllStandardOutput();
     QByteArray error = process.readAllStandardError();
 
+    mRestarting = false;
     qDebug() << "Exit Code:" << exitCode;
     qDebug() << "Standard Output:" << result;
     qDebug() << "Standard Error:" << error;

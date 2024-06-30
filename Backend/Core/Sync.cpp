@@ -556,9 +556,8 @@ void Sync::checkFirmwareUpdate(QJsonObject settings)
         auto fwUpdateObj = settings.value(m_firmwareUpdateKey).toObject();
         auto fwUpdateVersion = fwUpdateObj.value(m_firmwareImageKey).toString("");
 
-        // Check force update effect
-        if (true /*&&
-            fwUpdateObj.value(m_firmwareForceUpdateKey).toBool()*/) {
+        // if force-update is set to true, then firmware-image instructs device to update to that version
+        if (fwUpdateObj.value(m_firmwareForceUpdateKey).toBool()) {
             fwVersion = fwUpdateVersion;
         }
     }

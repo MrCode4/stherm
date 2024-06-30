@@ -99,6 +99,8 @@ public:
 
     Q_INVOKABLE void exitManualMode();
 
+    Q_INVOKABLE bool isFWServerUpdate();
+
     void wifiConnected(bool hasInternet);
 
     void setCanFetchServer(bool canFetch);
@@ -342,6 +344,8 @@ private:
 
     bool mIsNightModeRunning;
 
+    //! Set to true after a device restart triggered by a firmware update or reboot,
+    //! to prevent firmware update.
     bool mRestarting;
 
     QTimer mFetchActiveTimer;
