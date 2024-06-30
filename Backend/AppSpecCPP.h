@@ -164,6 +164,7 @@ public:
         Alert_wiring_not_connected,
         Alert_could_not_set_relay,
         Alert_temperature_not_reach,
+        Alert_temperature_humidity_malfunction,
         Alert_Light_High,
         Alert_Light_Low,
         Alert_Efficiency_Issue,

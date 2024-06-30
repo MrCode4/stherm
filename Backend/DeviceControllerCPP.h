@@ -212,6 +212,11 @@ Q_SIGNALS:
     //! Exit from Force off mode when the sensors work properly
     void exitForceOffSystem();
 
+    //! co2SensorStatus transmits CO2 sensor health.
+    //! True indicates proper operation,
+    //!  False indicates malfunction.
+    void co2SensorStatus (bool status = true);
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData, bool addToData = false);

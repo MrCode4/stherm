@@ -283,7 +283,7 @@ struct AQ_TH_PR_thld {
     uint16_t c02_low;       ///< CO2 threshold high (400 to 5000 ppm)
     uint8_t Tvoc_high;       ///< TVOC threshold high (0.1 to 10+ mg/m^3)
     uint8_t etoh_high;       ///< ETOH threshold high (up to 20 ppm)
-    uint8_t iaq_high;        ///< IAQ threshold high (1 to 5)
+    uint8_t iaq_high;        ///< More than 40
     double  temp_high;        ///< Temperature threshold high (up to +100 F)
     double  temp_low;         ///< Temperature threshold low (as low as 40F)
     uint8_t humidity_high;   ///< Humidity threshold high (up to 100%)
@@ -370,7 +370,7 @@ static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
     case AppSpecCPP::Alert_humidity_low:
         return QString("Humidity is very low.");
 
-    case AppSpecCPP::Alert_temperature_not_reach:
+    case AppSpecCPP::Alert_temperature_humidity_malfunction:
         return QString("Temperature and Humidity sensor malfunction.  Please contact your contractor.");
 
     case AppSpecCPP::Alert_Tvoc_high:

@@ -116,6 +116,11 @@ signals:
     //! Exit from Force off mode when the sensors work properly, so send false
     void forceOffSystem(bool forceOff = false);
 
+    //! co2SensorStatus transmits CO2 sensor health.
+    //! True indicates proper operation,
+    //!  False indicates malfunction.
+    void co2SensorStatus (bool status = true);
+
 private slots:
     void wtdExec();
     void wiringExec();
@@ -205,6 +210,7 @@ private:
     QElapsedTimer m_HumidityAlertET;
     QElapsedTimer m_FanAlertET;
     QElapsedTimer m_LightAlertET;
+    QElapsedTimer m_IAQAlertET;
 
 
     //! It checks whether the humidity and temperature data is received or not.

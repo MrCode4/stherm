@@ -281,6 +281,9 @@ QtObject {
     property Connections airConditionWatcherCon: Connections {
         target: device
 
+
+        // enabled: depend on onCo2SensorStatus in deviceConroller
+
         function onCo2Changed() {
             if (device.co2 > AppSpec.airQualityAlertThreshold) {
                 airConditionWatcher.start();
@@ -316,6 +319,14 @@ QtObject {
     property Connections  deviceControllerConnection: Connections {
         target: deviceController.deviceControllerCPP
 
+        function onCo2SensorStatus(status: bool) {
+            if (!status) {
+                airConditionWatcher.stop();
+            }
+
+            airConditionWatcherCon.enabled = status;
+        }
+
         function onAlert(alertLevel : int,
                          alertType : int,
                          alertMessage : string) {
@@ -339,7 +350,7 @@ QtObject {
 
             } break;
 
-            case AppSpec.Alert_temperature_not_reach: {
+            case AppSpec.Alert_temperature_humidity_malfunction: {
                 messageType = Message.Type.SystemAlert;
                 retriggerInterval = sixHoursAlertInterval;
             } break;
@@ -348,6 +359,7 @@ QtObject {
             case AppSpec.Alert_iaq_low:
             case AppSpec.Alert_c02_low: {
                 messageType = Message.Type.SystemAlert;
+                retriggerInterval = weeklyAlertInterval;
 
             } break;
 

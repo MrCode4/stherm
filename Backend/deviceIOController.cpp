@@ -24,7 +24,8 @@
 #define WIRING_CHECK_TIME 600 // ms
 
 
-static  const char*   m_ValidSensorDataReceived  = "ValidSensorDataReceived";
+static  const char*   m_IsHumTempSensorValid   = "isHumTempSensorValid ";
+static  const char*   m_SensorDataReceived     = "sensorDataReceived";
 
 class DeviceIOPrivate
 {
@@ -115,22 +116,42 @@ DeviceIOController::DeviceIOController(QObject *parent)
     mSensorDataRecievedTimer.setInterval(15 * 60 * 1000);
     mSensorDataRecievedTimer.setTimerType(Qt::PreciseTimer);
     mSensorDataRecievedTimer.setSingleShot(false);
-    mSensorDataRecievedTimer.setProperty(m_ValidSensorDataReceived, false);
+    mSensorDataRecievedTimer.setProperty(m_IsHumTempSensorValid , false);
+    mSensorDataRecievedTimer.setProperty(m_SensorDataReceived, false);
     mSensorDataRecievedTimer.start();
 
     connect(&mSensorDataRecievedTimer, &QTimer::timeout, this, [this]() {
-        if (!mSensorDataRecievedTimer.property(m_ValidSensorDataReceived).toBool()) {
+
+        // If sensor data is not received for 15 minutes,
+        // the system will switch to off mode, causing another sensor's functionality to be disrupted.
+        bool sensorDataReceived = mSensorDataRecievedTimer.property(m_SensorDataReceived).toBool();
+
+        // Set to True if valid data is received, False if data is invalid or not received for 15 minutes.
+        bool isHumTempSensorValid = mSensorDataRecievedTimer.property(m_IsHumTempSensorValid ).toBool();
+
+        if (!isHumTempSensorValid) {
+            // Send co2 sensor humidity/temperature malfunction alert (bad data).
             emit alert(STHERM::AlertLevel::LVL_Emergency,
-                       AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
+                       AppSpecCPP::AlertTypes::Alert_temperature_humidity_malfunction,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_humidity_malfunction));
 
         }
 
-        emit forceOffSystem(!mSensorDataRecievedTimer.property(m_ValidSensorDataReceived).toBool());
+        if (!sensorDataReceived) {
+            // Send co2 sensor malfunction alert, No Co2 data available.
+            emit alert(STHERM::AlertLevel::LVL_Emergency,
+                       AppSpecCPP::AlertTypes::Alert_iaq_high,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
+
+            emit co2SensorStatus(false);
+        }
+
+        // humidity/temperature malfunction
+        emit forceOffSystem(!isHumTempSensorValid);
 
         // Set to false (the mainDataReady might not be called)
-        mSensorDataRecievedTimer.setProperty(m_ValidSensorDataReceived, false);
-
+        mSensorDataRecievedTimer.setProperty(m_IsHumTempSensorValid , false);
+        mSensorDataRecievedTimer.setProperty(m_SensorDataReceived, false);
     });
 }
 
@@ -1323,6 +1344,8 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 
 void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed, const uint32_t luminosity)
 {
+    mSensorDataRecievedTimer.setProperty(m_SensorDataReceived, true);
+
     bool isSensorDataWrong = values.temp     > m_p->throlds_aq.Temperature_Working_Range_High ||
                              values.temp     < m_p->throlds_aq.Temperature_Working_Range_Low  ||
                              values.humidity > m_p->throlds_aq.Humidity_Working_Range_High    ||
@@ -1331,11 +1354,11 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
     if (isSensorDataWrong) {
         // Check humidity and temperature sensor data.
         // If last m_SensorDataRecived status is true so we need restart the timer
-        if (mSensorDataRecievedTimer.property(m_ValidSensorDataReceived).toBool())
+        if (mSensorDataRecievedTimer.property(m_IsHumTempSensorValid ).toBool())
             mSensorDataRecievedTimer.start();
     }
 
-    mSensorDataRecievedTimer.setProperty(m_ValidSensorDataReceived, !isSensorDataWrong);
+    mSensorDataRecievedTimer.setProperty(m_IsHumTempSensorValid , !isSensorDataWrong);
 
 
     if (!isSensorDataWrong) {
@@ -1459,15 +1482,16 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_pressure_high));
     }
 
-    if (values.c02 > m_p->throlds_aq.c02_high) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_high));
+    // TODO: Wait for logic
+    // if (values.c02 > m_p->throlds_aq.c02_high) {
+    //     emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_high,
+    //                STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_high));
 
-    } else if (values.c02 < m_p->throlds_aq.c02_low) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_low,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_low));
+    // } else if (values.c02 < m_p->throlds_aq.c02_low) {
+    //     emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_low,
+    //                STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_low));
 
-    }
+    // }
 
     if (values.Tvoc > m_p->throlds_aq.Tvoc_high * 1000) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Tvoc_high,
@@ -1475,16 +1499,35 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
     }
 
-    if (values.etoh > m_p->throlds_aq.etoh_high * 100) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_etoh_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_etoh_high));
+    // TODO: Wait for logic
+    // if (values.etoh > m_p->throlds_aq.etoh_high * 100) {
+        // emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_etoh_high,
+                   // STHERM::getAlertTypeString(AppSpecCPP::Alert_etoh_high));
 
-    }
+    // }
 
+    // As air quality sensor can send big numbers due to bad air the threshold
+    // to consider the sensor as not working is when it does not send any data (error)
     if (values.iaq > m_p->throlds_aq.iaq_high) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_iaq_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
+        if (m_IAQAlertET.isValid() && m_IAQAlertET.elapsed() >= 15 * 60 * 1000) {
 
+            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_iaq_high,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
+
+            // Invalid data available.
+            emit co2SensorStatus(false);
+
+            m_IAQAlertET.restart();
+
+        } else if (!m_IAQAlertET.isValid()) {
+            m_IAQAlertET.start();
+            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high);
+
+        }
+    }  else {
+        // Valid data available.
+        emit co2SensorStatus(true);
+        m_IAQAlertET.invalidate();
     }
 }
 
