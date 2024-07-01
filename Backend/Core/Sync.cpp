@@ -12,9 +12,9 @@ const QString cBaseUrl = "https://devapi.nuvehvac.com/"; // base domain
 const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
 const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
-const QString m_firmwareUpdateKey      = QString("firmware");
-const QString m_firmwareImageKey       = QString("firmware-image");
-const QString m_firmwareForceUpdateKey = QString("force-update");
+const QString cFirmwareUpdateKey      = QString("firmware");
+const QString cFirmwareImageKey       = QString("firmware-image");
+const QString cFirmwareForceUpdateKey = QString("force-update");
 const char* cNotifyGetSN       = "notifyGetSN";
 
 inline QDateTime updateTimeStringToTime(const QString &timeStr) {
@@ -276,13 +276,13 @@ void Sync::checkFirmwareUpdate(QJsonObject settings)
 {
     QString fwVersion;
 
-    if (settings.contains(m_firmwareUpdateKey) &&
-        settings.value(m_firmwareUpdateKey).isObject()) {
-        auto fwUpdateObj = settings.value(m_firmwareUpdateKey).toObject();
-        auto fwUpdateVersion = fwUpdateObj.value(m_firmwareImageKey).toString("");
+    if (settings.contains(cFirmwareUpdateKey) &&
+        settings.value(cFirmwareUpdateKey).isObject()) {
+        auto fwUpdateObj = settings.value(cFirmwareUpdateKey).toObject();
+        auto fwUpdateVersion = fwUpdateObj.value(cFirmwareImageKey).toString("");
 
         // if force-update is set to true, then firmware-image instructs device to update to that version
-        if (fwUpdateObj.value(m_firmwareForceUpdateKey).toBool()) {
+        if (fwUpdateObj.value(cFirmwareForceUpdateKey).toBool()) {
             fwVersion = fwUpdateVersion;
         }
     }
