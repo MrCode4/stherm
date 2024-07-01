@@ -6,7 +6,7 @@ Release Note
 =============
 -------------
 ## Release R 1.0.0 
- 1th July 2024  
+ 1st July 2024  
  Branch- master, commit- *
  
 ### Release Articles
@@ -20,11 +20,13 @@ New features
 - Add privacy policy and terms of use in test mode and initial setup
 
 ### What Been Updated
+- New update path for public releases
 
 ### What’s Been Fixed
 
 
 ### Known Issues
+ - Alerts should be updated according the docs
 
 
 ## Release R 0.9.5 
@@ -32,7 +34,7 @@ New features
  Branch- master, commit- b3e5394
  
 ### Release Articles
-update-V0.9.4.2.zip
+manual(update-V0.9.4.2.zip)
 
 ### Reason
 Refactor and fix some issues
