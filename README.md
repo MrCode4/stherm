@@ -237,7 +237,7 @@ update-V0.4.2.zip
 
 
 ## Release R 0.4.1
-2th May 2024
+2nd May 2024
 Branch- master, commit- 0a62fd5e
 
 ### Release Articles
@@ -357,7 +357,7 @@ update.V0.3.12.zip
 - New feature and fix some issues
 
 ### What’s Brand New
--	Fan colors according to actual state added.
+- Fan colors according to actual state added.
 
 ### What Been Updated
 - Checking internet connectivity made more robust.
@@ -371,7 +371,7 @@ update.V0.3.12.zip
 
 
 ## Release R 0.3.11
-3th April 2024
+3rd April 2024
 Branch- master, commit- 393a9081
 
 ### Release Articles
