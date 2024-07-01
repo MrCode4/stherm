@@ -8,7 +8,7 @@ echo "appStherm stopped"
 
 sleep 10
 
-echo "Start ppStherm"
+echo "start appStherm"
 systemctl start appStherm
 
 # Exit with success code
