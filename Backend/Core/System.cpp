@@ -1317,6 +1317,9 @@ void NUVE::System::processNetworkReply(QNetworkReply* reply)
 
 void NUVE::System::onSnReady()
 {
+    // needed for binding serialNumber property
+    emit snReady();
+
     //! Get update information when Serial number is ready.
     getUpdateInformation(true);
 }

@@ -22,7 +22,7 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
 
-    title: "Privacy Policy and Terms Of Use"
+    title: "Privacy Policy & Terms Of Use"
 
     // to fit the title in page
     titleHeadeingLevel: 4
@@ -122,14 +122,14 @@ BasePageView {
         }
     }
 
-    //! Term Of Use
+    //! Terms Of Use
     ExpandableItem {
         id: termsOfUseExpand
 
         anchors.top: privacyPolicyExpand.bottom
         anchors.topMargin: 10
         isExpanded: false
-        title: "Term Of Use V. " + appModel.userPolicyTerms.currentVersion
+        title: "Terms Of Use V. " + appModel.userPolicyTerms.currentVersion
         width: parent.width
         maxHeight: root.height * 0.55
 
