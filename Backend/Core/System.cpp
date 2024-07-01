@@ -232,11 +232,11 @@ void NUVE::System::startFetchActiveTimer()
 bool NUVE::System::installSystemCtlRestartService()
 {
     #ifdef __unix__
-    QFile updateFileSH("/usr/local/bin/systemctlRestart.sh");
-    if (updateFileSH.exists())
-        updateFileSH.remove("/usr/local/bin/systemctlRestart.sh");
+    QFile systemctlRestartSH("/usr/local/bin/systemctlRestart.sh");
+    if (systemctlRestartSH.exists())
+        systemctlRestartSH.remove("/usr/local/bin/systemctlRestart.sh");
 
-    QFile copyFile(":/Stherm/update.sh");
+    QFile copyFile(":/Stherm/systemctlRestart.sh");
     if (!copyFile.copy("/usr/local/bin/systemctlRestart.sh")) {
         TRACE << "systemctlRestart.sh file did not updated: " << copyFile.errorString();
         return false;
@@ -274,13 +274,13 @@ bool NUVE::System::installSystemCtlRestartService()
 
         updateServiceFile.close();
 
-        TRACE << "The update service successfully installed.";
+        TRACE << "The systemctlRestart service successfully installed.";
 
     } else if (!neetToUpdateService) {
         TRACE << "The service is already installed..";
 
     } else {
-        TRACE << "Unable to install the update service.";
+        TRACE << "Unable to install the systemctlRestart service.";
 
         return false;
     }
