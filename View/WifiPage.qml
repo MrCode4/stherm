@@ -48,6 +48,7 @@ BasePageView {
 
         onTriggered: {
             uiSession.settingsReady = system.fetchSettings();
+            console.log("fetching in initial was", uiSession.settingsReady )
         }
     }
 
@@ -450,6 +451,7 @@ BasePageView {
         //! Check update
         function onUpdateNoChecked() {
             checkedUpdate = true;
+            console.log("udpate checked in initial setup")
         }
     }
 
