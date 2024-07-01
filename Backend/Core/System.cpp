@@ -288,6 +288,8 @@ bool NUVE::System::installSystemCtlRestartService()
     // Disable the appStherm-restart
     return updateServiceState("appStherm-restart", false);
     #endif
+
+    return true;
 }
 
 bool NUVE::System::installUpdateService()
