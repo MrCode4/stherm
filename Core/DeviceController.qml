@@ -650,6 +650,11 @@ I_DeviceController {
                                 AppSpec.ATNone : device.systemSetup.systemAccessories.accessoriesType,
                 }
             },
+
+            // Report the app version
+            "firmware": {
+                "firmware-version": Application.version
+            }
         }
 
         device.schedules.forEach(schedule =>
@@ -1054,8 +1059,8 @@ I_DeviceController {
 
     function forgetDevice() {
         // Remove the save files from the directory.
-        QSFileIO.removeFile(uiSession.recoveryConfigFilePath);
-        QSFileIO.removeFile(uiSession.configFilePath);
+        console.log("forgetDevice: remove file in ", uiSession.recoveryConfigFilePath, ": ", QSFileIO.removeFile(uiSession.recoveryConfigFilePath));
+        console.log("forgetDevice: remove file in ", uiSession.configFilePath, ": ", QSFileIO.removeFile(uiSession.configFilePath));
 
         deviceControllerCPP.forgetDevice();
     }

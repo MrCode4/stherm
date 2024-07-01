@@ -16,7 +16,7 @@ QSCoreCpp::QSCoreCpp(QObject *parent)
 {
     // Attempt to read ID information from Disk
     {
-        QFile cfgFile("QSCore.cfg");
+        QFile cfgFile("/usr/local/bin/QSCore.cfg");
 
         if (cfgFile.open(QFile::ReadOnly)) {
             m_coreId = QUuid(cfgFile.readAll());
@@ -37,7 +37,7 @@ QSCoreCpp::QSCoreCpp(QObject *parent)
                 0, 0, 0, 0, 0, 0, 0, 0                                  // Object ID
             );
 
-        QFile cfgFile("QSCore.cfg");
+        QFile cfgFile("/usr/local/bin/QSCore.cfg");
 
         if (cfgFile.open(QFile::WriteOnly)) {
             cfgFile.write(m_coreId.toString().toLatin1());

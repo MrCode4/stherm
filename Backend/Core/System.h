@@ -86,7 +86,8 @@ public:
     Q_INVOKABLE void partialUpdate(const bool isBackdoor = false);
     Q_INVOKABLE void partialUpdateByVersion(const QString version);
 
-    Q_INVOKABLE void updateAndRestart(const bool isBackdoor, const bool isResetVersion = false);
+    Q_INVOKABLE void updateAndRestart(const bool isBackdoor, const bool isResetVersion = false,
+                                      const bool isFWServerVersion = false);
 
     //! Get update information from server
     //! notifyUser: Send notification for user when new update is available
@@ -97,6 +98,8 @@ public:
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
     Q_INVOKABLE void exitManualMode();
+
+    Q_INVOKABLE bool isFWServerUpdate();
 
     void wifiConnected(bool hasInternet);
 
@@ -222,7 +225,7 @@ signals:
     void lastInstalledUpdateDateChanged();
 
     //! Emit when partially update is ready.
-    void partialUpdateReady(bool isBackdoor = false, bool isResetToVersion = false);
+    void partialUpdateReady(bool isBackdoor = false, bool isResetToVersion = false, const bool isFWServerVersion = false);
 
     //! Start download process.
     void downloadStarted();
@@ -263,7 +266,8 @@ private:
 
     //! verify dounloaded files and prepare to set up.
     bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true,
-                               bool isBackdoor = false, const bool isResetVersion = false);
+                               bool isBackdoor = false, const bool isResetVersion = false,
+                               const bool isFWServerVersion = false);
 
 
     //! Check new version from file.
@@ -292,7 +296,8 @@ private:
     void updateAvailableVersions(const QJsonObject updateJsonObject);
 
     //! Check and prepare the system to start download process.
-    void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false, const bool isResetVersion = false);
+    void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false,
+                                       const bool isResetVersion = false, const bool isFWServerVersion = false);
 
     //! Check the pushing progress and start the fetch timer.
     void startFetchActiveTimer();
@@ -325,6 +330,7 @@ private:
 
     bool mIsManualUpdate;
     bool mStartedWithManualUpdate;
+    bool mStartedWithFWServerUpdate;
 
     int mRequiredMemory;
     int mUpdateFileSize;
@@ -347,6 +353,10 @@ private:
     bool mTestMode;
 
     bool mIsNightModeRunning;
+
+    //! Set to true after a device restart triggered by a firmware update or reboot,
+    //! to prevent firmware update.
+    bool mRestarting;
 
     QTimer mFetchActiveTimer;
 

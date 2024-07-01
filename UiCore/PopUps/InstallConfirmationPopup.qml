@@ -20,6 +20,9 @@ I_PopUp {
     //! isResetToVersion
     property bool isResetToVersion: false
 
+    //! isFWServerVersion: update framware from server
+    property bool isFWServerVersion: false
+
     /* Object properties
      * ****************************************************************************************/
 
@@ -71,6 +74,6 @@ I_PopUp {
         ScreenSaverManager.setInactive();
 
         // Restart the app.
-        deviceController.deviceControllerCPP.system.updateAndRestart(isBackdoor, isResetToVersion);
+        deviceController.deviceControllerCPP.system.updateAndRestart(isBackdoor, isResetToVersion, isFWServerVersion);
     }
 }

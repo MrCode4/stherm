@@ -170,6 +170,8 @@ public:
     Q_ENUM(AlertTypes)
 
 
+    Q_INVOKABLE QVariant readFromFile(const QString &fileUrl);
+
 signals:
 
 private:

@@ -10,6 +10,11 @@ import Stherm
 BasePageView {
     id: root
 
+    /* Property declaration
+     * ****************************************************************************************/
+    //! System
+    property System system: deviceController.deviceControllerCPP.system
+
     /* Object properties
      * ****************************************************************************************/
     backButtonVisible: false
@@ -150,14 +155,21 @@ BasePageView {
                         break;
 
                     case "System Update":
-                        root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
-                                                     "uiSession": Qt.binding(() => uiSession)
-                                                 });
+                        if (system.isFWServerUpdate()) {
+                            uiSession.toastManager.showToast("System update are currently unavailable", "due to firmware server update.");
+
+                        } else {
+                            root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
+                                                         "uiSession": Qt.binding(() => uiSession)
+                                                     });
+                        }
+
+
                         break;
 
                     case "System Update Stage":{
                         uiSession.uiTestMode = true;
-                        deviceController.deviceControllerCPP.system.testMode = true;
+                        system.testMode = true;
                         root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
                                                      "uiSession": Qt.binding(() => uiSession)
                                                  });
