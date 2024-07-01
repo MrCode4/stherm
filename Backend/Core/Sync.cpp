@@ -12,10 +12,13 @@ const QString cBaseUrl = "https://devapi.nuvehvac.com/"; // base domain
 const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
 const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
-const char *cNotifyGetSN = "notifyGetSN";
+const QString m_firmwareUpdateKey      = QString("firmware");
+const QString m_firmwareImageKey       = QString("firmware-image");
+const QString m_firmwareForceUpdateKey = QString("force-update");
+const char* cNotifyGetSN       = "notifyGetSN";
 
-inline QDateTime updateTimeStringToTime(const QString &timeStr)
-{
+inline QDateTime updateTimeStringToTime(const QString &timeStr) {
+
     QString format = "yyyy-MM-dd HH:mm:ss";
 
     return QDateTime::fromString(timeStr, format);
@@ -269,6 +272,25 @@ void Sync::fetchContractorLogo(const QString &url)
     mCallbacks.insert(url, callback);
 }
 
+void Sync::checkFirmwareUpdate(QJsonObject settings)
+{
+    QString fwVersion;
+
+    if (settings.contains(m_firmwareUpdateKey) &&
+        settings.value(m_firmwareUpdateKey).isObject()) {
+        auto fwUpdateObj = settings.value(m_firmwareUpdateKey).toObject();
+        auto fwUpdateVersion = fwUpdateObj.value(m_firmwareImageKey).toString("");
+
+        // if force-update is set to true, then firmware-image instructs device to update to that version
+        if (fwUpdateObj.value(m_firmwareForceUpdateKey).toBool()) {
+            fwVersion = fwUpdateVersion;
+        }
+    }
+
+    emit updateFirmwareFromServer(fwVersion);
+}
+
+
 void Sync::fetchSettings()
 {
     if (mSerialNumber.isEmpty()) {
@@ -309,6 +331,7 @@ void Sync::fetchSettings()
             // Transmit Non-Configuration Data to UI and Update Model on Server
             // Response
             emit appDataReady(data.toVariantMap());
+            checkFirmwareUpdate(data);
         }
         else {
             TRACE << "Received settings belong to another device: " + mSerialNumber + ", " + data.value("sn").toString();

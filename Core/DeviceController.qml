@@ -650,6 +650,11 @@ I_DeviceController {
                                 AppSpec.ATNone : device.systemSetup.systemAccessories.accessoriesType,
                 }
             },
+
+            // Report the app version
+            "firmware": {
+                "firmware-version": Application.version
+            }
         }
 
         device.schedules.forEach(schedule =>

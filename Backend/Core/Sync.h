@@ -74,6 +74,12 @@ signals:
 
     void testModeStarted();
 
+    void updateFirmwareFromServer(QString version);
+
+private slots:
+    //! Check firmware update with getSettings reply
+    void checkFirmwareUpdate(QJsonObject settings);
+
 protected:
     void processNetworkReply(QNetworkReply* reply) override;
 
