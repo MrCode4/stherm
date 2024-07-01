@@ -203,7 +203,7 @@ BasePageView {
     //! Reboot popup with count down timer to send reboot request to system
     RebootDevicePopup {
         id: rebootPopup
-        system: root.system
+
         anchors.centerIn: Template.Overlay.overlay
 
         onStartAction: {
@@ -219,7 +219,6 @@ BasePageView {
 
         title: "   Restart App   "
         infoText: "Restarting App..."
-        system: root.system
         anchors.centerIn: Template.Overlay.overlay
 
         onStartAction: {

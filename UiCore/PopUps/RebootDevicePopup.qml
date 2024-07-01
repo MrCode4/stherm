@@ -5,15 +5,13 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * Reboot popup with count down timer to send reboot request to system
+ * RebootDevicePopup: popup with count down timer to send emit startAction to parent
  * ***********************************************************************************************/
 I_PopUp {
     id: root
 
     /* Property Declaration
      * ****************************************************************************************/
-
-    property System system
     property bool cancelEnable: true
 
     property string infoText: "Restarting Device..."

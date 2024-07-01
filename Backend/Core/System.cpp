@@ -561,8 +561,7 @@ void NUVE::System::systemCtlRestartApp()
     installSystemCtlRestartService();
 
     QTimer::singleShot(200, this, [=]() {
-        int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-restart.service; systemctl start appStherm-restart.service"});
-        TRACE << exitCode;
+        updateServiceState("appStherm-restart", true);
     });
     #endif
 }
