@@ -343,7 +343,7 @@ Control {
                     // display the VersionInformationPage.
                     // Otherwise, display the PrivacyPolicyPage for acceptance.
                     if (device.userPolicyTerms.acceptedVersionOnTestMode === device.userPolicyTerms.currentVersion) {
-                        root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                        mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                      "uiSession": Qt.binding(() => uiSession),
                                                      "backButtonVisible" : false
                                                  });
