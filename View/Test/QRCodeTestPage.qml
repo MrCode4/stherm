@@ -26,9 +26,15 @@ BasePageView {
     //! Reboot popup with count down timer to send reboot request to system
     RebootDevicePopup {
         id: rebootPopup
-        system: root.system
+
         infoText: "Serial number is ready.\nRestarting Device..."
         anchors.centerIn: Template.Overlay.overlay
+
+        onStartAction: {
+            if (system) {
+                system.rebootDevice();
+            }
+        }
     }
 
     InfoPopup {

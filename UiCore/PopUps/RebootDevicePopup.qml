@@ -5,21 +5,22 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * Reboot popup with count down timer to send reboot request to system
+ * RebootDevicePopup: popup with count down timer to send emit startAction to parent
  * ***********************************************************************************************/
 I_PopUp {
     id: root
 
     /* Property Declaration
      * ****************************************************************************************/
-
-    property System system
     property bool cancelEnable: true
 
     property string infoText: "Restarting Device..."
 
+    signal startAction();
+
     /* Object properties
      * ****************************************************************************************/
+    title: "   Restart Device   "
     titleBar: false
 
     closePolicy: Popup.NoAutoClose
@@ -45,7 +46,7 @@ I_PopUp {
         Label {
             Layout.fillWidth: true
             font.pointSize: Application.font.pointSize * 1.5
-            text: "   Restart Device   "
+            text: root.title
             horizontalAlignment: Text.AlignHCenter
             lineHeight: 1.5
         }
@@ -92,8 +93,8 @@ I_PopUp {
             onTriggered: {
 
                 mainLay.counter--;
-                if (system && mainLay.counter <= 0) {
-                    system.rebootDevice();
+                if (mainLay.counter <= 0) {
+                    startAction();
                 }
             }
         }

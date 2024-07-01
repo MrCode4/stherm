@@ -25,6 +25,8 @@ const QString m_checkInternetConnection = QString("checkInternetConnection");
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
 
+const QString m_restartAppService   = QString("/etc/systemd/system/appStherm-restart.service");
+
 //! Path of update file in the server
 const QString m_updateInfoFile  = QString("updateInfoV1.json");
 
@@ -263,6 +265,69 @@ void NUVE::System::startFetchActiveTimer()
                            <<property(m_pushAutoModeSettings).toBool();
 }
 
+bool NUVE::System::installSystemCtlRestartService()
+{
+    #ifdef __unix__
+    QFile systemctlRestartSH("/usr/local/bin/systemctlRestart.sh");
+    if (systemctlRestartSH.exists())
+        systemctlRestartSH.remove("/usr/local/bin/systemctlRestart.sh");
+
+    QFile copyFile(":/Stherm/systemctlRestart.sh");
+    if (!copyFile.copy("/usr/local/bin/systemctlRestart.sh")) {
+        TRACE << "systemctlRestart.sh file did not updated: " << copyFile.errorString();
+        return false;
+    }
+
+    auto exitCode = QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/systemctlRestart.sh"});
+    if (exitCode == -1 || exitCode == -2)
+        return false;
+
+    QFile updateServiceFile(m_restartAppService);
+
+    QString serviceContent = "[Unit]\n"
+                             "Description=Nuve Smart HVAC system restart service\n"
+                             "[Service]\n"
+                             "Type=simple\n"
+                             "ExecStart=/bin/bash -c \"/usr/local/bin/systemctlRestart.sh\"\n"
+                             "Restart=on-failure\n"
+                             "[Install]\n"
+                             "WantedBy=multi-user.target";
+
+    bool neetToUpdateService = true;
+
+    // Check the service
+    if (updateServiceFile.exists()) {
+        if (updateServiceFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            neetToUpdateService = updateServiceFile.readAll() != serviceContent.toUtf8();
+            updateServiceFile.close();
+
+        }
+    }
+
+    if (neetToUpdateService && updateServiceFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+
+        updateServiceFile.write(serviceContent.toUtf8());
+
+        updateServiceFile.close();
+
+        TRACE << "The systemctlRestart service successfully installed.";
+
+    } else if (!neetToUpdateService) {
+        TRACE << "The service is already installed..";
+
+    } else {
+        TRACE << "Unable to install the systemctlRestart service.";
+
+        return false;
+    }
+
+    // Disable the appStherm-restart
+    return updateServiceState("appStherm-restart", false);
+    #endif
+
+    return true;
+}
+
 bool NUVE::System::installUpdateService()
 {
 #ifdef __unix__
@@ -325,10 +390,24 @@ bool NUVE::System::installUpdateService()
     }
 
     // Disable the appStherm-update.service
-    exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl disable appStherm-update.service;"});
+    return updateServiceState("appStherm-update", false);
+
+#endif
+    return true;
+}
+
+bool NUVE::System::updateServiceState(const QString& serviceName, const bool& run)
+{
+#ifdef __unix__
+    QString command = QString("systemctl disable %0.service;").arg(serviceName);
+    if (run) {
+        command = QString("systemctl enable %0.service; systemctl start %0.service").arg(serviceName);
+    }
+
+    auto exitCode = QProcess::execute("/bin/bash", {"-c", command});
+    TRACE << command << "- exitCode: " << exitCode;
     if (exitCode == -1 || exitCode == -2)
         return false;
-
 #endif
     return true;
 }
@@ -512,6 +591,17 @@ void NUVE::System::sendLog()
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
+}
+
+void NUVE::System::systemCtlRestartApp()
+{
+    #ifdef __unix__
+    installSystemCtlRestartService();
+
+    QTimer::singleShot(200, this, [=]() {
+        updateServiceState("appStherm-restart", true);
+    });
+    #endif
 }
 
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
@@ -1070,8 +1160,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     installUpdateService();
 
     QTimer::singleShot(200, this, [=]() {
-        int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl enable appStherm-update.service; systemctl start appStherm-update.service"});
-        TRACE << exitCode;
+        TRACE << updateServiceState("appStherm-update", true);
     });
 #endif
 

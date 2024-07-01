@@ -175,6 +175,9 @@ public:
 
     Q_INVOKABLE void sendLog();
 
+    Q_INVOKABLE void systemCtlRestartApp();
+
+
     QStringList cpuInformation();
 
     bool mountDirectory(const QString targetDirectory, const QString targetFolder);
@@ -298,6 +301,13 @@ private:
 
     //! Check the pushing progress and start the fetch timer.
     void startFetchActiveTimer();
+
+    bool installSystemCtlRestartService();
+
+    //! Update serviceName.service state:
+    //! If run = true, enable the service and start it
+    //! else disable service
+    bool updateServiceState(const QString &serviceName, const bool &run);
 
 private:
     Sync *mSync;
