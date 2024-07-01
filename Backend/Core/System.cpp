@@ -25,6 +25,9 @@ const QString m_checkInternetConnection = QString("checkInternetConnection");
 
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
 
+//! Path of update file in the server
+const QString m_updateInfoFile  = QString("updateInfoV1.json");
+
 const char m_isBusyDownloader[] = "isBusyDownloader";
 const char m_isResetVersion[]   = "isResetVersion";
 const char m_isFWServerVersion[]   = "isFWServerVersion";
@@ -94,7 +97,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     , mIsNightModeRunning(false)
     , mRestarting(false)
 {
-    mUpdateFilePath = qApp->applicationDirPath() + "/updateInfo.json";
+    mUpdateFilePath = qApp->applicationDirPath() + "/" + m_updateInfoFile;
 
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
 
@@ -568,7 +571,7 @@ bool NUVE::System::getUpdate(QString softwareVersion)
 
 void NUVE::System::getUpdateInformation(bool notifyUser) {
     // Fetch the file from web location
-    QNetworkReply* reply = get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/updateInfo.json"))));
+    QNetworkReply* reply = get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/" + m_updateInfoFile))));
     TRACE << reply->url().toString();
     reply->setProperty(m_methodProperty, m_updateFromServer);
     reply->setProperty(m_notifyUserProperty, mIsManualUpdate ? false : notifyUser);
@@ -1117,7 +1120,7 @@ void NUVE::System::processNetworkReply(QNetworkReply* reply)
 
             auto method  = reply->property(m_methodProperty).toString();
             if ( method == m_updateFromServer) {
-                qWarning() << "Unable to download updateInfo.json file: " << reply->errorString();
+                qWarning() << "Unable to download " << m_updateInfoFile << " file: " << reply->errorString();
                 // emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
 
             } else if (method == m_partialUpdate || method == m_backdoorUpdate) {
@@ -1196,7 +1199,7 @@ void NUVE::System::processNetworkReply(QNetworkReply* reply)
 //                emit alert("The update information did not fetched correctly, Try again later!");
             }
 
-            // Check the last saved updateInfo.json file
+            // Check the last saved m_updateInfoFile file
             checkPartialUpdate(reply->property(m_notifyUserProperty).toBool());
 
         }  else if (reply->property(m_methodProperty).toString() == m_backdoorFromServer) {
@@ -1287,8 +1290,7 @@ bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
                  << m_RequiredMemory
                  << m_CurrentFileSize
                  << m_CheckSum
-                 << m_Staging
-                 << m_ForceUpdate;
+                 << m_Staging;
 
         if (latestVersionObj.isEmpty()) {
             qWarning() << "The 'LatestVersion' value (" << latestVersionKey << ") is empty in the Update file (server side).";
@@ -1473,7 +1475,7 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
     foreach (auto keyVersion, versions) {
         if (isVersionNewer(keyVersion, currentVersion)) {
             auto obj = updateJsonObject.value(keyVersion).toObject();
-            auto isForce =  obj.value(m_ForceUpdate).toBool();
+            auto isForce =  obj.value(m_ForceUpdate).toBool(false);
 
             if (isForce) {
                 // Update the earlier force update that is greater than the current version
