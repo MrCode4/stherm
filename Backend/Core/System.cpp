@@ -365,7 +365,7 @@ bool NUVE::System::updateServiceState(const QString& serviceName, const bool& ru
 #ifdef __unix__
     QString command = QString("systemctl disable %0.service;").arg(serviceName);
     if (run) {
-        command = QString("systemctl enable %0.service; systemctl start %0.service").arg(command);
+        command = QString("systemctl enable %0.service; systemctl start %0.service").arg(serviceName);
     }
 
     auto exitCode = QProcess::execute("/bin/bash", {"-c", command});
