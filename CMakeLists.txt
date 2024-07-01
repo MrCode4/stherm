@@ -88,6 +88,7 @@ qt6_add_qml_module(appStherm
         Core/ContactContractor.qml
         Core/NightMode.qml
         Core/ToastManager.qml
+        Core/UserPolicyTerms.qml
 
 
         # Primitive Components
@@ -134,6 +135,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/SemiCircleSliderDoubleHandle.qml
         UiCore/Components/Toast.qml
         UiCore/Components/RoniaTumbler.qml
+        UiCore/Components/ExpandableItem.qml
 
 
         # Views and Widgets
@@ -189,6 +191,7 @@ qt6_add_qml_module(appStherm
         View/ContactContractorPage.qml
         View/NightModePage.qml
         View/BackdoorUpdatePage.qml
+        View/PrivacyPolicyPage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
@@ -396,6 +399,9 @@ qt6_add_qml_module(appStherm
         Images/Locations/office.svg
         Images/Locations/other.svg
         Images/Locations/upstairs.svg
+
+        Resources/privacyPolicy.md
+        Resources/termOfUse.md
 
         # Update file
         update.sh

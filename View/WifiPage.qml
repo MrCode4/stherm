@@ -458,14 +458,25 @@ BasePageView {
     /* Functions
      * ****************************************************************************************/
 
+    //! Called when initial setup is true
     function nextPage() {
         if (root.StackView.view) {
             nextPageTimer.once = true;
             if (system.serialNumber.length > 0) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                             "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                         });
+
+                //! If privacy policy not accepted in normal mode load the PrivacyPolicyPage
+                if (appModel.userPolicyTerms.acceptedVersion === appModel.userPolicyTerms.currentVersion) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                             });
+
+                } else {
+                    root.StackView.view.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
+                                                 "uiSession": Qt.binding(() => uiSession),
+                                                 "initialSetup": root.initialSetup
+                                             });
+                }
             }
         }
     }
