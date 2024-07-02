@@ -175,8 +175,8 @@ ApplicationWindow {
 
     Connections {
         target: deviceControllerCPP.system
-        function onAreSettingsFetchedChanged(yes) {
-            uiSessionId.settingsReady = yes;
+        function onAreSettingsFetchedChanged(success) {
+            uiSessionId.settingsReady = success;
         }
     }
 
