@@ -127,10 +127,22 @@ bool Sync::getSettings()
             loop.quit();
         });
 
-        loop.exec(QEventLoop::ExcludeSocketNotifiers);
 
-        if (getAutoModeSetings()) {
-            returnval = loop.property("success").toBool();
+        TRACE << "Waiting for Settings get";
+
+        loop.exec();
+
+        returnval = loop.property("success").toBool();
+
+        TRACE << "Settings get with result" << returnval;
+
+        if (returnval) {
+
+            TRACE << "gettings auto mode";
+
+            returnval = getAutoModeSetings();
+
+            TRACE << "gettings auto mode with results" << returnval;
         }
     }
 
@@ -153,7 +165,7 @@ bool Sync::getAutoModeSetings() {
         loop.quit();
     });
 
-    loop.exec(QEventLoop::ExcludeSocketNotifiers);
+    loop.exec();
     return loop.property("success").toBool();
 }
 
