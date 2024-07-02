@@ -46,9 +46,7 @@ BasePageView {
         running: root.visible && initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady
         interval: 5000
 
-        onTriggered: {
-            system.fetchSettings();
-        }
+        onTriggered: system.fetchSettings();
     }
 
     //! Once the network connection is established, the System Types page should automatically open,
@@ -450,10 +448,12 @@ BasePageView {
         //! Check update
         function onUpdateNoChecked() {
             checkedUpdate = true;
+            console.log("udpate checked in initial setup")
         }
 
-        function onAreSettingsFetchedChanged(yes) {
-            uiSession.settingsReady = yes;
+        function onAreSettingsFetchedChanged(success) {
+            uiSession.settingsReady = success;
+            console.log("fetching in initial was", uiSession.settingsReady )
         }
     }
 
@@ -462,14 +462,25 @@ BasePageView {
     /* Functions
      * ****************************************************************************************/
 
+    //! Called when initial setup is true
     function nextPage() {
         if (root.StackView.view) {
             nextPageTimer.once = true;
             if (system.serialNumber.length > 0) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                             "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                         });
+
+                //! If privacy policy not accepted in normal mode load the PrivacyPolicyPage
+                if (appModel.userPolicyTerms.acceptedVersion === appModel.userPolicyTerms.currentVersion) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                             });
+
+                } else {
+                    root.StackView.view.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
+                                                 "uiSession": Qt.binding(() => uiSession),
+                                                 "initialSetup": root.initialSetup
+                                             });
+                }
             }
         }
     }

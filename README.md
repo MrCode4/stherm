@@ -5,6 +5,140 @@ This repository contains STHERM project
 Release Note
 =============
 -------------
+## Release R 1.0.0 
+ 1st July 2024  
+ Branch- master, commit- *
+ 
+### Release Articles
+update-V1.0.0.zip
+
+### Reason
+New features
+
+### What’s Brand New
+- Implement discrete firmware version update
+- Add privacy policy and terms of use in test mode and initial setup
+
+### What Been Updated
+- New update path for public releases
+
+### What’s Been Fixed
+
+
+### Known Issues
+ - Alerts should be updated according the docs
+
+
+## Release R 0.9.5 
+ 29th June 2024  
+ Branch- master, commit- b3e5394
+ 
+### Release Articles
+manual(update-V0.9.4.2.zip)
+
+### Reason
+Refactor and fix some issues
+
+### What’s Brand New
+- refactor nmcli interface and api-calls\
+
+### What Been Updated
+
+### What’s Been Fixed
+-  fix bug that could cause device to factory restore.
+
+### Known Issues
+
+## Release R 0.9.3 
+ 18th June 2024  
+ Branch- master, commit- a18d81d6
+ 
+### Release Articles
+update-V0.9.3.zip
+
+### Reason
+Add new features and fix wifi critical issue
+
+### What’s Brand New
+- Muting Alerts/Notifications added.
+- Alerts/Notifications and update will show icon on the Screen saver. 
+
+### What Been Updated
+- Wi-Fi improvements inlcuding showing saved networks.
+
+### What’s Been Fixed
+- Minor fixes and improvements.
+
+### Known Issues
+
+
+## Release R 0.9.2 
+ 10th June 2024  
+ Branch- master, commit- 49593f6e
+ 
+### Release Articles
+update-V0.9.2.zip
+
+### Reason
+Add new feature and modify UX
+
+### What’s Brand New
+- Toast notifications added for schedule activations.
+
+### What Been Updated
+- Auto mode api updated.
+- Better UX for sending logs.
+
+### What’s Been Fixed
+- Minor fixes and improvements.
+
+### Known Issues
+
+## Release R 0.9.1
+9th June 2024  
+Branch- master, commit- ffdc108
+
+### Release Articles
+-
+
+### Reason
+Minor fixes
+
+### What’s Brand New
+
+### What Been Updated
+
+### What’s Been Fixed
+- fixed some conflicts in the test sequence.
+- Try to create folder at least once before sending log
+
+### Known Issues
+
+
+## Release R 0.9.0
+8th June 2024  
+Branch- master, commit- 926364a
+
+### Release Articles
+-
+
+### Reason
+Fix UI bugs
+
+### What’s Brand New
+
+### What Been Updated
+
+### What’s Been Fixed
+- Hide decimal numbers in ScheduleTempraturePage.
+- Fix auto UI bug when schedule is running.
+- Set time - Minutes for Time  should be 00, 01,02, 03 ... 09.
+- Fix test sequences.
+- Minor fixes and improvements.
+
+### Known Issues
+
+
 ## Release R 0.4.6 
  28th May 2024  
  Branch- master, commit- 5cb68242
@@ -35,7 +169,7 @@ Some Critical fixes for old devices
 
 ## Release R 0.4.5
  17th May 2024
-Branch- master, commit- 5cb68242
+Branch- master, commit- 0460796
 
 ### Release Articles
 update-V0.4.5.zip
@@ -103,7 +237,7 @@ update-V0.4.2.zip
 
 
 ## Release R 0.4.1
-2th May 2024
+2nd May 2024
 Branch- master, commit- 0a62fd5e
 
 ### Release Articles
@@ -223,7 +357,7 @@ update.V0.3.12.zip
 - New feature and fix some issues
 
 ### What’s Brand New
--	Fan colors according to actual state added.
+- Fan colors according to actual state added.
 
 ### What Been Updated
 - Checking internet connectivity made more robust.
@@ -237,7 +371,7 @@ update.V0.3.12.zip
 
 
 ## Release R 0.3.11
-3th April 2024
+3rd April 2024
 Branch- master, commit- 393a9081
 
 ### Release Articles

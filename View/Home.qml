@@ -337,11 +337,23 @@ Control {
             //! Open a test mode page from home when app start with test mode.
             if (startMode === 0) {
                 uiSession.uiTestMode = true;
-                if (mainStackView)
-                    mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                           "uiSession": Qt.binding(() => uiSession),
-                                           "backButtonVisible" : false
-                                       });
+                if (mainStackView) {
+
+                    // If a specific version has been accepted only once in test mode,
+                    // display the VersionInformationPage.
+                    // Otherwise, display the PrivacyPolicyPage for acceptance.
+                    if (device.userPolicyTerms.acceptedVersionOnTestMode === device.userPolicyTerms.currentVersion) {
+                        mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                                                     "uiSession": Qt.binding(() => uiSession),
+                                                     "backButtonVisible" : false
+                                                 });
+                    } else {
+                        mainStackView.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
+                                               "uiSession": Qt.binding(() => uiSession),
+                                               "testMode" : true
+                                           });
+                    }
+                }
 
             } else {
                 deviceController.setInitialSetup(true);

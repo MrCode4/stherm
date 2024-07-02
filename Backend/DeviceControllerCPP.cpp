@@ -437,6 +437,7 @@ void DeviceControllerCPP::setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovern
 
 void DeviceControllerCPP::forgetDevice()
 {
+    QFile::remove("/usr/local/bin/QSCore.cfg");
     _deviceAPI->forgetDevice();
     m_system->forgetDevice();
 }

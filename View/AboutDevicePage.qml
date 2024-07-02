@@ -133,8 +133,20 @@ BasePageView {
 
                 //! additional button if available
                 ButtonInverted {
-                    visible: (modelData.key === "Restart Device") && system.testMode
+                    visible: (modelData.key === "Send Log") && system.testMode
                     text:  "Update NRF"
+                    leftPadding: 8
+                    rightPadding: 8
+
+                    onClicked: {
+                        buttonCallbacks(text);
+                    }
+                }
+
+                //! additional button if available
+                ButtonInverted {
+                    visible: (modelData.key === "Restart Device") && system.testMode
+                    text:  "Restart App"
                     leftPadding: 8
                     rightPadding: 8
 
@@ -177,6 +189,9 @@ BasePageView {
             rebootPopup.cancelEnable = true;
             rebootPopup.open();
 
+        } else if (key === "Restart App") {
+            restartAppPopup.open();
+
         } else if (key === "Send Log") {
             if (NetworkInterface.hasInternet)
                 logBusyPop.open();
@@ -188,10 +203,30 @@ BasePageView {
     //! Reboot popup with count down timer to send reboot request to system
     RebootDevicePopup {
         id: rebootPopup
-        system: root.system
+
         anchors.centerIn: Template.Overlay.overlay
+
+        onStartAction: {
+            if (system) {
+                system.rebootDevice();
+            }
+        }
     }
 
+    //! Restart popup with count down timer to send restart request to system
+    RebootDevicePopup {
+        id: restartAppPopup
+
+        title: "   Restart App   "
+        infoText: "Restarting App..."
+        anchors.centerIn: Template.Overlay.overlay
+
+        onStartAction: {
+            if (system) {
+                system.systemCtlRestartApp();
+            }
+        }
+    }
 
     //! Exit popup with count down timer to send exit request to system
     ResetDevicePopup {

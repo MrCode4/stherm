@@ -18,6 +18,19 @@ BasePageView {
      * ****************************************************************************************/
     title: "System Type"
 
+    backButtonCallback: function() {
+        if (root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (root.StackView.view.currentItem === root) {
+                root.StackView.view.pop();
+
+                if (root.StackView.view.currentItem instanceof PrivacyPolicyPage) {
+                    root.StackView.view.pop();
+                }
+            }
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
 
