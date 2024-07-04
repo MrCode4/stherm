@@ -26,7 +26,7 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 
 
 Sync::Sync(QObject *parent)
-    : NetworkWorker(parent)
+    : RestApiExecutor(parent)
     , mHasClient(false)
 {
     QSettings setting;
@@ -45,86 +45,15 @@ QString Sync::getSerialNumber() const { return mSerialNumber;}
 bool Sync::hasClient() const { return mHasClient; }
 QVariantMap Sync::getContractorInfo() const { return mContractorInfo; }
 
-QNetworkRequest Sync::prepareApiRequest(const QString &endpoint, bool setAuth)
+void Sync::setApiAuth(QNetworkRequest& request)
 {
-    QNetworkRequest request(endpoint);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader("accept", "application/json");
-    request.setTransferTimeout(8000);
-
-    if (setAuth) {
-        auto authData = mSystemUuid + mSerialNumber.toStdString();
-        // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain
-        // the header compression context for the connection"
-        request.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(authData, QCryptographicHash::Sha256).toHex());
-    }
-
-    return request;
+    RestApiExecutor::setApiAuth(request);
+    auto authData = mSystemUuid + mSerialNumber.toStdString();
+    // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain
+    // the header compression context for the connection"
+    request.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(authData, QCryptographicHash::Sha256).toHex());
 }
 
-QNetworkReply *Sync::callGetApi(const QString &endpoint, ResponseCallback callback, bool setAuth)
-{
-    if (mCallbacks.contains(endpoint)) {
-        return nullptr;
-    }
-    else {
-        mCallbacks.insert(endpoint, callback);
-        auto reply = get(prepareApiRequest(endpoint, setAuth));
-        reply->setProperty("endpoint", endpoint);
-        return reply;
-    }
-}
-
-QNetworkReply *Sync::callPostApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback)
-{
-    if (mCallbacks.contains(endpoint)) {
-        return nullptr;
-    }
-    else {
-        mCallbacks.insert(endpoint, callback);
-        auto reply = post(prepareApiRequest(endpoint, true), postData);
-        reply->setProperty("endpoint", endpoint);
-        return reply;
-    }
-}
-
-void Sync::processNetworkReply(QNetworkReply *reply)
-{
-    auto endpoint = reply->property("endpoint").toString();
-    if (!mCallbacks.contains(endpoint)) {
-        TRACE << "Callback not found for endpoint " << endpoint;
-        return;
-    }
-
-    QByteArray rawData;
-    QJsonObject data;
-
-    if (reply->error() != QNetworkReply::NoError) {
-        TRACE << "API ERROR (" << endpoint << ") # code: "<< reply->error() << ", message: " << reply->errorString();
-    }
-    else {
-        rawData = reply->readAll();
-        if (reply->property("IsBinaryData").isValid() == false) {
-            const QJsonObject jsonDocObj = QJsonDocument::fromJson(rawData).object();
-
-            if (reply->property("noContentLog").isValid() == false) {
-                TRACE << "API RESPONSE (" << endpoint << ") : " << jsonDocObj;
-            }
-
-            if (jsonDocObj.contains("data")) {
-                data = jsonDocObj.value("data").toObject();
-            }
-            else {
-                TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object";
-            }
-        }
-    }
-
-    auto callback = mCallbacks.take(endpoint);
-    if (callback) {
-        callback(reply, rawData, data);
-    }
-}
 
 void Sync::fetchSerialNumber(cpuid_t accessUid, bool notifyUser)
 {
@@ -251,12 +180,6 @@ void Sync::fetchContractorInfo()
 
 void Sync::fetchContractorLogo(const QString &url)
 {
-    // what if gets error, should we return immadiately?
-    QNetworkRequest request(url);
-    QNetworkReply *reply = get(request);
-    reply->setProperty("IsBinaryData", true);
-    reply->setProperty("endpoint", url);
-
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() == QNetworkReply::NoError) {
             QImage image;
@@ -269,7 +192,7 @@ void Sync::fetchContractorLogo(const QString &url)
         emit contractorInfoReady();
     };
 
-    mCallbacks.insert(url, callback);
+    downloadBinary(url, callback, false);
 }
 
 void Sync::checkFirmwareUpdate(QJsonObject settings)

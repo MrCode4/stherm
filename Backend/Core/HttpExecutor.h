@@ -4,17 +4,17 @@
 #include <QtNetwork>
 
 /*! ***********************************************************************************************
- * Interface class to manage network requests.
+ * Base class to manage network requests.
  * ************************************************************************************************/
 
 constexpr char m_methodProperty[] = "method";
 
-class NetworkWorker : public QObject
+class HttpExecutor : public QObject
 {
     Q_OBJECT
 
 public:
-    NetworkWorker(QObject *parent = nullptr);        
+    HttpExecutor(QObject *parent = nullptr);
 
     QNetworkReply* get(const QNetworkRequest& request);
     QNetworkReply* post(const QNetworkRequest& request, const QByteArray& data);

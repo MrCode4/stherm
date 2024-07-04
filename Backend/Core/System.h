@@ -5,14 +5,14 @@
 #include <QQmlEngine>
 
 #include "Backend/Device/nuve_types.h"
-#include "NetworkWorker.h"
+#include "RestApiExecutor.h"
 #include "Sync.h"
 
 /*! ***********************************************************************************************
  * This class manage system requests.
  * ************************************************************************************************/
 namespace NUVE {
-class System : public NetworkWorker
+class System : public RestApiExecutor
 {
     Q_OBJECT
 

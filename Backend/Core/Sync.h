@@ -4,17 +4,15 @@
 #include <QtNetwork>
 
 #include "nuve_types.h"
-#include "NetworkWorker.h"
+#include "RestApiExecutor.h"
 
 /*! ***********************************************************************************************
  * This class manage sync requests.
  * ************************************************************************************************/
 namespace NUVE {
-class Sync : public NetworkWorker
+class Sync : public RestApiExecutor
 {
-    Q_OBJECT
-    using ResponseCallback = std::function<void (QNetworkReply* reply, const QByteArray& rawData, QJsonObject& data)>;
-
+    Q_OBJECT    
 public:
     Sync(QObject *parent = nullptr);
 
@@ -81,16 +79,13 @@ private slots:
     void checkFirmwareUpdate(QJsonObject settings);
 
 protected:
-    void processNetworkReply(QNetworkReply* reply) override;
+    //bool processNetworkReply(QNetworkReply* reply) override;
 
-private:
+protected:
     QByteArray preparePacket(QString className, QString method, QJsonArray params);
-    QNetworkRequest prepareApiRequest(const QString& endpoint, bool setAuth = true);
-    QNetworkReply* callGetApi(const QString& endpoint, ResponseCallback callback = nullptr, bool setAuth = true);
-    QNetworkReply* callPostApi(const QString& endpoint, const QByteArray &postData, ResponseCallback callback = nullptr);
+    void setApiAuth(QNetworkRequest& request) override;
 
-private:
-    QHash <QString, ResponseCallback> mCallbacks;
+private:    
     bool mHasClient;
     QString mSerialNumber;
     QDateTime mLastPushTime;

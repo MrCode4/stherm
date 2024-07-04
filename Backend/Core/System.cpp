@@ -90,7 +90,7 @@ bool isVersionNewer(const QString& version1, const QString& version2) {
 }
 
 NUVE::System::System(NUVE::Sync *sync, QObject *parent)
-    : NetworkWorker(parent)
+    : RestApiExecutor(parent)
     , mSync(sync)
     , mAreSettingsFetched(false)
     , mUpdateAvailable (false)
