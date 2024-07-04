@@ -192,7 +192,7 @@ void Sync::fetchContractorLogo(const QString &url)
         emit contractorInfoReady();
     };
 
-    downloadBinary(url, callback, false);
+    downloadFile(url, callback, false);
 }
 
 void Sync::checkFirmwareUpdate(QJsonObject settings)

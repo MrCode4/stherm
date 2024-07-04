@@ -7,8 +7,6 @@
  * Base class to manage network requests.
  * ************************************************************************************************/
 
-constexpr char m_methodProperty[] = "method";
-
 class HttpExecutor : public QObject
 {
     Q_OBJECT

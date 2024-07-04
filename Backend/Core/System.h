@@ -85,9 +85,9 @@ public:
 
     //! Get update information from server
     //! notifyUser: Send notification for user when new update is available
-    Q_INVOKABLE void getUpdateInformation(bool notifyUser = false);
+    Q_INVOKABLE void fetchUpdateInformation(bool notifyUser = false);
 
-    Q_INVOKABLE void getBackdoorInformation();
+    Q_INVOKABLE void fetchBackdoorInformation();
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
@@ -199,9 +199,6 @@ public:
 protected slots:
     void onSerialNumberReady();
     void createLogDirectoryOnServer();
-
-protected:
-    void processNetworkReply(QNetworkReply* reply) override;
 
 signals:
     void serialNumberReady();

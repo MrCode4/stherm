@@ -45,7 +45,7 @@ QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByte
     }
 }
 
-QNetworkReply* RestApiExecutor::downloadBinary(const QString &url, ResponseCallback callback, bool setAuth)
+QNetworkReply* RestApiExecutor::downloadFile(const QString &url, ResponseCallback callback, bool setAuth)
 {
     if (mCallbacks.contains(url)) {
         return nullptr;
@@ -54,7 +54,7 @@ QNetworkReply* RestApiExecutor::downloadBinary(const QString &url, ResponseCallb
         QNetworkRequest request(url);
         if (setAuth) setApiAuth(request);
         QNetworkReply *reply = get(request);
-        reply->setProperty("IsBinaryData", true);
+        reply->setProperty("IsFileData", true);
         reply->setProperty("endpoint", url);
         mCallbacks.insert(url, callback);
         return reply;
@@ -79,11 +79,11 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
     else {
         rawData = reply->readAll();
 
-        if (reply->property("IsBinaryData").isValid() == false) {
+        if (reply->property("IsFileData").isValid() == false) {
             const QJsonObject jsonDocObj = QJsonDocument::fromJson(rawData).object();
 
             if (reply->property("noContentLog").isValid() == false) {
-                TRACE << "API RESPONSE (" << endpoint << ") : " << jsonDocObj;
+                TRACE << "API RESPONSE (" << endpoint << ") : " << rawData;
             }
 
             if (jsonDocObj.contains("data")) {

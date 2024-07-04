@@ -17,7 +17,7 @@ public:
 
     QNetworkReply* callGetApi(const QString& endpoint, ResponseCallback callback = nullptr, bool setAuth = true);
     QNetworkReply* callPostApi(const QString& endpoint, const QByteArray &postData, ResponseCallback callback = nullptr, bool setAuth = true);
-    QNetworkReply* downloadBinary(const QString& url, ResponseCallback callback = nullptr, bool setAuth = true);
+    QNetworkReply* downloadFile(const QString& url, ResponseCallback callback = nullptr, bool setAuth = true);
 
 protected:
     virtual void setApiAuth(QNetworkRequest& request);

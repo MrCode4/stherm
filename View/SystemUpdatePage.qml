@@ -30,7 +30,7 @@ BasePageView {
         const versionArray = Application.version.split('.')
         const versionArrayMain = versionArray.splice(0, 3)
         installedVesion = versionArrayMain.join('.')
-        system.getUpdateInformation();
+        system.fetchUpdateInformation();
     }
 
     /* Children
@@ -231,7 +231,7 @@ BasePageView {
 
             onClicked: {
                 if (system) {
-                    system.getBackdoorInformation();
+                    system.fetchBackdoorInformation();
                     if (root.StackView.view) {
                         root.StackView.view.push("qrc:/Stherm/View/BackdoorUpdatePage.qml", {
                                                      "uiSession": root.uiSession

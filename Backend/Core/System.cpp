@@ -10,16 +10,11 @@
 /* ************************************************************************************************
  * Network information
  * ************************************************************************************************/
-const QUrl m_updateServerUrl  = QUrl("http://fileserver.nuvehvac.com"); // New server
+const QString m_updateServerUrl  = "http://fileserver.nuvehvac.com"; // New server
 const QString m_logUsername = "uploadtemp";
 const QString m_logPassword = "oDhjPTDJYkUOvM9";
 const QString m_logServerAddress = "logs.nuvehvac.com";
 const QString m_logPath = "/opt/logs/";
-
-const QString m_partialUpdate   = QString("partialUpdate");
-const QString m_backdoorUpdate   = QString("backdoorUpdate");
-const QString m_updateFromServer= QString("UpdateFromServer");
-const QString m_backdoorFromServer = QString("BackdoorFromServer");
 
 const QString m_checkInternetConnection = QString("checkInternetConnection");
 
@@ -115,7 +110,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
         if (!mIsNightModeRunning)
-            getUpdateInformation(true);
+            fetchUpdateInformation(true);
     });
 
     mUpdateTimer.setInterval(6 * 60 * 60 * 1000); // each 6 hours
@@ -538,7 +533,7 @@ bool NUVE::System::findBackdoorVersion(const QString fileName)
     QFile file(qApp->applicationDirPath() + "/files_info.json");
 
     if (!file.exists())
-        getBackdoorInformation();
+        fetchBackdoorInformation();
 
     if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
         TRACE << "Unable to open file (files_info.json) for reading";
@@ -653,19 +648,61 @@ void NUVE::System::fetchSerialNumber(NUVE::cpuid_t accessUid)
     }
 }
 
-void NUVE::System::getUpdateInformation(bool notifyUser) {
+void NUVE::System::fetchUpdateInformation(bool notifyUser)
+{
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() != QNetworkReply::NoError) {
+            qWarning() << "Unable to download " << m_updateInfoFile << " file: " << reply->errorString();
+        }
+        else {
+            TRACE << mUpdateFilePath;
+            // Save the downloaded data
+            if (checkUpdateFile(rawData)) {
+                QFile file(mUpdateFilePath);
+                if (!file.open(QIODevice::WriteOnly)) {
+                    TRACE << "Unable to open file for writing";
+                    emit error("Unable to open file for writing");
+                    return;
+                }
+                else {
+                    file.write(rawData);
+                    file.close();
+                }
+            }
+            else {
+                TRACE << "The update information did not fetched correctly, Try again later!";
+            }
+
+            // Check the last saved m_updateInfoFile file
+            checkPartialUpdate(reply->property(m_notifyUserProperty).toBool());
+        }
+    };
+
     // Fetch the file from web location
-    QNetworkReply* reply = get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/" + m_updateInfoFile))));
-    TRACE << reply->url().toString();
-    reply->setProperty(m_methodProperty, m_updateFromServer);
-    reply->setProperty(m_notifyUserProperty, mIsManualUpdate ? false : notifyUser);
+    QNetworkReply* reply = downloadFile(m_updateServerUrl + "/" + m_updateInfoFile, callback, false);
+    if (reply) reply->setProperty(m_notifyUserProperty, mIsManualUpdate ? false : notifyUser);
 }
 
-void NUVE::System::getBackdoorInformation() {
+void NUVE::System::fetchBackdoorInformation()
+{
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            // Save the downloaded data
+            QFile file(qApp->applicationDirPath() + "/files_info.json");
+            if (file.open(QIODevice::WriteOnly)) {
+                TRACE << "Backdoor Data: " << rawData;
+                file.write(rawData);
+                file.close();
+            }
+            else {
+                TRACE << "Unable to open file for writing";
+                emit error("Unable to open file for writing");
+            }
+        }
+    };
+
     // Fetch the backdoor file from web location
-    QNetworkReply* reply = get(QNetworkRequest(m_updateServerUrl.resolved(QUrl("/manual_update/files_info.json"))));
-    TRACE << "backdoor information - URL: " << reply->url().toString();
-    reply->setProperty(m_methodProperty, m_backdoorFromServer);
+    downloadFile(m_updateServerUrl + "/manual_update/files_info.json", callback, false);
 }
 
 void NUVE::System::wifiConnected(bool hasInternet) {
@@ -677,15 +714,15 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     mUpdateTimer.start();
     if (!mIsNightModeRunning) {
 
-        // In initial setup process should not trigger the getUpdateInformation function immediately.
+        // In initial setup process should not trigger the fetchUpdateInformation function immediately.
         // Instead, we wait until the serial number of the device is available.
         // Once the serial number is ready, the onSerialNumberReady signal is emitted,
-        // prompting the call to getUpdateInformation.
+        // prompting the call to fetchUpdateInformation.
         // This ensures information is updated only after the device is fully initialized.
         if (!mIsInitialSetup)
-            getUpdateInformation(true);
+            fetchUpdateInformation(true);
 
-        getBackdoorInformation();
+        fetchBackdoorInformation();
     }
 }
 
@@ -997,9 +1034,44 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
     emit downloadStarted();
 
+    auto callback = [this, isBackdoor](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            // Check data and prepare to set up.
+            if (isBackdoor) {
+                verifyDownloadedFiles(rawData, true, true);
+            }
+            else {
+                verifyDownloadedFiles(rawData, true, false, reply->property(m_isResetVersion).toBool(),
+                                      reply->property(m_isFWServerVersion).toBool());
+            }
+            this->setProperty(m_isBusyDownloader, false);
+        }
+        else {
+            this->setProperty(m_isBusyDownloader, false);
+            emit error("Download error: " + reply->errorString());
+
+            if (isInitialSetup() && !isBackdoor) {
+                static int i = 0;
+                i++;
+                if (i > 5) {
+                    // After retry 2 times, the update back to normal state.
+                    setIsInitialSetup(false);
+                    emit updateNoChecked();
+
+                }
+                else {
+                    // In initial setup, retry when an error occurred.
+                    QTimer::singleShot(10000, this, [this]() {
+                        fetchUpdateInformation(true);
+                    });
+                }
+            }
+        }
+    };
+
     // Fetch the file from web location
-    QNetworkReply* reply = get(QNetworkRequest(m_updateServerUrl.resolved(QUrl(versionAddressInServer))));
-    reply->setProperty(m_methodProperty, isBackdoor ? m_backdoorUpdate : m_partialUpdate);
+    if (!versionAddressInServer.startsWith("/")) versionAddressInServer = "/" + versionAddressInServer;
+    QNetworkReply* reply = downloadFile(m_updateServerUrl + versionAddressInServer, callback, false);
     reply->setProperty(m_isFWServerVersion, isFWServerVersion);
 
     this->setProperty(m_isBusyDownloader, true);
@@ -1202,125 +1274,12 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
     return false;
 }
 
-void NUVE::System::processNetworkReply(QNetworkReply* reply)
-{
-    if (reply->error() != QNetworkReply::NoError) {
-        if (reply->operation() == QNetworkAccessManager::GetOperation) {
-
-            auto method  = reply->property(m_methodProperty).toString();
-            if ( method == m_updateFromServer) {
-                qWarning() << "Unable to download " << m_updateInfoFile << " file: " << reply->errorString();
-                // emit alert("Unable to download update information, Please check your internet connection: " + netReply->errorString());
-
-            } else if (method == m_partialUpdate || method == m_backdoorUpdate) {
-                this->setProperty(m_isBusyDownloader, false);
-                emit error("Download error: " + reply->errorString());
-
-                if (isInitialSetup() && method == m_partialUpdate) {
-                    static int i = 0;
-                    i++;
-                    if (i > 5) {
-                        // After retry 2 times, the update back to normal state.
-                        setIsInitialSetup(false);
-                        emit updateNoChecked();
-
-                    } else {
-                        // In initial setup, retry when an error occurred.
-                        QTimer::singleShot(10000, this, [this]() {
-                                getUpdateInformation(true);
-
-                        });
-                    }
-                }
-
-            } else {
-                qWarning() << "Network/request Error: " << reply->errorString() << method;
-            }
-        }
-
-        return;
-    }
-
-    QByteArray data = reply->readAll();
-    const QJsonDocument doc = QJsonDocument::fromJson(data);
-    const QJsonObject obj = doc.object();
-
-    switch (reply->operation()) {
-    case QNetworkAccessManager::PostOperation: {
-
-    } break;
-    case QNetworkAccessManager::GetOperation: {
-
-        // Partial update (download process) finished.
-        if (reply->property(m_methodProperty).toString() == m_partialUpdate) {
-
-            // Check data and prepare to set up.
-            verifyDownloadedFiles(data, true, false, reply->property(m_isResetVersion).toBool(),
-                                  reply->property(m_isFWServerVersion).toBool());
-
-            this->setProperty(m_isBusyDownloader, false);
-
-        } else if (reply->property(m_methodProperty).toString() == m_backdoorUpdate) {
-
-            // Check data and prepare to set up.
-            verifyDownloadedFiles(data, true, true);
-            this->setProperty(m_isBusyDownloader, false);
-
-        } else if (reply->property(m_methodProperty).toString() == m_updateFromServer) { // Partial update (download process) finished.
-
-            TRACE << mUpdateFilePath;
-            // Save the downloaded data
-            if (checkUpdateFile(data)) {
-
-                QFile file(mUpdateFilePath);
-                if (!file.open(QIODevice::WriteOnly)) {
-                    TRACE << "Unable to open file for writing";
-                    emit error("Unable to open file for writing");
-                    break;
-                }
-                TRACE << doc.toJson().toStdString().c_str();
-
-                file.write(data);
-
-                file.close();
-            } else {
-                TRACE << "The update information did not fetched correctly, Try again later!" << data.toStdString().c_str();
-//                emit alert("The update information did not fetched correctly, Try again later!");
-            }
-
-            // Check the last saved m_updateInfoFile file
-            checkPartialUpdate(reply->property(m_notifyUserProperty).toBool());
-
-        }  else if (reply->property(m_methodProperty).toString() == m_backdoorFromServer) {
-
-            // Save the downloaded data
-            QFile file(qApp->applicationDirPath() + "/files_info.json");
-            if (!file.open(QIODevice::WriteOnly)) {
-                TRACE << "Unable to open file for writing";
-                emit error("Unable to open file for writing");
-                break;
-            }
-            TRACE << "Backdoor Data: " << doc.toJson().toStdString().c_str();
-
-            file.write(data);
-
-            file.close();
-        }
-
-    } break;
-
-    default:
-
-        break;
-    }
-}
-
 void NUVE::System::onSerialNumberReady()
 {
     emit serialNumberReady();
 
     //! Get update information when Serial number is ready.
-    getUpdateInformation(true);
+    fetchUpdateInformation(true);
 }
 
 void NUVE::System::createLogDirectoryOnServer()
