@@ -33,8 +33,9 @@ ToolButton {
         source: "qrc:/Stherm/Images/fan-on.png"
 
         //! Animation for rotatin
+        //! will cost almost 10% cpu usage even when not visible
         Behavior on rotation {
-            enabled: fanAnimation.running
+            enabled: false // fanAnimation.running
             NumberAnimation
             {
                 duration: fanAnimation.interval
@@ -42,16 +43,17 @@ ToolButton {
         }
     }
 
-    //! Timer for fan animatin
+    //! Timer for fan animation
+    //! we may lower the fps in quiet mode
     Timer {
         id: fanAnimation
 
-        interval: 250
+        interval: 60
         running: false
         repeat: true
 
         onTriggered: {
-            logoImage.rotation += 45;
+            logoImage.rotation += 10;
         }
     }
 
