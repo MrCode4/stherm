@@ -15,7 +15,6 @@ const QString cContractorSettings = QString("NUVE/Contractor");
 const QString cFirmwareUpdateKey      = QString("firmware");
 const QString cFirmwareImageKey       = QString("firmware-image");
 const QString cFirmwareForceUpdateKey = QString("force-update");
-const char* cNotifyGetSN       = "notifyGetSN";
 
 inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 
@@ -57,7 +56,7 @@ void Sync::setApiAuth(QNetworkRequest& request)
 
 void Sync::fetchSerialNumber(cpuid_t accessUid, bool notifyUser)
 {
-    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    auto callback = [this, notifyUser](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (data.contains("serial_number")) {
             auto sn = data.value("serial_number").toString();
             mHasClient = data.value("has_client").toBool();
@@ -89,7 +88,6 @@ void Sync::fetchSerialNumber(cpuid_t accessUid, bool notifyUser)
 
             mSerialNumber = sn;
 
-            auto notifyUser = reply->property(cNotifyGetSN).toBool();
             if (mSerialNumber.isEmpty() && notifyUser) {
                 emit testModeStarted();
             }
@@ -103,11 +101,8 @@ void Sync::fetchSerialNumber(cpuid_t accessUid, bool notifyUser)
             if (reply->error() == QNetworkReply::NoError) {
                 TRACE << "No serial number has returned by server";
             }
-            else {
-                auto notifyUser = reply->property(cNotifyGetSN).toBool();
-                if (notifyUser && reply->error() == QNetworkReply::ContentNotFoundError) {
-                    emit testModeStarted();
-                }
+            else if (notifyUser && reply->error() == QNetworkReply::ContentNotFoundError) {
+                    emit testModeStarted();                
             }
         }
 
@@ -117,7 +112,6 @@ void Sync::fetchSerialNumber(cpuid_t accessUid, bool notifyUser)
     auto netReply = callGetApi(cBaseUrl + QString("api/sync/getSn?uid=%0").arg(accessUid.c_str()), callback, false);
 
     if (netReply) {
-        netReply->setProperty(cNotifyGetSN, notifyUser);
 
         // block if the first serial is invalid or client is not set yet
         if (mSerialNumber.isEmpty() || !mHasClient) {
