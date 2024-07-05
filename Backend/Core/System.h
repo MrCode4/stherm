@@ -362,7 +362,7 @@ private:
     QElapsedTimer mElapsedTimer;
 
     QTimer downloaderTimer;
-
+    bool mIsBusyDownloader = false;
     qint64 mDownloadBytesReceived;
     double mDownloadRateEMA;
 

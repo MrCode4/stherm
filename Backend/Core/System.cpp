@@ -17,20 +17,11 @@ const QString m_logServerAddress = "logs.nuvehvac.com";
 const QString m_logPath = "/opt/logs/";
 
 const QString m_checkInternetConnection = QString("checkInternetConnection");
-
 const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.service");
-
 const QString m_restartAppService   = QString("/etc/systemd/system/appStherm-restart.service");
 
 //! Path of update file in the server
 const QString m_updateInfoFile  = QString("updateInfoV1.json");
-
-const char m_isBusyDownloader[] = "isBusyDownloader";
-const char m_isResetVersion[]   = "isResetVersion";
-const char m_isFWServerVersion[]   = "isFWServerVersion";
-
-constexpr char m_notifyUserProperty[] = "notifyUser";
-
 const int m_timeout = 100000; // 100 seconds
 
 /* ************************************************************************************************
@@ -650,7 +641,9 @@ void NUVE::System::fetchSerialNumber(NUVE::cpuid_t accessUid)
 
 void NUVE::System::fetchUpdateInformation(bool notifyUser)
 {
-    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    bool installLatest = mIsManualUpdate ? false : notifyUser;
+
+    auto callback = [this, installLatest](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError) {
             qWarning() << "Unable to download " << m_updateInfoFile << " file: " << reply->errorString();
         }
@@ -674,13 +667,12 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
             }
 
             // Check the last saved m_updateInfoFile file
-            checkPartialUpdate(reply->property(m_notifyUserProperty).toBool());
+            checkPartialUpdate(installLatest);
         }
     };
 
     // Fetch the file from web location
     QNetworkReply* reply = downloadFile(m_updateServerUrl + "/" + m_updateInfoFile, callback, false);
-    if (reply) reply->setProperty(m_notifyUserProperty, mIsManualUpdate ? false : notifyUser);
 }
 
 void NUVE::System::fetchBackdoorInformation()
@@ -1026,28 +1018,28 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         }
     }
 
-    if (this->property(m_isBusyDownloader).toBool()) {
-        // To open progress bar.
-        emit downloadStarted();
-        return;
-    }
-
     emit downloadStarted();
 
-    auto callback = [this, isBackdoor](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    if (mIsBusyDownloader) {
+        return;
+    }
+    else {
+        mIsBusyDownloader = true;
+    }
+
+    auto callback = [this, isBackdoor, isResetVersion, isFWServerVersion]
+        (QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        mIsBusyDownloader = false;
         if (reply->error() == QNetworkReply::NoError) {
             // Check data and prepare to set up.
             if (isBackdoor) {
                 verifyDownloadedFiles(rawData, true, true);
             }
             else {
-                verifyDownloadedFiles(rawData, true, false, reply->property(m_isResetVersion).toBool(),
-                                      reply->property(m_isFWServerVersion).toBool());
+                verifyDownloadedFiles(rawData, true, false, isResetVersion, isFWServerVersion);
             }
-            this->setProperty(m_isBusyDownloader, false);
         }
         else {
-            this->setProperty(m_isBusyDownloader, false);
             emit error("Download error: " + reply->errorString());
 
             if (isInitialSetup() && !isBackdoor) {
@@ -1069,13 +1061,10 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         }
     };
 
-    // Fetch the file from web location
+    // Fetch the file from web location    
     if (!versionAddressInServer.startsWith("/")) versionAddressInServer = "/" + versionAddressInServer;
     QNetworkReply* reply = downloadFile(m_updateServerUrl + versionAddressInServer, callback, false);
-    reply->setProperty(m_isFWServerVersion, isFWServerVersion);
-
-    this->setProperty(m_isBusyDownloader, true);
-    reply->setProperty(m_isResetVersion, isResetVersion);
+    if (!reply) return; // another call in progress, so ignore
 
     setPartialUpdateProgress(0);
 
