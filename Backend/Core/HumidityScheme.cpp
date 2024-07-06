@@ -39,6 +39,11 @@ void HumidityScheme::run()
     }
 
     while (!stopWork) {
+        // If no wire go to offloop
+        if (mDataProvider.data()->systemSetup()->systemAccessories->getAccessoriesWireType() == AppSpecCPP::None) {
+            OffLoop();
+        }
+
         // Vacation has a higher priority compared to other processes.
         if (mDataProvider.data()->systemSetup()->isVacation) {
             VacationLoop();
