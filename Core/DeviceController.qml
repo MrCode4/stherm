@@ -409,7 +409,19 @@ I_DeviceController {
             return;
         }
 
-        setVacation(settings.min_temp, settings.max_temp, settings.min_humidity, settings.max_humidity)
+        // Clamp vacation data.
+        var minimumTemperature = Utils.convertedTemperatureClamped(temp_min, AppSpec.TempratureUnit.Cel,
+                                                                   AppSpec.vacationMinimumTemperatureC,
+                                                                   AppSpec.vacationMinimumTemperatureF);
+
+        var maximumTemperature = Utils.convertedTemperatureClamped(temp_max, AppSpec.TempratureUnit.Cel,
+                                                                   AppSpec.vacationMinimumTemperatureC,
+                                                                   AppSpec.vacationMinimumTemperatureF);
+
+        var minimumHumidity = clampValue(hum_min, 0, 100);
+        var maximumHumidity = clampValue(hum_max, 0, 100);
+
+        setVacation(minimumTemperature, maximumTemperature, minimumHumidity, maximumHumidity)
         setVacationOnFromServer(settings.is_enable)
     }
 

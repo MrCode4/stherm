@@ -24,10 +24,15 @@ QtObject {
 
         if (toUnit === AppSpec.TempratureUnit.Fah) {
             var fahTemp = 32 + 1.8 * celsiusTemp;
-            return Math.min(Math.max(fahTemp, min), max);
+            return clampValue(fahTemp, min, max);
         } else {
-            return Math.min(Math.max(celsiusTemp, min), max);
+            return clampValue(celsiusTemp, min, max);
         }
+    }
+
+    //! Clamp values
+    function clampValue(value, min, max) {
+        return Math.min(Math.max(value, min), max);
     }
 
     //! Convert temperature from fahrenheit to celsius
