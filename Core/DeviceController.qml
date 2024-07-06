@@ -371,7 +371,7 @@ I_DeviceController {
             return;
         }
 
-        updateFan(settings.mode, settings.workingPerHour)
+        updateFan(settings.mode, Utils.clampValues(settings.workingPerHour, AppSpec.minimumFanWorking, AppSpec.maximumFanWorking))
     }
 
     function updateBacklight(isOn, hue, brightness, shadeIndex)

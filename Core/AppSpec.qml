@@ -12,6 +12,9 @@ AppSpecCPP {
     property int minStepTempF: 10
     property int minStepHum:   20
 
+    property int minimumFanWorking: 5
+    property int maximumFanWorking: 55
+
     //! Maximum value of first temperature handler (left) in auto mode
     //! Celcius
     property real maxAutoMinTemp: 29.4444
