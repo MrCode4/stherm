@@ -95,6 +95,7 @@ Popup {
                 if (deviceController && vacationModePop.counter <= 0) {
                     deviceController.setVacationOn(true);
                     uiSession.showMainWindow = true;
+                    deviceController.updateEditMode(AppSpec.EMVacation, false)
                 }
             }
         }
