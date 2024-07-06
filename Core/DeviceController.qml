@@ -681,7 +681,7 @@ I_DeviceController {
                                             "message": message.message,
                                             "type": message.type,
                                             "isRead": message.isRead,
-                                            "datetime": message.datetime,
+                                            "created": message.datetime,
                                         })
                                 })
 
