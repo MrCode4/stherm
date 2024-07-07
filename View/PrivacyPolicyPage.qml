@@ -77,7 +77,7 @@ BasePageView {
         property bool isRead: false
 
         ScrollIndicator.vertical: ScrollIndicator {
-            parent: privacyFlick.parent
+            parent: privacyFlick
             height: parent.height
             x: parent.width
 
