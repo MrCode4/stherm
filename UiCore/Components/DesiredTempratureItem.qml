@@ -46,6 +46,25 @@ Control {
     //! Label width
     readonly property alias     labelWidth: rightTempLabel.width
 
+    Component.onCompleted: {
+        var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
+        updateTemperature(tmp);
+    }
+
+    //! Update temperature value in UI and model when min/max changed.
+    onMinTempratureChanged: {
+        if (!currentSchedule) {
+            updateTemperature(device?.requestedTemp ?? 18.0);
+            updateTemperatureModel();
+        }
+    }
+
+    onMaxTempratureChanged: {
+        if (!currentSchedule) {
+            updateTemperature(device?.requestedTemp ?? 18.0);
+            updateTemperatureModel();
+        }
+    }
 
     onDraggingChanged: {
         if (dragging)
@@ -58,15 +77,10 @@ Control {
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
         if (currentSchedule) {
-            _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                                  device.setting.tempratureUnit,
-                                                                  minTemprature,
-                                                                  maxTemprature);
+            updateTemperature(currentSchedule.temprature);
+
         } else if (device) {
-            _tempSlider.value = Utils.convertedTemperatureClamped(device.requestedTemp,
-                                                                  device.setting.tempratureUnit,
-                                                                  minTemprature,
-                                                                  maxTemprature);
+            updateTemperature(device.requestedTemp);
         }
     }
 
@@ -82,25 +96,11 @@ Control {
             from: minTemprature
             to: maxTemprature
 
-            //! Note: this binding will be broken use Connections instead
-            value: {
-                var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
-                return Utils.convertedTemperatureClamped(tmp,
-                                                         device.setting.tempratureUnit,
-                                                         minTemprature,
-                                                         maxTemprature);
-            }
-
             //! Use onPressed instead of on value changed so value is only applied to device when
             //! Dragging is finished
             onPressedChanged: {
                 if (!pressed) {
-                    var celValue = (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah)
-                            ? Utils.fahrenheitToCelsius(value) : value;
-                    if (device && device.requestedTemp !== celValue) {
-                        uiSession.deviceController.setDesiredTemperature(celValue);
-                        deviceController.pushSettings();
-                    }
+                    updateTemperatureModel();
                 }
             }
         }
@@ -398,10 +398,7 @@ Control {
             //! Update slider value (UI) with changed requestedTemp
             //! When setDesiredTemperature failed, update slider with previous value.
             function onRequestedTempChanged() {
-                _tempSlider.value = Utils.convertedTemperatureClamped(device.requestedTemp,
-                                                                      device.setting.tempratureUnit,
-                                                                      minTemprature,
-                                                                      maxTemprature);
+                updateTemperature(device.requestedTemp);
             }
         }
 
@@ -410,10 +407,7 @@ Control {
 
             //! Update slider value (UI) with changed TempratureUnit
             function onUnitChanged() {
-                _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule?.temprature ?? device.requestedTemp,
-                                                                      device.setting.tempratureUnit,
-                                                                      minTemprature,
-                                                                      maxTemprature);
+                updateTemperature(urrentSchedule?.temprature ?? device.requestedTemp);
             }
         }
 
@@ -625,4 +619,24 @@ Control {
             }
         }
     ]
+
+    /* Functions
+     * ****************************************************************************************/
+    //! Update _tempSlider.value
+    function updateTemperature(temperature: real) {
+        _tempSlider.value = Utils.convertedTemperatureClamped(temperature,
+                                                              device.setting.tempratureUnit,
+                                                              minTemprature,
+                                                              maxTemprature);
+    }
+
+    //! Update model based on _tempSlider value in heating/cooling mode.
+    function updateTemperatureModel() {
+        var celValue = (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah)
+                ? Utils.fahrenheitToCelsius(value) : _tempSlider.value;
+        if (device && device.requestedTemp !== celValue) {
+            uiSession.deviceController.setDesiredTemperature(celValue);
+            deviceController.pushSettings();
+        }
+    }
 }

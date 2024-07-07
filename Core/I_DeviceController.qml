@@ -19,6 +19,10 @@ QtObject {
 
     //! Minimum value for temperature slider (Fah)
     property real               _minimumTemperatureF: {
+        if (currentSchedule) {
+            return AppSpec.minimumTemperatureF;
+        }
+
         switch(device.systemSetup.systemMode) {
         case AppSpec.Heating:
             return 40;
@@ -27,12 +31,16 @@ QtObject {
         case AppSpec.Auto:
             return 40;
         default:
-            return 64; //! In Off and Schedule mode (doesn't matter)
+            return 64; //! In Off mode
         }
     }
 
     //! Maximum value for temperature slider
     property real               _maximumTemperatureF: {
+        if (currentSchedule) {
+            return AppSpec.maximumTemperatureF;
+        }
+
         switch(device.systemSetup.systemMode) {
         case AppSpec.Heating:
             return 85;
@@ -41,7 +49,7 @@ QtObject {
         case AppSpec.Auto:
             return 90;
         default:
-            return 90; //! In Off and Schedule mode (doesn't matter)
+            return 90; //! In Off mode
         }
     }
 

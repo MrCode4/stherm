@@ -454,7 +454,7 @@ I_DeviceController {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
-            pushSettings();
+            Qt.callLater(pushSettings);
         }
     }
 
