@@ -357,7 +357,7 @@ QtObject {
                                       newSchedule.enable = schedule.is_enable;
                                       newSchedule.name = schedule.name;
                                       newSchedule.type = schedule.type_id;
-                                      newSchedule.temprature = Utils.convertedTemperatureClamped(schedule.temp);
+                                      newSchedule.temprature = Utils.clampValue(schedule.temp, AppSpec.minimumTemperatureC, AppSpec.maximumTemperatureC);
                                       newSchedule.humidity = Utils.clampValue(schedule.humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
                                       newSchedule.startTime = formatTime(schedule.start_time);
                                       newSchedule.endTime = formatTime(schedule.end_time);

@@ -374,7 +374,7 @@ I_DeviceController {
             return;
         }
 
-        updateFan(settings.mode, Utils.clampValues(settings.workingPerHour, AppSpec.minimumFanWorking, AppSpec.maximumFanWorking))
+        updateFan(settings.mode, Utils.clampValue(settings.workingPerHour, AppSpec.minimumFanWorking, AppSpec.maximumFanWorking))
     }
 
     function updateBacklight(isOn, hue, brightness, shadeIndex)
@@ -413,16 +413,16 @@ I_DeviceController {
         }
 
         // Clamp vacation data.
-        var minimumTemperature = Utils.convertedTemperatureClamped(temp_min, AppSpec.TempratureUnit.Cel,
+        var minimumTemperature = Utils.convertedTemperatureClamped(settings.min_temp, AppSpec.TempratureUnit.Cel,
                                                                    AppSpec.vacationMinimumTemperatureC,
                                                                    AppSpec.vacationMinimumTemperatureF);
 
-        var maximumTemperature = Utils.convertedTemperatureClamped(temp_max, AppSpec.TempratureUnit.Cel,
+        var maximumTemperature = Utils.convertedTemperatureClamped(settings.max_temp, AppSpec.TempratureUnit.Cel,
                                                                    AppSpec.vacationMinimumTemperatureC,
                                                                    AppSpec.vacationMinimumTemperatureF);
 
-        var minimumHumidity = clampValue(hum_min, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
-        var maximumHumidity = clampValue(hum_max, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
+        var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
+        var maximumHumidity = Utils.clampValue(settings.max_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
 
         setVacation(minimumTemperature, maximumTemperature, minimumHumidity, maximumHumidity)
         setVacationOnFromServer(settings.is_enable)
@@ -736,12 +736,13 @@ I_DeviceController {
             return;
         }
 
-        var temperatureValue = Utils.clampValue(temperature, _minimumModelTemperatureC, _maximumModelTemperatureC);
+        var temperatureValue = Utils.clampValue(temperature, _minimumTemperatureC, _maximumTemperatureC);
         setDesiredTemperature(temperatureValue);
     }
 
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
+        console.log("aaamode temperature", temperature)
         //! Apply temperature in backend
         deviceControllerCPP.setRequestedTemperature(temperature);
 
