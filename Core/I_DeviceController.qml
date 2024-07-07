@@ -29,7 +29,7 @@ QtObject {
         case AppSpec.Cooling:
             return 60;
         case AppSpec.Auto:
-            return 40;
+            return AppSpec.autoMinimumTemperatureF;
         default:
             return 64; //! In Off mode
         }
@@ -47,7 +47,7 @@ QtObject {
         case AppSpec.Cooling:
             return 90;
         case AppSpec.Auto:
-            return 90;
+            return AppSpec.autoMaximumTemperatureF;
         default:
             return 90; //! In Off mode
         }

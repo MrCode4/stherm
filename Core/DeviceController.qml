@@ -835,15 +835,17 @@ I_DeviceController {
         }
 
         if (settings.hasOwnProperty("auto_temp_low")) {
-            if (device.autoMinReqTemp !== settings.auto_temp_low) {
-                device.autoMinReqTemp = settings.auto_temp_low;
+            var auto_temp_low = Utils.clampValue(settings.auto_temp_low, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
+            if (device.autoMinReqTemp !== auto_temp_low) {
+                device.autoMinReqTemp = auto_temp_low;
                 deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
             }
         }
 
         if (settings.hasOwnProperty("auto_temp_high")) {
-            if (device.autoMaxReqTemp !== settings.auto_temp_high) {
-                device.autoMaxReqTemp = settings.auto_temp_high;
+            var auto_temp_high = Utils.clampValue(settings.auto_temp_high, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
+            if (device.autoMaxReqTemp !== auto_temp_high) {
+                device.autoMaxReqTemp = auto_temp_high;
                 deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
             }
         }
