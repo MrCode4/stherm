@@ -146,9 +146,12 @@ I_DeviceController {
             updateHoldServer(settings.hold)
             updateFanServer(settings.fan)
             setSettingsServer(settings.setting)
-            setRequestedHumidityFromServer(settings.humidity)
-            setDesiredTemperatureFromServer(settings.temp)
+
+            // Set the mode before adjusting the temperature: the minimum and maximum temperatures will update
+            // after the mode is changed and may affect the current temperature value.
             setSystemModeServer(settings.mode_id)
+            setDesiredTemperatureFromServer(settings.temp)
+            setRequestedHumidityFromServer(settings.humidity)
             setSchedulesFromServer(settings.schedule)
             setVacationServer(settings.vacation)
             checkSensors(settings.sensors)
@@ -733,8 +736,8 @@ I_DeviceController {
             return;
         }
 
-        // TODO: Clamp based on mode
-        setDesiredTemperature(temperature);
+        var temperatureValue = Utils.clampValue(temperature, _minimumModelTemperatureC, _maximumModelTemperatureC);
+        setDesiredTemperature(temperatureValue);
     }
 
     //! Set temperature to device (system) and update model.

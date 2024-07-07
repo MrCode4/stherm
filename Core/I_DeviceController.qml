@@ -17,12 +17,8 @@ QtObject {
 
     property int                 startMode: -1
 
-    //! Minimum value for temperature slider (Fah)
-    property real               _minimumTemperatureF: {
-        if (currentSchedule) {
-            return AppSpec.minimumTemperatureF;
-        }
-
+    //! Minimum value for temperature model (Fah)
+    property real               _minimumModeTemperatureF: {
         switch(device.systemSetup.systemMode) {
         case AppSpec.Heating:
             return 40;
@@ -35,12 +31,8 @@ QtObject {
         }
     }
 
-    //! Maximum value for temperature slider
-    property real               _maximumTemperatureF: {
-        if (currentSchedule) {
-            return AppSpec.maximumTemperatureF;
-        }
-
+    //! Maximum value for temperature model (Fah)
+    property real               _maximumModelTemperatureF: {
         switch(device.systemSetup.systemMode) {
         case AppSpec.Heating:
             return 85;
@@ -53,9 +45,33 @@ QtObject {
         }
     }
 
-    //! Maximum and Minimum temperature in Celsius
+    //! Minimum value for temperature slider (Fah)
+    //! - Has schedule effect
+    property real               _minimumTemperatureF: {
+        if (currentSchedule) {
+            return AppSpec.minimumTemperatureF;
+        }
+
+        return _minimumModeTemperatureF;
+    }
+
+    //! Maximum value for temperature slider
+    //! - Has schedule effect
+    property real               _maximumTemperatureF: {
+        if (currentSchedule) {
+            return AppSpec.maximumTemperatureF;
+        }
+
+        return _maximumModelTemperatureF;
+    }
+
+    //! Maximum and Minimum slider temperature in Celsius
     property real               _minimumTemperatureC: Math.floor(Utils.fahrenheitToCelsius(_minimumTemperatureF))
     property real               _maximumTemperatureC: Math.floor(Utils.fahrenheitToCelsius(_maximumTemperatureF))
+
+    //! Maximum and Minimum model temperature in Celsius
+    property real               _minimumModelTemperatureC: Math.floor(Utils.fahrenheitToCelsius(_minimumModeTemperatureF))
+    property real               _maximumModelTemperatureC: Math.floor(Utils.fahrenheitToCelsius(_maximumModelTemperatureF))
 
     //! Actual values of minimum and maximum temperatures based on temperature unit
     property real               _minimumTemperature:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
