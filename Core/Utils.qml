@@ -15,6 +15,9 @@ QtObject {
         return (toUnit === AppSpec.TempratureUnit.Fah) ? 32 + 1.8 * celsiusTemp : celsiusTemp;
     }
 
+    //! Clamp temperature values based on min and max.
+    //! For scheduled temperatures, use default min and max values.
+    //! For others, set min and max values directly.
     function convertedTemperatureClamped(celsiusTemp: real, toUnit: int, min=null, max=null) : real {
         if (min === null || min === undefined)
             min = (toUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minimumTemperatureF : AppSpec.minimumTemperatureC)

@@ -418,8 +418,8 @@ I_DeviceController {
                                                                    AppSpec.vacationMinimumTemperatureC,
                                                                    AppSpec.vacationMinimumTemperatureF);
 
-        var minimumHumidity = clampValue(hum_min, 0, 100);
-        var maximumHumidity = clampValue(hum_max, 0, 100);
+        var minimumHumidity = clampValue(hum_min, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
+        var maximumHumidity = clampValue(hum_max, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
 
         setVacation(minimumTemperature, maximumTemperature, minimumHumidity, maximumHumidity)
         setVacationOnFromServer(settings.is_enable)
@@ -733,6 +733,7 @@ I_DeviceController {
             return;
         }
 
+        // TODO: Clamp based on mode
         setDesiredTemperature(temperature);
     }
 

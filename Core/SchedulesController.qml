@@ -357,8 +357,8 @@ QtObject {
                                       newSchedule.enable = schedule.is_enable;
                                       newSchedule.name = schedule.name;
                                       newSchedule.type = schedule.type_id;
-                                      newSchedule.temprature = schedule.temp;
-                                      newSchedule.humidity = schedule.humidity;
+                                      newSchedule.temprature = Utils.convertedTemperatureClamped(schedule.temp);
+                                      newSchedule.humidity = Utils.clampValue(schedule.humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
                                       newSchedule.startTime = formatTime(schedule.start_time);
                                       newSchedule.endTime = formatTime(schedule.end_time);
                                       newSchedule.repeats = schedule.weekdays.map(String).join(',');
