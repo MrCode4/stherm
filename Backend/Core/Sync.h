@@ -22,14 +22,14 @@ public:
     bool hasClient() const;
     QVariantMap getContractorInfo() const;
 
-    void fetchSerialNumber(cpuid_t accessUid, bool notifyUser = true);    
+    void fetchSerialNumber(const QString& uid, bool notifyUser = true);
     void fetchContractorInfo();
     void fetchContractorLogo(const QString& url);
     void fetchSettings();
     void fetchAutoModeSetings();
 
     void fetchMessages();
-    void fetchWirings(cpuid_t accessUid);
+    void fetchWirings(const QString& uid);
     void requestJob(QString type);
 
     void pushSettingsToServer(const QVariantMap &settings);

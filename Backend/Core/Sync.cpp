@@ -54,7 +54,7 @@ void Sync::setApiAuth(QNetworkRequest& request)
 }
 
 
-void Sync::fetchSerialNumber(cpuid_t accessUid, bool notifyUser)
+void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 {
     auto callback = [this, notifyUser](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (data.contains("serial_number")) {
@@ -109,7 +109,7 @@ void Sync::fetchSerialNumber(cpuid_t accessUid, bool notifyUser)
         emit serialNumberReady();
     };
 
-    auto netReply = callGetApi(cBaseUrl + QString("api/sync/getSn?uid=%0").arg(accessUid.c_str()), callback, false);
+    auto netReply = callGetApi(cBaseUrl + QString("api/sync/getSn?uid=%0").arg(uid), callback, false);
 
     if (netReply) {
 
@@ -292,13 +292,13 @@ void Sync::fetchMessages()
     callGetApi(cBaseUrl + QString("api/sync/messages?sn=%0").arg(mSerialNumber), callback);
 }
 
-void Sync::fetchWirings(cpuid_t accessUid)
+void Sync::fetchWirings(const QString& uid)
 {
     auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &) {
         emit wiringReady();
     };
 
-    callGetApi(cBaseUrl + QString("api/sync/getWirings?uid=%0").arg(accessUid.c_str()), callback);
+    callGetApi(cBaseUrl + QString("api/sync/getWirings?uid=%0").arg(uid), callback);
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
