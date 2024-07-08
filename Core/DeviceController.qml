@@ -147,11 +147,10 @@ I_DeviceController {
             updateFanServer(settings.fan)
             setSettingsServer(settings.setting)
 
-            // Set the mode before adjusting the temperature: the minimum and maximum temperatures will update
-            // after the mode is changed and may affect the current temperature value.
-            setSystemModeServer(settings.mode_id)
+            // The temperature might change several times due to mode change or temperature, but the last recorded value is the correct one.
             setDesiredTemperatureFromServer(settings.temp)
             setRequestedHumidityFromServer(settings.humidity)
+            setSystemModeServer(settings.mode_id)
             setSchedulesFromServer(settings.schedule)
             setVacationServer(settings.vacation)
             checkSensors(settings.sensors)
