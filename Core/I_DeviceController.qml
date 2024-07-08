@@ -70,15 +70,14 @@ QtObject {
             default:
                 break;
             }
-            _minimumTemperatureF = minimumTemperature;
 
+            _minimumTemperatureF = minimumTemperature;
             _maximumTemperatureF = maximumTemperature;
-            console.log("--aaaMode: ", device.systemSetup.systemMode, _minimumTemperatureC, _maximumTemperatureC)
 
             var clampTemperature = Utils.clampValue(device.requestedTemp, _minimumTemperatureC, _maximumTemperatureC);
+            console.log("mode----",clampTemperature, device.requestedTemp, _minimumTemperatureC, _maximumTemperatureC)
 
             if (clampTemperature !== device.requestedTemp) {
-                console.log("--aaaModeaa: ", device.systemSetup.systemMode, _minimumTemperatureC, _maximumTemperatureC)
                 setDesiredTemperature(clampTemperature);
                 pushSettings();
             }
@@ -111,10 +110,10 @@ QtObject {
                                                         ? _maximumTemperatureUIF : _maximumTemperatureUIC
 
     /* Object Properties
-     * ****************************************************************************************/
+         * ****************************************************************************************/
 
     /* Functions
-     * ****************************************************************************************/
+         * ****************************************************************************************/
 
     function updateBacklight(isOn, hue, brightness, shadeIndex) {}
 

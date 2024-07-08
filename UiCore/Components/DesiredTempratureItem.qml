@@ -57,10 +57,10 @@ Control {
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
         if (currentSchedule) {
-            updateTemperature(currentSchedule.temprature);
+            Qt.callLater(updateTemperature, currentSchedule.temprature);
 
         } else if (device) {
-            updateTemperature(device.requestedTemp);
+            Qt.callLater(updateTemperature, device.requestedTemp);
         }
     }
 

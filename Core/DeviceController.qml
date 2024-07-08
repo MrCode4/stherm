@@ -299,6 +299,10 @@ I_DeviceController {
     }
 
     Component.onCompleted: {
+
+        // To update the minimum and maximum when model completed
+        device.systemSetup.systemModeChanged();
+
         console.log("* requestedTemp initial: ", device.requestedTemp);
         console.log("* requestedHum initial: ", device.requestedHum);
         deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
@@ -742,7 +746,6 @@ I_DeviceController {
 
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
-        console.log("aaamode temperature", temperature)
         //! Apply temperature in backend
         deviceControllerCPP.setRequestedTemperature(temperature);
 
