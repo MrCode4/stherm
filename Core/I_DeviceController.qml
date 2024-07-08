@@ -75,7 +75,6 @@ QtObject {
             _maximumTemperatureF = maximumTemperature;
 
             var clampTemperature = Utils.clampValue(device.requestedTemp, _minimumTemperatureC, _maximumTemperatureC);
-            console.log("mode----",clampTemperature, device.requestedTemp, _minimumTemperatureC, _maximumTemperatureC)
 
             if (clampTemperature !== device.requestedTemp) {
                 setDesiredTemperature(clampTemperature);
