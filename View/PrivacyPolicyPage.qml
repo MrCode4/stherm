@@ -96,9 +96,9 @@ BasePageView {
             id: privacyPolicyLabel
             anchors.fill: parent
 
-            text: "## Privacy Policy V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
+            text: "### Privacy Policy V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
                   appModel.userPolicyTerms.privacyPolicy + "\n\n\n\n" +
-                  "## Terms Of Use V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
+                  "### Terms Of Use V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
                   appModel.userPolicyTerms.termsOfUse
 
             leftPadding: 4;
