@@ -70,7 +70,7 @@ public:
     bool areSettingsFetched() const;
 
     //! Get serial number from server
-    Q_INVOKABLE void fetchSerialNumber(const QString& uid);
+    Q_INVOKABLE void fetchSerialNumber(const QString& uid, bool notifyUser = true);
 
     //! Send request job to web server
     void requestJob(QString type);

@@ -630,9 +630,9 @@ void NUVE::System::setUpdateAvailable(bool updateAvailable) {
 
 bool NUVE::System::hasClient() const {return mSync->hasClient();}
 
-void NUVE::System::fetchSerialNumber(const QString& uid)
+void NUVE::System::fetchSerialNumber(const QString& uid, bool notifyUser)
 {
-    mSync->fetchSerialNumber(uid);
+    mSync->fetchSerialNumber(uid, notifyUser);
 
     if (mSync->hasClient()) {
         setUID(uid.toStdString());
