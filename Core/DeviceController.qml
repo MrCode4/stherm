@@ -146,10 +146,10 @@ I_DeviceController {
             updateHoldServer(settings.hold)
             updateFanServer(settings.fan)
             setSettingsServer(settings.setting)
+            setRequestedHumidityFromServer(settings.humidity)
 
             // The temperature might change several times due to mode change or temperature, but the last recorded value is the correct one.
             setDesiredTemperatureFromServer(settings.temp)
-            setRequestedHumidityFromServer(settings.humidity)
             setSystemModeServer(settings.mode_id)
             setSchedulesFromServer(settings.schedule)
             setVacationServer(settings.vacation)
@@ -418,11 +418,11 @@ I_DeviceController {
         // Clamp vacation data.
         var minimumTemperature = Utils.convertedTemperatureClamped(settings.min_temp, AppSpec.TempratureUnit.Cel,
                                                                    AppSpec.vacationMinimumTemperatureC,
-                                                                   AppSpec.vacationMinimumTemperatureF);
+                                                                   AppSpec.vacationMaximumTemperatureC);
 
         var maximumTemperature = Utils.convertedTemperatureClamped(settings.max_temp, AppSpec.TempratureUnit.Cel,
                                                                    AppSpec.vacationMinimumTemperatureC,
-                                                                   AppSpec.vacationMinimumTemperatureF);
+                                                                   AppSpec.vacationMaximumTemperatureC);
 
         var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
         var maximumHumidity = Utils.clampValue(settings.max_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);

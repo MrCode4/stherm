@@ -57,10 +57,10 @@ Control {
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
         if (currentSchedule) {
-            Qt.callLater(updateTemperature, currentSchedule.temprature);
+            Qt.callLater(updateTemperatureValue, currentSchedule.temprature);
 
         } else if (device) {
-            Qt.callLater(updateTemperature, device.requestedTemp);
+            Qt.callLater(updateTemperatureValue, device.requestedTemp);
         }
     }
 
@@ -79,10 +79,10 @@ Control {
             //! Note: this binding will be broken use Connections instead
             value: {
                 var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
-                Utils.convertedTemperatureClamped(tmp,
-                                                  device.setting.tempratureUnit,
-                                                  minTemprature,
-                                                  maxTemprature);
+                return Utils.convertedTemperatureClamped(tmp,
+                                                         device.setting.tempratureUnit,
+                                                         minTemprature,
+                                                         maxTemprature);
             }
 
             //! Use onPressed instead of on value changed so value is only applied to device when
@@ -387,7 +387,7 @@ Control {
             //! Update slider value (UI) with changed requestedTemp
             //! When setDesiredTemperature failed, update slider with previous value.
             function onRequestedTempChanged() {
-                updateTemperature(device.requestedTemp);
+                updateTemperatureValue(device.requestedTemp);
             }
         }
 
@@ -396,7 +396,7 @@ Control {
 
             //! Update slider value (UI) with changed TempratureUnit
             function onUnitChanged() {
-                updateTemperature(currentSchedule?.temprature ?? device.requestedTemp);
+                updateTemperatureValue(currentSchedule?.temprature ?? device.requestedTemp);
             }
         }
 
@@ -612,7 +612,7 @@ Control {
     /* Functions
      * ****************************************************************************************/
     //! Update _tempSlider.value
-    function updateTemperature(temperature: real) {
+    function updateTemperatureValue(temperature: real) {
         _tempSlider.value = Utils.convertedTemperatureClamped(temperature,
                                                               device.setting.tempratureUnit,
                                                               minTemprature,
