@@ -12,7 +12,7 @@
 namespace NUVE {
 class Sync : public RestApiExecutor
 {
-    Q_OBJECT    
+    Q_OBJECT
 public:
     Sync(QObject *parent = nullptr);
 
