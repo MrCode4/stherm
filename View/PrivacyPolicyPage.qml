@@ -44,6 +44,8 @@ BasePageView {
         onClicked: {
             //! Save accepted version and Load the next page
             if (root.StackView.view) {
+                appModel.userPolicyTerms.acceptedtime = system.getCurrentTime();
+
                 if (testMode) {
                     appModel.userPolicyTerms.acceptedVersionOnTestMode = appModel.userPolicyTerms.currentVersion;
                     root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {

@@ -201,6 +201,8 @@ public:
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
+    int getCurrentTime();
+
 protected slots:  
     void onSnReady();
     void createLogDirectoryOnServer();

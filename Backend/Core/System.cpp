@@ -727,6 +727,11 @@ void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const d
     mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
 
+int NUVE::System::getCurrentTime()
+{
+    return QDateTime::currentSecsSinceEpoch();
+}
+
 void NUVE::System::exitManualMode()
 {
     // Manual mode is false
