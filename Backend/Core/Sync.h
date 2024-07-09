@@ -81,7 +81,7 @@ private slots:
 private:
     QByteArray preparePacket(QString className, QString method, QJsonArray params);
 
-protected:    
+protected:
     void setApiAuth(QNetworkRequest& request) override;
     QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const override;
 
