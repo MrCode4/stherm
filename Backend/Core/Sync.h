@@ -35,7 +35,7 @@ public:
     void pushSettingsToServer(const QVariantMap &settings);
     void pushAlertToServer(const QVariantMap &settings);
 
-    void forgetDevice();    
+    void forgetDevice();
 
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
