@@ -85,7 +85,7 @@ protected:
     void setApiAuth(QNetworkRequest& request) override;
     QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const override;
 
-private:    
+private:
     bool mHasClient;
     QString mSerialNumber;
     QDateTime mLastPushTime;
