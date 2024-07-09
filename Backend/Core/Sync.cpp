@@ -53,6 +53,21 @@ void Sync::setApiAuth(QNetworkRequest& request)
     request.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(authData, QCryptographicHash::Sha256).toHex());
 }
 
+QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
+{
+    QJsonObject data;
+    const QJsonObject rootObject = QJsonDocument::fromJson(rawData).object();
+
+    if (rootObject.contains("data")) {
+        data = rootObject.value("data").toObject();
+    }
+    else {
+        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object";
+    }
+
+    return data;
+}
+
 
 void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 {

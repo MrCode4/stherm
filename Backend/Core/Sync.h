@@ -78,12 +78,12 @@ private slots:
     //! Check firmware update with getSettings reply
     void checkFirmwareUpdate(QJsonObject settings);
 
-protected:
-    //bool processNetworkReply(QNetworkReply* reply) override;
-
-protected:
+private:
     QByteArray preparePacket(QString className, QString method, QJsonArray params);
+
+protected:    
     void setApiAuth(QNetworkRequest& request) override;
+    QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const override;
 
 private:    
     bool mHasClient;

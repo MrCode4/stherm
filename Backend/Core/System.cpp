@@ -672,7 +672,7 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
     };
 
     // Fetch the file from web location
-    QNetworkReply* reply = downloadFile(m_updateServerUrl + "/" + m_updateInfoFile, callback, false);
+    downloadFile(m_updateServerUrl + "/" + m_updateInfoFile, callback);
 }
 
 void NUVE::System::fetchBackdoorInformation()
@@ -694,7 +694,7 @@ void NUVE::System::fetchBackdoorInformation()
     };
 
     // Fetch the backdoor file from web location
-    downloadFile(m_updateServerUrl + "/manual_update/files_info.json", callback, false);
+    downloadFile(m_updateServerUrl + "/manual_update/files_info.json", callback);
 }
 
 void NUVE::System::wifiConnected(bool hasInternet) {
@@ -1023,9 +1023,8 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     if (mIsBusyDownloader) {
         return;
     }
-    else {
-        mIsBusyDownloader = true;
-    }
+
+    mIsBusyDownloader = true;
 
     auto callback = [this, isBackdoor, isResetVersion, isFWServerVersion]
         (QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
@@ -1266,8 +1265,6 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
 void NUVE::System::onSerialNumberReady()
 {
     emit serialNumberReady();
-
-    //! Get update information when Serial number is ready.
     fetchUpdateInformation(true);
 }
 

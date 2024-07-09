@@ -305,7 +305,7 @@ private:
 private:
     Sync *mSync;
 
-    bool mAreSettingsFetched;
+    bool mAreSettingsFetched = false;
     QJsonObject mUpdateJsonObject;
 
     QByteArray m_expectedUpdateChecksum;

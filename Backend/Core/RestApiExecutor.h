@@ -17,14 +17,13 @@ public:
 
     QNetworkReply* callGetApi(const QString& endpoint, ResponseCallback callback = nullptr, bool setAuth = true);
     QNetworkReply* callPostApi(const QString& endpoint, const QByteArray &postData, ResponseCallback callback = nullptr, bool setAuth = true);
-    QNetworkReply* downloadFile(const QString& url, ResponseCallback callback = nullptr, bool setAuth = true);
+    QNetworkReply* downloadFile(const QString& url, ResponseCallback callback = nullptr, bool jsonFile = true, bool setAuth = false);
 
 protected:
     virtual void setApiAuth(QNetworkRequest& request);
     QNetworkRequest prepareApiRequest(const QString& endpoint, bool setAuth = true);
+    virtual QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const;
     void processNetworkReply(QNetworkReply* reply) override;
-    virtual void processApiSuccess(const QString& endpoint, const QByteArray& rawData, QJsonObject& data);
-    virtual void processApiError(const QString& endpoint, QNetworkReply* reply);
 
 private:
     QHash <QString, ResponseCallback> mCallbacks;
