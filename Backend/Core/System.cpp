@@ -657,10 +657,9 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
                     emit error("Unable to open file for writing");
                     return;
                 }
-                else {
-                    file.write(rawData);
-                    file.close();
-                }
+
+                file.write(rawData);
+                file.close();
             }
             else {
                 TRACE << "The update information did not fetched correctly, Try again later!";

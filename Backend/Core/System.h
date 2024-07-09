@@ -41,7 +41,7 @@ class System : public RestApiExecutor
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
-    QML_ELEMENT   
+    QML_ELEMENT
 
 public:
     /* Public Constructors & Destructor
