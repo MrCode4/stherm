@@ -23,10 +23,6 @@
 
 #define WIRING_CHECK_TIME 600 // ms
 
-
-static  const char*   m_IsHumTempSensorValid   = "isHumTempSensorValid ";
-static  const char*   m_SensorDataReceived     = "sensorDataReceived";
-
 class DeviceIOPrivate
 {
 public:
@@ -115,28 +111,25 @@ DeviceIOController::DeviceIOController(QObject *parent)
     mSensorDataRecievedTimer.setInterval(15 * 60 * 1000);
     mSensorDataRecievedTimer.setTimerType(Qt::PreciseTimer);
     mSensorDataRecievedTimer.setSingleShot(false);
-    mSensorDataRecievedTimer.setProperty(m_IsHumTempSensorValid , false);
-    mSensorDataRecievedTimer.setProperty(m_SensorDataReceived, false);
     mSensorDataRecievedTimer.start();
+
+    mIsHumTempSensorValid = false;
+    mIsDataReceived = false;
 
     connect(&mSensorDataRecievedTimer, &QTimer::timeout, this, [this]() {
 
         // If sensor data is not received for 15 minutes,
         // the system will switch to off mode, causing another sensor's functionality to be disrupted.
-        bool sensorDataReceived = mSensorDataRecievedTimer.property(m_SensorDataReceived).toBool();
-
         // Set to True if valid data is received, False if data is invalid or not received for 15 minutes.
-        bool isHumTempSensorValid = mSensorDataRecievedTimer.property(m_IsHumTempSensorValid).toBool();
-
-        if (!isHumTempSensorValid) {
-            // Send co2 sensor humidity/temperature malfunction alert (bad data).
+        if (!mIsHumTempSensorValid) {
+            // Send  humidity/temperature malfunction alert (bad data).
             emit alert(STHERM::AlertLevel::LVL_Emergency,
                        AppSpecCPP::AlertTypes::Alert_temperature_humidity_malfunction,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_humidity_malfunction));
 
         }
 
-        if (!sensorDataReceived) {
+        if (!mIsDataReceived) {
             // Send co2 sensor malfunction alert, No Co2 data available.
             emit alert(STHERM::AlertLevel::LVL_Emergency,
                        AppSpecCPP::AlertTypes::Alert_iaq_high,
@@ -146,11 +139,11 @@ DeviceIOController::DeviceIOController(QObject *parent)
         }
 
         // humidity/temperature malfunction
-        emit forceOffSystem(!isHumTempSensorValid);
+        emit forceOffSystem(!mIsHumTempSensorValid);
 
         // Set to false (the mainDataReady might not be called)
-        mSensorDataRecievedTimer.setProperty(m_IsHumTempSensorValid , false);
-        mSensorDataRecievedTimer.setProperty(m_SensorDataReceived, false);
+        mIsHumTempSensorValid = false;
+        mIsDataReceived = false;
     });
 }
 
@@ -1343,22 +1336,19 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 
 void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed, const uint32_t luminosity)
 {
-    mSensorDataRecievedTimer.setProperty(m_SensorDataReceived, true);
+    mIsDataReceived = true;
 
     bool isHumTempSensorDataValid = values.temp     <= m_p->throlds_aq.Temperature_Working_Range_High &&
                                     values.temp     >= m_p->throlds_aq.Temperature_Working_Range_Low  &&
                                     values.humidity <= m_p->throlds_aq.Humidity_Working_Range_High    &&
                                     values.humidity >= m_p->throlds_aq.Humidity_Working_Range_Low;
 
-    if (!isHumTempSensorDataValid) {
-        // Check humidity and temperature sensor data.
-        // If last m_SensorDataRecived status is true so we need restart the timer
-        if (mSensorDataRecievedTimer.property(m_IsHumTempSensorValid).toBool())
-            mSensorDataRecievedTimer.start();
-    }
+    // Check humidity and temperature sensor data.
+    // If last m_SensorDataRecived status is true so we need restart the timer
+    if (!isHumTempSensorDataValid && mIsHumTempSensorValid)
+        mSensorDataRecievedTimer.start();
 
-    mSensorDataRecievedTimer.setProperty(m_IsHumTempSensorValid , isHumTempSensorDataValid);
-
+    mIsHumTempSensorValid = isHumTempSensorDataValid;
 
     if (isHumTempSensorDataValid) {
 

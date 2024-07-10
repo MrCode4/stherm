@@ -209,6 +209,12 @@ private:
     QElapsedTimer m_FanAlertET;
     QElapsedTimer m_LightAlertET;
 
-    //! It checks whether the humidity and temperature data is received or not.
+    //! Verifies if data from sensors like humidity, temperature, and others is received.
     QTimer mSensorDataRecievedTimer;
+
+    //! Has correct sensor data been received from the humidity and temperature sensor
+    bool mIsHumTempSensorValid;
+
+    //! Is there recent data available from the sensors
+    bool mIsDataReceived;
 };
