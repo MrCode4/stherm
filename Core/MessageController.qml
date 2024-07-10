@@ -280,9 +280,7 @@ QtObject {
     //! Check air quility
     property Connections airConditionWatcherCon: Connections {
         target: device
-
-
-        // enabled: depend on onCo2SensorStatus in deviceConroller
+        enabled: deviceController.airConditionSensorHealth
 
         function onCo2Changed() {
             if (device.co2 > AppSpec.airQualityAlertThreshold) {
@@ -301,6 +299,9 @@ QtObject {
         interval: 3 * 60 * 60 * 1000
 
         onTriggered: {
+            if (!deviceController.airConditionSensorHealth)
+                return;
+
             var message = "Poor air quality detected. Please ventilate the room.";
 
             console.log("Air condition alert ", message)
@@ -318,14 +319,6 @@ QtObject {
 
     property Connections  deviceControllerConnection: Connections {
         target: deviceController.deviceControllerCPP
-
-        function onCo2SensorStatus(status: bool) {
-            if (!status) {
-                airConditionWatcher.stop();
-            }
-
-            airConditionWatcherCon.enabled = status;
-        }
 
         function onAlert(alertLevel : int,
                          alertType : int,

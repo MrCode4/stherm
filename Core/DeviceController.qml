@@ -21,6 +21,9 @@ I_DeviceController {
 
     property bool initialSetup: false;
 
+    //! Air condition health
+    property bool airConditionSensorHealth: true;
+
     //! mandatory update
     //! Set to true when in initial setup exist new update
     //! more usage in future like force update with permission
@@ -112,6 +115,10 @@ I_DeviceController {
 
         // adding version so we can force the image to refresh the content
         property int version : 0;
+
+        function onCo2SensorStatus(status: bool) {
+            airConditionSensorHealth = status;
+        }
 
         //! Set system mode to auto when
         //! return the system to Auto mode with the default temp range from 68F to 76F.
