@@ -194,6 +194,7 @@ qt6_add_qml_module(appStherm
         View/PrivacyPolicyPage.qml
         View/MobileAppPage.qml
         View/LockPage.qml
+        View/Lock/PINItem.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml

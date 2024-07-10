@@ -22,11 +22,19 @@ BasePageView {
     ColumnLayout {
         anchors.centerIn: parent
         width: parent.width
-        spacing: 8
+        spacing: 16
 
         Label {
-            font.pointSize: _root.font.pointSize * 0.8
-            text: "Type a 4 digit PIN code to\nlock the thermostat"
+            Layout.alignment: Qt.AlignHCenter
+            font.pointSize: root.font.pointSize * 0.8
+            text: "Type a 4 digit PIN code to\n   lock the thermostat"
+            elide: Text.ElideMiddle
+        }
+
+        PINItem {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.fillHeight: true
+            Layout.fillWidth: true
         }
     }
 }
