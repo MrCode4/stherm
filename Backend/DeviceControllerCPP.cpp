@@ -160,7 +160,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         if (forceOff) {
             emit forceOffSystem();
 
-        } if (mSystemSetup->_mIsSystemShutoff) {
+        } else if (mSystemSetup->_mIsSystemShutoff) {
             emit exitForceOffSystem();
         }
     });

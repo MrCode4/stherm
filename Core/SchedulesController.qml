@@ -530,7 +530,7 @@ QtObject {
     property Connections systemSetupConnections: Connections{
         target: device.systemSetup
 
-        function on_IsSystemShutoff() {
+        function on_IsSystemShutoffChanged() {
             if (device?.systemSetup?._isSystemShutoff)
                 deviceController.setActivatedSchedule(null);
         }
