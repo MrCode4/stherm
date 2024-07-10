@@ -193,6 +193,7 @@ qt6_add_qml_module(appStherm
         View/BackdoorUpdatePage.qml
         View/PrivacyPolicyPage.qml
         View/MobileAppPage.qml
+        View/LockPage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
