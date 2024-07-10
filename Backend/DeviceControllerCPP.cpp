@@ -160,7 +160,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         if (forceOff) {
             emit forceOffSystem();
 
-        } if (mSystemSetup->systemMode == AppSpecCPP::ForceOff) {
+        } if (mSystemSetup->_mIsSystemShutoff) {
             emit exitForceOffSystem();
         }
     });
@@ -391,8 +391,6 @@ void DeviceControllerCPP::nightModeControl(bool start)
     mIsNightModeRunning = start;
 
     m_system->setNightModeRunning(start);
-
-    _deviceIO->setNightModeRunning(start);
 
     if (start) {
         mNightModeTimer.start();

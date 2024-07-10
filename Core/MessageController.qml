@@ -365,6 +365,14 @@ QtObject {
 
             case AppSpec.Alert_fan_High:
             case AppSpec.Alert_fan_low: {
+                // Emit this alert when device is not in night/quiet mode
+                if (device.nightMode._running) {
+                    return;
+                }
+
+                //! Turn on the night mode
+                device.nightMode.mode =  AppSpec.NMOn;
+
                 // TODO: The fan speed is wrong in the main data.
                 // Return temporary
                 return;
@@ -376,9 +384,11 @@ QtObject {
 
             case AppSpec.Alert_Light_High:
             case AppSpec.Alert_Light_Low: {
-                // TODO: Turn off the adaptive brightness.
                 messageType = Message.Type.SystemAlert;
                 retriggerInterval = weeklyAlertInterval;
+
+                // Disable the adaptive brightness.
+                device.setting.adaptiveBrightness = false;
 
             } break;
 

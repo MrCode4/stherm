@@ -63,7 +63,6 @@ public:
         Vacation,
         Off,
         Emergency,
-        ForceOff // Set the system mode to OFF and user can not change it
     };
     Q_ENUM(SystemMode)
 
@@ -93,8 +92,7 @@ public:
         T1PWRD = 0,
         T1Short,
         T2PWRD,
-        None,
-        AWTForceOFF
+        None
     };
     Q_ENUM(AccessoriesWireType)
     Q_INVOKABLE QString accessoriesWireTypeString(AccessoriesWireType wt);

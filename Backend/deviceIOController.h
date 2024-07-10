@@ -79,8 +79,6 @@ public:
 
     QString getTI_SW() const;
 
-    void setNightModeRunning(const bool running);
-
     //! Start TOF sensor reading
     void startTOFGpioHandler();
     //! TODO: Enhance TOF sensor data processing speed
@@ -210,8 +208,6 @@ private:
     QElapsedTimer m_HumidityAlertET;
     QElapsedTimer m_FanAlertET;
     QElapsedTimer m_LightAlertET;
-    QElapsedTimer m_IAQAlertET;
-
 
     //! It checks whether the humidity and temperature data is received or not.
     QTimer mSensorDataRecievedTimer;

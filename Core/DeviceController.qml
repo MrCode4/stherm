@@ -116,18 +116,20 @@ I_DeviceController {
         //! Set system mode to auto when
         //! return the system to Auto mode with the default temp range from 68F to 76F.
         function onExitForceOffSystem() {
-            setAutoMinReqTemp(20);
-            setAutoMaxReqTemp(24.444);
-            setSystemModeTo(AppSpec.Auto);
+            if (device.systemSetup._isSystemShutoff) {
+                device.systemSetup._isSystemShutoff = false;
 
-            device.systemSetup.systemAccessories.backToLastState();
-            pushSettings();
+                // Move to auto mode
+                setAutoMinReqTemp(20);
+                setAutoMaxReqTemp(24.444);
+                setSystemModeTo(AppSpec.Auto);
+            }
         }
 
         //! Force off the system (Temperature and humidity)
         function onForceOffSystem() {
-            setSystemModeTo(AppSpec.ForceOff);
-            setSystemAccesseories(device.systemSetup.systemAccessories.accessoriesType, AppSpecCPP.AWTForceOFF);
+            setSystemModeTo(AppSpec.Off);
+            device.systemSetup._isSystemShutoff = true;
         }
 
         function onContractorInfoUpdated(brandName, phoneNumber, iconUrl, url,  techUrl) {
@@ -463,10 +465,15 @@ I_DeviceController {
 
     function setSystemModeTo(systemMode: int)
     {
+        if (device.systemSetup._isSystemShutoff) {
+            console.log("Ignore system mode, system is shutoff by alert manager.")
+            return;
+        }
+
         if (systemMode === AppSpecCPP.Vacation) {
             setVacationOn(true);
 
-        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.ForceOff) {
+        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;

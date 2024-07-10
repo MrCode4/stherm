@@ -39,7 +39,6 @@ public:
     bool wait_for_wiring_check = true;
     bool wiring_check_f = false;
     bool wait_relay_response = false;
-    bool mIsNightModeRunning = false;
 
     STHERM::SIOPacket SensorPacketBA;
     STHERM::SIOPacket TOFPacketBA;
@@ -1346,22 +1345,26 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 {
     mSensorDataRecievedTimer.setProperty(m_SensorDataReceived, true);
 
-    bool isSensorDataWrong = values.temp     > m_p->throlds_aq.Temperature_Working_Range_High ||
-                             values.temp     < m_p->throlds_aq.Temperature_Working_Range_Low  ||
-                             values.humidity > m_p->throlds_aq.Humidity_Working_Range_High    ||
-                             values.humidity < m_p->throlds_aq.Humidity_Working_Range_Low;
+    bool isHumTempSensorDataValid = values.temp     <= m_p->throlds_aq.Temperature_Working_Range_High &&
+                                    values.temp     >= m_p->throlds_aq.Temperature_Working_Range_Low  &&
+                                    values.humidity <= m_p->throlds_aq.Humidity_Working_Range_High    &&
+                                    values.humidity >= m_p->throlds_aq.Humidity_Working_Range_Low;
 
-    if (isSensorDataWrong) {
+    if (!isHumTempSensorDataValid) {
         // Check humidity and temperature sensor data.
         // If last m_SensorDataRecived status is true so we need restart the timer
         if (mSensorDataRecievedTimer.property(m_IsHumTempSensorValid ).toBool())
             mSensorDataRecievedTimer.start();
     }
 
-    mSensorDataRecievedTimer.setProperty(m_IsHumTempSensorValid , !isSensorDataWrong);
+    mSensorDataRecievedTimer.setProperty(m_IsHumTempSensorValid , isHumTempSensorDataValid);
 
 
-    if (!isSensorDataWrong) {
+    if (isHumTempSensorDataValid) {
+
+        // Exit from force off
+        emit forceOffSystem(false);
+
         // Manage temperature alerts
         if (values.temp > m_p->throlds_aq.temp_high) {
             if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
@@ -1433,7 +1436,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
     } else */
     // If the RPM is below the Predefined threshold and
     // the device is not in Quite mode.
-    if (!m_p->mIsNightModeRunning && fanSpeed < m_p->throlds_aq.fan_low) {
+    if (fanSpeed < m_p->throlds_aq.fan_low) {
         if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_low,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low));
@@ -1508,27 +1511,8 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
     // As air quality sensor can send big numbers due to bad air the threshold
     // to consider the sensor as not working is when it does not send any data (error)
-    if (values.iaq > m_p->throlds_aq.iaq_high) {
-        if (m_IAQAlertET.isValid() && m_IAQAlertET.elapsed() >= 15 * 60 * 1000) {
-
-            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_iaq_high,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
-
-            // Invalid data available.
-            emit co2SensorStatus(false);
-
-            m_IAQAlertET.restart();
-
-        } else if (!m_IAQAlertET.isValid()) {
-            m_IAQAlertET.start();
-            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high);
-
-        }
-    }  else {
-        // Valid data available.
-        emit co2SensorStatus(true);
-        m_IAQAlertET.invalidate();
-    }
+    // Valid data available.
+    emit co2SensorStatus(true);
 }
 
 STHERM::ResponseTime DeviceIOController::getTimeConfig()
@@ -1705,11 +1689,4 @@ QString DeviceIOController::getNRF_HW() const
 double DeviceIOController::backlightFactor()
 {
     return m_backlightFactor;
-}
-
-void DeviceIOController::setNightModeRunning(const bool running) {
-    if (m_p->mIsNightModeRunning == running)
-        return;
-
-    m_p->mIsNightModeRunning = running;
 }

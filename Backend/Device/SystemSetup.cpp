@@ -17,4 +17,6 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
 
     systemAccessories = new SystemAccessories(this);
     isVacation = false;
+
+    _mIsSystemShutoff = false;
 }

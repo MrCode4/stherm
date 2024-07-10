@@ -56,7 +56,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Cooling
-            enabled: coolAvailable && device?.systemSetup.systemMode !== AppSpecCPP.ForceOff
+            enabled: coolAvailable && !device?.systemSetup._isSystemShutoff
             text: "Cooling"
 
             onClicked: {
@@ -72,7 +72,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Heating
-            enabled: heatAvailable && device?.systemSetup.systemMode !== AppSpecCPP.ForceOff
+            enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Heating"
 
             onClicked: {
@@ -88,7 +88,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Auto
-            enabled: coolAvailable && heatAvailable && device?.systemSetup.systemMode !== AppSpecCPP.ForceOff
+            enabled: coolAvailable && heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Auto"
 
             onClicked: {
@@ -104,8 +104,8 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemSetup.isVacation
-            enabled: device?.systemSetup.systemMode !== AppSpecCPP.ForceOff
+            checked: device?.systemSetup.isVacation && !device?.systemSetup._isSystemShutoff
+            enabled: !device?.systemSetup._isSystemShutoff
             text: "Vacation"
 
             onClicked: {
@@ -122,7 +122,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemSetup.systemMode === AppSpecCPP.Off || device?.systemSetup.systemMode === AppSpecCPP.ForceOff
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Off || device?.systemSetup._isSystemShutoff
             text: "OFF"
 
             onClicked: {

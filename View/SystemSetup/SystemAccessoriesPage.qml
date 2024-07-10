@@ -20,8 +20,6 @@ BasePageView {
 
     property bool initialSetup : false
 
-    property bool isAccessoriesEnabled: systemAccessories.accessoriesWireType !== AppSpecCPP.AWTForceOFF
-
     /* Object properties
      * ****************************************************************************************/
     title: "Accessories"
@@ -90,7 +88,6 @@ BasePageView {
 
             Layout.leftMargin: 40 * scaleFactor
             checked: isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1PWRD
-            enabled: isAccessoriesEnabled
             text: "T1\npwrd"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
@@ -101,7 +98,6 @@ BasePageView {
             id: humidifierT1Short
 
             checked: isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1Short
-            enabled: isAccessoriesEnabled
             text: "T1\nshort"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
@@ -112,7 +108,6 @@ BasePageView {
             id: humidifierT2PWRD
 
             checked: isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T2PWRD
-            enabled: isAccessoriesEnabled
             text: "T2\npwrd"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
@@ -130,7 +125,6 @@ BasePageView {
 
             Layout.leftMargin: 40 * scaleFactor
             checked: !isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1PWRD
-            enabled: isAccessoriesEnabled
             text: "T1\npwrd"
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
@@ -142,7 +136,6 @@ BasePageView {
 
             text: "T1\nshort"
             checked: !isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T1Short
-            enabled: isAccessoriesEnabled
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
@@ -153,7 +146,6 @@ BasePageView {
 
             text: "T2\npwrd"
             checked: !isHumidifier && systemAccessories.accessoriesWireType === AppSpecCPP.T2PWRD
-            enabled: isAccessoriesEnabled
 
             Component.onCompleted: contentItem.horizontalAlignment = Qt.AlignHCenter
         }
@@ -168,17 +160,13 @@ BasePageView {
             id: noneChbox
 
             Layout.leftMargin: 40 * scaleFactor
-            checked: systemAccessories.accessoriesWireType === AppSpecCPP.None || !isAccessoriesEnabled
+            checked: systemAccessories.accessoriesWireType === AppSpecCPP.None
 
         }
     }
 
     //! Update model
     function updateModel() {
-
-        if (!isAccessoriesEnabled)
-            return;
-
         //! Apply settings and pop this from StackView
         //! Apply settings here
         var accTypeUI = (humidifierT1PWRD.checked || humidifierT1Short.checked || humidifierT2PWRD.checked) ?
