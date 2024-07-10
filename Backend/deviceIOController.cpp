@@ -126,7 +126,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
         bool sensorDataReceived = mSensorDataRecievedTimer.property(m_SensorDataReceived).toBool();
 
         // Set to True if valid data is received, False if data is invalid or not received for 15 minutes.
-        bool isHumTempSensorValid = mSensorDataRecievedTimer.property(m_IsHumTempSensorValid ).toBool();
+        bool isHumTempSensorValid = mSensorDataRecievedTimer.property(m_IsHumTempSensorValid).toBool();
 
         if (!isHumTempSensorValid) {
             // Send co2 sensor humidity/temperature malfunction alert (bad data).
@@ -1353,7 +1353,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
     if (!isHumTempSensorDataValid) {
         // Check humidity and temperature sensor data.
         // If last m_SensorDataRecived status is true so we need restart the timer
-        if (mSensorDataRecievedTimer.property(m_IsHumTempSensorValid ).toBool())
+        if (mSensorDataRecievedTimer.property(m_IsHumTempSensorValid).toBool())
             mSensorDataRecievedTimer.start();
     }
 
