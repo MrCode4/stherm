@@ -84,6 +84,10 @@ ListView {
             "text": "Wi-Fi Settings"
         },
         {
+            "icon": FAIcons.lock,
+            "text": "Lock"
+        },
+        {
             "icon": FAIcons.night,
             "text": "Night Mode",
             "visible": false
