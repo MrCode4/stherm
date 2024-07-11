@@ -80,7 +80,6 @@ QtObject {
             if (clampTemperature !== device.requestedTemp) {
                 setDesiredTemperature(clampTemperature);
             }
-
         }
     }
 

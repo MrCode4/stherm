@@ -416,7 +416,6 @@ I_DeviceController {
         }
 
         // Clamp vacation data.
-            // Clamp vacation data.
         var minimumTemperature = Utils.clampValue(settings.min_temp, AppSpec.vacationMinimumTemperatureC,
                                                                      AppSpec.vacationMaximumTemperatureC);
 
@@ -776,7 +775,7 @@ I_DeviceController {
         device.systemSetup.coolStage  = stage;
         device.systemSetup.systemType = AppSpecCPP.CoolingOnly;
 
-        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== Vacation)  {
+        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== AppSpecCPP.Vacation)  {
             setSystemModeTo(AppSpecCPP.Cooling)
         }
     }
@@ -784,7 +783,7 @@ I_DeviceController {
     function setSystemHeatOnly(stage: int) {
         device.systemSetup.heatStage  = stage;
         device.systemSetup.systemType = AppSpecCPP.HeatingOnly;
-        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== Vacation)  {
+        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== AppSpecCPP.Vacation)  {
             setSystemModeTo(AppSpecCPP.Heating)
         }
     }
