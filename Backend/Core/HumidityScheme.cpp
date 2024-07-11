@@ -39,12 +39,22 @@ void HumidityScheme::run()
     }
 
     while (!stopWork) {
-        // Vacation has a higher priority compared to other processes.
-        if (mDataProvider.data()->systemSetup()->isVacation) {
-            VacationLoop();
+        // If no wire go to offloop
 
-        } else if (mDataProvider.data()->systemSetup()->systemMode == AppSpecCPP::SystemMode::Off) {
+        auto sysSetup = mDataProvider->systemSetup();
+        if (sysSetup->systemAccessories->getAccessoriesWireType() == AppSpecCPP::None ||
+            sysSetup->systemMode == AppSpecCPP::SystemMode::Off) {
             OffLoop();
+
+            if (stopWork)
+                break;
+
+            continue;
+        }
+
+        // Vacation has a higher priority compared to other processes.
+        if (sysSetup->isVacation) {
+            VacationLoop();
 
         } else {
             normalLoop();

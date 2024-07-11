@@ -348,9 +348,8 @@ void Scheme::VacationLoop()
 
     } else {
         TRACE << "The conditions for the vacation loop (Temperature scheme) are not met.";
+        waitLoop(-1);
     }
-
-    waitLoop(-1);
 }
 
 void Scheme::EmergencyLoop()
