@@ -416,13 +416,12 @@ I_DeviceController {
         }
 
         // Clamp vacation data.
-        var minimumTemperature = Utils.convertedTemperatureClamped(settings.min_temp, AppSpec.TempratureUnit.Cel,
-                                                                   AppSpec.vacationMinimumTemperatureC,
-                                                                   AppSpec.vacationMaximumTemperatureC);
+            // Clamp vacation data.
+        var minimumTemperature = Utils.clampValue(settings.min_temp, AppSpec.vacationMinimumTemperatureC,
+                                                                     AppSpec.vacationMaximumTemperatureC);
 
-        var maximumTemperature = Utils.convertedTemperatureClamped(settings.max_temp, AppSpec.TempratureUnit.Cel,
-                                                                   AppSpec.vacationMinimumTemperatureC,
-                                                                   AppSpec.vacationMaximumTemperatureC);
+        var maximumTemperature = Utils.clampValue(settings.max_temp, AppSpec.vacationMinimumTemperatureC,
+                                                                     AppSpec.vacationMaximumTemperatureC);
 
         var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
         var maximumHumidity = Utils.clampValue(settings.max_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);

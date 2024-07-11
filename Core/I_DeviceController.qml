@@ -74,11 +74,11 @@ QtObject {
             _minimumTemperatureF = minimumTemperature;
             _maximumTemperatureF = maximumTemperature;
 
+            // mode can change minimum and maximum range of desired temperature so need to clamp desired temperature with mode changes.
             var clampTemperature = Utils.clampValue(device.requestedTemp, _minimumTemperatureC, _maximumTemperatureC);
 
             if (clampTemperature !== device.requestedTemp) {
                 setDesiredTemperature(clampTemperature);
-                pushSettings();
             }
 
         }
