@@ -147,6 +147,8 @@ I_DeviceController {
             updateFanServer(settings.fan)
             setSettingsServer(settings.setting)
             setRequestedHumidityFromServer(settings.humidity)
+
+            // The temperature might change several times due to mode change or temperature, but the last recorded value is the correct one.
             setDesiredTemperatureFromServer(settings.temp)
             setSystemModeServer(settings.mode_id)
             setSchedulesFromServer(settings.schedule)
@@ -296,6 +298,10 @@ I_DeviceController {
     }
 
     Component.onCompleted: {
+
+        // To update the minimum and maximum when model completed
+        device.systemSetup.systemModeChanged();
+
         console.log("* requestedTemp initial: ", device.requestedTemp);
         console.log("* requestedHum initial: ", device.requestedHum);
         deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
@@ -371,7 +377,7 @@ I_DeviceController {
             return;
         }
 
-        updateFan(settings.mode, settings.workingPerHour)
+        updateFan(settings.mode, Utils.clampValue(settings.workingPerHour, AppSpec.minimumFanWorking, AppSpec.maximumFanWorking))
     }
 
     function updateBacklight(isOn, hue, brightness, shadeIndex)
@@ -409,7 +415,17 @@ I_DeviceController {
             return;
         }
 
-        setVacation(settings.min_temp, settings.max_temp, settings.min_humidity, settings.max_humidity)
+        // Clamp vacation data.
+        var minimumTemperature = Utils.clampValue(settings.min_temp, AppSpec.vacationMinimumTemperatureC,
+                                                                     AppSpec.vacationMaximumTemperatureC);
+
+        var maximumTemperature = Utils.clampValue(settings.max_temp, AppSpec.vacationMinimumTemperatureC,
+                                                                     AppSpec.vacationMaximumTemperatureC);
+
+        var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
+        var maximumHumidity = Utils.clampValue(settings.max_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
+
+        setVacation(minimumTemperature, maximumTemperature, minimumHumidity, maximumHumidity)
         setVacationOnFromServer(settings.is_enable)
     }
 
@@ -442,7 +458,7 @@ I_DeviceController {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
-            pushSettings();
+            Qt.callLater(pushSettings);
         }
     }
 
@@ -681,7 +697,7 @@ I_DeviceController {
                                             "message": message.message,
                                             "type": message.type,
                                             "isRead": message.isRead,
-                                            "datetime": message.datetime,
+                                            "created": message.datetime,
                                         })
                                 })
 
@@ -721,7 +737,8 @@ I_DeviceController {
             return;
         }
 
-        setDesiredTemperature(temperature);
+        var temperatureValue = Utils.clampValue(temperature, _minimumTemperatureC, _maximumTemperatureC);
+        setDesiredTemperature(temperatureValue);
     }
 
     //! Set temperature to device (system) and update model.
@@ -758,7 +775,7 @@ I_DeviceController {
         device.systemSetup.coolStage  = stage;
         device.systemSetup.systemType = AppSpecCPP.CoolingOnly;
 
-        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== Vacation)  {
+        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== AppSpecCPP.Vacation)  {
             setSystemModeTo(AppSpecCPP.Cooling)
         }
     }
@@ -766,7 +783,7 @@ I_DeviceController {
     function setSystemHeatOnly(stage: int) {
         device.systemSetup.heatStage  = stage;
         device.systemSetup.systemType = AppSpecCPP.HeatingOnly;
-        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== Vacation)  {
+        if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== AppSpecCPP.Vacation)  {
             setSystemModeTo(AppSpecCPP.Heating)
         }
     }
@@ -822,15 +839,17 @@ I_DeviceController {
         }
 
         if (settings.hasOwnProperty("auto_temp_low")) {
-            if (device.autoMinReqTemp !== settings.auto_temp_low) {
-                device.autoMinReqTemp = settings.auto_temp_low;
+            var auto_temp_low = Utils.clampValue(settings.auto_temp_low, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
+            if (device.autoMinReqTemp !== auto_temp_low) {
+                device.autoMinReqTemp = auto_temp_low;
                 deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
             }
         }
 
         if (settings.hasOwnProperty("auto_temp_high")) {
-            if (device.autoMaxReqTemp !== settings.auto_temp_high) {
-                device.autoMaxReqTemp = settings.auto_temp_high;
+            var auto_temp_high = Utils.clampValue(settings.auto_temp_high, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
+            if (device.autoMaxReqTemp !== auto_temp_high) {
+                device.autoMaxReqTemp = auto_temp_high;
                 deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
             }
         }

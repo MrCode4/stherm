@@ -141,8 +141,8 @@ BasePageView {
                     Layout.rightMargin: 24 * scaleFactor
                     majorTickCount: 1
                     ticksCount: (to - from) / 5
-                    from: 5
-                    to: 55
+                    from: AppSpec.minimumFanWorking
+                    to: AppSpec.maximumFanWorking
                     stepSize: 5
                     value: fan?.workingPerHour ?? 0
                     valueChangeAnimation: true
