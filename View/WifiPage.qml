@@ -41,13 +41,27 @@ BasePageView {
 
     Timer {
         id: fetchTimer
-
+        property bool isFetching: false
         repeat: true
-        running: root.visible && initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady
+        running: root.visible && initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady && !isFetching
         interval: 5000
 
-        onTriggered: system.fetchSettings();
+        onTriggered: {
+            isFetching = true;
+            system.fetchSettings();
+        }
     }
+
+    Connections {
+        target: system
+
+        function onAreSettingsFetchedChanged(success) {
+            uiSession.settingsReady = success;
+            fetchTimer.isFetching = false;
+            console.log("fetching in initial was", uiSession.settingsReady )
+        }
+    }
+
 
     //! Once the network connection is established, the System Types page should automatically open,
     Timer {
@@ -449,11 +463,6 @@ BasePageView {
         function onUpdateNoChecked() {
             checkedUpdate = true;
             console.log("udpate checked in initial setup")
-        }
-
-        function onAreSettingsFetchedChanged(success) {
-            uiSession.settingsReady = success;
-            console.log("fetching in initial was", uiSession.settingsReady )
         }
     }
 

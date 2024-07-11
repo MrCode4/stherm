@@ -56,7 +56,7 @@ void Sync::setApiAuth(QNetworkRequest& request)
 QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
 {
     QJsonObject data;
-    const QJsonObject rootObject = QJsonDocument::fromJson(rawData).object();
+    const QJsonObject rootObject = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
 
     if (rootObject.contains("data")) {
         data = rootObject.value("data").toObject();
@@ -117,7 +117,10 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
                 TRACE << "No serial number has returned by server";
             }
             else if (notifyUser && reply->error() == QNetworkReply::ContentNotFoundError) {
-                    emit testModeStarted();                
+                emit testModeStarted();
+            }
+            else {
+                qWarning() << "Unable to fetch the device serial number, error: " << reply->errorString();
             }
         }
 
@@ -140,8 +143,7 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 void Sync::fetchContractorInfo()
 {
     if (mSerialNumber.isEmpty()) {
-        qWarning()
-            << "ContractorInfo: The serial number is not recognized correctly...";
+        qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
         return;
     }
 

@@ -156,6 +156,23 @@ I_DeviceController {
 
         }
 
+        function onAreSettingsFetchedChanged(success) {
+            if (success) {
+                settingsLoader.interval = 5000;
+                console.log("fetching success, back to ", interval);
+            }
+            else {
+                var intervalNew = settingsLoader.interval * 2;
+                if (intervalNew > 60000) {
+                    intervalNew = 60000;
+                }
+                settingsLoader.interval = intervalNew;
+                console.log("fetching failed, backing off to ", settingsLoader.interval)
+            }
+
+            settingsLoader.isFetching = false;
+        }
+
         function onAppDataReady(data) {
             // This is not a settings section, the QR URL is just part of the information
             checkQRurl(data.qr_url);
@@ -229,21 +246,13 @@ I_DeviceController {
     }
 
     property Timer  settingsLoader: Timer {
+        property bool isFetching: false
         repeat: true;
-        running: !initialSetup;
+        running: !initialSetup && !isFetching;
         interval: 5000;
         onTriggered: {
-            deviceControllerCPP.system.fetchSettings();
-            if (!deviceControllerCPP.system.areSettingsFetched) {
-                var intervalNew = interval * 2;
-                if (intervalNew > 60000)
-                    intervalNew = 60000;
-                interval = intervalNew;
-                console.log("fetching failed, backing off to ", interval)
-            } else {
-                interval = 5000;
-                console.log("fetching success, back to ", interval)
-            }
+            isFetching = true;
+            deviceControllerCPP.system.fetchSettings();            
         }
     }
 

@@ -80,7 +80,7 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
     QJsonObject data;
 
     if (reply->error() != QNetworkReply::NoError) {
-        TRACE << "API ERROR (" << endpoint << ") # code: "<< reply->error() << ", message: " << reply->errorString();
+        qWarning() << "API ERROR (" << endpoint << ") # code: "<< reply->error() << ", message: " << reply->errorString();
     }
     else {
         rawData = reply->readAll();
@@ -97,6 +97,6 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
 
     auto callback = mCallbacks.take(endpoint);
     if (callback) {
-        callback(reply, rawData, data);
+        callback(reply, rawData, data);        
     }
 }
