@@ -5,6 +5,32 @@ This repository contains STHERM project
 Release Note
 =============
 -------------
+## Release R 1.0.2
+ 11th July 2024  
+ Branch- master, commit- 4432a5d6
+ 
+### Release Articles
+update-V.1.0.2.zip
+
+### Reason
+Fix some issues
+
+### What’s Brand New
+
+### What Been Updated
+- fan performance a little less smooth but way less cpu usage
+- Update created time of messages based on new API
+- Improved ui for privacy policy page and saving timestamp of acceptance
+
+### What’s Been Fixed
+- fixing bug with vacation mode which mobile version can not resume to normal
+- fix for out of sync values on mode change using validation of data upon receiving from server or before sending to it
+- fix with delay on ending vacation mode
+
+
+### Known Issues
+ - Alerts should be updated according the docs
+
 ## Release R 1.0.0 
  1st July 2024  
  Branch- master, commit- *
