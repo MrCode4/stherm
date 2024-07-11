@@ -16,7 +16,6 @@ BacklightPage {
     bottomPadding: 32 * scaleFactor
     title: "Backlight Test"
     isTest: true
-    backlightSwitch.checked: true
 
     onVisibleChanged: {
         if (visible) {
@@ -102,7 +101,8 @@ BacklightPage {
             }
 
             _root.setCurrentColor(btnIndex)
-            _root.applyOnline()
+            backlightSwitch.checked = true;
+            onlineTimer.startTimer();
             buttonTimer.btnIndex++
         }
     }
