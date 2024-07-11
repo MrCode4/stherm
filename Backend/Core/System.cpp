@@ -727,6 +727,15 @@ void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const d
     mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
 
+QString NUVE::System::getCurrentTime()
+{
+    auto time = QDateTime::currentDateTimeUtc();
+    // we can get time from Internet if available;
+    //! TODO
+
+    return time.toString(Qt::ISODate);
+}
+
 void NUVE::System::exitManualMode()
 {
     // Manual mode is false

@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * privacyPolicy and terms of use
+ * privacyPolicyPage.qml privacyPolicy and terms of use
  * ***********************************************************************************************/
 
 BasePageView {
@@ -44,7 +44,9 @@ BasePageView {
         onClicked: {
             //! Save accepted version and Load the next page
             if (root.StackView.view) {
+
                 if (testMode) {
+                    appModel.userPolicyTerms.acceptedTimeTester = system.getCurrentTime();
                     appModel.userPolicyTerms.acceptedVersionOnTestMode = appModel.userPolicyTerms.currentVersion;
                     root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                  "uiSession": Qt.binding(() => uiSession),
@@ -52,6 +54,7 @@ BasePageView {
                                              });
 
                 } else {
+                    appModel.userPolicyTerms.acceptedTimeUser = system.getCurrentTime();
                     appModel.userPolicyTerms.acceptedVersion = appModel.userPolicyTerms.currentVersion;
                     root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                                  "uiSession": uiSession,
@@ -64,131 +67,61 @@ BasePageView {
         }
     }
 
-    //! Privacy Policy
-    ExpandableItem {
-        id: privacyPolicyExpand
+
+    Flickable {
+        id: privacyFlick
 
         anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: confirmRowLayout.top
+        anchors.bottomMargin: 10
 
-        width: parent.width
-        maxHeight: root.height * 0.55
+        property bool isRead: false
 
-        isExpanded: true
-        title: "Privacy Policy V. " + appModel.userPolicyTerms.currentVersion
+        ScrollIndicator.vertical: ScrollIndicator {
+            parent: privacyFlick
+            height: parent.height
+            x: parent.width
 
-        onIsExpandedChanged: {
-            termsOfUseExpand.isExpanded = !isExpanded;
-        }
-
-        Item {
-            anchors.fill: parent
-
-            Flickable {
-                id: privacyFlick
-
-                property bool isRead: false
-
-                ScrollIndicator.vertical: ScrollIndicator {
-                    parent: privacyFlick.parent
-                    height: parent.height
-                    x: parent.width
-
-                    onPositionChanged: {
-                        if (!privacyFlick.isRead)
-                            privacyFlick.isRead = position > 0.95;
-                    }
-                }
-
-                anchors.fill: parent
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                contentWidth: width
-                contentHeight: privacyPolicyLabel.implicitHeight
-
-                Label {
-                    id: privacyPolicyLabel
-                    anchors.fill: parent
-
-                    text: appModel.userPolicyTerms.privacyPolicy
-                    leftPadding: 4;
-                    rightPadding: 4
-                    background: null
-                    textFormat: Text.MarkdownText
-                    wrapMode: Text.WordWrap
-                    lineHeight: 1.3
-                    font.pointSize: Qt.application.font.pointSize * 0.7
-                }
+            onPositionChanged: {
+                if (!privacyFlick.isRead)
+                    privacyFlick.isRead = position > 0.98;
             }
         }
-    }
 
-    //! Terms Of Use
-    ExpandableItem {
-        id: termsOfUseExpand
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        contentWidth: width
+        contentHeight: privacyPolicyLabel.implicitHeight
 
-        anchors.top: privacyPolicyExpand.bottom
-        anchors.topMargin: 10
-        isExpanded: false
-        title: "Terms Of Use V. " + appModel.userPolicyTerms.currentVersion
-        width: parent.width
-        maxHeight: root.height * 0.55
-
-        onIsExpandedChanged: {
-            privacyPolicyExpand.isExpanded = !isExpanded;
-        }
-
-        Item {
+        Label {
+            id: privacyPolicyLabel
             anchors.fill: parent
 
+            text: "### Privacy Policy V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
+                  appModel.userPolicyTerms.privacyPolicy + "\n\n\n\n" +
+                  "### Terms Of Use V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
+                  appModel.userPolicyTerms.termsOfUse
 
-            Flickable {
-                id: termsflick
-
-                property bool isRead: false
-
-                ScrollIndicator.vertical: ScrollIndicator {
-                    parent: termsflick.parent
-                    height: parent.height
-                    x: parent.width
-
-                    onPositionChanged: {
-                        if (!termsflick.isRead)
-                            termsflick.isRead = position > 0.95;
-                    }
-                }
-
-
-                anchors.fill: parent
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                contentWidth: width
-                contentHeight: termsUsageLabel.implicitHeight
-
-                Label {
-                    id: termsUsageLabel
-                    anchors.fill: parent
-
-                    text: appModel.userPolicyTerms.termsOfUse
-                    leftPadding: 4;
-                    rightPadding: 4
-                    background: null
-                    textFormat: Text.MarkdownText
-                    wrapMode: Text.WordWrap
-                    lineHeight: 1.3
-                    font.pointSize: Qt.application.font.pointSize * 0.7
-                }
-            }
+            leftPadding: 4;
+            rightPadding: 4
+            background: null
+            textFormat: Text.MarkdownText
+            wrapMode: Text.WordWrap
+            lineHeight: 1.3
+            font.pointSize: Qt.application.font.pointSize * 0.7
         }
     }
 
     RowLayout {
+        id: confirmRowLayout
         spacing: 4
 
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
 
-        enabled: (privacyPolicyLabel.text.length > 0 && termsUsageLabel.text.length > 0) &&
-                 (privacyFlick.isRead && termsflick.isRead)
+        enabled: privacyPolicyLabel.text.length > 0 && privacyFlick.isRead
 
         CheckBox {
             id: privacyPolicyChbox

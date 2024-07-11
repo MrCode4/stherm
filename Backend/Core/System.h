@@ -201,6 +201,8 @@ public:
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
+    Q_INVOKABLE QString getCurrentTime();
+
 protected slots:  
     void onSnReady();
     void createLogDirectoryOnServer();
