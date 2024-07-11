@@ -521,8 +521,8 @@ void DeviceControllerCPP::startDevice()
     // will be loaded always, but should be OFF in iniial setup mode as its default is OFF
     QTimer::singleShot(5000, this, [this]() {
         TRACE << "starting scheme";
-        m_scheme->restartWork();
-        m_HumidityScheme->restartWork();
+        m_scheme->restartWork(true);
+        m_HumidityScheme->restartWork(true);
     });
 
     if (startMode == 0) {

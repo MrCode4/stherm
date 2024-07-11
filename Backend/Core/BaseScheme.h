@@ -32,12 +32,13 @@ public:
     virtual void setSystemSetup() = 0;
 
     //! Restart the worker thread
-    virtual void restartWork() = 0;
+    virtual void restartWork(bool forceStart = false) = 0;
 
     virtual void setVacation() = 0;
 
     void setCanSendRelays(const bool& csr);
 
+    void onScheduleChanged();
 
 signals:
     void stopWorkRequested();

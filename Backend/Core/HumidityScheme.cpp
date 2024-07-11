@@ -72,7 +72,7 @@ void HumidityScheme::run()
     }
 }
 
-void HumidityScheme::restartWork()
+void HumidityScheme::restartWork(bool forceStart)
 {
     if (isRunning()) {
         TRACE << "restarting Humidity scheme" << stopWork;
@@ -95,11 +95,14 @@ void HumidityScheme::restartWork()
         emit stopWorkRequested();
         this->wait(QDeadlineTimer(1000, Qt::PreciseTimer));
 
-    } else {
+    } else if (forceStart){
         TRACE << "started Humidity scheme";
         stopWork = false;
         // mLogTimer.start();
         this->start();
+
+    } else {
+        TRACE << "trying to start before main start";
     }
 }
 

@@ -31,7 +31,7 @@ public:
     void setSystemSetup() override;
 
     //! Restart the worker thread
-    void restartWork() override;
+    void restartWork(bool forceStart = false) override;
 
     void setVacation() override;
 
