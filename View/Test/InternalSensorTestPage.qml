@@ -95,7 +95,7 @@ BasePageView {
     function writeSensorResult(key, value, min, max, compare) {
         let result = (value >= min && value <= max)
         let description = "%1(%5) must be between %2 and %3. Value: %4".arg(key).arg(min).arg(max).arg(value).arg(compare ? "used" : "not used")
-        deviceController.deviceControllerCPP.writeTestResult(key, compare ? result : true, description)
+        deviceController.deviceControllerCPP.saveTestResult(key, compare ? result : true, description)
     }
 
     function nextPage(){

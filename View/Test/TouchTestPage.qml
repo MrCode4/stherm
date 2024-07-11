@@ -46,7 +46,7 @@ BasePageView {
     onPointsStateChanged: {
         if (pointsState === "1,1,1,1,1,1,1,1,1") {
             backButtonVisible = false;
-            deviceController.deviceControllerCPP.writeTestResult("Touch test", true)
+            deviceController.deviceControllerCPP.saveTestResult("Touch test", true)
             nextPage()
         }
     }
@@ -73,7 +73,7 @@ BasePageView {
         onRetryClicked: infoPopup.open()
         onContinueClicked: {
             backButtonVisible = true;
-            deviceController.deviceControllerCPP.writeTestResult("Touch test", false, "The touchscreen is not working or it failed to register within " + infoPopup.seconds + " seconds")
+            deviceController.deviceControllerCPP.saveTestResult("Touch test", false, "The touchscreen is not working or it failed to register within " + infoPopup.seconds + " seconds")
             nextPage()
         }
     }

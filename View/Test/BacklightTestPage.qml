@@ -61,7 +61,7 @@ BacklightPage {
         detailMessage: "Are all LEDS on,<br>at the same brightness and colour?"
         onAccepted: {
             backButtonVisible = false;
-            deviceController.deviceControllerCPP.writeTestResult("Backlight test", true)
+            deviceController.deviceControllerCPP.saveTestResult("Backlight test", true)
             nextPage()
         }
         onRejected: {
@@ -80,7 +80,7 @@ BacklightPage {
         }
         onRejected: {
             backButtonVisible = true;
-            deviceController.deviceControllerCPP.writeTestResult("Backlight test", false, "The backlight is not functioning properly")
+            deviceController.deviceControllerCPP.saveTestResult("Backlight test", false, "The backlight is not functioning properly")
             nextPage()
         }
     }

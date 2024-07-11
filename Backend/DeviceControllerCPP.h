@@ -68,8 +68,8 @@ public:
     Q_INVOKABLE QVariantMap getMainData();
 
     //!
-    Q_INVOKABLE void writeTestResult(const QString& testName, const QString& testResult, const QString& description="");
-    Q_INVOKABLE void writeTestResult(const QString& testName, bool testResult, const QString& description="");
+    Q_INVOKABLE void writeTestResult(const QString &fileName, const QString& testName, const QString& testResult, const QString& description="");
+    Q_INVOKABLE void saveTestResult(const QString& testName, bool testResult, const QString& description="");
     Q_INVOKABLE void beginTesting();
 
     Q_INVOKABLE void testBrightness(int value);
@@ -318,7 +318,10 @@ private:
     }
 
     // Testing
-    QList<bool> mAllTestsPassed ;
+    std::map<QString, bool> mAllTestsResults;
+    std::map<QString, QString> mAllTestsValues;
+    //! TODO: initialize all tests as a test for all tests to be conducted
+    QStringList mAllTestNames; // to keep them in order
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 };
