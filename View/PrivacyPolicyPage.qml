@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * privacyPolicy and terms of use
+ * privacyPolicyPage.qml privacyPolicy and terms of use
  * ***********************************************************************************************/
 
 BasePageView {
@@ -44,9 +44,9 @@ BasePageView {
         onClicked: {
             //! Save accepted version and Load the next page
             if (root.StackView.view) {
-                appModel.userPolicyTerms.acceptedtime = system.getCurrentTime();
 
                 if (testMode) {
+                    appModel.userPolicyTerms.acceptedTimeTester = system.getCurrentTime();
                     appModel.userPolicyTerms.acceptedVersionOnTestMode = appModel.userPolicyTerms.currentVersion;
                     root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                  "uiSession": Qt.binding(() => uiSession),
@@ -54,6 +54,7 @@ BasePageView {
                                              });
 
                 } else {
+                    appModel.userPolicyTerms.acceptedTimeUser = system.getCurrentTime();
                     appModel.userPolicyTerms.acceptedVersion = appModel.userPolicyTerms.currentVersion;
                     root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                                  "uiSession": uiSession,
