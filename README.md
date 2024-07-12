@@ -7,7 +7,7 @@ Release Note
 -------------
 ## Release R 1.0.2
  11th July 2024  
- Branch- master, commit- 4432a5d6
+ Branch- master, commit- 743f30f5
  
 ### Release Articles
 update-V.1.0.2.zip
