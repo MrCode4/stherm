@@ -17,6 +17,8 @@ Control {
 
     property int pinLength: 4
 
+    property bool showPin: false
+
     /* Object properties
      * ****************************************************************************************/
 
@@ -30,7 +32,7 @@ Control {
         spacing: 8
 
         RowLayout {
-            spacing: 8
+            spacing: 32
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
 
@@ -40,7 +42,8 @@ Control {
                 delegate: TextField {
                     id: delegate
 
-                    echoMode: TextInput.Password
+                    readOnly: true
+                    echoMode: showPin ? TextInput.Normal : TextInput.Password
                     validator: IntValidator {
                         bottom: 0
                         top: 9
@@ -52,14 +55,38 @@ Control {
                         radius: 5
                         color: Style.button.disabledColor
 
-                        border.width: delegate.text.legth > 0 ? 2 : 0
+                        border.width: delegate.text.length > 0 ? 2 : 0
                         border.color: Style.foreground
                     }
                 }
             }
 
+            Item {
+                Layout.alignment: Qt.AlignVCenter
+                width: 30
+                height: 45
+
+                RoniaTextIcon {
+                    anchors.centerIn: parent
+                    font.weight: 400
+                    font.pointSize: root.font.pointSize * 0.8
+                    text: showPin ? AppStyle.generalIcons.visible : AppStyle.generalIcons.hide
+                }
+
+                TapHandler{
+                    onTapped: {
+                        showPin = !showPin;
+                    }
+                }
+            }
         }
 
+        GridLayout {
+            columns: 4
+            rows: 3
+
+
+        }
 
     }
 }
