@@ -6,7 +6,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * A delegate to be used in Lock/Unlock page
+ * PINItem: A delegate to be used in Lock/Unlock page
  * ***********************************************************************************************/
 
 Control {
@@ -15,52 +15,81 @@ Control {
     /* Property declaration
      * ****************************************************************************************/
 
+    property bool showPin: false
+
+    property bool isLock: true
+
     property int pinLength: 4
 
-    property bool showPin: false
+    property string errorText: ""
+
+
+    //! Binding broke when pin changed.
+    property bool isPINWrong: false
+
+    property var pinItems: Object.values(pinLayout.children).filter(item => item instanceof PINTextField)
+
+    property TextField focusItem: null
+
+
+    //! Send pin to parent
+    signal sendPIN(pin: string)
 
     /* Object properties
      * ****************************************************************************************/
 
+    Component.onCompleted: {
+        if (pinItems.length > 0)
+            pinItems[0].forceActiveFocus();
+    }
 
     /* Children
      * ****************************************************************************************/
 
     ColumnLayout {
-        anchors.centerIn: parent
-        width: parent.width
+        anchors.fill: parent
         spacing: 8
 
         RowLayout {
-            spacing: 32
+            id: pinLayout
+            spacing: 8
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
 
             Repeater {
+                id:pinRepeater
+
                 model: pinLength
 
-                delegate: TextField {
-                    id: delegate
+                PINTextField {
+                    id: pinField
 
-                    readOnly: true
-                    echoMode: showPin ? TextInput.Normal : TextInput.Password
-                    validator: IntValidator {
-                        bottom: 0
-                        top: 9
+                    // focus: true
+                    showPin: root.showPin
+                    focus: false
+                    isPINWrong: root.isPINWrong
+
+                    onFocusChanged: {
+                        if (focus) {
+                            root.focusItem = pinField
+                        }
                     }
 
-                    background: Rectangle {
-                        width: 35
-                        height: 45
-                        radius: 5
-                        color: Style.button.disabledColor
+                    onTextChanged: {
+                        root.isPINWrong = false;
 
-                        border.width: delegate.text.length > 0 ? 2 : 0
-                        border.color: Style.foreground
+                        // Update focus to the next field if text length is 1
+                        if (text.length > 0) {
+                            root.nextField(pinField).forceActiveFocus();
+                        } else {
+                            // Move focus back if text is cleared
+                            // root.previousField(pinField).forceActiveFocus();
+                        }
                     }
                 }
             }
 
+            //! Show/hide the pin
             Item {
                 Layout.alignment: Qt.AlignVCenter
                 width: 30
@@ -81,12 +110,110 @@ Control {
             }
         }
 
+        //! Show wrong PIN error.
+        Label {
+            id: warnInfo
+
+            Layout.alignment: Qt.AlignHCenter
+
+            font.pointSize: root.font.pointSize * 0.8
+            text: errorText
+            elide: Text.ElideMiddle
+            visible: isPINWrong
+            color: Style.testFailColor
+        }
+
+        //! PIN keyboard
         GridLayout {
             columns: 4
             rows: 3
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
 
+            Repeater {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignRight
 
+                model: [
+                    "1", "2", "3", "4",
+                    "5", "6", "7", "8",
+                    "", "9", "0"
+                ]
+
+                delegate: Button {
+                    text: modelData
+
+                    enabled: modelData.length > 0
+                    flat: true
+                    radius: 0
+                    backgroundColor: enabled ? (hovered ? Style.foreground : Style.button.disabledColor) : "transparent"
+                    topBackgroundColor: backgroundColor
+                    textColor: enabled ? (hovered ? Style.background : Style.foreground) : "transparent"
+
+                    width: 55
+                    height: width
+
+                    onClicked: {
+                        if (focusItem)
+                            focusItem.text = modelData;
+                    }
+                }
+            }
+
+            //! Use item to have wide tap area.
+            Item {
+                width: 55
+                height: width
+                RoniaTextIcon {
+                    anchors.centerIn: parent
+                    text: AppStyle.generalIcons.deleteLeft
+                    font.pointSize: root.font.pointSize * 1.1
+                }
+
+                TapHandler {
+                    onTapped: {
+                        focusItem.text = "";
+                    }
+                }
+            }
         }
 
+        ButtonInverted {
+            Layout.alignment: Qt.AlignHCenter
+
+            leftPadding: 8
+            rightPadding: 8
+            width: 100
+            implicitWidth: width
+
+            enabled: !isPINWrong && pinItems.filter(item => item.text.length > 0).length === pinLength
+            text: isLock ? "Lock" : "Unlock"
+            frameColor: "transparent"
+
+            onClicked: {
+                var pin = "";
+                for (var i = 0; i < pinItems.length; i++) {
+                    pin += pinItems[i].text;
+                }
+
+                console.log("PIN ", pin)
+                sendPIN(pin);
+            }
+        }
     }
+
+    /* Functions
+     * ****************************************************************************************/
+
+    // Helper functions for managing focus
+      function nextField(pinField) {
+        var index = pinItems.indexOf(pinField)
+          console.log("indexindex", index)
+        return pinItems[(index + 1) % pinItems.length]
+      }
+
+      function previousField(pinField) {
+        var index = pinItems.indexOf(pinField)
+        return pinItems[(index - 1 + pinItems.length) % pinItems.length]
+      }
 }
