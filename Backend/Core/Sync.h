@@ -23,12 +23,12 @@ public:
     QVariantMap getContractorInfo() const;
 
     void fetchSerialNumber(const QString& uid, bool notifyUser = true);
-    void fetchContractorInfo();
+    bool fetchContractorInfo();
     void fetchContractorLogo(const QString& url);
-    void fetchSettings();
-    void fetchAutoModeSetings();
+    bool fetchSettings();
+    bool fetchAutoModeSetings();
 
-    void fetchMessages();
+    bool fetchMessages();
     void fetchWirings(const QString& uid);
     void requestJob(QString type);
 

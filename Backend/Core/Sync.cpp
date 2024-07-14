@@ -140,11 +140,11 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
     }
 }
 
-void Sync::fetchContractorInfo()
+bool Sync::fetchContractorInfo()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
-        return;
+        return false;
     }
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
@@ -186,7 +186,7 @@ void Sync::fetchContractorInfo()
         }
     };
 
-    callGetApi(cBaseUrl + QString("api/sync/getContractorInfo?sn=%0").arg(mSerialNumber), callback);
+    return callGetApi(cBaseUrl + QString("api/sync/getContractorInfo?sn=%0").arg(mSerialNumber), callback) != nullptr;
 }
 
 void Sync::fetchContractorLogo(const QString &url)
@@ -225,11 +225,11 @@ void Sync::checkFirmwareUpdate(QJsonObject settings)
 }
 
 
-void Sync::fetchSettings()
+bool Sync::fetchSettings()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get settings!";
-        return;
+        return false;
     }
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
@@ -278,13 +278,15 @@ void Sync::fetchSettings()
     if (reply) {
         reply->setProperty("noContentLog", true);
     }
+
+    return reply != nullptr;
 }
 
-void Sync::fetchAutoModeSetings()
+bool Sync::fetchAutoModeSetings()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get auto mode settings!";
-        return;
+        return false;
     }
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
@@ -292,21 +294,21 @@ void Sync::fetchAutoModeSetings()
         emit settingsFetched(!data.isEmpty());
     };
 
-    callGetApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), callback);
+    return callGetApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), callback) != nullptr;
 }
 
-void Sync::fetchMessages()
+bool Sync::fetchMessages()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get messages!";
-        return;
+        return false;
     }
 
     auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &) {
         emit messagesLoaded();
     };
 
-    callGetApi(cBaseUrl + QString("api/sync/messages?sn=%0").arg(mSerialNumber), callback);
+    return callGetApi(cBaseUrl + QString("api/sync/messages?sn=%0").arg(mSerialNumber), callback) != nullptr;
 }
 
 void Sync::fetchWirings(const QString& uid)

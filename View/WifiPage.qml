@@ -47,8 +47,7 @@ BasePageView {
         interval: 5000
 
         onTriggered: {
-            isFetching = true;
-            system.fetchSettings();
+            isFetching = system.fetchSettings();
         }
     }
 

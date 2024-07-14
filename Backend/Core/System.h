@@ -64,7 +64,7 @@ public:
     //! Reset device by exiting app and disabling service
     Q_INVOKABLE void stopDevice();
 
-    Q_INVOKABLE void fetchSettings();
+    Q_INVOKABLE bool fetchSettings();
 
     bool hasClient() const;
     bool areSettingsFetched() const;

@@ -785,8 +785,8 @@ QVariantMap NUVE::System::getContractorInfo() const
     return mSync->getContractorInfo();
 }
 
-void NUVE::System::fetchContractorInfo() {
-    mSync->fetchContractorInfo();
+bool NUVE::System::fetchContractorInfo() {
+    return mSync->fetchContractorInfo();
 }
 
 QStringList NUVE::System::availableVersions()
@@ -1560,11 +1560,12 @@ void NUVE::System::stopDevice()
 #endif
 }
 
-void NUVE::System::fetchSettings()
+bool NUVE::System::fetchSettings()
 {
     if (mCanFetchServer) {
-        mSync->fetchSettings();
+        return mSync->fetchSettings();
     }
+    return false;
 }
 
 QString NUVE::System::findLatestVersion(QJsonObject updateJson) {

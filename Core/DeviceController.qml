@@ -251,8 +251,7 @@ I_DeviceController {
         running: !initialSetup && !isFetching;
         interval: 5000;
         onTriggered: {
-            isFetching = true;
-            deviceControllerCPP.system.fetchSettings();            
+            isFetching = deviceControllerCPP.system.fetchSettings();
         }
     }
 
