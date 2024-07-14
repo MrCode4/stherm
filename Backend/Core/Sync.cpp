@@ -71,7 +71,9 @@ QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray&
 
 void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 {
-    auto callback = [this, notifyUser](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    QEventLoop* eventLoop = nullptr;
+
+    auto callback = [this, &eventLoop, notifyUser](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (data.contains("serial_number")) {
             auto sn = data.value("serial_number").toString();
             mHasClient = data.value("has_client").toBool();
@@ -103,6 +105,10 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 
             mSerialNumber = sn;
 
+            if (!mSerialNumber.isEmpty()) {
+                emit serialNumberReady();
+            }
+
             if (mSerialNumber.isEmpty() && notifyUser) {
                 emit testModeStarted();
             }
@@ -124,17 +130,18 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             }
         }
 
-        emit serialNumberReady();
+        if (eventLoop) {
+            eventLoop->quit();
+        }
     };
 
     auto netReply = callGetApi(cBaseUrl + QString("api/sync/getSn?uid=%0").arg(uid), callback, false);
 
     if (netReply) {
-
         // block if the first serial is invalid or client is not set yet
         if (mSerialNumber.isEmpty() || !mHasClient) {
             QEventLoop loop;
-            connect(this, &NUVE::Sync::serialNumberReady, &loop, [&loop]() { loop.quit(); });
+            eventLoop = &loop;
             loop.exec();
         }
     }
@@ -290,6 +297,9 @@ bool Sync::fetchAutoModeSetings()
     }
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (data.isEmpty()) {
+            TRACE << "Received settings corrupted";
+        }
         emit autoModeSettingsReady(data.toVariantMap(), !data.isEmpty());
         emit settingsFetched(!data.isEmpty());
     };

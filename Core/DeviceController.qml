@@ -159,7 +159,7 @@ I_DeviceController {
         function onAreSettingsFetchedChanged(success) {
             if (success) {
                 settingsLoader.interval = 5000;
-                console.log("fetching success, back to ", interval);
+                console.log("fetching success, back to ", settingsLoader.interval);
             }
             else {
                 var intervalNew = settingsLoader.interval * 2;

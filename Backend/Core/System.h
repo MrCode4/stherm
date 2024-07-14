@@ -103,7 +103,7 @@ public:
 
     //! Get Contractor Information
     QVariantMap getContractorInfo() const;
-    void fetchContractorInfo();
+    bool fetchContractorInfo();
 
     //! Getters
     QStringList availableVersions();

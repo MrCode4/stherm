@@ -1047,7 +1047,6 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
                     // After retry 2 times, the update back to normal state.
                     setIsInitialSetup(false);
                     emit updateNoChecked();
-
                 }
                 else {
                     // In initial setup, retry when an error occurred.
@@ -1062,7 +1061,11 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     // Fetch the file from web location    
     if (!versionAddressInServer.startsWith("/")) versionAddressInServer = "/" + versionAddressInServer;
     QNetworkReply* reply = downloadFile(m_updateServerUrl + versionAddressInServer, callback, false);
-    if (!reply) return; // another call in progress, so ignore
+    if (!reply) {
+        // another call in progress, so ignore
+        TRACE << "Downloading file " << (m_updateServerUrl + versionAddressInServer) << " got called more than once";
+        return;
+    }
 
     setPartialUpdateProgress(0);
 
