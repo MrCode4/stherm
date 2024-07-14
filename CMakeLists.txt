@@ -195,6 +195,7 @@ qt6_add_qml_module(appStherm
         View/MobileAppPage.qml
         View/LockPage.qml
         View/Lock/PINItem.qml
+        View/Lock/PINTextField.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
