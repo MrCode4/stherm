@@ -93,14 +93,12 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     m_system = _deviceAPI->system();
 
-
     connect(m_system, &NUVE::System::contractorInfoReady, this, [this]() {
         auto info = m_system->getContractorInfo();
         emit contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
                                      info.value("logo").toString(), info.value("url").toString(),
                                      info.value("tech").toString());
     });
-
 
     mAdaptiveBrightness = 50;
 

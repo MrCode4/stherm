@@ -97,6 +97,6 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
 
     auto callback = mCallbacks.take(endpoint);
     if (callback) {
-        callback(reply, rawData, data);        
+        callback(reply, rawData, data);
     }
 }

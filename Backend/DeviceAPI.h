@@ -40,10 +40,10 @@ public:
 
     Q_INVOKABLE int getStartMode();
     int runDevice();
-    int checkSN();    
+    int checkSN();
 
     //! Forget device configs
-    void forgetDevice();        
+    void forgetDevice();
 
 signals:
     void uidChanged();
