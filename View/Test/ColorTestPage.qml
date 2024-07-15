@@ -13,8 +13,9 @@ BasePageView {
      * ****************************************************************************************/
 
     /* Object properties
-     * ****************************************************************************************/
+     * ****************************************************************************************/    
     title: "Color Test"
+    useSimpleStackView: true
     headerColor:  (root.state === "white") ? "black" : "white"
     background: Rectangle {
         color: "black"
@@ -30,12 +31,10 @@ BasePageView {
      * ****************************************************************************************/
 
     function nextPage() {
-        if (root.StackView.view) {
-            root.StackView.view.push("qrc:/Stherm/View/Test/BrightnessTestPage.qml", {
-                                         "uiSession": uiSession,
-                                         "backButtonVisible" : backButtonVisible
-                                     })
-        }
+        gotoPage("qrc:/Stherm/View/Test/BrightnessTestPage.qml", {
+                     "uiSession": uiSession,
+                     "backButtonVisible" : backButtonVisible
+                 });
     }
 
     InfoPopup {

@@ -11,10 +11,11 @@ BacklightPage {
     id: _root
 
     /* Object properties
-     * ****************************************************************************************/
+     * ****************************************************************************************/    
     topPadding: 0
     bottomPadding: 32 * scaleFactor
     title: "Backlight Test"
+    useSimpleStackView: true
     isTest: true
 
     onVisibleChanged: {
@@ -27,16 +28,10 @@ BacklightPage {
      * ****************************************************************************************/
 
     function nextPage() {
-        if (_root.StackView.view) {
-            // _root.StackView.view.push("qrc:/Stherm/View/Test/AudioTestPage.qml", {
-            //                               "uiSession": uiSession
-            //                           })
-
-            _root.StackView.view.push("qrc:/Stherm/View/Test/InternalSensorTestPage.qml", {
-                                          "uiSession": uiSession,
-                                          "backButtonVisible" : backButtonVisible
-                                      })
-        }
+        gotoPage("qrc:/Stherm/View/Test/InternalSensorTestPage.qml", {
+                     "uiSession": uiSession,
+                     "backButtonVisible" : backButtonVisible
+                 });
     }
 
     InfoPopup {

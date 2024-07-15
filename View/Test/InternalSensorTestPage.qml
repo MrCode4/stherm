@@ -40,8 +40,9 @@ BasePageView {
     property bool autoNext: true
 
     /* Object properties
-     * ****************************************************************************************/
+     * ****************************************************************************************/    
     title: "Internal Sensor Test"
+    useSimpleStackView: true
 
     Component.onCompleted: {
         model = deviceController.getTestData();
@@ -104,20 +105,16 @@ BasePageView {
         // show relays test always for now
         if (deviceController.startMode !== 0 || true) {
             //! Next page
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/Test/RelayTestPage.qml", {
-                                             "uiSession": uiSession,
-                                             "backButtonVisible" : backButtonVisible
-                                         })
-            }
+            gotoPage("qrc:/Stherm/View/Test/RelayTestPage.qml", {
+                         "uiSession": uiSession,
+                         "backButtonVisible" : backButtonVisible
+                     });
         } else {
             //! Test mode enabled with GPIO as there is no ti board connected
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
-                                             "uiSession": uiSession,
-                                             "backButtonVisible" : backButtonVisible
-                                         })
-            }
+            gotoPage("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
+                         "uiSession": uiSession,
+                         "backButtonVisible" : backButtonVisible
+                     });
         }
     }
 

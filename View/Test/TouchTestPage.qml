@@ -17,6 +17,7 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Test Touch"
+    useSimpleStackView: true
 
     Component.onCompleted: {
         deviceController.deviceControllerCPP.system.testMode = true;
@@ -35,12 +36,10 @@ BasePageView {
 
     function nextPage() {
         failurePopuptimer.stop()
-        if (_root.StackView.view) {
-            _root.StackView.view.push("qrc:/Stherm/View/Test/ColorTestPage.qml", {
-                                          "uiSession": uiSession,
-                                          "backButtonVisible" : backButtonVisible
-                                      })
-        }
+        gotoPage("qrc:/Stherm/View/Test/ColorTestPage.qml", {
+                     "uiSession": uiSession,
+                     "backButtonVisible" : backButtonVisible
+                 });
     }
 
     onPointsStateChanged: {
@@ -70,7 +69,10 @@ BasePageView {
     TestFailedPopup {
         id: failPopup
         errorMessage: "Touch test failed"
-        onRetryClicked: infoPopup.open()
+        onRetryClicked: {
+            _root.pointsState = "0,0,0,0,0,0,0,0,0"
+            infoPopup.open()
+        }
         onContinueClicked: {
             backButtonVisible = true;
             deviceController.deviceControllerCPP.saveTestResult("Touch test", false, "The touchscreen is not working or it failed to register within " + infoPopup.seconds + " seconds")

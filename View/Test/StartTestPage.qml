@@ -23,6 +23,7 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Start Test"
+    useSimpleStackView: true
 
     Component.onCompleted: {
         deviceController.deviceControllerCPP.system.testMode = true;
@@ -135,11 +136,9 @@ BasePageView {
     function nextPage() {
         nextPageTimer.stop()
         //! Load next page
-        if (root.StackView.view) {
-            root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
-                                         "uiSession": uiSession,
-                                         "backButtonVisible" : backButtonVisible
-                                     })
-        }
+        gotoPage("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                     "uiSession": uiSession,
+                     "backButtonVisible" : backButtonVisible
+                 });
     }
 }
