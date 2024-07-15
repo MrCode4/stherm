@@ -31,14 +31,23 @@ BasePageView {
         }
 
         PINItem {
+            id: pinItem
+
             Layout.alignment: Qt.AlignHCenter
             Layout.fillWidth: true
             Layout.fillHeight: true
 
             onSendPIN: pin => {
-                           // Todo: lock the app
-                           console.log("pin: ", pin);
+                           lock(pin);
                        }
         }
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+
+    // Todo: lock the app
+    function lock(pin: string) {
+        console.log("pin: ", pin);
     }
 }

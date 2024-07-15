@@ -209,7 +209,6 @@ Control {
     // Helper functions for managing focus
       function nextField(pinField) {
         var index = _pinTextFieldItems.indexOf(pinField)
-          console.log("indexindex", index)
         return _pinTextFieldItems[(index + 1) % _pinTextFieldItems.length]
       }
 
