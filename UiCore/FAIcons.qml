@@ -43,5 +43,5 @@ QtObject {
     readonly property string restart:                           "\uf0e2"
     readonly property string night:                             "\uf186"
     readonly property string update:                            "\uf1da"
-    readonly property string lock:                              "\uf023"
+    readonly property string lock:                              "\uf30d"
 }

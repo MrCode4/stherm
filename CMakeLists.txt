@@ -194,6 +194,7 @@ qt6_add_qml_module(appStherm
         View/PrivacyPolicyPage.qml
         View/MobileAppPage.qml
         View/LockPage.qml
+        View/UnlockPage.qml
         View/Lock/PINItem.qml
         View/Lock/PINTextField.qml
 
