@@ -81,6 +81,7 @@ QtObject {
         readonly property string xmark:            "\uf057"
         readonly property string palette:          "\uf53f"
         readonly property string resetData:        "\uf1da"
+        readonly property string deleteLeft:       "\uf55a"
     }
 
     // Base Colors

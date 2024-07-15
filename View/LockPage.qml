@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * LockPage
+ * LockPage: Lock the app
  * ***********************************************************************************************/
 
 BasePageView {
@@ -20,12 +20,11 @@ BasePageView {
 
     //! Contents
     ColumnLayout {
-        anchors.centerIn: parent
-        width: parent.width
-        spacing: 32
+        anchors.fill: parent
+        spacing: 8
 
         Label {
-            Layout.alignment: Qt.AlignHCenter
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             font.pointSize: root.font.pointSize * 0.8
             text: "Type a 4 digit PIN code to\n      lock the thermostat"
             elide: Text.ElideMiddle
@@ -33,8 +32,13 @@ BasePageView {
 
         PINItem {
             Layout.alignment: Qt.AlignHCenter
-            Layout.fillHeight: true
             Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            onSendPIN: pin => {
+                           // Todo: lock the app
+                           console.log("pin: ", pin);
+                       }
         }
     }
 }
