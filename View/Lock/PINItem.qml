@@ -27,8 +27,9 @@ Control {
     property bool   isPINWrong: false
 
 
-    property var          _pinTextFieldItemsms: Object.values(pinLayout.children).filter(item => item instanceof PINTextField)
+    property var          _pinTextFieldItems: Object.values(pinLayout.children).filter(item => item instanceof PINTextField)
 
+    //! The PINTextField (PINs) that is currently receiving keyboard input
     property PINTextField _focusedItem: null
 
 
@@ -146,9 +147,9 @@ Control {
                     enabled: modelData.length > 0
                     flat: true
                     radius: 0
-                    backgroundColor: enabled ? (hovered ? Style.foreground : Style.button.disabledColor) : "transparent"
+                    backgroundColor: enabled ? ((hovered || pressed) ? Style.foreground : Style.button.disabledColor) : "transparent"
                     topBackgroundColor: backgroundColor
-                    textColor: enabled ? (hovered ? Style.background : Style.foreground) : "transparent"
+                    textColor: enabled ? ((hovered || pressed) ? Style.background : Style.foreground) : "transparent"
 
                     width: 55
                     height: width
