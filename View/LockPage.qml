@@ -14,6 +14,8 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
 
+    property Lock lock: appModel.lock
+
     /* Object properties
      * ****************************************************************************************/
     title: "Lock"
@@ -50,6 +52,7 @@ BasePageView {
     // Todo: lock the app
     function lock(pin: string) : bool {
         console.log("pin: ", pin);
-        return true;
+        lock.isLock = pin === lock.pin;
+        return lock.isLock;
     }
 }

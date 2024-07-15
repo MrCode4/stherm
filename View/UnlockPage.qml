@@ -12,6 +12,7 @@ BasePageView {
     id: root
     /* Property declaration
      * ****************************************************************************************/
+     property Lock lock: appModel.lock
 
     /* Object properties
      * ****************************************************************************************/
@@ -62,7 +63,10 @@ BasePageView {
     // Todo: Unlock the app
     function unlock(pin: string) : bool {
         console.log("unlock pin: ", pin);
+        if (pin === lock.pin) {
+           lock.isLock = false;
+        }
 
-        return true;
+        return pin === lock.pin;
     }
 }

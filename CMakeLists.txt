@@ -89,7 +89,7 @@ qt6_add_qml_module(appStherm
         Core/NightMode.qml
         Core/ToastManager.qml
         Core/UserPolicyTerms.qml
-
+        Core/Lock.qml
 
         # Primitive Components
         UiCore/Components/RoniaTextIcon.qml

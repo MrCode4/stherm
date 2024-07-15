@@ -90,6 +90,9 @@ QSObject {
     //! Private policy and terms of use
     property UserPolicyTerms userPolicyTerms: UserPolicyTerms {}
 
+    //! Lock model
+    property Lock            lock: Lock {}
+
     //! When a new object is added to the device, ensure it's saved in the
     //! correct save sequence. To achieve this, the object should be added to
     //! defaultRepo using a timer after the loading process finishes.
