@@ -15,21 +15,21 @@ Control {
     /* Property declaration
      * ****************************************************************************************/
 
-    property bool showPin: false
+    property bool   showPin: false
 
-    property bool isLock: true
+    property bool   isLock: true
 
-    property int pinLength: 4
+    property int    pinLength: 4
 
     property string errorText: ""
 
-
     //! Binding broke when pin changed.
-    property bool isPINWrong: false
+    property bool   isPINWrong: false
 
-    property var pinItems: Object.values(pinLayout.children).filter(item => item instanceof PINTextField)
 
-    property TextField focusItem: null
+    property var          _pinTextFieldItemsms: Object.values(pinLayout.children).filter(item => item instanceof PINTextField)
+
+    property PINTextField _focusedItem: null
 
 
     //! Send pin to parent
@@ -39,8 +39,8 @@ Control {
      * ****************************************************************************************/
 
     Component.onCompleted: {
-        if (pinItems.length > 0)
-            pinItems[0].forceActiveFocus();
+        if (_pinTextFieldItems.length > 0)
+            _pinTextFieldItems[0].forceActiveFocus();
     }
 
     /* Children
@@ -71,7 +71,7 @@ Control {
 
                     onFocusChanged: {
                         if (focus) {
-                            root.focusItem = pinField
+                            root._focusedItem = pinField
                         }
                     }
 
@@ -154,8 +154,8 @@ Control {
                     height: width
 
                     onClicked: {
-                        if (focusItem)
-                            focusItem.text = modelData;
+                        if (_focusedItem)
+                            _focusedItem.text = modelData;
                     }
                 }
             }
@@ -172,7 +172,7 @@ Control {
 
                 TapHandler {
                     onTapped: {
-                        focusItem.text = "";
+                        _focusedItem.text = "";
                     }
                 }
             }
@@ -186,14 +186,14 @@ Control {
             width: 100
             implicitWidth: width
 
-            enabled: !isPINWrong && pinItems.filter(item => item.text.length > 0).length === pinLength
+            enabled: !isPINWrong && _pinTextFieldItems.filter(item => item.text.length > 0).length === pinLength
             text: isLock ? "Lock" : "Unlock"
             frameColor: "transparent"
 
             onClicked: {
                 var pin = "";
-                for (var i = 0; i < pinItems.length; i++) {
-                    pin += pinItems[i].text;
+                for (var i = 0; i < _pinTextFieldItems.length; i++) {
+                    pin += _pinTextFieldItems[i].text;
                 }
 
                 console.log("PIN ", pin)
@@ -207,13 +207,13 @@ Control {
 
     // Helper functions for managing focus
       function nextField(pinField) {
-        var index = pinItems.indexOf(pinField)
+        var index = _pinTextFieldItems.indexOf(pinField)
           console.log("indexindex", index)
-        return pinItems[(index + 1) % pinItems.length]
+        return _pinTextFieldItems[(index + 1) % _pinTextFieldItems.length]
       }
 
       function previousField(pinField) {
-        var index = pinItems.indexOf(pinField)
-        return pinItems[(index - 1 + pinItems.length) % pinItems.length]
+        var index = _pinTextFieldItems.indexOf(pinField)
+        return _pinTextFieldItems[(index - 1 + _pinTextFieldItems.length) % _pinTextFieldItems.length]
       }
 }
