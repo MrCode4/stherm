@@ -38,7 +38,8 @@ BasePageView {
             Layout.fillHeight: true
 
             onSendPIN: pin => {
-                           lock(pin);
+                           var locked = lock(pin);
+                           updatePinStatus(locked);
                        }
         }
     }
@@ -47,7 +48,8 @@ BasePageView {
      * ****************************************************************************************/
 
     // Todo: lock the app
-    function lock(pin: string) {
+    function lock(pin: string) : bool {
         console.log("pin: ", pin);
+        return true;
     }
 }

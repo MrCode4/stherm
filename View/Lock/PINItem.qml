@@ -21,16 +21,23 @@ Control {
 
     property int    pinLength: 4
 
-    property string errorText: ""
-
+    property string errorText: retryTimer.running ? `Next attempt available in ${_retryCountTime}` +
+                                                    ((_retryCountTime > 1) ? `, ${_retryCountTime - 1} secs.` : " sec.") :
+                                                    isPinWrong ? `Wrong PIN, you have ${_retryCounter} more attempts.` : ""
     //! Binding broke when pin changed.
-    property bool   isPINWrong: false
+    property bool   isPinWrong: false
 
 
     property var          _pinTextFieldItems: Object.values(pinLayout.children).filter(item => item instanceof PINTextField)
 
     //! The PINTextField (PINs) that is currently receiving keyboard input
     property PINTextField _focusedItem: null
+
+    //! Use to retry with new pin
+    property int          _retryCounter: 3
+
+    //! Can retry after _retryCountTime secs
+    property int          _retryCountTime: 120
 
 
     //! Send pin to parent
@@ -68,7 +75,7 @@ Control {
                     // focus: true
                     showPin: root.showPin
                     focus: false
-                    isPINWrong: root.isPINWrong
+                    isPinWrong: root.isPinWrong
 
                     onFocusChanged: {
                         if (focus) {
@@ -77,8 +84,6 @@ Control {
                     }
 
                     onTextChanged: {
-                        root.isPINWrong = false;
-
                         // Update focus to the next field if text length is 1
                         if (text.length > 0) {
                             root.nextField(pinField).forceActiveFocus();
@@ -113,14 +118,14 @@ Control {
 
         //! Show wrong PIN error.
         Label {
-            id: warnInfo
+            id: errInfo
 
             Layout.alignment: Qt.AlignHCenter
 
             font.pointSize: root.font.pointSize * 0.8
             text: errorText
             elide: Text.ElideMiddle
-            visible: isPINWrong
+            visible: isPinWrong
             color: Style.testFailColor
         }
 
@@ -187,19 +192,33 @@ Control {
             width: 100
             implicitWidth: width
 
-            enabled: !isPINWrong && _pinTextFieldItems.filter(item => item.text.length > 0).length === pinLength
+            enabled: !retryTimer.running && _pinTextFieldItems.filter(item => item.text.length > 0).length === pinLength
             text: isLock ? "Lock" : "Unlock"
             frameColor: "transparent"
 
             onClicked: {
+                // Reset the _retryCountTime
+                _retryCountTime = 120;
+
                 var pin = "";
                 for (var i = 0; i < _pinTextFieldItems.length; i++) {
                     pin += _pinTextFieldItems[i].text;
                 }
 
-                console.log("PIN ", pin)
                 sendPIN(pin);
             }
+        }
+    }
+
+    Timer {
+        id: retryTimer
+
+        repeat: true
+        interval: 1000
+        running: isPinWrong && _retryCounter < 1 && _retryCountTime > 0
+
+        onTriggered: {
+            _retryCountTime--
         }
     }
 
@@ -207,13 +226,25 @@ Control {
      * ****************************************************************************************/
 
     // Helper functions for managing focus
-      function nextField(pinField) {
+    function nextField(pinField) {
         var index = _pinTextFieldItems.indexOf(pinField)
         return _pinTextFieldItems[(index + 1) % _pinTextFieldItems.length]
-      }
+    }
 
-      function previousField(pinField) {
+    function previousField(pinField) {
         var index = _pinTextFieldItems.indexOf(pinField)
         return _pinTextFieldItems[(index - 1 + _pinTextFieldItems.length) % _pinTextFieldItems.length]
-      }
+    }
+
+    //! Check PIN correctness
+    function updatePinStatus(isCorrect : bool) {
+        isPinWrong = !isCorrect
+        if (isPinWrong) {
+            _retryCounter--;
+
+        } else {
+            // reset retry counter
+            _retryCounter = 3;
+        }
+    }
 }

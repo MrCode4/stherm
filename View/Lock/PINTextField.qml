@@ -14,7 +14,7 @@ TextField {
     /* Property declaration
      * ****************************************************************************************/
 
-    property bool isPINWrong: false
+    property bool isPinWrong: false
 
     property bool showPin: false
 
@@ -41,7 +41,7 @@ TextField {
         color: Style.button.disabledColor
 
         border.width: 2
-        border.color: isPINWrong ? Style.testFailColor :
+        border.color: isPinWrong ? Style.testFailColor :
                                    delegate.text.length > 0 ? Style.foreground : "transparent"
     }
 }

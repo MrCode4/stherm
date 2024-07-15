@@ -26,7 +26,7 @@ BasePageView {
         spacing: 8
         RoniaTextIcon {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            font.pointSize: root.font.pointSize * 3
+            font.pointSize: root.font.pointSize * 2.2
             text: FAIcons.lock
             color: root.headerColor
         }
@@ -48,7 +48,9 @@ BasePageView {
             isLock: false
 
             onSendPIN: pin => {
-                           unlock(pin);
+                           var unLocked = unlock(pin);
+
+                           updatePinStatus(unLocked);
                        }
         }
     }
@@ -58,7 +60,9 @@ BasePageView {
      * ****************************************************************************************/
 
     // Todo: Unlock the app
-    function unlock(pin: string) {
+    function unlock(pin: string) : bool {
         console.log("unlock pin: ", pin);
+
+        return true;
     }
 }
