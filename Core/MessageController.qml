@@ -343,6 +343,7 @@ QtObject {
 
             } break;
 
+            case AppSpec.Alert_No_Data_Received:
             case AppSpec.Alert_temperature_humidity_malfunction: {
                 messageType = Message.Type.SystemAlert;
                 retriggerInterval = sixHoursAlertInterval;

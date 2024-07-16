@@ -121,7 +121,18 @@ DeviceIOController::DeviceIOController(QObject *parent)
         // If sensor data is not received for 15 minutes,
         // the system will switch to off mode, causing another sensor's functionality to be disrupted.
         // Set to True if valid data is received, False if data is invalid or not received for 15 minutes.
-        if (!mIsHumTempSensorValid) {
+        if (!mIsDataReceived) {
+            // Send co2 sensor malfunction alert, No Co2 data available.
+            // emit alert(STHERM::AlertLevel::LVL_Emergency,
+            //            AppSpecCPP::AlertTypes::Alert_iaq_high,
+            //            STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
+            emit alert(STHERM::AlertLevel::LVL_Emergency,
+                       AppSpecCPP::AlertTypes::Alert_No_Data_Received,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_No_Data_Received));
+
+            emit co2SensorStatus(false);
+
+        } else if (!mIsHumTempSensorValid) {
             // Send  humidity/temperature malfunction alert (bad data).
             emit alert(STHERM::AlertLevel::LVL_Emergency,
                        AppSpecCPP::AlertTypes::Alert_temperature_humidity_malfunction,
@@ -129,14 +140,6 @@ DeviceIOController::DeviceIOController(QObject *parent)
 
         }
 
-        if (!mIsDataReceived) {
-            // Send co2 sensor malfunction alert, No Co2 data available.
-            emit alert(STHERM::AlertLevel::LVL_Emergency,
-                       AppSpecCPP::AlertTypes::Alert_iaq_high,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
-
-            emit co2SensorStatus(false);
-        }
 
         // humidity/temperature malfunction
         emit forceOffSystem(!mIsHumTempSensorValid);

@@ -166,6 +166,7 @@ public:
         Alert_Light_High,
         Alert_Light_Low,
         Alert_Efficiency_Issue,
+        Alert_No_Data_Received,
         NO_ALlert
     };
     Q_ENUM(AlertTypes)
