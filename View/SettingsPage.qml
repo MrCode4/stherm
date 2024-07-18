@@ -241,14 +241,14 @@ BasePageView {
                 }
             }
 
-            //! Mute notifications
+            //! Mute Messages
             RowLayout {
                 Layout.topMargin: 12
 
                 Label {
                     opacity: 0.6
                     Layout.fillWidth: true
-                    text: "Notifications"
+                    text: "Messages"
                 }
 
                 Switch {
