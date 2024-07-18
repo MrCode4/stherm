@@ -105,6 +105,9 @@ QtObject {
                              if (message.message === "")
                              return;
 
+                             // we need this for now as server sents every message only once, so it should be false so user don't lose it
+                             message.isRead = false;
+
                              // Find Schedule in the model
                              var foundMessage = device.messages.find(messageModel => (message.message === messageModel.message &&
                                                                                       messageModel.sourceType === Message.SourceType.Server));
@@ -116,7 +119,7 @@ QtObject {
                                  // isRead in the server is wrong. So I use the isRead condition from the local.
                                  // foundMessage.isRead = message.isRead;
 
-                             } else { // Check empty message
+                             } else { // new message, TODO: Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
                                  addNewMessageFromData(type, message.message, message.created, message.isRead, icon, Message.SourceType.Server);
                              }
