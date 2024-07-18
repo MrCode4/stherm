@@ -941,6 +941,8 @@ void DeviceControllerCPP::testFinished()
             failedTests.append(testName);
     }
 
+    TRACE << failedTests;
+
     QString result = failedTests.empty() ? "PASS" : "FAIL";
     QString testResultsFileName = QString("%1_%2.csv").arg(_deviceAPI->uid(), result);
 
@@ -954,6 +956,8 @@ void DeviceControllerCPP::testFinished()
     // override sn test on finished
     QString sn = _deviceAPI->system()->serialNumber();
     saveTestResult("SN", !sn.isEmpty(), sn);
+
+    TRACE << "test finsihed with SN: " << sn;
 
     // write header of the actual file
     writeTestResult(testResultsFileName, "Test name", QString("Test Result"), "Description");
