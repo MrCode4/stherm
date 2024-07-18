@@ -892,6 +892,7 @@ I_DeviceController {
 
     function setMessagesServer(messages: var) {
         console.log("device.messages: ", device.messages.length)
+        console.log("messages: ", messages.length)
 
         // Send messages to message controller.
         messageController.setMessagesServer(messages);
