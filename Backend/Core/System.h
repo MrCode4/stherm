@@ -149,6 +149,7 @@ public:
     void setPartialUpdateProgress(int progress);
 
     void setUID(NUVE::cpuid_t uid);
+    void setSerialNumber(const QString &sn);
 
     QString systemUID();
 

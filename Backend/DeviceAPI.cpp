@@ -35,6 +35,7 @@ int DeviceAPI::checkSN()
     // Check serial number
     // serial number already set, starting normally
     if (m_deviceConfig.serial_number != "") {
+        m_system->setSerialNumber(QString::fromStdString(m_deviceConfig.serial_number));
         m_deviceConfig.start_mode = 0;
         return 0;
     }

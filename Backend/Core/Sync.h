@@ -17,6 +17,7 @@ class Sync : public NetworkWorker
 public:
     Sync(QObject *parent = nullptr);
 
+    void setSerialNumber(const QString &serialNumber);
     void setUID(cpuid_t accessUid);
     //! Get serial number and if has client from server if not fetched or saved
     std::pair<std::string, bool> getSN(cpuid_t accessUid, bool notifyUser = true);

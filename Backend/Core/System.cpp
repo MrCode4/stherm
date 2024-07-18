@@ -1430,6 +1430,11 @@ void NUVE::System::setUID(cpuid_t uid)
     emit systemUIDChanged();
 }
 
+void NUVE::System::setSerialNumber(const QString &sn)
+{
+    mSync->setSerialNumber(sn);
+}
+
 QString NUVE::System::systemUID()
 {
     return QString::fromStdString(mUID);

@@ -48,6 +48,22 @@ Sync::Sync(QObject *parent)
     mContractorInfo       = setting.value(m_ContractorSettings).toMap();
 }
 
+void Sync::setSerialNumber(const QString &serialNumber)
+{
+    if (serialNumber.isEmpty() || serialNumber == mSerialNumber){
+        TRACE << "serial number not set:" << serialNumber << ", current is :" << mSerialNumber;
+        return;
+    }
+
+    mHasClient            = true;
+    // Update SN for get settings
+    mSerialNumber         = serialNumber;
+    // Force to update with new settings
+    mLastPushTime = QDateTime();
+    // Fetch with new serial number
+    emit serialNumberChanged();
+}
+
 void Sync::setUID(cpuid_t accessUid)
 {
     mSystemUuid = accessUid;
