@@ -33,7 +33,7 @@ Sync::Sync(QObject *parent)
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
     mContractorInfo = setting.value(cContractorSettings).toMap();
 
-    connect(this, &Sync::contractorInfoReady, [this]() {
+    connect(this, &Sync::contractorInfoReady, this, [this]() {
         QSettings setting;
         setting.setValue(cContractorSettings, mContractorInfo);
     });
