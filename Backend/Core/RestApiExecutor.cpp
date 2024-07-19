@@ -87,11 +87,15 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
 
         if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
 
-            if (reply->property("noContentLog").isValid() == false) {
-                TRACE << "API RESPONSE (" << endpoint << ") : " << QJsonDocument::fromJson(rawData).toJson();
-            }
-
             data = prepareJsonResponse(endpoint, rawData);
+            if (data.isEmpty()) {
+                TRACE << "API RESPONSE (" << endpoint << ") is Empty or invalid:" << rawData;
+
+            } else if (!reply->property("noContentLog").isValid() || !reply->property("noContentLog").value<bool>()) {
+                QJsonDocument doc(data);
+                QString strJson(doc.toJson(QJsonDocument::Indented));
+                TRACE << "API RESPONSE (" << endpoint << ") : " << strJson.toStdString().c_str();
+            }
         }
     }
 

@@ -1,7 +1,5 @@
 #include "System.h"
 #include "LogHelper.h"
-#include "UtilityHelper.h"
-#include "NetworkManager.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -671,7 +669,11 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
     };
 
     // Fetch the file from web location
-    downloadFile(m_updateServerUrl + "/" + m_updateInfoFile, callback);
+    auto reply = downloadFile(m_updateServerUrl + "/" + m_updateInfoFile, callback);
+    // skip logging the content
+    if (reply) {
+        reply->setProperty("noContentLog", true);
+    }
 }
 
 void NUVE::System::fetchBackdoorInformation()
@@ -681,7 +683,7 @@ void NUVE::System::fetchBackdoorInformation()
             // Save the downloaded data
             QFile file(qApp->applicationDirPath() + "/files_info.json");
             if (file.open(QIODevice::WriteOnly)) {
-                TRACE << "Backdoor Data: " << rawData;
+                TRACE << "Backdoor Data saved.";
                 file.write(rawData);
                 file.close();
             }
@@ -693,7 +695,11 @@ void NUVE::System::fetchBackdoorInformation()
     };
 
     // Fetch the backdoor file from web location
-    downloadFile(m_updateServerUrl + "/manual_update/files_info.json", callback);
+    auto reply = downloadFile(m_updateServerUrl + "/manual_update/files_info.json", callback);
+    // skip logging the content
+    if (reply) {
+        reply->setProperty("noContentLog", true);
+    }
 }
 
 void NUVE::System::wifiConnected(bool hasInternet) {
