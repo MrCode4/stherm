@@ -154,6 +154,7 @@ void NmCli::getProfileInfoByName(const QString& connName, std::function<void (co
 
             callback(ssid, seenBssids);
         } else {
+            // readAll() may have more info than errorString which is printed in parent.
             NC_WARN << process->exitCode() << process->readAll() << connName;
         }
     };

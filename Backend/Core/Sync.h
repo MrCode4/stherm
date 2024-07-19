@@ -4,51 +4,51 @@
 #include <QtNetwork>
 
 #include "nuve_types.h"
-#include "NetworkWorker.h"
+#include "RestApiExecutor.h"
 
 /*! ***********************************************************************************************
  * This class manage sync requests.
  * ************************************************************************************************/
 namespace NUVE {
-class Sync : public NetworkWorker
+class Sync : public RestApiExecutor
 {
     Q_OBJECT
-
 public:
     Sync(QObject *parent = nullptr);
 
     void setUID(cpuid_t accessUid);
-    //! Get serial number and if has client from server if not fetched or saved
-    std::pair<std::string, bool> getSN(cpuid_t accessUid, bool notifyUser = true);
     //! returns last fetched from save or server
-    std::pair<std::string, bool> getSN();
+    QString getSerialNumber() const;
+    bool hasClient() const;
+    QVariantMap getContractorInfo() const;
 
-    QVariantMap getContractorInfo();
-    bool getSettings();
-    void getMessages();
-    void getWirings(cpuid_t accessUid);
+    void fetchSerialNumber(const QString& uid, bool notifyUser = true);
+    bool fetchContractorInfo();
+    void fetchContractorLogo(const QString& url);
+    bool fetchSettings();
+    bool fetchAutoModeSetings();
+
+    bool fetchMessages();
+    void fetchWirings(const QString& uid);
     void requestJob(QString type);
 
     void pushSettingsToServer(const QVariantMap &settings);
     void pushAlertToServer(const QVariantMap &settings);
 
-    void ForgetDevice();
-
-    bool getAutoModeSetings();
+    void forgetDevice();
 
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
 signals:
-    //! Send when SN is ready !!!
-    void snReady();
+    void settingsFetched(bool success);
+    void serialNumberReady();
 
     //! Use snFinished signal to exit from sn loop
     void snFinished();
 
     void wiringReady();
     void contractorInfoReady();
-    void settingsLoaded();
 
     //! Settings data
     void settingsReady(QVariantMap settings);
@@ -56,13 +56,10 @@ signals:
     //! Parse non-settings data, to update immediately
     void appDataReady(QVariantMap data);
 
-    void autoModeSettingsReady(QVariantMap settings, bool isValid);
+    void autoModeSettingsReady(const QVariantMap& settings, bool isValid);
+    void autoModeSettingsFetched();
     void messagesLoaded();
     void requestJobDone();
-
-    //! Received settings that are invalid and do not require updating the model.
-    //! But The request for settings (getSettings) retrieval was successful.
-    void invalidSettingsReceived();
 
     void alert(QString msg);
 
@@ -81,25 +78,18 @@ private slots:
     //! Check firmware update with getSettings reply
     void checkFirmwareUpdate(QJsonObject settings);
 
-protected:
-    QNetworkReply* sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method = "");
-    void sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method);
-    void processNetworkReply(QNetworkReply* reply) override;
-
 private:
     QByteArray preparePacket(QString className, QString method, QJsonArray params);
-    //! Used as a simple mutex to ensure only 1 getSettings and getAutoSettings requests
-    QMutex getSettingsMutex;
-    bool getSettingsRequested = false;
+
+protected:
+    void setApiAuth(QNetworkRequest& request) override;
+    QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const override;
 
 private:
-    /* Attributes
-     * ****************************************************************************************/
     bool mHasClient;
     QString mSerialNumber;
     QDateTime mLastPushTime;
     QVariantMap mContractorInfo;
-
     cpuid_t mSystemUuid;
 };
 }

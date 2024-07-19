@@ -1,0 +1,106 @@
+#include "RestApiExecutor.h"
+
+#include "LogHelper.h"
+
+RestApiExecutor::RestApiExecutor(QObject *parent)
+    : HttpExecutor(parent)
+{
+}
+
+void RestApiExecutor::setApiAuth(QNetworkRequest& request) {}
+
+QNetworkRequest RestApiExecutor::prepareApiRequest(const QString &endpoint, bool setAuth)
+{
+    QNetworkRequest request(endpoint);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("accept", "application/json");
+    request.setTransferTimeout(8000);
+    if (setAuth) setApiAuth(request);
+    return request;
+}
+
+QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCallback callback, bool setAuth)
+{
+    if (mCallbacks.contains(endpoint)) {
+        return nullptr;
+    }
+    else {
+        mCallbacks.insert(endpoint, callback);
+        auto reply = get(prepareApiRequest(endpoint, setAuth));
+        reply->setProperty("endpoint", endpoint);
+        reply->setProperty("isJson", true);
+        return reply;
+    }
+}
+
+QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth)
+{
+    if (mCallbacks.contains(endpoint)) {
+        return nullptr;
+    }
+    else {
+        mCallbacks.insert(endpoint, callback);
+        auto reply = post(prepareApiRequest(endpoint, setAuth), postData);
+        reply->setProperty("endpoint", endpoint);
+        reply->setProperty("isJson", true);
+        return reply;
+    }
+}
+
+QNetworkReply* RestApiExecutor::downloadFile(const QString &url, ResponseCallback callback, bool jsonFile, bool setAuth)
+{
+    if (mCallbacks.contains(url)) {
+        return nullptr;
+    }
+    else {
+        QNetworkRequest request(url);
+        if (setAuth) setApiAuth(request);
+        QNetworkReply *reply = get(request);
+        reply->setProperty("isJson", jsonFile);
+        reply->setProperty("endpoint", url);
+        mCallbacks.insert(url, callback);
+        return reply;
+    }
+}
+
+QJsonObject RestApiExecutor::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
+{
+    return QJsonDocument::fromJson(rawData).object();
+}
+
+void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
+{
+    auto endpoint = reply->property("endpoint").toString();
+    if (!mCallbacks.contains(endpoint)) {
+        TRACE << "Callback not found for endpoint " << endpoint;
+        return;
+    }
+
+    QByteArray rawData;
+    QJsonObject data;
+
+    if (reply->error() != QNetworkReply::NoError) {
+        qWarning() << "API ERROR (" << endpoint << ") # code: "<< reply->error() << ", message: " << reply->errorString();
+    }
+    else {
+        rawData = reply->readAll();
+
+        if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
+
+            data = prepareJsonResponse(endpoint, rawData);
+            if (data.isEmpty()) {
+                TRACE << "API RESPONSE (" << endpoint << ") is Empty or invalid:" << rawData;
+
+            } else if (!reply->property("noContentLog").isValid() || !reply->property("noContentLog").value<bool>()) {
+                QJsonDocument doc(data);
+                QString strJson(doc.toJson(QJsonDocument::Indented));
+                TRACE << "API RESPONSE (" << endpoint << ") : " << strJson.toStdString().c_str();
+            }
+        }
+    }
+
+    auto callback = mCallbacks.take(endpoint);
+    if (callback) {
+        callback(reply, rawData, data);
+    }
+}

@@ -1,5 +1,7 @@
 #include "NetworkManager.h"
+
 #include "LogHelper.h"
+
 #include <QCoreApplication>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>

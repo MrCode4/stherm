@@ -16,8 +16,7 @@
 #include "php/include/sensors.h"
 
 #include "UtilityHelper.h"
-#include "Backend/Core/NetworkWorker.h"
-
+#include "Backend/Core/HttpExecutor.h"
 
 #ifdef _WIN32
 #define uid_t uint8_t // for building in windows as test purpose

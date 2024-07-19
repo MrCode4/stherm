@@ -41,16 +41,26 @@ BasePageView {
 
     Timer {
         id: fetchTimer
-
+        property bool isFetching: false
         repeat: true
-        running: root.visible && initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady
+        running: root.visible && initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady && !isFetching
         interval: 5000
 
         onTriggered: {
-            uiSession.settingsReady = system.fetchSettings();
+            isFetching = system.fetchSettings();
+        }
+    }
+
+    Connections {
+        target: system
+
+        function onAreSettingsFetchedChanged(success) {
+            uiSession.settingsReady = success;
+            fetchTimer.isFetching = false;
             console.log("fetching in initial was", uiSession.settingsReady )
         }
     }
+
 
     //! Once the network connection is established, the System Types page should automatically open,
     Timer {
