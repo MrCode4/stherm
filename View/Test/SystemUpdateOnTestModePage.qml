@@ -24,7 +24,7 @@ BasePageView {
     title: "Reset System Version"
 
     Component.onCompleted: {
-        system.getUpdateInformation();
+        system.fetchUpdateInformation();
     }
 
     /* Children

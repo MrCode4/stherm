@@ -1,8 +1,9 @@
 #include "NetworkInterface.h"
+
 #include "LogHelper.h"
 #include "Nmcli/NmcliInterface.h"
-#include<QAbstractNetworkCache>
 
+#include<QAbstractNetworkCache>
 #include <QNetworkInterface>
 #include <QNetworkRequest>
 #include <QProcess>

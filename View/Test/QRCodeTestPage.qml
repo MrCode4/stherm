@@ -85,7 +85,7 @@ BasePageView {
             if (sn.length === 0) {
                 //! Retrieve Serial Number (SN) using UID and await response
                 var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
-                system.getSN_QML(uid);
+                system.fetchSerialNumber(uid, false);
             }
 
             printConfirmPopup.open();

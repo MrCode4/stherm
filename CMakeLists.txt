@@ -304,8 +304,10 @@ qt6_add_qml_module(appStherm
         Backend/Core/ScheduleCPP.cpp
         Backend/Core/NetworkManager.h
         Backend/Core/NetworkManager.cpp
-        Backend/Core/NetworkWorker.h
-        Backend/Core/NetworkWorker.cpp
+        Backend/Core/HttpExecutor.h
+        Backend/Core/HttpExecutor.cpp
+        Backend/Core/RestApiExecutor.h
+        Backend/Core/RestApiExecutor.cpp
         Backend/Core/System.h
         Backend/Core/System.cpp
         Backend/Core/Sync.h

@@ -5,14 +5,14 @@
 #include <QQmlEngine>
 
 #include "Backend/Device/nuve_types.h"
-#include "NetworkWorker.h"
+#include "RestApiExecutor.h"
 #include "Sync.h"
 
 /*! ***********************************************************************************************
  * This class manage system requests.
  * ************************************************************************************************/
 namespace NUVE {
-class System : public NetworkWorker
+class System : public RestApiExecutor
 {
     Q_OBJECT
 
@@ -23,14 +23,15 @@ class System : public NetworkWorker
     Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionChangeLog READ latestVersionChangeLog  NOTIFY logVersionChanged FINAL)
     Q_PROPERTY(QString remainingDownloadTime  READ remainingDownloadTime   NOTIFY remainingDownloadTimeChanged FINAL)
-    Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY snReady FINAL)
+    Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY serialNumberReady FINAL)
     Q_PROPERTY(QString systemUID              READ systemUID               NOTIFY systemUIDChanged FINAL)
     Q_PROPERTY(QString backdoorLog            READ backdoorLog             NOTIFY backdoorLogChanged FINAL)
 
+    Q_PROPERTY(bool areSettingsFetched  READ areSettingsFetched   NOTIFY areSettingsFetchedChanged FINAL)
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
-    Q_PROPERTY(bool fetchSuccessOnce   READ hasFetchSuccessOnce  FINAL)
+    Q_PROPERTY(bool fetchSuccessOnce   READ hasFetchSuccessOnce  CONSTANT FINAL)
 
 
     //! Maybe used in future...
@@ -65,21 +66,14 @@ public:
 
     Q_INVOKABLE bool fetchSettings();
 
+    bool hasClient() const;
+    bool areSettingsFetched() const;
+
     //! Get serial number from server
-    std::pair<std::string, bool> getSN(cpuid_t accessUid);
-
-    //! Get serial number from server, call from QML and return serial number
-    //! Some signals are block in this function.
-    Q_INVOKABLE QString getSN_QML(QString accessUid);
-
-    //! Get update
-    //! todo: process response packet
-    //! TEMP: "022"
-    bool getUpdate(QString softwareVersion = "022");
+    Q_INVOKABLE void fetchSerialNumber(const QString& uid, bool notifyUser = true);
 
     //! Send request job to web server
     void requestJob(QString type);
-
 
     //! Start the partilally update
     //! if the version is empty, partialUpdate start to install the latest version
@@ -91,9 +85,9 @@ public:
 
     //! Get update information from server
     //! notifyUser: Send notification for user when new update is available
-    Q_INVOKABLE void getUpdateInformation(bool notifyUser = false);
+    Q_INVOKABLE void fetchUpdateInformation(bool notifyUser = false);
 
-    Q_INVOKABLE void getBackdoorInformation();
+    Q_INVOKABLE void fetchBackdoorInformation();
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
 
@@ -108,7 +102,8 @@ public:
     bool canFetchServer();
 
     //! Get Contractor Information
-    QVariantMap getContractorInfo();
+    QVariantMap getContractorInfo() const;
+    bool fetchContractorInfo();
 
     //! Getters
     QStringList availableVersions();
@@ -192,7 +187,7 @@ public:
     Q_INVOKABLE void setIsInitialSetup(bool isInitailSetup);
 
     //! Forget device settings and sync settings
-    Q_INVOKABLE void ForgetDevice();
+    Q_INVOKABLE void forgetDevice();
 
     bool hasFetchSuccessOnce() const;
 
@@ -204,20 +199,18 @@ public:
 
     Q_INVOKABLE QString getCurrentTime();
 
-protected slots:  
-    void onSnReady();
+protected slots:
+    void onSerialNumberReady();
     void createLogDirectoryOnServer();
 
-protected:
-    void processNetworkReply(QNetworkReply* reply) override;
-
 signals:
-    void snReady();
-
+    void serialNumberReady();
+    void areSettingsFetchedChanged(bool success);
+    void contractorInfoReady();
     void settingsReady(QVariantMap settings);
     void appDataReady(QVariantMap settings);
 
-    void autoModeSettingsReady(QVariantMap settings, bool isValid);
+    void autoModeSettingsReady(const QVariantMap& settings, bool isValid);
     void pushFailed();
 
     void latestVersionChanged();
@@ -315,6 +308,7 @@ private:
 private:
     Sync *mSync;
 
+    bool mAreSettingsFetched = false;
     QJsonObject mUpdateJsonObject;
 
     QByteArray m_expectedUpdateChecksum;
@@ -371,7 +365,7 @@ private:
     QElapsedTimer mElapsedTimer;
 
     QTimer downloaderTimer;
-
+    bool mIsBusyDownloader = false;
     qint64 mDownloadBytesReceived;
     double mDownloadRateEMA;
 

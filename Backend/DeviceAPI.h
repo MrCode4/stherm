@@ -32,26 +32,18 @@ class DeviceAPI : public QObject
 public:
     explicit DeviceAPI(QObject *parent = nullptr);
 
+    QString uid() const;
+    NUVE::Timing *timing();
+    NUVE::System* system();
+    const NUVE::DeviceConfig& deviceConfig() const;
+    void setSampleRate(const int sampleRate);
+
     Q_INVOKABLE int getStartMode();
     int runDevice();
     int checkSN();
 
-    NUVE::Timing *timing();
-
-    NUVE::System* system() {
-        return m_system;
-    }
-
-    QString uid() {
-        return QString::fromStdString(_uid);
-    }
-
     //! Forget device configs
-    void ForgetDevice();
-
-    const NUVE::DeviceConfig& deviceConfig() const;
-
-    void setSampleRate(const int sampleRate);
+    void forgetDevice();
 
 signals:
     void uidChanged();
