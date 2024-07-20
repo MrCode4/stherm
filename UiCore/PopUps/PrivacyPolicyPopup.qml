@@ -21,8 +21,9 @@ I_PopUp {
     /* Object properties
      * ****************************************************************************************/
     title: "Privacy Policy & Terms Of Use "
+    titleHeadingLevel: 5
     height: parent.height * 0.9
-    width: parent.width * 0.9
+    width: parent.width * 0.95
 
     /* Children
      * ****************************************************************************************/
