@@ -22,7 +22,7 @@ I_PopUp {
      * ****************************************************************************************/
     title: "Privacy Policy & Terms Of Use "
     titleHeadingLevel: 5
-    height: parent.height * 0.9
+    height: parent.height * 0.95
     width: parent.width * 0.95
 
     /* Children
@@ -67,5 +67,10 @@ I_PopUp {
             lineHeight: 1.3
             font.pointSize: Qt.application.font.pointSize * 0.7
         }
+
+        //! Accept button
+        // ButtonInverted {
+
+        // }
     }
 }

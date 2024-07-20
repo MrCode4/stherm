@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * privacyPolicyPage.qml privacyPolicy and terms of use
+ * PrivacyPolicyPage: privacyPolicy and terms of use
  * ***********************************************************************************************/
 
 BasePageView {
@@ -69,24 +69,17 @@ BasePageView {
 
     CheckBox {
         id: privacyPolicyChbox
-        // Layout.leftMargin: leftPadding
-        // Layout.alignment: Qt.AlignVCenter
 
         anchors.left: parent.left
         anchors.leftMargin: leftPadding
         anchors.verticalCenter: parent.verticalCenter
 
-        focusPolicy: Qt.TabFocus
-
         checked: false
-        onClicked: {
-            managePrivacyPolicyChbox();
-        }
+
+        enabled: privacyPolicyPopup.isRead
     }
 
     Label {
-        // Layout.alignment: Qt.AlignVCenter
-
         anchors.left: privacyPolicyChbox.right
         anchors.right: parent.right
         anchors.leftMargin: leftMargin
@@ -100,7 +93,6 @@ BasePageView {
         text:  '<p>By checking this box and activating this device, I agree to the <b><a>Privacy Policy</a></b> and <b><a>Terms of use</a></b>,
                     which contain arbitration provisions waiving my right to a jury trial and my right to enforce this contract via class action.</p>'
 
-
         TapHandler {
             onTapped: {
                 managePrivacyPolicyChbox();
@@ -110,16 +102,19 @@ BasePageView {
 
     //! PrivacyPolicyPopup: To improve memory efficiency, we'll declare this here
     //! as it's also used in the PrivacyPolicyPage.
+    //! When the user use back button, he/she should read the text again.
     PrivacyPolicyPopup {
         id: privacyPolicyPopup
         userPolicyTerms: appModel.userPolicyTerms
 
+        onClosed: {
+            privacyPolicyChbox.checked = privacyPolicyPopup.isRead ? !privacyPolicyChbox.checked : false;
+        }
     }
 
     /* Functions
      * ****************************************************************************************/
     function managePrivacyPolicyChbox() {
-        privacyPolicyChbox.checked = privacyPolicyPopup.isRead ? !privacyPolicyChbox.checked : false;
         privacyPolicyPopup.open();
     }
 }
