@@ -23,6 +23,6 @@ QSObject {
     property string acceptedVersionOnTestMode: ""
 
     //! Accepted time (keep the number of seconds since the start, in UTC, of the year 1970)
-    property string acceptedTimeUser: ""
+    property string acceptedTimeUser:   ""
     property string acceptedTimeTester: ""
 }
