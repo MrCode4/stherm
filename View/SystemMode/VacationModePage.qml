@@ -137,8 +137,8 @@ BasePageView {
         RangeSliderLabeled {
             id: _humSlider
             Layout.fillWidth: true
-            from: 0
-            to: 100
+            from: AppSpec.minimumHumidity
+            to: AppSpec.maximumHumidity
             first.value: appModel?.vacation?.hum_min ?? from
             second.value: appModel?.vacation?.hum_max ?? to
             difference: AppSpec.minStepHum

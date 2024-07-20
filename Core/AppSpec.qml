@@ -15,8 +15,8 @@ AppSpecCPP {
     property int minimumFanWorking: 5
     property int maximumFanWorking: 55
 
-    property int minimumHumidity: 0
-    property int maximumHumidity: 100
+    property int minimumHumidity: 20
+    property int maximumHumidity: 70
 
     //! Maximum value of first temperature handler (left) in auto mode
     //! Celcius
