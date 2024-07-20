@@ -25,11 +25,15 @@ BasePageView {
         anchors.fill: parent
         anchors.topMargin: 8 * scaleFactor
         spacing: 8
-        RoniaTextIcon {
+
+        Image {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            font.pointSize: root.font.pointSize * 2.2
-            text: FAIcons.lock
-            color: root.headerColor
+            width: 37
+            height: 49
+            source: "qrc:/Stherm/Images/lock-image.svg"
+            fillMode: Image.PreserveAspectFit
+            horizontalAlignment: Image.AlignHCenter
+            verticalAlignment: Image.AlignVCenter
         }
 
         Label {

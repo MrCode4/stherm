@@ -409,6 +409,7 @@ qt6_add_qml_module(appStherm
         Images/Locations/other.svg
         Images/Locations/upstairs.svg
         Images/delete-left.svg
+        Images/lock-image.svg
 
         Resources/privacyPolicy.md
         Resources/termOfUse.md

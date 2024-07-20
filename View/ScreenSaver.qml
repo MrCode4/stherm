@@ -124,6 +124,17 @@ Popup {
                     cache: true
                 }
             }
+
+            Image {
+                visible: !device.lock.isLock
+                Layout.alignment: Qt.AlignHCenter
+                width: 37
+                height: 49
+                source: "qrc:/Stherm/Images/lock-image.svg"
+                fillMode: Image.PreserveAspectFit
+                horizontalAlignment: Image.AlignHCenter
+                verticalAlignment: Image.AlignVCenter
+            }
         }
 
         //! Spacer
