@@ -67,61 +67,12 @@ BasePageView {
         }
     }
 
-
-    Flickable {
-        id: privacyFlick
-
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: confirmRowLayout.top
-        anchors.bottomMargin: 10
-
-        property bool isRead: false
-
-        ScrollIndicator.vertical: ScrollIndicator {
-            parent: privacyFlick
-            height: parent.height
-            x: parent.width
-
-            onPositionChanged: {
-                if (!privacyFlick.isRead)
-                    privacyFlick.isRead = position > 0.98;
-            }
-        }
-
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
-        contentWidth: width
-        contentHeight: privacyPolicyLabel.implicitHeight
-
-        Label {
-            id: privacyPolicyLabel
-            anchors.fill: parent
-
-            text: "### Privacy Policy V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
-                  appModel.userPolicyTerms.privacyPolicy + "\n\n\n\n" +
-                  "### Terms Of Use V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
-                  appModel.userPolicyTerms.termsOfUse
-
-            leftPadding: 4;
-            rightPadding: 4
-            background: null
-            textFormat: Text.MarkdownText
-            wrapMode: Text.WordWrap
-            lineHeight: 1.3
-            font.pointSize: Qt.application.font.pointSize * 0.7
-        }
-    }
-
     RowLayout {
         id: confirmRowLayout
         spacing: 4
 
-        anchors.bottom: parent.bottom
+        anchors.centerIn: parent
         anchors.bottomMargin: 10
-
-        enabled: privacyPolicyLabel.text.length > 0 && privacyFlick.isRead
 
         CheckBox {
             id: privacyPolicyChbox
@@ -129,6 +80,9 @@ BasePageView {
             focusPolicy: Qt.TabFocus
 
             checked: false
+            onClicked: {
+                managePrivacyPolicyChbox();
+            }
         }
 
         Label {
@@ -138,13 +92,30 @@ BasePageView {
             textFormat: Text.StyledText
             linkColor: Material.foreground
             verticalAlignment: Text.AlignVCenter
-            text: '<p>I agree to <b><a>Privacy Policy</a></b> and<br><b><a>Terms of use</a></b>.</p>'
+            text: '<p>By checking this box and activating this device,<br> I agree to the <b><a>Privacy Policy</a></b> and <b><a>Terms of use</a></b>,
+                   <br>which contain arbitration provisions waiving<br>my right to a jury trial and my right to enforce<br>this contract via class action.</p>'
+
 
             TapHandler {
                 onTapped: {
-                    privacyPolicyChbox.checked = !privacyPolicyChbox.checked;
+                    managePrivacyPolicyChbox();
                 }
             }
         }
+    }
+
+    //! PrivacyPolicyPopup: To improve memory efficiency, we'll declare this here
+    //! as it's also used in the PrivacyPolicyPage.
+    PrivacyPolicyPopup {
+        id: privacyPolicyPopup
+        userPolicyTerms: appModel.userPolicyTerms
+
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+    function managePrivacyPolicyChbox() {
+        privacyPolicyChbox.checked = privacyPolicyPopup.isRead ? !privacyPolicyChbox.checked : false;
+        privacyPolicyPopup.open();
     }
 }
