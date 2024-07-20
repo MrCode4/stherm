@@ -156,7 +156,7 @@ Control {
                     topBackgroundColor: backgroundColor
                     textColor: enabled ? ((hovered || pressed) ? Style.background : Style.foreground) : "transparent"
 
-                    width: 55
+                    width: 58
                     height: width
 
                     onClicked: {
@@ -168,14 +168,18 @@ Control {
 
             //! Use item to have wide tap area.
             Item {
-                width: 55
+                width: 58
                 height: width
-                RoniaTextIcon {
-                    anchors.centerIn: parent
-                    text: AppStyle.generalIcons.deleteLeft
-                    font.pointSize: root.font.pointSize * 1.1
-                }
 
+                Image {
+                    anchors.centerIn: parent
+                    width: 35
+                    height: 21
+                    source: "qrc:/Stherm/Images/delete-left.svg"
+                    fillMode: Image.PreserveAspectFit
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                }
                 TapHandler {
                     onTapped: {
                         _focusedItem.text = "";
