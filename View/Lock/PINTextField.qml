@@ -21,8 +21,8 @@ TextField {
     /* Object properties
      * ****************************************************************************************/
 
-    implicitWidth: 40
-    implicitHeight: 50
+    implicitWidth: 35
+    implicitHeight: 45
     echoMode: showPin ? TextInput.Normal : TextInput.Password
 
     validator: IntValidator {
@@ -31,8 +31,6 @@ TextField {
     }
 
     leftPadding: 12
-    topPadding: 2
-
 
     background: Rectangle {
         width: 40

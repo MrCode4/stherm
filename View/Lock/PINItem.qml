@@ -98,7 +98,7 @@ Control {
             //! Show/hide the pin
             Item {
                 Layout.alignment: Qt.AlignVCenter
-                width: 30
+                width: 35
                 height: 45
 
                 RoniaTextIcon {
