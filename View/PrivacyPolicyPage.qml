@@ -67,39 +67,43 @@ BasePageView {
         }
     }
 
-    RowLayout {
-        id: confirmRowLayout
-        spacing: 4
+    CheckBox {
+        id: privacyPolicyChbox
+        // Layout.leftMargin: leftPadding
+        // Layout.alignment: Qt.AlignVCenter
 
-        anchors.centerIn: parent
-        anchors.bottomMargin: 10
+        anchors.left: parent.left
+        anchors.leftMargin: leftPadding
+        anchors.verticalCenter: parent.verticalCenter
 
-        CheckBox {
-            id: privacyPolicyChbox
-            Layout.leftMargin: -leftPadding
-            focusPolicy: Qt.TabFocus
+        focusPolicy: Qt.TabFocus
 
-            checked: false
-            onClicked: {
-                managePrivacyPolicyChbox();
-            }
+        checked: false
+        onClicked: {
+            managePrivacyPolicyChbox();
         }
+    }
 
-        Label {
-            Layout.alignment: Qt.AlignVCenter
+    Label {
+        // Layout.alignment: Qt.AlignVCenter
 
-            font.pointSize: Application.font.pointSize * 0.85
-            textFormat: Text.StyledText
-            linkColor: Material.foreground
-            verticalAlignment: Text.AlignVCenter
-            text: '<p>By checking this box and activating this device,<br> I agree to the <b><a>Privacy Policy</a></b> and <b><a>Terms of use</a></b>,
-                   <br>which contain arbitration provisions waiving<br>my right to a jury trial and my right to enforce<br>this contract via class action.</p>'
+        anchors.left: privacyPolicyChbox.right
+        anchors.right: parent.right
+        anchors.leftMargin: leftMargin
+        anchors.verticalCenter: parent.verticalCenter
+
+        font.pointSize: Application.font.pointSize * 0.85
+        textFormat: Text.StyledText
+        linkColor: Material.foreground
+        verticalAlignment: Text.AlignVCenter
+        wrapMode: Text.WordWrap
+        text:  '<p>By checking this box and activating this device, I agree to the <b><a>Privacy Policy</a></b> and <b><a>Terms of use</a></b>,
+                    which contain arbitration provisions waiving my right to a jury trial and my right to enforce this contract via class action.</p>'
 
 
-            TapHandler {
-                onTapped: {
-                    managePrivacyPolicyChbox();
-                }
+        TapHandler {
+            onTapped: {
+                managePrivacyPolicyChbox();
             }
         }
     }
