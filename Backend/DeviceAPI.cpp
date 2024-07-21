@@ -25,6 +25,40 @@ DeviceAPI::DeviceAPI(QObject *parent)
     m_system->setUID(_uid);
 }
 
+QString DeviceAPI::uid() const
+{
+    return QString::fromStdString(_uid);
+}
+
+NUVE::Timing* DeviceAPI::timing()
+{
+    return &m_timing;
+}
+
+NUVE::System* DeviceAPI::system()
+{
+    return m_system;
+}
+
+const NUVE::DeviceConfig &DeviceAPI::deviceConfig() const
+{
+    return m_deviceConfig;
+}
+
+void DeviceAPI::setSampleRate(const int sampleRate)
+{
+    if (sampleRate < 0) {
+        return;
+    }
+
+    m_deviceConfig.setSampleRate(sampleRate);
+}
+
+int DeviceAPI::getStartMode()
+{
+    return m_hardware->getStartMode();
+}
+
 int DeviceAPI::runDevice()
 {
     return m_hardware->runDevice(_uid);
@@ -40,10 +74,11 @@ int DeviceAPI::checkSN()
     }
 
     // can take some time in the initial usage, but not blocking ui as the WiFi is not connected for sure
-    auto sn_config = m_system->getSN(_uid);
-    if (!sn_config.second) {
+    m_system->fetchSerialNumber(uid());
+    auto serialNumber = m_system->serialNumber();
+    if (!m_system->hasClient()) {
 
-        qWarning() << "serial number(SN) with false has_client, SN: " << sn_config.first.c_str();
+        qWarning() << "serial number(SN) with false has_client, SN: " << serialNumber;
 
         // Staring first time setup
         m_hardware->setDefaultValues(_uid);
@@ -51,38 +86,19 @@ int DeviceAPI::checkSN()
         return 2;
     }
 
-    TRACE << "serial number : " << QString::fromStdString(sn_config.first);
+    TRACE << "serial number : " << serialNumber;
 
     // staring normally, but defaults not set
     m_timing.setDefaultValues();
     m_currentStage.timestamp = NUVE::current_timestamp();
-    m_deviceConfig.serial_number = sn_config.first;
+    m_deviceConfig.serial_number = serialNumber.toStdString();
     m_deviceConfig.start_mode = 1;
     m_deviceConfig.save();
     return 1;
 }
 
-int DeviceAPI::getStartMode()
+void DeviceAPI::forgetDevice()
 {
-    return m_hardware->getStartMode();
-}
-
-NUVE::Timing* DeviceAPI::timing() {
-    return &m_timing;
-}
-
-void DeviceAPI::ForgetDevice() {
     m_deviceConfig.initialise("");
 }
 
-const NUVE::DeviceConfig &DeviceAPI::deviceConfig() const
-{
-    return m_deviceConfig;
-}
-
-void DeviceAPI::setSampleRate(const int sampleRate) {
-    if (sampleRate < 0)
-        return;
-
-    m_deviceConfig.setSampleRate(sampleRate);
-}

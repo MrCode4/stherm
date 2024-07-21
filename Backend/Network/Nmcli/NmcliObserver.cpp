@@ -1,4 +1,5 @@
 #include "NmcliObserver.h"
+
 #include "LogHelper.h"
 #include "Nmcli.h"
 

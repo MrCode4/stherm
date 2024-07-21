@@ -93,6 +93,13 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     m_system = _deviceAPI->system();
 
+    connect(m_system, &NUVE::System::contractorInfoReady, this, [this]() {
+        auto info = m_system->getContractorInfo();
+        emit contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
+                                     info.value("logo").toString(), info.value("url").toString(),
+                                     info.value("tech").toString());
+    });
+
     mAdaptiveBrightness = 50;
 
     QDir backdoorDir(m_backdoorPath);
@@ -429,9 +436,8 @@ void DeviceControllerCPP::setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovern
 void DeviceControllerCPP::forgetDevice()
 {
     QFile::remove("/usr/local/bin/QSCore.cfg");
-
-    _deviceAPI->ForgetDevice();
-    m_system->ForgetDevice();
+    _deviceAPI->forgetDevice();
+    m_system->forgetDevice();
 }
 
 double DeviceControllerCPP::adaptiveBrightness() {
@@ -735,11 +741,7 @@ bool DeviceControllerCPP::checkSN()
 
 void DeviceControllerCPP::checkContractorInfo()
 {
-    auto info = m_system->getContractorInfo();
-
-    Q_EMIT contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
-                                 info.value("logo").toString(), info.value("url").toString(),
-                                 info.value("tech").toString());
+    m_system->fetchContractorInfo();
 }
 
 void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)

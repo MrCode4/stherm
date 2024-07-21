@@ -8,209 +8,337 @@
  * Network information
  * ************************************************************************************************/
 namespace NUVE {
-const QUrl m_domainUrl        = QUrl("https://devapi.nuvehvac.com/"); // base domain
-const QUrl m_engineUrl        = QUrl("/engine/index.php");          // engine
-const QUrl m_updateUrl        = QUrl("/update/");                   // update
-const QString m_getSN             = QString("getSN");
-const QString m_getContractorInfo = QString("getContractorInfo");
-const QString m_getContractorLogo = QString("getContractorLogo");
-const QString m_getSettings = QString("getSettings");
-const QString m_getAutoModeSettings = QString("getAutoModeSettings");
-const QString m_getMessages = QString("getMessages");
-const QString m_setSettings = QString("setSettings");
-const QString m_setAutoModeSettings = QString("setAutoModeSettings");
-const QString m_setAlerts = QString("setAlerts");
-const QString m_getWirings = QString("getWirings");
-const QString m_SerialNumberSetting = QString("NUVE/SerialNumber");
-const QString m_HasClientSetting = QString("NUVE/SerialNumberClient");
-const QString m_ContractorSettings = QString("NUVE/Contractor");
-const QString m_requestJob      = QString("requestJob");
-
-const QString m_firmwareUpdateKey      = QString("firmware");
-const QString m_firmwareImageKey       = QString("firmware-image");
-const QString m_firmwareForceUpdateKey = QString("force-update");
-
-const char* m_notifyGetSN       = "notifyGetSN";
+const QString cBaseUrl = "https://devapi.nuvehvac.com/"; // base domain
+const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
+const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
+const QString cContractorSettings = QString("NUVE/Contractor");
+const QString cFirmwareUpdateKey      = QString("firmware");
+const QString cFirmwareImageKey       = QString("firmware-image");
+const QString cFirmwareForceUpdateKey = QString("force-update");
 
 inline QDateTime updateTimeStringToTime(const QString &timeStr) {
+
     QString format = "yyyy-MM-dd HH:mm:ss";
 
     return QDateTime::fromString(timeStr, format);
 }
 
+
 Sync::Sync(QObject *parent)
-    : NetworkWorker(parent)
+    : RestApiExecutor(parent)
     , mHasClient(false)
 {
     QSettings setting;
-    mHasClient            = setting.value(m_HasClientSetting).toBool();
-    mSerialNumber         = setting.value(m_SerialNumberSetting).toString();
-    mContractorInfo       = setting.value(m_ContractorSettings).toMap();
+    mHasClient = setting.value(cHasClientSetting).toBool();
+    mSerialNumber = setting.value(cSerialNumberSetting).toString();
+    mContractorInfo = setting.value(cContractorSettings).toMap();
+
+    connect(this, &Sync::contractorInfoReady, [this]() {
+        QSettings setting;
+        setting.setValue(cContractorSettings, mContractorInfo);
+    });
 }
 
-void Sync::setUID(cpuid_t accessUid)
+void Sync::setUID(cpuid_t accessUid) { mSystemUuid = accessUid; }
+QString Sync::getSerialNumber() const { return mSerialNumber;}
+bool Sync::hasClient() const { return mHasClient; }
+QVariantMap Sync::getContractorInfo() const { return mContractorInfo; }
+
+void Sync::setApiAuth(QNetworkRequest& request)
 {
-    mSystemUuid = accessUid;
+    RestApiExecutor::setApiAuth(request);
+    auto authData = mSystemUuid + mSerialNumber.toStdString();
+    // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain
+    // the header compression context for the connection"
+    request.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(authData, QCryptographicHash::Sha256).toHex());
 }
 
-std::pair<std::string, bool> Sync::getSN(cpuid_t accessUid, bool notifyUser)
+QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
 {
-    auto netReply = sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSn?uid=%0").arg(accessUid.c_str())), m_getSN);
-    netReply->setProperty(m_notifyGetSN, notifyUser);
+    QJsonObject data;
+    const QJsonObject rootObject = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
 
-    // Return Serial number when serial number already exist.
-    if (!mSerialNumber.isEmpty() && mHasClient)
-        return getSN();
+    if (rootObject.contains("data")) {
+        data = rootObject.value("data").toObject();
+    }
+    else {
+        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object";
+    }
 
-    QEventLoop loop;
-    connect(this, &NUVE::Sync::snFinished, &loop, &QEventLoop::quit);
-
-    loop.exec();
-
-    TRACE << "Retrieve SN returned: " << QString::fromStdString(mSerialNumber.toStdString());
-
-    return getSN();
+    return data;
 }
 
-std::pair<std::string, bool> Sync::getSN()
+
+void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 {
-    return {mSerialNumber.toStdString(), mHasClient};
+    QEventLoop* eventLoop = nullptr;
+
+    auto callback = [this, &eventLoop, notifyUser](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (data.contains("serial_number")) {
+            auto sn = data.value("serial_number").toString();
+            mHasClient = data.value("has_client").toBool();
+            TRACE << sn << mHasClient;
+
+            if (!mHasClient) {
+                TRACE << "will start initial setup!";
+            }
+
+            if (!mSerialNumber.isEmpty() && sn != mSerialNumber) {
+                emit alert("The serial number does not match the last one.");
+
+                if (!mHasClient) {
+                    // Update SN for get settings
+                    mSerialNumber = sn;
+                    // Force to update with new settings
+                    mLastPushTime = QDateTime();
+                    // Fetch with new serial number
+                    emit serialNumberChanged();
+                }
+
+                TRACE << "The serial number does not match the last one." << mSerialNumber << sn;
+            }
+            else if (sn.isEmpty()) {
+                emit alert("Oops...\nlooks like this device is not recognized by "
+                           "our servers,\nplease send it to the manufacturer and\n "
+                           "try to install another device.");
+            }
+
+            mSerialNumber = sn;
+
+            if (!mSerialNumber.isEmpty()) {
+                emit serialNumberReady();
+            }
+
+            if (mSerialNumber.isEmpty() && notifyUser) {
+                emit testModeStarted();
+            }
+
+            // Save the serial number in settings
+            QSettings setting;
+            setting.setValue(cHasClientSetting, mHasClient);
+            setting.setValue(cSerialNumberSetting, mSerialNumber);
+        }
+        else {
+            if (reply->error() == QNetworkReply::NoError) {
+                TRACE << "No serial number has returned by server";
+            }
+            else if (notifyUser && reply->error() == QNetworkReply::ContentNotFoundError) {
+                emit testModeStarted();
+            }
+            else {
+                qWarning() << "Unable to fetch the device serial number, error: " << reply->errorString();
+            }
+        }
+
+        if (eventLoop) {
+            eventLoop->quit();
+        }
+    };
+
+    auto netReply = callGetApi(cBaseUrl + QString("api/sync/getSn?uid=%0").arg(uid), callback, false);
+
+    if (netReply) {
+        // block if the first serial is invalid or client is not set yet
+        if (mSerialNumber.isEmpty() || !mHasClient) {
+            QEventLoop loop;
+            eventLoop = &loop;
+            loop.exec();
+        }
+    }
 }
 
-QVariantMap Sync::getContractorInfo()
+bool Sync::fetchContractorInfo()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "ContractorInfo: The serial number is not recognized correctly...";
-        return mContractorInfo;
-    }
-
-    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getContractorInfo?sn=%0").arg(mSerialNumber)), m_getContractorInfo);
-
-    QEventLoop loop;
-    connect(this, &NUVE::Sync::contractorInfoReady, &loop, &QEventLoop::quit);
-
-    loop.exec();
-
-    QSettings setting;
-    setting.setValue(m_ContractorSettings, mContractorInfo);
-    return mContractorInfo;
-}
-
-bool Sync::getSettings()
-{
-    QMutexLocker locker(&getSettingsMutex);
-    bool returnval = false;
-
-    if (getSettingsRequested) {
-        TRACE_CHECK(true) << "skipping getSettings request due to previously active one";
         return false;
     }
-    getSettingsRequested = true;
-    locker.unlock();    // Let waiting threads exit
 
-    if (mSerialNumber.isEmpty()) {
-        qWarning()   << "Sn is not ready! can not get settings!";
-    }
-    else {
-        sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getSettings?sn=%0").arg(mSerialNumber)), m_getSettings);
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() != QNetworkReply::NoError) {
+            emit contractorInfoReady();
+        }
+        else {
+            auto brandValue = data.value("brand");
+            auto phoneValue = data.value("phone");
+            auto logoValue = data.value("logo");
 
-        QEventLoop loop;
-        connect(this, &NUVE::Sync::settingsLoaded, &loop, &QEventLoop::quit);
-        connect(this, &NUVE::Sync::settingsReady, &loop, [&loop] {
-            loop.setProperty("success", true);
-            loop.quit();
-        });
+            if (data.isEmpty() || !brandValue.isString() || brandValue.toString().isEmpty()) {
+                TRACE << "Wrong contractor info fetched from server";
+                emit contractorInfoReady();
+                return;
+            }
 
-        // Quit from loop and change success to 'true'
-        connect(this, &NUVE::Sync::invalidSettingsReceived, &loop, [&loop] {
-            loop.setProperty("success", true);
-            loop.quit();
-        });
+            QVariantMap map;
+            map.insert("phone", phoneValue.toString(mContractorInfo.value("phone").toString()));
+            map.insert("brand", brandValue.toString(mContractorInfo.value("brand").toString()));
+            map.insert("url", data.value("url").toString(mContractorInfo.value("url").toString()));
+            map.insert("tech", data.value("schedule").toString(mContractorInfo.value("tech").toString()));
+            // logo is a bit more complicated than others,
+            // the value inside map should be either empty so it loads from brand
+            // name, or be a resource or local fs path so if it has the logo
+            // response we keep it empty until the actual value handled (if not
+            // empty, it should be downloaded to a local path) and if it has null
+            // or has not value, we will keep the previous value
+            map.insert("logo", logoValue.isString() ? "" : mContractorInfo.value("logo").toString());
+            mContractorInfo = map;
 
+            auto logo = logoValue.toString();
+            if (logo.isEmpty()) {
+                emit contractorInfoReady();
+            }
+            else {
+                fetchContractorLogo(logo);
+            }
+        }
+    };
 
-        TRACE << "Waiting for Settings get";
+    return callGetApi(cBaseUrl + QString("api/sync/getContractorInfo?sn=%0").arg(mSerialNumber), callback) != nullptr;
+}
 
-        loop.exec();
+void Sync::fetchContractorLogo(const QString &url)
+{
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            QImage image;
+            if (image.loadFromData(rawData)) {
+                image.save("/home/root/customIcon.png");
+                mContractorInfo.insert("logo", "file:///home/root/customIcon.png");
+            }
+        }
 
-        returnval = loop.property("success").toBool();
+        emit contractorInfoReady();
+    };
 
-        TRACE << "Settings get with result" << returnval;
+    downloadFile(url, callback, false);
+}
 
-        if (returnval) {
+void Sync::checkFirmwareUpdate(QJsonObject settings)
+{
+    QString fwVersion;
 
-            TRACE << "gettings auto mode";
+    if (settings.contains(cFirmwareUpdateKey) &&
+        settings.value(cFirmwareUpdateKey).isObject()) {
+        auto fwUpdateObj = settings.value(cFirmwareUpdateKey).toObject();
+        auto fwUpdateVersion = fwUpdateObj.value(cFirmwareImageKey).toString("");
 
-            returnval = getAutoModeSetings();
-
-            TRACE << "gettings auto mode with results" << returnval;
+        // if force-update is set to true, then firmware-image instructs device to update to that version
+        if (fwUpdateObj.value(cFirmwareForceUpdateKey).toBool()) {
+            fwVersion = fwUpdateVersion;
         }
     }
 
-    locker.relock();
-    getSettingsRequested = false;
-    return returnval;
+    emit updateFirmwareFromServer(fwVersion);
 }
 
-bool Sync::getAutoModeSetings() {
+
+bool Sync::fetchSettings()
+{
     if (mSerialNumber.isEmpty()) {
-        qWarning()   << "Sn is not ready! can not get auto mode settings!";
+        qWarning() << "Sn is not ready! can not get settings!";
         return false;
     }
 
-    sendGetRequest(m_domainUrl, QUrl(QString("/api/sync/autoMode?sn=%0").arg(mSerialNumber)), m_getAutoModeSettings);
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (data.isEmpty()) {
+            if (reply->error() == QNetworkReply::NoError) {
+                TRACE << "Received settings corrupted: " + mSerialNumber;
+            }
+        }
+        else if (data.value("sn").toString() == mSerialNumber) {
+            auto dateString = data.value("setting").toObject().value("last_update");
+            TRACE << "cpp last_update:" << dateString;
+            QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
 
-    QEventLoop loop;
-    connect(this, &NUVE::Sync::autoModeSettingsReady, &loop, [&loop](QVariantMap settings, bool isValid) {
-        loop.setProperty("success", isValid);
-        loop.quit();
-    });
+            if (dateTimeObject.isValid()) {
+                // Use the dateTimeObject here with time information
+                TRACE << "Date with time cpp set last_update: " << dateTimeObject
+                      << dateTimeObject.toString() << (mLastPushTime > dateTimeObject)
+                      << (mLastPushTime == dateTimeObject)
+                      << (mLastPushTime < dateTimeObject);
+            }
+            else {
+                TRACE << "Invalid date format! cpp set last_update:";
+            }
 
-    loop.exec();
-    return loop.property("success").toBool();
-}
+            if (!mLastPushTime.isNull() && (!dateTimeObject.isValid() || mLastPushTime >= dateTimeObject)) {
+                TRACE << "Received settings has invalid date last_update: " + dateTimeObject.toString();
+            }
+            else {
+                mLastPushTime = dateTimeObject;
+                emit settingsReady(data.toVariantMap());
+            }
 
-void Sync::getMessages()
-{
-    if (mSerialNumber.isEmpty()) {
-        qWarning()   << "Sn is not ready! can not get messages!";
-        return;
+            // Transmit Non-Configuration Data to UI and Update Model on Server
+            // Response
+            emit appDataReady(data.toVariantMap());
+            checkFirmwareUpdate(data);
+        }
+        else {
+            TRACE << "Received settings belong to another device: " + mSerialNumber + ", " + data.value("sn").toString();
+        }
+
+        fetchAutoModeSetings();
+    };
+
+    auto reply = callGetApi(cBaseUrl + QString("api/sync/getSettings?sn=%0").arg(mSerialNumber), callback);
+    if (reply) {
+        reply->setProperty("noContentLog", true);
     }
 
-    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/messages?sn=%0").arg(mSerialNumber)), m_getMessages);
-
-    QEventLoop loop;
-    connect(this, &NUVE::Sync::messagesLoaded, &loop, &QEventLoop::quit);
-
-    loop.exec();
+    return reply != nullptr;
 }
 
-void Sync::getWirings(cpuid_t accessUid)
+bool Sync::fetchAutoModeSetings()
 {
-    sendGetRequest(m_domainUrl, QUrl(QString("api/sync/getWirings?uid=%0").arg(accessUid.c_str())), m_getWirings);
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "Sn is not ready! can not get auto mode settings!";
+        return false;
+    }
 
-    QEventLoop loop;
-    connect(this, &NUVE::Sync::wiringReady, &loop, &QEventLoop::quit);
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (data.isEmpty()) {
+            TRACE << "Received settings corrupted";
+        }
+        emit autoModeSettingsReady(data.toVariantMap(), !data.isEmpty());
+        emit settingsFetched(!data.isEmpty());
+    };
 
-    loop.exec();
+    return callGetApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), callback) != nullptr;
+}
+
+bool Sync::fetchMessages()
+{
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "Sn is not ready! can not get messages!";
+        return false;
+    }
+
+    auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &) {
+        emit messagesLoaded();
+    };
+
+    return callGetApi(cBaseUrl + QString("api/sync/messages?sn=%0").arg(mSerialNumber), callback) != nullptr;
+}
+
+void Sync::fetchWirings(const QString& uid)
+{
+    auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &) {
+        emit wiringReady();
+    };
+
+    callGetApi(cBaseUrl + QString("api/sync/getWirings?uid=%0").arg(uid), callback);
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
 {
     QJsonObject requestData;
-    requestData["request"] = QJsonObject{
-        {"class", className},
-        {"method", method},
-        {"params", params}
-    };
+    requestData["request"] =
+        QJsonObject{{"class", className}, {"method", method}, {"params", params}};
 
-    requestData["user"] = QJsonObject{
-        {"lang_id", 0},
-        {"user_id", 0},
-        {"type_id", 0},
-        {"host_id", 0},
-        {"region_id", 0},
-        {"token", ""}
-    };
+    requestData["user"] =
+        QJsonObject{{"lang_id", 0}, {"user_id", 0},   {"type_id", 0},
+                    {"host_id", 0}, {"region_id", 0}, {"token", ""}};
 
     QJsonDocument jsonDocument(requestData);
 
@@ -222,401 +350,83 @@ void Sync::requestJob(QString type)
     QJsonArray paramsArray;
     paramsArray.append(mSerialNumber);
     paramsArray.append(type);
-
-    QByteArray requestData = preparePacket("sync", m_requestJob, paramsArray);
-    sendPostRequest(m_domainUrl, m_engineUrl, requestData, m_requestJob);
+    callPostApi(cBaseUrl + "engine/index.php", preparePacket("sync", "requestJob", paramsArray));
 }
 
 void Sync::pushSettingsToServer(const QVariantMap &settings)
 {
-    QJsonObject requestDataObj = QJsonObject::fromVariantMap(settings);
-    requestDataObj["sn"] = mSerialNumber;
+    QJsonObject reqData = QJsonObject::fromVariantMap(settings);
+    reqData["sn"] = mSerialNumber;
 
-    QJsonDocument jsonDocument(requestDataObj);
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            // get the last update
+            auto dateString = data.value("setting").toObject().value("last_update");
+            TRACE << "cpp set last_update:" << dateString;
+            QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
 
-    QByteArray requestData = jsonDocument.toJson();
+            if (dateTimeObject.isValid()) {
+                // Use the dateTimeObject here with time information
+                TRACE << "Date with time cpp set last_update: " << dateTimeObject << dateTimeObject.toString();
+                mLastPushTime = dateTimeObject;
+            } else {
+                TRACE << "Invalid date format! cpp set last_update:";
+            }
 
+            emit pushSuccess();
+        }
+        else {
+            emit pushFailed();
+        }
+    };
 
-    sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/update")), requestData, m_setSettings);
+    callPostApi(cBaseUrl + "api/sync/update", QJsonDocument(reqData).toJson(), callback);
 }
 
-void Sync::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
+void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high)
 {
-    QJsonObject requestDataObj;
-    requestDataObj["auto_temp_low"] = auto_temp_low;
-    requestDataObj["auto_temp_high"] = auto_temp_high;
-
+    QJsonObject reqData;
+    reqData["auto_temp_low"] = auto_temp_low;
+    reqData["auto_temp_high"] = auto_temp_high;
     // Temporary, has no effect
-    requestDataObj["mode"] = "auto";
-    requestDataObj["is_active"] = true;
+    reqData["mode"] = "auto";
+    reqData["is_active"] = true;
 
-    QJsonDocument jsonDocument(requestDataObj);
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            TRACE << "Auto mode settings pushed to server: setAutoModeSettings";
+            emit autoModePush(true);
+        } else {
+            emit autoModePush(false);
+        }
+    };
 
-    QByteArray requestData = jsonDocument.toJson();
-
-
-    sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/autoMode?sn=%0").arg(mSerialNumber)), requestData, m_setAutoModeSettings);
+    callPostApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), QJsonDocument(reqData).toJson(), callback);
 }
 
 void Sync::pushAlertToServer(const QVariantMap &settings)
 {
     QJsonObject requestDataObj;
     requestDataObj["sn"] = mSerialNumber;
-
     QJsonObject requestDataObjAlert;
     requestDataObjAlert["alert_id"] = 1;
-
     QJsonArray requestDataObjAlertArr;
     requestDataObjAlertArr.append(requestDataObjAlert);
     requestDataObj["alerts"] = requestDataObjAlertArr;
-
-    QJsonDocument jsonDocument(requestDataObj);
-
-    QByteArray requestData = jsonDocument.toJson();
-
-
-    TRACE_CHECK(false) << requestData.toStdString().c_str();
-    sendPostRequest(m_domainUrl, QUrl(QString("/api/sync/alerts")), requestData, m_setAlerts);
+    callPostApi(cBaseUrl + "api/sync/alerts", QJsonDocument(requestDataObj).toJson());
 }
 
-void Sync::ForgetDevice()
+void Sync::forgetDevice()
 {
     mHasClient = false;
     mSerialNumber = QString();
-    mContractorInfo = QVariantMap {};
+    mContractorInfo = QVariantMap{};
 
     // Save the serial number in settings
     QSettings setting;
-    setting.setValue(m_HasClientSetting, mHasClient);
-    setting.setValue(m_SerialNumberSetting, mSerialNumber);
-    setting.setValue(m_ContractorSettings, mContractorInfo);
+    setting.setValue(cHasClientSetting, mHasClient);
+    setting.setValue(cSerialNumberSetting, mSerialNumber);
+    setting.setValue(cContractorSettings, mContractorInfo);
 }
 
-void Sync::processNetworkReply(QNetworkReply* reply)
-{
-    QString errorString = reply->error() == QNetworkReply::NoError ? "" : reply->errorString();
-    auto method = reply->property(m_methodProperty).toString();
-
-    QByteArray dataRaw = reply->readAll();
-    const QJsonDocument jsonDoc = QJsonDocument::fromJson(dataRaw);
-    const QJsonObject jsonDocObj = jsonDoc.object();
-    if (errorString.isEmpty() && !jsonDocObj.contains("data") && method != m_getContractorLogo) {
-        errorString = "server returned null response";
-    }
-
-    if (errorString.isEmpty()) {
-        auto dataValue = jsonDocObj.value("data");
-
-        switch (reply->operation()) {
-        case QNetworkAccessManager::PostOperation: {
-            TRACE_CHECK(false) << method << dataRaw << jsonDocObj << dataValue << dataValue.isObject() << jsonDoc.toJson().toStdString().c_str();
-
-            if (method == m_setSettings) {
-                // get the last update
-                auto dateString = jsonDocObj.value("data").toObject().value("setting").toObject().value("last_update");
-                TRACE << "cpp set last_update:" << dateString;
-                QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
-
-                if (dateTimeObject.isValid()) {
-                    // Use the dateTimeObject here with time information
-                    TRACE << "Date with time cpp set last_update: " << dateTimeObject << dateTimeObject.toString() ;
-                    mLastPushTime = dateTimeObject;
-                } else {
-                    TRACE << "Invalid date format! cpp set last_update:";
-                }
-
-                Q_EMIT pushSuccess();
-
-            } else if (method == m_setAutoModeSettings) {
-
-                TRACE << "Auto mode settings pushed to server: " << m_setAutoModeSettings;
-                Q_EMIT autoModePush(true);
-            }
-
-
-        } break;
-        case QNetworkAccessManager::GetOperation: {
-            TRACE << dataValue.isObject() << reply->property(m_methodProperty).toString();
-            TRACE_CHECK(method != m_getContractorLogo && method != m_getSettings) << dataRaw << jsonDocObj;
-
-            if (method == m_getSN) {
-                if (dataValue.isObject())
-                {
-                    auto dataObj = dataValue.toObject();
-                    if (!dataObj.contains("serial_number")) {
-                        errorString = "No serial number has returned by server";
-                        break;
-                    }
-
-                    auto sn = dataObj.value("serial_number").toString();
-                    mHasClient = dataObj.value("has_client").toBool();
-                    TRACE << sn << mHasClient;
-
-                    if (!mHasClient) {
-                        TRACE << "will start initial setup!";
-                    }
-
-                    if (!mSerialNumber.isEmpty() && sn != mSerialNumber){
-                        emit alert("The serial number does not match the last one.");
-
-                        if (!mHasClient) {
-                            // Update SN for get settings
-                            mSerialNumber = sn;
-                            // Force to update with new settings
-                            mLastPushTime = QDateTime();
-                            // Fetch with new serial number
-                            emit serialNumberChanged();
-                        }
-
-                        TRACE << "The serial number does not match the last one." << mSerialNumber << sn;
-                    } else if (sn.isEmpty()) {
-                        emit alert("Oops...\nlooks like this device is not recognized by our servers,\nplease send it to the manufacturer and\n try to install another device.");
-                    }
-
-                    mSerialNumber = sn;
-
-                    auto notifyUser = reply->property(m_notifyGetSN).toBool();
-                    if (mSerialNumber.isEmpty() && notifyUser)
-                        emit testModeStarted();
-
-                    // Send sn ready signal to get software update.
-                    if (!mSerialNumber.isEmpty())
-                        Q_EMIT snReady();
-
-                    // Save the serial number in settings
-                    QSettings setting;
-                    setting.setValue(m_HasClientSetting, mHasClient);
-                    setting.setValue(m_SerialNumberSetting, mSerialNumber);
-
-                    Q_EMIT snFinished();
-                } else {
-                    errorString = "No serial number has returned by server";
-                }
-            } else if (method == m_getContractorInfo) {
-                if (dataValue.isObject())
-                {
-                    auto dataObj = dataValue.toObject();
-                    auto brandValue = dataObj.value("brand");
-                    auto phoneValue = dataObj.value("phone");
-                    auto logoValue = dataObj.value("logo");
-
-                    if (!brandValue.isString() || brandValue.toString().isEmpty()) {
-                        errorString = "Wrong contractor info fetched from server";
-                        break;
-                    }
-
-                    QVariantMap map;
-                    map.insert("phone", phoneValue.toString(mContractorInfo.value("phone").toString()));
-                    map.insert("brand", brandValue.toString(mContractorInfo.value("brand").toString()));
-                    map.insert("url", dataObj.value("url").toString(mContractorInfo.value("url").toString()));
-                    map.insert("tech", dataObj.value("schedule").toString(mContractorInfo.value("tech").toString()));
-                    // logo is a bit more complicated than others,
-                    // the value inside map should be either empty so it loads from brand name, or be a resource or local fs path
-                    // so if it has the logo response we keep it empty until the actual value handled (if not empty, it should be downloaded to a local path)
-                    // and if it has null or has not value, we will keep the previous value
-                    map.insert("logo", logoValue.isString() ? "" : mContractorInfo.value("logo").toString());
-                    mContractorInfo = map;
-
-                    auto logo = logoValue.toString();
-                    if (logo.isEmpty()){
-                        Q_EMIT contractorInfoReady();
-                    } else {
-                        // what if gets error, should we return immadiately?
-                        QNetworkRequest dlRequest(logo);
-                        QNetworkReply *netReply = get(dlRequest);
-                        netReply->setProperty(m_methodProperty, m_getContractorLogo);
-                    }
-                } else {
-                    errorString = "Wrong contractor info fetched from server";
-                }
-            } else if (method == m_getContractorLogo) {
-                QImage image;
-                if (image.loadFromData(dataRaw)){
-                    image.save("/home/root/customIcon.png");
-                    mContractorInfo.insert("logo", "file:///home/root/customIcon.png");
-                }
-                Q_EMIT contractorInfoReady();
-            } else if (method == m_getSettings) {
-                TRACE_CHECK(false) << jsonDoc.toJson().toStdString().c_str();
-
-
-                if (jsonDoc.isObject()) {
-                    auto data = jsonDoc.object().value("data");
-                    if (data.isObject()){
-                        auto object = data.toObject();
-                        if (object.value("sn").toString() == mSerialNumber){
-                            auto dateString = object.value("setting").toObject().value("last_update");
-                            TRACE << "cpp last_update:" << dateString;
-                            QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
-
-                            if (dateTimeObject.isValid()) {
-                                // Use the dateTimeObject here with time information
-                                TRACE << "Date with time cpp set last_update: " << dateTimeObject << dateTimeObject.toString()
-                                           << (mLastPushTime > dateTimeObject) << (mLastPushTime == dateTimeObject) << (mLastPushTime < dateTimeObject) ;
-                            } else {
-                                TRACE << "Invalid date format! cpp set last_update:";
-                            }
-                            if (!mLastPushTime.isNull() && (!dateTimeObject.isValid() || mLastPushTime >= dateTimeObject)) {
-                                errorString = "Received settings has invalid date last_update: " + dateTimeObject.toString();
-                                Q_EMIT invalidSettingsReceived();
-
-                            } else {
-                                mLastPushTime = dateTimeObject;
-                                Q_EMIT settingsReady(object.toVariantMap());
-                            }
-
-                            // Transmit Non-Configuration Data to UI and Update Model on Server Response
-                            emit appDataReady(object.toVariantMap());
-
-                            checkFirmwareUpdate(object);
-
-                            break;
-                        } else {
-                            errorString = "Received settings belong to another device: " + mSerialNumber + ", " + object.value("sn").toString();
-                            break;
-                        }
-                    }
-                }
-
-                errorString = "Received settings corrupted: " + mSerialNumber ;
-
-            } else if (method == m_getMessages) {
-                TRACE << jsonDoc.toJson().toStdString().c_str();
-                Q_EMIT messagesLoaded();
-            } else if (method == m_getWirings) {
-                TRACE ;
-                Q_EMIT wiringReady();
-
-            } else if (method == m_getAutoModeSettings) {
-                TRACE_CHECK(true) << jsonDoc.toJson().toStdString().c_str();
-                if (jsonDoc.isObject()) {
-                    auto data = jsonDoc.object().value("data");
-                    if (data.isObject()) {
-                        auto object = data.toObject();
-                        Q_EMIT autoModeSettingsReady(object.toVariantMap(), true);
-
-                    } else {
-                        errorString = "Received settings corrupted";
-                        break;
-                    }
-                }
-            }
-        } break;
-
-        default:
-
-            break;
-        }
-    }
-
-    if (!errorString.isEmpty()){
-        if (method == m_getSN) {
-            Q_EMIT snFinished();
-
-            auto notifyUser = reply->property(m_notifyGetSN).toBool();
-            if (notifyUser && reply->error() == QNetworkReply::ContentNotFoundError)
-                emit testModeStarted();
-
-            QString error = "Unable to fetch the device serial number, Please check your internet connection: ";
-//            emit alert(error + errorString);
-            qWarning() << error << errorString ;
-        } else if (method == m_getContractorInfo) {
-            Q_EMIT contractorInfoReady();
-            QString error = "Unable to fetch the Contarctor Info, Please check your internet connection: ";
-//            emit alert(error + errorString);
-            qWarning() << error << errorString ;
-        } else if (method == m_getContractorLogo) {
-            Q_EMIT contractorInfoReady();
-            QString error = "Unable to fetch the Contarctor logo, Please check your internet connection: ";
-//            emit alert(error + errorString);
-            qWarning() << error << errorString;
-        } else if (method == m_getSettings) {
-            QString error = "Unable to fetch the settings, Please check your internet connection: ";
-            Q_EMIT settingsLoaded();
-            qWarning() << error << errorString;
-        } else if (method == m_getMessages) {
-            QString error = "Unable to fetch the messages, Please check your internet connection: ";
-            Q_EMIT messagesLoaded();
-            qWarning() << error << errorString;
-        } else if (method == m_setSettings) {
-            QString error = "Unable to push the settings to server, Please check your internet connection: ";
-            qWarning() << error << errorString;
-            Q_EMIT pushFailed();
-
-        } else if (method == m_getAutoModeSettings) {
-            qWarning() << m_getAutoModeSettings << errorString;
-            Q_EMIT autoModeSettingsReady(QVariantMap(), false);
-
-        } else if (method == m_setAutoModeSettings) {
-            QString error = "Unable to push the auto mode settings to server, Please check your internet connection: ";
-            qWarning() << error << errorString;
-            Q_EMIT autoModePush(false);
-
-        } else {
-            QString error = "unknown method in sync processNetworkReply ";
-            qWarning() << method << error << errorString ;
-        }
-    }    
-}
-
-void Sync::checkFirmwareUpdate(QJsonObject settings)
-{
-    QString fwVersion;
-
-    if (settings.contains(m_firmwareUpdateKey) &&
-        settings.value(m_firmwareUpdateKey).isObject()) {
-        auto fwUpdateObj = settings.value(m_firmwareUpdateKey).toObject();
-        auto fwUpdateVersion = fwUpdateObj.value(m_firmwareImageKey).toString("");
-
-        // if force-update is set to true, then firmware-image instructs device to update to that version
-        if (fwUpdateObj.value(m_firmwareForceUpdateKey).toBool()) {
-            fwVersion = fwUpdateVersion;
-        }
-    }
-
-    emit updateFirmwareFromServer(fwVersion);
-}
-
-QNetworkReply* Sync::sendGetRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QString &method)
-{
-    // Prepare request
-    QNetworkRequest netRequest(mainUrl.resolved(relativeUrl));
-    netRequest.setRawHeader("accept", "application/json");
-    netRequest.setTransferTimeout(4000);
-
-    if (method != m_getSN) {
-        auto data = mSystemUuid + mSerialNumber.toStdString();
-
-        // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain the header compression context for the connection"
-        netRequest.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(data, QCryptographicHash::Sha256).toHex());
-    }
-
-
-    // Post a request
-    QNetworkReply *netReply = get(netRequest);
-    netReply->setProperty(m_methodProperty, method);
-    return netReply;
-}
-
-void Sync::sendPostRequest(const QUrl &mainUrl, const QUrl &relativeUrl, const QByteArray &postData, const QString &method)
-{
-    // Prepare request
-    QNetworkRequest netRequest(mainUrl.resolved(relativeUrl));
-    netRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    netRequest.setRawHeader("accept", "application/json");
-    netRequest.setTransferTimeout(8000);
-
-    // set authentication
-    {
-        auto data = mSystemUuid + mSerialNumber.toStdString();
-
-        // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain the header compression context for the connection"
-        netRequest.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(data, QCryptographicHash::Sha256).toHex());
-    }
-
-    // Post a request
-    QNetworkReply *netReply = post(netRequest, postData);
-    netReply->setProperty(m_methodProperty, method);
-}
-}
-
+} // namespace NUVE

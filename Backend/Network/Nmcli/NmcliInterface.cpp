@@ -30,7 +30,7 @@ NmcliInterface::NmcliInterface(QObject* parent)
     setupObserver();
 
     initializeConProfilesWatcher();
-    scanConProfiles();
+    scanConProfiles(); // TODO this should be called Async
 }
 
 NmcliInterface::~NmcliInterface()
@@ -648,6 +648,7 @@ void NmcliInterface::updateConProfilesList(QProcess* process)
             line = process->readLine();
         }
     } else {
+        // readAll() may have more info than errorString which is printed in parent.
         NC_WARN << process->readAll();
     }
 
