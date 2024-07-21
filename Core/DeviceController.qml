@@ -1084,4 +1084,32 @@ I_DeviceController {
 
         settingsPushRetry.start()
     }
+
+    //! Lock/unlock the application
+    function lock(isLock : bool, pin: string) : bool {
+        var isPinCorrect = device.lock.pin === pin;
+
+        console.log("Pin: ", pin, ", isPinCorrect:", isPinCorrect, ", isLock: ", isLock);
+
+        if (isPinCorrect && lockDevice(isLock)) {
+            pushSettings();
+        }
+
+        return isPinCorrect;
+    }
+
+    //! Update the lock model
+    //! Call from device and server
+    function lockDevice(isLock : bool) : bool {
+        if (device.lock.isLock === isLock)
+            return false;
+
+        device.lock.isLock = isLock;
+        if (isLock) {
+            ScreenSaverManager.setActive();
+        }
+        uiSession.showHome();
+
+        return true;
+    }
 }

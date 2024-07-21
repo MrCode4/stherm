@@ -53,24 +53,9 @@ BasePageView {
             isLock: false
 
             onSendPIN: pin => {
-                           var unLocked = unlock(pin);
-
+                           var unLocked = deviceController.lock(false, pin);
                            updatePinStatus(unLocked);
                        }
         }
-    }
-
-
-    /* Functions
-     * ****************************************************************************************/
-
-    // Todo: Unlock the app
-    function unlock(pin: string) : bool {
-        console.log("unlock pin: ", pin);
-        if (pin === lock.pin) {
-           lock.isLock = false;
-        }
-
-        return pin === lock.pin;
     }
 }

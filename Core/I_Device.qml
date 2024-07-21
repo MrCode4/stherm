@@ -105,6 +105,7 @@ QSObject {
 
         onTriggered: {
             AppCore.defaultRepo.addObjectManually(userPolicyTerms);
+            AppCore.defaultRepo.addObjectManually(lock);
         }
 
     }
