@@ -402,7 +402,7 @@ static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
         return QString("**System Efficiency Issue:**\nThe system is unable to reach the set temperature.");
 
     case AppSpecCPP::Alert_No_Data_Received:
-        return QString("No sensor data has been received recently.\nPlease contact your contractor.");
+        return QString("Controller failure.\nPlease contact your contractor.");
 
     default:
         return QString();
