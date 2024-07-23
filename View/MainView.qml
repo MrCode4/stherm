@@ -15,6 +15,11 @@ Item {
      * ****************************************************************************************/
     property UiSession  uiSession
 
+    //! unlockPage, use property to avoid delete the page in pop of stack view.
+    property UnlockPage unlockPage: UnlockPage {
+        uiSession: mainView.uiSession
+    }
+
     /* Children
      * ****************************************************************************************/
     implicitWidth: 480
@@ -78,9 +83,7 @@ Item {
 
             // Touching the screen should prompt a page requesting a 4-digit PIN for unlocking (Unlock page)
             if (uiSession.appModel.lock.isLock) {
-                _mainStackView.push("qrc:/Stherm/View/UnlockPage.qml", {
-                                        "uiSession": Qt.binding(() => uiSession)
-                                    });
+                _mainStackView.push(unlockPage);
             }
         }
     }
