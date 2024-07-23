@@ -167,6 +167,8 @@ public:
 
     Q_INVOKABLE void wifiConnected(bool hasInternet);
 
+    Q_INVOKABLE void lockDeviceController(bool isLock);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/

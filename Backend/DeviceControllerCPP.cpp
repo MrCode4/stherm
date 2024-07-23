@@ -692,6 +692,16 @@ void DeviceControllerCPP::wifiConnected(bool hasInternet)
     }
 }
 
+void DeviceControllerCPP::lockDeviceController(bool isLock)
+{
+    if (isLock) {
+        _deviceIO->stopTOFGpioHandler();
+
+    } else {
+        _deviceIO->startTOFGpioHandler();
+    }
+}
+
 void DeviceControllerCPP::setAdaptiveBrightness(const double adaptiveBrightness) {
     if (mAdaptiveBrightness == adaptiveBrightness)
         return;

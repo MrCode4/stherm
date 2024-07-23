@@ -80,6 +80,11 @@ public:
     QString getTI_SW() const;
 
 
+    //! Start TOF sensor reading
+    void startTOFGpioHandler();
+    //! Stop TOF sensor reading
+    void stopTOFGpioHandler();
+
 signals:
     void mainDataReady(QVariantMap data);
     void tofDataReady(QVariantMap data);

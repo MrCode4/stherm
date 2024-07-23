@@ -288,6 +288,9 @@ I_DeviceController {
         // as well as device io which may TODO refactor later and call it on demand
         deviceControllerCPP.startDevice();
 
+        //! Update TOF sensor status.
+        deviceControllerCPP.lockDeviceController(device.lock.isLock);
+
         // TODO    we might call this contitionally
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
@@ -1118,6 +1121,10 @@ I_DeviceController {
         if (isLock) {
             ScreenSaverManager.setActive();
         }
+
+        // Update TOS sensor status
+        deviceControllerCPP.lockDeviceController(isLock);
+
         uiSession.showHome();
 
         return true;

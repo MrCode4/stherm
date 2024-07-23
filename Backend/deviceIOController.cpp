@@ -486,7 +486,15 @@ void DeviceIOController::createNRF()
         qWarning() << "GPIO 4 failed to connect" ;
     }
 
+    // Call from lockDeviceController in devicecontroller cpp.
+    // startTOFGpioHandler();
+}
+
+void DeviceIOController::startTOFGpioHandler() {
     if (m_gpioHandler5->startConnection()) {
+        TRACE << "GPIO 5 is currently active.";
+
+        m_gpioHandler5->disconnect();
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             if (data.length() == 2 && data.at(0) == '0') {
                 m_nRF_queue.push(m_p->TOFPacketBA);
@@ -494,9 +502,15 @@ void DeviceIOController::createNRF()
                 TRACE_CHECK(false) << "request for gpio 5" << processed;
             }
         });
+
     } else {
-        qWarning() << "GPIO 5 failed to connect" ;
+        TRACE << "GPIO 5 failed to activate." ;
     }
+}
+
+void DeviceIOController::stopTOFGpioHandler() {
+    m_gpioHandler5->disconnect();
+    m_gpioHandler5->closeFile();
 }
 
 void DeviceIOController::stopReading()
