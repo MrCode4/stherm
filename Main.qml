@@ -266,7 +266,7 @@ ApplicationWindow {
         implicitHeight: keyboard.height + _closeBtn.height
 
         onActiveChanged: {
-            if (active && !window.activeFocusControl instanceof PINTextField &&
+            if (active && !(window.activeFocusControl instanceof PINTextField) &&
                     (window.activeFocusControl instanceof TextInput
                            || window.activeFocusControl instanceof TextEdit)) {
                 var activeControlPos = window.activeFocusControl.mapToItem(window.contentItem, 0, 0);

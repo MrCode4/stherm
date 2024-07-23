@@ -9,7 +9,7 @@ T.Button {
 
     property int        radius:          Style.button.radius < 0 ? Math.min(width, height) / 2 : Style.button.radius
     property color      backgroundColor: !control.enabled ? Style.button.disabledColor
-                                                          : control.flat ? "transparent"
+                                                          : control.flat ? Qt.color("transparent")
                                                                          : (control.checked ? Style.foreground :
                                                                                               control.highlighted ? (control.checked ? Style.foreground :
                                                                                                                                        Style.accent)
@@ -17,8 +17,8 @@ T.Button {
                                                                             )
 
     property color topBackgroundColor: control.enabled && (control.hovered || control.pressed)
-                                       ? (control.checked ? Qt.darker(parent.color, 1.5) : Style.button.hoverColor)
-                                       : "transparent"
+                                       ? (control.checked ? Qt.darker(backgroundColor, 1.5) : Style.button.hoverColor)
+                                       : Qt.color("transparent")
 
     property color textColor: !control.enabled ? Style.hintTextColor
                                                : (control.checked ? Style.background
