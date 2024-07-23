@@ -30,7 +30,8 @@ TextField {
         top: 9
     }
 
-    leftPadding: 12
+    horizontalAlignment: TextInput.AlignHCenter
+    verticalAlignment: TextInput.AlignVCenter
 
     background: Rectangle {
         width: 40
