@@ -72,7 +72,6 @@ Control {
                 PINTextField {
                     id: pinField
 
-                    // focus: true
                     showPin: root.showPin
                     focus: false
                     isPinWrong: root.isPinWrong
@@ -87,9 +86,6 @@ Control {
                         // Update focus to the next field if text length is 1
                         if (text.length > 0) {
                             root.nextField(pinField).forceActiveFocus();
-                        } else {
-                            // Move focus back if text is cleared
-                            // root.previousField(pinField).forceActiveFocus();
                         }
                     }
                 }
@@ -160,8 +156,14 @@ Control {
                     height: width
 
                     onClicked: {
-                        if (_focusedItem)
+                        if (_focusedItem) {
+                            if (_focusedItem.text.length > 0) {
+                                root.nextField(_focusedItem).forceActiveFocus();
+                            }
+
+                            if (_focusedItem)
                             _focusedItem.text = modelData;
+                        }
                     }
                 }
             }
@@ -183,6 +185,9 @@ Control {
                 TapHandler {
                     onTapped: {
                         _focusedItem.text = "";
+
+                        // Move focus back if text is cleared
+                        root.previousField(_focusedItem).forceActiveFocus();
                     }
                 }
             }
@@ -231,13 +236,21 @@ Control {
 
     // Helper functions for managing focus
     function nextField(pinField) {
-        var index = _pinTextFieldItems.indexOf(pinField)
-        return _pinTextFieldItems[(index + 1) % _pinTextFieldItems.length]
+        var index = _pinTextFieldItems.indexOf(pinField);
+        var focusIndex = (index + 1) % _pinTextFieldItems.length;
+        if (index + 1 === _pinTextFieldItems.length)
+            focusIndex = index;
+
+        return _pinTextFieldItems[focusIndex];
     }
 
     function previousField(pinField) {
-        var index = _pinTextFieldItems.indexOf(pinField)
-        return _pinTextFieldItems[(index - 1 + _pinTextFieldItems.length) % _pinTextFieldItems.length]
+        var index = _pinTextFieldItems.indexOf(pinField);
+        var focusIndex = (index - 1 + _pinTextFieldItems.length) % _pinTextFieldItems.length;
+        if (index === 0)
+            focusIndex = index;
+
+        return _pinTextFieldItems[focusIndex];
     }
 
     //! Check PIN correctness
