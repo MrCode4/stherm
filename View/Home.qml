@@ -105,7 +105,7 @@ Control {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: centerItems.top
-                bottomMargin: 8
+                bottomMargin: isSchedule ? 18 : 8
                 // To align with schedule ON button
                 horizontalCenterOffset: isSchedule ? -15 : -6
             }
