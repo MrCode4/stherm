@@ -511,6 +511,7 @@ void DeviceIOController::startTOFGpioHandler() {
 void DeviceIOController::stopTOFGpioHandler() {
     m_gpioHandler5->disconnect();
     m_gpioHandler5->closeFile();
+    TRACE << "TOF: GPIO 5 disabled." ;
 }
 
 void DeviceIOController::stopReading()
