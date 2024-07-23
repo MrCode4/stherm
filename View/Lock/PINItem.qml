@@ -227,7 +227,13 @@ Control {
         running: isPinWrong && _retryCounter < 1 && _retryCountTime > 0
 
         onTriggered: {
-            _retryCountTime--
+            _retryCountTime--;
+
+            // reset retry counter
+            if (_retryCountTime <= 0) {
+                isPinWrong = false;
+                _retryCounter = 3;
+            }
         }
     }
 
