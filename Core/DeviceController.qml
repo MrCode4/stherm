@@ -1086,20 +1086,30 @@ I_DeviceController {
     }
 
     //! Lock/unlock the application
-    function lock(isLock : bool, pin: string) : bool {
-        var isPinCorrect = device.lock.pin === pin;
+    //! Call from device and server
+    function lock(isLock : bool, pin: string, fromServer = false) : bool {
+        // Set the pin in lock editMode
+        if (pin.length !== 4) {
+            console.log("Pin: ", pin, " has incorrect format.")
+            return false;
+        }
 
-        console.log("Pin: ", pin, ", isPinCorrect:", isPinCorrect, ", isLock: ", isLock);
+        if (isLock) {
+            device.lock.pin = pin;
+        }
+
+        var isPinCorrect = device.lock.pin === pin;
+        console.log("Pin: ", pin, ", isPinCorrect:", isPinCorrect, ", isLock: ", isLock, ", fromServer", fromServer);
 
         if (isPinCorrect && lockDevice(isLock)) {
-            pushSettings();
+            if (!fromServer)
+                pushSettings();
         }
 
         return isPinCorrect;
     }
 
     //! Update the lock model
-    //! Call from device and server
     function lockDevice(isLock : bool) : bool {
         if (device.lock.isLock === isLock)
             return false;
