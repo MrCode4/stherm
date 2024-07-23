@@ -87,11 +87,11 @@ QSObject {
         _qsRepo: appModel._qsRepo
     }
 
-    //! Private policy and terms of use
-    property UserPolicyTerms userPolicyTerms: UserPolicyTerms {}
-
     //! Lock model
     property Lock            lock: Lock {}
+
+    //! Private policy and terms of use
+    property UserPolicyTerms userPolicyTerms: UserPolicyTerms {}
 
     //! When a new object is added to the device, ensure it's saved in the
     //! correct save sequence. To achieve this, the object should be added to
@@ -104,8 +104,8 @@ QSObject {
         repeat: false
 
         onTriggered: {
-            AppCore.defaultRepo.addObjectManually(userPolicyTerms);
             AppCore.defaultRepo.addObjectManually(lock);
+            AppCore.defaultRepo.addObjectManually(userPolicyTerms);
         }
 
     }
