@@ -76,7 +76,13 @@ BasePageView {
 
         checked: false
 
-        enabled: privacyPolicyPopup.isRead
+        // Use TapHandler to handle checked in the checkbox.
+        TapHandler {
+            onTapped: {
+                privacyPolicyChbox.checked = !privacyPolicyChbox.checked;
+                managePrivacyPolicyChbox();
+            }
+        }
     }
 
     Label {
