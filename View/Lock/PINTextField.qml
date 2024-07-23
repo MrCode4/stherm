@@ -22,7 +22,7 @@ TextField {
      * ****************************************************************************************/
 
     implicitWidth: 35
-    implicitHeight: 45
+    implicitHeight: 50
     echoMode: showPin ? TextInput.Normal : TextInput.Password
 
     validator: IntValidator {
