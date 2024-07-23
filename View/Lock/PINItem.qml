@@ -42,6 +42,16 @@ Control {
 
     //! Send pin to parent
     signal sendPIN(pin: string)
+    signal clearPIN();
+
+    onClearPIN: {
+        _pinTextFieldItems.forEach(item => {
+                                      item.text = "";
+                                   });
+
+        if (_pinTextFieldItems.length > 0)
+            _pinTextFieldItems[0].forceActiveFocus();
+    }
 
     /* Object properties
      * ****************************************************************************************/

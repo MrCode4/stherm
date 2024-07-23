@@ -55,6 +55,8 @@ BasePageView {
             onSendPIN: pin => {
                            var unLocked = deviceController.lock(false, pin);
                            updatePinStatus(unLocked);
+
+                           clearPIN();
                        }
         }
     }
