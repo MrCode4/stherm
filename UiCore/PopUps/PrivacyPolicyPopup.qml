@@ -16,14 +16,17 @@ I_PopUp {
     required property UserPolicyTerms userPolicyTerms
 
     property bool isRead: false
-
+    property bool isAccepted: false
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Privacy Policy & Terms Of Use "
-    titleHeadingLevel: 5
+
+    titleBar: false
+
     height: parent.height * 0.95
     width: parent.width * 0.95
+
+    onOpened: isAccepted = false;
 
     /* Children
      * ****************************************************************************************/
@@ -31,7 +34,11 @@ I_PopUp {
     Flickable {
         id: privacyFlick
 
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.bottom: acceptButton.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.topMargin: 10
         anchors.bottomMargin: 10
 
         ScrollIndicator.vertical: ScrollIndicator {
@@ -68,9 +75,24 @@ I_PopUp {
             font.pointSize: Qt.application.font.pointSize * 0.7
         }
 
-        //! Accept button
-        // ButtonInverted {
+    }
 
-        // }
+    //! Accept button
+    ButtonInverted {
+        id: acceptButton
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+
+        leftPadding: 8
+        rightPadding: 8
+        text: " Accept "
+
+        enabled: isRead
+
+        onClicked: {
+            isAccepted = true;
+            close();
+        }
     }
 }
