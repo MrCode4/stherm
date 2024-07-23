@@ -107,8 +107,16 @@ BasePageView {
         id: privacyPolicyPopup
         userPolicyTerms: appModel.userPolicyTerms
 
+        onOpened: {
+            if (!isRead)
+                uiSession.toastManager.showToast("You need to scroll to the end to accept.", "");
+        }
+
         onClosed: {
-            privacyPolicyChbox.checked = privacyPolicyPopup.isRead ? !privacyPolicyChbox.checked : false;
+            if (isAccepted)
+                privacyPolicyChbox.checked = isRead;
+            else
+                privacyPolicyChbox.checked = isRead ? !privacyPolicyChbox.checked : false;
         }
     }
 
