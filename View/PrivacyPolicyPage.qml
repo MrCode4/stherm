@@ -79,7 +79,6 @@ BasePageView {
         // Use TapHandler to handle checked in the checkbox.
         TapHandler {
             onTapped: {
-                privacyPolicyChbox.checked = !privacyPolicyChbox.checked;
                 managePrivacyPolicyChbox();
             }
         }
@@ -88,7 +87,7 @@ BasePageView {
     Label {
         anchors.left: privacyPolicyChbox.right
         anchors.right: parent.right
-        anchors.leftMargin: leftMargin
+        anchors.leftMargin: leftPadding
         anchors.verticalCenter: parent.verticalCenter
 
         font.pointSize: Application.font.pointSize * 0.85

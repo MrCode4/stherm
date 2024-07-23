@@ -83,6 +83,7 @@ I_PopUp {
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: -5
 
         leftPadding: 8
         rightPadding: 8
