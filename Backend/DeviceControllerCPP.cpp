@@ -694,6 +694,9 @@ void DeviceControllerCPP::wifiConnected(bool hasInternet)
 
 void DeviceControllerCPP::lockDeviceController(bool isLock)
 {
+    // TODO
+    return;
+
     if (isLock) {
         _deviceIO->stopTOFGpioHandler();
 
