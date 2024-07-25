@@ -136,6 +136,8 @@ qt6_add_qml_module(appStherm
         UiCore/Components/Toast.qml
         UiCore/Components/RoniaTumbler.qml
         UiCore/Components/ExpandableItem.qml
+        UiCore/Components/PINKeyboard.qml
+        UiCore/Components/PINTextField.qml
 
 
         # Views and Widgets
@@ -195,8 +197,6 @@ qt6_add_qml_module(appStherm
         View/MobileAppPage.qml
         View/LockPage.qml
         View/UnlockPage.qml
-        View/Lock/PINItem.qml
-        View/Lock/PINTextField.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml

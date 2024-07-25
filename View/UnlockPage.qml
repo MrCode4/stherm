@@ -43,7 +43,7 @@ BasePageView {
             elide: Text.ElideMiddle
         }
 
-        PINItem {
+        PINKeyboard {
             id: pinItem
 
             Layout.alignment: Qt.AlignHCenter
