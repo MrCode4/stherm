@@ -32,7 +32,7 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    //! Next button (loads StartTestPage)
+    //! Next button (loads SystemTypePage in normal mode or VersionInformationPage in test mode)
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
@@ -79,7 +79,13 @@ BasePageView {
         // Use TapHandler to handle checked in the checkbox.
         TapHandler {
             onTapped: {
-                managePrivacyPolicyChbox();
+                if (privacyPolicyPopup.isRead) {
+                    privacyPolicyChbox.checked = !privacyPolicyChbox.checked;
+                    privacyPolicyPopup.isAccepted = privacyPolicyChbox.checked;
+
+                } else {
+                    managePrivacyPolicyChbox();
+                }
             }
         }
     }
@@ -105,9 +111,7 @@ BasePageView {
         }
     }
 
-    //! PrivacyPolicyPopup: To improve memory efficiency, we'll declare this here
-    //! as it's also used in the PrivacyPolicyPage.
-    //! When the user use back button, he/she should read the text again.
+    //! PrivacyPolicyPopup: To improve memory efficiency, we declared this here
     PrivacyPolicyPopup {
         id: privacyPolicyPopup
         userPolicyTerms: appModel.userPolicyTerms
@@ -120,8 +124,6 @@ BasePageView {
         onClosed: {
             if (isAccepted)
                 privacyPolicyChbox.checked = isRead;
-            else
-                privacyPolicyChbox.checked = isRead ? !privacyPolicyChbox.checked : false;
         }
     }
 

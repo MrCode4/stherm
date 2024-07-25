@@ -26,8 +26,6 @@ I_PopUp {
     height: parent.height * 0.95
     width: parent.width * 0.95
 
-    onOpened: isAccepted = false;
-
     /* Children
      * ****************************************************************************************/
 
@@ -87,12 +85,12 @@ I_PopUp {
 
         leftPadding: 8
         rightPadding: 8
-        text: " Accept "
-
-        enabled: isRead
+        text: (isRead && !isAccepted) ? " Accept " : "  Close  "
 
         onClicked: {
-            isAccepted = true;
+            if (text === " Accept ")
+                isAccepted = true;
+
             close();
         }
     }

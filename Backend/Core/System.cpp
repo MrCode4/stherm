@@ -762,6 +762,8 @@ QString NUVE::System::getCurrentTime()
 
     QEventLoop* eventLoop = nullptr;
     auto callback = [this, &eventLoop, &time](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+
+        // Convert string to QDateTime to validate the received time.
         auto dateTime = QDateTime::fromString(data.value("utc_datetime").toString(), Qt::ISODate);
 
         if (dateTime.isValid())
