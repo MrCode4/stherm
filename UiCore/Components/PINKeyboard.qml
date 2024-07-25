@@ -22,7 +22,7 @@ Control {
     property int    pinLength: 4
 
     property string errorText: retryTimer.running ? `Next attempt available in ${_retryCountTime}` +
-                                                    ((_retryCountTime > 1) ? `, ${_retryCountTime - 1} secs.` : " sec.") :
+                                                    ((_retryCountTime > 1) ? ` secs.` : " sec.") :
                                                     isPinWrong ? `Wrong PIN, you have ${_retryCounter} more attempts.` : ""
     //! Binding broke when pin changed.
     property bool   isPinWrong: false
