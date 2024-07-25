@@ -192,6 +192,7 @@ qt6_add_qml_module(appStherm
         View/NightModePage.qml
         View/BackdoorUpdatePage.qml
         View/PrivacyPolicyPage.qml
+        View/MobileAppPage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
@@ -362,6 +363,8 @@ qt6_add_qml_module(appStherm
         Fonts/Montserrat-Regular.ttf
         Fonts/RobotoMono-Regular.ttf
         Fonts/Roboto-Regular.ttf
+        Images/smart-phone.png
+        Images/mobile-app-link.png
         Images/auto.png
         Images/cool.png
         Images/sun.png
