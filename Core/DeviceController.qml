@@ -1128,6 +1128,10 @@ I_DeviceController {
     }
 
     function pushLockUpdates() {
+        // we should not save before the app completely loaded
+        if (uiSession && uiSession.currentFile.length > 0)
+            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
 
+        // TODO: Update the server
     }
 }
