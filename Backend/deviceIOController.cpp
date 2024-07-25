@@ -486,15 +486,14 @@ void DeviceIOController::createNRF()
         qWarning() << "GPIO 4 failed to connect" ;
     }
 
-    // Call from lockDeviceController in devicecontroller cpp.
-    // startTOFGpioHandler();
+    startTOFGpioHandler();
 }
 
 void DeviceIOController::startTOFGpioHandler() {
     if (m_gpioHandler5->startConnection()) {
         TRACE << "GPIO 5 is currently active.";
 
-        m_gpioHandler5->disconnect();
+        // m_gpioHandler5->disconnect();
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             if (data.length() == 2 && data.at(0) == '0') {
                 m_nRF_queue.push(m_p->TOFPacketBA);
@@ -504,7 +503,7 @@ void DeviceIOController::startTOFGpioHandler() {
         });
 
     } else {
-        TRACE << "GPIO 5 failed to activate." ;
+        qWarning() << "GPIO 5 failed to activate." ;
     }
 }
 
@@ -1579,7 +1578,7 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
     // TOF sensor activate display when distance < 1 meter and time > 1 second (handled in firmware)
     if (range_mm > 60 && range_mm <= TOF_IRQ_RANGE) {
         if (auto manager = ScreenSaverManager::instance()) {
-            manager->restart();
+            manager->triggerScreenSaverBasedOnTOF();
         }
     }
 }

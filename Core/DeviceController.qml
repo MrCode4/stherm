@@ -289,7 +289,7 @@ I_DeviceController {
         deviceControllerCPP.startDevice();
 
         //! Update TOF sensor status.
-        deviceControllerCPP.lockDeviceController(device.lock.isLock);
+        lock(device.lock.isLock, device.lock.pin, true);
 
         // TODO    we might call this contitionally
         console.log("************** set the backlight on initialization **************")
@@ -1094,6 +1094,9 @@ I_DeviceController {
         // Set the pin in lock editMode
         if (pin.length !== 4) {
             console.log("Pin: ", pin, " has incorrect format.")
+            // Unlock device.
+            lockDevice(false);
+
             return false;
         }
 
@@ -1104,9 +1107,8 @@ I_DeviceController {
         var isPinCorrect = device.lock.pin === pin;
         console.log("Pin: ", pin, ", isPinCorrect:", isPinCorrect, ", isLock: ", isLock, ", fromServer", fromServer);
 
-        if (isPinCorrect && lockDevice(isLock)) {
-            if (!fromServer)
-                pushSettings();
+        if (isPinCorrect && lockDevice(isLock) && !fromServer) {
+            Qt.callLater(pushLockUpdates);
         }
 
         return isPinCorrect;
@@ -1118,15 +1120,14 @@ I_DeviceController {
             return false;
 
         device.lock.isLock = isLock;
-        if (isLock) {
-            ScreenSaverManager.setActive();
-        }
-
-        // Update TOS sensor status
-        deviceControllerCPP.lockDeviceController(isLock);
+        ScreenSaverManager.lockDevice(isLock);
 
         uiSession.showHome();
 
         return true;
+    }
+
+    function pushLockUpdates() {
+
     }
 }

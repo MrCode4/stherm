@@ -82,7 +82,12 @@ public:
 
     //! Start TOF sensor reading
     void startTOFGpioHandler();
-    //! Stop TOF sensor reading
+    //! TODO: Enhance TOF sensor data processing speed
+    //!  and resource utilization by streamlining data
+    //!  reading and process and other operations.
+    //!  we can implement a power saving measures
+    //!  by dynamically enabling/disabling the sensor based
+    //!  on device state (e.g., locked/unlocked).
     void stopTOFGpioHandler();
 
 signals:
