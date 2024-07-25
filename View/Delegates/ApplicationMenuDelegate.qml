@@ -42,6 +42,7 @@ ItemDelegate {
 
             visible: !hasFontAwesomeIcon
             fillMode: Image.PreserveAspectFit
+            Layout.preferredWidth: implicitHeight
 
             source: hasFontAwesomeIcon ? "" : (delegateData?.icon ?? "")
         }
