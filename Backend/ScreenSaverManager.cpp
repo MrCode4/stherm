@@ -182,8 +182,10 @@ void ScreenSaverManager::lockDevice(const bool& isLock) {
     if (mIsDeviceLocked == isLock)
         return;
 
+    // to ignore TOF events
     mIsDeviceLocked = isLock;
 
+    // to ensure screen saver will be shown after a period of time
     if (isLock)
         setActive();
 }
