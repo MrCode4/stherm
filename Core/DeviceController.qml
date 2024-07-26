@@ -126,7 +126,7 @@ I_DeviceController {
             if (device.systemSetup._isSystemShutoff) {
                 device.systemSetup._isSystemShutoff = false;
 
-                // Move to auto mode
+                // Move to auto mode with specified values
                 setAutoMinReqTemp(20);
                 setAutoMaxReqTemp(24.444);
                 setSystemModeTo(AppSpec.Auto);

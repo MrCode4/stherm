@@ -204,8 +204,6 @@ Q_SIGNALS:
     void startSystemDelayCountdown(AppSpecCPP::SystemMode mode, int delay);
     void stopSystemDelayCountdown();
 
-    void pushSettings();
-
     //! The system set to off when humidity or temperature sensors malfunction
     void forceOffSystem();
 
