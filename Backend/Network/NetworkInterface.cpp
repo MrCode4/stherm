@@ -61,11 +61,10 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
     connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
         mSetNoInternetTimer.stop();
-        if (mNam.cache()){
-            mNam.cache()->clear();
-        }
-        mNam.clearAccessCache();
-        mNam.clearConnectionCache();
+
+        // clear the cache to restore internet access faster
+        clearDNSChache();
+
         auto connectedWifiInfo = connectedWifi();
         if (connectedWifiInfo) {
             if (!mCheckInternetAccessTmr.isActive()) {
@@ -229,6 +228,15 @@ void NetworkInterface::checkHasInternet()
 
         mNam.get(request);
     }
+}
+
+void NetworkInterface::clearDNSChache()
+{
+    if (mNam.cache()){
+        mNam.cache()->clear();
+    }
+    mNam.clearAccessCache();
+    mNam.clearConnectionCache();
 }
 
 void NetworkInterface::onErrorOccured(int error)
