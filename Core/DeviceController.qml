@@ -500,6 +500,9 @@ I_DeviceController {
             return false;
         }
 
+        // TODO, disabled for now
+        adaptive = false;
+
         // Mute alerts update locally.
         if (device.setting.enabledAlerts !== enabledAlerts) {
             device.setting.enabledAlerts = enabledAlerts;

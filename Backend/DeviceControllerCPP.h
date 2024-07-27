@@ -30,6 +30,7 @@ class DeviceControllerCPP  : public QObject
     Q_PROPERTY(QString    swNRF READ  getNRF_SW NOTIFY nrfVersionChanged)
     Q_PROPERTY(QString    hwNRF READ  getNRF_HW NOTIFY nrfVersionChanged)
 
+    // for quiet mode bind
     Q_PROPERTY(double  adaptiveBrightness READ  adaptiveBrightness NOTIFY adaptiveBrightnessChanged)
 
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
