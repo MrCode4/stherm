@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * privacyPolicyPage.qml privacyPolicy and terms of use
+ * PrivacyPolicyPage: privacyPolicy and terms of use
  * ***********************************************************************************************/
 
 BasePageView {
@@ -32,7 +32,7 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    //! Next button (loads StartTestPage)
+    //! Next button (loads SystemTypePage in normal mode or VersionInformationPage in test mode)
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
@@ -67,84 +67,69 @@ BasePageView {
         }
     }
 
+    CheckBox {
+        id: privacyPolicyChbox
 
-    Flickable {
-        id: privacyFlick
-
-        anchors.top: parent.top
         anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: confirmRowLayout.top
-        anchors.bottomMargin: 10
+        anchors.leftMargin: leftPadding
+        anchors.verticalCenter: parent.verticalCenter
 
-        property bool isRead: false
+        checked: false
 
-        ScrollIndicator.vertical: ScrollIndicator {
-            parent: privacyFlick
-            height: parent.height
-            x: parent.width
-
-            onPositionChanged: {
-                if (!privacyFlick.isRead)
-                    privacyFlick.isRead = position > 0.98;
-            }
-        }
-
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
-        contentWidth: width
-        contentHeight: privacyPolicyLabel.implicitHeight
-
-        Label {
-            id: privacyPolicyLabel
-            anchors.fill: parent
-
-            text: "### Privacy Policy V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
-                  appModel.userPolicyTerms.privacyPolicy + "\n\n\n\n" +
-                  "### Terms Of Use V. " + appModel.userPolicyTerms.currentVersion + "\n\n" +
-                  appModel.userPolicyTerms.termsOfUse
-
-            leftPadding: 4;
-            rightPadding: 4
-            background: null
-            textFormat: Text.MarkdownText
-            wrapMode: Text.WordWrap
-            lineHeight: 1.3
-            font.pointSize: Qt.application.font.pointSize * 0.7
-        }
-    }
-
-    RowLayout {
-        id: confirmRowLayout
-        spacing: 4
-
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
-
-        enabled: privacyPolicyLabel.text.length > 0 && privacyFlick.isRead
-
-        CheckBox {
-            id: privacyPolicyChbox
-            Layout.leftMargin: -leftPadding
-            focusPolicy: Qt.TabFocus
-
-            checked: false
-        }
-
-        Label {
-            Layout.alignment: Qt.AlignVCenter
-
-            font.pointSize: Application.font.pointSize * 0.85
-            textFormat: Text.StyledText
-            linkColor: Material.foreground
-            verticalAlignment: Text.AlignVCenter
-            text: '<p>I agree to <b><a>Privacy Policy</a></b> and<br><b><a>Terms of use</a></b>.</p>'
-
-            TapHandler {
-                onTapped: {
+        // Use TapHandler to handle checked in the checkbox.
+        TapHandler {
+            onTapped: {
+                if (privacyPolicyPopup.isRead) {
                     privacyPolicyChbox.checked = !privacyPolicyChbox.checked;
+                    privacyPolicyPopup.isAccepted = privacyPolicyChbox.checked;
+
+                } else {
+                    managePrivacyPolicyChbox();
                 }
             }
         }
+    }
+
+    Label {
+        anchors.left: privacyPolicyChbox.right
+        anchors.right: parent.right
+        anchors.leftMargin: leftPadding
+        anchors.verticalCenter: parent.verticalCenter
+
+        font.pointSize: Application.font.pointSize * 0.85
+        textFormat: Text.StyledText
+        linkColor: Material.foreground
+        verticalAlignment: Text.AlignVCenter
+        wrapMode: Text.WordWrap
+        text:  '<p>By checking this box and activating this device, I agree to the <b><a>Privacy Policy</a></b> and <b><a>Terms of use</a></b>,
+                    which contain arbitration provisions waiving my right to a jury trial and my right to enforce this contract via class action.</p>'
+
+        TapHandler {
+            onTapped: {
+                managePrivacyPolicyChbox();
+            }
+        }
+    }
+
+    //! PrivacyPolicyPopup: To improve memory efficiency, we declared this here
+    PrivacyPolicyPopup {
+        id: privacyPolicyPopup
+        userPolicyTerms: appModel.userPolicyTerms
+
+        onOpened: {
+            if (!isRead)
+                uiSession.toastManager.showToast("You need to scroll to the end to accept.", "");
+        }
+
+        onClosed: {
+            if (isAccepted)
+                privacyPolicyChbox.checked = isRead;
+        }
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+    function managePrivacyPolicyChbox() {
+        privacyPolicyPopup.open();
     }
 }

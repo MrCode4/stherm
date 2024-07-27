@@ -757,9 +757,33 @@ void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const d
 
 QString NUVE::System::getCurrentTime()
 {
+    // Retrieve utc time from the internet if available; otherwise, use the local system time (UTC).
     auto time = QDateTime::currentDateTimeUtc();
-    // we can get time from Internet if available;
-    //! TODO
+
+    QEventLoop* eventLoop = nullptr;
+    auto callback = [this, &eventLoop, &time](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+
+        // Convert string to QDateTime to validate the received time.
+        auto dateTime = QDateTime::fromString(data.value("utc_datetime").toString(), Qt::ISODate);
+
+        if (dateTime.isValid())
+            time = dateTime;
+
+        TRACE << "getCurrentTime: " << data.value("utc_datetime").toString() << dateTime;
+
+        if (eventLoop) {
+            eventLoop->quit();
+        }
+    };
+
+    auto netReply = callGetApi(QString("https://worldtimeapi.org/api/timezone/Etc/UTC"), callback, false);
+
+    if (netReply) {
+        netReply->ignoreSslErrors();
+        QEventLoop loop;
+        eventLoop = &loop;
+        loop.exec();
+    }
 
     return time.toString(Qt::ISODate);
 }
