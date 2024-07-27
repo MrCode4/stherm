@@ -12,6 +12,8 @@ Button {
 
     property int radius: 8
 
+    property color      frameColor: Style.frameColor
+
     contentItem: Label {
         font: control.font
         text: control.text
@@ -26,7 +28,7 @@ Button {
         implicitHeight: Style.button.buttonHeight
 
         border.width: control.flat ? 0 : Style.button.borderWidth
-        border.color: Style.frameColor
+        border.color: frameColor
         radius: control.radius
         color: !control.enabled ? Style.button.disabledColor
                                 : Style.foreground

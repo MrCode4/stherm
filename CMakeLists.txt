@@ -89,7 +89,7 @@ qt6_add_qml_module(appStherm
         Core/NightMode.qml
         Core/ToastManager.qml
         Core/UserPolicyTerms.qml
-
+        Core/Lock.qml
 
         # Primitive Components
         UiCore/Components/RoniaTextIcon.qml
@@ -136,6 +136,8 @@ qt6_add_qml_module(appStherm
         UiCore/Components/Toast.qml
         UiCore/Components/RoniaTumbler.qml
         UiCore/Components/ExpandableItem.qml
+        UiCore/Components/PINKeyboard.qml
+        UiCore/Components/PINTextField.qml
 
 
         # Views and Widgets
@@ -193,6 +195,8 @@ qt6_add_qml_module(appStherm
         View/BackdoorUpdatePage.qml
         View/PrivacyPolicyPage.qml
         View/MobileAppPage.qml
+        View/LockPage.qml
+        View/UnlockPage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
@@ -404,6 +408,8 @@ qt6_add_qml_module(appStherm
         Images/Locations/office.svg
         Images/Locations/other.svg
         Images/Locations/upstairs.svg
+        Images/delete-left.svg
+        Images/lock-image.svg
 
         Resources/privacyPolicy.md
         Resources/termOfUse.md

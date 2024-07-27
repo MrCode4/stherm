@@ -80,6 +80,16 @@ public:
     QString getTI_SW() const;
 
 
+    //! Start TOF sensor reading
+    void startTOFGpioHandler();
+    //! TODO: Enhance TOF sensor data processing speed
+    //!  and resource utilization by streamlining data
+    //!  reading and process and other operations.
+    //!  we can implement a power saving measures
+    //!  by dynamically enabling/disabling the sensor based
+    //!  on device state (e.g., locked/unlocked).
+    void stopTOFGpioHandler();
+
 signals:
     void mainDataReady(QVariantMap data);
     void tofDataReady(QVariantMap data);
