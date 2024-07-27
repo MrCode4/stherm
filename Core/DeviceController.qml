@@ -500,7 +500,7 @@ I_DeviceController {
             return false;
         }
 
-        // TODO, disabled for now
+        // TODO, prevent setting adaptive for now
         adaptive = false;
 
         // Mute alerts update locally.
