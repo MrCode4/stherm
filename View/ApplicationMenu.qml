@@ -187,6 +187,11 @@ BasePageView {
                                                      "uiSession": Qt.binding(() => uiSession)
                                                  });
                     } break;
+                    case "Mobile App": {
+                        root.StackView.view.push("qrc:/Stherm/View/MobileAppPage.qml", {
+                                                     "uiSession": Qt.binding(() => uiSession)
+                                                 });
+                    } break;
                     }
                 }
             }
