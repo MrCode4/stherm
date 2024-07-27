@@ -1091,12 +1091,13 @@ I_DeviceController {
     //! Lock/unlock the application
     //! Call from device and server
     function lock(isLock : bool, pin: string, fromServer = false) : bool {
-        // Set the pin in lock editMode
-        if (pin.length !== 4) {
+        var force = false;
+        if (!isLock && device.lock.pin.length !== 4) {
+            console.log("Model was wrong: ", device.lock.pin, ", unlocked without check pin:", pin);
+            pin = device.lock.pin;
+            force = true;
+        } else if (pin.length !== 4) { // Set the pin in lock editMode
             console.log("Pin: ", pin, " has incorrect format.")
-            // Unlock device.
-            lockDevice(false);
-
             return false;
         }
 
@@ -1107,7 +1108,7 @@ I_DeviceController {
         var isPinCorrect = device.lock.pin === pin;
         console.log("Pin: ", pin, ", isPinCorrect:", isPinCorrect, ", isLock: ", isLock, ", fromServer", fromServer);
 
-        if (isPinCorrect && lockDevice(isLock) && !fromServer) {
+        if (isPinCorrect && lockDevice(isLock, force) && !fromServer) {
             Qt.callLater(pushLockUpdates);
         }
 
@@ -1115,8 +1116,8 @@ I_DeviceController {
     }
 
     //! Update the lock model
-    function lockDevice(isLock : bool) : bool {
-        if (device.lock.isLock === isLock)
+    function lockDevice(isLock : bool, force : bool) : bool {
+        if (!force && device.lock.isLock === isLock)
             return false;
 
         device.lock.isLock = isLock;
