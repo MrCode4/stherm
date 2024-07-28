@@ -21,6 +21,9 @@ I_DeviceController {
 
     property bool initialSetup: false;
 
+    //! Air condition health
+    property bool airConditionSensorHealth: true;
+
     //! mandatory update
     //! Set to true when in initial setup exist new update
     //! more usage in future like force update with permission
@@ -112,6 +115,29 @@ I_DeviceController {
 
         // adding version so we can force the image to refresh the content
         property int version : 0;
+
+        function onCo2SensorStatus(status: bool) {
+            airConditionSensorHealth = status;
+        }
+
+        //! Set system mode to auto when
+        //! return the system to Auto mode with the default temp range from 68F to 76F.
+        function onExitForceOffSystem() {
+            if (device.systemSetup._isSystemShutoff) {
+                device.systemSetup._isSystemShutoff = false;
+
+                // Move to auto mode with specified values
+                setAutoMinReqTemp(20);
+                setAutoMaxReqTemp(24.444);
+                setSystemModeTo(AppSpec.Auto);
+            }
+        }
+
+        //! Force off the system (Temperature and humidity)
+        function onForceOffSystem() {
+            setSystemModeTo(AppSpec.Off);
+            device.systemSetup._isSystemShutoff = true;
+        }
 
         function onContractorInfoUpdated(brandName, phoneNumber, iconUrl, url,  techUrl) {
 
@@ -296,6 +322,9 @@ I_DeviceController {
         // as well as device io which may TODO refactor later and call it on demand
         deviceControllerCPP.startDevice();
 
+        //! Update TOF sensor status.
+        lock(device.lock.isLock, device.lock.pin, true);
+
         // TODO    we might call this contitionally
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
@@ -465,6 +494,11 @@ I_DeviceController {
 
     function setSystemModeTo(systemMode: int)
     {
+        if (device.systemSetup._isSystemShutoff) {
+            console.log("Ignore system mode, system is shutoff by alert manager.")
+            return;
+        }
+
         if (systemMode === AppSpecCPP.Vacation) {
             setVacationOn(true);
 
@@ -998,11 +1032,13 @@ I_DeviceController {
     }
 
     function setSystemAccesseoriesServer(settings: var) {
-        setSystemAccesseories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
+        device.systemSetup.systemAccessories.setSystemAccessories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
     }
 
     function setSystemAccesseories(accType: int, wireType: int) {
         device.systemSetup.systemAccessories.setSystemAccessories(accType, wireType);
+
+        pushSettings();
     }
     
     function testRelays(relays) {
@@ -1117,5 +1153,53 @@ I_DeviceController {
         }
 
         settingsPushRetry.start()
+    }
+
+    //! Lock/unlock the application
+    //! Call from device and server
+    function lock(isLock : bool, pin: string, fromServer = false) : bool {
+        var force = false;
+        if (!isLock && device.lock.pin.length !== 4) {
+            console.log("Model was wrong: ", device.lock.pin, ", unlocked without check pin:", pin);
+            pin = device.lock.pin;
+            force = true;
+        } else if (pin.length !== 4) { // Set the pin in lock editMode
+            console.log("Pin: ", pin, " has incorrect format.")
+            return false;
+        }
+
+        if (isLock) {
+            device.lock.pin = pin;
+        }
+
+        var isPinCorrect = device.lock.pin === pin;
+        console.log("Pin: ", pin, ", isPinCorrect:", isPinCorrect, ", isLock: ", isLock, ", fromServer", fromServer);
+
+        if (isPinCorrect && lockDevice(isLock, force) && !fromServer) {
+            Qt.callLater(pushLockUpdates);
+        }
+
+        return isPinCorrect;
+    }
+
+    //! Update the lock model
+    function lockDevice(isLock : bool, force : bool) : bool {
+        if (!force && device.lock.isLock === isLock)
+            return false;
+
+        device.lock.isLock = isLock;
+        ScreenSaverManager.lockDevice(isLock);
+
+        uiSession.showHome();
+
+        return true;
+    }
+
+    function pushLockUpdates() {
+        // we should not save before the app completely loaded
+        if (uiSession && uiSession.currentFile.length > 0)
+            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+
+        // TODO: Update the server
     }
 }

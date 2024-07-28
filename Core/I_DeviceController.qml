@@ -154,4 +154,7 @@ QtObject {
 
     function updateNightMode(nightMode : int) {}
 
+    //! Lock/unlock the application
+    function lock(isLock : bool, pin: string) : bool {return false;}
+
 }

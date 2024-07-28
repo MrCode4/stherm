@@ -79,6 +79,15 @@ public:
 
     QString getTI_SW() const;
 
+    //! Start TOF sensor reading
+    void startTOFGpioHandler();
+    //! TODO: Enhance TOF sensor data processing speed
+    //!  and resource utilization by streamlining data
+    //!  reading and process and other operations.
+    //!  we can implement a power saving measures
+    //!  by dynamically enabling/disabling the sensor based
+    //!  on device state (e.g., locked/unlocked).
+    void stopTOFGpioHandler();
 
 signals:
     void mainDataReady(QVariantMap data);
@@ -100,6 +109,15 @@ signals:
     void fanStatusUpdated(bool off);
 
     void relaysUpdated(STHERM::RelayConfigs relays);
+
+    //! The system set to off when humidity or temperature sensors malfunction, so send true
+    //! Exit from Force off mode when the sensors work properly, so send false
+    void forceOffSystem(bool forceOff = false);
+
+    //! co2SensorStatus transmits CO2 sensor health.
+    //! True indicates proper operation,
+    //!  False indicates malfunction.
+    void co2SensorStatus (bool status = true);
 
 private slots:
     void wtdExec();
@@ -190,4 +208,13 @@ private:
     QElapsedTimer m_HumidityAlertET;
     QElapsedTimer m_FanAlertET;
     QElapsedTimer m_LightAlertET;
+
+    //! Verifies if data from sensors like humidity, temperature, and others is received.
+    QTimer mSensorDataRecievedTimer;
+
+    //! Has correct sensor data been received from the humidity and temperature sensor
+    bool mIsHumTempSensorValid;
+
+    //! Is there recent data available from the sensors
+    bool mIsDataReceived;
 };

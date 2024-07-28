@@ -90,6 +90,9 @@ QSObject {
     //! Private policy and terms of use
     property UserPolicyTerms userPolicyTerms: UserPolicyTerms {}
 
+    //! Lock model
+    property Lock            lock: Lock {}
+
     /* Functions
      * ****************************************************************************************/
 

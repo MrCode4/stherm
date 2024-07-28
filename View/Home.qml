@@ -182,6 +182,7 @@ Control {
                     Layout.alignment: Qt.AlignTrailing
                     // using iaq
                     condition: device._co2_id
+                    visible: deviceController.airConditionSensorHealth
                 }
             }
 
