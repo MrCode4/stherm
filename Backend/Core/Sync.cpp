@@ -51,6 +51,7 @@ void Sync::setSerialNumber(const QString &serialNumber)
     mSerialNumber         = serialNumber;
     // Force to update with new settings
     mLastPushTime = QDateTime();
+    mAutoModeLastPushTime = QDateTime();
     // Fetch with new serial number
     emit serialNumberChanged();
 }
@@ -109,6 +110,8 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
                     mLastPushTime = QDateTime();
                     // Fetch with new serial number
                     emit serialNumberChanged();
+
+                    mAutoModeLastPushTime = QDateTime();
                 }
 
                 TRACE << "The serial number does not match the last one." << mSerialNumber << sn;
@@ -316,7 +319,26 @@ bool Sync::fetchAutoModeSetings()
         if (data.isEmpty()) {
             TRACE << "Received settings corrupted";
         }
-        emit autoModeSettingsReady(data.toVariantMap(), !data.isEmpty());
+
+        QDateTime dateTimeObject = updateTimeStringToTime(data.value("last_update").toString());
+        if (dateTimeObject.isValid()) {
+            // Use the dateTimeObject here with time information
+            TRACE << "Auto mode: date with time cpp set last_update: " << dateTimeObject
+                  << dateTimeObject.toString() << (mAutoModeLastPushTime > dateTimeObject)
+                  << (mAutoModeLastPushTime == dateTimeObject)
+                  << (mAutoModeLastPushTime < dateTimeObject);
+        } else {
+            TRACE << "Auto mode: Invalid date format! cpp set last_update:";
+        }
+
+        // check date time
+        if (!mAutoModeLastPushTime.isNull() && (!dateTimeObject.isValid() || mAutoModeLastPushTime >= dateTimeObject)) {
+            TRACE << "Auto mode: Received auto mode settings has invalid date last_update: " + dateTimeObject.toString();
+        } else {
+            mAutoModeLastPushTime = dateTimeObject;
+            emit autoModeSettingsReady(data.toVariantMap(), !data.isEmpty());
+        }
+
         emit settingsFetched(!data.isEmpty());
     };
 
@@ -411,6 +433,19 @@ void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &a
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() == QNetworkReply::NoError) {
             TRACE << "Auto mode settings pushed to server: setAutoModeSettings";
+
+            auto dateString = data.value("last_update");
+            QDateTime dateTimeObject =  QDateTime::fromString(dateString.toString(), Qt::ISODate);
+
+            if (dateTimeObject.isValid()) {
+                // Use the dateTimeObject here with time information
+                TRACE << "Auto mode:  Date with time cpp set last_update: " << dateTimeObject << dateTimeObject.toString();
+                mAutoModeLastPushTime = dateTimeObject;
+
+            } else {
+                TRACE << "Auto mode: Invalid date format! cpp set last_update:";
+            }
+
             emit autoModePush(true);
         } else {
             emit autoModePush(false);

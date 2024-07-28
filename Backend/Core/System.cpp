@@ -147,7 +147,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     });
 
     connect(mSync, &NUVE::Sync::autoModePush, this, [this](bool isSuccess) {
-        setProperty(m_pushAutoModeSettings, false);
+        setProperty(m_pushAutoModeSettings, false); // this allows to fetch data when auto mode finishes fail or success
 
         startFetchActiveTimer();
 
@@ -749,6 +749,8 @@ void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const d
     // set when settings changed or no timer is active! otherwise let the timer do the job!
     if (!mFetchActiveTimer.isActive()){
         setCanFetchServer(false);
+    } else {
+        TRACE << "can fetch server did not set to false";
     }
 
     setProperty(m_pushAutoModeSettings, true);

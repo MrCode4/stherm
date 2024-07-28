@@ -90,6 +90,7 @@ private:
     bool mHasClient;
     QString mSerialNumber;
     QDateTime mLastPushTime;
+    QDateTime mAutoModeLastPushTime;
     QVariantMap mContractorInfo;
     cpuid_t mSystemUuid;
 };

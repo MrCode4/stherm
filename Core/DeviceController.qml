@@ -190,6 +190,7 @@ I_DeviceController {
 
         //! Update the auto mode settings with the fetch signal.
         function onAutoModePush(isSuccess: bool) {
+            console.log("onAutoModePush, isSuccess: ", isSuccess);
             settingsPush.hasAutoModeSettings = !isSuccess;
 
             if (!isSuccess) {
@@ -199,6 +200,8 @@ I_DeviceController {
 
         function onCanFetchServerChanged() {
             if (deviceControllerCPP.system.canFetchServer) {
+                console.log("onCanFetchServerChanged: Reset the push parameters, values before reset: ",
+                            settingsPush.hasSettings, settingsPush.hasAutoModeSettings);
                 settingsPushRetry.failed = false;
                 settingsPushRetry.interval = 5000;
                 settingsPush.hasSettings = false
@@ -227,6 +230,9 @@ I_DeviceController {
         property bool hasAutoModeSettings : false
 
         onTriggered: {
+            console.log("DeviceController.qml: Push to server with: ", "hasSensorDataChanges: ", hasSensorDataChanges,
+                        ", hasSettings: ", hasSettings, ", hasAutoModeSettings: ", hasAutoModeSettings);
+
             if (hasSettings || hasSensorDataChanges)
                 pushToServer();
 
@@ -551,21 +557,26 @@ I_DeviceController {
             settingsPush.hasSettings = true
 
         // we should not push before we fetch at least once successfully
-        if (settingsPush.running || !deviceControllerCPP.system.fetchSuccessOnce)
+        if (settingsPush.running || !deviceControllerCPP.system.fetchSuccessOnce) {
+            console.log("DeviceController.qml: pushUpdateToServer: ", settingsPush.running, !deviceControllerCPP.system.fetchSuccessOnce);
             return;
+        }
 
         if (settingsPushRetry.running)
             settingsPushRetry.stop();
-        else if (settingsPushRetry.failed)
+        else if (settingsPushRetry.failed){ // cm
+            console.log("did not pushed as retrying had no reponse yet");
             return;
+        }
 
         settingsPush.start()
     }
 
     //! Push auto settings to server
     function pushAutoModeSettings() {
+        console.log("DeviceController.qml: pushAutoModeSettings");
         settingsPush.hasAutoModeSettings = true;
-        pushUpdateToServer(false);
+        pushUpdateToServer(false); // this should be false to prevent excess calling of regular push
     }
 
     function pushSettings() {
@@ -845,7 +856,7 @@ I_DeviceController {
             return;
 
         if (editModeEnabled(AppSpec.EMDesiredTemperature)) {
-            console.log("The temperature is being edited and cannot be updated by the server.")
+            console.log("The temperature is being edited and auto mode cannot be updated by the server.")
             return;
         }
 
