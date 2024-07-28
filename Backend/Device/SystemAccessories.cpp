@@ -4,16 +4,10 @@
 SystemAccessories::SystemAccessories(QSObjectCpp *parent) :
     QSObjectCpp{parent}
 {
-    mLastAccessoriesType = AppSpecCPP::Humidifier;
-    mLastAccessoriesWireType = AppSpecCPP::None;
-
     setSystemAccessories(AppSpecCPP::Humidifier, AppSpecCPP::None);
 }
 
 void SystemAccessories::setSystemAccessories(AppSpecCPP::AccessoriesType accessoriesType, AppSpecCPP::AccessoriesWireType wireType) {
-
-    mLastAccessoriesType = mAccessoriesType;
-    mLastAccessoriesWireType = mAccessoriesWireType;
 
     if (mAccessoriesType     != accessoriesType ||
         mAccessoriesWireType != wireType) {
@@ -33,8 +27,4 @@ AppSpecCPP::AccessoriesType SystemAccessories::getAccessoriesType() const
 AppSpecCPP::AccessoriesWireType SystemAccessories::getAccessoriesWireType() const
 {
     return mAccessoriesWireType;
-}
-
-void SystemAccessories::backToLastState() {
-    setSystemAccessories(mLastAccessoriesType, mLastAccessoriesWireType);
 }
