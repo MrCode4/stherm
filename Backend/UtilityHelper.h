@@ -263,14 +263,19 @@ struct AQ_TH_PR_thld {
         Tvoc_high     = 50;
         etoh_high     = 70;
         iaq_high      = 40;
-        temp_high     = 125;
-        temp_low      = -40;
-        humidity_high = 100;
+        temp_high     = 37.78;
+        temp_low      = 4.44;
+        humidity_high = 80;
         humidity_low  = 0;
         fan_high      = 3800 * 1.2;
-        fan_low       = 3800 * 0.8;
+        fan_low       = 700;
         light_low     = 0;
-        light_high   = 1000000;
+        light_high   = 25000;
+
+        Temperature_Working_Range_High = 125;
+        Temperature_Working_Range_Low   = -40;
+        Humidity_Working_Range_High     = 100;
+        Humidity_Working_Range_Low      = 0;
     }
 
     uint16_t pressure_high;  ///< Pressure threshold high (up to 1200 hPa)
@@ -278,15 +283,20 @@ struct AQ_TH_PR_thld {
     uint16_t c02_low;       ///< CO2 threshold high (400 to 5000 ppm)
     uint8_t Tvoc_high;       ///< TVOC threshold high (0.1 to 10+ mg/m^3)
     uint8_t etoh_high;       ///< ETOH threshold high (up to 20 ppm)
-    uint8_t iaq_high;        ///< IAQ threshold high (1 to 5)
-    int8_t temp_high;        ///< Temperature threshold high (up to +127�C)
-    int8_t temp_low;         ///< Temperature threshold low (as low as -128�C)
+    uint8_t iaq_high;        ///< More than 40
+    double  temp_high;        ///< Temperature threshold high (up to +100 F)
+    double  temp_low;         ///< Temperature threshold low (as low as 40F)
     uint8_t humidity_high;   ///< Humidity threshold high (up to 100%)
     uint8_t humidity_low;    ///< Humidity threshold low (as low as 0%)
     uint16_t fan_high;
     uint16_t fan_low;
     uint16_t light_low;
     int light_high;
+
+    double Temperature_Working_Range_High; ///< Celcius
+    double Temperature_Working_Range_Low; ///< Celcius
+    double Humidity_Working_Range_High; ///< Percent
+    double Humidity_Working_Range_Low; ///< Percent
 };
 
 /**
@@ -349,8 +359,20 @@ struct SensorConfigThresholds {
 static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
     switch (alertType) {
     case AppSpecCPP::Alert_temp_high:
+        return QString("Temperature is very high.");
+
     case AppSpecCPP::Alert_temp_low:
-        return QString("Temperature Sensor Malfunction\nPlease contact your contractor.");
+        return QString("Temperature is very low.");
+
+    case AppSpecCPP::Alert_humidity_high:
+        return QString("Humidity is very high.");
+
+    case AppSpecCPP::Alert_humidity_low:
+        return QString("Humidity is very low.");
+
+    case AppSpecCPP::Alert_temperature_humidity_malfunction:
+        return QString("Temperature and Humidity sensor malfunction.  Please contact your contractor.");
+
     case AppSpecCPP::Alert_Tvoc_high:
         return QString("Tvoc is high");
     case AppSpecCPP::Alert_etoh_high:
@@ -365,21 +387,22 @@ static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
     case AppSpecCPP::Alert_fan_low:
         return QString("Fan Malfunction\nPlease contact your contractor.");
 
-    case AppSpecCPP::Alert_humidity_high:
-    case AppSpecCPP::Alert_humidity_low:
-        return QString("Humidity Sensor Malfunction\nPlease contact your contractor.");
     case AppSpecCPP::Alert_pressure_high:
         return QString("Pressure is high");
     case AppSpecCPP::Alert_wiring_not_connected:
         return QString("Wiring is not connected.");
     case AppSpecCPP::Alert_could_not_set_relay:
         return QString("Could not set relay.");
-    case AppSpecCPP::Alert_temperature_not_reach:
-        return QString("**System efficiency issue:** temperature not reached in 2 hours");
 
     case AppSpecCPP::Alert_Light_High:
     case AppSpecCPP::Alert_Light_Low:
-        return QString("The light sensor stops working or works not properly providing not normal data");
+        return QString("Ambient sensor malfunction.\nPlease contact your contractor.");
+
+    case AppSpecCPP::Alert_Efficiency_Issue:
+        return QString("**System Efficiency Issue:**\nThe system is unable to reach the set temperature.");
+
+    case AppSpecCPP::Alert_No_Data_Received:
+        return QString("Controller failure.\nPlease contact your contractor.");
 
     default:
         return QString();

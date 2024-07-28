@@ -21,6 +21,9 @@ I_DeviceController {
 
     property bool initialSetup: false;
 
+    //! Air condition health
+    property bool airConditionSensorHealth: true;
+
     //! mandatory update
     //! Set to true when in initial setup exist new update
     //! more usage in future like force update with permission
@@ -112,6 +115,29 @@ I_DeviceController {
 
         // adding version so we can force the image to refresh the content
         property int version : 0;
+
+        function onCo2SensorStatus(status: bool) {
+            airConditionSensorHealth = status;
+        }
+
+        //! Set system mode to auto when
+        //! return the system to Auto mode with the default temp range from 68F to 76F.
+        function onExitForceOffSystem() {
+            if (device.systemSetup._isSystemShutoff) {
+                device.systemSetup._isSystemShutoff = false;
+
+                // Move to auto mode with specified values
+                setAutoMinReqTemp(20);
+                setAutoMaxReqTemp(24.444);
+                setSystemModeTo(AppSpec.Auto);
+            }
+        }
+
+        //! Force off the system (Temperature and humidity)
+        function onForceOffSystem() {
+            setSystemModeTo(AppSpec.Off);
+            device.systemSetup._isSystemShutoff = true;
+        }
 
         function onContractorInfoUpdated(brandName, phoneNumber, iconUrl, url,  techUrl) {
 
@@ -446,6 +472,11 @@ I_DeviceController {
 
     function setSystemModeTo(systemMode: int)
     {
+        if (device.systemSetup._isSystemShutoff) {
+            console.log("Ignore system mode, system is shutoff by alert manager.")
+            return;
+        }
+
         if (systemMode === AppSpecCPP.Vacation) {
             setVacationOn(true);
 
@@ -967,11 +998,13 @@ I_DeviceController {
     }
 
     function setSystemAccesseoriesServer(settings: var) {
-        setSystemAccesseories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
+        device.systemSetup.systemAccessories.setSystemAccessories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
     }
 
     function setSystemAccesseories(accType: int, wireType: int) {
         device.systemSetup.systemAccessories.setSystemAccessories(accType, wireType);
+
+        pushSettings();
     }
     
     function testRelays(relays) {

@@ -281,7 +281,8 @@ QtObject {
         })
 
         // !this function is called even if device is off or hold!
-        if (device.isHold || (device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) {
+        if (device.isHold || ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) ||
+                device?.systemSetup?._isSystemShutoff) {
             currentSchedule = null;
         }
 
@@ -528,6 +529,11 @@ QtObject {
     //! Send null schedule when system mode changed to OFF mode
     property Connections systemSetupConnections: Connections{
         target: device.systemSetup
+
+        function on_IsSystemShutoffChanged() {
+            if (device?.systemSetup?._isSystemShutoff)
+                deviceController.setActivatedSchedule(null);
+        }
 
         function onSystemModeChanged() {
             if ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) {

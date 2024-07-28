@@ -26,7 +26,6 @@ static  const QString m_T1                    = "Temperature compensation T1 (F)
 #endif
 static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
-
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
     "green": 255,
@@ -133,11 +132,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(m_scheme, &Scheme::alert, this, [this]() {
-        TRACE << STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach);
-        // TODO
-        // emit alert(STHERM::AlertLevel::LVL_Emergency,
-        //            AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
-        //            STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
+        emit alert(STHERM::AlertLevel::LVL_Emergency,
+                   AppSpecCPP::AlertTypes::Alert_Efficiency_Issue,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_Efficiency_Issue));
     });
 
     // TODO should be loaded later for accounting previous session
@@ -157,6 +154,18 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceIO, &DeviceIOController::fanStatusUpdated, this, [this](bool fanOff) {
         mFanOff = fanOff;
     });
+
+    connect(_deviceIO, &DeviceIOController::forceOffSystem, this, [this](bool forceOff) {
+
+        if (forceOff) {
+            emit forceOffSystem();
+
+        } else if (mSystemSetup->_mIsSystemShutoff) {
+            emit exitForceOffSystem();
+        }
+    });
+
+    connect(_deviceIO, &DeviceIOController::co2SensorStatus, this, &DeviceControllerCPP::co2SensorStatus);
 
     mTEMPERATURE_COMPENSATION_Timer.setTimerType(Qt::PreciseTimer);
     mTEMPERATURE_COMPENSATION_Timer.setInterval(1000);
@@ -259,18 +268,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         emit alert(alertLevel,
                    alertType,
                    alertMessage);
-
-        // To monitor alert type like off the system
-        switch (alertType) {
-        case AppSpecCPP::Alert_humidity_high:
-        case AppSpecCPP::Alert_humidity_low:
-        case AppSpecCPP::Alert_temp_high:
-        case AppSpecCPP::Alert_temp_low:
-            // mSystemSetup->systemMode = AppSpecCPP::SystemMode::Off;
-            break;
-        default:
-            break;
-        }
     });
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
