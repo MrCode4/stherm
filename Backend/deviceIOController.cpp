@@ -495,7 +495,7 @@ void DeviceIOController::createNRF()
     connect(m_nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
         TRACE_CHECK(false) << "NRF Response:   " << data;
         auto rxPacket = DataParser::deserializeData(data);
-        TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+        TRACE_CHECK(rxPacket.CMD != STHERM::GetTOF) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
             qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD << m_nRF_queue.size();
@@ -588,7 +588,7 @@ bool DeviceIOController::update_nRF_Firmware()
     m_nRF_queue.push(packet);
 
     auto result = processNRFQueue(STHERM::SIOCommand::GetIntoDFU);
-    TRACE_CHECK(result) << "sending get into dfu failed or waiting in queue";
+    TRACE_CHECK(!result) << "sending get into dfu failed or waiting in queue";
     return result;
 }
 
@@ -700,7 +700,7 @@ bool DeviceIOController::setFanSpeed(int speed)
     m_nRF_queue.push(packet);
 
     auto result = processNRFQueue(STHERM::SIOCommand::SetFanSpeed);
-    TRACE_CHECK(result) << "send fan speed request failed or waiting in queue";
+    TRACE_CHECK(!result) << "send fan speed request failed or waiting in queue";
     return result;
 }
 
@@ -989,6 +989,8 @@ bool DeviceIOController::processNRFQueue(STHERM::SIOCommand cause)
         TRACE_CHECK(cause != STHERM::GetTOF) << cause << " not sent, busy with previous one" << packet.CMD << m_nRF_queue.size();
         return false;
     }
+
+    TRACE_CHECK(packet.CMD != STHERM::GetTOF) << packet.CMD << "sending, caused by" << cause << m_nRF_queue.size();
 
     m_nRfConnection->setProperty("busy", true);
 
