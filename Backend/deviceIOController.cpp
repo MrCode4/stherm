@@ -537,13 +537,10 @@ void DeviceIOController::startTOFGpioHandler() {
         // m_gpioHandler5->disconnect();
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             if (data.length() == 2 && data.at(0) == '0') {
-                bool debug = false;
-                if (m_nRF_queue.empty() || m_nRF_queue.back().CMD != STHERM::SIOCommand::GetTOF) {
-                    m_nRF_queue.push(m_p->TOFPacketBA);
-                    debug = true;
-                }
+                //! we must send request for each data we receive otherwise this will be broken
+                m_nRF_queue.push(m_p->TOFPacketBA);
                 bool processed = processNRFQueue(STHERM::SIOCommand::GetTOF);
-                TRACE_CHECK(debug) << "request for gpio 5" << processed;
+                TRACE_CHECK(false) << "request for gpio 5 finished" << processed;
             }
         });
 
