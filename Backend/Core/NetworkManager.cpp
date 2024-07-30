@@ -4,7 +4,7 @@
 
 #include <QCoreApplication>
 #include <QNetworkAccessManager>
-#include<QAbstractNetworkCache>
+#include <QAbstractNetworkCache>
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>

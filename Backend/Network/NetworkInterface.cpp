@@ -48,8 +48,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
             }
 
             checkHasInternet();
-        }
-        else {
+        } else {
             if (mCheckInternetAccessTmr.isActive()) {
                 mCheckInternetAccessTmr.stop();
             }
