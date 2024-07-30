@@ -4,6 +4,7 @@
 
 #include <QCoreApplication>
 #include <QNetworkAccessManager>
+#include<QAbstractNetworkCache>
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -22,6 +23,16 @@ NetworkManager* NetworkManager::instance()
         sMe = new NetworkManager(qApp);
     }
     return sMe;
+}
+
+void NetworkManager::clearCache()
+{
+    if (mNetManager->cache()){
+        mNetManager->cache()->clear();
+    }
+
+    mNetManager->clearAccessCache();
+    mNetManager->clearConnectionCache();
 }
 
 QNetworkReply* NetworkManager::get(const QNetworkRequest& request)

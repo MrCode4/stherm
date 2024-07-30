@@ -2,9 +2,6 @@
 
 #include <QObject>
 #include <QQmlEngine>
-#include <QNetworkInterface>
-#include <QProcess>
-#include <QNetworkAccessManager>
 #include <QTimer>
 
 #include "WifiInfo.h"
@@ -147,11 +144,6 @@ private:
      * NmcliInterface::wifis
      */
     QList<WifiInfo*>&       mWifiInfos;
-
-    /*!
-     * \brief mNam QNetworkRequestManager that is used to check internet access
-     */
-    QNetworkAccessManager   mNam;
 
     /*!
      *  \brief mNamIsRunning Whether mNam is running a request
