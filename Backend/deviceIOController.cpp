@@ -1,10 +1,7 @@
 #include "deviceIOController.h"
 
 #include <QDateTime>
-#include <QFutureWatcher>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QtConcurrent/QtConcurrent>
+#include <QProcess>
 #include <ScreenSaverManager.h>
 
 #include "LogHelper.h"
