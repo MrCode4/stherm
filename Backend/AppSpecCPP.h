@@ -84,6 +84,7 @@ public:
     {
         Humidifier = 0,
         Dehumidifier,
+        ATNone
     };
     Q_ENUM(AccessoriesType)
 

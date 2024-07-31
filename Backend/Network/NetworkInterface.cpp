@@ -41,7 +41,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
         mSetNoInternetTimer.stop();
 
         // clear the cache to restore internet access faster
-        clearDNSChache();
+        clearDNSCache();
 
         auto connectedWifiInfo = connectedWifi();
         if (connectedWifiInfo) {
@@ -229,7 +229,7 @@ void NetworkInterface::checkHasInternet()
     }
 }
 
-void NetworkInterface::clearDNSChache()
+void NetworkInterface::clearDNSCache()
 {
     NetworkManager::instance()->clearCache();
 }
