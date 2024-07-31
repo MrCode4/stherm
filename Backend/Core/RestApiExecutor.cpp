@@ -2,12 +2,19 @@
 
 #include "LogHelper.h"
 
+#include <QNetworkAccessManager>
+
 RestApiExecutor::RestApiExecutor(QObject *parent)
     : HttpExecutor(parent)
 {
 }
 
 void RestApiExecutor::setApiAuth(QNetworkRequest& request) {}
+
+QString RestApiExecutor::prepareHashKey(int operation, const QString& endpoint)
+{
+    return QString("%1:%2").arg(operation).arg(endpoint);
+}
 
 QNetworkRequest RestApiExecutor::prepareApiRequest(const QString &endpoint, bool setAuth)
 {
@@ -21,11 +28,12 @@ QNetworkRequest RestApiExecutor::prepareApiRequest(const QString &endpoint, bool
 
 QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCallback callback, bool setAuth)
 {
-    if (mCallbacks.contains(endpoint)) {
+    auto key = prepareHashKey(QNetworkAccessManager::Operation::GetOperation, endpoint);
+    if (mCallbacks.contains(key)) {
         return nullptr;
     }
     else {
-        mCallbacks.insert(endpoint, callback);
+        mCallbacks.insert(key, callback);
         auto reply = get(prepareApiRequest(endpoint, setAuth));
         reply->setProperty("endpoint", endpoint);
         reply->setProperty("isJson", true);
@@ -35,11 +43,12 @@ QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCall
 
 QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth)
 {
-    if (mCallbacks.contains(endpoint)) {
+    auto key = prepareHashKey(QNetworkAccessManager::Operation::PostOperation, endpoint);
+    if (mCallbacks.contains(key)) {
         return nullptr;
     }
     else {
-        mCallbacks.insert(endpoint, callback);
+        mCallbacks.insert(key, callback);
         auto reply = post(prepareApiRequest(endpoint, setAuth), postData);
         reply->setProperty("endpoint", endpoint);
         reply->setProperty("isJson", true);
@@ -49,7 +58,8 @@ QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByte
 
 QNetworkReply* RestApiExecutor::downloadFile(const QString &url, ResponseCallback callback, bool jsonFile, bool setAuth)
 {
-    if (mCallbacks.contains(url)) {
+    auto key = prepareHashKey(QNetworkAccessManager::Operation::GetOperation, url);
+    if (mCallbacks.contains(key)) {
         return nullptr;
     }
     else {
@@ -58,7 +68,7 @@ QNetworkReply* RestApiExecutor::downloadFile(const QString &url, ResponseCallbac
         QNetworkReply *reply = get(request);
         reply->setProperty("isJson", jsonFile);
         reply->setProperty("endpoint", url);
-        mCallbacks.insert(url, callback);
+        mCallbacks.insert(key, callback);
         return reply;
     }
 }
@@ -71,7 +81,8 @@ QJsonObject RestApiExecutor::prepareJsonResponse(const QString& endpoint, const 
 void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
 {
     auto endpoint = reply->property("endpoint").toString();
-    if (!mCallbacks.contains(endpoint)) {
+    auto key = prepareHashKey(reply->operation(), endpoint);
+    if (!mCallbacks.contains(key)) {
         TRACE << "Callback not found for endpoint " << endpoint;
         return;
     }
@@ -99,7 +110,7 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
         }
     }
 
-    auto callback = mCallbacks.take(endpoint);
+    auto callback = mCallbacks.take(key);
     if (callback) {
         callback(reply, rawData, data);
     }
