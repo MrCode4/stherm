@@ -1,9 +1,9 @@
 #include "NetworkInterface.h"
 
 #include "LogHelper.h"
+#include "Core/NetworkManager.h"
 #include "Nmcli/NmcliInterface.h"
 
-#include<QAbstractNetworkCache>
 #include <QNetworkInterface>
 #include <QNetworkRequest>
 #include <QProcess>
@@ -34,38 +34,13 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(mNmcliInterface, &NmcliInterface::wifiNeedAuthentication, this,
             &NetworkInterface::incorrectWifiPassword);
 
-    //! Connecting to QNetworkAccessManager
-    connect(&mNam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
-
-        bool hasInternet = reply->error() == QNetworkReply::NoError;
-        mNamIsRunning = false;
-
-        if (hasInternet) {
-            mSetNoInternetTimer.stop();
-            setHasInternet(true);
-        } else {
-            TRACE << "check has internet has error" << mHasInternet << mSetNoInternetTimer.isActive() << reply->error();
-            // sending a sooner request when we previously had internet but we get failed
-            if (mHasInternet)
-                QTimer::singleShot(10000, this, &NetworkInterface::checkHasInternet);
-            // setting no Internet after a double time period to let the blip go away
-            if (!mSetNoInternetTimer.isActive())
-                mSetNoInternetTimer.start();
-        }
-
-        reply->deleteLater();
-    });
-
     //! Set up time for checking internet access: every 30 seconds
     mCheckInternetAccessTmr.setInterval(cCheckInternetAccessInterval);
     connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
     connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
         mSetNoInternetTimer.stop();
-        if (mNam.cache()){
-            mNam.cache()->clear();
-        }
-        mNam.clearAccessCache();
-        mNam.clearConnectionCache();
+        NetworkManager::instance()->clearCache();
+
         auto connectedWifiInfo = connectedWifi();
         if (connectedWifiInfo) {
             if (!mCheckInternetAccessTmr.isActive()) {
@@ -222,12 +197,33 @@ void NetworkInterface::checkHasInternet()
     auto connectedWifiInfo = connectedWifi();
     if (!connectedWifiInfo) {
         setHasInternet(false);
-    } else if (!mNamIsRunning) {
-        QNetworkRequest request(cCheckInternetAccessUrl);
-        request.setTransferTimeout(8000);
+    }
+    else if (!mNamIsRunning) {
         mNamIsRunning = true;
+        QNetworkRequest request(cCheckInternetAccessUrl);
+        request.setTransferTimeout(8000);                
+        auto* reply = NetworkManager::instance()->get(request);
+        connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+            bool hasInternet = reply->error() == QNetworkReply::NoError;
+            mNamIsRunning = false;
 
-        mNam.get(request);
+            if (hasInternet) {
+                mSetNoInternetTimer.stop();
+                setHasInternet(true);
+            } else {
+                TRACE << "check has internet has error" << mHasInternet << mSetNoInternetTimer.isActive() << reply->error();
+                // sending a sooner request when we previously had internet but we get failed
+                if (mHasInternet) {
+                    QTimer::singleShot(10000, this, &NetworkInterface::checkHasInternet);
+                }
+                // setting no Internet after a double time period to let the blip go away
+                if (!mSetNoInternetTimer.isActive()) {
+                    mSetNoInternetTimer.start();
+                }
+            }
+
+            reply->deleteLater();
+        });
     }
 }
 
