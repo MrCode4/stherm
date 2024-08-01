@@ -26,7 +26,7 @@ BasePageView {
         Label {
             Layout.alignment: Qt.AlignLeft
             Layout.preferredWidth: parent.width
-            text: "1. Download and install the Nuve Home application."
+            text: "1. Download and install the Nuve Home app."
             wrapMode: Text.WordWrap
         }
 
@@ -40,7 +40,7 @@ BasePageView {
         Label {
             Layout.alignment: Qt.AlignLeft
             Layout.preferredWidth: parent.width
-            text: "2. Click on “Forgot password” then enter the email address below to create a new password and log in."
+            text: "2. To recover your password, click on “Forgot password”, enter the email below, create a new password and log in."
              wrapMode: Text.WordWrap
         }
 
