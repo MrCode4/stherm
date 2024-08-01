@@ -232,11 +232,13 @@ I_DeviceController {
                 settingsPushRetry.interval = 5000;
                 settingsPush.hasSettings = false
                 settingsPush.hasAutoModeSettings = false;
+                settingsPush.hasSensorDataChanges = false;
             }
         }
 
         function onPushSuccess() {
             settingsPush.hasSettings = false;
+            settingsPush.hasSensorDataChanges = false;
             // what if we have some changes after trying to push?
             // should we compare the changes in the reply?
             editMode = AppSpec.EMNone;
@@ -267,6 +269,12 @@ I_DeviceController {
 
             if (hasAutoModeSettings)
                 pushAutoModeSettingsToServer();
+
+            // sensor true fails, in between goes false
+            if (!(hasSettings || hasSensorDataChanges || hasAutoModeSettings)) {
+                console.warn("Something odd hapenned!, restoring the flow.")
+                settingsPushRetry.failed = false;
+            }
         }
     }
 
@@ -1010,9 +1018,6 @@ I_DeviceController {
 
             settingsPush.hasSensorDataChanges = true;
             pushUpdateToServer(false);
-
-        } else {
-            settingsPush.hasSensorDataChanges = false;
         }
 
         //        console.log("--------------- End: updateInformation -------------------")

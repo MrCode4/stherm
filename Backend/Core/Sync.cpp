@@ -255,6 +255,7 @@ bool Sync::fetchSettings()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get settings!";
+        // false preventing the fetch timer to be disabled
         return false;
     }
 
@@ -297,6 +298,7 @@ bool Sync::fetchSettings()
             TRACE << "Received settings belong to another device: " + mSerialNumber + ", " + data.value("sn").toString();
         }
 
+        // emits settingsFetched to allow next fetch
         fetchAutoModeSetings();
     };
 
@@ -312,6 +314,8 @@ bool Sync::fetchAutoModeSetings()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get auto mode settings!";
+        // to preserve he flow! although this must not happen!
+        emit settingsFetched(false);
         return false;
     }
 
