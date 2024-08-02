@@ -237,6 +237,9 @@ I_DeviceController {
 
         function onPushSuccess() {
             settingsPush.hasSettings = false;
+            // what if we have some changes after trying to push?
+            // should we compare the changes in the reply?
+            editMode = AppSpec.EMNone;
         }
 
         function onPushFailed() {
@@ -289,6 +292,7 @@ I_DeviceController {
         }
     }
 
+    //! TODO deprecated we need to cease it down
     property Timer editModeTimer: Timer {
         repeat: false
         running: false
@@ -376,6 +380,8 @@ I_DeviceController {
             editModeTimer.disableFlags = editModeTimer.disableFlags & ~editMode
 
         } else { // add to current disable flags and restart timer
+            console.log("deprecated, we need to cease it down");
+
             editModeTimer.disableFlags = editModeTimer.disableFlags | editMode
             if (editModeTimer.running)
                 editModeTimer.stop();
