@@ -384,12 +384,19 @@ QtObject {
                 // Disable the adaptive brightness.
                 device.setting.adaptiveBrightness = false;
 
+                // TODO: adaptive brightness is not available for now
+                console.log("ignored Alert_Light alert: ++++++++++++++++++++++++++++++");
+                return;
+
             } break;
 
             case AppSpec.Alert_Efficiency_Issue: {
                 messageType = Message.Type.SystemAlert;
                 retriggerInterval = weeklyAlertInterval;
 
+                // TODO: outdoor can have conflict, disabled for now
+                console.log("ignored Alert_Efficiency_Issue alert: ++++++++++++++++++++++++++++++");
+                return;
             } break;
 
             default:
