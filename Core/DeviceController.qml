@@ -303,19 +303,6 @@ I_DeviceController {
         }
     }
 
-    //! TODO deprecated we need to cease it down
-    property Timer editModeTimer: Timer {
-        repeat: false
-        running: false
-        interval: 15000
-        property int disableFlags : AppSpec.EMNone;
-
-        onTriggered: {
-            root.editMode = root.editMode & ~disableFlags;
-            disableFlags = AppSpec.EMNone;
-        }
-    }
-
     /* Object Properties
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {
