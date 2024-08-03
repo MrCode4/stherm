@@ -19,6 +19,9 @@ I_DeviceController {
 
     property int editMode: AppSpec.EMNone
 
+    //! Use stageMode to handle in progress push
+    property int stageMode: AppSpec.EMNone
+
     property bool initialSetup: false;
 
     //! Air condition health
@@ -164,7 +167,7 @@ I_DeviceController {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {
-            if (!deviceControllerCPP.system.canFetchServer || settingsPush.running || settingsPushRetry.running) {
+            if (settingsPush.running || settingsPushRetry.running) {
                 console.log("We have some changes that not applied on the server.")
                 return;
             }
@@ -241,7 +244,7 @@ I_DeviceController {
             settingsPush.hasSensorDataChanges = false;
             // what if we have some changes after trying to push?
             // should we compare the changes in the reply?
-            editMode = AppSpec.EMNone;
+            stageMode = AppSpec.EMNone;
         }
 
         function onPushFailed() {
@@ -380,25 +383,13 @@ I_DeviceController {
             deviceControllerCPP.system.setIsInitialSetup(true);
     }
 
-    function updateEditMode(editMode : int, enable = true) {
-
-        if (enable) {
-            root.editMode = root.editMode | editMode; // add flag
-            // remove from disabling flags
-            editModeTimer.disableFlags = editModeTimer.disableFlags & ~editMode
-
-        } else { // add to current disable flags and restart timer
-            console.log("deprecated, we need to cease it down");
-
-            editModeTimer.disableFlags = editModeTimer.disableFlags | editMode
-            if (editModeTimer.running)
-                editModeTimer.stop();
-            editModeTimer.start();
-        }
+    function updateEditMode(editMode : int) {
+        root.editMode = root.editMode | editMode; // add flag
     }
 
     function editModeEnabled(editMode : int) {
-        return (root.editMode & editMode) !== 0;
+        return (root.editMode & editMode) !== 0 ||
+                (root.stageMode & editMode) !== 0;
     }
 
     function updateDeviceBacklight(isOn, color) : bool
@@ -628,6 +619,11 @@ I_DeviceController {
     }
 
     function pushSettings() {
+
+        // Update the stage mode and clear the edit editMode
+        // Move all edit mode flags to stage mode, so the push process is in progress
+        stageMode = stageMode | editMode;
+        editMode = AppSpec.EMNone;
         pushUpdateToServer(true);
 
         // we should not save before the app completely loaded
