@@ -496,6 +496,11 @@ void DeviceIOController::createNRF()
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
             qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD << m_nRF_queue.size();
+        else if (sent.CMD == STHERM::GetTOF)
+            m_gpioHandler5->readProcessed();
+        else if (sent.CMD == STHERM::GetSensors)
+            m_gpioHandler4->readProcessed();
+
         processNRFResponse(rxPacket, sent);
         m_nRfConnection->setProperty("busy", false);
         if (!m_nRF_queue.empty())
@@ -509,15 +514,17 @@ void DeviceIOController::createNRF()
     if (m_gpioHandler4->startConnection() ) {
         connect(m_gpioHandler4, &GpioHandler::readyRead, this, [=](QByteArray data) {
             auto time = QDateTime::currentMSecsSinceEpoch();
-            if (time - m_p->lastTimeSensors < 1000)
-                return;
-            if (data.length() == 2 && data.at(0) == '0') {
+            if (time - m_p->lastTimeSensors >= 1000 &&
+                data.length() == 2 && data.at(0) == '0') {
                 m_p->lastTimeSensors = time;
                 m_nRF_queue.push(m_p->SensorPacketBA);
                 bool processed = processNRFQueue(STHERM::SIOCommand::GetSensors);
                 TRACE_CHECK(false) << "request for gpio 4" << processed;
                 // check after tiemout if no other request sent
                 m_nRF_timer.start();
+            } else {
+                // to restore normal operation
+                m_gpioHandler4->readProcessed();
             }
         });
     } else {
@@ -537,7 +544,10 @@ void DeviceIOController::startTOFGpioHandler() {
                 //! we must send request for each data we receive otherwise this will be broken
                 m_nRF_queue.push(m_p->TOFPacketBA);
                 bool processed = processNRFQueue(STHERM::SIOCommand::GetTOF);
-                TRACE_CHECK(false) << "request for gpio 5 finished" << processed;
+                TRACE_CHECK(!processed) << "request for gpio 5 failed";
+            }  else {
+                // to restore normal operation
+                m_gpioHandler5->readProcessed();
             }
         });
 
