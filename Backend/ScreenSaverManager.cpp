@@ -186,8 +186,12 @@ void ScreenSaverManager::lockDevice(const bool& isLock) {
     mIsDeviceLocked = isLock;
 
     // to ensure screen saver will be shown after a period of time
-    if (isLock)
+    if (isLock) {
         setActive();
+
+        //! set screen to sleep immediately
+        setState(ScreenSaverManager::State::Timeout);
+    }
 }
 
 void ScreenSaverManager::triggerScreenSaverBasedOnTOF() {
