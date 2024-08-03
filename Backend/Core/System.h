@@ -151,6 +151,9 @@ public:
     Q_INVOKABLE bool installUpdateService();
 
     //! Install update service
+    Q_INVOKABLE bool installSSHPass(bool recurse = false);
+
+    //! Install update service
     Q_INVOKABLE bool installUpdate_NRF_FW_Service();
 
     //! Mount update directory

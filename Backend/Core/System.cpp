@@ -392,6 +392,75 @@ bool NUVE::System::installUpdateService()
     return true;
 }
 
+bool NUVE::System::installSSHPass(bool recurse)
+{
+    static int counter = 0;
+    if (!recurse)
+        counter = 0;
+
+    TRACE << "Check sshpass existence" << recurse << counter;
+
+    if (counter > 3)
+        return false;
+
+    counter++;
+
+#ifdef __unix__
+    auto checkExists = []()->bool {
+        QProcess process;
+        process.start("/bin/bash", {"-c", "sshpass -V"});
+        if (!process.waitForStarted())
+            return false;
+
+        if (!process.waitForFinished())
+            return false;
+
+        QByteArray result = process.readAll();
+        TRACE << process.exitCode() << process.exitStatus() << result;
+        return (process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0 && result.startsWith("sshpass"));
+    };
+
+    if (!checkExists()) {
+        QFile getsshpassRun("/usr/local/bin/getsshpass.sh");
+        if (getsshpassRun.exists())
+            getsshpassRun.remove("/usr/local/bin/getsshpass.sh");
+
+        QFile copyFile(":/Stherm/getsshpass.sh");
+        if (!copyFile.copy("/usr/local/bin/getsshpass.sh")) {
+            TRACE << "getsshpass.sh file did not updated: " << copyFile.errorString();
+            return false;
+        }
+
+        auto exitCode = QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/getsshpass.sh"});
+        if (exitCode == -1 || exitCode == -2)
+            return false;
+
+        TRACE << "getting the sshpass using getsshpass.sh";
+
+        QProcess getsshProcess;
+        getsshProcess.start("/bin/bash", {"-c", "/usr/local/bin/getsshpass.sh"});
+        if (!getsshProcess.waitForStarted())
+            return false;
+
+        if (!getsshProcess.waitForFinished())
+            return false;
+
+        QByteArray result = getsshProcess.readAll();
+
+        exitCode = getsshProcess.exitCode();
+        TRACE << "getsshpass.sh file exec: " << exitCode << getsshProcess.exitStatus() << result;
+        if (exitCode != 0)
+            return false;
+
+        TRACE << "Check sshpass existence again";
+
+        return installSSHPass(true);
+    }
+#endif
+
+    return true;
+}
+
 bool NUVE::System::updateServiceState(const QString& serviceName, const bool& run)
 {
 #ifdef __unix__
