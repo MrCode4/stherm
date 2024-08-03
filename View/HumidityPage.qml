@@ -27,8 +27,6 @@ BasePageView {
 
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMRequestedHumidity);
 
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMRequestedHumidity, false);
-
     /* Children
      * ****************************************************************************************/
     //! Confirm button

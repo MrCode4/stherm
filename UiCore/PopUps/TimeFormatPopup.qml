@@ -24,7 +24,6 @@ I_PopUp {
     title: "24H / 12H"
 
     onOpened: uiSession.deviceController.updateEditMode(AppSpec.EMSettings);
-    onClosed: uiSession.deviceController.updateEditMode(AppSpec.EMSettings, false);
 
     /* Children
      * ****************************************************************************************/

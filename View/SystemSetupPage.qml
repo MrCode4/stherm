@@ -22,7 +22,6 @@ BasePageView {
 
     Component.onDestruction: {
         deviceController.pushSettings();
-        deviceController.updateEditMode(AppSpec.EMSystemSetup, false);
     }
 
     /* Children

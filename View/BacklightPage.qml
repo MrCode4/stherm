@@ -286,6 +286,5 @@ BasePageView {
             backlight.on !== _backlightOnOffSw.checked) {
             revertToModel();
         }
-        deviceController.updateEditMode(AppSpec.EMBacklight, false);
     }
 }

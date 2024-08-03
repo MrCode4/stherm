@@ -40,8 +40,6 @@ BasePageView {
 
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
 
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMVacation, false);
-
     /* Children
      * ****************************************************************************************/
     //! Confirm icon

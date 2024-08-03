@@ -24,8 +24,6 @@ BasePageView {
 
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSystemMode);
 
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMSystemMode, false);
-
     /* Children
      * ****************************************************************************************/
     //! Make buttons mutually-exclusive

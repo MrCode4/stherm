@@ -25,7 +25,6 @@ I_PopUp {
 
 
     onOpened: uiSession.deviceController.updateEditMode(AppSpec.EMSettings);
-    onClosed: uiSession.deviceController.updateEditMode(AppSpec.EMSettings, false);
 
     /* Children
      * ****************************************************************************************/

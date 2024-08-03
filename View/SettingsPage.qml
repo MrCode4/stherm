@@ -364,8 +364,6 @@ BasePageView {
     }
 
     Component.onDestruction: {
-        deviceController.updateEditMode(AppSpec.EMSettings, false);
-
         if (setting) {
             if (setting.brightness !== internal.copyOfSettings.brightness
                     || setting.adaptiveBrightness !== internal.copyOfSettings.adaptiveBrightness

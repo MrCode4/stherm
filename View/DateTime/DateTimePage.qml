@@ -29,8 +29,6 @@ BasePageView {
     Component.onDestruction: {
         if (sendToServer)
             deviceController.pushSettings();
-
-        deviceController.updateEditMode(AppSpec.EMDateTime, false);
     }
 
     /* Children
