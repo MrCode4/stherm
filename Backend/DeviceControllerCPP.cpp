@@ -754,9 +754,9 @@ void DeviceControllerCPP::checkContractorInfo()
     m_system->fetchContractorInfo();
 }
 
-void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
+void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings)
 {
-    m_system->pushSettingsToServer(settings, hasSettingsChanged);
+    m_system->pushSettingsToServer(settings);
 }
 
 void DeviceControllerCPP::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)

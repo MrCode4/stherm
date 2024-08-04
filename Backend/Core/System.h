@@ -87,7 +87,7 @@ public:
 
     Q_INVOKABLE void fetchBackdoorInformation();
 
-    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
 
     Q_INVOKABLE void exitManualMode();
 
@@ -286,9 +286,6 @@ private:
     //! Check and prepare the system to start download process.
     void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false,
                                        const bool isResetVersion = false, const bool isFWServerVersion = false);
-
-    //! Check the pushing progress and start the fetch timer.
-    void startFetchActiveTimer();
 
     bool installSystemCtlRestartService();
 

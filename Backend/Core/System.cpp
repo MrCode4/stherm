@@ -41,9 +41,6 @@ const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 
-const char* m_pushMainSettings     = "pushMainSettings";
-const char* m_pushAutoModeSettings = "pushAutoModeSettings";
-
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
@@ -136,17 +133,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
     connect(mSync, &NUVE::Sync::testModeStarted, this, &NUVE::System::testModeStarted);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
-        setProperty(m_pushMainSettings, false);
-
-        startFetchActiveTimer();
         emit pushSuccess();
     });
 
     connect(mSync, &NUVE::Sync::autoModePush, this, [this](bool isSuccess) {
-        setProperty(m_pushAutoModeSettings, false); // this allows to fetch data when auto mode finishes fail or success
-
-        startFetchActiveTimer();
-
         emit autoModePush(isSuccess);
     });
 
@@ -245,17 +235,6 @@ NUVE::System::~System()
 }
 
 bool NUVE::System::areSettingsFetched() const {return mAreSettingsFetched;}
-
-void NUVE::System::startFetchActiveTimer()
-{
-    if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
-        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
-    else
-        TRACE_CHECK(false) << "Can not start fetch timer, main settings pushing: "
-                           << property(m_pushMainSettings).toBool()
-                           << "Auto mode settings pushing: "
-                           <<property(m_pushAutoModeSettings).toBool();
-}
 
 bool NUVE::System::installSystemCtlRestartService()
 {
@@ -719,15 +698,13 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     }
 }
 
-void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
+void NUVE::System::pushSettingsToServer(const QVariantMap &settings)
 {
-    setProperty(m_pushMainSettings, hasSettingsChanged);
     mSync->pushSettingsToServer(settings);
 }
 
 void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
 {
-    setProperty(m_pushAutoModeSettings, true);
     mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
 
