@@ -93,10 +93,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
     connect(mSync, &NUVE::Sync::contractorInfoReady, this, &NUVE::System::contractorInfoReady);
 
-    connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
-            setCanFetchServer(true);
-    });
-
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
         if (!mIsNightModeRunning)
             fetchUpdateInformation(true);
@@ -725,34 +721,12 @@ void NUVE::System::wifiConnected(bool hasInternet) {
 
 void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
 {
-    // if timer running and hasSettingsChanged stop to prevent canFetchServer issues
-    if (mFetchActiveTimer.isActive() && hasSettingsChanged) {
-        mFetchActiveTimer.stop();
-    }
-
-    // set when settings changed or no timer is active! otherwise let the timer do the job!
-    if (!mFetchActiveTimer.isActive() || hasSettingsChanged){
-        setCanFetchServer(!hasSettingsChanged);
-    }
-
     setProperty(m_pushMainSettings, hasSettingsChanged);
     mSync->pushSettingsToServer(settings);
 }
 
 void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
 {
-    // if timer running and hasSettingsChanged stop to prevent canFetchServer issues
-    if (mFetchActiveTimer.isActive()) {
-        mFetchActiveTimer.stop();
-    }
-
-    // set when settings changed or no timer is active! otherwise let the timer do the job!
-    if (!mFetchActiveTimer.isActive()){
-        setCanFetchServer(false);
-    } else {
-        TRACE << "can fetch server did not set to false";
-    }
-
     setProperty(m_pushAutoModeSettings, true);
     mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
@@ -805,20 +779,6 @@ void NUVE::System::exitManualMode()
 bool NUVE::System::isFWServerUpdate()
 {
     return mStartedWithFWServerUpdate;
-}
-
-void NUVE::System::setCanFetchServer(bool canFetch)
-{
-    if (mCanFetchServer == canFetch)
-        return;
-
-    mCanFetchServer = canFetch;
-    emit canFetchServerChanged();
-}
-
-bool NUVE::System::canFetchServer()
-{
-    return mCanFetchServer;
 }
 
 QVariantMap NUVE::System::getContractorInfo() const
@@ -1611,10 +1571,7 @@ void NUVE::System::stopDevice()
 
 bool NUVE::System::fetchSettings()
 {
-    if (mCanFetchServer) {
-        return mSync->fetchSettings();
-    }
-    return false;
+    return mSync->fetchSettings();
 }
 
 QString NUVE::System::findLatestVersion(QJsonObject updateJson) {

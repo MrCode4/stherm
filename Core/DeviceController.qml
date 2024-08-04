@@ -227,18 +227,6 @@ I_DeviceController {
             }
         }
 
-        function onCanFetchServerChanged() {
-            if (deviceControllerCPP.system.canFetchServer) {
-                console.log("onCanFetchServerChanged: Reset the push parameters, values before reset: ",
-                            settingsPush.hasSettings, settingsPush.hasAutoModeSettings);
-                settingsPushRetry.failed = false;
-                settingsPushRetry.interval = 5000;
-                settingsPush.hasSettings = false
-                settingsPush.hasAutoModeSettings = false;
-                settingsPush.hasSensorDataChanges = false;
-            }
-        }
-
         function onPushSuccess() {
             settingsPush.hasSettings = false;
             settingsPush.hasSensorDataChanges = false;
