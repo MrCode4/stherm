@@ -22,6 +22,7 @@ BasePageView {
      * ****************************************************************************************/
     title: "System Mode"
 
+    // Check
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSystemMode);
 
     /* Children

@@ -70,6 +70,7 @@ BasePageView {
 
         onClicked: {
             if (applyToModel() || hasChange) {
+                deviceController.updateEditMode(AppSpec.EMSettings);
                 deviceController.pushSettings();
             } else {
                 console.log("model did not pushed")
@@ -348,6 +349,7 @@ BasePageView {
                                              AppSpec.defaultVolume,
                                              AppSpec.TempratureUnit.Fah,
                                              false, true, true)) {
+                    deviceController.updateEditMode(AppSpec.EMSettings);
                     deviceController.pushSettings()
                     makeCopyOfSettings()
                 } else {
@@ -358,8 +360,6 @@ BasePageView {
     }
 
     Component.onCompleted: {
-        deviceController.updateEditMode(AppSpec.EMSettings);
-
         makeCopyOfSettings();
     }
 

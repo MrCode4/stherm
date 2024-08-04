@@ -23,8 +23,6 @@ I_PopUp {
     leftPadding: 24; rightPadding: 24
     title: "24H / 12H"
 
-    onOpened: uiSession.deviceController.updateEditMode(AppSpec.EMSettings);
-
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
@@ -60,6 +58,7 @@ I_PopUp {
                     }
                 }
 
+                uiSession.deviceController.updateEditMode(AppSpec.EMSettings);
                 uiSession.deviceController.pushSettings();
 
                 delayedClose.start();

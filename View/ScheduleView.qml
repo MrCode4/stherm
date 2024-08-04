@@ -19,6 +19,7 @@ BasePageView {
      * ****************************************************************************************/
     title: "Schedule"
 
+    // Check
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSchedule);
 
     /* Children

@@ -86,6 +86,7 @@ BasePageView {
 
             onClicked: {
                 applyToModel();
+                deviceController.updateEditMode(AppSpec.EMBacklight);
                 deviceController.pushSettings();
                 goBack();
             }
@@ -273,7 +274,6 @@ BasePageView {
     }
 
     Component.onCompleted: {
-        deviceController.updateEditMode(AppSpec.EMBacklight);
         if (backlight) {
             setCurrentColor(backlight.shadeIndex);
         }

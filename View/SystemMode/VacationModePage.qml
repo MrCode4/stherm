@@ -38,8 +38,6 @@ BasePageView {
         }
     }
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
-
     /* Children
      * ****************************************************************************************/
     //! Confirm icon
@@ -64,6 +62,7 @@ BasePageView {
                                              _humSlider.first.value, _humSlider.second.value);
             }
 
+            deviceController.updateEditMode(AppSpec.EMVacation);
             deviceController.pushSettings();
 
             saved();

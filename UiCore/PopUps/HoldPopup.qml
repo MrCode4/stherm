@@ -21,8 +21,6 @@ Popup {
     //! App model
     property I_Device   device: uiSession.appModel
 
-    onOpened: deviceController.updateEditMode(AppSpec.EMHold);
-
     /* Object properties
      * ****************************************************************************************/
     horizontalPadding: 96
@@ -69,6 +67,7 @@ Popup {
             onCheckedChanged: {
                 if (device && deviceController && device.isHold !== checked) {
                     deviceController.updateHold(checked)
+                    deviceController.updateEditMode(AppSpec.EMHold);
                     deviceController.pushSettings();
                 }
             }

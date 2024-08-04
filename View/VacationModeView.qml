@@ -40,6 +40,7 @@ Popup {
         }
     }
 
+    // Check
     onOpened: deviceController.updateEditMode(AppSpec.EMVacation, !uiSessionId.showMainWindow);
 
     Material.theme: Material.Dark

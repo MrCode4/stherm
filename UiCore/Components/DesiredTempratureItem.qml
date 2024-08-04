@@ -47,7 +47,7 @@ Control {
     readonly property alias     labelWidth: rightTempLabel.width
 
     onDraggingChanged: {
-        if (dragging)
+        if (!dragging)
             deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
     }
 

@@ -25,8 +25,6 @@ BasePageView {
      * ****************************************************************************************/
     title: "Humidity Control"
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMRequestedHumidity);
-
     /* Children
      * ****************************************************************************************/
     //! Confirm button
@@ -41,6 +39,7 @@ BasePageView {
                 deviceController.setRequestedHumidity(humidity)
             }
 
+            deviceController.updateEditMode(AppSpec.EMRequestedHumidity);
             deviceController.pushSettings();
 
             //! Also move out of this Page
