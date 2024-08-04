@@ -227,6 +227,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         }
     });
 
+    //! copies the sshpass from /usr/local/bin/ to /usr/bin
+    //! if the first one exists and second one not exists
+    //! installs from server if either not exists
     if (!has_sshPass()) {
         TRACE << "sshpass was not in /usr/bin";
         QFile sshpass_local("/usr/local/bin/sshpass");
@@ -237,6 +240,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             TRACE_CHECK(!success) << "failed to copy sshpass";
         } else {
             TRACE << "sshpass is not in /usr/local/bin either";
+            installSSHPass();
         }
     }
 
@@ -406,6 +410,7 @@ bool NUVE::System::installSSHPass(bool recurse)
     counter++;
 
 #ifdef __unix__
+    // this helps validating the existence as well as workable version of sshPass
     auto checkExists = []()->bool {
         QProcess process;
         process.start("/bin/bash", {"-c", "sshpass -V"});

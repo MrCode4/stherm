@@ -128,6 +128,7 @@ public:
 
     bool testMode();
 
+    //! checks only existance of the sshpass file in /usr/bin
     bool has_sshPass();
 
     /*!
@@ -150,7 +151,9 @@ public:
     //! Install update service
     Q_INVOKABLE bool installUpdateService();
 
-    //! Install update service
+    //! Install sshpass if not exits or not working,
+    //! returns false if not success
+    //! returns true on windows
     Q_INVOKABLE bool installSSHPass(bool recurse = false);
 
     //! Install update service
