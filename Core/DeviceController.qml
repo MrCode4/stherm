@@ -242,9 +242,10 @@ I_DeviceController {
     }
 
     property Timer  settingsPush: Timer {
-        repeat: false;
-        running: false;
-        interval: 100;
+        repeat: running
+        running: (root.editMode & AppSpec.EMNone) !== AppSpec.EMNone ||
+                 (root.stageMode & AppSpec.EMNone) !== AppSpec.EMNone
+        interval: 500;
 
         property bool hasSensorDataChanges : false
 
@@ -252,17 +253,19 @@ I_DeviceController {
         property bool hasAutoModeSettings : false
 
         onTriggered: {
-            console.log("DeviceController.qml: Push to server with: ", "hasSensorDataChanges: ", hasSensorDataChanges,
-                        ", hasSettings: ", hasSettings, ", hasAutoModeSettings: ", hasAutoModeSettings);
+            console.log("DeviceController.qml: Push to server with: ",
+                        ", editMode: ", root.editMode,
+                        ", stageMode: ", root.stageMode);
 
-            if (hasSettings || hasSensorDataChanges)
+//            if (hasSettings || hasSensorDataChanges)
                 pushToServer();
 
-            if (hasAutoModeSettings)
+            if ((root.editMode & AppSpec.EMAutoMode) !== AppSpec.EMAutoMode)
                 pushAutoModeSettingsToServer();
 
             // sensor true fails, in between goes false
-            if (!(hasSettings || hasSensorDataChanges || hasAutoModeSettings)) {
+            if ((root.editMode & AppSpec.EMNone) === AppSpec.EMNone &&
+                    (root.stageMode & AppSpec.EMNone) === AppSpec.EMNone) {
                 console.warn("Something odd hapenned!, restoring the flow.")
                 settingsPushRetry.failed = false;
             }
@@ -277,7 +280,7 @@ I_DeviceController {
         property bool failed: false
 
         onTriggered: {
-            settingsPush.start();
+//            settingsPush.start();
         }
     }
 
@@ -359,12 +362,16 @@ I_DeviceController {
     }
 
     function updateEditMode(editMode : int) {
-        root.editMode = root.editMode | editMode; // add flag
+        console.log("DeviceController.qml: Push to server with --- 15: ", (root.editMode))
+        root.editMode &= ~(AppSpec.EMNone);
+         console.log("DeviceController.qml: Push to server with --- 15.1: ", root.editMode)
+        root.editMode |= editMode; // add flag
+        console.log("DeviceController.qml: Push to server with --- 16: ", root.editMode)
     }
 
     function editModeEnabled(editMode : int) {
-        return (root.editMode & editMode) !== 0 ||
-                (root.stageMode & editMode) !== 0;
+        return (root.editMode & editMode) !== editMode ||
+                (root.stageMode & editMode) !== editMode;
     }
 
     function updateDeviceBacklight(isOn, color) : bool
@@ -583,12 +590,11 @@ I_DeviceController {
             return;
         }
 
-        settingsPush.start()
+//        settingsPush.start()
     }
 
     //! Push auto settings to server
     function pushAutoModeSettings() {
-        console.log("DeviceController.qml: pushAutoModeSettings");
         settingsPush.hasAutoModeSettings = true;
         pushUpdateToServer(false); // this should be false to prevent excess calling of regular push
     }
@@ -597,6 +603,7 @@ I_DeviceController {
 
         // Update the stage mode and clear the edit editMode
         // Move all edit mode flags to stage mode, so the push process is in progress
+        stageMode &= ~(AppSpec.EMNone);
         stageMode = stageMode | editMode;
         editMode = AppSpec.EMNone;
         pushUpdateToServer(true);
