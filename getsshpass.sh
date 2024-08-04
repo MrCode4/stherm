@@ -21,16 +21,25 @@ echo "Downloading sshpass in $destDir"
 
 wget http://fileserver.nuvehvac.com/files/sshpass-1.05-2-armv7h.pkg.tar.xz
 
-echo "uncomressing sshpass-1.05-2-armv7h.pkg.tar.xz in $destDir"
+if [ -f "sshpass-1.05-2-armv7h.pkg.tar.xz" ]; then
+    echo "uncomressing sshpass-1.05-2-armv7h.pkg.tar.xz in $destDir"
+    tar -xvf "sshpass-1.05-2-armv7h.pkg.tar.xz"
 
-tar -xvf "sshpass-1.05-2-armv7h.pkg.tar.xz"
+    if [ -f "usr/bin/sshpass" ]; then
+        echo "applying access rules"
+        cd "usr/bin"
+        chmod +x "sshpass"
 
-echo "applying access rules"
-cd "usr/bin"
-chmod +x "sshpass"
+        echo "copying sshpass to /usr/bin"
+        cp "sshpass" "/usr/bin/sshpass"
+    else
+        echo "err: sshpass not exists in $destDir/usr/bin"
+    fi
 
-echo "copying sshpass to /usr/bin"
-cp "sshpass" "/usr/bin/sshpass"
+else
+    echo "err: sshpass-1.05-2-armv7h.pkg.tar.xz does not exists in $destDir"
+fi
+
 
 echo "cleaning up"
 cd "$sourceDir"
