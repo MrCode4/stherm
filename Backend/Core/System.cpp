@@ -229,7 +229,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
     //! copies the sshpass from /usr/local/bin/ to /usr/bin
     //! if the first one exists and second one not exists
-    //! installs from server if either not exists
+    //! will be installed from server when needed if either not exists
     if (!has_sshPass()) {
         TRACE << "sshpass was not in /usr/bin";
         QFile sshpass_local("/usr/local/bin/sshpass");
@@ -239,8 +239,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             TRACE_CHECK(success) << "copy sshpass successfuly";
             TRACE_CHECK(!success) << "failed to copy sshpass";
         } else {
-            TRACE << "sshpass is not in /usr/local/bin either";
-            installSSHPass();
+            TRACE << "sshpass is not in /usr/local/bin either, will be installed on first use";
         }
     }
 
@@ -454,10 +453,8 @@ bool NUVE::System::installSSHPass(bool recurse)
 
         exitCode = getsshProcess.exitCode();
         TRACE << "getsshpass.sh file exec: " << exitCode << getsshProcess.exitStatus() << result;
-        if (exitCode != 0)
+        if (exitCode < 0)
             return false;
-
-        TRACE << "Check sshpass existence again";
 
         return installSSHPass(true);
     }
@@ -1352,10 +1349,17 @@ void NUVE::System::onSerialNumberReady()
 
 void NUVE::System::createLogDirectoryOnServer()
 {
+    if (!installSSHPass()){
+        QString error("Device is not ready to send log!");
+        qWarning() << error;
+        emit alert(error);
+        return;
+    }
+
     auto sn = serialNumber();
     // Check serial number
     if (sn.isEmpty()){
-        QString error("Serial number empty! can not create log folder!");
+        QString error("Serial number empty! can not send log!");
         qWarning() << error;
         emit alert(error);
         return;
@@ -1366,7 +1370,7 @@ void NUVE::System::createLogDirectoryOnServer()
         tryCount++;
         mLogSender.setProperty("tryCount", tryCount);
     } else {
-        QString error("Can not create log folder! Try again later.");
+        QString error("Can not send log! Try again later.");
         qWarning() << error;
         emit alert(error);
         tryCount = 0; // reset the counter for next time!

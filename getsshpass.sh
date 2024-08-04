@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# exit with 1: restart
-#           0: success, stop the service
+# exit with 1, 2: restart
+#              0: success, stop the service
 
 # Set source and destination directories from arguments
 sourceDir="/usr/local/bin"
 destDir="sshpass_dl"
+exitCode=0
 
 # Display source and destination directories
 echo "Source directory: $sourceDir"
@@ -34,10 +35,12 @@ if [ -f "sshpass-1.05-2-armv7h.pkg.tar.xz" ]; then
         cp "sshpass" "/usr/bin/sshpass"
     else
         echo "err: sshpass not exists in $destDir/usr/bin"
+        exitCode=2
     fi
 
 else
     echo "err: sshpass-1.05-2-armv7h.pkg.tar.xz does not exists in $destDir"
+    exitCode=1
 fi
 
 
@@ -45,5 +48,5 @@ echo "cleaning up"
 cd "$sourceDir"
 rm -rf "$destDir"
 
-echo "Exit with success code"
-exit 0
+echo "Exit with code $exitCode, 0 means success, positive value has error and needs retry"
+exit $exitCode
