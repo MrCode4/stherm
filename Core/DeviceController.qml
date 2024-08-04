@@ -167,7 +167,7 @@ I_DeviceController {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {
-            if (settingsPush.running || settingsPushRetry.running) {
+            if (settingsPush.isPushing) {
                 console.log("We have some changes that not applied on the server.")
                 return;
             }
@@ -219,68 +219,74 @@ I_DeviceController {
 
         //! Update the auto mode settings with the fetch signal.
         function onAutoModePush(isSuccess: bool) {
-            console.log("onAutoModePush, isSuccess: ", isSuccess);
-            settingsPush.hasAutoModeSettings = !isSuccess;
+            console.log("DeviceController.qml: push onAutoModePush, isSuccess: ", isSuccess);
 
-            if (!isSuccess) {
-                managePushFailure();
+            if (isSuccess && root.stageMode  === AppSpec.EMAutoMode) {
+                stageMode = AppSpec.EMNone;
+
+            } else if (isSuccess) {
+                stageMode = ~(AppSpec.EMAutoMode);
             }
+
+            pushSettings();
+            settingsPush.isPushing = false;
         }
 
         function onPushSuccess() {
-            settingsPush.hasSettings = false;
-            settingsPush.hasSensorDataChanges = false;
             // what if we have some changes after trying to push?
             // should we compare the changes in the reply?
-            stageMode = AppSpec.EMNone;
+            if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
+                stageMode = AppSpec.EMAutoMode;
+
+            } else {
+                stageMode = AppSpec.EMNone;
+            }
+
+            console.log("DeviceController.qml: Push onPushSuccess")
+
+            pushSettings();
+            settingsPush.isPushing = false;
         }
 
         function onPushFailed() {
-            managePushFailure();
+            console.log("DeviceController.qml: Push onPushFailed")
+            pushSettings();
+            settingsPush.isPushing = false;
+            // managePushFailure();
         }
 
     }
 
     property Timer  settingsPush: Timer {
         repeat: running
-        running: (root.editMode & AppSpec.EMNone) !== AppSpec.EMNone ||
-                 (root.stageMode & AppSpec.EMNone) !== AppSpec.EMNone
+        running: (root.editMode !== AppSpec.EMNone) ||
+                 (root.stageMode !== AppSpec.EMNone) && !isPushing
         interval: 500;
 
-        property bool hasSensorDataChanges : false
-
-        property bool hasSettings : false
+        property bool isPushing : false
         property bool hasAutoModeSettings : false
 
         onTriggered: {
-            console.log("DeviceController.qml: Push to server with: ",
+
+            console.log("DeviceController.qml: Push, settingsPush timer: ",
                         ", editMode: ", root.editMode,
                         ", stageMode: ", root.stageMode);
 
-//            if (hasSettings || hasSensorDataChanges)
+            if (root.stageMode !== AppSpec.EMAutoMode && root.stageMode !== AppSpec.EMNone) {
+                isPushing = true;
                 pushToServer();
+            }
 
-            if ((root.editMode & AppSpec.EMAutoMode) !== AppSpec.EMAutoMode)
+            if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
+                isPushing = true;
                 pushAutoModeSettingsToServer();
+            }
 
             // sensor true fails, in between goes false
-            if ((root.editMode & AppSpec.EMNone) === AppSpec.EMNone &&
-                    (root.stageMode & AppSpec.EMNone) === AppSpec.EMNone) {
+            if (root.editMode === AppSpec.EMNone &&
+                    root.stageMode === AppSpec.EMNone) {
                 console.warn("Something odd hapenned!, restoring the flow.")
-                settingsPushRetry.failed = false;
             }
-        }
-    }
-
-    property Timer  settingsPushRetry: Timer {
-        repeat: false;
-        running: false;
-        interval: 5000;
-
-        property bool failed: false
-
-        onTriggered: {
-//            settingsPush.start();
         }
     }
 
@@ -370,7 +376,7 @@ I_DeviceController {
     }
 
     function editModeEnabled(editMode : int) {
-        return (root.editMode & editMode) !== editMode ||
+        return (root.editMode & editMode) !== editMode &&
                 (root.stageMode & editMode) !== editMode;
     }
 
@@ -573,9 +579,7 @@ I_DeviceController {
         return true;
     }
 
-    function pushUpdateToServer(settings: bool) {
-        if (settings)
-            settingsPush.hasSettings = true
+    function pushUpdateToServer() {
 
         // we should not push before we fetch at least once successfully
         if (settingsPush.running || !deviceControllerCPP.system.fetchSuccessOnce) {
@@ -583,30 +587,27 @@ I_DeviceController {
             return;
         }
 
-        if (settingsPushRetry.running)
-            settingsPushRetry.stop();
-        else if (settingsPushRetry.failed){ // cm
-            console.log("did not pushed as retrying had no reponse yet");
-            return;
-        }
+        // if (settingsPushRetry.running)
+        //     settingsPushRetry.stop();
+        // else if (settingsPushRetry.failed){ // cm
+        //     console.log("did not pushed as retrying had no reponse yet");
+        //     return;
+        // }
 
 //        settingsPush.start()
     }
 
-    //! Push auto settings to server
-    function pushAutoModeSettings() {
-        settingsPush.hasAutoModeSettings = true;
-        pushUpdateToServer(false); // this should be false to prevent excess calling of regular push
-    }
-
     function pushSettings() {
+
+        if (editMode === AppSpec.EMNone) {
+            return;
+        }
 
         // Update the stage mode and clear the edit editMode
         // Move all edit mode flags to stage mode, so the push process is in progress
         stageMode &= ~(AppSpec.EMNone);
         stageMode = stageMode | editMode;
         editMode = AppSpec.EMNone;
-        pushUpdateToServer(true);
 
         // we should not save before the app completely loaded
         if (uiSession && uiSession.currentFile.length > 0)
@@ -662,6 +663,7 @@ I_DeviceController {
     }
 
     function pushToServer() {
+        console.log("DeviceController.qml: Push to server with : pushToServer")
         var send_data = {
             "temp": device.requestedTemp,
             "humidity": device.requestedHum,
@@ -760,7 +762,7 @@ I_DeviceController {
                                         })
                                 })
 
-        deviceControllerCPP.pushSettingsToServer(send_data, settingsPush.hasSettings)
+        deviceControllerCPP.pushSettingsToServer(send_data)
     }
 
     function checkQRurl(url: var) {
@@ -1133,15 +1135,15 @@ I_DeviceController {
     }
 
     function managePushFailure() {
-        if (settingsPushRetry.failed) {
-            settingsPushRetry.interval = settingsPushRetry.interval *2;
-            if (settingsPushRetry.interval > 60000)
-                settingsPushRetry.interval = 60000;
-        } else {
-            settingsPushRetry.failed = true;
-        }
+        // if (settingsPushRetry.failed) {
+        //     settingsPushRetry.interval = settingsPushRetry.interval *2;
+        //     if (settingsPushRetry.interval > 60000)
+        //         settingsPushRetry.interval = 60000;
+        // } else {
+        //     settingsPushRetry.failed = true;
+        // }
 
-        settingsPushRetry.start()
+        // settingsPushRetry.start()
     }
 
     //! Lock/unlock the application
