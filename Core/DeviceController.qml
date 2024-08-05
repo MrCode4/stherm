@@ -285,10 +285,12 @@ I_DeviceController {
 
             // Start push process if stage mode is available
             if (root.stageMode !== AppSpec.EMAutoMode && root.stageMode !== AppSpec.EMNone) {
+                // what if we have an internal crash?
                 pushToServer();
             }
             // maybe need some delay here between two pushes!
             //! else to prevent calling together and ensure some delay
+            //! this can be delayed too much if never push success or too much edits?
             else if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
                 pushAutoModeSettingsToServer();
             } else {
