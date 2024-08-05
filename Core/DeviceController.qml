@@ -576,24 +576,6 @@ I_DeviceController {
         return true;
     }
 
-    function pushUpdateToServer() {
-
-        // we should not push before we fetch at least once successfully
-        if (settingsPush.running || !deviceControllerCPP.system.fetchSuccessOnce) {
-            console.log("DeviceController.qml: pushUpdateToServer: ", settingsPush.running, !deviceControllerCPP.system.fetchSuccessOnce);
-            return;
-        }
-
-        // if (settingsPushRetry.running)
-        //     settingsPushRetry.stop();
-        // else if (settingsPushRetry.failed){ // cm
-        //     console.log("did not pushed as retrying had no reponse yet");
-        //     return;
-        // }
-
-//        settingsPush.start()
-    }
-
     function pushSettings() {
 
         if (editMode === AppSpec.EMNone) {
@@ -946,20 +928,6 @@ I_DeviceController {
 
     }
 
-    //! Control the push to server with the updateInformation().
-    property int _pushUpdateInformationCounter: 0
-
-    //! Reset the _pushUpdateInformationCounter
-    property Timer _pushUpdateInformationTimer: Timer {
-        repeat: true
-        running: true
-        interval: 60000
-
-        onTriggered: {
-            _pushUpdateInformationCounter = 0;
-        }
-    }
-
     //! Read data from system with getMainData method.
     function updateInformation()
     {
@@ -990,11 +958,8 @@ I_DeviceController {
 
         //        device.fan.mode?
 
-        if (isNeedToPushToServer && _pushUpdateInformationCounter < 5) {
-            _pushUpdateInformationCounter++;
-
-            settingsPush.hasSensorDataChanges = true;
-            pushUpdateToServer(false);
+        if (isNeedToPushToServer) {
+            deviceController.updateEditMode(AppSpec.EMSensorValues);
         }
 
         //        console.log("--------------- End: updateInformation -------------------")
@@ -1002,7 +967,6 @@ I_DeviceController {
 
     function updateHoldServer(isHold)
     {
-
         if (editModeEnabled(AppSpec.EMHold)) {
             console.log("The hold page is being edited and cannot be updated by the server.")
             return;
@@ -1127,18 +1091,6 @@ I_DeviceController {
         console.log("forgetDevice: remove file in ", uiSession.configFilePath, ": ", QSFileIO.removeFile(uiSession.configFilePath));
 
         deviceControllerCPP.forgetDevice();
-    }
-
-    function managePushFailure() {
-        // if (settingsPushRetry.failed) {
-        //     settingsPushRetry.interval = settingsPushRetry.interval *2;
-        //     if (settingsPushRetry.interval > 60000)
-        //         settingsPushRetry.interval = 60000;
-        // } else {
-        //     settingsPushRetry.failed = true;
-        // }
-
-        // settingsPushRetry.start()
     }
 
     //! Lock/unlock the application

@@ -127,7 +127,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
 
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, [this](const QVariantMap& settings, bool isValid) {
-        setProperty("hasFetchSuccessOnce", true);
         emit autoModeSettingsReady(settings, isValid);
     });
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
@@ -854,11 +853,6 @@ void NUVE::System::forgetDevice()
     settings.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
 
     mSync->forgetDevice();
-}
-
-bool NUVE::System::hasFetchSuccessOnce() const
-{
-    return property("hasFetchSuccessOnce").toBool();
 }
 
 void NUVE::System::setNightModeRunning(const bool running) {

@@ -31,8 +31,6 @@ class System : public RestApiExecutor
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
-    Q_PROPERTY(bool fetchSuccessOnce   READ hasFetchSuccessOnce  CONSTANT FINAL)
-
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
@@ -182,8 +180,6 @@ public:
 
     //! Forget device settings and sync settings
     Q_INVOKABLE void forgetDevice();
-
-    bool hasFetchSuccessOnce() const;
 
     //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);
