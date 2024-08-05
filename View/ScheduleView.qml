@@ -19,9 +19,6 @@ BasePageView {
      * ****************************************************************************************/
     title: "Schedule"
 
-    // Check
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSchedule);
-
     /* Children
      * ****************************************************************************************/
     //! Add schedule button -> add it to header
