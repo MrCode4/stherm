@@ -496,6 +496,8 @@ I_DeviceController {
             //! TODo required actions if any
 
             device.systemSetup.systemMode = systemMode;
+            deviceController.updateEditMode(AppSpec.EMSystemMode);
+            // to let all dependant parameters being updated and save all
             Qt.callLater(pushSettings);
         }
     }
