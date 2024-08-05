@@ -900,12 +900,14 @@ I_DeviceController {
     }
 
     function checkSensors(sensors: var) {
+        sensors.forEach(sensor => console.log(sensor.location, sensor.name, sensor.type, sensor.uid, sensor.locationsd))
+
         if (editModeEnabled(AppSpec.EMSensors)) {
             console.log("The sensors are being edited and cannot be updated by the server.")
             return;
         }
 
-        sensors.forEach(sensor => console.log(sensor.location, sensor.name, sensor.type, sensor.uid, sensor.locationsd))
+        //! \TODO: add the logic when ready
     }
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
