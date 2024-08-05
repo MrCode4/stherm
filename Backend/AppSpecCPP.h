@@ -139,6 +139,7 @@ public:
         EMSystemMode         = 1 << 10,
         EMDateTime           = 1 << 11,
         EMAutoMode           = 1 << 12,
+        EMSensorValues       = 1 << 13,
     };
     Q_ENUM(EditMode)
 
