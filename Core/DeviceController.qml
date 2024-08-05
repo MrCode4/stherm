@@ -22,6 +22,9 @@ I_DeviceController {
     //! Use stageMode to handle in progress push
     property int stageMode: AppSpec.EMNone
 
+    //! Use LockMode to handle in progress edit
+    property int lockMode: AppSpec.EMNone
+
     property bool initialSetup: false;
 
     //! Air condition health
@@ -223,82 +226,91 @@ I_DeviceController {
 
         //! Update the auto mode settings with the fetch signal.
         function onAutoModePush(isSuccess: bool) {
-            console.log("DeviceController.qml: push onAutoModePush, isSuccess: ", isSuccess);
+            console.log("DeviceController.qml: push onAutoModePush, isSuccess: ", isSuccess, stageMode, editMode, lockMode);
 
             if (isSuccess) {
-
-                if (root.stageMode  === AppSpec.EMAutoMode)
-                    settingsPush.isPushing = false;
-
-                stageMode = ~(AppSpec.EMAutoMode);
+                stageMode &= ~AppSpec.EMAutoMode;
             }
 
-            pushSettings();
+            settingsPush.isPushing = false;
+            console.log("DeviceController.qml: push onAutoModePush", stageMode);
+
         }
 
         function onPushSuccess() {
             // what if we have some changes after trying to push?
             // should we compare the changes in the reply?
+
+            console.log("DeviceController.qml: onPushSuccess", stageMode, editMode, lockMode)
+
             if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
                 stageMode = AppSpec.EMAutoMode;
-
             } else {
                 stageMode = AppSpec.EMNone;
-                settingsPush.isPushing = false;
-                pushSettings();
             }
 
-            console.log("DeviceController.qml: Push onPushSuccess")
+            settingsPush.isPushing = false;
+
+            console.log("DeviceController.qml: Push onPushSuccess", stageMode)
 
         }
 
         function onPushFailed() {
-            console.log("DeviceController.qml: Push onPushFailed")
-            pushSettings();
+            console.log("DeviceController.qml: Push onPushFailed", stageMode, editMode, lockMode)
             settingsPush.isPushing = false;
-            // managePushFailure();
         }
-
     }
 
     property Timer  settingsPush: Timer {
-        repeat: running
-        running: (root.editMode !== AppSpec.EMNone) ||
-                 (root.stageMode !== AppSpec.EMNone) && !isPushing
+        repeat: true // should repeat if not pushed
+        running: !isPushing &&
+                 (root.editMode !== AppSpec.EMNone || root.stageMode !== AppSpec.EMNone) &&
+                 system.areSettingsFetched && !settingsLoader.isFetching
         interval: 500;
 
         property bool isPushing : false
 
         onTriggered: {
 
+            isPushing = true;
+
             console.log("DeviceController.qml: Push, settingsPush timer: ",
                         ", editMode: ", root.editMode,
-                        ", stageMode: ", root.stageMode);
+                        ", stageMode: ", root.stageMode, "lockMode: ", lockMode);
+
+            // Update the stage mode and clear the edit editMode
+            // Move all edit mode flags to stage mode, so the push process is in progress
+            stageMode = stageMode | editMode;
+            editMode = AppSpec.EMNone;
 
             // Start push process if stage mode is available
             if (root.stageMode !== AppSpec.EMAutoMode && root.stageMode !== AppSpec.EMNone) {
-                isPushing = true;
                 pushToServer();
             }
-
-            if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
-                isPushing = true;
+            // maybe need some delay here between two pushes!
+            //! else to prevent calling together and ensure some delay
+            else if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
                 pushAutoModeSettingsToServer();
+            } else {
+                isPushing = alse;
             }
 
             // sensor true fails, in between goes false
             if (root.editMode === AppSpec.EMNone &&
                     root.stageMode === AppSpec.EMNone) {
-                console.warn("Something odd hapenned!, restoring the flow.")
+                console.warn("Something odd hapenned!, restoring the flow.", isPushing)
+                isPushing = false;
             }
         }
     }
 
     property Timer  settingsLoader: Timer {
-        property bool isFetching: false
         repeat: true;
         running: !initialSetup && !isFetching;
         interval: 5000;
+
+        property bool isFetching: false
+
         onTriggered: {
             isFetching = deviceControllerCPP.system.fetchSettings();
         }
@@ -371,14 +383,21 @@ I_DeviceController {
             deviceControllerCPP.system.setIsInitialSetup(true);
     }
 
-    function updateEditMode(editMode : int) {
-        root.editMode &= ~(AppSpec.EMNone);
-        root.editMode |= editMode; // add flag
+    function updateEditMode(mode : int) {
+        root.editMode |= mode; // add flag
     }
 
-    function editModeEnabled(editMode : int) {
-        return (root.editMode & editMode) !== editMode &&
-                (root.stageMode & editMode) !== editMode;
+    function updateLockMode(mode : int, enable: bool) {
+        if (enable)
+            root.lockMode |= mode; // add flag
+        else
+            root.lockMode &= ~mode; // remove flag
+    }
+
+    function editModeEnabled(mode : int) {
+        return (root.editMode & mode) === mode ||
+                (root.lockMode & mode) === mode ||
+                (root.stageMode & mode) === mode;
     }
 
     function updateDeviceBacklight(isOn, color) : bool
@@ -583,16 +602,11 @@ I_DeviceController {
     }
 
     function pushSettings() {
-
         if (editMode === AppSpec.EMNone) {
-            return;
+            console.log("PushSettings called with empty edit mode", stageMode, lockMode)
+            // to skip extra call
+            //            return;
         }
-
-        // Update the stage mode and clear the edit editMode
-        // Move all edit mode flags to stage mode, so the push process is in progress
-        stageMode &= ~(AppSpec.EMNone);
-        stageMode = stageMode | editMode;
-        editMode = AppSpec.EMNone;
 
         // we should not save before the app completely loaded
         if (uiSession && uiSession.currentFile.length > 0)
