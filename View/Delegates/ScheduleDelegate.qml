@@ -142,8 +142,8 @@ ItemDelegate {
                         uiSession.toastManager.showToast(dt.message, dt.detail);
                     }
 
-                    deviceController.updateEditMode(AppSpec.EMSchedule);
                     // Send Data to server when a schedule changed...
+                    deviceController.updateEditMode(AppSpec.EMSchedule);
                     uiSession.deviceController.pushSettings();
                 }
             }
@@ -203,8 +203,8 @@ ItemDelegate {
         if (schedule?.enable === false) {
             schedule.enable = true;
 
-            deviceController.updateEditMode(AppSpec.EMSchedule);
             // Send Data to server when a schedule changed...
+            deviceController.updateEditMode(AppSpec.EMSchedule);
             uiSession.deviceController.pushSettings();
 
             //Shows a proper toast message upon activation of a schedule

@@ -24,12 +24,14 @@ BasePageView {
 
     Component.onCompleted: {
         if (initialSetup) {
+            deviceController.updateEditMode(AppSpec.EMGeneral);
             deviceController.pushSettings();
         }
     }
 
     Component.onDestruction: {
         if (initialSetup) {
+            deviceController.updateEditMode(AppSpec.EMGeneral);
             deviceController.pushSettings();
         }
     }

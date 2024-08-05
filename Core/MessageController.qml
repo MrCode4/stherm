@@ -201,6 +201,7 @@ QtObject {
             device.messagesChanged();
 
             // Send messages to server
+            deviceController.updateEditMode(AppSpec.EMMessages);
             deviceController.pushSettings();
         }
 

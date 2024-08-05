@@ -59,7 +59,8 @@ I_PopUp {
                     }
                 }
 
-                uiSession.deviceController.updateEditMode(AppSpec.EMSettings);
+                // this is internal for now , no need to push or lock
+                //                uiSession.deviceController.updateEditMode(AppSpec.EMSettings);
                 uiSession.deviceController.pushSettings();
 
                 delayedClose.start();
