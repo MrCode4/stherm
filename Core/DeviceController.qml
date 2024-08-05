@@ -168,7 +168,11 @@ I_DeviceController {
 
         function onSettingsReady(settings) {
             if (settingsPush.isPushing) {
-                console.log("We have some changes that not applied on the server.")
+                // what should we do about last time as we updated it but ignored the content!
+                console.log("Err: We have some changes that not applied from the server due to pushing in progress.")
+                //! we may have 5 seconds gap which can override the changes of Mobile
+                //! so we ignore whole incoming value as the time of pushing will be latter
+                //! \TODO: when API is ready to send just the actual changes we can remove
                 return;
             }
 
