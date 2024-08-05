@@ -265,7 +265,7 @@ I_DeviceController {
         repeat: true // should repeat if not pushed
         running: !isPushing &&
                  (root.editMode !== AppSpec.EMNone || root.stageMode !== AppSpec.EMNone) &&
-                 system.areSettingsFetched && !settingsLoader.isFetching
+                 deviceControllerCPP.system.areSettingsFetched && !settingsLoader.isFetching
         interval: 500;
 
         property bool isPushing : false
