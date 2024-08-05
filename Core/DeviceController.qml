@@ -221,15 +221,15 @@ I_DeviceController {
         function onAutoModePush(isSuccess: bool) {
             console.log("DeviceController.qml: push onAutoModePush, isSuccess: ", isSuccess);
 
-            if (isSuccess && root.stageMode  === AppSpec.EMAutoMode) {
-                stageMode = AppSpec.EMNone;
+            if (isSuccess) {
 
-            } else if (isSuccess) {
+                if (root.stageMode  === AppSpec.EMAutoMode)
+                    settingsPush.isPushing = false;
+
                 stageMode = ~(AppSpec.EMAutoMode);
             }
 
             pushSettings();
-            settingsPush.isPushing = false;
         }
 
         function onPushSuccess() {
@@ -240,12 +240,12 @@ I_DeviceController {
 
             } else {
                 stageMode = AppSpec.EMNone;
+                settingsPush.isPushing = false;
+                pushSettings();
             }
 
             console.log("DeviceController.qml: Push onPushSuccess")
 
-            pushSettings();
-            settingsPush.isPushing = false;
         }
 
         function onPushFailed() {
@@ -264,7 +264,6 @@ I_DeviceController {
         interval: 500;
 
         property bool isPushing : false
-        property bool hasAutoModeSettings : false
 
         onTriggered: {
 
@@ -272,6 +271,7 @@ I_DeviceController {
                         ", editMode: ", root.editMode,
                         ", stageMode: ", root.stageMode);
 
+            // Start push process if stage mode is available
             if (root.stageMode !== AppSpec.EMAutoMode && root.stageMode !== AppSpec.EMNone) {
                 isPushing = true;
                 pushToServer();
@@ -368,11 +368,8 @@ I_DeviceController {
     }
 
     function updateEditMode(editMode : int) {
-        console.log("DeviceController.qml: Push to server with --- 15: ", (root.editMode))
         root.editMode &= ~(AppSpec.EMNone);
-         console.log("DeviceController.qml: Push to server with --- 15.1: ", root.editMode)
         root.editMode |= editMode; // add flag
-        console.log("DeviceController.qml: Push to server with --- 16: ", root.editMode)
     }
 
     function editModeEnabled(editMode : int) {
