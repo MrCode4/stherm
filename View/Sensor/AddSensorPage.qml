@@ -30,6 +30,7 @@ BasePageView {
         }
     }
 
+    //! \TODO: update when needed
     Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSensors);
 
     /* Children
