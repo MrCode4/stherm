@@ -27,7 +27,7 @@ public:
     bool fetchContractorInfo();
     void fetchContractorLogo(const QString& url);
     bool fetchSettings();
-    bool fetchAutoModeSetings();
+    bool fetchAutoModeSetings(bool success);
 
     bool fetchMessages();
     void fetchWirings(const QString& uid);

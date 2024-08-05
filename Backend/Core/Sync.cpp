@@ -260,9 +260,11 @@ bool Sync::fetchSettings()
     }
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        bool success = true;
         if (data.isEmpty()) {
             if (reply->error() == QNetworkReply::NoError) {
                 TRACE << "Received settings corrupted: " + mSerialNumber;
+                success = false;
             }
         }
         else if (data.value("sn").toString() == mSerialNumber) {
@@ -295,11 +297,12 @@ bool Sync::fetchSettings()
             checkFirmwareUpdate(data);
         }
         else {
+            success = false;
             TRACE << "Received settings belong to another device: " + mSerialNumber + ", " + data.value("sn").toString();
         }
 
         // emits settingsFetched to allow next fetch
-        fetchAutoModeSetings();
+        fetchAutoModeSetings(success);
     };
 
     auto reply = callGetApi(cBaseUrl + QString("api/sync/getSettings?sn=%0").arg(mSerialNumber), callback);
@@ -310,7 +313,7 @@ bool Sync::fetchSettings()
     return reply != nullptr;
 }
 
-bool Sync::fetchAutoModeSetings()
+bool Sync::fetchAutoModeSetings(bool success)
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get auto mode settings!";
@@ -319,7 +322,7 @@ bool Sync::fetchAutoModeSetings()
         return false;
     }
 
-    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    auto callback = [this, success](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (data.isEmpty()) {
             TRACE << "Received settings corrupted";
         }
@@ -343,7 +346,8 @@ bool Sync::fetchAutoModeSetings()
             emit autoModeSettingsReady(data.toVariantMap(), !data.isEmpty());
         }
 
-        emit settingsFetched(!data.isEmpty());
+        // what if auto mode sucess but normal not!
+        emit settingsFetched(success && !data.isEmpty());
     };
 
     return callGetApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), callback) != nullptr;
