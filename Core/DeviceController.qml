@@ -861,7 +861,7 @@ I_DeviceController {
         device.systemSetup.coolStage = settings.coolStage;
         device.systemSetup.heatPumpOBState = settings.heatPumpOBState;
         device.systemSetup.systemRunDelay = settings.systemRunDelay;
-        setSystemAccesseoriesServer(settings.systemAccessories)
+        setSystemAccessoriesServer(settings.systemAccessories)
 
         if (settings.type === "traditional")
             setSystemTraditional(settings.coolStage, settings.heatStage);
@@ -1019,14 +1019,12 @@ I_DeviceController {
             device.isHold = isHold;
     }
 
-    function setSystemAccesseoriesServer(settings: var) {
-        device.systemSetup.systemAccessories.setSystemAccessories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
+    function setSystemAccessoriesServer(settings: var) {
+        setSystemAccessories(settings.mode, AppSpec.accessoriesWireTypeToEnum(settings.wire));
     }
 
-    function setSystemAccesseories(accType: int, wireType: int) {
+    function setSystemAccessories(accType: int, wireType: int) {
         device.systemSetup.systemAccessories.setSystemAccessories(accType, wireType);
-
-        pushSettings();
     }
     
     function testRelays(relays) {
