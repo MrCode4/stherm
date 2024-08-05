@@ -508,7 +508,7 @@ I_DeviceController {
     //! On/off the vacation.
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
-
+        deviceController.updateEditMode(AppSpec.EMVacation);
         pushSettings();
     }
 
