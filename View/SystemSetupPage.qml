@@ -18,9 +18,15 @@ BasePageView {
      * ****************************************************************************************/
     title: "System Setup"
 
+    Component.onCompleted: {
+        deviceController.updateLockMode(AppSpec.EMSystemSetup, true);
+    }
+
     Component.onDestruction: {
         deviceController.updateEditMode(AppSpec.EMSystemSetup);
         deviceController.pushSettings();
+
+        deviceController.updateLockMode(AppSpec.EMSystemSetup, false);
     }
 
     /* Children
