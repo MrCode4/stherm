@@ -57,6 +57,11 @@ Control {
         }
     }
 
+    onDraggingChanged: {
+        deviceController.updateLockMode(AppSpec.EMDesiredTemperature, dragging);
+        deviceController.updateLockMode(AppSpec.EMAutoMode, dragging);
+    }
+
     font.pointSize: Qt.application.font.pointSize * 2.5
     background: null
     contentItem: Item {

@@ -19,6 +19,14 @@ BasePageView {
      * ****************************************************************************************/
     title: "Schedule"
 
+    Component.onCompleted: {
+        deviceController.updateLockMode(AppSpec.EMSchedule, true);
+    }
+
+    Component.onDestruction: {
+        deviceController.updateLockMode(AppSpec.EMSchedule, false);
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Add schedule button -> add it to header

@@ -238,9 +238,6 @@ I_DeviceController {
         }
 
         function onPushSuccess() {
-            // what if we have some changes after trying to push?
-            // should we compare the changes in the reply?
-
             console.log("DeviceController.qml: onPushSuccess", stageMode, editMode, lockMode)
 
             if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
@@ -283,16 +280,23 @@ I_DeviceController {
             stageMode = stageMode | editMode;
             editMode = AppSpec.EMNone;
 
+            // deprioritize if only sensorValues there to push auto mode api sooner
+            var priorityMode = root.stageMode & ~AppSpec.EMSensorValues;
+
             // Start push process if stage mode is available
-            if (root.stageMode !== AppSpec.EMAutoMode && root.stageMode !== AppSpec.EMNone) {
-                // what if we have an internal crash?
-                pushToServer();
-            }
-            // maybe need some delay here between two pushes!
-            //! else to prevent calling together and ensure some delay
-            //! this can be delayed too much if never push success or too much edits?
-            else if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
+            // push auto mode first if nothing else is staged except EMSensorValues
+            // need some delay here between two api pushes so if another one exist we push the other first!
+            // then, this will be called after success push
+            //! this can be delayed too much if never push success or too much edits
+            if (priorityMode === AppSpec.EMAutoMode) {
                 pushAutoModeSettingsToServer();
+            } else if (root.stageMode !== AppSpec.EMNone){
+                try {
+                    pushToServer();
+                } catch (err) {
+                    console.log("DeviceController.qml: Push, error in push to server")
+                    isPushing = alse;
+                }
             } else {
                 isPushing = alse;
             }

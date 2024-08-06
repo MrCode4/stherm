@@ -35,10 +35,11 @@ BasePageView {
         }
 
         onClicked: {
-            if (deviceController) {
-                deviceController.setRequestedHumidity(humidity)
+            if (!deviceController) {
+                console.log("HumidityPage: onClicked: Error in deviceController.")
             }
 
+            deviceController.setRequestedHumidity(humidity)
             deviceController.updateEditMode(AppSpec.EMRequestedHumidity);
             deviceController.pushSettings();
 
