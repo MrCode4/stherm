@@ -38,10 +38,6 @@ BasePageView {
         }
     }
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
-
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMVacation, false);
-
     /* Children
      * ****************************************************************************************/
     //! Confirm icon
@@ -64,9 +60,10 @@ BasePageView {
 
                 deviceController.setVacation(minValue, maxValue,
                                              _humSlider.first.value, _humSlider.second.value);
-            }
 
-            deviceController.pushSettings();
+                deviceController.updateEditMode(AppSpec.EMVacation);
+                deviceController.pushSettings();
+            }
 
             saved();
         }

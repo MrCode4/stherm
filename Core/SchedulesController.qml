@@ -48,6 +48,7 @@ QtObject {
         device.schedulesChanged();
 
         // Send data to server and save file
+        deviceController.updateEditMode(AppSpec.EMSchedule);
         deviceController.pushSettings();
     }
 
@@ -63,6 +64,7 @@ QtObject {
 //            schedule.destroy();
 
             // Send data to server
+            deviceController.updateEditMode(AppSpec.EMSchedule);
             deviceController.pushSettings();
         }
     }

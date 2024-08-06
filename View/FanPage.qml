@@ -19,10 +19,6 @@ BasePageView {
      * ****************************************************************************************/
     title: "Fan"
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMFan);
-
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMFan, false);
-
     /* Children
      * ****************************************************************************************/
     //! Confirm button
@@ -38,9 +34,10 @@ BasePageView {
                 var fanMode = _onButton.checked ? AppSpec.FMOn : AppSpec.FMAuto
 
                 deviceController.updateFan(fanMode, _hourSliders.value);
+                //! should we check the output of previous function?
+                deviceController.updateEditMode(AppSpec.EMFan);
+                deviceController.pushSettings();
             }
-
-            deviceController.pushSettings();
 
             //! Also move out of this Page
             if (_root.StackView.view) {

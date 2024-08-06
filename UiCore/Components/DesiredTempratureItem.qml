@@ -46,13 +46,6 @@ Control {
     //! Label width
     readonly property alias     labelWidth: rightTempLabel.width
 
-    onDraggingChanged: {
-        if (dragging)
-            deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
-        else
-            deviceController.updateEditMode(AppSpec.EMDesiredTemperature, false);
-    }
-
     /* Object properties
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
@@ -62,6 +55,11 @@ Control {
         } else if (device) {
             Qt.callLater(updateTemperatureValue, device.requestedTemp);
         }
+    }
+
+    onDraggingChanged: {
+        deviceController.updateLockMode(AppSpec.EMDesiredTemperature, dragging);
+        deviceController.updateLockMode(AppSpec.EMAutoMode, dragging);
     }
 
     font.pointSize: Qt.application.font.pointSize * 2.5
@@ -123,7 +121,9 @@ Control {
                     deviceController.setAutoMinReqTemp(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(first.value)
                                                        : first.value);
-                    deviceController.pushAutoModeSettings();
+                    deviceController.updateEditMode(AppSpec.EMAutoMode);
+                    deviceController.pushSettings();
+
                 }
             }
 
@@ -132,7 +132,8 @@ Control {
                     deviceController.setAutoMaxReqTemp(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(second.value)
                                                        : second.value);
-                    deviceController.pushAutoModeSettings();
+                    deviceController.updateEditMode(AppSpec.EMAutoMode);
+                    deviceController.pushSettings();
                 }
             }
 
@@ -631,6 +632,7 @@ Control {
                 ? Utils.fahrenheitToCelsius(_tempSlider.value) : _tempSlider.value;
         if (device && device.requestedTemp !== celValue) {
             deviceController.setDesiredTemperature(celValue);
+            deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
             deviceController.pushSettings();
         }
     }

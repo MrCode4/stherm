@@ -29,7 +29,7 @@ Control {
     readonly property real  darkerShade: 3.8
 
     //! Holds whether slider is being dragged
-    readonly property bool  pressed: firstHandleDh.dragging || secondHandleDh.dragging
+    readonly property bool  pressed: first.pressed || second.pressed
 
     //! Some other limitations for first and second values
     property real firstValueCeil: AppSpec.maxAutoMinTemp

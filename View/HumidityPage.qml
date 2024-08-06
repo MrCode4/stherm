@@ -25,10 +25,6 @@ BasePageView {
      * ****************************************************************************************/
     title: "Humidity Control"
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMRequestedHumidity);
-
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMRequestedHumidity, false);
-
     /* Children
      * ****************************************************************************************/
     //! Confirm button
@@ -39,10 +35,12 @@ BasePageView {
         }
 
         onClicked: {
-            if (deviceController) {
-                deviceController.setRequestedHumidity(humidity)
+            if (!deviceController) {
+                console.log("HumidityPage: onClicked: Error in deviceController.")
             }
 
+            deviceController.setRequestedHumidity(humidity)
+            deviceController.updateEditMode(AppSpec.EMRequestedHumidity);
             deviceController.pushSettings();
 
             //! Also move out of this Page

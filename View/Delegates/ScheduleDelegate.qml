@@ -143,6 +143,7 @@ ItemDelegate {
                     }
 
                     // Send Data to server when a schedule changed...
+                    deviceController.updateEditMode(AppSpec.EMSchedule);
                     uiSession.deviceController.pushSettings();
                 }
             }
@@ -203,6 +204,7 @@ ItemDelegate {
             schedule.enable = true;
 
             // Send Data to server when a schedule changed...
+            deviceController.updateEditMode(AppSpec.EMSchedule);
             uiSession.deviceController.pushSettings();
 
             //Shows a proper toast message upon activation of a schedule

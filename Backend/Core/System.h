@@ -31,13 +31,9 @@ class System : public RestApiExecutor
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
-    Q_PROPERTY(bool fetchSuccessOnce   READ hasFetchSuccessOnce  CONSTANT FINAL)
-
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
-
-    Q_PROPERTY(bool canFetchServer READ canFetchServer WRITE setCanFetchServer NOTIFY canFetchServerChanged FINAL)
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
@@ -89,17 +85,13 @@ public:
 
     Q_INVOKABLE void fetchBackdoorInformation();
 
-    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
 
     Q_INVOKABLE void exitManualMode();
 
     Q_INVOKABLE bool isFWServerUpdate();
 
     void wifiConnected(bool hasInternet);
-
-    void setCanFetchServer(bool canFetch);
-
-    bool canFetchServer();
 
     //! Get Contractor Information
     QVariantMap getContractorInfo() const;
@@ -189,8 +181,6 @@ public:
     //! Forget device settings and sync settings
     Q_INVOKABLE void forgetDevice();
 
-    bool hasFetchSuccessOnce() const;
-
     //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);
 
@@ -242,8 +232,6 @@ signals:
 
     void systemUIDChanged();
 
-    void canFetchServerChanged();
-
     void backdoorLogChanged();
 
     void isManualModeChanged();
@@ -294,9 +282,6 @@ private:
     //! Check and prepare the system to start download process.
     void checkAndDownloadPartialUpdate(const QString installingVersion, const bool isBackdoor = false,
                                        const bool isResetVersion = false, const bool isFWServerVersion = false);
-
-    //! Check the pushing progress and start the fetch timer.
-    void startFetchActiveTimer();
 
     bool installSystemCtlRestartService();
 
@@ -368,8 +353,6 @@ private:
     bool mIsBusyDownloader = false;
     qint64 mDownloadBytesReceived;
     double mDownloadRateEMA;
-
-    bool mCanFetchServer = true;
 
     // Backdoor attributes
     QJsonObject mBackdoorJsonObject;
