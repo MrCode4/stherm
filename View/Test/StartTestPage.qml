@@ -77,11 +77,11 @@ BasePageView {
             // Test 5 (sshpass for sending logs)
             if (system.installSSHPass()) {
                 testCounter++;
-                deviceController.deviceControllerCPP.writeTestResult("sshpass", true)
+                deviceController.deviceControllerCPP.saveTestResult("sshpass", true)
             } else {
                 var errorText = "The sshpass does not installed.";
                 notPassedTests.text += "\n" + errorText;
-                deviceController.deviceControllerCPP.writeTestResult("sshpass", false, errorText)
+                deviceController.deviceControllerCPP.saveTestResult("sshpass", false, errorText)
             }
         }
     }
