@@ -5,6 +5,41 @@ This repository contains STHERM project
 Release Note
 =============
 -------------
+## Release R 1.1.0
+ 7th August 2024
+ Branch- release, commit- ae8f5fe7
+ 
+### Release Articles
+update-V.1.1.0.zip
+
+### Reason
+Add new features and fix some issues
+
+### What’s Brand New
+- mobile app link page.
+- screen lock/unlock page.
+
+### What Been Updated
+- Alerts based on the documents.
+- Improved sync flow to fix issues.
+- Serial number flow improved when device is registered.
+- Label of Notifications changed to Messages in settings.
+- Adaptive brightness can not be turned on from server.
+- Improve TOF requests flow to prevent too much data.
+- Improve system mode button position and temperature labels position and size of them.
+- Technician phone number updated.
+
+### What’s Been Fixed
+- Installs the sshpass if not exists.
+- Time format for messages.
+- All API calls are refactored in Sync.
+- uuid of save file back to random to prevent new structures issues.
+- Clear the cache when internet has issues.
+
+
+### Known Issues
+ - Device settings are lost on startup without WIFI.
+
 ## Release R 1.0.2
  11th July 2024  
  Branch- master, commit- 743f30f5
