@@ -83,6 +83,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     , mTestMode(false)
     , mIsNightModeRunning(false)
     , mRestarting(false)
+    , sshpassInstallCounter(0)
 {
     mUpdateFilePath = qApp->applicationDirPath() + "/" + m_updateInfoFile;
 
@@ -395,18 +396,17 @@ bool NUVE::System::installUpdateService()
     return true;
 }
 
-bool NUVE::System::installSSHPass(bool recurse)
+bool NUVE::System::installSSHPass(bool recursiveCall)
 {
-    static int counter = 0;
-    if (!recurse)
-        counter = 0;
+    if (!recursiveCall)
+        sshpassInstallCounter = 0;
 
-    TRACE << "Check sshpass existence" << recurse << counter;
+    TRACE << "Check sshpass existence" << recursiveCall << sshpassInstallCounter;
 
-    if (counter > 3)
+    if (sshpassInstallCounter > 3)
         return false;
 
-    counter++;
+    sshpassInstallCounter++;
 
 #ifdef __unix__
     // this helps validating the existence as well as workable version of sshPass

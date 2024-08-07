@@ -152,9 +152,10 @@ public:
     Q_INVOKABLE bool installUpdateService();
 
     //! Install sshpass if not exits or not working,
+    //! tries 3 times recursively if fails
     //! returns false if not success
     //! returns true on windows
-    Q_INVOKABLE bool installSSHPass(bool recurse = false);
+    Q_INVOKABLE bool installSSHPass(bool recursiveCall = false);
 
     //! Install update service
     Q_INVOKABLE bool installUpdate_NRF_FW_Service();
@@ -357,6 +358,8 @@ private:
     //! Set to true after a device restart triggered by a firmware update or reboot,
     //! to prevent firmware update.
     bool mRestarting;
+
+    int sshpassInstallCounter;
 
     QTimer mFetchActiveTimer;
 
