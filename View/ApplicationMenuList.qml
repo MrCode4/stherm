@@ -75,8 +75,17 @@ ListView {
             "text": "System Setup"
         },
         {
+            "hasFontAwesomeIcon": false,
+            "icon": "qrc:/Stherm/Images/smart-phone.png",
+            "text": "Mobile App"
+        },
+        {
             "icon": FAIcons.wifi,
             "text": "Wi-Fi Settings"
+        },
+        {
+            "icon": FAIcons.lock,
+            "text": "Lock"
         },
         {
             "icon": FAIcons.night,
@@ -111,7 +120,7 @@ ListView {
         text: delegateData?.text ?? ""
         delegateData: modelData
         delegateIndex: index
-
+        hasFontAwesomeIcon: delegateData?.hasFontAwesomeIcon ?? true
         visible: modelData?.visible ?? true
 
         hasNotification:  modelData?.hasNotification ?? false

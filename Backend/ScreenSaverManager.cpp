@@ -177,3 +177,25 @@ bool ScreenSaverManager::eventFilter(QObject* watched, QEvent* event)
     //! Events should not be set as accepted (Except press event in State::Timeout)
     return false;
 }
+
+void ScreenSaverManager::lockDevice(const bool& isLock) {
+    if (mIsDeviceLocked == isLock)
+        return;
+
+    // to ignore TOF events
+    mIsDeviceLocked = isLock;
+
+    // to ensure screen saver will be shown after a period of time
+    if (isLock) {
+        setActive();
+
+        //! set screen to sleep immediately
+        setState(ScreenSaverManager::State::Timeout);
+    }
+}
+
+void ScreenSaverManager::triggerScreenSaverBasedOnTOF() {
+    if (!mIsDeviceLocked) {
+        restart();
+    }
+}

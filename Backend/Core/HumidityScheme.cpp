@@ -39,12 +39,22 @@ void HumidityScheme::run()
     }
 
     while (!stopWork) {
-        // Vacation has a higher priority compared to other processes.
-        if (mDataProvider.data()->systemSetup()->isVacation) {
-            VacationLoop();
+        // If no wire go to offloop
 
-        } else if (mDataProvider.data()->systemSetup()->systemMode == AppSpecCPP::SystemMode::Off) {
+        auto sysSetup = mDataProvider->systemSetup();
+        if (sysSetup->systemAccessories->getAccessoriesWireType() == AppSpecCPP::None ||
+            sysSetup->systemMode == AppSpecCPP::SystemMode::Off) {
             OffLoop();
+
+            if (stopWork)
+                break;
+
+            continue;
+        }
+
+        // Vacation has a higher priority compared to other processes.
+        if (sysSetup->isVacation) {
+            VacationLoop();
 
         } else {
             normalLoop();
@@ -62,7 +72,7 @@ void HumidityScheme::run()
     }
 }
 
-void HumidityScheme::restartWork()
+void HumidityScheme::restartWork(bool forceStart)
 {
     if (isRunning()) {
         TRACE << "restarting Humidity scheme" << stopWork;
@@ -85,11 +95,14 @@ void HumidityScheme::restartWork()
         emit stopWorkRequested();
         this->wait(QDeadlineTimer(1000, Qt::PreciseTimer));
 
-    } else {
+    } else if (forceStart){
         TRACE << "started Humidity scheme";
         stopWork = false;
         // mLogTimer.start();
         this->start();
+
+    } else {
+        TRACE << "trying to start before main start";
     }
 }
 

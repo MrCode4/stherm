@@ -1,10 +1,7 @@
 #include "deviceIOController.h"
 
 #include <QDateTime>
-#include <QFutureWatcher>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QtConcurrent/QtConcurrent>
+#include <QProcess>
 #include <ScreenSaverManager.h>
 
 #include "LogHelper.h"
@@ -106,6 +103,47 @@ DeviceIOController::DeviceIOController(QObject *parent)
         }
         // when it reaches to the target stops and will not print anymore
         TRACE_CHECK(false) << "backlight factor updated to "  << m_backlightFactor << "with step " << diff / 20 << "and Target " << target;
+    });
+
+    mSensorDataRecievedTimer.setInterval(15 * 60 * 1000);
+    mSensorDataRecievedTimer.setTimerType(Qt::PreciseTimer);
+    mSensorDataRecievedTimer.setSingleShot(false);
+    mSensorDataRecievedTimer.start();
+
+    mIsHumTempSensorValid = false;
+    mIsDataReceived = false;
+
+    connect(&mSensorDataRecievedTimer, &QTimer::timeout, this, [this]() {
+
+        // If sensor data is not received for 15 minutes,
+        // the system will switch to off mode, causing another sensor's functionality to be disrupted.
+        // Set to True if valid data is received, False if data is invalid or not received for 15 minutes.
+        if (!mIsDataReceived) {
+            // Send co2 sensor malfunction alert, No Co2 data available.
+            // emit alert(STHERM::AlertLevel::LVL_Emergency,
+            //            AppSpecCPP::AlertTypes::Alert_iaq_high,
+            //            STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
+            emit alert(STHERM::AlertLevel::LVL_Emergency,
+                       AppSpecCPP::AlertTypes::Alert_No_Data_Received,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_No_Data_Received));
+
+            emit co2SensorStatus(false);
+
+        } else if (!mIsHumTempSensorValid) {
+            // Send  humidity/temperature malfunction alert (bad data).
+            emit alert(STHERM::AlertLevel::LVL_Emergency,
+                       AppSpecCPP::AlertTypes::Alert_temperature_humidity_malfunction,
+                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_humidity_malfunction));
+
+        }
+
+
+        // humidity/temperature malfunction
+        emit forceOffSystem(!mIsHumTempSensorValid);
+
+        // Set to false (the mainDataReady might not be called)
+        mIsHumTempSensorValid = false;
+        mIsDataReceived = false;
     });
 }
 
@@ -454,10 +492,15 @@ void DeviceIOController::createNRF()
     connect(m_nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
         TRACE_CHECK(false) << "NRF Response:   " << data;
         auto rxPacket = DataParser::deserializeData(data);
-        TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+        TRACE_CHECK(rxPacket.CMD != STHERM::GetTOF) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
             qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD << m_nRF_queue.size();
+        else if (sent.CMD == STHERM::GetTOF)
+            m_gpioHandler5->readProcessed();
+        else if (sent.CMD == STHERM::GetSensors)
+            m_gpioHandler4->readProcessed();
+
         processNRFResponse(rxPacket, sent);
         m_nRfConnection->setProperty("busy", false);
         if (!m_nRF_queue.empty())
@@ -471,32 +514,52 @@ void DeviceIOController::createNRF()
     if (m_gpioHandler4->startConnection() ) {
         connect(m_gpioHandler4, &GpioHandler::readyRead, this, [=](QByteArray data) {
             auto time = QDateTime::currentMSecsSinceEpoch();
-            if (time - m_p->lastTimeSensors < 1000)
-                return;
-            if (data.length() == 2 && data.at(0) == '0') {
+            if (time - m_p->lastTimeSensors >= 1000 &&
+                data.length() == 2 && data.at(0) == '0') {
                 m_p->lastTimeSensors = time;
                 m_nRF_queue.push(m_p->SensorPacketBA);
-                bool processed = processNRFQueue();
+                bool processed = processNRFQueue(STHERM::SIOCommand::GetSensors);
                 TRACE_CHECK(false) << "request for gpio 4" << processed;
                 // check after tiemout if no other request sent
                 m_nRF_timer.start();
+            } else {
+                // to restore normal operation
+                m_gpioHandler4->readProcessed();
             }
         });
     } else {
         qWarning() << "GPIO 4 failed to connect" ;
     }
 
+    startTOFGpioHandler();
+}
+
+void DeviceIOController::startTOFGpioHandler() {
     if (m_gpioHandler5->startConnection()) {
+        TRACE << "GPIO 5 is currently active.";
+
+        // m_gpioHandler5->disconnect();
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             if (data.length() == 2 && data.at(0) == '0') {
+                //! we must send request for each data we receive otherwise this will be broken
                 m_nRF_queue.push(m_p->TOFPacketBA);
-                bool processed = processNRFQueue();
-                TRACE_CHECK(false) << "request for gpio 5" << processed;
+                bool processed = processNRFQueue(STHERM::SIOCommand::GetTOF);
+                TRACE_CHECK(!processed) << "request for gpio 5 failed";
+            }  else {
+                // to restore normal operation
+                m_gpioHandler5->readProcessed();
             }
         });
+
     } else {
-        qWarning() << "GPIO 5 failed to connect" ;
+        qWarning() << "GPIO 5 failed to activate." ;
     }
+}
+
+void DeviceIOController::stopTOFGpioHandler() {
+    m_gpioHandler5->disconnect();
+    m_gpioHandler5->closeFile();
+    TRACE << "TOF: GPIO 5 disabled." ;
 }
 
 void DeviceIOController::stopReading()
@@ -531,8 +594,8 @@ bool DeviceIOController::update_nRF_Firmware()
                                                STHERM::PacketType::UARTPacket);
     m_nRF_queue.push(packet);
 
-    auto result = processNRFQueue();
-    TRACE_CHECK(result) << "sending get into dfu failed or waiting in queue";
+    auto result = processNRFQueue(STHERM::SIOCommand::GetIntoDFU);
+    TRACE_CHECK(!result) << "sending get into dfu failed or waiting in queue";
     return result;
 }
 
@@ -623,8 +686,8 @@ bool DeviceIOController::setBacklight(QVariantList data)
             last.DataArray[4] = data[3].toInt();
         }
 
-        auto result = processNRFQueue();
-        TRACE_CHECK(result) << "send setBacklight request failed or waiting in queue";
+        auto result = processNRFQueue(STHERM::SIOCommand::SetColorRGB);
+        TRACE_CHECK(!result) << "send setBacklight request failed or waiting in queue";
         return true;
     } else {
         qWarning() << "backlight not sent: data is empty or not consistent";
@@ -643,8 +706,8 @@ bool DeviceIOController::setFanSpeed(int speed)
                                                {speed});
     m_nRF_queue.push(packet);
 
-    auto result = processNRFQueue();
-    TRACE_CHECK(result) << "send fan speed request failed or waiting in queue";
+    auto result = processNRFQueue(STHERM::SIOCommand::SetFanSpeed);
+    TRACE_CHECK(!result) << "send fan speed request failed or waiting in queue";
     return result;
 }
 
@@ -661,6 +724,8 @@ bool DeviceIOController::setSettings(QVariantList data)
 
         bool adaptive = data.last().toBool();
         m_p->brightness_mode = adaptive ? 1 : 0;
+
+        TRACE_CHECK(adaptive) << "Adaptive enabled" << m_p->luminosity; // should not be in log as adaptive disabled for now
 
         if (setBrightness(adaptive ? m_p->luminosity :
                               qRound(data.first().toDouble() * 2.55)))
@@ -723,16 +788,21 @@ void DeviceIOController::wiringExec()
 
 void DeviceIOController::nRFExec()
 {
-    TRACE_CHECK(false) << "start NRF" << (m_nRfConnection && m_nRfConnection->isConnected());
+    bool debug = false;
+#ifdef DEBUG_MODE
+    debug = true;
+#endif
+
+    TRACE_CHECK(debug) << "start NRF" << (m_nRfConnection && m_nRfConnection->isConnected());
     if (m_nRfConnection && m_nRfConnection->isConnected()) {
-        TRACE_CHECK(false) << "start GetSensors";
+        TRACE_CHECK(debug) << "start GetSensors";
 
         m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
 
         m_nRF_queue.push(m_p->SensorPacketBA);
-        auto result = processNRFQueue();
+        auto result = processNRFQueue(STHERM::SIOCommand::GetSensors);
 
-        TRACE_CHECK(false) << "GetSensors message finished" << result;
+        TRACE_CHECK(debug) << "GetSensors message finished" << result;
     }
 }
 
@@ -911,7 +981,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
     }
 }
 
-bool DeviceIOController::processNRFQueue()
+bool DeviceIOController::processNRFQueue(STHERM::SIOCommand cause)
 {
     if (!m_nRfConnection || !m_nRfConnection->isConnected())
         return false;
@@ -923,9 +993,11 @@ bool DeviceIOController::processNRFQueue()
     auto packet = m_nRF_queue.front();
 
     if (m_nRfConnection->property("busy").toBool()) {
-        TRACE_CHECK(packet.CMD != STHERM::GetTOF) << "busy with previous one" << packet.CMD << m_nRF_queue.size();
+        TRACE_CHECK(cause != STHERM::GetTOF) << cause << " not sent, busy with previous one" << packet.CMD << m_nRF_queue.size();
         return false;
     }
+
+    TRACE_CHECK(packet.CMD != STHERM::GetTOF) << packet.CMD << "sending, caused by" << cause << m_nRF_queue.size();
 
     m_nRfConnection->setProperty("busy", true);
 
@@ -1284,62 +1356,82 @@ bool DeviceIOController::sendTIRequest(STHERM::SIOPacket txPacket)
 
 void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values, const uint16_t &fanSpeed, const uint32_t luminosity)
 {
-    // Manage temperature alerts
-    if (values.temp > m_p->throlds_aq.temp_high) {
-        if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
-            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high));
-            m_TemperatureAlertET.restart();
+    mIsDataReceived = true;
 
-        } else if (!m_TemperatureAlertET.isValid()) {
-            m_TemperatureAlertET.start();
-            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high);
+    bool isHumTempSensorDataValid = values.temp     <= m_p->throlds_aq.Temperature_Working_Range_High &&
+                                    values.temp     >= m_p->throlds_aq.Temperature_Working_Range_Low  &&
+                                    values.humidity <= m_p->throlds_aq.Humidity_Working_Range_High    &&
+                                    values.humidity >= m_p->throlds_aq.Humidity_Working_Range_Low;
+
+    // Check humidity and temperature sensor data.
+    // If last m_SensorDataRecived status is true so we need restart the timer
+    if (!isHumTempSensorDataValid && mIsHumTempSensorValid)
+        mSensorDataRecievedTimer.start();
+
+    mIsHumTempSensorValid = isHumTempSensorDataValid;
+
+    if (isHumTempSensorDataValid) {
+
+        // Exit from force off
+        emit forceOffSystem(false);
+
+        // Manage temperature alerts
+        if (values.temp > m_p->throlds_aq.temp_high) {
+            if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
+                emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
+                           STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high));
+                m_TemperatureAlertET.restart();
+
+            } else if (!m_TemperatureAlertET.isValid()) {
+                m_TemperatureAlertET.start();
+                TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high);
+            }
+
+        } else if (values.temp < m_p->throlds_aq.temp_low) {
+            if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
+                emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_low,
+                           STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low));
+                m_TemperatureAlertET.restart();
+
+            } else if (!m_TemperatureAlertET.isValid()) {
+                m_TemperatureAlertET.start();
+                TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low);
+            }
+
+        } else {
+            m_TemperatureAlertET.invalidate();
         }
 
-    } else if (values.temp < m_p->throlds_aq.temp_low) {
-        if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
-            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_low,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low));
-            m_TemperatureAlertET.restart();
+        // Manage humidity alerts
+        if (values.humidity > m_p->throlds_aq.humidity_high) {
+            if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
+                emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
+                           STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
+                m_HumidityAlertET.restart();
 
-        } else if (!m_TemperatureAlertET.isValid()) {
-            m_TemperatureAlertET.start();
-            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low);
+            } else if (!m_HumidityAlertET.isValid()) {
+                m_HumidityAlertET.start();
+                TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high);
+            }
+
+        } else if (values.humidity < m_p->throlds_aq.humidity_low) {
+            if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
+                emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_low,
+                           STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low));
+                m_HumidityAlertET.restart();
+
+            } else if (!m_HumidityAlertET.isValid()) {
+                m_HumidityAlertET.start();
+                TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low);
+            }
+
+        } else {
+            m_HumidityAlertET.invalidate();
         }
-
-    } else {
-        m_TemperatureAlertET.invalidate();
-    }
-
-    // Manage humidity alerts
-    if (values.humidity > m_p->throlds_aq.humidity_high) {
-        if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
-            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
-            m_HumidityAlertET.restart();
-
-        } else if (!m_HumidityAlertET.isValid()) {
-            m_HumidityAlertET.start();
-            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high);
-        }
-
-    } else if (values.humidity < m_p->throlds_aq.humidity_low) {
-        if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
-            emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_low,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low));
-            m_HumidityAlertET.restart();
-
-        } else if (!m_HumidityAlertET.isValid()) {
-            m_HumidityAlertET.start();
-            TRACE_CHECK(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low);
-        }
-
-    } else {
-        m_HumidityAlertET.invalidate();
     }
 
     // Manage fan alerts
-    if (fanSpeed > m_p->throlds_aq.fan_high) {
+   /* if (fanSpeed > m_p->throlds_aq.fan_high) {
         if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_High,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High));
@@ -1351,7 +1443,10 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
         }
 
-    } else if (fanSpeed < m_p->throlds_aq.fan_low) {
+    } else */
+    // If the RPM is below the Predefined threshold and
+    // the device is not in Quite mode.
+    if (fanSpeed < m_p->throlds_aq.fan_low) {
         if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_low,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low));
@@ -1369,7 +1464,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
     // Manage light alerts
     if (luminosity < m_p->throlds_aq.light_low) {
-        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 24 * 60 * 60 * 1000) {
+        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 10 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_Low,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low));
             m_LightAlertET.restart();
@@ -1381,7 +1476,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
         }
 
     } else if (luminosity > m_p->throlds_aq.light_high) {
-        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 24 * 60 * 60 * 1000) {
+        if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 10 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_High,
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High));
             m_LightAlertET.restart();
@@ -1400,15 +1495,16 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_pressure_high));
     }
 
-    if (values.c02 > m_p->throlds_aq.c02_high) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_high));
+    // TODO: Wait for logic
+    // if (values.c02 > m_p->throlds_aq.c02_high) {
+    //     emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_high,
+    //                STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_high));
 
-    } else if (values.c02 < m_p->throlds_aq.c02_low) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_low,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_low));
+    // } else if (values.c02 < m_p->throlds_aq.c02_low) {
+    //     emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_low,
+    //                STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_low));
 
-    }
+    // }
 
     if (values.Tvoc > m_p->throlds_aq.Tvoc_high * 1000) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Tvoc_high,
@@ -1416,17 +1512,17 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
     }
 
-    if (values.etoh > m_p->throlds_aq.etoh_high * 100) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_etoh_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_etoh_high));
+    // TODO: Wait for logic
+    // if (values.etoh > m_p->throlds_aq.etoh_high * 100) {
+        // emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_etoh_high,
+                   // STHERM::getAlertTypeString(AppSpecCPP::Alert_etoh_high));
 
-    }
+    // }
 
-    if (values.iaq > m_p->throlds_aq.iaq_high) {
-        emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_iaq_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
-
-    }
+    // As air quality sensor can send big numbers due to bad air the threshold
+    // to consider the sensor as not working is when it does not send any data (error)
+    // Valid data available.
+    emit co2SensorStatus(true);
 }
 
 STHERM::ResponseTime DeviceIOController::getTimeConfig()
@@ -1564,14 +1660,14 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
     // TOF sensor activate display when distance < 1 meter and time > 1 second (handled in firmware)
     if (range_mm > 60 && range_mm <= TOF_IRQ_RANGE) {
         if (auto manager = ScreenSaverManager::instance()) {
-            manager->restart();
+            manager->triggerScreenSaverBasedOnTOF();
         }
     }
 }
 
 void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
 {
-    TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity)) <<
+    TRACE_CHECK(m_p->brightness_mode == 1) << (QString("Luminosity (%1)").arg(luminosity)) <<
         m_p->brightness_mode << m_adaptiveBrightness_timer.isActive();
     m_p->luminosity = luminosity;  // we can smooth this as well if changes too much
     if (m_p->brightness_mode == 1) {

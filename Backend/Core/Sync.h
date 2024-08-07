@@ -17,6 +17,7 @@ public:
     Sync(QObject *parent = nullptr);
 
     void setUID(cpuid_t accessUid);
+    void setSerialNumber(const QString &serialNumber);
     //! returns last fetched from save or server
     QString getSerialNumber() const;
     bool hasClient() const;
@@ -26,7 +27,7 @@ public:
     bool fetchContractorInfo();
     void fetchContractorLogo(const QString& url);
     bool fetchSettings();
-    bool fetchAutoModeSetings();
+    bool fetchAutoModeSetings(bool success);
 
     bool fetchMessages();
     void fetchWirings(const QString& uid);
@@ -89,6 +90,7 @@ private:
     bool mHasClient;
     QString mSerialNumber;
     QDateTime mLastPushTime;
+    QDateTime mAutoModeLastPushTime;
     QVariantMap mContractorInfo;
     cpuid_t mSystemUuid;
 };

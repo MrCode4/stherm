@@ -27,18 +27,22 @@ ToolButton {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: Math.max(56, _coolingStateItem.implicitWidth) + leftPadding + rightPadding
+    implicitWidth: metrics.boundingRect("Cooling").width + leftPadding + rightPadding
     implicitHeight: implicitWidth
-    padding: 10
+    padding: 8
 
     clickable: enabled && !isSchedule
-    enabled: visible
-    visible: showCountdownLabel || !isSchedule
+    enabled: showCountdownLabel || !isSchedule
     hoverEnabled: enabled && !isSchedule
 
 
     /* Children
      * ****************************************************************************************/
+    FontMetrics {
+        id: metrics
+        font: coolingLbl.font
+    }
+
     Item {
         id: mainItem
 
@@ -72,6 +76,7 @@ ToolButton {
             anchors.centerIn: parent
             visible: opacity > 0
             opacity: _control.state === "heating" ? 1. : 0.
+            spacing: 2
 
             //! HEATING mode icon
             Image {
@@ -81,9 +86,9 @@ ToolButton {
 
             Label {
                 Layout.alignment: Qt.AlignCenter
-                font.pointSize: Application.font.pointSize * 0.75
+                font.pointSize: Application.font.pointSize * 0.65
                 text: "Heating"
-                visible: !showCountdownLabel
+                opacity: showCountdownLabel ? 0 : 1
             }
 
             Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -95,6 +100,7 @@ ToolButton {
             anchors.centerIn: parent
             visible: opacity > 0
             opacity: _control.state === "cooling" ? 1. : 0.
+            spacing: 2
 
             //! COOLING mode icon
             Image {
@@ -103,10 +109,11 @@ ToolButton {
             }
 
             Label {
+                id: coolingLbl
                 Layout.alignment: Qt.AlignCenter
-                font.pointSize: Application.font.pointSize * 0.75
+                font.pointSize: Application.font.pointSize * 0.65
                 text: "Cooling"
-                visible: !showCountdownLabel
+                opacity: showCountdownLabel ? 0 : 1
             }
 
             Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -118,6 +125,7 @@ ToolButton {
             anchors.centerIn: parent
             visible: opacity > 0
             opacity: _control.state === "auto" ? 1. : 0.
+            spacing: 2
 
             //! AUTO mode icon
             Image {
@@ -127,9 +135,9 @@ ToolButton {
 
             Label {
                 Layout.alignment: Qt.AlignCenter
-                font.pointSize: Application.font.pointSize * 0.75
+                font.pointSize: Application.font.pointSize * 0.65
                 text: "Auto"
-                visible: !showCountdownLabel
+                opacity: showCountdownLabel ? 0 : 1
             }
 
             Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -139,7 +147,7 @@ ToolButton {
             id: countdownLabel
 
             anchors.bottom: mainItem.bottom
-            anchors.bottomMargin: -10
+            anchors.bottomMargin: isSchedule ? 4 : -8
             anchors.horizontalCenter: parent.horizontalCenter
 
             font.pointSize: Application.font.pointSize * 0.65
@@ -192,7 +200,7 @@ ToolButton {
 
     state: {
         if (isSchedule)
-            return "";
+            return "schedule";
 
         switch(device?.systemSetup?.systemMode) {
         case AppSpecCPP.Off:
@@ -211,6 +219,10 @@ ToolButton {
         }
     }
     states: [
+        State {
+            name: "schedule"
+        },
+
         State {
             name: "off"
         },

@@ -33,10 +33,27 @@ Sync::Sync(QObject *parent)
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
     mContractorInfo = setting.value(cContractorSettings).toMap();
 
-    connect(this, &Sync::contractorInfoReady, [this]() {
+    connect(this, &Sync::contractorInfoReady, this, [this]() {
         QSettings setting;
         setting.setValue(cContractorSettings, mContractorInfo);
     });
+}
+
+void Sync::setSerialNumber(const QString &serialNumber)
+{
+    if (serialNumber.isEmpty() || serialNumber == mSerialNumber){
+        TRACE << "serial number not set:" << serialNumber << ", current is :" << mSerialNumber;
+        return;
+    }
+
+    mHasClient            = true;
+    // Update SN for get settings
+    mSerialNumber         = serialNumber;
+    // Force to update with new settings
+    mLastPushTime = QDateTime();
+    mAutoModeLastPushTime = QDateTime();
+    // Fetch with new serial number
+    emit serialNumberChanged();
 }
 
 void Sync::setUID(cpuid_t accessUid) { mSystemUuid = accessUid; }
@@ -93,6 +110,8 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
                     mLastPushTime = QDateTime();
                     // Fetch with new serial number
                     emit serialNumberChanged();
+
+                    mAutoModeLastPushTime = QDateTime();
                 }
 
                 TRACE << "The serial number does not match the last one." << mSerialNumber << sn;
@@ -236,13 +255,16 @@ bool Sync::fetchSettings()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get settings!";
+        // false preventing the fetch timer to be disabled
         return false;
     }
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        bool success = true;
         if (data.isEmpty()) {
             if (reply->error() == QNetworkReply::NoError) {
                 TRACE << "Received settings corrupted: " + mSerialNumber;
+                success = false;
             }
         }
         else if (data.value("sn").toString() == mSerialNumber) {
@@ -275,10 +297,12 @@ bool Sync::fetchSettings()
             checkFirmwareUpdate(data);
         }
         else {
+            success = false;
             TRACE << "Received settings belong to another device: " + mSerialNumber + ", " + data.value("sn").toString();
         }
 
-        fetchAutoModeSetings();
+        // emits settingsFetched to allow next fetch
+        fetchAutoModeSetings(success);
     };
 
     auto reply = callGetApi(cBaseUrl + QString("api/sync/getSettings?sn=%0").arg(mSerialNumber), callback);
@@ -289,19 +313,41 @@ bool Sync::fetchSettings()
     return reply != nullptr;
 }
 
-bool Sync::fetchAutoModeSetings()
+bool Sync::fetchAutoModeSetings(bool success)
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get auto mode settings!";
+        // to preserve he flow! although this must not happen!
+        emit settingsFetched(false);
         return false;
     }
 
-    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    auto callback = [this, success](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (data.isEmpty()) {
             TRACE << "Received settings corrupted";
         }
-        emit autoModeSettingsReady(data.toVariantMap(), !data.isEmpty());
-        emit settingsFetched(!data.isEmpty());
+
+        QDateTime dateTimeObject = updateTimeStringToTime(data.value("last_update").toString());
+        if (dateTimeObject.isValid()) {
+            // Use the dateTimeObject here with time information
+            TRACE << "Auto mode: date with time cpp set last_update: " << dateTimeObject
+                  << dateTimeObject.toString() << (mAutoModeLastPushTime > dateTimeObject)
+                  << (mAutoModeLastPushTime == dateTimeObject)
+                  << (mAutoModeLastPushTime < dateTimeObject);
+        } else {
+            TRACE << "Auto mode: Invalid date format! cpp set last_update:";
+        }
+
+        // check date time
+        if (!mAutoModeLastPushTime.isNull() && (!dateTimeObject.isValid() || mAutoModeLastPushTime >= dateTimeObject)) {
+            TRACE << "Auto mode: Received auto mode settings has invalid date last_update: " + dateTimeObject.toString();
+        } else {
+            mAutoModeLastPushTime = dateTimeObject;
+            emit autoModeSettingsReady(data.toVariantMap(), !data.isEmpty());
+        }
+
+        // what if auto mode sucess but normal not!
+        emit settingsFetched(success && !data.isEmpty());
     };
 
     return callGetApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), callback) != nullptr;
@@ -395,6 +441,19 @@ void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &a
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() == QNetworkReply::NoError) {
             TRACE << "Auto mode settings pushed to server: setAutoModeSettings";
+
+            auto dateString = data.value("last_update");
+            QDateTime dateTimeObject =  QDateTime::fromString(dateString.toString(), Qt::ISODate);
+
+            if (dateTimeObject.isValid()) {
+                // Use the dateTimeObject here with time information
+                TRACE << "Auto mode:  Date with time cpp set last_update: " << dateTimeObject << dateTimeObject.toString();
+                mAutoModeLastPushTime = dateTimeObject;
+
+            } else {
+                TRACE << "Auto mode: Invalid date format! cpp set last_update:";
+            }
+
             emit autoModePush(true);
         } else {
             emit autoModePush(false);

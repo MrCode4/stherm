@@ -151,7 +151,7 @@ WiringPage {
         detailMessage: "Are all relay LEDs switching?"
         onAccepted: {
             backButtonVisible = false;
-            deviceController.deviceControllerCPP.writeTestResult("Relay test", true)
+            deviceController.deviceControllerCPP.saveTestResult("Relay test", true)
             nextPage()
         }
         onRejected: {
@@ -170,7 +170,7 @@ WiringPage {
         }
         onRejected: {
             backButtonVisible = true;
-            deviceController.deviceControllerCPP.writeTestResult("Relay test", false, "The backlight is not functioning properly")
+            deviceController.deviceControllerCPP.saveTestResult("Relay test", false, "The backlight is not functioning properly")
             nextPage()
         }
     }

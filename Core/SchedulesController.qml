@@ -48,6 +48,7 @@ QtObject {
         device.schedulesChanged();
 
         // Send data to server and save file
+        deviceController.updateEditMode(AppSpec.EMSchedule);
         deviceController.pushSettings();
     }
 
@@ -63,6 +64,7 @@ QtObject {
 //            schedule.destroy();
 
             // Send data to server
+            deviceController.updateEditMode(AppSpec.EMSchedule);
             deviceController.pushSettings();
         }
     }
@@ -281,7 +283,8 @@ QtObject {
         })
 
         // !this function is called even if device is off or hold!
-        if (device.isHold || (device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) {
+        if (device.isHold || ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) ||
+                device?.systemSetup?._isSystemShutoff) {
             currentSchedule = null;
         }
 
@@ -357,8 +360,8 @@ QtObject {
                                       newSchedule.enable = schedule.is_enable;
                                       newSchedule.name = schedule.name;
                                       newSchedule.type = schedule.type_id;
-                                      newSchedule.temprature = schedule.temp;
-                                      newSchedule.humidity = schedule.humidity;
+                                      newSchedule.temprature = Utils.clampValue(schedule.temp, AppSpec.minimumTemperatureC, AppSpec.maximumTemperatureC);
+                                      newSchedule.humidity = Utils.clampValue(schedule.humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
                                       newSchedule.startTime = formatTime(schedule.start_time);
                                       newSchedule.endTime = formatTime(schedule.end_time);
                                       newSchedule.repeats = schedule.weekdays.map(String).join(',');
@@ -528,6 +531,11 @@ QtObject {
     //! Send null schedule when system mode changed to OFF mode
     property Connections systemSetupConnections: Connections{
         target: device.systemSetup
+
+        function on_IsSystemShutoffChanged() {
+            if (device?.systemSetup?._isSystemShutoff)
+                deviceController.setActivatedSchedule(null);
+        }
 
         function onSystemModeChanged() {
             if ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) {

@@ -24,9 +24,6 @@ I_PopUp {
     title: "\u00b0F / \u00b0C"
 
 
-    onOpened: uiSession.deviceController.updateEditMode(AppSpec.EMSettings);
-    onClosed: uiSession.deviceController.updateEditMode(AppSpec.EMSettings, false);
-
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
@@ -62,6 +59,8 @@ I_PopUp {
                     }
                 }
 
+                // this is internal for now , no need to push or lock
+                //                uiSession.deviceController.updateEditMode(AppSpec.EMSettings);
                 uiSession.deviceController.pushSettings();
 
                 delayedClose.start();

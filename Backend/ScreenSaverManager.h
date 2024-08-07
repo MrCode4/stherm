@@ -57,6 +57,10 @@ public:
 
     Q_INVOKABLE void    setAppActive(bool setAppActive);
 
+    Q_INVOKABLE void    lockDevice(const bool &isLock);
+
+    void      triggerScreenSaverBasedOnTOF();
+
     /* Protected/private methods
      * ****************************************************************************************/
 protected:
@@ -98,4 +102,6 @@ private:
     bool                mAutoRestartOnPress = true;
 
     bool                mSetAppActive = false;
+
+    bool                mIsDeviceLocked = false;
 };

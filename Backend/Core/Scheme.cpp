@@ -119,7 +119,7 @@ Scheme::~Scheme()
     stop();
 }
 
-void Scheme::restartWork()
+void Scheme::restartWork(bool forceStart)
 {
     if (isRunning()) {
         TRACE << "restarting HVAC" << stopWork;
@@ -142,11 +142,13 @@ void Scheme::restartWork()
         emit stopWorkRequested();
         this->wait(QDeadlineTimer(1000, Qt::PreciseTimer));
 
-    } else {
+    } else if (forceStart){
         TRACE << "started HVAC";
         stopWork = false;
         mLogTimer.start();
         this->start();
+    } else {
+        TRACE << "trying to start before main start";
     }
 }
 
@@ -348,9 +350,8 @@ void Scheme::VacationLoop()
 
     } else {
         TRACE << "The conditions for the vacation loop (Temperature scheme) are not met.";
+        waitLoop(-1);
     }
-
-    waitLoop(-1);
 }
 
 void Scheme::EmergencyLoop()

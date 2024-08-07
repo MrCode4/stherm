@@ -28,6 +28,7 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(bool heatPumpEmergency MEMBER heatPumpEmergency NOTIFY heatPumpEmergencyChanged FINAL)
 
     Q_PROPERTY(bool isVacation        MEMBER isVacation        NOTIFY isVacationChanged FINAL)
+    Q_PROPERTY(bool _isSystemShutoff  MEMBER _mIsSystemShutoff NOTIFY isSystemShutoffChanged FINAL)
 
     QML_ELEMENT
 
@@ -48,6 +49,8 @@ public:
 
     AppSpecCPP::SystemMode systemMode;
 
+    bool _mIsSystemShutoff;
+
     bool heatPumpEmergency;
 
     SystemAccessories* systemAccessories;
@@ -64,5 +67,6 @@ signals:
     void heatPumpEmergencyChanged();
     void systemAccessoriesChanged();
     void isVacationChanged();
+    void isSystemShutoffChanged();
 
 };

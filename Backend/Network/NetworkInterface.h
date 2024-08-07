@@ -2,9 +2,6 @@
 
 #include <QObject>
 #include <QQmlEngine>
-#include <QNetworkInterface>
-#include <QProcess>
-#include <QNetworkAccessManager>
 #include <QTimer>
 
 #include "WifiInfo.h"
@@ -90,6 +87,7 @@ private:
 private slots:
     void                onErrorOccured(int error); //! error is: NmcliInterface::Error
     void                checkHasInternet();
+    void                clearDNSCache();
 
     /* Signals
      * ****************************************************************************************/
@@ -149,11 +147,6 @@ private:
     QList<WifiInfo*>&       mWifiInfos;
 
     /*!
-     * \brief mNam QNetworkRequestManager that is used to check internet access
-     */
-    QNetworkAccessManager   mNam;
-
-    /*!
      *  \brief mNamIsRunning Whether mNam is running a request
      */
     bool                    mNamIsRunning;
@@ -168,6 +161,12 @@ inline void NetworkInterface::setHasInternet(bool hasInternet)
 {
     if (mHasInternet != hasInternet) {
         mHasInternet = hasInternet;
+
+        // clear the cache to ensure this is not the cause
+        if (!mHasInternet){
+            clearDNSCache();
+        }
+
         emit hasInternetChanged();
     }
 }

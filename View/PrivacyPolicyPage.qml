@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * privacyPolicy and terms of use
+ * PrivacyPolicyPage: privacyPolicy and terms of use
  * ***********************************************************************************************/
 
 BasePageView {
@@ -32,7 +32,7 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    //! Next button (loads StartTestPage)
+    //! Next button (loads SystemTypePage in normal mode or VersionInformationPage in test mode)
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
@@ -44,7 +44,9 @@ BasePageView {
         onClicked: {
             //! Save accepted version and Load the next page
             if (root.StackView.view) {
+
                 if (testMode) {
+                    appModel.userPolicyTerms.acceptedTimeTester = system.getCurrentTime();
                     appModel.userPolicyTerms.acceptedVersionOnTestMode = appModel.userPolicyTerms.currentVersion;
                     root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                                  "uiSession": Qt.binding(() => uiSession),
@@ -52,6 +54,7 @@ BasePageView {
                                              });
 
                 } else {
+                    appModel.userPolicyTerms.acceptedTimeUser = system.getCurrentTime();
                     appModel.userPolicyTerms.acceptedVersion = appModel.userPolicyTerms.currentVersion;
                     root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                                  "uiSession": uiSession,
@@ -64,154 +67,69 @@ BasePageView {
         }
     }
 
-    //! Privacy Policy
-    ExpandableItem {
-        id: privacyPolicyExpand
+    CheckBox {
+        id: privacyPolicyChbox
 
-        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.leftMargin: leftPadding
+        anchors.verticalCenter: parent.verticalCenter
 
-        width: parent.width
-        maxHeight: root.height * 0.55
+        checked: false
 
-        isExpanded: true
-        title: "Privacy Policy V. " + appModel.userPolicyTerms.currentVersion
-
-        onIsExpandedChanged: {
-            termsOfUseExpand.isExpanded = !isExpanded;
-        }
-
-        Item {
-            anchors.fill: parent
-
-            Flickable {
-                id: privacyFlick
-
-                property bool isRead: false
-
-                ScrollIndicator.vertical: ScrollIndicator {
-                    parent: privacyFlick.parent
-                    height: parent.height
-                    x: parent.width
-
-                    onPositionChanged: {
-                        if (!privacyFlick.isRead)
-                            privacyFlick.isRead = position > 0.95;
-                    }
-                }
-
-                anchors.fill: parent
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                contentWidth: width
-                contentHeight: privacyPolicyLabel.implicitHeight
-
-                Label {
-                    id: privacyPolicyLabel
-                    anchors.fill: parent
-
-                    text: appModel.userPolicyTerms.privacyPolicy
-                    leftPadding: 4;
-                    rightPadding: 4
-                    background: null
-                    textFormat: Text.MarkdownText
-                    wrapMode: Text.WordWrap
-                    lineHeight: 1.3
-                    font.pointSize: Qt.application.font.pointSize * 0.7
-                }
-            }
-        }
-    }
-
-    //! Terms Of Use
-    ExpandableItem {
-        id: termsOfUseExpand
-
-        anchors.top: privacyPolicyExpand.bottom
-        anchors.topMargin: 10
-        isExpanded: false
-        title: "Terms Of Use V. " + appModel.userPolicyTerms.currentVersion
-        width: parent.width
-        maxHeight: root.height * 0.55
-
-        onIsExpandedChanged: {
-            privacyPolicyExpand.isExpanded = !isExpanded;
-        }
-
-        Item {
-            anchors.fill: parent
-
-
-            Flickable {
-                id: termsflick
-
-                property bool isRead: false
-
-                ScrollIndicator.vertical: ScrollIndicator {
-                    parent: termsflick.parent
-                    height: parent.height
-                    x: parent.width
-
-                    onPositionChanged: {
-                        if (!termsflick.isRead)
-                            termsflick.isRead = position > 0.95;
-                    }
-                }
-
-
-                anchors.fill: parent
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                contentWidth: width
-                contentHeight: termsUsageLabel.implicitHeight
-
-                Label {
-                    id: termsUsageLabel
-                    anchors.fill: parent
-
-                    text: appModel.userPolicyTerms.termsOfUse
-                    leftPadding: 4;
-                    rightPadding: 4
-                    background: null
-                    textFormat: Text.MarkdownText
-                    wrapMode: Text.WordWrap
-                    lineHeight: 1.3
-                    font.pointSize: Qt.application.font.pointSize * 0.7
-                }
-            }
-        }
-    }
-
-    RowLayout {
-        spacing: 4
-
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
-
-        enabled: (privacyPolicyLabel.text.length > 0 && termsUsageLabel.text.length > 0) &&
-                 (privacyFlick.isRead && termsflick.isRead)
-
-        CheckBox {
-            id: privacyPolicyChbox
-            Layout.leftMargin: -leftPadding
-            focusPolicy: Qt.TabFocus
-
-            checked: false
-        }
-
-        Label {
-            Layout.alignment: Qt.AlignVCenter
-
-            font.pointSize: Application.font.pointSize * 0.85
-            textFormat: Text.StyledText
-            linkColor: Material.foreground
-            verticalAlignment: Text.AlignVCenter
-            text: '<p>I agree to <b><a>Privacy Policy</a></b> and<br><b><a>Terms of use</a></b>.</p>'
-
-            TapHandler {
-                onTapped: {
+        // Use TapHandler to handle checked in the checkbox.
+        TapHandler {
+            onTapped: {
+                if (privacyPolicyPopup.isRead) {
                     privacyPolicyChbox.checked = !privacyPolicyChbox.checked;
+                    privacyPolicyPopup.isAccepted = privacyPolicyChbox.checked;
+
+                } else {
+                    managePrivacyPolicyChbox();
                 }
             }
         }
+    }
+
+    Label {
+        anchors.left: privacyPolicyChbox.right
+        anchors.right: parent.right
+        anchors.leftMargin: leftPadding
+        anchors.verticalCenter: parent.verticalCenter
+
+        font.pointSize: Application.font.pointSize * 0.85
+        textFormat: Text.StyledText
+        linkColor: Material.foreground
+        verticalAlignment: Text.AlignVCenter
+        wrapMode: Text.WordWrap
+        text:  '<p>By checking this box and activating this device, I agree to the <b><a>Privacy Policy</a></b> and <b><a>Terms of use</a></b>,
+                    which contain arbitration provisions waiving my right to a jury trial and my right to enforce this contract via class action.</p>'
+
+        TapHandler {
+            onTapped: {
+                managePrivacyPolicyChbox();
+            }
+        }
+    }
+
+    //! PrivacyPolicyPopup: To improve memory efficiency, we declared this here
+    PrivacyPolicyPopup {
+        id: privacyPolicyPopup
+        userPolicyTerms: appModel.userPolicyTerms
+
+        onOpened: {
+            if (!isRead)
+                uiSession.toastManager.showToast("You need to scroll to the end to accept.", "");
+        }
+
+        onClosed: {
+            if (isAccepted)
+                privacyPolicyChbox.checked = isRead;
+        }
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+    function managePrivacyPolicyChbox() {
+        privacyPolicyPopup.open();
     }
 }

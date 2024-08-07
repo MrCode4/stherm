@@ -16,7 +16,6 @@ BacklightPage {
     bottomPadding: 32 * scaleFactor
     title: "Backlight Test"
     isTest: true
-    backlightSwitch.checked: true
 
     onVisibleChanged: {
         if (visible) {
@@ -61,7 +60,7 @@ BacklightPage {
         detailMessage: "Are all LEDS on,<br>at the same brightness and colour?"
         onAccepted: {
             backButtonVisible = false;
-            deviceController.deviceControllerCPP.writeTestResult("Backlight test", true)
+            deviceController.deviceControllerCPP.saveTestResult("Backlight test", true)
             nextPage()
         }
         onRejected: {
@@ -80,7 +79,7 @@ BacklightPage {
         }
         onRejected: {
             backButtonVisible = true;
-            deviceController.deviceControllerCPP.writeTestResult("Backlight test", false, "The backlight is not functioning properly")
+            deviceController.deviceControllerCPP.saveTestResult("Backlight test", false, "The backlight is not functioning properly")
             nextPage()
         }
     }
@@ -102,7 +101,8 @@ BacklightPage {
             }
 
             _root.setCurrentColor(btnIndex)
-            _root.applyOnline()
+            backlightSwitch.checked = true;
+            onlineTimer.startTimer();
             buttonTimer.btnIndex++
         }
     }

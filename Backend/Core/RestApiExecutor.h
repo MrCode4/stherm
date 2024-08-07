@@ -26,5 +26,8 @@ protected:
     void processNetworkReply(QNetworkReply* reply) override;
 
 private:
+    QString prepareHashKey(int operation, const QString& endpoint);
+
+private:
     QHash <QString, ResponseCallback> mCallbacks;
 };

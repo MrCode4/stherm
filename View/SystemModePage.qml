@@ -22,10 +22,6 @@ BasePageView {
      * ****************************************************************************************/
     title: "System Mode"
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSystemMode);
-
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMSystemMode, false);
-
     /* Children
      * ****************************************************************************************/
     //! Make buttons mutually-exclusive
@@ -56,7 +52,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Cooling
-            enabled: coolAvailable
+            enabled: coolAvailable && !device?.systemSetup._isSystemShutoff
             text: "Cooling"
 
             onClicked: {
@@ -72,7 +68,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Heating
-            enabled: heatAvailable
+            enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Heating"
 
             onClicked: {
@@ -88,7 +84,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             checked: device?.systemSetup.systemMode === AppSpecCPP.Auto
-            enabled: coolAvailable && heatAvailable
+            enabled: coolAvailable && heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Auto"
 
             onClicked: {
@@ -104,7 +100,8 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemSetup.isVacation
+            checked: device?.systemSetup.isVacation && !device?.systemSetup._isSystemShutoff
+            enabled: !device?.systemSetup._isSystemShutoff
             text: "Vacation"
 
             onClicked: {
@@ -121,7 +118,7 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
-            checked: device?.systemSetup.systemMode === AppSpecCPP.Off
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Off || device?.systemSetup._isSystemShutoff
             text: "OFF"
 
             onClicked: {

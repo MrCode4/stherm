@@ -18,8 +18,10 @@ ItemDelegate {
     //! index of this delegate in model/view
     property int        delegateIndex: -1
 
-    property string dateTimeText: message.datetime ? (Date.fromLocaleString(message.datetime).toLocaleString(locale, " (dd MMM yyyy h:mm AP)")) :
-                                                     ""
+    // we can not support floating part of seconds as the way currently sent with microseconds precision, so we omit it as we do not need in UI
+    property string dateTimeText: message.datetime ? (Date.fromLocaleString(locale, message.datetime.split('.')[0], "yyyy-MM-dd HH:mm:ss").
+                                                      toLocaleString(locale, " (MMM dd, yyyy h:mmAP)")) :
+                                                     " -"
     /* Object properties
      * ****************************************************************************************/
     highlighted: !message.isRead

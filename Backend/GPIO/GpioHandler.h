@@ -32,6 +32,11 @@ public:
 
     bool stopped() const;
 
+    bool waitingReadProcessed() const;
+    void readProcessed();
+
+    void beforeReadyRead();
+
 signals:
     void readyRead(QByteArray buffer);
 
@@ -41,6 +46,7 @@ private:
     QString filePath;
     QString mError;
     bool _stopped = false;
+    bool _waitingReadProcessed = false;
 
 #ifdef __unix__
     int _fd;

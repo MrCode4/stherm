@@ -90,21 +90,8 @@ QSObject {
     //! Private policy and terms of use
     property UserPolicyTerms userPolicyTerms: UserPolicyTerms {}
 
-    //! When a new object is added to the device, ensure it's saved in the
-    //! correct save sequence. To achieve this, the object should be added to
-    //! defaultRepo using a timer after the loading process finishes.
-    //! The addObject function will ignore objects that already exist
-    //! in the defaultRepo during future runs.
-    property Timer _timer: Timer {
-        running: !AppCore.defaultRepo._isLoading
-        interval: 0
-        repeat: false
-
-        onTriggered: {
-            AppCore.defaultRepo.addObjectManually(userPolicyTerms);
-        }
-
-    }
+    //! Lock model
+    property Lock            lock: Lock {}
 
     /* Functions
      * ****************************************************************************************/

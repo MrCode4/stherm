@@ -26,7 +26,6 @@ static  const QString m_T1                    = "Temperature compensation T1 (F)
 #endif
 static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
-
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
     "green": 255,
@@ -133,11 +132,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(m_scheme, &Scheme::alert, this, [this]() {
-        TRACE << STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach);
-        // TODO
-        // emit alert(STHERM::AlertLevel::LVL_Emergency,
-        //            AppSpecCPP::AlertTypes::Alert_temperature_not_reach,
-        //            STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_not_reach));
+        emit alert(STHERM::AlertLevel::LVL_Emergency,
+                   AppSpecCPP::AlertTypes::Alert_Efficiency_Issue,
+                   STHERM::getAlertTypeString(AppSpecCPP::Alert_Efficiency_Issue));
     });
 
     // TODO should be loaded later for accounting previous session
@@ -157,6 +154,18 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceIO, &DeviceIOController::fanStatusUpdated, this, [this](bool fanOff) {
         mFanOff = fanOff;
     });
+
+    connect(_deviceIO, &DeviceIOController::forceOffSystem, this, [this](bool forceOff) {
+
+        if (forceOff) {
+            emit forceOffSystem();
+
+        } else if (mSystemSetup->_mIsSystemShutoff) {
+            emit exitForceOffSystem();
+        }
+    });
+
+    connect(_deviceIO, &DeviceIOController::co2SensorStatus, this, &DeviceControllerCPP::co2SensorStatus);
 
     mTEMPERATURE_COMPENSATION_Timer.setTimerType(Qt::PreciseTimer);
     mTEMPERATURE_COMPENSATION_Timer.setInterval(1000);
@@ -259,18 +268,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         emit alert(alertLevel,
                    alertType,
                    alertMessage);
-
-        // To monitor alert type like off the system
-        switch (alertType) {
-        case AppSpecCPP::Alert_humidity_high:
-        case AppSpecCPP::Alert_humidity_low:
-        case AppSpecCPP::Alert_temp_high:
-        case AppSpecCPP::Alert_temp_low:
-            // mSystemSetup->systemMode = AppSpecCPP::SystemMode::Off;
-            break;
-        default:
-            break;
-        }
     });
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
@@ -527,8 +524,8 @@ void DeviceControllerCPP::startDevice()
     // will be loaded always, but should be OFF in iniial setup mode as its default is OFF
     QTimer::singleShot(5000, this, [this]() {
         TRACE << "starting scheme";
-        m_scheme->restartWork();
-        m_HumidityScheme->restartWork();
+        m_scheme->restartWork(true);
+        m_HumidityScheme->restartWork(true);
     });
 
     if (startMode == 0) {
@@ -692,6 +689,19 @@ void DeviceControllerCPP::wifiConnected(bool hasInternet)
     }
 }
 
+void DeviceControllerCPP::lockDeviceController(bool isLock)
+{
+    // TODO
+    return;
+
+    if (isLock) {
+        _deviceIO->stopTOFGpioHandler();
+
+    } else {
+        _deviceIO->startTOFGpioHandler();
+    }
+}
+
 void DeviceControllerCPP::setAdaptiveBrightness(const double adaptiveBrightness) {
     if (mAdaptiveBrightness == adaptiveBrightness)
         return;
@@ -744,9 +754,9 @@ void DeviceControllerCPP::checkContractorInfo()
     m_system->fetchContractorInfo();
 }
 
-void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
+void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings)
 {
-    m_system->pushSettingsToServer(settings, hasSettingsChanged);
+    m_system->pushSettingsToServer(settings);
 }
 
 void DeviceControllerCPP::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
@@ -866,9 +876,9 @@ QVariantMap DeviceControllerCPP::getMainData()
     return mainData;
 }
 
-void DeviceControllerCPP::writeTestResult(const QString &testName, const QString& testResult, const QString &description)
+void DeviceControllerCPP::writeTestResult(const QString &fileName, const QString &testName, const QString& testResult, const QString &description)
 {
-    QFile file("test_results.csv");
+    QFile file(fileName);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
         qWarning() << "Unable to open file" << file.fileName() << "for writing";
@@ -879,38 +889,48 @@ void DeviceControllerCPP::writeTestResult(const QString &testName, const QString
     output << testName << "," << testResult << "," << description << "\n";
 }
 
-void DeviceControllerCPP::writeTestResult(const QString &testName, bool testResult, const QString &description)
+void DeviceControllerCPP::saveTestResult(const QString &testName, bool testResult, const QString &description)
 {
-    mAllTestsPassed.append(testResult);
+    //! TODO check if testName already existed (defined in unit tests)
+    mAllTestsResults.insert({testName, testResult});
+    mAllTestsValues.insert({testName, description});
+    // keep the order on first occurance
+    if (!mAllTestNames.contains(testName))
+        mAllTestNames.push_back(testName);
+
     QString result = testResult ? "PASS" : "FAIL";
-    writeTestResult(testName, result, description);
+    writeTestResult("test_results.csv", testName, result, description);
 }
 
 void DeviceControllerCPP::beginTesting()
 {
-    QFile file("test_results.csv");
-    mAllTestsPassed.clear();
+    mAllTestsValues.clear();
+    mAllTestsResults.clear();
+    mAllTestNames.clear();
+    //! TODO initialize all tests in mAllTestNames
 
+    QFile file("test_results.csv");
     if (file.exists() && !file.remove())
     {
         qWarning() << "Unable to delete file" << file.fileName();
-        return;
     }
+    writeTestResult("test_results.csv", "Test name", QString("Test Result"), "Description");
 
     QString uid = _deviceAPI->uid();
+    QString sn = m_system->serialNumber();
     QString sw = QCoreApplication::applicationVersion();
     QString qt = qVersion();
     QString nrf = getNRF_SW();
     QString kernel = m_system->kernelBuildVersion();
     QString ti = getTI_SW();
 
-    writeTestResult("Test name", QString("Test Result"), "Description");
-    writeTestResult("UID", !uid.isEmpty(), uid);
-    writeTestResult("SW version", !sw.isEmpty(), sw);
-    writeTestResult("QT version", !qt.isEmpty(), qt);
-    writeTestResult("NRF version", !nrf.isEmpty(), nrf);
-    writeTestResult("Kernel version", !kernel.isEmpty(), kernel);
-    writeTestResult("TI version", !ti.isEmpty(), ti);
+    saveTestResult("UID", !uid.isEmpty(), uid);
+    saveTestResult("SN", !sn.isEmpty(), sn);
+    saveTestResult("SW version", !sw.isEmpty(), sw);
+    saveTestResult("QT version", !qt.isEmpty(), qt);
+    saveTestResult("NRF version", !nrf.isEmpty(), nrf);
+    saveTestResult("Kernel version", !kernel.isEmpty(), kernel);
+    saveTestResult("TI version", !ti.isEmpty(), ti);
 }
 
 void DeviceControllerCPP::testBrightness(int value)
@@ -925,24 +945,43 @@ void DeviceControllerCPP::stopTestBrightness()
 
 void DeviceControllerCPP::testFinished()
 {
-    if (!QFileInfo::exists("test_results.csv")) {
-        TRACE << "test_results.csv not exists. So can not wite the test file.";
-
-        return;
+    QStringList failedTests;
+    for (const auto &testName : mAllTestNames) {
+        auto resultIter = mAllTestsResults.find(testName);
+        // whether not found in results or the value is false
+        if (resultIter == mAllTestsResults.end() || !resultIter->second)
+            failedTests.append(testName);
     }
 
-    QString result = mAllTestsPassed.contains(false) ? "FAIL" : "PASS";
-    QString newFileName = QString("%1_%2.csv").arg(_deviceAPI->uid(), result);
+    TRACE << failedTests;
+
+    QString result = failedTests.empty() ? "PASS" : "FAIL";
+    QString testResultsFileName = QString("%1_%2.csv").arg(_deviceAPI->uid(), result);
 
     // Remove the file if exists
-    if (QFileInfo::exists(newFileName)) {
-        if (!QFile::remove(newFileName)) {
-            TRACE << "Could not remove the file: " << newFileName;
+    if (QFileInfo::exists(testResultsFileName)) {
+        if (!QFile::remove(testResultsFileName)) {
+            TRACE << "Could not remove the file: " << testResultsFileName;
         }
     }
 
-    if (!QFile::rename("test_results.csv", newFileName)) {
-        TRACE << "Could not create the file: " << newFileName;
+    // override sn test on finished
+    QString sn = m_system->serialNumber();
+    saveTestResult("SN", !sn.isEmpty(), sn);
+
+    TRACE << "test finsihed with SN: " << sn;
+
+    // write header of the actual file
+    writeTestResult(testResultsFileName, "Test name", QString("Test Result"), "Description");
+    // write results to final file
+    for (const auto &testName : mAllTestNames) {
+        auto testResult = !failedTests.contains(testName);
+        QString result = testResult ? "PASS" : "FAIL";
+        QString description;
+        auto descriptionIter = mAllTestsValues.find(testName);
+        if (descriptionIter != mAllTestsValues.end())
+                description = descriptionIter->second;
+        writeTestResult(testResultsFileName, testName, result, description);
     }
 
     // disabled it for now!

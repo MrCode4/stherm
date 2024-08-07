@@ -62,7 +62,7 @@ public:
         Auto,
         Vacation,
         Off,
-        Emergency
+        Emergency,
     };
     Q_ENUM(SystemMode)
 
@@ -138,6 +138,10 @@ public:
         EMSystemSetup        = 1 << 9,
         EMSystemMode         = 1 << 10,
         EMDateTime           = 1 << 11,
+        EMAutoMode           = 1 << 12,
+        EMSensorValues       = 1 << 13,
+        EMMessages           = 1 << 14,
+        EMGeneral            = 1 << 15,
     };
     Q_ENUM(EditMode)
 
@@ -147,13 +151,13 @@ public:
  */
     enum AlertTypes
     {
-        Alert_temp_high = 1,// +127 max
-        Alert_temp_low, // -128 low
+        Alert_temp_high = 1,// +37.78 C (100 F) max
+        Alert_temp_low, // 4.44 C (40 F) low
         Alert_Tvoc_high, // 255 max (tvoc value range 0.1 to 10+ mg/m^3 value is divided by 10.0)
         Alert_etoh_high, //up to 20ppm
         Alert_iaq_high, //1 to 5
         Alert_iaq_low, //1 to 5
-        Alert_humidity_high,// up to 100%
+        Alert_humidity_high,// up to 80%
         Alert_humidity_low,//as low as 0%
         Alert_pressure_high, //up to 1200 hPa
         Alert_c02_high,//400 to 5000ppm
@@ -163,8 +167,11 @@ public:
         Alert_wiring_not_connected,
         Alert_could_not_set_relay,
         Alert_temperature_not_reach,
+        Alert_temperature_humidity_malfunction,
         Alert_Light_High,
         Alert_Light_Low,
+        Alert_Efficiency_Issue,
+        Alert_No_Data_Received,
         NO_ALlert
     };
     Q_ENUM(AlertTypes)

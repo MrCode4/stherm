@@ -19,8 +19,13 @@ BasePageView {
      * ****************************************************************************************/
     title: "Schedule"
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMSchedule);
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMSchedule, false);
+    Component.onCompleted: {
+        deviceController.updateLockMode(AppSpec.EMSchedule, true);
+    }
+
+    Component.onDestruction: {
+        deviceController.updateLockMode(AppSpec.EMSchedule, false);
+    }
 
     /* Children
      * ****************************************************************************************/

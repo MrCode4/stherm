@@ -24,12 +24,14 @@ BasePageView {
 
     Component.onCompleted: {
         if (initialSetup) {
+            deviceController.updateEditMode(AppSpec.EMGeneral);
             deviceController.pushSettings();
         }
     }
 
     Component.onDestruction: {
         if (initialSetup) {
+            deviceController.updateEditMode(AppSpec.EMGeneral);
             deviceController.pushSettings();
         }
     }
@@ -111,7 +113,7 @@ BasePageView {
             horizontalAlignment: Qt.AlignHCenter
             x: (parent.width - width) / 2
             font.pointSize: Application.font.pointSize * 0.9
-            text: "For any issues or questions, please contact\nour tech support by calling\n(855) OWN-NUVE or (855) 696-6883."
+            text: "For any issues or questions, please contact\nour tech support by calling\n(657) 626-4887."
         }
     }
 }

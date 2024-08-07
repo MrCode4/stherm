@@ -76,6 +76,7 @@ BasePageView {
         columnSpacing: 4
         rowSpacing: 4
 
+
         Label {
             Layout.columnSpan: 3
             text: "Humidifier"
@@ -186,6 +187,6 @@ BasePageView {
             }
         }
 
-        deviceController.setSystemAccesseories(accTypeUI, wireTypeUI);
+        deviceController.setSystemAccessories(accTypeUI, wireTypeUI);
     }
 }

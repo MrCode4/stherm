@@ -40,10 +40,6 @@ Popup {
         }
     }
 
-    onOpened: deviceController.updateEditMode(AppSpec.EMVacation, !uiSessionId.showMainWindow);
-
-    onClosed: deviceController.updateEditMode(AppSpec.EMVacation, false);
-
     Material.theme: Material.Dark
     /* Children
      * ****************************************************************************************/

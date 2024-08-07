@@ -30,7 +30,7 @@ NmcliInterface::NmcliInterface(QObject* parent)
     setupObserver();
 
     initializeConProfilesWatcher();
-    scanConProfiles(); // TODO this should be called Async
+    //    scanConProfiles(); // TODO this should be called Async
 }
 
 NmcliInterface::~NmcliInterface()
