@@ -15,7 +15,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property int testCounter: 0
-    property int allTests:    4
+    property int allTests:    5
 
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system
@@ -72,6 +72,16 @@ BasePageView {
             } else {
                 notPassedTests.text += "\nThe nrf version and the app version are not compatible."
                 deviceController.deviceControllerCPP.saveTestResult("NRF compatibility", false, "The nrf version and the app version are not compatible")
+            }
+
+            // Test 5 (sshpass for sending logs)
+            if (system.installSSHPass()) {
+                testCounter++;
+                deviceController.deviceControllerCPP.writeTestResult("sshpass", true)
+            } else {
+                var errorText = "The sshpass does not installed.";
+                notPassedTests.text += "\n" + errorText;
+                deviceController.deviceControllerCPP.writeTestResult("sshpass", false, errorText)
             }
         }
     }

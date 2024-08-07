@@ -420,6 +420,7 @@ qt6_add_qml_module(appStherm
         systemctlRestart.sh
         update_fw_nrf.sh
         update_fw_nrf_seamless.sh
+        getsshpass.sh
         nrf_fw_update.zip
         SOURCES Backend/Network/WifiInfo.h Backend/Network/WifiInfo.cpp
 )
