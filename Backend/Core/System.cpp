@@ -83,6 +83,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     , mTestMode(false)
     , mIsNightModeRunning(false)
     , mRestarting(false)
+    , sshpassInstallCounter(0)
 {
     mUpdateFilePath = qApp->applicationDirPath() + "/" + m_updateInfoFile;
 
@@ -227,6 +228,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         }
     });
 
+    //! copies the sshpass from /usr/local/bin/ to /usr/bin
+    //! if the first one exists and second one not exists
+    //! will be installed from server when needed if either not exists
     if (!has_sshPass()) {
         TRACE << "sshpass was not in /usr/bin";
         QFile sshpass_local("/usr/local/bin/sshpass");
@@ -236,7 +240,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             TRACE_CHECK(success) << "copy sshpass successfuly";
             TRACE_CHECK(!success) << "failed to copy sshpass";
         } else {
-            TRACE << "sshpass is not in /usr/local/bin either";
+            TRACE << "sshpass is not in /usr/local/bin either, will be installed on first use";
         }
     }
 
@@ -389,6 +393,73 @@ bool NUVE::System::installUpdateService()
     return updateServiceState("appStherm-update", false);
 
 #endif
+    return true;
+}
+
+bool NUVE::System::installSSHPass(bool recursiveCall)
+{
+    if (!recursiveCall)
+        sshpassInstallCounter = 0;
+
+    TRACE << "Check sshpass existence" << recursiveCall << sshpassInstallCounter;
+
+    if (sshpassInstallCounter > 3)
+        return false;
+
+    sshpassInstallCounter++;
+
+#ifdef __unix__
+    // this helps validating the existence as well as workable version of sshPass
+    auto checkExists = []()->bool {
+        QProcess process;
+        process.start("/bin/bash", {"-c", "sshpass -V"});
+        if (!process.waitForStarted())
+            return false;
+
+        if (!process.waitForFinished())
+            return false;
+
+        QByteArray result = process.readAll();
+        TRACE << process.exitCode() << process.exitStatus() << result;
+        return (process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0 && result.startsWith("sshpass"));
+    };
+
+    if (!checkExists()) {
+        QFile getsshpassRun("/usr/local/bin/getsshpass.sh");
+        if (getsshpassRun.exists())
+            getsshpassRun.remove("/usr/local/bin/getsshpass.sh");
+
+        QFile copyFile(":/Stherm/getsshpass.sh");
+        if (!copyFile.copy("/usr/local/bin/getsshpass.sh")) {
+            TRACE << "getsshpass.sh file did not updated: " << copyFile.errorString();
+            return false;
+        }
+
+        auto exitCode = QProcess::execute("/bin/bash", {"-c", "chmod +x /usr/local/bin/getsshpass.sh"});
+        if (exitCode == -1 || exitCode == -2)
+            return false;
+
+        TRACE << "getting the sshpass using getsshpass.sh";
+
+        QProcess getsshProcess;
+        getsshProcess.start("/bin/bash", {"-c", "/usr/local/bin/getsshpass.sh"});
+        if (!getsshProcess.waitForStarted())
+            return false;
+
+        if (!getsshProcess.waitForFinished())
+            return false;
+
+        QByteArray result = getsshProcess.readAll();
+
+        exitCode = getsshProcess.exitCode();
+        TRACE << "getsshpass.sh file exec: " << exitCode << getsshProcess.exitStatus() << result;
+        if (exitCode < 0)
+            return false;
+
+        return installSSHPass(true);
+    }
+#endif
+
     return true;
 }
 
@@ -1278,10 +1349,17 @@ void NUVE::System::onSerialNumberReady()
 
 void NUVE::System::createLogDirectoryOnServer()
 {
+    if (!installSSHPass()){
+        QString error("Device is not ready to send log!");
+        qWarning() << error;
+        emit alert(error);
+        return;
+    }
+
     auto sn = serialNumber();
     // Check serial number
     if (sn.isEmpty()){
-        QString error("Serial number empty! can not create log folder!");
+        QString error("Serial number empty! can not send log!");
         qWarning() << error;
         emit alert(error);
         return;
@@ -1292,7 +1370,7 @@ void NUVE::System::createLogDirectoryOnServer()
         tryCount++;
         mLogSender.setProperty("tryCount", tryCount);
     } else {
-        QString error("Can not create log folder! Try again later.");
+        QString error("Can not send log! Try again later.");
         qWarning() << error;
         emit alert(error);
         tryCount = 0; // reset the counter for next time!
