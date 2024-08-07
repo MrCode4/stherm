@@ -19,10 +19,6 @@ BasePageView {
      * ****************************************************************************************/
     title: "Fan"
 
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMFan);
-
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMFan, false);
-
     /* Children
      * ****************************************************************************************/
     //! Confirm button
@@ -35,13 +31,13 @@ BasePageView {
         onClicked: {
             //! Update Fan
             if (deviceController) {
-                var fanMode = _autoButton.checked ? AppSpec.FMAuto :
-                                                    (_onButton.checked ? AppSpec.FMOn :
-                                                                         AppSpec.FMOff)
-                deviceController.updateFan(fanMode, _hourSliders.value);
-            }
+                var fanMode = _onButton.checked ? AppSpec.FMOn : AppSpec.FMAuto
 
-            deviceController.pushSettings();
+                deviceController.updateFan(fanMode, _hourSliders.value);
+                //! should we check the output of previous function?
+                deviceController.updateEditMode(AppSpec.EMFan);
+                deviceController.pushSettings();
+            }
 
             //! Also move out of this Page
             if (_root.StackView.view) {
@@ -77,7 +73,7 @@ BasePageView {
                 checkable: true
                 text: "Auto"
 
-                checked: fan?.mode === AppSpec.FMAuto
+                checked: fan?.mode !== AppSpec.FMOn
             }
 
             Button {
@@ -141,8 +137,8 @@ BasePageView {
                     Layout.rightMargin: 24 * scaleFactor
                     majorTickCount: 1
                     ticksCount: (to - from) / 5
-                    from: 5
-                    to: 55
+                    from: AppSpec.minimumFanWorking
+                    to: AppSpec.maximumFanWorking
                     stepSize: 5
                     value: fan?.workingPerHour ?? 0
                     valueChangeAnimation: true

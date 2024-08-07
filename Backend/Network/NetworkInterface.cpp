@@ -39,7 +39,9 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
     connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
         mSetNoInternetTimer.stop();
-        NetworkManager::instance()->clearCache();
+
+        // clear the cache to restore internet access faster
+        clearDNSCache();
 
         auto connectedWifiInfo = connectedWifi();
         if (connectedWifiInfo) {
@@ -201,7 +203,7 @@ void NetworkInterface::checkHasInternet()
     else if (!mNamIsRunning) {
         mNamIsRunning = true;
         QNetworkRequest request(cCheckInternetAccessUrl);
-        request.setTransferTimeout(8000);                
+        request.setTransferTimeout(8000);
         auto* reply = NetworkManager::instance()->get(request);
         connect(reply, &QNetworkReply::finished, this, [this, reply]() {
             bool hasInternet = reply->error() == QNetworkReply::NoError;
@@ -225,6 +227,11 @@ void NetworkInterface::checkHasInternet()
             reply->deleteLater();
         });
     }
+}
+
+void NetworkInterface::clearDNSCache()
+{
+    NetworkManager::instance()->clearCache();
 }
 
 void NetworkInterface::onErrorOccured(int error)

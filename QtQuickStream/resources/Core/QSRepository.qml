@@ -89,14 +89,6 @@ QSRepositoryCpp {
         return jsonObjects;
     }
 
-    function addObjectManually(qsObject) {
-        if (!Object.keys(_qsObjects).includes(qsObject._qsUuid)) {
-            addObject(qsObject._qsUuid, qsObject);
-            console.log("Object added to repo: ", Object.keys(_qsObjects).includes(qsObject._qsUuid)
-                        , ", Object type: ", qsObject.qsType)
-        }
-    }
-
     /*! ***************************************************************************************
      * Creates all objects' properties, in which qsobject references are URLs.
      * ****************************************************************************************/

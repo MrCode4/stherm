@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 1.0.1 LANGUAGES CXX)
+project(Stherm VERSION 1.1.0.4 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -243,6 +243,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/UpdateNotificationPopup.qml
         UiCore/PopUps/InfoPopup.qml
         UiCore/PopUps/TestFailedPopup.qml
+        UiCore/PopUps/PrivacyPolicyPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml

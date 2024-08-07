@@ -84,6 +84,7 @@ public:
     {
         Humidifier = 0,
         Dehumidifier,
+        ATNone
     };
     Q_ENUM(AccessoriesType)
 
@@ -137,6 +138,10 @@ public:
         EMSystemSetup        = 1 << 9,
         EMSystemMode         = 1 << 10,
         EMDateTime           = 1 << 11,
+        EMAutoMode           = 1 << 12,
+        EMSensorValues       = 1 << 13,
+        EMMessages           = 1 << 14,
+        EMGeneral            = 1 << 15,
     };
     Q_ENUM(EditMode)
 

@@ -102,10 +102,9 @@ Control {
         //! System mode button
         SystemModeButton {
             id: _systemModeBtn
+            y: 116
             anchors {
                 horizontalCenter: parent.horizontalCenter
-                bottom: centerItems.top
-                bottomMargin: 8
                 // To align with schedule ON button
                 horizontalCenterOffset: isSchedule ? -15 : -6
             }
@@ -470,8 +469,9 @@ Control {
 
             PropertyChanges {
                 target: _desiredTempItem
-                font.pointSize: Qt.application.font.pointSize * 3
-                labelVerticalOffset: device?.systemSetup?.systemMode === AppSpec.Auto ? -2 : -32
+                font.pointSize: Qt.application.font.pointSize * 2.8
+                labelVerticalOffset: device?.systemSetup?.systemMode === AppSpec.Auto
+                                     && !_desiredTempItem.currentSchedule ? -12 : -28
                 enableAnimations: true
             }
 

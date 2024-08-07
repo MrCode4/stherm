@@ -187,6 +187,6 @@ BasePageView {
             }
         }
 
-        deviceController.setSystemAccesseories(accTypeUI, wireTypeUI);
+        deviceController.setSystemAccessories(accTypeUI, wireTypeUI);
     }
 }

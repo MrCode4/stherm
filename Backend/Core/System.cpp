@@ -41,9 +41,6 @@ const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 
-const char* m_pushMainSettings     = "pushMainSettings";
-const char* m_pushAutoModeSettings = "pushAutoModeSettings";
-
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
@@ -94,10 +91,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
     connect(mSync, &NUVE::Sync::contractorInfoReady, this, &NUVE::System::contractorInfoReady);
 
-    connect(&mFetchActiveTimer, &QTimer::timeout, this, [=]() {
-            setCanFetchServer(true);
-    });
-
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
         if (!mIsNightModeRunning)
             fetchUpdateInformation(true);
@@ -135,23 +128,15 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
 
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, [this](const QVariantMap& settings, bool isValid) {
-        setProperty("hasFetchSuccessOnce", true);
         emit autoModeSettingsReady(settings, isValid);
     });
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
     connect(mSync, &NUVE::Sync::testModeStarted, this, &NUVE::System::testModeStarted);
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
-        setProperty(m_pushMainSettings, false);
-
-        startFetchActiveTimer();
         emit pushSuccess();
     });
 
     connect(mSync, &NUVE::Sync::autoModePush, this, [this](bool isSuccess) {
-        setProperty(m_pushAutoModeSettings, false);
-
-        startFetchActiveTimer();
-
         emit autoModePush(isSuccess);
     });
 
@@ -253,17 +238,6 @@ NUVE::System::~System()
 }
 
 bool NUVE::System::areSettingsFetched() const {return mAreSettingsFetched;}
-
-void NUVE::System::startFetchActiveTimer()
-{
-    if (!property(m_pushMainSettings).toBool() && !property(m_pushAutoModeSettings).toBool())
-        mFetchActiveTimer.start(10 * 1000); // can fetch, 10 seconds after a successful push
-    else
-        TRACE_CHECK(false) << "Can not start fetch timer, main settings pushing: "
-                           << property(m_pushMainSettings).toBool()
-                           << "Auto mode settings pushing: "
-                           <<property(m_pushAutoModeSettings).toBool();
-}
 
 bool NUVE::System::installSystemCtlRestartService()
 {
@@ -794,36 +768,47 @@ void NUVE::System::wifiConnected(bool hasInternet) {
     }
 }
 
-void NUVE::System::pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged)
+void NUVE::System::pushSettingsToServer(const QVariantMap &settings)
 {
-    // if timer running and hasSettingsChanged stop to prevent canFetchServer issues
-    if (mFetchActiveTimer.isActive() && hasSettingsChanged) {
-        mFetchActiveTimer.stop();
-    }
-
-    // set when settings changed or no timer is active! otherwise let the timer do the job!
-    if (!mFetchActiveTimer.isActive() || hasSettingsChanged){
-        setCanFetchServer(!hasSettingsChanged);
-    }
-
-    setProperty(m_pushMainSettings, hasSettingsChanged);
     mSync->pushSettingsToServer(settings);
 }
 
 void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
 {
-    // if timer running and hasSettingsChanged stop to prevent canFetchServer issues
-    if (mFetchActiveTimer.isActive()) {
-        mFetchActiveTimer.stop();
-    }
-
-    // set when settings changed or no timer is active! otherwise let the timer do the job!
-    if (!mFetchActiveTimer.isActive()){
-        setCanFetchServer(false);
-    }
-
-    setProperty(m_pushAutoModeSettings, true);
     mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
+}
+
+QString NUVE::System::getCurrentTime()
+{
+    // Retrieve utc time from the internet if available; otherwise, use the local system time (UTC).
+    auto time = QDateTime::currentDateTimeUtc();
+
+    QEventLoop* eventLoop = nullptr;
+    auto callback = [this, &eventLoop, &time](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+
+        // Convert string to QDateTime to validate the received time.
+        auto dateTime = QDateTime::fromString(data.value("utc_datetime").toString(), Qt::ISODate);
+
+        if (dateTime.isValid())
+            time = dateTime;
+
+        TRACE << "getCurrentTime: " << data.value("utc_datetime").toString() << dateTime;
+
+        if (eventLoop) {
+            eventLoop->quit();
+        }
+    };
+
+    auto netReply = callGetApi(QString("https://worldtimeapi.org/api/timezone/Etc/UTC"), callback, false);
+
+    if (netReply) {
+        netReply->ignoreSslErrors();
+        QEventLoop loop;
+        eventLoop = &loop;
+        loop.exec();
+    }
+
+    return time.toString(Qt::ISODate);
 }
 
 void NUVE::System::exitManualMode()
@@ -841,20 +826,6 @@ void NUVE::System::exitManualMode()
 bool NUVE::System::isFWServerUpdate()
 {
     return mStartedWithFWServerUpdate;
-}
-
-void NUVE::System::setCanFetchServer(bool canFetch)
-{
-    if (mCanFetchServer == canFetch)
-        return;
-
-    mCanFetchServer = canFetch;
-    emit canFetchServerChanged();
-}
-
-bool NUVE::System::canFetchServer()
-{
-    return mCanFetchServer;
 }
 
 QVariantMap NUVE::System::getContractorInfo() const
@@ -953,11 +924,6 @@ void NUVE::System::forgetDevice()
     settings.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
 
     mSync->forgetDevice();
-}
-
-bool NUVE::System::hasFetchSuccessOnce() const
-{
-    return property("hasFetchSuccessOnce").toBool();
 }
 
 void NUVE::System::setNightModeRunning(const bool running) {
@@ -1451,6 +1417,11 @@ void NUVE::System::setUID(cpuid_t uid)
     emit systemUIDChanged();
 }
 
+void NUVE::System::setSerialNumber(const QString &sn)
+{
+    mSync->setSerialNumber(sn);
+}
+
 QString NUVE::System::systemUID()
 {
     return QString::fromStdString(mUID);
@@ -1649,10 +1620,7 @@ void NUVE::System::stopDevice()
 
 bool NUVE::System::fetchSettings()
 {
-    if (mCanFetchServer) {
-        return mSync->fetchSettings();
-    }
-    return false;
+    return mSync->fetchSettings();
 }
 
 QString NUVE::System::findLatestVersion(QJsonObject updateJson) {

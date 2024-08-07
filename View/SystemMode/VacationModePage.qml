@@ -22,6 +22,12 @@ BasePageView {
     //! System Accessories use in humidity control.
     property SystemAccessories  systemAccessories: appModel.systemSetup.systemAccessories
 
+    property real minTemperature: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
+                                AppSpec.vacationMinimumTemperatureF : AppSpec.vacationMinimumTemperatureC
+
+    property real maxTemperature: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
+                                      AppSpec.vacationMaximumTemperatureF : AppSpec.vacationMaximumTemperatureC
+
     /* Object properties
      * ****************************************************************************************/
     title: "Vacation"
@@ -31,10 +37,6 @@ BasePageView {
             _root.StackView.view.pop();
         }
     }
-
-    Component.onCompleted: deviceController.updateEditMode(AppSpec.EMVacation);
-
-    Component.onDestruction: deviceController.updateEditMode(AppSpec.EMVacation, false);
 
     /* Children
      * ****************************************************************************************/
@@ -58,9 +60,10 @@ BasePageView {
 
                 deviceController.setVacation(minValue, maxValue,
                                              _humSlider.first.value, _humSlider.second.value);
-            }
 
-            deviceController.pushSettings();
+                deviceController.updateEditMode(AppSpec.EMVacation);
+                deviceController.pushSettings();
+            }
 
             saved();
         }
@@ -99,8 +102,9 @@ BasePageView {
                      AppSpec.vacationMaximumTemperatureF : AppSpec.vacationMaximumTemperatureC) ??
                 AppSpec.vacationMaximumTemperatureC
 
-            first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit)
-            second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit)
+            first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit, minTemperature, maxTemperature)
+
+            second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit, minTemperature, maxTemperature)
             difference: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
 
             labelSuffix: "\u00b0" + (setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
@@ -130,8 +134,8 @@ BasePageView {
         RangeSliderLabeled {
             id: _humSlider
             Layout.fillWidth: true
-            from: 0
-            to: 100
+            from: AppSpec.minimumHumidity
+            to: AppSpec.maximumHumidity
             first.value: appModel?.vacation?.hum_min ?? from
             second.value: appModel?.vacation?.hum_max ?? to
             difference: AppSpec.minStepHum

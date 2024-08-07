@@ -246,10 +246,7 @@ bool QSObjectCpp::setUuidStr(const QString &uuid)
  * ************************************************************************************************/
 QUuid QSObjectCpp::createUuid()
 {
-    // assuming 90000 ids are enough started from 10000 to keep it always 5 digits
-    static int counter = 10000;
-    counter++;
-    QUuid id = QUuid::fromString(QString("{00000001-0000-0000-0000-0000000%1}").arg(counter));
+    QUuid id = QUuid::createUuid();
 
     // These will be assigned by repo
     id.data1 = 0;

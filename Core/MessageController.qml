@@ -114,20 +114,23 @@ QtObject {
                              if (message.message === "")
                              return;
 
+                             // we need this for now as server sents every message only once, so it should be false so user don't lose it
+                             message.isRead = false;
+
                              // Find Schedule in the model
                              var foundMessage = device.messages.find(messageModel => (message.message === messageModel.message &&
                                                                                       messageModel.sourceType === Message.SourceType.Server));
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
-                             var messageDatetime = message.datetime === null ? "" : message.datetime;
+                             var messageDatetime = message.created === null ? "" : message.created;
                              if (foundMessage && foundMessage.datetime === messageDatetime &&
                                  foundMessage.type === type) {
                                  // isRead in the server is wrong. So I use the isRead condition from the local.
                                  // foundMessage.isRead = message.isRead;
 
-                             } else { // Check empty message
+                             } else { // new message, TODO: Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
-                                 addNewMessageFromData(type, message.message, message.datetime, message.isRead, icon, Message.SourceType.Server);
+                                 addNewMessageFromData(type, message.message, message.created, message.isRead, icon, Message.SourceType.Server);
                              }
                          });
     }
@@ -198,6 +201,7 @@ QtObject {
             device.messagesChanged();
 
             // Send messages to server
+            deviceController.updateEditMode(AppSpec.EMMessages);
             deviceController.pushSettings();
         }
 

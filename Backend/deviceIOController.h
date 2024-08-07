@@ -142,7 +142,7 @@ private:
 
     //! Process NRF response
     void processNRFResponse(STHERM::SIOPacket rxPacket, const STHERM::SIOPacket &txPacket);
-    bool processNRFQueue();
+    bool processNRFQueue(STHERM::SIOCommand cause = STHERM::NoCommand);
 
     //! Process TI response
     void processTIResponse(STHERM::SIOPacket rxPacket);

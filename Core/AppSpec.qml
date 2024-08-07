@@ -12,6 +12,12 @@ AppSpecCPP {
     property int minStepTempF: 10
     property int minStepHum:   20
 
+    property int minimumFanWorking: 5
+    property int maximumFanWorking: 55
+
+    property int minimumHumidity: 20
+    property int maximumHumidity: 70
+
     //! Maximum value of first temperature handler (left) in auto mode
     //! Celcius
     property real maxAutoMinTemp: 29.4444
@@ -122,6 +128,12 @@ AppSpecCPP {
     property real vacationMaximumTemperatureC: 32
     property real vacationMinimumTemperatureF: 40
     property real vacationMaximumTemperatureF: 90
+
+    //! Minimum and maximum temperature in the vacation (Celcius)
+    property real autoMinimumTemperatureC: 4
+    property real autoMaximumTemperatureC: 32
+    property real autoMinimumTemperatureF: 40
+    property real autoMaximumTemperatureF: 90
 
     //! Get default schedule
     function getDefaultSchedule (type: int) : SceduleCPP {

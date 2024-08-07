@@ -59,6 +59,8 @@ BasePageView {
             //! To ensure test finished called at least once
             deviceController.deviceControllerCPP.testFinished();
 
+            console.log("QRCodeTestPage, finished test, serial number:", system.serialNumber, system.serialNumber.length)
+
             if (system.serialNumber.length > 0) {
                 rebootPopup.open();
 
@@ -77,6 +79,8 @@ BasePageView {
 
         onClicked: {
             var sn = system.serialNumber;
+
+            console.log("QRCodeTestPage, checking for serial number ready:", sn, sn.length)
 
             if (sn.length === 0) {
                 //! Retrieve Serial Number (SN) using UID and await response

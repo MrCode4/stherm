@@ -30,6 +30,7 @@ class DeviceControllerCPP  : public QObject
     Q_PROPERTY(QString    swNRF READ  getNRF_SW NOTIFY nrfVersionChanged)
     Q_PROPERTY(QString    hwNRF READ  getNRF_HW NOTIFY nrfVersionChanged)
 
+    // for quiet mode bind
     Q_PROPERTY(double  adaptiveBrightness READ  adaptiveBrightness NOTIFY adaptiveBrightnessChanged)
 
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
@@ -68,8 +69,8 @@ public:
     Q_INVOKABLE QVariantMap getMainData();
 
     //!
-    Q_INVOKABLE void writeTestResult(const QString& testName, const QString& testResult, const QString& description="");
-    Q_INVOKABLE void writeTestResult(const QString& testName, bool testResult, const QString& description="");
+    Q_INVOKABLE void writeTestResult(const QString &fileName, const QString& testName, const QString& testResult, const QString& description="");
+    Q_INVOKABLE void saveTestResult(const QString& testName, bool testResult, const QString& description="");
     Q_INVOKABLE void beginTesting();
 
     Q_INVOKABLE void testBrightness(int value);
@@ -130,10 +131,7 @@ public:
 
     Q_INVOKABLE void checkContractorInfo();
 
-    //! settings: main data
-    //! hasSettingsChanged: push due to settings changes.
-    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings, bool hasSettingsChanged);
-
+    Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
 
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);
@@ -331,7 +329,10 @@ private:
     }
 
     // Testing
-    QList<bool> mAllTestsPassed ;
+    std::map<QString, bool> mAllTestsResults;
+    std::map<QString, QString> mAllTestsValues;
+    //! TODO: initialize all tests as a test for all tests to be conducted
+    QStringList mAllTestNames; // to keep them in order
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 };

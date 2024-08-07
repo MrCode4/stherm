@@ -492,10 +492,15 @@ void DeviceIOController::createNRF()
     connect(m_nRfConnection, &UARTConnection::sendData, this, [=](QByteArray data) {
         TRACE_CHECK(false) << "NRF Response:   " << data;
         auto rxPacket = DataParser::deserializeData(data);
-        TRACE_CHECK(false) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
+        TRACE_CHECK(rxPacket.CMD != STHERM::GetTOF) << (QString("NRF Response - CMD: %0").arg(rxPacket.CMD));
         auto sent = m_nRF_queue.front();
         if (sent.CMD != rxPacket.CMD)
             qWarning() << "NRF RESPONSE IS ANOTHER CMD" << sent.CMD << rxPacket.CMD << m_nRF_queue.size();
+        else if (sent.CMD == STHERM::GetTOF)
+            m_gpioHandler5->readProcessed();
+        else if (sent.CMD == STHERM::GetSensors)
+            m_gpioHandler4->readProcessed();
+
         processNRFResponse(rxPacket, sent);
         m_nRfConnection->setProperty("busy", false);
         if (!m_nRF_queue.empty())
@@ -509,15 +514,17 @@ void DeviceIOController::createNRF()
     if (m_gpioHandler4->startConnection() ) {
         connect(m_gpioHandler4, &GpioHandler::readyRead, this, [=](QByteArray data) {
             auto time = QDateTime::currentMSecsSinceEpoch();
-            if (time - m_p->lastTimeSensors < 1000)
-                return;
-            if (data.length() == 2 && data.at(0) == '0') {
+            if (time - m_p->lastTimeSensors >= 1000 &&
+                data.length() == 2 && data.at(0) == '0') {
                 m_p->lastTimeSensors = time;
                 m_nRF_queue.push(m_p->SensorPacketBA);
-                bool processed = processNRFQueue();
+                bool processed = processNRFQueue(STHERM::SIOCommand::GetSensors);
                 TRACE_CHECK(false) << "request for gpio 4" << processed;
                 // check after tiemout if no other request sent
                 m_nRF_timer.start();
+            } else {
+                // to restore normal operation
+                m_gpioHandler4->readProcessed();
             }
         });
     } else {
@@ -534,9 +541,13 @@ void DeviceIOController::startTOFGpioHandler() {
         // m_gpioHandler5->disconnect();
         connect(m_gpioHandler5, &GpioHandler::readyRead, this, [=](QByteArray data) {
             if (data.length() == 2 && data.at(0) == '0') {
+                //! we must send request for each data we receive otherwise this will be broken
                 m_nRF_queue.push(m_p->TOFPacketBA);
-                bool processed = processNRFQueue();
-                TRACE_CHECK(false) << "request for gpio 5" << processed;
+                bool processed = processNRFQueue(STHERM::SIOCommand::GetTOF);
+                TRACE_CHECK(!processed) << "request for gpio 5 failed";
+            }  else {
+                // to restore normal operation
+                m_gpioHandler5->readProcessed();
             }
         });
 
@@ -583,8 +594,8 @@ bool DeviceIOController::update_nRF_Firmware()
                                                STHERM::PacketType::UARTPacket);
     m_nRF_queue.push(packet);
 
-    auto result = processNRFQueue();
-    TRACE_CHECK(result) << "sending get into dfu failed or waiting in queue";
+    auto result = processNRFQueue(STHERM::SIOCommand::GetIntoDFU);
+    TRACE_CHECK(!result) << "sending get into dfu failed or waiting in queue";
     return result;
 }
 
@@ -675,8 +686,8 @@ bool DeviceIOController::setBacklight(QVariantList data)
             last.DataArray[4] = data[3].toInt();
         }
 
-        auto result = processNRFQueue();
-        TRACE_CHECK(result) << "send setBacklight request failed or waiting in queue";
+        auto result = processNRFQueue(STHERM::SIOCommand::SetColorRGB);
+        TRACE_CHECK(!result) << "send setBacklight request failed or waiting in queue";
         return true;
     } else {
         qWarning() << "backlight not sent: data is empty or not consistent";
@@ -695,8 +706,8 @@ bool DeviceIOController::setFanSpeed(int speed)
                                                {speed});
     m_nRF_queue.push(packet);
 
-    auto result = processNRFQueue();
-    TRACE_CHECK(result) << "send fan speed request failed or waiting in queue";
+    auto result = processNRFQueue(STHERM::SIOCommand::SetFanSpeed);
+    TRACE_CHECK(!result) << "send fan speed request failed or waiting in queue";
     return result;
 }
 
@@ -713,6 +724,8 @@ bool DeviceIOController::setSettings(QVariantList data)
 
         bool adaptive = data.last().toBool();
         m_p->brightness_mode = adaptive ? 1 : 0;
+
+        TRACE_CHECK(adaptive) << "Adaptive enabled" << m_p->luminosity; // should not be in log as adaptive disabled for now
 
         if (setBrightness(adaptive ? m_p->luminosity :
                               qRound(data.first().toDouble() * 2.55)))
@@ -775,16 +788,21 @@ void DeviceIOController::wiringExec()
 
 void DeviceIOController::nRFExec()
 {
-    TRACE_CHECK(false) << "start NRF" << (m_nRfConnection && m_nRfConnection->isConnected());
+    bool debug = false;
+#ifdef DEBUG_MODE
+    debug = true;
+#endif
+
+    TRACE_CHECK(debug) << "start NRF" << (m_nRfConnection && m_nRfConnection->isConnected());
     if (m_nRfConnection && m_nRfConnection->isConnected()) {
-        TRACE_CHECK(false) << "start GetSensors";
+        TRACE_CHECK(debug) << "start GetSensors";
 
         m_p->lastTimeSensors = QDateTime::currentMSecsSinceEpoch();
 
         m_nRF_queue.push(m_p->SensorPacketBA);
-        auto result = processNRFQueue();
+        auto result = processNRFQueue(STHERM::SIOCommand::GetSensors);
 
-        TRACE_CHECK(false) << "GetSensors message finished" << result;
+        TRACE_CHECK(debug) << "GetSensors message finished" << result;
     }
 }
 
@@ -963,7 +981,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
     }
 }
 
-bool DeviceIOController::processNRFQueue()
+bool DeviceIOController::processNRFQueue(STHERM::SIOCommand cause)
 {
     if (!m_nRfConnection || !m_nRfConnection->isConnected())
         return false;
@@ -975,9 +993,11 @@ bool DeviceIOController::processNRFQueue()
     auto packet = m_nRF_queue.front();
 
     if (m_nRfConnection->property("busy").toBool()) {
-        TRACE_CHECK(packet.CMD != STHERM::GetTOF) << "busy with previous one" << packet.CMD << m_nRF_queue.size();
+        TRACE_CHECK(cause != STHERM::GetTOF) << cause << " not sent, busy with previous one" << packet.CMD << m_nRF_queue.size();
         return false;
     }
+
+    TRACE_CHECK(packet.CMD != STHERM::GetTOF) << packet.CMD << "sending, caused by" << cause << m_nRF_queue.size();
 
     m_nRfConnection->setProperty("busy", true);
 
@@ -1647,7 +1667,7 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
 
 void DeviceIOController::checkTOFLuminosity(uint32_t luminosity)
 {
-    TRACE_CHECK(false) << (QString("Luminosity (%1)").arg(luminosity)) <<
+    TRACE_CHECK(m_p->brightness_mode == 1) << (QString("Luminosity (%1)").arg(luminosity)) <<
         m_p->brightness_mode << m_adaptiveBrightness_timer.isActive();
     m_p->luminosity = luminosity;  // we can smooth this as well if changes too much
     if (m_p->brightness_mode == 1) {

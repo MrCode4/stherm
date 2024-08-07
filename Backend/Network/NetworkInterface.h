@@ -87,6 +87,7 @@ private:
 private slots:
     void                onErrorOccured(int error); //! error is: NmcliInterface::Error
     void                checkHasInternet();
+    void                clearDNSCache();
 
     /* Signals
      * ****************************************************************************************/
@@ -160,6 +161,12 @@ inline void NetworkInterface::setHasInternet(bool hasInternet)
 {
     if (mHasInternet != hasInternet) {
         mHasInternet = hasInternet;
+
+        // clear the cache to ensure this is not the cause
+        if (!mHasInternet){
+            clearDNSCache();
+        }
+
         emit hasInternetChanged();
     }
 }

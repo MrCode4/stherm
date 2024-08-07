@@ -24,7 +24,6 @@ public:
     QNetworkReply* get(const QNetworkRequest& request);
     QNetworkReply* post(const QNetworkRequest& request, const QByteArray& data);
 
-
 private slots:
     void processNetworkReply(QNetworkReply *netReply);
 

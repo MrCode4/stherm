@@ -26,10 +26,10 @@ Control {
     property string             unit: (device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C") ?? "F"
 
     //! Minimum temprature
-    property real               minTemprature: deviceController?._minimumTemperature ?? 40
+    property real               minTemprature: deviceController?._minimumTemperatureUI ?? 40
 
     //! Maximum temprature
-    property real               maxTemprature: deviceController?._maximumTemperature ?? 90
+    property real               maxTemprature: deviceController?._maximumTemperatureUI ?? 90
 
     //! Offset of desired temp label
     property int                labelVerticalOffset: -8
@@ -46,31 +46,23 @@ Control {
     //! Label width
     readonly property alias     labelWidth: rightTempLabel.width
 
-
-    onDraggingChanged: {
-        if (dragging)
-            deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
-        else
-            deviceController.updateEditMode(AppSpec.EMDesiredTemperature, false);
-    }
-
     /* Object properties
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
         if (currentSchedule) {
-            _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                                  device.setting.tempratureUnit,
-                                                                  minTemprature,
-                                                                  maxTemprature);
+            Qt.callLater(updateTemperatureValue, currentSchedule.temprature);
+
         } else if (device) {
-            _tempSlider.value = Utils.convertedTemperatureClamped(device.requestedTemp,
-                                                                  device.setting.tempratureUnit,
-                                                                  minTemprature,
-                                                                  maxTemprature);
+            Qt.callLater(updateTemperatureValue, device.requestedTemp);
         }
     }
 
-    font.pointSize: Qt.application.font.pointSize * 2.8
+    onDraggingChanged: {
+        deviceController.updateLockMode(AppSpec.EMDesiredTemperature, dragging);
+        deviceController.updateLockMode(AppSpec.EMAutoMode, dragging);
+    }
+
+    font.pointSize: Qt.application.font.pointSize * 2.5
     background: null
     contentItem: Item {
         SemiCircleSlider {
@@ -95,12 +87,7 @@ Control {
             //! Dragging is finished
             onPressedChanged: {
                 if (!pressed) {
-                    var celValue = (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah)
-                            ? Utils.fahrenheitToCelsius(value) : value;
-                    if (device && device.requestedTemp !== celValue) {
-                        uiSession.deviceController.setDesiredTemperature(celValue);
-                        deviceController.pushSettings();
-                    }
+                    updateTemperatureModel();
                 }
             }
         }
@@ -108,6 +95,7 @@ Control {
         //! Double handle semi circle slider
         SemiCircleSliderDoubleHandle {
             id: tempSliderDoubleHandle
+
             anchors.centerIn: parent
             width: parent.width
             height: width / 2
@@ -133,7 +121,9 @@ Control {
                     deviceController.setAutoMinReqTemp(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(first.value)
                                                        : first.value);
-                    deviceController.pushAutoModeSettings();
+                    deviceController.updateEditMode(AppSpec.EMAutoMode);
+                    deviceController.pushSettings();
+
                 }
             }
 
@@ -142,7 +132,8 @@ Control {
                     deviceController.setAutoMaxReqTemp(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(second.value)
                                                        : second.value);
-                    deviceController.pushAutoModeSettings();
+                    deviceController.updateEditMode(AppSpec.EMAutoMode);
+                    deviceController.pushSettings();
                 }
             }
 
@@ -294,96 +285,101 @@ Control {
         }
 
         //! Label to show desired temperature in cooling/heating mode and second temperature in auto
-        Label {
-            id: rightTempLabel
-            visible: labelVisible
-            anchors {
-                verticalCenter: parent.verticalCenter
-                verticalCenterOffset: labelVerticalOffset
-            }
-            font {
-                pointSize: _root.font.pointSize * 0.65
-            }
+        Item {
+            id: tempLabelParent
+            width: _tempSlider.background.shapeWidth
+            height: _tempSlider.background.shapeHeight
+            anchors.centerIn: parent
 
-            //! Unit
-            Row {
-                id: rightUnitLbl
-                anchors.left: parent.right
-                anchors.top: parent.top
-                opacity: 0.6
-
-                Label {
-                    y: parent.height / 9
-                    font.pointSize: Application.font.pointSize
-                    text: "\u00b0"
+            Label {
+                id: rightTempLabel
+                visible: labelVisible
+                anchors {
+                    verticalCenter: parent.verticalCenter
+                    verticalCenterOffset: labelVerticalOffset
+                }
+                font {
+                    pointSize: _root.font.pointSize * 0.65
                 }
 
-                Label {
-                    font {
-                        pointSize: _root.font.pointSize / 2
-                        capitalization: "AllUppercase"
+                //! Unit
+                Row {
+                    id: rightUnitLbl
+                    anchors.left: parent.right
+                    anchors.top: parent.top
+                    opacity: 0.6
+
+                    Label {
+                        font.pointSize: Application.font.pointSize * 0.8
+                        text: "\u00b0"
                     }
-                    text: `${unit}`
+
+                    Label {
+                        font {
+                            pointSize: Application.font.pointSize * 1.1
+                            capitalization: "AllUppercase"
+                        }
+                        text: `${unit}`
+                    }
                 }
-            }
 
-            Item {
-                width: parent.width + rightUnitLbl.width + 8
-                height: parent.height + rightUnitLbl.height
-                anchors.verticalCenter: parent.verticalCenter
+                Item {
+                    width: parent.width + rightUnitLbl.width + 8
+                    height: parent.height + rightUnitLbl.height
+                    anchors.verticalCenter: parent.verticalCenter
 
-                TapHandler {
-                    onTapped: {
-                        if (uiSession) {
-                            uiSession.popupLayout.displayPopUp(tempUnitPop, true);
+                    TapHandler {
+                        onTapped: {
+                            if (uiSession) {
+                                uiSession.popupLayout.displayPopUp(tempUnitPop, true);
+                            }
                         }
                     }
                 }
             }
-        }
 
-        Label {
-            id: leftTempLabel
-            anchors {
-                verticalCenter: parent.verticalCenter
-                verticalCenterOffset: labelVerticalOffset
-            }
-            font {
-                pointSize: _root.font.pointSize * 0.65
-            }
-            text: tempSliderDoubleHandle.first.value.toFixed(0)
-
-            //! Unit
-            Row {
-                id: leftUnitLbl
-                anchors.left: parent.right
-                anchors.top: parent.top
-                opacity: 0.6
-
-                Label {
-                    y: parent.height / 9
-                    font.pointSize: Application.font.pointSize
-                    text: "\u00b0"
+            Label {
+                id: leftTempLabel
+                anchors {
+                    verticalCenter: parent.verticalCenter
+                    verticalCenterOffset: labelVerticalOffset
                 }
+                font {
+                    pointSize: _root.font.pointSize * 0.65
+                }
+                text: tempSliderDoubleHandle.first.value.toFixed(0)
 
-                Label {
-                    font {
-                        pointSize: _root.font.pointSize / 2
-                        capitalization: "AllUppercase"
+                //! Unit
+                Row {
+                    id: leftUnitLbl
+                    anchors.left: parent.right
+                    anchors.top: parent.top
+                    opacity: 0.6
+
+                    Label {
+                        font.pointSize: Application.font.pointSize * 0.8
+                        text: "\u00b0"
                     }
-                    text: `${unit}`
+
+                    Label {
+                        font {
+                            pointSize: Application.font.pointSize * 1.1
+                            capitalization: "AllUppercase"
+                        }
+                        text: `${unit}`
+                    }
                 }
-            }
 
-            Item {
-                width: parent.width + rightUnitLbl.width + 8
-                height: parent.height + rightUnitLbl.height
-                anchors.verticalCenter: parent.verticalCenter
+                Item {
+                    width: parent.width + rightUnitLbl.width + 8
+                    height: parent.height + rightUnitLbl.height
+                    anchors.verticalCenter: parent.verticalCenter
 
-                TapHandler {
-                    onTapped: {
-                        if (uiSession) {
-                            uiSession.popupLayout.displayPopUp(tempUnitPop, true);
+                    TapHandler {
+                        onTapped: {
+                            if (uiSession) {
+                                uiSession.popupLayout.displayPopUp(tempUnitPop, true);
+                            }
                         }
                     }
                 }
@@ -398,10 +394,7 @@ Control {
             //! Update slider value (UI) with changed requestedTemp
             //! When setDesiredTemperature failed, update slider with previous value.
             function onRequestedTempChanged() {
-                _tempSlider.value = Utils.convertedTemperatureClamped(device.requestedTemp,
-                                                                      device.setting.tempratureUnit,
-                                                                      minTemprature,
-                                                                      maxTemprature);
+                updateTemperatureValue(device.requestedTemp);
             }
         }
 
@@ -410,10 +403,7 @@ Control {
 
             //! Update slider value (UI) with changed TempratureUnit
             function onUnitChanged() {
-                _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule?.temprature ?? device.requestedTemp,
-                                                                      device.setting.tempratureUnit,
-                                                                      minTemprature,
-                                                                      maxTemprature);
+                updateTemperatureValue(currentSchedule?.temprature ?? device.requestedTemp);
             }
         }
 
@@ -509,7 +499,7 @@ Control {
 
             PropertyChanges {
                 target: rightTempLabel
-                x: 3 * rightTempLabel.parent.width / 5 - 16
+                x: 5 * rightTempLabel.parent.width / 8 - rightUnitLbl.width / 2 - 4
                 visible: labelVisible
                 opacity: 1
                 text: tempSliderDoubleHandle.second.value.toFixed(0)
@@ -518,7 +508,7 @@ Control {
             PropertyChanges {
                 target: leftTempLabel
                 visible: labelVisible
-                x: leftTempLabel.parent.width / 4
+                x: 2 * tempLabelParent.width / 8 - 8
             }
 
             PropertyChanges {
@@ -625,4 +615,25 @@ Control {
             }
         }
     ]
+
+    /* Functions
+     * ****************************************************************************************/
+    //! Update _tempSlider.value
+    function updateTemperatureValue(temperature: real) {
+        _tempSlider.value = Utils.convertedTemperatureClamped(temperature,
+                                                              device.setting.tempratureUnit,
+                                                              minTemprature,
+                                                              maxTemprature);
+    }
+
+    //! Update model based on _tempSlider value in heating/cooling mode.
+    function updateTemperatureModel() {
+        var celValue = (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah)
+                ? Utils.fahrenheitToCelsius(_tempSlider.value) : _tempSlider.value;
+        if (device && device.requestedTemp !== celValue) {
+            deviceController.setDesiredTemperature(celValue);
+            deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
+            deviceController.pushSettings();
+        }
+    }
 }

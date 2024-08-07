@@ -603,6 +603,7 @@ BasePageView {
             uiSession.toastManager.showToast(dt.message, dt.detail);
         }
 
+        deviceController.updateEditMode(AppSpec.EMSchedule);
         deviceController.pushSettings();
 
         if (internal.exitAfterSave) {

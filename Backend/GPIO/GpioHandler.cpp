@@ -37,7 +37,7 @@ void *nrf_uart_thrd(void *a) {
     while (!parent->stopped()) {
         int ready = poll(fds, 1, 10000);  // wait indefinitely for events
 
-        if (ready > 0) {
+        if (ready > 0 && !parent->waitingReadProcessed()) {
             if (fds->revents & POLLPRI) {
                 lseek(fds->fd, 0, SEEK_SET);
                 qint64 bytesRead = read(fds->fd, buffer, sizeof(buffer));
@@ -46,6 +46,7 @@ void *nrf_uart_thrd(void *a) {
                 if (bytesRead > 0) {
                     QByteArray bufferBA(buffer, bytesRead);
 
+                    parent->beforeReadyRead();
                     emit parent->readyRead(bufferBA);
                 }
             }
@@ -117,6 +118,21 @@ bool GpioHandler::stopped() const
 #else
     return false;
 #endif
+}
+
+bool GpioHandler::waitingReadProcessed() const
+{
+    return _waitingReadProcessed;
+}
+
+void GpioHandler::readProcessed()
+{
+    _waitingReadProcessed = false;
+}
+
+void GpioHandler::beforeReadyRead()
+{
+    _waitingReadProcessed = true;
 }
 
 QString GpioHandler::error() const

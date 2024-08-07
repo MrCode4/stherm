@@ -63,7 +63,7 @@ BasePageView {
         }
         onRejected: {
             backButtonVisible = false;
-            deviceController.deviceControllerCPP.writeTestResult("Color test", true)
+            deviceController.deviceControllerCPP.saveTestResult("Color test", true)
             nextPage()
         }
     }
@@ -79,7 +79,7 @@ BasePageView {
         }
         onRejected: {
             backButtonVisible = true;
-            deviceController.deviceControllerCPP.writeTestResult("Color test", false, "The display is discolored or has dead pixels")
+            deviceController.deviceControllerCPP.saveTestResult("Color test", false, "The display is discolored or has dead pixels")
             nextPage()
         }
     }
