@@ -10,15 +10,73 @@ import Stherm
 
 BasePageView {
     id: root
+
     /* Property declaration
      * ****************************************************************************************/
      property Lock lock: appModel.lock
+
+    //! Use in unlock page
+    property string encodedMasterPin: ""
 
     /* Object properties
      * ****************************************************************************************/
     title: ""
     backButtonVisible: false
     header: null
+
+    onVisibleChanged: {
+        contactContractorBtn.visible = false;
+    }
+
+    //! Wifi status
+    WifiButton {
+        id: _wifiBtn
+
+        anchors.right: parent.right
+        anchors.top: parent.top
+        z: 1
+
+        visible: !Boolean(NetworkInterface.connectedWifi) ||
+                 !Boolean(NetworkInterface.hasInternet)
+
+        onClicked: {
+            //! Open WifiPage
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                             "uiSession": uiSession
+                                         });
+            }
+        }
+    }
+
+    //! technician access page
+    ToolButton {
+        id: contactContractorBtn
+
+        touchMargin: 30
+        visible: false
+
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        z: 1
+
+        contentItem: RoniaTextIcon {
+            anchors.fill: parent
+            font.pointSize: Style.fontIconSize.largePt
+            text: FAIcons.headSet
+        }
+
+        onClicked: {
+            //! Open technician access page
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
+                                             "uiSession": uiSession,
+                                             "openFromUnlockPage": true,
+                                             "encodedMasterPin": root.encodedMasterPin
+                                         });
+            }
+        }
+    }
 
     //! Contents
     ColumnLayout {
@@ -51,6 +109,13 @@ BasePageView {
             Layout.fillHeight: true
 
             isLock: false
+
+            onForgetPIN: {
+                var randomPin = AppSpec.generateRandomPassword();
+                root.encodedMasterPin = randomPin;
+                appModel.lock._masterPIN = AppSpec.decodeLockPassword(randomPin);
+                contactContractorBtn.visible = true;
+            }
 
             onSendPIN: pin => {
                            var unLocked = deviceController.lock(false, pin);
