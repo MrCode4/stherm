@@ -11,7 +11,7 @@ QSObject {
 
     property string brandName :  "Nuve"
 
-    property string phoneNumber: "(714) 471-7965"
+    property string phoneNumber: "(657) 626-4887"
 
     property string iconSource:  "qrc:/Stherm/Images/nuve-icon.png"
 
