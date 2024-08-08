@@ -91,7 +91,7 @@ QSObject {
     property UserPolicyTerms userPolicyTerms: UserPolicyTerms {}
 
     //! Lock model
-    property Lock            lock: Lock {}
+    property Lock            _lock: Lock {}
 
     /* Functions
      * ****************************************************************************************/

@@ -13,7 +13,7 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-     property Lock lock: appModel.lock
+     property Lock lock: appModel._lock
 
     //! Use in unlock page
     property string encodedMasterPin: ""
@@ -113,7 +113,7 @@ BasePageView {
             onForgetPIN: {
                 var randomPin = AppSpec.generateRandomPassword();
                 root.encodedMasterPin = randomPin;
-                appModel.lock._masterPIN = AppSpec.decodeLockPassword(randomPin);
+                appModel._lock._masterPIN = AppSpec.decodeLockPassword(randomPin);
                 contactContractorBtn.visible = true;
             }
 

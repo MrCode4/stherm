@@ -87,7 +87,7 @@ Item {
             uiSession.popupLayout.closeAllPopups();
 
             // Touching the screen should prompt a page requesting a 4-digit PIN for unlocking (Unlock page)
-            if (uiSession.appModel.lock.isLock) {
+            if (uiSession.appModel._lock.isLock) {
                 _mainStackView.push(unlockPage);
             }
         }
