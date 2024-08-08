@@ -1153,6 +1153,12 @@ I_DeviceController {
         if (!force && device.lock.isLock === isLock)
             return false;
 
+        // Check has client in lock mode.
+        if (isLock && !deviceControllerCPP.system.hasClient()) {
+            console.log("The device cannot be locked because there is no active client.")
+            return false;
+        }
+
         device.lock.isLock = isLock;
         ScreenSaverManager.lockDevice(isLock);
 
