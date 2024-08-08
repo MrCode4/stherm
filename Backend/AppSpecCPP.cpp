@@ -110,7 +110,7 @@ QVariant AppSpecCPP::readFromFile(const QString& fileUrl)
 }
 
 QString AppSpecCPP::generateRandomPassword() {
-    const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+    const QString possibleCharacters("abcdefghijklmnopqrstuvwxyz0123456789");
     const int randomStringLength = 8;
 
     QString randomString;
