@@ -125,6 +125,7 @@ BasePageView {
         Label {
             visible: openFromUnlockPage
             horizontalAlignment: Qt.AlignHCenter
+            topPadding: 10
             x: (parent.width - width) / 2
             font.pointSize: Application.font.pointSize * 0.9
             font.bold: true

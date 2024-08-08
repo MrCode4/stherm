@@ -24,10 +24,6 @@ BasePageView {
     backButtonVisible: false
     header: null
 
-    onVisibleChanged: {
-        contactContractorBtn.visible = false;
-    }
-
     //! Wifi status
     WifiButton {
         id: _wifiBtn
@@ -111,10 +107,14 @@ BasePageView {
             isLock: false
 
             onForgetPIN: {
+                contactContractorBtn.visible = true;
+                if (root.encodedMasterPin.length === 8 &&
+                        appModel._lock._masterPIN.length === 4)
+                    return;
+
                 var randomPin = AppSpec.generateRandomPassword();
                 root.encodedMasterPin = randomPin;
                 appModel._lock._masterPIN = AppSpec.decodeLockPassword(randomPin);
-                contactContractorBtn.visible = true;
             }
 
             onSendPIN: pin => {
@@ -122,6 +122,9 @@ BasePageView {
                            updatePinStatus(unLocked);
 
                            clearPIN();
+
+                           if (unLocked)
+                               contactContractorBtn.visible = false;
                        }
         }
     }
