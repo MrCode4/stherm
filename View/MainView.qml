@@ -74,6 +74,11 @@ Item {
 
         function onShowHome()
         {
+            if (!ScreenSaverManager.isAppActivated()) {
+                console.log("The app must be active before you can access the home page.")
+                return;
+            }
+
             //! Avoid to close the SystemUpdatePage on mandatory update mode
             if (!uiSession.deviceController.mandatoryUpdate || !(_mainStackView.currentItem instanceof SystemUpdatePage))
                 _mainStackView.pop(null) //! Pop all items except the first one which is _mainViewSw
