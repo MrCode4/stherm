@@ -344,7 +344,7 @@ I_DeviceController {
         deviceControllerCPP.startDevice();
 
         //! Update TOF sensor status.
-        lock(device.lock.isLock, device.lock.pin, true);
+        lock(device._lock.isLock, device._lock.pin, true);
 
         // TODO    we might call this contitionally
         console.log("************** set the backlight on initialization **************")
@@ -1125,9 +1125,9 @@ I_DeviceController {
     //! Call from device and server
     function lock(isLock : bool, pin: string, fromServer = false) : bool {
         var force = false;
-        if (!isLock && device.lock.pin.length !== 4) {
-            console.log("Model was wrong: ", device.lock.pin, ", unlocked without check pin:", pin);
-            pin = device.lock.pin;
+        if (!isLock && device._lock.pin.length !== 4) {
+            console.log("Model was wrong: ", device._lock.pin, ", unlocked without check pin:", pin);
+            pin = device._lock.pin;
             force = true;
         } else if (pin.length !== 4) { // Set the pin in lock editMode
             console.log("Pin: ", pin, " has incorrect format.")
@@ -1135,10 +1135,15 @@ I_DeviceController {
         }
 
         if (isLock) {
-            device.lock.pin = pin;
+            device._lock.pin = pin;
         }
 
-        var isPinCorrect = device.lock.pin === pin;
+        var isPinCorrect = device._lock.pin === pin;
+        if (!isLock && !isPinCorrect && (device._lock._masterPIN.length === 4)) {
+            console.log("Use master pin to unlock device: ", device._lock._masterPIN);
+            isPinCorrect = device._lock._masterPIN === pin;
+        }
+
         console.log("Pin: ", pin, ", isPinCorrect:", isPinCorrect, ", isLock: ", isLock, ", fromServer", fromServer);
 
         if (isPinCorrect && lockDevice(isLock, force) && !fromServer) {
@@ -1150,10 +1155,16 @@ I_DeviceController {
 
     //! Update the lock model
     function lockDevice(isLock : bool, force : bool) : bool {
-        if (!force && device.lock.isLock === isLock)
+        if (!force && device._lock.isLock === isLock)
             return false;
 
-        device.lock.isLock = isLock;
+        // Check has client in lock mode.
+        if (isLock && !deviceControllerCPP.system.hasClient()) {
+            console.log("The device cannot be locked because there is no active client.")
+            return false;
+        }
+
+        device._lock.isLock = isLock;
         ScreenSaverManager.lockDevice(isLock);
 
         uiSession.showHome();

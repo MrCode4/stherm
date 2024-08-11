@@ -56,6 +56,7 @@ public:
     Q_INVOKABLE void    restart();
 
     Q_INVOKABLE void    setAppActive(bool setAppActive);
+    Q_INVOKABLE bool    isAppActivated();
 
     Q_INVOKABLE void    lockDevice(const bool &isLock);
 

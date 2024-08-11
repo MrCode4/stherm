@@ -43,6 +43,7 @@ Control {
     //! Send pin to parent
     signal sendPIN(pin: string)
     signal clearPIN();
+    signal forgetPIN();
 
     onClearPIN: {
         _pinTextFieldItems.forEach(item => {
@@ -235,6 +236,11 @@ Control {
         repeat: true
         interval: 1000
         running: isPinWrong && _retryCounter < 1 && _retryCountTime > 0
+
+        onRunningChanged: {
+            if(running)
+                forgetPIN();
+        }
 
         onTriggered: {
             _retryCountTime--;
