@@ -56,7 +56,9 @@ Sync::Sync(QObject *parent)
 void Sync::setSerialNumber(const QString &serialNumber)
 {
     if (serialNumber.isEmpty() || serialNumber == mSerialNumber){
-        TRACE << "serial number not set:" << serialNumber << ", current is :" << mSerialNumber;
+        TRACE << "serial number not set:" << serialNumber << ", current is :" << mSerialNumber
+              << ", has client is :" << mHasClient << ", set to true";
+        mHasClient            = true;
         return;
     }
 
