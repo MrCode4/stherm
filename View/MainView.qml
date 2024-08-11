@@ -74,6 +74,11 @@ Item {
 
         function onShowHome()
         {
+            if (!ScreenSaverManager.isAppActivated()) {
+                console.log("The app must be active before you can access the home page.")
+                return;
+            }
+
             //! Avoid to close the SystemUpdatePage on mandatory update mode
             if (!uiSession.deviceController.mandatoryUpdate || !(_mainStackView.currentItem instanceof SystemUpdatePage))
                 _mainStackView.pop(null) //! Pop all items except the first one which is _mainViewSw
@@ -82,7 +87,7 @@ Item {
             uiSession.popupLayout.closeAllPopups();
 
             // Touching the screen should prompt a page requesting a 4-digit PIN for unlocking (Unlock page)
-            if (uiSession.appModel.lock.isLock) {
+            if (uiSession.appModel._lock.isLock) {
                 _mainStackView.push(unlockPage);
             }
         }

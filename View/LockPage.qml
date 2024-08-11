@@ -14,7 +14,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
 
-    property Lock lock: appModel.lock
+    property Lock lock: appModel._lock
 
     /* Object properties
      * ****************************************************************************************/

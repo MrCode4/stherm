@@ -62,7 +62,7 @@ public:
 
     Q_INVOKABLE bool fetchSettings();
 
-    bool hasClient() const;
+    Q_INVOKABLE bool hasClient() const;
     bool areSettingsFetched() const;
 
     //! Get serial number from server

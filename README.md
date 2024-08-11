@@ -5,12 +5,35 @@ This repository contains STHERM project
 Release Note
 =============
 -------------
+## Release R 1.1.1
+ 10th August 2024
+ Branch- hotfix, commit- 57d28d0f
+ 
+### Release Articles
+update-V.1.1.1.zip
+
+### Reason
+Hotfix for regression and backdoor for lock
+
+### What’s Brand New
+
+### What Been Updated
+- Master password added for lock screen when forget password.
+- Access to wifi settings when no internet in lock screen.
+
+### What’s Been Fixed
+- Regressing with show home on unlocking in startup
+
+### Known Issues
+ - Device settings are lost on startup without WIFI.
+
+
 ## Release R 1.1.0
  7th August 2024
  Branch- release, commit- ae8f5fe7
  
 ### Release Articles
-update-V.1.1.0.zip
+update-V.1.1.0.zip (deprecated)
 
 ### Reason
 Add new features and fix some issues
@@ -39,6 +62,7 @@ Add new features and fix some issues
 
 ### Known Issues
  - Device settings are lost on startup without WIFI.
+ - Regression with Initial setup and test mode skipping to home screen
 
 ## Release R 1.0.2
  11th July 2024  

@@ -95,6 +95,10 @@ void ScreenSaverManager::setScreenSaverTimeout(int newScreenSaverTimeout)
     }
 }
 
+bool ScreenSaverManager::isAppActivated() {
+    return mSetAppActive;
+}
+
 void ScreenSaverManager::setInactive()
 {
     setState(State::Disabled); //! This will stop timer and disable event filter.

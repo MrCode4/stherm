@@ -10,15 +10,69 @@ import Stherm
 
 BasePageView {
     id: root
+
     /* Property declaration
      * ****************************************************************************************/
-     property Lock lock: appModel.lock
+     property Lock lock: appModel._lock
+
+    //! Use in unlock page
+    property string encodedMasterPin: ""
 
     /* Object properties
      * ****************************************************************************************/
     title: ""
     backButtonVisible: false
     header: null
+
+    //! Wifi status
+    WifiButton {
+        id: _wifiBtn
+
+        anchors.right: parent.right
+        anchors.top: parent.top
+        z: 1
+
+        visible: !Boolean(NetworkInterface.connectedWifi) ||
+                 !Boolean(NetworkInterface.hasInternet)
+
+        onClicked: {
+            //! Open WifiPage
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                             "uiSession": uiSession
+                                         });
+            }
+        }
+    }
+
+    //! technician access page
+    ToolButton {
+        id: contactContractorBtn
+
+        touchMargin: 30
+        visible: false
+
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        z: 1
+
+        contentItem: RoniaTextIcon {
+            anchors.fill: parent
+            font.pointSize: Style.fontIconSize.largePt
+            text: FAIcons.headSet
+        }
+
+        onClicked: {
+            //! Open technician access page
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
+                                             "uiSession": uiSession,
+                                             "openFromUnlockPage": true,
+                                             "encodedMasterPin": root.encodedMasterPin
+                                         });
+            }
+        }
+    }
 
     //! Contents
     ColumnLayout {
@@ -52,11 +106,25 @@ BasePageView {
 
             isLock: false
 
+            onForgetPIN: {
+                contactContractorBtn.visible = true;
+                if (root.encodedMasterPin.length === 8 &&
+                        appModel._lock._masterPIN.length === 4)
+                    return;
+
+                var randomPin = AppSpec.generateRandomPassword();
+                root.encodedMasterPin = randomPin;
+                appModel._lock._masterPIN = AppSpec.decodeLockPassword(randomPin);
+            }
+
             onSendPIN: pin => {
                            var unLocked = deviceController.lock(false, pin);
                            updatePinStatus(unLocked);
 
                            clearPIN();
+
+                           if (unLocked)
+                               contactContractorBtn.visible = false;
                        }
         }
     }
