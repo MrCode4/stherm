@@ -49,6 +49,7 @@ Control {
         }
 
         onValueChanged: {
+            // when both values clamping to bottom
             //! Set position and visualPosition
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
