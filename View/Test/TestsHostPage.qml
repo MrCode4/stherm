@@ -10,12 +10,14 @@ import Stherm
  * ***********************************************************************************************/
 
 BasePageView {
+    id: root
     header.visible: false
     property SimpleStackView testsStackView: stackView
 
     SimpleStackView {
         id: stackView
         anchors.fill: parent
+        stackView: root.StackView.view
     }
 
     Component.onCompleted: {

@@ -81,18 +81,16 @@ Page {
 
     //! By default if Page is inside a StackView it will be popped if not nothing happens.
     //! For most Pages this is enough, although it might be neccessary to override it for some    
-    backButtonCallback: function() {
+    backButtonCallback: tryGoBack
+
+    function tryGoBack() {
         if (useSimpleStackView) {
             if (testsStackView.currentItem == _root) {
-                if (testsStackView.pop()) {
-                    // pop will return true if it is actually popped once.
-                    // if not, meaning we need to go back to the main stack view
-                    return;
-                }
+                testsStackView.pop();
+                return;
             }
         }
-
-        if (_root.StackView.view) {
+        else if (_root.StackView.view) {
             //! Then Page is inside an StackView
             if (_root.StackView.view.currentItem === _root) {
                 _root.StackView.view.pop();

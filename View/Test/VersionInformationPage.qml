@@ -105,6 +105,7 @@ BasePageView {
         interval: 5000
 
         onTriggered: {
+            timer.stop();
             root.StackView.view.push("qrc:/Stherm/View/Test/TestsHostPage.qml", {
                                          "uiSession": Qt.binding(() => uiSession)
                                      });
