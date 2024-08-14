@@ -17,7 +17,7 @@ BasePageView {
     SimpleStackView {
         id: stackView
         anchors.fill: parent
-        stackView: root.StackView.view
+        parentStackView: root.StackView.view
     }
 
     Component.onCompleted: {

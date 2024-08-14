@@ -7,7 +7,7 @@ Item {
     property var stack: []
     property int depth: stack.length
     property alias currentItem: loader.item
-    property StackView stackView
+    property StackView parentStackView
 
     function push(page, props) {
         root.stack.push({'page': page, 'props': props});
@@ -21,8 +21,8 @@ Item {
             loader.load(vm.page, vm.props)
         }
         else {
-            if (stackView) {
-                stackView.pop();
+            if (parentStackView) {
+                parentStackView.pop();
             }
         }
     }
