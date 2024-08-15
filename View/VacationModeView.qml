@@ -162,7 +162,7 @@ Popup {
                     font.pointSize: Qt.application.font.pointSize * 1.2
                     font.capitalization: Font.AllUppercase
 
-                    text: `\u00b0${(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")}`
+                    text: `\u00b0${(device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")}`
                 }
             }
 

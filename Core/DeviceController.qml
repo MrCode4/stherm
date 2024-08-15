@@ -643,7 +643,7 @@ I_DeviceController {
         if (!editModeEnabled(AppSpec.EMSettings)) {
             // The server interprets temperature data based on the displayed unit (Celsius or Fahrenheit).
             // To maintain accurate control and prevent misinterpretations,
-            // the unit should be permanently set to Celsius.
+            // the unit should be permanently set to Celsius. so we always use data from device to ignore
             if (!setSettings(settings.brightness, settings.speaker,
                         device.setting.tempratureUnit, settings.brightness_mode,
                              device.setting.enabledAlerts, device.setting.enabledNotifications))

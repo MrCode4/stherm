@@ -22,10 +22,10 @@ BasePageView {
     //! System Accessories use in humidity control.
     property SystemAccessories  systemAccessories: appModel.systemSetup.systemAccessories
 
-    property real minTemperature: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
+    property real minTemperature: setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ?
                                 AppSpec.vacationMinimumTemperatureF : AppSpec.vacationMinimumTemperatureC
 
-    property real maxTemperature: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
+    property real maxTemperature: setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ?
                                       AppSpec.vacationMaximumTemperatureF : AppSpec.vacationMaximumTemperatureC
 
     /* Object properties
@@ -53,7 +53,7 @@ BasePageView {
                 var minValue = _tempSlider.first.value;
                 var maxValue = _tempSlider.second.value;
 
-                if (setting.tempratureUnit === AppSpec.TempratureUnit.Fah) {
+                if (setting?.tempratureUnit === AppSpec.TempratureUnit.Fah) {
                     minValue = Utils.fahrenheitToCelsius(minValue)
                     maxValue = Utils.fahrenheitToCelsius(maxValue)
                 }
@@ -105,12 +105,12 @@ BasePageView {
             first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit, minTemperature, maxTemperature)
 
             second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit, minTemperature, maxTemperature)
-            difference: setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
+            difference: setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
 
-            labelSuffix: "\u00b0" + (setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
+            labelSuffix: "\u00b0" + (setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
             showMinMax: true
-            fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
-            toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah)
+            fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel)
+            toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel)
         }
 
         //! Humidity
