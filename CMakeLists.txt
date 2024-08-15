@@ -250,6 +250,9 @@ qt6_add_qml_module(appStherm
         UiCore/Dialogs/ForgetWifiDialog.qml
 
     SOURCES
+        Backend/Property.h
+        Backend/ModelBase.h
+        Backend/ModelBase.cpp
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
         Backend/ScreenSaverManager.h
@@ -342,7 +345,6 @@ qt6_add_qml_module(appStherm
         Backend/GPIO/GpioHandler.h
         Backend/GPIO/GpioHandler.cpp
 
-
         Backend/QrCode/qrcodegen.hpp
         Backend/QrCode/qrcodegen.cpp
         Backend/QRCodeGenerator.h
@@ -359,6 +361,7 @@ qt6_add_qml_module(appStherm
         Backend/Network/Nmcli/NmcliInterface.cpp
         Backend/Network/NetworkInterface.h
         Backend/Network/NetworkInterface.cpp
+        Backend/Network/WifiInfo.h Backend/Network/WifiInfo.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
@@ -421,8 +424,7 @@ qt6_add_qml_module(appStherm
         update_fw_nrf.sh
         update_fw_nrf_seamless.sh
         getsshpass.sh
-        nrf_fw_update.zip
-        SOURCES Backend/Network/WifiInfo.h Backend/Network/WifiInfo.cpp
+        nrf_fw_update.zip        
 )
 
 if (DEBUG_MODE)
