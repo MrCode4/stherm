@@ -377,14 +377,21 @@ void Sync::fetchWirings(const QString& uid)
     callGetApi(cBaseUrl + QString("api/sync/getWirings?uid=%0").arg(uid), callback);
 }
 
-bool Sync::fetchUserData()
+void Sync::fetchUserData()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get user-data!";
-        return false;
+        return;
+    }
+
+    if (fetchingUserData()) {
+        qWarning() << "user-data fetching in progress";
+        return;
     }
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
+        setfetchingUserData(false);
+        TRACE << "fetchUserData: " << rawData;
         if (data.isEmpty()) {
             TRACE << "Received user-data corrupted";
         }
@@ -392,11 +399,11 @@ bool Sync::fetchUserData()
             userData()->setemail(data.value("email").toString());
             userData()->setname(data.value("name").toString());
         }
-        emit userDataFetched();
     };
 
+    setfetchingUserData(true);
     auto reply= callGetApi(cBaseUrl + QString("api/sync/client?sn=%0").arg(mSerialNumber), callback);
-    return reply != nullptr;
+    setfetchingUserData(reply != nullptr);
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)

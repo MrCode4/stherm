@@ -17,6 +17,42 @@ BasePageView {
      * ****************************************************************************************/
     title: "Mobile App"
 
+    RowLayout {
+        parent: root.header.contentItem
+        Item {
+            Layout.alignment: Qt.AlignCenter
+            implicitWidth: Material.touchTarget
+            implicitHeight: Material.touchTarget
+
+            ToolButton {
+                id: btnRefresh
+                anchors.centerIn: parent
+                visible: uiSession.deviceController.deviceControllerCPP.sync.fetchingUserData == false
+                contentItem: RoniaTextIcon {
+                    text: "\uf2f9" //! rotate-right
+                }
+
+                onClicked: root.fetchUserData()
+            }
+
+            BusyIndicator {
+                anchors {
+                    fill: parent
+                    margins: 4
+                }
+                visible: running
+                running: !btnRefresh.visible
+            }
+        }
+    }
+
+    function fetchUserData() {
+        uiSession.deviceController.deviceControllerCPP.sync.fetchUserData();
+    }
+
+    Component.onCompleted: fetchUserData()
+
+
     /* Children
      * ****************************************************************************************/
     GridLayout {
@@ -73,8 +109,7 @@ BasePageView {
             Layout.preferredWidth: parent.width
             Layout.topMargin: 20
             Layout.columnSpan: 2
-            visible: false // as we have no info for real email
             text: "Email: " + uiSession.deviceController.deviceControllerCPP.sync.userData.email
         }
-    }
+    }    
 }

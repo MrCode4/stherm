@@ -20,6 +20,7 @@ class Sync : public RestApiExecutor
     QML_ELEMENT
 
     PROPERTY_PRIVATE(UserData*, userData)
+    PROPERTY_PRIVATE(bool, fetchingUserData)
 public:
     Sync(QObject *parent = nullptr);
 
@@ -39,7 +40,7 @@ public:
     bool fetchMessages();
     void fetchWirings(const QString& uid);
     void requestJob(QString type);
-    Q_INVOKABLE bool fetchUserData();
+    Q_INVOKABLE void fetchUserData();
 
     void pushSettingsToServer(const QVariantMap &settings);
     void pushAlertToServer(const QVariantMap &settings);
@@ -69,7 +70,6 @@ signals:
     void autoModeSettingsFetched();
     void messagesLoaded();
     void requestJobDone();
-    void userDataFetched();
 
     void alert(QString msg);
 
