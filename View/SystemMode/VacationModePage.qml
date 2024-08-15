@@ -102,9 +102,9 @@ BasePageView {
                      AppSpec.vacationMaximumTemperatureF : AppSpec.vacationMaximumTemperatureC) ??
                 AppSpec.vacationMaximumTemperatureC // CHECK
 
-            first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit, minTemperature, maxTemperature)
+            first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel, minTemperature, maxTemperature)
 
-            second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting.tempratureUnit, minTemperature, maxTemperature)
+            second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel, minTemperature, maxTemperature)
             difference: setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
 
             labelSuffix: "\u00b0" + (setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")

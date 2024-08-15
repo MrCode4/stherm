@@ -68,7 +68,7 @@ Popup {
                 text: !deviceController.sensorsFetched ?
                           "NAN" : Number(Utils.convertedTemperature(
                                              device?.currentTemp ?? 0,
-                                             device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
+                                             device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel)).toLocaleString(locale, "f", 0)
 
                 Label {
                     id: unitLbl

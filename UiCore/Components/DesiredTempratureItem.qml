@@ -81,7 +81,7 @@ Control {
             Component.onCompleted: {
                 var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
                 _tempSlider.value = Utils.convertedTemperatureClamped(tmp,
-                                                                      device?.setting.tempratureUnit ?? AppSpec.TempratureUnit.Fah,
+                                                                      device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel,
                                                                       minTemprature,
                                                                       maxTemprature);
             }
@@ -406,7 +406,7 @@ Control {
 
             //! Update slider value (UI) with changed TempratureUnit
             function onUnitChanged() {
-                updateTemperatureValue(currentSchedule?.temprature ?? device.requestedTemp);
+                updateTemperatureValue(currentSchedule?.temprature ?? device?.requestedTemp ?? 18.0);
             }
         }
 
@@ -416,7 +416,7 @@ Control {
             //! Update slider value (UI) with changed temperature in schedule
             function onTempratureChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                                      device.setting.tempratureUnit,
+                                                                      device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel,
                                                                       minTemprature,
                                                                       maxTemprature);
             }
@@ -624,7 +624,7 @@ Control {
     //! Update _tempSlider.value
     function updateTemperatureValue(temperature: real) {
         _tempSlider.value = Utils.convertedTemperatureClamped(temperature,
-                                                              device.setting.tempratureUnit,
+                                                              device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel,
                                                               minTemprature,
                                                               maxTemprature);
     }
