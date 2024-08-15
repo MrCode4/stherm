@@ -10,6 +10,7 @@
 #include "Core/Scheme.h"
 #include "HumidityScheme.h"
 #include "Device/SystemSetup.h"
+#include "Property.h"
 
 class ScheduleCPP;
 
@@ -20,6 +21,9 @@ class ScheduleCPP;
 class DeviceControllerCPP  : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+
+    PROPERTY_PRIVATE(NUVE::Sync*, sync)
 
     Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
     Q_PROPERTY(NUVE::System *system MEMBER  m_system NOTIFY systemChanged)
@@ -35,7 +39,7 @@ class DeviceControllerCPP  : public QObject
 
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
-    QML_ELEMENT
+
 
 public:
     /* Public Constructors & Destructor

@@ -2,7 +2,31 @@
 
 #include <QObject>
 
-#define PROPERTY(_TYPE_, _NAME_)\
+#define PROPERTY_PRIVATE(_TYPE_, _NAME_)\
+    Q_PROPERTY(_TYPE_ _NAME_ MEMBER m_##_NAME_ READ _NAME_ WRITE set##_NAME_ NOTIFY _NAME_##Changed)\
+    Q_SIGNALS: void _NAME_##Changed(_TYPE_ value);\
+    public: _TYPE_ _NAME_ () const {return m_##_NAME_;}\
+    private: \
+    void set##_NAME_(_TYPE_ value){\
+        m_##_NAME_ = value;\
+        emit _NAME_##Changed(value);\
+    }\
+    private:\
+    _TYPE_ m_##_NAME_;
+
+#define PROPERTY_PROTECTED(_TYPE_, _NAME_)\
+    Q_PROPERTY(_TYPE_ _NAME_ MEMBER m_##_NAME_ READ _NAME_ WRITE set##_NAME_ NOTIFY _NAME_##Changed)\
+    Q_SIGNALS: void _NAME_##Changed(_TYPE_ value);\
+    public: _TYPE_ _NAME_ () const {return m_##_NAME_;}\
+    protected: \
+    void set##_NAME_(_TYPE_ value){\
+        m_##_NAME_ = value;\
+        emit _NAME_##Changed(value);\
+    }\
+    protected:\
+    _TYPE_ m_##_NAME_;
+
+#define PROPERTY_PUBLIC(_TYPE_, _NAME_)\
     Q_PROPERTY(_TYPE_ _NAME_ MEMBER m_##_NAME_ READ _NAME_ WRITE set##_NAME_ NOTIFY _NAME_##Changed)\
     Q_SIGNALS: void _NAME_##Changed(_TYPE_ value);\
     public: _TYPE_ _NAME_ () const {return m_##_NAME_;}\

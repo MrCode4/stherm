@@ -74,7 +74,7 @@ BasePageView {
             Layout.topMargin: 20
             Layout.columnSpan: 2
             visible: false // as we have no info for real email
-            text: "Email: [email]@mail.com" // email should be real
+            text: "Email: " + uiSession.deviceController.deviceControllerCPP.sync.userData.email
         }
     }
 }

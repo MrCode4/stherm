@@ -27,6 +27,7 @@ set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Core)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Data)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
 
@@ -251,8 +252,6 @@ qt6_add_qml_module(appStherm
 
     SOURCES
         Backend/Property.h
-        Backend/ModelBase.h
-        Backend/ModelBase.cpp
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
         Backend/ScreenSaverManager.h
@@ -260,6 +259,8 @@ qt6_add_qml_module(appStherm
         Backend/DateTimeManagerCPP.h
         Backend/DateTimeManagerCPP.cpp
         Backend/TimezonesDSTMap.h
+
+        Backend/Data/UserData.h
 
         # php
         Backend/PhpApi.h
@@ -424,7 +425,7 @@ qt6_add_qml_module(appStherm
         update_fw_nrf.sh
         update_fw_nrf_seamless.sh
         getsshpass.sh
-        nrf_fw_update.zip        
+        nrf_fw_update.zip
 )
 
 if (DEBUG_MODE)

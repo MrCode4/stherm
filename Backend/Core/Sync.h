@@ -2,17 +2,24 @@
 
 #include <QObject>
 #include <QtNetwork>
+#include <QQmlEngine>
 
 #include "nuve_types.h"
 #include "RestApiExecutor.h"
+#include "Property.h"
+#include "UserData.h"
 
 /*! ***********************************************************************************************
  * This class manage sync requests.
  * ************************************************************************************************/
+
 namespace NUVE {
 class Sync : public RestApiExecutor
 {
     Q_OBJECT
+    QML_ELEMENT
+
+    PROPERTY_PRIVATE(UserData*, userData)
 public:
     Sync(QObject *parent = nullptr);
 
@@ -32,6 +39,7 @@ public:
     bool fetchMessages();
     void fetchWirings(const QString& uid);
     void requestJob(QString type);
+    Q_INVOKABLE bool fetchUserData();
 
     void pushSettingsToServer(const QVariantMap &settings);
     void pushAlertToServer(const QVariantMap &settings);
@@ -39,7 +47,7 @@ public:
     void forgetDevice();
 
     //! Push auto mode settings to server
-    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
+    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);    
 
 signals:
     void settingsFetched(bool success);
@@ -61,6 +69,7 @@ signals:
     void autoModeSettingsFetched();
     void messagesLoaded();
     void requestJobDone();
+    void userDataFetched();
 
     void alert(QString msg);
 
@@ -73,7 +82,7 @@ signals:
 
     void testModeStarted();
 
-    void updateFirmwareFromServer(QString version);
+    void updateFirmwareFromServer(QString version);    
 
 private slots:
     //! Check firmware update with getSettings reply

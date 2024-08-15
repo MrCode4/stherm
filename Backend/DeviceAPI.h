@@ -7,6 +7,7 @@
 #include "Device/device_config.h"
 #include "Device/sensors.h"
 #include "Device/timing.h"
+#include "Property.h"
 
 /* PHP, on V1, is used to extend the JS web browser based UI.
  * we intend to replace it with something more suitable
@@ -20,11 +21,6 @@ class Hardware;
 class DeviceAPI : public QObject
 {
     Q_OBJECT
-    /* TODO - FYR
-     * The Q_PROPERTY macro declares a property that could be accessed from QML.
-     * e.g.
-     *  Q_PROPERTY(QString userName READ userName WRITE setUserName NOTIFY userNameChanged)
-    */
 
     Q_PROPERTY(QString uid READ uid NOTIFY uidChanged)
 
@@ -35,6 +31,7 @@ public:
     QString uid() const;
     NUVE::Timing *timing();
     NUVE::System* system();
+    NUVE::Sync* sync();
     const NUVE::DeviceConfig& deviceConfig() const;
     void setSampleRate(const int sampleRate);
 
@@ -54,8 +51,8 @@ private:
     NUVE::CurrentStage m_currentStage;
     NUVE::Sensors m_sensors;
 
-    NUVE::Sync *m_sync;
     NUVE::System *m_system;
+    NUVE::Sync *m_sync;
     NUVE::Hardware *m_hardware;
 
     NUVE::cpuid_t _uid;

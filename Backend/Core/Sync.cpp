@@ -27,6 +27,7 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 Sync::Sync(QObject *parent)
     : RestApiExecutor(parent)
     , mHasClient(false)
+    , m_userData(new UserData(this))
 {
     QSettings setting;
     mHasClient = setting.value(cHasClientSetting).toBool();
@@ -374,6 +375,28 @@ void Sync::fetchWirings(const QString& uid)
     };
 
     callGetApi(cBaseUrl + QString("api/sync/getWirings?uid=%0").arg(uid), callback);
+}
+
+bool Sync::fetchUserData()
+{
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "Sn is not ready! can not get user-data!";
+        return false;
+    }
+
+    auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
+        if (data.isEmpty()) {
+            TRACE << "Received user-data corrupted";
+        }
+        else {
+            userData()->setemail(data.value("email").toString());
+            userData()->setname(data.value("name").toString());
+        }
+        emit userDataFetched();
+    };
+
+    auto reply= callGetApi(cBaseUrl + QString("api/sync/client?sn=%0").arg(mSerialNumber), callback);
+    return reply != nullptr;
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
