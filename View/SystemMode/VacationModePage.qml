@@ -97,10 +97,10 @@ BasePageView {
 
             from: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
                        AppSpec.vacationMinimumTemperatureF : AppSpec.vacationMinimumTemperatureC) ??
-                  AppSpec.vacationMinimumTemperatureC
+                  AppSpec.vacationMinimumTemperatureC // CHECK
             to: (deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
                      AppSpec.vacationMaximumTemperatureF : AppSpec.vacationMaximumTemperatureC) ??
-                AppSpec.vacationMaximumTemperatureC
+                AppSpec.vacationMaximumTemperatureC // CHECK
 
             first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting.tempratureUnit, minTemperature, maxTemperature)
 
