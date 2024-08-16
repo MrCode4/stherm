@@ -3,10 +3,10 @@
 #include <QObject>
 
 #define PROPERTY(_SETTER_ACCCESS_, _TYPE_, _NAME_)\
-    Q_PROPERTY(_TYPE_ _NAME_ MEMBER m_##_NAME_ READ _NAME_ WRITE set##_NAME_ NOTIFY _NAME_##Changed)\
+    Q_PROPERTY(_TYPE_ _NAME_ MEMBER m_##_NAME_ READ _NAME_ WRITE _NAME_ NOTIFY _NAME_##Changed)\
     Q_SIGNALS: void _NAME_##Changed(_TYPE_ value);\
     _SETTER_ACCCESS_: _TYPE_ _NAME_ () const {return m_##_NAME_;}\
-    void set##_NAME_(_TYPE_ value){\
+    void _NAME_(_TYPE_ value){\
         m_##_NAME_ = value;\
         emit _NAME_##Changed(value);\
     }\

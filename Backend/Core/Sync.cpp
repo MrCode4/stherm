@@ -391,20 +391,20 @@ void Sync::fetchUserData()
     }
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
-        setfetchingUserData(false);
+        fetchingUserData(false);
         TRACE << "fetchUserData: " << rawData;
         if (data.isEmpty()) {
             TRACE << "Received user-data corrupted";
         }
         else {
-            userData()->setemail(data.value("email").toString());
-            userData()->setname(data.value("name").toString());
+            userData()->email(data.value("email").toString());
+            userData()->name(data.value("name").toString());
         }
     };
 
-    setfetchingUserData(true);
+    fetchingUserData(true);
     auto reply= callGetApi(cBaseUrl + QString("api/sync/client?sn=%0").arg(mSerialNumber), callback);
-    setfetchingUserData(reply != nullptr);
+    fetchingUserData(reply != nullptr);
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
