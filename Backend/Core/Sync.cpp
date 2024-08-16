@@ -27,6 +27,7 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 Sync::Sync(QObject *parent)
     : RestApiExecutor(parent)
     , mHasClient(false)
+    , m_fetchingUserData(false)
     , m_userData(new UserData(this))
 {
     QSettings setting;

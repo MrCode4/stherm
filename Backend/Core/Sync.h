@@ -19,8 +19,8 @@ class Sync : public RestApiExecutor
     Q_OBJECT
     QML_ELEMENT
 
-    PROPERTY_PRIVATE(UserData*, userData)
-    PROPERTY_PRIVATE(bool, fetchingUserData)
+    PROPERTY_PRI(UserData*, userData)
+    PROPERTY_PRI(bool, fetchingUserData)
 public:
     Sync(QObject *parent = nullptr);
 
@@ -48,7 +48,7 @@ public:
     void forgetDevice();
 
     //! Push auto mode settings to server
-    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);    
+    void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
 signals:
     void settingsFetched(bool success);
@@ -82,7 +82,7 @@ signals:
 
     void testModeStarted();
 
-    void updateFirmwareFromServer(QString version);    
+    void updateFirmwareFromServer(QString version);
 
 private slots:
     //! Check firmware update with getSettings reply

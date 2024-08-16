@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QObject>
 #include <QQmlEngine>
 
 #include "Device/current_stage.h"
@@ -51,8 +50,8 @@ private:
     NUVE::CurrentStage m_currentStage;
     NUVE::Sensors m_sensors;
 
-    NUVE::System *m_system;
     NUVE::Sync *m_sync;
+    NUVE::System *m_system;
     NUVE::Hardware *m_hardware;
 
     NUVE::cpuid_t _uid;
