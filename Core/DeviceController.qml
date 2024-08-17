@@ -192,6 +192,9 @@ I_DeviceController {
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
+            // Save settings after fetch
+            saveSettings();
+
         }
 
         function onAreSettingsFetchedChanged(success) {
@@ -221,6 +224,7 @@ I_DeviceController {
         function onAutoModeSettingsReady(settings, isValid) {
             if (isValid) {
                 setAutoTemperatureFromServer(settings);
+                saveSettings();
             }
         }
 
