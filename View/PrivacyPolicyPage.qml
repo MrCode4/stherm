@@ -62,7 +62,7 @@ BasePageView {
                                              });
                 }
 
-                AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+                deviceController.saveSettings();
             }
         }
     }

@@ -36,7 +36,7 @@ ApplicationWindow {
     //! Save the app configuration when the app closed
     onClosing: {
         // Save to found path
-        AppCore.defaultRepo.saveToFile(uiSessionId.configFilePath);
+        uiSessionId.deviceController.saveSettings();
     }
 
     onVisibleChanged: {
