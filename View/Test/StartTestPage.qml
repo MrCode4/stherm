@@ -15,7 +15,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property int testCounter: 0
-    property int allTests:    5    
+    property int allTests: 5
 
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system

@@ -87,7 +87,6 @@ Page {
         if (useSimpleStackView) {
             if (testsStackView.currentItem == _root) {
                 testsStackView.pop();
-                return;
             }
         }
         else if (_root.StackView.view) {
