@@ -87,7 +87,7 @@ BasePageView {
             onClicked: {
                 applyToModel();
                 deviceController.updateEditMode(AppSpec.EMBacklight);
-                deviceController.pushSettings();
+                deviceController.saveSettings();
                 goBack();
             }
         }

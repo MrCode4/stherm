@@ -527,7 +527,7 @@ I_DeviceController {
             device.systemSetup.systemMode = systemMode;
             deviceController.updateEditMode(AppSpec.EMSystemMode);
             // to let all dependant parameters being updated and save all
-            Qt.callLater(pushSettings);
+            Qt.callLater(saveSettings);
         }
     }
 
@@ -540,7 +540,7 @@ I_DeviceController {
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
         deviceController.updateEditMode(AppSpec.EMVacation);
-        pushSettings();
+        saveSettings();
     }
 
     //! Set time format
@@ -607,9 +607,10 @@ I_DeviceController {
         return true;
     }
 
-    function pushSettings() {
+    //! Save settings to file (configFilePath)
+    function saveSettings() {
         if (editMode === AppSpec.EMNone) {
-            console.log("PushSettings called with empty edit mode", stageMode, lockMode)
+            console.log("saveSettings called with empty edit mode", stageMode, lockMode)
             // to skip extra call
             //            return;
         }

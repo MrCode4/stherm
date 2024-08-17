@@ -202,10 +202,8 @@ QtObject {
 
             // Send messages to server
             deviceController.updateEditMode(AppSpec.EMMessages);
-            deviceController.pushSettings();
+            deviceController.saveSettings();
         }
-
-        AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
 
         if (notifyUser)
             newMessageReceived(newMessage);

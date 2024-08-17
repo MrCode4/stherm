@@ -36,7 +36,7 @@ BasePageView {
                 deviceController.updateFan(fanMode, _hourSliders.value);
                 //! should we check the output of previous function?
                 deviceController.updateEditMode(AppSpec.EMFan);
-                deviceController.pushSettings();
+                deviceController.saveSettings();
             }
 
             //! Also move out of this Page

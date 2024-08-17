@@ -300,7 +300,7 @@ BasePageView {
         }
 
         deviceController.updateEditMode(AppSpec.EMSchedule);
-        deviceController.pushSettings();
+        deviceController.saveSettings();
 
         if (root.StackView.view) {
             root.StackView.view.pop();

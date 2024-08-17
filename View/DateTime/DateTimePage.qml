@@ -28,7 +28,7 @@ BasePageView {
     Component.onDestruction: {
         if (sendToServer) {
             deviceController.updateEditMode(AppSpec.EMDateTime);
-            deviceController.pushSettings();
+            deviceController.saveSettings();
         }
     }
 

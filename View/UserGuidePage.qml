@@ -31,14 +31,14 @@ BasePageView {
     Component.onCompleted: {
         if (initialSetup) {
             deviceController.updateEditMode(AppSpec.EMGeneral);
-            deviceController.pushSettings();
+            deviceController.saveSettings();
         }
     }
 
     Component.onDestruction: {
         if (initialSetup) {
             deviceController.updateEditMode(AppSpec.EMGeneral);
-            deviceController.pushSettings();
+            deviceController.saveSettings();
         }
     }
 
