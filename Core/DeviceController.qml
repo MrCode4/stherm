@@ -216,7 +216,7 @@ I_DeviceController {
 
         function onAppDataReady(data) {
             // This is not a settings section, the QR URL is just part of the information
-            checkQRurl(data.qr_url);
+            updateTechQRurl(data.qr_url);
             setMessagesServer(data.messages)
         }
 
@@ -773,8 +773,12 @@ I_DeviceController {
         deviceControllerCPP.pushSettingsToServer(send_data)
     }
 
-    function checkQRurl(url: var) {
-        root.device.contactContractor.technicianURL = url;
+    function updateTechQRurl(url: var) {
+        var urlIsSame = root.device.contactContractor.technicianURL === url;
+        if (!urlIsSame){
+            root.device.contactContractor.technicianURL = url;
+            saveSettings();
+        }
     }
 
     function setSystemModeServer(mode_id) {
