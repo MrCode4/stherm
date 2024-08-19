@@ -613,15 +613,13 @@ I_DeviceController {
 
     //! Save settings to file (configFilePath)
     function saveSettings() {
-        if (editMode === AppSpec.EMNone) {
-            console.log("saveSettings called with empty edit mode", stageMode, lockMode)
-            // to skip extra call
-            //            return;
+        if (uiSession) {
+            console.log("saveSettings called with edit mode", stageMode, lockMode, uiSession.currentFile)
+            if (uiSession.currentFile.length > 0) // we should not save before the app completely loaded
+                AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+        } else {
+            console.log("saveSettings called without uiSession")
         }
-
-        // we should not save before the app completely loaded
-        if (uiSession && uiSession.currentFile.length > 0)
-            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
     }
 
     function setSettingsServer(settings: var) {
