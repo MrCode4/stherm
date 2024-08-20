@@ -284,7 +284,7 @@ BasePageView {
                 RadioButton {
                     id: _tempCelciUnitBtn
                     text: "\u00b0C"
-                    checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ?? true
+                    checked: appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah
                 }
             }
 

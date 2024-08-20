@@ -198,8 +198,8 @@ BasePageView {
                     }
 
                     Label {
-                        readonly property string unit: (device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
-                                                        ? "F" : "C") ?? "C"
+                        readonly property string unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? "F" : "C"
 
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"

@@ -1118,7 +1118,7 @@ I_DeviceController {
 
     //! Just use for night mode
     function setBrightnessInNightMode(brightness, volume, adaptive) {
-        var send_data = [brightness, volume, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel, adaptive];
+        var send_data = [brightness, volume, device.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel, adaptive];
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }
