@@ -531,11 +531,12 @@ I_DeviceController {
         var minimumTemperature = Utils.clampValue(settings.min_temp, AppSpec.vacationMinimumTemperatureC,
                                                                      AppSpec.vacationMaximumTemperatureC);
 
-        var maximumTemperature = Utils.clampValue(settings.max_temp, AppSpec.vacationMinimumTemperatureC,
-                                                                     AppSpec.vacationMaximumTemperatureC);
+        // minimumTemperature is between vacationMinimumTemperatureC and vacationMaximumTemperatureC so:
+        var maximumTemperature = Utils.clampValue(settings.max_temp, Math.max(AppSpec.minAutoMaxTemp, minimumTemperature + AppSpec.minStepTempC),
+                                                  AppSpec.vacationMaximumTemperatureC);
 
         var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
-        var maximumHumidity = Utils.clampValue(settings.max_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
+        var maximumHumidity = Utils.clampValue(settings.max_humidity, minimumHumidity + AppSpec.minStepHum, AppSpec.maximumHumidity);
 
         setVacation(minimumTemperature, maximumTemperature, minimumHumidity, maximumHumidity)
         setVacationOnFromServer(settings.is_enable)
