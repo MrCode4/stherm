@@ -956,13 +956,14 @@ I_DeviceController {
         }
 
         if (settings.hasOwnProperty("auto_temp_high")) {
-            var auto_temp_high = Utils.clampValue(settings.auto_temp_high, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
+            const minimumSecondarySlider = Math.max(AppSpec.minAutoMaxTemp, device.autoMinReqTemp + AppSpec.autoModeDiffrenceC);
+
+            var auto_temp_high = Utils.clampValue(settings.auto_temp_high, minimumSecondarySlider, AppSpec.autoMaximumTemperatureC);
             if (device.autoMaxReqTemp !== auto_temp_high) {
                 device.autoMaxReqTemp = auto_temp_high;
                 deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
             }
         }
-
     }
 
     function setAutoMinReqTemp(min) {

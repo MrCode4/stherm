@@ -106,7 +106,7 @@ Control {
             width: parent.width
             height: width / 2
             enabled: labelVisible && !currentSchedule
-            difference: temperatureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
+            difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? 4 : AppSpec.autoModeDiffrenceC
 
             firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
             secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
@@ -117,7 +117,7 @@ Control {
             onVisibleChanged: {
                 if (visible) {
                     //! Set difference
-                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
+                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Fah ? 4 : AppSpec.autoModeDiffrenceC
                     tempSliderDoubleHandle.updateFirstSecondValues();
                 }
             }
@@ -169,7 +169,7 @@ Control {
                 running: false
                 onTriggered: {
                     //! Set difference
-                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
+                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Fah ? 4 : AppSpec.autoModeDiffrenceC
                     tempSliderDoubleHandle.updateFirstSecondValues();
                 }
             }
