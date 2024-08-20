@@ -14,7 +14,7 @@ Item {
     Shortcut {
         sequences: [StandardKey.Save]
         onActivated: {
-            saveDialog.saveProject();
+            uiSession.deviceController.saveSettings()
         }
     }
 
@@ -22,25 +22,16 @@ Item {
     Shortcut {
         sequences: [StandardKey.SaveAs, "Ctrl+Shift+S"]
         onActivated: {
-            uiSession.currentFile = "";
-            saveDialog.saveProject();
+            uiSession.deviceController.saveSettings()
         }
     }
 
     //! Load a project
     Shortcut {
         sequences: [StandardKey.Open]
-        onActivated: loadDialog.visible = true;
-    }
-
-    //Save Dialog
-    SaveDialoge {
-        id: saveDialog
-    }
-
-    //! Load Dialog
-    LoadDialoge {
-        id: loadDialog
+        onActivated: {
+         console.log("Open key is deactivated..");
+        }
     }
 
     /* Functions

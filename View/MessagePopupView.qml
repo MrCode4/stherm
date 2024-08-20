@@ -67,7 +67,7 @@ Item {
                 if (messageController && message && message.type !== Message.Type.SystemNotification) {
                     message.isRead = true;
                     deviceController.updateEditMode(AppSpec.EMMessages);
-                    uiSession.deviceController.pushSettings();
+                    uiSession.deviceController.saveSettings();
                 }
 
                 // Remove message from showing messages

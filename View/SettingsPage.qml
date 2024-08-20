@@ -71,7 +71,7 @@ BasePageView {
         onClicked: {
             if (applyToModel() || hasChange) {
                 deviceController.updateEditMode(AppSpec.EMSettings);
-                deviceController.pushSettings();
+                deviceController.saveSettings();
             } else {
                 console.log("model did not pushed")
             }
@@ -350,7 +350,7 @@ BasePageView {
                                              AppSpec.TempratureUnit.Fah,
                                              false, true, true)) {
                     deviceController.updateEditMode(AppSpec.EMSettings);
-                    deviceController.pushSettings()
+                    deviceController.saveSettings()
                     makeCopyOfSettings()
                 } else {
                     console.log("settings did not applied")

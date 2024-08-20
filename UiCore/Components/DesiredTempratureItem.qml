@@ -122,7 +122,7 @@ Control {
                                                        ? Utils.fahrenheitToCelsius(first.value)
                                                        : first.value);
                     deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.pushSettings();
+                    deviceController.saveSettings();
 
                 }
             }
@@ -133,7 +133,7 @@ Control {
                                                        ? Utils.fahrenheitToCelsius(second.value)
                                                        : second.value);
                     deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.pushSettings();
+                    deviceController.saveSettings();
                 }
             }
 
@@ -633,7 +633,7 @@ Control {
         if (device && device.requestedTemp !== celValue) {
             deviceController.setDesiredTemperature(celValue);
             deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
-            deviceController.pushSettings();
+            deviceController.saveSettings();
         }
     }
 }

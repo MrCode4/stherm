@@ -604,7 +604,7 @@ BasePageView {
         }
 
         deviceController.updateEditMode(AppSpec.EMSchedule);
-        deviceController.pushSettings();
+        deviceController.saveSettings();
 
         if (internal.exitAfterSave) {
             goBack();

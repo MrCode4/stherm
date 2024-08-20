@@ -41,7 +41,7 @@ BasePageView {
 
             deviceController.setRequestedHumidity(humidity)
             deviceController.updateEditMode(AppSpec.EMRequestedHumidity);
-            deviceController.pushSettings();
+            deviceController.saveSettings();
 
             //! Also move out of this Page
             if (_root.StackView.view && _root.StackView.view.depth > 1

@@ -60,7 +60,7 @@ I_PopUp {
 
                 // will be pushed but may chgange edit mode
                 uiSession.deviceController.updateEditMode(AppSpec.EMDateTime);
-                uiSession.deviceController.pushSettings();
+                uiSession.deviceController.saveSettings();
 
                 delayedClose.start();
             }

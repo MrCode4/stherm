@@ -128,7 +128,7 @@ QtObject {
     function setVacationOn(on: bool) {}
 
     function setSettings(brightness, volume, temperatureUnit, adaptive, enabledAlerts, enabledNotifications) {}
-    function pushSettings() {}
+    function saveSettings() {}
 
     function setDesiredTemperature(temperature: real) {}
 

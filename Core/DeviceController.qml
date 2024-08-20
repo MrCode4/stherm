@@ -192,6 +192,9 @@ I_DeviceController {
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
+            // Save settings after fetch
+            saveSettings();
+
         }
 
         function onAreSettingsFetchedChanged(success) {
@@ -213,7 +216,7 @@ I_DeviceController {
 
         function onAppDataReady(data) {
             // This is not a settings section, the QR URL is just part of the information
-            checkQRurl(data.qr_url);
+            updateTechQRurl(data.qr_url);
             setMessagesServer(data.messages)
         }
 
@@ -221,6 +224,7 @@ I_DeviceController {
         function onAutoModeSettingsReady(settings, isValid) {
             if (isValid) {
                 setAutoTemperatureFromServer(settings);
+                saveSettings();
             }
         }
 
@@ -527,7 +531,7 @@ I_DeviceController {
             device.systemSetup.systemMode = systemMode;
             deviceController.updateEditMode(AppSpec.EMSystemMode);
             // to let all dependant parameters being updated and save all
-            Qt.callLater(pushSettings);
+            Qt.callLater(saveSettings);
         }
     }
 
@@ -540,7 +544,7 @@ I_DeviceController {
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
         deviceController.updateEditMode(AppSpec.EMVacation);
-        pushSettings();
+        saveSettings();
     }
 
     //! Set time format
@@ -607,16 +611,15 @@ I_DeviceController {
         return true;
     }
 
-    function pushSettings() {
-        if (editMode === AppSpec.EMNone) {
-            console.log("PushSettings called with empty edit mode", stageMode, lockMode)
-            // to skip extra call
-            //            return;
+    //! Save settings to file (configFilePath)
+    function saveSettings() {
+        if (uiSession) {
+            console.log("saveSettings called with edit mode", stageMode, lockMode, uiSession.currentFile)
+            if (uiSession.currentFile.length > 0) // we should not save before the app completely loaded
+                AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+        } else {
+            console.log("saveSettings called without uiSession")
         }
-
-        // we should not save before the app completely loaded
-        if (uiSession && uiSession.currentFile.length > 0)
-            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
     }
 
     function setSettingsServer(settings: var) {
@@ -770,8 +773,12 @@ I_DeviceController {
         deviceControllerCPP.pushSettingsToServer(send_data)
     }
 
-    function checkQRurl(url: var) {
-        root.device.contactContractor.technicianURL = url;
+    function updateTechQRurl(url: var) {
+        var urlIsSame = root.device.contactContractor.technicianURL === url;
+        if (!urlIsSame){
+            root.device.contactContractor.technicianURL = url;
+            saveSettings();
+        }
     }
 
     function setSystemModeServer(mode_id) {
@@ -1173,9 +1180,7 @@ I_DeviceController {
     }
 
     function pushLockUpdates() {
-        // we should not save before the app completely loaded
-        if (uiSession && uiSession.currentFile.length > 0)
-            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+        saveSettings();
 
         // TODO: Update the server
     }

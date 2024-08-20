@@ -62,7 +62,7 @@ BasePageView {
                                              _humSlider.first.value, _humSlider.second.value);
 
                 deviceController.updateEditMode(AppSpec.EMVacation);
-                deviceController.pushSettings();
+                deviceController.saveSettings();
             }
 
             saved();
