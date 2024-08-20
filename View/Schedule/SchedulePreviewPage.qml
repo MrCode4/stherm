@@ -204,7 +204,7 @@ BasePageView {
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
                         text: Number(Utils.convertedTemperature(scheduleToDisplay?.temprature ?? 0,
-                                                                device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel)
+                                                                device?.setting?.tempratureUnit)
                                      ).toLocaleString(locale, "f", 0)
                               + ` \u00b0${unit}`
                     }

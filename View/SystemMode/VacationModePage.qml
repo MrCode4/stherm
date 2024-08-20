@@ -97,19 +97,18 @@ BasePageView {
 
             from: deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
                        AppSpec.vacationMinimumTemperatureF : AppSpec.vacationMinimumTemperatureC
-
             to: deviceController.device?.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ?
                      AppSpec.vacationMaximumTemperatureF : AppSpec.vacationMaximumTemperatureC
 
-            first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel, minTemperature, maxTemperature)
+            first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, setting?.tempratureUnit, minTemperature, maxTemperature)
 
-            second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel, minTemperature, maxTemperature)
+            second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, setting?.tempratureUnit, minTemperature, maxTemperature)
             difference: setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
 
             labelSuffix: "\u00b0" + (setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")
             showMinMax: true
-            fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel)
-            toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, appModel?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel)
+            fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, appModel?.setting?.tempratureUnit)
+            toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, appModel?.setting?.tempratureUnit)
         }
 
         //! Humidity

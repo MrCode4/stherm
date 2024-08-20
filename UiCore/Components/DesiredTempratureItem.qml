@@ -81,7 +81,7 @@ Control {
             Component.onCompleted: {
                 var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
                 _tempSlider.value = Utils.convertedTemperatureClamped(tmp,
-                                                                      device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel,
+                                                                      device?.setting?.tempratureUnit,
                                                                       minTemprature,
                                                                       maxTemprature);
             }
@@ -105,8 +105,8 @@ Control {
             enabled: labelVisible && !currentSchedule
             difference: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
 
-            firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel)
-            secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel)
+            firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device?.setting?.tempratureUnit)
+            secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device?.setting?.tempratureUnit)
 
             from: minTemprature
             to: maxTemprature
@@ -416,7 +416,7 @@ Control {
             //! Update slider value (UI) with changed temperature in schedule
             function onTempratureChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                                      device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel,
+                                                                      device?.setting?.tempratureUnit,
                                                                       minTemprature,
                                                                       maxTemprature);
             }
@@ -624,7 +624,7 @@ Control {
     //! Update _tempSlider.value
     function updateTemperatureValue(temperature: real) {
         _tempSlider.value = Utils.convertedTemperatureClamped(temperature,
-                                                              device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel,
+                                                              device?.setting?.tempratureUnit,
                                                               minTemprature,
                                                               maxTemprature);
     }
