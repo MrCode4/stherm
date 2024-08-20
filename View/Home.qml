@@ -69,6 +69,7 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
+            visible: deviceController.sensorsFetched
 
             TapHandler {
                 onTapped: {
@@ -142,6 +143,8 @@ Control {
                     Layout.leftMargin: -8
                     device: _root.uiSession.appModel
 
+                    visible: deviceController.sensorsFetched
+
                     onClicked: {
                         if (mainStackView && (systemAccessories.accessoriesWireType !== AppSpecCPP.None)) {
                             mainStackView.push("qrc:/Stherm/View/HumidityPage.qml", {
@@ -182,7 +185,7 @@ Control {
                     Layout.alignment: Qt.AlignTrailing
                     // using iaq
                     condition: device._co2_id
-                    visible: deviceController.airConditionSensorHealth
+                    visible: deviceController.sensorsFetched && deviceController.airConditionSensorHealth
                 }
             }
 

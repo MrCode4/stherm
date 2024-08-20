@@ -41,6 +41,9 @@ I_DeviceController {
     property real nightModeBrightness: -1
     property real targetNightModeBrightness: Math.min(50, (device.setting.adaptiveBrightness ? deviceControllerCPP.adaptiveBrightness : device.setting.brightness))
 
+    //! control which data should be shown
+    property bool sensorsFetched: false
+
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
@@ -989,6 +992,7 @@ I_DeviceController {
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = co2 // use iaq as indicator for air quality
+        root.sensorsFetched = true;
         //        device.setting.brightness = result?.brightness ?? 0
 
         //        device.fan.mode?

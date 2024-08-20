@@ -64,9 +64,11 @@ Popup {
                 fontSizeMode: "HorizontalFit"
                 verticalAlignment: "AlignVCenter"
                 horizontalAlignment: "AlignHCenter"
-                text: Number(Utils.convertedTemperature(
-                                 device?.currentTemp ?? 0,
-                                 device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
+                visible: deviceController.sensorsFetched
+                text: !deviceController.sensorsFetched ?
+                          "NAN" : Number(Utils.convertedTemperature(
+                                             device?.currentTemp ?? 0,
+                                             device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
 
                 Label {
                     id: unitLbl
