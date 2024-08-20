@@ -22,7 +22,7 @@ BasePageView {
     property ScheduleCPP            schedule
 
     //! Whether temprature unit is Celsius
-    property bool                   isCelcius:  appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah ?? true
+    property bool                   isCelcius:  appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     //! Can schedule fields be editabled
     property bool                   isEditable: false

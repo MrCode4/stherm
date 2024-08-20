@@ -40,7 +40,7 @@ Control {
             font {
                 pointSize: Qt.application.font.pointSize * 1.5
             }
-            text: Number(Utils.convertedTemperature(temperature, device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel))
+            text: Number(Utils.convertedTemperature(temperature, device?.setting?.tempratureUnit))
                         .toLocaleString(locale, "f", 0)
         }
 

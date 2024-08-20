@@ -29,7 +29,7 @@ BasePageView {
                                          : _tempSlider.value)
 
     //!
-    property bool           isCelcius:  appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah ?? true
+    property bool           isCelcius:  appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     /* Object properties
      * ****************************************************************************************/

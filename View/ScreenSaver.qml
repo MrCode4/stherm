@@ -22,7 +22,7 @@ Popup {
     property I_Device               device: deviceController?.device ?? null
 
     //! Unit
-    property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C" ?? "C"
+    property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C"
 
     property bool isActiveSchedule: deviceController?.currentSchedule ?? null
 
@@ -68,7 +68,7 @@ Popup {
                 text: !deviceController.sensorsFetched ?
                           "NAN" : Number(Utils.convertedTemperature(
                                              device?.currentTemp ?? 0,
-                                             device?.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel)).toLocaleString(locale, "f", 0)
+                                             device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
 
                 Label {
                     id: unitLbl

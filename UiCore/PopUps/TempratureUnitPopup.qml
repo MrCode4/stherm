@@ -43,7 +43,7 @@ I_PopUp {
             Layout.fillWidth: true
             autoExclusive: true
             checkable: true
-            checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ?? true
+            checked: appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah
             text: "Celsius (\u00b0C)"
 
             onCheckedChanged: {
