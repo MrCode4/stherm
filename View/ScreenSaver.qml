@@ -64,8 +64,8 @@ Popup {
                 fontSizeMode: "HorizontalFit"
                 verticalAlignment: "AlignVCenter"
                 horizontalAlignment: "AlignHCenter"
-                visible: deviceController.sensorsFetched
-                text: !deviceController.sensorsFetched ?
+                visible: deviceController.temperatureSensorHealth
+                text: !deviceController.temperatureSensorHealth ?
                           "NAN" : Number(Utils.convertedTemperature(
                                              device?.currentTemp ?? 0,
                                              device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)

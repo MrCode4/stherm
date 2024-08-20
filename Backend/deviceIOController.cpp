@@ -128,6 +128,8 @@ DeviceIOController::DeviceIOController(QObject *parent)
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_No_Data_Received));
 
             emit co2SensorStatus(false);
+            emit temperatureSensorStatus(false);
+            emit humiditySensorStatus(false);
 
         } else if (!mIsHumTempSensorValid) {
             // Send  humidity/temperature malfunction alert (bad data).
@@ -1413,12 +1415,16 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
     mIsHumTempSensorValid = isHumTempSensorDataValid;
 
+    bool temperatureSensorHealth = isHumTempSensorDataValid;
+    bool humiditySensorHealth    = isHumTempSensorDataValid;
+
     if (isHumTempSensorDataValid) {
 
         // Exit from force off
         emit forceOffSystem(false);
 
         // Manage temperature alerts
+        temperatureSensorHealth = false;
         if (values.temp > m_p->throlds_aq.temp_high) {
             if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
                 emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
@@ -1442,9 +1448,11 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
             }
 
         } else {
+            temperatureSensorHealth = true;
             m_TemperatureAlertET.invalidate();
         }
 
+        humiditySensorHealth = false;
         // Manage humidity alerts
         if (values.humidity > m_p->throlds_aq.humidity_high) {
             if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
@@ -1469,9 +1477,13 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
             }
 
         } else {
+            humiditySensorHealth = true;
             m_HumidityAlertET.invalidate();
         }
     }
+
+    emit temperatureSensorStatus(temperatureSensorHealth);
+    emit humiditySensorStatus(humiditySensorHealth);
 
     // Manage fan alerts
    /* if (fanSpeed > m_p->throlds_aq.fan_high) {

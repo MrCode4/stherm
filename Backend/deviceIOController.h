@@ -119,6 +119,9 @@ signals:
     //!  False indicates malfunction.
     void co2SensorStatus (bool status = true);
 
+    void temperatureSensorStatus(bool status = true);
+    void humiditySensorStatus(bool status = true);
+
 private slots:
     void wtdExec();
     void wiringExec();

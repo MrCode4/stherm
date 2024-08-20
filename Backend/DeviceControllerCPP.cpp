@@ -167,6 +167,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(_deviceIO, &DeviceIOController::co2SensorStatus, this, &DeviceControllerCPP::co2SensorStatus);
+    connect(_deviceIO, &DeviceIOController::temperatureSensorStatus, this, &DeviceControllerCPP::temperatureSensorStatus);
+    connect(_deviceIO, &DeviceIOController::humiditySensorStatus,    this, &DeviceControllerCPP::humiditySensorStatus);
 
     mTEMPERATURE_COMPENSATION_Timer.setTimerType(Qt::PreciseTimer);
     mTEMPERATURE_COMPENSATION_Timer.setInterval(1000);

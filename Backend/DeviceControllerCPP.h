@@ -217,6 +217,9 @@ Q_SIGNALS:
     //!  False indicates malfunction.
     void co2SensorStatus (bool status = true);
 
+    void temperatureSensorStatus(bool status = true);
+    void humiditySensorStatus(bool status = true);
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData, bool addToData = false);

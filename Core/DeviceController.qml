@@ -28,7 +28,13 @@ I_DeviceController {
     property bool initialSetup: false;
 
     //! Air condition health
-    property bool airConditionSensorHealth: true;
+    property bool airConditionSensorHealth: false;
+
+    //! Temperature sensor health
+    property bool temperatureSensorHealth:  false;
+
+    //! Humidity sensor health
+    property bool humiditySensorHealth:  false;
 
     //! mandatory update
     //! Set to true when in initial setup exist new update
@@ -129,6 +135,14 @@ I_DeviceController {
 
         function onCo2SensorStatus(status: bool) {
             airConditionSensorHealth = status;
+        }
+
+        function onTemperatureSensorStatus(status: bool) {
+            temperatureSensorHealth = status;
+        }
+
+        function onHumiditySensorStatus(status: bool) {
+            humiditySensorHealth = status;
         }
 
         //! Set system mode to auto when
@@ -1008,7 +1022,6 @@ I_DeviceController {
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = co2 // use iaq as indicator for air quality
-        root.sensorsFetched = true;
         //        device.setting.brightness = result?.brightness ?? 0
 
         //        device.fan.mode?
