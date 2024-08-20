@@ -7,19 +7,22 @@ import QtQuick.Controls
  * is to replace the built-in StackView as is and solve those problems.
  * ***********************************************************************************************/
 Item {
-    id: root    
-    readonly property int depth: loader.stack.length
-    readonly property Item currentItem: loader.item
+    id: root
     property StackView parentStackView
+    readonly property int depth: sv.stack.length
 
-    function push(page, props) {
-        loader.stack.push({'page': page, 'props': props});
-        loader.load(page, props);
-    }
+    property alias currentItem: sv.currentItem
+    property alias busy: sv.busy
+    property alias popExit: sv.popExit
+    property alias popEnter: sv.popEnter
+    property alias pushExit: sv.pushExit
+    property alias pushEnter: sv.pushEnter
+    property alias replaceExit: sv.replaceExit
+    property alias replaceEnter: sv.replaceEnter
 
     function updateProps(page, newProps) {
-        for(let i = 0; i < loader.stack.length; i++) {
-            let vm = loader.stack[i];
+        for(let i = 0; i < sv.stack.length; i++) {
+            let vm = sv.stack[i];
             if (vm.page == page) {
                 Object.assign(vm.props, newProps);
                 break;
@@ -27,11 +30,20 @@ Item {
         }
     }
 
+    function push(page, props) {
+        sv.stack.push({'page': page, 'props': props});
+        sv.replaceExit = sv.pushExit;
+        sv.replaceEnter = sv.pushEnter;
+        sv.replace(sv.currentItem, page, props);
+    }
+
     function pop() {
-        if (loader.stack.length > 1) {
-            loader.stack.splice(-1, 1);
-            let vm = loader.stack[loader.stack.length-1];
-            loader.load(vm.page, vm.props)
+        if (sv.stack.length > 1) {
+            sv.stack.splice(-1, 1);
+            let vm = sv.stack[sv.stack.length-1];
+            sv.replaceExit = sv.popExit;
+            sv.replaceEnter = sv.popEnter;
+            sv.replace(sv.currentItem, vm.page, vm.props)
         }
         else {
             if (parentStackView) {
@@ -40,15 +52,18 @@ Item {
         }
     }
 
-    Loader {
-        id: loader
+    StackView {
+        id: sv
         property var stack: []
-
-        asynchronous: false
         anchors.fill: parent
+        initialItem: Item {}
 
-        function load(page, props) {
-            loader.setSource(page, props)
+        property Transition oldReplaceExit
+        property Transition oldReplaceEnter
+
+        Component.onCompleted: {
+            oldReplaceExit = replaceExit
+            oldReplaceEnter = replaceEnter
         }
     }
 }
