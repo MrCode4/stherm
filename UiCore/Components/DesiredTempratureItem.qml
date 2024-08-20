@@ -123,24 +123,11 @@ Control {
             }
 
             first.onPressedChanged: {
-                if (deviceController && !first.pressed) {
-                    deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Cel
-                                                       ? first.value
-                                                       : Utils.fahrenheitToCelsius(first.value));
-                    deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.saveSettings();
-
-                }
+               updateAutoMinReqTempModel();
             }
 
             second.onPressedChanged: {
-                if (deviceController && !second.pressed) {
-                    deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Cel
-                                                       ? second.value
-                                                       : Utils.fahrenheitToCelsius(second.value));
-                    deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.saveSettings();
-                }
+                updateAutoMaxReqTempModel();
             }
 
             //! Use Connections to update first and second values
@@ -187,6 +174,26 @@ Control {
                 }
             }
 
+            function updateAutoMinReqTempModel() {
+                if (deviceController && !first.pressed) {
+                    deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(first.value)
+                                                       : first.value);
+                    deviceController.updateEditMode(AppSpec.EMAutoMode);
+                    deviceController.saveSettings();
+                }
+            }
+
+            function updateAutoMaxReqTempModel() {
+                if (deviceController && !second.pressed) {
+                    deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(second.value)
+                                                       : second.value);
+                    deviceController.updateEditMode(AppSpec.EMAutoMode);
+                    deviceController.saveSettings();
+                }
+            }
+
             function updateFirstValue()
             {
                 if (!device) return;
@@ -216,17 +223,23 @@ Control {
                                                                      temperatureUnit,
                                                                      minTemprature,
                                                                      maxTemprature);
+
+                const minimumSecondarySlider = Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference);
                 const secondValue = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
                                                                       temperatureUnit,
-                                                                      minTemprature,
+                                                                      Math.max(minTemprature, minimumSecondarySlider),
                                                                       maxTemprature);
 
                 //! Now first set first.maxValue and second.minValue then update their actual values
                 first.setMaxValue(Math.min(firstValueCeil, secondValue - tempSliderDoubleHandle.difference));
-                second.setMinValue(Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference));
+                second.setMinValue(minimumSecondarySlider);
 
                 first.value = firstValue;
+                updateAutoMinReqTempModel();
+
                 second.value = secondValue;
+                updateAutoMaxReqTempModel();
+
             }
         }
 
