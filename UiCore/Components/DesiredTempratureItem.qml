@@ -74,13 +74,16 @@ Control {
             from: minTemprature
             to: maxTemprature
 
-            //! Note: this binding will be broken use Connections instead
-            value: {
+            //! Note: Can not bind the value as will be broken so we use Connections instead
+            //! Also binding will be called before broken too many times as the values are loading one by one and
+            //! can be faulty
+            //! Use Component.onCompleted to update the UI for first time after the settings are loaded.
+            Component.onCompleted: {
                 var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
-                return Utils.convertedTemperatureClamped(tmp,
-                                                         device.setting.tempratureUnit,
-                                                         minTemprature,
-                                                         maxTemprature);
+                _tempSlider.value = Utils.convertedTemperatureClamped(tmp,
+                                                                      device?.setting.tempratureUnit ?? AppSpec.TempratureUnit.Fah,
+                                                                      minTemprature,
+                                                                      maxTemprature);
             }
 
             //! Use onPressed instead of on value changed so value is only applied to device when
