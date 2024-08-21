@@ -145,6 +145,18 @@ DeviceIOController::DeviceIOController(QObject *parent)
         mIsHumTempSensorValid = false;
         mIsDataReceived = false;
     });
+
+    //! will be started on each GetInfo packet
+    //! to retry if not receiving any response in 5 seconds
+    mGetInfoNRFStarter.setInterval(5 * 1000);
+    mGetInfoNRFStarter.setTimerType(Qt::PreciseTimer);
+    //! will be stopped if received the response;
+    mGetInfoNRFStarter.setSingleShot(true);
+    connect(&mGetInfoNRFStarter, &QTimer::timeout, this, [this]() {
+        TRACE << "retrying to send latest packet again";
+        m_nRfConnection->setProperty("busy", false);
+        processNRFQueue();
+    });
 }
 
 DeviceIOController::~DeviceIOController()
@@ -500,6 +512,8 @@ void DeviceIOController::createNRF()
             m_gpioHandler5->readProcessed();
         else if (sent.CMD == STHERM::GetSensors)
             m_gpioHandler4->readProcessed();
+        else if (sent.CMD == STHERM::GetInfo)
+            mGetInfoNRFStarter.stop(); // stop retrying to getInfo
 
         processNRFResponse(rxPacket, sent);
         m_nRfConnection->setProperty("busy", false);
@@ -1007,7 +1021,10 @@ bool DeviceIOController::processNRFQueue(STHERM::SIOCommand cause)
     auto packetBA = QByteArray::fromRawData(reinterpret_cast<char *>(ThreadBuff), ThreadSendSize);
 
     if (m_nRfConnection->sendRequest(packetBA)) {
-        if (packet.CMD == STHERM::SIOCommand::SetFanSpeed) {
+        if (packet.CMD == STHERM::SIOCommand::GetInfo) {
+            TRACE << "CHECK for GetInfo";
+            mGetInfoNRFStarter.start(); // will try again if not responding in 5 seconds
+        } else if (packet.CMD == STHERM::SIOCommand::SetFanSpeed) {
             TRACE << "CHECK for set fan speed";
         } else if (packet.CMD == STHERM::SIOCommand::GetTOF) {
             TRACE_CHECK(false) << "CHECK for TOF values";
@@ -1028,6 +1045,7 @@ bool DeviceIOController::processNRFQueue(STHERM::SIOCommand cause)
     } else {
         qWarning() << "nRF request packet not sent" << packet.CMD
                    << "queue size: " << m_nRF_queue.size();
+        // TODO should we set busy to false? or start timer?
     }
 
     return false;
