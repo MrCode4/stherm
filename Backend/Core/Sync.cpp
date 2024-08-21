@@ -27,8 +27,8 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 Sync::Sync(QObject *parent)
     : RestApiExecutor(parent)
     , mHasClient(false)
+    , m_userData(nullptr)
     , m_fetchingUserData(false)
-    , m_userData(new UserData(this))
 {
     QSettings setting;
     mHasClient = setting.value(cHasClientSetting).toBool();
@@ -390,9 +390,14 @@ void Sync::fetchUserData()
         return;
     }
 
+    if (userData() == nullptr) {
+        qWarning() << "user-data is not set yet";
+        return;
+    }
+
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
         fetchingUserData(false);
-        TRACE << "fetchUserData: " << rawData;
+
         if (data.isEmpty()) {
             TRACE << "Received user-data corrupted";
         }

@@ -2,6 +2,15 @@
 
 #include <QObject>
 
+/*! ***********************************************************************************************
+ * Here are just a few boilerplate definition of properties that helps to
+ * declare a property (field, siganl, setter, getter, property defition etc)
+ * in just a signle-line to keep the code clean and fresh in used classes.
+ * Use PROPERTY_PRI to delcare a property with private setter, PROPERTY_PRO
+ * to declare a property with protected setter and PROPERTY_PUB to declare
+ * a property with public setter.
+ * ************************************************************************************************/
+
 #define PROPERTY(_SETTER_ACCCESS_, _TYPE_, _NAME_)\
     Q_PROPERTY(_TYPE_ _NAME_ MEMBER m_##_NAME_ READ _NAME_ WRITE _NAME_ NOTIFY _NAME_##Changed)\
     Q_SIGNALS: void _NAME_##Changed(_TYPE_ value);\

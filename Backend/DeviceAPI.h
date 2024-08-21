@@ -1,12 +1,12 @@
 #pragma once
 
+#include <QObject>
 #include <QQmlEngine>
 
 #include "Device/current_stage.h"
 #include "Device/device_config.h"
 #include "Device/sensors.h"
 #include "Device/timing.h"
-#include "Property.h"
 
 /* PHP, on V1, is used to extend the JS web browser based UI.
  * we intend to replace it with something more suitable
