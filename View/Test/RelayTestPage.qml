@@ -21,6 +21,7 @@ WiringPage {
     topPadding: 0
     bottomPadding: 32 * scaleFactor
     title: "Relay Test"
+    useSimpleStackView: true
 
     wiring: Wiring {
         onIsRChanged:   deviceController.testRelays(wiring);
@@ -72,12 +73,10 @@ WiringPage {
     }
 
     function nextPage() {
-        if (root.StackView.view) {
-            root.StackView.view.push("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
-                                         "uiSession": uiSession,
-                                         "backButtonVisible" : backButtonVisible
-                                     })
-        }
+        gotoPage("qrc:/Stherm/View/Test/QRCodeTestPage.qml", {
+                     "uiSession": uiSession,
+                     "backButtonVisible" : backButtonVisible
+                 });
     }
 
     Timer {

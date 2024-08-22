@@ -10,8 +10,9 @@ BasePageView {
     id: _root
 
     /* Object properties
-     * ****************************************************************************************/
+     * ****************************************************************************************/    
     title: "Audio Test"
+    useSimpleStackView: true
 
     /* Children
      * ****************************************************************************************/
@@ -24,11 +25,7 @@ BasePageView {
 
         onClicked: {
             //! Next page
-            if (_root.StackView.view) {
-                _root.StackView.view.push("qrc:/Stherm/View/Test/InternalSensorTestPage.qml", {
-                                              "uiSession": uiSession
-                                          })
-            }
+            gotoPage("qrc:/Stherm/View/Test/InternalSensorTestPage.qml", {"uiSession": uiSession});
         }
     }
 

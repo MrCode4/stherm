@@ -35,6 +35,8 @@ Page {
 
     property color                  headerColor: "white"
 
+    property bool useSimpleStackView: false
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
@@ -78,13 +80,29 @@ Page {
     }
 
     //! By default if Page is inside a StackView it will be popped if not nothing happens.
-    //! For most Pages this is enough, although it might be neccessary to override it for some
-    backButtonCallback: function() {
-        if (_root.StackView.view) {
+    //! For most Pages this is enough, although it might be neccessary to override it for some    
+    backButtonCallback: tryGoBack
+
+    function tryGoBack() {
+        if (useSimpleStackView) {
+            if (testsStackView.currentItem == _root) {
+                testsStackView.pop();
+            }
+        }
+        else if (_root.StackView.view) {
             //! Then Page is inside an StackView
             if (_root.StackView.view.currentItem === _root) {
                 _root.StackView.view.pop();
             }
+        }
+    }
+
+    function gotoPage(page, props)  {
+        if (useSimpleStackView) {
+            testsStackView.push(page, props);
+        }
+        else if (_root.StackView.view)  {
+            _root.StackView.view.push(page, props);
         }
     }
 }

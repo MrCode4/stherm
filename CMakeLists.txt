@@ -110,6 +110,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/ConfirmPopup.qml
         UiCore/PopUps/UpdatePopup.qml
         UiCore/ShortcutManager.qml
+        UiCore/SimpleStackView.qml
         UiCore/Components/SemiCircleSlider.qml
         UiCore/Components/SystemModeButton.qml
         UiCore/Components/DateTimeLabel.qml
@@ -204,6 +205,7 @@ qt6_add_qml_module(appStherm
         View/DateTime/MonthDayDelegate.qml
 
         # Test
+        View/Test/TestsHostPage.qml
         View/Test/TouchTestPage.qml
         View/Test/ColorTestPage.qml
         View/Test/BrightnessTestPage.qml

@@ -19,6 +19,7 @@ BasePageView {
      * ****************************************************************************************/
 
     title: "System  QR Code "
+    useSimpleStackView: true
 
     /* Children
      * ****************************************************************************************/
@@ -126,11 +127,7 @@ BasePageView {
             text: FAIcons.circleInfo
         }
 
-        onClicked: {
-            root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
-                                         "uiSession": Qt.binding(() => uiSession)
-                                     })
-        }
+        onClicked: gotoPage("qrc:/Stherm/View/AboutDevicePage.qml", {"uiSession": Qt.binding(() => uiSession), 'useSimpleStackView': true});
     }
 
     //! The timer will be start when

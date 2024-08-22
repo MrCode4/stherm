@@ -15,7 +15,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property int testCounter: 0
-    property int allTests:    5
+    property int allTests: 5
 
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system
@@ -23,19 +23,25 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Start Test"
+    useSimpleStackView: true
 
     Component.onCompleted: {
-        deviceController.deviceControllerCPP.system.testMode = true;
-        deviceController.deviceControllerCPP.beginTesting()
+        if (testCounter == 0) {
+            console.log('Start Test Page: Completed')
+            deviceController.deviceControllerCPP.system.testMode = true;
+            deviceController.deviceControllerCPP.beginTesting()
+            timerStartTests.start();
+        }
     }
 
     /* Children
      * ****************************************************************************************/
 
     Timer {
+        id: timerStartTests
         interval: 1000
         repeat: false
-        running: true
+        running: false
 
         onTriggered: {
             // Test 1
@@ -83,6 +89,10 @@ BasePageView {
                 notPassedTests.text += "\n" + errorText;
                 deviceController.deviceControllerCPP.saveTestResult("sshpass", false, errorText)
             }
+
+            if (testCounter === allTests) {
+                nextPageTimer.start();
+            }
         }
     }
 
@@ -90,7 +100,7 @@ BasePageView {
         id: nextPageTimer
         interval: 3000
         repeat: false
-        running: testCounter === allTests
+        running: false
 
         onTriggered: {
             nextPage();
@@ -134,12 +144,11 @@ BasePageView {
 
     function nextPage() {
         nextPageTimer.stop()
+        testsStackView.updateProps("qrc:/Stherm/View/Test/StartTestPage.qml", {"testCounter": testCounter});
         //! Load next page
-        if (root.StackView.view) {
-            root.StackView.view.push("qrc:/Stherm/View/Test/TouchTestPage.qml", {
-                                         "uiSession": uiSession,
-                                         "backButtonVisible" : backButtonVisible
-                                     })
-        }
+        gotoPage("qrc:/Stherm/View/Test/TouchTestPage.qml", {
+                     "uiSession": uiSession,
+                     "backButtonVisible" : backButtonVisible
+                 });
     }
 }

@@ -13,8 +13,9 @@ BasePageView {
      * ****************************************************************************************/
 
     /* Object properties
-     * ****************************************************************************************/
+     * ****************************************************************************************/    
     title: "Brightness Test"
+    useSimpleStackView: true
     headerColor: "black"
     background: Rectangle {
         color: "white"
@@ -36,12 +37,10 @@ BasePageView {
      * ****************************************************************************************/
 
     function nextPage() {
-        if (root.StackView.view) {
-            root.StackView.view.push("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
-                                         "uiSession": uiSession,
-                                         "backButtonVisible" : backButtonVisible
-                                     })
-        }
+        gotoPage("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
+                     "uiSession": uiSession,
+                     "backButtonVisible" : backButtonVisible
+                 });
     }
 
     Item {
