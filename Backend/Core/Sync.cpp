@@ -211,6 +211,8 @@ bool Sync::fetchContractorInfo()
             else {
                 fetchContractorLogo(logo);
             }
+
+            fetchUserData();
         }
     };
 
@@ -382,11 +384,6 @@ void Sync::fetchUserData()
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not get user-data!";
-        return;
-    }
-
-    if (fetchingUserData()) {
-        qWarning() << "user-data fetching in progress";
         return;
     }
 
