@@ -11,6 +11,7 @@ import Stherm
 QtObject {
 
     //! Convert temperature from celsius to fahrenheit
+    //! If no unit is specified (unit is null), Celsius (Cel) is used by default.
     function convertedTemperature(celsiusTemp: real, toUnit: int) : real {
         return (toUnit === AppSpec.TempratureUnit.Fah) ? 32 + 1.8 * celsiusTemp : celsiusTemp;
     }

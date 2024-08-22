@@ -284,7 +284,7 @@ BasePageView {
                 RadioButton {
                     id: _tempCelciUnitBtn
                     text: "\u00b0C"
-                    checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
+                    checked: appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah
                 }
             }
 
@@ -347,7 +347,7 @@ BasePageView {
             if (deviceController) {
                 if (deviceController.setSettings(AppSpec.defaultBrightness,
                                              AppSpec.defaultVolume,
-                                             AppSpec.TempratureUnit.Fah,
+                                             AppSpec.TempratureUnit.Cel,
                                              false, true, true)) {
                     deviceController.updateEditMode(AppSpec.EMSettings);
                     deviceController.saveSettings()

@@ -24,12 +24,12 @@ BasePageView {
     property bool editMode: false
 
     //! Temprature value: this is always in celsius
-    readonly property real  temprature: (device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+    readonly property real  temprature: (device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
                                          ? Utils.fahrenheitToCelsius(_tempSlider.value)
                                          : _tempSlider.value)
 
     //!
-    property bool           isCelcius:  appModel.setting.tempratureUnit !== AppSpec.TempratureUnit.Fah
+    property bool           isCelcius:  appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah
 
     /* Object properties
      * ****************************************************************************************/

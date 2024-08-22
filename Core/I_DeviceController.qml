@@ -90,10 +90,10 @@ QtObject {
 
 
     //! Actual values of minimum and maximum temperatures based on temperature unit
-    property real               _minimumTemperature:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+    property real               _minimumTemperature:  device.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                       ? _minimumTemperatureF : _minimumTemperatureC
 
-    property real               _maximumTemperature:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+    property real               _maximumTemperature:  device.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                       ? _maximumTemperatureF : _maximumTemperatureC
 
     //! Maximum and Minimum model temperature in Celsius to use in UI
@@ -101,10 +101,10 @@ QtObject {
     property real               _maximumTemperatureUIC: Math.floor(Utils.fahrenheitToCelsius(_maximumTemperatureUIF))
 
     //! Actual values of minimum and maximum temperatures based on temperature unit to use in UI
-    property real               _minimumTemperatureUI:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+    property real               _minimumTemperatureUI:  device.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                         ? _minimumTemperatureUIF : _minimumTemperatureUIC
 
-    property real               _maximumTemperatureUI:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+    property real               _maximumTemperatureUI:  device.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
                                                         ? _maximumTemperatureUIF : _maximumTemperatureUIC
 
     /* Object Properties
