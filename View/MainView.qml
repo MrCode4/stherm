@@ -22,8 +22,8 @@ Item {
 
     /* Children
      * ****************************************************************************************/
-    implicitWidth: 480
-    implicitHeight: 480
+    implicitWidth: AppStyle.size
+    implicitHeight: AppStyle.size
 
     StackView {
         id: _mainStackView

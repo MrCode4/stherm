@@ -71,6 +71,126 @@ BasePageView {
             }
         }
 
+        property var menuModel: [
+            {
+                icon: FAIcons.sunDust,
+                text: "System Mode",
+                view: "qrc:/Stherm/View/SystemModePage.qml"
+            },
+            {
+                icon: FAIcons.bolt,
+                text: "Backlight",
+                view: "qrc:/Stherm/View/BacklightPage.qml"
+            },
+            {
+                icon: FAIcons.bellExclamation,
+                text: "Alerts/Messages",
+                view: "qrc:/Stherm/View/AlertsNotificationsPage.qml"
+            },
+            {
+                icon: FAIcons.calendarDays,
+                text: "Schedule",
+                view: "qrc:/Stherm/View/ScheduleView.qml"
+            },
+            {
+                icon: FAIcons.gear,
+                text: "Settings",
+                view: "qrc:/Stherm/View/SettingsPage.qml"
+            },
+            {
+                icon: FAIcons.calendarClock,
+                text: "Date & Time",
+                view: "qrc:/Stherm/View/DateTime/DateTimePage.qml"
+            },
+            {
+                icon: FAIcons.signalStream,
+                text: "Sensors",
+                view: "qrc:/Stherm/View/SensorsPage.qml"
+            },
+            {
+                icon: FAIcons.droplet,
+                text: "Humidity Control",
+                visible: ((systemAccessories?.accessoriesWireType ?? AppSpecCPP.None) !== AppSpecCPP.None),
+                view: "qrc:/Stherm/View/HumidityPage.qml"
+            },
+            {
+                icon: FAIcons.fan,
+                text: "Fan Control",
+                view: "qrc:/Stherm/View/FanPage.qml"
+            },
+            {
+                icon: FAIcons.wrench,
+                text: "System Setup",
+                view: "qrc:/Stherm/View/SystemSetupPage.qml"
+            },
+            {
+                image: "qrc:/Stherm/Images/smart-phone.png",
+                text: "Mobile App",
+                view: "qrc:/Stherm/View/MobileAppPage.qml"
+            },
+            {
+                icon: FAIcons.wifi,
+                text: "Wi-Fi Settings",
+                view: "qrc:/Stherm/View/WifiPage.qml"
+            },
+            {
+                icon: FAIcons.lock,
+                text: "Lock",
+                view: "qrc:/Stherm/View/LockPage.qml"
+            },
+            {
+                icon: FAIcons.night,
+                text: "Night Mode",
+                visible: false,
+                view: "qrc:/Stherm/View/NightModePage.qml"
+            },
+            {
+                icon: FAIcons.fileExclamation,
+                text: "Technician Access",
+                view: "qrc:/Stherm/View/UserGuidePage.qml"
+            },
+            {
+                icon: FAIcons.arrowsRotate,
+                text: "System Update",
+                view: "qrc:/Stherm/View/SystemUpdatePage.qml",
+                hasNotification: uiSession.hasUpdateNotification,
+                shouldGo: function () {
+                    if (system.isFWServerUpdate()) {
+                        uiSession.toastManager.showToast("System update are currently unavailable", "due to firmware server update.");
+                        return false;
+                    }
+                    return true;
+                },
+                longPressAction: function() {
+                    uiSession.uiTestMode = true;
+                    system.testMode = true;
+                    root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
+                                                 "uiSession": Qt.binding(() => uiSession)
+                                             });
+                }
+            },
+            {
+                icon: FAIcons.memoCircleInfo,
+                text: "Device Information",
+                view: "qrc:/Stherm/View/AboutDevicePage.qml",
+                longPressAction: function() {
+                    uiSession.uiTestMode = true;
+                    root.StackView.view.push("qrc:/Stherm/View/SensorsPage.qml", {
+                                                 "uiSession": Qt.binding(() => uiSession)
+                                             });
+                }
+            },
+            {
+                icon: FAIcons.headSet,
+                text: "Contact Contractor",
+                view: "qrc:/Stherm/View/ContactContractorPage.qml"
+            },
+            // {
+            //     icon: FAIcons.memoCircleInfo,
+            //     text: "System Info"
+            // }
+        ]
+
         contentItem: ApplicationMenuList {
             uiSession: root.uiSession
 

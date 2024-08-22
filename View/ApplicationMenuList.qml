@@ -20,7 +20,7 @@ ListView {
 
     property I_Device appModel: uiSession.appModel
 
-    property bool               hasUpdateNotification: uiSession.hasUpdateNotification
+    property bool hasUpdateNotification: uiSession.hasUpdateNotification
 
     //! SystemAccessories
     property SystemAccessories  systemAccessories: appModel?.systemSetup?.systemAccessories ?? null
@@ -29,7 +29,7 @@ ListView {
      * ****************************************************************************************/
     ScrollIndicator.vertical: ScrollIndicator {}
 
-    implicitWidth: 480
+    implicitWidth: AppStyle.size
     implicitHeight: contentHeight
     clip: true
     model: [
@@ -75,8 +75,7 @@ ListView {
             "text": "System Setup"
         },
         {
-            "hasFontAwesomeIcon": false,
-            "icon": "qrc:/Stherm/Images/smart-phone.png",
+            "image": "qrc:/Stherm/Images/smart-phone.png",
             "text": "Mobile App"
         },
         {
