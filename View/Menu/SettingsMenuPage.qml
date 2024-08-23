@@ -16,11 +16,11 @@ BasePageView {
     onTitleLongTapped: root.showHiddenItems = !root.showHiddenItems
 
     contentItem: MenuListView {
-        gotoView: function(view, props) {
+        onMenuActivated: function(item) {
             let newProps = {};
-            Object.assign(newProps, props);
+            Object.assign(newProps, item.properties);
             Object.assign(newProps, {"uiSession": Qt.binding(() => uiSession)});
-            root.StackView.view.push(view, newProps);
+            root.StackView.view.push(item.view, newProps);
         }
 
         property var commonItems: [

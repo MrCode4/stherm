@@ -10,7 +10,6 @@ import Stherm
  * ***********************************************************************************************/
 ListView {
     id: root
-    property var gotoView
 
     signal menuActivated(itemModel: var)
 
@@ -69,18 +68,10 @@ ListView {
             pressAndHoldInterval: 10000
 
             onClicked: {                    
-                if (modelData.prepareAndCheck instanceof Function) {
-                    if (modelData.prepareAndCheck() && modelData.view && root.gotoView instanceof Function) {
-                        root.gotoView(modelData.view, modelData.properties);
-                    }
+                if (!modelData.prepareAndCheck ||
+                        (modelData.prepareAndCheck instanceof Function && modelData.prepareAndCheck())) {
+                    root.menuActivated(modelData);
                 }
-                else {
-                    if (modelData.view && root.gotoView instanceof Function) {
-                        root.gotoView(modelData.view, modelData.properties);
-                    }
-                }
-
-                root.menuActivated(modelData);
             }
 
             onPressAndHold: if (modelData.longPressAction instanceof Function) modelData.longPressAction();
