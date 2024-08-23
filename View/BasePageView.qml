@@ -37,6 +37,10 @@ Page {
 
     property bool useSimpleStackView: false
 
+    property int titleLongTapInterval: 10000
+    signal titleTapped()
+    signal titleLongTapped()
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
@@ -75,6 +79,13 @@ Page {
                 horizontalAlignment: "AlignHCenter"
                 text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} ${title}`
                 elide: "ElideRight"
+
+                MouseArea {
+                    anchors.fill: parent
+                    pressAndHoldInterval: _root.titleLongTapInterval
+                    onClicked: _root.titleTapped()
+                    onPressAndHold: _root.titleLongTapped()
+                }
             }
         }
     }

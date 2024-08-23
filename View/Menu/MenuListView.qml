@@ -65,6 +65,7 @@ ListView {
 
         MouseArea {
             anchors.fill: parent
+            propagateComposedEvents: true
             pressAndHoldInterval: 10000
 
             onClicked: {                    

@@ -8,12 +8,14 @@ import Stherm
  * ApplicationMenu provides ui to access different section of application
  * ***********************************************************************************************/
 BasePageView {
-    id: root
-    property System system: deviceController.deviceControllerCPP.system
+    id: root    
     title: "Settings"
 
-    contentItem: MenuListView {
+    property System system: deviceController.deviceControllerCPP.system
+    property bool showHiddenItems: false
+    onTitleLongTapped: root.showHiddenItems = !root.showHiddenItems
 
+    contentItem: MenuListView {
         gotoView: function(view, props) {
             let newProps = {};
             Object.assign(newProps, props);
@@ -21,7 +23,7 @@ BasePageView {
             root.StackView.view.push(view, newProps);
         }
 
-        model: [
+        property var commonItems: [
             {
                 icon: FAIcons.gear,
                 text: "General",
@@ -80,7 +82,6 @@ BasePageView {
                     root.StackView.view.push("qrc:/Stherm/View/VersionInformationPage.qml", {"uiSession": Qt.binding(() => uiSession)});
                 }
             },
-
             {
                 image: "qrc:/Stherm/Images/smart-phone.png",
                 text: "Mobile App",
@@ -96,7 +97,10 @@ BasePageView {
                 text: "Night Mode",
                 visible: false,
                 view: "qrc:/Stherm/View/NightModePage.qml"
-            },
+            }
+        ]
+
+        property var hiddenItems: [
             {
                 icon: FAIcons.fileExclamation,
                 text: "Technician Access",
@@ -113,5 +117,7 @@ BasePageView {
                 view: "qrc:/Stherm/View/AlertsNotificationsPage.qml"
             }
         ]
+
+        model: root.showHiddenItems ? commonItems.concat(hiddenItems) : commonItems
     }
 }
