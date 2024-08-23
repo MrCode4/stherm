@@ -58,6 +58,9 @@ QtObject {
         var schIndex = device.schedules.findIndex(elem => elem._qsUuid === schedule._qsUuid);
 
         if (schIndex !== -1) {
+            // Set repo to unregister deleted object
+            schedule._qsRepo = null;
+
             device.schedules.splice(schIndex, 1);
             device.schedulesChanged();
 

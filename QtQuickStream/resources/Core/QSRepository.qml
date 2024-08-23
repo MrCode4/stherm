@@ -23,6 +23,9 @@ QSRepositoryCpp {
     // To be set by the system core, e.g., 'SystemCore'
     property var                imports:        [ "QtQuickStream" ]
 
+    //! Keep the new properties
+    property var newProperties: []
+
     name: qsRootObject?.objectName ?? "Uninitialized Repo"
 
 
@@ -116,12 +119,15 @@ QSRepositoryCpp {
         /* 3. Delete unneeded objects
          * ********************************************************************************/
         if (deleteOldObjects) {
-            Object.keys     (_qsObjects)
-                  .filter   (objId => !(objId in jsonObjects))
-                  .forEach  (objId =>
-            {
-                delObject(objId)
-            });
+            findNewProperties(jsonObjects, rootUrl);
+
+            var rootKeys = Object.keys(jsonObjects[rootUrl.replace(/^qqs:\//, '')]);
+            // Preserve new properties.
+            Object.keys (_qsObjects)
+            .filter (objId =>  !(objId in jsonObjects) && !newProperties.includes(objId))
+            .forEach (objId => {
+                          delObject(objId)
+                      });
         };
 
         /* 4. Set root object
@@ -142,6 +148,35 @@ QSRepositoryCpp {
         _isLoading = false;
 
         return true;
+    }
+
+    /*! ***************************************************************************************
+     * Find new properties to avoid delete it,
+     * To accurately maintain data integrity when merging JSON objects,
+     * it's crucial to identify properties that exist within the root
+     * object but are absent from the JSON objects loaded from a file.
+     * This process involves comparing the property sets of the root object
+     * and the loaded JSON objects.
+     * ****************************************************************************************/
+    function findNewProperties(jsonObjects, rootUrl) {
+        // Find root object with the rootUrl.
+        var jsonRootObject = jsonObjects[rootUrl.replace(/^qqs:\//, '')];
+        var jsonRootKeys = Object.keys(jsonRootObject);
+
+        // Find created root object with the rootUrl.
+        var rootObject = _qsObjects[rootUrl.replace(/^qqs:\//, '')];
+
+        Object.keys(rootObject)
+        .filter(key => typeof rootObject[key] !== 'function')
+        .forEach(name => {
+                     if (!jsonRootKeys.includes(name) && !name.startsWith("_")) {
+                         var uuid = rootObject[name]?._qsUuid ?? "";
+                         if (uuid.length > 0) {
+                             console.log("New property: ", name, "Uuid: ", uuid);
+                             newProperties.push(uuid);
+                         }
+                     }
+                 });
     }
 
     /*! ***************************************************************************************
@@ -179,7 +214,7 @@ QSRepositoryCpp {
 
         /* 2. Update property values
          * ********************************************************************************/
-        // Replace all qs://UUID properties by references
+        // Replace all qss://UUID properties by references
         for (const [objId, jsonObj] of Object.entries(jsonObjects)) {
             let obj = _qsObjects[objId];
             if (obj)

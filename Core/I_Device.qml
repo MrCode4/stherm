@@ -4,7 +4,11 @@ import QtQuickStream
 import Stherm
 
 /*! ***********************************************************************************************
- *
+ * I_Device: keeps the main data of app
+ * NOTE: Avoid adding '_' prefixed object properties (e.g. property Lock _lock: Lock {}) to the
+ * I_device object and its descendants.
+ * Introduce new object properties (e.g. Wiring, Setting, Lock, ...) exclusively within the
+ * I_device base object.
  * ************************************************************************************************/
 QSObject {
     id: appModel

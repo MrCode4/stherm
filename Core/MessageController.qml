@@ -224,6 +224,9 @@ QtObject {
     {
         var msgIndex = device.messages.findIndex((element, index) => element === message);
         if (msgIndex > -1) {
+            // Set repo to unregister deleted object
+            message._qsRepo = null;
+
             // We can not destroy spliced object because it will cause a crash
             device.messages.splice(msgIndex, 1);
             device.messagesChanged();
