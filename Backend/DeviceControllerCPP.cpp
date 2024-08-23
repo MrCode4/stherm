@@ -930,8 +930,7 @@ QString DeviceControllerCPP::beginTesting()
         err = "uid is empty.";
     saveTestResult("UID", !uid.isEmpty(), uid);
 
-    if (sn.isEmpty())
-        err = "Serial number is empty.";
+    // we do not throw error here, as it may retrieved at the end of process
     saveTestResult("SN", !sn.isEmpty(), sn);
 
     if (sw.isEmpty())

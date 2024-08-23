@@ -726,7 +726,7 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
         reply->setProperty("noContentLog", true);
 
     } else {
-        emit fetchUpdateErrorOccurred("Skiped fetching information.");
+        emit fetchUpdateErrorOccurred("Skipped fetching information.");
     }
 }
 
