@@ -33,7 +33,7 @@ class System : public RestApiExecutor
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
 
     //! Maybe used in future...
-    Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
+    Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY forceUpdateChanged FINAL)
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
@@ -83,11 +83,15 @@ public:
     //! notifyUser: Send notification for user when new update is available
     Q_INVOKABLE void fetchUpdateInformation(bool notifyUser = false);
 
+    Q_INVOKABLE QString fetchUpdateInformationSync(bool notifyUser = false);
+
     Q_INVOKABLE void fetchBackdoorInformation();
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
 
     Q_INVOKABLE void exitManualMode();
+
+    Q_INVOKABLE void ignoreManualUpdateMode(bool checkUpdate = false);
 
     Q_INVOKABLE bool isFWServerUpdate();
 
@@ -252,6 +256,11 @@ signals:
     void pushSuccess();
 
     void testModeStarted();
+
+    //! Pass errors, used for tests in test mode
+    void fetchUpdateErrorOccurred(QString err);
+
+    void forceUpdateChanged();
 
 private:
 

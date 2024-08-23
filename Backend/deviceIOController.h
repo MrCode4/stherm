@@ -217,4 +217,7 @@ private:
 
     //! Is there recent data available from the sensors
     bool mIsDataReceived;
+
+    QTimer mGetInfoNRFStarter;
+    QTimer mGetInfoTIStarter;
 };

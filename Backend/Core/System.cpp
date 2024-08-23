@@ -688,7 +688,9 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
 
     auto callback = [this, installLatest](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError) {
-            qWarning() << "Unable to download " << m_updateInfoFile << " file: " << reply->errorString();
+            auto err = "Unable to download update data file: " + reply->errorString();
+            qWarning() << "Unable to download " + m_updateInfoFile + " file: " + reply->errorString();
+            emit fetchUpdateErrorOccurred(err);
         }
         else {
             TRACE << mUpdateFilePath;
@@ -696,8 +698,10 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
             if (checkUpdateFile(rawData)) {
                 QFile file(mUpdateFilePath);
                 if (!file.open(QIODevice::WriteOnly)) {
-                    TRACE << "Unable to open file for writing";
-                    emit error("Unable to open file for writing");
+                    auto err = QString("Unable to open update file system for writing");
+                    TRACE << err;
+                    emit error(err);
+                    emit fetchUpdateErrorOccurred(err);
                     return;
                 }
 
@@ -705,7 +709,9 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
                 file.close();
             }
             else {
-                TRACE << "The update information did not fetched correctly, Try again later!";
+                QString err = "The update information did not fetched correctly, Try again later!";
+                emit fetchUpdateErrorOccurred(err);
+                TRACE << err;
             }
 
             // Check the last saved m_updateInfoFile file
@@ -718,7 +724,45 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
     // skip logging the content
     if (reply) {
         reply->setProperty("noContentLog", true);
+
+    } else {
+        emit fetchUpdateErrorOccurred("Skipped fetching information.");
     }
+}
+
+QString NUVE::System::fetchUpdateInformationSync(bool notifyUser)
+{
+    QEventLoop loop;
+    QString error;
+
+    fetchUpdateInformation(notifyUser);
+    // error
+    connect(this, &NUVE::System::fetchUpdateErrorOccurred, &loop, [&error, &loop] (QString err) {
+        error = "Unable to fetch update. Please retry.\n" + err;
+        loop.quit();
+    });
+    QTimer::singleShot(30000, &loop, [&error, &loop] {
+        error = "Unable to fetch update. Please retry. Timeout!" ;
+        loop.quit();
+    });
+
+    // force update available
+    connect(this, &NUVE::System::forceUpdateChanged, &loop, [this, &error, &loop] () {
+        error = mHasForceUpdate ? "Applying mandatory update. Please wait..." : "";
+        loop.quit();
+    });
+    // update available but not force
+    connect(this, &NUVE::System::notifyNewUpdateAvailable, &loop, [&error, &loop] () {
+        loop.quit();
+    });
+    // update not available
+    connect(this, &NUVE::System::updateNoChecked, &loop, [&loop] () {
+        loop.quit();
+    });
+
+    loop.exec();
+
+    return error;
 }
 
 void NUVE::System::fetchBackdoorInformation()
@@ -821,6 +865,14 @@ void NUVE::System::exitManualMode()
     mIsManualUpdate = false;
 
     checkPartialUpdate(false, true);
+}
+
+void NUVE::System::ignoreManualUpdateMode(bool checkUpdate)
+{
+    mIsManualUpdate = false;
+    // we can use this for early update in some case
+    if (checkUpdate)
+        checkPartialUpdate(true, false);
 }
 
 bool NUVE::System::isFWServerUpdate()
@@ -1506,6 +1558,8 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     // Manual update must be exit for force update
     if (installLatestVersion || (mHasForceUpdate && !manualUpdateInstalled)) {
         partialUpdate();
+    } else {
+        TRACE << "update not started" << installLatestVersion << mHasForceUpdate << manualUpdateInstalled;
     }
 }
 
@@ -1574,6 +1628,7 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
                 // Update the earlier force update that is greater than the current version
                 if (mTestMode || !obj.value(m_Staging).toBool()) {
                     mHasForceUpdate = true;
+                    emit forceUpdateChanged();
                     latestVersionKey = keyVersion;
                 }
             }

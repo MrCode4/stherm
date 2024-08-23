@@ -15,7 +15,10 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property int testCounter: 0
-    property int allTests: 5
+    property int allTests: 6
+
+    //! Check update before test start in sn test mode
+    property bool testUpdate: deviceController.testModeType === AppSpec.TestModeType.SerialNumber
 
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system
@@ -29,7 +32,10 @@ BasePageView {
         if (testCounter == 0) {
             console.log('Start Test Page: Completed')
             deviceController.deviceControllerCPP.system.testMode = true;
-            deviceController.deviceControllerCPP.beginTesting()
+            var errText = deviceController.deviceControllerCPP.beginTesting();
+            if (errText.length > 0)
+                notPassedTests.text += ("\n" + errText);
+
             timerStartTests.start();
         }
     }
@@ -88,6 +94,19 @@ BasePageView {
                 var errorText = "The sshpass does not installed.";
                 notPassedTests.text += "\n" + errorText;
                 deviceController.deviceControllerCPP.saveTestResult("sshpass", false, errorText)
+            }
+
+            // Test 6: Check software update
+            if (testUpdate) {
+                var error = system.fetchUpdateInformationSync(true);
+
+                if (error.length === 0)
+                    testCounter++;
+                else
+                    notPassedTests.text += "\n" + error;
+            } else {
+                // Update test passed when no need to check it.
+                testCounter++;
             }
 
             if (testCounter === allTests) {
