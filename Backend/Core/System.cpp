@@ -688,7 +688,9 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
 
     auto callback = [this, installLatest](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError) {
-            qWarning() << "Unable to download " << m_updateInfoFile << " file: " << reply->errorString();
+            auto err = "Unable to download " + m_updateInfoFile + " file: " + reply->errorString();
+            qWarning() << err;
+            emit fetchUpdateErrorOccurred(err);
         }
         else {
             TRACE << mUpdateFilePath;
@@ -696,8 +698,10 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
             if (checkUpdateFile(rawData)) {
                 QFile file(mUpdateFilePath);
                 if (!file.open(QIODevice::WriteOnly)) {
-                    TRACE << "Unable to open file for writing";
-                    emit error("Unable to open file for writing");
+                    auto err = QString("Unable to open file for writing");
+                    TRACE << err;
+                    emit error(err);
+                    emit fetchUpdateErrorOccurred(err);
                     return;
                 }
 
@@ -705,7 +709,9 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
                 file.close();
             }
             else {
-                TRACE << "The update information did not fetched correctly, Try again later!";
+                QString err = "The update information did not fetched correctly, Try again later!";
+                emit fetchUpdateErrorOccurred(err);
+                TRACE << err;
             }
 
             // Check the last saved m_updateInfoFile file
@@ -718,6 +724,9 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
     // skip logging the content
     if (reply) {
         reply->setProperty("noContentLog", true);
+
+    } else {
+        emit fetchUpdateErrorOccurred("Skiped fetching information.");
     }
 }
 
@@ -1574,6 +1583,7 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
                 // Update the earlier force update that is greater than the current version
                 if (mTestMode || !obj.value(m_Staging).toBool()) {
                     mHasForceUpdate = true;
+                    emit forceUpdateChanged();
                     latestVersionKey = keyVersion;
                 }
             }

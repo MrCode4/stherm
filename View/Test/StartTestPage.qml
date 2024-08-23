@@ -15,7 +15,10 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property int testCounter: 0
-    property int allTests: 5
+    property int allTests: 6
+
+    //! Check update before test start in sn test mode
+    property bool testUpdate: false
 
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system
@@ -31,6 +34,12 @@ BasePageView {
             deviceController.deviceControllerCPP.system.testMode = true;
             deviceController.deviceControllerCPP.beginTesting()
             timerStartTests.start();
+        }
+    }
+
+    onTestCounterChanged: {
+        if (testCounter === allTests) {
+            nextPageTimer.start();
         }
     }
 
@@ -90,8 +99,12 @@ BasePageView {
                 deviceController.deviceControllerCPP.saveTestResult("sshpass", false, errorText)
             }
 
-            if (testCounter === allTests) {
-                nextPageTimer.start();
+            // Test 6: Check software update
+            if (testUpdate) {
+                system.fetchUpdateInformation(true);
+
+            } else {
+                testCounter++;
             }
         }
     }
@@ -140,6 +153,33 @@ BasePageView {
         wrapMode: Text.WordWrap
         color: Style.foreground
         horizontalAlignment: Text.AlignHCenter
+    }
+
+    Connections {
+        target: system
+        enabled: testUpdate
+
+        function onFetchUpdateErrorOccurred(err: string) {
+            var errorText = "Unable to fetch update. Please retry.";
+            notPassedTests.text += "\n" + errorText;
+        }
+
+        function onUpdateNoChecked() {
+            //! No updates available at this time.
+            testCounter++;
+        }
+
+        function onNotifyNewUpdateAvailable() {
+            // Update available. Test passed.
+            testCounter++;
+        }
+
+        function onForceUpdateChanged() {
+            if (system.hasForceUpdate) {
+                var errorText = "Applying mandatory update. Please wait...";
+                notPassedTests.text += "\n" + errorText;
+            }
+        }
     }
 
     function nextPage() {

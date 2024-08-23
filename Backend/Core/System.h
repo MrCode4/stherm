@@ -33,7 +33,7 @@ class System : public RestApiExecutor
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
 
     //! Maybe used in future...
-    Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
+    Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY forceUpdateChanged FINAL)
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
@@ -252,6 +252,11 @@ signals:
     void pushSuccess();
 
     void testModeStarted();
+
+    //! Pass errors, used for tests in test mode
+    void fetchUpdateErrorOccurred(QString err);
+
+    void forceUpdateChanged();
 
 private:
 
