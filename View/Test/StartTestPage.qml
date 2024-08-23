@@ -40,12 +40,6 @@ BasePageView {
         }
     }
 
-    onTestCounterChanged: {
-        if (testCounter === allTests) {
-            nextPageTimer.start();
-        }
-    }
-
     /* Children
      * ****************************************************************************************/
 
@@ -106,8 +100,12 @@ BasePageView {
             if (testUpdate) {
                 system.fetchUpdateInformation(true);
 
-            } else {
+                // Update test passed when no need to check it.
                 testCounter++;
+            }
+
+            if (testCounter === allTests) {
+                nextPageTimer.start();
             }
         }
     }
@@ -165,22 +163,24 @@ BasePageView {
         function onFetchUpdateErrorOccurred(err: string) {
             var errorText = "Unable to fetch update. Please retry.";
             notPassedTests.text += "\n" + errorText;
+            testCounter--;
         }
 
         function onUpdateNoChecked() {
             //! No updates available at this time.
-            testCounter++;
+            // testCounter++;
         }
 
         function onNotifyNewUpdateAvailable() {
             // Update available. Test passed.
-            testCounter++;
+            // testCounter++;
         }
 
         function onForceUpdateChanged() {
             if (system.hasForceUpdate) {
                 var errorText = "Applying mandatory update. Please wait...";
                 notPassedTests.text += "\n" + errorText;
+                testCounter--;
             }
         }
     }
