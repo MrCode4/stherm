@@ -184,11 +184,7 @@ BasePageView {
                 icon: FAIcons.headSet,
                 text: "Contact Contractor",
                 view: "qrc:/Stherm/View/ContactContractorPage.qml"
-            },
-            // {
-            //     icon: FAIcons.memoCircleInfo,
-            //     text: "System Info"
-            // }
+            }
         ]
 
         contentItem: ApplicationMenuList {

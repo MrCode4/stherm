@@ -68,12 +68,12 @@ ListView {
                 if (!root.stackView) return;
                 if (modelData.shouldGo instanceof Function) {
                     if (modelData.shouldGo() && modelData.view) {
-                        stackView.push(modelData.view);
+                        stackView.push(modelData.view, modelData.props);
                     }
                 }
                 else {
                     if (modelData.view) {
-                        stackView.push(modelData.view);
+                        stackView.push(modelData.view, modelData.props);
                     }
                 }
 
