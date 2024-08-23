@@ -31,6 +31,13 @@ AppSpecCPP {
     //! Percent
     property int defaultVolume:     50
 
+    enum TestModeType {
+        SerialNumber = 0, //! Test mode started due to serial number
+        StartMode,        //! Test mode started due to TI board
+        User,
+        None
+    }
+
     enum DeviceType {
         DT_IMX6 = 0,
         DT_Sim,

@@ -44,6 +44,8 @@ I_DeviceController {
     //! control which data should be shown
     property bool sensorsFetched: false
 
+    property int testModeType: AppSpec.TestModeType.None
+
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true

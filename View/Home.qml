@@ -440,6 +440,8 @@ Control {
             console.log("Test mode started due to serial number issues.")
             uiSession.uiTestMode = true;
             deviceController.startMode = 0;
+            deviceController.testModeType = AppSpec.TestModeType.SerialNumber;
+
             if (mainStackView)
                 mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                        "uiSession": Qt.binding(() => uiSession),

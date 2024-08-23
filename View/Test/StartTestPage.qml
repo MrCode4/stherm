@@ -18,7 +18,7 @@ BasePageView {
     property int allTests: 6
 
     //! Check update before test start in sn test mode
-    property bool testUpdate: false
+    property bool testUpdate: deviceController.testModeType === AppSpec.TestModeType.SerialNumber
 
     //! System, use in update notification
     property System                 system:           deviceController.deviceControllerCPP.system
