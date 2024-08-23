@@ -12,7 +12,7 @@ BasePageView {
     title: "Settings"
 
     property System system: deviceController.deviceControllerCPP.system
-    property bool showHiddenItems: false
+    property bool showHiddenItems: true
     onTitleLongTapped: root.showHiddenItems = !root.showHiddenItems
 
     contentItem: MenuListView {
@@ -101,19 +101,23 @@ BasePageView {
         ]
 
         property var hiddenItems: [
+            {isSeparator: true},
             {
                 icon: FAIcons.fileExclamation,
                 text: "Technician Access",
+                color: "#42E8FF",
                 view: "qrc:/Stherm/View/UserGuidePage.qml"
             },
             {
                 icon: FAIcons.wrench,
                 text: "System Setup",
+                color: "#42E8FF",
                 view: "qrc:/Stherm/View/SystemSetupPage.qml"
             },
             {
                 icon: FAIcons.bellExclamation,
                 text: "System Alerts",
+                color: "#42E8FF",
                 view: "qrc:/Stherm/View/AlertsNotificationsPage.qml"
             }
         ]
