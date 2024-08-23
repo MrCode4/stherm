@@ -441,6 +441,7 @@ Control {
             uiSession.uiTestMode = true;
             deviceController.startMode = 0;
             deviceController.testModeType = AppSpec.TestModeType.SerialNumber;
+            system.ignoreManualUpdateMode();
 
             if (mainStackView)
                 mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {

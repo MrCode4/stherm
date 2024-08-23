@@ -832,6 +832,14 @@ void NUVE::System::exitManualMode()
     checkPartialUpdate(false, true);
 }
 
+void NUVE::System::ignoreManualUpdateMode(bool checkUpdate)
+{
+    mIsManualUpdate = false;
+    // we can use this for early update in some case
+    if (checkUpdate)
+        checkPartialUpdate(true, false);
+}
+
 bool NUVE::System::isFWServerUpdate()
 {
     return mStartedWithFWServerUpdate;
@@ -1515,6 +1523,8 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     // Manual update must be exit for force update
     if (installLatestVersion || (mHasForceUpdate && !manualUpdateInstalled)) {
         partialUpdate();
+    } else {
+        TRACE << "update not started" << installLatestVersion << mHasForceUpdate << manualUpdateInstalled;
     }
 }
 

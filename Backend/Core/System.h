@@ -89,6 +89,8 @@ public:
 
     Q_INVOKABLE void exitManualMode();
 
+    Q_INVOKABLE void ignoreManualUpdateMode(bool checkUpdate = false);
+
     Q_INVOKABLE bool isFWServerUpdate();
 
     void wifiConnected(bool hasInternet);
