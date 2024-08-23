@@ -405,8 +405,7 @@ void Sync::fetchUserData()
     };
 
     fetchingUserData(true);
-    auto reply= callGetApi(cBaseUrl + QString("api/sync/client?sn=%0").arg(mSerialNumber), callback);
-    fetchingUserData(reply != nullptr);
+    callGetApi(cBaseUrl + QString("api/sync/client?sn=%0").arg(mSerialNumber), callback);
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
