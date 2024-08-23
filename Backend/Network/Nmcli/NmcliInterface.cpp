@@ -30,7 +30,7 @@ NmcliInterface::NmcliInterface(QObject* parent)
     setupObserver();
 
     initializeConProfilesWatcher();
-    //    scanConProfiles(); // TODO this should be called Async
+    scanConProfiles(); //! It uses an async procedure
 }
 
 NmcliInterface::~NmcliInterface()
@@ -610,49 +610,62 @@ void NmcliInterface::scanConProfiles()
     });
 }
 
+void NmcliInterface::updateNextConnectionProfile(QSharedPointer<QTextStream> stream, ProfilesList* profiles)
+{
+    QString line = stream->readLine();
+    if (line.isEmpty()) {
+        //! It's over, delete the profiles
+        delete profiles;
+        mBusyUpdatingConProfiles = false;
+
+        return;
+    }
+
+    QString conName = line.sliced(5, line.length() - 5);
+
+    if (mBssToCorrectSsidMap.contains(conName)) {
+        conName = mBssToCorrectSsidMap[conName];
+    }
+
+    //! If a connection with this name is already in the list of profiles, skip it
+    auto wi = std::find_if(profiles->begin(), profiles->end(),
+                           [&](ConnectionProfile p) {
+                               return conName == p.ssid;
+                           });
+
+    if (wi == profiles->end()) {
+        //! Get profile info of this connection
+        mCliCommon->getProfileInfoByNameAsync(
+            conName, [this, stream, profiles] (const QString& ssid, const QString& seenBssids) {
+                if (!ssid.isEmpty() || !seenBssids.isEmpty()) {
+                    mConProfiles.emplace_back(ssid, seenBssids);
+                }
+                updateNextConnectionProfile(stream, profiles);
+        });
+    } else {
+        //! The connection already exists, push it to mConProfiles
+        mConProfiles.push_back(*wi);
+        updateNextConnectionProfile(stream, profiles);
+    }
+}
+
 void NmcliInterface::updateConProfilesList(QProcess* process)
 {
     if (process->exitCode() == 0 && process->exitStatus() == QProcess::NormalExit) {
         //! Copy mConProfiles to aviod requesting for connections that already exists
-        auto conProfilesBak = mConProfiles;
+        //! Note: This pointer must be deleted when done with and updateNextConnectionProfile()
+        //! should do this when profiles are finished
+        ProfilesList* conProfilesBak = new ProfilesList(mConProfiles);
         mConProfiles.clear();
 
-        QProcess conProcess;
+        QSharedPointer<QTextStream> stream(new QTextStream(process->readAll()));
 
-        QString line = process->readLine();
-        while (!line.isEmpty()) {
-            QString conName = line.sliced(5, line.length() - 5 - 1);
-
-            if (mBssToCorrectSsidMap.contains(conName)) {
-                conName = mBssToCorrectSsidMap[conName];
-            }
-
-            //! If a connection with this name is already in the list of profiles, skip it
-            auto wi = std::find_if(conProfilesBak.begin(), conProfilesBak.end(),
-                                   [&](ConnectionProfile p) {
-                                       return conName == p.ssid;
-                                   });
-
-            if (wi == conProfilesBak.end()) {
-                //! Get profile info of this connection
-                mCliCommon->getProfileInfoByName(conName, [this] (const QString& ssid, const QString& seenBssids) {
-                    if (!ssid.isEmpty() || !seenBssids.isEmpty()) {
-                        mConProfiles.emplace_back(ssid, seenBssids);
-                    }
-                });
-            } else {
-                //! The connection already exists, push it to mConProfiles
-                mConProfiles.push_back(*wi);
-            }
-
-            line = process->readLine();
-        }
+        updateNextConnectionProfile(stream, conProfilesBak);
     } else {
         // readAll() may have more info than errorString which is printed in parent.
         NC_WARN << process->readAll();
+        mBusyUpdatingConProfiles = false;
     }
-
-    mBusyUpdatingConProfiles = false;
 }
 
 void NmcliInterface::initializeConProfilesWatcher()

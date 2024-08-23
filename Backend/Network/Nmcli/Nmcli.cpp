@@ -130,6 +130,41 @@ void NmCli::addConnection(
     execAsync(NC_COMMAND, args, callback);
 }
 
+void NmCli::getProfileInfoByNameAsync(const QString& connName, std::function<void (const QString&, const QString&)> callback)
+{
+    //! Get profile info of this connection
+    QStringList args = {
+        "--get-values",
+        "802-11-wireless.ssid,802-11-wireless.seen-bssids",
+        "--escape",
+        "no",
+        NC_ARG_CONNECTION,
+        NC_ARG_SHOW,
+        connName,
+    };
+
+    auto onFinished = [this, connName, callback] (QProcess* process) {
+        if (process->exitStatus() == QProcess::NormalExit && process->exitCode() == 0) {
+            QString ssid = process->readLine();
+            ssid.remove(ssid.length() - 1, 1); //! Remove '\n'
+
+            // can have only one bssid or be empty or have multiple values separated by comma delimiter
+            QString seenBssids = process->readLine();
+            seenBssids.remove(seenBssids.length() - 1, 1); //! Remove '\n'
+
+            callback(ssid, seenBssids);
+        } else {
+            // readAll() may have more info than errorString which is printed in parent.
+            NC_WARN << process->exitCode() << process->readAll() << process->readAllStandardError() << connName;
+
+            //! Call the callbck with empty strings.
+            callback("", "");
+        }
+    };
+
+    execAsync(NC_COMMAND, args, onFinished);
+}
+
 void NmCli::getProfileInfoByName(const QString& connName, std::function<void (const QString&, const QString&)> callback)
 {
     //! Get profile info of this connection
@@ -156,6 +191,9 @@ void NmCli::getProfileInfoByName(const QString& connName, std::function<void (co
         } else {
             // readAll() may have more info than errorString which is printed in parent.
             NC_WARN << process->exitCode() << process->readAll() << connName;
+
+            //! Call the callbck with empty strings.
+            callback("", "");
         }
     };
 
