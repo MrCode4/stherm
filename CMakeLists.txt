@@ -145,7 +145,8 @@ qt6_add_qml_module(appStherm
         View/SplashScreen.qml
         View/Menu/MenuItemInfo.qml
         View/Menu/MenuListView.qml
-        View/ApplicationMenu.qml
+        View/Menu/AppMenuPage.qml
+        View/Menu/SettingsMenuPage.qml
         View/ApplicationMenuList.qml
         View/BasePageView.qml
         View/ScheduleView.qml

@@ -5,4 +5,5 @@ QtObject {
     property string view
     property string icon
     property string image
+    property bool hasNotification
 }

@@ -278,9 +278,9 @@ Control {
 
             hasNotification: uiSession.hasUpdateNotification
             onClicked: {
-                //! Push ApplicationMenu to StackView
+                //! Push AppMenuPage to StackView
                 if (mainStackView) {
-                    mainStackView.push("qrc:/Stherm/View/ApplicationMenu.qml", {
+                    mainStackView.push("qrc:/Stherm/View/Menu/AppMenuPage.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
                                        }, StackView.Immediate);
 

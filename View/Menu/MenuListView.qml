@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 
 import Ronia
@@ -9,12 +10,15 @@ import Stherm
  * ***********************************************************************************************/
 ListView {
     id: root
-    property StackView stackView
-    signal menuActivated(string menu)
+    property var gotoView
+
+    signal menuActivated(itemModel: var)
+
     ScrollIndicator.vertical: ScrollIndicator {}
     implicitWidth: AppStyle.size
     implicitHeight: contentHeight
     clip: true
+
     delegate: ItemDelegate {
         width: ListView.view.width
         height: (modelData?.visible ?? true) ? implicitHeight : 0
@@ -61,24 +65,21 @@ ListView {
 
         MouseArea {
             anchors.fill: parent
-            propagateComposedEvents: true;
             pressAndHoldInterval: 10000
 
-            onClicked: {
-                if (!root.stackView) return;
-                if (modelData.shouldGo instanceof Function) {
-                    if (modelData.shouldGo() && modelData.view) {
-                        stackView.push(modelData.view, modelData.props);
+            onClicked: {                    
+                if (modelData.prepareAndCheck instanceof Function) {
+                    if (modelData.prepareAndCheck() && modelData.view && root.gotoView instanceof Function) {
+                        root.gotoView(modelData.view, modelData.properties);
                     }
                 }
                 else {
-                    if (modelData.view) {
-                        stackView.push(modelData.view, modelData.props);
+                    if (modelData.view && root.gotoView instanceof Function) {
+                        root.gotoView(modelData.view, modelData.properties);
                     }
                 }
 
-                root.menuActivated(parent.text);
-                root.hasUpdateNotification = false;
+                root.menuActivated(modelData);
             }
 
             onPressAndHold: if (modelData.longPressAction instanceof Function) modelData.longPressAction();
