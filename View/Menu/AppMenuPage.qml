@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * ApplicationMenu provides ui to access different section of application
+ * AppMenuPage provides ui to access different section of application
  * ***********************************************************************************************/
 BasePageView {
     id: root

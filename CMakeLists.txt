@@ -147,7 +147,6 @@ qt6_add_qml_module(appStherm
         View/Menu/MenuListView.qml
         View/Menu/AppMenuPage.qml
         View/Menu/SettingsMenuPage.qml
-        View/ApplicationMenuList.qml
         View/BasePageView.qml
         View/ScheduleView.qml
         View/BacklightPage.qml
@@ -223,7 +222,6 @@ qt6_add_qml_module(appStherm
         View/Test/QRCodeTestPage.qml
 
         # Delegates
-        View/Delegates/ApplicationMenuDelegate.qml
         View/Delegates/ShadeButtonDelegate.qml
         View/Delegates/ScheduleDelegate.qml
         View/Delegates/WifiDelegate.qml

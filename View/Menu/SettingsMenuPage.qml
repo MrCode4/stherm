@@ -4,9 +4,6 @@ import QtQuick.Layouts
 import Ronia
 import Stherm
 
-/*! ***********************************************************************************************
- * ApplicationMenu provides ui to access different section of application
- * ***********************************************************************************************/
 BasePageView {
     id: root    
     title: "Settings"
