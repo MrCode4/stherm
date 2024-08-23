@@ -688,8 +688,8 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
 
     auto callback = [this, installLatest](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError) {
-            auto err = "Unable to download " + m_updateInfoFile + " file: " + reply->errorString();
-            qWarning() << err;
+            auto err = "Unable to download update data file: " + reply->errorString();
+            qWarning() << "Unable to download " + m_updateInfoFile + " file: " + reply->errorString();
             emit fetchUpdateErrorOccurred(err);
         }
         else {
@@ -698,7 +698,7 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
             if (checkUpdateFile(rawData)) {
                 QFile file(mUpdateFilePath);
                 if (!file.open(QIODevice::WriteOnly)) {
-                    auto err = QString("Unable to open file for writing");
+                    auto err = QString("Unable to open update file system for writing");
                     TRACE << err;
                     emit error(err);
                     emit fetchUpdateErrorOccurred(err);
