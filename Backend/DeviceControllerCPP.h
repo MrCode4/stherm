@@ -71,7 +71,7 @@ public:
     //!
     Q_INVOKABLE void writeTestResult(const QString &fileName, const QString& testName, const QString& testResult, const QString& description="");
     Q_INVOKABLE void saveTestResult(const QString& testName, bool testResult, const QString& description="");
-    Q_INVOKABLE void beginTesting();
+    Q_INVOKABLE QString beginTesting();
 
     Q_INVOKABLE void testBrightness(int value);
     Q_INVOKABLE void stopTestBrightness();

@@ -32,7 +32,10 @@ BasePageView {
         if (testCounter == 0) {
             console.log('Start Test Page: Completed')
             deviceController.deviceControllerCPP.system.testMode = true;
-            deviceController.deviceControllerCPP.beginTesting()
+            var errText = deviceController.deviceControllerCPP.beginTesting();
+            if (errText.length > 0)
+                notPassedTests.text += ("\n" + errText);
+
             timerStartTests.start();
         }
     }
