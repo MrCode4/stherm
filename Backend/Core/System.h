@@ -83,6 +83,8 @@ public:
     //! notifyUser: Send notification for user when new update is available
     Q_INVOKABLE void fetchUpdateInformation(bool notifyUser = false);
 
+    Q_INVOKABLE QString fetchUpdateInformationSync(bool notifyUser = false);
+
     Q_INVOKABLE void fetchBackdoorInformation();
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);

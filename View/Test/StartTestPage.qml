@@ -98,8 +98,13 @@ BasePageView {
 
             // Test 6: Check software update
             if (testUpdate) {
-                system.fetchUpdateInformation(true);
+                var error = system.fetchUpdateInformationSync(true);
 
+                if (error.length === 0)
+                    testCounter++;
+                else
+                    notPassedTests.text += "\n" + error;
+            } else {
                 // Update test passed when no need to check it.
                 testCounter++;
             }
@@ -154,35 +159,6 @@ BasePageView {
         wrapMode: Text.WordWrap
         color: Style.foreground
         horizontalAlignment: Text.AlignHCenter
-    }
-
-    Connections {
-        target: system
-        enabled: testUpdate
-
-        function onFetchUpdateErrorOccurred(err: string) {
-            var errorText = "Unable to fetch update. Please retry.";
-            notPassedTests.text += "\n" + errorText;
-            testCounter--;
-        }
-
-        function onUpdateNoChecked() {
-            //! No updates available at this time.
-            // testCounter++;
-        }
-
-        function onNotifyNewUpdateAvailable() {
-            // Update available. Test passed.
-            // testCounter++;
-        }
-
-        function onForceUpdateChanged() {
-            if (system.hasForceUpdate) {
-                var errorText = "Applying mandatory update. Please wait...";
-                notPassedTests.text += "\n" + errorText;
-                testCounter--;
-            }
-        }
     }
 
     function nextPage() {

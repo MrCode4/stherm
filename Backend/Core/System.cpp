@@ -730,6 +730,41 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
     }
 }
 
+QString NUVE::System::fetchUpdateInformationSync(bool notifyUser)
+{
+    QEventLoop loop;
+    QString error;
+
+    fetchUpdateInformation(notifyUser);
+    // error
+    connect(this, &NUVE::System::fetchUpdateErrorOccurred, &loop, [&error, &loop] (QString err) {
+        error = "Unable to fetch update. Please retry.\n" + err;
+        loop.quit();
+    });
+    QTimer::singleShot(30000, &loop, [&error, &loop] {
+        error = "Unable to fetch update. Please retry. Timeout!" ;
+        loop.quit();
+    });
+
+    // force update available
+    connect(this, &NUVE::System::forceUpdateChanged, &loop, [this, &error, &loop] () {
+        error = mHasForceUpdate ? "Applying mandatory update. Please wait..." : "";
+        loop.quit();
+    });
+    // update available but not force
+    connect(this, &NUVE::System::notifyNewUpdateAvailable, &loop, [&error, &loop] () {
+        loop.quit();
+    });
+    // update not available
+    connect(this, &NUVE::System::updateNoChecked, &loop, [&loop] () {
+        loop.quit();
+    });
+
+    loop.exec();
+
+    return error;
+}
+
 void NUVE::System::fetchBackdoorInformation()
 {
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
