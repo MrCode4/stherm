@@ -219,4 +219,5 @@ private:
     bool mIsDataReceived;
 
     QTimer mGetInfoNRFStarter;
+    QTimer mGetInfoTIStarter;
 };

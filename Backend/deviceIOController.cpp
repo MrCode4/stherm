@@ -153,9 +153,23 @@ DeviceIOController::DeviceIOController(QObject *parent)
     //! will be stopped if received the response;
     mGetInfoNRFStarter.setSingleShot(true);
     connect(&mGetInfoNRFStarter, &QTimer::timeout, this, [this]() {
-        TRACE << "retrying to send latest packet again";
+        TRACE << "retrying NRF to send latest packet again";
         m_nRfConnection->setProperty("busy", false);
         processNRFQueue();
+    });
+
+    //! will be started on each GetInfo packet
+    //! to retry if not receiving any response in 5 seconds
+    mGetInfoTIStarter.setInterval(5 * 1000);
+    mGetInfoTIStarter.setTimerType(Qt::PreciseTimer);
+    //! will be stopped if received the response;
+    mGetInfoTIStarter.setSingleShot(true);
+    connect(&mGetInfoTIStarter, &QTimer::timeout, this, [this]() {
+        TRACE << "retrying TI to send latest packet again";
+        // Send GetInfo request
+        auto packet = DataParser::prepareSIOPacket(STHERM::GetInfo);
+        m_TI_queue.push(packet);
+        processTIQueue();
     });
 }
 
@@ -474,6 +488,11 @@ void DeviceIOController::createTIConnection()
         //        m_wtd_timer.start();
 
         TRACE_CHECK(trace) << QString("TI Response - CMD: %0").arg(rxPacket.CMD);
+        if (rxPacket.CMD == STHERM::GetInfo){
+            TRACE << "TI Info received";
+            mGetInfoTIStarter.stop(); // stop retrying to getInfo
+        }
+
         processTIResponse(rxPacket);
 
         processTIQueue();
@@ -1342,7 +1361,13 @@ bool DeviceIOController::processTIQueue()
     }
 
     if (sendTIRequest(packet)) {
+        if (packet.CMD == STHERM::SIOCommand::GetInfo) {
+            TRACE << "CHECK for GetInfo TI";
+            mGetInfoTIStarter.start(); // will try again if not responding in 5 seconds
+        }
+
         m_TI_queue.pop();
+
         return true;
     } else {
         qWarning() << "ti request packet not sent" << packet.CMD
