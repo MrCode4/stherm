@@ -51,9 +51,7 @@ BasePageView {
                 Component.onCompleted: fetchUserData()
 
                 function fetchUserData() {
-                    if (uiSession.deviceController.deviceControllerCPP.sync.fetchingUserData == false) {
-                        uiSession.deviceController.deviceControllerCPP.sync.fetchUserData();
-                    }
+                    uiSession.deviceController.deviceControllerCPP.sync.fetchUserData();
                 }
             }
         }

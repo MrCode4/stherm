@@ -171,7 +171,7 @@ I_DeviceController {
         }
     }
 
-    property Connections sync: Connections {
+    property Connections system: Connections {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {
@@ -264,6 +264,17 @@ I_DeviceController {
         function onPushFailed() {
             console.log("DeviceController.qml: Push onPushFailed", stageMode, editMode, lockMode)
             settingsPush.isPushing = false;
+        }
+    }
+
+    property Connections sync: Connections {
+        target: deviceControllerCPP.sync
+
+        function onUserDataFetched(email:string, name: string) {
+            if (!device || !device.userData) return;
+
+            device.userData.email = email;
+            device.userData.name = name;
         }
     }
 

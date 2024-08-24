@@ -7,7 +7,6 @@
 #include "nuve_types.h"
 #include "RestApiExecutor.h"
 #include "Property.h"
-#include "UserData.h"
 
 /*! ***********************************************************************************************
  * This class manage sync requests.
@@ -19,7 +18,6 @@ class Sync : public RestApiExecutor
     Q_OBJECT
     QML_ELEMENT
 
-    PROPERTY_PRI(UserData*, userData)
     PROPERTY_PRI(bool, fetchingUserData)
 public:
     Sync(QObject *parent = nullptr);
@@ -59,6 +57,7 @@ signals:
 
     void wiringReady();
     void contractorInfoReady();
+    void userDataFetched(const QString& email, const QString& name);
 
     //! Settings data
     void settingsReady(QVariantMap settings);

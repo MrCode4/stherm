@@ -79,8 +79,7 @@ Item {
     property ToastManager toastManager:ToastManager
 
     //! app core, will be created in main.qml onCompleted function
-    property I_Device           appModel
-    onAppModelChanged: if (appModel) deviceController.deviceControllerCPP.sync.userData = appModel.userData
+    property I_Device           appModel    
 
     //! This property can be used to disable wifi refreshing temporarily
     property bool               refreshWifiEnabled: true
