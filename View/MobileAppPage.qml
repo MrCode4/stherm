@@ -15,7 +15,7 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Mobile App"    
+    title: "Mobile App"
 
     /* Children
      * ****************************************************************************************/
@@ -90,5 +90,5 @@ BasePageView {
             elide: Text.ElideMiddle
             text: "Email: " + uiSession.appModel.userData.email
         }
-    }    
+    }
 }

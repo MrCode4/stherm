@@ -79,7 +79,7 @@ Item {
     property ToastManager toastManager:ToastManager
 
     //! app core, will be created in main.qml onCompleted function
-    property I_Device           appModel    
+    property I_Device           appModel
 
     //! This property can be used to disable wifi refreshing temporarily
     property bool               refreshWifiEnabled: true
@@ -99,7 +99,7 @@ Item {
     //! Not used for now! maybe usefull for later
     property bool uiTestMode: false
 
-    Component.onCompleted: deviceController.startDeviceRequested();    
+    Component.onCompleted: deviceController.startDeviceRequested();
 
     /* Controllers
      * ****************************************************************************************/
