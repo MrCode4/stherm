@@ -73,11 +73,7 @@ BasePageView {
             {
                 icon: FAIcons.memoCircleInfo,
                 text: "Device Information",
-                view: "qrc:/Stherm/View/AboutDevicePage.qml",
-                longPressAction: function() {
-                    uiSession.uiTestMode = true;
-                    root.StackView.view.push("qrc:/Stherm/View/VersionInformationPage.qml", {"uiSession": Qt.binding(() => uiSession)});
-                }
+                view: "qrc:/Stherm/View/AboutDevicePage.qml"
             },
             {
                 image: "qrc:/Stherm/Images/smart-phone.png",
@@ -102,19 +98,25 @@ BasePageView {
             {
                 icon: FAIcons.fileExclamation,
                 text: "Technician Access",
-                color: "#42E8FF",
+                color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/UserGuidePage.qml"
             },
             {
                 icon: FAIcons.wrench,
                 text: "System Setup",
-                color: "#42E8FF",
+                color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/SystemSetupPage.qml"
+            },
+            {
+                icon: FAIcons.wrench,
+                text: "Test Mode",
+                color: Style.hiddenMenuColor,
+                view: "qrc:/Stherm/View/VersionInformationPage.qml",
             },
             {
                 icon: FAIcons.bellExclamation,
                 text: "System Alerts",
-                color: "#42E8FF",
+                color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/AlertsNotificationsPage.qml"
             }
         ]
