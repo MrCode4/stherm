@@ -218,17 +218,24 @@ Control {
             {
                 if (!device) return;
 
-                //! First calculate new values for handles without setting them
-                const firstValue = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
-                                                                     temperatureUnit,
-                                                                     minTemprature,
-                                                                     maxTemprature);
+                var firstValue  = AppSpec.defaultAutoMinReqTemp;
+                var secondValue = AppSpec.defaultAutoMaxReqTemp;
+                var minimumSecondarySlider = Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference);
 
-                const minimumSecondarySlider = Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference);
-                const secondValue = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
-                                                                      temperatureUnit,
-                                                                      Math.max(minTemprature, minimumSecondarySlider),
-                                                                      maxTemprature);
+                // If both autoMinReqTemp and autoMaxReqTemp are zero, use default values.
+                if (device.autoMinReqTemp !== 0 || device.autoMaxReqTemp !== 0) {
+                    //! First calculate new values for handles without setting them
+                    firstValue = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
+                                                                   temperatureUnit,
+                                                                   minTemprature,
+                                                                   maxTemprature);
+
+                    minimumSecondarySlider = Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference);
+                    secondValue = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
+                                                                    temperatureUnit,
+                                                                    Math.max(minTemprature, minimumSecondarySlider),
+                                                                    maxTemprature);
+                }
 
                 //! Now first set first.maxValue and second.minValue then update their actual values
                 first.setMaxValue(Math.min(firstValueCeil, secondValue - tempSliderDoubleHandle.difference));
