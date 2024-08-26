@@ -33,6 +33,10 @@ AppSpecCPP {
     //! Celcius
     property real autoModeDiffrenceC: 2.5
 
+    //! Auto mode defauls
+    property real defaultAutoMinReqTemp: 21.1111 // 70 F
+    property real defaultAutoMaxReqTemp: 23.3333 // 74 F
+
     //! Percent
     property int defaultBrightness: 100
     //! Percent

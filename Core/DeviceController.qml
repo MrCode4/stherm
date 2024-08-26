@@ -947,6 +947,18 @@ I_DeviceController {
             return;
         }
 
+        // If both auto_temp_low and auto_temp_high are zero, use default values.
+        if (settings?.auto_temp_low === 0 && settings?.auto_temp_high === 0) {
+
+            device.autoMinReqTemp = AppSpec.defaultAutoMinReqTemp;
+            deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
+
+            device.autoMaxReqTemp = AppSpec.defaultAutoMaxReqTemp;
+            deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
+
+            return;
+        }
+
         if (settings.hasOwnProperty("auto_temp_low")) {
             var auto_temp_low = Utils.clampValue(settings.auto_temp_low, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
             if (device.autoMinReqTemp !== auto_temp_low) {
