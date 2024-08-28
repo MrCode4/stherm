@@ -10,7 +10,15 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
     property bool showHiddenItems: true
-    onTitleLongTapped: root.showHiddenItems = !root.showHiddenItems
+    onTitleLongTapped: root.showHiddenItems = true
+    backButtonCallback: {
+        if (root.showHiddenItems) {
+            root.showHiddenItems = false;
+        }
+        else {
+            tryGoBack();
+        }
+    }
 
     contentItem: MenuListView {
         onMenuActivated: function(item) {
