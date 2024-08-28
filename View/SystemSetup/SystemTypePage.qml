@@ -67,6 +67,22 @@ BasePageView {
             }
         }
 
+        //! Dual Fuel Heating
+        Button {
+            Layout.fillWidth: true
+            text: "Dual Fuel Heating"
+            autoExclusive: true
+            enabled: false
+            // checked: appModel.systemSetup.systemType === AppSpec.CoolingOnly
+
+            onClicked: {
+                //! Move to corresponding page
+                if (root.StackView.view) {
+                    // root.StackView.view.push(_coolonlyPageCompo);
+                }
+            }
+        }
+
         Button {
             Layout.fillWidth: true
             text: "Cool Only"
