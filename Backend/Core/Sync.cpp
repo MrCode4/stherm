@@ -224,8 +224,14 @@ void Sync::fetchContractorLogo(const QString &url)
         if (reply->error() == QNetworkReply::NoError) {
             QImage image;
             if (image.loadFromData(rawData)) {
-                image.save("/home/root/customIcon.png");
-                mContractorInfo.insert("logo", "file:///home/root/customIcon.png");
+                QString imgPath = "/usr/local/customIcon.png";
+#ifdef unix
+                imgPath = "/home/root/customIcon.png";
+#endif
+                if (!image.save(imgPath)) {
+                    qWarning() << "Contractor logo could not be saved. " << imgPath << image.isNull();
+                }
+                mContractorInfo.insert("logo", "file://" + imgPath);
             }
         }
 
