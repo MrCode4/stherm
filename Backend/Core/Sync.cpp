@@ -228,10 +228,12 @@ void Sync::fetchContractorLogo(const QString &url)
 #ifdef unix
                 imgPath = "/home/root/customIcon.png";
 #endif
-                if (!image.save(imgPath)) {
+                if (image.save(imgPath)) {
+                    mContractorInfo.insert("logo", "file://" + imgPath);
+
+                } else {
                     qWarning() << "Contractor logo could not be saved. " << imgPath << image.isNull();
                 }
-                mContractorInfo.insert("logo", "file://" + imgPath);
             }
         }
 

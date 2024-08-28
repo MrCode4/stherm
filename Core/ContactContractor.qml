@@ -13,7 +13,7 @@ QSObject {
 
     property string phoneNumber: "(657) 626-4887"
 
-    property string iconSource:  "qrc:/Stherm/Images/nuve-icon.png"
+    property string iconSource:  ""
 
     property string qrURL:       "https://www.nuvehome.com/"
 
