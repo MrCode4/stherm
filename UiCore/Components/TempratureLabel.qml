@@ -14,7 +14,7 @@ Control {
     /* Property declaration
      * ****************************************************************************************/
     //! Holds current unit of temprature (Fahrenheit or Celsius)
-    property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C"
+    property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ? "C" : "F"
 
     property real temperature: device?.currentTemp ?? 0
 

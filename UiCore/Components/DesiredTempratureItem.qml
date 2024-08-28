@@ -23,7 +23,7 @@ Control {
     property I_Device           device: uiSession.appModel
 
     //! Unit of temprature
-    property string             unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C"
+    property string             unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ? "C" : "F"
 
     //! Minimum temprature
     property real               minTemprature: deviceController?._minimumTemperatureUI ?? 40
@@ -103,7 +103,7 @@ Control {
             width: parent.width
             height: width / 2
             enabled: labelVisible && !currentSchedule
-            difference: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
+            difference: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
 
             firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device?.setting?.tempratureUnit)
             secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device?.setting?.tempratureUnit)
@@ -114,16 +114,16 @@ Control {
             onVisibleChanged: {
                 if (visible) {
                     //! Set difference
-                    tempSliderDoubleHandle.difference = device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
+                    tempSliderDoubleHandle.difference = device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
                     tempSliderDoubleHandle.updateFirstSecondValues();
                 }
             }
 
             first.onPressedChanged: {
                 if (deviceController && !first.pressed) {
-                    deviceController.setAutoMinReqTemp(device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(first.value)
-                                                       : first.value);
+                    deviceController.setAutoMinReqTemp(device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
+                                                       ? first.value
+                                                       : Utils.fahrenheitToCelsius(first.value));
                     deviceController.updateEditMode(AppSpec.EMAutoMode);
                     deviceController.saveSettings();
 
@@ -132,9 +132,9 @@ Control {
 
             second.onPressedChanged: {
                 if (deviceController && !second.pressed) {
-                    deviceController.setAutoMaxReqTemp(device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(second.value)
-                                                       : second.value);
+                    deviceController.setAutoMaxReqTemp(device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
+                                                       ? second.value
+                                                       : Utils.fahrenheitToCelsius(second.value));
                     deviceController.updateEditMode(AppSpec.EMAutoMode);
                     deviceController.saveSettings();
                 }
@@ -179,7 +179,7 @@ Control {
                 running: false
                 onTriggered: {
                     //! Set difference
-                    tempSliderDoubleHandle.difference = device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
+                    tempSliderDoubleHandle.difference = device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
                     tempSliderDoubleHandle.updateFirstSecondValues();
                 }
             }
@@ -256,7 +256,7 @@ Control {
 
                 // The slider value is currently converted to the selected unit.
                 // However, we need to convert it to Celsius.
-                temp = device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? Utils.fahrenheitToCelsius(temp) : temp;
+                temp = device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ? temp : Utils.fahrenheitToCelsius(temp);
 
                 return temp;
             }
@@ -631,8 +631,8 @@ Control {
 
     //! Update model based on _tempSlider value in heating/cooling mode.
     function updateTemperatureModel() {
-        var celValue = (device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah)
-                ? Utils.fahrenheitToCelsius(_tempSlider.value) : _tempSlider.value;
+        var celValue = (device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel)
+                ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value);
         if (device && device.requestedTemp !== celValue) {
             deviceController.setDesiredTemperature(celValue);
             deviceController.updateEditMode(AppSpec.EMDesiredTemperature);

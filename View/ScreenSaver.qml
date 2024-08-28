@@ -22,7 +22,7 @@ Popup {
     property I_Device               device: deviceController?.device ?? null
 
     //! Unit
-    property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C"
+    property string     unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ? "C" : "F"
 
     property bool isActiveSchedule: deviceController?.currentSchedule ?? null
 

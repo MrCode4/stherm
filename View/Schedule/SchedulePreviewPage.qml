@@ -22,7 +22,7 @@ BasePageView {
     property ScheduleCPP            schedule
 
     //! Whether temprature unit is Celsius
-    property bool                   isCelcius:  appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah
+    property bool                   isCelcius:  appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
 
     //! Can schedule fields be editabled
     property bool                   isEditable: false
@@ -198,8 +198,7 @@ BasePageView {
                     }
 
                     Label {
-                        readonly property string unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? "F" : "C"
+                        readonly property string unit: isCelcius ? "C" : "F"
 
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
