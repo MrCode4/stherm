@@ -203,6 +203,7 @@ qt6_add_qml_module(appStherm
         View/MobileAppPage.qml
         View/LockPage.qml
         View/UnlockPage.qml
+        View/InstallationTypePage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
