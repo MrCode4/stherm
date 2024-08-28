@@ -24,30 +24,6 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    //! Next button
-    ToolButton {
-        parent: root.header.contentItem
-
-
-        contentItem: RoniaTextIcon {
-            text: FAIcons.arrowRight
-        }
-
-        visible: initialSetup
-        // Enable when the serial number is correctly filled
-        enabled: initialSetup
-
-        onClicked: {
-           updateModel();
-
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
-            }
-        }
-    }
 
     //! Confirm button
     ToolButton {
@@ -65,6 +41,30 @@ BasePageView {
             if (root.StackView.view) {
                 //! pop this from StackView
                 root.StackView.view.pop()
+            }
+        }
+    }
+
+    //! Next button in initial setup flow
+    ButtonInverted {
+        text: "Next"
+
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.margins: 10
+
+        visible: initialSetup
+        leftPadding: 25
+        rightPadding: 25
+
+        onClicked: {
+            updateModel();
+
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                         });
             }
         }
     }
