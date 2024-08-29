@@ -51,7 +51,7 @@ BasePageView {
                 Component.onCompleted: fetchUserData()
 
                 function fetchUserData() {
-                    uiSession.deviceController.deviceControllerCPP.sync.fetchUserData();
+                    deviceController?.deviceControllerCPP?.sync.fetchUserData();
                 }
             }
         }
@@ -62,7 +62,7 @@ BasePageView {
             wrapMode: Text.NoWrap
             font.pointSize: Qt.application.font.pointSize * 0.9
         }
-
+        // one of below labels will be visible based on email value in model
         Label {
             Layout.alignment: Qt.AlignLeft
             Layout.preferredWidth: parent.width - 10
@@ -70,11 +70,10 @@ BasePageView {
                   "enter the email you have provided during installation, create a new password and log in."
             wrapMode: Text.WordWrap
             font.pointSize: Qt.application.font.pointSize * 0.9
-            visible: !uiSession.appModel.userData.email
+            visible: !appModel?.userData.email
         }
-
         Label {
-            visible: uiSession.appModel.userData.email
+            visible: appModel?.userData.email
             Layout.alignment: Qt.AlignLeft
             Layout.preferredWidth: parent.width - 10
             text: "To recover your password, click on\n“Forgot password”, enter the email\nbelow, create a password and log in."
@@ -82,13 +81,14 @@ BasePageView {
         }
 
         Label {
-            visible: uiSession.appModel.userData.email
+            visible: appModel?.userData.email
             Layout.alignment: Qt.AlignLeft
             Layout.preferredWidth: parent.width
             Layout.topMargin: 20
             Layout.columnSpan: 2
             elide: Text.ElideMiddle
-            text: "Email: " + uiSession.appModel.userData.email
+            text: "Email: " + appModel?.userData.email ?? ""
+            font.pointSize: Qt.application.font.pointSize * 0.9
         }
     }
 }
