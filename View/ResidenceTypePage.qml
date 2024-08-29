@@ -42,10 +42,33 @@ BasePageView {
         onClicked: {
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession)
+                                             "uiSession": Qt.binding(() => uiSession),
+                                             "initialSetup": root.initialSetup
                                          });
             }
 
+        }
+    }
+
+    //! Next button in initial setup flow
+    ButtonInverted {
+        text: "Next"
+
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.margins: 10
+
+        visible: initialSetup && appModel.residenceType === AppSpec.ResidenceTypes.Garage;
+        leftPadding: 25
+        rightPadding: 25
+
+        onClicked: {
+            // if (root.StackView.view) {
+            //     root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+            //                                   "uiSession": uiSession,
+            //                                  "initialSetup": root.initialSetup
+            //                               });
+            // }
         }
     }
 
@@ -54,79 +77,26 @@ BasePageView {
         width: parent.width * 0.5
         spacing: 12
 
-        Button {
-            Layout.fillWidth: true
-            text: "House"
-            autoExclusive: true
-            checked: appModel.systemSetup.systemType === AppSpec.Conventional
+        Repeater {
+            model: Object.keys(AppSpec.residenceTypesNames)
+            delegate: Button {
+                Layout.fillWidth: true
+                text: AppSpec.residenceTypesNames[modelData]
+                autoExclusive: true
+                checked: appModel?.residenceType === modelData
 
-            onClicked: {
-                //! Move to corresponding page
-                if (root.StackView.view) {
-                    // root.StackView.view.push();
+                onClicked: {
+                    appModel.residenceType = modelData;
+
+                    if (appModel.residenceType !== AppSpec.ResidenceTypes.Garage) {
+                        console.log("MAOd", modelData)
+                        if (root.StackView.view) {
+                            root.StackView.view.push("qrc:/Stherm/View/DeviceLocationPage.qml", {
+                                                         "uiSession": Qt.binding(() => uiSession)
+                                                     });
+                        }
+                    }
                 }
-            }
-        }
-
-        Button {
-            Layout.fillWidth: true
-            text: "Apartment"
-            autoExclusive: true
-            checked: appModel.systemSetup.systemType === AppSpec.Conventional
-
-            onClicked: {
-                //! Move to corresponding page
-                if (root.StackView.view) {
-                    // root.StackView.view.push();
-                }
-            }
-        }
-        Button {
-            Layout.fillWidth: true
-            text: "Commercial"
-            autoExclusive: true
-            checked: appModel.systemSetup.systemType === AppSpec.Conventional
-
-            onClicked: {
-                //! Move to corresponding page
-                if (root.StackView.view) {
-                    // root.StackView.view.push();
-                }
-            }
-        }
-        Button {
-            Layout.fillWidth: true
-            text: "Office"
-            autoExclusive: true
-            checked: appModel.systemSetup.systemType === AppSpec.Conventional
-
-            onClicked: {
-                //! Move to corresponding page
-                if (root.StackView.view) {
-                    // root.StackView.view.push();
-                }
-            }
-        }
-        Button {
-            Layout.fillWidth: true
-            text: "Industrial"
-            autoExclusive: true
-            checked: appModel.systemSetup.systemType === AppSpec.Conventional
-
-            onClicked: {
-                //! Move to corresponding page
-                if (root.StackView.view) {
-                    // root.StackView.view.push();
-                }
-            }
-        }
-        Button {
-            Layout.fillWidth: true
-            text: "Garage"
-            autoExclusive: true
-            checked: appModel.systemSetup.systemType === AppSpec.Conventional
-
-            onClicked: {
             }
         }
     }
