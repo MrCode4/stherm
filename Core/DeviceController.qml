@@ -157,8 +157,7 @@ I_DeviceController {
 
             root.device.contactContractor.brandName     = brandName
             root.device.contactContractor.phoneNumber   = phoneNumber
-
-            root.device.contactContractor.iconSource    = iconUrl === "" ? "" : (iconUrl + "?version=" + version)
+            root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName) : (iconUrl + "?version=" + version)
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
         }
@@ -1085,7 +1084,7 @@ I_DeviceController {
         else if (name === "lees")
             return "qrc:/Stherm/Images/lee_s.png"
 
-        return "qrc:/Stherm/Images/nuve-icon.png"
+        return ""
     }
 
     function updateNightMode(nightMode : int) {

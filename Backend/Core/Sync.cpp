@@ -224,6 +224,7 @@ void Sync::fetchContractorLogo(const QString &url)
         if (reply->error() == QNetworkReply::NoError) {
             QImage image;
             if (image.loadFromData(rawData)) {
+                // Use 'usr' directory in the windows. It will be change in unix.
                 QString imgPath = "/usr/local/customIcon.png";
 #ifdef unix
                 imgPath = "/home/root/customIcon.png";
