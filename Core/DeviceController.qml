@@ -275,6 +275,9 @@ I_DeviceController {
 
             device.userData.email = email;
             device.userData.name = name;
+
+            // save the updated data to file
+            saveSettings();
         }
     }
 
