@@ -98,7 +98,7 @@ BasePageView {
                 {
                     icon: FAIcons.bellExclamation,
                     text: "Messages",
-                    view: "qrc:/Stherm/View/AlertsNotificationsPage.qml"
+                    view: "qrc:/Stherm/View/Menu/MessagessPage.qml"
                 }
             ]
         }

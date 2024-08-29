@@ -42,7 +42,7 @@ BasePageView {
             {
                 icon: FAIcons.bellExclamation,
                 text: "Alerts",
-                view: "qrc:/Stherm/View/AlertsNotificationsPage.qml"
+                view: "qrc:/Stherm/View/AlertsPage.qml"
             },
             {
                 icon: FAIcons.signalStream,
@@ -125,7 +125,7 @@ BasePageView {
                 icon: FAIcons.bellExclamation,
                 text: "System Alerts",
                 color: Style.hiddenMenuColor,
-                view: "qrc:/Stherm/View/AlertsNotificationsPage.qml"
+                view: "qrc:/Stherm/View/SystemAlertsPage.qml"
             }
         ]
 
