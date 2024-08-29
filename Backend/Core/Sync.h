@@ -18,6 +18,7 @@ class Sync : public RestApiExecutor
     Q_OBJECT
     QML_ELEMENT
 
+    //! useful for showing busy indicator when needed
     PROPERTY_PRI(bool, fetchingUserData)
 public:
     Sync(QObject *parent = nullptr);
