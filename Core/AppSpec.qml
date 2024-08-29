@@ -95,6 +95,49 @@ AppSpecCPP {
         GuestHouse
     }
 
+    // Residence types
+    enum ResidenceTypes {
+        House = 0,
+        Apartment,
+        Commercial,
+        Office,
+        Industrial,
+        Garage,
+        Unknown
+    }
+
+    //! Device location map
+    property var residenceTypesNames: {
+        var types = {};
+        types[`${AppSpec.ResidenceTypes.House}`]      = "House";
+        types[`${AppSpec.ResidenceTypes.Apartment}`]  = "Apartment";
+        types[`${AppSpec.ResidenceTypes.Commercial}`] = "Commercial";
+        types[`${AppSpec.ResidenceTypes.Office}`]     = "Office";
+        types[`${AppSpec.ResidenceTypes.Industrial}`] = "Industrial";
+        types[`${AppSpec.ResidenceTypes.Garage}`]     = "Garage";
+
+        return types;
+    }
+
+    //! Device location map
+    property var deviceLoacations: {
+        var types = {};
+        types[`${AppSpec.ResidenceTypes.House}`]      = ["Bedroom", "Living room", "Kids room",
+                                                         "Bathroom", "Kitchen", "Downstairs",
+                                                         "Upstairs", "Office", "Main floor",
+                                                         "Dinning room", "Master bedroom", "Guesthouse"];
+        types[`${AppSpec.ResidenceTypes.Apartment}`]  = ["Bedroom", "Downstairs", "Kids room",
+                                                         "Living room", "Master bedroom", "Downstairs",
+                                                         "Upstairs", "Other"];
+        types[`${AppSpec.ResidenceTypes.Commercial}`] = ["Lunchroom", "Office", "Warehouse",
+                                                         "Other"];
+        types[`${AppSpec.ResidenceTypes.Office}`]     = [];
+        types[`${AppSpec.ResidenceTypes.Industrial}`] = [];
+        types[`${AppSpec.ResidenceTypes.Garage}`]     = [];
+
+        return types;
+    }
+
     //! Sensor location names
     //! \note: we use map (js object) instead of array to avoid bugs in case of moving
     //! SensorLocation enum values
