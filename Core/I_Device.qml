@@ -63,6 +63,10 @@ QSObject {
     //! List <Schedule>
     property var            schedules:      []
 
+    property int    residenceType: AppSpec.ResidenceTypes.Unknown
+
+    property string deviceLocation: ""
+
     //! Backlight
     property Backlight      backlight:      Backlight {}
 
