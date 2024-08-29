@@ -10,12 +10,44 @@ import Stherm
 BasePageView {
     id: root
 
+    /* Property declaration
+     * ****************************************************************************************/
+    property bool initialSetup: false
+
+
     /* Object properties
      * ****************************************************************************************/
     title: "Installation Type"
 
     /* Children
      * ****************************************************************************************/
+    //! Info button in initial setup mode.
+    ToolButton {
+        parent: root.header.contentItem
+        checkable: false
+        checked: false
+        visible: initialSetup
+        implicitWidth: 64
+        implicitHeight: implicitWidth
+        icon.width: 50
+        icon.height: 50
+
+        contentItem: RoniaTextIcon {
+            anchors.fill: parent
+            font.pointSize: Style.fontIconSize.largePt
+            Layout.alignment: Qt.AlignLeft
+            text: FAIcons.circleInfo
+        }
+
+        onClicked: {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
+                                             "uiSession": Qt.binding(() => uiSession)
+                                         });
+            }
+
+        }
+    }
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -28,9 +60,11 @@ BasePageView {
             autoExclusive: true
 
             onClicked: {
-                //! Move to corresponding page
                 if (root.StackView.view) {
-                    // root.StackView.view.push();
+                    root.StackView.view.push("qrc:/Stherm/View/ResidenceTypePage.qml", {
+                                                  "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                              });
                 }
             }
         }
@@ -41,9 +75,11 @@ BasePageView {
             autoExclusive: true
 
             onClicked: {
-                //! Move to corresponding page
                 if (root.StackView.view) {
-                    // root.StackView.view.push();
+                    root.StackView.view.push("qrc:/Stherm/View/ResidenceTypePage.qml", {
+                                                  "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                              });
                 }
             }
         }
