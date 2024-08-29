@@ -86,6 +86,7 @@ QSObject {
         _qsRepo: appModel._qsRepo
     }
 
+
     //! Contact Contractor
     property ContactContractor contactContractor: ContactContractor {
         _qsRepo: appModel._qsRepo
@@ -96,6 +97,8 @@ QSObject {
 
     //! Lock model
     property Lock            _lock: Lock {}
+
+    property UserData userData: UserData {}
 
     /* Functions
      * ****************************************************************************************/

@@ -91,6 +91,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
 
     m_system = _deviceAPI->system();
+    m_sync = _deviceAPI->sync();
 
     connect(m_system, &NUVE::System::contractorInfoReady, this, [this]() {
         auto info = m_system->getContractorInfo();

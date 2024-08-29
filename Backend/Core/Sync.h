@@ -2,17 +2,24 @@
 
 #include <QObject>
 #include <QtNetwork>
+#include <QQmlEngine>
 
 #include "nuve_types.h"
 #include "RestApiExecutor.h"
+#include "Property.h"
 
 /*! ***********************************************************************************************
  * This class manage sync requests.
  * ************************************************************************************************/
+
 namespace NUVE {
 class Sync : public RestApiExecutor
 {
     Q_OBJECT
+    QML_ELEMENT
+
+    //! useful for showing busy indicator when needed
+    PROPERTY_PRI(bool, fetchingUserData)
 public:
     Sync(QObject *parent = nullptr);
 
@@ -32,6 +39,7 @@ public:
     bool fetchMessages();
     void fetchWirings(const QString& uid);
     void requestJob(QString type);
+    Q_INVOKABLE void fetchUserData();
 
     void pushSettingsToServer(const QVariantMap &settings);
     void pushAlertToServer(const QVariantMap &settings);
@@ -50,6 +58,7 @@ signals:
 
     void wiringReady();
     void contractorInfoReady();
+    void userDataFetched(const QString& email, const QString& name);
 
     //! Settings data
     void settingsReady(QVariantMap settings);

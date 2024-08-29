@@ -20,11 +20,6 @@ class Hardware;
 class DeviceAPI : public QObject
 {
     Q_OBJECT
-    /* TODO - FYR
-     * The Q_PROPERTY macro declares a property that could be accessed from QML.
-     * e.g.
-     *  Q_PROPERTY(QString userName READ userName WRITE setUserName NOTIFY userNameChanged)
-    */
 
     Q_PROPERTY(QString uid READ uid NOTIFY uidChanged)
 
@@ -35,6 +30,7 @@ public:
     QString uid() const;
     NUVE::Timing *timing();
     NUVE::System* system();
+    NUVE::Sync* sync();
     const NUVE::DeviceConfig& deviceConfig() const;
     void setSampleRate(const int sampleRate);
 
