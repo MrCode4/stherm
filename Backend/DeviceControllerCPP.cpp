@@ -555,7 +555,8 @@ void DeviceControllerCPP::runTemperatureScheme(bool start)
         // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
         // This function will execute after provided sensor data has been received,
         // so we do not need more delay.
-        m_scheme->restartWork(true);
+        if (!m_scheme->isRunning())
+            m_scheme->restartWork(true);
 
     } else {
         m_scheme->stop();
@@ -570,7 +571,8 @@ void DeviceControllerCPP::runHumidityScheme(bool start)
         // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
         // This function will execute after provided sensor data has been received,
         // so we do not need more delay.
-        m_HumidityScheme->restartWork(true);
+        if (!m_HumidityScheme->isRunning())
+            m_HumidityScheme->restartWork(true);
 
     } else {
         m_HumidityScheme->stop();

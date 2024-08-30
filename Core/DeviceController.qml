@@ -385,6 +385,14 @@ I_DeviceController {
         // as well as device io which may TODO refactor later and call it on demand
         deviceControllerCPP.startDevice();
 
+        if (temperatureSensorHealth) {
+            deviceControllerCPP.runTemperatureScheme(true);
+        }
+
+        if (humiditySensorHealth) {
+            deviceControllerCPP.runHumidityScheme(true);
+        }
+
         //! Update TOF sensor status.
         lock(device._lock.isLock, device._lock.pin, true);
 
