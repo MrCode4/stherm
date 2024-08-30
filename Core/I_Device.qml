@@ -28,7 +28,7 @@ QSObject {
     property real           autoMaxReqTemp: AppSpec.defaultAutoMaxReqTemp
 
     //! Current Temperature (Cel)
-    property real           currentTemp:    18.0
+    property real           currentTemp:    AppSpec.defaultRequestedTemperature
 
     //! Requested Humidity (Percent)
     property real           requestedHum:   45.0

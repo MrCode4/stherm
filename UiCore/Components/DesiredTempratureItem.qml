@@ -82,7 +82,7 @@ Control {
             //! can be faulty
             //! Use Component.onCompleted to update the UI for first time after the settings are loaded.
             Component.onCompleted: {
-                var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
+                var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? AppSpec.defaultRequestedTemperature);
                 _tempSlider.value = Utils.convertedTemperatureClamped(tmp,
                                                                       temperatureUnit,
                                                                       minTemprature,
