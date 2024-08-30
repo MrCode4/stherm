@@ -171,6 +171,16 @@ public:
 
     Q_INVOKABLE void lockDeviceController(bool isLock);
 
+    //! Start/Stop the temperature scheme
+    //! start = true, start scheme
+    //! start = false, stop scheme
+    Q_INVOKABLE void runTemperatureScheme(bool start);
+
+    //! Start/Stop the humidity scheme
+    //! start = true, start scheme
+    //! start = false, stop scheme
+    Q_INVOKABLE void runHumidityScheme(bool start);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -267,6 +277,8 @@ private:
 
     // To avoid the first deviation in the average
     bool _isFirstDataReceived = false;
+
+    bool mIsDeviceStarted = false;
 
     DeviceIOController *_deviceIO;
     DeviceAPI *_deviceAPI;

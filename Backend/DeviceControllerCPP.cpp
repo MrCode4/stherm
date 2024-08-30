@@ -523,13 +523,7 @@ void DeviceControllerCPP::startDevice()
     int startMode = getStartMode();
     emit startModeChanged(startMode);
 
-    // Start with delay to ensure the model loaded.
-    // will be loaded always, but should be OFF in iniial setup mode as its default is OFF
-    QTimer::singleShot(5000, this, [this]() {
-        TRACE << "starting scheme";
-        m_scheme->restartWork(true);
-        m_HumidityScheme->restartWork(true);
-    });
+    mIsDeviceStarted = true;
 
     if (startMode == 0) {
         startTestMode();
@@ -549,8 +543,39 @@ void DeviceControllerCPP::startDevice()
 void DeviceControllerCPP::stopDevice()
 {
     _deviceIO->stopReading();
-    m_scheme->stop();
-    m_HumidityScheme->stop();
+    runTemperatureScheme(false);
+    runHumidityScheme(false);
+}
+
+void DeviceControllerCPP::runTemperatureScheme(bool start)
+{
+    TRACE << "starting temperature scheme: " << (start && mIsDeviceStarted) << start;
+    if(start && mIsDeviceStarted) {
+        // Start with delay to ensure the model loaded.
+        // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
+        QTimer::singleShot(5000, this, [this]() {
+            m_scheme->restartWork(true);
+            m_HumidityScheme->restartWork(true);
+        });
+
+    } else {
+        m_scheme->stop();
+    }
+}
+
+void DeviceControllerCPP::runHumidityScheme(bool start)
+{
+    TRACE << "starting humidity scheme: " << (start && mIsDeviceStarted) << start;
+    if(start && mIsDeviceStarted) {
+        // Start with delay to ensure the model loaded.
+        // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
+        QTimer::singleShot(5000, this, [this]() {
+            m_HumidityScheme->restartWork(true);
+        });
+
+    } else {
+        m_HumidityScheme->stop();
+    }
 }
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)

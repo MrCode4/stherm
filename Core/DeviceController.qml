@@ -47,9 +47,6 @@ I_DeviceController {
     property real nightModeBrightness: -1
     property real targetNightModeBrightness: Math.min(50, (device.setting.adaptiveBrightness ? deviceControllerCPP.adaptiveBrightness : device.setting.brightness))
 
-    //! control which data should be shown
-    property bool sensorsFetched: false
-
     property int testModeType: AppSpec.TestModeType.None
 
     //! Timer to check and run the night mode.
@@ -139,10 +136,12 @@ I_DeviceController {
 
         function onTemperatureSensorStatus(status: bool) {
             temperatureSensorHealth = status;
+            deviceControllerCPP.runTemperatureScheme(status);
         }
 
         function onHumiditySensorStatus(status: bool) {
             humiditySensorHealth = status;
+            deviceControllerCPP.runHumidityScheme(status);
         }
 
         //! Set system mode to auto when
