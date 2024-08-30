@@ -198,9 +198,8 @@ bool Sync::fetchContractorInfo()
             // the value inside map should be either empty so it loads from brand
             // name, or be a resource or local fs path so if it has the logo
             // response we keep it empty until the actual value handled (if not
-            // empty, it should be downloaded to a local path) and if it has null
-            // or has not value, we will keep the previous value
-            map.insert("logo", logoValue.isString() ? "" : mContractorInfo.value("logo").toString());
+            // empty, it should be downloaded to a local path).
+            map.insert("logo", "");
             mContractorInfo = map;
 
             auto logo = logoValue.toString();
