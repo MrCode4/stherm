@@ -141,6 +141,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
 
 
         // humidity/temperature malfunction
+        // mIsHumTempSensorValid is false when no data is received.
         emit forceOffSystem(!mIsHumTempSensorValid);
 
         // Set to false (the mainDataReady might not be called)
@@ -1415,8 +1416,8 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
     mIsHumTempSensorValid = isHumTempSensorDataValid;
 
-    bool temperatureSensorHealth = isHumTempSensorDataValid;
-    bool humiditySensorHealth    = isHumTempSensorDataValid;
+    bool temperatureSensorHealth = false;
+    bool humiditySensorHealth    = false;
 
     if (isHumTempSensorDataValid) {
 
@@ -1424,7 +1425,6 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
         emit forceOffSystem(false);
 
         // Manage temperature alerts
-        temperatureSensorHealth = false;
         if (values.temp > m_p->throlds_aq.temp_high) {
             if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
                 emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
@@ -1452,7 +1452,6 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
             m_TemperatureAlertET.invalidate();
         }
 
-        humiditySensorHealth = false;
         // Manage humidity alerts
         if (values.humidity > m_p->throlds_aq.humidity_high) {
             if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
