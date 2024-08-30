@@ -553,11 +553,9 @@ void DeviceControllerCPP::runTemperatureScheme(bool start)
     if(start && mIsDeviceStarted) {
         // Start with delay to ensure the model loaded.
         // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
-        // This function will execute after 30 seconds, provided sensor data has been received,
+        // This function will execute after provided sensor data has been received,
         // so we do not need more delay.
-        // QTimer::singleShot(5000, this, [this]() {
-            m_scheme->restartWork(true);
-        // });
+        m_scheme->restartWork(true);
 
     } else {
         m_scheme->stop();
@@ -570,11 +568,9 @@ void DeviceControllerCPP::runHumidityScheme(bool start)
     if(start && mIsDeviceStarted) {
         // Start with delay to ensure the model loaded.
         // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
-        // This function will execute after 30 seconds, provided sensor data has been received,
+        // This function will execute after provided sensor data has been received,
         // so we do not need more delay.
-        // QTimer::singleShot(5000, this, [this]() {
-            m_HumidityScheme->restartWork(true);
-        // });
+        m_HumidityScheme->restartWork(true);
 
     } else {
         m_HumidityScheme->stop();

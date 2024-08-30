@@ -131,17 +131,23 @@ I_DeviceController {
         property int version : 0;
 
         function onCo2SensorStatus(status: bool) {
-            airConditionSensorHealth = status;
+            if (temperatureSensorHealth !== status) {
+                airConditionSensorHealth = status;
+            }
         }
 
         function onTemperatureSensorStatus(status: bool) {
-            temperatureSensorHealth = status;
-            deviceControllerCPP.runTemperatureScheme(status);
+            if (temperatureSensorHealth !== status) {
+                temperatureSensorHealth = status;
+                deviceControllerCPP.runTemperatureScheme(status);
+            }
         }
 
         function onHumiditySensorStatus(status: bool) {
-            humiditySensorHealth = status;
-            deviceControllerCPP.runHumidityScheme(status);
+            if (humiditySensorHealth !== status) {
+                humiditySensorHealth = status;
+                deviceControllerCPP.runHumidityScheme(status);
+            }
         }
 
         //! Set system mode to auto when
