@@ -17,7 +17,7 @@ QtObject {
 
     property int                 startMode: -1
 
-    property int                 temperatureUnit: device.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah
+    readonly property int        temperatureUnit: device.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
 
     //! Minimum value for temperature model (Fah)
     property real               _minimumTemperatureF: 40

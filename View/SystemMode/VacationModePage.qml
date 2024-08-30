@@ -22,7 +22,7 @@ BasePageView {
     //! System Accessories use in humidity control.
     property SystemAccessories  systemAccessories: appModel.systemSetup.systemAccessories
 
-    readonly property int tempratureUnit: setting?.tempratureUnit ?? AppSpec.TempratureUnit.Fah
+    readonly property int tempratureUnit: setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
 
     property real minTemperature: tempratureUnit === AppSpec.TempratureUnit.Fah ?
                                 AppSpec.vacationMinimumTemperatureF : AppSpec.vacationMinimumTemperatureC
@@ -107,7 +107,7 @@ BasePageView {
             second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, tempratureUnit, minTemperature, maxTemperature)
             difference: tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
 
-            labelSuffix: "\u00b0" + (tempratureUnit === AppSpec.TempratureUnit.Cel ? "C" : "F")
+            labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(tempratureUnit))
             showMinMax: true
             fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, tempratureUnit)
             toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, tempratureUnit)

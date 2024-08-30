@@ -23,8 +23,10 @@ BasePageView {
 
     property bool editMode: false
 
-    //!
-    property bool           isCelcius:  appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
+    property int unit:      appModel?.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
+
+    //! Is Celsius selected as the unit?
+    property bool           isCelcius:  unit === AppSpec.TempratureUnit.Cel
 
     //! Temprature value: this is always in celsius
     readonly property real  temprature: (isCelcius ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value))
@@ -38,7 +40,7 @@ BasePageView {
                                                       : 0
     leftPadding: 8 * scaleFactor
     rightPadding: 8 * scaleFactor
-    title: "Temprature (\u00b0" + (isCelcius ? "C" : "F") + ")"
+    title: "Temprature (\u00b0" + (AppSpec.temperatureUnitString(unit)) + ")"
     backButtonVisible: false
     titleHeadeingLevel: 4
 
@@ -69,7 +71,7 @@ BasePageView {
         width: parent.width
         from: isCelcius ? AppSpec.minimumTemperatureC : AppSpec.minimumTemperatureF
         to: isCelcius ? AppSpec.maximumTemperatureC : AppSpec.maximumTemperatureF
-        value: Utils.convertedTemperatureClamped(schedule?.temprature ?? 0, device.setting.tempratureUnit)
+        value: Utils.convertedTemperatureClamped(schedule?.temprature ?? 0, unit)
         majorTickCount: isCelcius ? 3 : 5
         ticksCount: to - from
         stepSize: 1

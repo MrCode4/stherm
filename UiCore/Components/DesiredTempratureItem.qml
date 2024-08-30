@@ -23,7 +23,7 @@ Control {
     property I_Device           device: uiSession.appModel
 
     //! Unit of temprature
-    property string             unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel ? "C" : "F"
+    property string             unit: AppSpec.temperatureUnitString(device?.setting?.tempratureUnit)
 
     //! Minimum temprature
     property real               minTemprature: deviceController?._minimumTemperatureUI ?? 40

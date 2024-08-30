@@ -198,7 +198,7 @@ BasePageView {
                     }
 
                     Label {
-                        readonly property string unit: isCelcius ? "C" : "F"
+                        readonly property string unit: AppSpec.temperatureUnitString(appModel?.setting?.tempratureUnit)
 
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
