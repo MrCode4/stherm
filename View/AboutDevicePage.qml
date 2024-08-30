@@ -21,6 +21,7 @@ BasePageView {
     property int testCounter: 0
 
     property string appVesion: ""
+    property bool showTestMode: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -60,10 +61,7 @@ BasePageView {
             { "key": "Custom Name",         "value": "Living Room" },
             { "key": "URL",                 "value": '<a href="nuvehome.com" style="text-decoration:none;color:#44A0FF;">nuvehome.com</a>' },
             { "key": "E-mail",              "value": '<a href="support@nuvehome.com" style="text-decoration:none;color:#44A0FF;">support@nuvehome.com</link>' },
-            { "key": "IPv4 Address",        "value": NetworkInterface.ipv4Address },
-            { "key": "Send Log",            "value": "01", "type": "button"},
-            { "key": "Restart Device",      "value": "01", "type": "button" },
-            { "key": "Exit",                "value": "01", "type": "button", "visible": system.testMode },
+            { "key": "IPv4 Address",        "value": NetworkInterface.ipv4Address }
         ]
         delegate: Item {
             width: ListView.view.width
@@ -73,9 +71,7 @@ BasePageView {
             RowLayout {
                 id: textContent
                 spacing: 16
-
                 visible: (modelData?.type !== "button") ?? true
-
                 anchors.fill: parent
 
                 Label {
@@ -112,91 +108,89 @@ BasePageView {
                     }
                 }
             }
+        }
 
-            RowLayout {
-                spacing: 16
+        footer: ColumnLayout {
+            spacing: 6
+            anchors.horizontalCenter: parent.horizontalCenter
 
-                anchors.centerIn: parent
+            Repeater {
+                model: [
+                    {
+                        text: "Send Log", action: () => {
+                            if (NetworkInterface.hasInternet) logBusyPop.open();
+                            else system.alert("No Internet, Please check your connection before sending log.")
+                        },
+                        buddies: [
+                            {
+                                text: "Update NRF", visible: system.testMode, action: () => {
+                                    deviceController.deviceControllerCPP.updateNRFFirmware();
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        text: "Test Mode", visible: root.showTestMode, action: () => {
+                            if (root.StackView.view) {
+                                uiSession.uiTestMode = true;
+                                root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {"uiSession": uiSession});
+                            }
+                        }
+                    },
+                    {
+                        text: "Restart Device", action: () => {
+                            rebootPopup.cancelEnable = true;
+                            rebootPopup.open();
+                        },
+                        buddies: [
+                            {
+                                text: "Restart App", visible: system.testMode, action: () => {
+                                    restartAppPopup.open();
+                                }
+                            }
+                        ]
 
-                visible: modelData?.type === "button"
-
-                // main button of the row from model
-                ButtonInverted {
-                    leftPadding: 8
-                    rightPadding: 8
-                    text: modelData.key
-
-                    onClicked: {
-                        buttonCallbacks(modelData.key);
+                    },
+                    {
+                        text: "Exit", visible: system.testMode, action: () => {
+                            exitPopup.open();
+                        },
+                        buddies: [
+                            {
+                                text: "Forget Device", action: () => {
+                                    deviceController.forgetDevice();
+                                    rebootPopup.cancelEnable = false;
+                                    rebootPopup.open();
+                                }
+                            }
+                        ]
                     }
-                }
+                ]
 
-                //! additional button if available
-                ButtonInverted {
-                    visible: (modelData.key === "Send Log") && system.testMode
-                    text:  "Update NRF"
-                    leftPadding: 8
-                    rightPadding: 8
+                RowLayout {
+                    spacing: 16
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: modelData.visible == undefined || modelData.visible
 
-                    onClicked: {
-                        buttonCallbacks(text);
+                    ButtonInverted {
+                        leftPadding: 8
+                        rightPadding: 8
+                        text: modelData.text
+                        onClicked: if (modelData.action instanceof Function) modelData.action()
                     }
-                }
 
-                //! additional button if available
-                ButtonInverted {
-                    visible: (modelData.key === "Restart Device") && system.testMode
-                    text:  "Restart App"
-                    leftPadding: 8
-                    rightPadding: 8
-
-                    onClicked: {
-                        buttonCallbacks(text);
-                    }
-                }
-
-                //! additional button if available
-                ButtonInverted {
-                    visible: (modelData.key === "Exit") && system.testMode
-                    text: "Forget Device"
-                    leftPadding: 8
-                    rightPadding: 8
-
-                    onClicked: {
-                        buttonCallbacks(text);
+                    Repeater {
+                        model: modelData.buddies
+                        ButtonInverted {
+                            leftPadding: 8
+                            rightPadding: 8
+                            text: modelData.text
+                            visible: modelData.visible == undefined || modelData.visible
+                            onClicked: if (modelData.action instanceof Function) modelData.action()
+                        }
                     }
                 }
             }
-
-        }
-    }
-
-    //! Button callbacks
-    function buttonCallbacks(key: string) {
-
-        if (key === "Forget Device") {
-            deviceController.forgetDevice();
-            rebootPopup.cancelEnable = false;
-            rebootPopup.open();
-
-        } else if (key === "Exit") {
-            exitPopup.open();
-
-        } else if (key === "Update NRF") {
-            deviceController.deviceControllerCPP.updateNRFFirmware();
-
-        } else if (key === "Restart Device") {
-            rebootPopup.cancelEnable = true;
-            rebootPopup.open();
-
-        } else if (key === "Restart App") {
-            restartAppPopup.open();
-
-        } else if (key === "Send Log") {
-            if (NetworkInterface.hasInternet)
-                logBusyPop.open();
-            else
-                system.alert("No Internet, Please check your connection before sending log.")
         }
     }
 

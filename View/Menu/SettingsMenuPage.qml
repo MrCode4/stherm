@@ -23,7 +23,7 @@ BasePageView {
     contentItem: MenuListView {
         onMenuActivated: function(item) {
             let newProps = {};
-            Object.assign(newProps, item.properties);
+            Object.assign(newProps, item.props);
             Object.assign(newProps, {"uiSession": Qt.binding(() => uiSession)});
             root.StackView.view.push(item.view, newProps);
         }
@@ -81,7 +81,8 @@ BasePageView {
             {
                 icon: FAIcons.memoCircleInfo,
                 text: "Device Information",
-                view: "qrc:/Stherm/View/AboutDevicePage.qml"
+                view: "qrc:/Stherm/View/AboutDevicePage.qml",
+                props: {showTestMode: true}
             },
             {
                 image: "qrc:/Stherm/Images/smart-phone.png",
@@ -114,12 +115,6 @@ BasePageView {
                 text: "System Setup",
                 color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/SystemSetupPage.qml"
-            },
-            {
-                icon: FAIcons.wrench,
-                text: "Test Mode",
-                color: Style.hiddenMenuColor,
-                view: "qrc:/Stherm/View/VersionInformationPage.qml",
             },
             {
                 icon: FAIcons.bellExclamation,
