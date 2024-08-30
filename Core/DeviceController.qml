@@ -963,15 +963,8 @@ I_DeviceController {
                                               AppSpec.autoMaximumTemperatureC);
         }
 
-        if (device.autoMinReqTemp !== auto_temp_low) {
-            device.autoMinReqTemp = auto_temp_low;
-            deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
-        }
-
-        if (device.autoMaxReqTemp !== auto_temp_high) {
-            device.autoMaxReqTemp = auto_temp_high;
-            deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
-        }
+        setAutoMinReqTemp(auto_temp_low);
+        setAutoMaxReqTemp(auto_temp_high);
     }
 
     function setAutoMinReqTemp(min) {

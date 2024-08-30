@@ -222,7 +222,7 @@ Control {
                 var secondValue = AppSpec.defaultAutoMaxReqTemp;
                 var minimumSecondarySlider = Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference);
 
-                // If both autoMinReqTemp and autoMaxReqTemp are zero, use default values.
+                // If both autoMinReqTemp and autoMaxReqTemp are zero, keep the default values.
                 if (device.autoMinReqTemp !== 0 || device.autoMaxReqTemp !== 0) {
                     //! First calculate new values for handles without setting them
                     firstValue = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
