@@ -50,30 +50,6 @@ BasePageView {
         }
     }
 
-    //! Next button in initial setup flow
-    ButtonInverted {
-        text: "Next"
-
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.margins: 10
-
-        visible: initialSetup
-        leftPadding: 25
-        rightPadding: 25
-
-        onClicked: {
-           updateModel();
-
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
-            }
-        }
-    }
-
     Flickable {
         id: itemsFlickable
 
@@ -107,8 +83,29 @@ BasePageView {
 
                     onClicked: {
                         deviceLocation = text;
+                        nextPageTimer.goNextPage = true;
                     }
                 }
+            }
+        }
+    }
+
+    Timer {
+        id: nextPageTimer
+
+        property bool goNextPage: false
+
+        interval: 5000
+        repeat: false
+        running: root.visible && goNextPage
+
+        onTriggered: {
+            goNextPage = false;
+
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/ThermostatNamePage.qml", {
+                                             "uiSession": Qt.binding(() => uiSession)
+                                         });
             }
         }
     }
