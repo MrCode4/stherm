@@ -408,7 +408,7 @@ Control {
             target: _root
 
             //! Update slider value (UI) with changed TempratureUnit
-            function onUnitChanged() {
+            function onTemperatureUnitChanged() {
                 updateTemperatureValue(currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0));
             }
         }
