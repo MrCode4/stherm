@@ -12,17 +12,11 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Device referenece
-    property Device                 device: uiSession?.appModel ?? null
-
     //! Schedules controlller
     property SchedulesController    schedulesController: uiSession?.schedulesController ?? null
 
     //! Schedule
     property ScheduleCPP            schedule
-
-    //! Whether temprature unit is Celsius
-    property bool                   isCelcius:  appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
 
     //! Can schedule fields be editabled
     property bool                   isEditable: false
@@ -203,7 +197,7 @@ BasePageView {
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
                         text: Number(Utils.convertedTemperature(scheduleToDisplay?.temprature ?? 0,
-                                                                device?.setting?.tempratureUnit)
+                                                                appModel?.setting?.tempratureUnit)
                                      ).toLocaleString(locale, "f", 0)
                               + ` \u00b0${unit}`
                     }
@@ -594,7 +588,7 @@ BasePageView {
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
 
         // Emit schedule changed to call updateCurrentSchedules function in schedule controller.
-        device.schedulesChanged();
+        appModel.schedulesChanged();
 
         //Displays a toast message for enabled schedule
         if (schedule.enable) {
