@@ -9,7 +9,7 @@ BasePageView {
     title: "Settings"
 
     property System system: deviceController.deviceControllerCPP.system
-    property bool showHiddenItems: true
+    property bool showHiddenItems: false
     onTitleLongTapped: root.showHiddenItems = true
     backButtonCallback: {
         if (root.showHiddenItems) {
@@ -42,7 +42,7 @@ BasePageView {
             {
                 icon: FAIcons.bellExclamation,
                 text: "Alerts",
-                view: "qrc:/Stherm/View/AlertsPage.qml"
+                view: "qrc:/Stherm/View/Menu/AlertsPage.qml"
             },
             {
                 icon: FAIcons.signalStream,
@@ -120,7 +120,7 @@ BasePageView {
                 icon: FAIcons.bellExclamation,
                 text: "System Alerts",
                 color: Style.hiddenMenuColor,
-                view: "qrc:/Stherm/View/SystemAlertsPage.qml"
+                view: "qrc:/Stherm/View/Menu/SystemAlertsPage.qml"
             }
         ]
 
