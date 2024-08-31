@@ -63,9 +63,11 @@ QSObject {
     //! List <Schedule>
     property var            schedules:      []
 
-    property int    residenceType: AppSpec.ResidenceTypes.Unknown
+    property int            residenceType: AppSpec.ResidenceTypes.Unknown
 
-    property string deviceLocation: ""
+    property string         deviceLocation: ""
+
+    property string         thermostatName: ""
 
     //! Backlight
     property Backlight      backlight:      Backlight {}

@@ -97,24 +97,20 @@ AppSpecCPP {
 
     // Residence types
     enum ResidenceTypes {
-        House = 0,
-        Apartment,
+        Apartment = 0,
         Commercial,
-        Office,
-        Industrial,
         Garage,
+        House,
         Unknown
     }
 
     //! Device location map
     property var residenceTypesNames: {
         var types = {};
-        types[`${AppSpec.ResidenceTypes.House}`]      = "House";
         types[`${AppSpec.ResidenceTypes.Apartment}`]  = "Apartment";
         types[`${AppSpec.ResidenceTypes.Commercial}`] = "Commercial";
-        types[`${AppSpec.ResidenceTypes.Office}`]     = "Office";
-        types[`${AppSpec.ResidenceTypes.Industrial}`] = "Industrial";
         types[`${AppSpec.ResidenceTypes.Garage}`]     = "Garage";
+        types[`${AppSpec.ResidenceTypes.House}`]      = "House";
 
         return types;
     }
@@ -131,8 +127,6 @@ AppSpecCPP {
                                                          "Upstairs", "Other"];
         types[`${AppSpec.ResidenceTypes.Commercial}`] = ["Lunchroom", "Office", "Warehouse",
                                                          "Other"];
-        types[`${AppSpec.ResidenceTypes.Office}`]     = [];
-        types[`${AppSpec.ResidenceTypes.Industrial}`] = [];
         types[`${AppSpec.ResidenceTypes.Garage}`]     = [];
 
         return types;
