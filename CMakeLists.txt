@@ -143,7 +143,6 @@ qt6_add_qml_module(appStherm
         # Views and Widgets
         View/Home.qml
         View/SplashScreen.qml
-        View/Menu/MenuItemInfo.qml
         View/Menu/MenuListView.qml
         View/Menu/AppMenuPage.qml
         View/Menu/SettingsMenuPage.qml
@@ -189,7 +188,7 @@ qt6_add_qml_module(appStherm
         View/Sensor/SensorPairPage.qml
         View/Sensor/SensorNamePage.qml
         View/Sensor/SensorInfoPage.qml
-        View/SensorsPage.qml        
+        View/SensorsPage.qml
         View/WiringPage.qml
         View/MessagePopupView.qml
         View/VacationModeView.qml
