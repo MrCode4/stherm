@@ -27,7 +27,7 @@ QSObject {
     property int        volume:                 AppSpec.defaultVolume
 
     //! Temprature unit
-    property int        tempratureUnit:         AppSpec.TempratureUnit.Fah
+    property int        tempratureUnit:         AppSpec.defaultTemperatureUnit
 
     //! Timer format
     property int        timeFormat:             AppSpec.TimeFormat.Hour12

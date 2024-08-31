@@ -13,7 +13,10 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Setting
-    property Setting    setting: uiSession?.appModel?.setting ?? null
+    property Setting    setting: appModel?.setting ?? null
+
+    //! Unit
+    readonly property int unit: setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
 
     property bool hasChange : false;
 
@@ -135,7 +138,7 @@ BasePageView {
                     Layout.fillWidth: true
                     from: 0
                     to: 100
-                    value: appModel?.setting?.brightness ?? 0
+                    value: setting?.brightness ?? 0
 
                     enabled: !_adaptiveBrSw.checked
 
@@ -179,7 +182,7 @@ BasePageView {
                     Layout.fillWidth: true
                     from: 0
                     to: 100
-                    value: appModel?.setting?.volume ?? 0
+                    value: setting?.volume ?? 0
 
                     enabled: false
                 }
@@ -204,7 +207,7 @@ BasePageView {
 
                 Switch {
                     id: _adaptiveBrSw
-                    checked: false && (appModel?.setting?.adaptiveBrightness ?? false)
+                    checked: false && (setting?.adaptiveBrightness ?? false)
                     enabled: false
 
                     onCheckedChanged: {
@@ -234,7 +237,7 @@ BasePageView {
 
                 Switch {
                     id: enabledAlertsSw
-                    checked: appModel?.setting?.enabledAlerts ?? false
+                    checked: setting?.enabledAlerts ?? false
 
                     onCheckedChanged: {
                         onlineTimer.startTimer()
@@ -254,7 +257,7 @@ BasePageView {
 
                 Switch {
                     id: enabledNotificationsSw
-                    checked: appModel?.setting?.enabledNotifications ?? false
+                    checked: setting?.enabledNotifications ?? false
 
                     onCheckedChanged: {
                         onlineTimer.startTimer()
@@ -278,13 +281,13 @@ BasePageView {
                 RadioButton {
                     id: _tempFarenUnitBtn
                     text: "\u00b0F"
-                    checked: appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Cel
+                    checked: unit !== AppSpec.TempratureUnit.Cel
                 }
 
                 RadioButton {
                     id: _tempCelciUnitBtn
                     text: "\u00b0C"
-                    checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
+                    checked: unit === AppSpec.TempratureUnit.Cel
                 }
             }
 
@@ -347,7 +350,7 @@ BasePageView {
             if (deviceController) {
                 if (deviceController.setSettings(AppSpec.defaultBrightness,
                                              AppSpec.defaultVolume,
-                                             AppSpec.TempratureUnit.Fah,
+                                             AppSpec.defaultTemperatureUnit,
                                              false, true, true)) {
                     deviceController.updateEditMode(AppSpec.EMSettings);
                     deviceController.saveSettings()

@@ -12,8 +12,6 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Device reference
-    property Device         device: uiSession?.appModel ?? null
 
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
     property ScheduleCPP    schedule
@@ -26,7 +24,7 @@ BasePageView {
     property int unit:      appModel?.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
 
     //! Is Celsius selected as the unit?
-    property bool           isCelcius:  unit === AppSpec.TempratureUnit.Cel
+    readonly property bool           isCelcius:  unit === AppSpec.TempratureUnit.Cel
 
     //! Temprature value: this is always in celsius
     readonly property real  temprature: (isCelcius ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value))

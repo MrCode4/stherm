@@ -11,7 +11,7 @@ import Stherm
 QtObject {
 
     //! Convert temperature from celsius to fahrenheit
-    //! If no unit is specified (unit is null), fahrenheit (Fah) is used by default.
+    //! If no unit is specified (unit is null), AppSpec.defaultTemperatureUnit is used by default.
     function convertedTemperature(celsiusTemp: real, toUnit: int) : real {
         // Set null/undefined toUnit to default unit
         if (toUnit === null || toUnit === undefined) {
@@ -24,6 +24,7 @@ QtObject {
     //! Clamp temperature values based on min and max.
     //! For scheduled temperatures, use default min and max values.
     //! For others, set min and max values directly.
+    //! If no unit is specified (unit is null), AppSpec.defaultTemperatureUnit is used by default.
     function convertedTemperatureClamped(celsiusTemp: real, toUnit: int, min=null, max=null) : real {
         // Set null/undefined toUnit to default unit
         if (toUnit === null || toUnit === undefined) {
