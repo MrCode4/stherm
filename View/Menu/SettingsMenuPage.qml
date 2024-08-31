@@ -10,8 +10,10 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
     property bool showHiddenItems: false
+
     onTitleLongTapped: root.showHiddenItems = true
-    backButtonCallback: {
+
+    backButtonCallback: () => {
         if (root.showHiddenItems) {
             root.showHiddenItems = false;
         }
