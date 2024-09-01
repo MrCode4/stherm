@@ -47,11 +47,15 @@ BasePageView {
     backButtonCallback: function() {
         //! Check if color is modified
         var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
+        var enabledAlerts = enabledAlertsSw.checked
+        var enabledNotifications = enabledNotificationsSw.checked
 
         if (internal.copyOfSettings.brightness !== _brightnessSlider.value
                 || internal.copyOfSettings.adaptiveBrightness !== _adaptiveBrSw.checked
                 || internal.copyOfSettings.volume !== _speakerSlider.value
-                || internal.copyOfSettings.tempratureUnit !== selectedTempUnit) {
+                || internal.copyOfSettings.tempratureUnit !== selectedTempUnit
+                || internal.copyOfSettings.enabledAlerts !== enabledAlerts
+                || internal.copyOfSettings.enabledNotifications !== enabledNotifications) {
             //! This means that changes are occured that are not saved into model
             uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
             uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
@@ -282,6 +286,9 @@ BasePageView {
                     id: _tempFarenUnitBtn
                     text: "\u00b0F"
                     checked: unit !== AppSpec.TempratureUnit.Cel
+                    onCheckedChanged: {
+                        onlineTimer.startTimer()
+                    }
                 }
 
                 RadioButton {
@@ -324,6 +331,8 @@ BasePageView {
             internal.copyOfSettings["adaptiveBrightness"]   = setting.adaptiveBrightness;
             internal.copyOfSettings["volume"]               = setting.volume;
             internal.copyOfSettings["tempratureUnit"]       = setting.tempratureUnit;
+            internal.copyOfSettings["enabledAlerts"]        = setting.enabledAlerts;
+            internal.copyOfSettings["enabledNotifications"] = setting.enabledNotifications;
         }
     }
 
@@ -371,7 +380,9 @@ BasePageView {
             if (setting.brightness !== internal.copyOfSettings.brightness
                     || setting.adaptiveBrightness !== internal.copyOfSettings.adaptiveBrightness
                     || setting.volume !== internal.copyOfSettings.volume
-                    || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit) {
+                    || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit
+                    || setting.enabledAlerts !== internal.copyOfSettings.enabledAlerts
+                    || setting.enabledNotifications !== internal.copyOfSettings.enabledNotifications) {
                 //! Reset to last saved setting
                 if (!deviceController.setSettings(
                             internal.copyOfSettings.brightness,
