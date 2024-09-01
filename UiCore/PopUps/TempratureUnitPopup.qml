@@ -18,6 +18,8 @@ I_PopUp {
     //! App model
     property I_Device appModel: uiSession?.appModel ?? null
 
+    readonly property int temperatureUnit: appModel?.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
+
     /* Object properties
      * ****************************************************************************************/
     leftPadding: 24; rightPadding: 24
@@ -35,7 +37,7 @@ I_PopUp {
             Layout.fillWidth: true
             autoExclusive: true
             checkable: true
-            checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
+            checked: temperatureUnit === AppSpec.TempratureUnit.Fah
             text: "Fahrenheit (\u00b0F)"
         }
 
@@ -43,7 +45,7 @@ I_PopUp {
             Layout.fillWidth: true
             autoExclusive: true
             checkable: true
-            checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
+            checked: temperatureUnit === AppSpec.TempratureUnit.Cel
             text: "Celsius (\u00b0C)"
 
             onCheckedChanged: {
