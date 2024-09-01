@@ -63,7 +63,7 @@ BasePageView {
                 view: "qrc:/Stherm/View/FanPage.qml"
             },
             {
-                icon: FAIcons.arrowsRotate,
+                icon: FAIcons.cloud_arrow_down,
                 text: "System Update",
                 view: "qrc:/Stherm/View/SystemUpdatePage.qml",
                 hasNotification: uiSession.hasUpdateNotification,
@@ -81,7 +81,7 @@ BasePageView {
                 }
             },
             {
-                icon: FAIcons.memoCircleInfo,
+                icon: FAIcons.circleInfo,
                 text: "Device Information",
                 view: "qrc:/Stherm/View/AboutDevicePage.qml",
                 props: {showTestMode: true}
@@ -107,19 +107,19 @@ BasePageView {
         property var hiddenItems: [
             {isSeparator: true},
             {
-                icon: FAIcons.fileExclamation,
+                icon: FAIcons.screwdriver_wrench,
                 text: "Technician Access",
                 color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/UserGuidePage.qml"
             },
             {
-                icon: FAIcons.wrench,
+                icon: FAIcons.sliders,
                 text: "System Setup",
                 color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/SystemSetupPage.qml"
             },
             {
-                icon: FAIcons.bellExclamation,
+                icon: FAIcons.triangleExclamation,
                 text: "System Alerts",
                 color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/Menu/SystemAlertsPage.qml"

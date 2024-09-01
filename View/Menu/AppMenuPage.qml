@@ -96,7 +96,7 @@ BasePageView {
                     view: "qrc:/Stherm/View/ContactContractorPage.qml"
                 },
                 {
-                    icon: FAIcons.bellExclamation,
+                    icon: FAIcons.message_middle,
                     text: "Messages",
                     view: "qrc:/Stherm/View/Menu/MessagesPage.qml"
                 }
