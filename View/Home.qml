@@ -69,7 +69,7 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
-            visible: deviceController.sensorsFetched
+            visible: deviceController.temperatureSensorHealth
 
             TapHandler {
                 onTapped: {
@@ -143,7 +143,7 @@ Control {
                     Layout.leftMargin: -8
                     device: _root.uiSession.appModel
 
-                    visible: deviceController.sensorsFetched
+                    visible: deviceController.humiditySensorHealth
 
                     onClicked: {
                         if (mainStackView && (systemAccessories.accessoriesWireType !== AppSpecCPP.None)) {
@@ -185,7 +185,7 @@ Control {
                     Layout.alignment: Qt.AlignTrailing
                     // using iaq
                     condition: device._co2_id
-                    visible: deviceController.sensorsFetched && deviceController.airConditionSensorHealth
+                    visible: deviceController.airConditionSensorHealth
                 }
             }
 

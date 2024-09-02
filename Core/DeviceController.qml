@@ -28,7 +28,13 @@ I_DeviceController {
     property bool initialSetup: false;
 
     //! Air condition health
-    property bool airConditionSensorHealth: true;
+    property bool airConditionSensorHealth: false;
+
+    //! Temperature sensor health
+    property bool temperatureSensorHealth:  false;
+
+    //! Humidity sensor health
+    property bool humiditySensorHealth:  false;
 
     //! mandatory update
     //! Set to true when in initial setup exist new update
@@ -40,9 +46,6 @@ I_DeviceController {
     //! Night mode brightness when screen saver is off.
     property real nightModeBrightness: -1
     property real targetNightModeBrightness: Math.min(50, (device.setting.adaptiveBrightness ? deviceControllerCPP.adaptiveBrightness : device.setting.brightness))
-
-    //! control which data should be shown
-    property bool sensorsFetched: false
 
     property int testModeType: AppSpec.TestModeType.None
 
@@ -128,7 +131,23 @@ I_DeviceController {
         property int version : 0;
 
         function onCo2SensorStatus(status: bool) {
-            airConditionSensorHealth = status;
+            if (temperatureSensorHealth !== status) {
+                airConditionSensorHealth = status;
+            }
+        }
+
+        function onTemperatureSensorStatus(status: bool) {
+            if (temperatureSensorHealth !== status) {
+                temperatureSensorHealth = status;
+                deviceControllerCPP.runTemperatureScheme(status);
+            }
+        }
+
+        function onHumiditySensorStatus(status: bool) {
+            if (humiditySensorHealth !== status) {
+                humiditySensorHealth = status;
+                deviceControllerCPP.runHumidityScheme(status);
+            }
         }
 
         //! Set system mode to auto when
@@ -365,6 +384,14 @@ I_DeviceController {
         //! initialize the device and config
         // as well as device io which may TODO refactor later and call it on demand
         deviceControllerCPP.startDevice();
+
+        if (temperatureSensorHealth) {
+            deviceControllerCPP.runTemperatureScheme(true);
+        }
+
+        if (humiditySensorHealth) {
+            deviceControllerCPP.runHumidityScheme(true);
+        }
 
         //! Update TOF sensor status.
         lock(device._lock.isLock, device._lock.pin, true);
@@ -1008,7 +1035,6 @@ I_DeviceController {
         device.currentHum = result?.humidity ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = co2 // use iaq as indicator for air quality
-        root.sensorsFetched = true;
         //        device.setting.brightness = result?.brightness ?? 0
 
         //        device.fan.mode?

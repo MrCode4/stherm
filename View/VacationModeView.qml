@@ -147,8 +147,8 @@ Popup {
             Label {
                 Layout.alignment: Qt.AlignHCenter
                 font.pointSize: Qt.application.font.pointSize * 2.5
-                visible: deviceController.sensorsFetched
-                text: !deviceController.sensorsFetched ?
+                visible: deviceController.temperatureSensorHealth
+                text: !deviceController.temperatureSensorHealth ?
                            "NAN" : Number(Utils.convertedTemperature(device?.currentTemp ?? 0, device?.setting?.tempratureUnit))
                       .toLocaleString(locale, "f", 0)
 

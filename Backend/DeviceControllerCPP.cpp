@@ -167,6 +167,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(_deviceIO, &DeviceIOController::co2SensorStatus, this, &DeviceControllerCPP::co2SensorStatus);
+    connect(_deviceIO, &DeviceIOController::temperatureSensorStatus, this, &DeviceControllerCPP::temperatureSensorStatus);
+    connect(_deviceIO, &DeviceIOController::humiditySensorStatus,    this, &DeviceControllerCPP::humiditySensorStatus);
 
     mTEMPERATURE_COMPENSATION_Timer.setTimerType(Qt::PreciseTimer);
     mTEMPERATURE_COMPENSATION_Timer.setInterval(1000);
@@ -521,13 +523,7 @@ void DeviceControllerCPP::startDevice()
     int startMode = getStartMode();
     emit startModeChanged(startMode);
 
-    // Start with delay to ensure the model loaded.
-    // will be loaded always, but should be OFF in iniial setup mode as its default is OFF
-    QTimer::singleShot(5000, this, [this]() {
-        TRACE << "starting scheme";
-        m_scheme->restartWork(true);
-        m_HumidityScheme->restartWork(true);
-    });
+    mIsDeviceStarted = true;
 
     if (startMode == 0) {
         startTestMode();
@@ -547,8 +543,40 @@ void DeviceControllerCPP::startDevice()
 void DeviceControllerCPP::stopDevice()
 {
     _deviceIO->stopReading();
-    m_scheme->stop();
-    m_HumidityScheme->stop();
+    runTemperatureScheme(false);
+    runHumidityScheme(false);
+}
+
+void DeviceControllerCPP::runTemperatureScheme(bool start)
+{
+    TRACE << "starting temperature scheme: " << (start && mIsDeviceStarted) << start;
+    if(start && mIsDeviceStarted) {
+        // Start with delay to ensure the model loaded.
+        // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
+        // This function will execute after provided sensor data has been received,
+        // so we do not need more delay.
+        if (!m_scheme->isRunning())
+            m_scheme->restartWork(true);
+
+    } else {
+        m_scheme->stop();
+    }
+}
+
+void DeviceControllerCPP::runHumidityScheme(bool start)
+{
+    TRACE << "starting humidity scheme: " << (start && mIsDeviceStarted) << start;
+    if(start && mIsDeviceStarted) {
+        // Start with delay to ensure the model loaded.
+        // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
+        // This function will execute after provided sensor data has been received,
+        // so we do not need more delay.
+        if (!m_HumidityScheme->isRunning())
+            m_HumidityScheme->restartWork(true);
+
+    } else {
+        m_HumidityScheme->stop();
+    }
 }
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)

@@ -128,6 +128,8 @@ DeviceIOController::DeviceIOController(QObject *parent)
                        STHERM::getAlertTypeString(AppSpecCPP::Alert_No_Data_Received));
 
             emit co2SensorStatus(false);
+            emit temperatureSensorStatus(false);
+            emit humiditySensorStatus(false);
 
         } else if (!mIsHumTempSensorValid) {
             // Send  humidity/temperature malfunction alert (bad data).
@@ -139,6 +141,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
 
 
         // humidity/temperature malfunction
+        // mIsHumTempSensorValid is false when no data is received.
         emit forceOffSystem(!mIsHumTempSensorValid);
 
         // Set to false (the mainDataReady might not be called)
@@ -1413,6 +1416,9 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
     mIsHumTempSensorValid = isHumTempSensorDataValid;
 
+    bool temperatureSensorHealth = false;
+    bool humiditySensorHealth    = false;
+
     if (isHumTempSensorDataValid) {
 
         // Exit from force off
@@ -1442,6 +1448,7 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
             }
 
         } else {
+            temperatureSensorHealth = true;
             m_TemperatureAlertET.invalidate();
         }
 
@@ -1469,9 +1476,13 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
             }
 
         } else {
+            humiditySensorHealth = true;
             m_HumidityAlertET.invalidate();
         }
     }
+
+    emit temperatureSensorStatus(temperatureSensorHealth);
+    emit humiditySensorStatus(humiditySensorHealth);
 
     // Manage fan alerts
    /* if (fanSpeed > m_p->throlds_aq.fan_high) {
