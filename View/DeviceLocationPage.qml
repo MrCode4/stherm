@@ -73,7 +73,7 @@ BasePageView {
             anchors.horizontalCenter: parent.horizontalCenter
 
             Repeater {
-                model: AppSpec.deviceLoacations[appModel.residenceType]
+                model: AppSpec.deviceLoacations[appModel?.residenceType ?? AppSpec.Unknown]
 
                 delegate: Button {
                     Layout.fillWidth: true
@@ -82,7 +82,7 @@ BasePageView {
                     checked: deviceLocation === text
 
                     onClicked: {
-                        deviceLocation = text;
+                        appModel.deviceLocation = String(modelData);
                         nextPageTimer.goNextPage = true;
                     }
                 }

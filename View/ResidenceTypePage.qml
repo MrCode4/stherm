@@ -58,13 +58,20 @@ BasePageView {
         Repeater {
             model: Object.keys(AppSpec.residenceTypesNames)
             delegate: Button {
+                //! Convert model data to number
+                property int modelDataNum: Number(modelData)
+
                 Layout.fillWidth: true
-                text: AppSpec.residenceTypesNames[modelData]
+                text: AppSpec.residenceTypesNames[modelDataNum]
                 autoExclusive: true
-                checked: appModel?.residenceType === Number(modelData)
+                checked: appModel?.residenceType === modelDataNum
 
                 onClicked: {
-                    appModel.residenceType = modelData;
+                    if (appModel.residenceType !== modelDataNum) {
+                        appModel.residenceType = modelDataNum;
+                        appModel.deviceLocation = ""
+                    }
+
                     nextPageTimer.goNextPage = true;
                 }
             }
@@ -78,7 +85,8 @@ BasePageView {
 
         interval: 5000
         repeat: false
-        running: root.visible && goNextPage
+        running: root.visible && goNextPage &&
+                 appModel.residenceType !== AppSpec.ResidenceTypes.Unknown
 
         onTriggered: {
             goNextPage = false;
@@ -94,7 +102,8 @@ BasePageView {
             } else {
                 if (root.StackView.view) {
                     root.StackView.view.push("qrc:/Stherm/View/DeviceLocationPage.qml", {
-                                                 "uiSession": Qt.binding(() => uiSession)
+                                                 "uiSession": Qt.binding(() => uiSession),
+                                                 "initialSetup":  root.initialSetup
                                              });
                 }
             }
