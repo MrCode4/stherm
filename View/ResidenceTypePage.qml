@@ -86,7 +86,8 @@ BasePageView {
             if (appModel.residenceType === AppSpec.ResidenceTypes.Garage) {
                 if (root.StackView.view) {
                     root.StackView.view.push("qrc:/Stherm/View/ThermostatNamePage.qml", {
-                                                 "uiSession": Qt.binding(() => uiSession)
+                                                 "uiSession": Qt.binding(() => uiSession),
+                                                 "initialSetup":  root.initialSetup
                                              });
                 }
 
