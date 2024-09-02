@@ -123,11 +123,13 @@ AppSpecCPP {
                                                          "Upstairs", "Office", "Main floor",
                                                          "Dinning room", "Master bedroom", "Guesthouse"];
         types[`${AppSpec.ResidenceTypes.Apartment}`]  = ["Bedroom", "Downstairs", "Kids room",
-                                                         "Living room", "Master bedroom", "Downstairs",
-                                                         "Upstairs", "Other"];
+                                                         "Living room", "Master bedroom", "Upstairs",
+                                                         "Other"];
         types[`${AppSpec.ResidenceTypes.Commercial}`] = ["Lunchroom", "Office", "Warehouse",
                                                          "Other"];
         types[`${AppSpec.ResidenceTypes.Garage}`]     = [];
+
+        types[`${AppSpec.ResidenceTypes.Unknown}`]    = [];
 
         return types;
     }
