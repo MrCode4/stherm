@@ -49,6 +49,8 @@ public:
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
+    void fetchServiceTitanInformation();
+
 signals:
     void settingsFetched(bool success);
     void serialNumberReady();
@@ -83,6 +85,11 @@ signals:
     void testModeStarted();
 
     void updateFirmwareFromServer(QString version);
+
+    void serviceTitanInformationReady(bool hasError = true,
+                                      bool isActive = false,
+                                      QString email = QString(),
+                                      QString zipCode = QString());
 
 private slots:
     //! Check firmware update with getSettings reply

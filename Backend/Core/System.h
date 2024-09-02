@@ -200,6 +200,8 @@ public:
 
     Q_INVOKABLE QString getCurrentTime();
 
+    Q_INVOKABLE void fetchServiceTitanInformation();
+
 protected slots:
     void onSerialNumberReady();
     void createLogDirectoryOnServer();
@@ -261,6 +263,9 @@ signals:
     void fetchUpdateErrorOccurred(QString err);
 
     void forceUpdateChanged();
+
+    void serviceTitanInformationReady(bool hasError, bool isActive,
+                                      QString email, QString zipCode);
 
 private:
 

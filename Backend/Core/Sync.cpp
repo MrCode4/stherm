@@ -497,6 +497,30 @@ void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &a
     callPostApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), QJsonDocument(reqData).toJson(), callback);
 }
 
+void Sync::fetchServiceTitanInformation()
+{
+    // TODO: Get service titan data with proper API
+    // We need email, ZIP code and isServiceTitanActive properties
+    // We can get customers information such as Email, Phone number, Zip code and
+    // address BUT only Email and ZIP code need to be reflected
+
+    QEventLoop* eventLoop = nullptr;
+
+    auto callback = [this, &eventLoop](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    };
+
+    QNetworkReply* netReply = nullptr;
+
+    if (netReply) {
+        QEventLoop loop;
+        eventLoop = &loop;
+        loop.exec();
+
+    } else {
+        emit serviceTitanInformationReady();
+    }
+}
+
 void Sync::pushAlertToServer(const QVariantMap &settings)
 {
     QJsonObject requestDataObj;

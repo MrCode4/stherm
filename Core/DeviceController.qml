@@ -49,6 +49,16 @@ I_DeviceController {
 
     property int testModeType: AppSpec.TestModeType.None
 
+    property Timer fetchServiceTitanTimer: Timer {
+        interval: 20000
+        repeat: true
+        running: initialSetup && deviceControllerCPP.system.serialNumber.length > 0
+
+        onTriggered: {
+            deviceControllerCPP.fetchServiceTitanInformation();
+        }
+    }
+
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
@@ -179,6 +189,19 @@ I_DeviceController {
             root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName) : (iconUrl + "?version=" + version)
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
+        }
+
+        function onServiceTitanInformationReady(hasError: bool, isActive : bool,
+                                                email : string, zipCode : string) {
+            console.log("ServiceTitanInformationReady", hasError, isActive, email, zipCode);
+            if (hasError) {
+                // Retry to fetch service titan data.
+
+            } else {
+                //! TODO: Update service titan model
+
+                fetchServiceTitanTimer.stop();
+            }
         }
     }
 
