@@ -17,7 +17,6 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitHeight: implicitHeaderHeight * 6 + _nameTf.implicitHeight + topPadding + bottomPadding
     title: "Thermostat Name"
 
     /* Children
@@ -43,31 +42,51 @@ BasePageView {
         onClicked: {
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession),
-                                             "initialSetup": root.initialSetup
+                                             "uiSession": Qt.binding(() => uiSession)
                                          });
             }
 
         }
     }
 
-    TextField {
-        id: _nameTf
+    ColumnLayout {
+        anchors.top: parent.top
+        anchors.topMargin: 25
         anchors.horizontalCenter: parent.horizontalCenter
-        y: height * 0.8
-        width: parent.width * 0.7
-        placeholderText: "Input the Name"
-        text: appModel?.thermostatName ?? ""
-        validator: RegularExpressionValidator {
-            regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
+
+        width: parent.width * 0.95
+        spacing: 4
+
+        Label {
+            text: "Thermostat name"
+            font.pointSize: root.font.pointSize * 1.1
         }
 
-        onAccepted: {
-            if (submitBtn.visible) {
+        TextField {
+            id: nameTf
+
+            Layout.fillWidth: true
+            placeholderText: "Input the name"
+            text: appModel?.thermostatName ?? ""
+            validator: RegularExpressionValidator {
+                regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
+            }
+
+            onAccepted: {
                 submitBtn.forceActiveFocus();
                 submitBtn.clicked();
             }
+        }
 
+        Label {
+            Layout.fillWidth: true
+
+            width: parent.width
+            wrapMode: Text.WordWrap
+            elide: Text.ElideLeft
+            font.pointSize: root.font.pointSize * 0.7
+            text: "Please ask the customer for the thermostat name. " +
+                  "The name is needed to differentiate between thermostats when using the Mobile app."
         }
     }
 
@@ -75,17 +94,17 @@ BasePageView {
     ButtonInverted {
         id: submitBtn
 
-        text: "Submit"
-
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.margins: 10
 
+        text: "Submit"
+        visible: !nameTf.activeFocus
         leftPadding: 25
         rightPadding: 25
 
         onClicked: {
-            appModel.thermostatName = _nameTf.text;
+            appModel.thermostatName = nameTf.text;
         }
     }
 }
