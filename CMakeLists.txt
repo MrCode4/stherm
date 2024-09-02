@@ -91,6 +91,8 @@ qt6_add_qml_module(appStherm
         Core/ToastManager.qml
         Core/UserPolicyTerms.qml
         Core/Lock.qml
+        Core/ServiceTitan.qml
+
 
         # Primitive Components
         UiCore/Components/RoniaTextIcon.qml

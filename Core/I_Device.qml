@@ -105,6 +105,8 @@ QSObject {
     property Lock            _lock: Lock {}
 
     property UserData userData: UserData {}
+    //! Service Titan model
+    property ServiceTitan    serviceTitan: ServiceTitan {}
 
     /* Functions
      * ****************************************************************************************/

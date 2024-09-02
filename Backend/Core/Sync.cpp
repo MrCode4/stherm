@@ -517,7 +517,7 @@ void Sync::fetchServiceTitanInformation()
         loop.exec();
 
     } else {
-        emit serviceTitanInformationReady();
+        emit serviceTitanInformationReady(false);
     }
 }
 
