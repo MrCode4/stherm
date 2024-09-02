@@ -12,8 +12,6 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    //! Device reference
-    property Device         device: uiSession?.appModel ?? null
 
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
     property ScheduleCPP    schedule
@@ -23,13 +21,14 @@ BasePageView {
 
     property bool editMode: false
 
-    //! Temprature value: this is always in celsius
-    readonly property real  temprature: (device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
-                                         ? Utils.fahrenheitToCelsius(_tempSlider.value)
-                                         : _tempSlider.value)
+    property int unit:      appModel?.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
 
-    //!
-    property bool           isCelcius:  appModel?.setting?.tempratureUnit !== AppSpec.TempratureUnit.Fah
+    //! Is Celsius selected as the unit?
+    readonly property bool           isCelcius:  unit === AppSpec.TempratureUnit.Cel
+
+    //! Temprature value: this is always in celsius
+    readonly property real  temprature: (isCelcius ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value))
+
 
     /* Object properties
      * ****************************************************************************************/
@@ -39,7 +38,7 @@ BasePageView {
                                                       : 0
     leftPadding: 8 * scaleFactor
     rightPadding: 8 * scaleFactor
-    title: "Temprature (\u00b0" + (isCelcius ? "C" : "F") + ")"
+    title: "Temprature (\u00b0" + (AppSpec.temperatureUnitString(unit)) + ")"
     backButtonVisible: false
     titleHeadeingLevel: 4
 
@@ -70,7 +69,7 @@ BasePageView {
         width: parent.width
         from: isCelcius ? AppSpec.minimumTemperatureC : AppSpec.minimumTemperatureF
         to: isCelcius ? AppSpec.maximumTemperatureC : AppSpec.maximumTemperatureF
-        value: Utils.convertedTemperatureClamped(schedule?.temprature ?? 0, device.setting.tempratureUnit)
+        value: Utils.convertedTemperatureClamped(schedule?.temprature ?? 0, unit)
         majorTickCount: isCelcius ? 3 : 5
         ticksCount: to - from
         stepSize: 1

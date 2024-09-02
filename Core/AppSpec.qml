@@ -18,6 +18,9 @@ AppSpecCPP {
     property int minimumHumidity: 20
     property int maximumHumidity: 70
 
+    //! Default for temperature unit
+    property int defaultTemperatureUnit: AppSpec.TempratureUnit.Fah
+
     //! Maximum value of first temperature handler (left) in auto mode
     //! Celcius
     property real maxAutoMinTemp: 29.4444
@@ -176,6 +179,25 @@ AppSpecCPP {
         }
 
         return newSchedule;
+    }
+
+    //! Convert temperature unit to string
+    function temperatureUnitString(unit: int) : string {
+
+        if (unit === null || unit === undefined) {
+            unit = defaultTemperatureUnit;
+        }
+
+        if (unit === AppSpec.TempratureUnit.Cel) {
+            return "C";
+
+        } else if (unit === AppSpec.TempratureUnit.Fah) {
+            return "F";
+        }
+
+        // Can not happen
+        return "F";
+
     }
 
     //! airQuality <= 1.0

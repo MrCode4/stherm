@@ -22,8 +22,11 @@ Control {
     //! Reference to I_Device
     property I_Device           device: uiSession.appModel
 
+    //! Temperature unit
+    readonly property int       temperatureUnit:       device?.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
+
     //! Unit of temprature
-    property string             unit: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C"
+    readonly property string    temperatureUnitString: AppSpec.temperatureUnitString(temperatureUnit)
 
     //! Minimum temprature
     property real               minTemprature: deviceController?._minimumTemperatureUI ?? 40
@@ -81,7 +84,7 @@ Control {
             Component.onCompleted: {
                 var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
                 _tempSlider.value = Utils.convertedTemperatureClamped(tmp,
-                                                                      device?.setting?.tempratureUnit,
+                                                                      temperatureUnit,
                                                                       minTemprature,
                                                                       maxTemprature);
             }
@@ -103,10 +106,10 @@ Control {
             width: parent.width
             height: width / 2
             enabled: labelVisible && !currentSchedule
-            difference: device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
+            difference: temperatureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
 
-            firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, device?.setting?.tempratureUnit)
-            secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, device?.setting?.tempratureUnit)
+            firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
+            secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
 
             from: minTemprature
             to: maxTemprature
@@ -114,16 +117,16 @@ Control {
             onVisibleChanged: {
                 if (visible) {
                     //! Set difference
-                    tempSliderDoubleHandle.difference = device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
+                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
                     tempSliderDoubleHandle.updateFirstSecondValues();
                 }
             }
 
             first.onPressedChanged: {
                 if (deviceController && !first.pressed) {
-                    deviceController.setAutoMinReqTemp(device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(first.value)
-                                                       : first.value);
+                    deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Cel
+                                                       ? first.value
+                                                       : Utils.fahrenheitToCelsius(first.value));
                     deviceController.updateEditMode(AppSpec.EMAutoMode);
                     deviceController.saveSettings();
 
@@ -132,9 +135,9 @@ Control {
 
             second.onPressedChanged: {
                 if (deviceController && !second.pressed) {
-                    deviceController.setAutoMaxReqTemp(device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(second.value)
-                                                       : second.value);
+                    deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Cel
+                                                       ? second.value
+                                                       : Utils.fahrenheitToCelsius(second.value));
                     deviceController.updateEditMode(AppSpec.EMAutoMode);
                     deviceController.saveSettings();
                 }
@@ -179,7 +182,7 @@ Control {
                 running: false
                 onTriggered: {
                     //! Set difference
-                    tempSliderDoubleHandle.difference = device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? 4 : 2.5
+                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
                     tempSliderDoubleHandle.updateFirstSecondValues();
                 }
             }
@@ -189,7 +192,7 @@ Control {
                 if (!device) return;
 
                 first.value = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
-                                                                device.setting.tempratureUnit,
+                                                                temperatureUnit,
                                                                 minTemprature,
                                                                 maxTemprature);
             }
@@ -199,7 +202,7 @@ Control {
                 if (!device) return;
 
                 second.value = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
-                                                                 device.setting.tempratureUnit,
+                                                                 temperatureUnit,
                                                                  minTemprature,
                                                                  maxTemprature)
             }
@@ -210,11 +213,11 @@ Control {
 
                 //! First calculate new values for handles without setting them
                 const firstValue = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
-                                                                     device.setting.tempratureUnit,
+                                                                     temperatureUnit,
                                                                      minTemprature,
                                                                      maxTemprature);
                 const secondValue = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
-                                                                      device.setting.tempratureUnit,
+                                                                      temperatureUnit,
                                                                       minTemprature,
                                                                       maxTemprature);
 
@@ -256,7 +259,7 @@ Control {
 
                 // The slider value is currently converted to the selected unit.
                 // However, we need to convert it to Celsius.
-                temp = device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah ? Utils.fahrenheitToCelsius(temp) : temp;
+                temp = temperatureUnit === AppSpec.TempratureUnit.Cel ? temp : Utils.fahrenheitToCelsius(temp);
 
                 return temp;
             }
@@ -322,7 +325,7 @@ Control {
                             pointSize: Application.font.pointSize * 1.1
                             capitalization: "AllUppercase"
                         }
-                        text: `${unit}`
+                        text: `${temperatureUnitString}`
                     }
                 }
 
@@ -369,7 +372,7 @@ Control {
                             pointSize: Application.font.pointSize * 1.1
                             capitalization: "AllUppercase"
                         }
-                        text: `${unit}`
+                        text: `${temperatureUnitString}`
                     }
                 }
 
@@ -405,7 +408,7 @@ Control {
             target: _root
 
             //! Update slider value (UI) with changed TempratureUnit
-            function onUnitChanged() {
+            function onTemperatureUnitChanged() {
                 updateTemperatureValue(currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0));
             }
         }
@@ -416,7 +419,7 @@ Control {
             //! Update slider value (UI) with changed temperature in schedule
             function onTempratureChanged() {
                 _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                                      device?.setting?.tempratureUnit,
+                                                                      temperatureUnit,
                                                                       minTemprature,
                                                                       maxTemprature);
             }
@@ -624,15 +627,15 @@ Control {
     //! Update _tempSlider.value
     function updateTemperatureValue(temperature: real) {
         _tempSlider.value = Utils.convertedTemperatureClamped(temperature,
-                                                              device?.setting?.tempratureUnit,
+                                                              temperatureUnit,
                                                               minTemprature,
                                                               maxTemprature);
     }
 
     //! Update model based on _tempSlider value in heating/cooling mode.
     function updateTemperatureModel() {
-        var celValue = (device?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah)
-                ? Utils.fahrenheitToCelsius(_tempSlider.value) : _tempSlider.value;
+        var celValue = (temperatureUnit === AppSpec.TempratureUnit.Cel)
+                ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value);
         if (device && device.requestedTemp !== celValue) {
             deviceController.setDesiredTemperature(celValue);
             deviceController.updateEditMode(AppSpec.EMDesiredTemperature);

@@ -599,7 +599,7 @@ I_DeviceController {
 
         var send_data = [brightness, volume, temperatureUnit, adaptive];
         var current_data = [device.setting.brightness, device.setting.volume,
-                            device.setting.tempratureUnit, device.setting.adaptiveBrightness]
+                            root.tempratureUnit, device.setting.adaptiveBrightness]
         if (send_data.toString() === current_data.toString()) {
             console.log("ignored setings")
             return false;
@@ -661,7 +661,7 @@ I_DeviceController {
             // To maintain accurate control and prevent misinterpretations,
             // the unit should be permanently set to Celsius. so we always use data from device to ignore
             if (!setSettings(settings.brightness, settings.speaker,
-                        device.setting.tempratureUnit, settings.brightness_mode,
+                        root.tempratureUnit, settings.brightness_mode,
                              device.setting.enabledAlerts, device.setting.enabledNotifications))
                 console.log("The system settings is not applied from server")
 
@@ -1134,7 +1134,7 @@ I_DeviceController {
 
     //! Just use for night mode
     function setBrightnessInNightMode(brightness, volume, adaptive) {
-        var send_data = [brightness, volume, device.setting?.tempratureUnit ?? AppSpec.TempratureUnit.Cel, adaptive];
+        var send_data = [brightness, volume, root.tempratureUnit, adaptive];
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }
