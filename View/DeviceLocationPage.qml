@@ -71,6 +71,7 @@ BasePageView {
             id: _contentLay
 
             anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width * 0.65
 
             Repeater {
                 model: AppSpec.deviceLoacations[appModel?.residenceType ?? AppSpec.Unknown]
