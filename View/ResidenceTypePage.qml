@@ -72,41 +72,32 @@ BasePageView {
                         appModel.deviceLocation = ""
                     }
 
-                    nextPageTimer.goNextPage = true;
+                    nextPage();
                 }
             }
         }
     }
 
-    Timer {
-        id: nextPageTimer
+    /* Functions
+     * ****************************************************************************************/
 
-        property bool goNextPage: false
+    function nextPage() {
 
-        interval: 5000
-        repeat: false
-        running: root.visible && goNextPage &&
-                 appModel.residenceType !== AppSpec.ResidenceTypes.Unknown
+        if (!root.StackView.view || appModel.residenceType === AppSpec.ResidenceTypes.Unknown) {
+            return;
+        }
 
-        onTriggered: {
-            goNextPage = false;
+        if (appModel.residenceType === AppSpec.ResidenceTypes.Garage) {
+            root.StackView.view.push("qrc:/Stherm/View/ThermostatNamePage.qml", {
+                                         "uiSession": Qt.binding(() => uiSession),
+                                         "initialSetup":  root.initialSetup
+                                     });
 
-            if (appModel.residenceType === AppSpec.ResidenceTypes.Garage) {
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/ThermostatNamePage.qml", {
-                                                 "uiSession": Qt.binding(() => uiSession),
-                                                 "initialSetup":  root.initialSetup
-                                             });
-                }
-
-            } else {
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/DeviceLocationPage.qml", {
-                                                 "uiSession": Qt.binding(() => uiSession),
-                                                 "initialSetup":  root.initialSetup
-                                             });
-                }
-            }
+        } else {
+            root.StackView.view.push("qrc:/Stherm/View/DeviceLocationPage.qml", {
+                                         "uiSession": Qt.binding(() => uiSession),
+                                         "initialSetup":  root.initialSetup
+                                     });
         }
     }
 }

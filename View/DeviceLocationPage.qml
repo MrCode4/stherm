@@ -70,7 +70,7 @@ BasePageView {
         ColumnLayout {
             id: _contentLay
 
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.centerIn: parent
             width: parent.width * 0.65
 
             Repeater {
@@ -84,31 +84,22 @@ BasePageView {
 
                     onClicked: {
                         appModel.deviceLocation = String(modelData);
-                        nextPageTimer.goNextPage = true;
+                        nextPage();
                     }
                 }
             }
         }
     }
 
-    Timer {
-        id: nextPageTimer
+    /* Functions
+     * ****************************************************************************************/
 
-        property bool goNextPage: false
-
-        interval: 5000
-        repeat: false
-        running: root.visible && goNextPage
-
-        onTriggered: {
-            goNextPage = false;
-
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/ThermostatNamePage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession),
-                                             "initialSetup":  root.initialSetup
-                                         });
-            }
+    function nextPage() {
+        if (root.StackView.view) {
+            root.StackView.view.push("qrc:/Stherm/View/ThermostatNamePage.qml", {
+                                         "uiSession": Qt.binding(() => uiSession),
+                                         "initialSetup":  root.initialSetup
+                                     });
         }
     }
 }

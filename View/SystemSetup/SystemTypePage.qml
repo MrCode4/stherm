@@ -64,7 +64,7 @@ BasePageView {
 
     ColumnLayout {
         anchors.centerIn: parent
-        width: parent.width * 0.5
+        width: parent.width * 0.65
         spacing: 12
 
         Button {
