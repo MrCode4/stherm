@@ -51,6 +51,8 @@ public:
 
     void fetchServiceTitanInformation();
 
+    void warrantyReplacement(QString oldSN, QString newSN);
+
 signals:
     void settingsFetched(bool success);
     void serialNumberReady();
@@ -90,6 +92,8 @@ signals:
                                       bool isActive = false,
                                       QString email = QString(),
                                       QString zipCode = QString());
+
+    void warrantyReplacementFinished(bool success = false);
 
 private slots:
     //! Check firmware update with getSettings reply

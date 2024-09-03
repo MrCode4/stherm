@@ -127,6 +127,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
     connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
     connect(mSync, &NUVE::Sync::serviceTitanInformationReady, this, &NUVE::System::serviceTitanInformationReady);
+    connect(mSync, &NUVE::Sync::warrantyReplacementFinished, this, &NUVE::System::warrantyReplacementFinished);
 
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, [this](const QVariantMap& settings, bool isValid) {
         emit autoModeSettingsReady(settings, isValid);
@@ -868,6 +869,11 @@ QString NUVE::System::getCurrentTime()
 void NUVE::System::fetchServiceTitanInformation()
 {
     mSync->fetchServiceTitanInformation();
+}
+
+void NUVE::System::warrantyReplacement(QString oldSN, QString newSN)
+{
+    mSync->warrantyReplacement(oldSN, newSN);
 }
 
 void NUVE::System::exitManualMode()

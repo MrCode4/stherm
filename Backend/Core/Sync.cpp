@@ -521,6 +521,12 @@ void Sync::fetchServiceTitanInformation()
     }
 }
 
+void Sync::warrantyReplacement(QString oldSN, QString newSN)
+{
+    // TODO: Warranty replacement implementation
+    emit warrantyReplacementFinished();
+}
+
 void Sync::pushAlertToServer(const QVariantMap &settings)
 {
     QJsonObject requestDataObj;

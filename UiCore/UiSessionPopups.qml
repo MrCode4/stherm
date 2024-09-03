@@ -89,6 +89,10 @@ Item {
         id: updatePopup
     }
 
+    SuccessPopup {
+        id: successPopup
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -131,6 +135,15 @@ Item {
                 deviceController.mandatoryUpdate = deviceController.deviceControllerCPP.system.isInitialSetup();
 
                 updateNotificationPopup.open();
+            }
+        }
+
+        function onWarrantyReplacementFinished(success: bool) {
+            console.log("WarrantyReplacementFinished", success);
+
+            if (success) {
+                successPopup.message = "The new thermostat has successfully integrated into the system."
+                successPopup.open();
             }
         }
     }
