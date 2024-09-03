@@ -19,7 +19,7 @@ QSObject {
     property int            type:           AppSpec.DeviceType.DT_Unknown
 
     //! Requested Temperature (Cel)
-    property real           requestedTemp:  22.22 // 72 F
+    property real           requestedTemp:  AppSpec.defaultRequestedTemperature
 
     //! Requested Min temperature in auto mode (Cel)
     property real           autoMinReqTemp: AppSpec.defaultAutoMinReqTemp
@@ -28,7 +28,7 @@ QSObject {
     property real           autoMaxReqTemp: AppSpec.defaultAutoMaxReqTemp
 
     //! Current Temperature (Cel)
-    property real           currentTemp:    AppSpec.defaultRequestedTemperature
+    property real           currentTemp:    18.0
 
     //! Requested Humidity (Percent)
     property real           requestedHum:   45.0

@@ -429,7 +429,7 @@ Control {
 
             //! Update slider value (UI) with changed TempratureUnit
             function onTemperatureUnitChanged() {
-                updateTemperatureValue(currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0));
+                updateTemperatureValue(currentSchedule?.temprature ?? (device?.requestedTemp ?? AppSpec.defaultRequestedTemperature));
             }
         }
 
