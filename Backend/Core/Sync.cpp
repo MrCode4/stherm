@@ -1,5 +1,6 @@
 #include "Sync.h"
 #include "LogHelper.h"
+#include "Config.h"
 
 #include <QImage>
 #include <QUrl>
@@ -8,7 +9,7 @@
  * Network information
  * ************************************************************************************************/
 namespace NUVE {
-const QString cBaseUrl = "https://devapi.nuvehvac.com/"; // base domain
+const QString cBaseUrl = API_SERVER_BASE_URL;
 const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
 const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
