@@ -103,7 +103,7 @@ BasePageView {
             placeholderText: "ZIP code"
             text: appModel?.serviceTitan?.zipCode ?? ""
             validator: RegularExpressionValidator {
-                regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
+                regularExpression: /^\d{5}(-\d{4})?$/
             }
         }
 
