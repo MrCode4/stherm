@@ -58,7 +58,7 @@ BasePageView {
         spacing: 4
 
         Label {
-            text: "Thermostat name"
+            text: "Full name"
             font.pointSize: root.font.pointSize * 1.1
         }
 
@@ -116,7 +116,12 @@ BasePageView {
             appModel.serviceTitan.fullName = nameTf.text;
 
             // Go to next page
-
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                         });
+            }
         }
     }
 }

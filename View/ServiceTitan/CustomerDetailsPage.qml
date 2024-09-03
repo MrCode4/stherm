@@ -66,13 +66,10 @@ BasePageView {
             id: emailTf
 
             Layout.fillWidth: true
-            placeholderText: "email"
+            placeholderText: "Email"
             text: appModel?.serviceTitan?.email ?? ""
             validator: RegularExpressionValidator {
                 regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
-            }
-
-            onAccepted: {
             }
         }
 
@@ -102,13 +99,10 @@ BasePageView {
 
             Layout.fillWidth: true
 
-            placeholderText: "ZIP code"
+            placeholderText: "ZIP code"  + appModel?.serviceTitan?.zipCode
             text: appModel?.serviceTitan?.zipCode ?? ""
             validator: RegularExpressionValidator {
                 regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
-            }
-
-            onAccepted: {
             }
         }
 
@@ -132,13 +126,13 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
-            appModel.serviceTitan.email = emailTf.text;
+            appModel.serviceTitan.email   = emailTf.text;
             appModel.serviceTitan.zipCode = zipCodeTf.text;
 
             // Go to next page
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/ServiceTitanReviewPage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession),
+                                             "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
                                          });
             }

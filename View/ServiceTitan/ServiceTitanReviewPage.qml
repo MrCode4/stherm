@@ -124,7 +124,7 @@ BasePageView {
         onClicked: {
             // Go to next page
             if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/InstallationTypePage.qmlInstallationTypePage.qml", {
+                root.StackView.view.push("qrc:/Stherm/View/InstallationTypePage.qml", {
                                               "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
                                           });

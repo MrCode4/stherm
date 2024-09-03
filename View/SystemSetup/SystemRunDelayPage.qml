@@ -121,7 +121,7 @@ BasePageView {
                                          });
             } else {
                 // Go to TechnicianDetailsPage
-                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/JobNumberPage.qml", {
+                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/TechnicianDetailsPage.qml", {
                                              "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
                                          });
