@@ -99,7 +99,7 @@ BasePageView {
 
             Layout.fillWidth: true
 
-            placeholderText: "ZIP code"  + appModel?.serviceTitan?.zipCode
+            placeholderText: "ZIP code"
             text: appModel?.serviceTitan?.zipCode ?? ""
             validator: RegularExpressionValidator {
                 regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
@@ -122,6 +122,7 @@ BasePageView {
 
         text: "Next"
         visible: !emailTf.activeFocus && !zipCodeTf.activeFocus
+        enabled: emailTf.text.length > 0 && zipCodeTf.text.length > 0
         leftPadding: 25
         rightPadding: 25
 

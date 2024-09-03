@@ -109,6 +109,7 @@ BasePageView {
 
         text: "Next"
         visible: !nameTf.activeFocus
+        enabled: nameTf.text.length > 0
         leftPadding: 25
         rightPadding: 25
 
