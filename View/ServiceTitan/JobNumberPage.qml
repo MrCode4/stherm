@@ -82,7 +82,7 @@ BasePageView {
         Text {
             id: skipCheckText
 
-            anchors.verticalCenter: jobNumberTf.verticalCenter
+            Layout.alignment: Qt.AlignVCenter
 
             text: jobNumberTf.text.length > 0 ? qsTr("Check") : qsTr("Skip")
             color: "#43E0F8"
@@ -93,10 +93,20 @@ BasePageView {
 
                     if (jobNumberTf.text.length > 0) {
                         // TODO: Check the job number
-
+                        if (root.StackView.view) {
+                            root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                                         "uiSession": Qt.binding(() => uiSession),
+                                                         "initialSetup": root.initialSetup
+                                                     });
+                        }
                     } else {
                         // Skip
-
+                        if (root.StackView.view) {
+                            root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                                         "uiSession": Qt.binding(() => uiSession),
+                                                         "initialSetup": root.initialSetup
+                                                     });
+                        }
                     }
                 }
             }
