@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * JobNumberPage
+ * ThermostatNamePage
  * ***********************************************************************************************/
 BasePageView {
     id: root
@@ -14,9 +14,10 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
+
     /* Object properties
      * ****************************************************************************************/
-    title: "Job Number"
+    title: "Technician Details"
 
     /* Children
      * ****************************************************************************************/
@@ -48,87 +49,43 @@ BasePageView {
         }
     }
 
-    GridLayout {
+    ColumnLayout {
         anchors.top: parent.top
         anchors.topMargin: 25
         anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.95
-        rowSpacing: 20
-        columnSpacing: 8
-        columns: 2
+        spacing: 4
 
         Label {
-            Layout.columnSpan: 2
-            text: "Job number"
+            text: "Thermostat name"
             font.pointSize: root.font.pointSize * 1.1
         }
 
         TextField {
-            id: jobNumberTf
+            id: nameTf
 
-            Layout.preferredWidth: parent.width * 0.8
-
-            placeholderText: "Input the job number"
-            text: appModel?.serviceTitan?.jobNumber ?? ""
+            Layout.fillWidth: true
+            placeholderText: "Input Technician’s Full name"
+            text: appModel?.serviceTitan?.fullName ?? ""
             validator: RegularExpressionValidator {
                 regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
             }
 
             onAccepted: {
+                nextBtn.forceActiveFocus();
+                nextBtn.clicked();
             }
         }
 
-        Text {
-            id: skipCheckText
-
-            Layout.alignment: Qt.AlignVCenter
-
-            text: jobNumberTf.text.length > 0 ? qsTr("Check") : qsTr("Skip")
-            color: "#43E0F8"
-
-            TapHandler {
-                onTapped: {
-                    appModel.serviceTitan.jobNumber = jobNumberTf.text;
-
-                    if (jobNumberTf.text.length > 0) {
-                        // TODO: Check the job number
-                        if (root.StackView.view) {
-                            root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
-                                                         "uiSession": Qt.binding(() => uiSession),
-                                                         "initialSetup": root.initialSetup
-                                                     });
-                        }
-                    } else {
-                        // Skip
-                        if (root.StackView.view) {
-                            root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/TechnicianDetailsPage.qml", {
-                                                         "uiSession": Qt.binding(() => uiSession),
-                                                         "initialSetup": root.initialSetup
-                                                     });
-                        }
-                    }
-                }
-            }
-        }
-
-        Label {
-            width: jobNumberTf.width
-
-            Layout.columnSpan: 2
-            Layout.preferredWidth: parent.width * 0.8
-
-            wrapMode: Text.WordWrap
-            elide: Text.ElideLeft
-            font.pointSize: root.font.pointSize * 0.7
-            text: "Enter the ServiceTitan Job number and click \"Check\" to auto-fill the fields." +
-                  "If you don't have one, click \"Skip.\""
+        Item {
+            Layout.fillWidth: true
+            height: root.height / 4
         }
 
         Text {
             id: warrantyReplacementText
 
-            Layout.columnSpan: 2
             text: qsTr("Warranty Replacement")
             font.underline: true
             color: "#43E0F8"
@@ -139,6 +96,27 @@ BasePageView {
 
                 }
             }
+        }
+    }
+
+    //! Next button
+    ButtonInverted {
+        id: nextBtn
+
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.margins: 10
+
+        text: "Next"
+        visible: !nameTf.activeFocus
+        leftPadding: 25
+        rightPadding: 25
+
+        onClicked: {
+            appModel.serviceTitan.fullName = nameTf.text;
+
+            // Go to next page
+
         }
     }
 }
