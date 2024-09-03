@@ -131,7 +131,7 @@ I_DeviceController {
         property int version : 0;
 
         function onCo2SensorStatus(status: bool) {
-            if (temperatureSensorHealth !== status) {
+            if (airConditionSensorHealth !== status) {
                 airConditionSensorHealth = status;
             }
         }
