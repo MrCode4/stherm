@@ -231,8 +231,11 @@ Control {
                     firstValue = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
                                                                    temperatureUnit,
                                                                    minTemprature,
-                                                                   maxTemprature);
+                                                                   maxTemprature - tempSliderDoubleHandle.difference);
 
+                    // The minimum value for the second slider should be the greater of
+                    // AppSpec.minAutoMaxTemp and the sum of the first slider value and the difference value.
+                    // So we need recalculate it when first slider changed.
                     minimumSecondarySlider = Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference);
                     secondValue = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
                                                                     temperatureUnit,
