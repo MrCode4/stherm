@@ -48,55 +48,55 @@ BasePageView {
         }
     }
 
-    ColumnLayout {
+    GridLayout {
         anchors.top: parent.top
         anchors.topMargin: 25
         anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.95
-        spacing: 4
+        rowSpacing: 20
+        columnSpacing: 8
+        columns: 2
 
         Label {
+            Layout.columnSpan: 2
             text: "Job number"
             font.pointSize: root.font.pointSize * 1.1
         }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 16
+        TextField {
+            id: jobNumberTf
 
-            TextField {
-                id: jobNumberTf
+            Layout.preferredWidth: parent.width * 0.8
 
-                placeholderText: "Input the job number"
-                text: appModel?.serviceTitan?.jobNumber ?? ""
-                validator: RegularExpressionValidator {
-                    regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
-                }
-
-                onAccepted: {
-                }
+            placeholderText: "Input the job number"
+            text: appModel?.serviceTitan?.jobNumber ?? ""
+            validator: RegularExpressionValidator {
+                regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
             }
 
-            Text {
-                id: skipCheckText
+            onAccepted: {
+            }
+        }
 
-                anchors.verticalCenter: jobNumberTf.verticalCenter
+        Text {
+            id: skipCheckText
 
-                text: jobNumberTf.text.length > 0 ? qsTr("Check") : qsTr("Skip")
-                color: "#43E0F8"
+            anchors.verticalCenter: jobNumberTf.verticalCenter
 
-                TapHandler {
-                    onTapped: {
-                        appModel.serviceTitan.jobNumber = jobNumberTf.text;
+            text: jobNumberTf.text.length > 0 ? qsTr("Check") : qsTr("Skip")
+            color: "#43E0F8"
 
-                        if (jobNumberTf.text.length > 0) {
-                            // TODO: Check the job number
+            TapHandler {
+                onTapped: {
+                    appModel.serviceTitan.jobNumber = jobNumberTf.text;
 
-                        } else {
-                            // Skip
+                    if (jobNumberTf.text.length > 0) {
+                        // TODO: Check the job number
 
-                        }
+                    } else {
+                        // Skip
+
                     }
                 }
             }
@@ -105,17 +105,20 @@ BasePageView {
         Label {
             width: jobNumberTf.width
 
+            Layout.columnSpan: 2
+            Layout.preferredWidth: parent.width * 0.8
+
             wrapMode: Text.WordWrap
             elide: Text.ElideLeft
             font.pointSize: root.font.pointSize * 0.7
             text: "Enter the ServiceTitan Job number and click \"Check\" to auto-fill the fields." +
-                  " Enter the ServiceTitan Job number and click \"Check\" to auto-fill the fields." +
                   "If you don't have one, click \"Skip.\""
         }
 
         Text {
             id: warrantyReplacementText
 
+            Layout.columnSpan: 2
             text: qsTr("Warranty Replacement")
             font.underline: true
             color: "#43E0F8"

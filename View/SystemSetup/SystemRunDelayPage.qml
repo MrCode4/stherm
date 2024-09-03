@@ -54,18 +54,13 @@ BasePageView {
         anchors.margins: 10
 
         visible: initialSetup
+        enabled: appModel?.serviceTitan?._fetched ?? false
         leftPadding: 25
         rightPadding: 25
 
         onClicked: {
             updateModel();
-
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
-                                             "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                         });
-            }
+            nextPage();
         }
     }
 
@@ -114,6 +109,24 @@ BasePageView {
         //! Apply settings
         if (deviceController) {
             deviceController.setSystemRunDelay(root.systemRunDelay)
+        }
+    }
+
+    function nextPage() {
+        if (root.StackView.view) {
+            if (appModel?.serviceTitan?.isActive ?? false) {
+                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/JobNumberPage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                         });
+            } else {
+                // Go to TechnicianDetailsPage
+                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/JobNumberPage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                         });
+            }
+
         }
     }
 }

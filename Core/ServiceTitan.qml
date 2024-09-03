@@ -8,17 +8,18 @@ import Stherm
  * ************************************************************************************************/
 
 QSObject {
-    //!Was the ServiceTitan data fetch successful?
-    property bool _fetched: false
+    //! Was the ServiceTitan data fetch successful?
+    property bool   _fetched:       false
 
-    property bool isActive: false
+    property bool   isSTManualMode: false
 
-    property string email: ""
+    property bool   isActive:       false
 
-    property string zipCode: ""
+    property string email:          ""
 
-    property string jobNumber: ""
+    property string zipCode:        ""
 
-    property string fullName: ""
+    property string jobNumber:      ""
 
+    property string fullName:       ""
 }

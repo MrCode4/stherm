@@ -55,7 +55,7 @@ I_DeviceController {
         running: initialSetup && deviceControllerCPP.system.serialNumber.length > 0
 
         onTriggered: {
-            deviceControllerCPP.fetchServiceTitanInformation();
+            deviceControllerCPP.system.fetchServiceTitanInformation();
         }
     }
 
@@ -190,19 +190,6 @@ I_DeviceController {
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
         }
-
-        function onServiceTitanInformationReady(hasError: bool, isActive : bool,
-                                                email : string, zipCode : string) {
-            console.log("ServiceTitanInformationReady", hasError, isActive, email, zipCode);
-            if (hasError) {
-                // Retry to fetch service titan data.
-
-            } else {
-                //! TODO: Update service titan model
-
-                fetchServiceTitanTimer.stop();
-            }
-        }
     }
 
     property Connections networkInterface: Connections {
@@ -306,6 +293,25 @@ I_DeviceController {
         function onPushFailed() {
             console.log("DeviceController.qml: Push onPushFailed", stageMode, editMode, lockMode)
             settingsPush.isPushing = false;
+        }
+
+        function onServiceTitanInformationReady(hasError: bool, isActive : bool,
+                                                email : string, zipCode : string) {
+            console.log("ServiceTitanInformationReady", hasError, isActive, email, zipCode);
+
+            device.serviceTitan._fetched = true;//!hasError;
+
+            device.serviceTitan.isActive = isActive;
+
+            if (!device.serviceTitan._fetched) {
+                // Retry to fetch service titan data.
+
+            } else {
+                //! TODO: Update service titan model
+                device.serviceTitan.email = email;
+                device.serviceTitan.zipCode = zipCode;
+                fetchServiceTitanTimer.stop();
+            }
         }
     }
 
