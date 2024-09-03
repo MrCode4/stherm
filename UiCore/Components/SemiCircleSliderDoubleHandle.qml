@@ -38,6 +38,11 @@ Control {
     onFirstValueCeilChanged: first.setMaxValue(firstValueCeil);
     onSecondValueFloorChanged: second.setMinValue(secondValueFloor);
 
+    //! When both the first and second values reach their minimum/maximum limits,
+    //! UI disruptions and slider malfunctions (slider overlapping) can potentially arise.
+    //! To prevent these issues, careful data clamping should be
+    //! implemented in the upper layers (Device controller and DesiredTempratureItem).
+
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
         pressed: firstHandleDh.dragging
@@ -49,7 +54,6 @@ Control {
         }
 
         onValueChanged: {
-            // when both values clamping to bottom
             //! Set position and visualPosition
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 

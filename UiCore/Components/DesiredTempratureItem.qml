@@ -214,6 +214,9 @@ Control {
                                                                  maxTemprature)
             }
 
+            //! Update the first and second slider values.
+            //! If the clamping logic has changed, review the corresponding functionality in the
+            //! DeviceController class (specifically the setAutoTemperatureFromServer function).
             function updateFirstSecondValues()
             {
                 if (!device) return;

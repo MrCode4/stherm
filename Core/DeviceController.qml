@@ -937,6 +937,8 @@ I_DeviceController {
             console.warn("System type unknown", settings.type)
     }
 
+    //! If the clamping logic has changed, review the corresponding functionality in the
+    //! DesiredTemperatureItem class (specifically the updateFirstSecondValues function).
     function setAutoTemperatureFromServer (settings) {
 
         if (!device)
