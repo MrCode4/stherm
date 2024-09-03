@@ -45,7 +45,7 @@ BasePageView {
 
         Label {
             text: "Thermostat name"
-            font.pointSize: root.font.pointSize * 1.1
+            font.pointSize: root.font.pointSize
         }
 
         TextField {
@@ -96,8 +96,9 @@ BasePageView {
         onClicked: {
             appModel.thermostatName = nameTf.text;
 
+            // TODO
             if (initialSetup) {
-                deviceController.updateEditMode(AppSpec.EMGeneral);
+                // deviceController.updateEditMode(AppSpec.EMGeneral);
                 deviceController.saveSettings();
             }
 

@@ -47,7 +47,7 @@ BasePageView {
         Label {
             Layout.columnSpan: 2
             text: "Job number"
-            font.pointSize: root.font.pointSize * 1.1
+            font.pointSize: root.font.pointSize
         }
 
         TextField {

@@ -85,7 +85,7 @@ BasePageView {
         }
 
         // Enable when the serial number is correctly filled
-        enabled: initialSetupReady ||true
+        enabled: initialSetupReady
         onClicked: nextPage()
     }
 

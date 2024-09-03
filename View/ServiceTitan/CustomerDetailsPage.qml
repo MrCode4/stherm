@@ -44,7 +44,7 @@ BasePageView {
 
         Label {
             text: "Email"
-            font.pointSize: root.font.pointSize * 1.1
+            font.pointSize: root.font.pointSize
         }
 
         TextField {
@@ -77,7 +77,7 @@ BasePageView {
 
         Label {
             text: "ZIP code"
-            font.pointSize: root.font.pointSize * 1.1
+            font.pointSize: root.font.pointSize
         }
 
         TextField {

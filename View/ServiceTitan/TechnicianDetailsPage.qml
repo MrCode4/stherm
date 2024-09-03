@@ -45,7 +45,7 @@ BasePageView {
 
         Label {
             text: "Full name"
-            font.pointSize: root.font.pointSize * 1.1
+            font.pointSize: root.font.pointSize
         }
 
         TextField {
