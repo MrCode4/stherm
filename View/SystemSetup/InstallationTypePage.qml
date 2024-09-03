@@ -61,7 +61,7 @@ BasePageView {
 
             onClicked: {
                 if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/ResidenceTypePage.qml", {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ResidenceTypePage.qml", {
                                                   "uiSession": uiSession,
                                                  "initialSetup": root.initialSetup
                                               });
@@ -76,7 +76,7 @@ BasePageView {
 
             onClicked: {
                 if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/ResidenceTypePage.qml", {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ResidenceTypePage.qml", {
                                                   "uiSession": uiSession,
                                                  "initialSetup": root.initialSetup
                                               });

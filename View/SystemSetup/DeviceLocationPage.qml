@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * ResidenceTypePage provides ui for choosing residence type and device location
+ * DeviceLocationPage provides ui for choosing device location
  * ***********************************************************************************************/
 BasePageView {
     id: root
@@ -14,13 +14,14 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
+    property string deviceLocation: appModel?.deviceLocation ?? ""
+
     /* Object properties
      * ****************************************************************************************/
-    title: "Residence Type"
+    title: "Device Location"
 
     /* Children
      * ****************************************************************************************/
-
     //! Info button in initial setup mode.
     ToolButton {
         parent: root.header.contentItem
@@ -42,37 +43,49 @@ BasePageView {
         onClicked: {
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession),
-                                             "initialSetup": root.initialSetup
+                                             "uiSession": Qt.binding(() => uiSession)
                                          });
             }
 
         }
     }
 
-    ColumnLayout {
-        anchors.centerIn: parent
-        width: parent.width * 0.5
-        spacing: 12
+    Flickable {
+        id: itemsFlickable
 
-        Repeater {
-            model: Object.keys(AppSpec.residenceTypesNames)
-            delegate: Button {
-                //! Convert model data to number
-                property int modelDataNum: Number(modelData)
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width - 4
+            y: root.contentItem.y
+            parent: root
+            height: root.contentItem.height - 16
+        }
 
-                Layout.fillWidth: true
-                text: AppSpec.residenceTypesNames[modelDataNum]
-                autoExclusive: true
-                checked: appModel?.residenceType === modelDataNum
+        anchors.fill: parent
+        anchors.rightMargin: 10
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        contentHeight: _contentLay.implicitHeight
+        contentWidth: width
 
-                onClicked: {
-                    if (appModel.residenceType !== modelDataNum) {
-                        appModel.residenceType = modelDataNum;
-                        appModel.deviceLocation = ""
+        ColumnLayout {
+            id: _contentLay
+
+            anchors.centerIn: parent
+            width: parent.width * 0.65
+
+            Repeater {
+                model: AppSpec.deviceLoacations[appModel?.residenceType ?? AppSpec.Unknown]
+
+                delegate: Button {
+                    Layout.fillWidth: true
+                    text: modelData
+                    autoExclusive: true
+                    checked: deviceLocation === text
+
+                    onClicked: {
+                        appModel.deviceLocation = String(modelData);
+                        nextPage();
                     }
-
-                    nextPage();
                 }
             }
         }
@@ -82,19 +95,8 @@ BasePageView {
      * ****************************************************************************************/
 
     function nextPage() {
-
-        if (!root.StackView.view || appModel.residenceType === AppSpec.ResidenceTypes.Unknown) {
-            return;
-        }
-
-        if (appModel.residenceType === AppSpec.ResidenceTypes.Garage) {
-            root.StackView.view.push("qrc:/Stherm/View/ThermostatNamePage.qml", {
-                                         "uiSession": Qt.binding(() => uiSession),
-                                         "initialSetup":  root.initialSetup
-                                     });
-
-        } else {
-            root.StackView.view.push("qrc:/Stherm/View/DeviceLocationPage.qml", {
+        if (root.StackView.view) {
+            root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ThermostatNamePage.qml", {
                                          "uiSession": Qt.binding(() => uiSession),
                                          "initialSetup":  root.initialSetup
                                      });

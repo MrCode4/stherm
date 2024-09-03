@@ -179,6 +179,10 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemTypeHeatOnlyPage.qml
         View/SystemSetup/SystemAccessoriesPage.qml
         View/SystemSetup/SystemRunDelayPage.qml
+        View/SystemSetup/InstallationTypePage.qml
+        View/SystemSetup/ResidenceTypePage.qml
+        View/SystemSetup/DeviceLocationPage.qml
+        View/SystemSetup/ThermostatNamePage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
         View/RequestTechPriorityPage.qml
@@ -205,10 +209,6 @@ qt6_add_qml_module(appStherm
         View/MobileAppPage.qml
         View/LockPage.qml
         View/UnlockPage.qml
-        View/InstallationTypePage.qml
-        View/ResidenceTypePage.qml
-        View/DeviceLocationPage.qml
-        View/ThermostatNamePage.qml
 
         # Service Titan pages
         View/ServiceTitan/JobNumberPage.qml

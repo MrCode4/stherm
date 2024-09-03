@@ -27,6 +27,8 @@ BasePageView {
             text: "\uf00c"
         }
 
+        visible: !initialSetup
+
         onClicked: {
             //! Do neccessary updates
             updateModel()

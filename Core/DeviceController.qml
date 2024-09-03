@@ -299,17 +299,17 @@ I_DeviceController {
                                                 email : string, zipCode : string) {
             console.log("ServiceTitanInformationReady", hasError, isActive, email, zipCode);
 
-            device.serviceTitan._fetched = true;//!hasError;
+            device.serviceTitan._fetched = !hasError;
 
             device.serviceTitan.isActive = isActive;
 
-            if (!device.serviceTitan._fetched) {
+            if (hasError) {
                 // Retry to fetch service titan data.
 
             } else {
                 //! TODO: Update service titan model
-                device.serviceTitan.email = email;
-                device.serviceTitan.zipCode = zipCode;
+                // device.serviceTitan.email = email;
+                // device.serviceTitan.zipCode = zipCode;
                 fetchServiceTitanTimer.stop();
             }
         }
