@@ -80,7 +80,7 @@ BasePageView {
 
         Item {
             Layout.fillWidth: true
-            height: root.height / 4
+            height: root.height / 6
         }
 
         Text {
