@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * ThermostatNamePage
+ * ServiceTitanReviewPage
  * ***********************************************************************************************/
 BasePageView {
     id: root
@@ -17,7 +17,7 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Customer Details"
+    title: "Review"
 
     /* Children
      * ****************************************************************************************/
@@ -49,8 +49,22 @@ BasePageView {
         }
     }
 
-    ColumnLayout {
+    Label {
+        id: confirmInfoLabel
+
         anchors.top: parent.top
+        anchors.topMargin: 25
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        width: parent.width * 0.9
+        text: "Please confirm with the customer that the information below is correct."
+        elide: Text.ElideMiddle
+        horizontalAlignment: Text.AlignHCenter
+        wrapMode: Text.WordWrap
+    }
+
+    ColumnLayout {
+        anchors.top: confirmInfoLabel.bottom
         anchors.topMargin: 25
         anchors.horizontalCenter: parent.horizontalCenter
 
@@ -62,32 +76,15 @@ BasePageView {
             font.pointSize: root.font.pointSize * 1.1
         }
 
-        TextField {
+        Label {
+
             id: emailTf
 
-            Layout.fillWidth: true
-            placeholderText: "email"
             text: appModel?.serviceTitan?.email ?? ""
-            validator: RegularExpressionValidator {
-                regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
-            }
-
-            onAccepted: {
-            }
-        }
-
-        Label {
-            Layout.fillWidth: true
-
-            width: parent.width
-            wrapMode: Text.WordWrap
-            elide: Text.ElideLeft
-            font.pointSize: root.font.pointSize * 0.7
-            text: "Email will be used as a Mobile App login credential."
+            font.pointSize: Application.font.pointSize * 0.9
         }
 
         Item {
-            id: spacer
             Layout.fillWidth: true
             height: 20
         }
@@ -97,19 +94,13 @@ BasePageView {
             font.pointSize: root.font.pointSize * 1.1
         }
 
-        TextField {
+        Label {
             id: zipCodeTf
 
             Layout.fillWidth: true
 
-            placeholderText: "ZIP code"
             text: appModel?.serviceTitan?.zipCode ?? ""
-            validator: RegularExpressionValidator {
-                regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
-            }
-
-            onAccepted: {
-            }
+            font.pointSize: Application.font.pointSize * 0.9
         }
 
         Item {
@@ -127,20 +118,16 @@ BasePageView {
         anchors.margins: 10
 
         text: "Next"
-        visible: !emailTf.activeFocus && !zipCodeTf.activeFocus
         leftPadding: 25
         rightPadding: 25
 
         onClicked: {
-            appModel.serviceTitan.email = emailTf.text;
-            appModel.serviceTitan.zipCode = zipCodeTf.text;
-
             // Go to next page
             if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/ServiceTitanReviewPage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession),
+                root.StackView.view.push("qrc:/Stherm/View/InstallationTypePage.qmlInstallationTypePage.qml", {
+                                              "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
-                                         });
+                                          });
             }
         }
     }
