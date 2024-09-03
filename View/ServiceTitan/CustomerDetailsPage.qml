@@ -55,7 +55,6 @@ BasePageView {
         anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.95
-        spacing: 4
 
         Label {
             text: "Email"
@@ -65,11 +64,12 @@ BasePageView {
         TextField {
             id: emailTf
 
+            topPadding: 0
             Layout.fillWidth: true
             placeholderText: "Email"
             text: appModel?.serviceTitan?.email ?? ""
             validator: RegularExpressionValidator {
-                regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
+                regularExpression: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
             }
         }
 
@@ -79,7 +79,7 @@ BasePageView {
             width: parent.width
             wrapMode: Text.WordWrap
             elide: Text.ElideLeft
-            font.pointSize: root.font.pointSize * 0.7
+            font.pointSize: root.font.pointSize * 0.67
             text: "Email will be used as a Mobile App login credential."
         }
 
@@ -99,6 +99,7 @@ BasePageView {
 
             Layout.fillWidth: true
 
+            topPadding: 0
             placeholderText: "ZIP code"
             text: appModel?.serviceTitan?.zipCode ?? ""
             validator: RegularExpressionValidator {
@@ -122,7 +123,7 @@ BasePageView {
 
         text: "Next"
         visible: !emailTf.activeFocus && !zipCodeTf.activeFocus
-        enabled: emailTf.text.length > 0 && zipCodeTf.text.length > 0
+        enabled: emailTf.acceptableInput && zipCodeTf.acceptableInput
         leftPadding: 25
         rightPadding: 25
 
