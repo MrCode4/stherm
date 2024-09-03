@@ -210,6 +210,9 @@ qt6_add_qml_module(appStherm
         View/DeviceLocationPage.qml
         View/ThermostatNamePage.qml
 
+        # Service Titan pages
+        View/ServiceTitan/JobNumberPage.qml
+
         # Date and Time
         View/DateTime/DateTimePage.qml
         View/DateTime/SelectTimePage.qml
