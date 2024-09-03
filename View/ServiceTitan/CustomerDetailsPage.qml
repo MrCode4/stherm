@@ -22,22 +22,9 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     //! Info button in initial setup mode.
-    ToolButton {
+    InfoToolButton {
         parent: root.header.contentItem
-        checkable: false
-        checked: false
         visible: initialSetup
-        implicitWidth: 64
-        implicitHeight: implicitWidth
-        icon.width: 50
-        icon.height: 50
-
-        contentItem: RoniaTextIcon {
-            anchors.fill: parent
-            font.pointSize: Style.fontIconSize.largePt
-            Layout.alignment: Qt.AlignLeft
-            text: FAIcons.circleInfo
-        }
 
         onClicked: {
             if (root.StackView.view) {
@@ -45,7 +32,6 @@ BasePageView {
                                              "uiSession": Qt.binding(() => uiSession)
                                          });
             }
-
         }
     }
 

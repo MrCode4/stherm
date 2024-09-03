@@ -140,6 +140,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ExpandableItem.qml
         UiCore/Components/PINKeyboard.qml
         UiCore/Components/PINTextField.qml
+        UiCore/Components/InfoToolButton.qml
         UiCore/Components/HorizontalTimeTumbler.qml
         UiCore/Components/TemperatureFlatRangeSlider.qml
 

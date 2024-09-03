@@ -62,7 +62,7 @@ void NUVE::DeviceConfig::load()
 {
     QSettings config("/usr/local/bin/device_config.ini", QSettings::IniFormat);
     uid = config.value("uid").toString().toStdString();
-    serial_number = config.value("serial_number").toString().toStdString();
+    // serial_number = config.value("serial_number").toString().toStdString();
     bool ok;
     auto sr = config.value("sampleRate").toInt(&ok);
     if (ok)

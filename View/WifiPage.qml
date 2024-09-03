@@ -85,7 +85,7 @@ BasePageView {
         }
 
         // Enable when the serial number is correctly filled
-        enabled: initialSetupReady
+        enabled: initialSetupReady ||true
         onClicked: nextPage()
     }
 
@@ -309,23 +309,10 @@ BasePageView {
                 }
             }
 
-            ToolButton {
+            InfoToolButton {
                 anchors.centerIn: parent
 
-                checkable: false
-                checked: false
                 visible: initialSetup
-                implicitWidth: 64
-                implicitHeight: implicitWidth
-                icon.width: 50
-                icon.height: 50
-
-                contentItem: RoniaTextIcon {
-                    anchors.fill: parent
-                    font.pointSize: Style.fontIconSize.largePt
-                    Layout.alignment: Qt.AlignLeft
-                    text: FAIcons.circleInfo
-                }
 
                 onClicked: {
                     root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
