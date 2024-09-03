@@ -14,7 +14,6 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
-
     /* Object properties
      * ****************************************************************************************/
     title: "Thermostat Name"
@@ -94,6 +93,10 @@ BasePageView {
     ButtonInverted {
         id: submitBtn
 
+        //! Has the initial flow been submitted?
+        //! TODO: When thermostatName changed, the model should be submitted again.
+        property bool submitted: false
+
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.margins: 10
@@ -105,6 +108,24 @@ BasePageView {
 
         onClicked: {
             appModel.thermostatName = nameTf.text;
+
+            if (initialSetup) {
+                deviceController.updateEditMode(AppSpec.EMGeneral);
+                deviceController.saveSettings();
+            }
+
+            submitBtn.submitted = true;
+        }
+    }
+
+    //! Start a timer once they are in technician page and check hasClient (checkSN) every 30 seconds
+    Timer {
+        repeat: true
+        running: root.visible && initialSetup && submitBtn.submitted
+        interval: 30000
+
+        onTriggered: {
+            deviceController.deviceControllerCPP.checkSN();
         }
     }
 }
