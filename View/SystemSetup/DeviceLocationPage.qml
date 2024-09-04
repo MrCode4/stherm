@@ -65,6 +65,9 @@ BasePageView {
 
                 delegate: Button {
                     Layout.fillWidth: true
+
+                    topInset: 2
+                    bottomInset: 2
                     text: modelData
                     autoExclusive: true
                     checked: deviceLocation === text
