@@ -120,7 +120,7 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
-            system?.warrantyReplacement(oldSNTf.text, newSNTf.text)
+            system?.warrantyReplacement(oldSNTf.text, newSNTf.text);
         }
     }
 

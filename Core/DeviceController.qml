@@ -137,6 +137,17 @@ I_DeviceController {
         }
     }
 
+    //! Start a timer to check serial number and has client after initial setup finished or warranty replacement integrated.
+    property Timer checkSNTimer: Timer {
+        repeat: true
+        running: false
+        interval: 30000
+
+        onTriggered: {
+            deviceControllerCPP.checkSN();
+        }
+    }
+
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
@@ -192,6 +203,11 @@ I_DeviceController {
             root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName) : (iconUrl + "?version=" + version)
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
+        }
+
+        function onSnModeChanged(snMode: int) {
+            if (snMode !== 2)
+                checkSNTimer.stop();
         }
     }
 
@@ -1282,6 +1298,19 @@ I_DeviceController {
         saveSettings();
 
         // TODO: Update the server
+    }
+
+    //! Go to home after inital setup
+    //! Ensure that all prerequisites are met before proceeding.
+    function goHomeAfterInitialSetup() {
+        // Push settings
+        // deviceController.updateEditMode(AppSpec.EMGeneral);
+        deviceController.saveSettings();
+        deviceControllerCPP.checkSN();
+        checkSNTimer.start();
+
+        // Show home directly
+        // uiSession.showHome();
     }
 
     //! Push initial setup information

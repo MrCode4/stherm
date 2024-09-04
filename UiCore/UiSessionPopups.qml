@@ -143,6 +143,7 @@ Item {
 
             if (success) {
                 successPopup.message = "The new thermostat has successfully integrated into the system."
+                successPopup.hid.connect(goHomeAfterInitialSetup);
                 successPopup.open();
             }
         }
@@ -165,5 +166,10 @@ Item {
             // Active screen saver
             ScreenSaverManager.setActive();
         }
+    }
+
+    function goHomeAfterInitialSetup() {
+        deviceController.goHomeAfterInitialSetup();
+        successPopup.hid.disconnect(goHomeAfterInitialSetup);
     }
 }

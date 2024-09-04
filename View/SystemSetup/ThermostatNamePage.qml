@@ -98,12 +98,12 @@ BasePageView {
 
             // TODO
             if (initialSetup) {
-                // deviceController.updateEditMode(AppSpec.EMGeneral);
-                deviceController.saveSettings();
+                deviceController.goHomeAfterInitialSetup();
                 deviceController.pushInitialSetupInformation();
             }
 
             submitBtn.submitted = true;
         }
     }
+
 }
