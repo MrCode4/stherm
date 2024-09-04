@@ -529,13 +529,13 @@ I_DeviceController {
 
         // Clamp vacation data.
         var minimumTemperature = Utils.clampValue(settings.min_temp, AppSpec.vacationMinimumTemperatureC,
-                                                                     AppSpec.vacationMaximumTemperatureC);
+                                                                     AppSpec.vacationMaximumTemperatureC - AppSpec.minStepTempC);
 
-        var maximumTemperature = Utils.clampValue(settings.max_temp, AppSpec.vacationMinimumTemperatureC,
-                                                                     AppSpec.vacationMaximumTemperatureC);
+        // minimumTemperature can not be less than vacationMinimumTemperatureC, so:
+        var maximumTemperature = Utils.clampValue(settings.max_temp, minimumTemperature + AppSpec.minStepTempC, AppSpec.vacationMaximumTemperatureC);
 
-        var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
-        var maximumHumidity = Utils.clampValue(settings.max_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
+        var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity - AppSpec.minStepHum);
+        var maximumHumidity = Utils.clampValue(settings.max_humidity, minimumHumidity + AppSpec.minStepHum, AppSpec.maximumHumidity);
 
         setVacation(minimumTemperature, maximumTemperature, minimumHumidity, maximumHumidity)
         setVacationOnFromServer(settings.is_enable)
@@ -936,6 +936,8 @@ I_DeviceController {
             console.warn("System type unknown", settings.type)
     }
 
+    //! If the clamping logic has changed, review the corresponding functionality in the
+    //! DesiredTemperatureItem class (specifically the updateFirstSecondValues function).
     function setAutoTemperatureFromServer (settings) {
 
         if (!device)
@@ -946,22 +948,24 @@ I_DeviceController {
             return;
         }
 
-        if (settings.hasOwnProperty("auto_temp_low")) {
-            var auto_temp_low = Utils.clampValue(settings.auto_temp_low, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
-            if (device.autoMinReqTemp !== auto_temp_low) {
-                device.autoMinReqTemp = auto_temp_low;
-                deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
-            }
+        var auto_temp_low = AppSpec.defaultAutoMinReqTemp;
+        var auto_temp_high = AppSpec.defaultAutoMaxReqTemp;
+
+        // If both auto_temp_low and auto_temp_high are zero, use default values.
+        // If auto_temp_low or auto_temp_high is undefined, keep default values.
+        if (settings?.auto_temp_low !== 0 || settings?.auto_temp_high !== 0) {
+            auto_temp_low = Utils.clampValue(settings?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp,
+                                             AppSpec.autoMinimumTemperatureC,
+                                             AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
+
+            const minimumSecondarySlider = Math.max(AppSpec.minAutoMaxTemp, auto_temp_low + AppSpec.autoModeDiffrenceC);
+            auto_temp_high = Utils.clampValue(settings?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp,
+                                              minimumSecondarySlider,
+                                              AppSpec.autoMaximumTemperatureC);
         }
 
-        if (settings.hasOwnProperty("auto_temp_high")) {
-            var auto_temp_high = Utils.clampValue(settings.auto_temp_high, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
-            if (device.autoMaxReqTemp !== auto_temp_high) {
-                device.autoMaxReqTemp = auto_temp_high;
-                deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
-            }
-        }
-
+        setAutoMinReqTemp(auto_temp_low);
+        setAutoMaxReqTemp(auto_temp_high);
     }
 
     function setAutoMinReqTemp(min) {

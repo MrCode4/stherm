@@ -29,6 +29,19 @@ AppSpecCPP {
     //! Celcius
     property real minAutoMaxTemp: 15.5556
 
+    //! Default of requested temperature
+    //! Celcius
+    property real defaultRequestedTemperature: 22.22 // 72 F
+
+    //! Diffrence between autoMinTemp and autoMaxTemp
+    //! Celcius
+    property real autoModeDiffrenceC: 2.5
+    property real autoModeDiffrenceF: 4.0
+
+    //! Auto mode defaults
+    property real defaultAutoMinReqTemp: 20.0    // 68 F
+    property real defaultAutoMaxReqTemp: 23.3333 // 74 F
+
     //! Percent
     property int defaultBrightness: 100
     //! Percent

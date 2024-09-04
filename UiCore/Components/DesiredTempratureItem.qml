@@ -82,7 +82,7 @@ Control {
             //! can be faulty
             //! Use Component.onCompleted to update the UI for first time after the settings are loaded.
             Component.onCompleted: {
-                var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0);
+                var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? AppSpec.defaultRequestedTemperature);
                 _tempSlider.value = Utils.convertedTemperatureClamped(tmp,
                                                                       temperatureUnit,
                                                                       minTemprature,
@@ -106,7 +106,7 @@ Control {
             width: parent.width
             height: width / 2
             enabled: labelVisible && !currentSchedule
-            difference: temperatureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
+            difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
 
             firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
             secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
@@ -117,30 +117,17 @@ Control {
             onVisibleChanged: {
                 if (visible) {
                     //! Set difference
-                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
+                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
                     tempSliderDoubleHandle.updateFirstSecondValues();
                 }
             }
 
             first.onPressedChanged: {
-                if (deviceController && !first.pressed) {
-                    deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Cel
-                                                       ? first.value
-                                                       : Utils.fahrenheitToCelsius(first.value));
-                    deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.saveSettings();
-
-                }
+               updateAutoMinReqTempModel();
             }
 
             second.onPressedChanged: {
-                if (deviceController && !second.pressed) {
-                    deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Cel
-                                                       ? second.value
-                                                       : Utils.fahrenheitToCelsius(second.value));
-                    deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.saveSettings();
-                }
+                updateAutoMaxReqTempModel();
             }
 
             //! Use Connections to update first and second values
@@ -182,8 +169,28 @@ Control {
                 running: false
                 onTriggered: {
                     //! Set difference
-                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Cel ? 2.5 : 4
+                    tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
                     tempSliderDoubleHandle.updateFirstSecondValues();
+                }
+            }
+
+            function updateAutoMinReqTempModel() {
+                if (deviceController && !first.pressed) {
+                    deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(first.value)
+                                                       : first.value);
+                    deviceController.updateEditMode(AppSpec.EMAutoMode);
+                    deviceController.saveSettings();
+                }
+            }
+
+            function updateAutoMaxReqTempModel() {
+                if (deviceController && !second.pressed) {
+                    deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(second.value)
+                                                       : second.value);
+                    deviceController.updateEditMode(AppSpec.EMAutoMode);
+                    deviceController.saveSettings();
                 }
             }
 
@@ -207,26 +214,45 @@ Control {
                                                                  maxTemprature)
             }
 
+            //! Update the first and second slider values.
+            //! If the clamping logic has changed, review the corresponding functionality in the
+            //! DeviceController class (specifically the setAutoTemperatureFromServer function).
             function updateFirstSecondValues()
             {
                 if (!device) return;
 
-                //! First calculate new values for handles without setting them
-                const firstValue = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
-                                                                     temperatureUnit,
-                                                                     minTemprature,
-                                                                     maxTemprature);
-                const secondValue = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
-                                                                      temperatureUnit,
-                                                                      minTemprature,
-                                                                      maxTemprature);
+                var firstValue  = AppSpec.defaultAutoMinReqTemp;
+                var secondValue = AppSpec.defaultAutoMaxReqTemp;
+                var minimumSecondarySlider = Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference);
+
+                // If both autoMinReqTemp and autoMaxReqTemp are zero, keep the default values.
+                if (device.autoMinReqTemp !== 0 || device.autoMaxReqTemp !== 0) {
+                    //! First calculate new values for handles without setting them
+                    firstValue = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
+                                                                   temperatureUnit,
+                                                                   minTemprature,
+                                                                   maxTemprature - tempSliderDoubleHandle.difference);
+
+                    // The minimum value for the second slider should be the greater of
+                    // AppSpec.minAutoMaxTemp and the sum of the first slider value and the difference value.
+                    // So we need recalculate it when first slider changed.
+                    minimumSecondarySlider = Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference);
+                    secondValue = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
+                                                                    temperatureUnit,
+                                                                    Math.max(minTemprature, minimumSecondarySlider),
+                                                                    maxTemprature);
+                }
 
                 //! Now first set first.maxValue and second.minValue then update their actual values
                 first.setMaxValue(Math.min(firstValueCeil, secondValue - tempSliderDoubleHandle.difference));
-                second.setMinValue(Math.max(secondValueFloor, firstValue + tempSliderDoubleHandle.difference));
+                second.setMinValue(minimumSecondarySlider);
 
                 first.value = firstValue;
+                updateAutoMinReqTempModel();
+
                 second.value = secondValue;
+                updateAutoMaxReqTempModel();
+
             }
         }
 
@@ -409,7 +435,7 @@ Control {
 
             //! Update slider value (UI) with changed TempratureUnit
             function onTemperatureUnitChanged() {
-                updateTemperatureValue(currentSchedule?.temprature ?? (device?.requestedTemp ?? 18.0));
+                updateTemperatureValue(currentSchedule?.temprature ?? (device?.requestedTemp ?? AppSpec.defaultRequestedTemperature));
             }
         }
 
