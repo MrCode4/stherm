@@ -871,7 +871,7 @@ void NUVE::System::fetchServiceTitanInformation()
     mSync->fetchServiceTitanInformation();
 }
 
-void NUVE::System::warrantyReplacement(QString oldSN, QString newSN)
+void NUVE::System::warrantyReplacement(const QString& oldSN, const QString& newSN)
 {
     mSync->warrantyReplacement(oldSN, newSN);
 }

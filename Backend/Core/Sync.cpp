@@ -13,6 +13,7 @@ const QString cBaseUrl = API_SERVER_BASE_URL;
 const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
 const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
+const QString cWarrantySerialNumberKey = QString("NUVE/WarrantySerialNumber");
 const QString cFirmwareUpdateKey      = QString("firmware");
 const QString cFirmwareImageKey       = QString("firmware-image");
 const QString cFirmwareForceUpdateKey = QString("force-update");
@@ -521,10 +522,15 @@ void Sync::fetchServiceTitanInformation()
     }
 }
 
-void Sync::warrantyReplacement(QString oldSN, QString newSN)
+void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
 {
     // TODO: Warranty replacement implementation
-    emit warrantyReplacementFinished();
+    if (oldSN != newSN) {
+        QSettings setting;
+        setting.setValue(cWarrantySerialNumberKey, oldSN);
+
+        emit warrantyReplacementFinished();
+    }
 }
 
 void Sync::pushAlertToServer(const QVariantMap &settings)

@@ -14,6 +14,7 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
+    property System system:     deviceController?.deviceControllerCPP?.system ?? null
 
     /* Object properties
      * ****************************************************************************************/
@@ -58,7 +59,7 @@ BasePageView {
             Layout.preferredHeight: 50
             placeholderText: "Input the S/N of damaged thermostat"
             validator: RegularExpressionValidator {
-                regularExpression: /^\d{2}-\d{3}-\d{5}$/
+                regularExpression: /^\d{2}-\d{3}-\d{6}$/
             }
         }
 
@@ -88,11 +89,13 @@ BasePageView {
 
             Layout.fillWidth: true
 
+            // Device with the new serial number
+            text: system?.serialNumber ?? ""
             topPadding: 0
             Layout.preferredHeight: 50
             placeholderText: "New S/N"
             validator: RegularExpressionValidator {
-                regularExpression: /^\d{2}-\d{3}-\d{5}$/
+                regularExpression: /^\d{2}-\d{3}-\d{6}$/
             }
         }
 
@@ -117,7 +120,7 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
-            deviceController.deviceControllerCPP.system.warrantyReplacement(oldSNTf.text, newSNTf.text)
+            system?.warrantyReplacement(oldSNTf.text, newSNTf.text)
         }
     }
 

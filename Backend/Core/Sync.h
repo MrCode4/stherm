@@ -51,7 +51,7 @@ public:
 
     void fetchServiceTitanInformation();
 
-    void warrantyReplacement(QString oldSN, QString newSN);
+    void warrantyReplacement(const QString& oldSN, const QString& newSN);
 
 signals:
     void settingsFetched(bool success);

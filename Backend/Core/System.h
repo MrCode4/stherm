@@ -202,7 +202,7 @@ public:
 
     Q_INVOKABLE void fetchServiceTitanInformation();
 
-    Q_INVOKABLE void warrantyReplacement(QString oldSN, QString newSN);
+    Q_INVOKABLE void warrantyReplacement(const QString& oldSN, const QString& newSN);
 
 protected slots:
     void onSerialNumberReady();
