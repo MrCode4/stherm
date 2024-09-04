@@ -223,6 +223,7 @@ BasePageView {
             //! Mute alerts
             RowLayout {
                 Layout.topMargin: 12
+                visible: is_control_alert_feature_enable
 
                 Label {
                     opacity: 0.6

@@ -130,6 +130,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperties({
         {"scaleFactor", scaleFactor},
         {"deviceInfo", deviceInfo},
+        {"is_control_alert_feature_enable", IS_CONTROL_ALERT_FEATURE_ENABLE},
     });
     engine.rootContext()->setContextProperty("deviceInfo", deviceInfo);
 

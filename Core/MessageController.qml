@@ -153,8 +153,9 @@ QtObject {
         var modifiedIsRead = isRead;
 
         // Check Alerts with enabledAlerts in settings
-        if (!device.setting.enabledAlerts && (type === Message.Type.SystemNotification ||
-                                              type === Message.Type.Alert)) {
+        if ((!device.setting.enabledAlerts && is_control_alert_feature_enable) &&
+                (type === Message.Type.SystemNotification ||
+                 type === Message.Type.Alert)) {
             // Temporary, can mark messages received from the server as "read" to prevent their display upon alerts re-enablement.
             if (sourceType === Message.SourceType.Server) {
                 notifyUser = false;
@@ -271,7 +272,7 @@ QtObject {
 
         //! wrong password alert.
         function onIncorrectWifiPassword() {
-            if (!device.setting.enabledAlerts)
+            if (!device.setting.enabledAlerts && is_control_alert_feature_enable)
                 return;
 
             var message = "Wrong password, please try again.";
@@ -450,7 +451,7 @@ QtObject {
         var connectedWifi = NetworkInterface.connectedWifi;
 
         // Wifi message type is SystemNotification, so related to alerts
-        if (device.setting.enabledAlerts && !connectedWifi) {
+        if ((device.setting.enabledAlerts || !is_control_alert_feature_enable) && !connectedWifi) {
             var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
         }
@@ -462,7 +463,7 @@ QtObject {
         var hasInternet = NetworkInterface.hasInternet;
 
         // Wifi message type is SystemNotification, so related to alerts
-        if (device.setting.enabledAlerts && !hasInternet) {
+        if ((device.setting.enabledAlerts || !is_control_alert_feature_enable) && !hasInternet) {
             var message = "No internet connection. Please check your internet connection.";
             showWifiInternetAlert(message, (new Date()).toLocaleString());
         }
@@ -501,7 +502,7 @@ QtObject {
 
     //! Exist unread alerts?
     function existUnreadAlerts() {
-        if (!device.setting.enabledAlerts) {
+        if (!device.setting.enabledAlerts && is_control_alert_feature_enable) {
             uiSession.hasUnreadAlerts = false;
             return;
         }
