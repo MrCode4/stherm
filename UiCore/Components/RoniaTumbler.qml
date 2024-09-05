@@ -12,6 +12,7 @@ import Stherm
 Tumbler {
     id: control
 
+    property real tumblerViewHeight: 200
     /* Object properties
      * ****************************************************************************************/
 
@@ -25,6 +26,23 @@ Tumbler {
 
         required property var modelData
         required property int index
+    }
+
+    contentItem: TumblerView {
+        implicitWidth: 60
+        implicitHeight: control.tumblerViewHeight
+        model: control.model
+        delegate: control.delegate
+        path: Path {
+            startX: control.contentItem.width / 2
+            startY: -control.contentItem.delegateHeight / 2
+            PathLine {
+                x: control.contentItem.width / 2
+                y: (control.visibleItemCount + 1) * control.contentItem.delegateHeight - control.contentItem.delegateHeight / 2
+            }
+        }
+
+        property real delegateHeight: control.availableHeight / control.visibleItemCount
     }
 
     /* Functions
