@@ -8,7 +8,7 @@ import Stherm
  * ScheduleStartTimePage provides ui for selecting start time in AddSchedulePage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -18,12 +18,6 @@ BasePageView {
     //! Schedule: If set changes are applied to it. This is can be used to edit a Schedule
     property ScheduleCPP        schedule
 
-    //! Schedule time property: end-time or start-time: only considered when schedule is set
-    property string             timeProperty:   "start-time"
-
-    //! Start time for schedule if this is end-time
-    property date               startTime:      Date
-
     //! Min minutes diff between start and end time
     readonly property int       minTimeDiff:    120
 
@@ -31,40 +25,35 @@ BasePageView {
 
     //! This shows whether the inputs in this page are valid or not
     readonly property bool      isValid:        {
-        var selectedTimeDate = Date.fromLocaleTimeString(Qt.locale(), _contentLay.selectedTime, "hh:mm AP");
-        if (startTime && timeProperty === "end-time") {
-            var diffTime   = (selectedTimeDate - startTime);
+        var selectedEndTimeDate = Date.fromLocaleTimeString(Qt.locale(), selectedEndTime, "hh:mm AP");
+        var selectedStartTimeDate = Date.fromLocaleTimeString(Qt.locale(), selectedStartTime, "hh:mm AP");
 
-            if (diffTime < 0) {
-                selectedTimeDate.setDate(selectedTimeDate.getDate() + 1);
-                diffTime = (selectedTimeDate - startTime);
-            }
+        var diffTime   = (selectedEndTimeDate - selectedStartTimeDate);
 
-            return (diffTime / 60000 >= minTimeDiff);
-
-        } else {
-            return true;
+        if (diffTime < 0) {
+            selectedEndTimeDate.setDate(selectedEndTimeDate.getDate() + 1);
+            diffTime = (selectedEndTimeDate - selectedStartTimeDate);
         }
+
+        return (diffTime / 60000 >= minTimeDiff);
     }
 
     //! Time in string format: 'hh:mm AM/PM'
-    property string    selectedTime
+    property string    selectedStartTime
+    property string    selectedEndTime
 
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size // _contentLay.implicitWidth + leftPadding + rightPadding
-    implicitHeight: _contentLay.implicitHeight + (msgLabel.visible ? msgLabel.implicitHeight : 0)
-                    + implicitHeaderHeight + implicitFooterHeight + topPadding + bottomPadding
+
     topPadding: 24
     backButtonVisible: false
-    titleHeadeingLevel: 4
-    title: timeProperty === "start-time" ? "Start Time" : "End Time"
 
     /* Children
      * ****************************************************************************************/
     //! Confirm button: only visible if is editing
     ToolButton {
-        parent: schedule ? _root.header.contentItem : _root
+        parent: schedule ? root.header.contentItem : root
         visible: editMode
         enabled: isValid
         contentItem: RoniaTextIcon {
@@ -79,151 +68,98 @@ BasePageView {
     }
 
     Binding {
-        target: _root
+        target: root
         delayed: true
-        property: "selectedTime"
-        value: _contentLay.selectedTime
+        property: "selectedStartTime"
+        value: startTimeTumbler.selectedTime
     }
 
-    GridLayout {
-        id: _contentLay
+    Binding {
+        target: root
+        delayed: true
+        property: "selectedEndTime"
+        value: endTimeTumbler.selectedTime
+    }
 
-        readonly property string    selectedTime:   {
-            var h = `${_hourTumbler.currentItem.modelData}`;
-            var m = `${_minuteTumbler.currentItem.modelData}`;
+    Label {
+        id: startTimeLabel
 
-            if (h.length === 1) h = "0" + h;
-            if (m.length === 1) m = "0" + m;
+        anchors.top: parent.top
+        anchors.topMargin: -10
+        anchors.left: parent.left
 
-            return `${h}:${m} ${_amRBtn.checked ? "AM" : "PM"}`;
-        }
+        z: 1
+        text: "Start Time:"
+        font.pointSize: root.font.pointSize * 0.85
 
-        anchors.centerIn: parent
-        width: parent.width * 0.6
+    }
 
-        columns: 3
-        columnSpacing: 12
-        rowSpacing: 20
+    HorizontalTimeTumbler {
+        id: startTimeTumbler
 
-        Item {
-            Layout.alignment: Qt.AlignCenter
-            implicitHeight: _hourTumbler.implicitHeight
-            implicitWidth: _hourTumbler.implicitWidth
+        anchors.top: startTimeLabel.bottom
+        anchors.topMargin: -10
+        anchors.horizontalCenter: parent.horizontalCenter
 
-            readonly property real delegateHeight: _hourTumbler.availableHeight / _hourTumbler.visibleItemCount
+        Layout.alignment: Qt.AlignHCenter
+    }
 
+    Rectangle {
+        id: spacerRect
 
-            RoniaTumbler {
-                id: _hourTumbler
-                anchors.fill: parent
-                currentIndex: 0
-                model: Array.from({ length: 12 }, (elem, indx) => indx + 1)
+        anchors.top: startTimeTumbler.bottom
+        anchors.topMargin: -2
+        anchors.horizontalCenter: parent.horizontalCenter
 
-            }
-            Rectangle {
-                x: 12
-                y: parent.delegateHeight * 2
-                width: parent.width - 24
-                height: 2
-                color: Style.foreground
-            }
+        height: 2
+        width: parent.width * 0.7
+        Layout.alignment: Qt.AlignHCenter
 
-            Rectangle {
-                x: 12
-                y: parent.delegateHeight * 3
-                width: parent.width - 24
-                height: 2
-                color: Style.foreground
-            }
-        }
+        color: AppStyle.primaryOffWhite
+    }
 
-        Label {
-            id: colonLbl
-            Layout.fillWidth:  true
-            textFormat: "MarkdownText"
-            text: "# :"
-            horizontalAlignment: "AlignHCenter"
-        }
+    Label {
+        id: endTimeLabel
 
-        Item {
-            Layout.alignment: Qt.AlignLeft
-            implicitHeight: _minuteTumbler.implicitHeight
-            implicitWidth: _minuteTumbler.implicitWidth
+        anchors.top: spacerRect.bottom
+        anchors.topMargin: 12
 
-            readonly property real delegateHeight: _minuteTumbler.availableHeight / _minuteTumbler.visibleItemCount
+        z: 1
+        text: "End Time:"
+        font.pointSize: root.font.pointSize * 0.85
+    }
 
-            RoniaTumbler {
-                id: _minuteTumbler
-                anchors.fill: parent
-                currentIndex: 0
-                model: 60
-            }
+    HorizontalTimeTumbler {
+        id: endTimeTumbler
 
-            Rectangle {
-                x: 12
-                y: parent.delegateHeight * 2
-                width: parent.width - 24
-                height: 2
-                color: Style.foreground
-            }
+        anchors.top: endTimeLabel.bottom
+        anchors.topMargin: -10
+        anchors.horizontalCenter: parent.horizontalCenter
 
-            Rectangle {
-                x: 12
-                y: parent.delegateHeight * 3
-                width: parent.width - 24
-                height: 2
-                color: Style.foreground
-            }
-        }
-
-        //! AM and PM radio buttons
-        RadioButton {
-            id: _amRBtn
-            Layout.alignment: Qt.AlignCenter
-            text: "AM"
-            checked: true
-        }
-
-        Item { }
-
-        RadioButton {
-            id: _pmRBtn
-            Layout.alignment: Qt.AlignLeft
-            text: "PM"
-        }
+        Layout.alignment: Qt.AlignHCenter
     }
 
     Label {
         id: msgLabel
-        anchors {
-            horizontalCenter: parent.horizontalCenter
-            top: _contentLay.bottom
-            topMargin: 12
-        }
-        visible: timeProperty === "end-time"
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: endTimeTumbler.bottom
+
         opacity: isValid ? 0. : 1.
         width: parent.width * 0.8
-        font.pointSize: _root.font.pointSize * 0.85
+        font.pointSize: root.font.pointSize * 0.85
         font.weight: Font.DemiBold
         wrapMode: "Wrap"
         text: "Please, select at least 2 hours period for the schedule"
-        horizontalAlignment: "AlignHCenter"
+        horizontalAlignment: Qt.AlignHCenter
 
         Behavior on opacity { NumberAnimation { duration: 150 } }
     }
 
     onScheduleChanged: {
         if (schedule) {
-            var time
-            if (timeProperty === "start-time") {
-                time = schedule.startTime;
-            } else if (timeProperty === "end-time") {
-                time = schedule.endTime;
-            }
-
-            if (time) {
-                setTimeFromString(time);
-            }
+            startTimeTumbler.setTimeFromString(schedule.startTime);
+            endTimeTumbler.setTimeFromString(schedule.endTime);
         }
     }
 
@@ -232,25 +168,16 @@ BasePageView {
     function saveTime()
     {
         if (editMode && schedule) {
-            if (timeProperty === "start-time" && schedule.startTime !== selectedTime) {
-                schedule.startTime = selectedTime;
-            } else if (timeProperty === "end-time" && schedule.endTime !== selectedTime) {
-                schedule.endTime = selectedTime;
+            if (schedule.startTime !== selectedTime) {
+                schedule.startTime = selectedStartTime;
+            }
+
+            if (schedule.endTime !== selectedTime) {
+                schedule.endTime = selectedEndTime;
             }
         }
 
         backButtonCallback();
     }
 
-    //!
-    function setTimeFromString(time)
-    {
-        _hourTumbler.currentIndex = Number(time.slice(0, 2)) - 1;
-        _minuteTumbler.currentIndex = Number(time.slice(3, 5));
-        if (time.slice(6, 8) === "AM") {
-            _amRBtn.checked = true;
-        } else if (time.slice(6, 8) === "PM") {
-            _pmRBtn.checked = true;
-        }
-    }
 }
