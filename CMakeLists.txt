@@ -138,6 +138,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ExpandableItem.qml
         UiCore/Components/PINKeyboard.qml
         UiCore/Components/PINTextField.qml
+        UiCore/Components/HorizontalTimeTumbler.qml
 
 
         # Views and Widgets
