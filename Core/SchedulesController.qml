@@ -37,6 +37,8 @@ QtObject {
         newSchedule.enable = schedule.enable;
         newSchedule.name = schedule.name;
         newSchedule.type = schedule.type;
+        newSchedule.minimumTemperature = schedule.minimumTemperature;
+        newSchedule.maximumTemperature = schedule.maximumTemperature;
         newSchedule.temprature = schedule.temprature;
         newSchedule.humidity = schedule.humidity;
         newSchedule.startTime = schedule.startTime;
@@ -363,7 +365,17 @@ QtObject {
                                       newSchedule.enable = schedule.is_enable;
                                       newSchedule.name = schedule.name;
                                       newSchedule.type = schedule.type_id;
-                                      newSchedule.temprature = Utils.clampValue(schedule.temp, AppSpec.minimumTemperatureC, AppSpec.maximumTemperatureC);
+
+                                      // TODO
+                                      var difference = deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
+
+                                      newSchedule.minimumTemperature = Utils.clampValue(schedule?.minimumTemperature ?? AppSpec.defaultAutoMinReqTemp,
+                                                                                        AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
+
+                                      newSchedule.maximumTemperature = Utils.clampValue(schedule?.maximumTemperature ?? AppSpec.defaultAutoMaxReqTemp,
+                                                                                        Math.max(newSchedule.minimumTemperature + AppSpec.autoModeDiffrenceC, AppSpec.minAutoMaxTemp),
+                                                                                        AppSpec.autoMaximumTemperatureC);
+                                      // newSchedule.temprature = Utils.clampValue(schedule.temp, AppSpec.minimumTemperatureC, AppSpec.maximumTemperatureC);
                                       newSchedule.humidity = Utils.clampValue(schedule.humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
                                       newSchedule.startTime = formatTime(schedule.start_time);
                                       newSchedule.endTime = formatTime(schedule.end_time);
