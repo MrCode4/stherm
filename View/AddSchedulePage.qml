@@ -131,7 +131,7 @@ BasePageView {
         id: _typePage
 
         ScheduleTypePage {
-            readonly property Component nextPage: _tempraturePage
+            readonly property Component nextPage:_startEndTimePage
 
             onTypeChanged: {
                 if (type !== _internal.newSchedule.type) {
@@ -145,7 +145,8 @@ BasePageView {
         id: _tempraturePage
 
         ScheduleTempraturePage {
-            readonly property Component nextPage: _startTimePage
+            // Move to enable/disable page
+            readonly property Component nextPage:  _tempraturePage
 
             uiSession: root.uiSession
 
@@ -166,55 +167,22 @@ BasePageView {
     }
 
     Component {
-        id: _startTimePage
-
-        ScheduleTimePage {
-            readonly property Component nextPage: _endTimePage
-
-            title: "Start Time"
-
-            schedule: root.defaultSchedule
-
-            onSelectedTimeChanged: {
-                if (isValid && selectedTime !== _internal.newSchedule.startTime) {
-                    _internal.newSchedule.startTime = selectedTime;
-                }
-            }
-
-            Component.onCompleted: {
-                if (_internal.newSchedule.type === AppSpec.Custom) {
-                    //! Set start time to current time
-                    setTimeFromString((new Date).toLocaleTimeString(Qt.locale(), "hh:mm AP"));
-                }
-            }
-        }
-    }
-
-    Component {
-        id: _endTimePage
+        id: _startEndTimePage
 
         ScheduleTimePage {
             readonly property Component nextPage: _repeatPage
 
-            title: "End Time"
-            timeProperty: "end-time"
-
-            startTime: Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.startTime, "hh:mm AP")
             schedule: root.defaultSchedule
 
-            onSelectedTimeChanged: {
-                if (isValid && selectedTime !== _internal.newSchedule.endTime) {
-                    _internal.newSchedule.endTime = selectedTime;
+            onSelectedStartTimeChanged: {
+                if (isValid && selectedStartTime !== _internal.newSchedule.startTime) {
+                    _internal.newSchedule.startTime = selectedStartTime;
                 }
             }
 
-            Component.onCompleted: {
-                if (_internal.newSchedule.type === AppSpec.Custom) {
-                    //! Set selected time to 2 hours after schedule's start time
-                    var endTime = Date.fromLocaleTimeString(locale, _internal.newSchedule.startTime, "hh:mm AP");
-                    endTime.setTime(endTime.getTime() + 2 * 1000 * 60 * 60);
-
-                    setTimeFromString(endTime.toLocaleTimeString(locale, "hh:mm AP"));
+            onSelectedEndTimeChanged: {
+                if (isValid && selectedEndTime !== _internal.newSchedule.endTime) {
+                    _internal.newSchedule.endTime = selectedEndTime;
                 }
             }
         }
@@ -224,7 +192,7 @@ BasePageView {
         id: _repeatPage
 
         ScheduleRepeatPage {
-            readonly property Component nextPage: _dataSourcePageCompo
+            readonly property Component nextPage: _tempraturePage
 
             schedule: root.defaultSchedule
 
@@ -236,6 +204,7 @@ BasePageView {
         }
     }
 
+    // Preview and data source page hide in the new design
     Component {
         id: _dataSourcePageCompo
 

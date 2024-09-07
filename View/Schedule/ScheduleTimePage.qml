@@ -45,9 +45,25 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size // _contentLay.implicitWidth + leftPadding + rightPadding
+    implicitHeight: AppStyle.size
 
     topPadding: 24
     backButtonVisible: false
+    title: "Start & End Time"
+
+    Component.onCompleted: {
+        if (!editMode && schedule.type === AppSpec.Custom) {
+            var now = new Date();
+            //! Set start time to current time
+            startTimeTumbler.setTimeFromString(now.toLocaleTimeString(Qt.locale(), "hh:mm AP"));
+
+            //! Set selected time to 2 hours after schedule's start time
+            var endTime = now;
+            endTime.setTime(now.getTime() + 2 * 1000 * 60 * 60);
+
+            endTimeTumbler.setTimeFromString(endTime.toLocaleTimeString(locale, "hh:mm AP"));
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -168,11 +184,11 @@ BasePageView {
     function saveTime()
     {
         if (editMode && schedule) {
-            if (schedule.startTime !== selectedTime) {
+            if (schedule.startTime !== selectedStartTime) {
                 schedule.startTime = selectedStartTime;
             }
 
-            if (schedule.endTime !== selectedTime) {
+            if (schedule.endTime !== selectedEndTime) {
                 schedule.endTime = selectedEndTime;
             }
         }

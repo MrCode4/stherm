@@ -272,7 +272,6 @@ BasePageView {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
                                                       "backButtonVisible": true,
                                                       "uiSession": uiSession,
-                                                      "timeProperty": "start-time",
                                                       "schedule": internal.scheduleToEdit,
                                                       "editMode": true
                                                   });
@@ -309,11 +308,7 @@ BasePageView {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
                                                       "backButtonVisible": true,
                                                       "uiSession": uiSession,
-                                                      "timeProperty": "end-time",
                                                       "schedule": internal.scheduleToEdit,
-                                                      "startTime": Date.fromLocaleTimeString(Qt.locale(),
-                                                                                             scheduleToDisplay.startTime,
-                                                                                             "hh:mm AP"),
                                                       "editMode": true
                                                   });
                     }
