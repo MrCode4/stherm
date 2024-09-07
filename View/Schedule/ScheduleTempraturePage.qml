@@ -26,13 +26,14 @@ BasePageView {
     //! Is Celsius selected as the unit?
     readonly property bool           isCelcius:  temperatureUnit === AppSpec.TempratureUnit.Cel
 
-    //! Temprature value: this is always in celsius
-    readonly property real  temprature: (isCelcius ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value))
+    //! Temperature value: this is always in celsius
+    readonly property real  minimumTemperature: (isCelcius ? _tempSlider.first.value : Utils.fahrenheitToCelsius(_tempSlider.first.value))
+    readonly property real  maximumTemperature: (isCelcius ? _tempSlider.second.value : Utils.fahrenheitToCelsius(_tempSlider.second.value))
 
-    //! Minimum temprature
+    //! Minimum temperature
     property real               minTemperature: isCelcius ? AppSpec.autoMinimumTemperatureC : AppSpec.autoMinimumTemperatureF
 
-    //! Maximum temprature
+    //! Maximum temperature
     property real               maxTemperature: isCelcius ? AppSpec.autoMaximumTemperatureC : AppSpec.autoMaximumTemperatureF
 
 
@@ -44,9 +45,13 @@ BasePageView {
                                                       : 0
     leftPadding: 8 * scaleFactor
     rightPadding: 8 * scaleFactor
-    title: "Temprature (\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit)) + ")"
+    title: "Temperature (\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit)) + ")"
     backButtonVisible: false
     titleHeadeingLevel: 4
+
+    Component.onCompleted: {
+        updateSliderValues();
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -61,12 +66,12 @@ BasePageView {
         onClicked: {
             if (schedule) {
                 if (temperatureUnit === AppSpec.TempratureUnit.Cel) {
-                    schedule.minimumTemprature = _tempSlider.first.value;
-                    schedule.maximumTemprature = _tempSlider.second.value;
+                    schedule.minimumTemperature = _tempSlider.first.value;
+                    schedule.maximumTemperature = _tempSlider.second.value;
 
                 } else {
-                    schedule.minimumTemprature = Utils.fahrenheitToCelsius(_tempSlider.first.value);
-                    schedule.maximumTemprature = Utils.fahrenheitToCelsius(_tempSlider.second.value);
+                    schedule.minimumTemperature = Utils.fahrenheitToCelsius(_tempSlider.first.value);
+                    schedule.maximumTemperature = Utils.fahrenheitToCelsius(_tempSlider.second.value);
                 }
             }
 
@@ -80,7 +85,7 @@ BasePageView {
 
         spacing: 20
 
-        //! Temprature icon
+        //! Temperature icon
         RoniaTextIcon {
             Layout.leftMargin: 24
             font.pointSize: _root.font.pointSize * 2
@@ -95,17 +100,38 @@ BasePageView {
             from: minTemperature
             to: maxTemperature
 
-            first.value: Utils.convertedTemperatureClamped(schedule?.minimumTemprature ?? from, temperatureUnit,
-                                                           minTemperature, maxTemperature - difference)
-
-            second.value: Utils.convertedTemperatureClamped(schedule?.maximumTemprature ?? to, temperatureUnit,
-                                                            first.value + difference, maxTemperature)
             difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
 
+            first.onPressedChanged: {
+                if (deviceController && !first.pressed) {
+                    schedule.minimumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(first.value)
+                                                       : first.value);
+                    deviceController.saveSettings();
+                }
+            }
+
+            second.onPressedChanged: {
+                if (deviceController && !second.pressed) {
+                    schedule.maximumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(second.value)
+                                                       : second.value);
+                    deviceController.saveSettings();
+                }
+            }
 
             labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))
             fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
             toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
         }
+    }
+
+    function updateSliderValues() {
+        _tempSlider.first.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? _tempSlider.from, temperatureUnit,
+                                                       minTemperature, maxTemperature - _tempSlider.difference)
+
+        _tempSlider.second.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? _tempSlider.to, temperatureUnit,
+                                                        _tempSlider.first.value + _tempSlider.difference, maxTemperature)
+
     }
 }
