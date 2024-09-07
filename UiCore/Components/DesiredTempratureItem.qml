@@ -53,7 +53,7 @@ Control {
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
         if (currentSchedule) {
-            Qt.callLater(updateTemperatureValue, currentSchedule.temprature);
+            Qt.callLater(autoModeTemperatureValueFromSchedule);
 
         } else if (device) {
             Qt.callLater(updateTemperatureValue, device.requestedTemp);
@@ -150,12 +150,17 @@ Control {
                 target: device?.setting ?? null
                 enabled: tempSliderDoubleHandle.visible
 
-                function onTempratureUnitChanged() { updateFirstSecondValuesTmr.restart(); }
+                function onTempratureUnitChanged() {
+                    if (currentSchedule)
+                        autoModeTemperatureValueFromSchedule();
+                    else
+                        updateFirstSecondValuesTmr.restart();
+                }
             }
 
             Connections {
                 target: _root
-                enabled: tempSliderDoubleHandle.visible
+                enabled: tempSliderDoubleHandle.visible && !currentSchedule
 
                 function onMinTempratureChanged() { updateFirstSecondValuesTmr.restart(); }
 
@@ -196,7 +201,7 @@ Control {
 
             function updateFirstValue()
             {
-                if (!device) return;
+                if (!device || currentSchedule) return;
 
                 first.value = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
                                                                 temperatureUnit,
@@ -206,7 +211,7 @@ Control {
 
             function updateSecondValue()
             {
-                if (!device) return;
+                if (!device || currentSchedule) return;
 
                 second.value = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
                                                                  temperatureUnit,
@@ -219,7 +224,7 @@ Control {
             //! DeviceController class (specifically the setAutoTemperatureFromServer function).
             function updateFirstSecondValues()
             {
-                if (!device) return;
+                if (!device || currentSchedule) return;
 
                 var firstValue  = AppSpec.defaultAutoMinReqTemp;
                 var secondValue = AppSpec.defaultAutoMaxReqTemp;
@@ -666,6 +671,15 @@ Control {
             deviceController.setDesiredTemperature(celValue);
             deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
             deviceController.saveSettings();
+        }
+    }
+
+    //! Update tempSliderDoubleHandle values
+    function autoModeTemperatureValueFromSchedule() {
+        if (currentSchedule) {
+            // TODO: Check for clamping data
+            tempSliderDoubleHandle.first.value = Utils.convertedTemperature(currentSchedule.minimumTemprature, temperatureUnit);
+            tempSliderDoubleHandle.second.value = Utils.convertedTemperature(currentSchedule.maximumTemprature, temperatureUnit);
         }
     }
 }
