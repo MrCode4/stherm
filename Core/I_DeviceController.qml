@@ -29,7 +29,7 @@ QtObject {
     //! - Has schedule effect
     property real               _minimumTemperatureUIF: {
         if (currentSchedule) {
-            return AppSpec.minimumTemperatureF;
+            return AppSpec.autoMinimumTemperatureF;
         }
 
         return _minimumTemperatureF;
@@ -39,7 +39,7 @@ QtObject {
     //! - Has schedule effect
     property real               _maximumTemperatureUIF: {
         if (currentSchedule) {
-            return AppSpec.maximumTemperatureF;
+            return AppSpec.autoMaximumTemperatureF;
         }
 
         return _maximumTemperatureF;

@@ -2,6 +2,8 @@
 
 #include <QObject>
 
+#include "AppSpecCPP.h"
+
 #include "QtQuickStream/Core/QSObjectCpp.h"
 
 class ScheduleCPP : public QSObjectCpp
@@ -61,6 +63,9 @@ public:
     bool enable;
 
     bool active;
+
+    //! Return the effective temperature based on the system mode
+    double effectiveTemperature(AppSpecCPP::SystemMode systemMode);
 
 signals:
     void nameChanged();

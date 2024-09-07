@@ -460,7 +460,7 @@ Control {
     /* States and Transitions
      * ************************************/
     state: {
-        if (currentSchedule) return "non-auto-idle";
+        if (currentSchedule) return "auto-idle";
 
         if (device?.systemSetup?.systemMode === AppSpec.Auto) {
             if (tempSliderDoubleHandle.first.pressed && !tempSliderDoubleHandle.second.pressed) {
@@ -545,12 +545,12 @@ Control {
 
             PropertyChanges {
                 target: _tempSlider
-                visible: currentSchedule
+                visible: false
             }
 
             PropertyChanges {
                 target: tempSliderDoubleHandle
-                visible: !currentSchedule
+                visible: true
                 showGreySection: true
             }
 
