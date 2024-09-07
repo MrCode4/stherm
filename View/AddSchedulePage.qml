@@ -75,7 +75,7 @@ BasePageView {
                 }
             } else {
                 // if sensors are empty we skip this page!
-                if (_newSchedulePages.currentItem instanceof ScheduleRepeatPage) {
+                if (_newSchedulePages.currentItem instanceof ScheduleTempraturePage) {
                     if (device?._sensors.length === 0) {
                         _internal.newSchedule.dataSource = "Onboard Sensor";
                         _newSchedulePages.push(_preivewPage)
@@ -142,31 +142,6 @@ BasePageView {
     }
 
     Component {
-        id: _tempraturePage
-
-        ScheduleTempraturePage {
-            // Move to enable/disable page
-            readonly property Component nextPage:  _tempraturePage
-
-            uiSession: root.uiSession
-
-            schedule: root.defaultSchedule
-
-            onTempratureChanged: {
-                if (temprature !== _internal.newSchedule.temprature) {
-                    _internal.newSchedule.temprature = temprature;
-                }
-            }
-
-            Component.onCompleted: {
-                if (_internal.newSchedule.type === AppSpec.Custom) {
-                    schedule.temprature = appModel.requestedTemp;
-                }
-            }
-        }
-    }
-
-    Component {
         id: _startEndTimePage
 
         ScheduleTimePage {
@@ -174,15 +149,15 @@ BasePageView {
 
             schedule: root.defaultSchedule
 
-            onSelectedStartTimeChanged: {
-                if (isValid && selectedStartTime !== _internal.newSchedule.startTime) {
-                    _internal.newSchedule.startTime = selectedStartTime;
-                }
-            }
+            onIsValidChanged: {
+                if (isValid) {
+                    if (selectedStartTime !== _internal.newSchedule.startTime) {
+                        _internal.newSchedule.startTime = selectedStartTime;
+                    }
 
-            onSelectedEndTimeChanged: {
-                if (isValid && selectedEndTime !== _internal.newSchedule.endTime) {
-                    _internal.newSchedule.endTime = selectedEndTime;
+                    if (selectedEndTime !== _internal.newSchedule.endTime) {
+                        _internal.newSchedule.endTime = selectedEndTime;
+                    }
                 }
             }
         }
@@ -192,13 +167,45 @@ BasePageView {
         id: _repeatPage
 
         ScheduleRepeatPage {
-            readonly property Component nextPage: _tempraturePage
+            readonly property Component nextPage: _temperaturePage
 
             schedule: root.defaultSchedule
 
             onRepeatsChanged: {
                 if (repeats !== _internal.newSchedule.repeats) {
                     _internal.newSchedule.repeats = repeats;
+                }
+            }
+        }
+    }
+
+    Component {
+        id: _temperaturePage
+
+        ScheduleTempraturePage {
+            // Move to enable/disable page
+            readonly property Component nextPage:  _dataSourcePageCompo
+
+            uiSession: root.uiSession
+
+            schedule: root.defaultSchedule
+
+            onMinimumTemperatureChanged: {
+                if (minimumTemperature !== _internal.newSchedule.minimumTemperature) {
+                    _internal.newSchedule.minimumTemperature = minimumTemperature;
+                }
+            }
+
+            onMaximumTemperatureChanged: {
+                if (maximumTemperature !== _internal.newSchedule.maximumTemperature) {
+                    _internal.newSchedule.maximumTemperature = maximumTemperature;
+                }
+            }
+
+            Component.onCompleted: {
+                if (_internal.newSchedule.type === AppSpec.Custom) {
+                    schedule.minimumTemperature = appModel.autoMinReqTemp;
+                    schedule.maximumTemperature = appModel.autoMaxReqTemp;
                 }
             }
         }
