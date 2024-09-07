@@ -30,10 +30,10 @@ BasePageView {
     readonly property real  temprature: (isCelcius ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value))
 
     //! Minimum temprature
-    property real               minTemperature: deviceController?._minimumTemperatureUI ?? 40
+    property real               minTemperature: isCelcius ? AppSpec.autoMinimumTemperatureC : AppSpec.autoMinimumTemperatureF
 
     //! Maximum temprature
-    property real               maxTemperature: deviceController?._maximumTemperatureUI ?? 90
+    property real               maxTemperature: isCelcius ? AppSpec.autoMaximumTemperatureC : AppSpec.autoMaximumTemperatureF
 
 
     /* Object properties
@@ -74,23 +74,38 @@ BasePageView {
         }
     }
 
-    TemperatureFlatRangeSlider {
-        id: _tempSlider
-
+    RowLayout {
         anchors.centerIn: parent
-        width: parent.width
+        width: parent.width * 0.85
 
-        from: minTemperature
-        to: maxTemperature
+        spacing: 20
 
-        first.value: Utils.convertedTemperatureClamped(schedule?.minimumTemprature ?? from, temperatureUnit, minTemperature, maxTemperature)
+        //! Temprature icon
+        RoniaTextIcon {
+            Layout.leftMargin: 24
+            font.pointSize: _root.font.pointSize * 2
+            text: "\uf2c8" //! temperature-three-quarters icon
+        }
 
-        second.value: Utils.convertedTemperatureClamped(schedule?.maximumTemprature ?? to, temperatureUnit, minTemperature, maxTemperature)
-        difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
+        TemperatureFlatRangeSlider {
+            id: _tempSlider
+
+            Layout.fillWidth: true
+
+            from: minTemperature
+            to: maxTemperature
+
+            first.value: Utils.convertedTemperatureClamped(schedule?.minimumTemprature ?? from, temperatureUnit,
+                                                           minTemperature, maxTemperature - difference)
+
+            second.value: Utils.convertedTemperatureClamped(schedule?.maximumTemprature ?? to, temperatureUnit,
+                                                            first.value + difference, maxTemperature)
+            difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
 
 
-        labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))
-        fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
-        toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
+            labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))
+            fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
+            toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
+        }
     }
 }
