@@ -17,7 +17,12 @@ class ScheduleCPP : public QSObjectCpp
 
     Q_PROPERTY(int type        MEMBER type       NOTIFY typeChanged FINAL)
 
+    // TODO: remove
     Q_PROPERTY(double temprature MEMBER temprature NOTIFY tempratureChanged FINAL)
+
+    Q_PROPERTY(double maximumTemprature MEMBER maximumTemprature NOTIFY maximumTempratureChanged FINAL)
+    Q_PROPERTY(double minimumTemprature MEMBER minimumTemprature NOTIFY minimumTempratureChanged FINAL)
+
     Q_PROPERTY(double humidity   MEMBER humidity   NOTIFY humidityChanged FINAL)
 
     Q_PROPERTY(bool enable  MEMBER enable  NOTIFY enableChanged FINAL)
@@ -47,6 +52,9 @@ public:
     //! ScheduleCPP temprature: This is always in Celsius
     double temprature;
 
+    double minimumTemprature;
+    double maximumTemprature;
+
     double humidity;
 
     //! Whether this ScheduleCPP is active or not
@@ -62,6 +70,8 @@ signals:
     void dataSourceChanged();
     void repeatsChanged();
     void tempratureChanged();
+    void maximumTempratureChanged();
+    void minimumTempratureChanged();
     void humidityChanged();
     void enableChanged();
     void activeChanged();

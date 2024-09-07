@@ -9,6 +9,8 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     temprature = 18; // Celsius
     humidity   = 0;  // Percentage
 
+    // TODO: Set defaults for minimum and maximum temperatures
+
     // default: Away
     type = 0;
 }
