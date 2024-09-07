@@ -22,8 +22,8 @@ class ScheduleCPP : public QSObjectCpp
     // TODO: remove
     Q_PROPERTY(double temprature MEMBER temprature NOTIFY tempratureChanged FINAL)
 
-    Q_PROPERTY(double maximumTemprature MEMBER maximumTemprature NOTIFY maximumTempratureChanged FINAL)
-    Q_PROPERTY(double minimumTemprature MEMBER minimumTemprature NOTIFY minimumTempratureChanged FINAL)
+    Q_PROPERTY(double maximumTemperature MEMBER maximumTemperature NOTIFY maximumTemperatureChanged FINAL)
+    Q_PROPERTY(double minimumTemperature MEMBER minimumTemperature NOTIFY minimumTemperatureChanged FINAL)
 
     Q_PROPERTY(double humidity   MEMBER humidity   NOTIFY humidityChanged FINAL)
 
@@ -54,8 +54,8 @@ public:
     //! ScheduleCPP temprature: This is always in Celsius
     double temprature;
 
-    double minimumTemprature;
-    double maximumTemprature;
+    double minimumTemperature;
+    double maximumTemperature;
 
     double humidity;
 
@@ -63,9 +63,6 @@ public:
     bool enable;
 
     bool active;
-
-    //! Return the effective temperature based on the system mode
-    double effectiveTemperature(AppSpecCPP::SystemMode systemMode);
 
 signals:
     void nameChanged();
@@ -75,8 +72,8 @@ signals:
     void dataSourceChanged();
     void repeatsChanged();
     void tempratureChanged();
-    void maximumTempratureChanged();
-    void minimumTempratureChanged();
+    void maximumTemperatureChanged();
+    void minimumTemperatureChanged();
     void humidityChanged();
     void enableChanged();
     void activeChanged();

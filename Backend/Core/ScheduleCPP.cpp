@@ -14,9 +14,3 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     // default: Away
     type = 0;
 }
-
-
-double ScheduleCPP::effectiveTemperature(AppSpecCPP::SystemMode systemMode) {
-
-    return 0.0;
-}
