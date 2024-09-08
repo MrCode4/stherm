@@ -56,7 +56,12 @@ Control {
             Qt.callLater(updateAutoModeTemperatureValueFromSchedule);
 
         } else if (device) {
-            Qt.callLater(updateTemperatureValue, device.requestedTemp);
+            if (tempSliderDoubleHandle.visible)
+                Qt.callLater(tempSliderDoubleHandle.updateFirstSecondValues);
+
+            else
+                Qt.callLater(updateTemperatureValue, device.requestedTemp);
+
         }
     }
 
