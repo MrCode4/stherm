@@ -39,7 +39,6 @@ QtObject {
         newSchedule.type = schedule.type;
         newSchedule.minimumTemperature = schedule.minimumTemperature;
         newSchedule.maximumTemperature = schedule.maximumTemperature;
-        newSchedule.temprature = schedule.temprature;
         newSchedule.humidity = schedule.humidity;
         newSchedule.startTime = schedule.startTime;
         newSchedule.endTime = schedule.endTime;
@@ -378,7 +377,6 @@ QtObject {
                                       newSchedule.maximumTemperature = Utils.clampValue(schedule?.maximumTemperature ?? AppSpec.defaultAutoMaxReqTemp,
                                                                                         Math.max(newSchedule.minimumTemperature + AppSpec.autoModeDiffrenceC, AppSpec.minAutoMaxTemp),
                                                                                         AppSpec.autoMaximumTemperatureC);
-                                      // newSchedule.temprature = Utils.clampValue(schedule.temp, AppSpec.minimumTemperatureC, AppSpec.maximumTemperatureC);
                                       newSchedule.humidity = Utils.clampValue(schedule.humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
                                       newSchedule.startTime = formatTime(schedule.start_time);
                                       newSchedule.endTime = formatTime(schedule.end_time);
@@ -406,9 +404,7 @@ QtObject {
                                           foundSchedule.endTime = endTime;
                                       }
 
-                                      if (foundSchedule.temprature !== schedule.temp) {
-                                          foundSchedule.temprature = schedule.temp;
-                                      }
+                                      // TODO: Update schedule temperatures
 
                                       if (foundSchedule.humidity !== schedule.humidity) {
                                           foundSchedule.humidity = schedule.humidity;

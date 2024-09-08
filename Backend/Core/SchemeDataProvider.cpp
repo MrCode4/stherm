@@ -77,6 +77,7 @@ double SchemeDataProvider::effectiveTemperature() const
 
     } else if (schedule() || systemSetup()->systemMode == AppSpecCPP::SystemMode::Auto) {
 
+        // Use auto mode values by default and change later is schedule is defined.
         double minReqTemp = mAutoMinReqTemp;
         double maxReqTemp = mAutoMaxReqTemp;
 

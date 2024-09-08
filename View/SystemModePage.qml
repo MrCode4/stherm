@@ -199,8 +199,7 @@ BasePageView {
 
     //! Update the system mode
     function save(systemMode : int) {
-        uiSession.schedulesController.deactivateIncompatibleSchedules(systemMode);
-        deviceController.setSystemModeTo(systemMode);
+        uiSession.checkToUpdateSystemMode(systemMode);
         backButtonCallback();
     }
 }

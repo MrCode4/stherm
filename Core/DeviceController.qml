@@ -574,11 +574,18 @@ I_DeviceController {
         } else if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
             //! TODo required actions if any
 
-            device.systemSetup.systemMode = systemMode;
+            checkToUpdateSystemMode(systemMode);
             deviceController.updateEditMode(AppSpec.EMSystemMode);
             // to let all dependant parameters being updated and save all
             Qt.callLater(saveSettings);
         }
+    }
+
+    function checkToUpdateSystemMode(systemMode: int) {
+        // Deactivate the incompatible schedules when mode changed from server or ui
+        uiSession.schedulesController.deactivateIncompatibleSchedules(systemMode);
+
+        device.systemSetup.systemMode = systemMode;
     }
 
     //! On/off the vacation from server.
@@ -786,7 +793,8 @@ I_DeviceController {
                                              "type_id": schedule.type,
                                              "start_time": schedule.startTime,
                                              "end_time": schedule.endTime,
-                                             "temp": schedule.temprature,
+                                             //!  TODO: remove
+                                             "temp": 18.0,
                                              "humidity": schedule.humidity,
                                              "dataSource": schedule.dataSource,
                                              "weekdays": schedule.repeats.split(',')
@@ -835,9 +843,7 @@ I_DeviceController {
             //! Vacation will be handled using setVacationServer
             if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Off &&
                     modeInt !== AppSpec.Vacation) {
-                // Deactivate the incompatible schedules when mode changed from server
-                uiSession.schedulesController.deactivateIncompatibleSchedules(modeInt);
-                device.systemSetup.systemMode = modeInt;
+                checkToUpdateSystemMode(modeInt);
             }
         }
     }

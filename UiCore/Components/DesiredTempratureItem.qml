@@ -52,6 +52,11 @@ Control {
     /* Object properties
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
+        // The auto mode slider (tempSliderDoubleHandle) should be updated when
+        // a schedule is defined or becomes null.
+        // If a schedule exists, update the slider with
+        // the schedule's minimum and maximum temperature values.
+        // If no schedule is defined, update each visible slider with the device's values.
         if (currentSchedule) {
             Qt.callLater(updateAutoModeTemperatureValueFromSchedule);
 
@@ -124,10 +129,12 @@ Control {
                     //! Set difference
                     tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
 
+                    // Update tempSliderDoubleHandle with the schedule's minimum and maximum temperature values.
                     if (currentSchedule) {
                         updateAutoModeTemperatureValueFromSchedule();
 
                     } else {
+                        // Update tempSliderDoubleHandle with the auto values in the device model.
                         tempSliderDoubleHandle.updateFirstSecondValues();
                     }
                 }
@@ -161,11 +168,9 @@ Control {
                 target: device?.setting ?? null
                 enabled: tempSliderDoubleHandle.visible
 
+                //! Update
                 function onTempratureUnitChanged() {
-                    if (currentSchedule)
-                        updateAutoModeTemperatureValueFromSchedule();
-                    else
-                        updateFirstSecondValuesTmr.restart();
+                    updateFirstSecondValuesTmr.restart();
                 }
             }
 
@@ -186,7 +191,12 @@ Control {
                 onTriggered: {
                     //! Set difference
                     tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
-                    tempSliderDoubleHandle.updateFirstSecondValues();
+
+                    if (currentSchedule)
+                        // Update tempSliderDoubleHandle based on schedule
+                        updateAutoModeTemperatureValueFromSchedule();
+                    else
+                        tempSliderDoubleHandle.updateFirstSecondValues();
                 }
             }
 
