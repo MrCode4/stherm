@@ -199,7 +199,7 @@ BasePageView {
 
     //! Update the system mode
     function save(systemMode : int) {
-        deviceController.checkToUpdateSystemMode(systemMode);
+        deviceController.setSystemModeTo(systemMode);
         backButtonCallback();
     }
 }

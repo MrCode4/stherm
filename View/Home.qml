@@ -474,8 +474,8 @@ Control {
             PropertyChanges {
                 target: _desiredTempItem
                 font.pointSize: Qt.application.font.pointSize * 2.8
-                labelVerticalOffset: device?.systemSetup?.systemMode === AppSpec.Auto
-                                     && !_desiredTempItem.currentSchedule ? -12 : -28
+                labelVerticalOffset: (device?.systemSetup?.systemMode === AppSpec.Auto
+                                     || _desiredTempItem.currentSchedule) ? -12 : -28
                 enableAnimations: true
             }
 
