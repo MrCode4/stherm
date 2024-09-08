@@ -35,8 +35,8 @@ AppSpecCPP {
 
     //! Diffrence between autoMinTemp and autoMaxTemp
     //! Celcius
-    property real autoModeDiffrenceC: 2.5
-    property real autoModeDiffrenceF: 4.0
+    property real autoModeDiffrenceC: 2.0
+    property real autoModeDiffrenceF: 3.0
 
     //! Auto mode defaults
     property real defaultAutoMinReqTemp: 20.0    // 68 F
@@ -166,21 +166,18 @@ AppSpecCPP {
 
         switch (type) {
         case AppSpecCPP.Away: {
-            newSchedule.temprature = 25.55;           // 78 F
             newSchedule.startTime = "06:00 AM";
             newSchedule.endTime = "03:00 PM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr";
         } break;
 
         case AppSpecCPP.Night: {
-            newSchedule.temprature = 24.44;         // 76 F
             newSchedule.startTime = "10:00 PM";
             newSchedule.endTime = "06:00 AM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr,Sa,Su";
         } break;
 
         case AppSpecCPP.Home: {
-            newSchedule.temprature = 23.33                 // 74 F
             newSchedule.startTime = "09:00 AM";
             newSchedule.endTime = "06:00 PM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr";
