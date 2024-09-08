@@ -49,7 +49,7 @@ BasePageView {
 
     topPadding: 24
     backButtonVisible: false
-    title: "Start & End Time"
+    title: "Time"
 
     Component.onCompleted: {
         if (!editMode && schedule.type === AppSpec.Custom) {
