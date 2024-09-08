@@ -211,7 +211,6 @@ BasePageView {
         }
     }
 
-    // Preview and data source page hide in the new design
     Component {
         id: _dataSourcePageCompo
 
