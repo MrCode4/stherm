@@ -318,6 +318,10 @@ Control {
             height: _tempSlider.background.shapeHeight
             anchors.centerIn: parent
 
+            // To fit label and schedule in home screen
+            anchors.verticalCenterOffset: (currentSchedule && device.systemSetup.systemMode !== AppSpec.Auto) ? -15 : 0
+
+
             Label {
                 id: rightTempLabel
                 visible: labelVisible
