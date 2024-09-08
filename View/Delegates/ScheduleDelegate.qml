@@ -134,6 +134,11 @@ ItemDelegate {
                     }
 
                     schedule.enable = checked;
+                    if (checked) {
+                        // Update system mode
+                        schedule.systemMode = uiSession.appModel.systemSetup.systemMode;
+                    }
+
                     uiSession.appModel.schedulesChanged();
 
                     //Shows a proper toast message upon activation of a schedule
@@ -202,6 +207,8 @@ ItemDelegate {
 
         if (schedule?.enable === false) {
             schedule.enable = true;
+            // Update system mode
+            schedule.systemMode = uiSession.appModel.systemSetup.systemMode;
 
             // Send Data to server when a schedule changed...
             deviceController.updateEditMode(AppSpec.EMSchedule);
