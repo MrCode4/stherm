@@ -183,7 +183,7 @@ AppSpecCPP {
 
         case AppSpecCPP.Home: {
             newSchedule.minimumTemperature = 22.77778; // 73
-            newSchedule.maximumTemperature = 25.0; // 76
+            newSchedule.maximumTemperature = 25.0; // 77
             newSchedule.startTime = "09:00 AM";
             newSchedule.endTime = "06:00 PM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr";
