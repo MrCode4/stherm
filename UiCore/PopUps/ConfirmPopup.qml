@@ -35,6 +35,8 @@ I_PopUp {
      * ****************************************************************************************/
     title: ""
 
+    onHid: rejected();
+
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
@@ -58,6 +60,7 @@ I_PopUp {
             textFormat: "RichText"
             text: `<small>${detailMessage}</small>`
             horizontalAlignment: "AlignHCenter"
+            wrapMode: Text.WordWrap
         }
 
         RowLayout {
