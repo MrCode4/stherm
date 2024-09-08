@@ -1,5 +1,7 @@
 #include "ScheduleCPP.h"
 
+#include "AppSpecCPP.h"
+
 ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     QSObjectCpp(parent)
 {
@@ -9,8 +11,13 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     temprature = 18; // Celsius
     humidity   = 0;  // Percentage
 
-    // TODO: Set defaults for minimum and maximum temperatures
+    // Set defaults for minimum and maximum temperatures
+    minimumTemperature = 15.5556;
+    maximumTemperature = 29.4444;
 
     // default: Away
     type = 0;
+
+    // Off
+    systemMode = AppSpecCPP::SystemMode::Off;
 }
