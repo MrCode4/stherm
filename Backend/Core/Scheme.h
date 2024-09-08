@@ -39,10 +39,6 @@ public:
 
     AppSpecCPP::FanMode fanMode() const;
 
-    //! Set Auto temperature ranges
-    void setAutoMinReqTemp(const double &min);
-    void setAutoMaxReqTemp(const double &max);
-
     void runSystemDelay(AppSpecCPP::SystemMode mode);
 
 signals:
@@ -132,10 +128,6 @@ private:
 
     //! to log vital informations
     QTimer mLogTimer;
-
-    //! Auto mode properites (Fahrenheit)
-    double mAutoMinReqTemp;
-    double mAutoMaxReqTemp;
 
     //! Vacation properites (Fahrenheit)
     double mVacationMinimumTemperature;

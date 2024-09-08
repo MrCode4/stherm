@@ -175,8 +175,6 @@ void Scheme::run()
         if (mDataProvider.data()->systemSetup()->isVacation) {
             VacationLoop();
 
-        } else if (mDataProvider.data()->schedule()) { // Schedule moves the app to auto mode and use the schedule property (temperature/humidity)
-            AutoModeLoop();
 
         } else {
             switch (mDataProvider.data()->systemSetup()->systemMode) {
@@ -1017,39 +1015,7 @@ void Scheme::moveToUpdatingMode()
 
 double Scheme::effectiveTemperature()
 {
-    double effTemperature = mDataProvider->setPointTemperature();
-
-    if (mDataProvider.data()->systemSetup()->isVacation) {
-        if ((mVacationMinimumTemperature - mDataProvider.data()->currentTemperature()) > 0.001) {
-            effTemperature = mVacationMinimumTemperature;
-
-        } else if ((mVacationMaximumTemperature - mDataProvider.data()->currentTemperature()) < 0.001) {
-            effTemperature = mVacationMaximumTemperature;
-        }
-
-    } else if (mDataProvider.data()->schedule()) {
-        effTemperature = UtilityHelper::toFahrenheit(mDataProvider.data()->schedule()->temprature);
-
-    } else if (mDataProvider.data()->systemSetup()->systemMode == AppSpecCPP::SystemMode::Auto) {
-        if ((mAutoMinReqTemp - mDataProvider.data()->currentTemperature()) > 0.001) {
-            effTemperature = mAutoMinReqTemp;
-
-        } else if ((mAutoMaxReqTemp - mDataProvider.data()->currentTemperature()) < 0.001) {
-            effTemperature = mAutoMaxReqTemp;
-
-        } else {
-            // Set the effective temperature to the boundary temperature to shutdown the system
-            // todo: Manage the Emergency mode.
-            if (mRelay->currentState() == AppSpecCPP::SystemMode::Cooling)
-                effTemperature = mAutoMaxReqTemp;
-            else if (mRelay->currentState() == AppSpecCPP::SystemMode::Heating)
-                effTemperature = mAutoMinReqTemp;
-            else
-                effTemperature = mDataProvider.data()->currentTemperature();
-        }
-    }
-
-    return effTemperature;
+    return mDataProvider->effectiveTemperature();
 }
 
 double Scheme::effectiveCurrentTemperature()
@@ -1059,20 +1025,6 @@ double Scheme::effectiveCurrentTemperature()
 
 AppSpecCPP::FanMode Scheme::fanMode() const {
     return mFanMode;
-}
-
-void Scheme::setAutoMinReqTemp(const double &min)
-{
-    auto minF = UtilityHelper::toFahrenheit(min);
-    if (qAbs(mAutoMinReqTemp - minF) > 0.001)
-        mAutoMinReqTemp = minF;
-}
-
-void Scheme::setAutoMaxReqTemp(const double &max)
-{
-    auto maxF = UtilityHelper::toFahrenheit(max);
-    if (qAbs(mAutoMaxReqTemp - maxF) > 0.001)
-        mAutoMaxReqTemp = maxF;
 }
 
 void Scheme::runSystemDelay(AppSpecCPP::SystemMode mode)
