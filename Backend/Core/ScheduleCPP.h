@@ -20,9 +20,6 @@ class ScheduleCPP : public QSObjectCpp
     Q_PROPERTY(int type        MEMBER type       NOTIFY typeChanged FINAL)
     Q_PROPERTY(AppSpecCPP::SystemMode systemMode  MEMBER systemMode NOTIFY systemModeChanged FINAL)
 
-    // TODO: remove
-    Q_PROPERTY(double temprature MEMBER temprature NOTIFY tempratureChanged FINAL)
-
     Q_PROPERTY(double maximumTemperature MEMBER maximumTemperature NOTIFY maximumTemperatureChanged FINAL)
     Q_PROPERTY(double minimumTemperature MEMBER minimumTemperature NOTIFY minimumTemperatureChanged FINAL)
 
@@ -55,9 +52,9 @@ public:
     //! Determine when a schedule was created or if the current schedule is enabled.
     AppSpecCPP::SystemMode systemMode;
 
-    //! ScheduleCPP temprature: This is always in Celsius
     double temprature;
 
+    //! Temperature: This is always in Celsius
     double minimumTemperature;
     double maximumTemperature;
 

@@ -82,7 +82,7 @@ Control {
             //! can be faulty
             //! Use Component.onCompleted to update the UI for first time after the settings are loaded.
             Component.onCompleted: {
-                var tmp = currentSchedule?.temprature ?? (device?.requestedTemp ?? AppSpec.defaultRequestedTemperature);
+                var tmp = device?.requestedTemp ?? AppSpec.defaultRequestedTemperature;
                 _tempSlider.value = Utils.convertedTemperatureClamped(tmp,
                                                                       temperatureUnit,
                                                                       minTemprature,
@@ -118,7 +118,13 @@ Control {
                 if (visible) {
                     //! Set difference
                     tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
-                    tempSliderDoubleHandle.updateFirstSecondValues();
+
+                    if (currentSchedule) {
+                        autoModeTemperatureValueFromSchedule();
+
+                    } else {
+                        tempSliderDoubleHandle.updateFirstSecondValues();
+                    }
                 }
             }
 
@@ -440,7 +446,7 @@ Control {
 
             //! Update slider value (UI) with changed TempratureUnit
             function onTemperatureUnitChanged() {
-                updateTemperatureValue(currentSchedule?.temprature ?? (device?.requestedTemp ?? AppSpec.defaultRequestedTemperature));
+                updateTemperatureValue(device?.requestedTemp ?? AppSpec.defaultRequestedTemperature);
             }
         }
 

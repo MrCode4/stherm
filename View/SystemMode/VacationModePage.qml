@@ -82,7 +82,7 @@ BasePageView {
         //! Temprature
         Label {
             Layout.columnSpan: 2
-            text: "Temprature"
+            text: "Temperature"
         }
 
         //! Temprature icon

@@ -8,10 +8,10 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     // Defaults
     enable     = true;
     active     = false;
-    temprature = 18; // Celsius
     humidity   = 0;  // Percentage
 
     // Set defaults for minimum and maximum temperatures
+    // Celsius
     minimumTemperature = 15.5556;
     maximumTemperature = 29.4444;
 
