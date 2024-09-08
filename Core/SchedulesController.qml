@@ -46,6 +46,9 @@ QtObject {
         newSchedule.repeats = schedule.repeats;
         newSchedule.dataSource = schedule.dataSource;
 
+        // Update the created schedule with the current system mode
+        newSchedule.systemMode = device.systemSetup.systemMode;
+
         device.schedules.push(newSchedule);
         device.schedulesChanged();
 
@@ -507,6 +510,33 @@ QtObject {
         return null;
     }
 
+    //! Deactivate schedules that are incompatible with the current system mode.
+    function deactivateIncompatibleSchedules(checkWithSystemMode : int) {
+
+        var incompatibleSchedules = findIncompatibleSchedules(checkWithSystemMode);
+        incompatibleSchedules.forEach(schedule => {
+                                          schedule.enable = false;
+                                      });
+    }
+
+    //! Find schedules that are incompatible with the current system mode.
+    function findIncompatibleSchedules(checkWithSystemMode : int) {
+        var currentSystemMode = device.systemSetup.systemMode;
+        var incompatibleSchedules = [];
+
+        // TODO: Check the vacation (schedule do not function when vacation is on)
+        // Also check the Off mode
+        if (checkWithSystemMode !== currentSystemMode &&
+                ((checkWithSystemMode === AppSpec.Cooling && currentSystemMode === AppSpec.Heating) ||
+                (checkWithSystemMode === AppSpec.Heating  && currentSystemMode === AppSpec.Cooling))) {
+            incompatibleSchedules = device.schedules.filter(schedule =>
+                                                            schedule.systemMode === currentSystemMode &&
+                                                            schedule.enable);
+        }
+
+        return incompatibleSchedules;
+    }
+
     property Timer _checkRunningTimer: Timer {
 
         running: runningScheduleEnabled
@@ -533,7 +563,7 @@ QtObject {
         }
     }
 
-    property Connections deviceControllerConnections: Connections{
+    property Connections deviceControllerConnections: Connections {
         target: deviceController.currentSchedule
 
         function onEnableChanged() {
@@ -545,7 +575,7 @@ QtObject {
 
     //! Send null schedule when system mode changed to OFF mode
     property Connections systemSetupConnections: Connections{
-        target: device.systemSetup
+        target: device?.systemSetup ?? null
 
         function on_IsSystemShutoffChanged() {
             if (device?.systemSetup?._isSystemShutoff)
@@ -553,9 +583,18 @@ QtObject {
         }
 
         function onSystemModeChanged() {
-            if ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) {
+            var currentSystemMode = device.systemSetup.systemMode;
+            if (currentSystemMode === AppSpec.Off) {
                 deviceController.setActivatedSchedule(null);
+
             }
+            // TODO: auto -> cooling/heating == will be disable the incompatible schedules
+            // else if (currentSystemMode === AppSpec.Cooling) {
+            //     deactivateIncompatibleSchedules(AppSpec.Heating);
+
+            // } else if (currentSystemMode === AppSpec.Heating) {
+            //     deactivateIncompatibleSchedules(AppSpec.Cooling);
+            // }
         }
     }
 }
