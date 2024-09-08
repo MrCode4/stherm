@@ -834,8 +834,11 @@ I_DeviceController {
             var modeInt = parseInt(mode_id) - 1;
             //! Vacation will be handled using setVacationServer
             if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Off &&
-                    modeInt !== AppSpec.Vacation)
+                    modeInt !== AppSpec.Vacation) {
+                // Deactivate the incompatible schedules when mode changed from server
+                uiSession.schedulesController.deactivateIncompatibleSchedules(modeInt);
                 device.systemSetup.systemMode = modeInt;
+            }
         }
     }
 
