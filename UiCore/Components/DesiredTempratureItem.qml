@@ -448,11 +448,13 @@ Control {
             target: currentSchedule
 
             //! Update slider value (UI) with changed temperature in schedule
-            function onTempratureChanged() {
-                _tempSlider.value = Utils.convertedTemperatureClamped(currentSchedule.temprature,
-                                                                      temperatureUnit,
-                                                                      minTemprature,
-                                                                      maxTemprature);
+            function onMaximumTemperatureChanged() {
+                autoModeTemperatureValueFromSchedule();
+            }
+
+            //! Update slider value (UI) with changed temperature in schedule
+            function onMinimumTemperatureChanged() {
+                autoModeTemperatureValueFromSchedule();
             }
         }
     }
