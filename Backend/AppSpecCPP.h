@@ -183,6 +183,9 @@ public:
     Q_INVOKABLE QString generateRandomPassword();
 
     Q_INVOKABLE QString decodeLockPassword(QString pass);
+
+    Q_INVOKABLE QString systemModeToString(SystemMode systemMode);
+
 signals:
 
 private:
