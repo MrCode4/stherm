@@ -53,7 +53,7 @@ Control {
      * ****************************************************************************************/
     onCurrentScheduleChanged: {
         if (currentSchedule) {
-            Qt.callLater(autoModeTemperatureValueFromSchedule);
+            Qt.callLater(updateAutoModeTemperatureValueFromSchedule);
 
         } else if (device) {
             Qt.callLater(updateTemperatureValue, device.requestedTemp);
@@ -120,7 +120,7 @@ Control {
                     tempSliderDoubleHandle.difference = temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
 
                     if (currentSchedule) {
-                        autoModeTemperatureValueFromSchedule();
+                        updateAutoModeTemperatureValueFromSchedule();
 
                     } else {
                         tempSliderDoubleHandle.updateFirstSecondValues();
@@ -158,7 +158,7 @@ Control {
 
                 function onTempratureUnitChanged() {
                     if (currentSchedule)
-                        autoModeTemperatureValueFromSchedule();
+                        updateAutoModeTemperatureValueFromSchedule();
                     else
                         updateFirstSecondValuesTmr.restart();
                 }
@@ -455,12 +455,12 @@ Control {
 
             //! Update slider value (UI) with changed temperature in schedule
             function onMaximumTemperatureChanged() {
-                autoModeTemperatureValueFromSchedule();
+                updateAutoModeTemperatureValueFromSchedule();
             }
 
             //! Update slider value (UI) with changed temperature in schedule
             function onMinimumTemperatureChanged() {
-                autoModeTemperatureValueFromSchedule();
+                updateAutoModeTemperatureValueFromSchedule();
             }
         }
     }
@@ -683,7 +683,7 @@ Control {
     }
 
     //! Update tempSliderDoubleHandle values
-    function autoModeTemperatureValueFromSchedule() {
+    function updateAutoModeTemperatureValueFromSchedule() {
         if (currentSchedule) {
             // TODO: Check for clamping data
             tempSliderDoubleHandle.first.value = Utils.convertedTemperature(currentSchedule.minimumTemperature, temperatureUnit);
