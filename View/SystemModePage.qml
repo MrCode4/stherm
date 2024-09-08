@@ -168,7 +168,7 @@ BasePageView {
     function checkAndUpdateSystemMode(systemMode : int) {
         if (uiSession.schedulesController.findIncompatibleSchedules(systemMode).length > 0) {
 
-            confirmPopup.detailMessage = `There are active Schedule(s) configured for ${AppSpec.systemModeToString(device.systemSetup.systemMode)} mode that are incompatible with the new ${AppSpec.systemModeToString(systemMode)} mode. These Schedules will be atomatically disabled.`
+            confirmPopup.detailMessage = `There are active Schedule(s) configured for ${AppSpec.systemModeToString(device.systemSetup.systemMode)} mode that are incompatible with the new ${AppSpec.systemModeToString(systemMode)} mode. These Schedules will be automatically disabled.`
             confirmPopup.accepted.connect(saveAndDisconnect.bind(this, systemMode));
             confirmPopup.rejected.connect(rejectAndDisconnect);
             confirmPopup.open();
@@ -184,10 +184,10 @@ BasePageView {
         confirmPopup.rejected.disconnect(rejectAndDisconnect);
 
         // Back to state of the model
-        _coolingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Cooling
-        _heatingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Heating
-        _autoButton.checked    = device?.systemSetup.systemMode === AppSpecCPP.Auto
-        _offButton.checked     = device?.systemSetup.systemMode === AppSpecCPP.Off
+        _coolingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Cooling;
+        _heatingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Heating;
+        _autoButton.checked    = device?.systemSetup.systemMode === AppSpecCPP.Auto;
+        _offButton.checked     = device?.systemSetup.systemMode === AppSpecCPP.Off;
     }
 
     //! Save the systemMode and disconnect the confirmPopup
