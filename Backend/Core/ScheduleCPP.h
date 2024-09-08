@@ -52,8 +52,6 @@ public:
     //! Determine when a schedule was created or if the current schedule is enabled.
     AppSpecCPP::SystemMode systemMode;
 
-    double temprature;
-
     //! Temperature: This is always in Celsius
     double minimumTemperature;
     double maximumTemperature;
