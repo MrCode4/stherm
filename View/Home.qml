@@ -107,17 +107,15 @@ Control {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 // To align with schedule ON button
-                horizontalCenterOffset: isSchedule ? -15 : -6
+                horizontalCenterOffset:  -6
             }
 
             deviceController: uiSession?.deviceController ?? null
 
             onClicked: {
-                if (!deviceController.currentSchedule) {
-                    _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
-                                                  "uiSession": Qt.binding(() => uiSession)
-                                              });
-                }
+                _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
+                                              "uiSession": Qt.binding(() => uiSession)
+                                          });
             }
         }
 
@@ -347,9 +345,9 @@ Control {
                     // Otherwise, display the PrivacyPolicyPage for acceptance.
                     if (device.userPolicyTerms.acceptedVersionOnTestMode === device.userPolicyTerms.currentVersion) {
                         mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                                     "uiSession": Qt.binding(() => uiSession),
-                                                     "backButtonVisible" : false
-                                                 });
+                                               "uiSession": Qt.binding(() => uiSession),
+                                               "backButtonVisible" : false
+                                           });
                     } else {
                         mainStackView.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
                                                "uiSession": Qt.binding(() => uiSession),
