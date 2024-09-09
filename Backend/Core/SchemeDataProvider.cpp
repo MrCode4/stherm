@@ -77,32 +77,41 @@ double SchemeDataProvider::effectiveTemperature() const
 
     } else if (schedule() || systemSetup()->systemMode == AppSpecCPP::SystemMode::Auto) {
 
-        // Use auto mode values by default and change later is schedule is defined.
-        double minReqTemp = mAutoMinReqTempF;
-        double maxReqTemp = mAutoMaxReqTempF;
-
-        if (schedule()) {
-            minReqTemp = UtilityHelper::toFahrenheit(schedule()->minimumTemperature);
-            maxReqTemp = UtilityHelper::toFahrenheit(schedule()->maximumTemperature);
-        }
-
-        if ((minReqTemp - currentTemperature()) > 0.001) {
-            effTemperature = minReqTemp;
-
-        } else if ((maxReqTemp - currentTemperature()) < 0.001) {
-            effTemperature = maxReqTemp;
+        // The mode can be heating or cooling
+        // In off mode schedule() is null
+        if (schedule() && systemSetup()->systemMode != AppSpecCPP::SystemMode::Auto) {
+            effTemperature = schedule()->effectiveTemperature(systemSetup()->systemMode);
 
         } else {
-            auto relay = Relay::instance();
 
-            // Set the effective temperature to the boundary temperature to shutdown the system
-            // todo: Manage the Emergency mode.
-            if (relay->currentState() == AppSpecCPP::SystemMode::Cooling)
-                effTemperature = maxReqTemp;
-            else if (relay->currentState() == AppSpecCPP::SystemMode::Heating)
+            // Use auto mode values by default and change later in schedule if needed.
+            double minReqTemp = mAutoMinReqTempF;
+            double maxReqTemp = mAutoMaxReqTempF;
+
+            // Use schedule and use the auto mode logics.
+            if (schedule()) {
+                minReqTemp = UtilityHelper::toFahrenheit(schedule()->minimumTemperature);
+                maxReqTemp = UtilityHelper::toFahrenheit(schedule()->maximumTemperature);
+            }
+
+            if ((minReqTemp - currentTemperature()) > 0.001) {
                 effTemperature = minReqTemp;
-            else
-                effTemperature = currentTemperature();
+
+            } else if ((maxReqTemp - currentTemperature()) < 0.001) {
+                effTemperature = maxReqTemp;
+
+            } else {
+                auto relay = Relay::instance();
+
+                // Set the effective temperature to the boundary temperature to shutdown the system
+                // todo: Manage the Emergency mode.
+                if (relay->currentState() == AppSpecCPP::SystemMode::Cooling)
+                    effTemperature = maxReqTemp;
+                else if (relay->currentState() == AppSpecCPP::SystemMode::Heating)
+                    effTemperature = minReqTemp;
+                else
+                    effTemperature = currentTemperature();
+            }
         }
     }
 

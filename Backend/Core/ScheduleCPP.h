@@ -63,6 +63,11 @@ public:
 
     bool active;
 
+    //! Determine the effective temperarure in the cooling and heating mode.
+    //! Return maximumTemperature in the cooling mode.
+    //! Return minimumTemperature in the heating mode.
+    Q_INVOKABLE double effectiveTemperature(const AppSpecCPP::SystemMode& sysMode);
+
 signals:
     void nameChanged();
     void typeChanged();

@@ -703,21 +703,15 @@ Control {
     // If no schedule is defined, update each visible slider with the device's values.
     function updateUITemperature() {
         if (currentSchedule) {
-            if (device.systemSetup.systemMode === AppSpec.Auto) {
+            if (device?.systemSetup?.systemMode === AppSpec.Auto) {
                 updateAutoModeTemperatureValueFromSchedule();
 
             } else {
-                // Heating use minimum temperature
-                if (device.systemSetup.systemMode === AppSpec.Heating)
-                   updateTemperatureValue(currentSchedule.minimumTemperature);
-
-                // Cooling use minimum temperature
-                else if (device.systemSetup.systemMode === AppSpec.Cooling)
-                    updateTemperatureValue(currentSchedule.maximumTemperature);
+                updateTemperatureValue(currentSchedule.effectiveTemperature(device?.systemSetup?.systemMode ?? AppSpec.Off));
             }
 
         } else {
-            if (device.systemSetup.systemMode === AppSpec.Auto)
+            if (device?.systemSetup?.systemMode === AppSpec.Auto)
                 tempSliderDoubleHandle.updateFirstSecondValues();
 
             else
