@@ -256,9 +256,15 @@ QtObject {
         })
 
         deviceCurrentSchedules = currentSchedules;
+
+        //! When the deviceCurrentSchedules changed, the running schedule should be check again.
+        findRunningSchedule();
     }
 
     //! Find current schedule to active it and pass to Scheme to work around
+    //! The function is triggered by the timer in the presence of active schedules.
+    //! Additionally, it's called by the updateCurrentSchedules function to manage
+    //! updates in scenarios where all schedules have been cleared.
     function findRunningSchedule() {
         var now = new Date();
         var currentDate = Qt.formatDate(now, "ddd").slice(0, -1);
@@ -405,6 +411,7 @@ QtObject {
                                       }
 
                                       // TODO: Update schedule temperatures
+                                      // TODO: Update schedule mode
 
                                       if (foundSchedule.humidity !== schedule.humidity) {
                                           foundSchedule.humidity = schedule.humidity;
@@ -554,6 +561,7 @@ QtObject {
                 deviceController.setActivatedSchedule(null);
         }
 
+        //! Add/remove schedules
         function onSchedulesChanged() {
             updateCurrentSchedules();
         }
