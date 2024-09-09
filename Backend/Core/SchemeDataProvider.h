@@ -52,16 +52,16 @@ public:
     double setPointHumidity() const;
 
     //! Set minimum of auto temperature ranges
-    //! min: Celsius
-    void setAutoMinReqTemp(const double &min);
+    //! cel_value: Celsius
+    void setAutoMinReqTemp(const double &cel_value);
     //! Fahrenheit
-    double autoMinReqTemp() const;
+    double autoMinReqTempF() const;
 
     //! Set maximum of auto temperature ranges
-    //! max: Celsius
-    void setAutoMaxReqTemp(const double &max);
+    //! cel_value: Celsius
+    void setAutoMaxReqTemp(const double &cel_value);
     //! Fahrenheit
-    double autoMaxReqTemp() const;
+    double autoMaxReqTempF() const;
 
     AppSpecCPP::AccessoriesType getAccessoriesType() const;
 
@@ -76,6 +76,10 @@ public:
     //! result should be in Fahrenheit as well.
     double effectiveTemperature() const;
 
+
+    void setAutoMinReqTempF(const double &fah_value);
+
+    void setAutoMaxReqTempF(const double &fah_value);
 
 signals:
 
@@ -113,7 +117,7 @@ private:
     struct STHERM::Vacation mVacation;
 
     //! Auto mode properites (Fahrenheit)
-    double mAutoMinReqTemp;
-    double mAutoMaxReqTemp;
+    double mAutoMinReqTempF;
+    double mAutoMaxReqTempF;
 };
 

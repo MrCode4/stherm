@@ -78,8 +78,8 @@ double SchemeDataProvider::effectiveTemperature() const
     } else if (schedule() || systemSetup()->systemMode == AppSpecCPP::SystemMode::Auto) {
 
         // Use auto mode values by default and change later is schedule is defined.
-        double minReqTemp = mAutoMinReqTemp;
-        double maxReqTemp = mAutoMaxReqTemp;
+        double minReqTemp = mAutoMinReqTempF;
+        double maxReqTemp = mAutoMaxReqTempF;
 
         if (schedule()) {
             minReqTemp = UtilityHelper::toFahrenheit(schedule()->minimumTemperature);
@@ -109,28 +109,38 @@ double SchemeDataProvider::effectiveTemperature() const
     return effTemperature;
 }
 
-void SchemeDataProvider::setAutoMinReqTemp(const double &min)
+void SchemeDataProvider::setAutoMinReqTempF(const double &fah_value)
 {
-    auto minF = UtilityHelper::toFahrenheit(min);
-    if (qAbs(mAutoMinReqTemp - minF) > 0.001)
-        mAutoMinReqTemp = minF;
+    if (qAbs(mAutoMinReqTempF - fah_value) > 0.001)
+        mAutoMinReqTempF = fah_value;
 }
 
-double SchemeDataProvider::autoMinReqTemp() const
+void SchemeDataProvider::setAutoMinReqTemp(const double &cel_value)
 {
-    return mAutoMinReqTemp;
+    auto minF = UtilityHelper::toFahrenheit(cel_value);
+    setAutoMinReqTempF(minF);
 }
 
-void SchemeDataProvider::setAutoMaxReqTemp(const double &max)
+double SchemeDataProvider::autoMinReqTempF() const
 {
-    auto maxF = UtilityHelper::toFahrenheit(max);
-    if (qAbs(mAutoMaxReqTemp - maxF) > 0.001)
-        mAutoMaxReqTemp = maxF;
+    return mAutoMinReqTempF;
 }
 
-double SchemeDataProvider::autoMaxReqTemp() const
+void SchemeDataProvider::setAutoMaxReqTemp(const double &cel_value)
 {
-    return mAutoMaxReqTemp;
+    auto maxF = UtilityHelper::toFahrenheit(cel_value);
+    setAutoMaxReqTempF(maxF);
+}
+
+void SchemeDataProvider::setAutoMaxReqTempF(const double& fah_value)
+{
+    if (qAbs(mAutoMaxReqTempF - fah_value) > 0.001)
+        mAutoMaxReqTempF = fah_value;
+}
+
+double SchemeDataProvider::autoMaxReqTempF() const
+{
+    return mAutoMaxReqTempF;
 }
 
 void SchemeDataProvider::setSchedule(ScheduleCPP *newSchedule)

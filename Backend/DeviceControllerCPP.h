@@ -110,8 +110,8 @@ public:
 
     Q_INVOKABLE bool checkNRFFirmwareVersion();
 
-    Q_INVOKABLE void setAutoMinReqTemp(const double min);
-    Q_INVOKABLE void setAutoMaxReqTemp(const double max);
+    Q_INVOKABLE void setAutoMinReqTemp(const double cel_value);
+    Q_INVOKABLE void setAutoMaxReqTemp(const double cel_value);
 
     /* Public Functions
      * Read and write data without any UART connection
