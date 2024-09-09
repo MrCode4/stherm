@@ -149,12 +149,29 @@ BasePageView {
 
             schedule: root.defaultSchedule
 
+            onSelectedStartTimeChanged: {
+                saveStartTime();
+            }
+
+            onSelectedEndTimeChanged: {
+               saveEndTime();
+            }
+
             onIsValidChanged: {
+                saveStartTime();
+                saveEndTime();
+            }
+
+            function saveStartTime() {
                 if (isValid) {
                     if (selectedStartTime !== _internal.newSchedule.startTime) {
                         _internal.newSchedule.startTime = selectedStartTime;
                     }
+                }
+            }
 
+            function saveEndTime() {
+                if (isValid) {
                     if (selectedEndTime !== _internal.newSchedule.endTime) {
                         _internal.newSchedule.endTime = selectedEndTime;
                     }
