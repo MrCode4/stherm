@@ -128,6 +128,7 @@ ItemDelegate {
                             toggle() //! This won't emit toggled() signal so no recursion occurs
 
                             uiSession.popUps.scheduleOverlapPopup.accepted.connect(setActive);
+                            uiSession.popUps.scheduleOverlapPopup.rejected.connect(disconnect);
                             uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
                             return;
                         }
@@ -203,7 +204,7 @@ ItemDelegate {
                                                   element.enable = false;
                                               });
 
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(setActive);
+        disconnect()
 
         if (schedule?.enable === false) {
             schedule.enable = true;
@@ -220,6 +221,12 @@ ItemDelegate {
         }
 
         uiSession.appModel.schedulesChanged();
+    }
+
+    //! Disconnect the popUps
+    function disconnect() {
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(setActive);
+        uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(disconnect);
     }
 }
 
