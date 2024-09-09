@@ -204,9 +204,13 @@ QtObject {
                     // else if (currentScheduleElement.runningDays === nextDay(today));
                 }
 
-                if ((currentStartTime > startTime && currentStartTime < endTime) ||
-                        (currentStartTime < startTime && currentScheduleElement.endTime > startTime) ||
-                        currentStartTime === startTime) {
+                // For accurate date comparisons, it's recommended to employ the .getTime() method to avoid potential issues.
+                // e.x.: While `Sep 9 06:00:00 2024 GMT+0300` and `Mon Sep 9 06:00:00 2024 GMT+0300` appear different,
+                // they represent the same timestamp (1725850800000).
+                // getTime: The value returned by the getTime method is the number of milliseconds since 1 January 1970 00:00:00.
+                if ((currentStartTime.getTime() > startTime.getTime() && currentStartTime.getTime() < endTime.getTime()) ||
+                        (currentStartTime.getTime() < startTime.getTime() && currentScheduleElement.endTime.getTime() > startTime.getTime()) ||
+                        currentStartTime.getTime() === startTime.getTime()) {
                     overlappings.push(currentScheduleElement.scheduleElement);
                 }
             };
