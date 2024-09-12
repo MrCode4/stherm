@@ -166,7 +166,7 @@ BasePageView {
         font.pointSize: root.font.pointSize * 0.85
         font.weight: Font.DemiBold
         wrapMode: "Wrap"
-        text: "Please, select at least 2 hours period for the schedule"
+        text: "The minimum scheduling time duration is 2 hours"
         horizontalAlignment: Qt.AlignHCenter
 
         Behavior on opacity { NumberAnimation { duration: 150 } }
