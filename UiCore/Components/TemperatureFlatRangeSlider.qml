@@ -12,6 +12,7 @@ RangeSliderLabeled {
     /* Object properties
      * ****************************************************************************************/
     showMinMax: true
+    leftHandlerLaberOnTop: true
 
     background: Rectangle {
         x: control.leftPadding + (control.horizontal ? 0 : (control.availableWidth - width) / 2)

@@ -18,24 +18,34 @@ LimitedRangeSlider {
     //! Show min and max values
     property bool       showMinMax:     false
 
+    //! Left handler label placement at the top
+    property bool leftHandlerLaberOnTop: false
+
+    //! Right handler label placement at the top
+    property bool rightHandlerLaberOnTop: false
+
     /* Children
      * ****************************************************************************************/
+    //! Left label
     Label {
         anchors {
-            top: parent.bottom
+            top: leftHandlerLaberOnTop ? undefined : parent.bottom
+            bottom: leftHandlerLaberOnTop ? parent.top : undefined
             horizontalCenter: parent.horizontalCenter
-            topMargin: 6
+            bottomMargin: 6
         }
         parent: _root.first.handle
         font.pointSize: _root.font.pointSize * 0.9
         text: Number(_root.first.value).toLocaleString(locale, "f", 0) + labelSuffix
     }
 
+    //! Right label
     Label {
         anchors {
-            top: parent.bottom
+            top: rightHandlerLaberOnTop ? undefined : parent.bottom
+            bottom: rightHandlerLaberOnTop ? parent.top : undefined
             horizontalCenter: parent.horizontalCenter
-            topMargin: 6
+            margins: 6
         }
         parent: _root.second.handle
         font.pointSize: _root.font.pointSize * 0.9
