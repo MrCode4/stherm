@@ -146,8 +146,12 @@ BasePageView {
 
             TapHandler {
                 onTapped: {
-                    // TODO: Go to the warranty page
-
+                    // Go to the warranty page
+                    if (root.StackView.view) {
+                        root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/WarrantyReplacementPage.qml", {
+                                                     "uiSession": uiSession
+                                                 });
+                    }
                 }
             }
         }
