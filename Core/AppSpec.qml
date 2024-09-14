@@ -97,20 +97,16 @@ AppSpecCPP {
 
     // Residence types
     enum ResidenceTypes {
-        Apartment = 0,
+        Residental = 0,
         Commercial,
-        Garage,
-        House,
         Unknown
     }
 
     //! Device location map
     property var residenceTypesNames: {
         var types = {};
-        types[`${AppSpec.ResidenceTypes.Apartment}`]  = "Apartment";
+        types[`${AppSpec.ResidenceTypes.Residental}`] = "Residental";
         types[`${AppSpec.ResidenceTypes.Commercial}`] = "Commercial";
-        types[`${AppSpec.ResidenceTypes.Garage}`]     = "Garage";
-        types[`${AppSpec.ResidenceTypes.House}`]      = "House";
 
         return types;
     }
@@ -118,16 +114,11 @@ AppSpecCPP {
     //! Device location map
     property var deviceLoacations: {
         var types = {};
-        types[`${AppSpec.ResidenceTypes.House}`]      = ["Bedroom", "Living room", "Kids room",
-                                                         "Bathroom", "Kitchen", "Downstairs",
-                                                         "Upstairs", "Office", "Main floor",
-                                                         "Dinning room", "Master bedroom", "Guesthouse"];
-        types[`${AppSpec.ResidenceTypes.Apartment}`]  = ["Bedroom", "Downstairs", "Kids room",
-                                                         "Living room", "Master bedroom", "Upstairs",
-                                                         "Other"];
-        types[`${AppSpec.ResidenceTypes.Commercial}`] = ["Lunchroom", "Office", "Warehouse",
-                                                         "Other"];
-        types[`${AppSpec.ResidenceTypes.Garage}`]     = [];
+        types[`${AppSpec.ResidenceTypes.Residental}`] = ["Basement", "Bedroom", "Dinning room",
+                                                         "Downstairs", "Guesthouse", "Kids room",
+                                                         "Living room", "Main floor", "Master bedroom",
+                                                         "Office", "Upstairs", "Other"];
+        types[`${AppSpec.ResidenceTypes.Commercial}`] = ["Lunchroom", "Office", "Warehouse", "Other"];
 
         types[`${AppSpec.ResidenceTypes.Unknown}`]    = [];
 
