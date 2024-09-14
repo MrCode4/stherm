@@ -80,21 +80,17 @@ BasePageView {
                     if (jobNumberTf.text.length > 0) {
                         appModel.serviceTitan.isSTManualMode = false;
                         // TODO: Check the job number
-                        if (root.StackView.view) {
-                            root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
-                                                         "uiSession": uiSession,
-                                                         "initialSetup": root.initialSetup
-                                                     });
-                        }
+
                     } else {
                         // Skip
                         appModel.serviceTitan.isSTManualMode = true;
-                        if (root.StackView.view) {
-                            root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/TechnicianDetailsPage.qml", {
-                                                         "uiSession": uiSession,
-                                                         "initialSetup": root.initialSetup
-                                                     });
-                        }
+                    }
+
+                    if (root.StackView.view) {
+                        root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup
+                                                 });
                     }
                 }
             }

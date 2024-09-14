@@ -120,8 +120,8 @@ BasePageView {
                                              "initialSetup": root.initialSetup
                                          });
             } else {
-                // Go to TechnicianDetailsPage
-                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/TechnicianDetailsPage.qml", {
+                // Go to CustomerDetailsPage
+                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
                                              "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
                                          });

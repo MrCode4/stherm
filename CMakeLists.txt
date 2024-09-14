@@ -215,7 +215,6 @@ qt6_add_qml_module(appStherm
         View/ServiceTitan/JobNumberPage.qml
         View/ServiceTitan/CustomerDetailsPage.qml
         View/ServiceTitan/ServiceTitanReviewPage.qml
-        View/ServiceTitan/TechnicianDetailsPage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
