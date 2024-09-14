@@ -143,7 +143,7 @@ Item {
 
             if (success) {
                 successPopup.message = "The new thermostat has successfully integrated into the system."
-                successPopup.hid.connect(goHomeAfterInitialSetup);
+                successPopup.hid.connect(warrantyReplacementFinished);
                 successPopup.open();
             }
         }
@@ -168,8 +168,8 @@ Item {
         }
     }
 
-    function goHomeAfterInitialSetup() {
-        deviceController.goHomeAfterInitialSetup();
-        successPopup.hid.disconnect(goHomeAfterInitialSetup);
+    //! TODO: maybe need to restart the app or activate the app and go to home
+    function warrantyReplacementFinished() {
+        successPopup.hid.disconnect(warrantyReplacementFinished);
     }
 }

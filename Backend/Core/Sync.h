@@ -93,6 +93,8 @@ signals:
                                       QString email = QString(),
                                       QString zipCode = QString());
 
+    //! TODO: send new data to device controller
+    //! maybe rename to warrantyReplacementDataReady
     void warrantyReplacementFinished(bool success = false);
 
 private slots:

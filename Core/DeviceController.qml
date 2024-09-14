@@ -137,7 +137,7 @@ I_DeviceController {
         }
     }
 
-    //! Start a timer to check serial number and has client after initial setup finished or warranty replacement integrated.
+    //! Start a timer to check serial number.
     property Timer checkSNTimer: Timer {
         repeat: true
         running: false
@@ -337,6 +337,16 @@ I_DeviceController {
         function onUpdateNoChecked() {
             checkedSWUpdate = true;
             console.log("udpate checked.")
+        }
+
+        //! TODO: replace new model with the current model
+        function onWarrantyReplacementFinished(success: bool) {
+            console.log("WarrantyReplacementFinished", success);
+
+            // TODO: action for now
+            if (success) {
+                initialSetupFinished();
+            }
         }
     }
 
@@ -1298,19 +1308,6 @@ I_DeviceController {
         saveSettings();
 
         // TODO: Update the server
-    }
-
-    //! Go to home after inital setup
-    //! Ensure that all prerequisites are met before proceeding.
-    function goHomeAfterInitialSetup() {
-        // Push settings
-        // deviceController.updateEditMode(AppSpec.EMGeneral);
-        deviceController.saveSettings();
-        deviceControllerCPP.checkSN();
-        checkSNTimer.start();
-
-        // Show home directly
-        // uiSession.showHome();
     }
 
     //! Push initial setup information
