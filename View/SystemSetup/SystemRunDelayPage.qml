@@ -120,6 +120,9 @@ BasePageView {
                                              "initialSetup": root.initialSetup
                                          });
             } else {
+                // Force to use manual mode
+                appModel.serviceTitan.isSTManualMode = true;
+
                 // Go to CustomerDetailsPage
                 root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
                                              "uiSession": uiSession,
