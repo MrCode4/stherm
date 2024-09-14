@@ -43,6 +43,20 @@ BasePageView {
         width: parent.width * 0.95
 
         Label {
+            visible: fullNameLabel.visible
+            text: "Full Name"
+            font.pointSize: root.font.pointSize
+        }
+
+        Label {
+            id: fullNameLabel
+
+            visible: appModel?.serviceTitan?.isSTManualMode ?? false
+            text: appModel?.serviceTitan?.fullName ?? ""
+            font.pointSize: root.font.pointSize * 0.9
+        }
+
+        Label {
             text: "Email"
             font.pointSize: root.font.pointSize
         }
@@ -93,10 +107,28 @@ BasePageView {
             }
         }
 
+
         Item {
-            Layout.fillHeight: true
             Layout.fillWidth: true
+            height: root.height / 6
         }
+
+        Text {
+            id: warrantyReplacementText
+
+            visible: fullNameLabel.visible
+            text: qsTr("Warranty Replacement")
+            font.underline: true
+            color: "#43E0F8"
+
+            TapHandler {
+                onTapped: {
+                    // TODO: Go to the warranty page
+
+                }
+            }
+        }
+
     }
 
     //! Next button
