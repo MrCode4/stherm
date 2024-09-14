@@ -100,20 +100,10 @@ BasePageView {
             if (initialSetup) {
                 // deviceController.updateEditMode(AppSpec.EMGeneral);
                 deviceController.saveSettings();
+                deviceController.initialSetupFinished();
             }
 
             submitBtn.submitted = true;
-        }
-    }
-
-    //! Start a timer once they are in technician page and check hasClient (checkSN) every 30 seconds
-    Timer {
-        repeat: true
-        running: root.visible && initialSetup && submitBtn.submitted
-        interval: 30000
-
-        onTriggered: {
-            deviceController.deviceControllerCPP.checkSN();
         }
     }
 }

@@ -417,6 +417,8 @@ I_DeviceController {
     //! Emit when need to stop device.
     signal stopDeviceRequested();
 
+    signal initialSetupFinished();
+
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************")
         //! initialize the device and config

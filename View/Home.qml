@@ -399,6 +399,22 @@ Control {
         }
     }
 
+    //! Use to show home after initial setup finished.
+    Connections {
+        target: deviceController
+
+        function onInitialSetupFinished() {
+            // In the initial setup we do not need to get settings from server.
+            uiSession.settingsReady = true;
+
+            // should be done by timer as can cause crash
+            startupTimer.start()
+            // disable fetching sn again
+            startupSN.enabled = false;
+            snChecker.enabled = false;
+        }
+    }
+
     //! Check SN mode
     Connections {
         id: startupSN
@@ -428,8 +444,9 @@ Control {
         target: system
 
         function onSerialNumberChanged() {
-            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup)
-            uiSession.settingsReady = false;
+            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup);
+            // In the initial setup we do not need to get settings from server.
+            uiSession.settingsReady = true;
         }
 
         function onTestModeStarted() {

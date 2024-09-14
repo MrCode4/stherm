@@ -90,6 +90,8 @@ BasePageView {
                                          "uiSession": Qt.binding(() => uiSession),
                                          "initialSetup":  root.initialSetup
                                      });
+        } else {
+            deviceController.initialSetupFinished();
         }
     }
 }
