@@ -71,20 +71,13 @@ BasePageView {
     function nextPage() {
 
         if (!root.StackView.view || appModel.residenceType === AppSpec.ResidenceTypes.Unknown) {
+            console.log("ResidenceTypePage.qml: Can not continue to DeviceLocationPage: ", appModel.residenceType)
             return;
         }
 
-        if (appModel.residenceType === AppSpec.ResidenceTypes.Garage) {
-            root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ThermostatNamePage.qml", {
-                                         "uiSession": Qt.binding(() => uiSession),
-                                         "initialSetup":  root.initialSetup
-                                     });
-
-        } else {
-            root.StackView.view.push("qrc:/Stherm/View/SystemSetup/DeviceLocationPage.qml", {
-                                         "uiSession": Qt.binding(() => uiSession),
-                                         "initialSetup":  root.initialSetup
-                                     });
-        }
+        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/DeviceLocationPage.qml", {
+                                     "uiSession": Qt.binding(() => uiSession),
+                                     "initialSetup":  root.initialSetup
+                                 });
     }
 }

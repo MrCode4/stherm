@@ -85,7 +85,7 @@ BasePageView {
      * ****************************************************************************************/
 
     function nextPage() {
-        if (root.StackView.view) {
+        if (root.StackView.view && appModel.deviceLocation === "Other") {
             root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ThermostatNamePage.qml", {
                                          "uiSession": Qt.binding(() => uiSession),
                                          "initialSetup":  root.initialSetup
