@@ -230,6 +230,15 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         }
     }
 
+    connect(this, &System::fetchUpdateErrorOccurred, this, [=](QString err) {
+        if (isInitialSetup()) {
+            QTimer::singleShot(2000, this, [this, err]() {
+                TRACE << "Retry to get update information due to " << err;
+                fetchUpdateInformation(true);
+            });
+        }
+    });
+
     if (!serialNumber().isEmpty())
         onSerialNumberReady();
 }
@@ -1145,7 +1154,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
                 static int i = 0;
                 i++;
                 if (i > 5) {
-                    // After retry 2 times, the update back to normal state.
+                    // After retry 5 times, the update back to normal state.
                     setIsInitialSetup(false);
                     emit updateNoChecked();
                 }
