@@ -26,7 +26,7 @@ BasePageView {
 
     property bool initialSetup: false
 
-    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && checkedUpdate
 
     //! Check update for first time
     property bool checkedUpdate: false;
