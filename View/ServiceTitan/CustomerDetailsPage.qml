@@ -37,7 +37,6 @@ BasePageView {
 
     ColumnLayout {
         anchors.top: parent.top
-        anchors.topMargin: 25
         anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.95
@@ -45,31 +44,43 @@ BasePageView {
         Label {
             visible: fullNameLabel.visible
             text: "Full Name"
-            font.pointSize: root.font.pointSize
+            font.pointSize: root.font.pointSize * 0.9
         }
 
         Label {
             id: fullNameLabel
 
-            visible: appModel?.serviceTitan?.isSTManualMode ?? false
+            visible: !(appModel?.serviceTitan?.isSTManualMode ?? true)
             text: appModel?.serviceTitan?.fullName ?? ""
-            font.pointSize: root.font.pointSize * 0.9
+            font.pointSize: root.font.pointSize * 0.8
         }
 
-        Label {
-            text: "Email"
-            font.pointSize: root.font.pointSize
-        }
 
-        TextField {
-            id: emailTf
-
-            topPadding: 0
+        Item {
             Layout.fillWidth: true
-            placeholderText: "Email"
-            text: appModel?.serviceTitan?.email ?? ""
-            validator: RegularExpressionValidator {
-                regularExpression: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            height: emailTf.implicitHeight + 5
+
+            Label {
+                id: emailLabel
+                anchors.top: parent.top
+                text: "Email"
+                font.pointSize: root.font.pointSize * 0.9
+            }
+
+            TextField {
+                id: emailTf
+                anchors.top: parent.top
+                anchors.topMargin: 5
+                anchors.right: parent.right
+                anchors.left: parent.left
+
+                topPadding: 0
+                placeholderText: "Input the Email"
+                font.pointSize: root.font.pointSize * 0.8
+                text: appModel?.serviceTitan?.email ?? ""
+                validator: RegularExpressionValidator {
+                    regularExpression: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                }
             }
         }
 
@@ -89,34 +100,46 @@ BasePageView {
             height: 20
         }
 
-        Label {
-            text: "ZIP code"
-            font.pointSize: root.font.pointSize
-        }
-
-        TextField {
-            id: zipCodeTf
-
-            Layout.fillWidth: true
-
-            topPadding: 0
-            placeholderText: "ZIP code"
-            text: appModel?.serviceTitan?.zipCode ?? ""
-            validator: RegularExpressionValidator {
-                regularExpression: /^\d{5}(-\d{4})?$/
-            }
-        }
-
 
         Item {
             Layout.fillWidth: true
-            height: root.height / 6
+            height: zipCodeTf.implicitHeight + 5
+
+            Label {
+                anchors.top: parent.top
+                text: "ZIP code"
+                font.pointSize: root.font.pointSize * 0.9
+            }
+
+
+            TextField {
+                id: zipCodeTf
+
+                anchors.top: parent.top
+                anchors.topMargin: 5
+                anchors.right: parent.right
+                anchors.left: parent.left
+
+                // topPadding: 0
+                placeholderText: "Input the ZIP code"
+                text: appModel?.serviceTitan?.zipCode ?? ""
+                font.pointSize: root.font.pointSize * 0.8
+                validator: RegularExpressionValidator {
+                    regularExpression: /^\d{5}(-\d{4})?$/
+                }
+            }
         }
+
+        Item {
+            Layout.fillWidth: true
+            height: 20
+        }
+
 
         Text {
             id: warrantyReplacementText
 
-            visible: fullNameLabel.visible
+            visible: appModel?.serviceTitan?.isSTManualMode ?? true
             text: qsTr("Warranty Replacement")
             font.underline: true
             color: "#43E0F8"
@@ -129,6 +152,10 @@ BasePageView {
             }
         }
 
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }
     }
 
     //! Next button
