@@ -100,7 +100,7 @@ BasePageView {
             if (initialSetup) {
                 // deviceController.updateEditMode(AppSpec.EMGeneral);
                 deviceController.saveSettings();
-                deviceController.initialSetupFinished();
+                deviceController.pushInitialSetupInformation();
             }
 
             submitBtn.submitted = true;

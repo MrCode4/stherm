@@ -1283,4 +1283,13 @@ I_DeviceController {
 
         // TODO: Update the server
     }
+
+    //! Push initial setup information
+    function pushInitialSetupInformation() {
+        // TODO
+        // Send initial setup data to server
+
+        initialSetupFinished();
+
+    }
 }

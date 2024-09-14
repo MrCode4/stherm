@@ -91,7 +91,7 @@ BasePageView {
                                          "initialSetup":  root.initialSetup
                                      });
         } else {
-            deviceController.initialSetupFinished();
+            deviceController.pushInitialSetupInformation();
         }
     }
 }
