@@ -63,6 +63,9 @@ QSObject {
     //! List <Schedule>
     property var            schedules:      []
 
+    //! Installation type
+    property int            installationType: AppSpec.InstallationType.ITUnknown
+
     property int            residenceType: AppSpec.ResidenceTypes.Unknown
 
     property string         deviceLocation: ""

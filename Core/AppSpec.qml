@@ -60,6 +60,11 @@ AppSpecCPP {
         DT_Unknown
     }
 
+    enum InstallationType {
+        ITNewInstallation = 0,
+        ITExistingSystem,
+        ITUnknown
+    }
 
     enum TempratureUnit {
         Cel,    //! Celsius

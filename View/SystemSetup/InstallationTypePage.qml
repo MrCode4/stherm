@@ -47,12 +47,8 @@ BasePageView {
             autoExclusive: true
 
             onClicked: {
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ResidenceTypePage.qml", {
-                                                  "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                              });
-                }
+                appModel.installationType = AppSpec.InstallationType.ITNewInstallation;
+                nextPage();
             }
         }
 
@@ -62,13 +58,21 @@ BasePageView {
             autoExclusive: true
 
             onClicked: {
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ResidenceTypePage.qml", {
-                                                  "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                              });
-                }
+                appModel.installationType = AppSpec.InstallationType.ITExistingSystem;
+                nextPage();
             }
+        }
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+    function nextPage() {
+
+        if (root.StackView.view) {
+            root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ResidenceTypePage.qml", {
+                                          "uiSession": uiSession,
+                                         "initialSetup": root.initialSetup
+                                      });
         }
     }
 }
