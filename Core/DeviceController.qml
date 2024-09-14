@@ -49,6 +49,9 @@ I_DeviceController {
 
     property int testModeType: AppSpec.TestModeType.None
 
+    //! Is the software update checked or not
+    property bool checkedSWUpdate: false
+
     property Timer fetchServiceTitanTimer: Timer {
         interval: 20000
         repeat: true
@@ -312,6 +315,12 @@ I_DeviceController {
                 // device.serviceTitan.zipCode = zipCode;
                 fetchServiceTitanTimer.stop();
             }
+        }
+
+        //! Check update
+        function onUpdateNoChecked() {
+            checkedSWUpdate = true;
+            console.log("udpate checked.")
         }
     }
 

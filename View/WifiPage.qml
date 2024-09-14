@@ -26,10 +26,7 @@ BasePageView {
 
     property bool initialSetup: false
 
-    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && checkedUpdate
-
-    //! Check update for first time
-    property bool checkedUpdate: false;
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
 
     /* Object properties
      * ****************************************************************************************/
@@ -413,19 +410,6 @@ BasePageView {
                                              "minPasswordLength": minPasswordLength,
                                          })
             }
-        }
-    }
-
-    //! Change checkedUpdate when update checked in the initial setup
-    Connections {
-        target: system
-
-        enabled: initialSetup && !checkedUpdate
-
-        //! Check update
-        function onUpdateNoChecked() {
-            checkedUpdate = true;
-            console.log("udpate checked in initial setup")
         }
     }
 
