@@ -404,6 +404,9 @@ Control {
         target: deviceController
 
         function onInitialSetupFinished() {
+            // Active the app
+            ScreenSaverManager.setAppActive(true);
+
             // In the initial setup we do not need to get settings from server.
             uiSession.settingsReady = true;
 
