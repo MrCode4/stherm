@@ -370,6 +370,7 @@ private:
     QTimer mFetchActiveTimer;
 
     QTimer mUpdateTimer;
+    QTimer mRetryUpdateTimer;
 
     NUVE::cpuid_t mUID;
 

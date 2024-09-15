@@ -231,12 +231,17 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         }
     }
 
-    connect(this, &System::fetchUpdateErrorOccurred, this, [=](QString err) {
+    mRetryUpdateTimer.setInterval(5000);
+    connect(&mRetryUpdateTimer, &QTimer::timeout, this, [=]() {
         if (isInitialSetup()) {
-            QTimer::singleShot(2000, this, [this, err]() {
-                TRACE << "Retry to get update information due to " << err;
-                fetchUpdateInformation(true);
-            });
+            fetchUpdateInformation(true);
+        }
+    });
+
+    connect(this, &System::fetchUpdateErrorOccurred, this, [=](QString err) {
+        TRACE << "Retry to get update information due to " << err;
+        if (isInitialSetup()) {
+            mRetryUpdateTimer.start();
         }
     });
 
@@ -1166,9 +1171,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
                 }
                 else {
                     // In initial setup, retry when an error occurred.
-                    QTimer::singleShot(10000, this, [this]() {
-                        fetchUpdateInformation(true);
-                    });
+                    mRetryUpdateTimer.start();
                 }
             }
         }
