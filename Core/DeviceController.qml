@@ -345,6 +345,7 @@ I_DeviceController {
 
             // TODO: action for now
             if (success) {
+                checkSNTimer.start();
                 initialSetupFinished();
             }
         }
@@ -1314,6 +1315,8 @@ I_DeviceController {
     function pushInitialSetupInformation() {
         // TODO
         // Send initial setup data to server
+
+        checkSNTimer.start();
 
         initialSetupFinished();
 

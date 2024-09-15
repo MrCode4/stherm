@@ -26,7 +26,7 @@ BasePageView {
         id: warranryReplacementInfo
 
         anchors.top: parent.top
-        anchors.topMargin: 10
+        anchors.topMargin: 5
 
         width: parent.width * 0.95
         wrapMode: Text.WordWrap
@@ -47,7 +47,7 @@ BasePageView {
 
         Label {
             text: "Old S/N"
-            font.pointSize: root.font.pointSize
+            font.pointSize: root.font.pointSize * 0.9
         }
 
         TextField {
@@ -56,6 +56,7 @@ BasePageView {
             topPadding: 0
             Layout.fillWidth: true
             Layout.preferredHeight: 50
+            font.pointSize: root.font.pointSize * 0.8
             placeholderText: "Input the S/N of damaged thermostat"
             validator: RegularExpressionValidator {
                 regularExpression: /^\d{2}-\d{3}-\d{6}$/
@@ -80,7 +81,7 @@ BasePageView {
 
         Label {
             text: "New S/N"
-            font.pointSize: root.font.pointSize
+            font.pointSize: root.font.pointSize * 0.9
         }
 
         TextField {
@@ -91,6 +92,7 @@ BasePageView {
             // Device with the new serial number
             text: system?.serialNumber ?? ""
             topPadding: 0
+            font.pointSize: root.font.pointSize * 0.8
             Layout.preferredHeight: 50
             placeholderText: "New S/N"
             validator: RegularExpressionValidator {
@@ -111,6 +113,7 @@ BasePageView {
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.margins: 10
+        anchors.bottomMargin: 5
 
         text: "Replace"
         visible: !oldSNTf.activeFocus && !newSNTf.activeFocus

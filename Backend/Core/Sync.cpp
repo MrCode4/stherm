@@ -529,7 +529,7 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
         QSettings setting;
         setting.setValue(cWarrantySerialNumberKey, oldSN);
 
-        emit warrantyReplacementFinished();
+        emit warrantyReplacementFinished(true);
     }
 }
 
