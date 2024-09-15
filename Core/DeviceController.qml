@@ -835,7 +835,7 @@ I_DeviceController {
             // To maintain accurate control and prevent misinterpretations,
             // the unit should be permanently set to Celsius. so we always use data from device to ignore
             if (!setSettings(settings.brightness, settings.speaker,
-                        root.tempratureUnit, settings.brightness_mode,
+                        root.temperatureUnit, settings.brightness_mode,
                              device.setting.enabledAlerts, device.setting.enabledNotifications))
                 console.log("The system settings is not applied from server")
 
