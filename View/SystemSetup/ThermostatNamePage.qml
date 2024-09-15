@@ -98,7 +98,6 @@ BasePageView {
 
             // TODO
             if (initialSetup) {
-                deviceController.goHomeAfterInitialSetup();
                 deviceController.pushInitialSetupInformation();
             }
 

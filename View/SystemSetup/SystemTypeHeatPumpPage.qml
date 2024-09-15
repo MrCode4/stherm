@@ -129,12 +129,11 @@ BasePageView {
             property int heatPumpOBState: 1
 
             Label {
-                Layout.fillWidth: true
                 text: "O/B on State"
             }
 
             RowLayout {
-                Layout.fillWidth: false
+                Layout.fillWidth: true
 
                 RadioButton {
                     checked: appModel.systemSetup.heatPumpOBState === 0
