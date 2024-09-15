@@ -414,7 +414,6 @@ Control {
             startupTimer.start()
             // disable fetching sn again
             startupSN.enabled = false;
-            snChecker.enabled = false;
         }
     }
 
@@ -436,8 +435,6 @@ Control {
                 startupTimer.start()
                 // disable fetching sn again
                 startupSN.enabled = false;
-                snChecker.enabled = false;
-
             }
         }
     }

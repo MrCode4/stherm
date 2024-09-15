@@ -304,8 +304,6 @@ private:
     QTimer mBacklightTimer;
     QTimer mBacklightPowerTimer;
 
-    QTimer mFetchContractorInfoTimer;
-
     // initialized in startup onStartDeviceRequested in qml
     QVariantList mBacklightModelData;
     QVariantList mBacklightActualData;  // for logging purpose
