@@ -341,12 +341,8 @@ I_DeviceController {
 
         //! TODO: replace new model with the current model
         function onWarrantyReplacementFinished(success: bool) {
-            console.log("WarrantyReplacementFinished", success);
-
             // TODO: action for now
             if (success) {
-                checkSNTimer.start();
-                initialSetupFinished();
             }
         }
     }
@@ -700,7 +696,7 @@ I_DeviceController {
 
         var send_data = [brightness, volume, temperatureUnit, adaptive];
         var current_data = [device.setting.brightness, device.setting.volume,
-                            root.tempratureUnit, device.setting.adaptiveBrightness]
+                            root.temperatureUnit, device.setting.adaptiveBrightness]
         if (send_data.toString() === current_data.toString()) {
             console.log("ignored setings")
             return false;
@@ -1240,7 +1236,7 @@ I_DeviceController {
 
     //! Just use for night mode
     function setBrightnessInNightMode(brightness, volume, adaptive) {
-        var send_data = [brightness, volume, root.tempratureUnit, adaptive];
+        var send_data = [brightness, volume, root.temperatureUnit, adaptive];
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }
@@ -1309,6 +1305,12 @@ I_DeviceController {
         saveSettings();
 
         // TODO: Update the server
+    }
+
+    //! TODO: maybe need to restart the app or activate the app and go to home
+    function warrantyReplacementFinished() {
+        checkSNTimer.start();
+        initialSetupFinished();
     }
 
     //! Push initial setup information

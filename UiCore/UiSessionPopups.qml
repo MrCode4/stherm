@@ -170,6 +170,7 @@ Item {
 
     //! TODO: maybe need to restart the app or activate the app and go to home
     function warrantyReplacementFinished() {
+        deviceController.warrantyReplacementFinished();
         successPopup.hid.disconnect(warrantyReplacementFinished);
     }
 }
