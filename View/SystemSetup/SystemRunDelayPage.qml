@@ -24,7 +24,6 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-
     //! Confirm button
     ToolButton {
         parent: root.header.contentItem
@@ -45,24 +44,6 @@ BasePageView {
         }
     }
 
-    //! Next button in initial setup flow
-    ButtonInverted {
-        text: "Next"
-
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.margins: 10
-
-        visible: initialSetup
-        enabled: appModel?.serviceTitan?._fetched ?? false
-        leftPadding: 25
-        rightPadding: 25
-
-        onClicked: {
-            updateModel();
-            nextPage();
-        }
-    }
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -104,6 +85,55 @@ BasePageView {
             }
         }
     }
+
+    //! Next button in initial setup flow
+    ButtonInverted {
+        id: nextButton
+
+        text: "Next"
+
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.margins: 10
+
+        visible: initialSetup
+        enabled: appModel?.serviceTitan?._fetched ?? false
+        leftPadding: 25
+        rightPadding: 25
+
+        onClicked: {
+            updateModel();
+            nextPage();
+        }
+    }
+
+    // busy indicator
+    BusyIndicator {
+        id: busyIndicator
+
+        anchors.left: parent.left
+        anchors.margins: 10
+        anchors.verticalCenter: nextButton.verticalCenter
+
+        running: !(appModel?.serviceTitan?._fetched ?? false) && initialSetup
+        height: 50
+        width: 50
+        visible: running
+    }
+
+    Label {
+        anchors.left: busyIndicator.right
+        anchors.verticalCenter: busyIndicator.verticalCenter
+        anchors.margins: 10
+
+        visible: busyIndicator.visible
+        font.pointSize: root.font.pointSize * 0.7
+        font.italic: true
+        text: "Fetching service titan"
+    }
+
+    /* Functions
+     * ****************************************************************************************/
 
     function updateModel() {
         //! Apply settings
