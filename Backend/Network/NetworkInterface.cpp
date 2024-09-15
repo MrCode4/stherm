@@ -205,6 +205,7 @@ void NetworkInterface::checkHasInternet()
         QNetworkRequest request(cCheckInternetAccessUrl);
         request.setTransferTimeout(8000);
         auto* reply = NetworkManager::instance()->get(request);
+        reply->ignoreSslErrors();
         connect(reply, &QNetworkReply::finished, this, [this, reply]() {
             bool hasInternet = reply->error() == QNetworkReply::NoError;
             mNamIsRunning = false;
