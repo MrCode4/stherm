@@ -70,7 +70,7 @@ BasePageView {
             wrapMode: Text.WordWrap
             elide: Text.ElideLeft
             font.pointSize: root.font.pointSize * 0.67
-            text: "Check the S/N (Serial Number) on the back of the thermostat (e.g., 01224001212)."
+            text: "Check the S/N (Serial Number) on the back of the thermostat (e.g., 01-224-001212)."
         }
 
         Item {
