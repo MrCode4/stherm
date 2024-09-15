@@ -137,14 +137,28 @@ I_DeviceController {
         }
     }
 
+
     //! Start a timer to check serial number.
     property Timer checkSNTimer: Timer {
-        repeat: true
+        property int _retrycheckSNTimerInterval: 10000
+
+        repeat: false
         running: false
-        interval: 30000
+        interval: _retrycheckSNTimerInterval
 
         onTriggered: {
             deviceControllerCPP.checkSN();
+
+            if (deviceControllerCPP.system.serialNumber.length === 0) {
+                _retrycheckSNTimerInterval += 10000;
+
+                if (_retrycheckSNTimerInterval > 40000)
+                    _retrycheckSNTimerInterval = 40000;
+
+            } else {
+                _retrycheckSNTimerInterval = 10000;
+            }
+
         }
     }
 
@@ -205,9 +219,17 @@ I_DeviceController {
             //            root.device.contactContractor.technicianURL = techUrl
         }
 
+        //! Logics for check SN:
         function onSnModeChanged(snMode: int) {
-            if (snMode !== 2)
+
+            if (deviceControllerCPP.system.serialNumber.length === 0) {
+                checkSNTimer.repeat = false;
+                checkSNTimer.start();
+
+            } else if (snMode !== 2) {
+                // Has client is true
                 checkSNTimer.stop();
+            }
         }
     }
 
@@ -216,6 +238,15 @@ I_DeviceController {
 
         function onHasInternetChanged() {
             deviceControllerCPP.wifiConnected(NetworkInterface.hasInternet);
+
+            // checkSN when the internet is connected.
+            if (NetworkInterface.hasInternet) {
+                if (startMode !== 0 && startMode !== -1) {
+                    if (!checkSNTimer.running) {
+                        deviceControllerCPP.checkSN();
+                    }
+                }
+            }
         }
     }
 
@@ -343,6 +374,16 @@ I_DeviceController {
         function onWarrantyReplacementFinished(success: bool) {
             // TODO: action for now
             if (success) {
+            }
+        }
+
+        function onSerialNumberReady() {
+            // "If the software update is not currently checked,
+            // initiate a check for updates.
+            // If the software update is already checked,
+            // proceed with the normal update process using a system timer.
+            if (!checkedSWUpdate) {
+                deviceControllerCPP.system.fetchUpdateInformation(true);
             }
         }
     }
@@ -1309,6 +1350,7 @@ I_DeviceController {
 
     //! TODO: maybe need to restart the app or activate the app and go to home
     function warrantyReplacementFinished() {
+        checkSNTimer.repeat = true;
         checkSNTimer.start();
         initialSetupFinished();
     }
@@ -1318,6 +1360,7 @@ I_DeviceController {
         // TODO
         // Send initial setup data to server
 
+        checkSNTimer.repeat = true;
         checkSNTimer.start();
 
         initialSetupFinished();

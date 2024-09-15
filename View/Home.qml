@@ -469,20 +469,6 @@ Control {
         }
     }
 
-    //! checkSN when the internet is connected.
-    Connections {
-        id: snChecker
-        target: NetworkInterface
-
-        function onHasInternetChanged() {
-            if (NetworkInterface.hasInternet) {
-                if (deviceController.startMode !== 0 && deviceController.startMode !== -1) {
-                    deviceController.deviceControllerCPP.checkSN();
-                }
-            }
-        }
-    }
-
     /* States and Transitions
      * ****************************************************************************************/
     state: "idle"

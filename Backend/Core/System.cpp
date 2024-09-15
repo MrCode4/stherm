@@ -1386,7 +1386,6 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
 void NUVE::System::onSerialNumberReady()
 {
     emit serialNumberReady();
-    fetchUpdateInformation(true);
 }
 
 void NUVE::System::createLogDirectoryOnServer()

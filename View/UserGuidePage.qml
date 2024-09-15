@@ -16,8 +16,6 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
 
-    property bool initialSetup : false
-
     //! Use in unlock page
     property bool openFromUnlockPage: false
 
@@ -28,47 +26,8 @@ BasePageView {
      * ****************************************************************************************/
     title: "Technician Access"
 
-    Component.onCompleted: {
-        if (initialSetup) {
-            deviceController.updateEditMode(AppSpec.EMGeneral);
-            deviceController.saveSettings();
-        }
-    }
-
-    Component.onDestruction: {
-        if (initialSetup) {
-            deviceController.updateEditMode(AppSpec.EMGeneral);
-            deviceController.saveSettings();
-        }
-    }
-
     /* Children
      * ****************************************************************************************/
-
-    //! Info icon
-    InfoToolButton {
-        parent: root.header.contentItem
-
-        visible: initialSetup
-
-        onClicked: {
-            root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
-                                         "uiSession": Qt.binding(() => uiSession)
-                                     })
-
-        }
-    }
-
-    //! Start a timer once they are in technician page and check hasClient (checkSN) every 30 seconds
-    Timer {
-        repeat: true
-        running: root.visible && initialSetup
-        interval: 30000
-
-        onTriggered: {
-            deviceController.deviceControllerCPP.checkSN();
-        }
-    }
 
     Text {
         anchors.centerIn: parent
