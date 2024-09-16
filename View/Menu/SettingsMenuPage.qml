@@ -11,6 +11,7 @@ BasePageView {
     property System system: deviceController.deviceControllerCPP.system
     property bool showHiddenItems: false
 
+    enableTitleTap: true
     onTitleLongTapped: root.showHiddenItems = true
 
     backButtonCallback: () => {
@@ -84,7 +85,7 @@ BasePageView {
                 icon: FAIcons.circleInfo,
                 text: "Device Information",
                 view: "qrc:/Stherm/View/AboutDevicePage.qml",
-                props: {showTestMode: true}
+                props: {showTestMode: root.showHiddenItems}
             },
             {
                 image: "qrc:/Stherm/Images/smart-phone.png",
