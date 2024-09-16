@@ -217,18 +217,6 @@ I_DeviceController {
             root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName) : (iconUrl + "?version=" + version)
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
-
-            // Retry
-            // Invalid data
-            if (brandName === "" && phoneNumber === "" && url === "") {
-                    fetchContractorInfoTimer._retryFetchContractorInfoTimerInterval = 30000;
-
-            } else {
-                fetchContractorInfoTimer._retryFetchContractorInfoTimerInterval = fetchContractorInfoTimer._defaultInterval;
-            }
-
-            fetchContractorInfoTimer.restart();
-
         }
 
         //! Logics for check SN:
@@ -242,9 +230,6 @@ I_DeviceController {
                 // Has client is true
                 checkSNTimer.stop();
 
-                deviceControllerCPP.checkContractorInfo();
-
-            } else {
                 deviceControllerCPP.checkContractorInfo();
             }
         }
@@ -409,6 +394,12 @@ I_DeviceController {
                 deviceControllerCPP.system.fetchUpdateInformation(true);
             }
         }
+
+        function onContractorInfoReady(getDataFromServerSuccessfully : bool) {
+            fetchContractorInfoTimer._retryFetchContractorInfoTimerInterval = getDataFromServerSuccessfully ? fetchContractorInfoTimer._defaultInterval : 30000;
+
+            fetchContractorInfoTimer.restart();
+        }
     }
 
     property Connections sync: Connections {
@@ -490,7 +481,7 @@ I_DeviceController {
     }
 
     property Timer  fetchContractorInfoTimer: Timer {
-        readonly property int _defaultInterval: 1.1 * 60 * 60 * 100
+        readonly property int _defaultInterval: 1.1 * 60 * 60 * 1000
         property int _retryFetchContractorInfoTimerInterval: _defaultInterval
 
         repeat: true;

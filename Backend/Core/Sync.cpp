@@ -178,7 +178,7 @@ bool Sync::fetchContractorInfo()
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError) {
-            emit contractorInfoReady();
+            emit contractorInfoReady(false);
         }
         else {
             auto brandValue = data.value("brand");
@@ -187,7 +187,7 @@ bool Sync::fetchContractorInfo()
 
             if (data.isEmpty() || !brandValue.isString() || brandValue.toString().isEmpty()) {
                 TRACE << "Wrong contractor info fetched from server";
-                emit contractorInfoReady();
+                emit contractorInfoReady(false);
                 return;
             }
 

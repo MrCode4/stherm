@@ -120,13 +120,14 @@ BasePageView {
                 anchors.right: parent.right
                 anchors.left: parent.left
 
-                // topPadding: 0
                 placeholderText: "Input the ZIP code"
                 text: appModel?.serviceTitan?.zipCode ?? ""
                 font.pointSize: root.font.pointSize * 0.8
                 validator: RegularExpressionValidator {
                     regularExpression: /^\d{5}(-\d{4})?$/
                 }
+
+                inputMethodHints: Qt.ImhDigitsOnly
             }
         }
 

@@ -46,7 +46,8 @@ BasePageView {
 
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-        anchors.margins: 10
+        anchors.rightMargin: -30
+        anchors.bottomMargin: 10
 
         visible: initialSetup
         leftPadding: 25

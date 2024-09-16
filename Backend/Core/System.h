@@ -211,7 +211,7 @@ protected slots:
 signals:
     void serialNumberReady();
     void areSettingsFetchedChanged(bool success);
-    void contractorInfoReady();
+    void contractorInfoReady(const bool& getDataFromServerSuccessfully = true);
     void settingsReady(QVariantMap settings);
     void appDataReady(QVariantMap settings);
 

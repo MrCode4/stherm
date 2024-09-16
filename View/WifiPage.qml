@@ -424,6 +424,9 @@ BasePageView {
             nextPageTimer.once = true;
             if (system.serialNumber.length > 0) {
 
+                // Check contractor info in the initial setup
+                deviceController.deviceControllerCPP.checkContractorInfo();
+
                 //! If privacy policy not accepted in normal mode load the PrivacyPolicyPage
                 if (appModel.userPolicyTerms.acceptedVersion === appModel.userPolicyTerms.currentVersion) {
                     root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
