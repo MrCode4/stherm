@@ -230,7 +230,11 @@ I_DeviceController {
                 // Has client is true
                 checkSNTimer.stop();
 
+                // Check contractor info once has client received and is true
                 deviceControllerCPP.checkContractorInfo();
+
+                if (fetchContractorInfoTimer.running)
+                    fetchContractorInfoTimer.restart();
             }
         }
     }

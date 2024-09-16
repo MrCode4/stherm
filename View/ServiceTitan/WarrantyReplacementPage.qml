@@ -58,13 +58,18 @@ BasePageView {
             Layout.preferredHeight: 50
             font.pointSize: root.font.pointSize * 0.8
             placeholderText: "Input the S/N of damaged thermostat"
+            inputMethodHints: Qt.ImhPreferNumbers
 
             property string updateText: ""
 
             onTextChanged: {
                 if (text.length > updateText.length && (text.match(/^\d{2}$/) || text.match(/^\d{2}-\d{3}$/))) {
                     text += "-";
+
+                } else if (text.length < updateText.length && text.endsWith("-")) {
+                    text = text.substring(0, text.length - 2);
                 }
+
                 updateText = text;
             }
 
@@ -105,13 +110,18 @@ BasePageView {
             font.pointSize: root.font.pointSize * 0.8
             Layout.preferredHeight: 50
             placeholderText: "New S/N"
+            inputMethodHints: Qt.ImhPreferNumbers
 
             property string updateText: ""
 
             onTextChanged: {
                 if (text.length > updateText.length && (text.match(/^\d{2}$/) || text.match(/^\d{2}-\d{3}$/))) {
                     text += "-";
+
+                } else if (text.length < updateText.length && text.endsWith("-")) {
+                    text = text.substring(0, text.length - 2);
                 }
+
                 updateText = text;
             }
 

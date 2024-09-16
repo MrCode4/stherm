@@ -127,7 +127,7 @@ BasePageView {
                     regularExpression: /^\d{5}(-\d{4})?$/
                 }
 
-                inputMethodHints: Qt.ImhDigitsOnly
+                inputMethodHints: Qt.ImhPreferNumbers
             }
         }
 
