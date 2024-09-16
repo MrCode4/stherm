@@ -65,12 +65,16 @@ BasePageView {
             onTextChanged: {
                 if (text.length > updateText.length && (text.match(/^\d{2}$/) || text.match(/^\d{2}-\d{3}$/))) {
                     text += "-";
+                    updateText = text;
 
-                } else if (text.length < updateText.length && text.endsWith("-")) {
-                    text = text.substring(0, text.length - 2);
+                } else if (text.length < updateText.length && updateText.endsWith("-")) {
+                    // Update the updateText before text changed.
+                    updateText = text.substring(0, text.length - 1);
+                    text = updateText;
+
+                } else {
+                    updateText = text;
                 }
-
-                updateText = text;
             }
 
             validator: RegularExpressionValidator {
@@ -117,12 +121,16 @@ BasePageView {
             onTextChanged: {
                 if (text.length > updateText.length && (text.match(/^\d{2}$/) || text.match(/^\d{2}-\d{3}$/))) {
                     text += "-";
+                    updateText = text;
 
-                } else if (text.length < updateText.length && text.endsWith("-")) {
-                    text = text.substring(0, text.length - 2);
+                } else if (text.length < updateText.length && updateText.endsWith("-")) {
+                    // Update the updateText before text changed.
+                    updateText = text.substring(0, text.length - 1);
+                    text = updateText;
+
+                } else {
+                    updateText = text;
                 }
-
-                updateText = text;
             }
 
             validator: RegularExpressionValidator {
