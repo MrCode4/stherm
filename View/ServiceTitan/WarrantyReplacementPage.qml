@@ -58,6 +58,16 @@ BasePageView {
             Layout.preferredHeight: 50
             font.pointSize: root.font.pointSize * 0.8
             placeholderText: "Input the S/N of damaged thermostat"
+
+            property string updateText: ""
+
+            onTextChanged: {
+                if (text.length > updateText.length && (text.match(/^\d{2}$/) || text.match(/^\d{2}-\d{3}$/))) {
+                    text += "-";
+                }
+                updateText = text;
+            }
+
             validator: RegularExpressionValidator {
                 regularExpression: /^\d{2}-\d{3}-\d{6}$/
             }
@@ -95,6 +105,16 @@ BasePageView {
             font.pointSize: root.font.pointSize * 0.8
             Layout.preferredHeight: 50
             placeholderText: "New S/N"
+
+            property string updateText: ""
+
+            onTextChanged: {
+                if (text.length > updateText.length && (text.match(/^\d{2}$/) || text.match(/^\d{2}-\d{3}$/))) {
+                    text += "-";
+                }
+                updateText = text;
+            }
+
             validator: RegularExpressionValidator {
                 regularExpression: /^\d{2}-\d{3}-\d{6}$/
             }
