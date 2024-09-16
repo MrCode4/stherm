@@ -329,6 +329,8 @@ QtObject {
     //! Compare the server schedules and the model schedules and update model based on the server data.
     function setSchedulesFromServer(serverSchedules: var) {
 
+        console.log("Checking schedule from server.");
+
         var modelSchedules = device.schedules;
         if (!Array.isArray(serverSchedules)) {
             console.log("Invalid server input. Expected arrays.");
@@ -337,7 +339,7 @@ QtObject {
 
         // Check the length of both arrays
         if (serverSchedules.length !== modelSchedules.length) {
-            console.log("Number of schedules in server and model differ.");
+            console.log("Number of schedules in server and model differ. ", serverSchedules.length,  modelSchedules.length);
         }
 
         // Clean the device schedules when the serverSchedules is empty.
@@ -396,6 +398,7 @@ QtObject {
                                       device.schedules.push(newSchedule);
 
                                       isNeedToUpdate = true;
+                                      console.log("Schecule: ", newSchedule?.name ?? "undefined", " added to model.");
 
                                   } else {
                                       if (foundSchedule.enable !== schedule.is_enable) {
@@ -409,7 +412,7 @@ QtObject {
                                       if (foundSchedule.startTime !== startTime) {
                                           foundSchedule.startTime = startTime;
                                       }
-                                      var endTime = formatTime(schedule.end_time)
+                                      var endTime = formatTime(schedule.end_time);
                                       if (foundSchedule.endTime !== endTime) {
                                           foundSchedule.endTime = endTime;
                                       }
@@ -425,10 +428,12 @@ QtObject {
                                           foundSchedule.dataSource = schedule.dataSource;
                                       }
 
-                                      var repeats = schedule.weekdays.map(String).join(',')
+                                      var repeats = schedule.weekdays.map(String).join(',');
                                       if (foundSchedule.repeats !== repeats) {
                                           foundSchedule.repeats = repeats;
                                       }
+
+                                        console.log("Schecule: ", foundSchedule?.name ?? "undefined", " updated.");
                                   }
                               });
 
