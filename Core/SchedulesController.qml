@@ -352,7 +352,7 @@ QtObject {
         var isNeedToUpdate = false;
 
         // Schedules that do not exist on the server will be deleted.
-        modelSchedules.every(schedule => {
+        modelSchedules.forEach(schedule => {
                                  // Find Schedule in the model
                                  var foundSchedule = serverSchedules.find(serverSchedule => schedule.name === serverSchedule.name);
 
@@ -366,7 +366,7 @@ QtObject {
 
                              });
 
-        serverSchedules.every(schedule => {
+        serverSchedules.forEach(schedule => {
                                   // Find Schedule in the model
                                   var foundSchedule = modelSchedules.find(modelSchedule => schedule.name === modelSchedule.name);
 
