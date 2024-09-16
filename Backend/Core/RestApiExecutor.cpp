@@ -114,5 +114,8 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
     auto callback = mCallbacks.take(key);
     if (callback) {
         callback(reply, rawData, data);
+
+    } else {
+        TRACE << "Can not find the callback: " << key;
     }
 }
