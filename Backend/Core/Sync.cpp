@@ -273,11 +273,10 @@ bool Sync::fetchSettings()
     }
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        bool success = true;
+        bool success = false;
         if (data.isEmpty()) {
             if (reply->error() == QNetworkReply::NoError) {
                 TRACE << "Received settings corrupted: " + mSerialNumber;
-                success = false;
             }
         }
         else if (data.value("sn").toString() == mSerialNumber) {
@@ -304,13 +303,14 @@ bool Sync::fetchSettings()
                 emit settingsReady(data.toVariantMap());
             }
 
+            success = true;
+
             // Transmit Non-Configuration Data to UI and Update Model on Server
             // Response
             emit appDataReady(data.toVariantMap());
             checkFirmwareUpdate(data);
         }
         else {
-            success = false;
             TRACE << "Received settings belong to another device: " + mSerialNumber + ", " + data.value("sn").toString();
         }
 
