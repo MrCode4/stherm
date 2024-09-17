@@ -35,6 +35,7 @@ Sync::Sync(QObject *parent)
     : RestApiExecutor(parent)
     , mHasClient(false)
     , m_fetchingUserData(false)
+    , m_updatingLockStatus(false)
 {
     QSettings setting;
 
@@ -309,6 +310,7 @@ bool Sync::fetchSettings()
             }
         }
         else if (data.value("sn").toString() == mSerialNumber) {
+            TRACE << "GET-SETTINGS_RESPONSE: " << data;
             auto dateString = data.value("setting").toObject().value("last_update");
             TRACE << "cpp last_update:" << dateString;
             QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
@@ -450,6 +452,34 @@ QString Sync::baseURL()
     }
 
     return url;
+}
+
+void Sync::updateLockStatus(const QString& pin, bool lock)
+{
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "Sn is not ready! can not update lock status!";
+        return;
+    }
+
+    TRACE << "CALLING_updateLockStatus";
+
+    auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &data) {
+        TRACE << "UPDATE_LOCK_STATUS_RESPONSE: " << data;
+        if (data.isEmpty()) {
+            TRACE << "Received lock-data corrupted";
+        }
+        else {
+            emit lockStatusUpdated(data.value("serial_number").toString(), data.value("locked").toBool());
+        }
+
+        updatingLockStatus(false);
+    };
+
+    updatingLockStatus(true);
+    auto endpoint = QString("api/sync/screen-%1?sn=%2").arg(lock ? "lock" : "unlock").arg(mSerialNumber);
+    QJsonObject requestBody;
+    requestBody["pin"] = pin;
+    callPostApi(cBaseUrl + endpoint, QJsonDocument(requestBody).toJson(), callback);
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)

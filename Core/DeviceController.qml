@@ -1508,8 +1508,7 @@ I_DeviceController {
 
     function pushLockUpdates() {
         saveSettings();
-
-        // TODO: Update the server
+        deviceControllerCPP.sync.updateLockStatus(device._lock.pin, device._lock.isLock);
     }
 
     //! TODO: maybe need to restart the app or activate the app and go to home
