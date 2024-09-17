@@ -35,6 +35,7 @@ QtObject {
 
     //! App specific shades of main colors
     property color      green:      "#4EAC55"
+    property color hiddenMenuColor: "#42E8FF"
 
     //! Number properties
     property int        delegateHeight:     64

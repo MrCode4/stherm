@@ -8,7 +8,7 @@ import Stherm
  * BasePageView is the basic class for all pages
  * ***********************************************************************************************/
 Page {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -37,6 +37,12 @@ Page {
 
     property bool useSimpleStackView: false
 
+    property bool enableTitleTap: false
+    property int titleLongTapInterval: 10000
+
+    signal titleTapped()
+    signal titleLongTapped()
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
@@ -54,7 +60,7 @@ Page {
                 visible: backButtonVisible
                 contentItem: RoniaTextIcon {
                     text: backButtonTextIcon
-                    color: _root.headerColor
+                    color: root.headerColor
                 }
 
                 onClicked: if (backButtonCallback instanceof Function) backButtonCallback();
@@ -70,11 +76,19 @@ Page {
 
                 visible: title.length > 0
                 textFormat: "MarkdownText"
-                color: _root.headerColor
+                color: root.headerColor
                 verticalAlignment: "AlignVCenter"
                 horizontalAlignment: "AlignHCenter"
                 text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} ${title}`
                 elide: "ElideRight"
+
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: root.enableTitleTap
+                    pressAndHoldInterval: root.titleLongTapInterval
+                    onClicked: root.titleTapped()
+                    onPressAndHold: root.titleLongTapped()
+                }
             }
         }
     }
@@ -85,14 +99,14 @@ Page {
 
     function tryGoBack() {
         if (useSimpleStackView) {
-            if (testsStackView.currentItem == _root) {
+            if (testsStackView.currentItem == root) {
                 testsStackView.pop();
             }
         }
-        else if (_root.StackView.view) {
+        else if (root.StackView.view) {
             //! Then Page is inside an StackView
-            if (_root.StackView.view.currentItem === _root) {
-                _root.StackView.view.pop();
+            if (root.StackView.view.currentItem === root) {
+                root.StackView.view.pop();
             }
         }
     }
@@ -101,8 +115,8 @@ Page {
         if (useSimpleStackView) {
             testsStackView.push(page, props);
         }
-        else if (_root.StackView.view)  {
-            _root.StackView.view.push(page, props);
+        else if (root.StackView.view)  {
+            root.StackView.view.push(page, props);
         }
     }
 }

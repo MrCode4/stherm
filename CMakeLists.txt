@@ -143,8 +143,13 @@ qt6_add_qml_module(appStherm
         # Views and Widgets
         View/Home.qml
         View/SplashScreen.qml
-        View/ApplicationMenu.qml
-        View/ApplicationMenuList.qml
+        View/Menu/MenuListView.qml
+        View/Menu/AppMenuPage.qml
+        View/Menu/SettingsMenuPage.qml
+        View/Menu/NotificationBasePage.qml
+        View/Menu/MessagesPage.qml
+        View/Menu/AlertsPage.qml
+        View/Menu/SystemAlertsPage.qml
         View/BasePageView.qml
         View/ScheduleView.qml
         View/BacklightPage.qml
@@ -184,7 +189,6 @@ qt6_add_qml_module(appStherm
         View/Sensor/SensorNamePage.qml
         View/Sensor/SensorInfoPage.qml
         View/SensorsPage.qml
-        View/AlertsNotificationsPage.qml
         View/WiringPage.qml
         View/MessagePopupView.qml
         View/VacationModeView.qml
@@ -220,12 +224,10 @@ qt6_add_qml_module(appStherm
         View/Test/QRCodeTestPage.qml
 
         # Delegates
-        View/Delegates/ApplicationMenuDelegate.qml
         View/Delegates/ShadeButtonDelegate.qml
         View/Delegates/ScheduleDelegate.qml
         View/Delegates/WifiDelegate.qml
         View/Delegates/SensorDelegate.qml
-        View/Delegates/AlertNotificationDelegate.qml
         View/Delegates/SensorLocationDelegate.qml
 
         # Popups
