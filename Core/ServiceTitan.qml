@@ -22,4 +22,16 @@ QSObject {
     property string jobNumber:      ""
 
     property string fullName:       ""
+
+    property string phone:          ""
+
+    property string address1:          ""
+
+    property string address2:          ""
+
+    property int cityId:  -1
+
+    property int stateId: -1
+
+
 }
