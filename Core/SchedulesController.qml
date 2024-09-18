@@ -37,12 +37,16 @@ QtObject {
         newSchedule.enable = schedule.enable;
         newSchedule.name = schedule.name;
         newSchedule.type = schedule.type;
-        newSchedule.temprature = schedule.temprature;
+        newSchedule.minimumTemperature = schedule.minimumTemperature;
+        newSchedule.maximumTemperature = schedule.maximumTemperature;
         newSchedule.humidity = schedule.humidity;
         newSchedule.startTime = schedule.startTime;
         newSchedule.endTime = schedule.endTime;
         newSchedule.repeats = schedule.repeats;
         newSchedule.dataSource = schedule.dataSource;
+
+        // Update the created schedule with the current system mode
+        newSchedule.systemMode = device.systemSetup.systemMode;
 
         device.schedules.push(newSchedule);
         device.schedulesChanged();
@@ -200,9 +204,13 @@ QtObject {
                     // else if (currentScheduleElement.runningDays === nextDay(today));
                 }
 
-                if ((currentStartTime > startTime && currentStartTime < endTime) ||
-                        (currentStartTime < startTime && currentScheduleElement.endTime > startTime) ||
-                        currentStartTime === startTime) {
+                // For accurate date comparisons, it's recommended to employ the .getTime() method to avoid potential issues.
+                // e.x.: While `Sep 9 06:00:00 2024 GMT+0300` and `Mon Sep 9 06:00:00 2024 GMT+0300` appear different,
+                // they represent the same timestamp (1725850800000).
+                // getTime: The value returned by the getTime method is the number of milliseconds since 1 January 1970 00:00:00.
+                if ((currentStartTime.getTime() > startTime.getTime() && currentStartTime.getTime() < endTime.getTime()) ||
+                        (currentStartTime.getTime() < startTime.getTime() && currentScheduleElement.endTime.getTime() > startTime.getTime()) ||
+                        currentStartTime.getTime() === startTime.getTime()) {
                     overlappings.push(currentScheduleElement.scheduleElement);
                 }
             };
@@ -252,9 +260,15 @@ QtObject {
         })
 
         deviceCurrentSchedules = currentSchedules;
+
+        //! When the deviceCurrentSchedules changed, the running schedule should be check again.
+        findRunningSchedule();
     }
 
     //! Find current schedule to active it and pass to Scheme to work around
+    //! The function is triggered by the timer in the presence of active schedules.
+    //! Additionally, it's called by the updateCurrentSchedules function to manage
+    //! updates in scenarios where all schedules have been cleared.
     function findRunningSchedule() {
         var now = new Date();
         var currentDate = Qt.formatDate(now, "ddd").slice(0, -1);
@@ -315,6 +329,8 @@ QtObject {
     //! Compare the server schedules and the model schedules and update model based on the server data.
     function setSchedulesFromServer(serverSchedules: var) {
 
+        console.log("Checking schedule from server.");
+
         var modelSchedules = device.schedules;
         if (!Array.isArray(serverSchedules)) {
             console.log("Invalid server input. Expected arrays.");
@@ -323,7 +339,7 @@ QtObject {
 
         // Check the length of both arrays
         if (serverSchedules.length !== modelSchedules.length) {
-            console.log("Number of schedules in server and model differ.");
+            console.log("Number of schedules in server and model differ. ", serverSchedules.length,  modelSchedules.length);
         }
 
         // Clean the device schedules when the serverSchedules is empty.
@@ -338,7 +354,7 @@ QtObject {
         var isNeedToUpdate = false;
 
         // Schedules that do not exist on the server will be deleted.
-        modelSchedules.every(schedule => {
+        modelSchedules.forEach(schedule => {
                                  // Find Schedule in the model
                                  var foundSchedule = serverSchedules.find(serverSchedule => schedule.name === serverSchedule.name);
 
@@ -352,7 +368,7 @@ QtObject {
 
                              });
 
-        serverSchedules.every(schedule => {
+        serverSchedules.forEach(schedule => {
                                   // Find Schedule in the model
                                   var foundSchedule = modelSchedules.find(modelSchedule => schedule.name === modelSchedule.name);
 
@@ -363,7 +379,16 @@ QtObject {
                                       newSchedule.enable = schedule.is_enable;
                                       newSchedule.name = schedule.name;
                                       newSchedule.type = schedule.type_id;
-                                      newSchedule.temprature = Utils.clampValue(schedule.temp, AppSpec.minimumTemperatureC, AppSpec.maximumTemperatureC);
+
+                                      // TODO
+                                      var difference = deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
+
+                                      newSchedule.minimumTemperature = Utils.clampValue(schedule?.minimumTemperature ?? AppSpec.defaultAutoMinReqTemp,
+                                                                                        AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
+
+                                      newSchedule.maximumTemperature = Utils.clampValue(schedule?.maximumTemperature ?? AppSpec.defaultAutoMaxReqTemp,
+                                                                                        Math.max(newSchedule.minimumTemperature + AppSpec.autoModeDiffrenceC, AppSpec.minAutoMaxTemp),
+                                                                                        AppSpec.autoMaximumTemperatureC);
                                       newSchedule.humidity = Utils.clampValue(schedule.humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
                                       newSchedule.startTime = formatTime(schedule.start_time);
                                       newSchedule.endTime = formatTime(schedule.end_time);
@@ -373,6 +398,7 @@ QtObject {
                                       device.schedules.push(newSchedule);
 
                                       isNeedToUpdate = true;
+                                      console.log("Schecule: ", newSchedule?.name ?? "undefined", " added to model.");
 
                                   } else {
                                       if (foundSchedule.enable !== schedule.is_enable) {
@@ -386,14 +412,13 @@ QtObject {
                                       if (foundSchedule.startTime !== startTime) {
                                           foundSchedule.startTime = startTime;
                                       }
-                                      var endTime = formatTime(schedule.end_time)
+                                      var endTime = formatTime(schedule.end_time);
                                       if (foundSchedule.endTime !== endTime) {
                                           foundSchedule.endTime = endTime;
                                       }
 
-                                      if (foundSchedule.temprature !== schedule.temp) {
-                                          foundSchedule.temprature = schedule.temp;
-                                      }
+                                      // TODO: Update schedule temperatures
+                                      // TODO: Update schedule mode
 
                                       if (foundSchedule.humidity !== schedule.humidity) {
                                           foundSchedule.humidity = schedule.humidity;
@@ -403,10 +428,12 @@ QtObject {
                                           foundSchedule.dataSource = schedule.dataSource;
                                       }
 
-                                      var repeats = schedule.weekdays.map(String).join(',')
+                                      var repeats = schedule.weekdays.map(String).join(',');
                                       if (foundSchedule.repeats !== repeats) {
                                           foundSchedule.repeats = repeats;
                                       }
+
+                                        console.log("Schecule: ", foundSchedule?.name ?? "undefined", " updated.");
                                   }
                               });
 
@@ -495,6 +522,38 @@ QtObject {
         return null;
     }
 
+    //! Deactivate schedules that are incompatible with the current system mode.
+    function deactivateIncompatibleSchedules(checkWithSystemMode : int) {
+
+        var incompatibleSchedules = findIncompatibleSchedules(checkWithSystemMode);
+        incompatibleSchedules.forEach(schedule => {
+                                          schedule.enable = false;
+                                      });
+    }
+
+    //! Find schedules that are incompatible with the current system mode.
+    //! If the current system mode is cooling or heating, and it's changed
+    //! to heating or cooling (respectively), the current schedule will be
+    //! automatically disabled. However, if the system mode is changed from
+    //! auto to cooling or heating, the schedule will not be considered incompatible
+    //! and will remain active.
+    function findIncompatibleSchedules(checkWithSystemMode : int) {
+        var currentSystemMode = device.systemSetup.systemMode;
+        var incompatibleSchedules = [];
+
+        // TODO: Check the vacation (schedule do not function when vacation is on)
+        // Also check the Off mode
+        if (checkWithSystemMode !== currentSystemMode &&
+                ((checkWithSystemMode === AppSpec.Cooling && currentSystemMode === AppSpec.Heating) ||
+                (checkWithSystemMode === AppSpec.Heating  && currentSystemMode === AppSpec.Cooling))) {
+            incompatibleSchedules = device.schedules.filter(schedule =>
+                                                            schedule.systemMode === currentSystemMode &&
+                                                            schedule.enable);
+        }
+
+        return incompatibleSchedules;
+    }
+
     property Timer _checkRunningTimer: Timer {
 
         running: runningScheduleEnabled
@@ -516,12 +575,13 @@ QtObject {
                 deviceController.setActivatedSchedule(null);
         }
 
+        //! Add/remove schedules
         function onSchedulesChanged() {
             updateCurrentSchedules();
         }
     }
 
-    property Connections deviceControllerConnections: Connections{
+    property Connections deviceControllerConnections: Connections {
         target: deviceController.currentSchedule
 
         function onEnableChanged() {
@@ -533,7 +593,7 @@ QtObject {
 
     //! Send null schedule when system mode changed to OFF mode
     property Connections systemSetupConnections: Connections{
-        target: device.systemSetup
+        target: device?.systemSetup ?? null
 
         function on_IsSystemShutoffChanged() {
             if (device?.systemSetup?._isSystemShutoff)
@@ -541,9 +601,18 @@ QtObject {
         }
 
         function onSystemModeChanged() {
-            if ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) {
+            var currentSystemMode = device.systemSetup.systemMode;
+            if (currentSystemMode === AppSpec.Off) {
                 deviceController.setActivatedSchedule(null);
+
             }
+            // TODO: auto -> cooling/heating == will be disable the incompatible schedules
+            // else if (currentSystemMode === AppSpec.Cooling) {
+            //     deactivateIncompatibleSchedules(AppSpec.Heating);
+
+            // } else if (currentSystemMode === AppSpec.Heating) {
+            //     deactivateIncompatibleSchedules(AppSpec.Cooling);
+            // }
         }
     }
 }

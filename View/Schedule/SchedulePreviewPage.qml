@@ -188,7 +188,7 @@ BasePageView {
                     Label {
                         Layout.fillWidth: true
                         font.bold: true
-                        text: "Temprature"
+                        text: "Temperature"
                     }
 
                     Label {
@@ -196,7 +196,10 @@ BasePageView {
 
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
-                        text: Number(Utils.convertedTemperature(scheduleToDisplay?.temprature ?? 0,
+                        text: Number(Utils.convertedTemperature(scheduleToDisplay?.minimumTemperature ?? 10,
+                                                                appModel?.setting?.tempratureUnit)
+                                     ).toLocaleString(locale, "f", 0) + " - " +
+                              Number(Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0,
                                                                 appModel?.setting?.tempratureUnit)
                                      ).toLocaleString(locale, "f", 0)
                               + ` \u00b0${unit}`
@@ -272,7 +275,6 @@ BasePageView {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
                                                       "backButtonVisible": true,
                                                       "uiSession": uiSession,
-                                                      "timeProperty": "start-time",
                                                       "schedule": internal.scheduleToEdit,
                                                       "editMode": true
                                                   });
@@ -309,11 +311,7 @@ BasePageView {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
                                                       "backButtonVisible": true,
                                                       "uiSession": uiSession,
-                                                      "timeProperty": "end-time",
                                                       "schedule": internal.scheduleToEdit,
-                                                      "startTime": Date.fromLocaleTimeString(Qt.locale(),
-                                                                                             scheduleToDisplay.startTime,
-                                                                                             "hh:mm AP"),
                                                       "editMode": true
                                                   });
                     }
@@ -448,7 +446,8 @@ BasePageView {
                 //! overlap with itself
                 scheduleToEdit.name = _root.schedule.name;
                 scheduleToEdit.type = _root.schedule.type;
-                scheduleToEdit.temprature = _root.schedule.temprature;
+                scheduleToEdit.minimumTemperature = _root.schedule.minimumTemperature;
+                scheduleToEdit.maximumTemperature = _root.schedule.maximumTemperature;
                 scheduleToEdit.humidity = _root.schedule.humidity;
                 scheduleToEdit.startTime = _root.schedule.startTime;
                 scheduleToEdit.endTime = _root.schedule.endTime;
@@ -463,7 +462,8 @@ BasePageView {
             return isEditable && _root.schedule && internal.scheduleToEdit
                     ? _root.schedule.name !== internal.scheduleToEdit.name
                       || _root.schedule.type !== internal.scheduleToEdit.type
-                      || _root.schedule.temprature !== internal.scheduleToEdit.temprature
+                      || _root.schedule.minimumTemperature !== internal.scheduleToEdit.minimumTemperature
+                      || _root.schedule.maximumTemperature !== internal.scheduleToEdit.maximumTemperature
                       || _root.schedule.humidity !== internal.scheduleToEdit.humidity
                       || _root.schedule.startTime !== internal.scheduleToEdit.startTime
                       || _root.schedule.endTime !== internal.scheduleToEdit.endTime
@@ -580,7 +580,8 @@ BasePageView {
         //! Apply internal.scheduleToEdit to _root.schedule and go back
         _root.schedule.name = internal.scheduleToEdit.name;
         _root.schedule.type = internal.scheduleToEdit.type;
-        _root.schedule.temprature = internal.scheduleToEdit.temprature;
+        _root.schedule.minimumTemperature = internal.scheduleToEdit.minimumTemperature;
+        _root.schedule.maximumTemperature = internal.scheduleToEdit.maximumTemperature;
         _root.schedule.humidity = internal.scheduleToEdit.humidity;
         _root.schedule.startTime = internal.scheduleToEdit.startTime;
         _root.schedule.endTime = internal.scheduleToEdit.endTime;

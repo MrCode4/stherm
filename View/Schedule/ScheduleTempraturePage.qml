@@ -21,13 +21,20 @@ BasePageView {
 
     property bool editMode: false
 
-    property int unit:      appModel?.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
+    property int temperatureUnit:      appModel?.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
 
     //! Is Celsius selected as the unit?
-    readonly property bool           isCelcius:  unit === AppSpec.TempratureUnit.Cel
+    readonly property bool           isCelcius:  temperatureUnit === AppSpec.TempratureUnit.Cel
 
-    //! Temprature value: this is always in celsius
-    readonly property real  temprature: (isCelcius ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value))
+    //! Temperature value: this is always in celsius
+    readonly property real  minimumTemperature: (isCelcius ? _tempSlider.first.value : Utils.fahrenheitToCelsius(_tempSlider.first.value))
+    readonly property real  maximumTemperature: (isCelcius ? _tempSlider.second.value : Utils.fahrenheitToCelsius(_tempSlider.second.value))
+
+    //! Minimum temperature
+    property real               minTemperature: isCelcius ? AppSpec.autoMinimumTemperatureC : AppSpec.autoMinimumTemperatureF
+
+    //! Maximum temperature
+    property real               maxTemperature: isCelcius ? AppSpec.autoMaximumTemperatureC : AppSpec.autoMaximumTemperatureF
 
 
     /* Object properties
@@ -38,9 +45,13 @@ BasePageView {
                                                       : 0
     leftPadding: 8 * scaleFactor
     rightPadding: 8 * scaleFactor
-    title: "Temprature (\u00b0" + (AppSpec.temperatureUnitString(unit)) + ")"
+    title: "Temperature (\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit)) + ")"
     backButtonVisible: false
     titleHeadeingLevel: 4
+
+    Component.onCompleted: {
+        updateSliderValues();
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -53,35 +64,74 @@ BasePageView {
         }
 
         onClicked: {
-            if (schedule && schedule.temprature !== temprature) {
-                schedule.temprature = temprature;
+            if (schedule) {
+                if (temperatureUnit === AppSpec.TempratureUnit.Cel) {
+                    schedule.minimumTemperature = _tempSlider.first.value;
+                    schedule.maximumTemperature = _tempSlider.second.value;
+
+                } else {
+                    schedule.minimumTemperature = Utils.fahrenheitToCelsius(_tempSlider.first.value);
+                    schedule.maximumTemperature = Utils.fahrenheitToCelsius(_tempSlider.second.value);
+                }
             }
 
             backButtonCallback();
         }
     }
 
-    TickedSlider {
-        id: _tempSlider
-        readonly property int tickStepSize: 4
-
+    RowLayout {
         anchors.centerIn: parent
-        width: parent.width
-        from: isCelcius ? AppSpec.minimumTemperatureC : AppSpec.minimumTemperatureF
-        to: isCelcius ? AppSpec.maximumTemperatureC : AppSpec.maximumTemperatureF
-        value: Utils.convertedTemperatureClamped(schedule?.temprature ?? 0, unit)
-        majorTickCount: isCelcius ? 3 : 5
-        ticksCount: to - from
-        stepSize: 1
+        width: parent.width * 0.85
 
-        ToolTip {
-            parent: _tempSlider.handle
-            y: -height - 16
-            x: (parent.width - width) / 2
-            visible: _tempSlider.pressed
-            timeout: Number.MAX_VALUE
-            delay: 0
-            text: _tempSlider.value.toFixed(0)
+        spacing: 20
+
+        //! Temperature icon
+        RoniaTextIcon {
+            Layout.leftMargin: 24
+            font.pointSize: _root.font.pointSize * 2
+            text: "\uf2c8" //! temperature-three-quarters icon
         }
+
+        TemperatureFlatRangeSlider {
+            id: _tempSlider
+
+            Layout.fillWidth: true
+
+            from: minTemperature
+            to: maxTemperature
+
+            difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
+
+            first.onPressedChanged: {
+                if (deviceController && !first.pressed) {
+                    schedule.minimumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(first.value)
+                                                       : first.value);
+                    deviceController.saveSettings();
+                }
+            }
+
+            second.onPressedChanged: {
+                if (deviceController && !second.pressed) {
+                    schedule.maximumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                                                       ? Utils.fahrenheitToCelsius(second.value)
+                                                       : second.value);
+                    deviceController.saveSettings();
+                }
+            }
+
+            labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))
+            fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
+            toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
+        }
+    }
+
+    function updateSliderValues() {
+        _tempSlider.first.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? _tempSlider.from, temperatureUnit,
+                                                       minTemperature, maxTemperature - _tempSlider.difference)
+
+        _tempSlider.second.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? _tempSlider.to, temperatureUnit,
+                                                        _tempSlider.first.value + _tempSlider.difference, maxTemperature)
+
     }
 }

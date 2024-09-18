@@ -814,16 +814,24 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
     return false;
 }
 
-void DeviceControllerCPP::setAutoMinReqTemp(const double min)
+void DeviceControllerCPP::setAutoMinReqTemp(const double cel_value)
 {
-    if (m_scheme)
-        m_scheme->setAutoMinReqTemp(min);
+    if (mSchemeDataProvider.isNull()) {
+        TRACE << "The schedule data provider is not available.";
+        return;
+    }
+
+    mSchemeDataProvider->setAutoMinReqTemp(cel_value);
 }
 
-void DeviceControllerCPP::setAutoMaxReqTemp(const double max)
+void DeviceControllerCPP::setAutoMaxReqTemp(const double cel_value)
 {
-    if (m_scheme)
-        m_scheme->setAutoMaxReqTemp(max);
+    if (mSchemeDataProvider.isNull()) {
+        TRACE << "The schedule data provider is not available.";
+        return;
+    }
+
+    mSchemeDataProvider->setAutoMaxReqTemp(cel_value);
 }
 
 bool DeviceControllerCPP::updateNRFFirmware()

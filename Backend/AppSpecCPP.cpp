@@ -144,3 +144,22 @@ QString AppSpecCPP::decodeLockPassword(QString pass)
     qDebug() << Q_FUNC_INFO << __LINE__ << QString::fromStdString(ss.str());
     return QString::fromStdString(ss.str());
 }
+
+QString AppSpecCPP::systemModeToString(SystemMode systemMode) {
+    switch(systemMode) {
+    case AppSpecCPP::Heating:
+        return "Heating";
+    case AppSpecCPP::Cooling:
+        return "Cooling";
+    case AppSpecCPP::Vacation:
+        return "Vacation";
+    case AppSpecCPP::Auto:
+        return "Auto";
+
+    case Off:
+    case Emergency:
+        break;
+    }
+
+    return "Off";
+}
