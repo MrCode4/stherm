@@ -53,7 +53,7 @@ I_DeviceController {
     property bool checkedSWUpdate: false
 
     property Timer fetchServiceTitanTimer: Timer {
-        interval: 5000
+        interval: 5000 // TODO
         repeat: true
         running: initialSetup && deviceControllerCPP.system.serialNumber.length > 0
 
@@ -512,6 +512,9 @@ I_DeviceController {
     //! Emit when need to stop device.
     signal stopDeviceRequested();
 
+    //! Once the initial setup process is finished, the app should become
+    //! active and automatically navigate to the home page.
+    //! This transition should be handled within the home page component.
     signal initialSetupFinished();
 
     onStartDeviceRequested: {

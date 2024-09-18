@@ -231,7 +231,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         }
     }
 
+    // Retry with timer to avoid many attempt error.
     mRetryUpdateTimer.setInterval(5000);
+    mRetryUpdateTimer.setSingleShot(true);
     connect(&mRetryUpdateTimer, &QTimer::timeout, this, [=]() {
         fetchUpdateInformation(true);
     });

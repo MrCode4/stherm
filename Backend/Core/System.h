@@ -262,6 +262,7 @@ signals:
     void testModeStarted();
 
     //! Pass errors, used for tests in test mode
+    //! Use to retry in initial setup
     void fetchUpdateErrorOccurred(QString err);
 
     void forceUpdateChanged();
