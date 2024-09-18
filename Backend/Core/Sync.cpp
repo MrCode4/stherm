@@ -461,8 +461,6 @@ void Sync::updateLockStatus(const QString& pin, bool lock)
         return;
     }
 
-    TRACE << "CALLING_updateLockStatus";
-
     auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &data) {
         TRACE << "UPDATE_LOCK_STATUS_RESPONSE: " << data;
         if (data.isEmpty()) {

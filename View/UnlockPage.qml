@@ -11,10 +11,6 @@ import Stherm
 BasePageView {
     id: root
 
-    /* Property declaration
-     * ****************************************************************************************/
-     property Lock lock: appModel._lock
-
     //! Use in unlock page
     property string encodedMasterPin: ""
 
@@ -109,22 +105,22 @@ BasePageView {
             onForgetPIN: {
                 contactContractorBtn.visible = true;
                 if (root.encodedMasterPin.length === 8 &&
-                        appModel._lock._masterPIN.length === 4)
+                        appModel.lock._masterPIN.length === 4) {
                     return;
+                }
 
-                var randomPin = AppSpec.generateRandomPassword();
+                let randomPin = AppSpec.generateRandomPassword();
                 root.encodedMasterPin = randomPin;
-                appModel._lock._masterPIN = AppSpec.decodeLockPassword(randomPin);
+                appModel.lock._masterPIN = AppSpec.decodeLockPassword(randomPin);
             }
 
             onSendPIN: pin => {
-                           var unLocked = deviceController.lock(false, pin);
+                           let unLocked = deviceController.updateAppLockState(false, pin);
                            updatePinStatus(unLocked);
-
                            clearPIN();
-
-                           if (unLocked)
+                           if (unLocked) {
                                contactContractorBtn.visible = false;
+                           }
                        }
         }
     }

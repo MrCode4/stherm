@@ -499,7 +499,7 @@ QtObject {
                                       // TODO: Update schedule mode
 
                                       if (foundSchedule.humidity !== schedule.humidity) {
-                                          foundSchedule.humidity = schedule.humidity;
+                                          foundSchedule.humidity = schedule.humidity ?? 0;
                                       }
 
                                       if (foundSchedule.dataSource !== schedule.dataSource) {

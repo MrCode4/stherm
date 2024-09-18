@@ -158,7 +158,7 @@ QtObject {
     function updateNightMode(nightMode : int) {}
 
     //! Lock/unlock the application
-    function lock(isLock : bool, pin: string) : bool {return false;}
+    function updateAppLockState(isLock : bool, pin: string) : bool {return false;}
 
     function getJobInformationManual() {}
 }

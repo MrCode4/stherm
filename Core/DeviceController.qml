@@ -326,6 +326,10 @@ I_DeviceController {
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
+            if (!deviceControllerCPP.sync.updatingLockStatus) {
+                updateAppLockState(settings.locked, settings.pin, true);
+            }
+
             // Save settings after fetch
             saveSettings();
 
@@ -644,7 +648,7 @@ I_DeviceController {
     signal customerInfoReady(var error);
 
     onStartDeviceRequested: {
-        console.log("************** Initialize and create connections **************")
+        console.log("************** Initialize and create connections **************");
         //! initialize the device and config
         // as well as device io which may TODO refactor later and call it on demand
         deviceControllerCPP.startDevice();
@@ -657,10 +661,7 @@ I_DeviceController {
             deviceControllerCPP.runHumidityScheme(true);
         }
 
-        //! Update TOF sensor status.
-        lock(device._lock.isLock, device._lock.pin, true);
-
-        // TODO    we might call this contitionally
+        // TODO we might call this contitionally
         console.log("************** set the backlight on initialization **************")
         updateDeviceBacklight(device.backlight.on, device.backlight._color);
 
@@ -668,6 +669,12 @@ I_DeviceController {
                          device.setting.tempratureUnit, device.setting.adaptiveBrightness];
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
+        }
+
+        if (device.lock?.isLock) {
+            console.log("Locking device at start");
+            ScreenSaverManager.lockDevice(true);
+            uiSession.showHome();
         }
     }
 
@@ -1457,30 +1464,22 @@ I_DeviceController {
 
     //! Lock/unlock the application
     //! Call from device and server
-    function lock(isLock : bool, pin: string, fromServer = false) : bool {
-        var force = false;
-        if (!isLock && device._lock.pin.length !== 4) {
-            console.log("Model was wrong: ", device._lock.pin, ", unlocked without check pin:", pin);
-            pin = device._lock.pin;
-            force = true;
-        } else if (pin.length !== 4) { // Set the pin in lock editMode
+    function updateAppLockState(isLock : bool, pin: string, fromServer = false) : bool {
+        if (pin?.length !== 4) {
             console.log("Pin: ", pin, " has incorrect format.")
             return false;
         }
 
-        if (isLock) {
-            device._lock.pin = pin;
-        }
+        let isPinCorrect = isLock || device.lock.pin === pin;
 
-        var isPinCorrect = device._lock.pin === pin;
-        if (!isLock && !isPinCorrect && (device._lock._masterPIN.length === 4)) {
-            console.log("Use master pin to unlock device: ", device._lock._masterPIN);
-            isPinCorrect = device._lock._masterPIN === pin;
+        if (!isLock && !isPinCorrect && (device.lock._masterPIN.length === 4)) {
+            console.log("Use master pin to unlock device: ", device.lock._masterPIN);
+            isPinCorrect = device.lock._masterPIN === pin;
         }
 
         console.log("Pin: ", pin, ", isPinCorrect:", isPinCorrect, ", isLock: ", isLock, ", fromServer", fromServer);
 
-        if (isPinCorrect && lockDevice(isLock, force) && !fromServer) {
+        if (isPinCorrect && lockDevice(isLock, pin) && !fromServer) {
             Qt.callLater(pushLockUpdates);
         }
 
@@ -1488,27 +1487,32 @@ I_DeviceController {
     }
 
     //! Update the lock model
-    function lockDevice(isLock : bool, force : bool) : bool {
-        if (!force && device._lock.isLock === isLock)
-            return false;
-
-        // Check has client in lock mode.
-        if (isLock && !deviceControllerCPP.system.hasClient()) {
-            console.log("The device cannot be locked because there is no active client.")
+    function lockDevice(isLock : bool, pin: string) : bool {
+        if (device.lock.isLock === isLock) {
+            console.log("No change in app lock status, ignoring: ", isLock);
             return false;
         }
 
-        device._lock.isLock = isLock;
+        // Check has client in lock mode.
+        if (isLock && !deviceControllerCPP.system.hasClient()) {
+            console.log("The device cannot be locked because there is no active client.");
+            return false;
+        }
+
+        console.log("Updating App lock state:", isLock);
+
+        device.lock.pin = pin;
+        device.lock.isLock = isLock;
+        saveSettings();
+
         ScreenSaverManager.lockDevice(isLock);
-
         uiSession.showHome();
-
         return true;
     }
 
     function pushLockUpdates() {
-        saveSettings();
-        deviceControllerCPP.sync.updateLockStatus(device._lock.pin, device._lock.isLock);
+        console.log("Pushing lock updates to server");
+        deviceControllerCPP.sync.updateLockStatus(device.lock.pin, device.lock.isLock);
     }
 
     //! TODO: maybe need to restart the app or activate the app and go to home

@@ -128,7 +128,7 @@ Popup {
             }
 
             Image {
-                visible: device._lock.isLock
+                visible: device.lock.isLock
                 Layout.alignment: Qt.AlignHCenter
                 width: 37
                 height: 49
