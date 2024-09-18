@@ -527,6 +527,20 @@ void Sync::fetchServiceTitanInformation()
     }
 }
 
+void Sync::getJobIdInformation(const QString& jobID)
+{
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+
+        emit jobInformationReady(!data.isEmpty(), data.toVariantMap());
+    };
+
+    auto netReply =  callGetApi(cBaseUrl + QString("/api/technicians/service-titan/customer/%0?sn=%01").arg(jobID, mSerialNumber), callback);
+    if (!netReply) {
+        emit jobInformationReady(false, QVariantMap());
+    }
+}
+
 void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
 {
     // TODO: Warranty replacement implementation

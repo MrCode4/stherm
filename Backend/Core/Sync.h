@@ -53,6 +53,9 @@ public:
 
     void warrantyReplacement(const QString& oldSN, const QString& newSN);
 
+    //! Get job information with the job id
+    Q_INVOKABLE void getJobIdInformation(const QString &jobID);
+
 signals:
     void settingsFetched(bool success);
     void serialNumberReady();
@@ -99,6 +102,8 @@ signals:
     //! TODO: send new data to device controller
     //! maybe rename to warrantyReplacementDataReady
     void warrantyReplacementFinished(bool success = false);
+
+    void jobInformationReady(bool success, QVariantMap data);
 
 private slots:
     //! Check firmware update with getSettings reply
