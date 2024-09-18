@@ -378,11 +378,12 @@ Control {
 
         onTriggered: {
 
-            // Settings fetch from server at least once before show home
+            // Settings fetch from server at least once before show home in some cases
             if(!uiSession.settingsReady) {
                 interval = 4000;
                 restart();
 
+                console.log("Wait for settings fetching ...")
                 return;
             }
 
@@ -436,8 +437,8 @@ Control {
                 // Disable check SN mode connections to prevent unnecessary show home
                 startupSN.enabled = false;
 
-                if (snMode === 0) {
-                    console.log("SnModeChanged: SN mode is 0.")
+                if (snMode === 1) {
+                    console.log("SnModeChanged: SN mode is 1.")
                 }
             }
         }

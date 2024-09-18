@@ -222,12 +222,13 @@ I_DeviceController {
         }
 
         //! Logics for check SN:
-        //! The SN check will be continuously executed until a valid serial number is obtained.
-        //! The snCheck will be called after initial setup finished and continue to change hasClient to true.
+        //! The checkSN will be continuously executed until a valid serial number is obtained.
+        //! The checkSN will be called after initial setup finished and continue to change hasClient to true.
         //! This called when checkSN called in anyway
         function onSnModeChanged(snMode: int) {
 
             if (deviceControllerCPP.system.serialNumber.length === 0) {
+                //! This called when checkSN called in anyway, so the timer should be singleshot.
                 checkSNTimer.repeat = false;
                 checkSNTimer.start();
 
@@ -239,7 +240,7 @@ I_DeviceController {
                 deviceControllerCPP.checkContractorInfo();
 
                 // Since checkContractorInfo has been invoked, so reset the timer associated
-                // with fetching contractor information
+                // with fetching contractor information to delay the checking process (avoid attempt error).
                 if (fetchContractorInfoTimer.running)
                     fetchContractorInfoTimer.restart();
             }
