@@ -22,7 +22,11 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 
     QString format = "yyyy-MM-dd HH:mm:ss";
 
-    return QDateTime::fromString(timeStr, format);
+    QDateTime dateTimeObject = QDateTime::fromString(timeStr, format);
+    // explicitly set as UTC for better compare
+    dateTimeObject.setTimeZone(QTimeZone(0));
+
+    return dateTimeObject;
 }
 
 
@@ -479,6 +483,7 @@ void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &a
 
             auto dateString = data.value("last_update");
             QDateTime dateTimeObject =  QDateTime::fromString(dateString.toString(), Qt::ISODate);
+            dateTimeObject.setTimeZone(QTimeZone(0)); // explicitly set as UTC for better compare
 
             if (dateTimeObject.isValid()) {
                 // Use the dateTimeObject here with time information
