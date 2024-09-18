@@ -96,7 +96,6 @@ BasePageView {
         onClicked: {
             appModel.thermostatName = nameTf.text;
 
-            // TODO
             if (initialSetup) {
                 deviceController.pushInitialSetupInformation();
             }

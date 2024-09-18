@@ -53,7 +53,7 @@ I_DeviceController {
     property bool checkedSWUpdate: false
 
     property Timer fetchServiceTitanTimer: Timer {
-        interval: 20000
+        interval: 5000
         repeat: true
         running: initialSetup && deviceControllerCPP.system.serialNumber.length > 0
 

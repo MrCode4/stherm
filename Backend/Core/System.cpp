@@ -233,9 +233,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
     mRetryUpdateTimer.setInterval(5000);
     connect(&mRetryUpdateTimer, &QTimer::timeout, this, [=]() {
-        if (isInitialSetup()) {
-            fetchUpdateInformation(true);
-        }
+        fetchUpdateInformation(true);
     });
 
     connect(this, &System::fetchUpdateErrorOccurred, this, [=](QString err) {

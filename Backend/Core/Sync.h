@@ -62,9 +62,9 @@ signals:
 
     void wiringReady();
 
-    //! If data is successfully retrieved from the server, the contractor information will be updated with the new data. However,
-    //! unless the device will use the local information.
-    void contractorInfoReady(const bool& getDataFromServerSuccessfully = true);
+    //! If data is successfully retrieved from the server, the contractor information will be updated with the new data.
+    //! otherwise the device will use the local informatio
+    void contractorInfoReady(bool getDataFromServerSuccessfully = true);
     void userDataFetched(const QString& email, const QString& name);
 
     //! Settings data

@@ -424,7 +424,7 @@ BasePageView {
             nextPageTimer.once = true;
             if (system.serialNumber.length > 0) {
 
-                // Check contractor info in the initial setup
+                // Check contractor info once without retrying in the initial setup
                 deviceController.deviceControllerCPP.checkContractorInfo();
 
                 //! If privacy policy not accepted in normal mode load the PrivacyPolicyPage
