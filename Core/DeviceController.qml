@@ -17,6 +17,8 @@ I_DeviceController {
 
     property MessageController   messageController
 
+    property Sync sync: deviceControllerCPP?.sync ?? null
+
     property int editMode: AppSpec.EMNone
 
     //! Use stageMode to handle in progress push
@@ -416,8 +418,8 @@ I_DeviceController {
         }
     }
 
-    property Connections sync: Connections {
-        target: deviceControllerCPP.sync
+    property Connections syncConnections: Connections {
+        target: sync
 
         function onUserDataFetched(email:string, name: string) {
             if (!device || !device.userData) return;
@@ -427,6 +429,24 @@ I_DeviceController {
 
             // save the updated data to file
             saveSettings();
+        }
+
+        function onJobInformationReady(success: bool, data: var) {
+            if (!success || !device || !device.serviceTitan)
+                return;
+
+            device.serviceTitan.fullName = data?.full_name ?? "";
+            device.serviceTitan.phone    = data?.phone ?? "";
+            device.serviceTitan.email    = data?.email ?? "";
+
+            device.serviceTitan.zipCode  = data?.zip?.code ?? "";
+
+            device.serviceTitan.cityId   = data?.city?.id ?? -1;
+            device.serviceTitan.stateId  = data?.state?.id ?? -1;
+
+            device.serviceTitan.address1 = data?.address1 ?? "";
+            device.serviceTitan.address2 = data?.address2 ?? "";
+
         }
     }
 
