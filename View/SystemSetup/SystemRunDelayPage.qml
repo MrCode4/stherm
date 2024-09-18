@@ -97,7 +97,8 @@ BasePageView {
         anchors.margins: 10
 
         visible: initialSetup
-        enabled: appModel?.serviceTitan?._fetched ?? false
+        // TODO
+        enabled: true//appModel?.serviceTitan?._fetched ?? false
         leftPadding: 25
         rightPadding: 25
 
@@ -144,7 +145,8 @@ BasePageView {
 
     function nextPage() {
         if (root.StackView.view) {
-            if (appModel?.serviceTitan?.isActive ?? false) {
+            // TODO
+            if (true/*appModel?.serviceTitan?.isActive ?? false*/) {
                 root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/JobNumberPage.qml", {
                                              "uiSession": uiSession,
                                              "initialSetup": root.initialSetup
