@@ -379,7 +379,6 @@ Control {
         onTriggered: {
 
             // Settings fetch from server at least once before show home
-            // Wait for WIFI page to fetch settings and show home here.
             if(!uiSession.settingsReady) {
                 interval = 4000;
                 restart();
@@ -410,9 +409,9 @@ Control {
             // In the initial setup we do not need to get settings from server.
             uiSession.settingsReady = true;
 
-            // should be done by timer as can cause crash
+            // Should be done by timer as can cause crash
             startupTimer.start()
-            // disable fetching sn again
+            // Disable check SN mode connections to prevent unnecessary show home
             startupSN.enabled = false;
         }
     }
@@ -422,8 +421,9 @@ Control {
         id: startupSN
         target: deviceController.deviceControllerCPP
 
+        //! This action should occur when the SN mode is set to 0.
         function onSnModeChanged(snMode: int) {
-            // snMode === 1 or 0
+            // snMode === 0
             var snTestMode = deviceController.deviceControllerCPP.getSNTestMode();
             if (snMode !== 2 || snTestMode) {
 
@@ -431,10 +431,14 @@ Control {
                 if (!uiSession.settingsReady)
                     uiSession.settingsReady = (snMode === 0);
 
-                // should be done by timer as can cause crash
+                // Should be done by timer as can cause crash
                 startupTimer.start()
-                // disable fetching sn again
+                // Disable check SN mode connections to prevent unnecessary show home
                 startupSN.enabled = false;
+
+                if (snMode === 0) {
+                    console.log("SnModeChanged: SN mode is 0.")
+                }
             }
         }
     }

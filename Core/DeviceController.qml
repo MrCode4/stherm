@@ -52,6 +52,8 @@ I_DeviceController {
     //! Is the software update checked or not
     property bool checkedSWUpdate: false
 
+    //! TODO: This will be used to retry the service titan fetch operation in case of errors
+    //! Used delays in the fetchServiceTitanInformation calls to improve the overall user experience.
     property Timer fetchServiceTitanTimer: Timer {
         interval: 5000 // TODO
         repeat: true
@@ -220,6 +222,9 @@ I_DeviceController {
         }
 
         //! Logics for check SN:
+        //! The SN check will be continuously executed until a valid serial number is obtained.
+        //! The snCheck will be called after initial setup finished and continue to change hasClient to true.
+        //! This called when checkSN called in anyway
         function onSnModeChanged(snMode: int) {
 
             if (deviceControllerCPP.system.serialNumber.length === 0) {
@@ -233,6 +238,8 @@ I_DeviceController {
                 // Check contractor info once has client received and is true
                 deviceControllerCPP.checkContractorInfo();
 
+                // Since checkContractorInfo has been invoked, so reset the timer associated
+                // with fetching contractor information
                 if (fetchContractorInfoTimer.running)
                     fetchContractorInfoTimer.restart();
             }
@@ -372,7 +379,9 @@ I_DeviceController {
                 //! TODO: Update service titan model
                 // device.serviceTitan.email = email;
                 // device.serviceTitan.zipCode = zipCode;
-                fetchServiceTitanTimer.stop();
+
+                // Instead of using the stop() function, utilize the running property to break the binding.
+                fetchServiceTitanTimer.running = false;
             }
         }
 
