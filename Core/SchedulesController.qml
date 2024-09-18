@@ -532,6 +532,11 @@ QtObject {
     }
 
     //! Find schedules that are incompatible with the current system mode.
+    //! If the current system mode is cooling or heating, and it's changed
+    //! to heating or cooling (respectively), the current schedule will be
+    //! automatically disabled. However, if the system mode is changed from
+    //! auto to cooling or heating, the schedule will not be considered incompatible
+    //! and will remain active.
     function findIncompatibleSchedules(checkWithSystemMode : int) {
         var currentSystemMode = device.systemSetup.systemMode;
         var incompatibleSchedules = [];

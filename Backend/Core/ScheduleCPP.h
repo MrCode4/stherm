@@ -49,7 +49,9 @@ public:
 
     int type;
 
-    //! Determine when a schedule was created or if the current schedule is enabled.
+    //! When a schedule is enabled or created, the system mode will automatically changed to
+    //! the current system mode of device.
+    //! The schedule system mode is initially set to `Off` by default.
     AppSpecCPP::SystemMode systemMode;
 
     //! Temperature: This is always in Celsius
