@@ -14,6 +14,9 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
+    //! Busy due to get the job number information
+    property bool isBusy: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Job Number"
@@ -40,14 +43,14 @@ BasePageView {
         anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.95
-        rowSpacing: 20
+        rowSpacing: 10
         columnSpacing: 8
         columns: 2
 
         Label {
             Layout.columnSpan: 2
             text: "Job number"
-            font.pointSize: root.font.pointSize
+            font.pointSize: root.font.pointSize * 0.9
         }
 
         TextField {
@@ -58,10 +61,24 @@ BasePageView {
             placeholderText: "Input the job number"
             text: appModel?.serviceTitan?.jobNumber ?? ""
             validator: RegularExpressionValidator {
-                regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
+                regularExpression: /^\d+$/
             }
 
-            onAccepted: {
+            onTextChanged: {
+                errorLabel.text = "";
+            }
+
+            inputMethodHints: Qt.ImhPreferNumbers
+
+            BusyIndicator {
+
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+
+                height: 45
+                width: 45
+                visible: isBusy
+                running: visible
             }
         }
 
@@ -71,26 +88,26 @@ BasePageView {
             Layout.alignment: Qt.AlignVCenter
 
             text: jobNumberTf.text.length > 0 ? qsTr("Check") : qsTr("Skip")
-            color: "#43E0F8"
+            color: isBusy ?  Qt.darker("#43E0F8", 1.5) : "#43E0F8"
 
             TapHandler {
+                enabled: !isBusy
+
                 onTapped: {
                     appModel.serviceTitan.jobNumber = jobNumberTf.text;
 
                     if (jobNumberTf.text.length > 0) {
+                        isBusy = true;
+                        errorLabel.text = "";
+
                         appModel.serviceTitan.isSTManualMode = false;
-                        // TODO: Check the job number
+
+                        deviceController.sync.getJobIdInformation(appModel.serviceTitan.jobNumber)
 
                     } else {
                         // Skip
                         appModel.serviceTitan.isSTManualMode = true;
-                    }
-
-                    if (root.StackView.view) {
-                        root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
-                                                     "uiSession": uiSession,
-                                                     "initialSetup": root.initialSetup
-                                                 });
+                        nextPage();
                     }
                 }
             }
@@ -109,12 +126,22 @@ BasePageView {
                   "If you don't have one, click \"Skip.\""
         }
 
+        Item {
+            id: spacer
+
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+
+            height: root.height / 7
+        }
+
         Text {
             id: warrantyReplacementText
 
             Layout.columnSpan: 2
             text: qsTr("Warranty Replacement")
             font.underline: true
+            font.pointSize: root.font.pointSize * 0.9
             color: "#43E0F8"
 
             TapHandler {
@@ -127,6 +154,50 @@ BasePageView {
                     }
                 }
             }
+        }
+    }
+
+    Label {
+        id: errorLabel
+
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        font.pointSize: root.font.pointSize * 0.7
+        text: ""
+        color: AppStyle.primaryRed
+        visible: text.length > 0 && !isBusy
+    }
+
+    //! Temp connection to go to the next page.
+    Connections {
+        target: deviceController.sync
+        enabled: root.visible
+
+        function onJobInformationReady(success: bool, data: var) {
+            isBusy = false;
+
+            if (!success) {
+                errorLabel.text = "Job number operation failed, retry.";
+                return;
+            }
+
+            nextPage();
+        }
+
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+
+    //! Go to CustomerDetailsPage
+    function nextPage() {
+        if (root.StackView.view) {
+            root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                         "uiSession": uiSession,
+                                         "initialSetup": root.initialSetup
+                                     });
         }
     }
 }
