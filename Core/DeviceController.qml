@@ -546,10 +546,11 @@ I_DeviceController {
         function onLockStatusPushed(success: bool, locked: bool) {
             if (success) {
                 console.log('Lock state pushed successfully');
-                lockStatePusher.isPushing = false;
+                lockStatePusher.stopPushing();
             }
             else {
-                lockStatePusher.interval = Math.min(lockStatePusher.interval * 2, 60 * 10000);
+                lockStatePusher.interval = Math.min(lockStatePusher.interval * 2, 60 * 1000);
+                console.error('Pushing app lock state failed, retry internal is ', lockStatePusher.interval);
             }
         }
     }
@@ -632,11 +633,9 @@ I_DeviceController {
     }
 
     property Timer lockStatePusher: Timer {
-        running: isPushing && !deviceControllerCPP.sync.updatingLockStatus
-        interval: 1000;
-
         property bool isPushing : false
-
+        running: isPushing && !deviceControllerCPP.sync.updatingLockStatus
+        interval: 1000;        
         onTriggered: sendData();
 
         function stopPushing() {
@@ -1520,7 +1519,7 @@ I_DeviceController {
 
     //! Update the lock model
     function lockDevice(isLock : bool, pin: string) : bool {
-        if (device.lock.isLock === isLock) {
+        if (device.lock.isLock === isLock && device.lock.pin == pin) {
             console.log("No change in app lock status, ignoring: ", isLock);
             return false;
         }
@@ -1537,8 +1536,11 @@ I_DeviceController {
         device.lock.isLock = isLock;
         saveSettings();
 
-        ScreenSaverManager.lockDevice(isLock);
-        uiSession.showHome();
+        if (device.lock.isLock !== isLock) {
+            ScreenSaverManager.lockDevice(isLock);
+            uiSession.showHome();
+        }
+
         return true;
     }
 

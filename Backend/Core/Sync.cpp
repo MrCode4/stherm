@@ -467,7 +467,7 @@ void Sync::updateLockStatus(const QString& pin, bool lock)
         updatingLockStatus(false);
     };
 
-    TRACE << "Pushing device lock state changes";
+    TRACE << "Pushing device lock state changes: " << lock;
     updatingLockStatus(true);
 
     auto endpoint = QString("api/sync/screen-%1?sn=%2").arg(lock ? "lock" : "unlock").arg(mSerialNumber);
