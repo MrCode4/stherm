@@ -219,14 +219,22 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     //! if the first one exists and second one not exists
     //! will be installed from server when needed if either not exists
     if (!has_sshPass()) {
-        TRACE << "sshpass was not in /usr/bin";
+        TRACE << "sshpass was not in /usr/bin or is invalid, so should be remove: "
+              << QFile::remove("/usr/bin/sshpass");
+
         QFile sshpass_local("/usr/local/bin/sshpass");
-        if (sshpass_local.exists()) {
+        bool isValidSshpass_local = sshpass_local.exists() && (sshpass_local.size() > 0);
+        if (isValidSshpass_local) {
+
             TRACE << "sshpass copying to /usr/bin";
+            // Invalid file in the /usr/bin/sshpass removed, so copy operation will be successful.
             auto success = sshpass_local.copy("/usr/bin/sshpass");
             TRACE_CHECK(success) << "copy sshpass successfuly";
             TRACE_CHECK(!success) << "failed to copy sshpass";
         } else {
+            // Remove the sshpass file when is invalid and exists.
+            TRACE << "Remove the invalid sshpass file in /usr/local/bin if exists: " << sshpass_local.remove();
+
             TRACE << "sshpass is not in /usr/local/bin either, will be installed on first use";
         }
     }
@@ -397,6 +405,13 @@ bool NUVE::System::installSSHPass(bool recursiveCall)
         return false;
 
     sshpassInstallCounter++;
+
+    // Remove the sshpass file if is exists or is invalid.
+    TRACE << "Remove the /usr/bin/sshpass: "
+          << QFile::remove("/usr/bin/sshpass");
+
+    TRACE << "Remove usr/local/bin/sshpass: "
+          << QFile::remove("/usr/local/bin/sshpass");
 
 #ifdef __unix__
     // this helps validating the existence as well as workable version of sshPass
@@ -973,7 +988,9 @@ bool NUVE::System::has_sshPass()
 {
     QFileInfo sshPass("/usr/bin/sshpass");
 
-    return sshPass.exists();
+    TRACE << "/usr/bin/sshpass information: " << sshPass.exists() << " - size (byte(s)): "  << sshPass.size();
+
+    return sshPass.exists() && (sshPass.size() > 0);
 }
 
 bool NUVE::System::isManualMode() {
