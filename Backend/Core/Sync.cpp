@@ -35,7 +35,7 @@ Sync::Sync(QObject *parent)
     : RestApiExecutor(parent)
     , mHasClient(false)
     , m_fetchingUserData(false)
-    , m_updatingLockStatus(false)
+    , m_pushingLockState(false)
 {
     QSettings setting;
 
@@ -310,7 +310,6 @@ bool Sync::fetchSettings()
             }
         }
         else if (data.value("sn").toString() == mSerialNumber) {
-            TRACE << "GET-SETTINGS_RESPONSE: " << data;
             auto dateString = data.value("setting").toObject().value("last_update");
             TRACE << "cpp last_update:" << dateString;
             QDateTime dateTimeObject = updateTimeStringToTime(dateString.toString());
@@ -454,7 +453,7 @@ QString Sync::baseURL()
     return url;
 }
 
-void Sync::updateLockStatus(const QString& pin, bool lock)
+void Sync::pushLockState(const QString& pin, bool lock)
 {
     if (mSerialNumber.isEmpty()) {
         qWarning() << "Sn is not ready! can not update lock status!";
@@ -462,13 +461,12 @@ void Sync::updateLockStatus(const QString& pin, bool lock)
     }
 
     auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &data) {
-        TRACE << "UPDATE_LOCK_STATUS_RESPONSE: " << data;
-        emit lockStatusPushed(data.contains("locked"), data.value("locked").toBool());
-        updatingLockStatus(false);
+        emit lockStatePushed(data.contains("locked"), data.value("locked").toBool());
+        pushingLockState(false);
     };
 
     TRACE << "Pushing device lock state changes: " << lock;
-    updatingLockStatus(true);
+    pushingLockState(true);
 
     auto endpoint = QString("api/sync/screen-%1?sn=%2").arg(lock ? "lock" : "unlock").arg(mSerialNumber);
     QJsonObject requestBody;

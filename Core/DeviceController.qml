@@ -543,7 +543,7 @@ I_DeviceController {
             console.warn("install failed try again.")
         }
 
-        function onLockStatusPushed(success: bool, locked: bool) {
+        function onLockStatePushed(success: bool, locked: bool) {
             if (success) {
                 console.log('Lock state pushed successfully');
                 lockStatePusher.stopPushing();
@@ -634,7 +634,7 @@ I_DeviceController {
 
     property Timer lockStatePusher: Timer {
         property bool isPushing : false
-        running: isPushing && !deviceControllerCPP.sync.updatingLockStatus
+        running: isPushing && !deviceControllerCPP.sync.pushingLockState
         interval: 1000;        
         onTriggered: sendData();
 
@@ -650,7 +650,7 @@ I_DeviceController {
         }
 
         function sendData() {
-            deviceControllerCPP.sync.updateLockStatus(device.lock.pin, device.lock.isLock);
+            deviceControllerCPP.sync.pushLockState(device.lock.pin, device.lock.isLock);
         }
     }
 

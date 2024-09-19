@@ -3,6 +3,7 @@
 #include <QQmlEngine>
 #include <QFile>
 #include <sstream>
+
 #include "device_config.h"
 
 AppSpecCPP::AppSpecCPP(QObject *parent)
