@@ -1536,10 +1536,8 @@ I_DeviceController {
         device.lock.isLock = isLock;
         saveSettings();
 
-        if (device.lock.isLock !== isLock) {
-            ScreenSaverManager.lockDevice(isLock);
-            uiSession.showHome();
-        }
+        ScreenSaverManager.lockDevice(isLock);
+        uiSession.showHome();
 
         return true;
     }
