@@ -117,14 +117,10 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
-            if (fetchMnaual){
-                isBusyCustomer = true;
-                isBusyZip = true;
-                // get needed values from api
-                deviceController.getJobInformationManual();
-            } else  {
-                nextPage();
-            }
+            isBusyCustomer = true;
+            isBusyZip = true;
+            // get needed values from api
+            deviceController.getJobInformationManual();
         }
     }
 

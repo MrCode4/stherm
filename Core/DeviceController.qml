@@ -468,7 +468,10 @@ I_DeviceController {
 
             //TODO name or id?
             device.serviceTitan.city  = data.city?.name ?? "";
-            device.serviceTitan.state  = data.state?.short ?? ""; //data.state?.name ?? "";
+            device.serviceTitan.state  = data.state?.short ?? ""; //data.state?.name ;
+
+            device.serviceTitan.city_id  = data.city?.id ?? -1;
+            device.serviceTitan.state_id  = data.state?.id ?? -1;
 
             internal.syncReturnedZip = data.code;
             zipCodeInfoReady("");
@@ -1461,7 +1464,7 @@ I_DeviceController {
     }
 
     //! TODO: maybe need to restart the app or activate the app and go to home
-    function warrantyReplacementFinished() {
+    function firstRunFlowEnded() {
         checkSNTimer.repeat = true;
         checkSNTimer.start();
         initialSetupFinished();
@@ -1469,13 +1472,29 @@ I_DeviceController {
 
     //! Push initial setup information
     function pushInitialSetupInformation() {
-        // TODO
-        // Send initial setup data to server
+        var send_data = {
+            "client": {
+                "full_name": device.serviceTitan.fullName,
+                "phone": device.serviceTitan.phone,
+                "email": device.serviceTitan.email
+              },
+              "devices": [
+                {
+                  "sn": deviceControllerCPP.system.serialNumber,
+                  "name": device.thermostatName,
+                  "address1": device.serviceTitan.address1,
+                  "address2": device.serviceTitan.address2,
+                  "state": device.serviceTitan.state_id,
+                  "city": device.serviceTitan.city_id ,
+                  "zip_code": device.serviceTitan.zipCode,
+                  "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
+                  "resident_type_id": 1 + device.residenceType, // or maybe using condition
+                  "where_installed_id": 0 //+ device.deviceLocation
+                }
+              ]
+        };
 
-        checkSNTimer.repeat = true;
-        checkSNTimer.start();
-
-        initialSetupFinished();
+        sync.installDevice(send_data);
 
     }
 

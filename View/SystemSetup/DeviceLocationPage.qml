@@ -74,6 +74,7 @@ BasePageView {
 
                     onClicked: {
                         appModel.deviceLocation = String(modelData);
+                        appModel.thermostatName = String(modelData);
                         nextPage();
                     }
                 }

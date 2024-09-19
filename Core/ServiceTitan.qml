@@ -32,4 +32,8 @@ QSObject {
     property string city:           ""
 
     property string state:          ""
+
+    property int city_id:           -1
+
+    property int state_id:          -1
 }

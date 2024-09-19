@@ -146,6 +146,7 @@ Item {
                 successPopup.hid.connect(warrantyReplacementFinished);
                 successPopup.open();
             }
+            // how about in error?
         }
     }
 
@@ -169,7 +170,7 @@ Item {
     }
 
     function warrantyReplacementFinished() {
-        deviceController.warrantyReplacementFinished();
+        deviceController.firstRunFlowEnded();
         successPopup.hid.disconnect(warrantyReplacementFinished);
     }
 }
