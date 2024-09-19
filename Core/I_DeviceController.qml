@@ -159,4 +159,5 @@ QtObject {
     //! Lock/unlock the application
     function lock(isLock : bool, pin: string) : bool {return false;}
 
+    function getJobInformationManual() {}
 }

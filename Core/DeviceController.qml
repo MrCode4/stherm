@@ -17,6 +17,8 @@ I_DeviceController {
 
     property MessageController   messageController
 
+    property Sync sync: deviceControllerCPP?.sync ?? null
+
     property int editMode: AppSpec.EMNone
 
     //! Use stageMode to handle in progress push
@@ -48,6 +50,27 @@ I_DeviceController {
     property real targetNightModeBrightness: Math.min(50, (device.setting.adaptiveBrightness ? deviceControllerCPP.adaptiveBrightness : device.setting.brightness))
 
     property int testModeType: AppSpec.TestModeType.None
+
+    //! Is the software update checked or not
+    property bool checkedSWUpdate: false
+
+    property var internal: QtObject {
+        //! This property will hold last returned data from manual first run flow
+        property string syncReturnedEmail: ""
+        property string syncReturnedZip: ""
+    }
+
+    //! TODO: This will be used to retry the service titan fetch operation in case of errors
+    //! Used delays in the fetchServiceTitanInformation calls to improve the overall user experience.
+    property Timer fetchServiceTitanTimer: Timer {
+        interval: 5000 // TODO
+        repeat: true
+        running: initialSetup && deviceControllerCPP.system.serialNumber.length > 0
+
+        onTriggered: {
+            deviceControllerCPP.system.fetchServiceTitanInformation();
+        }
+    }
 
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
@@ -124,6 +147,31 @@ I_DeviceController {
         }
     }
 
+
+    //! Start a timer to check serial number.
+    property Timer checkSNTimer: Timer {
+        property int _retrycheckSNTimerInterval: 10000
+
+        repeat: false
+        running: false
+        interval: _retrycheckSNTimerInterval
+
+        onTriggered: {
+            deviceControllerCPP.checkSN();
+
+            if (deviceControllerCPP.system.serialNumber.length === 0) {
+                _retrycheckSNTimerInterval += 10000;
+
+                if (_retrycheckSNTimerInterval > 40000)
+                    _retrycheckSNTimerInterval = 40000;
+
+            } else {
+                _retrycheckSNTimerInterval = 10000;
+            }
+
+        }
+    }
+
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
@@ -180,6 +228,31 @@ I_DeviceController {
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
         }
+
+        //! Logics for check SN:
+        //! The checkSN will be continuously executed until a valid serial number is obtained.
+        //! The checkSN will be called after initial setup finished and continue to change hasClient to true.
+        //! This called when checkSN called in anyway
+        function onSnModeChanged(snMode: int) {
+
+            if (deviceControllerCPP.system.serialNumber.length === 0) {
+                //! This called when checkSN called in anyway, so the timer should be singleshot.
+                checkSNTimer.repeat = false;
+                checkSNTimer.start();
+
+            } else if (snMode !== 2) {
+                // Has client is true
+                checkSNTimer.stop();
+
+                // Check contractor info once has client received and is true
+                deviceControllerCPP.checkContractorInfo();
+
+                // Since checkContractorInfo has been invoked, so reset the timer associated
+                // with fetching contractor information to delay the checking process (avoid attempt error).
+                if (fetchContractorInfoTimer.running)
+                    fetchContractorInfoTimer.restart();
+            }
+        }
     }
 
     property Connections networkInterface: Connections {
@@ -187,6 +260,21 @@ I_DeviceController {
 
         function onHasInternetChanged() {
             deviceControllerCPP.wifiConnected(NetworkInterface.hasInternet);
+
+            // checkSN when the internet is connected.
+            if (NetworkInterface.hasInternet) {
+                if (startMode !== 0 && startMode !== -1) {
+                    if (!checkSNTimer.running) {
+                        deviceControllerCPP.checkSN();
+                    }
+                }
+
+                if (deviceControllerCPP.system.serialNumber.length > 0)
+                    fetchContractorInfoTimer.start();
+
+            } else {
+                fetchContractorInfoTimer.stop();
+            }
         }
     }
 
@@ -284,10 +372,60 @@ I_DeviceController {
             console.log("DeviceController.qml: Push onPushFailed", stageMode, editMode, lockMode)
             settingsPush.isPushing = false;
         }
+
+        function onServiceTitanInformationReady(hasError: bool, isActive : bool,
+                                                email : string, zipCode : string) {
+            console.log("ServiceTitanInformationReady", hasError, isActive, email, zipCode);
+
+            device.serviceTitan._fetched = !hasError;
+
+            device.serviceTitan.isActive = isActive;
+
+            if (hasError) {
+                // Retry to fetch service titan data.
+
+            } else {
+                //! TODO: Update service titan model
+                // device.serviceTitan.email = email;
+                // device.serviceTitan.zipCode = zipCode;
+
+                // Instead of using the stop() function, utilize the running property to break the binding.
+                fetchServiceTitanTimer.running = false;
+            }
+        }
+
+        //! Check update
+        function onUpdateNoChecked() {
+            checkedSWUpdate = true;
+            console.log("udpate checked.")
+        }
+
+        //! TODO: replace new model with the current model
+        function onWarrantyReplacementFinished(success: bool) {
+            // TODO: action for now
+            if (success) {
+            }
+        }
+
+        function onSerialNumberReady() {
+            // "If the software update is not currently checked,
+            // initiate a check for updates.
+            // If the software update is already checked,
+            // proceed with the normal update process using a system timer.
+            if (!checkedSWUpdate) {
+                deviceControllerCPP.system.fetchUpdateInformation(true);
+            }
+        }
+
+        function onContractorInfoReady(getDataFromServerSuccessfully : bool) {
+            fetchContractorInfoTimer._retryFetchContractorInfoTimerInterval = getDataFromServerSuccessfully ? fetchContractorInfoTimer._defaultInterval : 30000;
+
+            fetchContractorInfoTimer.restart();
+        }
     }
 
-    property Connections sync: Connections {
-        target: deviceControllerCPP.sync
+    property Connections syncConnections: Connections {
+        target: sync
 
         function onUserDataFetched(email:string, name: string) {
             if (!device || !device.userData) return;
@@ -298,6 +436,75 @@ I_DeviceController {
             // save the updated data to file
             saveSettings();
         }
+
+        function onJobInformationReady(success: bool, data: var) {
+            if (!success || !device || !device.serviceTitan)
+                return;
+
+            device.serviceTitan.fullName = data?.full_name ?? "";
+            device.serviceTitan.phone    = data?.phone ?? "";
+            device.serviceTitan.email    = data?.email ?? "";
+
+            device.serviceTitan.zipCode  = data?.zip?.code ?? (data?.zip ?? "");
+
+            device.serviceTitan.city   = data?.city?.name ?? (data?.city ?? "");
+            device.serviceTitan.state  = data?.state?.short ?? (data?.state ?? "");
+
+            device.serviceTitan.city_id  = data.city?.id ?? -1;
+            device.serviceTitan.state_id  = data.state?.id ?? -1;
+
+            device.serviceTitan.address1 = data?.address1 ?? "";
+            device.serviceTitan.address2 = data?.address2 ?? "";
+
+        }
+
+        function onZipCodeInfoReady(success: bool, data: var) {
+            if (!success || !data  || !device || !device.serviceTitan) {
+                internal.syncReturnedZip = "";
+                zipCodeInfoReady("Getting zip code information failed.");
+                return;
+            }
+
+            if (data.code !== device.serviceTitan.zipCode)
+                console.warn("onZipCodeInfoReady: zip code returned is different", data.code, device.serviceTitan.zipCode);
+
+            device.serviceTitan.city  = data.city?.name ?? "";
+            device.serviceTitan.state  = data.state?.short ?? ""; //data.state?.name ;
+
+            device.serviceTitan.city_id  = data.city?.id ?? -1;
+            device.serviceTitan.state_id  = data.state?.id ?? -1;
+
+            internal.syncReturnedZip = data.code;
+            zipCodeInfoReady("");
+        }
+
+        function onCustomerInfoReady(success: bool, data: var) {
+            if (!success || !data || !device || !device.serviceTitan) {
+                internal.syncReturnedEmail = "";
+                customerInfoReady("Getting customer information failed.");
+                return;
+            }
+
+            if (data.email !== device.serviceTitan.email)
+                console.warn("onCustomerInfoReady: email returned is different", data.email, device.serviceTitan.email);
+
+            console.log("onCustomerInfoReady:", data.membership, data.is_enabled);
+
+            device.serviceTitan.fullName = data.full_name ?? "";
+            device.serviceTitan.phone    = data.phone ?? "";
+
+            internal.syncReturnedEmail = data.email;
+            customerInfoReady("");
+        }
+
+        function onInstalledSuccess() {
+            firstRunFlowEnded();
+        }
+
+        function onInstallFailed() {
+            console.warn("install failed try again.")
+        }
+
     }
 
     property Timer  settingsPush: Timer {
@@ -364,6 +571,19 @@ I_DeviceController {
         }
     }
 
+    property Timer  fetchContractorInfoTimer: Timer {
+        readonly property int _defaultInterval: 1.1 * 60 * 60 * 1000
+        property int _retryFetchContractorInfoTimerInterval: _defaultInterval
+
+        repeat: true;
+        running: false
+        interval: _retryFetchContractorInfoTimerInterval
+
+        onTriggered: {
+            deviceControllerCPP.checkContractorInfo();
+        }
+    }
+
     /* Object Properties
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {
@@ -378,6 +598,15 @@ I_DeviceController {
 
     //! Emit when need to stop device.
     signal stopDeviceRequested();
+
+    //! Once the initial setup process is finished, the app should become
+    //! active and automatically navigate to the home page.
+    //! This transition should be handled within the home page component.
+    signal initialSetupFinished();
+
+    //! first run flow manual data needs in same page
+    signal zipCodeInfoReady(var error);
+    signal customerInfoReady(var error);
 
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************")
@@ -633,7 +862,7 @@ I_DeviceController {
 
         var send_data = [brightness, volume, temperatureUnit, adaptive];
         var current_data = [device.setting.brightness, device.setting.volume,
-                            root.tempratureUnit, device.setting.adaptiveBrightness]
+                            root.temperatureUnit, device.setting.adaptiveBrightness]
         if (send_data.toString() === current_data.toString()) {
             console.log("ignored setings")
             return false;
@@ -695,7 +924,7 @@ I_DeviceController {
             // To maintain accurate control and prevent misinterpretations,
             // the unit should be permanently set to Celsius. so we always use data from device to ignore
             if (!setSettings(settings.brightness, settings.speaker,
-                        root.tempratureUnit, settings.brightness_mode,
+                        root.temperatureUnit, settings.brightness_mode,
                              device.setting.enabledAlerts, device.setting.enabledNotifications))
                 console.log("The system settings is not applied from server")
 
@@ -1173,7 +1402,7 @@ I_DeviceController {
 
     //! Just use for night mode
     function setBrightnessInNightMode(brightness, volume, adaptive) {
-        var send_data = [brightness, volume, root.tempratureUnit, adaptive];
+        var send_data = [brightness, volume, root.temperatureUnit, adaptive];
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }
@@ -1242,5 +1471,53 @@ I_DeviceController {
         saveSettings();
 
         // TODO: Update the server
+    }
+
+    //! TODO: maybe need to restart the app or activate the app and go to home
+    function firstRunFlowEnded() {
+        checkSNTimer.repeat = true;
+        checkSNTimer.start();
+        initialSetupFinished();
+    }
+
+    //! Push initial setup information
+    function pushInitialSetupInformation() {
+        var send_data = {
+            "client": {
+                "full_name": device.serviceTitan.fullName,
+                "phone": device.serviceTitan.phone,
+                "email": device.serviceTitan.email
+              },
+              "devices": [
+                {
+                  "sn": deviceControllerCPP.system.serialNumber,
+                  "name": device.thermostatName,
+                  "address1": device.serviceTitan.address1,
+                  "address2": device.serviceTitan.address2,
+                  "state": device.serviceTitan.state_id,
+                  "city": device.serviceTitan.city_id ,
+                  "zip_code": device.serviceTitan.zipCode,
+                  "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
+                  "resident_type_id": device.residenceType, // or maybe using condition
+                  "where_installed_id": device.whereInstalled
+                }
+              ]
+        };
+
+        sync.installDevice(send_data);
+    }
+
+    //! as both data needs to be fetched together and each may return error
+    //! we do not resend it if last time it was success so we have better chance in total
+    function getJobInformationManual() {
+        if (internal.syncReturnedZip !== device.serviceTitan.zipCode)
+            sync.getAddressInformationManual(device.serviceTitan.zipCode);
+        else
+            zipCodeInfoReady("");
+
+        if (internal.syncReturnedEmail !== device.serviceTitan.email)
+            sync.getCustomerInformationManual(device.serviceTitan.email)
+        else
+            customerInfoReady("");
     }
 }

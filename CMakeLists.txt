@@ -91,6 +91,8 @@ qt6_add_qml_module(appStherm
         Core/ToastManager.qml
         Core/UserPolicyTerms.qml
         Core/Lock.qml
+        Core/ServiceTitan.qml
+
 
         # Primitive Components
         UiCore/Components/RoniaTextIcon.qml
@@ -138,6 +140,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ExpandableItem.qml
         UiCore/Components/PINKeyboard.qml
         UiCore/Components/PINTextField.qml
+        UiCore/Components/InfoToolButton.qml
         UiCore/Components/HorizontalTimeTumbler.qml
         UiCore/Components/TemperatureFlatRangeSlider.qml
 
@@ -177,6 +180,10 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemTypeHeatOnlyPage.qml
         View/SystemSetup/SystemAccessoriesPage.qml
         View/SystemSetup/SystemRunDelayPage.qml
+        View/SystemSetup/InstallationTypePage.qml
+        View/SystemSetup/ResidenceTypePage.qml
+        View/SystemSetup/DeviceLocationPage.qml
+        View/SystemSetup/ThermostatNamePage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
         View/RequestTechPriorityPage.qml
@@ -203,6 +210,12 @@ qt6_add_qml_module(appStherm
         View/MobileAppPage.qml
         View/LockPage.qml
         View/UnlockPage.qml
+
+        # Service Titan pages
+        View/ServiceTitan/JobNumberPage.qml
+        View/ServiceTitan/CustomerDetailsPage.qml
+        View/ServiceTitan/ServiceTitanReviewPage.qml
+        View/ServiceTitan/WarrantyReplacementPage.qml
 
         # Date and Time
         View/DateTime/DateTimePage.qml
@@ -249,6 +262,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/InfoPopup.qml
         UiCore/PopUps/TestFailedPopup.qml
         UiCore/PopUps/PrivacyPolicyPopup.qml
+        UiCore/PopUps/SuccessPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml

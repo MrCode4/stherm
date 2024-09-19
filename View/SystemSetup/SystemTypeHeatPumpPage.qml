@@ -26,26 +26,41 @@ BasePageView {
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
-            text: initialSetup ? FAIcons.arrowRight : "\uf00c"
+            text: "\uf00c"
         }
+
+        visible: !initialSetup
 
         onClicked: {
             //! Do neccessary updates
-            if (deviceController) {
-                deviceController.setSystemHeatPump(_emergencyHeatingSwh.checked,
-                                                   heatPumpStageLayout.heatPumpStage,
-                                                   heatPumpOBStateLayout.heatPumpOBState)
-            }
-            if (initialSetup) {
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
-                                                  "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                              });
-                }
-            } else {
-                //! Also move out of this Page
-                goToSystemTypePage();
+            updateModel();
+
+            //! Also move out of this Page
+            goToSystemTypePage();
+        }
+    }
+
+    //! Next button in initial setup flow
+    ButtonInverted {
+        text: "Next"
+
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.rightMargin: -30
+        anchors.bottomMargin: 10
+
+        visible: initialSetup
+        leftPadding: 25
+        rightPadding: 25
+
+        onClicked: {
+           updateModel();
+
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
             }
         }
     }
@@ -115,12 +130,11 @@ BasePageView {
             property int heatPumpOBState: 1
 
             Label {
-                Layout.fillWidth: true
                 text: "O/B on State"
             }
 
             RowLayout {
-                Layout.fillWidth: false
+                Layout.fillWidth: true
 
                 RadioButton {
                     checked: appModel.systemSetup.heatPumpOBState === 0
@@ -141,6 +155,14 @@ BasePageView {
                     text: "Heat"
                 }
             }
+        }
+    }
+
+    function updateModel() {
+        if (deviceController) {
+            deviceController.setSystemHeatPump(_emergencyHeatingSwh.checked,
+                                               heatPumpStageLayout.heatPumpStage,
+                                               heatPumpOBStateLayout.heatPumpOBState)
         }
     }
 

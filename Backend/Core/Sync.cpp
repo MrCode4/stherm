@@ -13,6 +13,7 @@ const QString cBaseUrl = API_SERVER_BASE_URL;
 const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
 const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
+const QString cWarrantySerialNumberKey = QString("NUVE/WarrantySerialNumber");
 const QString cFirmwareUpdateKey      = QString("firmware");
 const QString cFirmwareImageKey       = QString("firmware-image");
 const QString cFirmwareForceUpdateKey = QString("force-update");
@@ -21,7 +22,11 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 
     QString format = "yyyy-MM-dd HH:mm:ss";
 
-    return QDateTime::fromString(timeStr, format);
+    QDateTime dateTimeObject = QDateTime::fromString(timeStr, format);
+    // explicitly set as UTC for better compare
+    dateTimeObject.setTimeZone(QTimeZone(0));
+
+    return dateTimeObject;
 }
 
 
@@ -177,7 +182,7 @@ bool Sync::fetchContractorInfo()
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError) {
-            emit contractorInfoReady();
+            emit contractorInfoReady(false);
         }
         else {
             auto brandValue = data.value("brand");
@@ -186,7 +191,7 @@ bool Sync::fetchContractorInfo()
 
             if (data.isEmpty() || !brandValue.isString() || brandValue.toString().isEmpty()) {
                 TRACE << "Wrong contractor info fetched from server";
-                emit contractorInfoReady();
+                emit contractorInfoReady(false);
                 return;
             }
 
@@ -272,11 +277,10 @@ bool Sync::fetchSettings()
     }
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        bool success = true;
+        bool success = false;
         if (data.isEmpty()) {
             if (reply->error() == QNetworkReply::NoError) {
                 TRACE << "Received settings corrupted: " + mSerialNumber;
-                success = false;
             }
         }
         else if (data.value("sn").toString() == mSerialNumber) {
@@ -303,13 +307,14 @@ bool Sync::fetchSettings()
                 emit settingsReady(data.toVariantMap());
             }
 
+            success = true;
+
             // Transmit Non-Configuration Data to UI and Update Model on Server
             // Response
             emit appDataReady(data.toVariantMap());
             checkFirmwareUpdate(data);
         }
         else {
-            success = false;
             TRACE << "Received settings belong to another device: " + mSerialNumber + ", " + data.value("sn").toString();
         }
 
@@ -478,6 +483,7 @@ void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &a
 
             auto dateString = data.value("last_update");
             QDateTime dateTimeObject =  QDateTime::fromString(dateString.toString(), Qt::ISODate);
+            dateTimeObject.setTimeZone(QTimeZone(0)); // explicitly set as UTC for better compare
 
             if (dateTimeObject.isValid()) {
                 // Use the dateTimeObject here with time information
@@ -495,6 +501,128 @@ void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &a
     };
 
     callPostApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), QJsonDocument(reqData).toJson(), callback);
+}
+
+void Sync::fetchServiceTitanInformation()
+{
+    // TODO: Get service titan data with proper API
+    // We need email, ZIP code and isServiceTitanActive properties
+    // We can get customers information such as Email, Phone number, Zip code and
+    // address BUT only Email and ZIP code need to be reflected
+
+    QEventLoop* eventLoop = nullptr;
+
+    auto callback = [this, &eventLoop](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    };
+
+    QNetworkReply* netReply = nullptr;
+
+    if (netReply) {
+        QEventLoop loop;
+        eventLoop = &loop;
+        loop.exec();
+
+    } else {
+        emit serviceTitanInformationReady(false);
+    }
+}
+
+void Sync::getJobIdInformation(const QString& jobID)
+{
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+
+        emit jobInformationReady(!data.isEmpty(), data.toVariantMap());
+    };
+
+    auto netReply =  callGetApi(cBaseUrl + QString("/api/technicians/service-titan/customer/%0?sn=%1").arg(jobID, mSerialNumber), callback);
+    if (!netReply) {
+        emit jobInformationReady(false, QVariantMap());
+    }
+}
+
+void Sync::getCustomerInformationManual(const QString &email)
+{
+    auto callbackCustomer = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+
+        emit customerInfoReady(!data.isEmpty(), data.toVariantMap());
+    };
+
+    auto netReply =  callGetApi(cBaseUrl + QString("/api/customer?email=%0").arg(email), callbackCustomer);
+    if (!netReply) {
+        TRACE << "call get api canceled for customer";
+        //        emit customerInfoReady(false, QVariantMap());
+    }
+}
+
+void Sync::getAddressInformationManual(const QString &zipCode)
+{
+    auto callbackZip = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+
+        emit zipCodeInfoReady(!data.isEmpty(), data.toVariantMap());
+    };
+
+    auto netReply =  callGetApi(cBaseUrl + QString("/api/zipCode?code=%0").arg(zipCode), callbackZip);
+    if (!netReply) {
+        TRACE << "call get api canceled for zip";
+        //        emit zipCodeInfoReady(false, QVariantMap());
+    }
+}
+
+void Sync::installDevice(const QVariantMap &data)
+{
+    QJsonObject reqData = QJsonObject::fromVariantMap(data);
+
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+
+            auto enabled = data.value("is_enabled");
+            TRACE << rawData << data << enabled;
+            emit installedSuccess();
+        }
+        else {
+            emit installFailed();
+            TRACE << rawData << data;
+        }
+    };
+
+    TRACE << QJsonDocument(reqData).toJson();
+    callPostApi(cBaseUrl + "/api/technicians/device/install", QJsonDocument(reqData).toJson(), callback);
+}
+
+void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
+{
+    // TODO: Warranty replacement implementation
+    if (oldSN != newSN) {
+        QSettings setting;
+        setting.setValue(cWarrantySerialNumberKey, oldSN);
+
+        auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+            bool success = false;
+            if (reply->error() == QNetworkReply::NoError) {
+                // get the last update
+                auto message = data.value("message").toString();
+                TRACE << "warrantyReplacement message:" << message;
+                success = true;
+            }
+
+            emit warrantyReplacementFinished(success);
+        };
+
+        QJsonObject reqData;
+        reqData["old_sn"] = oldSN;
+        reqData["new_sn"] = newSN;
+
+        auto netReply =  callPostApi(cBaseUrl + QString("/api/technicians/warranty"), QJsonDocument(reqData).toJson(), callback);
+        if (!netReply) {
+            TRACE << "call get api canceled for warranty";
+            //            emit warrantyReplacementFinished(false);
+        }
+    } else {
+        emit warrantyReplacementFinished(false);
+    }
 }
 
 void Sync::pushAlertToServer(const QVariantMap &settings)

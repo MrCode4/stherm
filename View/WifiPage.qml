@@ -26,10 +26,7 @@ BasePageView {
 
     property bool initialSetup: false
 
-    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && uiSession.settingsReady && checkedUpdate
-
-    //! Check update for first time
-    property bool checkedUpdate: false;
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
 
     /* Object properties
      * ****************************************************************************************/
@@ -38,29 +35,6 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-
-    Timer {
-        id: fetchTimer
-        property bool isFetching: false
-        repeat: true
-        running: root.visible && initialSetup && system.serialNumber.length > 0 && !uiSession.settingsReady && !isFetching
-        interval: 5000
-
-        onTriggered: {
-            isFetching = system.fetchSettings();
-        }
-    }
-
-    Connections {
-        target: system
-
-        function onAreSettingsFetchedChanged(success) {
-            uiSession.settingsReady = success;
-            fetchTimer.isFetching = false;
-            console.log("fetching in initial was", uiSession.settingsReady )
-        }
-    }
-
 
     //! Once the network connection is established, the System Types page should automatically open,
     Timer {
@@ -309,23 +283,10 @@ BasePageView {
                 }
             }
 
-            ToolButton {
+            InfoToolButton {
                 anchors.centerIn: parent
 
-                checkable: false
-                checked: false
                 visible: initialSetup
-                implicitWidth: 64
-                implicitHeight: implicitWidth
-                icon.width: 50
-                icon.height: 50
-
-                contentItem: RoniaTextIcon {
-                    anchors.fill: parent
-                    font.pointSize: Style.fontIconSize.largePt
-                    Layout.alignment: Qt.AlignLeft
-                    text: FAIcons.circleInfo
-                }
 
                 onClicked: {
                     root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
@@ -452,19 +413,6 @@ BasePageView {
         }
     }
 
-    //! Change checkedUpdate when update checked in the initial setup
-    Connections {
-        target: system
-
-        enabled: initialSetup && !checkedUpdate
-
-        //! Check update
-        function onUpdateNoChecked() {
-            checkedUpdate = true;
-            console.log("udpate checked in initial setup")
-        }
-    }
-
     onSortedWifisChanged: _wifisRepeater.currentIndexChanged();
 
     /* Functions
@@ -475,6 +423,9 @@ BasePageView {
         if (root.StackView.view) {
             nextPageTimer.once = true;
             if (system.serialNumber.length > 0) {
+
+                // Check contractor info once without retrying in the initial setup
+                deviceController.deviceControllerCPP.checkContractorInfo();
 
                 //! If privacy policy not accepted in normal mode load the PrivacyPolicyPage
                 if (appModel.userPolicyTerms.acceptedVersion === appModel.userPolicyTerms.currentVersion) {

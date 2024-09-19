@@ -24,25 +24,40 @@ BasePageView {
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
-            text: initialSetup ? FAIcons.arrowRight : "\uf00c"
+            text: "\uf00c"
         }
+
+        visible: !initialSetup
 
         onClicked: {
             //! Do neccessary updates
-            if (deviceController) {
-                deviceController.setSystemCoolingOnly(coolStageLayout.coolStage)
-            }
+            updateModel()
 
-            if (initialSetup) {
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
-                                                  "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                              });
-                }
-            } else {
-                //! Also move out of this Page
-                goToSystemTypePage();
+            //! Also move out of this Page
+            goToSystemTypePage();
+        }
+    }
+
+    //! Next button in initial setup flow
+    ButtonInverted {
+        text: "Next"
+
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.margins: 10
+
+        visible: initialSetup
+        leftPadding: 25
+        rightPadding: 25
+
+        onClicked: {
+           updateModel();
+
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
             }
         }
     }
@@ -82,6 +97,12 @@ BasePageView {
 
                 text: "2"
             }
+        }
+    }
+
+    function updateModel() {
+        if (deviceController) {
+            deviceController.setSystemCoolingOnly(coolStageLayout.coolStage)
         }
     }
 

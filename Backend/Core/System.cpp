@@ -126,6 +126,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
     connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
+    connect(mSync, &NUVE::Sync::serviceTitanInformationReady, this, &NUVE::System::serviceTitanInformationReady);
+    connect(mSync, &NUVE::Sync::warrantyReplacementFinished, this, &NUVE::System::warrantyReplacementFinished);
 
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, [this](const QVariantMap& settings, bool isValid) {
         emit autoModeSettingsReady(settings, isValid);
@@ -228,6 +230,20 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             TRACE << "sshpass is not in /usr/local/bin either, will be installed on first use";
         }
     }
+
+    // Retry with timer to avoid many attempt error.
+    mRetryUpdateTimer.setInterval(5000);
+    mRetryUpdateTimer.setSingleShot(true);
+    connect(&mRetryUpdateTimer, &QTimer::timeout, this, [=]() {
+        fetchUpdateInformation(true);
+    });
+
+    connect(this, &System::fetchUpdateErrorOccurred, this, [=](QString err) {
+        TRACE << "Retry to get update information due to " << err;
+        if (isInitialSetup()) {
+            mRetryUpdateTimer.start();
+        }
+    });
 
     if (!serialNumber().isEmpty())
         onSerialNumberReady();
@@ -855,6 +871,16 @@ QString NUVE::System::getCurrentTime()
     return time.toString(Qt::ISODate);
 }
 
+void NUVE::System::fetchServiceTitanInformation()
+{
+    mSync->fetchServiceTitanInformation();
+}
+
+void NUVE::System::warrantyReplacement(const QString& oldSN, const QString& newSN)
+{
+    mSync->warrantyReplacement(oldSN, newSN);
+}
+
 void NUVE::System::exitManualMode()
 {
     // Manual mode is false
@@ -1139,15 +1165,13 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
                 static int i = 0;
                 i++;
                 if (i > 5) {
-                    // After retry 2 times, the update back to normal state.
+                    // After retry 5 times, the update back to normal state.
                     setIsInitialSetup(false);
                     emit updateNoChecked();
                 }
                 else {
                     // In initial setup, retry when an error occurred.
-                    QTimer::singleShot(10000, this, [this]() {
-                        fetchUpdateInformation(true);
-                    });
+                    mRetryUpdateTimer.start();
                 }
             }
         }
@@ -1362,7 +1386,6 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
 void NUVE::System::onSerialNumberReady()
 {
     emit serialNumberReady();
-    fetchUpdateInformation(true);
 }
 
 void NUVE::System::createLogDirectoryOnServer()

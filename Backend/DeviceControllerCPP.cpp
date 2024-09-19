@@ -349,12 +349,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     if (!sInstance) {
         sInstance = this;
     }
-
-    // Check contractor info
-    mFetchContractorInfoTimer.setInterval(1.1 * 60 * 60 * 1000);
-    connect(&mFetchContractorInfoTimer, &QTimer::timeout, this, [=]() {
-        checkContractorInfo();
-    });
 }
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
@@ -709,13 +703,6 @@ bool DeviceControllerCPP::checkUpdateMode()
 void DeviceControllerCPP::wifiConnected(bool hasInternet)
 {
     m_system->wifiConnected(hasInternet);
-
-    if (hasInternet) {
-        mFetchContractorInfoTimer.start();
-
-    } else {
-        mFetchContractorInfoTimer.stop();
-    }
 }
 
 void DeviceControllerCPP::lockDeviceController(bool isLock)

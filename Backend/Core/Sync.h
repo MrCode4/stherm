@@ -49,6 +49,20 @@ public:
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
+    void fetchServiceTitanInformation();
+
+    void warrantyReplacement(const QString& oldSN, const QString& newSN);
+
+    //! Get job information with the job id
+    Q_INVOKABLE void getJobIdInformation(const QString &jobID);
+
+    //! Get job information manually with email and zip code
+    Q_INVOKABLE void getCustomerInformationManual(const QString& email);
+    Q_INVOKABLE void getAddressInformationManual(const QString& zipCode);
+
+
+    Q_INVOKABLE void installDevice(const QVariantMap &data);
+
 signals:
     void settingsFetched(bool success);
     void serialNumberReady();
@@ -57,7 +71,10 @@ signals:
     void snFinished();
 
     void wiringReady();
-    void contractorInfoReady();
+
+    //! If data is successfully retrieved from the server, the contractor information will be updated with the new data.
+    //! otherwise the device will use the local informatio
+    void contractorInfoReady(bool getDataFromServerSuccessfully = true);
     void userDataFetched(const QString& email, const QString& name);
 
     //! Settings data
@@ -76,6 +93,9 @@ signals:
     void pushSuccess();
     void pushFailed();
 
+    void installedSuccess();
+    void installFailed();
+
     void autoModePush(bool isSuccess);
 
     void serialNumberChanged();
@@ -83,6 +103,20 @@ signals:
     void testModeStarted();
 
     void updateFirmwareFromServer(QString version);
+
+    void serviceTitanInformationReady(bool hasError = true,
+                                      bool isActive = false,
+                                      QString email = QString(),
+                                      QString zipCode = QString());
+
+    //! TODO: send new data to device controller
+    //! maybe rename to warrantyReplacementDataReady
+    void warrantyReplacementFinished(bool success = false);
+
+    void jobInformationReady(bool success, QVariantMap data);
+
+    void zipCodeInfoReady(bool success, QVariantMap data);
+    void customerInfoReady(bool success, QVariantMap data);
 
 private slots:
     //! Check firmware update with getSettings reply

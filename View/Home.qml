@@ -378,12 +378,12 @@ Control {
 
         onTriggered: {
 
-            // Settings fetch from server at least once before show home
-            // Wait for WIFI page to fetch settings and show home here.
+            // Settings fetch from server at least once before show home in some cases
             if(!uiSession.settingsReady) {
                 interval = 4000;
                 restart();
 
+                console.log("Wait for settings fetching ...")
                 return;
             }
 
@@ -399,13 +399,32 @@ Control {
         }
     }
 
+    //! Use to show home after initial setup finished.
+    Connections {
+        target: deviceController
+
+        function onInitialSetupFinished() {
+            // Active the app
+            ScreenSaverManager.setAppActive(true);
+
+            // In the initial setup we do not need to get settings from server.
+            uiSession.settingsReady = true;
+
+            // Should be done by timer as can cause crash
+            startupTimer.start()
+            // Disable check SN mode connections to prevent unnecessary show home
+            startupSN.enabled = false;
+        }
+    }
+
     //! Check SN mode
     Connections {
         id: startupSN
         target: deviceController.deviceControllerCPP
 
+        //! This action should occur when the SN mode is set to 0.
         function onSnModeChanged(snMode: int) {
-            // snMode === 1 or 0
+            // snMode === 0
             var snTestMode = deviceController.deviceControllerCPP.getSNTestMode();
             if (snMode !== 2 || snTestMode) {
 
@@ -413,12 +432,14 @@ Control {
                 if (!uiSession.settingsReady)
                     uiSession.settingsReady = (snMode === 0);
 
-                // should be done by timer as can cause crash
+                // Should be done by timer as can cause crash
                 startupTimer.start()
-                // disable fetching sn again
+                // Disable check SN mode connections to prevent unnecessary show home
                 startupSN.enabled = false;
-                snChecker.enabled = false;
 
+                if (snMode === 1) {
+                    console.log("SnModeChanged: SN mode is 1.")
+                }
             }
         }
     }
@@ -428,8 +449,9 @@ Control {
         target: system
 
         function onSerialNumberChanged() {
-            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup)
-            uiSession.settingsReady = false;
+            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup);
+            // In the initial setup we do not need to get settings from server.
+            uiSession.settingsReady = true;
         }
 
         function onTestModeStarted() {
@@ -446,20 +468,6 @@ Control {
                                        "uiSession": Qt.binding(() => uiSession),
                                        "backButtonVisible" : false
                                    });
-        }
-    }
-
-    //! checkSN when the internet is connected.
-    Connections {
-        id: snChecker
-        target: NetworkInterface
-
-        function onHasInternetChanged() {
-            if (NetworkInterface.hasInternet) {
-                if (deviceController.startMode !== 0 && deviceController.startMode !== -1) {
-                    deviceController.deviceControllerCPP.checkSN();
-                }
-            }
         }
     }
 

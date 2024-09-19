@@ -35,6 +35,7 @@ QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCall
     else {
         mCallbacks.insert(key, callback);
         auto reply = get(prepareApiRequest(endpoint, setAuth));
+        reply->ignoreSslErrors();
         reply->setProperty("endpoint", endpoint);
         reply->setProperty("isJson", true);
         return reply;
@@ -113,5 +114,8 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
     auto callback = mCallbacks.take(key);
     if (callback) {
         callback(reply, rawData, data);
+
+    } else {
+        TRACE << "Can not find the callback: " << key;
     }
 }

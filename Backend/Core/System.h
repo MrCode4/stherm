@@ -200,6 +200,10 @@ public:
 
     Q_INVOKABLE QString getCurrentTime();
 
+    Q_INVOKABLE void fetchServiceTitanInformation();
+
+    Q_INVOKABLE void warrantyReplacement(const QString& oldSN, const QString& newSN);
+
 protected slots:
     void onSerialNumberReady();
     void createLogDirectoryOnServer();
@@ -207,7 +211,7 @@ protected slots:
 signals:
     void serialNumberReady();
     void areSettingsFetchedChanged(bool success);
-    void contractorInfoReady();
+    void contractorInfoReady(const bool& getDataFromServerSuccessfully = true);
     void settingsReady(QVariantMap settings);
     void appDataReady(QVariantMap settings);
 
@@ -258,9 +262,15 @@ signals:
     void testModeStarted();
 
     //! Pass errors, used for tests in test mode
+    //! Use to retry in initial setup
     void fetchUpdateErrorOccurred(QString err);
 
     void forceUpdateChanged();
+
+    void serviceTitanInformationReady(bool hasError, bool isActive,
+                                      QString email, QString zipCode);
+
+    void warrantyReplacementFinished(bool success = false);
 
 private:
 
@@ -361,6 +371,7 @@ private:
     QTimer mFetchActiveTimer;
 
     QTimer mUpdateTimer;
+    QTimer mRetryUpdateTimer;
 
     NUVE::cpuid_t mUID;
 

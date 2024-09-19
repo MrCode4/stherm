@@ -34,9 +34,24 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
+    //! Info button in initial setup mode.
+    InfoToolButton {
+        parent: root.header.contentItem
+        visible: initialSetup
+
+        onClicked: {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
+                                             "uiSession": Qt.binding(() => uiSession)
+                                         });
+            }
+
+        }
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
-        width: parent.width * 0.5
+        width: parent.width * 0.65
         spacing: 12
 
         Button {
@@ -63,6 +78,23 @@ BasePageView {
                 //! Move to corresponding page
                 if (root.StackView.view) {
                     root.StackView.view.push(_heatPumpPageCompo);
+                }
+            }
+        }
+
+        //! Dual Fuel Heating
+        //! TODO: Add the page
+        Button {
+            Layout.fillWidth: true
+            text: "Dual Fuel Heating"
+            autoExclusive: true
+            enabled: false
+            // checked: appModel.systemSetup.systemType === AppSpec.CoolingOnly
+
+            onClicked: {
+                //! Move to corresponding page
+                if (root.StackView.view) {
+                    // root.StackView.view.push(_coolonlyPageCompo);
                 }
             }
         }

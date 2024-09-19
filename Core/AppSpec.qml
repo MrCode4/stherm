@@ -60,6 +60,11 @@ AppSpecCPP {
         DT_Unknown
     }
 
+    enum InstallationType {
+        ITNewInstallation = 0,
+        ITExistingSystem,
+        ITUnknown
+    }
 
     enum TempratureUnit {
         Cel,    //! Celsius
@@ -93,6 +98,36 @@ AppSpecCPP {
         Downstairs,
         DinningRoom,
         GuestHouse
+    }
+
+    // Residence types
+    enum ResidenceTypes {
+        Residental = 0,
+        Commercial,
+        Unknown
+    }
+
+    //! Device location map
+    property var residenceTypesNames: {
+        var types = {};
+        types[`${AppSpec.ResidenceTypes.Residental}`] = "Residental";
+        types[`${AppSpec.ResidenceTypes.Commercial}`] = "Commercial";
+
+        return types;
+    }
+
+    //! Device location map
+    property var deviceLoacations: {
+        var types = {};
+        types[`${AppSpec.ResidenceTypes.Residental}`] = ["Basement", "Bedroom", "Dinning room",
+                                                         "Downstairs", "Guesthouse", "Kids room",
+                                                         "Living room", "Main floor", "Master bedroom",
+                                                         "Office", "Upstairs", "Other"];
+        types[`${AppSpec.ResidenceTypes.Commercial}`] = ["Lunchroom", "Office", "Warehouse", "Other"];
+
+        types[`${AppSpec.ResidenceTypes.Unknown}`]    = [];
+
+        return types;
     }
 
     //! Sensor location names

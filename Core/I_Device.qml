@@ -63,6 +63,17 @@ QSObject {
     //! List <Schedule>
     property var            schedules:      []
 
+    //! Installation type
+    property int            installationType: AppSpec.InstallationType.ITUnknown
+
+    property int            residenceType: AppSpec.ResidenceTypes.Unknown
+
+    property int            whereInstalled: -1
+
+    property string         deviceLocation: ""
+
+    property string         thermostatName: ""
+
     //! Backlight
     property Backlight      backlight:      Backlight {}
 
@@ -99,6 +110,8 @@ QSObject {
     property Lock            _lock: Lock {}
 
     property UserData userData: UserData {}
+    //! Service Titan model
+    property ServiceTitan    serviceTitan: ServiceTitan {}
 
     /* Functions
      * ****************************************************************************************/
