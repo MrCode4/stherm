@@ -893,12 +893,23 @@ I_DeviceController {
         return true;
     }
 
+    //! Use timer to prevent excessive attempts to save file in the short intervals.
+    property Timer saveTimer: Timer {
+        interval: 100
+        running: false
+        repeat: false
+        onTriggered: {
+            if (uiSession.currentFile.length > 0) // we should not save before the app completely loaded
+                AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+        }
+    }
+
     //! Save settings to file (configFilePath)
     function saveSettings() {
         if (uiSession) {
             console.log("saveSettings called with edit mode", stageMode, lockMode, uiSession.currentFile)
-            if (uiSession.currentFile.length > 0) // we should not save before the app completely loaded
-                AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+            saveTimer.restart();
+
         } else {
             console.log("saveSettings called without uiSession")
         }

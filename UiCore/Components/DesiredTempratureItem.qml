@@ -242,12 +242,15 @@ Control {
                 first.setMaxValue(Math.min(firstValueCeil, secondValue - tempSliderDoubleHandle.difference));
                 second.setMinValue(minimumSecondarySlider);
 
-                first.value = firstValue;
-                updateAutoMinReqTempModel();
+                if (first.value !== firstValue) {
+                    first.value = firstValue;
+                    updateAutoMinReqTempModel();
+                }
 
-                second.value = secondValue;
-                updateAutoMaxReqTempModel();
-
+                if (second.value !== secondValue) {
+                    second.value = secondValue;
+                    updateAutoMaxReqTempModel();
+                }
             }
         }
 

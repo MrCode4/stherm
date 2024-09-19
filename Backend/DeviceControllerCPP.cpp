@@ -915,9 +915,9 @@ void DeviceControllerCPP::writeTestResult(const QString &fileName, const QString
 
 void DeviceControllerCPP::saveTestResult(const QString &testName, bool testResult, const QString &description)
 {
-    //! TODO check if testName already existed (defined in unit tests)
-    mAllTestsResults.insert({testName, testResult});
-    mAllTestsValues.insert({testName, description});
+    mAllTestsResults.insert_or_assign(testName, testResult);
+    mAllTestsValues.insert_or_assign(testName, description);
+
     // keep the order on first occurance
     if (!mAllTestNames.contains(testName))
         mAllTestNames.push_back(testName);
@@ -993,6 +993,13 @@ void DeviceControllerCPP::stopTestBrightness()
 
 void DeviceControllerCPP::testFinished()
 {
+    // Override sn test on finished.
+    QString sn = m_system->serialNumber();
+    saveTestResult("SN", !sn.isEmpty(), sn);
+
+    TRACE << "test finsihed with SN: " << sn;
+
+
     QStringList failedTests;
     for (const auto &testName : mAllTestNames) {
         auto resultIter = mAllTestsResults.find(testName);
@@ -1012,12 +1019,6 @@ void DeviceControllerCPP::testFinished()
             TRACE << "Could not remove the file: " << testResultsFileName;
         }
     }
-
-    // override sn test on finished
-    QString sn = m_system->serialNumber();
-    saveTestResult("SN", !sn.isEmpty(), sn);
-
-    TRACE << "test finsihed with SN: " << sn;
 
     // write header of the actual file
     writeTestResult(testResultsFileName, "Test name", QString("Test Result"), "Description");
