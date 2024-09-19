@@ -463,17 +463,13 @@ void Sync::updateLockStatus(const QString& pin, bool lock)
 
     auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &data) {
         TRACE << "UPDATE_LOCK_STATUS_RESPONSE: " << data;
-        if (data.isEmpty()) {
-            TRACE << "Received lock-data corrupted";
-        }
-        else {
-            emit lockStatusUpdated(data.value("serial_number").toString(), data.value("locked").toBool());
-        }
-
+        emit lockStatusPushed(data.contains("locked"), data.value("locked").toBool());
         updatingLockStatus(false);
     };
 
+    TRACE << "Pushing device lock state changes";
     updatingLockStatus(true);
+
     auto endpoint = QString("api/sync/screen-%1?sn=%2").arg(lock ? "lock" : "unlock").arg(mSerialNumber);
     QJsonObject requestBody;
     requestBody["pin"] = pin;

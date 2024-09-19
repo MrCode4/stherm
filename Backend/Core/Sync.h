@@ -104,7 +104,7 @@ signals:
 
     void alert(QString msg);
 
-    void lockStatusUpdated(const QString& sn, bool locked);
+    void lockStatusPushed(bool success, bool locked);
 
     void pushSuccess();
     void pushFailed();

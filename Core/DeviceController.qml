@@ -326,7 +326,7 @@ I_DeviceController {
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
-            if (!deviceControllerCPP.sync.updatingLockStatus) {
+            if (!lockStatePusher.isPushing) {
                 updateAppLockState(settings.locked, settings.pin, true);
             }
 
@@ -453,7 +453,7 @@ I_DeviceController {
     property Connections syncConnections: Connections {
         target: sync
 
-        function onUserDataFetched(email:string, name: string) {
+        function onUserDataFetched(email: string, name: string) {
             if (!device || !device.userData) return;
 
             device.userData.email = email;
@@ -485,7 +485,6 @@ I_DeviceController {
 
             device.serviceTitan.address1 = data?.address1 ?? "";
             device.serviceTitan.address2 = data?.address2 ?? "";
-
         }
 
         function onZipCodeInfoReady(success: bool, data: var) {
@@ -544,6 +543,15 @@ I_DeviceController {
             console.warn("install failed try again.")
         }
 
+        function onLockStatusPushed(success: bool, locked: bool) {
+            if (success) {
+                console.log('Lock state pushed successfully');
+                lockStatePusher.isPushing = false;
+            }
+            else {
+                lockStatePusher.interval = Math.min(lockStatePusher.interval * 2, 60 * 10000);
+            }
+        }
     }
 
     property Timer  settingsPush: Timer {
@@ -620,6 +628,30 @@ I_DeviceController {
 
         onTriggered: {
             deviceControllerCPP.checkContractorInfo();
+        }
+    }
+
+    property Timer lockStatePusher: Timer {
+        running: isPushing && !deviceControllerCPP.sync.updatingLockStatus
+        interval: 1000;
+
+        property bool isPushing : false
+
+        onTriggered: sendData();
+
+        function stopPushing() {
+            isPushing = false;
+            interval = 1000;
+        }
+
+        function startPushing() {
+            isPushing = true;
+            interval = 1000;
+            sendData();
+        }
+
+        function sendData() {
+            deviceControllerCPP.sync.updateLockStatus(device.lock.pin, device.lock.isLock);
         }
     }
 
@@ -1511,8 +1543,7 @@ I_DeviceController {
     }
 
     function pushLockUpdates() {
-        console.log("Pushing lock updates to server");
-        deviceControllerCPP.sync.updateLockStatus(device.lock.pin, device.lock.isLock);
+        lockStatePusher.startPushing();
     }
 
     //! TODO: maybe need to restart the app or activate the app and go to home
