@@ -16,6 +16,9 @@ BasePageView {
 
     property string deviceLocation: appModel?.deviceLocation ?? ""
 
+    //! Busy due to get the Install operation
+    property bool isBusy: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Device Location"
@@ -50,6 +53,7 @@ BasePageView {
         anchors.fill: parent
         anchors.rightMargin: 10
         clip: true
+        enabled: !isBusy
         boundsBehavior: Flickable.StopAtBounds
         contentHeight: _contentLay.implicitHeight
         contentWidth: width
@@ -73,12 +77,53 @@ BasePageView {
                     checked: deviceLocation === text
 
                     onClicked: {
+                        appModel.whereInstalled = index;
                         appModel.deviceLocation = String(modelData);
                         appModel.thermostatName = String(modelData);
                         nextPage();
                     }
                 }
             }
+        }
+    }
+
+
+    Label {
+        id: errorLabel
+
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        font.pointSize: root.font.pointSize * 0.7
+        text: ""
+        color: AppStyle.primaryRed
+        visible: text.length > 0 && !isBusy
+    }
+
+    BusyIndicator {
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        height: 45
+        width: 45
+        visible: isBusy
+        running: visible
+    }
+
+
+    //! Temp connection to end busy
+    Connections {
+        target: deviceController.sync
+        enabled: root.visible
+
+        function onInstalledSuccess() {
+            isBusy = false;
+        }
+
+        function onInstallFailed() {
+            isBusy = false;
+            errorLabel.text = "Please try again!";
         }
     }
 
@@ -92,6 +137,8 @@ BasePageView {
                                          "initialSetup":  root.initialSetup
                                      });
         } else {
+            isBusy = true;
+            errorLabel.text = "";
             deviceController.pushInitialSetupInformation();
         }
     }

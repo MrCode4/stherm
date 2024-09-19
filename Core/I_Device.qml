@@ -68,6 +68,8 @@ QSObject {
 
     property int            residenceType: AppSpec.ResidenceTypes.Unknown
 
+    property int            whereInstalled: -1
+
     property string         deviceLocation: ""
 
     property string         thermostatName: ""

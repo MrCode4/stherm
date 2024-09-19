@@ -445,11 +445,13 @@ I_DeviceController {
             device.serviceTitan.phone    = data?.phone ?? "";
             device.serviceTitan.email    = data?.email ?? "";
 
-            device.serviceTitan.zipCode  = data?.zip ?? "";
+            device.serviceTitan.zipCode  = data?.zip?.code ?? (data?.zip ?? "");
 
-            // object or value?
-            device.serviceTitan.city   = data?.city ?? "";
-            device.serviceTitan.state  = data?.state ?? "";
+            device.serviceTitan.city   = data?.city?.name ?? (data?.city ?? "");
+            device.serviceTitan.state  = data?.state?.short ?? (data?.state ?? "");
+
+            device.serviceTitan.city_id  = data.city?.id ?? -1;
+            device.serviceTitan.state_id  = data.state?.id ?? -1;
 
             device.serviceTitan.address1 = data?.address1 ?? "";
             device.serviceTitan.address2 = data?.address2 ?? "";
@@ -466,7 +468,6 @@ I_DeviceController {
             if (data.code !== device.serviceTitan.zipCode)
                 console.warn("onZipCodeInfoReady: zip code returned is different", data.code, device.serviceTitan.zipCode);
 
-            //TODO name or id?
             device.serviceTitan.city  = data.city?.name ?? "";
             device.serviceTitan.state  = data.state?.short ?? ""; //data.state?.name ;
 
@@ -495,6 +496,15 @@ I_DeviceController {
             internal.syncReturnedEmail = data.email;
             customerInfoReady("");
         }
+
+        function onInstalledSuccess() {
+            firstRunFlowEnded();
+        }
+
+        function onInstallFailed() {
+            console.warn("install failed try again.")
+        }
+
     }
 
     property Timer  settingsPush: Timer {
@@ -1488,14 +1498,13 @@ I_DeviceController {
                   "city": device.serviceTitan.city_id ,
                   "zip_code": device.serviceTitan.zipCode,
                   "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
-                  "resident_type_id": 1 + device.residenceType, // or maybe using condition
-                  "where_installed_id": 0 //+ device.deviceLocation
+                  "resident_type_id": device.residenceType, // or maybe using condition
+                  "where_installed_id": device.whereInstalled
                 }
               ]
         };
 
         sync.installDevice(send_data);
-
     }
 
     //! as both data needs to be fetched together and each may return error

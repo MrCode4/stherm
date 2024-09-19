@@ -571,6 +571,27 @@ void Sync::getAddressInformationManual(const QString &zipCode)
     }
 }
 
+void Sync::installDevice(const QVariantMap &data)
+{
+    QJsonObject reqData = QJsonObject::fromVariantMap(data);
+
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+
+            auto enabled = data.value("is_enabled");
+            TRACE << rawData << data << enabled;
+            emit installedSuccess();
+        }
+        else {
+            emit installFailed();
+            TRACE << rawData << data;
+        }
+    };
+
+    TRACE << QJsonDocument(reqData).toJson();
+    callPostApi(cBaseUrl + "/api/technicians/device/install", QJsonDocument(reqData).toJson(), callback);
+}
+
 void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
 {
     // TODO: Warranty replacement implementation

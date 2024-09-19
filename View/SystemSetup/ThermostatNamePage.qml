@@ -14,6 +14,9 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
+    //! Busy due to get the Install operation
+    property bool isBusy: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Thermostat Name"
@@ -31,7 +34,6 @@ BasePageView {
                                              "uiSession": Qt.binding(() => uiSession)
                                          });
             }
-
         }
     }
 
@@ -57,6 +59,7 @@ BasePageView {
             validator: RegularExpressionValidator {
                 regularExpression: /^[^\s\\].*/ // At least 1 non-space characte
             }
+            readOnly: isBusy
 
             onAccepted: {
                 submitBtn.forceActiveFocus();
@@ -76,6 +79,29 @@ BasePageView {
         }
     }
 
+    Label {
+        id: errorLabel
+
+        anchors.bottom: submitBtn.top
+        anchors.bottomMargin: 10
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        font.pointSize: root.font.pointSize * 0.7
+        text: ""
+        color: AppStyle.primaryRed
+        visible: text.length > 0 && !isBusy
+    }
+
+    BusyIndicator {
+        anchors.right: submitBtn.left
+        anchors.verticalCenter: submitBtn.verticalCenter
+
+        height: 45
+        width: 45
+        visible: isBusy
+        running: visible
+    }
+
     //! Submit button
     ButtonInverted {
         id: submitBtn
@@ -88,12 +114,16 @@ BasePageView {
         anchors.right: parent.right
         anchors.margins: 10
 
+        enabled: !isBusy
         text: "Submit"
         visible: !nameTf.activeFocus
         leftPadding: 25
         rightPadding: 25
 
         onClicked: {
+            isBusy = true;
+            errorLabel.text = "";
+
             appModel.thermostatName = nameTf.text;
 
             if (initialSetup) {
@@ -102,6 +132,22 @@ BasePageView {
 
             submitBtn.submitted = true;
         }
+    }
+
+    //! Temp connection to end busy
+    Connections {
+        target: deviceController.sync
+        enabled: root.visible
+
+        function onInstalledSuccess() {
+            isBusy = false;
+        }
+
+        function onInstallFailed() {
+            isBusy = false;
+            errorLabel.text = "Please try again!";
+        }
+
     }
 
 }

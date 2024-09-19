@@ -60,6 +60,9 @@ public:
     Q_INVOKABLE void getCustomerInformationManual(const QString& email);
     Q_INVOKABLE void getAddressInformationManual(const QString& zipCode);
 
+
+    Q_INVOKABLE void installDevice(const QVariantMap &data);
+
 signals:
     void settingsFetched(bool success);
     void serialNumberReady();
@@ -89,6 +92,9 @@ signals:
 
     void pushSuccess();
     void pushFailed();
+
+    void installedSuccess();
+    void installFailed();
 
     void autoModePush(bool isSuccess);
 

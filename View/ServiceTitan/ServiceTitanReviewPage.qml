@@ -117,6 +117,7 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
+            errorLabel.text = "";
             isBusyCustomer = true;
             isBusyZip = true;
             // get needed values from api
