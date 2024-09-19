@@ -535,9 +535,39 @@ void Sync::getJobIdInformation(const QString& jobID)
         emit jobInformationReady(!data.isEmpty(), data.toVariantMap());
     };
 
-    auto netReply =  callGetApi(cBaseUrl + QString("/api/technicians/service-titan/customer/%0?sn=%01").arg(jobID, mSerialNumber), callback);
+    auto netReply =  callGetApi(cBaseUrl + QString("/api/technicians/service-titan/customer/%0?sn=%1").arg(jobID, mSerialNumber), callback);
     if (!netReply) {
         emit jobInformationReady(false, QVariantMap());
+    }
+}
+
+void Sync::getCustomerInformationManual(const QString &email)
+{
+    auto callbackCustomer = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+
+        emit customerInfoReady(!data.isEmpty(), data.toVariantMap());
+    };
+
+    auto netReply =  callGetApi(cBaseUrl + QString("/api/customer?email=%0").arg(email), callbackCustomer);
+    if (!netReply) {
+        TRACE << "call get api canceled for customer";
+        //        emit customerInfoReady(false, QVariantMap());
+    }
+}
+
+void Sync::getAddressInformationManual(const QString &zipCode)
+{
+    auto callbackZip = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+
+        emit zipCodeInfoReady(!data.isEmpty(), data.toVariantMap());
+    };
+
+    auto netReply =  callGetApi(cBaseUrl + QString("/api/zipCode?code=%0").arg(zipCode), callbackZip);
+    if (!netReply) {
+        TRACE << "call get api canceled for zip";
+        //        emit zipCodeInfoReady(false, QVariantMap());
     }
 }
 
@@ -548,7 +578,29 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
         QSettings setting;
         setting.setValue(cWarrantySerialNumberKey, oldSN);
 
-        emit warrantyReplacementFinished(true);
+        auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+            bool success = false;
+            if (reply->error() == QNetworkReply::NoError) {
+                // get the last update
+                auto message = data.value("message").toString();
+                TRACE << "warrantyReplacement message:" << message;
+                success = true;
+            }
+
+            emit warrantyReplacementFinished(success);
+        };
+
+        QJsonObject reqData;
+        reqData["old_sn"] = oldSN;
+        reqData["new_sn"] = newSN;
+
+        auto netReply =  callPostApi(cBaseUrl + QString("/api/technicians/warranty"), QJsonDocument(reqData).toJson(), callback);
+        if (!netReply) {
+            TRACE << "call get api canceled for warranty";
+            //            emit warrantyReplacementFinished(false);
+        }
+    } else {
+        emit warrantyReplacementFinished(false);
     }
 }
 

@@ -56,6 +56,10 @@ public:
     //! Get job information with the job id
     Q_INVOKABLE void getJobIdInformation(const QString &jobID);
 
+    //! Get job information manually with email and zip code
+    Q_INVOKABLE void getCustomerInformationManual(const QString& email);
+    Q_INVOKABLE void getAddressInformationManual(const QString& zipCode);
+
 signals:
     void settingsFetched(bool success);
     void serialNumberReady();
@@ -104,6 +108,9 @@ signals:
     void warrantyReplacementFinished(bool success = false);
 
     void jobInformationReady(bool success, QVariantMap data);
+
+    void zipCodeInfoReady(bool success, QVariantMap data);
+    void customerInfoReady(bool success, QVariantMap data);
 
 private slots:
     //! Check firmware update with getSettings reply

@@ -13,6 +13,7 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     property bool initialSetup: false
+    property bool manualEntry: appModel?.serviceTitan?.isSTManualMode ?? true
 
 
     /* Object properties
@@ -50,7 +51,7 @@ BasePageView {
         Label {
             id: fullNameLabel
 
-            visible: !(appModel?.serviceTitan?.isSTManualMode ?? true)
+            visible: !manualEntry
             text: appModel?.serviceTitan?.fullName ?? ""
             font.pointSize: root.font.pointSize * 0.8
         }
@@ -75,6 +76,7 @@ BasePageView {
                 anchors.left: parent.left
 
                 topPadding: 0
+                readOnly: !manualEntry
                 placeholderText: "Input the Email"
                 font.pointSize: root.font.pointSize * 0.8
                 text: appModel?.serviceTitan?.email ?? ""
@@ -120,6 +122,7 @@ BasePageView {
                 anchors.right: parent.right
                 anchors.left: parent.left
 
+                readOnly: !manualEntry
                 placeholderText: "Input the ZIP code"
                 text: appModel?.serviceTitan?.zipCode ?? ""
                 font.pointSize: root.font.pointSize * 0.8
@@ -140,7 +143,7 @@ BasePageView {
         Text {
             id: warrantyReplacementText
 
-            visible: appModel?.serviceTitan?.isSTManualMode ?? true
+            visible: manualEntry
             text: qsTr("Warranty Replacement")
             font.underline: true
             color: "#43E0F8"
@@ -172,23 +175,32 @@ BasePageView {
         anchors.margins: 10
 
         text: "Next"
-        visible: !emailTf.activeFocus && !zipCodeTf.activeFocus
+        visible: !manualEntry || (!emailTf.activeFocus && !zipCodeTf.activeFocus)
         enabled: emailTf.acceptableInput && zipCodeTf.acceptableInput
         leftPadding: 25
         rightPadding: 25
 
         onClicked: {
-            appModel.serviceTitan.email   = emailTf.text;
-            appModel.serviceTitan.zipCode = zipCodeTf.text;
-
-            // Go to next page
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/ServiceTitanReviewPage.qml", {
-                                             "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                         });
+            if (manualEntry) {
+                appModel.serviceTitan.email   = emailTf.text;
+                appModel.serviceTitan.zipCode = zipCodeTf.text;
             }
+
+            nextPage();
         }
     }
 
+    /* Functions
+     * ****************************************************************************************/
+
+    //! Go to CustomerDetailsPage
+    function nextPage() {
+        // Go to next page
+        if (root.StackView.view) {
+            root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/ServiceTitanReviewPage.qml", {
+                                         "uiSession": uiSession,
+                                         "initialSetup": root.initialSetup
+                                     });
+        }
+    }
 }

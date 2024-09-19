@@ -180,10 +180,10 @@ BasePageView {
 
             if (!success) {
                 errorLabel.text = "Job number operation failed, retry.";
-                return;
-            }
 
-            nextPage();
+            } else {
+                nextPage();
+            }
         }
 
     }

@@ -54,6 +54,12 @@ I_DeviceController {
     //! Is the software update checked or not
     property bool checkedSWUpdate: false
 
+    property var internal: QtObject {
+        //! This property will hold last returned data from manual first run flow
+        property string syncReturnedEmail: ""
+        property string syncReturnedZip: ""
+    }
+
     //! TODO: This will be used to retry the service titan fetch operation in case of errors
     //! Used delays in the fetchServiceTitanInformation calls to improve the overall user experience.
     property Timer fetchServiceTitanTimer: Timer {
@@ -439,14 +445,52 @@ I_DeviceController {
             device.serviceTitan.phone    = data?.phone ?? "";
             device.serviceTitan.email    = data?.email ?? "";
 
-            device.serviceTitan.zipCode  = data?.zip?.code ?? "";
+            device.serviceTitan.zipCode  = data?.zip ?? "";
 
-            device.serviceTitan.cityId   = data?.city?.id ?? -1;
-            device.serviceTitan.stateId  = data?.state?.id ?? -1;
+            // object or value?
+            device.serviceTitan.city   = data?.city ?? "";
+            device.serviceTitan.state  = data?.state ?? "";
 
             device.serviceTitan.address1 = data?.address1 ?? "";
             device.serviceTitan.address2 = data?.address2 ?? "";
 
+        }
+
+        function onZipCodeInfoReady(success: bool, data: var) {
+            if (!success || !data  || !device || !device.serviceTitan) {
+                internal.syncReturnedZip = "";
+                zipCodeInfoReady("Getting zip code information failed.");
+                return;
+            }
+
+            if (data.code !== device.serviceTitan.zipCode)
+                console.warn("onZipCodeInfoReady: zip code returned is different", data.code, device.serviceTitan.zipCode);
+
+            //TODO name or id?
+            device.serviceTitan.city  = data.city?.name ?? "";
+            device.serviceTitan.state  = data.state?.short ?? ""; //data.state?.name ?? "";
+
+            internal.syncReturnedZip = data.code;
+            zipCodeInfoReady("");
+        }
+
+        function onCustomerInfoReady(success: bool, data: var) {
+            if (!success || !data || !device || !device.serviceTitan) {
+                internal.syncReturnedEmail = "";
+                customerInfoReady("Getting customer information failed.");
+                return;
+            }
+
+            if (data.email !== device.serviceTitan.email)
+                console.warn("onCustomerInfoReady: email returned is different", data.email, device.serviceTitan.email);
+
+            console.log("onCustomerInfoReady:", data.membership, data.is_enabled);
+
+            device.serviceTitan.fullName = data.full_name ?? "";
+            device.serviceTitan.phone    = data.phone ?? "";
+
+            internal.syncReturnedEmail = data.email;
+            customerInfoReady("");
         }
     }
 
@@ -546,6 +590,10 @@ I_DeviceController {
     //! active and automatically navigate to the home page.
     //! This transition should be handled within the home page component.
     signal initialSetupFinished();
+
+    //! first run flow manual data needs in same page
+    signal zipCodeInfoReady(var error);
+    signal customerInfoReady(var error);
 
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************")
@@ -1429,5 +1477,19 @@ I_DeviceController {
 
         initialSetupFinished();
 
+    }
+
+    //! as both data needs to be fetched together and each may return error
+    //! we do not resend it if last time it was success so we have better chance in total
+    function getJobInformationManual() {
+        if (internal.syncReturnedZip !== device.serviceTitan.zipCode)
+            sync.getAddressInformationManual(device.serviceTitan.zipCode);
+        else
+            zipCodeInfoReady("");
+
+        if (internal.syncReturnedEmail !== device.serviceTitan.email)
+            sync.getCustomerInformationManual(device.serviceTitan.email)
+        else
+            customerInfoReady("");
     }
 }
