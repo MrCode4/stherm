@@ -2,7 +2,7 @@
 
 ## Introduction
 
-## Pre-requirments
+## Pre-requirements
 Ensure you have the following software installed and configured before proceeding:
 - CMake v3.16 or later
 - Qt 6.4.3 with the following modules and libraries:
