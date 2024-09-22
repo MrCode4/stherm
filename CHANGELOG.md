@@ -1,6 +1,89 @@
 
 Release Note
 -------------
+## Release R 1.1.1
+ 10th August 2024
+ Branch- hotfix, commit- 57d28d0f
+ 
+### Release Articles
+update-V.1.1.1.zip
+
+### Reason
+Hotfix for regression and backdoor for lock
+
+### What’s Brand New
+
+### What Been Updated
+- Master password added for lock screen when forget password.
+- Access to wifi settings when no internet in lock screen.
+
+### What’s Been Fixed
+- Regressing with show home on unlocking in startup
+
+### Known Issues
+ - Device settings are lost on startup without WIFI.
+
+
+## Release R 1.1.0
+ 7th August 2024
+ Branch- release, commit- ae8f5fe7
+ 
+### Release Articles
+update-V.1.1.0.zip (deprecated)
+
+### Reason
+Add new features and fix some issues
+
+### What’s Brand New
+- mobile app link page.
+- screen lock/unlock page.
+
+### What Been Updated
+- Alerts based on the documents.
+- Improved sync flow to fix issues.
+- Serial number flow improved when device is registered.
+- Label of Notifications changed to Messages in settings.
+- Adaptive brightness can not be turned on from server.
+- Improve TOF requests flow to prevent too much data.
+- Improve system mode button position and temperature labels position and size of them.
+- Technician phone number updated.
+
+### What’s Been Fixed
+- Installs the sshpass if not exists.
+- Time format for messages.
+- All API calls are refactored in Sync.
+- uuid of save file back to random to prevent new structures issues.
+- Clear the cache when internet has issues.
+
+
+### Known Issues
+ - Device settings are lost on startup without WIFI.
+ - Regression with Initial setup and test mode skipping to home screen
+
+## Release R 1.0.2
+ 11th July 2024  
+ Branch- master, commit- 743f30f5
+ 
+### Release Articles
+update-V.1.0.2.zip
+
+### Reason
+Fix some issues
+
+### What’s Brand New
+
+### What Been Updated
+- fan performance a little less smooth but way less cpu usage
+- Update created time of messages based on new API
+- Improved ui for privacy policy page and saving timestamp of acceptance
+
+### What’s Been Fixed
+- fixing bug with vacation mode which mobile version can not resume to normal
+- fix for out of sync values on mode change using validation of data upon receiving from server or before sending to it
+- fix with delay on ending vacation mode
+
+### Known Issues
+ - Alerts should be updated according the docs
 
 ## Release R 1.0.0 
  1st July 2024  
