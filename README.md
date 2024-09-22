@@ -13,7 +13,7 @@ Ensure you have the following software installed and configured before proceedin
         - Qt Multimedia
         - Qt Serial Port
         - Qt Virtual Keyboard
-        
+
 if you are using Windows:
         - MSVC 2019 64-bit with the following workloads:
             - Desktop development with C++ workload
@@ -117,6 +117,81 @@ If your app has a valid serial number and the variable `hasClient` is set to `fa
 > **_TODO:_** Let's make it easier.
 
 ## Test mode
-### What it is Test mode exactly?
+### What is Test mode exactly?
+When you enable Test mode, you have the ability to physically test your device to ensure all components are functioning correctly. Additionally, Test mode allows you to manually update your device's software or firmware, providing greater control over maintenance and troubleshooting.
+
 
 ### How to move the app to the test mode?
+
+You can enter Test mode in several ways:
+
+1- By setting startMode to zero in `DeviceControllerCPP::startDevice()`:
+
+```C++
+    //some codes
+    //int startMode = getStartMode();
+    int startMode = 0; 
+    emit startModeChanged(startMode);
+    //some codes
+```
+
+Alternatively, if your device doesn't have GPIO or the `START_MODE_GPIO` is set to zero in the parameter definitions:
+
+```C++
+/** The GPIO used to determine start mode */
+#define START_MODE_GPIO         0
+```
+
+2- By pressing and holding the `device information` for 10 seconds in the device menu.
+
+</br>
+<center>
+<img src="./screenshots/1.PNG" alt="Description of image" width="400">
+</center>
+</br>
+
+After enabling Test mode, you will see new buttons on the device information page that allow you to update the NRF, restart the app, or forget the device.
+
+3- By pressing and holding the `system update` option for 10 seconds in the device menu.
+
+</br>
+<center>
+<img src="./screenshots/2.PNG" alt="Description of image" width="400">
+</center>
+</br>
+
+After this, a new option for manual updates will appear on the system update page.
+
+
+4- By tapping 10 times on the `FCC ID` in the device information page in the device menu.
+
+</br>
+<center>
+<img src="./screenshots/13.PNG" alt="Description of image" width="400">
+</center>
+</br>
+
+After enabling Test mode through these methods, the app will show tests for touch functionality, color display, brightness, backlight, internal sensors, and relays. At the end, a QR code containing the serial number will be displayed, and then the device will restart.
+
+</br>
+<div style="display: flex; justify-content: space-around;">
+  <img src="./screenshots/5.PNG" width="30%">
+  <img src="./screenshots/6.PNG" width="30%">
+  <img src="./screenshots/7.PNG" width="30%">
+</div>
+</br>
+
+</br>
+<div style="display: flex; justify-content: space-around;">
+  <img src="./screenshots/8.PNG" width="30%">
+  <img src="./screenshots/9.PNG" width="30%">
+  <img src="./screenshots/10.PNG" width="30%">
+</div>
+</br>
+
+</br>
+<div style="display: flex; justify-content: space-around;">
+  <img src="./screenshots/11.PNG" width="30%">
+  <img src="./screenshots/12.PNG" width="30%">
+</div>
+</br>
