@@ -15,4 +15,7 @@ public:
     explicit PerfTestService(QObject *parent = nullptr);
 
 signals:
+
+private:
+    void scheduleNextCheck(const QDate& scheduleDate);
 };
