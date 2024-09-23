@@ -537,7 +537,8 @@ void Sync::getJobIdInformation(const QString& jobID)
 
     auto netReply =  callGetApi(cBaseUrl + QString("/api/technicians/service-titan/customer/%0?sn=%1").arg(jobID, mSerialNumber), callback);
     if (!netReply) {
-        emit jobInformationReady(false, QVariantMap());
+        TRACE << "call get api canceled for getJobIdInformation";
+        //        emit jobInformationReady(false, QVariantMap());
     }
 }
 
@@ -546,7 +547,8 @@ void Sync::getCustomerInformationManual(const QString &email)
     auto callbackCustomer = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
 
-        emit customerInfoReady(!data.isEmpty(), data.toVariantMap());
+        // data can be empty when email is new
+        emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap());
     };
 
     auto netReply =  callGetApi(cBaseUrl + QString("/api/customer?email=%0").arg(email), callbackCustomer);

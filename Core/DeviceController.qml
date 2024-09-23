@@ -444,8 +444,12 @@ I_DeviceController {
             device.serviceTitan.fullName = data?.full_name ?? "";
             device.serviceTitan.phone    = data?.phone ?? "";
             device.serviceTitan.email    = data?.email ?? "";
+            //! to prevent fetching customer info again if not changed later
+            internal.syncReturnedEmail   = device.serviceTitan.email;
 
             device.serviceTitan.zipCode  = data?.zip?.code ?? (data?.zip ?? "");
+            //! if there is no new data to fetch than jobid in review page
+            //internal.syncReturnedZip = device.serviceTitan.zipCode;
 
             device.serviceTitan.city   = data?.city?.name ?? (data?.city ?? "");
             device.serviceTitan.state  = data?.state?.short ?? (data?.state ?? "");
@@ -479,9 +483,18 @@ I_DeviceController {
         }
 
         function onCustomerInfoReady(success: bool, data: var) {
-            if (!success || !data || !device || !device.serviceTitan) {
-                internal.syncReturnedEmail = "";
+            //! we keep this empty in case of any error so it can be retry
+            internal.syncReturnedEmail = "";
+
+            if (!success || !device || !device.serviceTitan) {
                 customerInfoReady("Getting customer information failed.");
+                return;
+            }
+
+            //! data can be empty without having error on new emails
+            if (!data) {
+                console.log("Returned data is empty! maybe email is new!");
+                customerInfoReady("");
                 return;
             }
 
@@ -493,7 +506,7 @@ I_DeviceController {
             device.serviceTitan.fullName = data.full_name ?? "";
             device.serviceTitan.phone    = data.phone ?? "";
 
-            internal.syncReturnedEmail = data.email;
+            internal.syncReturnedEmail = data.email ?? "";
             customerInfoReady("");
         }
 
@@ -1493,26 +1506,60 @@ I_DeviceController {
 
     //! Push initial setup information
     function pushInitialSetupInformation() {
+        // Initialize the client object
+        var clientData = {};
+
+        clientData.email = device.serviceTitan.email;
+        // Add fields conditionally
+        if (device.serviceTitan.fullName) {
+            clientData.full_name = device.serviceTitan.fullName;
+        }
+        if (device.serviceTitan.phone) {
+            clientData.phone = device.serviceTitan.phone;
+        }
+
+        // Initialize the devices array
+        var devicesData = [];
+
+        // construct object for device with minimal data required
+        var deviceObj = {
+         "sn": deviceControllerCPP.system.serialNumber,
+         "zip_code": device.serviceTitan.zipCode,
+         "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
+         "resident_type_id": device.residenceType, // or maybe using condition
+         "where_installed_id": device.whereInstalled
+        }
+
+        //! add dynamic fileds
+        if (device.thermostatName) {
+            deviceObj.name = device.thermostatName;
+        }
+        if (device.serviceTitan.address1) {
+            deviceObj.address1 = device.serviceTitan.address1;
+        }
+        if (device.serviceTitan.address2) {
+            deviceObj.address2 = device.serviceTitan.address2;
+        }
+        if (device.serviceTitan.state_id > -1) {
+            deviceObj.state = device.serviceTitan.state_id;
+        }
+        if (device.serviceTitan.city_id > -1) {
+            deviceObj.city = device.serviceTitan.city_id;
+        }
+
+
+        // Add the constructed device object to the devices array
+        devicesData.push(deviceObj);
+
+        // Now create the final data structure
+        var finalData = {
+            client: clientData,
+            devices: devicesData
+        };
+
         var send_data = {
-            "client": {
-                "full_name": device.serviceTitan.fullName,
-                "phone": device.serviceTitan.phone,
-                "email": device.serviceTitan.email
-              },
-              "devices": [
-                {
-                  "sn": deviceControllerCPP.system.serialNumber,
-                  "name": device.thermostatName,
-                  "address1": device.serviceTitan.address1,
-                  "address2": device.serviceTitan.address2,
-                  "state": device.serviceTitan.state_id,
-                  "city": device.serviceTitan.city_id ,
-                  "zip_code": device.serviceTitan.zipCode,
-                  "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
-                  "resident_type_id": device.residenceType, // or maybe using condition
-                  "where_installed_id": device.whereInstalled
-                }
-              ]
+              "client": clientData,
+              "devices": devicesData
         };
 
         sync.installDevice(send_data);

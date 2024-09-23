@@ -406,13 +406,6 @@ bool NUVE::System::installSSHPass(bool recursiveCall)
 
     sshpassInstallCounter++;
 
-    // Remove the sshpass file if is exists or is invalid.
-    TRACE << "Remove the /usr/bin/sshpass: "
-          << QFile::remove("/usr/bin/sshpass");
-
-    TRACE << "Remove usr/local/bin/sshpass: "
-          << QFile::remove("/usr/local/bin/sshpass");
-
 #ifdef __unix__
     // this helps validating the existence as well as workable version of sshPass
     auto checkExists = []()->bool {
@@ -430,6 +423,13 @@ bool NUVE::System::installSSHPass(bool recursiveCall)
     };
 
     if (!checkExists()) {
+        // Remove the sshpass file if is exists or is invalid.
+        TRACE << "Remove the /usr/bin/sshpass: "
+              << QFile::remove("/usr/bin/sshpass");
+
+        TRACE << "Remove usr/local/bin/sshpass: "
+              << QFile::remove("/usr/local/bin/sshpass");
+
         QFile getsshpassRun("/usr/local/bin/getsshpass.sh");
         if (getsshpassRun.exists())
             getsshpassRun.remove("/usr/local/bin/getsshpass.sh");

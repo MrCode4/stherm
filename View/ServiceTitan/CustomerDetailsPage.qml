@@ -76,7 +76,6 @@ BasePageView {
                 anchors.left: parent.left
 
                 topPadding: 0
-                readOnly: !manualEntry
                 placeholderText: "Input the Email"
                 font.pointSize: root.font.pointSize * 0.8
                 text: appModel?.serviceTitan?.email ?? ""
@@ -122,7 +121,6 @@ BasePageView {
                 anchors.right: parent.right
                 anchors.left: parent.left
 
-                readOnly: !manualEntry
                 placeholderText: "Input the ZIP code"
                 text: appModel?.serviceTitan?.zipCode ?? ""
                 font.pointSize: root.font.pointSize * 0.8
@@ -175,16 +173,14 @@ BasePageView {
         anchors.margins: 10
 
         text: "Next"
-        visible: !manualEntry || (!emailTf.activeFocus && !zipCodeTf.activeFocus)
+        visible: !emailTf.activeFocus && !zipCodeTf.activeFocus
         enabled: emailTf.acceptableInput && zipCodeTf.acceptableInput
         leftPadding: 25
         rightPadding: 25
 
         onClicked: {
-            if (manualEntry) {
-                appModel.serviceTitan.email   = emailTf.text;
-                appModel.serviceTitan.zipCode = zipCodeTf.text;
-            }
+            appModel.serviceTitan.email   = emailTf.text;
+            appModel.serviceTitan.zipCode = zipCodeTf.text;
 
             nextPage();
         }
