@@ -383,8 +383,8 @@ qt6_add_qml_module(appStherm
         Backend/QrCode/qrcodegen.hpp
         Backend/QrCode/qrcodegen.cpp
         Backend/QRCodeGenerator.h
-        Backend/AccessCodeGenerator.h
-        Backend/AccessCodeGenerator.cpp
+        Backend/AppUtilities.h
+        Backend/AppUtilities.cpp
         Backend/Device/SystemSetup.h
         Backend/Device/SystemSetup.cpp
         Backend/Device/SystemAccessories.h

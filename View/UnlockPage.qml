@@ -109,9 +109,9 @@ BasePageView {
                     return;
                 }
 
-                let randomPin = AccessCodeGenerator.generateRandomPassword();
+                let randomPin = AppUtilities.generateRandomPassword();
                 root.encodedMasterPin = randomPin;
-                appModel.lock._masterPIN = AccessCodeGenerator.decodeLockPassword(randomPin);
+                appModel.lock._masterPIN = AppUtilities.decodeLockPassword(randomPin);
             }
 
             onSendPIN: pin => {

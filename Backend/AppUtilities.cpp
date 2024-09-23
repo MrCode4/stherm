@@ -1,17 +1,12 @@
-#include "AccessCodeGenerator.h"
+#include "AppUtilities.h"
 
 #include <random>
 #include <sstream>
 
 #include "LogHelper.h"
 
-AccessCodeGenerator::AccessCodeGenerator(QObject *parent)
-    : QObject{parent}
+QString AppUtilities::generateRandomPassword()
 {
-
-}
-
-QString AccessCodeGenerator::generateRandomPassword() {
     const QString possibleCharacters("abcdefghijklmnopqrstuvwxyz0123456789");
     const int randomStringLength = 8;
 
@@ -28,11 +23,11 @@ QString AccessCodeGenerator::generateRandomPassword() {
         randomString.append(nextChar);
     }
 
-    TRACE << randomString;
+    TRACE << "Generated Random String: " << randomString;
     return randomString;
 }
 
-QString AccessCodeGenerator::decodeLockPassword(QString pass)
+QString AppUtilities::decodeLockPassword(QString pass)
 {
     const int MOD = 10000;  // Modulo to ensure a 4-digit number
     int hashValue = 0;
@@ -47,6 +42,6 @@ QString AccessCodeGenerator::decodeLockPassword(QString pass)
     std::ostringstream ss;
     ss << std::setw(4) << std::setfill('0') << hashValue;
 
-    TRACE << QString::fromStdString(ss.str());
+    TRACE << "Decoded Password: " << QString::fromStdString(ss.str());
     return QString::fromStdString(ss.str());
 }

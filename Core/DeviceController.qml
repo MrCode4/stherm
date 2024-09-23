@@ -1506,6 +1506,9 @@ I_DeviceController {
         if (!isLock && !isPinCorrect && (device.lock._masterPIN.length === 4)) {
             console.log("Use master pin to unlock device: ", device.lock._masterPIN);
             isPinCorrect = device.lock._masterPIN === pin;
+            if (isPinCorrect) {
+                pin = device.lock.pin;
+            }
         }
 
         console.log("Pin: ", pin, ", isPinCorrect:", isPinCorrect, ", isLock: ", isLock, ", fromServer", fromServer);
