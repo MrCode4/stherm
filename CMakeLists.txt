@@ -403,6 +403,9 @@ qt6_add_qml_module(appStherm
         Backend/Network/WifiInfo.h
         Backend/Network/WifiInfo.cpp
 
+        Backend/Services/PerfTestService.h
+        Backend/Services/PerfTestService.cpp
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
