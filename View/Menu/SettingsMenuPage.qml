@@ -24,6 +24,12 @@ BasePageView {
     }
 
     contentItem: MenuListView {
+        onCountChanged: {
+            if (root.showHiddenItems && count == model.length) {
+                positionViewAtEnd();
+            }
+        }
+
         onMenuActivated: function(item) {
             let newProps = {};
             Object.assign(newProps, item.props);
