@@ -208,9 +208,20 @@ void NmcliInterface::addConnection(const QString& name,
     //! Connect to this new connection if successfully added
     auto onFinished = [this, name, ssid, security] (QProcess* process) {
         if (process->exitStatus() == QProcess::NormalExit && process->exitCode() == 0) {
-            WifiInfo* newWifi = new WifiInfo(false, false, ssid, "", 100, security);
-            newWifi->setIsConnecting(true);
-            mWifis.push_back(newWifi);
+            //! Either create a new WifiInfo instance or use an existing one
+            auto wifiIter = std::find_if(mWifis.begin(), mWifis.end(), [ssid] (WifiInfo* w) {
+                return w->ssid() == ssid;
+            });
+
+            WifiInfo* wifi = nullptr;
+            if (wifiIter == mWifis.end()) {
+                wifi = new WifiInfo(false, true, ssid, "", 100, security);
+                mWifis.push_back(wifi);
+            } else {
+                wifi = *wifiIter;
+                wifi->setIsSaved(true);
+            }
+            wifi->setIsConnecting(true);
             emit wifisChanged();
             mCliWifi->connectToSavedWifi(name, "", [this] (QProcess*) {
                 setBusy(false);
@@ -301,9 +312,7 @@ void NmcliInterface::onWifiListRefreshFinished(QProcess* process)
                     continue;
                 }
 
-                if (cp.seenBssids.contains(parsedWi.bssid())
-                    || (cp.seenBssids.isEmpty()
-                        && cp.ssid == parsedWi.ssid())) {
+                if (cp.ssid == parsedWi.ssid()) {
                     alreadyAddedConProfiles[cp.ssid] = true;
                     conProfileForThis = &cp;
                 }
@@ -477,10 +486,14 @@ void NmcliInterface::setConnectedWifi(WifiInfo* wifiInfo)
 
 void NmcliInterface::onWifiConnected(const QString& ssid)
 {
-    for (WifiInfo* wifi : mWifis) {
+    for (int i = 0; i < mWifis.length(); ++i) {
+        WifiInfo* wifi = mWifis[i];
         if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
             wifi->setIsConnecting(false);
             setConnectedWifi(wifi);
+
+            //! Also remove it from the list of mWifis
+            mWifis.remove(i);
 
             return;
         }
