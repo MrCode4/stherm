@@ -88,16 +88,6 @@ BasePageView {
                 props: {showTestMode: root.showHiddenItems}
             },
             {
-                image: "qrc:/Stherm/Images/smart-phone.png",
-                text: "Mobile App",
-                view: "qrc:/Stherm/View/MobileAppPage.qml"
-            },
-            {
-                icon: FAIcons.lock,
-                text: "Lock",
-                view: "qrc:/Stherm/View/LockPage.qml"
-            },
-            {
                 icon: FAIcons.night,
                 text: "Night Mode",
                 visible: false,
