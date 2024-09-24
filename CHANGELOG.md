@@ -1,6 +1,45 @@
 
 Release Note
 -------------
+## Release R 1.2.1
+ 24th September 2024
+ Branch- r1_2_1, commit- 43b884f4
+ 
+### Release Articles
+update-V.1.2.1.zip
+
+### Reason
+Add new features and fix some issues.
+
+### What’s Brand New
+- Simple Stack View implemented and used in tests.
+- fetched client data from server.
+- Restructured the menu.
+- Redesigned the initial run flow.
+- Added warranty replacement.
+
+### What Been Updated
+- Hide sensor values until actual values fetch from sensors.
+- Access to wifi settings when no internet in lock screen.
+- Update mobile app page.
+- Remove Nuve icon from default of ContactContractor model.
+- Check sensors health and manage the schemes.
+- Update the schedule UI and logics.
+
+### What’s Been Fixed
+- Fixed save sequence for fetched data.
+- Fixed device settings lost on startup.
+- Fixed default values for null.
+- Fixed GetInfo retry for TI.
+- Fixed server data fetch.
+- Fixed repository issues for save/load.
+- Fixed clamp issue in auto and vacation mode, updated model on data change.
+- Fixed overlap, enable/disable, update from server for schedules.
+- Fixed some WIFI issues.
+
+### Known Issues
+
+
 ## Release R 1.1.1
  10th August 2024
  Branch- hotfix, commit- 57d28d0f
