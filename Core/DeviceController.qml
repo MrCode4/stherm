@@ -1187,6 +1187,15 @@ I_DeviceController {
         device.systemSetup.systemType = AppSpecCPP.Conventional;
     }
 
+    function setSystemDualFuelHeating(emergency: bool, stage: int, obState: int, dualFuelHeatingTemperature: real) {
+        device.systemSetup.heatPumpEmergency = emergency;
+        device.systemSetup.heatStage = stage;
+        device.systemSetup.heatPumpOBState = obState;
+        device.systemSetup.dualFuelHeatingTemperature = dualFuelHeatingTemperature;
+        device.systemSetup.systemType = AppSpecCPP.DualFuelHeating;
+    }
+
+
     function setSystemSetupServer(settings: var) {
 
         if (editModeEnabled(AppSpec.EMSystemSetup)) {
