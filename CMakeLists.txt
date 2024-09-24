@@ -16,6 +16,24 @@ set(TEMPERATURE_SCHEME_VERSION_C "V.1.94 (02.10.2024)")
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
 
+option (INITIAL_SETUP_MODE "Force the app to run in the initial setup pages" OFF)
+option (FAKE_SERIAL_MODE "Run app with a fake serial stored in FAKE_SERIAL_ID" OFF)
+option (TEST_MODE "Run app with starting test device mode" OFF)
+set(FAKE_SERIAL_ID "110879d4d9642249")
+
+if(FAKE_SERIAL_MODE)
+    add_compile_definitions(FAKE_SERIAL_MODE_ON)
+    add_compile_definitions(FAKE_SERIAL_ID="${FAKE_SERIAL_ID}")
+endif()
+
+if(INITIAL_SETUP_MODE)
+    add_compile_definitions(INITIAL_SETUP_MODE_ON)
+endif()
+
+if(TEST_MODE)
+    add_compile_definitions(TEST_MODE_ON)
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
     QuickControls2 Multimedia Concurrent
     Core5Compat SerialPort )

@@ -37,7 +37,11 @@ Sync::Sync(QObject *parent)
     , m_fetchingUserData(false)
 {
     QSettings setting;
+
+#ifndef INITIAL_SETUP_MODE_ON
     mHasClient = setting.value(cHasClientSetting).toBool();
+#endif
+
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
     mContractorInfo = setting.value(cContractorSettings).toMap();
 
@@ -103,7 +107,13 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
     auto callback = [this, &eventLoop, notifyUser](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (data.contains("serial_number")) {
             auto sn = data.value("serial_number").toString();
+
+#ifndef INITIAL_SETUP_MODE_ON
             mHasClient = data.value("has_client").toBool();
+#else
+            mHasClient = false;
+#endif
+
             TRACE << sn << mHasClient;
 
             if (!mHasClient) {

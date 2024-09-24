@@ -169,6 +169,10 @@ std::string convert_hex_to_string(const std::string& hex_value) {
 
 QString UtilityHelper::getCPUInfo()
 {
+#ifdef FAKE_SERIAL_MODE_ON
+    return FAKE_SERIAL_ID;
+#endif
+
     QFile file("/sys/fsl_otp/HW_OCOTP_CFG1");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         TRACE << "Failed to open the CFG1 file.";
