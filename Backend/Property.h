@@ -12,6 +12,17 @@
  * ************************************************************************************************/
 
 #define PROPERTY(_SETTER_ACCCESS_, _TYPE_, _NAME_)\
+Q_PROPERTY(_TYPE_ _NAME_ MEMBER m_##_NAME_ READ _NAME_ WRITE _NAME_ NOTIFY _NAME_##Changed)\
+    Q_SIGNALS: void _NAME_##Changed(_TYPE_ value);\
+    _SETTER_ACCCESS_: _TYPE_ _NAME_ () const {return m_##_NAME_;}\
+    void _NAME_(_TYPE_ value){\
+        m_##_NAME_ = value;\
+        emit _NAME_##Changed(value);\
+}\
+    private:\
+    _TYPE_ m_##_NAME_;
+
+#define PROPERTY_DEFAULT_VALUE(_SETTER_ACCCESS_, _TYPE_, _NAME_, _VALUE_)\
     Q_PROPERTY(_TYPE_ _NAME_ MEMBER m_##_NAME_ READ _NAME_ WRITE _NAME_ NOTIFY _NAME_##Changed)\
     Q_SIGNALS: void _NAME_##Changed(_TYPE_ value);\
     _SETTER_ACCCESS_: _TYPE_ _NAME_ () const {return m_##_NAME_;}\
@@ -20,11 +31,15 @@
         emit _NAME_##Changed(value);\
     }\
     private:\
-    _TYPE_ m_##_NAME_;
+    _TYPE_ m_##_NAME_ = _VALUE_;
 
 #define PROPERTY_PRI(_TYPE_, _NAME_) PROPERTY(private, _TYPE_, _NAME_)
 #define PROPERTY_PRO(_TYPE_, _NAME_) PROPERTY(protected, _TYPE_, _NAME_)
 #define PROPERTY_PUB(_TYPE_, _NAME_) PROPERTY(public, _TYPE_, _NAME_)
+
+#define PROPERTY_PRI_DEF_VAL(_TYPE_, _NAME_, _VALUE_) PROPERTY_DEFAULT_VALUE(private, _TYPE_, _NAME_, _VALUE_)
+#define PROPERTY_PRO_DEF_VAL(_TYPE_, _NAME_, _VALUE_) PROPERTY_DEFAULT_VALUE(protected, _TYPE_, _NAME_, _VALUE_)
+#define PROPERTY_PUB_DEF_VAL(_TYPE_, _NAME_, _VALUE_) PROPERTY_DEFAULT_VALUE(public, _TYPE_, _NAME_, _VALUE_)
 
 #define PROPERTY_LIST(_NAME_)\
     Q_PROPERTY(QVariantList _NAME_ MEMBER m_##_NAME_ NOTIFY _NAME_##Changed)\

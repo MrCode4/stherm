@@ -39,6 +39,7 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Core)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Data)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Services)
 
 # Add any include directories
 #include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)

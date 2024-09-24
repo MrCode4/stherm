@@ -11,6 +11,9 @@ class PerfTestService : public RestApiExecutor
     QML_ELEMENT
     QML_SINGLETON
 
+    PROPERTY_PRI_DEF_VAL(int, startTimeLeft, 0)
+    PROPERTY_PRI_DEF_VAL(int, testTimeLeft, 0)
+
 public:
     explicit PerfTestService(QObject *parent = nullptr);
 
