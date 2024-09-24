@@ -38,21 +38,22 @@ if you are using Windows:
         ```
 
 ## How to Fake a Serial Number?
-If you are running the app on a device, you can set a fake serial number in the `DeviceAPI::DeviceAPI()` function:
-```C++
-//some codes
-#ifdef __unix__
-    // _uid = UtilityHelper::getCPUInfo().toStdString();
-    _uid = "123456a1a0123456"; 
-#else
- //some codes
+To enable fake serial mode, set `FAKE_SERIAL_MODE` option to `ON` in your `CMakeLists` file and create a new fake serial ID. Please follow the steps below: </br>
+Qt Creator: </br>
+1. In the CMakeLists.txt file, search for the `FAKE_SERIAL_ID` variable and set it to your desired value.
+    > **_Note:_** Remember, the value must be 16 characters long and can include both digits and letters.
+2. Go to `Projects` (Ctrl + 5).
+3. Under the currently selected kit, click on `Build`.
+4. In the `CMake Section`, select the `Current Configuration` tab.
+5. Search for `FAKE_SERIAL_MODE`.
+6. Check the box to turn it ON.
+7. Finally, click on `Run CMake`.
+
+CMake: </br>
+```properties
+cmake -DFAKE_SERIAL_MODE:BOOL=ON -DFAKE_SERIAL_ID=000111a1d1111110 .
 ```
 
-If you are running the app on your PC, you can set a fake serial number in the `DeviceConfig::load()` function:
-```C++
-    // uid = config.value("uid").toString().toStdString();
-    uid = "110879d4d9642249";
-```
 > **_WARNING:_** Ensure your fake serial number is not a valid serial number connected to a real device. Any changes you make in the app will appear on the device.
 
 ## Devloper Mode
@@ -84,37 +85,20 @@ If your app has a valid serial number and the variable `hasClient` is set to `fa
 
 > **_NOTE_**: Make sure your app has a serial number. If you are testing the app on Windows, refer to the **How to Fake a Serial Number** section.
 
-1. Comment the line in `NUVE::DeviceConfig::load()`:
-    ```C++
-    // serial_number = config.value("serial_number").toString().toStdString();
-    ```
+To run the app in initial setup mode, you need to set `INITIAL_SETUP_MODE` option to ON in your `CMakeLists` file. Please follow the steps below: </br>
+Qt Creator: </br>
 
-1. Comment the line in the Sync Class Constructor:
-    ```C++
-    // mHasClient = setting.value(m_HasClientSetting).toBool();
-    ```
+1. Go to `Projects` (Ctrl + 5).
+2. Under the currently selected kit, click on `Build`.
+3. In the `CMake Section`, select the `Current Configuration` tab.
+4. Search for `INITIAL_SETUP_MODE`.
+5. Check the box to turn it ON.
+6. Finally, click on `Run CMake`.
 
-2. Set `mHasClient` to `false` in the Sync Class:
-    ```C++
-    // some codes
-    auto sn = dataObj.value("serial_number").toString();
-    // mHasClient = dataObj.value("has_client").toBool();
-    mHasClient = false;
-    // some codes
-    ```
-3. Set `startMode` in `DeviceControllerCPP::startDevice()` function to whatever except 0.
-    ```C++
-    void DeviceControllerCPP::startDevice()
-    {
-        // some codes
-        // int startMode = getStartMode();
-        int startMode = 1;
-        emit startModeChanged(startMode);
-        // some codes
-    }
-    ```
-
-> **_TODO:_** Let's make it easier.
+CMake: </br>
+```properties
+cmake -DINITIAL_SETUP_MODE:BOOL=ON .
+```
 
 ## Test mode
 ### What is Test mode exactly?
@@ -125,15 +109,20 @@ When you enable Test mode, you have the ability to physically test your device t
 
 You can enter Test mode in several ways:
 
-1- By setting startMode to zero in `DeviceControllerCPP::startDevice()`:
+1. To run the app in test mode, set `TEST_MODE` option to ON in your `CMakeLists` file. Please follow the steps below: </br>
+    Qt Creator: </br>
 
-```C++
-    //some codes
-    //int startMode = getStartMode();
-    int startMode = 0; 
-    emit startModeChanged(startMode);
-    //some codes
-```
+    1. Go to `Projects` (Ctrl + 5).
+    2. Under the currently selected kit, click on `Build`.
+    3. In the `CMake Section`, select the `Current Configuration` tab.
+    4. Search for `TEST_MODE`.
+    5. Check the box to turn it ON.
+    6. Finally, click on `Run CMake`.
+
+    CMake: </br>
+    ```properties
+    cmake -DTEST_MODE:BOOL=ON .
+    ```
 
 Alternatively, if your device doesn't have GPIO or the `START_MODE_GPIO` is set to zero in the parameter definitions:
 
