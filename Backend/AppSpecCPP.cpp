@@ -30,6 +30,9 @@ QString AppSpecCPP::systemTypeString(SystemType systemType) {
     case HeatingOnly:
         return "heating";
 
+    case DualFuelHeating:
+        return "Dual_Fuel_Heating";
+
     default:
         break;
     }
@@ -49,6 +52,9 @@ AppSpecCPP::SystemType AppSpecCPP::systemTypeToEnum(QString systemTypeStr) {
 
     } else if (systemTypeStr == "heating") {
         return HeatingOnly;
+
+    } else if (systemTypeStr == "Dual_Fuel_Heating") {
+        return DualFuelHeating;
     }
 
     return Conventional;
