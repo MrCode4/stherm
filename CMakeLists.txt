@@ -143,6 +143,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/InfoToolButton.qml
         UiCore/Components/HorizontalTimeTumbler.qml
         UiCore/Components/TemperatureFlatRangeSlider.qml
+        UiCore/Components/SingleTemperatureSlider.qml
 
 
         # Views and Widgets
@@ -211,6 +212,7 @@ qt6_add_qml_module(appStherm
         View/MobileAppPage.qml
         View/LockPage.qml
         View/UnlockPage.qml
+        View/DualFuelHeatingPage.qml
 
         # Service Titan pages
         View/ServiceTitan/JobNumberPage.qml
