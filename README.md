@@ -16,8 +16,10 @@ Ensure you have the following software installed and configured before proceedin
 - Openssl v1.x
 
 if you are using Windows:
-        - MSVC 2019 64-bit with the following workloads:
-            - Desktop development with C++ workload
+- MSVC 2019 64-bit with the following workloads:
+  - Desktop development with C++ workload
+
+ > **_Note:_** If you're using Linux, make sure to run the app with `root` or `sudo` privileges.
 
 ## How to build?
 1. Set CMake build type to Release
