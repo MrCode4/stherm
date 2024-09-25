@@ -71,6 +71,7 @@ public:
 
     //!
     Q_INVOKABLE QVariantMap getMainData();
+    Q_INVOKABLE double getTemperature();
 
     //!
     Q_INVOKABLE void writeTestResult(const QString &fileName, const QString& testName, const QString& testResult, const QString& description="");

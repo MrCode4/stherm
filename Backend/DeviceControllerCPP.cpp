@@ -982,6 +982,11 @@ QVariantMap DeviceControllerCPP::getMainData()
     return mainData;
 }
 
+double DeviceControllerCPP::getTemperature()
+{
+    return mSchemeDataProvider->currentTemperature();
+}
+
 void DeviceControllerCPP::writeTestResult(const QString &fileName, const QString &testName, const QString& testResult, const QString &description)
 {
     QFile file(fileName);

@@ -18,6 +18,8 @@ DeviceInfo* DeviceInfo::me()
 DeviceInfo::DeviceInfo(QObject *parent)
     : QObject(parent)
 {
+    QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
+
     QSettings setting;
     hasClient(setting.value("NUVE/SerialNumberClient").toBool());
     serialNumber(setting.value("NUVE/SerialNumber").toString());
