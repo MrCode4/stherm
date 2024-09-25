@@ -14,8 +14,8 @@ class PerfTestService : public DevApiExecutor
     QML_ELEMENT
     QML_SINGLETON
 
-    PROPERTY_PRI_DEF_VAL(bool, isEligibleTotest, false)
-    PROPERTY_PRI_DEF_VAL(bool, isCoolingTest, false)
+    PROPERTY_PRI_DEF_VAL(int, state, 0)
+    PROPERTY_PRI_DEF_VAL(int, mode, 0)
     PROPERTY_PRI_DEF_VAL(int, startTimeLeft, 0)
     PROPERTY_PRI_DEF_VAL(int, testTimeLeft, 0)
 
@@ -25,6 +25,18 @@ private:
 public:
     static PerfTestService* me();
     static PerfTestService* create(QQmlEngine*, QJSEngine*) {return me();}
+
+    enum TestState {
+        Waiting = 0,
+        Checking,
+        Eligible,
+        Warmup,
+        Running,
+        Sending,
+        Complete,
+        Cancelling
+    };
+    Q_ENUM(TestState)
 
 signals:
 
@@ -37,7 +49,7 @@ private slots:
     void collectReading();
 
 private:
-    void scheduleNextCheck(const QDateTime& scheduleDate);
+    void scheduleNextCheck(const QTime& checkTime);
     void sendReadingsToServer();
 
 private:
