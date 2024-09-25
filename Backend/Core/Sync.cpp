@@ -153,9 +153,11 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             }
 
             // Save the serial number in settings
+#if !defined(FAKE_SERIAL_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
             QSettings setting;
             setting.setValue(cHasClientSetting, mHasClient);
             setting.setValue(cSerialNumberSetting, mSerialNumber);
+#endif
         }
         else {
             if (reply->error() == QNetworkReply::NoError) {

@@ -105,8 +105,10 @@ void NUVE::DeviceConfig::save()
 {
     QSettings config("/usr/local/bin/device_config.ini", QSettings::IniFormat);
 
+#if !defined(FAKE_SERIAL_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
     config.setValue("uid", QString::fromStdString(uid));
     config.setValue("serial_number", QString::fromStdString(serial_number));
+#endif
     config.setValue("endpoint", QString::fromStdString(endpoint));
     config.setValue("sampleRate", QString::number(sampleRate));
 
