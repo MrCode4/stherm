@@ -4,9 +4,23 @@
 #include "UtilityHelper.h"
 #include "Relay.h"
 
-SchemeDataProvider::SchemeDataProvider(QObject *parent)
-    : QObject{parent}
-{}
+SchemeDataProvider::SchemeDataProvider(NUVE::Sync *sync, QObject *parent) :
+    mSync(sync),
+    QObject{parent}
+{
+    mGetOutdoorTemperatureTimer.setInterval(60 * 1000);
+    mGetOutdoorTemperatureTimer.setSingleShot(false);
+    connect(&mGetOutdoorTemperatureTimer, &QTimer::timeout, this, [this]() {
+        mSync->getOutdoorTemperature();
+    });
+
+    mOutdoorTemperature = -1;
+    connect(mSync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
+        if (success) {
+            mOutdoorTemperature = temp;
+        }
+    });
+}
 
 void SchemeDataProvider::setMainData(QVariantMap mainData)
 {
@@ -45,6 +59,17 @@ void SchemeDataProvider::setSystemSetup(SystemSetup *systemSetup)
     }
 
      mSystemSetup = systemSetup;
+
+     // To provide outdoor temperature
+    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [=] {
+         if (mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
+             mSync->getOutdoorTemperature();
+             mGetOutdoorTemperatureTimer.start();
+
+         } else {
+             mGetOutdoorTemperatureTimer.stop();
+         }
+    });
 
     emit systemSetupChanged();
 }
@@ -145,6 +170,16 @@ void SchemeDataProvider::setAutoMaxReqTempF(const double& fah_value)
 {
     if (qAbs(mAutoMaxReqTempF - fah_value) > 0.001)
         mAutoMaxReqTempF = fah_value;
+}
+
+double SchemeDataProvider::outdoorTemperatureF() const
+{
+    return UtilityHelper::toFahrenheit(mOutdoorTemperature);
+}
+
+double SchemeDataProvider::dualFuelHeatingTemperatureF() const
+{
+    return UtilityHelper::toFahrenheit(mSystemSetup->dualFuelHeatingTemperature);
 }
 
 double SchemeDataProvider::autoMaxReqTempF() const

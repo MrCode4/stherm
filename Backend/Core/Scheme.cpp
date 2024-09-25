@@ -305,10 +305,29 @@ void Scheme::HeatingLoop()
 {
     TRACE_CHECK(false) << "Heating started " << mDataProvider.data()->systemSetup()->systemType;
 
+    // Control the system type:
+    auto activeSysType = mDataProvider->systemSetup()->systemType;
+    if (activeSysType == AppSpecCPP::SystemType::DualFuelHeating) {
+        if (mDataProvider->dualFuelHeatingTemperatureF() -  mDataProvider->outdoorTemperatureF() >= 0.001) {
+            // Start the heat pump
+            activeSysType = AppSpecCPP::SystemType::HeatPump;
+
+            // To ensure the relays is off
+            mRelay->turnConventionalHeating(false);
+
+        } else {
+            // Start the conventional heating
+            activeSysType = AppSpecCPP::SystemType::Conventional;
+
+            // To ensure the relays is off
+            mRelay->turnHeatPump(false);
+        }
+    }
+
     // update configs and ...
     // s1 & s2 time threshold
     //    Y1, Y2, O/B G W1 W2 W3
-    switch (mDataProvider.data()->systemSetup()->systemType) {
+    switch (activeSysType) {
     case AppSpecCPP::SystemType::HeatPump: // emergency as well?
     {
         TRACE_CHECK(false) << "HeatPump" << mDataProvider.data()->currentTemperature() << effectiveTemperature();
@@ -1098,6 +1117,7 @@ void Scheme::setSystemSetup()
     connect(sys, &SystemSetup::systemTypeChanged, this, [=] {
         TRACE<< "systemTypeChanged: "<< sys->systemType << sys->heatPumpOBState;
 
+        // CHECK for dual fuel
         mRelay->setOb_on_state(sys->systemType == AppSpecCPP::SystemType::HeatPump ?
                                    (sys->heatPumpOBState == 0 ? AppSpecCPP::Cooling
                                                                        : AppSpecCPP::Heating) :

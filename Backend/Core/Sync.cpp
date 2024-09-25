@@ -82,8 +82,8 @@ void Sync::setApiAuth(QNetworkRequest& request)
 
 QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
 {
-    QJsonObject data;
     const QJsonObject rootObject = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
+    QJsonObject data = rootObject;
 
     if (rootObject.contains("data")) {
         data = rootObject.value("data").toObject();
@@ -665,6 +665,21 @@ void Sync::forgetDevice()
     setting.setValue(cHasClientSetting, mHasClient);
     setting.setValue(cSerialNumberSetting, mSerialNumber);
     setting.setValue(cContractorSettings, mContractorInfo);
+}
+
+void Sync::getOutdoorTemperature() {
+
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            double temp = data.value("value").toDouble(-1);
+            emit outdoorTemperatureReady(temp > -1, temp);
+        }
+        else {
+            emit  outdoorTemperatureReady();
+        }
+    };
+
+    callGetApi(cBaseUrl + QString("/api/weather?sn=%0").arg(mSerialNumber), callback);
 }
 
 } // namespace NUVE

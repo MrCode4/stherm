@@ -5,6 +5,7 @@
 
 #include "ScheduleCPP.h"
 #include "SystemSetup.h"
+#include "Sync.h"
 
 /*! ***********************************************************************************************
  * This class provides data for Scheme and HumidityScheme.
@@ -18,7 +19,7 @@ public:
     /* Public Constructors & Destructor
      * ****************************************************************************************/
 
-    explicit SchemeDataProvider(QObject *parent = nullptr);
+    explicit SchemeDataProvider(NUVE::Sync *sync, QObject *parent = nullptr);
 
     /* Public Functions
      * ****************************************************************************************/
@@ -81,6 +82,10 @@ public:
 
     void setAutoMaxReqTempF(const double &fah_value);
 
+    double outdoorTemperatureF() const;
+
+    double dualFuelHeatingTemperatureF() const;
+
 signals:
 
     /* Public Signals
@@ -103,6 +108,10 @@ private:
 
     ScheduleCPP* mSchedule = nullptr;
 
+    NUVE::Sync *mSync;
+
+    QTimer mGetOutdoorTemperatureTimer;
+
     //! Humidity parameters (Percentage)
     double mCurrentHumidity;
 
@@ -119,5 +128,10 @@ private:
     //! Auto mode properites (Fahrenheit)
     double mAutoMinReqTempF;
     double mAutoMaxReqTempF;
+
+    //! Outdoot temperature
+    //! Celsius
+    double mOutdoorTemperature;
+
 };
 

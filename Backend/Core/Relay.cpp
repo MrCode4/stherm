@@ -384,6 +384,18 @@ bool Relay::turnOffEmergencyHeating()
     return true;
 }
 
+
+void Relay::turnHeatPump(bool on) {
+    mRelay.y1 = on ? STHERM::ON : STHERM::OFF;
+    mRelay.y2 = on ? STHERM::ON : STHERM::OFF;
+}
+
+void Relay::turnConventionalHeating(bool on) {
+    mRelay.w1 = on ? STHERM::ON : STHERM::OFF;
+    mRelay.w2 = on ? STHERM::ON : STHERM::OFF;
+    mRelay.w3 = on ? STHERM::ON : STHERM::OFF;
+}
+
 void Relay::fanOn() {
     mRelay.g = STHERM::ON;
 }

@@ -77,6 +77,10 @@ public:
 
     void setFanMode(bool on);
 
+    void turnHeatPump(bool on);
+
+    void turnConventionalHeating(bool on);
+
 private:
     explicit Relay();
 
