@@ -289,6 +289,8 @@ qt6_add_qml_module(appStherm
 
     SOURCES
         Backend/Property.h
+        Backend/DeviceInfo.h
+        Backend/DeviceInfo.cpp
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
         Backend/ScreenSaverManager.h
@@ -355,6 +357,8 @@ qt6_add_qml_module(appStherm
         Backend/Core/HttpExecutor.cpp
         Backend/Core/RestApiExecutor.h
         Backend/Core/RestApiExecutor.cpp
+        Backend/Core/DevApiExecutor.h
+        Backend/Core/DevApiExecutor.cpp
         Backend/Core/System.h
         Backend/Core/System.cpp
         Backend/Core/Sync.h

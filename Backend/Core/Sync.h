@@ -4,8 +4,8 @@
 #include <QtNetwork>
 #include <QQmlEngine>
 
+#include "DevApiExecutor.h"
 #include "nuve_types.h"
-#include "RestApiExecutor.h"
 #include "Property.h"
 
 /*! ***********************************************************************************************
@@ -13,7 +13,7 @@
  * ************************************************************************************************/
 
 namespace NUVE {
-class Sync : public RestApiExecutor
+class Sync : public DevApiExecutor
 {
     Q_OBJECT
     QML_ELEMENT
@@ -90,7 +90,6 @@ signals:
     //! otherwise the device will use the local informatio
     void contractorInfoReady(bool getDataFromServerSuccessfully = true);
     void userDataFetched(const QString& email, const QString& name);
-    void perfTestScheduleFetched(bool yes, bool cooling);
 
     //! Settings data
     void settingsReady(QVariantMap settings);
@@ -147,10 +146,6 @@ private slots:
 
 private:
     QByteArray preparePacket(QString className, QString method, QJsonArray params);
-
-protected:
-    void setApiAuth(QNetworkRequest& request) override;
-    QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const override;
 
 private:
     bool mHasClient;

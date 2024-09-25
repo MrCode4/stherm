@@ -1,4 +1,7 @@
 #include "Sync.h"
+#include "LogHelper.h"
+#include "Config.h"
+#include "DeviceInfo.h"
 
 #include <QImage>
 #include <QUrl>
@@ -32,7 +35,7 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 
 
 Sync::Sync(QObject *parent)
-    : RestApiExecutor(parent)
+    : DevApiExecutor(parent)
     , mHasClient(false)
     , m_fetchingUserData(false)
     , m_pushingLockState(false)
@@ -63,17 +66,24 @@ void Sync::setSerialNumber(const QString &serialNumber)
         return;
     }
 
-    mHasClient            = true;
+    mHasClient = true;
     // Update SN for get settings
-    mSerialNumber         = serialNumber;
+    mSerialNumber = serialNumber;
     // Force to update with new settings
     mLastPushTime = QDateTime();
     mAutoModeLastPushTime = QDateTime();
     // Fetch with new serial number
     emit serialNumberChanged();
+
+    Device->updateSerialNumber(serialNumber, true);
 }
 
-void Sync::setUID(cpuid_t accessUid) { mSystemUuid = accessUid; }
+void Sync::setUID(cpuid_t accessUid)
+{
+    mSystemUuid = accessUid;
+    Device->uid(accessUid);
+}
+
 QString Sync::getSerialNumber() const { return mSerialNumber;}
 bool Sync::hasClient() const { return mHasClient; }
 QVariantMap Sync::getContractorInfo() const { return mContractorInfo; }
@@ -169,6 +179,7 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             setting.setValue(cHasClientSetting, mHasClient);
             setting.setValue(cSerialNumberSetting, mSerialNumber);
 #endif
+            Device->updateSerialNumber(mSerialNumber, mHasClient);
         }
         else {
             if (reply->error() == QNetworkReply::NoError) {
@@ -725,6 +736,7 @@ void Sync::forgetDevice()
     setting.setValue(cHasClientSetting, mHasClient);
     setting.setValue(cSerialNumberSetting, mSerialNumber);
     setting.setValue(cContractorSettings, mContractorInfo);
+    Device->reset();
 }
 
 void Sync::clearSchedule(const int &scheduleID)

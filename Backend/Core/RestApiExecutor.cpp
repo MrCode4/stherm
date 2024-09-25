@@ -1,5 +1,4 @@
 #include "RestApiExecutor.h"
-
 #include "LogHelper.h"
 
 #include <QNetworkAccessManager>
