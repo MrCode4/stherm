@@ -18,7 +18,6 @@ class Sync : public RestApiExecutor
     Q_OBJECT
     QML_ELEMENT
 
-    //! useful for showing busy indicator when needed
     PROPERTY_PRI(bool, fetchingUserData)
     PROPERTY_PRI(bool, pushingLockState)
 public:
@@ -44,6 +43,7 @@ public:
     Q_INVOKABLE void fetchUserData();
 
     Q_INVOKABLE QString baseURL();
+    void fetchPerfTestSchedule();
 
     Q_INVOKABLE void pushLockState(const QString& pin, bool lock);
 
@@ -90,6 +90,7 @@ signals:
     //! otherwise the device will use the local informatio
     void contractorInfoReady(bool getDataFromServerSuccessfully = true);
     void userDataFetched(const QString& email, const QString& name);
+    void perfTestScheduleFetched(bool yes, bool cooling);
 
     //! Settings data
     void settingsReady(QVariantMap settings);
