@@ -308,7 +308,7 @@ void Scheme::HeatingLoop()
     // Control the system type:
     auto activeSysType = mDataProvider->systemSetup()->systemType;
     if (activeSysType == AppSpecCPP::SystemType::DualFuelHeating) {
-        if (mDataProvider->dualFuelHeatingTemperatureF() -  mDataProvider->outdoorTemperatureF() >= 0.001) {
+        if (mDataProvider->dualFuelHeatingTemperatureF() >=  mDataProvider->outdoorTemperatureF()) {
             // Start the heat pump
             activeSysType = AppSpecCPP::SystemType::HeatPump;
 
@@ -322,6 +322,8 @@ void Scheme::HeatingLoop()
             // To ensure the relays is off
             mRelay->turnHeatPump(false);
         }
+
+        emit dfhSystemTypeChanged(activeSysType);
     }
 
     // update configs and ...

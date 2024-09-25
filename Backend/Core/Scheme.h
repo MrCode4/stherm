@@ -58,6 +58,9 @@ signals:
     //! stop system delay timer
     void stopSystemDelayCountdown();
 
+    //! Active system mode changed due to dual fuel heating
+    void dfhSystemTypeChanged(AppSpecCPP::SystemType activeSystemType);
+
 protected:
     void run() override;
 

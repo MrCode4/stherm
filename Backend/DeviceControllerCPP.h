@@ -213,6 +213,9 @@ Q_SIGNALS:
     void fanWorkChanged(bool fanState);
     void currentSystemModeChanged(AppSpecCPP::SystemMode fanState);
 
+    //! Active system mode changed due to dual fuel heating
+    void dfhSystemTypeChanged(AppSpecCPP::SystemType activeSystemType);
+
     void adaptiveBrightnessChanged();
 
     //! Forward signals from Scheme and send to UI

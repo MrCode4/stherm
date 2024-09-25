@@ -23,6 +23,8 @@ ToolButton {
 
     property int realMode: AppSpec.Cooling
 
+    property int dfhSystemMode: AppSpec.HeatPump
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: metrics.boundingRect("Cooling").width + leftPadding + rightPadding
@@ -84,7 +86,19 @@ ToolButton {
             Label {
                 Layout.alignment: Qt.AlignCenter
                 font.pointSize: Application.font.pointSize * 0.65
-                text: "Heating"
+                text: {
+                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating) {
+                        if (dfhSystemMode === AppSpec.Conventional) {
+                            return "Heating by furnace"
+
+                        } else if (dfhSystemMode === AppSpec.HeatPump) {
+                            return "Heating by heat pump"
+                        }
+                    }
+
+                    return "Heating";
+                }
+
                 opacity: showCountdownLabel ? 0 : 1
             }
 
@@ -233,4 +247,13 @@ ToolButton {
             name: "auto"
         }
     ]
+
+    Connections {
+        target: deviceController.deviceControllerCPP
+        enabled: device.systemSetup.systemType === AppSpec.DualFuelHeating
+
+        function onDfhSystemTypeChanged(activeSystemType: int) {
+            dfhSystemMode = activeSystemType;
+        }
+    }
 }
