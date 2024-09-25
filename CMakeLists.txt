@@ -19,18 +19,6 @@ option (DEBUG_MODE "Debug mode" OFF)
 option (INITIAL_SETUP_MODE "Force the app to run in the initial setup pages" OFF)
 option (FAKE_SERIAL_MODE "Run app with a fake serial stored in FAKE_SERIAL_ID" OFF)
 option (TEST_MODE "Run app with starting test device mode" OFF)
-if(FAKE_SERIAL_MODE)
-    add_compile_definitions(FAKE_SERIAL_MODE_ON)
-    add_compile_definitions(FAKE_SERIAL_ID="${FAKE_SERIAL_ID}")
-endif()
-
-if(INITIAL_SETUP_MODE)
-    add_compile_definitions(INITIAL_SETUP_MODE_ON)
-endif()
-
-if(TEST_MODE)
-    add_compile_definitions(TEST_MODE_ON)
-endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
     QuickControls2 Multimedia Concurrent
@@ -474,6 +462,19 @@ qt6_add_qml_module(appStherm
 
 if (DEBUG_MODE)
     target_compile_definitions(appStherm PRIVATE DEBUG_MODE=${DEBUG_MODE})
+endif()
+
+if(FAKE_SERIAL_MODE)
+    target_compile_definitions(appStherm PRIVATE FAKE_SERIAL_MODE_ON)
+    target_compile_definitions(appStherm PRIVATE FAKE_SERIAL_ID="${FAKE_SERIAL_ID}")
+endif()
+
+if(INITIAL_SETUP_MODE)
+    target_compile_definitions(appStherm PRIVATE INITIAL_SETUP_MODE_ON)
+endif()
+
+if(TEST_MODE)
+    target_compile_definitions(appStherm PRIVATE TEST_MODE_ON)
 endif()
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
