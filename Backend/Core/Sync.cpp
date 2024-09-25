@@ -108,10 +108,10 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
         if (data.contains("serial_number")) {
             auto sn = data.value("serial_number").toString();
 
-#ifndef INITIAL_SETUP_MODE_ON
-            mHasClient = data.value("has_client").toBool();
-#else
+#ifdef INITIAL_SETUP_MODE_ON
             mHasClient = false;
+#else
+            mHasClient = data.value("has_client").toBool();
 #endif
 
             TRACE << sn << mHasClient;
