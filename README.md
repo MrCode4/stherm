@@ -13,6 +13,7 @@ Ensure you have the following software installed and configured before proceedin
         - Qt Multimedia
         - Qt Serial Port
         - Qt Virtual Keyboard
+- Openssl v1.x
 
 if you are using Windows:
         - MSVC 2019 64-bit with the following workloads:
