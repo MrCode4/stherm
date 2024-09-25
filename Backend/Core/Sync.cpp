@@ -40,9 +40,9 @@ Sync::Sync(QObject *parent)
 
 #ifndef INITIAL_SETUP_MODE_ON
     mHasClient = setting.value(cHasClientSetting).toBool();
+    mSerialNumber = setting.value(cSerialNumberSetting).toString();
 #endif
 
-    mSerialNumber = setting.value(cSerialNumberSetting).toString();
     mContractorInfo = setting.value(cContractorSettings).toMap();
 
     cBaseUrl = qEnvironmentVariable("API_SERVER_BASE_URL", API_SERVER_BASE_URL);
