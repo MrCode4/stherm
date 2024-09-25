@@ -1176,7 +1176,9 @@ I_DeviceController {
     function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
         device.systemSetup.heatPumpEmergency = emergency;
         device.systemSetup.heatStage = stage;
-        device.systemSetup.coolStage = stage;
+
+        // CHECK: cool stage changed in the heat pump
+        // device.systemSetup.coolStage = stage;
         device.systemSetup.heatPumpOBState = obState;
         device.systemSetup.systemType = AppSpecCPP.HeatPump;
     }
