@@ -184,6 +184,8 @@ public:
     //! start = false, stop scheme
     Q_INVOKABLE void runHumidityScheme(bool start);
 
+    Q_INVOKABLE void switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/

@@ -23,7 +23,7 @@ ToolButton {
 
     property int realMode: AppSpec.Cooling
 
-    property int dfhSystemMode: AppSpec.HeatPump
+    property int dfhSystemMode: deviceController.dfhSystemMode
 
     /* Object properties
      * ****************************************************************************************/
@@ -247,13 +247,4 @@ ToolButton {
             name: "auto"
         }
     ]
-
-    Connections {
-        target: deviceController.deviceControllerCPP
-        enabled: device.systemSetup.systemType === AppSpec.DualFuelHeating
-
-        function onDfhSystemTypeChanged(activeSystemType: int) {
-            dfhSystemMode = activeSystemType;
-        }
-    }
 }

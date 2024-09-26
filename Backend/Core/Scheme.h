@@ -41,6 +41,10 @@ public:
 
     void runSystemDelay(AppSpecCPP::SystemMode mode);
 
+    AppSpecCPP::SystemType activeSystemTypeInDualFuelHeating();
+
+    void switchDFHActiveSysType(AppSpecCPP::SystemType to);
+
 signals:
     //! Change backlight with the mode
     //!changeBacklight() without any parameters resets the backlight to its original value
@@ -142,4 +146,7 @@ private:
 
     bool isVacation;
     bool mRestarting;
+
+    //! Switch active system type in the dual fuel heating to ...
+    AppSpecCPP::SystemType switchDFHActiveSysTypeTo = AppSpecCPP::SystemType::SysTUnknown;
 };

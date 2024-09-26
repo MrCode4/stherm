@@ -56,6 +56,9 @@ I_DeviceController {
     //! Is the software update checked or not
     property bool checkedSWUpdate: false
 
+    //! Active system mode in dual fuel heating
+    property int dfhSystemMode: AppSpec.HeatPump
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -267,6 +270,11 @@ I_DeviceController {
                 if (fetchContractorInfoTimer.running)
                     fetchContractorInfoTimer.restart();
             }
+        }
+
+        //! Update active system mode in the dual fuel heating
+        function onDfhSystemTypeChanged(activeSystemType: int) {
+            dfhSystemMode = activeSystemType;
         }
     }
 

@@ -821,6 +821,10 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
     return false;
 }
 
+void DeviceControllerCPP::switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType) {
+    m_scheme->switchDFHActiveSysType(activeSystemType);
+}
+
 void DeviceControllerCPP::setAutoMinReqTemp(const double cel_value)
 {
     if (mSchemeDataProvider.isNull()) {
