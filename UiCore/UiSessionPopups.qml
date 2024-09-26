@@ -93,6 +93,13 @@ Item {
         id: successPopup
     }
 
+    //! Used in the dual fuel heating
+    SwitchHeatingPopup {
+        id: switchHeatingPopup
+
+        deviceController: root.deviceController
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -166,6 +173,19 @@ Item {
 
             // Active screen saver
             ScreenSaverManager.setActive();
+        }
+    }
+
+    //! To manage switch popup in the dual fuel heating
+    Timer {
+        id: switchDFHTimer
+
+        repeat: false
+        interval: 5 * 1000
+        running: !NetworkInterface.hasInternet && deviceController?.device?.systemSetup?.systemType === AppSpec.DualFuelHeating
+
+        onTriggered: {
+            switchHeatingPopup.open();
         }
     }
 
