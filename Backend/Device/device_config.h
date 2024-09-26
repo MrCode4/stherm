@@ -2,20 +2,21 @@
 
 #include "nuve_types.h"
 
+#define API_SERVER_BASE_URL "https://devapi.nuvehvac.com/"
+
 namespace NUVE {
 
 struct DeviceConfig
 {
-    DeviceConfig() {
-        init();
-        load();
-    }
-    DeviceConfig(const cpuid_t cpuid) { initialise(cpuid); }
+    DeviceConfig();
+    DeviceConfig(const cpuid_t cpuid);
 
     void initialise(const cpuid_t cpuid);
     void init();
     void load();
     void save();
+    // should be called only on constructor as env can not be changed during runtime
+    void setEnv();
 
     //! Set the sample rate (maybe from server)
     void setSampleRate(const uint32_t &sr);
@@ -49,6 +50,12 @@ struct DeviceConfig
     uint32_t humidifier_id;
     std::string hum_wiring;
     uint32_t system_type;
+
+    // endpoint for access API and internet access check
+    std::string endpoint;
+
+    // Enable/disable alert feature
+    bool controlAlertEnabled;
 };
 
 } // namespace NUVE

@@ -23,6 +23,7 @@ DeviceAPI::DeviceAPI(QObject *parent)
 #endif
 
     m_system->setUID(_uid);
+    m_system->setControlAlertEnabled(m_deviceConfig.controlAlertEnabled);
 }
 
 QString DeviceAPI::uid() const

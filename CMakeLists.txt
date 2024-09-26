@@ -269,7 +269,6 @@ qt6_add_qml_module(appStherm
         UiCore/Dialogs/ForgetWifiDialog.qml
 
     SOURCES
-        Backend/Config.h
         Backend/Property.h
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp

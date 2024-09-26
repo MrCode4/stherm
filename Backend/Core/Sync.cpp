@@ -1,15 +1,16 @@
 #include "Sync.h"
-#include "LogHelper.h"
-#include "Config.h"
 
 #include <QImage>
 #include <QUrl>
+
+#include "LogHelper.h"
+#include "device_config.h"
 
 /* ************************************************************************************************
  * Network information
  * ************************************************************************************************/
 namespace NUVE {
-const QString cBaseUrl = API_SERVER_BASE_URL;
+const QString cBaseUrl = qEnvironmentVariable("API_SERVER_BASE_URL", API_SERVER_BASE_URL);
 const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
 const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
