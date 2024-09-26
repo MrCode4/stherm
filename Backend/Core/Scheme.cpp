@@ -1108,9 +1108,9 @@ void Scheme::setSystemSetup()
 {
     const auto sys = mDataProvider.data()->systemSetup();
     // ob_state_ initial value?
-    mRelay->setOb_on_state(sys->systemType == AppSpecCPP::SystemType::HeatPump ?
+    mRelay->setOb_on_state((sys->systemType == AppSpecCPP::SystemType::HeatPump || sys->systemType == AppSpecCPP::SystemType::DualFuelHeating) ?
                                (sys->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                                   : AppSpecCPP::Heating) :
+                                                          : AppSpecCPP::Heating) :
                                AppSpecCPP::Off);
 
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
@@ -1129,9 +1129,9 @@ void Scheme::setSystemSetup()
         TRACE<< "systemTypeChanged: "<< sys->systemType << sys->heatPumpOBState;
 
         // CHECK for dual fuel
-        mRelay->setOb_on_state(sys->systemType == AppSpecCPP::SystemType::HeatPump ?
+        mRelay->setOb_on_state((sys->systemType == AppSpecCPP::SystemType::HeatPump || sys->systemType == AppSpecCPP::SystemType::DualFuelHeating) ?
                                    (sys->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                                       : AppSpecCPP::Heating) :
+                                                              : AppSpecCPP::Heating) :
                                    AppSpecCPP::Off);
 
         restartWork();
@@ -1139,12 +1139,13 @@ void Scheme::setSystemSetup()
 
     // these parameters will be used in control loop, if any condition locked to these update here
     connect(sys, &SystemSetup::heatPumpOBStateChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
+        auto isHeatPumpAvailable = sys->systemType == AppSpecCPP::SystemType::HeatPump || sys->systemType == AppSpecCPP::SystemType::DualFuelHeating;
+        if (isHeatPumpAvailable)
             TRACE << "heatPumpOBStateChanged: " << sys->heatPumpOBState
                   << sys->systemType;
-        mRelay->setOb_on_state(sys->systemType == AppSpecCPP::SystemType::HeatPump ?
+        mRelay->setOb_on_state(isHeatPumpAvailable ?
                                    (sys->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                                       : AppSpecCPP::Heating) :
+                                                              : AppSpecCPP::Heating) :
                                    AppSpecCPP::Off);
     });
 
@@ -1163,7 +1164,8 @@ void Scheme::setSystemSetup()
               << sys->systemType;
     });
     connect(sys, &SystemSetup::heatPumpEmergencyChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
+        if (sys->systemType == AppSpecCPP::SystemType::HeatPump ||
+            sys->systemType == AppSpecCPP::SystemType::DualFuelHeating)
             TRACE << "heatPumpEmergencyChanged: " << sys->heatPumpEmergency;
     });
 
