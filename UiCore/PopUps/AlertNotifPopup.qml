@@ -35,6 +35,9 @@ I_PopUp {
                      : message.icon)
                   : ""
 
+    spacing: 10
+    bottomPadding: 6
+    horizontalPadding: 10
 
     /* Children
      * ****************************************************************************************/

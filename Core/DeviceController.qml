@@ -29,6 +29,8 @@ I_DeviceController {
 
     property bool initialSetup: false;
 
+    readonly property int  checkSNTryCount: checkSNTimer.tryCount;
+
     //! Air condition health
     property bool airConditionSensorHealth: false;
 
@@ -156,7 +158,12 @@ I_DeviceController {
         running: false
         interval: _retrycheckSNTimerInterval
 
+        property int tryCount: 0
+
         onTriggered: {
+            tryCount++;
+            console.log("trying to checkSN:", tryCount)
+
             deviceControllerCPP.checkSN();
 
             if (deviceControllerCPP.system.serialNumber.length === 0) {
