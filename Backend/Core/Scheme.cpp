@@ -252,6 +252,7 @@ void Scheme::CoolingLoop()
 
     switch (mDataProvider.data()->systemSetup()->systemType) { // Device type
     case AppSpecCPP::SystemType::HeatPump:
+    case AppSpecCPP::SystemType::DualFuelHeating: // Works same as HeatPump in cooling
         heatPump = true;
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::CoolingOnly: {

@@ -6,6 +6,7 @@
 
 SchemeDataProvider::SchemeDataProvider(NUVE::Sync *sync, QObject *parent) :
     mSync(sync),
+    mOutdoorTemperature(35.0),
     QObject{parent}
 {
     mGetOutdoorTemperatureTimer.setInterval(60 * 1000);
@@ -18,6 +19,10 @@ SchemeDataProvider::SchemeDataProvider(NUVE::Sync *sync, QObject *parent) :
     connect(mSync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
         if (success) {
             mOutdoorTemperature = temp;
+
+            if (systemSetup()->systemType != AppSpecCPP::DualFuelHeating) {
+                mGetOutdoorTemperatureTimer.stop();
+            }
         }
     });
 }
@@ -72,6 +77,9 @@ void SchemeDataProvider::setSystemSetup(SystemSetup *systemSetup)
     });
 
     emit systemSetupChanged();
+
+    // To cache the outdoor temperature, it will be stop when get data successfully in the other system types
+    mGetOutdoorTemperatureTimer.start();
 }
 
 AppSpecCPP::AccessoriesType SchemeDataProvider::getAccessoriesType() const

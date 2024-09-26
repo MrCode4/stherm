@@ -31,7 +31,7 @@ QString AppSpecCPP::systemTypeString(SystemType systemType) {
         return "heating";
 
     case DualFuelHeating:
-        return "Dual_Fuel_Heating";
+        return "dual_fuel_heating";
 
     default:
         break;

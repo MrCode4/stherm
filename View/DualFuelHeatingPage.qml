@@ -243,7 +243,6 @@ BasePageView {
     function updateModel() {
         if (deviceController) {
             var temperatureC = isCelsius ? temperature.control.value : Utils.fahrenheitToCelsius(temperature.control.value);
-            console.log("MAK ", temperatureC, appModel.systemSetup.dualFuelHeatingTemperature, isCelsius)
             deviceController.setSystemDualFuelHeating(emergencyHeatingSwh.checked,
                                                       heatPumpStageLayout.heatPumpStage,
                                                       heatPumpOBStateLayout.heatPumpOBState,
