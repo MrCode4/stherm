@@ -181,7 +181,7 @@ Item {
         id: switchDFHTimer
 
         repeat: false
-        interval: 5 * 1000
+        interval: 60 * 1000
         running: !NetworkInterface.hasInternet && deviceController?.device?.systemSetup?.systemType === AppSpec.DualFuelHeating
 
         onTriggered: {
