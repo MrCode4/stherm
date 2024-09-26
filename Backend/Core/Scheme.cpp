@@ -85,6 +85,14 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
         LOG_CHECK(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";
     });
+
+    connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureChanged, this, [this] () {
+        if (mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
+            mDataProvider->systemSetup()->systemMode == AppSpecCPP::SystemMode::Heating &&
+            mDataProvider->systemSetup()->systemMode == AppSpecCPP::SystemMode::Auto) {
+            restartWork();
+        }
+    });
 }
 
 void Scheme::stop()
@@ -1157,6 +1165,15 @@ void Scheme::setSystemSetup()
     connect(sys, &SystemSetup::heatPumpEmergencyChanged, this, [=] {
         if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
             TRACE << "heatPumpEmergencyChanged: " << sys->heatPumpEmergency;
+    });
+
+    connect(sys, &SystemSetup::dualFuelHeatingTemperatureChanged, this, [=] {
+        if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
+            mDataProvider->systemSetup()->systemMode == AppSpecCPP::SystemMode::Heating &&
+            mDataProvider->systemSetup()->systemMode == AppSpecCPP::SystemMode::Auto) {
+            TRACE << "Restart scheme due to dual fuel temperature changed.";
+            restartWork();
+        }
     });
 }
 

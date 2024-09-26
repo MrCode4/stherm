@@ -18,7 +18,10 @@ SchemeDataProvider::SchemeDataProvider(NUVE::Sync *sync, QObject *parent) :
     mOutdoorTemperature = -1;
     connect(mSync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
         if (success) {
-            mOutdoorTemperature = temp;
+            if (mOutdoorTemperature != temp) {
+                mOutdoorTemperature = temp;
+                emit outdoorTemperatureChanged();
+            }
 
             if (systemSetup()->systemType != AppSpecCPP::DualFuelHeating) {
                 mGetOutdoorTemperatureTimer.stop();

@@ -98,6 +98,9 @@ signals:
     void setTemperatureChanged();
     void setHumidityChanged();
 
+    void outdoorTemperatureChanged();
+    void dualFuelHeatingTemperatureChanged();
+
 private:
     /* Attributes
      * ****************************************************************************************/
