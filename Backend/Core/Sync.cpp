@@ -10,7 +10,7 @@
  * Network information
  * ************************************************************************************************/
 namespace NUVE {
-const QString cBaseUrl = qEnvironmentVariable("API_SERVER_BASE_URL", API_SERVER_BASE_URL);
+static QString cBaseUrl = API_SERVER_BASE_URL;
 const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
 const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
@@ -40,6 +40,8 @@ Sync::Sync(QObject *parent)
     mHasClient = setting.value(cHasClientSetting).toBool();
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
     mContractorInfo = setting.value(cContractorSettings).toMap();
+
+    cBaseUrl = qEnvironmentVariable("API_SERVER_BASE_URL", API_SERVER_BASE_URL);
 
     connect(this, &Sync::contractorInfoReady, this, [this]() {
         QSettings setting;

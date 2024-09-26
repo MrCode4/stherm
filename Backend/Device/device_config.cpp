@@ -92,6 +92,7 @@ void NUVE::DeviceConfig::save()
 
     config.setValue("uid", QString::fromStdString(uid));
     config.setValue("serial_number", QString::fromStdString(serial_number));
+    config.setValue("endpoint", QString::fromStdString(endpoint));
     config.setValue("sampleRate", QString::number(sampleRate));
 }
 

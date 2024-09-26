@@ -33,6 +33,7 @@ public:
     NUVE::Sync* sync();
     const NUVE::DeviceConfig& deviceConfig() const;
     void setSampleRate(const int sampleRate);
+    void setEndpoint(const QString &endpoint);
 
     Q_INVOKABLE int getStartMode();
     int runDevice();

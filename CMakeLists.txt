@@ -155,6 +155,7 @@ qt6_add_qml_module(appStherm
         View/Menu/MessagesPage.qml
         View/Menu/AlertsPage.qml
         View/Menu/SystemAlertsPage.qml
+        View/Menu/ManageEndpoint.qml
         View/BasePageView.qml
         View/ScheduleView.qml
         View/BacklightPage.qml

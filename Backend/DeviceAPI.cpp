@@ -60,6 +60,12 @@ void DeviceAPI::setSampleRate(const int sampleRate)
     m_deviceConfig.setSampleRate(sampleRate);
 }
 
+void DeviceAPI::setEndpoint(const QString &endpoint)
+{
+    m_deviceConfig.endpoint = endpoint.toStdString();
+    m_deviceConfig.save();
+}
+
 int DeviceAPI::getStartMode()
 {
     return m_hardware->getStartMode();
