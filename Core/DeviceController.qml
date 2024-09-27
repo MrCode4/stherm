@@ -166,7 +166,15 @@ I_DeviceController {
 
             deviceControllerCPP.checkSN();
 
+            console.log("initial setup:", initialSetup, ", serial number:", deviceControllerCPP.system.serialNumber)
+
             if (deviceControllerCPP.system.serialNumber.length === 0) {
+
+                // sending log automatically if fails to get SN on first RUN
+                if (tryCount > 0 && initialSetup) {
+                    deviceControllerCPP.system.sendFirstRunLog();
+                }
+
                 _retrycheckSNTimerInterval += 10000;
 
                 if (_retrycheckSNTimerInterval > 40000)
