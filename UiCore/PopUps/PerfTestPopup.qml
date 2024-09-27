@@ -6,13 +6,14 @@ import Stherm
 
 I_PopUp {
     id: root
-    title: "Performance Test"
+    title: showConfirmationToStop ? "Stop the Performance Test" : "Performance Test"
     leftPadding: 24; rightPadding: 24; topPadding: 20; bottomPadding: 24
     closeButtonEnabled: false
     closePolicy: Popup.NoAutoClose
 
     property UiSession uiSession
     property I_Device appModel: uiSession?.appModel ?? null
+    property bool showConfirmationToStop: false
 
     background: Rectangle {
         border.width: 4
@@ -53,14 +54,30 @@ I_PopUp {
             }
         }
 
-        ButtonInverted {
+        RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            leftPadding: 8
-            rightPadding: 8
-            text: "Stop"
-            font.bold: true
-            onClicked: {
-                root.close()
+
+            ButtonInverted {
+                leftPadding: 8
+                rightPadding: 8
+                text: "Cancel"
+                font.bold: true
+                visible: root.showConfirmationToStop
+                onClicked: root.showConfirmationToStop = false
+            }
+
+            ButtonInverted {
+                leftPadding: 8
+                rightPadding: 8
+                text: "Stop"
+                font.bold: true
+                onClicked: {
+                    root.showConfirmationToStop = !root.showConfirmationToStop;
+                    if (!root.showConfirmationToStop) {
+                        PerfTestService.cancelTest();                        
+                        root.close();
+                    }
+                }
             }
         }
     }

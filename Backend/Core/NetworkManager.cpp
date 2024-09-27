@@ -37,12 +37,12 @@ void NetworkManager::clearCache()
 
 QNetworkReply* NetworkManager::get(const QNetworkRequest& request)
 {
-    return mNetManager->get(request);
+    return isEnable() ? mNetManager->get(request) : nullptr;
 }
 
 QNetworkReply* NetworkManager::post(const QNetworkRequest& request, const QByteArray& data)
 {
-    return mNetManager->post(request, data);
+    return isEnable() ? mNetManager->post(request, data) : nullptr;
 }
 
 QNetworkReply* NetworkManager::put(const QNetworkRequest& request, const QByteArray& data)

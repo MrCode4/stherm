@@ -35,9 +35,14 @@ QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCall
     else {
         mCallbacks.insert(key, callback);
         auto reply = get(prepareApiRequest(endpoint, setAuth));
-        reply->ignoreSslErrors();
-        reply->setProperty("endpoint", endpoint);
-        reply->setProperty("isJson", true);
+        if (reply) {
+            reply->ignoreSslErrors();
+            reply->setProperty("endpoint", endpoint);
+            reply->setProperty("isJson", true);
+        }
+        else {
+            mCallbacks.remove(key);
+        }
         return reply;
     }
 }
@@ -51,8 +56,13 @@ QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByte
     else {
         mCallbacks.insert(key, callback);
         auto reply = post(prepareApiRequest(endpoint, setAuth), postData);
-        reply->setProperty("endpoint", endpoint);
-        reply->setProperty("isJson", true);
+        if (reply) {
+            reply->setProperty("endpoint", endpoint);
+            reply->setProperty("isJson", true);
+        }
+        else {
+            mCallbacks.remove(key);
+        }
         return reply;
     }
 }
@@ -79,12 +89,17 @@ QNetworkReply* RestApiExecutor::downloadFile(const QString &url, ResponseCallbac
         return nullptr;
     }
     else {
+        mCallbacks.insert(key, callback);
         QNetworkRequest request(url);
         if (setAuth) setApiAuth(request);
         QNetworkReply *reply = get(request);
-        reply->setProperty("isJson", jsonFile);
-        reply->setProperty("endpoint", url);
-        mCallbacks.insert(key, callback);
+        if (reply) {
+            reply->setProperty("isJson", jsonFile);
+            reply->setProperty("endpoint", url);
+        }
+        else {
+            mCallbacks.remove(key);
+        }
         return reply;
     }
 }

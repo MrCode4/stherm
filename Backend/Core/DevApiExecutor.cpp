@@ -2,8 +2,6 @@
 #include "DeviceInfo.h"
 #include "LogHelper.h"
 
-#include <QNetworkAccessManager>
-
 DevApiExecutor::DevApiExecutor(QObject *parent)
     : RestApiExecutor(parent)
 {

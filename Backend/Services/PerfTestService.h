@@ -2,6 +2,7 @@
 
 #include "DevApiExecutor.h"
 #include "Property.h"
+#include "AppSpecCPP.h"
 
 #include <QQmlEngine>
 #include <QDateTime>
@@ -16,6 +17,7 @@ class PerfTestService : public DevApiExecutor
 
     PROPERTY_PRI_DEF_VAL(int, state, 0)
     PROPERTY_PRI_DEF_VAL(int, mode, 0)
+    PROPERTY_PRI_DEF_VAL(int, actualMode, 0)
     PROPERTY_PRI_DEF_VAL(int, startTimeLeft, 0)
     PROPERTY_PRI_DEF_VAL(int, testTimeLeft, 0)
 
@@ -46,15 +48,19 @@ public slots:
 
 private slots:
     void checkTestEligibility();
+    void onCountdownStart(AppSpecCPP::SystemMode mode, int delay);
+    void onCountdownStop();
     void collectReading();
 
 private:
     void scheduleNextCheck(const QTime& checkTime);
+    void setupWarmup();
     void sendReadingsToServer();
 
 private:
     static PerfTestService* mMe;
 
+    QTimer mTimerDelay;
     QTimer mTimerGetTemp;
     QJsonArray mReadings;
 };
