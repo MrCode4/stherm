@@ -2,8 +2,8 @@
 #include "Config.h"
 #include "DeviceInfo.h"
 #include "LogHelper.h"
-#include "DeviceControllerCPP.h"
 #include "AppSpecCPP.h"
+#include "DeviceControllerCPP.h"
 
 #include <QCoreApplication>
 #include <QRandomGenerator64>
@@ -13,8 +13,7 @@ PerfTestService* PerfTestService::mMe = nullptr;
 
 PerfTestService* PerfTestService::me()
 {
-    if (!mMe)
-        mMe = new PerfTestService(qApp);
+    if (!mMe) mMe = new PerfTestService(qApp);
 
     return mMe;
 }
