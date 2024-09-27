@@ -200,10 +200,12 @@ ApplicationWindow {
             contentWidth: width
             contentHeight: window.width
 
-            MainView {
-                id: mainView
+            SimpleStackView {
+                id: simpleStackView
                 anchors.fill: parent
-                uiSession: uiSessionId
+                Component.onCompleted: {
+                    simpleStackView.push("qrc:/Stherm/View/MainView.qml", {"uiSession": uiSessionId});
+                }
             }
 
             Behavior on contentY {

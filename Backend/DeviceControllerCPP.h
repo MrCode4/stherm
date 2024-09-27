@@ -188,10 +188,14 @@ public:
     Q_INVOKABLE void switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType);
 
     Q_INVOKABLE bool isTestsPassed();
+    void doPerfTest(AppSpecCPP::SystemMode mode);
 
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
+
+    void temperatureSchemeStateChanged(bool started);
+    void humiditySchemeStateChanged(bool started);
 
     //! Send alert to ui
     void alert(STHERM::AlertLevel alertLevel,

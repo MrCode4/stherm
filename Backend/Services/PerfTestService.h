@@ -16,8 +16,8 @@ class PerfTestService : public DevApiExecutor
     QML_SINGLETON
 
     PROPERTY_PRI_DEF_VAL(int, state, 0)
-    PROPERTY_PRI_DEF_VAL(int, mode, 0)
-    PROPERTY_PRI_DEF_VAL(int, actualMode, 0)
+    PROPERTY_PRI_DEF_VAL(AppSpecCPP::SystemMode, mode, AppSpecCPP::Cooling)
+    PROPERTY_PRI_DEF_VAL(AppSpecCPP::SystemMode, actualMode, AppSpecCPP::Cooling)
     PROPERTY_PRI_DEF_VAL(int, startTimeLeft, 0)
     PROPERTY_PRI_DEF_VAL(int, testTimeLeft, 0)
 
@@ -44,12 +44,13 @@ signals:
 
 public slots:
     Q_INVOKABLE void startTest();
-    Q_INVOKABLE void cancelTest();
+    Q_INVOKABLE void stopTest();
 
 private slots:
     void checkTestEligibility();
     void onCountdownStart(AppSpecCPP::SystemMode mode, int delay);
     void onCountdownStop();
+    void onTemperatureSchemeStateChanged(bool started);
     void collectReading();
 
 private:

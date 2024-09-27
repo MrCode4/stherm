@@ -132,6 +132,19 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setBacklight(colorData, true);
     });
 
+    connect(m_scheme, &Scheme::started, this, [this]() {
+        emit temperatureSchemeStateChanged(true);
+    });
+    connect(m_scheme, &Scheme::finished, this, [this]() {
+        emit temperatureSchemeStateChanged(false);
+    });
+    connect(m_HumidityScheme, &Scheme::started, this, [this]() {
+        emit humiditySchemeStateChanged(true);
+    });
+    connect(m_HumidityScheme, &Scheme::finished, this, [this]() {
+        emit humiditySchemeStateChanged(false);
+    });
+
     connect(m_scheme, &Scheme::alert, this, [this]() {
         emit alert(STHERM::AlertLevel::LVL_Emergency,
                    AppSpecCPP::AlertTypes::Alert_Efficiency_Issue,
@@ -1473,4 +1486,15 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
                                       destinationPath);
 
     TRACE << "exporting test results ended " << sent;
+void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
+{
+    if (mSystemSetup) {
+        qDebug() << "MANUAL MODE SET " << mSystemSetup->systemMode <<  mode;
+        mSystemSetup->systemMode = mode;
+
+        if (m_scheme) {
+            m_scheme->setCurrentSysMode(mode);
+            m_scheme->restartWork(true);
+        }
+    }
 }

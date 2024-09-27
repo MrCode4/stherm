@@ -74,7 +74,7 @@ I_PopUp {
                 onClicked: {
                     root.showConfirmationToStop = !root.showConfirmationToStop;
                     if (!root.showConfirmationToStop) {
-                        PerfTestService.cancelTest();                        
+                        PerfTestService.stopTest();
                         root.close();
                     }
                 }

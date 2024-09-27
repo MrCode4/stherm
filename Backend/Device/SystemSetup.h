@@ -37,8 +37,6 @@ class SystemSetup : public QSObjectCpp
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
 
-    void setMode(AppSpecCPP::SystemMode mode);
-
 public:
     AppSpecCPP::SystemType systemType;
 
