@@ -12,12 +12,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Temperature scheme version and update date.
 set(TEMPERATURE_SCHEME_VERSION_C "V.1.94 (02.10.2024)")
-set(FAKE_SERIAL_ID "" CACHE STRING "The fake serial ID used for testing purposes")
+set(FAKE_UID "" CACHE STRING "The fake UID used for testing purposes")
 
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
 option (INITIAL_SETUP_MODE "Force the app to run in the initial setup pages" OFF)
-option (FAKE_SERIAL_MODE "Run app with a fake serial stored in FAKE_SERIAL_ID" OFF)
+option (FAKE_UID_MODE "Run app with a fake UID stored in FAKE_UID" OFF)
 option (TEST_MODE "Run app with starting test device mode" OFF)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
@@ -464,9 +464,9 @@ if (DEBUG_MODE)
     target_compile_definitions(appStherm PRIVATE DEBUG_MODE=${DEBUG_MODE})
 endif()
 
-if(FAKE_SERIAL_MODE)
-    target_compile_definitions(appStherm PRIVATE FAKE_SERIAL_MODE_ON)
-    target_compile_definitions(appStherm PRIVATE FAKE_SERIAL_ID="${FAKE_SERIAL_ID}")
+if(FAKE_UID_MODE)
+    target_compile_definitions(appStherm PRIVATE FAKE_UID_MODE_ON)
+    target_compile_definitions(appStherm PRIVATE FAKE_UID="${FAKE_UID}")
 endif()
 
 if(INITIAL_SETUP_MODE)

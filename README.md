@@ -41,22 +41,22 @@ if you are using Windows:
         ```
 
 ## How to Fake a Serial Number?
-To enable fake serial mode, set `FAKE_SERIAL_MODE` option to `ON` in your `CMakeLists` file and create a new fake serial ID. Please follow the steps below: </br>
+To enable fake serial mode, set `FAKE_UID_MODE` option to `ON` in your `CMakeLists` file and create a new fake serial ID. Please follow the steps below: </br>
 Qt Creator: </br>
 
 1. Go to `Projects` (Ctrl + 5).
 2. Under the currently selected kit, click on `Build`.
 3. In the `CMake Section`, select the `Current Configuration` tab.
-4. Search for `FAKE_SERIAL_MODE`.
+4. Search for `FAKE_UID_MODE`.
 5. Check the box to turn it ON.
-6. Search for `FAKE_SERIAL_ID`
+6. Search for `FAKE_UID`
 7. Set your fake serial ID as the value
     > **_Note:_** Remember, the value must be 16 characters long and can include both digits and letters.
 8. Finally, click on `Run CMake`.
 
 CMake: </br>
 ```properties
-cmake -DFAKE_SERIAL_MODE:BOOL=ON -DFAKE_SERIAL_ID=$YOUR_FAKE_SERIAL_ID .
+cmake -DFAKE_UID_MODE:BOOL=ON -DFAKE_UID=$YOUR_FAKE_UID .
 ```
 
 > **_WARNING:_** Ensure your fake serial number is not a valid serial number connected to a real device. Any changes you make in the app will appear on the device.

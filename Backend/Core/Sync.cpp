@@ -38,7 +38,7 @@ Sync::Sync(QObject *parent)
 {
     QSettings setting;
 
-#if !defined(FAKE_SERIAL_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
+#if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
     mHasClient = setting.value(cHasClientSetting).toBool();
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
 #endif
@@ -153,7 +153,7 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             }
 
             // Save the serial number in settings
-#if !defined(FAKE_SERIAL_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
+#if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
             QSettings setting;
             setting.setValue(cHasClientSetting, mHasClient);
             setting.setValue(cSerialNumberSetting, mSerialNumber);
