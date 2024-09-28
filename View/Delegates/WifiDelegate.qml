@@ -64,6 +64,7 @@ Control {
                     anchors.fill: parent
 
                     isConnected: wifi?.connected ?? false
+                    isOpen: wifi.security === ""
                     strength: wifi?.strength ?? 0
                 }
             }

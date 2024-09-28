@@ -14,6 +14,9 @@ Item {
     //!
     property bool       isConnected: true
 
+    //! Is wifi open (no password)
+    property bool       isOpen: false
+
     //! Strength of wifi (0, 100)
     property int        strength
 
@@ -39,5 +42,15 @@ Item {
                    )
         sourceSize.width: width
         sourceSize.height: height
+    }
+
+    RoniaTextIcon {
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+        }
+        visible: strength > 25 && !isOpen
+        font.pointSize: Application.font.pointSize * 0.7
+        text: FAIcons.lock
     }
 }
