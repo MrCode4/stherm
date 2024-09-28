@@ -68,6 +68,7 @@ public:
         const QString& password,
         ExitedCallback callback);
 
+    void getProfileInfoByNameAsync(const QString& connName, std::function<void (const QString&, const QString&)> callback);
     void getProfileInfoByName(const QString& connName, std::function<void (const QString&, const QString&)> callback);
     QString getConnectedWifiBssid();
     bool hasWifiProfile(const QString& ssid);

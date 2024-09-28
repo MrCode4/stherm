@@ -69,6 +69,7 @@ Control {
             }
             z: 1
             device: _root.uiSession.appModel
+            visible: deviceController.temperatureSensorHealth
 
             TapHandler {
                 onTapped: {
@@ -106,17 +107,15 @@ Control {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 // To align with schedule ON button
-                horizontalCenterOffset: isSchedule ? -15 : -6
+                horizontalCenterOffset:  -6
             }
 
             deviceController: uiSession?.deviceController ?? null
 
             onClicked: {
-                if (!deviceController.currentSchedule) {
-                    _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
-                                                  "uiSession": Qt.binding(() => uiSession)
-                                              });
-                }
+                _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
+                                              "uiSession": Qt.binding(() => uiSession)
+                                          });
             }
         }
 
@@ -141,6 +140,8 @@ Control {
                     Layout.alignment: Qt.AlignLeading
                     Layout.leftMargin: -8
                     device: _root.uiSession.appModel
+
+                    visible: deviceController.humiditySensorHealth
 
                     onClicked: {
                         if (mainStackView && (systemAccessories.accessoriesWireType !== AppSpecCPP.None)) {
@@ -275,9 +276,9 @@ Control {
 
             hasNotification: uiSession.hasUpdateNotification
             onClicked: {
-                //! Push ApplicationMenu to StackView
+                //! Push AppMenuPage to StackView
                 if (mainStackView) {
-                    mainStackView.push("qrc:/Stherm/View/ApplicationMenu.qml", {
+                    mainStackView.push("qrc:/Stherm/View/Menu/AppMenuPage.qml", {
                                            "uiSession": Qt.binding(() => uiSession)
                                        }, StackView.Immediate);
 
@@ -344,9 +345,9 @@ Control {
                     // Otherwise, display the PrivacyPolicyPage for acceptance.
                     if (device.userPolicyTerms.acceptedVersionOnTestMode === device.userPolicyTerms.currentVersion) {
                         mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                                     "uiSession": Qt.binding(() => uiSession),
-                                                     "backButtonVisible" : false
-                                                 });
+                                               "uiSession": Qt.binding(() => uiSession),
+                                               "backButtonVisible" : false
+                                           });
                     } else {
                         mainStackView.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
                                                "uiSession": Qt.binding(() => uiSession),
@@ -377,12 +378,12 @@ Control {
 
         onTriggered: {
 
-            // Settings fetch from server at least once before show home
-            // Wait for WIFI page to fetch settings and show home here.
+            // Settings fetch from server at least once before show home in some cases
             if(!uiSession.settingsReady) {
                 interval = 4000;
                 restart();
 
+                console.log("Wait for settings fetching ...")
                 return;
             }
 
@@ -398,13 +399,32 @@ Control {
         }
     }
 
+    //! Use to show home after initial setup finished.
+    Connections {
+        target: deviceController
+
+        function onInitialSetupFinished() {
+            // Active the app
+            ScreenSaverManager.setAppActive(true);
+
+            // In the initial setup we do not need to get settings from server.
+            uiSession.settingsReady = true;
+
+            // Should be done by timer as can cause crash
+            startupTimer.start()
+            // Disable check SN mode connections to prevent unnecessary show home
+            startupSN.enabled = false;
+        }
+    }
+
     //! Check SN mode
     Connections {
         id: startupSN
         target: deviceController.deviceControllerCPP
 
+        //! This action should occur when the SN mode is set to 0.
         function onSnModeChanged(snMode: int) {
-            // snMode === 1 or 0
+            // snMode === 0
             var snTestMode = deviceController.deviceControllerCPP.getSNTestMode();
             if (snMode !== 2 || snTestMode) {
 
@@ -412,12 +432,14 @@ Control {
                 if (!uiSession.settingsReady)
                     uiSession.settingsReady = (snMode === 0);
 
-                // should be done by timer as can cause crash
+                // Should be done by timer as can cause crash
                 startupTimer.start()
-                // disable fetching sn again
+                // Disable check SN mode connections to prevent unnecessary show home
                 startupSN.enabled = false;
-                snChecker.enabled = false;
 
+                if (snMode === 1) {
+                    console.log("SnModeChanged: SN mode is 1.")
+                }
             }
         }
     }
@@ -427,8 +449,9 @@ Control {
         target: system
 
         function onSerialNumberChanged() {
-            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup)
-            uiSession.settingsReady = false;
+            console.log("initialSetup (in onSerialNumberChanged slot): ", deviceController.initialSetup);
+            // In the initial setup we do not need to get settings from server.
+            uiSession.settingsReady = true;
         }
 
         function onTestModeStarted() {
@@ -437,25 +460,14 @@ Control {
             console.log("Test mode started due to serial number issues.")
             uiSession.uiTestMode = true;
             deviceController.startMode = 0;
+            deviceController.testModeType = AppSpec.TestModeType.SerialNumber;
+            system.ignoreManualUpdateMode();
+
             if (mainStackView)
                 mainStackView.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                        "uiSession": Qt.binding(() => uiSession),
                                        "backButtonVisible" : false
                                    });
-        }
-    }
-
-    //! checkSN when the internet is connected.
-    Connections {
-        id: snChecker
-        target: NetworkInterface
-
-        function onHasInternetChanged() {
-            if (NetworkInterface.hasInternet) {
-                if (deviceController.startMode !== 0 && deviceController.startMode !== -1) {
-                    deviceController.deviceControllerCPP.checkSN();
-                }
-            }
         }
     }
 
@@ -470,8 +482,8 @@ Control {
             PropertyChanges {
                 target: _desiredTempItem
                 font.pointSize: Qt.application.font.pointSize * 2.8
-                labelVerticalOffset: device?.systemSetup?.systemMode === AppSpec.Auto
-                                     && !_desiredTempItem.currentSchedule ? -12 : -28
+                labelVerticalOffset: (device?.systemSetup?.systemMode === AppSpec.Auto
+                                     || _desiredTempItem.currentSchedule) ? -12 : -28
                 enableAnimations: true
             }
 

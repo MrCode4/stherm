@@ -17,6 +17,8 @@ I_DeviceController {
 
     property MessageController   messageController
 
+    property Sync sync: deviceControllerCPP?.sync ?? null
+
     property int editMode: AppSpec.EMNone
 
     //! Use stageMode to handle in progress push
@@ -28,7 +30,13 @@ I_DeviceController {
     property bool initialSetup: false;
 
     //! Air condition health
-    property bool airConditionSensorHealth: true;
+    property bool airConditionSensorHealth: false;
+
+    //! Temperature sensor health
+    property bool temperatureSensorHealth:  false;
+
+    //! Humidity sensor health
+    property bool humiditySensorHealth:  false;
 
     //! mandatory update
     //! Set to true when in initial setup exist new update
@@ -40,6 +48,29 @@ I_DeviceController {
     //! Night mode brightness when screen saver is off.
     property real nightModeBrightness: -1
     property real targetNightModeBrightness: Math.min(50, (device.setting.adaptiveBrightness ? deviceControllerCPP.adaptiveBrightness : device.setting.brightness))
+
+    property int testModeType: AppSpec.TestModeType.None
+
+    //! Is the software update checked or not
+    property bool checkedSWUpdate: false
+
+    property var internal: QtObject {
+        //! This property will hold last returned data from manual first run flow
+        property string syncReturnedEmail: ""
+        property string syncReturnedZip: ""
+    }
+
+    //! TODO: This will be used to retry the service titan fetch operation in case of errors
+    //! Used delays in the fetchServiceTitanInformation calls to improve the overall user experience.
+    property Timer fetchServiceTitanTimer: Timer {
+        interval: 5000 // TODO
+        repeat: true
+        running: initialSetup && deviceControllerCPP.system.serialNumber.length > 0
+
+        onTriggered: {
+            deviceControllerCPP.system.fetchServiceTitanInformation();
+        }
+    }
 
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
@@ -116,6 +147,31 @@ I_DeviceController {
         }
     }
 
+
+    //! Start a timer to check serial number.
+    property Timer checkSNTimer: Timer {
+        property int _retrycheckSNTimerInterval: 10000
+
+        repeat: false
+        running: false
+        interval: _retrycheckSNTimerInterval
+
+        onTriggered: {
+            deviceControllerCPP.checkSN();
+
+            if (deviceControllerCPP.system.serialNumber.length === 0) {
+                _retrycheckSNTimerInterval += 10000;
+
+                if (_retrycheckSNTimerInterval > 40000)
+                    _retrycheckSNTimerInterval = 40000;
+
+            } else {
+                _retrycheckSNTimerInterval = 10000;
+            }
+
+        }
+    }
+
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
@@ -123,7 +179,23 @@ I_DeviceController {
         property int version : 0;
 
         function onCo2SensorStatus(status: bool) {
-            airConditionSensorHealth = status;
+            if (airConditionSensorHealth !== status) {
+                airConditionSensorHealth = status;
+            }
+        }
+
+        function onTemperatureSensorStatus(status: bool) {
+            if (temperatureSensorHealth !== status) {
+                temperatureSensorHealth = status;
+                deviceControllerCPP.runTemperatureScheme(status);
+            }
+        }
+
+        function onHumiditySensorStatus(status: bool) {
+            if (humiditySensorHealth !== status) {
+                humiditySensorHealth = status;
+                deviceControllerCPP.runHumidityScheme(status);
+            }
         }
 
         //! Set system mode to auto when
@@ -152,9 +224,34 @@ I_DeviceController {
 
             root.device.contactContractor.brandName     = brandName
             root.device.contactContractor.phoneNumber   = phoneNumber
-            root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName): iconUrl + "?version=" + version
+            root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName) : (iconUrl + "?version=" + version)
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
+        }
+
+        //! Logics for check SN:
+        //! The checkSN will be continuously executed until a valid serial number is obtained.
+        //! The checkSN will be called after initial setup finished and continue to change hasClient to true.
+        //! This called when checkSN called in anyway
+        function onSnModeChanged(snMode: int) {
+
+            if (deviceControllerCPP.system.serialNumber.length === 0) {
+                //! This called when checkSN called in anyway, so the timer should be singleshot.
+                checkSNTimer.repeat = false;
+                checkSNTimer.start();
+
+            } else if (snMode !== 2) {
+                // Has client is true
+                checkSNTimer.stop();
+
+                // Check contractor info once has client received and is true
+                deviceControllerCPP.checkContractorInfo();
+
+                // Since checkContractorInfo has been invoked, so reset the timer associated
+                // with fetching contractor information to delay the checking process (avoid attempt error).
+                if (fetchContractorInfoTimer.running)
+                    fetchContractorInfoTimer.restart();
+            }
         }
     }
 
@@ -163,10 +260,25 @@ I_DeviceController {
 
         function onHasInternetChanged() {
             deviceControllerCPP.wifiConnected(NetworkInterface.hasInternet);
+
+            // checkSN when the internet is connected.
+            if (NetworkInterface.hasInternet) {
+                if (startMode !== 0 && startMode !== -1) {
+                    if (!checkSNTimer.running) {
+                        deviceControllerCPP.checkSN();
+                    }
+                }
+
+                if (deviceControllerCPP.system.serialNumber.length > 0)
+                    fetchContractorInfoTimer.start();
+
+            } else {
+                fetchContractorInfoTimer.stop();
+            }
         }
     }
 
-    property Connections sync: Connections {
+    property Connections system: Connections {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {
@@ -192,6 +304,9 @@ I_DeviceController {
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
 
+            // Save settings after fetch
+            saveSettings();
+
         }
 
         function onAreSettingsFetchedChanged(success) {
@@ -213,7 +328,7 @@ I_DeviceController {
 
         function onAppDataReady(data) {
             // This is not a settings section, the QR URL is just part of the information
-            checkQRurl(data.qr_url);
+            updateTechQRurl(data.qr_url);
             setMessagesServer(data.messages)
         }
 
@@ -221,6 +336,7 @@ I_DeviceController {
         function onAutoModeSettingsReady(settings, isValid) {
             if (isValid) {
                 setAutoTemperatureFromServer(settings);
+                saveSettings();
             }
         }
 
@@ -256,6 +372,152 @@ I_DeviceController {
             console.log("DeviceController.qml: Push onPushFailed", stageMode, editMode, lockMode)
             settingsPush.isPushing = false;
         }
+
+        function onServiceTitanInformationReady(hasError: bool, isActive : bool,
+                                                email : string, zipCode : string) {
+            console.log("ServiceTitanInformationReady", hasError, isActive, email, zipCode);
+
+            device.serviceTitan._fetched = !hasError;
+
+            device.serviceTitan.isActive = isActive;
+
+            if (hasError) {
+                // Retry to fetch service titan data.
+
+            } else {
+                //! TODO: Update service titan model
+                // device.serviceTitan.email = email;
+                // device.serviceTitan.zipCode = zipCode;
+
+                // Instead of using the stop() function, utilize the running property to break the binding.
+                fetchServiceTitanTimer.running = false;
+            }
+        }
+
+        //! Check update
+        function onUpdateNoChecked() {
+            checkedSWUpdate = true;
+            console.log("udpate checked.")
+        }
+
+        //! TODO: replace new model with the current model
+        function onWarrantyReplacementFinished(success: bool) {
+            // TODO: action for now
+            if (success) {
+            }
+        }
+
+        function onSerialNumberReady() {
+            // "If the software update is not currently checked,
+            // initiate a check for updates.
+            // If the software update is already checked,
+            // proceed with the normal update process using a system timer.
+            if (!checkedSWUpdate) {
+                deviceControllerCPP.system.fetchUpdateInformation(true);
+            }
+        }
+
+        function onContractorInfoReady(getDataFromServerSuccessfully : bool) {
+            fetchContractorInfoTimer._retryFetchContractorInfoTimerInterval = getDataFromServerSuccessfully ? fetchContractorInfoTimer._defaultInterval : 30000;
+
+            fetchContractorInfoTimer.restart();
+        }
+    }
+
+    property Connections syncConnections: Connections {
+        target: sync
+
+        function onUserDataFetched(email:string, name: string) {
+            if (!device || !device.userData) return;
+
+            device.userData.email = email;
+            device.userData.name = name;
+
+            // save the updated data to file
+            saveSettings();
+        }
+
+        function onJobInformationReady(success: bool, data: var) {
+            if (!success || !device || !device.serviceTitan)
+                return;
+
+            device.serviceTitan.fullName = data?.full_name ?? "";
+            device.serviceTitan.phone    = data?.phone ?? "";
+            device.serviceTitan.email    = data?.email ?? "";
+            //! to prevent fetching customer info again if not changed later
+            internal.syncReturnedEmail   = device.serviceTitan.email;
+
+            device.serviceTitan.zipCode  = data?.zip?.code ?? (data?.zip ?? "");
+            //! if there is no new data to fetch than jobid in review page
+            //internal.syncReturnedZip = device.serviceTitan.zipCode;
+
+            device.serviceTitan.city   = data?.city?.name ?? (data?.city ?? "");
+            device.serviceTitan.state  = data?.state?.short ?? (data?.state ?? "");
+
+            device.serviceTitan.city_id  = data.city?.id ?? -1;
+            device.serviceTitan.state_id  = data.state?.id ?? -1;
+
+            device.serviceTitan.address1 = data?.address1 ?? "";
+            device.serviceTitan.address2 = data?.address2 ?? "";
+
+        }
+
+        function onZipCodeInfoReady(success: bool, data: var) {
+            if (!success || !data  || !device || !device.serviceTitan) {
+                internal.syncReturnedZip = "";
+                zipCodeInfoReady("Getting zip code information failed.");
+                return;
+            }
+
+            if (data.code !== device.serviceTitan.zipCode)
+                console.warn("onZipCodeInfoReady: zip code returned is different", data.code, device.serviceTitan.zipCode);
+
+            device.serviceTitan.city  = data.city?.name ?? "";
+            device.serviceTitan.state  = data.state?.short ?? ""; //data.state?.name ;
+
+            device.serviceTitan.city_id  = data.city?.id ?? -1;
+            device.serviceTitan.state_id  = data.state?.id ?? -1;
+
+            internal.syncReturnedZip = data.code;
+            zipCodeInfoReady("");
+        }
+
+        function onCustomerInfoReady(success: bool, data: var) {
+            //! we keep this empty in case of any error so it can be retry
+            internal.syncReturnedEmail = "";
+
+            if (!success || !device || !device.serviceTitan) {
+                customerInfoReady("Getting customer information failed.");
+                return;
+            }
+
+            //! data can be empty without having error on new emails
+            if (!data) {
+                console.log("Returned data is empty! maybe email is new!");
+                customerInfoReady("");
+                return;
+            }
+
+            if (data.email !== device.serviceTitan.email)
+                console.warn("onCustomerInfoReady: email returned is different", data.email, device.serviceTitan.email);
+
+            console.log("onCustomerInfoReady:", data.membership, data.is_enabled);
+
+            device.serviceTitan.fullName = data.full_name ?? "";
+            device.serviceTitan.phone    = data.phone ?? "";
+
+            internal.syncReturnedEmail = data.email ?? "";
+            customerInfoReady("");
+        }
+
+        function onInstalledSuccess() {
+            firstRunFlowEnded();
+        }
+
+        function onInstallFailed() {
+            console.warn("install failed try again.")
+        }
+
     }
 
     property Timer  settingsPush: Timer {
@@ -322,6 +584,19 @@ I_DeviceController {
         }
     }
 
+    property Timer  fetchContractorInfoTimer: Timer {
+        readonly property int _defaultInterval: 1.1 * 60 * 60 * 1000
+        property int _retryFetchContractorInfoTimerInterval: _defaultInterval
+
+        repeat: true;
+        running: false
+        interval: _retryFetchContractorInfoTimerInterval
+
+        onTriggered: {
+            deviceControllerCPP.checkContractorInfo();
+        }
+    }
+
     /* Object Properties
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {
@@ -337,11 +612,28 @@ I_DeviceController {
     //! Emit when need to stop device.
     signal stopDeviceRequested();
 
+    //! Once the initial setup process is finished, the app should become
+    //! active and automatically navigate to the home page.
+    //! This transition should be handled within the home page component.
+    signal initialSetupFinished();
+
+    //! first run flow manual data needs in same page
+    signal zipCodeInfoReady(var error);
+    signal customerInfoReady(var error);
+
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************")
         //! initialize the device and config
         // as well as device io which may TODO refactor later and call it on demand
         deviceControllerCPP.startDevice();
+
+        if (temperatureSensorHealth) {
+            deviceControllerCPP.runTemperatureScheme(true);
+        }
+
+        if (humiditySensorHealth) {
+            deviceControllerCPP.runHumidityScheme(true);
+        }
 
         //! Update TOF sensor status.
         lock(device._lock.isLock, device._lock.pin, true);
@@ -479,13 +771,13 @@ I_DeviceController {
 
         // Clamp vacation data.
         var minimumTemperature = Utils.clampValue(settings.min_temp, AppSpec.vacationMinimumTemperatureC,
-                                                                     AppSpec.vacationMaximumTemperatureC);
+                                                                     AppSpec.vacationMaximumTemperatureC - AppSpec.minStepTempC);
 
-        var maximumTemperature = Utils.clampValue(settings.max_temp, AppSpec.vacationMinimumTemperatureC,
-                                                                     AppSpec.vacationMaximumTemperatureC);
+        // minimumTemperature can not be less than vacationMinimumTemperatureC, so:
+        var maximumTemperature = Utils.clampValue(settings.max_temp, minimumTemperature + AppSpec.minStepTempC, AppSpec.vacationMaximumTemperatureC);
 
-        var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
-        var maximumHumidity = Utils.clampValue(settings.max_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
+        var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity - AppSpec.minStepHum);
+        var maximumHumidity = Utils.clampValue(settings.max_humidity, minimumHumidity + AppSpec.minStepHum, AppSpec.maximumHumidity);
 
         setVacation(minimumTemperature, maximumTemperature, minimumHumidity, maximumHumidity)
         setVacationOnFromServer(settings.is_enable)
@@ -524,11 +816,18 @@ I_DeviceController {
         } else if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
             //! TODo required actions if any
 
-            device.systemSetup.systemMode = systemMode;
+            checkToUpdateSystemMode(systemMode);
             deviceController.updateEditMode(AppSpec.EMSystemMode);
             // to let all dependant parameters being updated and save all
-            Qt.callLater(pushSettings);
+            Qt.callLater(saveSettings);
         }
+    }
+
+    function checkToUpdateSystemMode(systemMode: int) {
+        // Deactivate the incompatible schedules when mode changed from server or ui
+        uiSession.schedulesController.deactivateIncompatibleSchedules(systemMode);
+
+        device.systemSetup.systemMode = systemMode;
     }
 
     //! On/off the vacation from server.
@@ -540,7 +839,7 @@ I_DeviceController {
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
         deviceController.updateEditMode(AppSpec.EMVacation);
-        pushSettings();
+        saveSettings();
     }
 
     //! Set time format
@@ -576,7 +875,7 @@ I_DeviceController {
 
         var send_data = [brightness, volume, temperatureUnit, adaptive];
         var current_data = [device.setting.brightness, device.setting.volume,
-                            device.setting.tempratureUnit, device.setting.adaptiveBrightness]
+                            root.temperatureUnit, device.setting.adaptiveBrightness]
         if (send_data.toString() === current_data.toString()) {
             console.log("ignored setings")
             return false;
@@ -607,16 +906,26 @@ I_DeviceController {
         return true;
     }
 
-    function pushSettings() {
-        if (editMode === AppSpec.EMNone) {
-            console.log("PushSettings called with empty edit mode", stageMode, lockMode)
-            // to skip extra call
-            //            return;
+    //! Use timer to prevent excessive attempts to save file in the short intervals.
+    property Timer saveTimer: Timer {
+        interval: 100
+        running: false
+        repeat: false
+        onTriggered: {
+            if (uiSession.currentFile.length > 0) // we should not save before the app completely loaded
+                AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
         }
+    }
 
-        // we should not save before the app completely loaded
-        if (uiSession && uiSession.currentFile.length > 0)
-            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+    //! Save settings to file (configFilePath)
+    function saveSettings() {
+        if (uiSession) {
+            console.log("saveSettings called with edit mode", stageMode, lockMode, uiSession.currentFile)
+            saveTimer.restart();
+
+        } else {
+            console.log("saveSettings called without uiSession")
+        }
     }
 
     function setSettingsServer(settings: var) {
@@ -637,9 +946,9 @@ I_DeviceController {
         if (!editModeEnabled(AppSpec.EMSettings)) {
             // The server interprets temperature data based on the displayed unit (Celsius or Fahrenheit).
             // To maintain accurate control and prevent misinterpretations,
-            // the unit should be permanently set to Celsius.
+            // the unit should be permanently set to Celsius. so we always use data from device to ignore
             if (!setSettings(settings.brightness, settings.speaker,
-                        device.setting.tempratureUnit, settings.brightness_mode,
+                        root.temperatureUnit, settings.brightness_mode,
                              device.setting.enabledAlerts, device.setting.enabledNotifications))
                 console.log("The system settings is not applied from server")
 
@@ -737,7 +1046,8 @@ I_DeviceController {
                                              "type_id": schedule.type,
                                              "start_time": schedule.startTime,
                                              "end_time": schedule.endTime,
-                                             "temp": schedule.temprature,
+                                             //!  TODO: remove
+                                             "temp": 18.0,
                                              "humidity": schedule.humidity,
                                              "dataSource": schedule.dataSource,
                                              "weekdays": schedule.repeats.split(',')
@@ -770,8 +1080,12 @@ I_DeviceController {
         deviceControllerCPP.pushSettingsToServer(send_data)
     }
 
-    function checkQRurl(url: var) {
-        root.device.contactContractor.technicianURL = url;
+    function updateTechQRurl(url: var) {
+        var urlIsSame = root.device.contactContractor.technicianURL === url;
+        if (!urlIsSame){
+            root.device.contactContractor.technicianURL = url;
+            saveSettings();
+        }
     }
 
     function setSystemModeServer(mode_id) {
@@ -781,8 +1095,9 @@ I_DeviceController {
             var modeInt = parseInt(mode_id) - 1;
             //! Vacation will be handled using setVacationServer
             if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Off &&
-                    modeInt !== AppSpec.Vacation)
-                device.systemSetup.systemMode = modeInt;
+                    modeInt !== AppSpec.Vacation) {
+                checkToUpdateSystemMode(modeInt);
+            }
         }
     }
 
@@ -883,6 +1198,8 @@ I_DeviceController {
             console.warn("System type unknown", settings.type)
     }
 
+    //! If the clamping logic has changed, review the corresponding functionality in the
+    //! DesiredTemperatureItem class (specifically the updateFirstSecondValues function).
     function setAutoTemperatureFromServer (settings) {
 
         if (!device)
@@ -893,22 +1210,24 @@ I_DeviceController {
             return;
         }
 
-        if (settings.hasOwnProperty("auto_temp_low")) {
-            var auto_temp_low = Utils.clampValue(settings.auto_temp_low, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
-            if (device.autoMinReqTemp !== auto_temp_low) {
-                device.autoMinReqTemp = auto_temp_low;
-                deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
-            }
+        var auto_temp_low = AppSpec.defaultAutoMinReqTemp;
+        var auto_temp_high = AppSpec.defaultAutoMaxReqTemp;
+
+        // If both auto_temp_low and auto_temp_high are zero, use default values.
+        // If auto_temp_low or auto_temp_high is undefined, keep default values.
+        if (settings?.auto_temp_low !== 0 || settings?.auto_temp_high !== 0) {
+            auto_temp_low = Utils.clampValue(settings?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp,
+                                             AppSpec.autoMinimumTemperatureC,
+                                             AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
+
+            const minimumSecondarySlider = Math.max(AppSpec.minAutoMaxTemp, auto_temp_low + AppSpec.autoModeDiffrenceC);
+            auto_temp_high = Utils.clampValue(settings?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp,
+                                              minimumSecondarySlider,
+                                              AppSpec.autoMaximumTemperatureC);
         }
 
-        if (settings.hasOwnProperty("auto_temp_high")) {
-            var auto_temp_high = Utils.clampValue(settings.auto_temp_high, AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC);
-            if (device.autoMaxReqTemp !== auto_temp_high) {
-                device.autoMaxReqTemp = auto_temp_high;
-                deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
-            }
-        }
-
+        setAutoMinReqTemp(auto_temp_low);
+        setAutoMaxReqTemp(auto_temp_high);
     }
 
     function setAutoMinReqTemp(min) {
@@ -1057,7 +1376,7 @@ I_DeviceController {
         else if (name === "lees")
             return "qrc:/Stherm/Images/lee_s.png"
 
-        return "qrc:/Stherm/Images/nuve-icon.png"
+        return ""
     }
 
     function updateNightMode(nightMode : int) {
@@ -1107,7 +1426,7 @@ I_DeviceController {
 
     //! Just use for night mode
     function setBrightnessInNightMode(brightness, volume, adaptive) {
-        var send_data = [brightness, volume, device.setting.tempratureUnit, adaptive];
+        var send_data = [brightness, volume, root.temperatureUnit, adaptive];
         if (!deviceControllerCPP.setSettings(send_data)){
             console.warn("setting failed");
         }
@@ -1173,10 +1492,90 @@ I_DeviceController {
     }
 
     function pushLockUpdates() {
-        // we should not save before the app completely loaded
-        if (uiSession && uiSession.currentFile.length > 0)
-            AppCore.defaultRepo.saveToFile(uiSession.configFilePath);
+        saveSettings();
 
         // TODO: Update the server
+    }
+
+    //! TODO: maybe need to restart the app or activate the app and go to home
+    function firstRunFlowEnded() {
+        checkSNTimer.repeat = true;
+        checkSNTimer.start();
+        initialSetupFinished();
+    }
+
+    //! Push initial setup information
+    function pushInitialSetupInformation() {
+        // Initialize the client object
+        var clientData = {};
+
+        clientData.email = device.serviceTitan.email;
+        // Add fields conditionally
+        if (device.serviceTitan.fullName) {
+            clientData.full_name = device.serviceTitan.fullName;
+        }
+        if (device.serviceTitan.phone) {
+            clientData.phone = device.serviceTitan.phone;
+        }
+
+        // Initialize the devices array
+        var devicesData = [];
+
+        // construct object for device with minimal data required
+        var deviceObj = {
+         "sn": deviceControllerCPP.system.serialNumber,
+         "zip_code": device.serviceTitan.zipCode,
+         "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
+         "resident_type_id": device.residenceType, // or maybe using condition
+         "where_installed_id": device.whereInstalled
+        }
+
+        //! add dynamic fileds
+        if (device.thermostatName) {
+            deviceObj.name = device.thermostatName;
+        }
+        if (device.serviceTitan.address1) {
+            deviceObj.address1 = device.serviceTitan.address1;
+        }
+        if (device.serviceTitan.address2) {
+            deviceObj.address2 = device.serviceTitan.address2;
+        }
+        if (device.serviceTitan.state_id > -1) {
+            deviceObj.state = device.serviceTitan.state_id;
+        }
+        if (device.serviceTitan.city_id > -1) {
+            deviceObj.city = device.serviceTitan.city_id;
+        }
+
+
+        // Add the constructed device object to the devices array
+        devicesData.push(deviceObj);
+
+        // Now create the final data structure
+        var finalData = {
+            client: clientData,
+            devices: devicesData
+        };
+
+        var send_data = {
+              "client": clientData,
+              "devices": devicesData
+        };
+
+        sync.installDevice(send_data);
+    }
+
+    //! as both data needs to be fetched together and each may return error
+    //! we do not resend it if last time it was success so we have better chance in total
+    function getJobInformationManual() {
+        if (internal.syncReturnedZip !== device.serviceTitan.zipCode)
+            sync.getAddressInformationManual(device.serviceTitan.zipCode);
+        else
+            zipCodeInfoReady("");
+
+        if (internal.syncReturnedEmail !== device.serviceTitan.email)
+            sync.getCustomerInformationManual(device.serviceTitan.email)
+        else
+            customerInfoReady("");
     }
 }

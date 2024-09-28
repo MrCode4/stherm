@@ -51,9 +51,35 @@ public:
     void setRequestedHumidity(const double &setPointHumidity);
     double setPointHumidity() const;
 
+    //! Set minimum of auto temperature ranges
+    //! cel_value: Celsius
+    void setAutoMinReqTemp(const double &cel_value);
+    //! Fahrenheit
+    double autoMinReqTempF() const;
+
+    //! Set maximum of auto temperature ranges
+    //! cel_value: Celsius
+    void setAutoMaxReqTemp(const double &cel_value);
+    //! Fahrenheit
+    double autoMaxReqTempF() const;
+
     AppSpecCPP::AccessoriesType getAccessoriesType() const;
 
     AppSpecCPP::AccessoriesWireType getAccessoriesWireType() const;
+
+    //! Calculate the effective temperature based on
+    //! Current temperature, vacation, schedule, system mode and
+    //! current system mode (relay state)
+    //! The priority order for calculations is vacation, schedule, and then system mode.
+    //! Ensure all temperature attributes involved in this calculation
+    //! are expressed in Fahrenheit, and the final effective temperature
+    //! result should be in Fahrenheit as well.
+    double effectiveTemperature() const;
+
+
+    void setAutoMinReqTempF(const double &fah_value);
+
+    void setAutoMaxReqTempF(const double &fah_value);
 
 signals:
 
@@ -89,5 +115,9 @@ private:
     double mSetPointHumidity;
 
     struct STHERM::Vacation mVacation;
+
+    //! Auto mode properites (Fahrenheit)
+    double mAutoMinReqTempF;
+    double mAutoMaxReqTempF;
 };
 

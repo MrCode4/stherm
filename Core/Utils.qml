@@ -11,25 +11,37 @@ import Stherm
 QtObject {
 
     //! Convert temperature from celsius to fahrenheit
+    //! If no unit is specified (unit is null), AppSpec.defaultTemperatureUnit is used by default.
     function convertedTemperature(celsiusTemp: real, toUnit: int) : real {
-        return (toUnit === AppSpec.TempratureUnit.Fah) ? 32 + 1.8 * celsiusTemp : celsiusTemp;
+        // Set null/undefined toUnit to default unit
+        if (toUnit === null || toUnit === undefined) {
+            toUnit = AppSpec.defaultTemperatureUnit;
+        }
+
+        return (toUnit === AppSpec.TempratureUnit.Cel) ? celsiusTemp : 32 + 1.8 * celsiusTemp;
     }
 
     //! Clamp temperature values based on min and max.
     //! For scheduled temperatures, use default min and max values.
     //! For others, set min and max values directly.
+    //! If no unit is specified (unit is null), AppSpec.defaultTemperatureUnit is used by default.
     function convertedTemperatureClamped(celsiusTemp: real, toUnit: int, min=null, max=null) : real {
+        // Set null/undefined toUnit to default unit
+        if (toUnit === null || toUnit === undefined) {
+            toUnit = AppSpec.defaultTemperatureUnit;
+        }
+
         if (min === null || min === undefined)
-            min = (toUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minimumTemperatureF : AppSpec.minimumTemperatureC)
+            min = (toUnit === AppSpec.TempratureUnit.Cel ? AppSpec.minimumTemperatureC : AppSpec.minimumTemperatureF)
 
         if (max === null || max === undefined)
-            max = (toUnit === AppSpec.TempratureUnit.Fah ? AppSpec.maximumTemperatureF : AppSpec.maximumTemperatureC)
+            max = (toUnit === AppSpec.TempratureUnit.Cel ? AppSpec.maximumTemperatureC : AppSpec.maximumTemperatureF)
 
-        if (toUnit === AppSpec.TempratureUnit.Fah) {
+        if (toUnit === AppSpec.TempratureUnit.Cel) {
+            return clampValue(celsiusTemp, min, max);
+        } else {
             var fahTemp = 32 + 1.8 * celsiusTemp;
             return clampValue(fahTemp, min, max);
-        } else {
-            return clampValue(celsiusTemp, min, max);
         }
     }
 

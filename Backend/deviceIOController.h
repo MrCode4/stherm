@@ -119,6 +119,9 @@ signals:
     //!  False indicates malfunction.
     void co2SensorStatus (bool status = true);
 
+    void temperatureSensorStatus(bool status = true);
+    void humiditySensorStatus(bool status = true);
+
 private slots:
     void wtdExec();
     void wiringExec();
@@ -217,4 +220,7 @@ private:
 
     //! Is there recent data available from the sensors
     bool mIsDataReceived;
+
+    QTimer mGetInfoNRFStarter;
+    QTimer mGetInfoTIStarter;
 };

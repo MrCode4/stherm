@@ -13,8 +13,9 @@ BasePageView {
      * ****************************************************************************************/
 
     /* Object properties
-     * ****************************************************************************************/
+     * ****************************************************************************************/    
     title: "Brightness Test"
+    useSimpleStackView: true
     headerColor: "black"
     background: Rectangle {
         color: "white"
@@ -27,7 +28,9 @@ BasePageView {
     }
 
     Component.onDestruction: {
-        // Stop the test
+        // Stop the test if started when we use back
+        if (!brightnessTimer.running)
+            return;
         deviceController.deviceControllerCPP.stopTestBrightness()
         brightnessTimer.stop()
     }
@@ -36,12 +39,10 @@ BasePageView {
      * ****************************************************************************************/
 
     function nextPage() {
-        if (root.StackView.view) {
-            root.StackView.view.push("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
-                                         "uiSession": uiSession,
-                                         "backButtonVisible" : backButtonVisible
-                                     })
-        }
+        gotoPage("qrc:/Stherm/View/Test/BacklightTestPage.qml", {
+                     "uiSession": uiSession,
+                     "backButtonVisible" : backButtonVisible
+                 });
     }
 
     Item {
@@ -53,6 +54,7 @@ BasePageView {
 
         TapHandler {
             onTapped: {
+                console.log("BrightnessTestPage tapped", brightnessTimer.running);
                 deviceController.deviceControllerCPP.stopTestBrightness()
                 brightnessTimer.stop()
                 confirmPopup1.open()
@@ -112,6 +114,7 @@ BasePageView {
         }
 
         onClicked: {
+            console.log("BrightnessTestPage Next onClicked", brightnessTimer.running);
             deviceController.deviceControllerCPP.stopTestBrightness()
             brightnessTimer.stop()
             confirmPopup1.open()

@@ -231,6 +231,11 @@ private slots:
     void    onWifiListRefreshFinished(QProcess* process);
 
     /*!
+     * \brief updateNextConnectionProfile
+     */
+    void    updateNextConnectionProfile(QSharedPointer<QTextStream> stream, ProfilesList* profiles);
+
+    /*!
      * \brief updateConProfilesList Updates connection profiles list from result of th process
      * started in \ref scanConProfiles()
      */

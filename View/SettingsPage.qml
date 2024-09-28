@@ -13,7 +13,10 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Setting
-    property Setting    setting: uiSession?.appModel?.setting ?? null
+    property Setting    setting: appModel?.setting ?? null
+
+    //! Unit
+    readonly property int unit: setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
 
     property bool hasChange : false;
 
@@ -44,11 +47,15 @@ BasePageView {
     backButtonCallback: function() {
         //! Check if color is modified
         var selectedTempUnit = _tempCelciUnitBtn.checked ? AppSpec.TempratureUnit.Cel : AppSpec.TempratureUnit.Fah;
+        var enabledAlerts = enabledAlertsSw.checked
+        var enabledNotifications = enabledNotificationsSw.checked
 
         if (internal.copyOfSettings.brightness !== _brightnessSlider.value
                 || internal.copyOfSettings.adaptiveBrightness !== _adaptiveBrSw.checked
                 || internal.copyOfSettings.volume !== _speakerSlider.value
-                || internal.copyOfSettings.tempratureUnit !== selectedTempUnit) {
+                || internal.copyOfSettings.tempratureUnit !== selectedTempUnit
+                || internal.copyOfSettings.enabledAlerts !== enabledAlerts
+                || internal.copyOfSettings.enabledNotifications !== enabledNotifications) {
             //! This means that changes are occured that are not saved into model
             uiSession.popUps.exitConfirmPopup.accepted.connect(confirmtBtn.clicked);
             uiSession.popUps.exitConfirmPopup.rejected.connect(goBack);
@@ -71,7 +78,7 @@ BasePageView {
         onClicked: {
             if (applyToModel() || hasChange) {
                 deviceController.updateEditMode(AppSpec.EMSettings);
-                deviceController.pushSettings();
+                deviceController.saveSettings();
             } else {
                 console.log("model did not pushed")
             }
@@ -135,7 +142,7 @@ BasePageView {
                     Layout.fillWidth: true
                     from: 0
                     to: 100
-                    value: appModel?.setting?.brightness ?? 0
+                    value: setting?.brightness ?? 0
 
                     enabled: !_adaptiveBrSw.checked
 
@@ -179,7 +186,7 @@ BasePageView {
                     Layout.fillWidth: true
                     from: 0
                     to: 100
-                    value: appModel?.setting?.volume ?? 0
+                    value: setting?.volume ?? 0
 
                     enabled: false
                 }
@@ -204,7 +211,7 @@ BasePageView {
 
                 Switch {
                     id: _adaptiveBrSw
-                    checked: false && (appModel?.setting?.adaptiveBrightness ?? false)
+                    checked: false && (setting?.adaptiveBrightness ?? false)
                     enabled: false
 
                     onCheckedChanged: {
@@ -216,6 +223,7 @@ BasePageView {
             //! Mute alerts
             RowLayout {
                 Layout.topMargin: 12
+                visible: is_control_alert_feature_enable
 
                 Label {
                     opacity: 0.6
@@ -234,7 +242,7 @@ BasePageView {
 
                 Switch {
                     id: enabledAlertsSw
-                    checked: appModel?.setting?.enabledAlerts ?? false
+                    checked: setting?.enabledAlerts ?? false
 
                     onCheckedChanged: {
                         onlineTimer.startTimer()
@@ -254,7 +262,7 @@ BasePageView {
 
                 Switch {
                     id: enabledNotificationsSw
-                    checked: appModel?.setting?.enabledNotifications ?? false
+                    checked: setting?.enabledNotifications ?? false
 
                     onCheckedChanged: {
                         onlineTimer.startTimer()
@@ -278,13 +286,16 @@ BasePageView {
                 RadioButton {
                     id: _tempFarenUnitBtn
                     text: "\u00b0F"
-                    checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Fah
+                    checked: unit !== AppSpec.TempratureUnit.Cel
+                    onCheckedChanged: {
+                        onlineTimer.startTimer()
+                    }
                 }
 
                 RadioButton {
                     id: _tempCelciUnitBtn
                     text: "\u00b0C"
-                    checked: appModel?.setting?.tempratureUnit === AppSpec.TempratureUnit.Cel
+                    checked: unit === AppSpec.TempratureUnit.Cel
                 }
             }
 
@@ -321,6 +332,8 @@ BasePageView {
             internal.copyOfSettings["adaptiveBrightness"]   = setting.adaptiveBrightness;
             internal.copyOfSettings["volume"]               = setting.volume;
             internal.copyOfSettings["tempratureUnit"]       = setting.tempratureUnit;
+            internal.copyOfSettings["enabledAlerts"]        = setting.enabledAlerts;
+            internal.copyOfSettings["enabledNotifications"] = setting.enabledNotifications;
         }
     }
 
@@ -347,10 +360,10 @@ BasePageView {
             if (deviceController) {
                 if (deviceController.setSettings(AppSpec.defaultBrightness,
                                              AppSpec.defaultVolume,
-                                             AppSpec.TempratureUnit.Fah,
+                                             AppSpec.defaultTemperatureUnit,
                                              false, true, true)) {
                     deviceController.updateEditMode(AppSpec.EMSettings);
-                    deviceController.pushSettings()
+                    deviceController.saveSettings()
                     makeCopyOfSettings()
                 } else {
                     console.log("settings did not applied")
@@ -368,7 +381,9 @@ BasePageView {
             if (setting.brightness !== internal.copyOfSettings.brightness
                     || setting.adaptiveBrightness !== internal.copyOfSettings.adaptiveBrightness
                     || setting.volume !== internal.copyOfSettings.volume
-                    || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit) {
+                    || setting.tempratureUnit !== internal.copyOfSettings.tempratureUnit
+                    || setting.enabledAlerts !== internal.copyOfSettings.enabledAlerts
+                    || setting.enabledNotifications !== internal.copyOfSettings.enabledNotifications) {
                 //! Reset to last saved setting
                 if (!deviceController.setSettings(
                             internal.copyOfSettings.brightness,

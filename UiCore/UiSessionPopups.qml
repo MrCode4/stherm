@@ -89,6 +89,10 @@ Item {
         id: updatePopup
     }
 
+    SuccessPopup {
+        id: successPopup
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -133,6 +137,17 @@ Item {
                 updateNotificationPopup.open();
             }
         }
+
+        function onWarrantyReplacementFinished(success: bool) {
+            console.log("WarrantyReplacementFinished", success);
+
+            if (success) {
+                successPopup.message = "The new thermostat has successfully integrated into the system."
+                successPopup.hid.connect(warrantyReplacementFinished);
+                successPopup.open();
+            }
+            // how about in error?
+        }
     }
 
     Connections {
@@ -152,5 +167,10 @@ Item {
             // Active screen saver
             ScreenSaverManager.setActive();
         }
+    }
+
+    function warrantyReplacementFinished() {
+        deviceController.firstRunFlowEnded();
+        successPopup.hid.disconnect(warrantyReplacementFinished);
     }
 }

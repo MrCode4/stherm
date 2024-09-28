@@ -126,6 +126,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
     connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
+    connect(mSync, &NUVE::Sync::serviceTitanInformationReady, this, &NUVE::System::serviceTitanInformationReady);
+    connect(mSync, &NUVE::Sync::warrantyReplacementFinished, this, &NUVE::System::warrantyReplacementFinished);
 
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, [this](const QVariantMap& settings, bool isValid) {
         emit autoModeSettingsReady(settings, isValid);
@@ -217,17 +219,39 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     //! if the first one exists and second one not exists
     //! will be installed from server when needed if either not exists
     if (!has_sshPass()) {
-        TRACE << "sshpass was not in /usr/bin";
+        TRACE << "sshpass was not in /usr/bin or is invalid, so should be remove: "
+              << QFile::remove("/usr/bin/sshpass");
+
         QFile sshpass_local("/usr/local/bin/sshpass");
-        if (sshpass_local.exists()) {
+        bool isValidSshpass_local = sshpass_local.exists() && (sshpass_local.size() > 0);
+        if (isValidSshpass_local) {
+
             TRACE << "sshpass copying to /usr/bin";
+            // Invalid file in the /usr/bin/sshpass removed, so copy operation will be successful.
             auto success = sshpass_local.copy("/usr/bin/sshpass");
             TRACE_CHECK(success) << "copy sshpass successfuly";
             TRACE_CHECK(!success) << "failed to copy sshpass";
         } else {
+            // Remove the sshpass file when is invalid and exists.
+            TRACE << "Remove the invalid sshpass file in /usr/local/bin if exists: " << sshpass_local.remove();
+
             TRACE << "sshpass is not in /usr/local/bin either, will be installed on first use";
         }
     }
+
+    // Retry with timer to avoid many attempt error.
+    mRetryUpdateTimer.setInterval(5000);
+    mRetryUpdateTimer.setSingleShot(true);
+    connect(&mRetryUpdateTimer, &QTimer::timeout, this, [=]() {
+        fetchUpdateInformation(true);
+    });
+
+    connect(this, &System::fetchUpdateErrorOccurred, this, [=](QString err) {
+        TRACE << "Retry to get update information due to " << err;
+        if (isInitialSetup()) {
+            mRetryUpdateTimer.start();
+        }
+    });
 
     if (!serialNumber().isEmpty())
         onSerialNumberReady();
@@ -399,6 +423,13 @@ bool NUVE::System::installSSHPass(bool recursiveCall)
     };
 
     if (!checkExists()) {
+        // Remove the sshpass file if is exists or is invalid.
+        TRACE << "Remove the /usr/bin/sshpass: "
+              << QFile::remove("/usr/bin/sshpass");
+
+        TRACE << "Remove usr/local/bin/sshpass: "
+              << QFile::remove("/usr/local/bin/sshpass");
+
         QFile getsshpassRun("/usr/local/bin/getsshpass.sh");
         if (getsshpassRun.exists())
             getsshpassRun.remove("/usr/local/bin/getsshpass.sh");
@@ -688,7 +719,9 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
 
     auto callback = [this, installLatest](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError) {
-            qWarning() << "Unable to download " << m_updateInfoFile << " file: " << reply->errorString();
+            auto err = "Unable to download update data file: " + reply->errorString();
+            qWarning() << "Unable to download " + m_updateInfoFile + " file: " + reply->errorString();
+            emit fetchUpdateErrorOccurred(err);
         }
         else {
             TRACE << mUpdateFilePath;
@@ -696,8 +729,10 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
             if (checkUpdateFile(rawData)) {
                 QFile file(mUpdateFilePath);
                 if (!file.open(QIODevice::WriteOnly)) {
-                    TRACE << "Unable to open file for writing";
-                    emit error("Unable to open file for writing");
+                    auto err = QString("Unable to open update file system for writing");
+                    TRACE << err;
+                    emit error(err);
+                    emit fetchUpdateErrorOccurred(err);
                     return;
                 }
 
@@ -705,7 +740,9 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
                 file.close();
             }
             else {
-                TRACE << "The update information did not fetched correctly, Try again later!";
+                QString err = "The update information did not fetched correctly, Try again later!";
+                emit fetchUpdateErrorOccurred(err);
+                TRACE << err;
             }
 
             // Check the last saved m_updateInfoFile file
@@ -718,7 +755,45 @@ void NUVE::System::fetchUpdateInformation(bool notifyUser)
     // skip logging the content
     if (reply) {
         reply->setProperty("noContentLog", true);
+
+    } else {
+        emit fetchUpdateErrorOccurred("Skipped fetching information.");
     }
+}
+
+QString NUVE::System::fetchUpdateInformationSync(bool notifyUser)
+{
+    QEventLoop loop;
+    QString error;
+
+    fetchUpdateInformation(notifyUser);
+    // error
+    connect(this, &NUVE::System::fetchUpdateErrorOccurred, &loop, [&error, &loop] (QString err) {
+        error = "Unable to fetch update. Please retry.\n" + err;
+        loop.quit();
+    });
+    QTimer::singleShot(30000, &loop, [&error, &loop] {
+        error = "Unable to fetch update. Please retry. Timeout!" ;
+        loop.quit();
+    });
+
+    // force update available
+    connect(this, &NUVE::System::forceUpdateChanged, &loop, [this, &error, &loop] () {
+        error = mHasForceUpdate ? "Applying mandatory update. Please wait..." : "";
+        loop.quit();
+    });
+    // update available but not force
+    connect(this, &NUVE::System::notifyNewUpdateAvailable, &loop, [&error, &loop] () {
+        loop.quit();
+    });
+    // update not available
+    connect(this, &NUVE::System::updateNoChecked, &loop, [&loop] () {
+        loop.quit();
+    });
+
+    loop.exec();
+
+    return error;
 }
 
 void NUVE::System::fetchBackdoorInformation()
@@ -811,6 +886,16 @@ QString NUVE::System::getCurrentTime()
     return time.toString(Qt::ISODate);
 }
 
+void NUVE::System::fetchServiceTitanInformation()
+{
+    mSync->fetchServiceTitanInformation();
+}
+
+void NUVE::System::warrantyReplacement(const QString& oldSN, const QString& newSN)
+{
+    mSync->warrantyReplacement(oldSN, newSN);
+}
+
 void NUVE::System::exitManualMode()
 {
     // Manual mode is false
@@ -821,6 +906,14 @@ void NUVE::System::exitManualMode()
     mIsManualUpdate = false;
 
     checkPartialUpdate(false, true);
+}
+
+void NUVE::System::ignoreManualUpdateMode(bool checkUpdate)
+{
+    mIsManualUpdate = false;
+    // we can use this for early update in some case
+    if (checkUpdate)
+        checkPartialUpdate(true, false);
 }
 
 bool NUVE::System::isFWServerUpdate()
@@ -895,7 +988,9 @@ bool NUVE::System::has_sshPass()
 {
     QFileInfo sshPass("/usr/bin/sshpass");
 
-    return sshPass.exists();
+    TRACE << "/usr/bin/sshpass information: " << sshPass.exists() << " - size (byte(s)): "  << sshPass.size();
+
+    return sshPass.exists() && (sshPass.size() > 0);
 }
 
 bool NUVE::System::isManualMode() {
@@ -1087,15 +1182,13 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
                 static int i = 0;
                 i++;
                 if (i > 5) {
-                    // After retry 2 times, the update back to normal state.
+                    // After retry 5 times, the update back to normal state.
                     setIsInitialSetup(false);
                     emit updateNoChecked();
                 }
                 else {
                     // In initial setup, retry when an error occurred.
-                    QTimer::singleShot(10000, this, [this]() {
-                        fetchUpdateInformation(true);
-                    });
+                    mRetryUpdateTimer.start();
                 }
             }
         }
@@ -1310,7 +1403,6 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
 void NUVE::System::onSerialNumberReady()
 {
     emit serialNumberReady();
-    fetchUpdateInformation(true);
 }
 
 void NUVE::System::createLogDirectoryOnServer()
@@ -1506,6 +1598,8 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
     // Manual update must be exit for force update
     if (installLatestVersion || (mHasForceUpdate && !manualUpdateInstalled)) {
         partialUpdate();
+    } else {
+        TRACE << "update not started" << installLatestVersion << mHasForceUpdate << manualUpdateInstalled;
     }
 }
 
@@ -1574,6 +1668,7 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
                 // Update the earlier force update that is greater than the current version
                 if (mTestMode || !obj.value(m_Staging).toBool()) {
                     mHasForceUpdate = true;
+                    emit forceUpdateChanged();
                     latestVersionKey = keyVersion;
                 }
             }

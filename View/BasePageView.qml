@@ -8,7 +8,7 @@ import Stherm
  * BasePageView is the basic class for all pages
  * ***********************************************************************************************/
 Page {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -35,6 +35,14 @@ Page {
 
     property color                  headerColor: "white"
 
+    property bool useSimpleStackView: false
+
+    property bool enableTitleTap: false
+    property int titleLongTapInterval: 5000
+
+    signal titleTapped()
+    signal titleLongTapped()
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: AppStyle.size
@@ -52,7 +60,7 @@ Page {
                 visible: backButtonVisible
                 contentItem: RoniaTextIcon {
                     text: backButtonTextIcon
-                    color: _root.headerColor
+                    color: root.headerColor
                 }
 
                 onClicked: if (backButtonCallback instanceof Function) backButtonCallback();
@@ -68,23 +76,47 @@ Page {
 
                 visible: title.length > 0
                 textFormat: "MarkdownText"
-                color: _root.headerColor
+                color: root.headerColor
                 verticalAlignment: "AlignVCenter"
                 horizontalAlignment: "AlignHCenter"
                 text: `${"#".repeat(Math.max(1, Math.min(6, titleHeadeingLevel)))} ${title}`
                 elide: "ElideRight"
+
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: root.enableTitleTap
+                    pressAndHoldInterval: root.titleLongTapInterval
+                    onClicked: root.titleTapped()
+                    onPressAndHold: root.titleLongTapped()
+                }
             }
         }
     }
 
     //! By default if Page is inside a StackView it will be popped if not nothing happens.
-    //! For most Pages this is enough, although it might be neccessary to override it for some
-    backButtonCallback: function() {
-        if (_root.StackView.view) {
-            //! Then Page is inside an StackView
-            if (_root.StackView.view.currentItem === _root) {
-                _root.StackView.view.pop();
+    //! For most Pages this is enough, although it might be neccessary to override it for some    
+    backButtonCallback: tryGoBack
+
+    function tryGoBack() {
+        if (useSimpleStackView) {
+            if (testsStackView.currentItem == root) {
+                testsStackView.pop();
             }
+        }
+        else if (root.StackView.view) {
+            //! Then Page is inside an StackView
+            if (root.StackView.view.currentItem === root) {
+                root.StackView.view.pop();
+            }
+        }
+    }
+
+    function gotoPage(page, props)  {
+        if (useSimpleStackView) {
+            testsStackView.push(page, props);
+        }
+        else if (root.StackView.view)  {
+            root.StackView.view.push(page, props);
         }
     }
 }

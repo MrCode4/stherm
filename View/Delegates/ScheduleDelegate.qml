@@ -128,12 +128,18 @@ ItemDelegate {
                             toggle() //! This won't emit toggled() signal so no recursion occurs
 
                             uiSession.popUps.scheduleOverlapPopup.accepted.connect(setActive);
+                            uiSession.popUps.scheduleOverlapPopup.rejected.connect(disconnect);
                             uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
                             return;
                         }
                     }
 
                     schedule.enable = checked;
+                    if (checked) {
+                        // Update system mode
+                        schedule.systemMode = uiSession.appModel.systemSetup.systemMode;
+                    }
+
                     uiSession.appModel.schedulesChanged();
 
                     //Shows a proper toast message upon activation of a schedule
@@ -144,7 +150,7 @@ ItemDelegate {
 
                     // Send Data to server when a schedule changed...
                     deviceController.updateEditMode(AppSpec.EMSchedule);
-                    uiSession.deviceController.pushSettings();
+                    uiSession.deviceController.saveSettings();
                 }
             }
         }
@@ -198,14 +204,16 @@ ItemDelegate {
                                                   element.enable = false;
                                               });
 
-        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(setActive);
+        disconnect()
 
         if (schedule?.enable === false) {
             schedule.enable = true;
+            // Update system mode
+            schedule.systemMode = uiSession.appModel.systemSetup.systemMode;
 
             // Send Data to server when a schedule changed...
             deviceController.updateEditMode(AppSpec.EMSchedule);
-            uiSession.deviceController.pushSettings();
+            uiSession.deviceController.saveSettings();
 
             //Shows a proper toast message upon activation of a schedule
             var dt = schedulesController.prepareToastMessage(schedule);
@@ -213,6 +221,12 @@ ItemDelegate {
         }
 
         uiSession.appModel.schedulesChanged();
+    }
+
+    //! Disconnect the popUps
+    function disconnect() {
+        uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(setActive);
+        uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(disconnect);
     }
 }
 

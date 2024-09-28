@@ -38,6 +38,11 @@ Control {
     onFirstValueCeilChanged: first.setMaxValue(firstValueCeil);
     onSecondValueFloorChanged: second.setMinValue(secondValueFloor);
 
+    //! When both the first and second values reach their minimum/maximum limits,
+    //! UI disruptions and slider malfunctions (slider overlapping) can potentially arise.
+    //! To prevent these issues, careful data clamping should be
+    //! implemented in the upper layers (Device controller and DesiredTempratureItem).
+
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
         pressed: firstHandleDh.dragging
@@ -124,12 +129,12 @@ Control {
 
                     GradientStop {
                         position: 0
-                        color: true ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+                        color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
                     }
 
                     GradientStop {
                         position: 0.55
-                        color: true ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+                        color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
                     }
                 }
 
@@ -143,13 +148,15 @@ Control {
                 }
             }
 
+            //! Space between first and second hadler
             ShapePath {
                 startX: 0
                 startY: background.shapeHeight
                 capStyle: ShapePath.RoundCap
                 fillColor: "transparent"
                 strokeWidth: background.pathWidth
-                strokeColor: showGreySection ? Qt.darker(Style.accent, 1.2) : "transparent"
+                strokeColor: showGreySection ? (_control.enabled ? Qt.darker(Style.accent, 1.2) :
+                                                                   Qt.darker(Style.primary, 2.0)) : "transparent"
 
                 PathAngleArc {
                     centerX: background.shapeWidth / 2

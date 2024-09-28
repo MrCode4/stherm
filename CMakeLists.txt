@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 1.1.1 LANGUAGES CXX)
+project(Stherm VERSION 1.2.1.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -27,6 +27,7 @@ set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Core)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Data)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
 
@@ -90,6 +91,8 @@ qt6_add_qml_module(appStherm
         Core/ToastManager.qml
         Core/UserPolicyTerms.qml
         Core/Lock.qml
+        Core/ServiceTitan.qml
+
 
         # Primitive Components
         UiCore/Components/RoniaTextIcon.qml
@@ -108,10 +111,9 @@ qt6_add_qml_module(appStherm
         UiCore/I_Dialog.qml
         UiCore/PopUps/AboutPopUp.qml
         UiCore/PopUps/ConfirmPopup.qml
-        UiCore/PopUps/SaveDialoge.qml
-        UiCore/PopUps/LoadDialoge.qml
         UiCore/PopUps/UpdatePopup.qml
         UiCore/ShortcutManager.qml
+        UiCore/SimpleStackView.qml
         UiCore/Components/SemiCircleSlider.qml
         UiCore/Components/SystemModeButton.qml
         UiCore/Components/DateTimeLabel.qml
@@ -138,13 +140,21 @@ qt6_add_qml_module(appStherm
         UiCore/Components/ExpandableItem.qml
         UiCore/Components/PINKeyboard.qml
         UiCore/Components/PINTextField.qml
+        UiCore/Components/InfoToolButton.qml
+        UiCore/Components/HorizontalTimeTumbler.qml
+        UiCore/Components/TemperatureFlatRangeSlider.qml
 
 
         # Views and Widgets
         View/Home.qml
         View/SplashScreen.qml
-        View/ApplicationMenu.qml
-        View/ApplicationMenuList.qml
+        View/Menu/MenuListView.qml
+        View/Menu/AppMenuPage.qml
+        View/Menu/SettingsMenuPage.qml
+        View/Menu/NotificationBasePage.qml
+        View/Menu/MessagesPage.qml
+        View/Menu/AlertsPage.qml
+        View/Menu/SystemAlertsPage.qml
         View/BasePageView.qml
         View/ScheduleView.qml
         View/BacklightPage.qml
@@ -170,6 +180,10 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/SystemTypeHeatOnlyPage.qml
         View/SystemSetup/SystemAccessoriesPage.qml
         View/SystemSetup/SystemRunDelayPage.qml
+        View/SystemSetup/InstallationTypePage.qml
+        View/SystemSetup/ResidenceTypePage.qml
+        View/SystemSetup/DeviceLocationPage.qml
+        View/SystemSetup/ThermostatNamePage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
         View/RequestTechPriorityPage.qml
@@ -184,7 +198,6 @@ qt6_add_qml_module(appStherm
         View/Sensor/SensorNamePage.qml
         View/Sensor/SensorInfoPage.qml
         View/SensorsPage.qml
-        View/AlertsNotificationsPage.qml
         View/WiringPage.qml
         View/MessagePopupView.qml
         View/VacationModeView.qml
@@ -198,6 +211,12 @@ qt6_add_qml_module(appStherm
         View/LockPage.qml
         View/UnlockPage.qml
 
+        # Service Titan pages
+        View/ServiceTitan/JobNumberPage.qml
+        View/ServiceTitan/CustomerDetailsPage.qml
+        View/ServiceTitan/ServiceTitanReviewPage.qml
+        View/ServiceTitan/WarrantyReplacementPage.qml
+
         # Date and Time
         View/DateTime/DateTimePage.qml
         View/DateTime/SelectTimePage.qml
@@ -206,6 +225,7 @@ qt6_add_qml_module(appStherm
         View/DateTime/MonthDayDelegate.qml
 
         # Test
+        View/Test/TestsHostPage.qml
         View/Test/TouchTestPage.qml
         View/Test/ColorTestPage.qml
         View/Test/BrightnessTestPage.qml
@@ -219,12 +239,10 @@ qt6_add_qml_module(appStherm
         View/Test/QRCodeTestPage.qml
 
         # Delegates
-        View/Delegates/ApplicationMenuDelegate.qml
         View/Delegates/ShadeButtonDelegate.qml
         View/Delegates/ScheduleDelegate.qml
         View/Delegates/WifiDelegate.qml
         View/Delegates/SensorDelegate.qml
-        View/Delegates/AlertNotificationDelegate.qml
         View/Delegates/SensorLocationDelegate.qml
 
         # Popups
@@ -244,12 +262,15 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/InfoPopup.qml
         UiCore/PopUps/TestFailedPopup.qml
         UiCore/PopUps/PrivacyPolicyPopup.qml
+        UiCore/PopUps/SuccessPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
         UiCore/Dialogs/ForgetWifiDialog.qml
 
     SOURCES
+        Backend/Config.h
+        Backend/Property.h
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
         Backend/ScreenSaverManager.h
@@ -257,6 +278,8 @@ qt6_add_qml_module(appStherm
         Backend/DateTimeManagerCPP.h
         Backend/DateTimeManagerCPP.cpp
         Backend/TimezonesDSTMap.h
+
+        Backend/Data/UserData.h
 
         # php
         Backend/PhpApi.h
@@ -342,7 +365,6 @@ qt6_add_qml_module(appStherm
         Backend/GPIO/GpioHandler.h
         Backend/GPIO/GpioHandler.cpp
 
-
         Backend/QrCode/qrcodegen.hpp
         Backend/QrCode/qrcodegen.cpp
         Backend/QRCodeGenerator.h
@@ -359,6 +381,8 @@ qt6_add_qml_module(appStherm
         Backend/Network/Nmcli/NmcliInterface.cpp
         Backend/Network/NetworkInterface.h
         Backend/Network/NetworkInterface.cpp
+        Backend/Network/WifiInfo.h
+        Backend/Network/WifiInfo.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
@@ -422,7 +446,6 @@ qt6_add_qml_module(appStherm
         update_fw_nrf_seamless.sh
         getsshpass.sh
         nrf_fw_update.zip
-        SOURCES Backend/Network/WifiInfo.h Backend/Network/WifiInfo.cpp
 )
 
 if (DEBUG_MODE)

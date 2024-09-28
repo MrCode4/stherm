@@ -56,8 +56,7 @@ BasePageView {
             text: "Cooling"
 
             onClicked: {
-                deviceController.setSystemModeTo(AppSpecCPP.Cooling);
-                backButtonCallback();
+                checkAndUpdateSystemMode(AppSpecCPP.Cooling);
             }
         }
 
@@ -72,8 +71,7 @@ BasePageView {
             text: "Heating"
 
             onClicked: {
-                deviceController.setSystemModeTo(AppSpecCPP.Heating);
-                backButtonCallback();
+                checkAndUpdateSystemMode(AppSpecCPP.Heating);
             }
         }
 
@@ -88,8 +86,7 @@ BasePageView {
             text: "Auto"
 
             onClicked: {
-                deviceController.setSystemModeTo(AppSpecCPP.Auto);
-                backButtonCallback();
+                checkAndUpdateSystemMode(AppSpecCPP.Auto);
             }
         }
 
@@ -122,8 +119,7 @@ BasePageView {
             text: "OFF"
 
             onClicked: {
-                deviceController.setSystemModeTo(AppSpecCPP.Off);
-                backButtonCallback();
+                checkAndUpdateSystemMode(AppSpecCPP.Off);
             }
         }
     }
@@ -153,5 +149,60 @@ BasePageView {
                 }
             }
         }
+    }
+
+    ConfirmPopup {
+        id: confirmPopup
+
+        topPadding: 10
+        title: "Change System Mode?"
+        message: "Warning!"
+        rejectText: "Cancel"
+        acceptText: "Ok"
+        // this will call reject always even after accept! but this is disconnected in such cases
+        // this is for when user close pop up or auto close
+        onHid: rejected()
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+
+    //! Check new system mode has conflict with schedules or not.
+    function checkAndUpdateSystemMode(systemMode : int) {
+        if (uiSession.schedulesController.findIncompatibleSchedules(systemMode).length > 0) {
+
+            confirmPopup.detailMessage = `There are active Schedule(s) configured for ${AppSpec.systemModeToString(device.systemSetup.systemMode)} mode that are incompatible with the new ${AppSpec.systemModeToString(systemMode)} mode. These Schedules will be automatically disabled.`
+            confirmPopup.accepted.connect(saveAndDisconnect.bind(this, systemMode));
+            confirmPopup.rejected.connect(rejectAndDisconnect);
+            confirmPopup.open();
+
+        } else {
+            save(systemMode);
+        }
+    }
+
+    //! Reject and sync ui with model and disconnect the confirmPopup
+    function rejectAndDisconnect() {
+        confirmPopup.accepted.disconnect(saveAndDisconnect.bind(this));
+        confirmPopup.rejected.disconnect(rejectAndDisconnect);
+
+        // Back to state of the model
+        _coolingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Cooling;
+        _heatingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Heating;
+        _autoButton.checked    = device?.systemSetup.systemMode === AppSpecCPP.Auto;
+        _offButton.checked     = device?.systemSetup.systemMode === AppSpecCPP.Off;
+    }
+
+    //! Save the systemMode and disconnect the confirmPopup
+    function saveAndDisconnect(systemMode : int) {
+        confirmPopup.accepted.disconnect(saveAndDisconnect.bind(this));
+        confirmPopup.rejected.disconnect(rejectAndDisconnect);
+        save(systemMode)
+    }
+
+    //! Update the system mode
+    function save(systemMode : int) {
+        deviceController.setSystemModeTo(systemMode);
+        backButtonCallback();
     }
 }

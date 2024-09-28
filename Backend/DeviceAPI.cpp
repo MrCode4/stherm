@@ -40,6 +40,11 @@ NUVE::System* DeviceAPI::system()
     return m_system;
 }
 
+NUVE::Sync* DeviceAPI::sync()
+{
+    return m_sync;
+}
+
 const NUVE::DeviceConfig &DeviceAPI::deviceConfig() const
 {
     return m_deviceConfig;

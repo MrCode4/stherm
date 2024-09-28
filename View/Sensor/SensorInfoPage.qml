@@ -123,7 +123,7 @@ BasePageView {
                 Label {
                     Layout.fillWidth: true
                     font.bold: true
-                    text: "Temprature"
+                    text: "Temperature"
                 }
 
                 Label {

@@ -18,6 +18,9 @@ AppSpecCPP {
     property int minimumHumidity: 20
     property int maximumHumidity: 70
 
+    //! Default for temperature unit
+    property int defaultTemperatureUnit: AppSpec.TempratureUnit.Fah
+
     //! Maximum value of first temperature handler (left) in auto mode
     //! Celcius
     property real maxAutoMinTemp: 29.4444
@@ -26,10 +29,30 @@ AppSpecCPP {
     //! Celcius
     property real minAutoMaxTemp: 15.5556
 
+    //! Default of requested temperature
+    //! Celcius
+    property real defaultRequestedTemperature: 22.22 // 72 F
+
+    //! Diffrence between autoMinTemp and autoMaxTemp
+    //! Celcius
+    property real autoModeDiffrenceC: 2.0
+    property real autoModeDiffrenceF: 3.0
+
+    //! Auto mode defaults
+    property real defaultAutoMinReqTemp: 20.0    // 68 F
+    property real defaultAutoMaxReqTemp: 23.3333 // 74 F
+
     //! Percent
     property int defaultBrightness: 100
     //! Percent
     property int defaultVolume:     50
+
+    enum TestModeType {
+        SerialNumber = 0, //! Test mode started due to serial number
+        StartMode,        //! Test mode started due to TI board
+        User,
+        None
+    }
 
     enum DeviceType {
         DT_IMX6 = 0,
@@ -37,6 +60,11 @@ AppSpecCPP {
         DT_Unknown
     }
 
+    enum InstallationType {
+        ITNewInstallation = 0,
+        ITExistingSystem,
+        ITUnknown
+    }
 
     enum TempratureUnit {
         Cel,    //! Celsius
@@ -70,6 +98,36 @@ AppSpecCPP {
         Downstairs,
         DinningRoom,
         GuestHouse
+    }
+
+    // Residence types
+    enum ResidenceTypes {
+        Residental = 0,
+        Commercial,
+        Unknown
+    }
+
+    //! Device location map
+    property var residenceTypesNames: {
+        var types = {};
+        types[`${AppSpec.ResidenceTypes.Residental}`] = "Residental";
+        types[`${AppSpec.ResidenceTypes.Commercial}`] = "Commercial";
+
+        return types;
+    }
+
+    //! Device location map
+    property var deviceLoacations: {
+        var types = {};
+        types[`${AppSpec.ResidenceTypes.Residental}`] = ["Basement", "Bedroom", "Dinning room",
+                                                         "Downstairs", "Guesthouse", "Kids room",
+                                                         "Living room", "Main floor", "Master bedroom",
+                                                         "Office", "Upstairs", "Other"];
+        types[`${AppSpec.ResidenceTypes.Commercial}`] = ["Lunchroom", "Office", "Warehouse", "Other"];
+
+        types[`${AppSpec.ResidenceTypes.Unknown}`]    = [];
+
+        return types;
     }
 
     //! Sensor location names
@@ -143,21 +201,24 @@ AppSpecCPP {
 
         switch (type) {
         case AppSpecCPP.Away: {
-            newSchedule.temprature = 25.55;           // 78 F
+            newSchedule.minimumTemperature = 24.44444; // 76
+            newSchedule.maximumTemperature = 26.66667; // 80
             newSchedule.startTime = "06:00 AM";
             newSchedule.endTime = "03:00 PM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr";
         } break;
 
         case AppSpecCPP.Night: {
-            newSchedule.temprature = 24.44;         // 76 F
+            newSchedule.minimumTemperature = 23.33333; // 74
+            newSchedule.maximumTemperature = 25.55556; // 78
             newSchedule.startTime = "10:00 PM";
             newSchedule.endTime = "06:00 AM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr,Sa,Su";
         } break;
 
         case AppSpecCPP.Home: {
-            newSchedule.temprature = 23.33                 // 74 F
+            newSchedule.minimumTemperature = 22.77778; // 73
+            newSchedule.maximumTemperature = 25.0; // 77
             newSchedule.startTime = "09:00 AM";
             newSchedule.endTime = "06:00 PM";
             newSchedule.repeats = "Mo,Tu,We,Th,Fr";
@@ -169,6 +230,25 @@ AppSpecCPP {
         }
 
         return newSchedule;
+    }
+
+    //! Convert temperature unit to string
+    function temperatureUnitString(unit: int) : string {
+
+        if (unit === null || unit === undefined) {
+            unit = defaultTemperatureUnit;
+        }
+
+        if (unit === AppSpec.TempratureUnit.Cel) {
+            return "C";
+
+        } else if (unit === AppSpec.TempratureUnit.Fah) {
+            return "F";
+        }
+
+        // Can not happen
+        return "F";
+
     }
 
     //! airQuality <= 1.0

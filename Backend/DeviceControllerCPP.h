@@ -10,6 +10,7 @@
 #include "Core/Scheme.h"
 #include "HumidityScheme.h"
 #include "Device/SystemSetup.h"
+#include "Property.h"
 
 class ScheduleCPP;
 
@@ -20,6 +21,9 @@ class ScheduleCPP;
 class DeviceControllerCPP  : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+
+    PROPERTY_PRI(NUVE::Sync*, sync)
 
     Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
     Q_PROPERTY(NUVE::System *system MEMBER  m_system NOTIFY systemChanged)
@@ -35,7 +39,7 @@ class DeviceControllerCPP  : public QObject
 
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
-    QML_ELEMENT
+
 
 public:
     /* Public Constructors & Destructor
@@ -71,7 +75,7 @@ public:
     //!
     Q_INVOKABLE void writeTestResult(const QString &fileName, const QString& testName, const QString& testResult, const QString& description="");
     Q_INVOKABLE void saveTestResult(const QString& testName, bool testResult, const QString& description="");
-    Q_INVOKABLE void beginTesting();
+    Q_INVOKABLE QString beginTesting();
 
     Q_INVOKABLE void testBrightness(int value);
     Q_INVOKABLE void stopTestBrightness();
@@ -106,8 +110,8 @@ public:
 
     Q_INVOKABLE bool checkNRFFirmwareVersion();
 
-    Q_INVOKABLE void setAutoMinReqTemp(const double min);
-    Q_INVOKABLE void setAutoMaxReqTemp(const double max);
+    Q_INVOKABLE void setAutoMinReqTemp(const double cel_value);
+    Q_INVOKABLE void setAutoMaxReqTemp(const double cel_value);
 
     /* Public Functions
      * Read and write data without any UART connection
@@ -167,6 +171,16 @@ public:
 
     Q_INVOKABLE void lockDeviceController(bool isLock);
 
+    //! Start/Stop the temperature scheme
+    //! start = true, start scheme
+    //! start = false, stop scheme
+    Q_INVOKABLE void runTemperatureScheme(bool start);
+
+    //! Start/Stop the humidity scheme
+    //! start = true, start scheme
+    //! start = false, stop scheme
+    Q_INVOKABLE void runHumidityScheme(bool start);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -212,6 +226,9 @@ Q_SIGNALS:
     //! True indicates proper operation,
     //!  False indicates malfunction.
     void co2SensorStatus (bool status = true);
+
+    void temperatureSensorStatus(bool status = true);
+    void humiditySensorStatus(bool status = true);
 
 private:
     // update main data and send data to scheme.
@@ -261,6 +278,8 @@ private:
     // To avoid the first deviation in the average
     bool _isFirstDataReceived = false;
 
+    bool mIsDeviceStarted = false;
+
     DeviceIOController *_deviceIO;
     DeviceAPI *_deviceAPI;
 
@@ -284,8 +303,6 @@ private:
 
     QTimer mBacklightTimer;
     QTimer mBacklightPowerTimer;
-
-    QTimer mFetchContractorInfoTimer;
 
     // initialized in startup onStartDeviceRequested in qml
     QVariantList mBacklightModelData;

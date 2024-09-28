@@ -54,6 +54,8 @@ I_PopUp {
         boundsBehavior: Flickable.StopAtBounds
         contentWidth: width
         contentHeight: privacyPolicyLabel.implicitHeight
+        flickDeceleration: 1000
+        maximumFlickVelocity: 200000
 
         Label {
             id: privacyPolicyLabel

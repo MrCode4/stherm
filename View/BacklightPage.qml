@@ -87,7 +87,7 @@ BasePageView {
             onClicked: {
                 applyToModel();
                 deviceController.updateEditMode(AppSpec.EMBacklight);
-                deviceController.pushSettings();
+                deviceController.saveSettings();
                 goBack();
             }
         }
@@ -265,12 +265,7 @@ BasePageView {
         uiSession.popUps.exitConfirmPopup.accepted.disconnect(confirmtBtn.clicked);
         uiSession.popUps.exitConfirmPopup.rejected.disconnect(goBack);
 
-        if (_root.StackView.view) {
-            //! Then Page is inside an StackView
-            if (_root.StackView.view.currentItem == _root) {
-                _root.StackView.view.pop();
-            }
-        }
+        tryGoBack();
     }
 
     Component.onCompleted: {

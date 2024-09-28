@@ -20,54 +20,20 @@ Item {
         uiSession: mainView.uiSession
     }
 
-    /* Children
-     * ****************************************************************************************/
-    implicitWidth: 480
-    implicitHeight: 480
+    implicitWidth: AppStyle.size
+    implicitHeight: AppStyle.size
 
     StackView {
         id: _mainStackView
         anchors.fill: parent
         initialItem: _homePage
-
-        /*Component.onCompleted: {
-            //! Push _mainViewSw to stack here, to make sure Home is current item without SwipeView
-            //! animating at window showing up.
-            _mainStackView.push(_mainViewSw);
-        }*/
     }
 
-    //! Home
     Home {
         id: _homePage
         mainStackView: _mainStackView
         uiSession: mainView.uiSession
     }
-
-    /*SwipeView {
-        id: _mainViewSw
-        currentIndex: 1
-        interactive: !_homePage.isDragging
-
-        //! This should be sync either with the model (I_Device) or with the FanPage used in
-        //! ApplicationMenu to prevent further issues or use exactly this FanPage instance in
-        //! ApplicationMenu to push to _mainStackView.
-        FanPage {
-            uiSession: mainView.uiSession
-            backButtonVisible: false
-        }
-
-        Home {
-            id: _homePage
-            mainStackView: _mainStackView
-            uiSession: mainView.uiSession
-        }
-
-        HumidityPage {
-            uiSession: mainView.uiSession
-            backButtonVisible: false
-        }
-    }*/
 
     Connections {
         target: uiSession

@@ -147,7 +147,9 @@ Popup {
             Label {
                 Layout.alignment: Qt.AlignHCenter
                 font.pointSize: Qt.application.font.pointSize * 2.5
-                text: Number(Utils.convertedTemperature(device?.currentTemp ?? 0, device?.setting?.tempratureUnit))
+                visible: deviceController.temperatureSensorHealth
+                text: !deviceController.temperatureSensorHealth ?
+                           "NAN" : Number(Utils.convertedTemperature(device?.currentTemp ?? 0, device?.setting?.tempratureUnit))
                       .toLocaleString(locale, "f", 0)
 
                 Label {
@@ -160,7 +162,7 @@ Popup {
                     font.pointSize: Qt.application.font.pointSize * 1.2
                     font.capitalization: Font.AllUppercase
 
-                    text: `\u00b0${(device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah ? "F" : "C")}`
+                    text: `\u00b0${AppSpec.temperatureUnitString(device?.setting?.tempratureUnit)}`
                 }
             }
 

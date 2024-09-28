@@ -120,10 +120,11 @@ bool QSRepositoryCpp::registerObject(QSObjectCpp *qsObject)
         return false;
     }
 
-    // If a file is being read, ignore any created objects
+    // It was supposed as: If a file is being read, ignore any created objects
+    // now we remove the extra registered if existing in file, because we are loading simultaneous with init
     if (m_isLoading) {
-//        qDebug() << "Ignoring newly created object: " << qsObject->objectName();
-        return true;
+        //        qDebug() << "Ignoring newly created object: " << qsObject->getType();
+        // return true;
     }
 
     addObject(qsObject->getUuidStr(), qsObject);
@@ -162,7 +163,7 @@ bool QSRepositoryCpp::addObject(const QString &uuidStr, QSObjectCpp *qsObject, b
         if (force) {
             unobserveObject(m_objects[uuidStr].value<QSObjectCpp*>());
         } else {
-            qWarning() << "Skipped adding object" << uuidStr << "-- uuid already registered!";
+            //            qWarning() << "Skipped adding object" << uuidStr << "-- uuid already registered!";
             return false;
         }
     }

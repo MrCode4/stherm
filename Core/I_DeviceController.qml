@@ -17,6 +17,8 @@ QtObject {
 
     property int                 startMode: -1
 
+    readonly property int        temperatureUnit: device.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
+
     //! Minimum value for temperature model (Fah)
     property real               _minimumTemperatureF: 40
 
@@ -27,7 +29,7 @@ QtObject {
     //! - Has schedule effect
     property real               _minimumTemperatureUIF: {
         if (currentSchedule) {
-            return AppSpec.minimumTemperatureF;
+            return AppSpec.autoMinimumTemperatureF;
         }
 
         return _minimumTemperatureF;
@@ -37,7 +39,7 @@ QtObject {
     //! - Has schedule effect
     property real               _maximumTemperatureUIF: {
         if (currentSchedule) {
-            return AppSpec.maximumTemperatureF;
+            return AppSpec.autoMaximumTemperatureF;
         }
 
         return _maximumTemperatureF;
@@ -90,10 +92,10 @@ QtObject {
 
 
     //! Actual values of minimum and maximum temperatures based on temperature unit
-    property real               _minimumTemperature:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+    property real               _minimumTemperature:  temperatureUnit === AppSpec.TempratureUnit.Fah
                                                       ? _minimumTemperatureF : _minimumTemperatureC
 
-    property real               _maximumTemperature:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+    property real               _maximumTemperature:  temperatureUnit === AppSpec.TempratureUnit.Fah
                                                       ? _maximumTemperatureF : _maximumTemperatureC
 
     //! Maximum and Minimum model temperature in Celsius to use in UI
@@ -101,10 +103,10 @@ QtObject {
     property real               _maximumTemperatureUIC: Math.floor(Utils.fahrenheitToCelsius(_maximumTemperatureUIF))
 
     //! Actual values of minimum and maximum temperatures based on temperature unit to use in UI
-    property real               _minimumTemperatureUI:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+    property real               _minimumTemperatureUI:  temperatureUnit === AppSpec.TempratureUnit.Fah
                                                         ? _minimumTemperatureUIF : _minimumTemperatureUIC
 
-    property real               _maximumTemperatureUI:  device.setting.tempratureUnit === AppSpec.TempratureUnit.Fah
+    property real               _maximumTemperatureUI:  temperatureUnit === AppSpec.TempratureUnit.Fah
                                                         ? _maximumTemperatureUIF : _maximumTemperatureUIC
 
     /* Object Properties
@@ -128,7 +130,7 @@ QtObject {
     function setVacationOn(on: bool) {}
 
     function setSettings(brightness, volume, temperatureUnit, adaptive, enabledAlerts, enabledNotifications) {}
-    function pushSettings() {}
+    function saveSettings() {}
 
     function setDesiredTemperature(temperature: real) {}
 
@@ -157,4 +159,5 @@ QtObject {
     //! Lock/unlock the application
     function lock(isLock : bool, pin: string) : bool {return false;}
 
+    function getJobInformationManual() {}
 }

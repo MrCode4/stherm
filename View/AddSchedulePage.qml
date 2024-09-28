@@ -75,7 +75,7 @@ BasePageView {
                 }
             } else {
                 // if sensors are empty we skip this page!
-                if (_newSchedulePages.currentItem instanceof ScheduleRepeatPage) {
+                if (_newSchedulePages.currentItem instanceof ScheduleTempraturePage) {
                     if (device?._sensors.length === 0) {
                         _internal.newSchedule.dataSource = "Onboard Sensor";
                         _newSchedulePages.push(_preivewPage)
@@ -131,7 +131,7 @@ BasePageView {
         id: _typePage
 
         ScheduleTypePage {
-            readonly property Component nextPage: _tempraturePage
+            readonly property Component nextPage:_startEndTimePage
 
             onTypeChanged: {
                 if (type !== _internal.newSchedule.type) {
@@ -142,79 +142,39 @@ BasePageView {
     }
 
     Component {
-        id: _tempraturePage
-
-        ScheduleTempraturePage {
-            readonly property Component nextPage: _startTimePage
-
-            uiSession: root.uiSession
-
-            schedule: root.defaultSchedule
-
-            onTempratureChanged: {
-                if (temprature !== _internal.newSchedule.temprature) {
-                    _internal.newSchedule.temprature = temprature;
-                }
-            }
-
-            Component.onCompleted: {
-                if (_internal.newSchedule.type === AppSpec.Custom) {
-                    schedule.temprature = appModel.requestedTemp;
-                }
-            }
-        }
-    }
-
-    Component {
-        id: _startTimePage
-
-        ScheduleTimePage {
-            readonly property Component nextPage: _endTimePage
-
-            title: "Start Time"
-
-            schedule: root.defaultSchedule
-
-            onSelectedTimeChanged: {
-                if (isValid && selectedTime !== _internal.newSchedule.startTime) {
-                    _internal.newSchedule.startTime = selectedTime;
-                }
-            }
-
-            Component.onCompleted: {
-                if (_internal.newSchedule.type === AppSpec.Custom) {
-                    //! Set start time to current time
-                    setTimeFromString((new Date).toLocaleTimeString(Qt.locale(), "hh:mm AP"));
-                }
-            }
-        }
-    }
-
-    Component {
-        id: _endTimePage
+        id: _startEndTimePage
 
         ScheduleTimePage {
             readonly property Component nextPage: _repeatPage
 
-            title: "End Time"
-            timeProperty: "end-time"
-
-            startTime: Date.fromLocaleTimeString(Qt.locale(), _internal.newSchedule.startTime, "hh:mm AP")
             schedule: root.defaultSchedule
 
-            onSelectedTimeChanged: {
-                if (isValid && selectedTime !== _internal.newSchedule.endTime) {
-                    _internal.newSchedule.endTime = selectedTime;
+            onSelectedStartTimeChanged: {
+                saveStartTime();
+            }
+
+            onSelectedEndTimeChanged: {
+               saveEndTime();
+            }
+
+            onIsValidChanged: {
+                saveStartTime();
+                saveEndTime();
+            }
+
+            function saveStartTime() {
+                if (isValid) {
+                    if (selectedStartTime !== _internal.newSchedule.startTime) {
+                        _internal.newSchedule.startTime = selectedStartTime;
+                    }
                 }
             }
 
-            Component.onCompleted: {
-                if (_internal.newSchedule.type === AppSpec.Custom) {
-                    //! Set selected time to 2 hours after schedule's start time
-                    var endTime = Date.fromLocaleTimeString(locale, _internal.newSchedule.startTime, "hh:mm AP");
-                    endTime.setTime(endTime.getTime() + 2 * 1000 * 60 * 60);
-
-                    setTimeFromString(endTime.toLocaleTimeString(locale, "hh:mm AP"));
+            function saveEndTime() {
+                if (isValid) {
+                    if (selectedEndTime !== _internal.newSchedule.endTime) {
+                        _internal.newSchedule.endTime = selectedEndTime;
+                    }
                 }
             }
         }
@@ -224,13 +184,45 @@ BasePageView {
         id: _repeatPage
 
         ScheduleRepeatPage {
-            readonly property Component nextPage: _dataSourcePageCompo
+            readonly property Component nextPage: _temperaturePage
 
             schedule: root.defaultSchedule
 
             onRepeatsChanged: {
                 if (repeats !== _internal.newSchedule.repeats) {
                     _internal.newSchedule.repeats = repeats;
+                }
+            }
+        }
+    }
+
+    Component {
+        id: _temperaturePage
+
+        ScheduleTempraturePage {
+            // Move to enable/disable page
+            readonly property Component nextPage:  _dataSourcePageCompo
+
+            uiSession: root.uiSession
+
+            schedule: root.defaultSchedule
+
+            onMinimumTemperatureChanged: {
+                if (minimumTemperature !== _internal.newSchedule.minimumTemperature) {
+                    _internal.newSchedule.minimumTemperature = minimumTemperature;
+                }
+            }
+
+            onMaximumTemperatureChanged: {
+                if (maximumTemperature !== _internal.newSchedule.maximumTemperature) {
+                    _internal.newSchedule.maximumTemperature = maximumTemperature;
+                }
+            }
+
+            Component.onCompleted: {
+                if (_internal.newSchedule.type === AppSpec.Custom) {
+                    schedule.minimumTemperature = appModel.autoMinReqTemp;
+                    schedule.maximumTemperature = appModel.autoMaxReqTemp;
                 }
             }
         }
@@ -300,7 +292,7 @@ BasePageView {
         }
 
         deviceController.updateEditMode(AppSpec.EMSchedule);
-        deviceController.pushSettings();
+        deviceController.saveSettings();
 
         if (root.StackView.view) {
             root.StackView.view.pop();

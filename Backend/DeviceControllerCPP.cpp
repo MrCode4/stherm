@@ -91,6 +91,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 {
 
     m_system = _deviceAPI->system();
+    m_sync = _deviceAPI->sync();
 
     connect(m_system, &NUVE::System::contractorInfoReady, this, [this]() {
         auto info = m_system->getContractorInfo();
@@ -166,6 +167,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(_deviceIO, &DeviceIOController::co2SensorStatus, this, &DeviceControllerCPP::co2SensorStatus);
+    connect(_deviceIO, &DeviceIOController::temperatureSensorStatus, this, &DeviceControllerCPP::temperatureSensorStatus);
+    connect(_deviceIO, &DeviceIOController::humiditySensorStatus,    this, &DeviceControllerCPP::humiditySensorStatus);
 
     mTEMPERATURE_COMPENSATION_Timer.setTimerType(Qt::PreciseTimer);
     mTEMPERATURE_COMPENSATION_Timer.setInterval(1000);
@@ -346,12 +349,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     if (!sInstance) {
         sInstance = this;
     }
-
-    // Check contractor info
-    mFetchContractorInfoTimer.setInterval(1.1 * 60 * 60 * 1000);
-    connect(&mFetchContractorInfoTimer, &QTimer::timeout, this, [=]() {
-        checkContractorInfo();
-    });
 }
 
 DeviceControllerCPP::~DeviceControllerCPP() {}
@@ -520,13 +517,7 @@ void DeviceControllerCPP::startDevice()
     int startMode = getStartMode();
     emit startModeChanged(startMode);
 
-    // Start with delay to ensure the model loaded.
-    // will be loaded always, but should be OFF in iniial setup mode as its default is OFF
-    QTimer::singleShot(5000, this, [this]() {
-        TRACE << "starting scheme";
-        m_scheme->restartWork(true);
-        m_HumidityScheme->restartWork(true);
-    });
+    mIsDeviceStarted = true;
 
     if (startMode == 0) {
         startTestMode();
@@ -546,8 +537,40 @@ void DeviceControllerCPP::startDevice()
 void DeviceControllerCPP::stopDevice()
 {
     _deviceIO->stopReading();
-    m_scheme->stop();
-    m_HumidityScheme->stop();
+    runTemperatureScheme(false);
+    runHumidityScheme(false);
+}
+
+void DeviceControllerCPP::runTemperatureScheme(bool start)
+{
+    TRACE << "starting temperature scheme: " << (start && mIsDeviceStarted) << start;
+    if(start && mIsDeviceStarted) {
+        // Start with delay to ensure the model loaded.
+        // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
+        // This function will execute after provided sensor data has been received,
+        // so we do not need more delay.
+        if (!m_scheme->isRunning())
+            m_scheme->restartWork(true);
+
+    } else {
+        m_scheme->stop();
+    }
+}
+
+void DeviceControllerCPP::runHumidityScheme(bool start)
+{
+    TRACE << "starting humidity scheme: " << (start && mIsDeviceStarted) << start;
+    if(start && mIsDeviceStarted) {
+        // Start with delay to ensure the model loaded.
+        // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
+        // This function will execute after provided sensor data has been received,
+        // so we do not need more delay.
+        if (!m_HumidityScheme->isRunning())
+            m_HumidityScheme->restartWork(true);
+
+    } else {
+        m_HumidityScheme->stop();
+    }
 }
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
@@ -680,13 +703,6 @@ bool DeviceControllerCPP::checkUpdateMode()
 void DeviceControllerCPP::wifiConnected(bool hasInternet)
 {
     m_system->wifiConnected(hasInternet);
-
-    if (hasInternet) {
-        mFetchContractorInfoTimer.start();
-
-    } else {
-        mFetchContractorInfoTimer.stop();
-    }
 }
 
 void DeviceControllerCPP::lockDeviceController(bool isLock)
@@ -785,16 +801,24 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
     return false;
 }
 
-void DeviceControllerCPP::setAutoMinReqTemp(const double min)
+void DeviceControllerCPP::setAutoMinReqTemp(const double cel_value)
 {
-    if (m_scheme)
-        m_scheme->setAutoMinReqTemp(min);
+    if (mSchemeDataProvider.isNull()) {
+        TRACE << "The schedule data provider is not available.";
+        return;
+    }
+
+    mSchemeDataProvider->setAutoMinReqTemp(cel_value);
 }
 
-void DeviceControllerCPP::setAutoMaxReqTemp(const double max)
+void DeviceControllerCPP::setAutoMaxReqTemp(const double cel_value)
 {
-    if (m_scheme)
-        m_scheme->setAutoMaxReqTemp(max);
+    if (mSchemeDataProvider.isNull()) {
+        TRACE << "The schedule data provider is not available.";
+        return;
+    }
+
+    mSchemeDataProvider->setAutoMaxReqTemp(cel_value);
 }
 
 bool DeviceControllerCPP::updateNRFFirmware()
@@ -891,9 +915,9 @@ void DeviceControllerCPP::writeTestResult(const QString &fileName, const QString
 
 void DeviceControllerCPP::saveTestResult(const QString &testName, bool testResult, const QString &description)
 {
-    //! TODO check if testName already existed (defined in unit tests)
-    mAllTestsResults.insert({testName, testResult});
-    mAllTestsValues.insert({testName, description});
+    mAllTestsResults.insert_or_assign(testName, testResult);
+    mAllTestsValues.insert_or_assign(testName, description);
+
     // keep the order on first occurance
     if (!mAllTestNames.contains(testName))
         mAllTestNames.push_back(testName);
@@ -902,7 +926,7 @@ void DeviceControllerCPP::saveTestResult(const QString &testName, bool testResul
     writeTestResult("test_results.csv", testName, result, description);
 }
 
-void DeviceControllerCPP::beginTesting()
+QString DeviceControllerCPP::beginTesting()
 {
     mAllTestsValues.clear();
     mAllTestsResults.clear();
@@ -924,13 +948,37 @@ void DeviceControllerCPP::beginTesting()
     QString kernel = m_system->kernelBuildVersion();
     QString ti = getTI_SW();
 
+    QString err;
+
+    if (uid.isEmpty())
+        err = "uid is empty.";
     saveTestResult("UID", !uid.isEmpty(), uid);
+
+    // we do not throw error here, as it may retrieved at the end of process
     saveTestResult("SN", !sn.isEmpty(), sn);
+
+    if (sw.isEmpty())
+        err = "Software version is empty.";
     saveTestResult("SW version", !sw.isEmpty(), sw);
+
+    if (qt.isEmpty())
+        err = "Software version is empty.";
     saveTestResult("QT version", !qt.isEmpty(), qt);
+
+    if (nrf.isEmpty())
+        err = "NRF version is empty.";
     saveTestResult("NRF version", !nrf.isEmpty(), nrf);
+
+    if (kernel.isEmpty())
+        err = "Kernel is empty.";
     saveTestResult("Kernel version", !kernel.isEmpty(), kernel);
+
+
+    if (ti.isEmpty())
+        err = "TI software version is empty.";
     saveTestResult("TI version", !ti.isEmpty(), ti);
+
+    return err;
 }
 
 void DeviceControllerCPP::testBrightness(int value)
@@ -940,11 +988,19 @@ void DeviceControllerCPP::testBrightness(int value)
 
 void DeviceControllerCPP::stopTestBrightness()
 {
+    TRACE;
     _deviceIO->setBrightnessTest(0, false);
 }
 
 void DeviceControllerCPP::testFinished()
 {
+    // Override sn test on finished.
+    QString sn = m_system->serialNumber();
+    saveTestResult("SN", !sn.isEmpty(), sn);
+
+    TRACE << "test finsihed with SN: " << sn;
+
+
     QStringList failedTests;
     for (const auto &testName : mAllTestNames) {
         auto resultIter = mAllTestsResults.find(testName);
@@ -964,12 +1020,6 @@ void DeviceControllerCPP::testFinished()
             TRACE << "Could not remove the file: " << testResultsFileName;
         }
     }
-
-    // override sn test on finished
-    QString sn = m_system->serialNumber();
-    saveTestResult("SN", !sn.isEmpty(), sn);
-
-    TRACE << "test finsihed with SN: " << sn;
 
     // write header of the actual file
     writeTestResult(testResultsFileName, "Test name", QString("Test Result"), "Description");

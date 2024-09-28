@@ -24,7 +24,7 @@ BasePageView {
 
     Component.onDestruction: {
         deviceController.updateEditMode(AppSpec.EMSystemSetup);
-        deviceController.pushSettings();
+        deviceController.saveSettings();
 
         deviceController.updateLockMode(AppSpec.EMSystemSetup, false);
     }

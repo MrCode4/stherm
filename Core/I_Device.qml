@@ -4,7 +4,11 @@ import QtQuickStream
 import Stherm
 
 /*! ***********************************************************************************************
- *
+ * I_Device: keeps the main data of app
+ * NOTE: Avoid adding '_' prefixed object properties (e.g. property Lock _lock: Lock {}) to the
+ * I_device object and its descendants.
+ * Introduce new object properties (e.g. Wiring, Setting, Lock, ...) exclusively within the
+ * I_device base object.
  * ************************************************************************************************/
 QSObject {
     id: appModel
@@ -15,13 +19,13 @@ QSObject {
     property int            type:           AppSpec.DeviceType.DT_Unknown
 
     //! Requested Temperature (Cel)
-    property real           requestedTemp:  22.22 // 72 F
+    property real           requestedTemp:  AppSpec.defaultRequestedTemperature
 
     //! Requested Min temperature in auto mode (Cel)
-    property real           autoMinReqTemp: 21.1111 // 70 F
+    property real           autoMinReqTemp: AppSpec.defaultAutoMinReqTemp
 
     //! Requested Max temperature in auto mode (Cel)
-    property real           autoMaxReqTemp: 23.3333 // 74 F
+    property real           autoMaxReqTemp: AppSpec.defaultAutoMaxReqTemp
 
     //! Current Temperature (Cel)
     property real           currentTemp:    18.0
@@ -59,6 +63,17 @@ QSObject {
     //! List <Schedule>
     property var            schedules:      []
 
+    //! Installation type
+    property int            installationType: AppSpec.InstallationType.ITUnknown
+
+    property int            residenceType: AppSpec.ResidenceTypes.Unknown
+
+    property int            whereInstalled: -1
+
+    property string         deviceLocation: ""
+
+    property string         thermostatName: ""
+
     //! Backlight
     property Backlight      backlight:      Backlight {}
 
@@ -82,6 +97,7 @@ QSObject {
         _qsRepo: appModel._qsRepo
     }
 
+
     //! Contact Contractor
     property ContactContractor contactContractor: ContactContractor {
         _qsRepo: appModel._qsRepo
@@ -92,6 +108,10 @@ QSObject {
 
     //! Lock model
     property Lock            _lock: Lock {}
+
+    property UserData userData: UserData {}
+    //! Service Titan model
+    property ServiceTitan    serviceTitan: ServiceTitan {}
 
     /* Functions
      * ****************************************************************************************/

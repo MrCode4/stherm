@@ -33,7 +33,7 @@ class System : public RestApiExecutor
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
 
     //! Maybe used in future...
-    Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY latestVersionChanged FINAL)
+    Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY forceUpdateChanged FINAL)
 
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
 
@@ -83,11 +83,15 @@ public:
     //! notifyUser: Send notification for user when new update is available
     Q_INVOKABLE void fetchUpdateInformation(bool notifyUser = false);
 
+    Q_INVOKABLE QString fetchUpdateInformationSync(bool notifyUser = false);
+
     Q_INVOKABLE void fetchBackdoorInformation();
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
 
     Q_INVOKABLE void exitManualMode();
+
+    Q_INVOKABLE void ignoreManualUpdateMode(bool checkUpdate = false);
 
     Q_INVOKABLE bool isFWServerUpdate();
 
@@ -196,6 +200,10 @@ public:
 
     Q_INVOKABLE QString getCurrentTime();
 
+    Q_INVOKABLE void fetchServiceTitanInformation();
+
+    Q_INVOKABLE void warrantyReplacement(const QString& oldSN, const QString& newSN);
+
 protected slots:
     void onSerialNumberReady();
     void createLogDirectoryOnServer();
@@ -203,7 +211,7 @@ protected slots:
 signals:
     void serialNumberReady();
     void areSettingsFetchedChanged(bool success);
-    void contractorInfoReady();
+    void contractorInfoReady(const bool& getDataFromServerSuccessfully = true);
     void settingsReady(QVariantMap settings);
     void appDataReady(QVariantMap settings);
 
@@ -252,6 +260,17 @@ signals:
     void pushSuccess();
 
     void testModeStarted();
+
+    //! Pass errors, used for tests in test mode
+    //! Use to retry in initial setup
+    void fetchUpdateErrorOccurred(QString err);
+
+    void forceUpdateChanged();
+
+    void serviceTitanInformationReady(bool hasError, bool isActive,
+                                      QString email, QString zipCode);
+
+    void warrantyReplacementFinished(bool success = false);
 
 private:
 
@@ -352,6 +371,7 @@ private:
     QTimer mFetchActiveTimer;
 
     QTimer mUpdateTimer;
+    QTimer mRetryUpdateTimer;
 
     NUVE::cpuid_t mUID;
 

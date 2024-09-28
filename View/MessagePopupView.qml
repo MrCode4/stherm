@@ -66,8 +66,8 @@ Item {
             onClosed: {
                 if (messageController && message && message.type !== Message.Type.SystemNotification) {
                     message.isRead = true;
-                    deviceController.updateEditMode(AppSpec.EMMessages);
-                    uiSession.deviceController.pushSettings();
+                    uiSession.deviceController.updateEditMode(AppSpec.EMMessages);
+                    uiSession.deviceController.saveSettings();
                 }
 
                 // Remove message from showing messages

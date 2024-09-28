@@ -17,8 +17,6 @@ ToolButton {
     //! I_Device
     property I_Device               device: deviceController?.device ?? null
 
-    property bool isSchedule: deviceController.currentSchedule
-
     property bool showCountdownLabel: systemDelayCounter > -1
 
     property int systemDelayCounter: -1
@@ -31,9 +29,8 @@ ToolButton {
     implicitHeight: implicitWidth
     padding: 8
 
-    clickable: enabled && !isSchedule
-    enabled: showCountdownLabel || !isSchedule
-    hoverEnabled: enabled && !isSchedule
+    clickable: enabled
+    hoverEnabled: enabled
 
 
     /* Children
@@ -147,7 +144,7 @@ ToolButton {
             id: countdownLabel
 
             anchors.bottom: mainItem.bottom
-            anchors.bottomMargin: isSchedule ? 4 : -8
+            anchors.bottomMargin: -8
             anchors.horizontalCenter: parent.horizontalCenter
 
             font.pointSize: Application.font.pointSize * 0.65
@@ -199,9 +196,6 @@ ToolButton {
     }
 
     state: {
-        if (isSchedule)
-            return "schedule";
-
         switch(device?.systemSetup?.systemMode) {
         case AppSpecCPP.Off:
             return "off";

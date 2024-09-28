@@ -68,7 +68,7 @@ Popup {
                 if (device && deviceController && device.isHold !== checked) {
                     deviceController.updateHold(checked)
                     deviceController.updateEditMode(AppSpec.EMHold);
-                    deviceController.pushSettings();
+                    deviceController.saveSettings();
                 }
             }
 
