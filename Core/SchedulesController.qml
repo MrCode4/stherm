@@ -230,6 +230,10 @@ QtObject {
                 schStartTime = new Date();
             }
             var schEndTime = Date.fromLocaleTimeString(Qt.locale(), schElement.endTime, "hh:mm AP");
+
+            //! Start time seconds is 0 e.x. 05:05:00
+            //! End time seconds is 59  e.x. 07:05:59
+            schEndTime.setSeconds(59);
             // find the correct running day for no repeat
             let scheduleRunningDays = findRunningDays(schElement.repeats, schStartTime, schEndTime, schElement.active);
             var currentSchedule = {
@@ -246,7 +250,8 @@ QtObject {
             }
             else // break into with correct running day
             {
-                currentSchedule.endTime = Date.fromLocaleTimeString(Qt.locale(), "11:59 PM", "hh:mm AP");
+                // Change to 11:59:59 PM
+                currentSchedule.endTime = Date.fromLocaleTimeString(Qt.locale(), "11:59:59 PM", "hh:mm:ss AP");
                 currentSchedules.push(currentSchedule)
 
                 var currentScheduleNight = {
