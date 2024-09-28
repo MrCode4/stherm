@@ -28,7 +28,9 @@ BasePageView {
     }
 
     Component.onDestruction: {
-        // Stop the test
+        // Stop the test if started when we use back
+        if (!brightnessTimer.running)
+            return;
         deviceController.deviceControllerCPP.stopTestBrightness()
         brightnessTimer.stop()
     }
@@ -52,6 +54,7 @@ BasePageView {
 
         TapHandler {
             onTapped: {
+                console.log("BrightnessTestPage tapped", brightnessTimer.running);
                 deviceController.deviceControllerCPP.stopTestBrightness()
                 brightnessTimer.stop()
                 confirmPopup1.open()
@@ -111,6 +114,7 @@ BasePageView {
         }
 
         onClicked: {
+            console.log("BrightnessTestPage Next onClicked", brightnessTimer.running);
             deviceController.deviceControllerCPP.stopTestBrightness()
             brightnessTimer.stop()
             confirmPopup1.open()

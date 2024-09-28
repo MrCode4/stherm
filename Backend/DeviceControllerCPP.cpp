@@ -988,6 +988,7 @@ void DeviceControllerCPP::testBrightness(int value)
 
 void DeviceControllerCPP::stopTestBrightness()
 {
+    TRACE;
     _deviceIO->setBrightnessTest(0, false);
 }
 

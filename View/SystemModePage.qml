@@ -159,6 +159,9 @@ BasePageView {
         message: "Warning!"
         rejectText: "Cancel"
         acceptText: "Ok"
+        // this will call reject always even after accept! but this is disconnected in such cases
+        // this is for when user close pop up or auto close
+        onHid: rejected()
     }
 
     /* Functions

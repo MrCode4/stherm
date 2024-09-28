@@ -38,7 +38,7 @@ Page {
     property bool useSimpleStackView: false
 
     property bool enableTitleTap: false
-    property int titleLongTapInterval: 10000
+    property int titleLongTapInterval: 5000
 
     signal titleTapped()
     signal titleLongTapped()
