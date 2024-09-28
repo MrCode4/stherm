@@ -32,8 +32,7 @@ Item {
 
     function push(page, props) {
         if (sv.stack.length > 0 && sv.stack[sv.stack.length-1].page == page) {
-            console.log(page, 'is already current page');
-            return;
+            return false;
         }
 
         console.log('Pushing Page', page)
@@ -41,6 +40,7 @@ Item {
         sv.replaceExit = sv.pushExit;
         sv.replaceEnter = sv.pushEnter;
         sv.replace(sv.currentItem, page, props);
+        return true;
     }
 
     function pop() {

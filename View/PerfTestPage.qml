@@ -12,6 +12,12 @@ BasePageView {
         uiSession: root.uiSession
     }
 
-    Component.onCompleted: uiSession.popupLayout.displayPopUp(perfTestPopup)
-    Component.onDestruction: perfTestPopup.close()
+    Component.onCompleted: {
+        uiSession.popupLayout.closeAllPopups();
+        uiSession.popupLayout.displayPopUp(perfTestPopup);
+    }
+    Component.onDestruction: {
+        console.log("Destructing PerfTestPage")
+        perfTestPopup.close()
+    }
 }

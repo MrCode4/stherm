@@ -41,7 +41,7 @@ PerfTestService::PerfTestService(QObject *parent)
     connect(&mTimerDelay, &QTimer::timeout, [this]() {
         auto timeLeft = startTimeLeft();        
         if (timeLeft > 0) {
-            startTimeLeft(timeLeft--);
+            startTimeLeft(timeLeft - 1);
         }
         else {
             startRunning();
@@ -56,7 +56,7 @@ PerfTestService::PerfTestService(QObject *parent)
         auto timeLeft = finishTimeLeft();
         qCDebug(PerfTestLogCat)<<"finishTimeLeft " <<timeLeft;
         if (timeLeft > 0) {
-            finishTimeLeft(timeLeft--);
+            finishTimeLeft(timeLeft - 1);
         }
         else {
             mTimerFinish.stop();
@@ -71,6 +71,9 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
 {
     while (mReadings.count() > 0) mReadings.removeLast();
 
+    startTimeLeft(0);
+    testTimeLeft(0);
+    finishTimeLeft(0);
     state(TestState::Waiting);
 
     QDateTime nextScheduleMark;
@@ -209,10 +212,10 @@ void PerfTestService::cleanupRunning()
 void PerfTestService::cancelTest()
 {
     cleanupRunning();
-    state(TestState::Cancelling);
+    //state(TestState::Cancelling);
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
-        qCDebug(PerfTestLogCat)<<"cancelTest Response " <<rawData;
+        qCDebug(PerfTestLogCat)<<"cancelTest Response " <<rawData;        
         scheduleNextCheck(PerfTest::Noon12PM);
     };
 
