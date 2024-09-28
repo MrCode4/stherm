@@ -1504,12 +1504,7 @@ void DeviceControllerCPP::revertPerfTest()
 {
     if (mSystemSetup && mSavedMode >= 0 && mSystemSetup->systemMode != mSavedMode) {
         qDebug() << "Reverting to old mode before perf-test: " <<  mSavedMode << ", running mode: " << mSystemSetup->systemMode;
-        mSystemSetup->systemMode = (AppSpecCPP::SystemMode)mSavedMode;
+        mSystemSetup->updateMode((AppSpecCPP::SystemMode)mSavedMode);
         mSavedMode = -1;
-
-        if (m_scheme) {
-            m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
-            m_scheme->restartWork(true);
-        }
     }
 }

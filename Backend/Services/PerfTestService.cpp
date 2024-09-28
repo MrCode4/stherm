@@ -12,8 +12,16 @@
 #include <QTimer>
 
 
-Q_LOGGING_CATEGORY(PerfTestServiceCat, "PerfTestServiceLog")
+Q_LOGGING_CATEGORY(PerfTestLogCat, "PerfTestServiceLog")
 
+namespace PerfTest {
+const int OneSecInMS = 1000;
+const QTime Noon12PM = QTime::fromString("12:00:00");
+const QTime TenAM = QTime::fromString("10:00:00");
+const int TestDuration = 2 * 60; //TODO: 15 * 60
+const int DataPickInterval = 2; //TODO: 15
+const int FinishDelay = 30; //TODO: 5 * 60
+}
 
 PerfTestService* PerfTestService::mMe = nullptr;
 
@@ -29,7 +37,7 @@ PerfTestService::PerfTestService(QObject *parent)
 {
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
-    mTimerDelay.setInterval(1000);
+    mTimerDelay.setInterval(PerfTest::OneSecInMS);
     connect(&mTimerDelay, &QTimer::timeout, [this]() {
         auto timeLeft = startTimeLeft();
         if (timeLeft > 0) {
@@ -40,8 +48,20 @@ PerfTestService::PerfTestService(QObject *parent)
         }
     });
 
-    mTimerGetTemp.setInterval(1 * 1000); // TODO: 15 * 1000
+    mTimerGetTemp.setInterval(PerfTest::DataPickInterval * PerfTest::OneSecInMS);
     connect(&mTimerGetTemp, &QTimer::timeout, this, &PerfTestService::collectReading);
+
+    mTimerFinish.setInterval(PerfTest::OneSecInMS);
+    connect(&mTimerGetTemp, &QTimer::timeout, [this]() {
+        auto timeLeft = finishTimeLeft();
+        if (timeLeft > 0) {
+            finishTimeLeft(timeLeft--);
+        }
+        else {
+            mTimerFinish.stop();
+            scheduleNextCheck(PerfTest::Noon12PM);
+        }
+    });
 
     scheduleNextCheck(QTime::currentTime());
 }
@@ -52,28 +72,27 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
 
     state(TestState::Waiting);
 
-    auto tenAm = QTime::fromString("10:00:00");
     QDateTime nextScheduleMark;
     QDateTime timeToCheckFrom = QDateTime(QDate::currentDate(), checkTime);
 
-    if (timeToCheckFrom.secsTo(QDateTime(QDate::currentDate(), QTime::fromString("11:45:00"))) >= 0) {
-        auto time = checkTime > tenAm ? checkTime : tenAm;
+    if (timeToCheckFrom.secsTo(QDateTime(QDate::currentDate(), PerfTest::Noon12PM.addSecs(-1 * PerfTest::TestDuration))) >= 0) {
+        auto time = checkTime > PerfTest::TenAM ? checkTime : PerfTest::TenAM;
         nextScheduleMark = QDateTime(QDate::currentDate(), time);
     }
     else {
-        nextScheduleMark = QDateTime(QDate::currentDate().addDays(1), tenAm);
+        nextScheduleMark = QDateTime(QDate::currentDate().addDays(1), PerfTest::TenAM);
     }
 
     auto msecsToNextCheck = timeToCheckFrom.msecsTo(nextScheduleMark);
-    qCDebug(PerfTestServiceCat) << "Next Schedule time " << nextScheduleMark << (qreal)msecsToNextCheck / (1000* 60);
-    QTimer::singleShot(30000, this, &PerfTestService::checkTestEligibility); // TODO: msecsToNextCheck
+    qCDebug(PerfTestLogCat) <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<" ms";
+    QTimer::singleShot(30000, this, &PerfTestService::checkTestEligibility); //TODO: msecsToNextCheck
 }
 
 void PerfTestService::checkTestEligibility()
 {
     if (Device->serialNumber().isEmpty()) {
-        qCDebug(PerfTestServiceCat) << "Sn is not ready! can not check perf-test-eligibility";
-        scheduleNextCheck(QTime::currentTime().addSecs(10 * 60));
+        qCDebug(PerfTestLogCat) <<"Sn is not ready! can not check perf-test-eligibility";
+        scheduleNextCheck(QTime::currentTime().addSecs(PerfTest::TestDuration / 3));
         return;
     }
 
@@ -81,7 +100,7 @@ void PerfTestService::checkTestEligibility()
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {        
         mode(data.value("cooling").toBool() ? AppSpecCPP::Cooling : AppSpecCPP::Heating);
-        qCDebug(PerfTestServiceCat)<< "CheckTestEligibility Response " << rawData << mode();
+        qCDebug(PerfTestLogCat)<<"CheckTestEligibility Response " <<rawData <<mode();
         state(TestState::Eligible);
         setupWarmup();
         // if (data.value("status").toBool()) {
@@ -89,7 +108,7 @@ void PerfTestService::checkTestEligibility()
         //     setupWarmup();
         // }
         // else {
-        //     scheduleNextCheck(QTime::fromString("12:00:00"));
+        //     scheduleNextCheck(PerfTest::Noon12PM);
         // }
     };
 
@@ -98,7 +117,7 @@ void PerfTestService::checkTestEligibility()
 
 void PerfTestService::setupWarmup()
 {
-    qCDebug(PerfTestServiceCat) << "setupWarmup";
+    qCDebug(PerfTestLogCat) <<"setupWarmup";
 
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
@@ -113,9 +132,9 @@ void PerfTestService::setupWarmup()
         bool isCoolable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::HeatingOnly;
 
         if ((mode() == AppSpecCPP::Heating && !isHeatable) || (mode() == AppSpecCPP::Cooling && !isCoolable)) {
-            qCDebug(PerfTestServiceCat) << "Test requested mode is not compatible. Requested-mode=" << mode()
-                                     << ", Device-type=" << DeviceControllerCPP::instance()->systemSetup()->systemType;
-            scheduleNextCheck(QTime::fromString("12:00:00"));
+            qCDebug(PerfTestLogCat) <<"Test requested mode is not compatible. Requested-mode=" <<mode()
+                                     <<", Device-type=" <<DeviceControllerCPP::instance()->systemSetup()->systemType;
+            scheduleNextCheck(PerfTest::Noon12PM);
         }
         else {
             state(TestState::Warmup);
@@ -128,9 +147,9 @@ void PerfTestService::setupWarmup()
 void PerfTestService::onCountdownStart(AppSpecCPP::SystemMode mode, int delay)
 {
     actualMode(mode);    
-    qCDebug(PerfTestServiceCat) << "onCountdownStart " << mode << ", " << delay;
-    qCDebug(PerfTestServiceCat) << "State: " << state();
-    startTimeLeft(delay/1000);
+    qCDebug(PerfTestLogCat) <<"onCountdownStart " <<mode <<", " <<delay;
+    qCDebug(PerfTestLogCat) <<"State: " <<state();
+    startTimeLeft(delay/PerfTest::OneSecInMS);
     mTimerDelay.start();
     mTimerGetTemp.stop();
     state(TestState::Warmup);
@@ -138,22 +157,24 @@ void PerfTestService::onCountdownStart(AppSpecCPP::SystemMode mode, int delay)
 
 void PerfTestService::onCountdownStop()
 {
-    qCDebug(PerfTestServiceCat) << "onCountdownStop";
-    qCDebug(PerfTestServiceCat) << "State: " << state();
+    qCDebug(PerfTestLogCat) <<"onCountdownStop";
+    qCDebug(PerfTestLogCat) <<"State: " <<state();
     startRunning();
 }
 
 void PerfTestService::onTempSchemeStateChanged(bool started)
 {
-    if (started && startTimeLeft() <= 0) {
+    qCDebug(PerfTestLogCat) <<"onTempSchemeStateChanged: " <<started;
+    if (started) {
+        testTimeLeft(PerfTest::TestDuration);
         startRunning();
     }
 }
 
 void PerfTestService::startRunning()
 {
-    qCDebug(PerfTestServiceCat) << "startRunning";
-    qCDebug(PerfTestServiceCat) << "State: " << state();
+    qCDebug(PerfTestLogCat) <<"startRunning";
+    qCDebug(PerfTestLogCat) <<"State: " <<state();
     startTimeLeft(0);
     mTimerDelay.stop();
     mTimerGetTemp.start();
@@ -163,10 +184,10 @@ void PerfTestService::startRunning()
 void PerfTestService::collectReading()
 {
     auto temperature = DeviceControllerCPP::instance()->getTemperature();
-    qCDebug(PerfTestServiceCat) << "collectReading " << temperature;
-
+    qCDebug(PerfTestLogCat) <<"collectReading " <<temperature;
+    testTimeLeft(testTimeLeft() - mTimerGetTemp.interval() / PerfTest::OneSecInMS);
     mReadings.append(QJsonValue(temperature));
-    if (mReadings.count() == 60) {
+    if (testTimeLeft() <= 0) {
         cleanupRunning();
         sendReadingsToServer();
     }
@@ -174,6 +195,7 @@ void PerfTestService::collectReading()
 
 void PerfTestService::cleanupRunning()
 {
+    qCDebug(PerfTestLogCat)<<"cleanupRunning";
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::tempSchemeStateChanged, this, &PerfTestService::onTempSchemeStateChanged);
@@ -188,8 +210,8 @@ void PerfTestService::cancelTest()
     state(TestState::Cancelling);
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
-        qCDebug(PerfTestServiceCat)<< "cancelTest Response " << rawData;
-        scheduleNextCheck(QTime::fromString("12:00:00"));
+        qCDebug(PerfTestLogCat)<<"cancelTest Response " <<rawData;
+        scheduleNextCheck(PerfTest::Noon12PM);
     };
 
     auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/cancel?sn=%0").arg(Device->serialNumber());
@@ -198,11 +220,15 @@ void PerfTestService::cancelTest()
 
 void PerfTestService::sendReadingsToServer()
 {
+    qCDebug(PerfTestLogCat)<<"sendReadingsToServer";
     state(TestState::Sending);
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
-        qCDebug(PerfTestServiceCat)<< "sendReadingsToServer Response " << rawData;
+        qCDebug(PerfTestLogCat)<<"sendReadingsToServer Response " <<rawData;
+        qCDebug(PerfTestLogCat)<<"Testing result uploaded, waiting to finish by user or automatic in " << PerfTest::FinishDelay;
         state(TestState::Complete);
+        finishTimeLeft(PerfTest::FinishDelay);
+        mTimerFinish.start();
     };
 
     QJsonObject data;
@@ -215,7 +241,8 @@ void PerfTestService::sendReadingsToServer()
 void PerfTestService::finishTest()
 {
     if (state() == TestState::Complete) {
-        qCDebug(PerfTestServiceCat)<< "finishTest, testing done, scheduling next check.";
-        scheduleNextCheck(QTime::fromString("12:00:00"));
+        qCDebug(PerfTestLogCat)<<"finishTest, testing done, scheduling next check.";
+        mTimerFinish.stop();
+        scheduleNextCheck(PerfTest::Noon12PM);
     }
 }
