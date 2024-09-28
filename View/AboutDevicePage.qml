@@ -144,7 +144,7 @@ BasePageView {
                         },
                         buddies: [
                             {
-                                text: "Restart App", visible: root.showTestMode, action: () => {
+                                text: "Restart App", visible: root.showTestMode || system.testMode, action: () => {
                                     restartAppPopup.open();
                                 }
                             }
@@ -152,7 +152,7 @@ BasePageView {
 
                     },
                     {
-                        text: "Manage Endpoint", visible: root.showTestMode, action: () => {
+                        text: "Manage Endpoint", visible: root.showTestMode  || system.testMode, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/Menu/ManageEndpoint.qml", {"uiSession": uiSession});
                             }
