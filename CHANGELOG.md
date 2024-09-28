@@ -1,15 +1,15 @@
 
 Release Note
 -------------
-## Release R 1.2.1
- 24th September 2024
- Branch- r1_2_1, commit- 43b884f4
+## Release R 1.2.1.1
+ 26th September 2024
+ Branch- r1_2_1, commit- 6d5a44614
  
 ### Release Articles
 update-V.1.2.1.zip
 
 ### Reason
-Add new features and fix some issues.
+Add new features and fix some issues Specifically first run flow.
 
 ### What’s Brand New
 - Simple Stack View implemented and used in tests.
@@ -25,6 +25,7 @@ Add new features and fix some issues.
 - Remove Nuve icon from default of ContactContractor model.
 - Check sensors health and manage the schemes.
 - Update the schedule UI and logics.
+- Factory test flow up check for update and sshpass on tests. 
 
 ### What’s Been Fixed
 - Fixed save sequence for fetched data.
@@ -38,6 +39,7 @@ Add new features and fix some issues.
 - Fixed some WIFI issues.
 
 ### Known Issues
+- Schedule has some minor issues to be determined.
 
 
 ## Release R 1.1.1
