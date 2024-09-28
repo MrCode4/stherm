@@ -81,7 +81,7 @@ void NUVE::DeviceConfig::load()
     uid = config.value("uid").toString().toStdString();
 #endif
 
-#ifndef INITIAL_SETUP_MODE_ON
+#if !defined(FAKE_SERIAL_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
     serial_number = config.value("serial_number").toString().toStdString();
 #endif
 

@@ -38,7 +38,7 @@ Sync::Sync(QObject *parent)
 {
     QSettings setting;
 
-#ifndef INITIAL_SETUP_MODE_ON
+#if !defined(FAKE_SERIAL_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
     mHasClient = setting.value(cHasClientSetting).toBool();
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
 #endif
