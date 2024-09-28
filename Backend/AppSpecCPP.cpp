@@ -53,7 +53,7 @@ AppSpecCPP::SystemType AppSpecCPP::systemTypeToEnum(QString systemTypeStr) {
     } else if (systemTypeStr == "heating") {
         return HeatingOnly;
 
-    } else if (systemTypeStr == "Dual_Fuel_Heating") {
+    } else if (systemTypeStr == "dual_fuel_heating") {
         return DualFuelHeating;
     }
 
