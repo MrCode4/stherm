@@ -14,9 +14,7 @@ DeviceAPI::DeviceAPI(QObject *parent)
     , m_hardware(
           new NUVE::Hardware(m_deviceConfig, m_timing, m_currentStage, m_sensors, *m_system, this))
 {
-#ifdef FAKE_SERIAL_MODE_ON
-    _uid = FAKE_SERIAL_ID;
-#elif defined(__unix__)
+#ifdef __unix__
     _uid = UtilityHelper::getCPUInfo().toStdString();
 #else
     // Use in test
