@@ -203,9 +203,7 @@ ApplicationWindow {
             SimpleStackView {
                 id: simpleStackView
                 anchors.fill: parent
-                Component.onCompleted: {
-                    simpleStackView.push("qrc:/Stherm/View/MainView.qml", {"uiSession": uiSessionId});
-                }
+                Component.onCompleted: simpleStackView.push("qrc:/Stherm/View/MainView.qml", {"uiSession": uiSessionId});
             }
 
             Behavior on contentY {
@@ -217,6 +215,19 @@ ApplicationWindow {
             id: _vacationModeView
             uiSession: uiSessionId
             visible: parent.currentIndex === 1
+        }
+    }
+
+    Connections {
+        target: PerfTestService
+        function onStateChanged(state) {
+            console.log('Perf-test state changed to ', state);
+            if (state >= PerfTestService.Eligible) {
+                simpleStackView.push("qrc:/Stherm/View/PerfTestPage.qml", {"uiSession": uiSessionId});
+            }
+            else {
+                simpleStackView.push("qrc:/Stherm/View/MainView.qml", {"uiSession": uiSessionId});
+            }
         }
     }
 
@@ -236,7 +247,7 @@ ApplicationWindow {
     ScreenSaver {
         id: _screenSaver
         anchors.centerIn: parent
-        visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
+        visible: ScreenSaverManager.state === ScreenSaverManager.Timeout && PerfTestService.state < PerfTestService.Eligible
 
         uiSession: uiSessionId
 

@@ -27,14 +27,6 @@ Item {
         id: _mainStackView
         anchors.fill: parent
         initialItem: _homePage
-        onCurrentItemChanged: {
-            if (currentItem == initialItem) {
-                uiSession.popupLayout.displayPopUp(perfTestPopup)
-            }
-            else {
-                perfTestPopup.close();
-            }
-        }
     }
 
     Home {
@@ -65,10 +57,5 @@ Item {
                 _mainStackView.push(unlockPage);
             }
         }
-    }
-
-    PerfTestPopup {
-        id: perfTestPopup
-        uiSession: mainView.uiSession
     }
 }

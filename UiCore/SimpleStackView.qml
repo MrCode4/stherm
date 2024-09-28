@@ -31,6 +31,12 @@ Item {
     }
 
     function push(page, props) {
+        if (sv.stack.length > 0 && sv.stack[sv.stack.length-1].page == page) {
+            console.log(page, 'is already current page');
+            return;
+        }
+
+        console.log('Pushing Page', page)
         sv.stack.push({'page': page, 'props': props});
         sv.replaceExit = sv.pushExit;
         sv.replaceEnter = sv.pushEnter;

@@ -39,7 +39,7 @@ PerfTestService::PerfTestService(QObject *parent)
 
     mTimerDelay.setInterval(PerfTest::OneSecInMS);
     connect(&mTimerDelay, &QTimer::timeout, [this]() {
-        auto timeLeft = startTimeLeft();
+        auto timeLeft = startTimeLeft();        
         if (timeLeft > 0) {
             startTimeLeft(timeLeft--);
         }
@@ -52,8 +52,9 @@ PerfTestService::PerfTestService(QObject *parent)
     connect(&mTimerGetTemp, &QTimer::timeout, this, &PerfTestService::collectReading);
 
     mTimerFinish.setInterval(PerfTest::OneSecInMS);
-    connect(&mTimerGetTemp, &QTimer::timeout, [this]() {
+    connect(&mTimerFinish, &QTimer::timeout, [this]() {
         auto timeLeft = finishTimeLeft();
+        qCDebug(PerfTestLogCat)<<"finishTimeLeft " <<timeLeft;
         if (timeLeft > 0) {
             finishTimeLeft(timeLeft--);
         }
@@ -184,8 +185,9 @@ void PerfTestService::startRunning()
 void PerfTestService::collectReading()
 {
     auto temperature = DeviceControllerCPP::instance()->getTemperature();
-    qCDebug(PerfTestLogCat) <<"collectReading " <<temperature;
+    qCDebug(PerfTestLogCat) <<"collectReading " <<temperature;    
     testTimeLeft(testTimeLeft() - mTimerGetTemp.interval() / PerfTest::OneSecInMS);
+    qCDebug(PerfTestLogCat) <<"testTimeLeft " <<testTimeLeft();
     mReadings.append(QJsonValue(temperature));
     if (testTimeLeft() <= 0) {
         cleanupRunning();
@@ -225,10 +227,10 @@ void PerfTestService::sendReadingsToServer()
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
         qCDebug(PerfTestLogCat)<<"sendReadingsToServer Response " <<rawData;
-        qCDebug(PerfTestLogCat)<<"Testing result uploaded, waiting to finish by user or automatic in " << PerfTest::FinishDelay;
-        state(TestState::Complete);
+        qCDebug(PerfTestLogCat)<<"Testing result uploaded, waiting to finish by user or automatic in " << PerfTest::FinishDelay;        
         finishTimeLeft(PerfTest::FinishDelay);
         mTimerFinish.start();
+        state(TestState::Complete);
     };
 
     QJsonObject data;
