@@ -59,6 +59,8 @@ CMake: </br>
 cmake -DFAKE_UID_MODE:BOOL=ON -DFAKE_UID=$YOUR_FAKE_UID .
 ```
 
+> **_Note:_** An active Internet connection is required to retrieve the serial number associated with your unique ID.
+
 > **_WARNING:_** Ensure your fake serial number is not a valid serial number connected to a real device. Any changes you make in the app will appear on the device.
 
 ## Devloper Mode
