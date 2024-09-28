@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * WifiIcon visualize a wifi strength
+ * WifiIcon visualize a wifi strength inside a WifiDelegate
  * ***********************************************************************************************/
 Item {
     id: _root
@@ -25,8 +25,9 @@ Item {
 
         fillMode: Image.PreserveAspectFit
         smooth: true
-        source: isConnected
-                ? (strength > 79
+        source: isConnected && !NetworkInterface.hasInternet
+                ? "qrc:/Stherm/Images/Wifi/wifi-no-internet.png"
+                : (strength > 79
                    ? "qrc:/Stherm/Images/Wifi/wifi.png"
                    : (strength > 50
                       ? "qrc:/Stherm/Images/Wifi/wifi-good.png"
@@ -36,7 +37,6 @@ Item {
                          )
                       )
                    )
-                : "qrc:/Stherm/Images/Wifi/wifi-off.png"
         sourceSize.width: width
         sourceSize.height: height
     }

@@ -63,7 +63,7 @@ Control {
                 WifiIcon {
                     anchors.fill: parent
 
-                    isConnected: true //! Disconnect icon is not desired
+                    isConnected: wifi?.connected ?? false
                     strength: wifi?.strength ?? 0
                 }
             }
