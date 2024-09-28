@@ -189,12 +189,13 @@ public:
 
     Q_INVOKABLE bool isTestsPassed();
     void doPerfTest(AppSpecCPP::SystemMode mode);
+    void revertPerfTest();
 
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
 
-    void temperatureSchemeStateChanged(bool started);
+    void tempSchemeStateChanged(bool started);
     void humiditySchemeStateChanged(bool started);
 
     //! Send alert to ui
@@ -372,4 +373,6 @@ private:
     QStringList mAllTestNames; // to keep them in order
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
+
+    int mSavedMode = -1;
 };

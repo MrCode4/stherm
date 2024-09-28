@@ -133,10 +133,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(m_scheme, &Scheme::started, this, [this]() {
-        emit temperatureSchemeStateChanged(true);
+        emit tempSchemeStateChanged(true);
     });
     connect(m_scheme, &Scheme::finished, this, [this]() {
-        emit temperatureSchemeStateChanged(false);
+        emit tempSchemeStateChanged(false);
     });
     connect(m_HumidityScheme, &Scheme::started, this, [this]() {
         emit humiditySchemeStateChanged(true);
@@ -1488,12 +1488,27 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
     TRACE << "exporting test results ended " << sent;
 void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 {
-    if (mSystemSetup) {
-        qDebug() << "MANUAL MODE SET " << mSystemSetup->systemMode <<  mode;
+    if (mSystemSetup && mSystemSetup->systemMode != mode) {
+        mSavedMode = mSystemSetup->systemMode;
+        qDebug() << "Requested Performance Test Mode: " <<  mode << ", running mode: " << mSystemSetup->systemMode;
         mSystemSetup->systemMode = mode;
 
         if (m_scheme) {
-            m_scheme->setCurrentSysMode(mode);
+            m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
+            m_scheme->restartWork(true);
+        }
+    }
+}
+
+void DeviceControllerCPP::revertPerfTest()
+{
+    if (mSystemSetup && mSavedMode >= 0 && mSystemSetup->systemMode != mSavedMode) {
+        qDebug() << "Reverting to old mode before perf-test: " <<  mSavedMode << ", running mode: " << mSystemSetup->systemMode;
+        mSystemSetup->systemMode = (AppSpecCPP::SystemMode)mSavedMode;
+        mSavedMode = -1;
+
+        if (m_scheme) {
+            m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
             m_scheme->restartWork(true);
         }
     }

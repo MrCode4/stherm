@@ -43,25 +43,27 @@ public:
 signals:
 
 public slots:
-    Q_INVOKABLE void startTest();
-    Q_INVOKABLE void stopTest();
+    Q_INVOKABLE void cancelTest();
+    Q_INVOKABLE void finishTest();
 
 private slots:
     void checkTestEligibility();
     void onCountdownStart(AppSpecCPP::SystemMode mode, int delay);
     void onCountdownStop();
-    void onTemperatureSchemeStateChanged(bool started);
+    void onTempSchemeStateChanged(bool started);
     void collectReading();
 
 private:
     void scheduleNextCheck(const QTime& checkTime);
     void setupWarmup();
+    void startRunning();
+    void cleanupRunning();
     void sendReadingsToServer();
 
 private:
     static PerfTestService* mMe;
 
     QTimer mTimerDelay;
-    QTimer mTimerGetTemp;
+    QTimer mTimerGetTemp;    
     QJsonArray mReadings;
 };
