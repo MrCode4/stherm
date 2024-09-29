@@ -256,7 +256,7 @@ void Scheme::CoolingLoop()
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::CoolingOnly: {
         auto effectiveTemp = effectiveTemperature();
-        TRACE_CHECK(false) << heatPump << mDataProvider.data()->currentTemperature() << effectiveTemperature();
+        TRACE_CHECK(false) << heatPump << mDataProvider.data()->currentTemperature() << effectiveTemp;
 
         bool hasDelay = false;
         while (mDataProvider.data()->currentTemperature() - effectiveTemp >= STAGE1_ON_RANGE) {

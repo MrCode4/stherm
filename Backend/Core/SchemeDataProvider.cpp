@@ -80,7 +80,7 @@ double SchemeDataProvider::effectiveTemperature() const
         // The mode can be heating or cooling
         // In off mode schedule() is null
         if (schedule() && systemSetup()->systemMode != AppSpecCPP::SystemMode::Auto) {
-            effTemperature = schedule()->effectiveTemperature(systemSetup()->systemMode);
+            effTemperature = UtilityHelper::toFahrenheit(schedule()->effectiveTemperature(systemSetup()->systemMode));
 
         } else {
 
