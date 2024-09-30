@@ -164,6 +164,16 @@ BasePageView {
         onHid: rejected()
     }
 
+    //! Used in the dual fuel heating
+    SwitchHeatingPopup {
+        id: switchHeatingPopup
+
+        deviceController: _root.deviceController
+
+        visible: _root.visible && !NetworkInterface.hasInternet && device?.systemSetup?.systemType === AppSpec.DualFuelHeating &&
+                 (deviceController.dfhSystemMode === AppSpecCPP.Conventional || deviceController.dfhSystemMode === AppSpecCPP.HeatPump)
+    }
+
     /* Functions
      * ****************************************************************************************/
 

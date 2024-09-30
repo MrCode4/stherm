@@ -319,6 +319,7 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeInDualFuelHeating() {
     if (activeSysType == AppSpecCPP::SystemType::DualFuelHeating) {
         if (switchDFHActiveSysTypeTo != AppSpecCPP::SystemType::SysTUnknown) {
             activeSysType = switchDFHActiveSysTypeTo;
+            emit dfhSystemTypeChanged(AppSpecCPP::SystemType::SysTUnknown);
 
         } else if (mDataProvider->dualFuelHeatingTemperatureF() >=  mDataProvider->outdoorTemperatureF()) {
             // Start the heat pump
@@ -327,15 +328,16 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeInDualFuelHeating() {
             // To ensure the related relays are off
             mRelay->turnConventionalHeating(false);
 
+            emit dfhSystemTypeChanged(activeSysType);
         } else {
             // Start the conventional heating
             activeSysType = AppSpecCPP::SystemType::Conventional;
 
             // To ensure the related relays are off
             mRelay->turnHeatPump(false);
+            emit dfhSystemTypeChanged(activeSysType);
         }
 
-        emit dfhSystemTypeChanged(activeSysType);
     }
 
     return activeSysType;
@@ -1156,6 +1158,8 @@ void Scheme::setSystemSetup()
                                    (sys->heatPumpOBState == 0 ? AppSpecCPP::Cooling
                                                               : AppSpecCPP::Heating) :
                                    AppSpecCPP::Off);
+
+        switchDFHActiveSysType(AppSpecCPP::SysTUnknown);
 
         restartWork();
     });

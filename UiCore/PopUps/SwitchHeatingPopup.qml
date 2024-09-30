@@ -58,6 +58,8 @@ I_PopUp {
                 text: "Cancel"
 
                 onClicked: {
+                    // Use automatic mode, continue the latest
+                    deviceController.deviceControllerCPP.switchDFHActiveSysType(AppSpec.SysTUnknown);
                     close();
                 }
             }

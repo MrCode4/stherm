@@ -78,16 +78,23 @@ ToolButton {
             spacing: 2
 
             //! HEATING mode icon
-            Image {
+            RoniaTextIcon {
                 Layout.alignment: Qt.AlignCenter
-                source: "qrc:/Stherm/Images/sun.png"
+                text: FAIcons.sun_bright
+                font.weight: 300
+
+                color: heatingLabel.color
             }
 
+
             Label {
+                id: heatingLabel
+
                 Layout.alignment: Qt.AlignCenter
                 font.pointSize: Application.font.pointSize * 0.65
                 text: {
-                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating) {
+                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet) {
+
                         if (dfhSystemMode === AppSpec.Conventional) {
                             return "Heating by furnace"
 
@@ -97,6 +104,16 @@ ToolButton {
                     }
 
                     return "Heating";
+                }
+
+                color: {
+                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet) {
+                        if (dfhSystemMode === AppSpec.Conventional || dfhSystemMode === AppSpec.HeatPump) {
+                            return "#DB4314"
+                        }
+                    }
+
+                    return Style.foreground
                 }
 
                 opacity: showCountdownLabel ? 0 : 1
