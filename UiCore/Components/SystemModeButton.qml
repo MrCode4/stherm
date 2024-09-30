@@ -23,10 +23,10 @@ ToolButton {
 
     property int realMode: AppSpec.Cooling
 
-    property int dfhSystemMode: deviceController.dfhSystemMode
+    property int dfhSystemType: deviceController.dfhSystemType
 
     property bool dfhTroubleshootingMode: device?.systemSetup?.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet &&
-                                          (dfhSystemMode === AppSpec.Conventional || dfhSystemMode === AppSpec.HeatPump)
+                                          (dfhSystemType === AppSpec.HeatingOnly || dfhSystemType === AppSpec.HeatPump)
 
 
     /* Object properties
@@ -99,10 +99,10 @@ ToolButton {
                 text: {
                     if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet) {
 
-                        if (dfhSystemMode === AppSpec.Conventional) {
+                        if (dfhSystemType === AppSpec.HeatingOnly) {
                             return "Heating by furnace"
 
-                        } else if (dfhSystemMode === AppSpec.HeatPump) {
+                        } else if (dfhSystemType === AppSpec.HeatPump) {
                             return "Heating by heat pump"
                         }
                     }

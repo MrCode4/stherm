@@ -329,7 +329,7 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeInDualFuelHeating() {
 
         } else {
             // Start the conventional heating
-            activeSysType = AppSpecCPP::SystemType::Conventional;
+            activeSysType = AppSpecCPP::SystemType::HeatingOnly; // or Conventional
 
             // To ensure the related relays are off
             mRelay->turnHeatPump(false);
@@ -1138,6 +1138,9 @@ void Scheme::setSystemSetup()
 
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
         TRACE<< "systemModeChanged: "<< sys;
+
+        // It will be call when heating loop started in dual fuel mode.
+        emit dfhSystemTypeChanged(AppSpecCPP::SysTUnknown);
 
         restartWork();
     });

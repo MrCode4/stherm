@@ -13,8 +13,8 @@ I_PopUp {
      * ****************************************************************************************/
     property DeviceController deviceController
     property string           detailMessage: "The thermostat is currently offline, and " +
-                                             (deviceController.dfhSystemMode === AppSpec.HeatPump ? "your heat pump is managing the heating.\n\nWould you like to switch to heating through the furnace instead?" :
-                                                                                                    "your furnace is managing the heating.\n\nWould you like to switch to heating through the heat pump instead?")
+                                             (deviceController.dfhSystemType === AppSpec.HeatPump ? "your heat pump is managing the heating.\n\nWould you like to switch to heating through the furnace instead?" :
+                                                                                                    "your furnace is managing the heating.\n\nWould you like to switch to heating through the heat pump instead?")
 
     /* signals
      * ****************************************************************************************/
@@ -95,8 +95,8 @@ I_PopUp {
 
                 onClicked: {
                     var switchTo = AppSpec.HeatPump;
-                    if (deviceController.dfhSystemMode === AppSpec.HeatPump){
-                        switchTo = AppSpec.Conventional;
+                    if (deviceController.dfhSystemType === AppSpec.HeatPump){
+                        switchTo = AppSpec.HeatingOnly;
                     }
 
                     deviceController.deviceControllerCPP.switchDFHActiveSysType(switchTo);
