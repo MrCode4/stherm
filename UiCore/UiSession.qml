@@ -66,7 +66,7 @@ Item {
 
     // Popups that can be called for this UiSession
     readonly property UiSessionPopups popUps:   UiSessionPopups {
-        parent: root
+        uiSession: root
     }
 
     //! Ui Preferences (Units, etc)
@@ -138,6 +138,7 @@ Item {
     signal sigHidePopUp (I_PopUp popUp);
     signal requestShowToast(string message);
     signal showHome(); //! This signal can be emitted to request going back to Home
+    signal openSystemModePage();
 
     /* Signal Handlers
      * ****************************************************************************************/

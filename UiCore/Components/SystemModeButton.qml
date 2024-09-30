@@ -25,6 +25,10 @@ ToolButton {
 
     property int dfhSystemMode: deviceController.dfhSystemMode
 
+    property bool dfhTroubleshootingMode: device?.systemSetup?.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet &&
+                                          (dfhSystemMode === AppSpec.Conventional || dfhSystemMode === AppSpec.HeatPump)
+
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: metrics.boundingRect("Cooling").width + leftPadding + rightPadding
@@ -80,9 +84,9 @@ ToolButton {
             //! HEATING mode icon
             RoniaTextIcon {
                 Layout.alignment: Qt.AlignCenter
+
                 text: FAIcons.sun_bright
                 font.weight: 300
-
                 color: heatingLabel.color
             }
 
@@ -106,15 +110,7 @@ ToolButton {
                     return "Heating";
                 }
 
-                color: {
-                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet) {
-                        if (dfhSystemMode === AppSpec.Conventional || dfhSystemMode === AppSpec.HeatPump) {
-                            return "#DB4314"
-                        }
-                    }
-
-                    return Style.foreground
-                }
+                color: dfhTroubleshootingMode ? "#DB4314" : Style.foreground
 
                 opacity: showCountdownLabel ? 0 : 1
             }

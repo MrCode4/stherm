@@ -23,7 +23,9 @@ Item {
 
     /* Property declartion
      * ****************************************************************************************/
-    property DeviceController deviceController: parent.deviceController
+    property var uiSession
+
+    property DeviceController deviceController: uiSession.deviceController
 
     property System system: deviceController.deviceControllerCPP.system
 
@@ -35,6 +37,9 @@ Item {
 
     //!
     property alias errorPopup:              errorPop
+
+    //! Switch heating mode in the dual fuel heating
+    property alias dfhSwitchHeatingPopup:      switchHeatingPopup
 
     /* Signal Handlers
      * ****************************************************************************************/
@@ -91,6 +96,14 @@ Item {
 
     SuccessPopup {
         id: successPopup
+    }
+
+    //! Used in the dual fuel heating
+    SwitchHeatingPopup {
+        id: switchHeatingPopup
+
+        deviceController: _root.deviceController
+        onOpenSystemModePage: uiSession.openSystemModePage();
     }
 
     //! Connections to show installConfirmation popup

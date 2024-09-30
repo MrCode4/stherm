@@ -87,7 +87,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
     });
 
     connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureChanged, this, [this] () {
-        // Device has internet and outdoor temperature has been successfully updated.
+        // Device has internet and outdoor temperature has been successfully updated, so move to automatic algorithm.
         switchDFHActiveSysType(AppSpecCPP::SystemType::SysTUnknown);
 
         if (mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
@@ -317,9 +317,8 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeInDualFuelHeating() {
     // Control the system type:
     auto activeSysType = mDataProvider->systemSetup()->systemType;
     if (activeSysType == AppSpecCPP::SystemType::DualFuelHeating) {
-        if (switchDFHActiveSysTypeTo != AppSpecCPP::SystemType::SysTUnknown) {
-            activeSysType = switchDFHActiveSysTypeTo;
-            emit dfhSystemTypeChanged(AppSpecCPP::SystemType::SysTUnknown);
+        if (mSwitchDFHActiveSysTypeTo != AppSpecCPP::SystemType::SysTUnknown) {
+            activeSysType = mSwitchDFHActiveSysTypeTo;
 
         } else if (mDataProvider->dualFuelHeatingTemperatureF() >=  mDataProvider->outdoorTemperatureF()) {
             // Start the heat pump
@@ -328,16 +327,15 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeInDualFuelHeating() {
             // To ensure the related relays are off
             mRelay->turnConventionalHeating(false);
 
-            emit dfhSystemTypeChanged(activeSysType);
         } else {
             // Start the conventional heating
             activeSysType = AppSpecCPP::SystemType::Conventional;
 
             // To ensure the related relays are off
             mRelay->turnHeatPump(false);
-            emit dfhSystemTypeChanged(activeSysType);
         }
 
+        emit dfhSystemTypeChanged(activeSysType);
     }
 
     return activeSysType;
@@ -345,8 +343,8 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeInDualFuelHeating() {
 
 void Scheme::switchDFHActiveSysType(AppSpecCPP::SystemType to)
 {
-    if (to != switchDFHActiveSysTypeTo) {
-        switchDFHActiveSysTypeTo = to;
+    if (to != mSwitchDFHActiveSysTypeTo) {
+        mSwitchDFHActiveSysTypeTo = to;
 
         if (mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
             restartWork();
@@ -1159,6 +1157,7 @@ void Scheme::setSystemSetup()
                                                               : AppSpecCPP::Heating) :
                                    AppSpecCPP::Off);
 
+        // Use automatic mode in dual fuel heating when system type change
         switchDFHActiveSysType(AppSpecCPP::SysTUnknown);
 
         restartWork();

@@ -148,5 +148,6 @@ private:
     bool mRestarting;
 
     //! Switch active system type in the dual fuel heating to ...
-    AppSpecCPP::SystemType switchDFHActiveSysTypeTo = AppSpecCPP::SystemType::SysTUnknown;
+    //! Used in internet connection troubleshooting
+    AppSpecCPP::SystemType mSwitchDFHActiveSysTypeTo = AppSpecCPP::SystemType::SysTUnknown;
 };
