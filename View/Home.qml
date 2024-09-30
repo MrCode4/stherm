@@ -114,7 +114,7 @@ Control {
 
             onClicked: {
                 if (dfhTroubleshootingMode) {
-                    uiSession.popUps.dfhSwitchHeatingPopup.open();
+                    uiSession.popupLayout.displayPopUp(switchHeatingPopup);
 
                 } else {
                     _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
@@ -315,6 +315,13 @@ Control {
         uiSession: _root.uiSession
     }
 
+    //! Switch heating mode in the dual fuel heating
+    SwitchHeatingPopup {
+        id: switchHeatingPopup
+
+        deviceController: uiSession.deviceController
+        onOpenSystemModePage: uiSession.openSystemModePage();
+    }
 
     //! Open a page from home
     Connections {

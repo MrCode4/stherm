@@ -44,7 +44,7 @@ I_PopUp {
 
             text: qsTr("System modes")
             font.underline: true
-            font.pointSize: root.font.pointSize * 0.9
+            font.pointSize: Qt.application.font.pointSize * 0.9
             color: "#43E0F8"
 
             TapHandler {
