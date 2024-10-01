@@ -17,6 +17,7 @@ SchemeDataProvider::SchemeDataProvider(NUVE::Sync *sync, QObject *parent) :
 
     mOutdoorTemperature = -1;
     connect(mSync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
+        TRACE << "Outdoor temperature:" << success << temp;
         if (success) {
             if (mOutdoorTemperature != temp) {
                 mOutdoorTemperature = temp;
