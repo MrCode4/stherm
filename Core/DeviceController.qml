@@ -1202,8 +1202,9 @@ I_DeviceController {
 
         // coolStage controls the Y wires.
         device.systemSetup.coolStage = heatPumpStage;
+        device.systemSetup.heatStage = stage;
 
-        device.systemSetup.heatStage = obState;
+        device.systemSetup.heatPumpOBState = obState;
 
         device.systemSetup.dualFuelThreshod = dualFuelThreshod;
         device.systemSetup.systemType = AppSpec.DualFuelHeating;
