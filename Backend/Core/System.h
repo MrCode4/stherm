@@ -174,6 +174,8 @@ public:
 
     Q_INVOKABLE void sendLog();
 
+    Q_INVOKABLE void sendFirstRunLog();
+
     Q_INVOKABLE void systemCtlRestartApp();
 
 
@@ -315,6 +317,8 @@ private:
     //! If run = true, enable the service and start it
     //! else disable service
     bool updateServiceState(const QString &serviceName, const bool &run);
+
+    QString generateLog();
 
 private:
     Sync *mSync;

@@ -61,6 +61,24 @@ BasePageView {
         // Enable when the serial number is correctly filled
         enabled: initialSetupReady
         onClicked: nextPage()
+
+        //! BusyIndicator for Fetching SN running status in first run flow
+        BusyIndicator {
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.bottom
+                topMargin: -10
+            }
+
+            width: parent.width
+            visible: running
+            running: system.serialNumber.length === 0 && deviceController.checkSNTryCount > 0
+
+            Label {
+                anchors.centerIn: parent
+                text: deviceController.checkSNTryCount
+            }
+        }
     }
 
     RowLayout {

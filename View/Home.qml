@@ -379,7 +379,7 @@ Control {
         onTriggered: {
 
             // Settings fetch from server at least once before show home in some cases
-            if(!uiSession.settingsReady) {
+            if (!uiSession.settingsReady) {
                 interval = 4000;
                 restart();
 
