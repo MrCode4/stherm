@@ -68,6 +68,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         auto sys = mDataProvider.data()->systemSetup();
 
         LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
+        LOG_CHECK(isRunning()) << "Temperature scheme version: " << QString(TEMPERATURE_SCHEME_VERSION);
         LOG_CHECK(isRunning() && sys) << "systemMode: " << sys->systemMode << "systemType: " << sys->systemType;
         LOG_CHECK(isRunning() && sys) << "systemRunDelay: " << sys->systemRunDelay << "isVacation: " << sys->isVacation;
         LOG_CHECK(isRunning() && sys) << "heatStage: "  << sys->heatStage << "coolStage: " <<sys->coolStage;

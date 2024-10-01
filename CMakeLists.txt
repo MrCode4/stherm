@@ -10,6 +10,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Temperature scheme version and update date.
+set(TEMPERATURE_SCHEME_VERSION_C "V.1.93(30.09.2024)")
+
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
 
@@ -467,9 +470,12 @@ set_target_properties(appStherm PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
-# Set a compile definition to be able to pass app version to cpp
 target_compile_definitions(appStherm PRIVATE
+# Set a compile definition to be able to pass app version to cpp
     PROJECT_VERSION_STRING="${PROJECT_VERSION}"
+
+# Temperature scheme version and update date.
+    TEMPERATURE_SCHEME_VERSION="${TEMPERATURE_SCHEME_VERSION_C}"
 )
 
 target_link_directories(appStherm PRIVATE
