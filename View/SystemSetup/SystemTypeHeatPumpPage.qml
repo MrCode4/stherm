@@ -101,7 +101,7 @@ BasePageView {
 
 
                 RadioButton {
-                    checked: appModel.systemSetup.heatStage === Number(text)
+                    checked: appModel.systemSetup.coolStage === Number(text)
                     onCheckedChanged: {
                         if (checked)
                             heatPumpStageLayout.heatPumpStage = Number(text);
@@ -111,7 +111,7 @@ BasePageView {
                 }
 
                 RadioButton {
-                    checked: appModel.systemSetup.heatStage === Number(text)
+                    checked: appModel.systemSetup.coolStage === Number(text)
                     onCheckedChanged: {
                         if (checked)
                             heatPumpStageLayout.heatPumpStage = Number(text);

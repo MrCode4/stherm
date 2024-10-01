@@ -73,7 +73,7 @@ BasePageView {
         // anchors.centerIn: parent
         anchors.top: parent.top
         width: parent.width
-        spacing: 12
+        spacing: 4
 
         //! Emergency Heating
         RowLayout {
@@ -149,7 +149,7 @@ BasePageView {
 
 
                 RadioButton {
-                    checked: appModel.systemSetup.heatStage === Number(text)
+                    checked: appModel.systemSetup.coolStage === Number(text)
                     onCheckedChanged: {
                         if (checked)
                             heatPumpStageLayout.heatPumpStage = Number(text);
@@ -159,7 +159,7 @@ BasePageView {
                 }
 
                 RadioButton {
-                    checked: appModel.systemSetup.heatStage === Number(text)
+                    checked: appModel.systemSetup.coolStage === Number(text)
                     onCheckedChanged: {
                         if (checked)
                             heatPumpStageLayout.heatPumpStage = Number(text);
@@ -212,6 +212,46 @@ BasePageView {
             }
         }
 
+
+        //! Furnace Stages
+        RowLayout {
+            spacing: 24
+
+            Label {
+                Layout.fillWidth: true
+                text: "Furnace Stages"
+            }
+
+            RowLayout {
+                id: furnaceStageLayout
+
+                Layout.fillWidth: false
+
+                property int furnaceStage: 1
+
+
+                RadioButton {
+                    checked: appModel.systemSetup.heatStage === Number(text)
+                    onCheckedChanged: {
+                        if (checked)
+                            furnaceStageLayout.furnaceStage = Number(text);
+                    }
+
+                    text: "1"
+                }
+
+                RadioButton {
+                    checked: appModel.systemSetup.heatStage === Number(text)
+                    onCheckedChanged: {
+                        if (checked)
+                            furnaceStageLayout.furnaceStage = Number(text);
+                    }
+
+                    text: "2"
+                }
+            }
+        }
+
         ColumnLayout {
 
             Layout.fillWidth: true
@@ -245,6 +285,7 @@ BasePageView {
             var temperatureC = isCelsius ? temperature.control.value : Utils.fahrenheitToCelsius(temperature.control.value);
             deviceController.setSystemDualFuelHeating(emergencyHeatingSwh.checked,
                                                       heatPumpStageLayout.heatPumpStage,
+                                                      furnaceStageLayout.furnaceStage,
                                                       heatPumpOBStateLayout.heatPumpOBState,
                                                       temperatureC)
         }
