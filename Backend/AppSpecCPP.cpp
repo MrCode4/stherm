@@ -2,6 +2,7 @@
 #include <QQmlEngine>
 #include <QFile>
 #include <sstream>
+#include "device_config.h"
 
 AppSpecCPP::AppSpecCPP(QObject *parent)
     : QObject{parent}
@@ -162,4 +163,8 @@ QString AppSpecCPP::systemModeToString(SystemMode systemMode) {
     }
 
     return "Off";
+}
+
+QString AppSpecCPP::apiBaseServerUrl() {
+    return API_SERVER_BASE_URL;
 }

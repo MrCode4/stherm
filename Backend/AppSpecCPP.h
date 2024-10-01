@@ -27,6 +27,9 @@ const QString fanSpeedKey   = QString("fanSpeed");
 class AppSpecCPP : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString api_base_server_url READ apiBaseServerUrl  CONSTANT)
+
     QML_ELEMENT
 public:
     explicit AppSpecCPP(QObject *parent = nullptr);
@@ -185,6 +188,8 @@ public:
     Q_INVOKABLE QString decodeLockPassword(QString pass);
 
     Q_INVOKABLE QString systemModeToString(SystemMode systemMode);
+
+    QString apiBaseServerUrl();
 
 signals:
 

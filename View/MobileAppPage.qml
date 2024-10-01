@@ -40,11 +40,19 @@ BasePageView {
         }
 
         Image {
+            id: qrCodeImage
+
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: parent.width
+            Layout.preferredWidth: parent.width * 0.35
+            Layout.preferredHeight: parent.width * 0.35
             Layout.columnSpan: 2
             fillMode: Image.PreserveAspectFit
-            source: "qrc:/Stherm/Images/mobile-app-link.png"
+
+            property string url: AppSpec.api_base_server_url + "api/mobilelink?sn=" + deviceController.deviceControllerCPP.system.serialNumber
+            source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg(qrCodeImage.url, Style.foreground)}`
+            sourceSize.width: width
+            sourceSize.height: height
+
             MouseArea {
                 anchors.fill: parent
                 onClicked: fetchUserData()
