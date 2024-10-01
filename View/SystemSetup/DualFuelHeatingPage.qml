@@ -231,7 +231,7 @@ BasePageView {
 
 
                 RadioButton {
-                    checked: appModel.systemSetup.heatStage === Number(text)
+                    checked: appModel.systemSetup.heatStage !== 2
                     onCheckedChanged: {
                         if (checked)
                             furnaceStageLayout.furnaceStage = Number(text);
