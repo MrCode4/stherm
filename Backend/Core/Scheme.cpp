@@ -1180,11 +1180,14 @@ void Scheme::setSystemSetup()
     });
 
     connect(sys, &SystemSetup::coolStageChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::CoolingOnly)
+        if (sys->systemType == AppSpecCPP::SystemType::CoolingOnly ||
+            sys->systemType == AppSpecCPP::SystemType::HeatPump ||
+            sys->systemType == AppSpecCPP::SystemType::DualFuelHeating)
             TRACE << "coolStageChanged: " << sys->coolStage;
     });
     connect(sys, &SystemSetup::heatStageChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::HeatingOnly)
+        if (sys->systemType == AppSpecCPP::SystemType::HeatingOnly ||
+            sys->systemType == AppSpecCPP::SystemType::DualFuelHeating)
             TRACE << "heatStageChanged: " << sys->heatStage;
     });
 
@@ -1200,9 +1203,10 @@ void Scheme::setSystemSetup()
     });
 
     connect(sys, &SystemSetup::dualFuelThreshodChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
-            mDataProvider->systemSetup()->systemMode == AppSpecCPP::SystemMode::Heating &&
-            mDataProvider->systemSetup()->systemMode == AppSpecCPP::SystemMode::Auto) {
+        // CHECK
+        if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && (
+            sys->systemMode == AppSpecCPP::SystemMode::Heating ||
+            sys->systemMode == AppSpecCPP::SystemMode::Auto)) {
             TRACE << "Restart scheme due to dual fuel temperature changed.";
             restartWork();
         }
