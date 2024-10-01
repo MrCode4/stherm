@@ -271,7 +271,27 @@ void NmCli::connectToUnsavedWifi(const QString& bssid, const QString& password, 
     execAsync(NC_COMMAND, args, callback);
 }
 
-void NmCli::connectToSavedWifi(const QString& ssid, const QString& password, ExitedCallback callback)
+void NmCli::connectToSavedWifi(const QString& ssid, const QString& security, const QString& password, ExitedCallback callback)
+{
+    //! If security is empty remove 802-11-wireless-security settting from profile.
+    //! Doesn't emit error if 802-11-wireless-security not exist
+    if (security.isEmpty()) {
+        const QStringList args({
+            NC_ARG_CONNECTION,
+            NC_ARG_MODIFY,
+            ssid,
+            "remove",
+            "802-11-wireless-security"
+        });
+        execAsync(NC_COMMAND, args, [this, ssid, security, password, callback] (QProcess* process) {
+            connectToSavedWifiImpl(ssid, security, password, callback);
+        });
+    } else {
+        connectToSavedWifiImpl(ssid, security, password, callback);
+    }
+}
+
+void NmCli::connectToSavedWifiImpl(const QString& ssid, const QString& security, const QString& password, ExitedCallback callback)
 {
     if (password.isEmpty()) {
         //! Perform connection command
@@ -297,10 +317,16 @@ void NmCli::connectToSavedWifi(const QString& ssid, const QString& password, Exi
             }
         };
 
+        //! Also update the security type (WAP2, WAP3, etc). This is required for saved wifi that
+        //! their security type is changed, for example a saved wifi with no password now has a
+        //! password or viceversa
+
         const QStringList args({
             NC_ARG_CONNECTION,
             NC_ARG_MODIFY,
             ssid,
+            "802-11-wireless-security.key-mgmt",
+            securityToNmcliKeyMgmt(security),
             "802-11-wireless-security.psk",
             password
         });
@@ -331,4 +357,17 @@ void NmCli::forgetWifi(const QString& ssid, ExitedCallback callback)
     });
 
     execAsync(NC_COMMAND, args, callback);
+}
+
+QString NmCli::securityToNmcliKeyMgmt(const QString& security)
+{
+    if (security == "WPA2" || security == "WPA2 WPA3") {
+        return "wpa-psk";
+    }
+
+    if (security == "WPA3") {
+        return "sae";
+    }
+
+    return ""; //! For example when security is "" (no password)
 }
