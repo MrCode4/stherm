@@ -46,7 +46,7 @@ AppSpecCPP {
     //! Dual fuel temperature range
     //! Fahrenheit
     property real maximumDualFuelThresholdF: 45
-    property real minumumDualFuelThresholdF: 15
+    property real minimumDualFuelThresholdF: 15
 
     //! Percent
     property int defaultBrightness: 100

@@ -78,6 +78,12 @@ BasePageView {
                                                       "uiSession": root.uiSession
                                                   });
                         break;
+
+                    case AppSpec.DualFuelHeating:
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/DualFuelHeatingPage.qml", {
+                                                     "uiSession": root.uiSession
+                                                 });
+                        break;
                 }
             }
         }

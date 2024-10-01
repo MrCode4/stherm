@@ -186,6 +186,7 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/ResidenceTypePage.qml
         View/SystemSetup/DeviceLocationPage.qml
         View/SystemSetup/ThermostatNamePage.qml
+        View/SystemSetup/DualFuelHeatingPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
         View/RequestTechPriorityPage.qml
@@ -212,7 +213,6 @@ qt6_add_qml_module(appStherm
         View/MobileAppPage.qml
         View/LockPage.qml
         View/UnlockPage.qml
-        View/DualFuelHeatingPage.qml
 
         # Service Titan pages
         View/ServiceTitan/JobNumberPage.qml
