@@ -1183,10 +1183,10 @@ I_DeviceController {
 
     function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
         device.systemSetup.heatPumpEmergency = emergency;
-        device.systemSetup.heatStage = stage;
 
-        // CHECK: cool stage changed in the heat pump
-        // device.systemSetup.coolStage = stage;
+        // coolStage controls the Y wires.
+        device.systemSetup.coolStage = stage;
+
         device.systemSetup.heatPumpOBState = obState;
         device.systemSetup.systemType = AppSpecCPP.HeatPump;
     }
@@ -1197,12 +1197,16 @@ I_DeviceController {
         device.systemSetup.systemType = AppSpecCPP.Conventional;
     }
 
-    function setSystemDualFuelHeating(emergency: bool, stage: int, obState: int, dualFuelHeatingTemperature: real) {
+    function setSystemDualFuelHeating(emergency: bool, heatPumpStage: int, stage: int, obState: int, dualFuelThreshod: real) {
         device.systemSetup.heatPumpEmergency = emergency;
-        device.systemSetup.heatStage = stage;
-        device.systemSetup.heatPumpOBState = obState;
-        device.systemSetup.dualFuelHeatingTemperature = dualFuelHeatingTemperature;
-        device.systemSetup.systemType = AppSpecCPP.DualFuelHeating;
+
+        // coolStage controls the Y wires.
+        device.systemSetup.coolStage = heatPumpStage;
+
+        device.systemSetup.heatStage = obState;
+
+        device.systemSetup.dualFuelThreshod = dualFuelThreshod;
+        device.systemSetup.systemType = AppSpec.DualFuelHeating;
     }
 
 
@@ -1228,6 +1232,10 @@ I_DeviceController {
             setSystemHeatPump(settings.heatPumpEmergency, settings.heatStage, settings.heatPumpOBState)
         else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
+        else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
+            setSystemDualFuelHeating(settings.heatPumpEmergency, settings.coolStage, settings.heatStage,
+                                     settings.heatPumpOBState,
+                                     settings?.dual_fuel_threshod ?? device.systemSetup.dualFuelThreshod);
         else
             console.warn("System type unknown", settings.type)
     }

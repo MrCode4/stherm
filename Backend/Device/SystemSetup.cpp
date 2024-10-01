@@ -20,5 +20,5 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
 
     _mIsSystemShutoff = false;
 
-    dualFuelHeatingTemperature = 1.666667; // 35 Fahrenheit
+    dualFuelThreshod = 1.666667; // 35 Fahrenheit
 }

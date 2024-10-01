@@ -269,10 +269,10 @@ BasePageView {
                 Layout.fillWidth: true
 
                 labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
-                control.from: isCelsius ? Utils.fahrenheitToCelsius(15) : 15;
-                control.to:   isCelsius ? Utils.fahrenheitToCelsius(45) : 45;
+                control.from: isCelsius ? Utils.fahrenheitToCelsius(AppSpec.minimumDualFuelThresholdF) : AppSpec.minimumDualFuelThresholdF;
+                control.to:   isCelsius ? Utils.fahrenheitToCelsius(AppSpec.maximumDualFuelThresholdF) : AppSpec.maximumDualFuelThresholdF;
 
-                control.value: Utils.convertedTemperature(appModel.systemSetup.dualFuelHeatingTemperature, deviceController.temperatureUnit);
+                control.value: Utils.convertedTemperature(appModel.systemSetup.dualFuelThreshod, deviceController.temperatureUnit);
             }
         }
     }

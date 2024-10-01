@@ -39,8 +39,14 @@ AppSpecCPP {
     property real autoModeDiffrenceF: 3.0
 
     //! Auto mode defaults
+    //! Celcius
     property real defaultAutoMinReqTemp: 20.0    // 68 F
     property real defaultAutoMaxReqTemp: 23.3333 // 74 F
+
+    //! Dual fuel temperature range
+    //! Fahrenheit
+    property real maximumDualFuelThresholdF: 45
+    property real minumumDualFuelThresholdF: 15
 
     //! Percent
     property int defaultBrightness: 100

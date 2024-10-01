@@ -30,7 +30,7 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(bool isVacation        MEMBER isVacation        NOTIFY isVacationChanged FINAL)
     Q_PROPERTY(bool _isSystemShutoff  MEMBER _mIsSystemShutoff NOTIFY isSystemShutoffChanged FINAL)
 
-    Q_PROPERTY(double dualFuelHeatingTemperature  MEMBER dualFuelHeatingTemperature NOTIFY dualFuelHeatingTemperatureChanged FINAL)
+    Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
     QML_ELEMENT
 
@@ -62,7 +62,7 @@ public:
     //! This is usually the outdoor temperature
     //! at which the heat pump becomes less efficient than the furnace.
     //! Celsius
-    double dualFuelHeatingTemperature;
+    double dualFuelThreshod;
 
 signals:
     void systemTypeChanged();
@@ -75,6 +75,6 @@ signals:
     void systemAccessoriesChanged();
     void isVacationChanged();
     void isSystemShutoffChanged();
-    void dualFuelHeatingTemperatureChanged();
+    void dualFuelThreshodChanged();
 
 };
