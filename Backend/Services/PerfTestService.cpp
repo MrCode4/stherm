@@ -20,7 +20,7 @@ const QTime Noon12PM = QTime::fromString("12:00:00");
 const QTime TenAM = QTime::fromString("10:00:00");
 const int TestDuration = 2 * 60; //TODO: 15 * 60
 const int DataPickInterval = 2; //TODO: 15
-const int FinishDelay = 30; //TODO: 5 * 60
+const int FinishDelay = 10; //TODO: 5 * 60
 }
 
 PerfTestService* PerfTestService::mMe = nullptr;
@@ -212,7 +212,7 @@ void PerfTestService::cleanupRunning()
 void PerfTestService::cancelTest()
 {
     cleanupRunning();
-    //state(TestState::Cancelling);
+    state(TestState::Cancelling);
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
         qCDebug(PerfTestLogCat)<<"cancelTest Response " <<rawData;        

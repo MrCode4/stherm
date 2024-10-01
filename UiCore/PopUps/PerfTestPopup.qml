@@ -6,7 +6,7 @@ import Stherm
 
 I_PopUp {
     id: root
-    title: showConfirmationToStop ? "Stop the Performance Test" : "Performance Test"
+    title: PerfTestService.state != PerfTestService.Complete && root.showConfirmationToStop ? "Stop the Performance Test" : "Performance Test"
     leftPadding: 24; rightPadding: 24; topPadding: 20; bottomPadding: 24
     closeButtonEnabled: false
     closePolicy: Popup.NoAutoClose
@@ -18,105 +18,38 @@ I_PopUp {
     background: Rectangle {
         border.width: 4
         border.color: Style.foreground
-        color: Style.background        
+        color: Style.background
     }
 
-    ColumnLayout {
+    width: AppStyle.size * 0.8
+    height: AppStyle.size * 0.7
+
+    contents: ColumnLayout {
         spacing: 20
+        anchors.fill: parent
 
-        Text {
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            font.family: "Montserrat"
-            font.pixelSize: 14
-            font.weight: 400
-            text: "Your HVAC system needs to perform a\n15-minute system check to ensure it is ready for\nthe season."
-            color: Style.foreground
-            visible: PerfTestService.state == PerfTestService.Eligible || PerfTestService.state == PerfTestService.Warmup
-        }
-
-        Column {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 5
-            visible: PerfTestService.state == PerfTestService.Eligible || PerfTestService.state == PerfTestService.Warmup
-
-            Image {
-                anchors.horizontalCenter: parent.horizontalCenter
-                source: "qrc:/Stherm/Images/%1".arg(PerfTestService.mode == AppSpecCPP.Cooling ? "cool.png" : "sun.png")
-            }
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
-                color: Style.foreground
-                visible: PerfTestService.startTimeLeft > 0
-                text: "Cooling will start in\n" + PerfTestService.startTimeLeft + " sec."
+        Loader {
+            id: loader
+            Layout.fillWidth: true;
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+            sourceComponent: {
+                if (PerfTestService.state != PerfTestService.Complete && root.showConfirmationToStop) {
+                    return compCancel
+                }
+                else {
+                    switch(PerfTestService.state) {
+                        case PerfTestService.Eligible:
+                        case PerfTestService.Warmup:
+                            return compWarmup;
+                        case PerfTestService.Running:
+                        case PerfTestService.Sending:
+                            return compRunning;
+                        case PerfTestService.Complete:
+                            return compComplete;
+                    }
+                }
             }
         }
-
-        Column {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 20
-            visible: PerfTestService.state == PerfTestService.Running
-
-            Item {width: 1; height: 25}
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
-                color: Style.foreground
-                text: "Performance check is in progress"
-            }
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
-                color: Style.foreground
-                text: "Remaining time " + Math.ceil(PerfTestService.testTimeLeft.toFixed()/60) + " minutes"
-            }
-
-            Item {width: 1; height: 10}
-        }
-
-        Column {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 20
-            visible: PerfTestService.state == PerfTestService.Complete
-
-            Item {width: 1; height: 25}
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
-                color: Style.foreground
-                text: "The check is complete, and the results have\nbeen sent to your contractor."
-            }
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
-                color: Style.foreground
-                text: "You will be contacted if there is any\npotential risk related to your HVAC."
-            }
-
-            Item {width: 1; height: 10}
-        }
-
 
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
@@ -130,22 +63,174 @@ I_PopUp {
                 onClicked: root.showConfirmationToStop = false
             }
 
+            Item {
+                Layout.fillWidth: true
+                width: 1
+                visible: root.showConfirmationToStop
+            }
+
             ButtonInverted {
                 leftPadding: 8
                 rightPadding: 8
                 text:  PerfTestService.state == PerfTestService.Complete ? "Close" : "Stop"
                 font.bold: true
+
                 onClicked: {
                     if (PerfTestService.state == PerfTestService.Complete) {
                         PerfTestService.finishTest();
                     }
                     else {
-                        root.showConfirmationToStop = !root.showConfirmationToStop;
-                        if (!root.showConfirmationToStop) {
+                        if (root.showConfirmationToStop) {
                             PerfTestService.cancelTest();
+                        }
+                        else {
+                            root.showConfirmationToStop = true;
                         }
                     }
                 }
+            }
+        }
+    }
+
+    Component {
+        id: compWarmup
+        ColumnLayout {
+            spacing: 40
+
+            Text {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.family: "Montserrat"
+                font.pixelSize: 14
+                font.weight: 400
+                color: Style.foreground
+                wrapMode: Text.Wrap
+                text: "Your HVAC system needs to perform a 15-minute system check to ensure it is ready for the season."
+            }
+
+            ColumnLayout {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true
+                spacing: 5
+
+                Image {
+                    Layout.alignment: Qt.AlignHCenter
+                    source: "qrc:/Stherm/Images/%1".arg(PerfTestService.mode == AppSpecCPP.Cooling ? "cool.png" : "sun.png")
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    font.family: "Montserrat"
+                    font.pixelSize: 14
+                    font.weight: 400
+                    color: Style.foreground
+                    visible: PerfTestService.startTimeLeft > 0
+                    wrapMode: Text.Wrap
+                    text: "Cooling will start in " + PerfTestService.startTimeLeft + " sec."
+                }
+            }
+        }
+    }
+
+    Component {
+        id: compRunning
+        ColumnLayout {
+            spacing: 20
+
+            Item {Layout.fillWidth: true; Layout.preferredHeight: 30}
+
+            Text {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.family: "Montserrat"
+                font.pixelSize: 14
+                font.weight: 400
+                color: Style.foreground
+                wrapMode: Text.Wrap
+                text: "Performance check is in progress"
+            }
+
+            Text {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.family: "Montserrat"
+                font.pixelSize: 14
+                font.weight: 400
+                color: Style.foreground
+                wrapMode: Text.Wrap
+                text: "Remaining time " + Math.ceil(PerfTestService.testTimeLeft.toFixed()) + " secs"
+            }
+        }
+    }
+
+    Component {
+        id: compComplete
+        ColumnLayout {
+            spacing: 20
+
+            Item {Layout.fillWidth: true; Layout.preferredHeight: 30}
+
+            Text {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.family: "Montserrat"
+                font.pixelSize: 14
+                font.weight: 400
+                color: Style.foreground
+                wrapMode: Text.Wrap
+                text: "The check is complete, and the results have been sent to your contractor."
+            }
+
+            Text {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.family: "Montserrat"
+                font.pixelSize: 14
+                font.weight: 400
+                color: Style.foreground
+                wrapMode: Text.Wrap
+                text: "You will be contacted if there is any potential risk related to your HVAC."
+            }
+        }
+    }
+
+    Component {
+        id: compCancel
+        ColumnLayout {
+            spacing: 20
+
+            Text {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.family: "Montserrat"
+                font.pixelSize: 14
+                font.weight: 400
+                color: Style.foreground
+                text: "Stopping the performance check will prevent the contractor from identifying potential issues with your HVAC system."
+                wrapMode: Text.Wrap
+            }
+
+            Text {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.family: "Montserrat"
+                font.pixelSize: 14
+                font.weight: 400
+                color: Style.foreground
+                text: "Your thermostat will return to the previous mode."
+                wrapMode: Text.Wrap
+            }
+
+            Text {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.family: "Montserrat"
+                font.pixelSize: 14
+                font.weight: 400
+                color: Style.foreground
+                text: "Are you sure you want to stop?"
+                wrapMode: Text.Wrap
             }
         }
     }
