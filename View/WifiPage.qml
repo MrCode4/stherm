@@ -329,7 +329,7 @@ BasePageView {
                     if (text === "Connect") {
                         var wifi = _wifisRepeater.currentItem.wifi;
 
-                        //! Check if password for this wifi is saved.
+                        //! Check if we need user prompt for password, i.e., access point is open or is saved and has a profile.
                         if (wifi.security === "" || NetworkInterface.isWifiSaved(wifi)) {
                             NetworkInterface.connectWifi(wifi, "");
                         } else {
