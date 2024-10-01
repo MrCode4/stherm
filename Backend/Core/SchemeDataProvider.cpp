@@ -188,9 +188,14 @@ double SchemeDataProvider::outdoorTemperatureF() const
     return UtilityHelper::toFahrenheit(mOutdoorTemperature);
 }
 
-double SchemeDataProvider::dualFuelHeatingTemperatureF() const
+double SchemeDataProvider::dualFuelThreshodF() const
 {
-    return UtilityHelper::toFahrenheit(mSystemSetup->dualFuelHeatingTemperature);
+    return UtilityHelper::toFahrenheit(mSystemSetup->dualFuelThreshod);
+}
+
+int SchemeDataProvider::heatPumpStage() const
+{
+    return mSystemSetup->coolStage;
 }
 
 double SchemeDataProvider::autoMaxReqTempF() const

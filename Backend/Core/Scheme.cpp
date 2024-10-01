@@ -264,6 +264,8 @@ void Scheme::CoolingLoop()
     switch (mDataProvider.data()->systemSetup()->systemType) { // Device type
     case AppSpecCPP::SystemType::HeatPump:
     case AppSpecCPP::SystemType::DualFuelHeating: // Works same as HeatPump in cooling
+        //! InternalCoolingLoopStage1 uses the cooling stage as a heat pump (both determine the Y wires),
+        //!  and they're identical without causing any issues.
         heatPump = true;
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::CoolingOnly: {
@@ -320,7 +322,7 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeInDualFuelHeating() {
         if (mSwitchDFHActiveSysTypeTo != AppSpecCPP::SystemType::SysTUnknown) {
             activeSysType = mSwitchDFHActiveSysTypeTo;
 
-        } else if (mDataProvider->dualFuelHeatingTemperatureF() >=  mDataProvider->outdoorTemperatureF()) {
+        } else if (mDataProvider->dualFuelThreshodF() >=  mDataProvider->outdoorTemperatureF()) {
             // Start the heat pump
             activeSysType = AppSpecCPP::SystemType::HeatPump;
 
@@ -449,6 +451,8 @@ void Scheme::internalCoolingLoopStage1()
         TRACE << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
               << mDataProvider.data()->systemSetup()->coolStage << mTiming->s1uptime.elapsed()
               << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
+
+        // coolStage: In the heat pump or dual fuel heating the cool stage and heat pump stage are the same.
         if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider.data()->systemSetup()->coolStage == 2) {
             if (mDataProvider.data()->currentTemperature() - effectiveTemperature() >= 2.9
                 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
@@ -767,10 +771,10 @@ void Scheme::internalPumpHeatingLoopStage1()
 
         while (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_ON_RANGE) {
             TRACE << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
-                  << mDataProvider.data()->systemSetup()->heatStage << mTiming->s1uptime.elapsed()
+                  << mDataProvider->heatPumpStage() << mTiming->s1uptime.elapsed()
                   << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
 
-            if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider.data()->systemSetup()->heatStage >= 2) {
+            if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider->heatPumpStage() >= 2) {
                 if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= 2.9
                     || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
                     if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
@@ -1198,7 +1202,7 @@ void Scheme::setSystemSetup()
             TRACE << "heatPumpEmergencyChanged: " << sys->heatPumpEmergency;
     });
 
-    connect(sys, &SystemSetup::dualFuelHeatingTemperatureChanged, this, [=] {
+    connect(sys, &SystemSetup::dualFuelThreshodChanged, this, [=] {
         if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
             mDataProvider->systemSetup()->systemMode == AppSpecCPP::SystemMode::Heating &&
             mDataProvider->systemSetup()->systemMode == AppSpecCPP::SystemMode::Auto) {
