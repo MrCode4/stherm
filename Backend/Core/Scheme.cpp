@@ -868,14 +868,10 @@ void Scheme::EmergencyHeating()
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-    bool stage2 = false;
-    while (mDataProvider.data()->currentTemperature() < HPT) {
-        if (!stage2 && mDataProvider.data()->currentTemperature() < ET - ET_STAGE2) {
-            mRelay->emergencyHeating2();
+    while (mDataProvider->currentTemperature() < HPT) {
+            mRelay->emergencyHeating3();
             sendRelays();
             waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
-            stage2 = true;
-        }
     }
 
     emit changeBacklight();
