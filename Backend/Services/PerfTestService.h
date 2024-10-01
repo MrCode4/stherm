@@ -21,6 +21,7 @@ class PerfTestService : public DevApiExecutor
     PROPERTY_PRI_DEF_VAL(int, startTimeLeft, 0) // in seconds
     PROPERTY_PRI_DEF_VAL(int, testTimeLeft, 0) // in seconds
     PROPERTY_PRI_DEF_VAL(int, finishTimeLeft, 0) // in seconds
+    PROPERTY_PRI_DEF_VAL(bool, isPostponed, false)
 
 private:
     explicit PerfTestService(QObject* parent = nullptr);
@@ -44,6 +45,8 @@ public:
 signals:
 
 public slots:
+    Q_INVOKABLE void postponeTest(const QString& reason);
+    Q_INVOKABLE void resumeTest();
     Q_INVOKABLE void cancelTest();
     Q_INVOKABLE void finishTest();
 
@@ -64,6 +67,7 @@ private:
 private:
     static PerfTestService* mMe;
 
+    bool mWasEligibleBeforePostpone = false;
     QTimer mTimerDelay;
     QTimer mTimerGetTemp;
     QTimer mTimerFinish;

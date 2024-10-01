@@ -54,7 +54,7 @@ PerfTestService::PerfTestService(QObject *parent)
     mTimerFinish.setInterval(PerfTest::OneSecInMS);
     connect(&mTimerFinish, &QTimer::timeout, [this]() {
         auto timeLeft = finishTimeLeft();
-        qCDebug(PerfTestLogCat)<<"finishTimeLeft " <<timeLeft;
+        qCDebug(PerfTestLogCat) <<"finishTimeLeft " <<timeLeft;
         if (timeLeft > 0) {
             finishTimeLeft(timeLeft - 1);
         }
@@ -65,6 +65,33 @@ PerfTestService::PerfTestService(QObject *parent)
     });
 
     scheduleNextCheck(QTime::currentTime());
+}
+
+void PerfTestService::postponeTest(const QString &reason)
+{
+    if (state() > Checking) {
+        qCDebug(PerfTestLogCat) <<"Perf-test can't be postponed since it's already running";
+    }
+    else {
+        isPostponed(true);
+        qCDebug(PerfTestLogCat) <<"Perf-test is postponed, reason: " <<reason;
+    }
+}
+
+void PerfTestService::resumeTest()
+{
+    if (!isPostponed()) return;
+    isPostponed(false);
+
+    if (mWasEligibleBeforePostpone) {
+        qCDebug(PerfTestLogCat) <<"Perf-test is elligible while resuming";
+        mWasEligibleBeforePostpone = false;
+        state(TestState::Eligible);
+        setupWarmup();
+    }
+    else {
+        qCDebug(PerfTestLogCat) <<"Perf-test was not elligible while resuming";
+    }
 }
 
 void PerfTestService::scheduleNextCheck(const QTime& checkTime)
@@ -104,16 +131,28 @@ void PerfTestService::checkTestEligibility()
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {        
         mode(data.value("cooling").toBool() ? AppSpecCPP::Cooling : AppSpecCPP::Heating);
-        qCDebug(PerfTestLogCat)<<"CheckTestEligibility Response " <<rawData <<mode();
-        state(TestState::Eligible);
-        setupWarmup();
-        // if (data.value("status").toBool()) {
-        //     state(TestState::Eligible);
-        //     setupWarmup();
-        // }
-        // else {
-        //     scheduleNextCheck(PerfTest::Noon12PM);
-        // }
+        qCDebug(PerfTestLogCat) <<"CheckTestEligibility Response " <<rawData <<mode();
+        if (true || data.value("status").toBool()) {
+            if (isPostponed()) {
+                mWasEligibleBeforePostpone = true;
+                // Check if blocking is not resumed by 12PM, ublock and schedule for next day
+                QTimer::singleShot(qMax(1, QTime::currentTime().msecsTo(PerfTest::Noon12PM)), [this] () {
+                    if (isPostponed()) {
+                        qCDebug(PerfTestLogCat) <<"Perf-test was not resumed by 12 noon, so going for next-day";
+                        isPostponed(false);
+                        mWasEligibleBeforePostpone = false;
+                        scheduleNextCheck(PerfTest::Noon12PM);
+                    }
+                });
+            }
+            else {
+                state(TestState::Eligible);
+                setupWarmup();
+            }
+        }
+        else {
+            scheduleNextCheck(PerfTest::Noon12PM);
+        }
     };
 
     callGetApi(API_SERVER_BASE_URL + QString("api/sync/perftest/schedule?sn=%0").arg(Device->serialNumber()), callback);
@@ -200,7 +239,7 @@ void PerfTestService::collectReading()
 
 void PerfTestService::cleanupRunning()
 {
-    qCDebug(PerfTestLogCat)<<"cleanupRunning";
+    qCDebug(PerfTestLogCat) <<"cleanupRunning";
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::tempSchemeStateChanged, this, &PerfTestService::onTempSchemeStateChanged);
@@ -215,7 +254,7 @@ void PerfTestService::cancelTest()
     state(TestState::Cancelling);
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
-        qCDebug(PerfTestLogCat)<<"cancelTest Response " <<rawData;        
+        qCDebug(PerfTestLogCat) <<"cancelTest Response " <<rawData;
         scheduleNextCheck(PerfTest::Noon12PM);
     };
 
@@ -225,12 +264,12 @@ void PerfTestService::cancelTest()
 
 void PerfTestService::sendReadingsToServer()
 {
-    qCDebug(PerfTestLogCat)<<"sendReadingsToServer";
+    qCDebug(PerfTestLogCat) <<"sendReadingsToServer";
     state(TestState::Sending);
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
-        qCDebug(PerfTestLogCat)<<"sendReadingsToServer Response " <<rawData;
-        qCDebug(PerfTestLogCat)<<"Testing result uploaded, waiting to finish by user or automatic in " << PerfTest::FinishDelay;        
+        qCDebug(PerfTestLogCat) <<"sendReadingsToServer Response " <<rawData;
+        qCDebug(PerfTestLogCat) <<"Testing result uploaded, waiting to finish by user or automatic in " << PerfTest::FinishDelay;
         finishTimeLeft(PerfTest::FinishDelay);
         mTimerFinish.start();
         state(TestState::Complete);
@@ -246,7 +285,7 @@ void PerfTestService::sendReadingsToServer()
 void PerfTestService::finishTest()
 {
     if (state() == TestState::Complete) {
-        qCDebug(PerfTestLogCat)<<"finishTest, testing done, scheduling next check.";
+        qCDebug(PerfTestLogCat) <<"finishTest, testing done, scheduling next check.";
         mTimerFinish.stop();
         scheduleNextCheck(PerfTest::Noon12PM);
     }
