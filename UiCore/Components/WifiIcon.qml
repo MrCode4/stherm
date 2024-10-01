@@ -49,7 +49,8 @@ Item {
             right: parent.right
             bottom: parent.bottom
         }
-        visible: strength > 25 && !isOpen
+        //! strength > 0 means don't display lock for non-in-range wifis
+        visible: strength > 0 && !isOpen
         font.pointSize: Application.font.pointSize * 0.7
         text: FAIcons.lock
     }

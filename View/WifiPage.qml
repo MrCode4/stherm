@@ -330,7 +330,7 @@ BasePageView {
                         var wifi = _wifisRepeater.currentItem.wifi;
 
                         //! Check if password for this wifi is saved.
-                        if (NetworkInterface.isWifiSaved(wifi)) {
+                        if (wifi.security === "" || NetworkInterface.isWifiSaved(wifi)) {
                             NetworkInterface.connectWifi(wifi, "");
                         } else {
                             var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
