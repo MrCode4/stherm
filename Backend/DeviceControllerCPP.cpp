@@ -85,7 +85,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , _deviceIO(new DeviceIOController(this))
     , _deviceAPI(new DeviceAPI(this))
     , mSystemSetup(nullptr)
-    , mSchemeDataProvider(new SchemeDataProvider(_deviceAPI->sync(), this))
+    , mSchemeDataProvider(new SchemeDataProvider(this))
     , m_scheme(new Scheme(_deviceAPI, mSchemeDataProvider, this))
     , m_HumidityScheme(new HumidityScheme(_deviceAPI, mSchemeDataProvider, this))
 {
@@ -271,6 +271,23 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         emit alert(alertLevel,
                    alertType,
                    alertMessage);
+    });
+
+    mGetOutdoorTemperatureTimer.setInterval(60 * 1000);
+    mGetOutdoorTemperatureTimer.setSingleShot(false);
+    connect(&mGetOutdoorTemperatureTimer, &QTimer::timeout, this, [this]() {
+        m_sync->getOutdoorTemperature();
+    });
+
+    connect(m_sync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
+        TRACE << "Outdoor temperature:" << success << temp;
+        if (success) {
+            mSchemeDataProvider->setOutdoorTemperature(temp);
+
+            if (systemSetup()->systemType != AppSpecCPP::DualFuelHeating) {
+                mGetOutdoorTemperatureTimer.stop();
+            }
+        }
     });
 
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
@@ -620,6 +637,21 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
     // Set system setp
     mSchemeDataProvider->setSystemSetup(mSystemSetup);
+
+    // To provide outdoor temperature
+    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [=] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
+            m_sync->getOutdoorTemperature();
+            mGetOutdoorTemperatureTimer.start();
+
+        } else {
+            mGetOutdoorTemperatureTimer.stop();
+        }
+    });
+
+    // To cache the outdoor temperature, it will be stop when get data successfully in the other system types
+    m_sync->getOutdoorTemperature();
+    mGetOutdoorTemperatureTimer.start();
 
     emit systemSetupChanged();
 }

@@ -1230,13 +1230,13 @@ I_DeviceController {
         else if(settings.type === "heating")
             setSystemHeatOnly(settings.heatStage)
         else if(settings.type === "heat_pump")
-            setSystemHeatPump(settings.heatPumpEmergency, settings.heatStage, settings.heatPumpOBState)
+            setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState)
         else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
         else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
             setSystemDualFuelHeating(settings.heatPumpEmergency, settings.coolStage, settings.heatStage,
                                      settings.heatPumpOBState,
-                                     settings?.dual_fuel_threshod ?? device.systemSetup.dualFuelThreshod);
+                                     settings.dual_fuel_threshod ?? device.systemSetup.dualFuelThreshod);
         else
             console.warn("System type unknown", settings.type)
     }

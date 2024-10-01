@@ -5,7 +5,6 @@
 
 #include "ScheduleCPP.h"
 #include "SystemSetup.h"
-#include "Sync.h"
 
 /*! ***********************************************************************************************
  * This class provides data for Scheme and HumidityScheme.
@@ -19,7 +18,7 @@ public:
     /* Public Constructors & Destructor
      * ****************************************************************************************/
 
-    explicit SchemeDataProvider(NUVE::Sync *sync, QObject *parent = nullptr);
+    explicit SchemeDataProvider(QObject *parent = nullptr);
 
     /* Public Functions
      * ****************************************************************************************/
@@ -42,6 +41,7 @@ public:
     ScheduleCPP *schedule() const;
     void setSchedule(ScheduleCPP *newSchedule);
 
+    void setOutdoorTemperature(double temp);
 
     STHERM::Vacation vacation() const;
     void setVacation(const STHERM::Vacation &newVacation);
@@ -102,7 +102,6 @@ signals:
     void setHumidityChanged();
 
     void outdoorTemperatureChanged();
-    void dualFuelThreshodChanged();
 
 private:
     /* Attributes
@@ -113,10 +112,6 @@ private:
     SystemSetup *mSystemSetup = nullptr;
 
     ScheduleCPP* mSchedule = nullptr;
-
-    NUVE::Sync *mSync;
-
-    QTimer mGetOutdoorTemperatureTimer;
 
     //! Humidity parameters (Percentage)
     double mCurrentHumidity;

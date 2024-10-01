@@ -40,6 +40,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
     mRelay  = Relay::instance();
 
     mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
+    mSwitchDFHActiveSysTypeTo = AppSpecCPP::SystemType::SysTUnknown;
 
     mFanHourTimer.setTimerType(Qt::PreciseTimer);
     mFanHourTimer.setSingleShot(false);
@@ -66,6 +67,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
     mLogTimer.connect(&mLogTimer, &QTimer::timeout, this, [=]() {
 
         auto sys = mDataProvider.data()->systemSetup();
+        bool dualFuelLog = mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::DualFuelHeating;
 
         LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
         LOG_CHECK(isRunning()) << "Temperature scheme version: " << QString(TEMPERATURE_SCHEME_VERSION);
@@ -83,6 +85,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK(isRunning() && mFanWPHTimer.isActive()) << "fan on stage finishes in " << mFanWPHTimer.remainingTime() / 60000 << "minutes";
         LOG_CHECK(isRunning()) << "Current Temperature : " << effectiveCurrentTemperature() << "Effective Set Temperature: " << effectiveTemperature();
         LOG_CHECK(isRunning()) << "Current Humidity : " << mDataProvider.data()->currentHumidity() << "Effective Set Humidity: " << effectiveSetHumidity();
+        LOG_CHECK(isRunning() && dualFuelLog) << "Current Outdoor temperature : " << mDataProvider.data()->outdoorTemperatureF();
         LOG_CHECK(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
         LOG_CHECK(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";
     });
@@ -146,6 +149,10 @@ void Scheme::restartWork(bool forceStart)
                 TRACE << "restarted HVAC";
                 stopWork = false;
                 mLogTimer.start();
+
+                // It will be called when heating loop started in dual fuel mode.
+                emit dfhSystemTypeChanged(AppSpecCPP::SysTUnknown);
+
                 this->start();
             },
             Qt::SingleShotConnection);
@@ -158,6 +165,10 @@ void Scheme::restartWork(bool forceStart)
         TRACE << "started HVAC";
         stopWork = false;
         mLogTimer.start();
+
+        // It will be called when heating loop started in dual fuel mode.
+        emit dfhSystemTypeChanged(AppSpecCPP::SysTUnknown);
+
         this->start();
     } else {
         TRACE << "trying to start before main start";
@@ -873,6 +884,7 @@ void Scheme::EmergencyHeating()
             mRelay->emergencyHeating3();
             sendRelays();
             waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+            // we need break condition here!
     }
 
     emit changeBacklight();
@@ -1140,9 +1152,6 @@ void Scheme::setSystemSetup()
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
         TRACE<< "systemModeChanged: "<< sys;
 
-        // It will be call when heating loop started in dual fuel mode.
-        emit dfhSystemTypeChanged(AppSpecCPP::SysTUnknown);
-
         restartWork();
     });
 
@@ -1180,14 +1189,12 @@ void Scheme::setSystemSetup()
     });
 
     connect(sys, &SystemSetup::coolStageChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::CoolingOnly ||
-            sys->systemType == AppSpecCPP::SystemType::HeatPump ||
-            sys->systemType == AppSpecCPP::SystemType::DualFuelHeating)
+        if (sys->systemType != AppSpecCPP::SystemType::HeatingOnly)
             TRACE << "coolStageChanged: " << sys->coolStage;
     });
     connect(sys, &SystemSetup::heatStageChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::HeatingOnly ||
-            sys->systemType == AppSpecCPP::SystemType::DualFuelHeating)
+        if (sys->systemType != AppSpecCPP::SystemType::CoolingOnly &&
+            sys->systemType != AppSpecCPP::SystemType::HeatPump)
             TRACE << "heatStageChanged: " << sys->heatStage;
     });
 

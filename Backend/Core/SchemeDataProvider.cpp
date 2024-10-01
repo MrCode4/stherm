@@ -4,31 +4,11 @@
 #include "UtilityHelper.h"
 #include "Relay.h"
 
-SchemeDataProvider::SchemeDataProvider(NUVE::Sync *sync, QObject *parent) :
-    mSync(sync),
+SchemeDataProvider::SchemeDataProvider(QObject *parent) :
     mOutdoorTemperature(35.0),
     QObject{parent}
 {
-    mGetOutdoorTemperatureTimer.setInterval(60 * 1000);
-    mGetOutdoorTemperatureTimer.setSingleShot(false);
-    connect(&mGetOutdoorTemperatureTimer, &QTimer::timeout, this, [this]() {
-        mSync->getOutdoorTemperature();
-    });
-
     mOutdoorTemperature = -1;
-    connect(mSync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
-        TRACE << "Outdoor temperature:" << success << temp;
-        if (success) {
-            if (mOutdoorTemperature != temp) {
-                mOutdoorTemperature = temp;
-                emit outdoorTemperatureChanged();
-            }
-
-            if (systemSetup()->systemType != AppSpecCPP::DualFuelHeating) {
-                mGetOutdoorTemperatureTimer.stop();
-            }
-        }
-    });
 }
 
 void SchemeDataProvider::setMainData(QVariantMap mainData)
@@ -69,21 +49,7 @@ void SchemeDataProvider::setSystemSetup(SystemSetup *systemSetup)
 
      mSystemSetup = systemSetup;
 
-     // To provide outdoor temperature
-    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [=] {
-         if (mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
-             mSync->getOutdoorTemperature();
-             mGetOutdoorTemperatureTimer.start();
-
-         } else {
-             mGetOutdoorTemperatureTimer.stop();
-         }
-    });
-
     emit systemSetupChanged();
-
-    // To cache the outdoor temperature, it will be stop when get data successfully in the other system types
-    mGetOutdoorTemperatureTimer.start();
 }
 
 AppSpecCPP::AccessoriesType SchemeDataProvider::getAccessoriesType() const
@@ -212,6 +178,14 @@ void SchemeDataProvider::setSchedule(ScheduleCPP *newSchedule)
     mSchedule = newSchedule;
 
     emit scheduleChanged();
+}
+
+void SchemeDataProvider::setOutdoorTemperature(double temp)
+{
+    if (mOutdoorTemperature != temp) {
+        mOutdoorTemperature = temp;
+        emit outdoorTemperatureChanged();
+    }
 }
 
 double SchemeDataProvider::currentHumidity() const

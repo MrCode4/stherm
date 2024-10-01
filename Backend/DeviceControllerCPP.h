@@ -303,6 +303,8 @@ private:
     //! Object to manage humidity control
     HumidityScheme *m_HumidityScheme;
 
+    QTimer mGetOutdoorTemperatureTimer;
+
     NUVE::System *m_system;
 
     QString m_backdoorPath = "/usr/local/bin/backdoor/";

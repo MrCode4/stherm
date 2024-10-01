@@ -149,5 +149,5 @@ private:
 
     //! Switch active system type in the dual fuel heating to ...
     //! Used in internet connection troubleshooting
-    AppSpecCPP::SystemType mSwitchDFHActiveSysTypeTo = AppSpecCPP::SystemType::SysTUnknown;
+    AppSpecCPP::SystemType mSwitchDFHActiveSysTypeTo;
 };

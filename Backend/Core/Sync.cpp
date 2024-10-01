@@ -83,13 +83,18 @@ void Sync::setApiAuth(QNetworkRequest& request)
 QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
 {
     const QJsonObject rootObject = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
-    QJsonObject data = rootObject;
+    QJsonObject data;
 
     if (rootObject.contains("data")) {
         data = rootObject.value("data").toObject();
     }
     else {
-        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object";
+        // weather api has no data object
+        if (endpoint.contains("weather")) {
+            data = rootObject;
+        } else {
+            TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object:" << rootObject;
+        }
     }
 
     return data;
@@ -671,8 +676,9 @@ void Sync::getOutdoorTemperature() {
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() == QNetworkReply::NoError) {
-            double temp = data.value("value").toDouble(-1);
-            emit outdoorTemperatureReady(temp > -1, temp);
+            auto var = data.value("value");
+            // what is the best validation?
+            emit outdoorTemperatureReady(!var.isUndefined(), var.toDouble());
         }
         else {
             emit  outdoorTemperatureReady();
