@@ -101,6 +101,7 @@ signals:
     void setTemperatureChanged();
     void setHumidityChanged();
 
+    void outdoorTemperatureReady();
     void outdoorTemperatureChanged();
 
 private:

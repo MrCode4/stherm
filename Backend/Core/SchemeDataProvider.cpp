@@ -182,10 +182,13 @@ void SchemeDataProvider::setSchedule(ScheduleCPP *newSchedule)
 
 void SchemeDataProvider::setOutdoorTemperature(double temp)
 {
-    if (mOutdoorTemperature != temp) {
-        mOutdoorTemperature = temp;
+    bool changed = mOutdoorTemperature != temp;
+
+    mOutdoorTemperature = temp;
+    emit outdoorTemperatureReady();
+
+    if (changed)
         emit outdoorTemperatureChanged();
-    }
 }
 
 double SchemeDataProvider::currentHumidity() const
