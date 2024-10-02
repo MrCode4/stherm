@@ -96,7 +96,7 @@ QtObject {
             schedule._qsRepo = null;
 
             // Send data to server
-            deviceController.sync.clearSchedule(schedule.id);
+            clearScheduleFromServer(schedule.id);
 
             device.schedules.splice(schIndex, 1);
             device.schedulesChanged();
@@ -596,6 +596,39 @@ QtObject {
         return incompatibleSchedules;
     }
 
+    function clearScheduleFromServer(id: int) {
+        var schId = deletingSchedules.findIndex(elem => elem === id);
+
+        if (schId === -1) {
+            deletingSchedules.push(id);
+            deletingSchedulesChanged();
+        }
+
+        deviceController.sync.clearSchedule(id);
+    }
+
+    function editScheduleFromServer(schedule: ScheduleCPP) {
+        var schId = editingSchedules.findIndex(elem => elem.id === schedule.id);
+        if (schId === -1) {
+            editingSchedules.unshift(schedule);
+            editingSchedulesChanged();
+        }
+
+        if (schedule) {
+            var schedulePacket;
+            schedulePacket.is_enable  = schedule.enable;
+            schedulePacket.name       = schedule.name;
+            schedulePacket.type_id    = schedule.type;
+            schedulePacket.start_time = schedule.startTime;
+            schedulePacket.end_time   = schedule.endTime;
+            schedulePacket.humidity   = schedule.humidity;
+            schedulePacket.dataSource = schedule.dataSource;
+            schedulePacket.weekdays   = schedule.repeats.split(',');
+
+            deviceController.sync.editSchedule(schedule.id, schedulePacket);
+        }
+    }
+
     property Timer _checkRunningTimer: Timer {
 
         running: runningScheduleEnabled
@@ -674,7 +707,7 @@ QtObject {
             } else {
                 // Schedule deleting failed, retry
                 if (schId !== -1) {
-                    deletingSchedules.push(id);
+                    deletingSchedules.push(schId);
                     deletingSchedulesChanged();
                 }
 
@@ -682,7 +715,25 @@ QtObject {
             }
         }
 
-        function scheduleEdited() {
+        function scheduleEdited(id: int, success: bool) {
+            var schId = editingSchedules.findIndex(elem => elem.id === id);
+            if (success) {
+                console.log("Schedule edited: ", id, schId);
+
+                if (schId !== -1) {
+                    editingSchedules.splice(schId, 1);
+                    editingSchedulesChanged();
+                }
+
+            } else {
+                // Schedule deleting failed, retry
+                if (schId !== -1) {
+                    editingSchedules.push(id);
+                    editingSchedulesChanged();
+                }
+
+                retryScheduleEditing.start();
+            }
 
         }
     }
@@ -700,24 +751,12 @@ QtObject {
 
     //! Retry to delete schedule
     property Timer retryScheduleEditing: Timer {
-        interval: 3000
+        interval: 4000
         running: false
         repeat: false
 
         onTriggered: {
-            var schedule = editingSchedules[0];
-            if (schedule) {
-                var schedulePacket;
-                schedulePacket.is_enable  = schedule.enable;
-                schedulePacket.name       = schedule.name;
-                schedulePacket.type_id    = schedule.type;
-                schedulePacket.start_time = schedule.startTime;
-                schedulePacket.end_time   = schedule.endTime;
-                schedulePacket.humidity   = schedule.humidity;
-                schedulePacket.dataSource = schedule.dataSource;
-                schedulePacket.weekdays   = schedule.repeats.split(',');
-                deviceController.sync.editSchedule(schedule.id, schedulePacket);
-            }
+          editScheduleFromServer(editingSchedules[0]);
         }
     }
 }

@@ -699,6 +699,7 @@ void Sync::editSchedule(const int &scheduleID, const QVariantMap &settings)
             emit scheduleEdited(scheduleID, true);
         }
         else {
+            TRACE << "editSchedule" << reply->errorString();
             emit scheduleEdited(scheduleID, false);
         }
     };
