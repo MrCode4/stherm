@@ -79,9 +79,8 @@ QtObject {
         device.schedules.push(newSchedule);
         device.schedulesChanged();
 
-        // TODO: Push new schedule to server and update schedule id
-        addingSchedules.push(schedule);
-        addingSchedulesChanged();
+        // Push new schedule to server and update schedule id
+        addScheduleToServer(newSchedule)
 
         deviceController.saveSettings();
     }
@@ -344,6 +343,7 @@ QtObject {
         deviceController.setActivatedSchedule(currentSchedule?.scheduleElement ?? null);
     }
 
+    //! Conver 24 hours to 12 hours format
     function formatTime(timeString) {
         // Split the time string into hours, minutes, and seconds
         const [hoursString, minutes, seconds] = timeString.split(':');
@@ -360,6 +360,23 @@ QtObject {
 
         // Return the formatted time string
         return `${adjustedHours.toString().padStart(2, '0')}:${formattedMinutes} ${amPm}`;
+    }
+
+    //! Conver 12 hours to 24 hours format
+    function convert12HourTo24Hour(timeString) {
+        const [time, period] = timeString.split(' ');
+
+        const [hours, minutes] = time.split(':');
+        let hour = parseInt(hours);
+
+        if (period === 'PM' && hour !== 12) {
+            hour += 12;
+        } else if (period === 'AM' && hour === 12) {
+            hour = 0;
+        }
+
+        const formattedTime = `${hour.toString().padStart(2, '0')}:${minutes}:00`;
+        return formattedTime;
     }
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
@@ -607,7 +624,7 @@ QtObject {
         deviceController.sync.clearSchedule(id);
     }
 
-    function editScheduleFromServer(schedule: ScheduleCPP) {
+    function editScheduleInServer(schedule: ScheduleCPP) {
         var schId = editingSchedules.findIndex(elem => elem.id === schedule.id);
         if (schId === -1) {
             editingSchedules.unshift(schedule);
@@ -615,18 +632,43 @@ QtObject {
         }
 
         if (schedule) {
-            var schedulePacket;
-            schedulePacket.is_enable  = schedule.enable;
-            schedulePacket.name       = schedule.name;
-            schedulePacket.type_id    = schedule.type;
-            schedulePacket.start_time = schedule.startTime;
-            schedulePacket.end_time   = schedule.endTime;
-            schedulePacket.humidity   = schedule.humidity;
-            schedulePacket.dataSource = schedule.dataSource;
-            schedulePacket.weekdays   = schedule.repeats.split(',');
-
+            var schedulePacket = schedulePacketServer(schedule);
             deviceController.sync.editSchedule(schedule.id, schedulePacket);
         }
+    }
+
+    function addScheduleToServer(schedule: ScheduleCPP) {
+        var schId = addingSchedules.findIndex(elem => elem._qsUuid === schedule._qsUuid);
+        if (schId === -1) {
+            addingSchedules.unshift(schedule);
+            addingSchedulesChanged();
+        }
+
+        if (schedule) {
+            var schedulePacket = schedulePacketServer(schedule);
+            deviceController.sync.addSchedule(schedule._qsUuid, schedulePacket);
+        }
+
+    }
+
+    //! Prepare schedule packet for server
+    function schedulePacketServer(schedule: ScheduleCPP) {
+        var schedulePacket = {};
+        schedulePacket.is_enable  = schedule.enable;
+        schedulePacket.name       = schedule.name;
+        schedulePacket.type_id    = schedule.type;
+        schedulePacket.start_time = convert12HourTo24Hour(schedule.startTime);
+        schedulePacket.end_time   = convert12HourTo24Hour(schedule.endTime);
+        schedulePacket.temp       = 18.0;
+
+        // TODO: Update schedule temperatures
+        // TODO: Update schedule mode
+
+        schedulePacket.humidity   = schedule.humidity;
+        schedulePacket.dataSource = schedule.dataSource;
+        schedulePacket.weekdays   = schedule.repeats.split(',');
+
+        return schedulePacket;
     }
 
     property Timer _checkRunningTimer: Timer {
@@ -638,7 +680,6 @@ QtObject {
         onTriggered: {
             findRunningSchedule();
         }
-
     }
 
     property Connections deviceConnections: Connections {
@@ -734,6 +775,25 @@ QtObject {
 
                 retryScheduleEditing.start();
             }
+        }
+
+        function onScheduleAdded(scheduleUid, success: bool, schedule: var) {
+            if (success) {
+                var addedSchedule = device.schedules.find(elem => elem._qsUuid === scheduleUid);
+                if (addedSchedule) {
+                    console.log("addSchedule: schedule added with id: ", schedule.schedule_id)
+                    addedSchedule.id = schedule.schedule_id;
+                }
+
+                var schId = addingSchedules.findIndex(elem => elem._qsUuid === scheduleUid);
+                if (schId !== -1) {
+                    addingSchedules.splice(schId, 1);
+                    addingSchedulesChanged();
+                }
+
+            } else {
+                retryScheduleAdding.start();
+            }
 
         }
     }
@@ -756,7 +816,18 @@ QtObject {
         repeat: false
 
         onTriggered: {
-          editScheduleFromServer(editingSchedules[0]);
+          editScheduleInServer(editingSchedules[0]);
+        }
+    }
+
+    //! Retry to delete schedule
+    property Timer retryScheduleAdding: Timer {
+        interval: 2000
+        running: false
+        repeat: false
+
+        onTriggered: {
+            addScheduleToServer(addingSchedules[0]);
         }
     }
 }
