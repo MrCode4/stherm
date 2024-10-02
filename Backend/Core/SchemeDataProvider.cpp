@@ -5,10 +5,9 @@
 #include "Relay.h"
 
 SchemeDataProvider::SchemeDataProvider(QObject *parent) :
-    mOutdoorTemperature(35.0),
+    mOutdoorTemperature(25.0),
     QObject{parent}
 {
-    mOutdoorTemperature = -1;
 }
 
 void SchemeDataProvider::setMainData(QVariantMap mainData)
