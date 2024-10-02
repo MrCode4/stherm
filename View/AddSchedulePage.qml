@@ -291,9 +291,6 @@ BasePageView {
                 uiSession.toastManager.showToast(dt.message, dt.detail);
         }
 
-        deviceController.updateEditMode(AppSpec.EMSchedule);
-        deviceController.saveSettings();
-
         if (root.StackView.view) {
             root.StackView.view.pop();
         }

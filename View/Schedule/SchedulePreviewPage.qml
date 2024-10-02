@@ -597,7 +597,8 @@ BasePageView {
             uiSession.toastManager.showToast(dt.message, dt.detail);
         }
 
-        deviceController.updateEditMode(AppSpec.EMSchedule);
+        // Edit schedule
+        schedulesController.editScheduleInServer(schedule);
         deviceController.saveSettings();
 
         if (internal.exitAfterSave) {

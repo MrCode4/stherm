@@ -20,11 +20,11 @@ BasePageView {
     title: "Schedule"
 
     Component.onCompleted: {
-        deviceController.updateLockMode(AppSpec.EMSchedule, true);
+       schedulesController.lockScheduleFetching(true);
     }
 
     Component.onDestruction: {
-        deviceController.updateLockMode(AppSpec.EMSchedule, false);
+       schedulesController.lockScheduleFetching(false);
     }
 
     /* Children

@@ -149,7 +149,8 @@ ItemDelegate {
                     }
 
                     // Send Data to server when a schedule changed...
-                    deviceController.updateEditMode(AppSpec.EMSchedule);
+                    // Edit schedule
+                    schedulesController.editScheduleInServer(schedule);
                     uiSession.deviceController.saveSettings();
                 }
             }
@@ -212,7 +213,8 @@ ItemDelegate {
             schedule.systemMode = uiSession.appModel.systemSetup.systemMode;
 
             // Send Data to server when a schedule changed...
-            deviceController.updateEditMode(AppSpec.EMSchedule);
+            // Edit schedule
+            schedulesController.editScheduleInServer(schedule);
             uiSession.deviceController.saveSettings();
 
             //Shows a proper toast message upon activation of a schedule
