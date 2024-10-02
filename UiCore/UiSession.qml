@@ -67,6 +67,7 @@ Item {
     // Popups that can be called for this UiSession
     readonly property UiSessionPopups popUps:   UiSessionPopups {
         uiSession: root
+        parent: root
     }
 
     //! Ui Preferences (Units, etc)
