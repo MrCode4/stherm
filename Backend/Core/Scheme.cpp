@@ -339,7 +339,8 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
         if (mSwitchDFHActiveSysTypeTo != AppSpecCPP::SystemType::SysTUnknown) {
             activeSysType = mSwitchDFHActiveSysTypeTo;
 
-        } else if (mDataProvider->dualFuelThreshodF() >=  mDataProvider->outdoorTemperatureF()) {
+            // in the cold outdoor heatpump can not function good so we use it only above threshold
+        } else if (mDataProvider->dualFuelThreshodF() <  mDataProvider->outdoorTemperatureF()) {
             // Start the heat pump
             activeSysType = AppSpecCPP::SystemType::HeatPump;
 
