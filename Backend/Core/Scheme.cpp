@@ -436,8 +436,9 @@ void Scheme::OffLoop()
 
 bool Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
 {
+    auto sysType = mDataProvider.data()->systemSetup()->systemType;
     // we should check if it is changed or not!
-    if (mRelay->setOb_state(newOb_state) && mDataProvider.data()->systemSetup()->systemType == AppSpecCPP::HeatPump)
+    if (mRelay->setOb_state(newOb_state) && (sysType == AppSpecCPP::HeatPump || sysType == AppSpecCPP::DualFuelHeating))
     {
         sendRelays();
         return  true;
