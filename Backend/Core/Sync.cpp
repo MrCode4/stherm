@@ -89,12 +89,7 @@ QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray&
         data = rootObject.value("data").toObject();
     }
     else {
-        // weather api has no data object
-        if (endpoint.contains("weather")) {
-            data = rootObject;
-        } else {
-            TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object:" << rootObject;
-        }
+        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object:" << rootObject;
     }
 
     return data;
@@ -685,7 +680,10 @@ void Sync::getOutdoorTemperature() {
         }
     };
 
-    callGetApi(cBaseUrl + QString("/api/weather?sn=%0").arg(mSerialNumber), callback);
+    auto reply = callGetApi(cBaseUrl + QString("/api/weather?sn=%0").arg(mSerialNumber), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
 }
 
 } // namespace NUVE
