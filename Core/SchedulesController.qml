@@ -19,8 +19,26 @@ QtObject {
 
     property var deviceCurrentSchedules: [];
 
+    //! Deleting schedules: Use in retry operation
+    //! Schedule id
+    property var deletingSchedules: [];
+
+    //! Editing schedules: Use in retry operation
+    //! Schedule
+    property var editingSchedules: [];
+
+    //! Adding schedules: Use in retry operation
+    //! Schedule
+    property var addingSchedules: [];
+
     //! Run the timer schedule and update ui
     property bool runningScheduleEnabled: device.schedules.filter(schedule => schedule.enable).length > 0
+
+    property bool scheduleEditing: deletingSchedules.length > 0 || addingSchedules.length > 0 || editingSchedules.length > 0
+
+    onScheduleEditingChanged: {
+        lockScheduleFetching();
+    }
 
     /* Object properties
      * ****************************************************************************************/
@@ -29,6 +47,16 @@ QtObject {
 
     /* Methods
      * ****************************************************************************************/
+
+    function lockScheduleFetching(lock = false) {
+        if (scheduleEditing || lock) {
+            deviceController.updateLockMode(AppSpec.EMSchedule, true);
+
+        } else {
+            deviceController.updateLockMode(AppSpec.EMSchedule, false);
+        }
+    }
+
     //! Saves new schedule
     function saveNewSchedule(schedule: ScheduleCPP)
     {
@@ -51,8 +79,10 @@ QtObject {
         device.schedules.push(newSchedule);
         device.schedulesChanged();
 
-        // Send data to server and save file
-        deviceController.updateEditMode(AppSpec.EMSchedule);
+        // TODO: Push new schedule to server and update schedule id
+        addingSchedules.push(schedule);
+        addingSchedulesChanged();
+
         deviceController.saveSettings();
     }
 
@@ -65,13 +95,14 @@ QtObject {
             // Set repo to unregister deleted object
             schedule._qsRepo = null;
 
+            // Send data to server
+            deviceController.sync.clearSchedule(schedule.id);
+
             device.schedules.splice(schIndex, 1);
             device.schedulesChanged();
 
 //            schedule.destroy();
 
-            // Send data to server
-            deviceController.updateEditMode(AppSpec.EMSchedule);
             deviceController.saveSettings();
         }
     }
@@ -334,6 +365,11 @@ QtObject {
     //! Compare the server schedules and the model schedules and update model based on the server data.
     function setSchedulesFromServer(serverSchedules: var) {
 
+        if (scheduleEditing) {
+            console.log("The schedules are being edited and cannot be updated by the server.")
+            return;
+        }
+
         console.log("Checking schedule from server.");
 
         var modelSchedules = device.schedules;
@@ -361,10 +397,10 @@ QtObject {
         // Schedules that do not exist on the server will be deleted.
         modelSchedules.forEach(schedule => {
                                  // Find Schedule in the model
-                                 var foundSchedule = serverSchedules.find(serverSchedule => schedule.name === serverSchedule.name);
+                                 var foundSchedule = serverSchedules.find(serverSchedule => schedule.id === serverSchedule.schedule_id);
 
                                  if (foundSchedule === undefined) {
-                                     var schIndex = device.schedules.findIndex(elem => elem.name === schedule.name);
+                                     var schIndex = device.schedules.findIndex(elem => elem.id === schedule.id);
                                      if (schIndex !== -1) {
                                          device.schedules.splice(schIndex, 1);
                                          isNeedToUpdate = true;
@@ -375,13 +411,14 @@ QtObject {
 
         serverSchedules.forEach(schedule => {
                                   // Find Schedule in the model
-                                  var foundSchedule = modelSchedules.find(modelSchedule => schedule.name === modelSchedule.name);
+                                  var foundSchedule = modelSchedules.find(modelSchedule => schedule.schedule_id === modelSchedule.id);
 
                                   // Add new schedule
                                   if (foundSchedule === undefined) {
                                       var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
                                       newSchedule._qsRepo = AppCore.defaultRepo;
                                       newSchedule.enable = schedule.is_enable;
+                                      newSchedule.id = schedule.schedule_id;
                                       newSchedule.name = schedule.name;
                                       newSchedule.type = schedule.type_id;
 
@@ -403,7 +440,7 @@ QtObject {
                                       device.schedules.push(newSchedule);
 
                                       isNeedToUpdate = true;
-                                      console.log("Schecule: ", newSchedule?.name ?? "undefined", " added to model.");
+                                      console.log("Schecule: ", newSchedule?.id ?? "undefined", " added to model.");
 
                                   } else {
                                       if (foundSchedule.enable !== schedule.is_enable) {
@@ -438,7 +475,7 @@ QtObject {
                                           foundSchedule.repeats = repeats;
                                       }
 
-                                        console.log("Schecule: ", foundSchedule?.name ?? "undefined", " updated.");
+                                        console.log("Schecule: ", foundSchedule?.id ?? "undefined", " updated.");
                                   }
                               });
 
@@ -620,4 +657,45 @@ QtObject {
             // }
         }
     }
+
+    property Connections syncController: Connections {
+        target: deviceController.sync
+
+        function onScheduleCleared(id: int, success: bool) {
+            var schId = deletingSchedules.findIndex(elem => elem === id);
+            if (success) {
+                console.log("Schedule cleared: ", id, schId);
+
+                if (schId !== -1) {
+                    deletingSchedules.splice(schId, 1);
+                    deletingSchedulesChanged();
+                }
+
+            } else {
+                // Schedule deleting failed, retry
+                if (schId !== -1) {
+                    deletingSchedules.push(id);
+                    deletingSchedulesChanged();
+                }
+
+                retryScheduleDeleting.start();
+            }
+        }
+
+        function scheduleEdited() {
+
+        }
+    }
+
+    //! Retry to delete schedule
+    property Timer retryScheduleDeleting: Timer {
+        interval: 3000
+        running: false
+        repeat: false
+
+        onTriggered: {
+            deviceController.sync.clearSchedule(deletingSchedules[0]);
+        }
+    }
+
 }

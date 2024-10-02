@@ -667,6 +667,29 @@ void Sync::forgetDevice()
     setting.setValue(cContractorSettings, mContractorInfo);
 }
 
+void Sync::clearSchedule(const int &scheduleID)
+{
+    auto callback = [this, scheduleID](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        bool success = reply->error() == QNetworkReply::NoError;
+
+        if (success) {
+            success = data.value("errors").isUndefined() || data.value("errors").toArray().empty();
+        }
+
+        if (!success) {
+            TRACE << "clearSchedule" << data.value("errors") << data.value("message") << reply->errorString();
+        }
+
+        emit scheduleCleared(scheduleID, success);
+    };
+
+    auto reply = callPostApi(cBaseUrl + QString("/api/sync/clearSchedules?sn=%0&id=%1").arg(mSerialNumber, QString::number(scheduleID)), QJsonDocument().toJson(), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
+
+
 void Sync::getOutdoorTemperature() {
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {

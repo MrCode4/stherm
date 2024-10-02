@@ -68,6 +68,9 @@ public:
 
     void getOutdoorTemperature();
 
+    Q_INVOKABLE void clearSchedule(const int &scheduleID);
+
+    Q_INVOKABLE void editSchedule(const int &scheduleID, const QVariantMap &settings);
 signals:
     void settingsFetched(bool success);
     void serialNumberReady();
@@ -124,6 +127,9 @@ signals:
     void customerInfoReady(bool success, QVariantMap data);
 
     void outdoorTemperatureReady(bool success = false, double temp = -1.0);
+
+    void scheduleCleared(int id, bool success);
+    void scheduleEdited(int id, bool success);
 
 private slots:
     //! Check firmware update with getSettings reply
