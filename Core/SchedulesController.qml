@@ -698,4 +698,26 @@ QtObject {
         }
     }
 
+    //! Retry to delete schedule
+    property Timer retryScheduleEditing: Timer {
+        interval: 3000
+        running: false
+        repeat: false
+
+        onTriggered: {
+            var schedule = editingSchedules[0];
+            if (schedule) {
+                var schedulePacket;
+                schedulePacket.is_enable  = schedule.enable;
+                schedulePacket.name       = schedule.name;
+                schedulePacket.type_id    = schedule.type;
+                schedulePacket.start_time = schedule.startTime;
+                schedulePacket.end_time   = schedule.endTime;
+                schedulePacket.humidity   = schedule.humidity;
+                schedulePacket.dataSource = schedule.dataSource;
+                schedulePacket.weekdays   = schedule.repeats.split(',');
+                deviceController.sync.editSchedule(schedule.id, schedulePacket);
+            }
+        }
+    }
 }

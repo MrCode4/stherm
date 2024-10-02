@@ -689,6 +689,25 @@ void Sync::clearSchedule(const int &scheduleID)
     }
 }
 
+void Sync::editSchedule(const int &scheduleID, const QVariantMap &settings)
+{
+    QJsonObject reqData = QJsonObject::fromVariantMap(settings);
+    reqData["sn"] = mSerialNumber;
+
+    auto callback = [this, scheduleID](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit scheduleEdited(scheduleID, true);
+        }
+        else {
+            emit scheduleEdited(scheduleID, false);
+        }
+    };
+
+    auto reply = callPostApi(cBaseUrl + QString("api/sync/schedules/%0").arg(QString::number(scheduleID)), QJsonDocument(reqData).toJson(), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
 
 void Sync::getOutdoorTemperature() {
 
