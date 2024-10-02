@@ -57,7 +57,7 @@ I_DeviceController {
     property bool checkedSWUpdate: false
 
     //! Active system mode in dual fuel heating
-    property int dfhSystemType: AppSpec.HeatPump
+    property int dfhSystemType: AppSpec.SysTUnknown
 
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow

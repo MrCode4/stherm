@@ -73,7 +73,7 @@ BasePageView {
         // anchors.centerIn: parent
         anchors.top: parent.top
         width: parent.width
-        spacing: 4
+        spacing: initialSetup ? 0 : 4
 
         //! Emergency Heating
         RowLayout {
