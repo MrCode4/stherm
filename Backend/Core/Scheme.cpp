@@ -226,6 +226,9 @@ void Scheme::run()
             }
         }
 
+        // reset to avoid excess restart while values are changing
+        mActiveSysTypeHeating = AppSpecCPP::SystemType::SysTUnknown;
+
         if (!mRestarting) {
             mRelay->setAllOff();
 
@@ -1147,9 +1150,9 @@ void Scheme::fanWork(bool isOn) {
 void Scheme::checkForRestartDualFuel()
 {
     const auto sys = mDataProvider.data()->systemSetup();
-    if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && (
-            sys->systemMode == AppSpecCPP::SystemMode::Heating ||
-            sys->systemMode == AppSpecCPP::SystemMode::Auto)) {
+    if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
+        (mActiveSysTypeHeating == AppSpecCPP::HeatPump ||
+            mActiveSysTypeHeating == AppSpecCPP::HeatingOnly)) {
         auto activeType = activeSystemTypeHeating();
         if (activeType != mActiveSysTypeHeating) {
             TRACE << "Restart scheme due to dual fuel change." << mActiveSysTypeHeating << activeType << sys->systemMode;
