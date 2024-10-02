@@ -340,19 +340,12 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
             activeSysType = mSwitchDFHActiveSysTypeTo;
 
             // in the cold outdoor heatpump can not function good so we use it only above threshold
-        } else if (mDataProvider->dualFuelThreshodF() <  mDataProvider->outdoorTemperatureF()) {
-            // Start the heat pump
+        } else if (mDataProvider->outdoorTemperatureF() > mDataProvider->dualFuelThreshodF()) {
+            // Start the heat pump (Y wires)
             activeSysType = AppSpecCPP::SystemType::HeatPump;
-
-            // To ensure the related relays are off
-            mRelay->turnConventionalHeating(false); // this might cause some issues when use this function to check the stage?
-
         } else {
-            // Start the conventional heating
-            activeSysType = AppSpecCPP::SystemType::HeatingOnly; // or Conventional
-
-            // To ensure the related relays are off
-            mRelay->turnHeatPump(false); // this might cause some issues when use this function to check the stage?
+            // Start the heating using Furnace (W wires)
+            activeSysType = AppSpecCPP::SystemType::HeatingOnly;
         }
 
         // this can be called sooner than reality, we may refactor and call it as need

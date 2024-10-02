@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Temperature scheme version and update date.
-set(TEMPERATURE_SCHEME_VERSION_C "V.1.93(30.09.2024)")
+set(TEMPERATURE_SCHEME_VERSION_C "V.1.94 (02.10.2024)")
 
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
