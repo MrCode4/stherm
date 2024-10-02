@@ -28,18 +28,16 @@ Item {
 
         fillMode: Image.PreserveAspectFit
         smooth: true
-        source: isConnected && !NetworkInterface.hasInternet
-                ? "qrc:/Stherm/Images/Wifi/wifi-no-internet.png"
-                : (strength > 79
-                   ? "qrc:/Stherm/Images/Wifi/wifi.png"
-                   : (strength > 50
-                      ? "qrc:/Stherm/Images/Wifi/wifi-good.png"
-                      : (strength > 25
-                         ? "qrc:/Stherm/Images/Wifi/wifi-fair.png"
-                         : "qrc:/Stherm/Images/Wifi/wifi-weak.png"
-                         )
-                      )
-                   )
+        source: (strength > 79
+                 ? "qrc:/Stherm/Images/Wifi/wifi.png"
+                 : (strength > 50
+                    ? "qrc:/Stherm/Images/Wifi/wifi-good.png"
+                    : (strength > 25
+                       ? "qrc:/Stherm/Images/Wifi/wifi-fair.png"
+                       : "qrc:/Stherm/Images/Wifi/wifi-weak.png"
+                       )
+                    )
+                 )
         sourceSize.width: width
         sourceSize.height: height
     }
@@ -53,5 +51,22 @@ Item {
         visible: strength > 0 && !isOpen
         font.pointSize: Application.font.pointSize * 0.7
         text: FAIcons.lock
+    }
+
+    Label {
+        anchors.centerIn: parent
+        visible: isConnected && !NetworkInterface.hasInternet
+        height: contentHeight
+        leftPadding: 1; rightPadding: 1
+        font {
+            weight: Font.Bold
+            pointSize: Application.font.pointSize * 1.8
+        }
+        text: "!"
+        horizontalAlignment: Text.AlignHCenter
+        background: Rectangle {
+            color: Style.background
+            radius: 2
+        }
     }
 }
