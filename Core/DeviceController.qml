@@ -840,7 +840,7 @@ I_DeviceController {
             //! TODo required actions if any
 
             checkToUpdateSystemMode(systemMode);
-            deviceController.updateEditMode(AppSpec.EMSystemMode);
+            updateEditMode(AppSpec.EMSystemMode);
             // to let all dependant parameters being updated and save all
             Qt.callLater(saveSettings);
         }
@@ -861,7 +861,7 @@ I_DeviceController {
     //! On/off the vacation.
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
-        deviceController.updateEditMode(AppSpec.EMVacation);
+        updateEditMode(AppSpec.EMVacation);
         saveSettings();
     }
 
@@ -1031,7 +1031,6 @@ I_DeviceController {
                 "effectDst": device.setting.effectDst,
             },
             "sensors" : [],
-            "schedules" : [],
             "messages" : [],
             "vacation" : {
                 "min_humidity" : device.vacation.hum_min,
@@ -1059,23 +1058,6 @@ I_DeviceController {
                 "firmware-version": Application.version
             }
         }
-
-        device.schedules.forEach(schedule =>
-                                 {
-                                     send_data.schedules.push(
-                                         {
-                                             "is_enable": schedule.enable,
-                                             "name": schedule.name,
-                                             "type_id": schedule.type,
-                                             "start_time": schedule.startTime,
-                                             "end_time": schedule.endTime,
-                                             //!  TODO: remove
-                                             "temp": 18.0,
-                                             "humidity": schedule.humidity,
-                                             "dataSource": schedule.dataSource,
-                                             "weekdays": schedule.repeats.split(',')
-                                         })
-                                 })
 
         device.messages.forEach(message =>
                                 {
@@ -1300,6 +1282,8 @@ I_DeviceController {
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
     function setSchedulesFromServer(serverSchedules: var) {
+
+        // Check the lock mode
         if (editModeEnabled(AppSpec.EMSchedule)) {
             console.log("The schedules are being edited and cannot be updated by the server.")
             return;
@@ -1349,7 +1333,7 @@ I_DeviceController {
         //        device.fan.mode?
 
         if (isNeedToPushToServer) {
-            deviceController.updateEditMode(AppSpec.EMSensorValues);
+            updateEditMode(AppSpec.EMSensorValues);
         }
 
         //        console.log("--------------- End: updateInformation -------------------")
