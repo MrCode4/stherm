@@ -57,6 +57,21 @@ QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByte
     }
 }
 
+QNetworkReply* RestApiExecutor::callPutApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth)
+{
+    auto key = prepareHashKey(QNetworkAccessManager::Operation::PutOperation, endpoint);
+    if (mCallbacks.contains(key)) {
+        return nullptr;
+    }
+    else {
+        mCallbacks.insert(key, callback);
+        auto reply = put(prepareApiRequest(endpoint, setAuth), postData);
+        reply->setProperty("endpoint", endpoint);
+        reply->setProperty("isJson", true);
+        return reply;
+    }
+}
+
 QNetworkReply* RestApiExecutor::downloadFile(const QString &url, ResponseCallback callback, bool jsonFile, bool setAuth)
 {
     auto key = prepareHashKey(QNetworkAccessManager::Operation::GetOperation, url);

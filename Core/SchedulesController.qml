@@ -809,7 +809,7 @@ QtObject {
         }
     }
 
-    //! Retry to delete schedule
+    //! Retry to edit schedule
     property Timer retryScheduleEditing: Timer {
         interval: 4000
         running: false
@@ -820,7 +820,7 @@ QtObject {
         }
     }
 
-    //! Retry to delete schedule
+    //! Retry to add schedule
     property Timer retryScheduleAdding: Timer {
         interval: 2000
         running: false

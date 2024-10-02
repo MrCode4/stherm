@@ -704,7 +704,7 @@ void Sync::editSchedule(const int &scheduleID, const QVariantMap &schedule)
         }
     };
 
-    auto reply = callPostApi(cBaseUrl + QString("api/sync/schedules/%0").arg(QString::number(scheduleID)), QJsonDocument(reqData).toJson(), callback);
+    auto reply = callPutApi(cBaseUrl + QString("api/sync/schedules/%0").arg(QString::number(scheduleID)), QJsonDocument(reqData).toJson(), callback);
     if (reply) {// returned response has no data object and values are in root
         reply->setProperty("noDataObject", true);
     }
