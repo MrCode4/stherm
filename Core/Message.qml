@@ -25,6 +25,9 @@ QSObject {
 
     /* Property declaration
      * ****************************************************************************************/
+    //! Message id: used in the server messages
+    property int        id:         -1
+
     //! Type of Message
     property int        type:       Message.Type.Unknown
 

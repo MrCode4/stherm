@@ -120,7 +120,7 @@ QtObject {
                              message.isRead = false;
 
                              // Find Schedule in the model
-                             var foundMessage = device.messages.find(messageModel => (message.message === messageModel.message &&
+                             var foundMessage = device.messages.find(messageModel => (message.message_id === messageModel.id &&
                                                                                       messageModel.sourceType === Message.SourceType.Server));
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
@@ -132,12 +132,12 @@ QtObject {
 
                              } else { // new message, TODO: Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
-                                 addNewMessageFromData(type, message.message, message.created, message.isRead, icon, Message.SourceType.Server);
+                                 addNewMessageFromData(type, message.message, message.created, message.isRead, icon, message.message_id, Message.SourceType.Server);
                              }
                          });
     }
 
-    function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
+    function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", id = -1, sourceType = Message.SourceType.Device)
     {
         if (message.length === 0) {
             console.log("addNewMessageFromData: The message is empty!")
@@ -198,6 +198,7 @@ QtObject {
         newMessage.datetime = datetime;
         newMessage.isRead = modifiedIsRead;
         newMessage.sourceType = sourceType;
+        newMessage.id = id;
 
         if (type !== Message.Type.SystemNotification) {
             device.messages.unshift(newMessage);
