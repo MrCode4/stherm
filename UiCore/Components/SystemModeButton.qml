@@ -179,6 +179,7 @@ ToolButton {
             elide: Text.ElideMiddle
             visible: opacity > 0
             enabled: visible
+            color: dfhTroubleshootingMode ? AppStyle.primaryOrange : Style.foreground
             opacity: showCountdownLabel ? 1. : 0.
 
             Behavior on opacity { NumberAnimation { duration: 200 } }
