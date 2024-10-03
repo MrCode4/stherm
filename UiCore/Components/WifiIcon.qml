@@ -56,14 +56,16 @@ Item {
     Label {
         anchors.centerIn: parent
         visible: isConnected && !NetworkInterface.hasInternet
-        height: contentHeight
-        leftPadding: 1; rightPadding: 1
+        // to distinguish with wifi icon
+        leftPadding: 1;
+        rightPadding: 1;
         font {
             weight: Font.Bold
-            pointSize: Application.font.pointSize * 1.8
+            pointSize: Application.font.pointSize * 1.2
         }
         text: "!"
         horizontalAlignment: Text.AlignHCenter
+        // make it more aesthetic
         background: Rectangle {
             color: Style.background
             radius: 2
