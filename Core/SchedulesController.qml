@@ -440,7 +440,9 @@ QtObject {
 
         serverSchedules.forEach(schedule => {
                                   // Find Schedule in the model
-                                  var foundSchedule = modelSchedules.find(modelSchedule => schedule.schedule_id === modelSchedule.id);
+                                  var foundSchedule = modelSchedules.find(modelSchedule => schedule.schedule_id === modelSchedule.id ||
+                                                                              (modelSchedule.id  < 0 && schedule.name === modelSchedule.name)
+                                                                          );
 
                                   // Add new schedule
                                   if (foundSchedule === undefined) {
@@ -472,6 +474,8 @@ QtObject {
                                       console.log("Schecule: ", newSchedule?.id ?? "undefined", " added to model.");
 
                                   } else {
+                                        foundSchedule.id = schedule.schedule_id ?? foundSchedule.id
+
                                       if (foundSchedule.enable !== schedule.is_enable) {
                                           foundSchedule.enable = schedule.is_enable;
                                       }
@@ -795,6 +799,7 @@ QtObject {
                 if (addedSchedule) {
                     console.log("addSchedule: schedule added with id: ", schedule.schedule_id)
                     addedSchedule.id = schedule.schedule_id;
+                    deviceController.saveSettings();
                 }
 
                 var schId = addingSchedules.findIndex(elem => elem._qsUuid === scheduleUid);
