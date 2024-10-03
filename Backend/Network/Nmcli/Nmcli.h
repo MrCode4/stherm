@@ -74,7 +74,27 @@ public:
     bool hasWifiProfile(const QString& ssid);
 
     void connectToUnsavedWifi(const QString& bssid, const QString& password, ExitedCallback callback);
-    void connectToSavedWifi(const QString& ssid, const QString& password, ExitedCallback callback);
+    void connectToSavedWifi(const QString& ssid, const QString& security, const QString& password, ExitedCallback callback);
     void disconnectFromWifi(const QString& ssid, ExitedCallback callback);
     void forgetWifi(const QString& ssid, ExitedCallback callback);
+
+private:
+    /*!
+     * \brief connectToSavedWifiImpl This method is used inside \ref connectToSavedWifi to avoid
+     * complicating that method
+     * \param ssid
+     * \param security
+     * \param password
+     * \param callback
+     */
+    void connectToSavedWifiImpl(const QString& ssid, const QString& security, const QString& password, ExitedCallback callback);
+
+    /*!
+     * \brief securityToNmcliKeyMgmt convert the security string which can be WAP2, WAP3, WPA2 WPA3
+     * to a valid string for 802-11-wireless-security.key-mgmt.
+     * \see https://networkmanager.dev/docs/api/latest/settings-802-11-wireless-security.html
+     * \param security
+     * \return
+     */
+    QString securityToNmcliKeyMgmt(const QString& security);
 };

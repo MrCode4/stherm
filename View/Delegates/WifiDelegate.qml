@@ -63,8 +63,21 @@ Control {
                 WifiIcon {
                     anchors.fill: parent
 
-                    isConnected: true //! Disconnect icon is not desired
+                    isConnected: wifi?.connected ?? false
+                    hasInternet: NetworkInterface.hasInternet
                     strength: wifi?.strength ?? 0
+                }
+
+                // security indicator
+                RoniaTextIcon {
+                    anchors {
+                        right: parent.right
+                        bottom: parent.bottom
+                    }
+                    //! strength > 0 means don't display lock for non-in-range wifis
+                    visible: wifi?.strength > 0 && wifi?.security !== ""
+                    font.pointSize: Application.font.pointSize * 0.5
+                    text: FAIcons.lock
                 }
             }
 
