@@ -117,9 +117,7 @@ Control {
                     uiSession.popupLayout.displayPopUp(switchHeatingPopup);
 
                 } else {
-                    _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
-                                                  "uiSession": Qt.binding(() => uiSession)
-                                              });
+                    uiSession.openSystemModePage();
                 }
             }
         }
