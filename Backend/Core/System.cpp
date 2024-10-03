@@ -77,6 +77,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     , mUpdateAvailable (false)
     , mHasForceUpdate(false)
     , mIsInitialSetup(false)
+    , mControlAlertEnabled(false)
     , mTestMode(false)
     , mIsNightModeRunning(false)
     , mRestarting(false)
@@ -1054,6 +1055,11 @@ void NUVE::System::setIsInitialSetup(bool isInitailSetup)
     mIsInitialSetup = isInitailSetup;
 }
 
+bool NUVE::System::controlAlertEnabled()
+{
+    return mControlAlertEnabled;
+}
+
 void NUVE::System::forgetDevice()
 {
     mLastInstalledUpdateDate = {};
@@ -1102,6 +1108,15 @@ void NUVE::System::setTestMode(bool testMode) {
 
     mTestMode = testMode;
     emit testModeChanged();
+}
+
+void NUVE::System::setControlAlertEnabled(bool enabled)
+{
+    if (mControlAlertEnabled == enabled)
+        return;
+
+    mControlAlertEnabled = enabled;
+    emit controlAlertEnabledChanged();
 }
 
 void NUVE::System::setPartialUpdateProgress(int progress) {

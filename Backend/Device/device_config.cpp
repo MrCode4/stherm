@@ -1,8 +1,20 @@
 #include "device_config.h"
 
 #include <QSettings>
+#include <QtGlobal>
 
 #include "LogHelper.h"
+
+NUVE::DeviceConfig::DeviceConfig() {
+    init();
+    load();
+    setEnv();
+}
+
+NUVE::DeviceConfig::DeviceConfig(const cpuid_t cpuid) {
+    initialise(cpuid);
+    setEnv();
+}
 
 void NUVE::DeviceConfig::initialise(const cpuid_t cpuid)
 {
@@ -48,6 +60,8 @@ void NUVE::DeviceConfig::init()
     humidifier_id = 3;
     hum_wiring = "";
     system_type = 1;
+    endpoint = API_SERVER_BASE_URL;
+    controlAlertEnabled = false;
 }
 
 void NUVE::DeviceConfig::setSampleRate(const uint32_t& sr) {
@@ -63,6 +77,9 @@ void NUVE::DeviceConfig::load()
     QSettings config("/usr/local/bin/device_config.ini", QSettings::IniFormat);
     uid = config.value("uid").toString().toStdString();
     serial_number = config.value("serial_number").toString().toStdString();
+
+    endpoint = config.value("endpoint", API_SERVER_BASE_URL).toString().toStdString();
+
     bool ok;
     auto sr = config.value("sampleRate").toInt(&ok);
     if (ok)
@@ -75,5 +92,14 @@ void NUVE::DeviceConfig::save()
 
     config.setValue("uid", QString::fromStdString(uid));
     config.setValue("serial_number", QString::fromStdString(serial_number));
+    config.setValue("endpoint", QString::fromStdString(endpoint));
     config.setValue("sampleRate", QString::number(sampleRate));
+}
+
+void NUVE::DeviceConfig::setEnv()
+{
+    //! Set check internet access url in env, used by NmcliInterface
+    qputenv("NMCLI_INTERNET_ACCESS_URL", QByteArray::fromStdString(endpoint));
+    //! used for Sync class calling API
+    qputenv("API_SERVER_BASE_URL", QByteArray::fromStdString(endpoint));
 }

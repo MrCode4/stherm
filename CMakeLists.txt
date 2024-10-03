@@ -155,6 +155,7 @@ qt6_add_qml_module(appStherm
         View/Menu/MessagesPage.qml
         View/Menu/AlertsPage.qml
         View/Menu/SystemAlertsPage.qml
+        View/Menu/ManageEndpoint.qml
         View/BasePageView.qml
         View/ScheduleView.qml
         View/BacklightPage.qml
@@ -269,7 +270,6 @@ qt6_add_qml_module(appStherm
         UiCore/Dialogs/ForgetWifiDialog.qml
 
     SOURCES
-        Backend/Config.h
         Backend/Property.h
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp

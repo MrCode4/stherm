@@ -22,6 +22,8 @@ QtObject {
 
     property bool activeAlerts: false
 
+    property bool is_control_alert_feature_enable : deviceController.deviceControllerCPP.system.controlAlertEnabled;
+
     //! alertInterval: Reshow specific alerts every 24 hours (if exist),
     //! but only if they haven't been displayed in the past 24 hours.
     readonly property int alertInterval: 24 * 60 * 60 * 1000

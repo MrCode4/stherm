@@ -137,6 +137,9 @@ public:
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
 
+    Q_INVOKABLE void setEndpoint(const QString &subdomain, const QString &domain);
+    Q_INVOKABLE QString getEndpoint();
+
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);
 

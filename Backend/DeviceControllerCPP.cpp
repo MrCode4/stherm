@@ -775,6 +775,24 @@ void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings)
     m_system->pushSettingsToServer(settings);
 }
 
+void DeviceControllerCPP::setEndpoint(const QString &subdomain, const QString &domain)
+{
+    _deviceAPI->setEndpoint(QString("https://%0.%1/").arg(subdomain, domain));
+}
+
+QString DeviceControllerCPP::getEndpoint()
+{
+    auto endpoint = QString::fromStdString(_deviceAPI->deviceConfig().endpoint);
+
+    // Use QUrl to parse the URL
+    QUrl parsedUrl(endpoint);
+
+    // Get the host (domain + subdomain) as QString
+    QString host = parsedUrl.host();
+
+    return host;
+}
+
 void DeviceControllerCPP::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
 {
     m_system->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);

@@ -12,7 +12,6 @@
 
 #include <csignal>
 
-#include "Config.h"
 #include "LogHelper.h"
 #include "UtilityHelper.h"
 
@@ -29,10 +28,6 @@ void signalHandler(int signal) {
 
 int main(int argc, char *argv[])
 {
-    //! Set check internet access url in env, used by NmcliInterface
-    qputenv("NMCLI_INTERNET_ACCESS_URL", API_SERVER_BASE_URL);
-
-
 // trying multiple times to read validated cpuid, reboot if not successful.
 #ifdef __unix__
     int counter = 0;
@@ -130,7 +125,6 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperties({
         {"scaleFactor", scaleFactor},
         {"deviceInfo", deviceInfo},
-        {"is_control_alert_feature_enable", IS_CONTROL_ALERT_FEATURE_ENABLE},
     });
     engine.rootContext()->setContextProperty("deviceInfo", deviceInfo);
 

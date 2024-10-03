@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Config.h"
+#include "nuve_types.h"
 
 /////////////// Configurations
 
@@ -22,9 +22,9 @@ static const int EXEC_TIMEOUT_INTERVAL = 30;
 // TODO check the validity of hte following descriptions
 /// Set the url used to view the technician qr code
 /// TODO refactor this nameing
-inline static const std::string TECHNIC_QR = std::string(API_SERVER_BASE_URL) + "#EN/USA/technician/view/";
+inline static const std::string TECHNIC_QR = "#EN/USA/technician/view/";
 /// set the url used to edit hte techicion qr code
-inline static const std::string TECHNIC_EDIT_QR = std::string(API_SERVER_BASE_URL) + "#EN/USA/technician/edit/";
+inline static const std::string TECHNIC_EDIT_QR = "#EN/USA/technician/edit/";
 
 
 
