@@ -254,6 +254,20 @@ void DateTimeManagerCPP::checkAutoUpdateTime()
     qWarning() << "Error: DTM checkAutoUpdateTime failed to read output";
 }
 
+QString DateTimeManagerCPP::utcDateTimeToLocalString(const QString& utcDateTime,
+                                                     const QString& inputFormat,
+                                                     const QString& outputFormat)
+{
+    QDateTime dateTimeObject = QDateTime::fromString(utcDateTime, inputFormat);
+    // Set time zone to UTC
+    dateTimeObject.setTimeZone(QTimeZone::utc());
+
+    // Convert to local time
+    dateTimeObject = dateTimeObject.toTimeZone(mCurrentTimeZone);
+
+    return dateTimeObject.toString(outputFormat);
+}
+
 void DateTimeManagerCPP::callProcessFinished(const QJSValueList& args)
 {
     if (mProcessFinishCb.isCallable()) {

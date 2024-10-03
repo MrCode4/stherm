@@ -82,8 +82,7 @@ BasePageView {
                 Label {
                     Layout.alignment: Qt.AlignCenter
                     Layout.fillWidth: true
-                    text: message.datetime ? (Date.fromLocaleString(locale, message.datetime.split('.')[0], "yyyy-MM-dd HH:mm:ss").
-                                              toLocaleString(locale, " (MMM dd, yyyy h:mmAP)")) : " -"
+                    text: message.datetime ? `(${DateTimeManager.utcDateTimeToLocalString(message.datetime)})` : " -"
                     elide: Qt.ElideRight
                     font.pixelSize: messageTypeLabel.font.pixelSize - 2
                 }
