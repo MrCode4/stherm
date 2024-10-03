@@ -96,6 +96,18 @@ QtObject {
 
             // Send data to server
             clearScheduleFromServer(schedule.id);
+            var schId = editingSchedules.findIndex(elem => elem.id === schedule.id);
+            if (schId > -1) {
+                editingSchedules.splice(schId, 1);
+                editingSchedulesChanged();
+            }
+
+            schId = addingSchedules.findIndex(elem => elem.id === schedule.id);
+            if (schId > -1) {
+                addingSchedules.splice(schId, 1);
+                addingSchedulesChanged();
+            }
+
 
             device.schedules.splice(schIndex, 1);
             device.schedulesChanged();
@@ -756,7 +768,7 @@ QtObject {
             }
         }
 
-        function scheduleEdited(id: int, success: bool) {
+        function onScheduleEdited(id: int, success: bool) {
             var schId = editingSchedules.findIndex(elem => elem.id === id);
             if (success) {
                 console.log("Schedule edited: ", id, schId);
@@ -805,7 +817,8 @@ QtObject {
         repeat: false
 
         onTriggered: {
-            deviceController.sync.clearSchedule(deletingSchedules[0]);
+            if (deletingSchedules.length > 0)
+                deviceController.sync.clearSchedule(deletingSchedules[0]);
         }
     }
 
@@ -816,7 +829,8 @@ QtObject {
         repeat: false
 
         onTriggered: {
-          editScheduleInServer(editingSchedules[0]);
+            if (editingSchedules.length > 0)
+                editScheduleInServer(editingSchedules[0]);
         }
     }
 
@@ -827,7 +841,8 @@ QtObject {
         repeat: false
 
         onTriggered: {
-            addScheduleToServer(addingSchedules[0]);
+            if (addingSchedules.length > 0)
+                addScheduleToServer(addingSchedules[0]);
         }
     }
 }
