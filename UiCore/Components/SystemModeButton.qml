@@ -110,7 +110,7 @@ ToolButton {
                     return "Heating";
                 }
 
-                color: dfhTroubleshootingMode ? "#DB4314" : Style.foreground
+                color: dfhTroubleshootingMode ? AppStyle.primaryOrange : Style.foreground
 
                 opacity: showCountdownLabel ? 0 : 1
             }
