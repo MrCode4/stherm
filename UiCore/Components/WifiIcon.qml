@@ -11,11 +11,15 @@ Item {
     id: _root
     /* Property declaration
      * ****************************************************************************************/
-    //!
+    //! this is for wifi delagates to show as connected on top
+    //! and on home page will be used for no Wi-Fi
     property bool       isConnected: true
 
-    //! Is wifi open (no password)
-    property bool       isOpen: false
+    //! to show indicator on connected Wi-Fi
+    property bool       hasInternet: false
+
+    //! true on home page
+    property bool       showOff: false
 
     //! Strength of wifi (0, 100)
     property int        strength
@@ -28,30 +32,22 @@ Item {
 
         fillMode: Image.PreserveAspectFit
         smooth: true
-        source: (strength > 79
-                 ? "qrc:/Stherm/Images/Wifi/wifi.png"
-                 : (strength > 50
-                    ? "qrc:/Stherm/Images/Wifi/wifi-good.png"
-                    : (strength > 25
-                       ? "qrc:/Stherm/Images/Wifi/wifi-fair.png"
-                       : "qrc:/Stherm/Images/Wifi/wifi-weak.png"
-                       )
-                    )
-                 )
+        source: isConnected || !showOff
+                ? (strength > 79
+                   ? "qrc:/Stherm/Images/Wifi/wifi.png"
+                   : (strength > 50
+                      ? "qrc:/Stherm/Images/Wifi/wifi-good.png"
+                      : (strength > 25
+                         ? "qrc:/Stherm/Images/Wifi/wifi-fair.png"
+                         : "qrc:/Stherm/Images/Wifi/wifi-weak.png"
+                         )
+                      )
+                   )
+                : "qrc:/Stherm/Images/Wifi/wifi-off.png"
         sourceSize.width: width
         sourceSize.height: height
     }
 
-    RoniaTextIcon {
-        anchors {
-            right: parent.right
-            bottom: parent.bottom
-        }
-        //! strength > 0 means don't display lock for non-in-range wifis
-        visible: strength > 0 && !isOpen
-        font.pointSize: Application.font.pointSize * 0.7
-        text: FAIcons.lock
-    }
 
     Label {
         anchors.centerIn: parent
