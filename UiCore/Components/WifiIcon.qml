@@ -24,6 +24,9 @@ Item {
     //! Strength of wifi (0, 100)
     property int        strength
 
+    //! stretch vertically to cover more area
+    property real yFactor: 1.15 * _wifiImage?.height / (Math.max(20, (noInternetIndicator?.height ?? 20))) ?? 1;
+
     /* Children
      * ****************************************************************************************/
     Image {
@@ -48,23 +51,36 @@ Item {
         sourceSize.height: height
     }
 
+    // aesthetic External background for noInternetIndicator
+    Rectangle {
+        visible: noInternetIndicator.visible
+        anchors.horizontalCenter: noInternetIndicator.horizontalCenter
+        anchors.top: noInternetIndicator.top
+        // to distinguish with wifi icon
+        width: noInternetIndicator.width + 2
+        // to fit better on wifi signals on both sizes
+        height: noInternetIndicator.height / 2 + (yFactor > 1.3 ? 7 : -3)
+        anchors.topMargin: yFactor > 1.3 ? 7 : 5
+        color: Style.background
+        radius: 2
+    }
 
     Label {
+        id: noInternetIndicator
+        visible: isConnected && !hasInternet
         anchors.centerIn: parent
-        visible: isConnected && !NetworkInterface.hasInternet
-        // to distinguish with wifi icon
-        leftPadding: 1;
-        rightPadding: 1;
+        // Adjust this value to match point of ! and wifi
+        anchors.verticalCenterOffset: yFactor > 1.3 ? -7 : 3
         font {
             weight: Font.Bold
             pointSize: Application.font.pointSize * 1.2
         }
         text: "!"
         horizontalAlignment: Text.AlignHCenter
-        // make it more aesthetic
-        background: Rectangle {
-            color: Style.background
-            radius: 2
+
+        transform: Scale {
+            xScale: 1
+            yScale: yFactor > 1.3 ? yFactor : 1.0 // Scale vertically in home
         }
     }
 }
