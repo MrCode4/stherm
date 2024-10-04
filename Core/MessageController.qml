@@ -119,16 +119,22 @@ QtObject {
                              // we need this for now as server sents every message only once, so it should be false so user don't lose it
                              message.isRead = false;
 
+                             var messageDatetime = message.created === null ? "" : message.created;
+
                              // Find Schedule in the model
-                             var foundMessage = device.messages.find(messageModel => (message.message_id === messageModel.id &&
-                                                                                      messageModel.sourceType === Message.SourceType.Server));
+                             var foundMessage = device.messages.find(messageModel => (messageModel.sourceType === Message.SourceType.Server &&
+                                                                                      (message.message_id === messageModel.id ||
+
+                                                                                       // To compatible with the old saved messages
+                                                                                       (messageModel.id < 0 && messageModel.message === message.message &&
+                                                                                        messageDatetime === foundMessage.datetime))
+                                                                                      ));
 
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
-                             var messageDatetime = message.created === null ? "" : message.created;
-                             if (foundMessage && foundMessage.datetime === messageDatetime &&
-                                 foundMessage.type === type) {
+                             if (foundMessage && foundMessage.type === type) {
                                  // isRead in the server is wrong. So I use the isRead condition from the local.
                                  // foundMessage.isRead = message.isRead;
+                                 foundMessage.id = message.message_id ?? foundMessage.id
 
                              } else { // new message, TODO: Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
