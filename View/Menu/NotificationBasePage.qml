@@ -83,9 +83,23 @@ BasePageView {
                     Layout.alignment: Qt.AlignCenter
                     Layout.fillWidth: true
 
-                    property string dateFormat: "yyyy-MM-dd HH:mm:ss"
+                    property string dateTimeFormat: "yyyy-MM-dd HH:mm:ss"
 
-                    property string dateTimeString: message.datetime ? DateTimeManager.utcDateTimeToLocalString(message.datetime, dateFormat) : ""
+                    property string dateTimeString: {
+                        if (message.datetime.length > 0) {
+                            var dts = DateTimeManager.utcDateTimeToLocalString(message.datetime, dateTimeFormat);
+
+                            // If QDateTime could not convert the date time with the dateTimeFormat, it use the ISO (`yyyy-MM-ddTHH:mm:ss.zzz`) instead.
+                            // It handle the old server messages.
+                            if (dts.length === 0) {
+                                dts = DateTimeManager.utcDateTimeToLocalString(message.datetime, "yyyy-MM-ddTHH:mm:ss.zzz");
+                            }
+
+                            return dts;
+                        }
+
+                        return "";
+                    }
 
                     text: dateTimeString.length > 0 ? ` (${dateTimeString})` : " -"
                     elide: Qt.ElideRight
