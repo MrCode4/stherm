@@ -245,7 +245,7 @@ QtObject {
         target: deviceController.deviceControllerCPP.system
 
         function onAlert(message: string) {
-            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toUTCString());
         }
 
         //! Manage update notifications (a message type)
@@ -322,7 +322,7 @@ QtObject {
                     (now - lastRead[message]) < weeklyAlertInterval)
                 return;
 
-            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
+            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toUTCString());
         }
     }
 
@@ -419,7 +419,7 @@ QtObject {
                     (now - lastRead[alertMessage]) < retriggerInterval)
                 return;
 
-            addNewMessageFromData(messageType, alertMessage, (new Date()).toLocaleString());
+            addNewMessageFromData(messageType, alertMessage, (new Date()).toUTCString());
 
         }
     }

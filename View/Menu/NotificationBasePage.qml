@@ -82,7 +82,12 @@ BasePageView {
                 Label {
                     Layout.alignment: Qt.AlignCenter
                     Layout.fillWidth: true
-                    text: message.datetime ? `(${DateTimeManager.utcDateTimeToLocalString(message.datetime)})` : " -"
+
+                    property string dateFormat: message.sourceType === Message.SourceType.Server ? "yyyy-MM-dd HH:mm:ss" : "ddd MMM d HH:mm:ss yyyy 'GMT'"
+
+                    property string dateTimeString: message.datetime ? DateTimeManager.utcDateTimeToLocalString(message.datetime, dateFormat) : ""
+
+                    text: dateTimeString.length > 0 ? `(${dateTimeString})` : " -"
                     elide: Qt.ElideRight
                     font.pixelSize: messageTypeLabel.font.pixelSize - 2
                 }

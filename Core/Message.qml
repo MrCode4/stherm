@@ -42,7 +42,7 @@ QSObject {
     //! Icon for this message, it should be a unicode from FontAwsome (can be blank)
     property string     icon:       ""
 
-    //! Date of arrival (Created message)
+    //! UTC date of arrival (Created message)
     property string     datetime
 
 }
