@@ -85,7 +85,17 @@ QtObject {
     Component.onCompleted: {
         // Filter out null/undefined messages from file data.
         device.messages = device.messages.filter(message => message !== null && message !== undefined);
-        device.messagesChanged()
+
+        //! To improve efficiency, remove messages if exists more than AppSpec.messagesLimits messages.
+        if (device.messages.length > AppSpec.messagesLimits) {
+            var deletedMessages = device.messages.splice(AppSpec.messagesLimits);
+
+            deletedMessages.forEach(msg => {
+                                        console.log(`message id: ${msg.id}, message: ${msg.message} - removed to improve efficiency.`)
+                                    });
+        }
+
+        device.messagesChanged();
     }
 
     /* Signals
@@ -119,25 +129,35 @@ QtObject {
                              // we need this for now as server sents every message only once, so it should be false so user don't lose it
                              message.isRead = false;
 
-                             // Find Schedule in the model
-                             var foundMessage = device.messages.find(messageModel => (message.message === messageModel.message &&
-                                                                                      messageModel.sourceType === Message.SourceType.Server));
-
-                             var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
                              var messageDatetime = message.created === null ? "" : message.created;
-                             if (foundMessage && foundMessage.datetime === messageDatetime &&
-                                 foundMessage.type === type) {
+                             var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
+
+                             // Find Schedule in the model
+                             var foundMessage = device.messages.find(messageModel => (messageModel.sourceType === Message.SourceType.Server &&
+                                                                                      (message.message_id === messageModel.id ||
+
+                                                                                       // To compatible with the old saved messages
+                                                                                       (messageModel.id < 0 &&
+                                                                                        messageModel.message === message.message &&
+                                                                                        messageModel.datetime === messageDatetime &&
+                                                                                        messageModel.type === type))
+                                                                                      ));
+
+                             if (foundMessage) {
                                  // isRead in the server is wrong. So I use the isRead condition from the local.
                                  // foundMessage.isRead = message.isRead;
+                                 foundMessage.id = message.message_id ?? foundMessage.id;
+
+                                 console.log("Message found: ", foundMessage.id, foundMessage.message, ", ignored.")
 
                              } else { // new message, TODO: Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
-                                 addNewMessageFromData(type, message.message, message.created, message.isRead, icon, Message.SourceType.Server);
+                                 addNewMessageFromData(type, message.message, message.created, message.isRead, icon, message.message_id, Message.SourceType.Server);
                              }
                          });
     }
 
-    function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", sourceType = Message.SourceType.Device)
+    function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", id = -1, sourceType = Message.SourceType.Device)
     {
         if (message.length === 0) {
             console.log("addNewMessageFromData: The message is empty!")
@@ -198,18 +218,33 @@ QtObject {
         newMessage.datetime = datetime;
         newMessage.isRead = modifiedIsRead;
         newMessage.sourceType = sourceType;
+        newMessage.id = id;
 
+        var hasMessagesChanges = false;
         if (type !== Message.Type.SystemNotification) {
             device.messages.unshift(newMessage);
+            hasMessagesChanges = true;
+        }
+
+        if (notifyUser)
+            newMessageReceived(newMessage);
+
+        //! To improve efficiency, remove messages if exists more than AppSpec.messagesLimits messages.
+        if (device.messages.length > AppSpec.messagesLimits) {
+            var deletedMessages = device.messages.splice(AppSpec.messagesLimits);
+            hasMessagesChanges = true;
+            deletedMessages.forEach(msg => {
+                                        console.log(`message id: ${msg.id}, message: ${msg.message} - removed to improve efficiency.`)
+                                    });
+        }
+
+        if (hasMessagesChanges) {
             device.messagesChanged();
 
             // Send messages to server
             deviceController.updateEditMode(AppSpec.EMMessages);
             deviceController.saveSettings();
         }
-
-        if (notifyUser)
-            newMessageReceived(newMessage);
     }
 
     function addNewMessage(message: Message)
@@ -244,7 +279,7 @@ QtObject {
         target: deviceController.deviceControllerCPP.system
 
         function onAlert(message: string) {
-            addNewMessageFromData(Message.Type.SystemNotification, message, (new Date()).toLocaleString());
+            addNewMessageFromData(Message.Type.SystemNotification, message, DateTimeManager.nowUTC());
         }
 
         //! Manage update notifications (a message type)
@@ -321,7 +356,7 @@ QtObject {
                     (now - lastRead[message]) < weeklyAlertInterval)
                 return;
 
-            addNewMessageFromData(Message.Type.Alert, message, (new Date()).toLocaleString());
+            addNewMessageFromData(Message.Type.Alert, message, DateTimeManager.nowUTC());
         }
     }
 
@@ -418,7 +453,7 @@ QtObject {
                     (now - lastRead[alertMessage]) < retriggerInterval)
                 return;
 
-            addNewMessageFromData(messageType, alertMessage, (new Date()).toLocaleString());
+            addNewMessageFromData(messageType, alertMessage, DateTimeManager.nowUTC());
 
         }
     }

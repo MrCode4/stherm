@@ -53,6 +53,11 @@ AppSpecCPP {
     //! Percent
     property int defaultVolume:     50
 
+
+    //! To improve efficiency, we should delete any messages that exceed
+    //! the maximum limit of messagesLimit messages.
+    property int messagesLimits: 50
+
     enum TestModeType {
         SerialNumber = 0, //! Test mode started due to serial number
         StartMode,        //! Test mode started due to TI board

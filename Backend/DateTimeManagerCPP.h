@@ -76,6 +76,21 @@ public:
      */
     Q_INVOKABLE void            checkAutoUpdateTime();
 
+
+    /*!
+     * \brief utcDateTimeToLocalString Convert UTC Date time to local date time
+     * \return QString of local date time with outputFormat format
+     */
+    Q_INVOKABLE QString         utcDateTimeToLocalString(const QString& utcDateTime,
+                                                 const QString& inputFormat  = QString("yyyy-MM-dd HH:mm:ss"),
+                                                 const QString& outputFormat = QString("MMM dd, yyyy h:mmAP"));
+
+    /*!
+     * \brief Now in UTC
+     * \return QString of Now date time with outputFormat format
+     */
+    Q_INVOKABLE QString         nowUTC(const QString &outputFormat = QString("yyyy-MM-dd HH:mm:ss"));
+
 private:
     /*!
      * \brief setAutoUpdateTimeProperty Sets mAutoUpdateTime value
