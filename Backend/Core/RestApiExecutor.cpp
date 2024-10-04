@@ -114,10 +114,10 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
 
         if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
 
-            if (reply->property("noDataObject").isValid() && reply->property("noDataObject").value<bool>())
+            data = prepareJsonResponse(endpoint, rawData);
+            if (data.isEmpty() && reply->property("noDataObject").isValid() && reply->property("noDataObject").value<bool>())
                 data = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
-            else
-                data = prepareJsonResponse(endpoint, rawData);
+
             if (data.isEmpty()) {
                 TRACE << "API RESPONSE (" << endpoint << ") is Empty or invalid:" << rawData;
 
