@@ -41,6 +41,7 @@ public:
     ScheduleCPP *schedule() const;
     void setSchedule(ScheduleCPP *newSchedule);
 
+    void setOutdoorTemperature(double temp);
 
     STHERM::Vacation vacation() const;
     void setVacation(const STHERM::Vacation &newVacation);
@@ -81,6 +82,13 @@ public:
 
     void setAutoMaxReqTempF(const double &fah_value);
 
+    double outdoorTemperatureF() const;
+
+    double dualFuelThreshodF() const;
+
+    //! Since the heat pump and cool stages both determine the Y wires, they're essentially the same.
+    int heatPumpStage() const;
+
 signals:
 
     /* Public Signals
@@ -92,6 +100,9 @@ signals:
     void vacationChanged();
     void setTemperatureChanged();
     void setHumidityChanged();
+
+    void outdoorTemperatureReady();
+    void outdoorTemperatureChanged();
 
 private:
     /* Attributes
@@ -119,5 +130,10 @@ private:
     //! Auto mode properites (Fahrenheit)
     double mAutoMinReqTempF;
     double mAutoMaxReqTempF;
+
+    //! Outdoot temperature
+    //! Celsius
+    double mOutdoorTemperature;
+
 };
 

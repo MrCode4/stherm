@@ -23,6 +23,12 @@ ToolButton {
 
     property int realMode: AppSpec.Cooling
 
+    property int dfhSystemType: deviceController.dfhSystemType
+
+    property bool dfhTroubleshootingMode: device?.systemSetup?.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet &&
+                                          (dfhSystemType === AppSpec.HeatingOnly || dfhSystemType === AppSpec.HeatPump)
+
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: metrics.boundingRect("Cooling").width + leftPadding + rightPadding
@@ -76,15 +82,36 @@ ToolButton {
             spacing: 2
 
             //! HEATING mode icon
-            Image {
+            RoniaTextIcon {
                 Layout.alignment: Qt.AlignCenter
-                source: "qrc:/Stherm/Images/sun.png"
+
+                text: FAIcons.sun_bright
+                font.weight: 300
+                color: heatingLabel.color
             }
 
+
             Label {
+                id: heatingLabel
+
                 Layout.alignment: Qt.AlignCenter
                 font.pointSize: Application.font.pointSize * 0.65
-                text: "Heating"
+                text: {
+                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet) {
+
+                        if (dfhSystemType === AppSpec.HeatingOnly) {
+                            return "Heating by furnace"
+
+                        } else if (dfhSystemType === AppSpec.HeatPump) {
+                            return "Heating by heat pump"
+                        }
+                    }
+
+                    return "Heating";
+                }
+
+                color: dfhTroubleshootingMode ? AppStyle.primaryOrange : Style.foreground
+
                 opacity: showCountdownLabel ? 0 : 1
             }
 
@@ -152,6 +179,7 @@ ToolButton {
             elide: Text.ElideMiddle
             visible: opacity > 0
             enabled: visible
+            color: dfhTroubleshootingMode ? AppStyle.primaryOrange : Style.foreground
             opacity: showCountdownLabel ? 1. : 0.
 
             Behavior on opacity { NumberAnimation { duration: 200 } }

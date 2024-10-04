@@ -75,6 +75,7 @@ public:
         HeatPump,
         CoolingOnly,
         HeatingOnly,
+        DualFuelHeating,
         SysTUnknown
     };
     Q_ENUM(SystemType)

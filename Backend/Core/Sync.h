@@ -66,6 +66,8 @@ public:
 
     Q_INVOKABLE void installDevice(const QVariantMap &data);
 
+    void getOutdoorTemperature();
+
 signals:
     void settingsFetched(bool success);
     void serialNumberReady();
@@ -120,6 +122,8 @@ signals:
 
     void zipCodeInfoReady(bool success, QVariantMap data);
     void customerInfoReady(bool success, QVariantMap data);
+
+    void outdoorTemperatureReady(bool success = false, double temp = -1.0);
 
 private slots:
     //! Check firmware update with getSettings reply

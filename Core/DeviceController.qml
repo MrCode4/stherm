@@ -56,6 +56,9 @@ I_DeviceController {
     //! Is the software update checked or not
     property bool checkedSWUpdate: false
 
+    //! Active system mode in dual fuel heating
+    property int dfhSystemType: AppSpec.SysTUnknown
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -267,6 +270,11 @@ I_DeviceController {
                 if (fetchContractorInfoTimer.running)
                     fetchContractorInfoTimer.restart();
             }
+        }
+
+        //! Update active system mode in the dual fuel heating
+        function onDfhSystemTypeChanged(activeSystemType: int) {
+            dfhSystemType = activeSystemType;
         }
     }
 
@@ -1175,8 +1183,10 @@ I_DeviceController {
 
     function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
         device.systemSetup.heatPumpEmergency = emergency;
-        device.systemSetup.heatStage = stage;
+
+        // coolStage controls the Y wires.
         device.systemSetup.coolStage = stage;
+
         device.systemSetup.heatPumpOBState = obState;
         device.systemSetup.systemType = AppSpecCPP.HeatPump;
     }
@@ -1186,6 +1196,20 @@ I_DeviceController {
         device.systemSetup.heatStage = heatStage;
         device.systemSetup.systemType = AppSpecCPP.Conventional;
     }
+
+    function setSystemDualFuelHeating(emergency: bool, heatPumpStage: int, stage: int, obState: int, dualFuelThreshod: real) {
+        device.systemSetup.heatPumpEmergency = emergency;
+
+        // coolStage controls the Y wires.
+        device.systemSetup.coolStage = heatPumpStage;
+        device.systemSetup.heatStage = stage;
+
+        device.systemSetup.heatPumpOBState = obState;
+
+        device.systemSetup.dualFuelThreshod = dualFuelThreshod;
+        device.systemSetup.systemType = AppSpec.DualFuelHeating;
+    }
+
 
     function setSystemSetupServer(settings: var) {
 
@@ -1206,9 +1230,13 @@ I_DeviceController {
         else if(settings.type === "heating")
             setSystemHeatOnly(settings.heatStage)
         else if(settings.type === "heat_pump")
-            setSystemHeatPump(settings.heatPumpEmergency, settings.heatStage, settings.heatPumpOBState)
+            setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState)
         else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
+        else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
+            setSystemDualFuelHeating(settings.heatPumpEmergency, settings.coolStage, settings.heatStage,
+                                     settings.heatPumpOBState,
+                                     settings.dual_fuel_threshod ?? device.systemSetup.dualFuelThreshod);
         else
             console.warn("System type unknown", settings.type)
     }

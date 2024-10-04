@@ -273,6 +273,23 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                    alertMessage);
     });
 
+    mGetOutdoorTemperatureTimer.setInterval(60 * 1000);
+    mGetOutdoorTemperatureTimer.setSingleShot(false);
+    connect(&mGetOutdoorTemperatureTimer, &QTimer::timeout, this, [this]() {
+        m_sync->getOutdoorTemperature();
+    });
+
+    connect(m_sync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
+        TRACE << "Outdoor temperature:" << success << temp;
+        if (success) {
+            mSchemeDataProvider->setOutdoorTemperature(temp);
+
+            if (systemSetup()->systemType != AppSpecCPP::DualFuelHeating) {
+                mGetOutdoorTemperatureTimer.stop();
+            }
+        }
+    });
+
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
         if (mBacklightTimer.isActive())
@@ -308,6 +325,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
     connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
+    connect(m_scheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
     connect(m_scheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
         m_HumidityScheme->setCanSendRelays(!isRunning);
     });
@@ -620,6 +638,21 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
     // Set system setp
     mSchemeDataProvider->setSystemSetup(mSystemSetup);
 
+    // To provide outdoor temperature
+    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [=] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
+            m_sync->getOutdoorTemperature();
+            mGetOutdoorTemperatureTimer.start();
+
+        } else {
+            mGetOutdoorTemperatureTimer.stop();
+        }
+    });
+
+    // To cache the outdoor temperature, it will be stop when get data successfully in the other system types
+    m_sync->getOutdoorTemperature();
+    mGetOutdoorTemperatureTimer.start();
+
     emit systemSetupChanged();
 }
 
@@ -818,6 +851,10 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
     }
 
     return false;
+}
+
+void DeviceControllerCPP::switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType) {
+    m_scheme->switchDFHActiveSysType(activeSystemType);
 }
 
 void DeviceControllerCPP::setAutoMinReqTemp(const double cel_value)

@@ -82,14 +82,14 @@ void Sync::setApiAuth(QNetworkRequest& request)
 
 QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
 {
-    QJsonObject data;
     const QJsonObject rootObject = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
+    QJsonObject data;
 
     if (rootObject.contains("data")) {
         data = rootObject.value("data").toObject();
     }
     else {
-        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object";
+        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object:" << rootObject;
     }
 
     return data;
@@ -665,6 +665,25 @@ void Sync::forgetDevice()
     setting.setValue(cHasClientSetting, mHasClient);
     setting.setValue(cSerialNumberSetting, mSerialNumber);
     setting.setValue(cContractorSettings, mContractorInfo);
+}
+
+void Sync::getOutdoorTemperature() {
+
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            auto var = data.value("value");
+            // what is the best validation?
+            emit outdoorTemperatureReady(!var.isUndefined(), var.toDouble());
+        }
+        else {
+            emit  outdoorTemperatureReady();
+        }
+    };
+
+    auto reply = callGetApi(cBaseUrl + QString("/api/weather?sn=%0").arg(mSerialNumber), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
 }
 
 } // namespace NUVE

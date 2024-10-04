@@ -373,6 +373,20 @@ bool Relay::emergencyHeating2()
     return true;
 }
 
+bool Relay::emergencyHeating3()
+{
+    mRelay.y1 = STHERM::RelayMode::OFF;
+    mRelay.y2 = STHERM::RelayMode::OFF;
+    mRelay.w1 = STHERM::RelayMode::OFF;
+    mRelay.w2 = STHERM::RelayMode::OFF;
+
+    mRelay.w3 = STHERM::RelayMode::ON;
+
+    current_state = AppSpecCPP::SystemMode::Emergency;
+
+    return true;
+}
+
 bool Relay::turnOffEmergencyHeating()
 {
     mRelay.w1  = STHERM::RelayMode::OFF;
@@ -421,7 +435,8 @@ void Relay::updateFan()
     // The fan operates:
     //    if it's set to 'on' using either WPH or if either Y1 or W1 is activated.
     //   if at least one of the Humidity wirings is ON
-    if (mFanOn || mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON ||
+    //   In emergency mode (w3 is ON), the fan should be active.
+    if (mFanOn || mRelay.y1 == STHERM::ON || mRelay.w1 == STHERM::ON || mRelay.w3 == STHERM::ON ||
         mRelay.acc2 == STHERM::ON || mRelay.acc1n == STHERM::ON || mRelay.acc1p == STHERM::ON) {
         fanOn();
 

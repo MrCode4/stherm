@@ -40,6 +40,8 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
     mRelay  = Relay::instance();
 
     mCurrentSysMode = AppSpecCPP::SystemMode::Auto;
+    mSwitchDFHActiveSysTypeTo = AppSpecCPP::SystemType::SysTUnknown;
+    mActiveSysTypeHeating = AppSpecCPP::SystemType::SysTUnknown;
 
     mFanHourTimer.setTimerType(Qt::PreciseTimer);
     mFanHourTimer.setSingleShot(false);
@@ -66,8 +68,10 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
     mLogTimer.connect(&mLogTimer, &QTimer::timeout, this, [=]() {
 
         auto sys = mDataProvider.data()->systemSetup();
+        bool dualFuelLog = mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::DualFuelHeating;
 
         LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
+        LOG_CHECK(isRunning()) << "Temperature scheme version: " << QString(TEMPERATURE_SCHEME_VERSION);
         LOG_CHECK(isRunning() && sys) << "systemMode: " << sys->systemMode << "systemType: " << sys->systemType;
         LOG_CHECK(isRunning() && sys) << "systemRunDelay: " << sys->systemRunDelay << "isVacation: " << sys->isVacation;
         LOG_CHECK(isRunning() && sys) << "heatStage: "  << sys->heatStage << "coolStage: " <<sys->coolStage;
@@ -82,8 +86,21 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK(isRunning() && mFanWPHTimer.isActive()) << "fan on stage finishes in " << mFanWPHTimer.remainingTime() / 60000 << "minutes";
         LOG_CHECK(isRunning()) << "Current Temperature : " << effectiveCurrentTemperature() << "Effective Set Temperature: " << effectiveTemperature();
         LOG_CHECK(isRunning()) << "Current Humidity : " << mDataProvider.data()->currentHumidity() << "Effective Set Humidity: " << effectiveSetHumidity();
+        LOG_CHECK(isRunning() && dualFuelLog) << "Current Outdoor temperature : " << mDataProvider.data()->outdoorTemperatureF();
         LOG_CHECK(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
         LOG_CHECK(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";
+    });
+
+
+    connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureReady, this, [this] () {
+        TRACE << "outdoorTemperatureReady" << mActiveSysTypeHeating << mDataProvider->systemSetup()->systemMode << mSwitchDFHActiveSysTypeTo;
+        // Device has internet and outdoor temperature has been successfully updated, so move to automatic algorithm.
+        switchDFHActiveSysType(AppSpecCPP::SystemType::SysTUnknown);
+    });
+
+    connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureChanged, this, [this] () {
+        TRACE << "outdoorTemperatureChanged" << mActiveSysTypeHeating << mDataProvider->systemSetup()->systemMode ;
+        checkForRestartDualFuel();
     });
 }
 
@@ -134,6 +151,10 @@ void Scheme::restartWork(bool forceStart)
                 TRACE << "restarted HVAC";
                 stopWork = false;
                 mLogTimer.start();
+
+                // It will be called when heating loop started in dual fuel mode.
+                emit dfhSystemTypeChanged(AppSpecCPP::SysTUnknown);
+
                 this->start();
             },
             Qt::SingleShotConnection);
@@ -146,6 +167,10 @@ void Scheme::restartWork(bool forceStart)
         TRACE << "started HVAC";
         stopWork = false;
         mLogTimer.start();
+
+        // It will be called when heating loop started in dual fuel mode.
+        emit dfhSystemTypeChanged(AppSpecCPP::SysTUnknown);
+
         this->start();
     } else {
         TRACE << "trying to start before main start";
@@ -201,6 +226,9 @@ void Scheme::run()
             }
         }
 
+        // reset to avoid excess restart while values are changing
+        mActiveSysTypeHeating = AppSpecCPP::SystemType::SysTUnknown;
+
         if (!mRestarting) {
             mRelay->setAllOff();
 
@@ -252,6 +280,9 @@ void Scheme::CoolingLoop()
 
     switch (mDataProvider.data()->systemSetup()->systemType) { // Device type
     case AppSpecCPP::SystemType::HeatPump:
+    case AppSpecCPP::SystemType::DualFuelHeating: // Works same as HeatPump in cooling
+        //! InternalCoolingLoopStage1 uses the cooling stage as a heat pump (both determine the Y wires),
+        //!  and they're identical without causing any issues.
         heatPump = true;
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::CoolingOnly: {
@@ -301,14 +332,50 @@ void Scheme::CoolingLoop()
     // turn off Y1, Y2 and G = 0 outside
 }
 
+AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
+    // Control the system type:
+    auto activeSysType = mDataProvider->systemSetup()->systemType;
+    if (activeSysType == AppSpecCPP::SystemType::DualFuelHeating) {
+        if (mSwitchDFHActiveSysTypeTo != AppSpecCPP::SystemType::SysTUnknown) {
+            activeSysType = mSwitchDFHActiveSysTypeTo;
+
+            // in the cold outdoor heatpump can not function good so we use it only above threshold
+        } else if (mDataProvider->outdoorTemperatureF() > mDataProvider->dualFuelThreshodF()) {
+            // Start the heat pump (Y wires)
+            activeSysType = AppSpecCPP::SystemType::HeatPump;
+        } else {
+            // Start the heating using Furnace (W wires)
+            activeSysType = AppSpecCPP::SystemType::HeatingOnly;
+        }
+
+        // this can be called sooner than reality, we may refactor and call it as need
+        emit dfhSystemTypeChanged(activeSysType);
+    }
+
+    return activeSysType;
+}
+
+void Scheme::switchDFHActiveSysType(AppSpecCPP::SystemType to)
+{
+    if (to != mSwitchDFHActiveSysTypeTo) {
+        mSwitchDFHActiveSysTypeTo = to;
+
+        if (mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
+            restartWork();
+        }
+    }
+}
+
 void Scheme::HeatingLoop()
 {
     TRACE_CHECK(false) << "Heating started " << mDataProvider.data()->systemSetup()->systemType;
 
+    mActiveSysTypeHeating = activeSystemTypeHeating();
+
     // update configs and ...
     // s1 & s2 time threshold
     //    Y1, Y2, O/B G W1 W2 W3
-    switch (mDataProvider.data()->systemSetup()->systemType) {
+    switch (mActiveSysTypeHeating) {
     case AppSpecCPP::SystemType::HeatPump: // emergency as well?
     {
         TRACE_CHECK(false) << "HeatPump" << mDataProvider.data()->currentTemperature() << effectiveTemperature();
@@ -366,8 +433,9 @@ void Scheme::OffLoop()
 
 bool Scheme::updateOBState(AppSpecCPP::SystemMode newOb_state)
 {
+    auto sysType = mDataProvider.data()->systemSetup()->systemType;
     // we should check if it is changed or not!
-    if (mRelay->setOb_state(newOb_state) && mDataProvider.data()->systemSetup()->systemType == AppSpecCPP::HeatPump)
+    if (mRelay->setOb_state(newOb_state) && (sysType == AppSpecCPP::HeatPump || sysType == AppSpecCPP::DualFuelHeating))
     {
         sendRelays();
         return  true;
@@ -396,6 +464,8 @@ void Scheme::internalCoolingLoopStage1()
         TRACE << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
               << mDataProvider.data()->systemSetup()->coolStage << mTiming->s1uptime.elapsed()
               << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
+
+        // coolStage: In the heat pump or dual fuel heating the cool stage and heat pump stage are the same.
         if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider.data()->systemSetup()->coolStage == 2) {
             if (mDataProvider.data()->currentTemperature() - effectiveTemperature() >= 2.9
                 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
@@ -714,10 +784,10 @@ void Scheme::internalPumpHeatingLoopStage1()
 
         while (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_ON_RANGE) {
             TRACE << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
-                  << mDataProvider.data()->systemSetup()->heatStage << mTiming->s1uptime.elapsed()
+                  << mDataProvider->heatPumpStage() << mTiming->s1uptime.elapsed()
                   << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
 
-            if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider.data()->systemSetup()->heatStage >= 2) {
+            if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider->heatPumpStage() >= 2) {
                 if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= 2.9
                     || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
                     if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
@@ -811,14 +881,11 @@ void Scheme::EmergencyHeating()
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-    bool stage2 = false;
-    while (mDataProvider.data()->currentTemperature() < HPT) {
-        if (!stage2 && mDataProvider.data()->currentTemperature() < ET - ET_STAGE2) {
-            mRelay->emergencyHeating2();
+    while (mDataProvider->currentTemperature() < HPT) {
+            mRelay->emergencyHeating3();
             sendRelays();
             waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
-            stage2 = true;
-        }
+            // we need break condition here!
     }
 
     emit changeBacklight();
@@ -1074,13 +1141,27 @@ void Scheme::fanWork(bool isOn) {
     sendRelays();
 }
 
+void Scheme::checkForRestartDualFuel()
+{
+    const auto sys = mDataProvider.data()->systemSetup();
+    if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
+        (mActiveSysTypeHeating == AppSpecCPP::HeatPump ||
+            mActiveSysTypeHeating == AppSpecCPP::HeatingOnly)) {
+        auto activeType = activeSystemTypeHeating();
+        if (activeType != mActiveSysTypeHeating) {
+            TRACE << "Restart scheme due to dual fuel change." << mActiveSysTypeHeating << activeType << sys->systemMode;
+            restartWork();
+        }
+    }
+}
+
 void Scheme::setSystemSetup()
 {
     const auto sys = mDataProvider.data()->systemSetup();
     // ob_state_ initial value?
-    mRelay->setOb_on_state(sys->systemType == AppSpecCPP::SystemType::HeatPump ?
+    mRelay->setOb_on_state((sys->systemType == AppSpecCPP::SystemType::HeatPump || sys->systemType == AppSpecCPP::SystemType::DualFuelHeating) ?
                                (sys->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                                   : AppSpecCPP::Heating) :
+                                                          : AppSpecCPP::Heating) :
                                AppSpecCPP::Off);
 
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
@@ -1098,31 +1179,37 @@ void Scheme::setSystemSetup()
     connect(sys, &SystemSetup::systemTypeChanged, this, [=] {
         TRACE<< "systemTypeChanged: "<< sys->systemType << sys->heatPumpOBState;
 
-        mRelay->setOb_on_state(sys->systemType == AppSpecCPP::SystemType::HeatPump ?
+        // CHECK for dual fuel
+        mRelay->setOb_on_state((sys->systemType == AppSpecCPP::SystemType::HeatPump || sys->systemType == AppSpecCPP::SystemType::DualFuelHeating) ?
                                    (sys->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                                       : AppSpecCPP::Heating) :
+                                                              : AppSpecCPP::Heating) :
                                    AppSpecCPP::Off);
+
+        // Use automatic mode in dual fuel heating when system type change
+        switchDFHActiveSysType(AppSpecCPP::SysTUnknown);
 
         restartWork();
     });
 
     // these parameters will be used in control loop, if any condition locked to these update here
     connect(sys, &SystemSetup::heatPumpOBStateChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
+        auto isHeatPumpAvailable = sys->systemType == AppSpecCPP::SystemType::HeatPump || sys->systemType == AppSpecCPP::SystemType::DualFuelHeating;
+        if (isHeatPumpAvailable)
             TRACE << "heatPumpOBStateChanged: " << sys->heatPumpOBState
                   << sys->systemType;
-        mRelay->setOb_on_state(sys->systemType == AppSpecCPP::SystemType::HeatPump ?
+        mRelay->setOb_on_state(isHeatPumpAvailable ?
                                    (sys->heatPumpOBState == 0 ? AppSpecCPP::Cooling
-                                                                       : AppSpecCPP::Heating) :
+                                                              : AppSpecCPP::Heating) :
                                    AppSpecCPP::Off);
     });
 
     connect(sys, &SystemSetup::coolStageChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::CoolingOnly)
+        if (sys->systemType != AppSpecCPP::SystemType::HeatingOnly)
             TRACE << "coolStageChanged: " << sys->coolStage;
     });
     connect(sys, &SystemSetup::heatStageChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::HeatingOnly)
+        if (sys->systemType != AppSpecCPP::SystemType::CoolingOnly &&
+            sys->systemType != AppSpecCPP::SystemType::HeatPump)
             TRACE << "heatStageChanged: " << sys->heatStage;
     });
 
@@ -1132,8 +1219,15 @@ void Scheme::setSystemSetup()
               << sys->systemType;
     });
     connect(sys, &SystemSetup::heatPumpEmergencyChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
+        if (sys->systemType == AppSpecCPP::SystemType::HeatPump ||
+            sys->systemType == AppSpecCPP::SystemType::DualFuelHeating)
             TRACE << "heatPumpEmergencyChanged: " << sys->heatPumpEmergency;
+    });
+
+    connect(sys, &SystemSetup::dualFuelThreshodChanged, this, [=] {
+        TRACE << "dualFuelThreshodChanged" << mActiveSysTypeHeating << sys->systemMode;
+        // restart scheme if needed
+        checkForRestartDualFuel();
     });
 }
 

@@ -184,6 +184,8 @@ public:
     //! start = false, stop scheme
     Q_INVOKABLE void runHumidityScheme(bool start);
 
+    Q_INVOKABLE void switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -212,6 +214,9 @@ Q_SIGNALS:
 
     void fanWorkChanged(bool fanState);
     void currentSystemModeChanged(AppSpecCPP::SystemMode fanState);
+
+    //! Active system mode changed due to dual fuel heating
+    void dfhSystemTypeChanged(AppSpecCPP::SystemType activeSystemType);
 
     void adaptiveBrightnessChanged();
 
@@ -297,6 +302,8 @@ private:
 
     //! Object to manage humidity control
     HumidityScheme *m_HumidityScheme;
+
+    QTimer mGetOutdoorTemperatureTimer;
 
     NUVE::System *m_system;
 

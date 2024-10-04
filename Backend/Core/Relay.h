@@ -77,6 +77,9 @@ public:
 
     void setFanMode(bool on);
 
+    //! This function turn on the w3 as emergency wire.
+    bool emergencyHeating3();
+
 private:
     explicit Relay();
 

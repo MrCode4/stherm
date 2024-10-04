@@ -141,6 +141,7 @@ QtObject {
     function setSystemHeatOnly(stage: int) {}
     function setSystemHeatPump(emergency: bool, stage: int, obState: int) {}
     function setSystemTraditional(coolStage: int, heatStage: int) {}
+    function setSystemDualFuelHeating(emergency: bool, stage: int, obState: int, dualFuelThreshod: real) {}
     function setSystemAccessories(accType: int, wireType: int) {}
 
     function updateInformation() {}

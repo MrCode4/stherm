@@ -4,9 +4,11 @@
 #include "UtilityHelper.h"
 #include "Relay.h"
 
-SchemeDataProvider::SchemeDataProvider(QObject *parent)
-    : QObject{parent}
-{}
+SchemeDataProvider::SchemeDataProvider(QObject *parent) :
+    mOutdoorTemperature(25.0),
+    QObject{parent}
+{
+}
 
 void SchemeDataProvider::setMainData(QVariantMap mainData)
 {
@@ -147,6 +149,21 @@ void SchemeDataProvider::setAutoMaxReqTempF(const double& fah_value)
         mAutoMaxReqTempF = fah_value;
 }
 
+double SchemeDataProvider::outdoorTemperatureF() const
+{
+    return UtilityHelper::toFahrenheit(mOutdoorTemperature);
+}
+
+double SchemeDataProvider::dualFuelThreshodF() const
+{
+    return UtilityHelper::toFahrenheit(mSystemSetup->dualFuelThreshod);
+}
+
+int SchemeDataProvider::heatPumpStage() const
+{
+    return mSystemSetup->coolStage;
+}
+
 double SchemeDataProvider::autoMaxReqTempF() const
 {
     return mAutoMaxReqTempF;
@@ -160,6 +177,17 @@ void SchemeDataProvider::setSchedule(ScheduleCPP *newSchedule)
     mSchedule = newSchedule;
 
     emit scheduleChanged();
+}
+
+void SchemeDataProvider::setOutdoorTemperature(double temp)
+{
+    bool changed = mOutdoorTemperature != temp;
+
+    mOutdoorTemperature = temp;
+    emit outdoorTemperatureReady();
+
+    if (changed)
+        emit outdoorTemperatureChanged();
 }
 
 double SchemeDataProvider::currentHumidity() const

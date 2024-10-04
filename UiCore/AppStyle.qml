@@ -19,6 +19,7 @@ QtObject {
     readonly property string inputBoxGray:          "#505050"
     readonly property string primaryGreen:          "#74C667"
     readonly property string primaryRed:            "#DA6767"
+    readonly property string primaryOrange:         "#DB4314"
     readonly property string primaryTextColor:      "white"
     readonly property string hoverColor:            baseColors.grayScale15
     readonly property string selectionColor:        baseColors.grayScale12
