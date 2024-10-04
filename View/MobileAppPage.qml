@@ -13,6 +13,8 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
 
+    property string baseURL : AppSpec.api_base_server_url;
+
     /* Object properties
      * ****************************************************************************************/
     title: "Mobile App"
@@ -48,7 +50,7 @@ BasePageView {
             Layout.columnSpan: 2
             fillMode: Image.PreserveAspectFit
 
-            property string url: AppSpec.api_base_server_url + "api/mobilelink?sn=" + deviceController.deviceControllerCPP.system.serialNumber
+            property string url: root.baseURL + "api/mobilelink?sn=" + deviceController.deviceControllerCPP.system.serialNumber
             source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg(qrCodeImage.url, Style.foreground)}`
             sourceSize.width: width
             sourceSize.height: height
@@ -59,6 +61,7 @@ BasePageView {
                 Component.onCompleted: fetchUserData()
 
                 function fetchUserData() {
+                    baseURL = deviceController?.deviceControllerCPP?.sync.baseURL();
                     deviceController?.deviceControllerCPP?.sync.fetchUserData();
                 }
             }

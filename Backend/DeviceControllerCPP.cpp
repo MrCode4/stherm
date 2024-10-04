@@ -777,7 +777,8 @@ void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings)
 
 void DeviceControllerCPP::setEndpoint(const QString &subdomain, const QString &domain)
 {
-    _deviceAPI->setEndpoint(QString("https://%0.%1/").arg(subdomain, domain));
+    _deviceAPI->setEndpoint(
+        QString("https://%0%1/").arg(subdomain.isEmpty() ? "" : subdomain + ".", domain));
 }
 
 QString DeviceControllerCPP::getEndpoint()
