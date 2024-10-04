@@ -83,16 +83,17 @@ BasePageView {
                     Layout.alignment: Qt.AlignCenter
                     Layout.fillWidth: true
 
-                    property string dateTimeFormat: "yyyy-MM-dd HH:mm:ss"
+                    property string inputDateTimeFormat: "yyyy-MM-dd HH:mm:ss"
+                    property string outputDateTimeFormat: (appModel.setting.timeFormat === AppSpec.TimeFormat.Hour24) ? "MMM dd, yyyy hh:mm" : "MMM dd, yyyy h:mmAP"
 
                     property string dateTimeString: {
                         if (message.datetime.length > 0) {
-                            var dts = DateTimeManager.utcDateTimeToLocalString(message.datetime, dateTimeFormat);
+                            var dts = DateTimeManager.utcDateTimeToLocalString(message.datetime, inputDateTimeFormat, outputDateTimeFormat);
 
                             // If QDateTime could not convert the date time with the dateTimeFormat, it use the ISO (`yyyy-MM-ddTHH:mm:ss.zzz`) instead.
                             // It handle the old server messages.
                             if (dts.length === 0) {
-                                dts = DateTimeManager.utcDateTimeToLocalString(message.datetime, "yyyy-MM-ddTHH:mm:ss.zzz");
+                                dts = DateTimeManager.utcDateTimeToLocalString(message.datetime, "yyyy-MM-ddTHH:mm:ss.zzz", outputDateTimeFormat);
                             }
 
                             return dts;
