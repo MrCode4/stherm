@@ -418,6 +418,18 @@ void Sync::fetchUserData()
     callGetApi(cBaseUrl + QString("api/sync/client?sn=%0").arg(mSerialNumber), callback);
 }
 
+QString Sync::baseURL()
+{
+    QString url = cBaseUrl;
+
+    if (!url.endsWith('/')) {
+        qWarning() << "sync base url is not valid" << url;
+        url += '/';
+    }
+
+    return url;
+}
+
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
 {
     QJsonObject requestData;

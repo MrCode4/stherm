@@ -39,7 +39,10 @@ public:
     bool fetchMessages();
     void fetchWirings(const QString& uid);
     void requestJob(QString type);
+
     Q_INVOKABLE void fetchUserData();
+
+    Q_INVOKABLE QString baseURL();
 
     void pushSettingsToServer(const QVariantMap &settings);
     void pushAlertToServer(const QVariantMap &settings);
