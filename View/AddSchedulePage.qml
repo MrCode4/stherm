@@ -283,6 +283,7 @@ BasePageView {
     function saveSchedule()
     {
         if (schedulesController) {
+            //! Save and send new schedule to server.
             schedulesController.saveNewSchedule(_internal.newSchedule);
 
             //If the schedule is enabled, show a proper toast message
