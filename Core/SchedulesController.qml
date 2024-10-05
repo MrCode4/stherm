@@ -206,6 +206,9 @@ QtObject {
             startTime = new Date();
         }
         var endTime = Date.fromLocaleTimeString(Qt.locale(), endTimeStr, "hh:mm AP")
+        //! Start time seconds is 0 e.x. 05:05:00
+        //! End time seconds is 59  e.x. 07:05:59
+        endTime.setSeconds(59);
 
         // fix no repeat issue and update repeats
         let runningDays = findRunningDays(repeats, startTime, endTime, active);
