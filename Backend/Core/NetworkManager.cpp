@@ -45,6 +45,11 @@ QNetworkReply* NetworkManager::post(const QNetworkRequest& request, const QByteA
     return mNetManager->post(request, data);
 }
 
+QNetworkReply* NetworkManager::put(const QNetworkRequest& request, const QByteArray& data)
+{
+    return mNetManager->put(request, data);
+}
+
 void NetworkManager::processNetworkReply(QNetworkReply *netReply)
 {
     // Handle All Errors

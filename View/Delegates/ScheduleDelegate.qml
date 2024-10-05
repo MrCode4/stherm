@@ -149,7 +149,8 @@ ItemDelegate {
                     }
 
                     // Send Data to server when a schedule changed...
-                    deviceController.updateEditMode(AppSpec.EMSchedule);
+                    // Edit schedule
+                    schedulesController.editScheduleInServer(schedule);
                     uiSession.deviceController.saveSettings();
                 }
             }
@@ -202,6 +203,7 @@ ItemDelegate {
         //! If there is overlapping Schedules disable them
         internal.overlappingSchedules.forEach((element, index) => {
                                                   element.enable = false;
+                                                  schedulesController.editScheduleInServer(element);
                                               });
 
         disconnect()
@@ -212,7 +214,8 @@ ItemDelegate {
             schedule.systemMode = uiSession.appModel.systemSetup.systemMode;
 
             // Send Data to server when a schedule changed...
-            deviceController.updateEditMode(AppSpec.EMSchedule);
+            // Edit schedule
+            schedulesController.editScheduleInServer(schedule);
             uiSession.deviceController.saveSettings();
 
             //Shows a proper toast message upon activation of a schedule

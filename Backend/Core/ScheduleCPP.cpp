@@ -19,6 +19,9 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     // default: Away
     type = 0;
 
+    // Invalid id
+    id   = -1;
+
     // Off
     systemMode = AppSpecCPP::SystemMode::Off;
 }

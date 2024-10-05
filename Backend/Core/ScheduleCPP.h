@@ -18,6 +18,7 @@ class ScheduleCPP : public QSObjectCpp
     Q_PROPERTY(QString repeats MEMBER repeats NOTIFY repeatsChanged FINAL)
 
     Q_PROPERTY(int type        MEMBER type       NOTIFY typeChanged FINAL)
+    Q_PROPERTY(int id          MEMBER id         NOTIFY idChanged FINAL)
     Q_PROPERTY(AppSpecCPP::SystemMode systemMode  MEMBER systemMode NOTIFY systemModeChanged FINAL)
 
     Q_PROPERTY(double maximumTemperature MEMBER maximumTemperature NOTIFY maximumTemperatureChanged FINAL)
@@ -48,6 +49,8 @@ public:
     QString repeats;
 
     int type;
+
+    int id;
 
     //! When a schedule is enabled or created, the system mode will automatically changed to
     //! the current system mode of device.
@@ -84,4 +87,5 @@ signals:
     void humidityChanged();
     void enableChanged();
     void activeChanged();
+    void idChanged();
 };

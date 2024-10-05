@@ -478,6 +478,7 @@ BasePageView {
             //! Disable overlapping schedules if any.
             overlappingSchedules.forEach((element, index) => {
                                              element.enable = false;
+                                             schedulesController.editScheduleInServer(element);
                                          });
             //! Enable this.
             schedule.enable = true;
@@ -597,7 +598,8 @@ BasePageView {
             uiSession.toastManager.showToast(dt.message, dt.detail);
         }
 
-        deviceController.updateEditMode(AppSpec.EMSchedule);
+        // Edit schedule
+        schedulesController.editScheduleInServer(schedule);
         deviceController.saveSettings();
 
         if (internal.exitAfterSave) {

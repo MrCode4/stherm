@@ -667,6 +667,70 @@ void Sync::forgetDevice()
     setting.setValue(cContractorSettings, mContractorInfo);
 }
 
+void Sync::clearSchedule(const int &scheduleID)
+{
+    auto callback = [this, scheduleID](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        bool success = reply->error() == QNetworkReply::NoError;
+
+        if (success) {
+            success = data.value("errors").isUndefined() || data.value("errors").toArray().empty();
+        }
+
+        if (!success) {
+            TRACE << "clearSchedule" << data.value("errors") << data.value("message") << reply->errorString();
+        }
+
+        emit scheduleCleared(scheduleID, success);
+    };
+
+    auto reply = callPostApi(cBaseUrl + QString("api/sync/clearSchedules?sn=%0&id=%1").arg(mSerialNumber, QString::number(scheduleID)), QJsonDocument().toJson(), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
+
+void Sync::editSchedule(const int &scheduleID, const QVariantMap &schedule)
+{
+    QJsonObject reqData = QJsonObject::fromVariantMap(schedule);
+    reqData["sn"] = mSerialNumber;
+
+    auto callback = [this, scheduleID](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit scheduleEdited(scheduleID, true);
+        }
+        else {
+            TRACE << "editSchedule" << reply->errorString();
+            emit scheduleEdited(scheduleID, false);
+        }
+    };
+
+    auto reply = callPutApi(cBaseUrl + QString("api/sync/schedules/%0").arg(QString::number(scheduleID)), QJsonDocument(reqData).toJson(), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
+
+void Sync::addSchedule(const QString &scheduleUid, const QVariantMap &schedule)
+{
+    QJsonObject reqData = QJsonObject::fromVariantMap(schedule);
+    reqData["sn"] = mSerialNumber;
+
+    auto callback = [this, scheduleUid](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit scheduleAdded(scheduleUid, !data.isEmpty(), data.toVariantMap());
+        }
+        else {
+            TRACE << "addSchedule" << reply->errorString();
+            emit scheduleAdded(scheduleUid, false);
+        }
+    };
+
+    auto reply = callPostApi(cBaseUrl + QString("api/sync/schedules"), QJsonDocument(reqData).toJson(), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
+
 void Sync::getOutdoorTemperature() {
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
