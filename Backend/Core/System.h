@@ -31,6 +31,8 @@ class System : public RestApiExecutor
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
+    //! Enable/disable alert feature
+    Q_PROPERTY(bool controlAlertEnabled   READ controlAlertEnabled  NOTIFY controlAlertEnabledChanged FINAL)
 
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY forceUpdateChanged FINAL)
@@ -138,6 +140,8 @@ public:
 
     void setTestMode(bool testMode);
 
+    void setControlAlertEnabled(bool enabled);
+
     void setPartialUpdateProgress(int progress);
 
     void setUID(NUVE::cpuid_t uid);
@@ -174,6 +178,8 @@ public:
 
     Q_INVOKABLE void sendLog();
 
+    Q_INVOKABLE void sendFirstRunLog();
+
     Q_INVOKABLE void systemCtlRestartApp();
 
 
@@ -188,6 +194,8 @@ public:
 
     Q_INVOKABLE bool isInitialSetup();
     Q_INVOKABLE void setIsInitialSetup(bool isInitailSetup);
+
+    Q_INVOKABLE bool controlAlertEnabled();
 
     //! Forget device settings and sync settings
     Q_INVOKABLE void forgetDevice();
@@ -242,6 +250,8 @@ signals:
     void notifyNewUpdateAvailable();
 
     void testModeChanged();
+
+    void controlAlertEnabledChanged();
 
     void availableVersionsChanged();
 
@@ -316,6 +326,8 @@ private:
     //! else disable service
     bool updateServiceState(const QString &serviceName, const bool &run);
 
+    QString generateLog();
+
 private:
     Sync *mSync;
 
@@ -355,8 +367,8 @@ private:
     bool mHasForceUpdate;
 
     bool mIsInitialSetup;
+    bool mControlAlertEnabled;
 
-    
     //! System on test mode or not
     bool mTestMode;
 

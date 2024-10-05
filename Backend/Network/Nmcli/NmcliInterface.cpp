@@ -124,7 +124,7 @@ bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
 
     setBusy(true);
 
-    mCliWifi->connectToSavedWifi(wifi->ssid(), password, [this] (QProcess*) {
+    mCliWifi->connectToSavedWifi(wifi->ssid(), wifi->security(), password, [this] (QProcess*) {
         setBusy(false);
     });
 
@@ -223,7 +223,7 @@ void NmcliInterface::addConnection(const QString& name,
             }
             wifi->setIsConnecting(true);
             emit wifisChanged();
-            mCliWifi->connectToSavedWifi(name, "", [this] (QProcess*) {
+            mCliWifi->connectToSavedWifi(name, wifi->security(), "", [this] (QProcess*) {
                 setBusy(false);
             });
         } else {

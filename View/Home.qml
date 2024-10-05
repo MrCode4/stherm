@@ -113,9 +113,12 @@ Control {
             deviceController: uiSession?.deviceController ?? null
 
             onClicked: {
-                _root.StackView.view.push("qrc:/Stherm/View/SystemModePage.qml", {
-                                              "uiSession": Qt.binding(() => uiSession)
-                                          });
+                if (dfhTroubleshootingMode) {
+                    uiSession.popupLayout.displayPopUp(switchHeatingPopup);
+
+                } else {
+                    uiSession.openSystemModePage();
+                }
             }
         }
 
@@ -310,6 +313,13 @@ Control {
         uiSession: _root.uiSession
     }
 
+    //! Switch heating mode in the dual fuel heating
+    SwitchHeatingPopup {
+        id: switchHeatingPopup
+
+        deviceController: uiSession.deviceController
+        onOpenSystemModePage: uiSession.openSystemModePage();
+    }
 
     //! Open a page from home
     Connections {
@@ -379,7 +389,7 @@ Control {
         onTriggered: {
 
             // Settings fetch from server at least once before show home in some cases
-            if(!uiSession.settingsReady) {
+            if (!uiSession.settingsReady) {
                 interval = 4000;
                 restart();
 
@@ -396,6 +406,20 @@ Control {
             deviceController.deviceControllerCPP.checkContractorInfo();
 
             deviceController.setInitialSetup(false);
+        }
+    }
+
+
+    //! Use to showsystem mode page from dual fuel heating
+    Connections {
+        target: uiSession
+
+        function onOpenSystemModePage() {
+            if (mainStackView) {
+                mainStackView.push("qrc:/Stherm/View/SystemModePage.qml", {
+                                       "uiSession": Qt.binding(() => uiSession)
+                                   });
+            }
         }
     }
 

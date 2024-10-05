@@ -82,8 +82,27 @@ BasePageView {
                 Label {
                     Layout.alignment: Qt.AlignCenter
                     Layout.fillWidth: true
-                    text: message.datetime ? (Date.fromLocaleString(locale, message.datetime.split('.')[0], "yyyy-MM-dd HH:mm:ss").
-                                              toLocaleString(locale, " (MMM dd, yyyy h:mmAP)")) : " -"
+
+                    property string inputDateTimeFormat: "yyyy-MM-dd HH:mm:ss"
+                    property string outputDateTimeFormat: (appModel.setting.timeFormat === AppSpec.TimeFormat.Hour24) ? "MMM dd, yyyy hh:mm" : "MMM dd, yyyy h:mmAP"
+
+                    property string dateTimeString: {
+                        if (message.datetime.length > 0) {
+                            var dts = DateTimeManager.utcDateTimeToLocalString(message.datetime, inputDateTimeFormat, outputDateTimeFormat);
+
+                            // If QDateTime could not convert the date time with the dateTimeFormat, it use the ISO (`yyyy-MM-ddTHH:mm:ss.zzz`) instead.
+                            // It handle the old server messages.
+                            if (dts.length === 0) {
+                                dts = DateTimeManager.utcDateTimeToLocalString(message.datetime, "yyyy-MM-ddTHH:mm:ss.zzz", outputDateTimeFormat);
+                            }
+
+                            return dts;
+                        }
+
+                        return "";
+                    }
+
+                    text: dateTimeString.length > 0 ? ` (${dateTimeString})` : " -"
                     elide: Qt.ElideRight
                     font.pixelSize: messageTypeLabel.font.pixelSize - 2
                 }

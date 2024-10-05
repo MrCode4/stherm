@@ -88,13 +88,12 @@ BasePageView {
             Layout.fillWidth: true
             text: "Dual Fuel Heating"
             autoExclusive: true
-            enabled: false
-            // checked: appModel.systemSetup.systemType === AppSpec.CoolingOnly
+            checked: appModel.systemSetup.systemType === AppSpec.DualFuelHeating
 
             onClicked: {
                 //! Move to corresponding page
                 if (root.StackView.view) {
-                    // root.StackView.view.push(_coolonlyPageCompo);
+                    root.StackView.view.push(_dualFuelHeatingPageCompo);
                 }
             }
         }
@@ -162,6 +161,15 @@ BasePageView {
         id: _heatonlyPageCompo
 
         SystemTypeHeatOnlyPage {
+            uiSession: root.uiSession
+            initialSetup: root.initialSetup
+        }
+    }
+
+    Component {
+        id: _dualFuelHeatingPageCompo
+
+        DualFuelHeatingPage {
             uiSession: root.uiSession
             initialSetup: root.initialSetup
         }

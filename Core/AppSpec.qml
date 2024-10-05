@@ -39,13 +39,24 @@ AppSpecCPP {
     property real autoModeDiffrenceF: 3.0
 
     //! Auto mode defaults
+    //! Celcius
     property real defaultAutoMinReqTemp: 20.0    // 68 F
     property real defaultAutoMaxReqTemp: 23.3333 // 74 F
+
+    //! Dual fuel temperature range
+    //! Fahrenheit
+    property real maximumDualFuelThresholdF: 45
+    property real minimumDualFuelThresholdF: 15
 
     //! Percent
     property int defaultBrightness: 100
     //! Percent
     property int defaultVolume:     50
+
+
+    //! To improve efficiency, we should delete any messages that exceed
+    //! the maximum limit of messagesLimit messages.
+    property int messagesLimits: 50
 
     enum TestModeType {
         SerialNumber = 0, //! Test mode started due to serial number

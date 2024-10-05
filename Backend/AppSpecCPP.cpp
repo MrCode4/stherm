@@ -2,6 +2,7 @@
 #include <QQmlEngine>
 #include <QFile>
 #include <sstream>
+#include "device_config.h"
 
 AppSpecCPP::AppSpecCPP(QObject *parent)
     : QObject{parent}
@@ -29,6 +30,9 @@ QString AppSpecCPP::systemTypeString(SystemType systemType) {
     case HeatingOnly:
         return "heating";
 
+    case DualFuelHeating:
+        return "dual_fuel_heating";
+
     default:
         break;
     }
@@ -48,6 +52,9 @@ AppSpecCPP::SystemType AppSpecCPP::systemTypeToEnum(QString systemTypeStr) {
 
     } else if (systemTypeStr == "heating") {
         return HeatingOnly;
+
+    } else if (systemTypeStr == "dual_fuel_heating") {
+        return DualFuelHeating;
     }
 
     return Conventional;
@@ -162,4 +169,8 @@ QString AppSpecCPP::systemModeToString(SystemMode systemMode) {
     }
 
     return "Off";
+}
+
+QString AppSpecCPP::apiBaseServerUrl() {
+    return API_SERVER_BASE_URL;
 }

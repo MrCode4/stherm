@@ -10,6 +10,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Temperature scheme version and update date.
+set(TEMPERATURE_SCHEME_VERSION_C "V.1.94 (02.10.2024)")
+
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
 
@@ -143,6 +146,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/InfoToolButton.qml
         UiCore/Components/HorizontalTimeTumbler.qml
         UiCore/Components/TemperatureFlatRangeSlider.qml
+        UiCore/Components/SingleTemperatureSlider.qml
 
 
         # Views and Widgets
@@ -155,6 +159,7 @@ qt6_add_qml_module(appStherm
         View/Menu/MessagesPage.qml
         View/Menu/AlertsPage.qml
         View/Menu/SystemAlertsPage.qml
+        View/Menu/ManageEndpoint.qml
         View/BasePageView.qml
         View/ScheduleView.qml
         View/BacklightPage.qml
@@ -184,6 +189,7 @@ qt6_add_qml_module(appStherm
         View/SystemSetup/ResidenceTypePage.qml
         View/SystemSetup/DeviceLocationPage.qml
         View/SystemSetup/ThermostatNamePage.qml
+        View/SystemSetup/DualFuelHeatingPage.qml
         View/HumidityPage.qml
         View/WifiPage.qml
         View/RequestTechPriorityPage.qml
@@ -263,13 +269,13 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/TestFailedPopup.qml
         UiCore/PopUps/PrivacyPolicyPopup.qml
         UiCore/PopUps/SuccessPopup.qml
+        UiCore/PopUps/SwitchHeatingPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
         UiCore/Dialogs/ForgetWifiDialog.qml
 
     SOURCES
-        Backend/Config.h
         Backend/Property.h
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
@@ -396,7 +402,6 @@ qt6_add_qml_module(appStherm
         Images/mobile-app-link.png
         Images/auto.png
         Images/cool.png
-        Images/sun.png
         Images/condition-good.png
         Images/condition-moderate.png
         Images/condition-poor.png
@@ -435,6 +440,7 @@ qt6_add_qml_module(appStherm
         Images/Locations/upstairs.svg
         Images/delete-left.svg
         Images/lock-image.svg
+        Images/swap.svg
 
         Resources/privacyPolicy.md
         Resources/termOfUse.md
@@ -463,9 +469,12 @@ set_target_properties(appStherm PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
-# Set a compile definition to be able to pass app version to cpp
 target_compile_definitions(appStherm PRIVATE
+# Set a compile definition to be able to pass app version to cpp
     PROJECT_VERSION_STRING="${PROJECT_VERSION}"
+
+# Temperature scheme version and update date.
+    TEMPERATURE_SCHEME_VERSION="${TEMPERATURE_SCHEME_VERSION_C}"
 )
 
 target_link_directories(appStherm PRIVATE

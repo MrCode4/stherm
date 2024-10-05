@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * SystemTypeHeatPumpPage
+ * DualFuelHeatingPage
  * ***********************************************************************************************/
 BasePageView {
     id: root
@@ -14,11 +14,15 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
+    property bool isCelsius: deviceController.temperatureUnit === AppSpec.Cel
+
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 48
-    rightPadding: 48
-    title: "Heat Pump"
+    title: "Dual Fuel Heating"
+    rightPadding: 20 * scaleFactor
+    leftPadding: 20 * scaleFactor
+    topPadding: scaleFactor
+
 
     /* Children
      * ****************************************************************************************/
@@ -46,7 +50,7 @@ BasePageView {
 
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-        anchors.rightMargin: -30
+        anchors.rightMargin: 10
         anchors.bottomMargin: 10
 
         visible: initialSetup
@@ -66,10 +70,12 @@ BasePageView {
     }
 
     ColumnLayout {
-        anchors.centerIn: parent
+        // anchors.centerIn: parent
+        anchors.top: parent.top
         width: parent.width
-        spacing: 16
+        spacing: initialSetup ? 0 : 4
 
+        //! Emergency Heating
         RowLayout {
             spacing: 24
             Label {
@@ -78,12 +84,54 @@ BasePageView {
             }
 
             Switch {
-                id: _emergencyHeatingSwh
+                id: emergencyHeatingSwh
 
                 checked: appModel.systemSetup.heatPumpEmergency
             }
         }
 
+
+        //! Emergency Heat Stages
+        RowLayout {
+            spacing: 24
+
+            visible: false
+            Label {
+                Layout.fillWidth: true
+                text: "Em. Heat Stages"
+            }
+
+            RowLayout {
+                id: emHeatStageLayout
+
+                Layout.fillWidth: false
+
+                property int emHeatStage: 1
+
+
+                RadioButton {
+                    // checked: appModel.systemSetup.heatStage === Number(text)
+                    onCheckedChanged: {
+                        if (checked)
+                            emHeatStageLayout.emHeatStage = Number(text);
+                    }
+
+                    text: "1"
+                }
+
+                RadioButton {
+                    // checked: appModel.systemSetup.heatStage === Number(text)
+                    onCheckedChanged: {
+                        if (checked)
+                            emHeatStageLayout.emHeatStage = Number(text);
+                    }
+
+                    text: "2"
+                }
+            }
+        }
+
+        //! Heat Pump Stages
         RowLayout {
             spacing: 24
 
@@ -122,6 +170,7 @@ BasePageView {
             }
         }
 
+        //! O/B on State
         RowLayout {
             id: heatPumpOBStateLayout
 
@@ -131,6 +180,12 @@ BasePageView {
 
             Label {
                 text: "O/B on State"
+            }
+
+            Item {
+
+                Layout.fillWidth: true
+                height: parent.height
             }
 
             RowLayout {
@@ -156,13 +211,83 @@ BasePageView {
                 }
             }
         }
+
+
+        //! Furnace Stages
+        RowLayout {
+            spacing: 24
+
+            Label {
+                Layout.fillWidth: true
+                text: "Furnace Stages"
+            }
+
+            RowLayout {
+                id: furnaceStageLayout
+
+                Layout.fillWidth: false
+
+                property int furnaceStage: 1
+
+
+                RadioButton {
+                    checked: appModel.systemSetup.heatStage !== 2
+                    onCheckedChanged: {
+                        if (checked)
+                            furnaceStageLayout.furnaceStage = Number(text);
+                    }
+
+                    text: "1"
+                }
+
+                RadioButton {
+                    checked: appModel.systemSetup.heatStage === Number(text)
+                    onCheckedChanged: {
+                        if (checked)
+                            furnaceStageLayout.furnaceStage = Number(text);
+                    }
+
+                    text: "2"
+                }
+            }
+        }
+
+        ColumnLayout {
+
+            Layout.fillWidth: true
+
+            Label {
+                Layout.fillWidth: true
+                text: "Use furnace to heat when temperature outside is below"
+                wrapMode: Text.WordWrap
+                font.pointSize: Qt.application.font.pointSize * 0.9
+            }
+
+            SingleTemperatureSlider {
+                id: temperature
+
+                Layout.fillWidth: true
+
+                labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
+                control.from: isCelsius ? Utils.fahrenheitToCelsius(AppSpec.minimumDualFuelThresholdF) : AppSpec.minimumDualFuelThresholdF;
+                control.to:   isCelsius ? Utils.fahrenheitToCelsius(AppSpec.maximumDualFuelThresholdF) : AppSpec.maximumDualFuelThresholdF;
+
+                control.value: Utils.convertedTemperature(appModel.systemSetup.dualFuelThreshod, deviceController.temperatureUnit);
+            }
+        }
     }
+
+    /* Functions
+     * ****************************************************************************************/
 
     function updateModel() {
         if (deviceController) {
-            deviceController.setSystemHeatPump(_emergencyHeatingSwh.checked,
-                                               heatPumpStageLayout.heatPumpStage,
-                                               heatPumpOBStateLayout.heatPumpOBState)
+            var temperatureC = isCelsius ? temperature.control.value : Utils.fahrenheitToCelsius(temperature.control.value);
+            deviceController.setSystemDualFuelHeating(emergencyHeatingSwh.checked,
+                                                      heatPumpStageLayout.heatPumpStage,
+                                                      furnaceStageLayout.furnaceStage,
+                                                      heatPumpOBStateLayout.heatPumpOBState,
+                                                      temperatureC)
         }
     }
 

@@ -61,6 +61,24 @@ BasePageView {
         // Enable when the serial number is correctly filled
         enabled: initialSetupReady
         onClicked: nextPage()
+
+        //! BusyIndicator for Fetching SN running status in first run flow
+        BusyIndicator {
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.bottom
+                topMargin: -10
+            }
+
+            width: parent.width
+            visible: running
+            running: system.serialNumber.length === 0 && deviceController.checkSNTryCount > 0
+
+            Label {
+                anchors.centerIn: parent
+                text: deviceController.checkSNTryCount
+            }
+        }
     }
 
     RowLayout {
@@ -311,8 +329,8 @@ BasePageView {
                     if (text === "Connect") {
                         var wifi = _wifisRepeater.currentItem.wifi;
 
-                        //! Check if password for this wifi is saved.
-                        if (NetworkInterface.isWifiSaved(wifi)) {
+                        //! Check if we need user prompt for password, i.e., access point is open or is saved and has a profile.
+                        if (wifi.security === "" || NetworkInterface.isWifiSaved(wifi)) {
                             NetworkInterface.connectWifi(wifi, "");
                         } else {
                             var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)

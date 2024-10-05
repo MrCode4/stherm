@@ -2,6 +2,8 @@
 
 #include <QTimeZone>
 
+#include "LogHelper.h"
+
 DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
     : QObject{parent}
     , mAutoUpdateTime { true }
@@ -252,6 +254,33 @@ void DateTimeManagerCPP::checkAutoUpdateTime()
     }
 
     qWarning() << "Error: DTM checkAutoUpdateTime failed to read output";
+}
+
+QString DateTimeManagerCPP::utcDateTimeToLocalString(const QString& utcDateTime,
+                                                     const QString& inputFormat,
+                                                     const QString& outputFormat)
+{
+    QDateTime dateTimeObject = QDateTime::fromString(utcDateTime, inputFormat);
+
+    // Set time zone to UTC
+    dateTimeObject.setTimeZone(QTimeZone::utc());
+
+    // Convert to local time
+    dateTimeObject = dateTimeObject.toTimeZone(mCurrentTimeZone);
+
+    QString output = dateTimeObject.toString(outputFormat);
+    if (output.isEmpty()) {
+        TRACE << "Conversion error: Date time" << utcDateTime
+              << "inputFormat: "  << inputFormat
+              << "outputFormat: " << outputFormat;
+    }
+
+    return output;
+}
+
+QString DateTimeManagerCPP::nowUTC(const QString& outputFormat)
+{
+    return QDateTime::currentDateTimeUtc().toString(outputFormat);
 }
 
 void DateTimeManagerCPP::callProcessFinished(const QJSValueList& args)

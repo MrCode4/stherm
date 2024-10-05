@@ -23,6 +23,7 @@ DeviceAPI::DeviceAPI(QObject *parent)
 #endif
 
     m_system->setUID(_uid);
+    m_system->setControlAlertEnabled(m_deviceConfig.controlAlertEnabled);
 }
 
 QString DeviceAPI::uid() const
@@ -57,6 +58,12 @@ void DeviceAPI::setSampleRate(const int sampleRate)
     }
 
     m_deviceConfig.setSampleRate(sampleRate);
+}
+
+void DeviceAPI::setEndpoint(const QString &endpoint)
+{
+    m_deviceConfig.endpoint = endpoint.toStdString();
+    m_deviceConfig.save();
 }
 
 int DeviceAPI::getStartMode()

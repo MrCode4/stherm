@@ -1,15 +1,16 @@
 #include "Sync.h"
-#include "LogHelper.h"
-#include "Config.h"
 
 #include <QImage>
 #include <QUrl>
+
+#include "LogHelper.h"
+#include "device_config.h"
 
 /* ************************************************************************************************
  * Network information
  * ************************************************************************************************/
 namespace NUVE {
-const QString cBaseUrl = API_SERVER_BASE_URL;
+static QString cBaseUrl = API_SERVER_BASE_URL;
 const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
 const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
@@ -39,6 +40,8 @@ Sync::Sync(QObject *parent)
     mHasClient = setting.value(cHasClientSetting).toBool();
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
     mContractorInfo = setting.value(cContractorSettings).toMap();
+
+    cBaseUrl = qEnvironmentVariable("API_SERVER_BASE_URL", API_SERVER_BASE_URL);
 
     connect(this, &Sync::contractorInfoReady, this, [this]() {
         QSettings setting;
@@ -79,14 +82,14 @@ void Sync::setApiAuth(QNetworkRequest& request)
 
 QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
 {
-    QJsonObject data;
     const QJsonObject rootObject = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
+    QJsonObject data;
 
     if (rootObject.contains("data")) {
         data = rootObject.value("data").toObject();
     }
     else {
-        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object";
+        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object:" << rootObject;
     }
 
     return data;
@@ -415,6 +418,18 @@ void Sync::fetchUserData()
     callGetApi(cBaseUrl + QString("api/sync/client?sn=%0").arg(mSerialNumber), callback);
 }
 
+QString Sync::baseURL()
+{
+    QString url = cBaseUrl;
+
+    if (!url.endsWith('/')) {
+        qWarning() << "sync base url is not valid" << url;
+        url += '/';
+    }
+
+    return url;
+}
+
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
 {
     QJsonObject requestData;
@@ -650,6 +665,89 @@ void Sync::forgetDevice()
     setting.setValue(cHasClientSetting, mHasClient);
     setting.setValue(cSerialNumberSetting, mSerialNumber);
     setting.setValue(cContractorSettings, mContractorInfo);
+}
+
+void Sync::clearSchedule(const int &scheduleID)
+{
+    auto callback = [this, scheduleID](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        bool success = reply->error() == QNetworkReply::NoError;
+
+        if (success) {
+            success = data.value("errors").isUndefined() || data.value("errors").toArray().empty();
+        }
+
+        if (!success) {
+            TRACE << "clearSchedule" << data.value("errors") << data.value("message") << reply->errorString();
+        }
+
+        emit scheduleCleared(scheduleID, success);
+    };
+
+    auto reply = callPostApi(cBaseUrl + QString("api/sync/clearSchedules?sn=%0&id=%1").arg(mSerialNumber, QString::number(scheduleID)), QJsonDocument().toJson(), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
+
+void Sync::editSchedule(const int &scheduleID, const QVariantMap &schedule)
+{
+    QJsonObject reqData = QJsonObject::fromVariantMap(schedule);
+    reqData["sn"] = mSerialNumber;
+
+    auto callback = [this, scheduleID](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit scheduleEdited(scheduleID, true);
+        }
+        else {
+            TRACE << "editSchedule" << reply->errorString();
+            emit scheduleEdited(scheduleID, false);
+        }
+    };
+
+    auto reply = callPutApi(cBaseUrl + QString("api/sync/schedules/%0").arg(QString::number(scheduleID)), QJsonDocument(reqData).toJson(), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
+
+void Sync::addSchedule(const QString &scheduleUid, const QVariantMap &schedule)
+{
+    QJsonObject reqData = QJsonObject::fromVariantMap(schedule);
+    reqData["sn"] = mSerialNumber;
+
+    auto callback = [this, scheduleUid](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit scheduleAdded(scheduleUid, !data.isEmpty(), data.toVariantMap());
+        }
+        else {
+            TRACE << "addSchedule" << reply->errorString();
+            emit scheduleAdded(scheduleUid, false);
+        }
+    };
+
+    auto reply = callPostApi(cBaseUrl + QString("api/sync/schedules"), QJsonDocument(reqData).toJson(), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
+
+void Sync::getOutdoorTemperature() {
+
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            auto var = data.value("value");
+            // what is the best validation?
+            emit outdoorTemperatureReady(!var.isUndefined(), var.toDouble());
+        }
+        else {
+            emit  outdoorTemperatureReady();
+        }
+    };
+
+    auto reply = callGetApi(cBaseUrl + QString("/api/weather?sn=%0").arg(mSerialNumber), callback);
+    if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
 }
 
 } // namespace NUVE

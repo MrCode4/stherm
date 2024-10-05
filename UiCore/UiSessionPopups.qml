@@ -15,15 +15,15 @@ import Stherm
  * \todo A better API could allow any class to call uiSession.popUps.xyz.show(), or to simply call
  *       uiSession.actions.doSomething(args);
  *
- * \todo The Popups should be passed the uiSession and handle their own actions instead of leaving
- *       that to the parent class.
  * ************************************************************************************************/
 Item {
     id: root
 
     /* Property declartion
      * ****************************************************************************************/
-    property DeviceController deviceController: parent.deviceController
+    property var uiSession
+
+    property DeviceController deviceController: uiSession.deviceController
 
     property System system: deviceController.deviceControllerCPP.system
 
@@ -104,7 +104,7 @@ Item {
             installConfirmation.isBackdoor = isBackdoor;
             installConfirmation.isResetToVersion = isResetToVersion;
             installConfirmation.isFWServerVersion = isFWServerVersion;
-            parent.popupLayout.displayPopUp(installConfirmation);
+            uiSession.popupLayout.displayPopUp(installConfirmation);
 
             // Active screen saver
             ScreenSaverManager.setActive();
@@ -115,7 +115,7 @@ Item {
             if (downloadingPopup.visible)
                 downloadingPopup.close();
 
-            parent.popupLayout.displayPopUp(updateInterruptionPopup);
+            uiSession.popupLayout.displayPopUp(updateInterruptionPopup);
 
             // Active screen saver
             ScreenSaverManager.setActive();
@@ -123,7 +123,7 @@ Item {
 
         function onDownloadStarted() {
             if (!downloadingPopup.visible)
-                parent.popupLayout.displayPopUp(downloadingPopup);
+                uiSession.popupLayout.displayPopUp(downloadingPopup);
 
             // Inactive screen saver
             ScreenSaverManager.setInactive();
@@ -155,7 +155,7 @@ Item {
 
         function onNrfUpdateStarted() {
             if (!updatePopup.visible)
-                parent.popupLayout.displayPopUp(updatePopup);
+                uiSession.popupLayout.displayPopUp(updatePopup);
 
             // Inactive screen saver
             ScreenSaverManager.setInactive();

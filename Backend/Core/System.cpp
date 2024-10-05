@@ -77,6 +77,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     , mUpdateAvailable (false)
     , mHasForceUpdate(false)
     , mIsInitialSetup(false)
+    , mControlAlertEnabled(false)
     , mTestMode(false)
     , mIsNightModeRunning(false)
     , mRestarting(false)
@@ -182,8 +183,12 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(&mLogSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
         qWarning() << "process has encountered an error:" << error << mLogSender.readAllStandardError();
 
+        auto sendFirstRunLogVar = mLogSender.property("sendFirstRunLog");
         auto initialized = mLogSender.property("initialized");
-        if (initialized.isValid() && initialized.toBool()){
+        if (sendFirstRunLogVar.isValid() && sendFirstRunLogVar.toBool()) {
+            mLogSender.setProperty("sendFirstRunLog", false);
+            emit alert("Log can not be sent!");
+        } else if (initialized.isValid() && initialized.toBool()) {
             emit alert("Log is not sent, Please try again!");
         } else {
             createLogDirectoryOnServer();
@@ -197,8 +202,17 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             success = false;
         }
 
+        auto sendFirstRunLogVar = mLogSender.property("sendFirstRunLog");
         auto initialized = mLogSender.property("initialized");
-        if (!initialized.isValid() || !initialized.toBool()){
+
+        if (sendFirstRunLogVar.isValid() && sendFirstRunLogVar.toBool()) {
+            mLogSender.setProperty("sendFirstRunLog", false);
+            if (success) {
+                emit alert("Log is sent!");
+            } else {
+                emit alert("Log is not sent!");
+            }
+        } else if (!initialized.isValid() || !initialized.toBool()){
             if (success){
                 TRACE << "Folder created in server successfully";
                 mLogSender.setProperty("initialized", true);
@@ -644,6 +658,44 @@ void NUVE::System::sendLog()
         return;
     }
 
+    auto filename = generateLog();
+    if (filename.isEmpty())
+        return;
+
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    TRACE << "sending log to server " << mLogRemoteFolder;
+    mLogSender.start("/bin/bash", {"-c", copyFile});
+}
+
+void NUVE::System::sendFirstRunLog()
+{
+    if (mLogSender.state() != QProcess::NotRunning){
+        QString error("Previous session is in progress, please try again later.");
+        qWarning() << error << "State is :" << mLogSender.state();
+        emit alert(error);
+        return;
+    }
+
+    auto filename = generateLog();
+    if (filename.isEmpty())
+        return;
+
+    mLogSender.setProperty("sendFirstRunLog", true);
+
+    auto logRemotePath = m_logPath + "firstRunLogs/" + QString("%0_%1").arg(QString::fromStdString(mUID), filename.split("/").last());
+
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, logRemotePath);
+    TRACE << "sending log to server " << logRemotePath;
+    mLogSender.start("/bin/bash", {"-c", copyFile});
+}
+
+QString NUVE::System::generateLog()
+{
+
     QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
 
     TRACE << "generating log file in " << filename;
@@ -655,14 +707,10 @@ void NUVE::System::sendLog()
         QString error("Unable to create log file.");
         qWarning() << error << exitCode;
         emit alert(error);
-        return;
+        return "";
     }
 
-    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
-                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
-    TRACE << "sending log to server " << mLogRemoteFolder;
-    mLogSender.start("/bin/bash", {"-c", copyFile});
+    return filename;
 }
 
 void NUVE::System::systemCtlRestartApp()
@@ -1007,6 +1055,11 @@ void NUVE::System::setIsInitialSetup(bool isInitailSetup)
     mIsInitialSetup = isInitailSetup;
 }
 
+bool NUVE::System::controlAlertEnabled()
+{
+    return mControlAlertEnabled;
+}
+
 void NUVE::System::forgetDevice()
 {
     mLastInstalledUpdateDate = {};
@@ -1055,6 +1108,15 @@ void NUVE::System::setTestMode(bool testMode) {
 
     mTestMode = testMode;
     emit testModeChanged();
+}
+
+void NUVE::System::setControlAlertEnabled(bool enabled)
+{
+    if (mControlAlertEnabled == enabled)
+        return;
+
+    mControlAlertEnabled = enabled;
+    emit controlAlertEnabledChanged();
 }
 
 void NUVE::System::setPartialUpdateProgress(int progress) {

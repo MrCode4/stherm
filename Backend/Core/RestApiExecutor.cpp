@@ -57,6 +57,21 @@ QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByte
     }
 }
 
+QNetworkReply* RestApiExecutor::callPutApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth)
+{
+    auto key = prepareHashKey(QNetworkAccessManager::Operation::PutOperation, endpoint);
+    if (mCallbacks.contains(key)) {
+        return nullptr;
+    }
+    else {
+        mCallbacks.insert(key, callback);
+        auto reply = put(prepareApiRequest(endpoint, setAuth), postData);
+        reply->setProperty("endpoint", endpoint);
+        reply->setProperty("isJson", true);
+        return reply;
+    }
+}
+
 QNetworkReply* RestApiExecutor::downloadFile(const QString &url, ResponseCallback callback, bool jsonFile, bool setAuth)
 {
     auto key = prepareHashKey(QNetworkAccessManager::Operation::GetOperation, url);
@@ -100,6 +115,9 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
         if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
 
             data = prepareJsonResponse(endpoint, rawData);
+            if (data.isEmpty() && reply->property("noDataObject").isValid() && reply->property("noDataObject").value<bool>())
+                data = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
+
             if (data.isEmpty()) {
                 TRACE << "API RESPONSE (" << endpoint << ") is Empty or invalid:" << rawData;
 

@@ -273,6 +273,23 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                    alertMessage);
     });
 
+    mGetOutdoorTemperatureTimer.setInterval(60 * 1000);
+    mGetOutdoorTemperatureTimer.setSingleShot(false);
+    connect(&mGetOutdoorTemperatureTimer, &QTimer::timeout, this, [this]() {
+        m_sync->getOutdoorTemperature();
+    });
+
+    connect(m_sync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
+        TRACE << "Outdoor temperature:" << success << temp;
+        if (success) {
+            mSchemeDataProvider->setOutdoorTemperature(temp);
+
+            if (systemSetup()->systemType != AppSpecCPP::DualFuelHeating) {
+                mGetOutdoorTemperatureTimer.stop();
+            }
+        }
+    });
+
     connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
         if (mBacklightTimer.isActive())
@@ -308,6 +325,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
     connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
+    connect(m_scheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
     connect(m_scheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
         m_HumidityScheme->setCanSendRelays(!isRunning);
     });
@@ -336,6 +354,11 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // save data to csv file
     // update the timer intervals when sample rate changed.
     connect(&mSaveSensorDataTimer, &QTimer::timeout, this, [this]() {
+        auto elapsed = mResponsivenessTimer.restart();
+        TRACE_CHECK(false) << "Operations took by :" << elapsed;
+        if (elapsed - mSaveSensorDataTimer.interval() > 3000) {
+            TRACE << "Operations delayed by :" << elapsed << mSaveSensorDataTimer.interval();
+        }
         writeSensorData(_mainData);
     });
 
@@ -343,7 +366,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mSaveSensorDataTimer.setTimerType(Qt::PreciseTimer);
     // TODO: check start condition
     mSaveSensorDataTimer.start(sampleRate * 60 * 1000);
-
+    mResponsivenessTimer.start();
 
     //! Set sInstance to this
     if (!sInstance) {
@@ -362,6 +385,7 @@ void DeviceControllerCPP::setSampleRate(const int sampleRate) {
         auto sr = _deviceAPI->deviceConfig().sampleRate;
         // TODO: check start condition
         mSaveSensorDataTimer.start(sr * 60 * 1000);
+        mResponsivenessTimer.restart();
     }
 }
 
@@ -620,6 +644,21 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
     // Set system setp
     mSchemeDataProvider->setSystemSetup(mSystemSetup);
 
+    // To provide outdoor temperature
+    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [=] {
+        if (mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
+            m_sync->getOutdoorTemperature();
+            mGetOutdoorTemperatureTimer.start();
+
+        } else {
+            mGetOutdoorTemperatureTimer.stop();
+        }
+    });
+
+    // To cache the outdoor temperature, it will be stop when get data successfully in the other system types
+    m_sync->getOutdoorTemperature();
+    mGetOutdoorTemperatureTimer.start();
+
     emit systemSetupChanged();
 }
 
@@ -775,6 +814,25 @@ void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings)
     m_system->pushSettingsToServer(settings);
 }
 
+void DeviceControllerCPP::setEndpoint(const QString &subdomain, const QString &domain)
+{
+    _deviceAPI->setEndpoint(
+        QString("https://%0%1/").arg(subdomain.isEmpty() ? "" : subdomain + ".", domain));
+}
+
+QString DeviceControllerCPP::getEndpoint()
+{
+    auto endpoint = QString::fromStdString(_deviceAPI->deviceConfig().endpoint);
+
+    // Use QUrl to parse the URL
+    QUrl parsedUrl(endpoint);
+
+    // Get the host (domain + subdomain) as QString
+    QString host = parsedUrl.host();
+
+    return host;
+}
+
 void DeviceControllerCPP::pushAutoSettingsToServer(const double& auto_temp_low, const double& auto_temp_high)
 {
     m_system->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
@@ -799,6 +857,10 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
     }
 
     return false;
+}
+
+void DeviceControllerCPP::switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType) {
+    m_scheme->switchDFHActiveSysType(activeSystemType);
 }
 
 void DeviceControllerCPP::setAutoMinReqTemp(const double cel_value)

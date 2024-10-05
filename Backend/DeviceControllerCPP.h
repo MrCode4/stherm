@@ -137,6 +137,9 @@ public:
 
     Q_INVOKABLE void pushSettingsToServer(const QVariantMap &settings);
 
+    Q_INVOKABLE void setEndpoint(const QString &subdomain, const QString &domain);
+    Q_INVOKABLE QString getEndpoint();
+
     SystemSetup* systemSetup() const;
     void setSystemSetup (SystemSetup* systemSetup);
 
@@ -181,6 +184,8 @@ public:
     //! start = false, stop scheme
     Q_INVOKABLE void runHumidityScheme(bool start);
 
+    Q_INVOKABLE void switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType);
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -209,6 +214,9 @@ Q_SIGNALS:
 
     void fanWorkChanged(bool fanState);
     void currentSystemModeChanged(AppSpecCPP::SystemMode fanState);
+
+    //! Active system mode changed due to dual fuel heating
+    void dfhSystemTypeChanged(AppSpecCPP::SystemType activeSystemType);
 
     void adaptiveBrightnessChanged();
 
@@ -295,6 +303,8 @@ private:
     //! Object to manage humidity control
     HumidityScheme *m_HumidityScheme;
 
+    QTimer mGetOutdoorTemperatureTimer;
+
     NUVE::System *m_system;
 
     QString m_backdoorPath = "/usr/local/bin/backdoor/";
@@ -314,6 +324,7 @@ private:
     //! TODO: Delete when logging is not required
     QTimer mLogTimer;
     QTimer mSaveSensorDataTimer;
+    QElapsedTimer mResponsivenessTimer;
 
     QString mGeneralSystemDatafilePath;
 

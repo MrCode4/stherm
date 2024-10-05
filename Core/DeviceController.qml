@@ -29,6 +29,8 @@ I_DeviceController {
 
     property bool initialSetup: false;
 
+    readonly property int  checkSNTryCount: checkSNTimer.tryCount;
+
     //! Air condition health
     property bool airConditionSensorHealth: false;
 
@@ -53,6 +55,9 @@ I_DeviceController {
 
     //! Is the software update checked or not
     property bool checkedSWUpdate: false
+
+    //! Active system mode in dual fuel heating
+    property int dfhSystemType: AppSpec.SysTUnknown
 
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
@@ -156,10 +161,23 @@ I_DeviceController {
         running: false
         interval: _retrycheckSNTimerInterval
 
+        property int tryCount: 0
+
         onTriggered: {
+            tryCount++;
+            console.log("trying to checkSN:", tryCount)
+
             deviceControllerCPP.checkSN();
 
+            console.log("initial setup:", initialSetup, ", serial number:", deviceControllerCPP.system.serialNumber)
+
             if (deviceControllerCPP.system.serialNumber.length === 0) {
+
+                // sending log automatically if fails to get SN on first RUN
+                if (tryCount > 0 && initialSetup) {
+                    deviceControllerCPP.system.sendFirstRunLog();
+                }
+
                 _retrycheckSNTimerInterval += 10000;
 
                 if (_retrycheckSNTimerInterval > 40000)
@@ -252,6 +270,11 @@ I_DeviceController {
                 if (fetchContractorInfoTimer.running)
                     fetchContractorInfoTimer.restart();
             }
+        }
+
+        //! Update active system mode in the dual fuel heating
+        function onDfhSystemTypeChanged(activeSystemType: int) {
+            dfhSystemType = activeSystemType;
         }
     }
 
@@ -817,7 +840,7 @@ I_DeviceController {
             //! TODo required actions if any
 
             checkToUpdateSystemMode(systemMode);
-            deviceController.updateEditMode(AppSpec.EMSystemMode);
+            updateEditMode(AppSpec.EMSystemMode);
             // to let all dependant parameters being updated and save all
             Qt.callLater(saveSettings);
         }
@@ -838,7 +861,7 @@ I_DeviceController {
     //! On/off the vacation.
     function setVacationOn(on: bool) {
         device.systemSetup.isVacation = on;
-        deviceController.updateEditMode(AppSpec.EMVacation);
+        updateEditMode(AppSpec.EMVacation);
         saveSettings();
     }
 
@@ -1008,7 +1031,6 @@ I_DeviceController {
                 "effectDst": device.setting.effectDst,
             },
             "sensors" : [],
-            "schedules" : [],
             "messages" : [],
             "vacation" : {
                 "min_humidity" : device.vacation.hum_min,
@@ -1036,23 +1058,6 @@ I_DeviceController {
                 "firmware-version": Application.version
             }
         }
-
-        device.schedules.forEach(schedule =>
-                                 {
-                                     send_data.schedules.push(
-                                         {
-                                             "is_enable": schedule.enable,
-                                             "name": schedule.name,
-                                             "type_id": schedule.type,
-                                             "start_time": schedule.startTime,
-                                             "end_time": schedule.endTime,
-                                             //!  TODO: remove
-                                             "temp": 18.0,
-                                             "humidity": schedule.humidity,
-                                             "dataSource": schedule.dataSource,
-                                             "weekdays": schedule.repeats.split(',')
-                                         })
-                                 })
 
         device.messages.forEach(message =>
                                 {
@@ -1160,8 +1165,10 @@ I_DeviceController {
 
     function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
         device.systemSetup.heatPumpEmergency = emergency;
-        device.systemSetup.heatStage = stage;
+
+        // coolStage controls the Y wires.
         device.systemSetup.coolStage = stage;
+
         device.systemSetup.heatPumpOBState = obState;
         device.systemSetup.systemType = AppSpecCPP.HeatPump;
     }
@@ -1171,6 +1178,20 @@ I_DeviceController {
         device.systemSetup.heatStage = heatStage;
         device.systemSetup.systemType = AppSpecCPP.Conventional;
     }
+
+    function setSystemDualFuelHeating(emergency: bool, heatPumpStage: int, stage: int, obState: int, dualFuelThreshod: real) {
+        device.systemSetup.heatPumpEmergency = emergency;
+
+        // coolStage controls the Y wires.
+        device.systemSetup.coolStage = heatPumpStage;
+        device.systemSetup.heatStage = stage;
+
+        device.systemSetup.heatPumpOBState = obState;
+
+        device.systemSetup.dualFuelThreshod = dualFuelThreshod;
+        device.systemSetup.systemType = AppSpec.DualFuelHeating;
+    }
+
 
     function setSystemSetupServer(settings: var) {
 
@@ -1191,9 +1212,13 @@ I_DeviceController {
         else if(settings.type === "heating")
             setSystemHeatOnly(settings.heatStage)
         else if(settings.type === "heat_pump")
-            setSystemHeatPump(settings.heatPumpEmergency, settings.heatStage, settings.heatPumpOBState)
+            setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState)
         else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
+        else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
+            setSystemDualFuelHeating(settings.heatPumpEmergency, settings.coolStage, settings.heatStage,
+                                     settings.heatPumpOBState,
+                                     settings.dual_fuel_threshod ?? device.systemSetup.dualFuelThreshod);
         else
             console.warn("System type unknown", settings.type)
     }
@@ -1257,6 +1282,8 @@ I_DeviceController {
 
     //! Compare the server schedules and the model schedules and update model based on the server data.
     function setSchedulesFromServer(serverSchedules: var) {
+
+        // Check the lock mode
         if (editModeEnabled(AppSpec.EMSchedule)) {
             console.log("The schedules are being edited and cannot be updated by the server.")
             return;
@@ -1306,7 +1333,7 @@ I_DeviceController {
         //        device.fan.mode?
 
         if (isNeedToPushToServer) {
-            deviceController.updateEditMode(AppSpec.EMSensorValues);
+            updateEditMode(AppSpec.EMSensorValues);
         }
 
         //        console.log("--------------- End: updateInformation -------------------")

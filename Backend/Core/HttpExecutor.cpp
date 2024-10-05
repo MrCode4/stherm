@@ -23,6 +23,14 @@ QNetworkReply* HttpExecutor::post(const QNetworkRequest& request, const QByteArr
     return reply;
 }
 
+QNetworkReply* HttpExecutor::put(const QNetworkRequest& request, const QByteArray& data)
+{
+    QNetworkReply* reply = NetworkManager::instance()->put(request, data);
+    connect(reply, &QNetworkReply::finished, this,  &HttpExecutor::onRequestFinished);
+    reply->ignoreSslErrors();
+    return reply;
+}
+
 
 void HttpExecutor::onRequestFinished()
 {

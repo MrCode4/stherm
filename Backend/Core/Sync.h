@@ -39,7 +39,10 @@ public:
     bool fetchMessages();
     void fetchWirings(const QString& uid);
     void requestJob(QString type);
+
     Q_INVOKABLE void fetchUserData();
+
+    Q_INVOKABLE QString baseURL();
 
     void pushSettingsToServer(const QVariantMap &settings);
     void pushAlertToServer(const QVariantMap &settings);
@@ -62,6 +65,14 @@ public:
 
 
     Q_INVOKABLE void installDevice(const QVariantMap &data);
+
+    void getOutdoorTemperature();
+
+    Q_INVOKABLE void clearSchedule(const int &scheduleID);
+
+    Q_INVOKABLE void editSchedule(const int &scheduleID, const QVariantMap &schedule);
+
+    Q_INVOKABLE void addSchedule(const QString &scheduleUid, const QVariantMap &schedule);
 
 signals:
     void settingsFetched(bool success);
@@ -117,6 +128,12 @@ signals:
 
     void zipCodeInfoReady(bool success, QVariantMap data);
     void customerInfoReady(bool success, QVariantMap data);
+
+    void outdoorTemperatureReady(bool success = false, double temp = -1.0);
+
+    void scheduleCleared(int id, bool success);
+    void scheduleEdited(int id, bool success);
+    void scheduleAdded(QString scheduleUid, bool success, QVariantMap schedule = QVariantMap());
 
 private slots:
     //! Check firmware update with getSettings reply
