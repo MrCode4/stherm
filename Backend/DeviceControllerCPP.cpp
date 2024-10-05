@@ -354,6 +354,11 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // save data to csv file
     // update the timer intervals when sample rate changed.
     connect(&mSaveSensorDataTimer, &QTimer::timeout, this, [this]() {
+        auto elapsed = mResponsivenessTimer.restart();
+        TRACE_CHECK(false) << "Operations took by :" << elapsed;
+        if (elapsed - mSaveSensorDataTimer.interval() > 3000) {
+            TRACE << "Operations delayed by :" << elapsed << mSaveSensorDataTimer.interval();
+        }
         writeSensorData(_mainData);
     });
 
@@ -361,7 +366,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mSaveSensorDataTimer.setTimerType(Qt::PreciseTimer);
     // TODO: check start condition
     mSaveSensorDataTimer.start(sampleRate * 60 * 1000);
-
+    mResponsivenessTimer.start();
 
     //! Set sInstance to this
     if (!sInstance) {
@@ -380,6 +385,7 @@ void DeviceControllerCPP::setSampleRate(const int sampleRate) {
         auto sr = _deviceAPI->deviceConfig().sampleRate;
         // TODO: check start condition
         mSaveSensorDataTimer.start(sr * 60 * 1000);
+        mResponsivenessTimer.restart();
     }
 }
 

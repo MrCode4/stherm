@@ -324,6 +324,7 @@ private:
     //! TODO: Delete when logging is not required
     QTimer mLogTimer;
     QTimer mSaveSensorDataTimer;
+    QElapsedTimer mResponsivenessTimer;
 
     QString mGeneralSystemDatafilePath;
 
