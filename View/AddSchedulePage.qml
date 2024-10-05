@@ -268,6 +268,7 @@ BasePageView {
         //! If there is overlapping Schedules disable them
         _internal.overlappingSchedules.forEach((element, index) => {
                                                    element.enable = false;
+                                                   schedulesController.editScheduleInServer(element);
                                                });
         saveScheduleAndDisconnect();
     }
@@ -287,9 +288,10 @@ BasePageView {
             schedulesController.saveNewSchedule(_internal.newSchedule);
 
             //If the schedule is enabled, show a proper toast message
-            if(_internal.newSchedule.enable === true)
+            if(_internal.newSchedule.enable === true) {
                 var dt = schedulesController.prepareToastMessage(_internal.newSchedule);
                 uiSession.toastManager.showToast(dt.message, dt.detail);
+            }
         }
 
         if (root.StackView.view) {

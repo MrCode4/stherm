@@ -603,6 +603,7 @@ QtObject {
         var incompatibleSchedules = findIncompatibleSchedules(checkWithSystemMode);
         incompatibleSchedules.forEach(schedule => {
                                           schedule.enable = false;
+                                          editScheduleInServer(schedule);
                                       });
     }
 
@@ -630,6 +631,11 @@ QtObject {
     }
 
     function clearScheduleFromServer(id: int) {
+        if (id < 0) {
+            console.log("Remove schedule: The schedule is not exists in the server (unknown ID)");
+            return;
+        }
+
         var schId = deletingSchedules.findIndex(elem => elem === id);
 
         if (schId === -1) {
@@ -641,6 +647,11 @@ QtObject {
     }
 
     function editScheduleInServer(schedule: ScheduleCPP) {
+        if (schedule.id < 0) {
+            console.log("Edit schedule: The schedule is not exists in the server (unknown ID)");
+            return
+        }
+
         var schId = editingSchedules.findIndex(elem => elem.id === schedule.id);
         if (schId === -1) {
             editingSchedules.unshift(schedule);

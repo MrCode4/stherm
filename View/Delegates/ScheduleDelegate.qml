@@ -203,6 +203,7 @@ ItemDelegate {
         //! If there is overlapping Schedules disable them
         internal.overlappingSchedules.forEach((element, index) => {
                                                   element.enable = false;
+                                                  schedulesController.editScheduleInServer(element);
                                               });
 
         disconnect()

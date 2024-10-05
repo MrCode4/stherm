@@ -478,6 +478,7 @@ BasePageView {
             //! Disable overlapping schedules if any.
             overlappingSchedules.forEach((element, index) => {
                                              element.enable = false;
+                                             schedulesController.editScheduleInServer(element);
                                          });
             //! Enable this.
             schedule.enable = true;
