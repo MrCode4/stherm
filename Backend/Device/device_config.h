@@ -1,5 +1,7 @@
 #pragma once
 
+#include <qobject.h>
+
 #include "nuve_types.h"
 
 #define API_SERVER_BASE_URL "https://devapi.nuvehvac.com/"
@@ -53,6 +55,12 @@ struct DeviceConfig
 
     // endpoint for access API and internet access check
     std::string endpoint;
+
+    // Configs to send test results to the specified cofigs
+    QString    testConfigIp;
+    QString    testConfigUser;
+    QString    testConfigPassword;
+    QString    testConfigDestination;
 
     // Enable/disable alert feature
     bool controlAlertEnabled;

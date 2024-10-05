@@ -115,3 +115,25 @@ void DeviceAPI::forgetDevice()
     m_deviceConfig.initialise("");
 }
 
+void DeviceAPI::setTestConfigs(const QString &ip, const QString &user, const QString &pass, const QString &destination)
+{
+    m_deviceConfig.testConfigIp = ip;
+    m_deviceConfig.testConfigUser = user;
+    m_deviceConfig.testConfigPassword = pass;
+    m_deviceConfig.testConfigDestination = destination;
+
+    m_deviceConfig.save();
+}
+
+QVariantMap DeviceAPI::testConfigs() const
+{
+    QVariantMap testConfig;
+
+    testConfig.insert("testConfigIp", m_deviceConfig.testConfigIp);
+    testConfig.insert("testConfigUser", m_deviceConfig.testConfigUser);
+    testConfig.insert("testConfigPassword", m_deviceConfig.testConfigPassword);
+    testConfig.insert("testConfigDestination", m_deviceConfig.testConfigDestination);
+
+    return testConfig;
+}
+

@@ -80,6 +80,11 @@ void NUVE::DeviceConfig::load()
 
     endpoint = config.value("endpoint", API_SERVER_BASE_URL).toString().toStdString();
 
+    testConfigIp          = config.value("testConfigIp").toString();
+    testConfigUser        = config.value("testConfigUser").toString();
+    testConfigPassword    = config.value("testConfigPassword").toString();
+    testConfigDestination = config.value("testConfigDestination").toString();
+
     bool ok;
     auto sr = config.value("sampleRate").toInt(&ok);
     if (ok)
@@ -94,6 +99,12 @@ void NUVE::DeviceConfig::save()
     config.setValue("serial_number", QString::fromStdString(serial_number));
     config.setValue("endpoint", QString::fromStdString(endpoint));
     config.setValue("sampleRate", QString::number(sampleRate));
+
+    config.setValue("testConfigIp",          testConfigIp);
+    config.setValue("testConfigUser",        testConfigUser);
+    config.setValue("testConfigPassword",    testConfigPassword);
+    config.setValue("testConfigDestination", testConfigDestination);
+
 }
 
 void NUVE::DeviceConfig::setEnv()
