@@ -80,10 +80,10 @@ void NUVE::DeviceConfig::load()
 
     endpoint = config.value("endpoint", API_SERVER_BASE_URL).toString().toStdString();
 
-    testConfigIp          = config.value("testConfigIp").toString();
-    testConfigUser        = config.value("testConfigUser").toString();
-    testConfigPassword    = config.value("testConfigPassword").toString();
-    testConfigDestination = config.value("testConfigDestination").toString();
+    testConfigIp          = config.value("testConfigIp").toString().toStdString();
+    testConfigUser        = config.value("testConfigUser").toString().toStdString();
+    testConfigPassword    = config.value("testConfigPassword").toString().toStdString();
+    testConfigDestination = config.value("testConfigDestination").toString().toStdString();
 
     bool ok;
     auto sr = config.value("sampleRate").toInt(&ok);
@@ -100,10 +100,10 @@ void NUVE::DeviceConfig::save()
     config.setValue("endpoint", QString::fromStdString(endpoint));
     config.setValue("sampleRate", QString::number(sampleRate));
 
-    config.setValue("testConfigIp",          testConfigIp);
-    config.setValue("testConfigUser",        testConfigUser);
-    config.setValue("testConfigPassword",    testConfigPassword);
-    config.setValue("testConfigDestination", testConfigDestination);
+    config.setValue("testConfigIp",          QString::fromStdString(testConfigIp));
+    config.setValue("testConfigUser",        QString::fromStdString(testConfigUser));
+    config.setValue("testConfigPassword",    QString::fromStdString(testConfigPassword));
+    config.setValue("testConfigDestination", QString::fromStdString(testConfigDestination));
 
 }
 

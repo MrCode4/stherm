@@ -1,7 +1,5 @@
 #pragma once
 
-#include <qobject.h>
-
 #include "nuve_types.h"
 
 #define API_SERVER_BASE_URL "https://devapi.nuvehvac.com/"
@@ -57,10 +55,10 @@ struct DeviceConfig
     std::string endpoint;
 
     // Configs to send test results to the specified cofigs
-    QString    testConfigIp;
-    QString    testConfigUser;
-    QString    testConfigPassword;
-    QString    testConfigDestination;
+    std::string testConfigIp;
+    std::string testConfigUser;
+    std::string testConfigPassword;
+    std::string testConfigDestination;
 
     // Enable/disable alert feature
     bool controlAlertEnabled;
