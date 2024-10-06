@@ -181,7 +181,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     downloaderTimer.setSingleShot(false);
 
     connect(&mLogSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
-        qWarning() << "process has encountered an error:" << error << mLogSender.readAllStandardError();
+        qWarning() << "log sender process has encountered an error:" << error
+                   << mLogSender.readAllStandardError();
 
         auto sendFirstRunLogVar = mLogSender.property("sendFirstRunLog");
         auto initialized = mLogSender.property("initialized");
@@ -197,8 +198,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
         bool success = true;
         if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-            qWarning() << "process did not exit cleanly" << exitCode << exitStatus << mLogSender.readAllStandardError()
-                       << mLogSender.readAllStandardOutput();
+            qWarning() << "log sender process did not exit cleanly" << exitCode << exitStatus
+                       << mLogSender.readAllStandardError() << mLogSender.readAllStandardOutput();
             success = false;
         }
 
@@ -228,6 +229,63 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             }
         }
     });
+
+    connect(&mFileSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+        auto role = mFileSender.property("role").toString();
+
+        QString errorStr = mFileSender.readAllStandardError();
+        qWarning() << role << "file sender process has encountered an error:" << error << errorStr;
+        errorStr = QString("%1: %0").arg(errorStr).arg(error);
+
+        if (!fileSenderCallbacks.contains(role)) {
+            QString error = "Callback not found for role " + role;
+            TRACE << error;
+            emit alert(error);
+            return;
+        }
+
+        auto callback = fileSenderCallbacks.take(role);
+        if (callback) {
+            callback(errorStr);
+
+        } else {
+            QString error = "Callback not valid for role " + role;
+            TRACE << error;
+            emit alert(error);
+        }
+    });
+    connect(&mFileSender,
+            &QProcess::finished,
+            this,
+            [this](int exitCode, QProcess::ExitStatus exitStatus) {
+                auto role = mFileSender.property("role").toString();
+
+                QString errorStr;
+                if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
+                    errorStr = mFileSender.readAllStandardOutput() + "\n"
+                               + mFileSender.readAllStandardError();
+                    qWarning() << role << "file sender process did not exit cleanly" << exitCode
+                               << exitStatus << errorStr;
+                    errorStr = QString("%1-%2: %0").arg(errorStr).arg(exitCode).arg(exitStatus);
+                }
+
+                if (!fileSenderCallbacks.contains(role)) {
+                    QString error = "Callback not found for role " + role;
+                    TRACE << error;
+                    emit alert(error);
+                    return;
+                }
+
+                auto callback = fileSenderCallbacks.take(role);
+                if (callback) {
+                    callback(errorStr);
+
+                } else {
+                    QString error = "Callback not valid for role " + role;
+                    TRACE << error;
+                    emit alert(error);
+                }
+            });
 
     //! copies the sshpass from /usr/local/bin/ to /usr/bin
     //! if the first one exists and second one not exists
@@ -1843,6 +1901,77 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
 
     return (storageInfo.isValid() && storageInfo.bytesFree() >= minimumSizeBytes);
 #endif
+
+    return true;
+}
+
+bool NUVE::System::sendResults(const QString &filepath,
+                               const QString &remoteIP,
+                               const QString &remoteUser,
+                               const QString &remotePassword,
+                               const QString &destination)
+{
+    if (!installSSHPass()) {
+        QString error("Device is not ready to send file!");
+        qWarning() << error;
+        emit alert(error);
+        return false;
+    }
+
+    if (mFileSender.state() != QProcess::NotRunning || !fileSenderCallbacks.isEmpty()) {
+        QString error("Previous session is in progress, please try again later.");
+        qWarning() << error << "State is :" << mFileSender.state() << fileSenderCallbacks.keys();
+        emit alert(error);
+        return false;
+    }
+
+    auto dirCreatorCallback = [=](QString error) {
+        auto role = mFileSender.property("role").toString();
+        TRACE_CHECK(role != "dir") << "role seems invalid" << role;
+
+        if (!error.isEmpty()) {
+            error = "error while creating directory on remote" + error;
+            qWarning() << error;
+            emit alert(error);
+            return;
+        }
+
+        auto sendFileCallback = [=](QString error) {
+            auto role = mFileSender.property("role").toString();
+            TRACE_CHECK(role != "file") << "role seems invalid" << role;
+
+            if (!error.isEmpty()) {
+                error = "error while sending file to remote" + error;
+                qWarning() << error;
+                emit alert(error);
+                return;
+            }
+
+            TRACE << "file has been sent to remote";
+        };
+
+        fileSenderCallbacks.insert("file", sendFileCallback);
+        mFileSender.setProperty("role", "file");
+
+        TRACE << "sending file to remote " << destination;
+
+        // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+        QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o "
+                                   "\"StrictHostKeyChecking=no\" %2 %3@%4:%5")
+                               .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
+        mFileSender.start("/bin/bash", {"-c", copyFile});
+    };
+
+    fileSenderCallbacks.insert("dir", dirCreatorCallback);
+    mFileSender.setProperty("role", "dir");
+
+    TRACE << "creating dir to send results on remote" << destination;
+
+    // Create remote path in case it doesn't exist, needed once! with internet access
+    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o "
+                                 "\"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'")
+                             .arg(remotePassword, remoteUser, remoteIP, destination);
+    mFileSender.start("/bin/bash", {"-c", createPath});
 
     return true;
 }

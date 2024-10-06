@@ -126,6 +126,12 @@ public:
 
     bool testMode();
 
+    bool sendResults(const QString &filepath,
+                     const QString &remoteIP,
+                     const QString &remoteUser,
+                     const QString &remotePassword,
+                     const QString &destination);
+
     //! checks only existance of the sshpass file in /usr/bin
     bool has_sshPass();
 
@@ -283,6 +289,7 @@ signals:
     void warrantyReplacementFinished(bool success = false);
 
 private:
+    using fileSenderCallback = std::function<void(QString error)>;
 
     //! verify dounloaded files and prepare to set up.
     bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true,
@@ -405,6 +412,8 @@ private:
     int mBackdoorUpdateFileSize;
 
     QProcess mLogSender;
+    QProcess mFileSender;
+    QHash<QString, fileSenderCallback> fileSenderCallbacks;
     QString mLogRemoteFolder;
 };
 
