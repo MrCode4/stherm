@@ -15,6 +15,7 @@ class PerfTestService : public DevApiExecutor
     QML_ELEMENT
     QML_SINGLETON
 
+    PROPERTY_PRI_DEF_VAL(int, testId, 1)
     PROPERTY_PRI_DEF_VAL(int, state, 0)
     PROPERTY_PRI_DEF_VAL(AppSpecCPP::SystemMode, mode, AppSpecCPP::Cooling)
     PROPERTY_PRI_DEF_VAL(AppSpecCPP::SystemMode, actualMode, AppSpecCPP::Cooling)

@@ -116,7 +116,7 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
 
     auto msecsToNextCheck = timeToCheckFrom.msecsTo(nextScheduleMark);
     qCDebug(PerfTestLogCat) <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<" ms";
-    QTimer::singleShot(30000, this, &PerfTestService::checkTestEligibility); //TODO: msecsToNextCheck
+    QTimer::singleShot(60000, this, &PerfTestService::checkTestEligibility); //TODO: msecsToNextCheck
 }
 
 void PerfTestService::checkTestEligibility()
@@ -129,10 +129,21 @@ void PerfTestService::checkTestEligibility()
 
     state(TestState::Checking);
 
-    auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {        
-        mode(data.value("cooling").toBool() ? AppSpecCPP::Cooling : AppSpecCPP::Heating);
-        qCDebug(PerfTestLogCat) <<"CheckTestEligibility Response " <<rawData <<mode();
-        if (true || data.value("status").toBool()) {
+    auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
+        testId(data.value("perftest_id").toInt());
+
+        auto action = data.value("action").toString();
+        if (action == "cooling") {
+            mode(AppSpecCPP::Cooling);
+        } else if (action == "heating") {
+            mode(AppSpecCPP::Heating);
+        } else {
+            mode(AppSpecCPP::Off);
+        }
+
+        qCDebug(PerfTestLogCat) <<"CheckTestEligibility Response " <<rawData <<testId() <<mode();
+
+        if (testId() > 0 && mode() != AppSpecCPP::Off) {
             if (isPostponed()) {
                 mWasEligibleBeforePostpone = true;
                 // Check if blocking is not resumed by 12PM, ublock and schedule for next day
@@ -230,7 +241,10 @@ void PerfTestService::collectReading()
     qCDebug(PerfTestLogCat) <<"collectReading " <<temperature;    
     testTimeLeft(testTimeLeft() - mTimerGetTemp.interval() / PerfTest::OneSecInMS);
     qCDebug(PerfTestLogCat) <<"testTimeLeft " <<testTimeLeft();
-    mReadings.append(QJsonValue(temperature));
+    QJsonObject item;
+    item["timestamp"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
+    item["temperature"] = temperature;
+    mReadings.append(item);
     if (testTimeLeft() <= 0) {
         cleanupRunning();
         sendReadingsToServer();
@@ -258,8 +272,17 @@ void PerfTestService::cancelTest()
         scheduleNextCheck(PerfTest::Noon12PM);
     };
 
-    auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/cancel?sn=%0").arg(Device->serialNumber());
-    callGetApi(url, callback);
+    QJsonObject data;
+    data["perftest_id"] = testId();
+    data["sn"] = Device->serialNumber();
+    data["action"] = mode() == AppSpecCPP::Cooling ? "cooling" : "heating";
+    data["result"] = "stopped";
+    data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
+
+    qCDebug(PerfTestLogCat) <<"cancelTest Request " <<QJsonDocument(data).toJson();
+
+    auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(Device->serialNumber());
+    callPostApi(url, QJsonDocument(data).toJson(), callback);
 }
 
 void PerfTestService::sendReadingsToServer()
@@ -276,7 +299,14 @@ void PerfTestService::sendReadingsToServer()
     };
 
     QJsonObject data;
-    data["readings"] = mReadings;
+    data["perftest_id"] = testId();
+    data["sn"] = Device->serialNumber();
+    data["action"] = mode() == AppSpecCPP::Cooling ? "cooling" : "heating";
+    data["result"] = "finished";
+    data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
+    data["data"] = mReadings;
+
+    qCDebug(PerfTestLogCat) <<"sendReadingsToServer Request " <<QJsonDocument(data).toJson();
 
     auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(Device->serialNumber());
     callPostApi(url, QJsonDocument(data).toJson(), callback);
