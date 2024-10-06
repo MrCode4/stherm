@@ -1957,7 +1957,7 @@ bool NUVE::System::sendResults(const QString &filepath,
 
         // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
         QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o "
-                                   "\"StrictHostKeyChecking=no\" %2 %3@%4:%5")
+                                   "\"StrictHostKeyChecking=no\" /%2 %3@%4:%5")
                                .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
         mFileSender.start("/bin/bash", {"-c", copyFile});
     };
