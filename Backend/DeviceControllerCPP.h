@@ -245,6 +245,8 @@ private:
 
     void startTestMode();
 
+    void publishTestResults(const QString &resultsPath);
+
     void setAdaptiveBrightness(const double adaptiveBrightness);
 
     //! return true: fan is ON

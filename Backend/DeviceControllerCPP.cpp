@@ -1096,6 +1096,13 @@ void DeviceControllerCPP::testFinished()
         writeTestResult(testResultsFileName, testName, result, description);
     }
 
+    if (failedTests.isEmpty()) {
+        publishTestResults(testResultsFileName);
+    } else {
+        TRACE << "all tests are not passed" << mAllTestsResults;
+        emit m_system->alert("All tests are not passed");
+    }
+
     // disabled it for now!
     if (false) {
         QSettings settings;
@@ -1416,4 +1423,33 @@ void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
     } else {
         TRACE << "Failed to open the file for writing/Reading." << directoryHasSpace;
     }
+}
+
+void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
+{
+    const auto &config = _deviceAPI->deviceConfig();
+
+    QString destinationIP = config.testConfigIp.empty()
+                                ? "192.168.10.101"
+                                : QString::fromStdString(config.testConfigIp);
+    QString username = config.testConfigUser.empty()
+                           ? "lcidtron1"
+                           : QString::fromStdString(config.testConfigUser);
+    QString password = config.testConfigPassword.empty()
+                           ? "Tony6763"
+                           : QString::fromStdString(config.testConfigPassword);
+    QString destinationPath = config.testConfigDestination.empty()
+                                  ? "d:/test_results/"
+                                  : QString::fromStdString(config.testConfigDestination);
+
+    TRACE << "start exporting test results as " << resultsPath << destinationIP << username
+          << password << destinationPath;
+
+    auto sent = m_system->sendResults(resultsPath,
+                                      destinationIP,
+                                      username,
+                                      password,
+                                      destinationPath);
+
+    TRACE << "exporting test results ended " << sent;
 }
