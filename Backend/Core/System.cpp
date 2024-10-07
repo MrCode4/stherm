@@ -262,7 +262,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
                 QString errorStr;
                 if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-                    errorStr = mFileSender.readAllStandardOutput() + "\n"
+                    errorStr = mFileSender.readAllStandardOutput() + "\r\n"
                                + mFileSender.readAllStandardError();
                     qWarning() << role << "file sender process did not exit cleanly" << exitCode
                                << exitStatus << errorStr;
@@ -1924,7 +1924,7 @@ bool NUVE::System::sendResults(const QString &filepath,
     }
 
     if (mFileSender.state() != QProcess::NotRunning || !fileSenderCallbacks.isEmpty()) {
-        QString error("Previous session is in progress, please try again later.");
+        QString error("Previous send file session is in progress, please try again later.");
         qWarning() << error << "State is :" << mFileSender.state() << fileSenderCallbacks.keys();
         emit testPublishFinished(error);
         return false;
@@ -1935,7 +1935,7 @@ bool NUVE::System::sendResults(const QString &filepath,
         TRACE_CHECK(role != "dir") << "role seems invalid" << role;
 
         if (!error.isEmpty()) {
-            error = "error while creating directory on remote" + error;
+            error = "error while creating directory on remote: " + error;
             qWarning() << error;
             emit testPublishFinished(error);
             return;
@@ -1962,7 +1962,7 @@ bool NUVE::System::sendResults(const QString &filepath,
 
         // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
         QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o "
-                                   "\"StrictHostKeyChecking=no\" /%2 %3@%4:%5")
+                                   "\"StrictHostKeyChecking=no\" %2 %3@%4:%5")
                                .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
         mFileSender.start("/bin/bash", {"-c", copyFile});
     };

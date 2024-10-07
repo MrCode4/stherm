@@ -998,7 +998,7 @@ void DeviceControllerCPP::saveTestResult(const QString &testName, bool testResul
         mAllTestNames.push_back(testName);
 
     QString result = testResult ? "PASS" : "FAIL";
-    writeTestResult("test_results.csv", testName, result, description);
+    writeTestResult("/test_results.csv", testName, result, description);
 }
 
 QString DeviceControllerCPP::beginTesting()
@@ -1008,12 +1008,12 @@ QString DeviceControllerCPP::beginTesting()
     mAllTestNames.clear();
     //! TODO initialize all tests in mAllTestNames
 
-    QFile file("test_results.csv");
+    QFile file("/test_results.csv");
     if (file.exists() && !file.remove())
     {
         qWarning() << "Unable to delete file" << file.fileName();
     }
-    writeTestResult("test_results.csv", "Test name", QString("Test Result"), "Description");
+    writeTestResult("/test_results.csv", "Test name", QString("Test Result"), "Description");
 
     QString uid = _deviceAPI->uid();
     QString sn = m_system->serialNumber();
@@ -1084,10 +1084,10 @@ void DeviceControllerCPP::testFinished()
             failedTests.append(testName);
     }
 
-    TRACE << failedTests;
+    TRACE_CHECK(!failedTests.empty()) << "Failed tests are:" << failedTests;
 
     QString result = failedTests.empty() ? "PASS" : "FAIL";
-    QString testResultsFileName = QString("%1_%2.csv").arg(_deviceAPI->uid(), result);
+    QString testResultsFileName = QString("/%1_%2.csv").arg(_deviceAPI->uid(), result);
 
     // Remove the file if exists
     if (QFileInfo::exists(testResultsFileName)) {
