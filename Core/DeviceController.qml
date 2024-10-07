@@ -287,14 +287,7 @@ I_DeviceController {
         function onHasInternetChanged() {
             deviceControllerCPP.wifiConnected(NetworkInterface.hasInternet);
 
-            // checkSN when the internet is connected.
             if (NetworkInterface.hasInternet) {
-                if (startMode !== 0 && startMode !== -1) {
-                    if (!checkSNTimer.running) {
-                        deviceControllerCPP.checkSN();
-                    }
-                }
-
                 if (deviceControllerCPP.system.serialNumber.length > 0)
                     fetchContractorInfoTimer.start();
 

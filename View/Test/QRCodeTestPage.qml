@@ -106,10 +106,6 @@ BasePageView {
             console.log("QRCodeTestPage, checking for serial number ready:", sn, sn.length)
 
             if (sn.length === 0) {
-                //! Retrieve Serial Number (SN) using UID and await response
-                var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
-                system.fetchSerialNumber(uid, false);
-
                 //! Try to check serial number
                 snChecker.triggered();
                 startSNCheck = true;
@@ -164,7 +160,9 @@ BasePageView {
 
         visible: true
 
-        onClicked: gotoPage("qrc:/Stherm/View/AboutDevicePage.qml", {"uiSession": Qt.binding(() => uiSession), 'useSimpleStackView': true});
+        onClicked: {
+            if (root.StackView.view) root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {"uiSession": Qt.binding(() => uiSession)});
+        }
     }
 
     //! The timer will be start when
