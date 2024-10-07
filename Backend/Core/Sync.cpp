@@ -126,7 +126,7 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 
                 TRACE << "The serial number does not match the last one." << mSerialNumber << sn;
             }
-            else if (sn.isEmpty()) {
+            else if (sn.isEmpty() && notifyUser) {
                 emit alert("Oops...\nlooks like this device is not recognized by "
                            "our servers,\nplease send it to the manufacturer and\n "
                            "try to install another device.");

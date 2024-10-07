@@ -15,6 +15,10 @@ BasePageView {
      * ****************************************************************************************/
     property System system: deviceController.deviceControllerCPP.system
 
+    property bool   startSNCheck: false
+
+    property int    retrySN:      0
+
     /* Object properties
      * ****************************************************************************************/
 
@@ -67,6 +71,9 @@ BasePageView {
 
             }  else {
                 infoPopup.open();
+
+                //! Retry to check serial number
+                startSNCheck = true;
             }
         }
     }
@@ -91,7 +98,26 @@ BasePageView {
 
             printConfirmPopup.open();
         }
+
+        //! BusyIndicator for Fetching SN running status.
+        BusyIndicator {
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.bottom
+                topMargin: -10
+            }
+
+            width: parent.width
+            visible: running
+            running: system.serialNumber.length === 0 && retrySN > 0
+
+            Label {
+                anchors.centerIn: parent
+                text: retrySN
+            }
+        }
     }
+
 
     //! User guide link QR code
     Image {
@@ -139,5 +165,18 @@ BasePageView {
                 printConfirmPopup.open();
             }
         }
+    }
+
+    property Timer snChecker: Timer {
+        repeat: true
+        running: startSNCheck && system.serialNumber.length === 0
+        interval: 10000
+
+        onTriggered: {
+            var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
+            system.fetchSerialNumber(uid, false);
+            retrySN ++;
+        }
+
     }
 }

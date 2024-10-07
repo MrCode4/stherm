@@ -1096,9 +1096,10 @@ void DeviceControllerCPP::testFinished()
         writeTestResult(testResultsFileName, testName, result, description);
     }
 
-    if (failedTests.isEmpty()) {
-        publishTestResults(testResultsFileName);
-    } else {
+    // Publish test results
+    publishTestResults(testResultsFileName);
+
+    if (!failedTests.isEmpty()) {
         TRACE << "all tests are not passed" << mAllTestsResults;
         emit m_system->alert("All tests are not passed");
     }
