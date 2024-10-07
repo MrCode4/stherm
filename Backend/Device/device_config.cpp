@@ -82,7 +82,7 @@ void NUVE::DeviceConfig::load()
 
     testConfigIp          = config.value("testConfigIp").toString().toStdString();
     testConfigUser        = config.value("testConfigUser").toString().toStdString();
-    testConfigPassword    = config.value("testConfigPassword").toString().toStdString();
+    // testConfigPassword    = config.value("testConfigPassword").toString().toStdString();
     testConfigDestination = config.value("testConfigDestination").toString().toStdString();
 
     bool ok;
@@ -102,7 +102,8 @@ void NUVE::DeviceConfig::save()
 
     config.setValue("testConfigIp",          QString::fromStdString(testConfigIp));
     config.setValue("testConfigUser",        QString::fromStdString(testConfigUser));
-    config.setValue("testConfigPassword",    QString::fromStdString(testConfigPassword));
+    //! to prevent security leak
+    // config.setValue("testConfigPassword",    QString::fromStdString(testConfigPassword));
     config.setValue("testConfigDestination", QString::fromStdString(testConfigDestination));
 
 }
