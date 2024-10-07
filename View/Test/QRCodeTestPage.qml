@@ -19,6 +19,8 @@ BasePageView {
 
     property int    retrySN:      0
 
+    property bool   backButtonWasVisible: backButtonVisible
+
     /* Object properties
      * ****************************************************************************************/
 
@@ -106,10 +108,14 @@ BasePageView {
             console.log("QRCodeTestPage, checking for serial number ready:", sn, sn.length)
 
             if (sn.length === 0) {
+                // restore backbutton after busy indicator done
+                backButtonWasVisible = backButtonVisible;
+                backButtonVisible = false;
+                // to ensure busy indicator starts
+                retrySN++;
                 //! Try to check serial number
                 snChecker.triggered();
                 startSNCheck = true;
-
                 //! will be set to true when sn is ready
                 //! to prevent excess tapping by user when snChecker timer already retrying
                 enabled = false;
@@ -129,6 +135,11 @@ BasePageView {
             width: parent.width
             visible: running
             running: system.serialNumber.length === 0 && retrySN > 0
+            onRunningChanged: {
+                if (!running) {
+                    backButtonVisible = backButtonWasVisible;
+                }
+            }
 
             Label {
                 anchors.centerIn: parent
