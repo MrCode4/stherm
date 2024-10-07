@@ -58,7 +58,10 @@ BasePageView {
 
         onAccepted: {
             if (system.serialNumber.length > 0) {
+                finishButton.enabled = true;
                 rebootPopup.open();
+            } else {
+                infoPopup.open();
             }
         }
     }
@@ -80,17 +83,18 @@ BasePageView {
 
             console.log("QRCodeTestPage, finished test, serial number:", system.serialNumber, system.serialNumber.length)
 
-            if (system.serialNumber.length === 0) {
-                infoPopup.open();
+            testInfoPopup.pending = true
 
-                //! Retry to check serial number
-                startSNCheck = true;
-            }
+            testInfoPopup.detailMessage = (deviceController.deviceControllerCPP.isTestsPassed() ? "All tests are passed." : "All tests are not passed.") +
+                    "<br>" + "Test results are being published.";
+            console.log("print label accepted:", testInfoPopup.detailMessage);
+            testInfoPopup.open();
         }
     }
 
     //! Finish button
     ToolButton {
+        id: finishButton
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.check
@@ -105,6 +109,14 @@ BasePageView {
                 //! Retrieve Serial Number (SN) using UID and await response
                 var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
                 system.fetchSerialNumber(uid, false);
+
+                //! Try to check serial number
+                snChecker.triggered();
+                startSNCheck = true;
+
+                //! will be set to true when sn is ready
+                //! to prevent excess tapping by user when snChecker timer already retrying
+                enabled = false;
             }
 
             printConfirmPopup.open();
@@ -165,13 +177,14 @@ BasePageView {
 
         interval: 5000
         running: root.visible && system.serialNumber.length > 0 &&
-                 !rebootPopup.visible && !printConfirmPopup.visible
+                 !rebootPopup.visible && !printConfirmPopup.visible && !testInfoPopup.visible
 
         repeat: true
 
         onTriggered: {
             // JUST check, always true in this scope
             if (system.serialNumber.length > 0) {
+                finishButton.enabled = true;
                 infoPopup.close();
                 printConfirmPopup.open();
             }
@@ -186,22 +199,24 @@ BasePageView {
         onTriggered: {
             var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
             system.fetchSerialNumber(uid, false);
-            retrySN ++;
+            retrySN++;
         }
 
     }
 
     Connections {
-
         target: system
 
         function onTestPublishFinished(msg: string) {
-            testInfoPopup.detailMessage = (deviceController.deviceControllerCPP.isTestsPassed() ? "All tests are passed" : "All tests are not passed") +
+            testInfoPopup.detailMessage = (deviceController.deviceControllerCPP.isTestsPassed() ? "All tests are passed." : "All tests are not passed.") +
                     "<br>" +
-                    (msg.length > 0 ? "Tests are not published." : "Tests are published.");
+                    (msg.length > 0 ? ("Test results are not published.<br> " + msg) : "Test results are published.");
 
-            console.log(testInfoPopup.detailMessage);
+            console.log("onTestPublishFinished:", testInfoPopup.detailMessage);
 
+            testInfoPopup.pending = false;
+
+            // no need but keept anyway
             testInfoPopup.open();
         }
     }

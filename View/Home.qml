@@ -483,6 +483,7 @@ Control {
                 return;
             console.log("Test mode started due to serial number issues.")
             uiSession.uiTestMode = true;
+            // we need this to differentiate between first run flow and testing flow
             deviceController.startMode = 0;
             deviceController.testModeType = AppSpec.TestModeType.SerialNumber;
             system.ignoreManualUpdateMode();

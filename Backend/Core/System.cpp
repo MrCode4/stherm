@@ -262,7 +262,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
                 QString errorStr;
                 if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-                    errorStr = mFileSender.readAllStandardOutput() + "\r\n"
+                    errorStr = mFileSender.readAllStandardOutput() + " <br>"
                                + mFileSender.readAllStandardError();
                     qWarning() << role << "file sender process did not exit cleanly" << exitCode
                                << exitStatus << errorStr;
@@ -1947,6 +1947,7 @@ bool NUVE::System::sendResults(const QString &filepath,
                 return;
             }
 
+            TRACE << "file has been sent to remote";
             emit testPublishFinished();
         };
 

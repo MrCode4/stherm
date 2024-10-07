@@ -254,9 +254,12 @@ I_DeviceController {
         function onSnModeChanged(snMode: int) {
 
             if (deviceControllerCPP.system.serialNumber.length === 0) {
-                //! This called when checkSN called in anyway, so the timer should be singleshot.
-                checkSNTimer.repeat = false;
-                checkSNTimer.start();
+                // we should only check for sn when started normally
+                if (startMode === 1) {
+                    //! This called when checkSN called in anyway, so the timer should be singleshot.
+                    checkSNTimer.repeat = false;
+                    checkSNTimer.start();
+                }
 
             } else if (snMode !== 2) {
                 // Has client is true
