@@ -49,6 +49,20 @@ BasePageView {
         visible: false
     }
 
+    //! To show test and publish tests results.
+    InfoPopup {
+        id: testInfoPopup
+
+        visible: false
+        message: "Test results"
+
+        onAccepted: {
+            if (system.serialNumber.length > 0) {
+                rebootPopup.open();
+            }
+        }
+    }
+
     //! ConfirmPopup to ask: "Have you printed the SN label?"
     //! The testFinished function is executed.
     //! If the serial number (SN) is available, a reboot popup is displayed.
@@ -66,10 +80,7 @@ BasePageView {
 
             console.log("QRCodeTestPage, finished test, serial number:", system.serialNumber, system.serialNumber.length)
 
-            if (system.serialNumber.length > 0) {
-                rebootPopup.open();
-
-            }  else {
+            if (system.serialNumber.length === 0) {
                 infoPopup.open();
 
                 //! Retry to check serial number
@@ -178,5 +189,20 @@ BasePageView {
             retrySN ++;
         }
 
+    }
+
+    Connections {
+
+        target: system
+
+        function onTestPublishFinished(msg: string) {
+            testInfoPopup.detailMessage = (deviceController.deviceControllerCPP.isTestsPassed() ? "All tests are passed" : "All tests are not passed") +
+                    "<br>" +
+                    (msg.length > 0 ? "Tests are not published." : "Tests are published.");
+
+            console.log(testInfoPopup.detailMessage);
+
+            testInfoPopup.open();
+        }
     }
 }

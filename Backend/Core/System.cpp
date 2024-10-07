@@ -240,7 +240,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         if (!fileSenderCallbacks.contains(role)) {
             QString error = "Callback not found for role " + role;
             TRACE << error;
-            emit alert(error);
+            emit testPublishFinished(error);
             return;
         }
 
@@ -251,7 +251,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         } else {
             QString error = "Callback not valid for role " + role;
             TRACE << error;
-            emit alert(error);
+            emit testPublishFinished(error);
         }
     });
     connect(&mFileSender,
@@ -272,7 +272,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
                 if (!fileSenderCallbacks.contains(role)) {
                     QString error = "Callback not found for role " + role;
                     TRACE << error;
-                    emit alert(error);
+                    emit testPublishFinished(error);
                     return;
                 }
 
@@ -283,8 +283,13 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
                 } else {
                     QString error = "Callback not valid for role " + role;
                     TRACE << error;
-                    emit alert(error);
+                    emit testPublishFinished(error);
+                    return;
                 }
+
+                // Finished with success
+                // exitCode == 0 && exitStatus == QProcess::NormalExit
+                emit testPublishFinished(errorStr);
             });
 
     //! copies the sshpass from /usr/local/bin/ to /usr/bin
@@ -1914,14 +1919,14 @@ bool NUVE::System::sendResults(const QString &filepath,
     if (!installSSHPass()) {
         QString error("Device is not ready to send file!");
         qWarning() << error;
-        emit alert(error);
+        emit testPublishFinished(error);
         return false;
     }
 
     if (mFileSender.state() != QProcess::NotRunning || !fileSenderCallbacks.isEmpty()) {
         QString error("Previous session is in progress, please try again later.");
         qWarning() << error << "State is :" << mFileSender.state() << fileSenderCallbacks.keys();
-        emit alert(error);
+        emit testPublishFinished(error);
         return false;
     }
 
@@ -1932,7 +1937,7 @@ bool NUVE::System::sendResults(const QString &filepath,
         if (!error.isEmpty()) {
             error = "error while creating directory on remote" + error;
             qWarning() << error;
-            emit alert(error);
+            emit testPublishFinished(error);
             return;
         }
 
@@ -1943,7 +1948,7 @@ bool NUVE::System::sendResults(const QString &filepath,
             if (!error.isEmpty()) {
                 error = "error while sending file to remote" + error;
                 qWarning() << error;
-                emit alert(error);
+                emit testPublishFinished(error);
                 return;
             }
 

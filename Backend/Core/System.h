@@ -249,6 +249,8 @@ signals:
 
     void alert(QString msg);
 
+    void testPublishFinished(QString msg = QString());
+
     //! Emit when need the system move to updating/restarting mode
     void systemUpdating();
 

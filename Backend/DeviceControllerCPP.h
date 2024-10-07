@@ -186,6 +186,8 @@ public:
 
     Q_INVOKABLE void switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType);
 
+    Q_INVOKABLE bool isTestsPassed();
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/

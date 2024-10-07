@@ -863,6 +863,19 @@ void DeviceControllerCPP::switchDFHActiveSysType(AppSpecCPP::SystemType activeSy
     m_scheme->switchDFHActiveSysType(activeSystemType);
 }
 
+bool DeviceControllerCPP::isTestsPassed()
+{
+    QStringList failedTests;
+    for (const auto &testName : mAllTestNames) {
+        auto resultIter = mAllTestsResults.find(testName);
+        // whether not found in results or the value is false
+        if (resultIter == mAllTestsResults.end() || !resultIter->second)
+            failedTests.append(testName);
+    }
+
+    return failedTests.empty();
+}
+
 void DeviceControllerCPP::setAutoMinReqTemp(const double cel_value)
 {
     if (mSchemeDataProvider.isNull()) {
