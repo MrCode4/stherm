@@ -486,6 +486,7 @@ Control {
             // we need this to differentiate between first run flow and testing flow
             deviceController.startMode = 0;
             deviceController.testModeType = AppSpec.TestModeType.SerialNumber;
+            // to get notification or have the force update
             system.ignoreManualUpdateMode();
 
             if (mainStackView)
