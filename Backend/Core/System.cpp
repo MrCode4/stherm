@@ -284,12 +284,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
                     QString error = "Callback not valid for role " + role;
                     TRACE << error;
                     emit testPublishFinished(error);
-                    return;
                 }
-
-                // Finished with success
-                // exitCode == 0 && exitStatus == QProcess::NormalExit
-                emit testPublishFinished(errorStr);
             });
 
     //! copies the sshpass from /usr/local/bin/ to /usr/bin
@@ -1952,7 +1947,7 @@ bool NUVE::System::sendResults(const QString &filepath,
                 return;
             }
 
-            TRACE << "file has been sent to remote";
+            emit testPublishFinished();
         };
 
         fileSenderCallbacks.insert("file", sendFileCallback);

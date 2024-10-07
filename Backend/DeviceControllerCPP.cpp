@@ -1112,11 +1112,6 @@ void DeviceControllerCPP::testFinished()
     // Publish test results
     publishTestResults(testResultsFileName);
 
-    if (!failedTests.isEmpty()) {
-        TRACE << "all tests are not passed" << mAllTestsResults;
-        emit m_system->alert("All tests are not passed");
-    }
-
     // disabled it for now!
     if (false) {
         QSettings settings;
