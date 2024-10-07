@@ -105,9 +105,26 @@ BasePageView {
             id: passwordTF
 
             Layout.fillWidth: true
+            rightPadding: _passwordEchoBtn.width
             placeholderText: "Password"
             text: testConfigs?.testConfigPassword ?? ""
             font.pointSize: root.font.pointSize * 0.8
+            echoMode: _passwordEchoBtn.checked ? TextField.Normal : TextField.Password
+
+            ToolButton {
+                id: _passwordEchoBtn
+                anchors {
+                    right: parent.right
+                    verticalCenter: parent.verticalCenter
+                    verticalCenterOffset: -6
+                }
+                checkable: true
+                focusPolicy: "NoFocus"
+                contentItem: RoniaTextIcon {
+                    font.pointSize: Style.fontIconSize.smallPt
+                    text: _passwordEchoBtn.checked ? FAIcons.eyeSlash : FAIcons.eye
+                }
+            }
         }
 
         Label {
