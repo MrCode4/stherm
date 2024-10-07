@@ -9,6 +9,7 @@
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QRandomGenerator64>
+#include <QSettings>
 #include <QTimer>
 
 
@@ -35,6 +36,7 @@ PerfTestService* PerfTestService::me()
 PerfTestService::PerfTestService(QObject *parent)
     : DevApiExecutor{parent}
 {
+    qCDebug(PerfTestLogCat) <<"PerfTestService";
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
     mTimerDelay.setInterval(PerfTest::OneSecInMS);
@@ -59,10 +61,12 @@ PerfTestService::PerfTestService(QObject *parent)
             finishTimeLeft(timeLeft - 1);
         }
         else {
-            mTimerFinish.stop();
-            scheduleNextCheck(PerfTest::Noon12PM);
+            finishTest();
         }
     });
+
+    mTimerRetrySending.setInterval(5 * 60 * PerfTest::OneSecInMS);
+    connect(&mTimerRetrySending, &QTimer::timeout, this, &PerfTestService::sendResultsToServer);
 
     scheduleNextCheck(QTime::currentTime());
 }
@@ -96,8 +100,6 @@ void PerfTestService::resumeTest()
 
 void PerfTestService::scheduleNextCheck(const QTime& checkTime)
 {
-    while (mReadings.count() > 0) mReadings.removeLast();
-
     startTimeLeft(0);
     testTimeLeft(0);
     finishTimeLeft(0);
@@ -127,7 +129,9 @@ void PerfTestService::checkTestEligibility()
         return;
     }
 
+    mTimerRetrySending.stop();
     state(TestState::Checking);
+
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
         testId(data.value("perftest_id").toInt());
@@ -235,6 +239,18 @@ void PerfTestService::startRunning()
     state(TestState::Running);
 }
 
+void PerfTestService::cleanupRunning()
+{
+    qCDebug(PerfTestLogCat) <<"cleanupRunning";
+    while (mReadings.count() > 0) mReadings.removeLast();
+    disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
+    disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
+    disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::tempSchemeStateChanged, this, &PerfTestService::onTempSchemeStateChanged);
+    NetworkManager::instance()->isEnable(true);
+    mTimerGetTemp.stop();
+    DeviceControllerCPP::instance()->revertPerfTest();
+}
+
 void PerfTestService::collectReading()
 {
     auto temperature = DeviceControllerCPP::instance()->getTemperature();
@@ -245,71 +261,67 @@ void PerfTestService::collectReading()
     item["timestamp"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
     item["temperature"] = temperature;
     mReadings.append(item);
-    if (testTimeLeft() <= 0) {
-        cleanupRunning();
-        sendReadingsToServer();
-    }
-}
 
-void PerfTestService::cleanupRunning()
-{
-    qCDebug(PerfTestLogCat) <<"cleanupRunning";
-    disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
-    disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
-    disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::tempSchemeStateChanged, this, &PerfTestService::onTempSchemeStateChanged);
-    NetworkManager::instance()->isEnable(true);
-    mTimerGetTemp.stop();
-    DeviceControllerCPP::instance()->revertPerfTest();
+    if (testTimeLeft() <= 0) {
+        qCDebug(PerfTestLogCat) <<"Perf-test getting readings completed";
+
+        QJsonObject data;
+        data["perftest_id"] = testId();
+        data["sn"] = Device->serialNumber();
+        data["action"] = mode() == AppSpecCPP::Cooling ? "cooling" : "heating";
+        data["result"] = "finished";
+        data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
+        data["data"] = mReadings;
+        mApiReqData = QJsonDocument(data).toJson();
+
+        cleanupRunning();
+        sendResultsToServer();
+        finishTimeLeft(PerfTest::FinishDelay);
+        mTimerFinish.start();
+        state(TestState::Complete);
+    }
 }
 
 void PerfTestService::cancelTest()
 {
-    cleanupRunning();
-    state(TestState::Cancelling);
-
-    auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
-        qCDebug(PerfTestLogCat) <<"cancelTest Response " <<rawData;
-        scheduleNextCheck(PerfTest::Noon12PM);
-    };
-
+    qCDebug(PerfTestLogCat) <<"Perf-test cancelled by user";
     QJsonObject data;
     data["perftest_id"] = testId();
     data["sn"] = Device->serialNumber();
     data["action"] = mode() == AppSpecCPP::Cooling ? "cooling" : "heating";
     data["result"] = "stopped";
     data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
+    mApiReqData = QJsonDocument(data).toJson();
 
-    qCDebug(PerfTestLogCat) <<"cancelTest Request " <<QJsonDocument(data).toJson();
-
-    auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(Device->serialNumber());
-    callPostApi(url, QJsonDocument(data).toJson(), callback);
+    cleanupRunning();
+    sendResultsToServer();
+    scheduleNextCheck(PerfTest::Noon12PM);
 }
 
-void PerfTestService::sendReadingsToServer()
+void PerfTestService::sendResultsToServer()
 {
-    qCDebug(PerfTestLogCat) <<"sendReadingsToServer";
-    state(TestState::Sending);
+    qCDebug(PerfTestLogCat) <<"sendResultsToServer";
 
-    auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
-        qCDebug(PerfTestLogCat) <<"sendReadingsToServer Response " <<rawData;
-        qCDebug(PerfTestLogCat) <<"Testing result uploaded, waiting to finish by user or automatic in " << PerfTest::FinishDelay;
-        finishTimeLeft(PerfTest::FinishDelay);
-        mTimerFinish.start();
-        state(TestState::Complete);
-    };
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        qCDebug(PerfTestLogCat) <<"sendResultsToServer Response " <<rawData;
 
-    QJsonObject data;
-    data["perftest_id"] = testId();
-    data["sn"] = Device->serialNumber();
-    data["action"] = mode() == AppSpecCPP::Cooling ? "cooling" : "heating";
-    data["result"] = "finished";
-    data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
-    data["data"] = mReadings;
+        if (reply->error() == QNetworkReply::NoError) {
+            mTimerRetrySending.stop();
+            QSettings settings;
+            settings.setValue("lastPerfTestDate", QDateTime::currentDateTime());
+            qCDebug(PerfTestLogCat) <<"Perf-test result uploaded successfully";
+        }
+        else {
+            qCDebug(PerfTestLogCat) <<"Perf-test result uploading failed";
+            if (!mTimerRetrySending.isActive()) {
+                mTimerRetrySending.start();
+            }
+        }
+    };    
 
-    qCDebug(PerfTestLogCat) <<"sendReadingsToServer Request " <<QJsonDocument(data).toJson();
-
+    qCDebug(PerfTestLogCat) <<"sendResultsToServer Request " <<mApiReqData;
     auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(Device->serialNumber());
-    callPostApi(url, QJsonDocument(data).toJson(), callback);
+    callPostApi(url, mApiReqData, callback);
 }
 
 void PerfTestService::finishTest()

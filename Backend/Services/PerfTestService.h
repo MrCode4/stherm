@@ -37,9 +37,7 @@ public:
         Eligible,
         Warmup,
         Running,
-        Sending,
-        Complete,
-        Cancelling
+        Complete
     };
     Q_ENUM(TestState)
 
@@ -63,7 +61,7 @@ private:
     void setupWarmup();
     void startRunning();
     void cleanupRunning();
-    void sendReadingsToServer();
+    void sendResultsToServer();
 
 private:
     static PerfTestService* mMe;
@@ -72,5 +70,7 @@ private:
     QTimer mTimerDelay;
     QTimer mTimerGetTemp;
     QTimer mTimerFinish;
+    QTimer mTimerRetrySending;
     QJsonArray mReadings;
+    QByteArray mApiReqData;
 };
