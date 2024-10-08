@@ -145,13 +145,13 @@ void PerfTestService::checkTestEligibility()
             mode(AppSpecCPP::Off);
         }
 
-        qCDebug(PerfTestLogCat) <<"CheckTestEligibility Response " <<rawData <<testId() <<mode();
+        qCDebug(PerfTestLogCat) <<"CheckTestEligibility Response " <<testId() <<mode() <<rawData ;
 
         if (testId() > 0 && mode() != AppSpecCPP::Off) {
             if (isPostponed()) {
                 mWasEligibleBeforePostpone = true;
                 // Check if blocking is not resumed by 12PM, ublock and schedule for next day
-                QTimer::singleShot(qMax(1, QTime::currentTime().msecsTo(PerfTest::Noon12PM)), [this] () {
+                QTimer::singleShot(qMax(1000, QTime::currentTime().msecsTo(PerfTest::Noon12PM)), [this] () {
                     if (isPostponed()) {
                         qCDebug(PerfTestLogCat) <<"Perf-test was not resumed by 12 noon, so going for next-day";
                         isPostponed(false);
