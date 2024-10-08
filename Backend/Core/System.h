@@ -12,6 +12,9 @@
  * This class manage system requests.
  * ************************************************************************************************/
 namespace NUVE {
+
+using fileSenderCallback = std::function<void(QString error)>;
+
 class System : public RestApiExecutor
 {
     Q_OBJECT
@@ -217,7 +220,6 @@ public:
 
 protected slots:
     void onSerialNumberReady();
-    void createLogDirectoryOnServer();
 
 signals:
     void serialNumberReady();
@@ -288,8 +290,6 @@ signals:
     void warrantyReplacementFinished(bool success = false);
 
 private:
-    using fileSenderCallback = std::function<void(QString error)>;
-
     //! verify dounloaded files and prepare to set up.
     bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true,
                                bool isBackdoor = false, const bool isResetVersion = false,
@@ -332,10 +332,19 @@ private:
     //! else disable service
     bool updateServiceState(const QString &serviceName, const bool &run);
 
+
+    void prepareResultsDirectory(const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination);
+    void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
+
+    void initLogSender();
+    void initFileSender();
+
     QString generateLog();
 
-    void prepareResultsDirectory(const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination, fileSenderCallback callback = nullptr);
-    void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
+    void prepareLogDirectory(fileSenderCallback callback = nullptr);
+    void prepareFirstRunLogDirectory();
+    void sendFirstRunLogFile();
+    void sendLogFile();
 
 private:
     Sync *mSync;
@@ -414,9 +423,11 @@ private:
     int mBackdoorUpdateFileSize;
 
     QProcess mLogSender;
+    QHash<QString, fileSenderCallback> logSenderCallbacks;
     QProcess mFileSender;
     QHash<QString, fileSenderCallback> fileSenderCallbacks;
     QString mLogRemoteFolder;
+    QString mLogRemoteFolderUID;
 };
 
 } // namespace NUVE

@@ -180,112 +180,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     downloaderTimer.setTimerType(Qt::PreciseTimer);
     downloaderTimer.setSingleShot(false);
 
-    connect(&mLogSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
-        qWarning() << "log sender process has encountered an error:" << error
-                   << mLogSender.readAllStandardError();
-
-        auto sendFirstRunLogVar = mLogSender.property("sendFirstRunLog");
-        auto initialized = mLogSender.property("initialized");
-        if (sendFirstRunLogVar.isValid() && sendFirstRunLogVar.toBool()) {
-            mLogSender.setProperty("sendFirstRunLog", false);
-            emit alert("Log can not be sent!");
-        } else if (initialized.isValid() && initialized.toBool()) {
-            emit alert("Log is not sent, Please try again!");
-        } else {
-            createLogDirectoryOnServer();
-        }
-    });
-    connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
-        bool success = true;
-        if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-            qWarning() << "log sender process did not exit cleanly" << exitCode << exitStatus
-                       << mLogSender.readAllStandardError() << mLogSender.readAllStandardOutput();
-            success = false;
-        }
-
-        auto sendFirstRunLogVar = mLogSender.property("sendFirstRunLog");
-        auto initialized = mLogSender.property("initialized");
-
-        if (sendFirstRunLogVar.isValid() && sendFirstRunLogVar.toBool()) {
-            mLogSender.setProperty("sendFirstRunLog", false);
-            if (success) {
-                emit alert("Log is sent!");
-            } else {
-                emit alert("Log is not sent!");
-            }
-        } else if (!initialized.isValid() || !initialized.toBool()){
-            if (success){
-                TRACE << "Folder created in server successfully";
-                mLogSender.setProperty("initialized", true);
-                sendLog();
-            } else {
-                createLogDirectoryOnServer();
-            }
-        } else {
-            if (success) {
-                emit alert("Log is sent!");
-            } else {
-                emit alert("Log is not sent, Please try again!");
-            }
-        }
-    });
-
-    connect(&mFileSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
-        auto role = mFileSender.property("role").toString();
-
-        QString errorStr = mFileSender.readAllStandardError();
-        qWarning() << role << "file sender process has encountered an error:" << error << errorStr;
-        errorStr = QString("%1: %0").arg(errorStr).arg(error);
-
-        if (!fileSenderCallbacks.contains(role)) {
-            QString error = "Callback not found for role " + role;
-            TRACE << error;
-            emit testPublishFinished(error);
-            return;
-        }
-
-        auto callback = fileSenderCallbacks.take(role);
-        if (callback) {
-            callback(errorStr);
-
-        } else {
-            QString error = "Callback not valid for role " + role;
-            TRACE << error;
-            emit testPublishFinished(error);
-        }
-    });
-    connect(&mFileSender,
-            &QProcess::finished,
-            this,
-            [this](int exitCode, QProcess::ExitStatus exitStatus) {
-                auto role = mFileSender.property("role").toString();
-
-                QString errorStr;
-                if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-                    errorStr = mFileSender.readAllStandardOutput() + " <br>"
-                               + mFileSender.readAllStandardError();
-                    qWarning() << role << "file sender process did not exit cleanly" << exitCode
-                               << exitStatus << errorStr;
-                    errorStr = QString("%1-%2: %0").arg(errorStr).arg(exitCode).arg(exitStatus);
-                }
-
-                if (!fileSenderCallbacks.contains(role)) {
-                    QString error = "Callback not found for role " + role;
-                    TRACE << error;
-                    emit testPublishFinished(error);
-                    return;
-                }
-
-                auto callback = fileSenderCallbacks.take(role);
-                if (callback) {
-                    callback(errorStr);
-
-                } else {
-                    QString error = "Callback not valid for role " + role;
-                    TRACE << error;
-                    emit testPublishFinished(error);
-                }
-            });
+    //! inits the connections of log sender responses
+    initLogSender();
+    //! inits the connections of file sender responses
+    initFileSender();
 
     //! copies the sshpass from /usr/local/bin/ to /usr/bin
     //! if the first one exists and second one not exists
@@ -698,77 +596,6 @@ bool NUVE::System::findBackdoorVersion(const QString fileName)
     }
 
     return false;
-}
-
-void NUVE::System::sendLog()
-{
-    if (mLogSender.state() != QProcess::NotRunning){
-        QString error("Previous session is in progress, please try again later.");
-        qWarning() << error << "State is :" << mLogSender.state();
-        emit alert(error);
-        return;
-    }
-
-    auto initialized = mLogSender.property("initialized");
-    if (!initialized.isValid() || !initialized.toBool()){
-        qWarning() << "Folder was not created successfully, trying again...";
-        createLogDirectoryOnServer(); // will call the sendLog if successful
-        return;
-    }
-
-    auto filename = generateLog();
-    if (filename.isEmpty())
-        return;
-
-    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
-                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
-    TRACE << "sending log to server " << mLogRemoteFolder;
-    mLogSender.start("/bin/bash", {"-c", copyFile});
-}
-
-void NUVE::System::sendFirstRunLog()
-{
-    if (mLogSender.state() != QProcess::NotRunning){
-        QString error("Previous session is in progress, please try again later.");
-        qWarning() << error << "State is :" << mLogSender.state();
-        emit alert(error);
-        return;
-    }
-
-    auto filename = generateLog();
-    if (filename.isEmpty())
-        return;
-
-    mLogSender.setProperty("sendFirstRunLog", true);
-
-    auto logRemotePath = m_logPath + "firstRunLogs/" + QString("%0_%1").arg(QString::fromStdString(mUID), filename.split("/").last());
-
-    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
-                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, logRemotePath);
-    TRACE << "sending log to server " << logRemotePath;
-    mLogSender.start("/bin/bash", {"-c", copyFile});
-}
-
-QString NUVE::System::generateLog()
-{
-
-    QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
-
-    TRACE << "generating log file in " << filename;
-
-    // Create log
-    auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
-    if (exitCode < 0)
-    {
-        QString error("Unable to create log file.");
-        qWarning() << error << exitCode;
-        emit alert(error);
-        return "";
-    }
-
-    return filename;
 }
 
 void NUVE::System::systemCtlRestartApp()
@@ -1525,44 +1352,6 @@ void NUVE::System::onSerialNumberReady()
     emit serialNumberReady();
 }
 
-void NUVE::System::createLogDirectoryOnServer()
-{
-    if (!installSSHPass()){
-        QString error("Device is not ready to send log!");
-        qWarning() << error;
-        emit alert(error);
-        return;
-    }
-
-    auto sn = serialNumber();
-    // Check serial number
-    if (sn.isEmpty()){
-        QString error("Serial number empty! can not send log!");
-        qWarning() << error;
-        emit alert(error);
-        return;
-    }
-
-    int tryCount = mLogSender.property("tryCount").toInt();
-    if (tryCount < 3) {
-        tryCount++;
-        mLogSender.setProperty("tryCount", tryCount);
-    } else {
-        QString error("Can not send log! Try again later.");
-        qWarning() << error;
-        emit alert(error);
-        tryCount = 0; // reset the counter for next time!
-        mLogSender.setProperty("tryCount", tryCount);
-        return;
-    }
-
-    mLogRemoteFolder = m_logPath + sn;
-    // Create remote path in case it doesn't exist(-p), needed once! with internet access
-    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
-                         arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
-    mLogSender.start("/bin/bash", {"-c", createPath});
-}
-
 bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
     auto updateDoc = QJsonDocument::fromJson(updateData);
     if (updateDoc.isNull()) {
@@ -1905,57 +1694,211 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
     return true;
 }
 
-void NUVE::System::prepareResultsDirectory(const QString &remoteIP,
-                                           const QString &remoteUser,
-                                           const QString &remotePassword,
-                                           const QString &destination,
-                                           fileSenderCallback callback)
+void NUVE::System::initLogSender()
 {
-    fileSenderCallbacks.insert("dir", callback);
-    mFileSender.setProperty("role", "dir");
-    TRACE << "creating dir to send results on remote" << destination;
+    connect(&mLogSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError errorProcess) {
+        auto role = mLogSender.property("role").toString();
+        QString errorStr = mLogSender.readAllStandardError();
+        qWarning() << role << "log sender process has encountered an error:" << errorProcess << errorStr;
+        errorStr = QString("%1: %0").arg(errorStr).arg(errorProcess);
 
-    // it will throw error if folder already exist
-    // if server is windows we should add if not exist "dirPath"
-    // if server is Linux we should add -p option for mkdir
-    // Create remote path in case it doesn't exist, needed once! with internet access
-    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o "
-                                 "\"StrictHostKeyChecking=no\" %2@%3 'mkdir \"%4\"'")
-                             .arg(remotePassword, remoteUser, remoteIP, destination);
-    mFileSender.start("/bin/bash", {"-c", createPath});
+        if (!logSenderCallbacks.contains(role)) {
+            QString error = "Callback not found for role " + role;
+            TRACE << error;
+            emit alert(error);
+            return;
+        }
+
+        auto callback = logSenderCallbacks.take(role);
+        if (callback) {
+            callback(errorStr);
+
+        } else {
+            QString error = "Callback not valid for role " + role;
+            TRACE << error;
+            emit alert(error);
+        }
+
+    });
+    connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
+        auto role = mLogSender.property("role").toString();
+        QString errorStr;
+        if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
+            errorStr = mLogSender.readAllStandardOutput() + "\r\n"
+                       + mLogSender.readAllStandardError();
+            qWarning() << role << "log sender process did not exit cleanly" << exitCode
+                       << exitStatus << errorStr;
+            errorStr = QString("%1-%2: %0").arg(errorStr).arg(exitCode).arg(exitStatus);
+        }
+
+        if (!logSenderCallbacks.contains(role)) {
+            QString error = "Callback not found for role " + role;
+            TRACE << error;
+            emit alert(error);
+            return;
+        }
+
+        auto callback = logSenderCallbacks.take(role);
+        if (callback) {
+            callback(errorStr);
+
+        } else {
+            QString error = "Callback not valid for role " + role;
+            TRACE << error;
+            emit alert(error);
+        }
+    });
 }
 
-void NUVE::System::sendResultsFile(const QString &filepath,
-                                   const QString &remoteIP,
-                                   const QString &remoteUser,
-                                   const QString &remotePassword,
-                                   const QString &destination)
+void NUVE::System::initFileSender()
 {
-    auto sendFileCallback = [=](QString error) {
+    connect(&mFileSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError errorProcess) {
         auto role = mFileSender.property("role").toString();
-        TRACE_CHECK(role != "file") << "role seems invalid" << role;
 
-        if (!error.isEmpty()) {
-            error = "error while sending file to remote" + error;
-            qWarning() << error;
+        QString errorStr = mFileSender.readAllStandardError();
+        qWarning() << role << "file sender process has encountered an error:" << errorProcess << errorStr;
+        errorStr = QString("%1: %0").arg(errorStr).arg(errorProcess);
+
+        if (!fileSenderCallbacks.contains(role)) {
+            QString error = "Callback not found for role " + role;
+            TRACE << error;
             emit testPublishFinished(error);
             return;
         }
 
-        TRACE << "file has been sent to remote";
-        emit testPublishFinished();
-    };
+        auto callback = fileSenderCallbacks.take(role);
+        if (callback) {
+            callback(errorStr);
 
-    fileSenderCallbacks.insert("file", sendFileCallback);
-    mFileSender.setProperty("role", "file");
+        } else {
+            QString error = "Callback not valid for role " + role;
+            TRACE << error;
+            emit testPublishFinished(error);
+        }
+    });
+    connect(&mFileSender,
+            &QProcess::finished,
+            this,
+            [this](int exitCode, QProcess::ExitStatus exitStatus) {
+                auto role = mFileSender.property("role").toString();
 
-    TRACE << "sending file to remote " << destination;
+                QString errorStr;
+                if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
+                    errorStr = mFileSender.readAllStandardOutput() + " <br>"
+                               + mFileSender.readAllStandardError();
+                    qWarning() << role << "file sender process did not exit cleanly" << exitCode
+                               << exitStatus << errorStr;
+                    errorStr = QString("%1-%2: %0").arg(errorStr).arg(exitCode).arg(exitStatus);
+                }
 
-    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o "
-                               "\"StrictHostKeyChecking=no\" \"%2\" %3@%4:%5")
-                           .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
-    mFileSender.start("/bin/bash", {"-c", copyFile});
+                if (!fileSenderCallbacks.contains(role)) {
+                    QString error = "Callback not found for role " + role;
+                    TRACE << error;
+                    emit testPublishFinished(error);
+                    return;
+                }
+
+                auto callback = fileSenderCallbacks.take(role);
+                if (callback) {
+                    callback(errorStr);
+
+                } else {
+                    QString error = "Callback not valid for role " + role;
+                    TRACE << error;
+                    emit testPublishFinished(error);
+                }
+            });
+
+}
+
+void NUVE::System::sendLog()
+{
+    if (!installSSHPass()){
+        QString error("Device is not ready to send log!");
+        qWarning() << error;
+        emit alert(error);
+        return;
+    }
+
+    if (mLogSender.state() != QProcess::NotRunning || !logSenderCallbacks.isEmpty()){
+        QString error("Previous session is in progress, please try again later.");
+        qWarning() << error << "State is :" << mLogSender.state() << logSenderCallbacks.keys();
+        emit alert(error);
+        return;
+    }
+
+    auto initialized = mLogSender.property("initialized");
+    if (initialized.isValid() && initialized.toBool()) {
+        sendLogFile();
+
+    } else {
+        qWarning() << "Folder was not created successfully, trying again...";
+        auto dirCreatorCallback = [=](QString error) {
+            auto role = mFileSender.property("role").toString();
+            TRACE_CHECK(role != "dirLog") << "role seems invalid" << role;
+
+            if (!error.isEmpty()) {
+                error = "error while creating log directory on remote: " + error;
+                qWarning() << error;
+                emit alert(error);
+                return;
+            }
+
+            TRACE << "Folder created in server successfully";
+            mLogSender.setProperty("initialized", true);
+
+            sendLogFile();
+        };
+
+        logSenderCallbacks.insert("dirLog", dirCreatorCallback);
+        mLogSender.setProperty("role", "dirLog");
+
+        prepareLogDirectory(dirCreatorCallback);
+    }
+}
+
+void NUVE::System::sendFirstRunLog()
+{
+    if (!installSSHPass()) {
+        QString error("Device is not ready to send log on First run!");
+        qWarning() << error;
+        emit alert(error);
+        return;
+    }
+
+    if (mLogSender.state() != QProcess::NotRunning || !logSenderCallbacks.isEmpty()){
+        QString error("Sending log on first run is in progress!");
+        qWarning() << error << "State is :" << mLogSender.state() << logSenderCallbacks.keys();
+        emit alert(error);
+        return;
+    }
+
+
+    auto initialized = mLogSender.property("initializedUID");
+    if (initialized.isValid() && initialized.toBool()){
+        sendFirstRunLogFile();
+
+    } else {
+        auto dirCreatorCallback = [=](QString error) {
+            auto role = mFileSender.property("role").toString();
+            TRACE_CHECK(role != "dirFirstRun") << "role seems invalid" << role;
+
+            if (!error.isEmpty()) {
+                error = "error while creating first run log directory on remote: " + error;
+                qWarning() << error;
+                emit alert(error);
+                return;
+            }
+
+            mLogSender.setProperty("initializedUID", true);
+
+            sendFirstRunLogFile();
+        };
+        mFileSender.setProperty("role", "dirFirstRun");
+        fileSenderCallbacks.insert("dirFirstRun", dirCreatorCallback);
+
+        prepareFirstRunLogDirectory();
+    }
 }
 
 bool NUVE::System::sendResults(const QString &filepath,
@@ -1985,7 +1928,7 @@ bool NUVE::System::sendResults(const QString &filepath,
     } else {
         auto dirCreatorCallback = [=](QString error) {
             auto role = mFileSender.property("role").toString();
-            TRACE_CHECK(role != "dir") << "role seems invalid" << role;
+            TRACE_CHECK(role != "dirFile") << "role seems invalid" << role;
 
             if (!error.isEmpty()) {
                 error = "error while creating directory on remote: " + error;
@@ -1997,8 +1940,174 @@ bool NUVE::System::sendResults(const QString &filepath,
             sendResultsFile(filepath, remoteIP, remoteUser, remotePassword, destination);
         };
 
-        prepareResultsDirectory(remoteIP, remoteUser, remotePassword, destination,  dirCreatorCallback);
+        fileSenderCallbacks.insert("dirFile", dirCreatorCallback);
+        mFileSender.setProperty("role", "dirFile");
+
+        prepareResultsDirectory(remoteIP, remoteUser, remotePassword, destination);
     }
 
     return true;
+}
+
+void NUVE::System::prepareLogDirectory(fileSenderCallback callback)
+{
+    auto sn = serialNumber();
+    // Check serial number
+    if (sn.isEmpty()){
+        QString error("Serial number empty! can not send log!");
+        qWarning() << error;
+        if (callback) callback(error);
+        return;
+    }
+
+    TRACE << "creating dir to send log on remote";
+
+    mLogRemoteFolder = m_logPath + sn;
+    // Create remote path in case it doesn't exist(-p), needed once! with internet access
+    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
+                         arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    mLogSender.start("/bin/bash", {"-c", createPath});
+
+}
+
+void NUVE::System::prepareFirstRunLogDirectory()
+{
+    TRACE << "creating dir to send first log on remote";
+
+    // Create remote path in case it doesn't exist(-p), needed once! with internet access
+    mLogRemoteFolderUID = m_logPath + "firstRunLogs";
+    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
+                         arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolderUID);
+    mLogSender.start("/bin/bash", {"-c", createPath});
+}
+
+void NUVE::System::prepareResultsDirectory(const QString &remoteIP,
+                                           const QString &remoteUser,
+                                           const QString &remotePassword,
+                                           const QString &destination)
+{
+    TRACE << "creating dir to send results on remote" << destination;
+
+    // it will throw error if folder already exist
+    // if server is windows we should add if not exist "dirPath"
+    // if server is Linux we should add -p option for mkdir
+    // Create remote path in case it doesn't exist, needed once! with internet access
+    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o "
+                                 "\"StrictHostKeyChecking=no\" %2@%3 'mkdir \"%4\"'")
+                             .arg(remotePassword, remoteUser, remoteIP, destination);
+    mFileSender.start("/bin/bash", {"-c", createPath});
+}
+
+QString NUVE::System::generateLog()
+{
+    QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
+
+    TRACE << "generating log file in " << filename;
+
+    // Create log
+    auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
+    if (exitCode < 0)
+    {
+        QString error("Unable to create log file.");
+        qWarning() << error << exitCode;
+        emit alert(error);
+        return "";
+    }
+
+    return filename;
+}
+
+void NUVE::System::sendFirstRunLogFile()
+{
+    auto filename = generateLog();
+    if (filename.isEmpty())
+        return;
+
+    auto sendCallback = [=](QString error) {
+        auto role = mLogSender.property("role").toString();
+        TRACE_CHECK(role != "sendFirstRunLog") << "role seems invalid" << role;
+
+        if (!error.isEmpty()) {
+            error = "error while sending first run log directory on remote: " + error;
+            qWarning() << error;
+            emit alert(error);
+            return;
+        }
+
+        emit alert("Log is sent for first run error!");
+    };
+
+    logSenderCallbacks.insert("sendFirstRunLog", sendCallback);
+    mLogSender.setProperty("role", "sendFirstRunLog");
+
+    auto logRemotePath = mLogRemoteFolderUID + QString("/%0_%1").arg(QString::fromStdString(mUID), filename.split("/").last());
+
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, logRemotePath);
+    TRACE << "sending log to server " << logRemotePath;
+    mLogSender.start("/bin/bash", {"-c", copyFile});
+}
+
+void NUVE::System::sendLogFile()
+{
+    auto filename = generateLog();
+    if (filename.isEmpty())
+        return;
+
+    auto sendCallback = [=](QString error) {
+        auto role = mLogSender.property("role").toString();
+        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
+
+        if (!error.isEmpty()) {
+            error = "error while sending log directory on remote: " + error;
+            qWarning() << error;
+            emit alert(error);
+            return;
+        }
+
+        emit alert("Log is sent!");
+    };
+
+    logSenderCallbacks.insert("sendLog", sendCallback);
+    mLogSender.setProperty("role", "sendLog");
+
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    TRACE << "sending log to server " << mLogRemoteFolder;
+    mLogSender.start("/bin/bash", {"-c", copyFile});
+}
+
+void NUVE::System::sendResultsFile(const QString &filepath,
+                                   const QString &remoteIP,
+                                   const QString &remoteUser,
+                                   const QString &remotePassword,
+                                   const QString &destination)
+{
+    auto sendFileCallback = [=](QString error) {
+        auto role = mFileSender.property("role").toString();
+        TRACE_CHECK(role != "resultsFile") << "role seems invalid" << role;
+
+        if (!error.isEmpty()) {
+            error = "error while sending file to remote" + error;
+            qWarning() << error;
+            emit testPublishFinished(error);
+            return;
+        }
+
+        TRACE << "file has been sent to remote";
+        emit testPublishFinished();
+    };
+
+    fileSenderCallbacks.insert("resultsFile", sendFileCallback);
+    mFileSender.setProperty("role", "resultsFile");
+
+    TRACE << "sending file to remote " << destination;
+
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o "
+                               "\"StrictHostKeyChecking=no\" \"%2\" %3@%4:%5")
+                           .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
+    mFileSender.start("/bin/bash", {"-c", copyFile});
 }
