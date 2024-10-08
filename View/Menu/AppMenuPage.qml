@@ -12,6 +12,11 @@ BasePageView {
     backButtonVisible: false
     header: null
     visible: false
+    //! Parent padding should be 0, as we have an internal page
+    leftPadding: 0
+    rightPadding: 0
+    topPadding:0
+    bottomPadding:0
 
     onVisibleChanged: {
         if (visible) {
@@ -25,6 +30,9 @@ BasePageView {
         title: "Menu"
         y: height
         opacity: 0
+        //! Cancel inside page effect
+        bottomPadding: 40
+        rightPadding: 30
 
         backButtonCallback: function() {
             if (root.StackView.view) {
@@ -57,6 +65,9 @@ BasePageView {
         }
 
         contentItem: MenuListView {
+            //! Bottom item should be partially visible
+            spacing: 4;
+
             onMenuActivated: function(item) {
                 let newProps = {};
                 Object.assign(newProps, item.properties);

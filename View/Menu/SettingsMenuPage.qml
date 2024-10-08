@@ -14,6 +14,9 @@ BasePageView {
     enableTitleTap: true
     onTitleLongTapped: root.showHiddenItems = true
 
+    //! Last item to be easily touchable
+    bottomPadding: 20
+
     backButtonCallback: () => {
         if (root.showHiddenItems) {
             root.showHiddenItems = false;
@@ -24,6 +27,9 @@ BasePageView {
     }
 
     contentItem: MenuListView {
+        //! Bottom item should be partially visible
+        spacing: 4;
+
         onCountChanged: {
             if (root.showHiddenItems && count == model.length) {
                 positionViewAtEnd();
