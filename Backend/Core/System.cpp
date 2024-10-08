@@ -181,9 +181,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     downloaderTimer.setSingleShot(false);
 
     //! inits the connections of log sender responses
-    initLogSender();
+    mLogSender.initialize([this](QString error){emit alert(error);}, "Log sender:", "\r\n");
     //! inits the connections of file sender responses
-    initFileSender();
+    mFileSender.initialize([this](QString error){emit testPublishFinished(error);}, "Result sender:");
 
     //! copies the sshpass from /usr/local/bin/ to /usr/bin
     //! if the first one exists and second one not exists
@@ -1694,123 +1694,6 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
     return true;
 }
 
-void NUVE::System::initLogSender()
-{
-    connect(&mLogSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError errorProcess) {
-        auto role = mLogSender.property("role").toString();
-        QString errorStr = mLogSender.readAllStandardError();
-        qWarning() << role << "log sender process has encountered an error:" << errorProcess << errorStr;
-        errorStr = QString("%1: %0").arg(errorStr).arg(errorProcess);
-
-        if (!logSenderCallbacks.contains(role)) {
-            QString error = "Callback not found for role " + role;
-            TRACE << error;
-            emit alert(error);
-            return;
-        }
-
-        auto callback = logSenderCallbacks.take(role);
-        if (callback) {
-            callback(errorStr);
-
-        } else {
-            QString error = "Callback not valid for role " + role;
-            TRACE << error;
-            emit alert(error);
-        }
-
-    });
-    connect(&mLogSender, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
-        auto role = mLogSender.property("role").toString();
-        QString errorStr;
-        if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-            errorStr = mLogSender.readAllStandardOutput() + "\r\n"
-                       + mLogSender.readAllStandardError();
-            qWarning() << role << "log sender process did not exit cleanly" << exitCode
-                       << exitStatus << errorStr;
-            errorStr = QString("%1-%2: %0").arg(errorStr).arg(exitCode).arg(exitStatus);
-        }
-
-        if (!logSenderCallbacks.contains(role)) {
-            QString error = "Callback not found for role " + role;
-            TRACE << error;
-            emit alert(error);
-            return;
-        }
-
-        auto callback = logSenderCallbacks.take(role);
-        if (callback) {
-            callback(errorStr);
-
-        } else {
-            QString error = "Callback not valid for role " + role;
-            TRACE << error;
-            emit alert(error);
-        }
-    });
-}
-
-void NUVE::System::initFileSender()
-{
-    connect(&mFileSender, &QProcess::errorOccurred, this, [this](QProcess::ProcessError errorProcess) {
-        auto role = mFileSender.property("role").toString();
-
-        QString errorStr = mFileSender.readAllStandardError();
-        qWarning() << role << "file sender process has encountered an error:" << errorProcess << errorStr;
-        errorStr = QString("%1: %0").arg(errorStr).arg(errorProcess);
-
-        if (!fileSenderCallbacks.contains(role)) {
-            QString error = "Callback not found for role " + role;
-            TRACE << error;
-            emit testPublishFinished(error);
-            return;
-        }
-
-        auto callback = fileSenderCallbacks.take(role);
-        if (callback) {
-            callback(errorStr);
-
-        } else {
-            QString error = "Callback not valid for role " + role;
-            TRACE << error;
-            emit testPublishFinished(error);
-        }
-    });
-    connect(&mFileSender,
-            &QProcess::finished,
-            this,
-            [this](int exitCode, QProcess::ExitStatus exitStatus) {
-                auto role = mFileSender.property("role").toString();
-
-                QString errorStr;
-                if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
-                    errorStr = mFileSender.readAllStandardOutput() + " <br>"
-                               + mFileSender.readAllStandardError();
-                    qWarning() << role << "file sender process did not exit cleanly" << exitCode
-                               << exitStatus << errorStr;
-                    errorStr = QString("%1-%2: %0").arg(errorStr).arg(exitCode).arg(exitStatus);
-                }
-
-                if (!fileSenderCallbacks.contains(role)) {
-                    QString error = "Callback not found for role " + role;
-                    TRACE << error;
-                    emit testPublishFinished(error);
-                    return;
-                }
-
-                auto callback = fileSenderCallbacks.take(role);
-                if (callback) {
-                    callback(errorStr);
-
-                } else {
-                    QString error = "Callback not valid for role " + role;
-                    TRACE << error;
-                    emit testPublishFinished(error);
-                }
-            });
-
-}
-
 void NUVE::System::sendLog()
 {
     if (!installSSHPass()){
@@ -1820,9 +1703,9 @@ void NUVE::System::sendLog()
         return;
     }
 
-    if (mLogSender.state() != QProcess::NotRunning || !logSenderCallbacks.isEmpty()){
+    if (mLogSender.busy()){
         QString error("Previous session is in progress, please try again later.");
-        qWarning() << error << "State is :" << mLogSender.state() << logSenderCallbacks.keys();
+        qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
         emit alert(error);
         return;
     }
@@ -1834,7 +1717,7 @@ void NUVE::System::sendLog()
     } else {
         qWarning() << "Folder was not created successfully, trying again...";
         auto dirCreatorCallback = [=](QString error) {
-            auto role = mFileSender.property("role").toString();
+            auto role = mLogSender.property("role").toString();
             TRACE_CHECK(role != "dirLog") << "role seems invalid" << role;
 
             if (!error.isEmpty()) {
@@ -1850,8 +1733,7 @@ void NUVE::System::sendLog()
             sendLogFile();
         };
 
-        logSenderCallbacks.insert("dirLog", dirCreatorCallback);
-        mLogSender.setProperty("role", "dirLog");
+        mLogSender.setRole("dirLog", dirCreatorCallback);
 
         prepareLogDirectory(dirCreatorCallback);
     }
@@ -1866,9 +1748,9 @@ void NUVE::System::sendFirstRunLog()
         return;
     }
 
-    if (mLogSender.state() != QProcess::NotRunning || !logSenderCallbacks.isEmpty()){
+    if (mLogSender.busy()){
         QString error("Sending log on first run is in progress!");
-        qWarning() << error << "State is :" << mLogSender.state() << logSenderCallbacks.keys();
+        qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
         emit alert(error);
         return;
     }
@@ -1880,7 +1762,7 @@ void NUVE::System::sendFirstRunLog()
 
     } else {
         auto dirCreatorCallback = [=](QString error) {
-            auto role = mFileSender.property("role").toString();
+            auto role = mLogSender.property("role").toString();
             TRACE_CHECK(role != "dirFirstRun") << "role seems invalid" << role;
 
             if (!error.isEmpty()) {
@@ -1894,8 +1776,8 @@ void NUVE::System::sendFirstRunLog()
 
             sendFirstRunLogFile();
         };
-        mFileSender.setProperty("role", "dirFirstRun");
-        fileSenderCallbacks.insert("dirFirstRun", dirCreatorCallback);
+
+        mLogSender.setRole("dirFirstRun", dirCreatorCallback);
 
         prepareFirstRunLogDirectory();
     }
@@ -1915,9 +1797,9 @@ bool NUVE::System::sendResults(const QString &filepath,
         return false;
     }
 
-    if (mFileSender.state() != QProcess::NotRunning || !fileSenderCallbacks.isEmpty()) {
+    if (mFileSender.busy()) {
         QString error("Previous send file session is in progress, please try again later.");
-        qWarning() << error << "State is :" << mFileSender.state() << fileSenderCallbacks.keys();
+        qWarning() << error << "State is :" << mFileSender.state() << mFileSender.keys();
         emit testPublishFinished(error);
         return false;
     }
@@ -1940,8 +1822,7 @@ bool NUVE::System::sendResults(const QString &filepath,
             sendResultsFile(filepath, remoteIP, remoteUser, remotePassword, destination);
         };
 
-        fileSenderCallbacks.insert("dirFile", dirCreatorCallback);
-        mFileSender.setProperty("role", "dirFile");
+        mFileSender.setRole("dirFile", dirCreatorCallback);
 
         prepareResultsDirectory(remoteIP, remoteUser, remotePassword, destination);
     }
@@ -2037,8 +1918,7 @@ void NUVE::System::sendFirstRunLogFile()
         emit alert("Log is sent for first run error!");
     };
 
-    logSenderCallbacks.insert("sendFirstRunLog", sendCallback);
-    mLogSender.setProperty("role", "sendFirstRunLog");
+    mLogSender.setRole("sendFirstRunLog", sendCallback);
 
     auto logRemotePath = mLogRemoteFolderUID + QString("/%0_%1").arg(QString::fromStdString(mUID), filename.split("/").last());
 
@@ -2069,8 +1949,7 @@ void NUVE::System::sendLogFile()
         emit alert("Log is sent!");
     };
 
-    logSenderCallbacks.insert("sendLog", sendCallback);
-    mLogSender.setProperty("role", "sendLog");
+    mLogSender.setRole("sendLog", sendCallback);
 
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
     QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
@@ -2100,8 +1979,7 @@ void NUVE::System::sendResultsFile(const QString &filepath,
         emit testPublishFinished();
     };
 
-    fileSenderCallbacks.insert("resultsFile", sendFileCallback);
-    mFileSender.setProperty("role", "resultsFile");
+    mFileSender.setRole("resultsFile", sendFileCallback);
 
     TRACE << "sending file to remote " << destination;
 
@@ -2110,4 +1988,66 @@ void NUVE::System::sendResultsFile(const QString &filepath,
                                "\"StrictHostKeyChecking=no\" \"%2\" %3@%4:%5")
                            .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
     mFileSender.start("/bin/bash", {"-c", copyFile});
+}
+
+void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler, const QString &subject, const QString &joiner)
+{
+    mErrorHandler = errorHandler;
+    mSubject = subject;
+    mJoiner = joiner;
+
+    connect(this, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+        auto role = property("role").toString();
+
+        QString errorStr = readAllStandardError();
+        qWarning() << role << mSubject + ": process has encountered an error:" << error << errorStr;
+        errorStr = QString("%1: %0").arg(errorStr).arg(error);
+
+        if (!mCallbacks.contains(role)) {
+            QString error = mSubject + ": Callback not found for role " + role;
+            TRACE << error;
+            mErrorHandler(error);
+            return;
+        }
+
+        auto callback = mCallbacks.take(role);
+        if (callback) {
+            callback(errorStr);
+
+        } else {
+            QString error = mSubject + ": Callback not valid for role " + role;
+            TRACE << error;
+            mErrorHandler(error);
+        }
+
+    });
+    connect(this, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
+        auto role = property("role").toString();
+
+        QString errorStr;
+        if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
+            errorStr = readAllStandardOutput() + mJoiner
+                       + readAllStandardError();
+            qWarning() << role << mSubject + ": process did not exit cleanly" << exitCode
+                       << exitStatus << errorStr;
+            errorStr = QString("%1-%2: %0").arg(errorStr).arg(exitCode).arg(exitStatus);
+        }
+
+        if (!mCallbacks.contains(role)) {
+            QString error = mSubject + ": Callback not found for role " + role;
+            TRACE << error;
+            mErrorHandler(error);
+            return;
+        }
+
+        auto callback = mCallbacks.take(role);
+        if (callback) {
+            callback(errorStr);
+
+        } else {
+            QString error = mSubject + ": Callback not valid for role " + role;
+            TRACE << error;
+            mErrorHandler(error);
+        }
+    });
 }

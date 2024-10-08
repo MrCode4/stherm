@@ -15,6 +15,35 @@ namespace NUVE {
 
 using fileSenderCallback = std::function<void(QString error)>;
 
+class senderProcess : public QProcess
+{
+    Q_OBJECT
+public:
+    senderProcess() {}
+    void initialize(std::function<void(QString)> errorHandler, const QString &subject, const QString &joiner = " <br>");
+    virtual ~senderProcess() {}
+
+    bool busy() {
+        return state() != QProcess::NotRunning || !mCallbacks.isEmpty();
+    }
+
+    QStringList keys() {
+        return mCallbacks.keys();
+    }
+
+    void setRole(const QString& role, fileSenderCallback callback = nullptr)
+    {
+        setProperty("role", role);
+        mCallbacks.insert(role, callback);
+    }
+
+private:
+    QHash<QString, fileSenderCallback> mCallbacks;
+    std::function<void(QString)> mErrorHandler = nullptr;
+    QString mJoiner;
+    QString mSubject;
+};
+
 class System : public RestApiExecutor
 {
     Q_OBJECT
@@ -129,9 +158,6 @@ public:
 
     bool testMode();
 
-    bool sendResults(const QString &filepath, const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination,
-                     bool createDirectory = false);
-
     //! checks only existance of the sshpass file in /usr/bin
     bool has_sshPass();
 
@@ -185,6 +211,9 @@ public:
     Q_INVOKABLE void sendLog();
 
     Q_INVOKABLE void sendFirstRunLog();
+
+    bool sendResults(const QString &filepath, const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination,
+                     bool createDirectory = false);
 
     Q_INVOKABLE void systemCtlRestartApp();
 
@@ -332,19 +361,13 @@ private:
     //! else disable service
     bool updateServiceState(const QString &serviceName, const bool &run);
 
-
     void prepareResultsDirectory(const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination);
-    void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
-
-    void initLogSender();
-    void initFileSender();
-
-    QString generateLog();
-
     void prepareLogDirectory(fileSenderCallback callback = nullptr);
     void prepareFirstRunLogDirectory();
+    QString generateLog();
     void sendFirstRunLogFile();
     void sendLogFile();
+    void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
 
 private:
     Sync *mSync;
@@ -422,10 +445,8 @@ private:
     int mBackdoorRequiredMemory;
     int mBackdoorUpdateFileSize;
 
-    QProcess mLogSender;
-    QHash<QString, fileSenderCallback> logSenderCallbacks;
-    QProcess mFileSender;
-    QHash<QString, fileSenderCallback> fileSenderCallbacks;
+    senderProcess mLogSender;
+    senderProcess mFileSender;
     QString mLogRemoteFolder;
     QString mLogRemoteFolderUID;
 };
