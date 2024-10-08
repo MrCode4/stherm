@@ -1557,7 +1557,7 @@ void NUVE::System::createLogDirectoryOnServer()
     }
 
     mLogRemoteFolder = m_logPath + sn;
-    // Create remote path in case it doesn't exist, needed once! with internet access
+    // Create remote path in case it doesn't exist(-p), needed once! with internet access
     QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2@%3 'mkdir -p %4'").
                          arg(m_logPassword, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     mLogSender.start("/bin/bash", {"-c", createPath});
@@ -1905,11 +1905,65 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
     return true;
 }
 
+void NUVE::System::prepareResultsDirectory(const QString &remoteIP,
+                                           const QString &remoteUser,
+                                           const QString &remotePassword,
+                                           const QString &destination,
+                                           fileSenderCallback callback)
+{
+    fileSenderCallbacks.insert("dir", callback);
+    mFileSender.setProperty("role", "dir");
+    TRACE << "creating dir to send results on remote" << destination;
+
+    // it will throw error if folder already exist
+    // if server is windows we should add if not exist "dirPath"
+    // if server is Linux we should add -p option for mkdir
+    // Create remote path in case it doesn't exist, needed once! with internet access
+    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o "
+                                 "\"StrictHostKeyChecking=no\" %2@%3 'mkdir \"%4\"'")
+                             .arg(remotePassword, remoteUser, remoteIP, destination);
+    mFileSender.start("/bin/bash", {"-c", createPath});
+}
+
+void NUVE::System::sendResultsFile(const QString &filepath,
+                                   const QString &remoteIP,
+                                   const QString &remoteUser,
+                                   const QString &remotePassword,
+                                   const QString &destination)
+{
+    auto sendFileCallback = [=](QString error) {
+        auto role = mFileSender.property("role").toString();
+        TRACE_CHECK(role != "file") << "role seems invalid" << role;
+
+        if (!error.isEmpty()) {
+            error = "error while sending file to remote" + error;
+            qWarning() << error;
+            emit testPublishFinished(error);
+            return;
+        }
+
+        TRACE << "file has been sent to remote";
+        emit testPublishFinished();
+    };
+
+    fileSenderCallbacks.insert("file", sendFileCallback);
+    mFileSender.setProperty("role", "file");
+
+    TRACE << "sending file to remote " << destination;
+
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o "
+                               "\"StrictHostKeyChecking=no\" \"%2\" %3@%4:%5")
+                           .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
+    mFileSender.start("/bin/bash", {"-c", copyFile});
+}
+
 bool NUVE::System::sendResults(const QString &filepath,
                                const QString &remoteIP,
                                const QString &remoteUser,
                                const QString &remotePassword,
-                               const QString &destination)
+                               const QString &destination,
+                               bool createDirectory)
 {
     if (!installSSHPass()) {
         QString error("Device is not ready to send file!");
@@ -1925,54 +1979,26 @@ bool NUVE::System::sendResults(const QString &filepath,
         return false;
     }
 
-    auto dirCreatorCallback = [=](QString error) {
-        auto role = mFileSender.property("role").toString();
-        TRACE_CHECK(role != "dir") << "role seems invalid" << role;
+    if (!createDirectory){
+        sendResultsFile(filepath, remoteIP, remoteUser, remotePassword, destination);
 
-        if (!error.isEmpty()) {
-            error = "error while creating directory on remote: " + error;
-            qWarning() << error;
-            emit testPublishFinished(error);
-            return;
-        }
-
-        auto sendFileCallback = [=](QString error) {
+    } else {
+        auto dirCreatorCallback = [=](QString error) {
             auto role = mFileSender.property("role").toString();
-            TRACE_CHECK(role != "file") << "role seems invalid" << role;
+            TRACE_CHECK(role != "dir") << "role seems invalid" << role;
 
             if (!error.isEmpty()) {
-                error = "error while sending file to remote" + error;
+                error = "error while creating directory on remote: " + error;
                 qWarning() << error;
                 emit testPublishFinished(error);
                 return;
             }
 
-            TRACE << "file has been sent to remote";
-            emit testPublishFinished();
+            sendResultsFile(filepath, remoteIP, remoteUser, remotePassword, destination);
         };
 
-        fileSenderCallbacks.insert("file", sendFileCallback);
-        mFileSender.setProperty("role", "file");
-
-        TRACE << "sending file to remote " << destination;
-
-        // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-        QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o "
-                                   "\"StrictHostKeyChecking=no\" \"%2\" %3@%4:%5")
-                               .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
-        mFileSender.start("/bin/bash", {"-c", copyFile});
-    };
-
-    fileSenderCallbacks.insert("dir", dirCreatorCallback);
-    mFileSender.setProperty("role", "dir");
-
-    TRACE << "creating dir to send results on remote" << destination;
-
-    // Create remote path in case it doesn't exist, needed once! with internet access
-    QString createPath = QString("sshpass -p '%1' ssh -o \"UserKnownHostsFile=/dev/null\" -o "
-                                 "\"StrictHostKeyChecking=no\" %2@%3 'mkdir \"%4\"'")
-                             .arg(remotePassword, remoteUser, remoteIP, destination);
-    mFileSender.start("/bin/bash", {"-c", createPath});
+        prepareResultsDirectory(remoteIP, remoteUser, remotePassword, destination,  dirCreatorCallback);
+    }
 
     return true;
 }

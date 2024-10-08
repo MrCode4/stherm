@@ -126,11 +126,8 @@ public:
 
     bool testMode();
 
-    bool sendResults(const QString &filepath,
-                     const QString &remoteIP,
-                     const QString &remoteUser,
-                     const QString &remotePassword,
-                     const QString &destination);
+    bool sendResults(const QString &filepath, const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination,
+                     bool createDirectory = false);
 
     //! checks only existance of the sshpass file in /usr/bin
     bool has_sshPass();
@@ -336,6 +333,9 @@ private:
     bool updateServiceState(const QString &serviceName, const bool &run);
 
     QString generateLog();
+
+    void prepareResultsDirectory(const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination, fileSenderCallback callback = nullptr);
+    void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
 
 private:
     Sync *mSync;
