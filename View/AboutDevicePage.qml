@@ -159,6 +159,13 @@ BasePageView {
                         }
                     },
                     {
+                        text: "Test Config", visible: system.testMode, action: () => {
+                            if (root.StackView.view) {
+                                root.StackView.view.push("qrc:/Stherm/View/Test/TestConfigPage.qml", {"uiSession": uiSession});
+                            }
+                        }
+                    },
+                    {
                         text: "Exit", visible: system.testMode, action: () => {
                             exitPopup.open();
                         },

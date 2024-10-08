@@ -132,7 +132,7 @@ Item {
         function onNotifyNewUpdateAvailable() {
             if (system.updateAvailable) {
                 //! mark update as mandatory after initial setup done!
-                deviceController.mandatoryUpdate = deviceController.deviceControllerCPP.system.isInitialSetup();
+                deviceController.mandatoryUpdate = deviceController.deviceControllerCPP.system.isInitialSetup() && deviceController.startMode === 1;
 
                 updateNotificationPopup.open();
             }

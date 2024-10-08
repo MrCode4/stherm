@@ -42,6 +42,11 @@ public:
     //! Forget device configs
     void forgetDevice();
 
+    Q_INVOKABLE void setTestConfigs(const QString &ip, const QString &user,
+                                    const QString &pass, const QString &destination);
+
+    Q_INVOKABLE QVariantMap testConfigs() const;
+
 signals:
     void uidChanged();
 

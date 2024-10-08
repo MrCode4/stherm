@@ -15,6 +15,12 @@ BasePageView {
      * ****************************************************************************************/
     property System system: deviceController.deviceControllerCPP.system
 
+    property bool   startSNCheck: false
+
+    property int    retrySN:      0
+
+    property bool   backButtonWasVisible: backButtonVisible
+
     /* Object properties
      * ****************************************************************************************/
 
@@ -45,6 +51,23 @@ BasePageView {
         visible: false
     }
 
+    //! To show test and publish tests results.
+    InfoPopup {
+        id: testInfoPopup
+
+        visible: false
+        message: "Test results"
+
+        onAccepted: {
+            if (system.serialNumber.length > 0) {
+                finishButton.enabled = true;
+                rebootPopup.open();
+            } else {
+                infoPopup.open();
+            }
+        }
+    }
+
     //! ConfirmPopup to ask: "Have you printed the SN label?"
     //! The testFinished function is executed.
     //! If the serial number (SN) is available, a reboot popup is displayed.
@@ -62,17 +85,18 @@ BasePageView {
 
             console.log("QRCodeTestPage, finished test, serial number:", system.serialNumber, system.serialNumber.length)
 
-            if (system.serialNumber.length > 0) {
-                rebootPopup.open();
+            testInfoPopup.pending = true
 
-            }  else {
-                infoPopup.open();
-            }
+            testInfoPopup.detailMessage = (deviceController.deviceControllerCPP.isTestsPassed() ? "All tests are passed." : "All tests are not passed.") +
+                    "<br>" + "Test results are being published.";
+            console.log("print label accepted:", testInfoPopup.detailMessage);
+            testInfoPopup.open();
         }
     }
 
     //! Finish button
     ToolButton {
+        id: finishButton
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
             text: FAIcons.check
@@ -84,14 +108,46 @@ BasePageView {
             console.log("QRCodeTestPage, checking for serial number ready:", sn, sn.length)
 
             if (sn.length === 0) {
-                //! Retrieve Serial Number (SN) using UID and await response
-                var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
-                system.fetchSerialNumber(uid, false);
+                // restore backbutton after busy indicator done
+                backButtonWasVisible = backButtonVisible;
+                backButtonVisible = false;
+                // to ensure busy indicator starts
+                retrySN++;
+                //! Try to check serial number
+                snChecker.triggered();
+                startSNCheck = true;
+                //! will be set to true when sn is ready
+                //! to prevent excess tapping by user when snChecker timer already retrying
+                enabled = false;
             }
 
             printConfirmPopup.open();
         }
+
+        //! BusyIndicator for Fetching SN running status.
+        BusyIndicator {
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.bottom
+                topMargin: -10
+            }
+
+            width: parent.width
+            visible: running
+            running: system.serialNumber.length === 0 && retrySN > 0
+            onRunningChanged: {
+                if (!running) {
+                    backButtonVisible = backButtonWasVisible;
+                }
+            }
+
+            Label {
+                anchors.centerIn: parent
+                text: retrySN
+            }
+        }
     }
+
 
     //! User guide link QR code
     Image {
@@ -115,7 +171,9 @@ BasePageView {
 
         visible: true
 
-        onClicked: gotoPage("qrc:/Stherm/View/AboutDevicePage.qml", {"uiSession": Qt.binding(() => uiSession), 'useSimpleStackView': true});
+        onClicked: {
+            if (root.StackView.view) root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {"uiSession": Qt.binding(() => uiSession)});
+        }
     }
 
     //! The timer will be start when
@@ -128,16 +186,47 @@ BasePageView {
 
         interval: 5000
         running: root.visible && system.serialNumber.length > 0 &&
-                 !rebootPopup.visible && !printConfirmPopup.visible
+                 !rebootPopup.visible && !printConfirmPopup.visible && !testInfoPopup.visible
 
         repeat: true
 
         onTriggered: {
             // JUST check, always true in this scope
             if (system.serialNumber.length > 0) {
+                finishButton.enabled = true;
                 infoPopup.close();
                 printConfirmPopup.open();
             }
+        }
+    }
+
+    property Timer snChecker: Timer {
+        repeat: true
+        running: startSNCheck && system.serialNumber.length === 0
+        interval: 10000
+
+        onTriggered: {
+            var uid = deviceController.deviceControllerCPP.deviceAPI.uid;
+            system.fetchSerialNumber(uid, false);
+            retrySN++;
+        }
+
+    }
+
+    Connections {
+        target: system
+
+        function onTestPublishFinished(msg: string) {
+            testInfoPopup.detailMessage = (deviceController.deviceControllerCPP.isTestsPassed() ? "All tests are passed." : "All tests are not passed.") +
+                    "<br>" +
+                    (msg.length > 0 ? ("Test results are not published.<br> " + msg) : "Test results are published.");
+
+            console.log("onTestPublishFinished:", testInfoPopup.detailMessage);
+
+            testInfoPopup.pending = false;
+
+            // no need but keept anyway
+            testInfoPopup.open();
         }
     }
 }

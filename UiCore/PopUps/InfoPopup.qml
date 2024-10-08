@@ -23,6 +23,8 @@ I_PopUp {
     //! Detail
     property string detailMessage: ""
 
+    property bool   pending: false
+
 
     /* Object properties
      * ****************************************************************************************/
@@ -49,6 +51,7 @@ I_PopUp {
         Label {
             Layout.fillWidth: true
             visible: detailMessage.length > 0
+            wrapMode: Text.WordWrap
             font.italic: true
             textFormat: "RichText"
             text: `<small>${detailMessage}</small>`
@@ -58,6 +61,7 @@ I_PopUp {
         Button {
             Layout.fillWidth: true
             text: qsTr("OK")
+            visible: !pending
 
             onClicked: {
                 accepted();
