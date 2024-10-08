@@ -863,6 +863,19 @@ void DeviceControllerCPP::switchDFHActiveSysType(AppSpecCPP::SystemType activeSy
     m_scheme->switchDFHActiveSysType(activeSystemType);
 }
 
+bool DeviceControllerCPP::isTestsPassed()
+{
+    QStringList failedTests;
+    for (const auto &testName : mAllTestNames) {
+        auto resultIter = mAllTestsResults.find(testName);
+        // whether not found in results or the value is false
+        if (resultIter == mAllTestsResults.end() || !resultIter->second)
+            failedTests.append(testName);
+    }
+
+    return failedTests.empty();
+}
+
 void DeviceControllerCPP::setAutoMinReqTemp(const double cel_value)
 {
     if (mSchemeDataProvider.isNull()) {
@@ -985,7 +998,7 @@ void DeviceControllerCPP::saveTestResult(const QString &testName, bool testResul
         mAllTestNames.push_back(testName);
 
     QString result = testResult ? "PASS" : "FAIL";
-    writeTestResult("test_results.csv", testName, result, description);
+    writeTestResult("/test_results.csv", testName, result, description);
 }
 
 QString DeviceControllerCPP::beginTesting()
@@ -995,12 +1008,12 @@ QString DeviceControllerCPP::beginTesting()
     mAllTestNames.clear();
     //! TODO initialize all tests in mAllTestNames
 
-    QFile file("test_results.csv");
+    QFile file("/test_results.csv");
     if (file.exists() && !file.remove())
     {
         qWarning() << "Unable to delete file" << file.fileName();
     }
-    writeTestResult("test_results.csv", "Test name", QString("Test Result"), "Description");
+    writeTestResult("/test_results.csv", "Test name", QString("Test Result"), "Description");
 
     QString uid = _deviceAPI->uid();
     QString sn = m_system->serialNumber();
@@ -1071,10 +1084,10 @@ void DeviceControllerCPP::testFinished()
             failedTests.append(testName);
     }
 
-    TRACE << failedTests;
+    TRACE_CHECK(!failedTests.empty()) << "Failed tests are:" << failedTests;
 
     QString result = failedTests.empty() ? "PASS" : "FAIL";
-    QString testResultsFileName = QString("%1_%2.csv").arg(_deviceAPI->uid(), result);
+    QString testResultsFileName = QString("/%1_%2.csv").arg(_deviceAPI->uid(), result);
 
     // Remove the file if exists
     if (QFileInfo::exists(testResultsFileName)) {
@@ -1095,6 +1108,9 @@ void DeviceControllerCPP::testFinished()
                 description = descriptionIter->second;
         writeTestResult(testResultsFileName, testName, result, description);
     }
+
+    // Publish test results
+    publishTestResults(testResultsFileName);
 
     // disabled it for now!
     if (false) {
@@ -1416,4 +1432,33 @@ void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
     } else {
         TRACE << "Failed to open the file for writing/Reading." << directoryHasSpace;
     }
+}
+
+void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
+{
+    const auto &config = _deviceAPI->deviceConfig();
+
+    QString destinationIP = config.testConfigIp.empty()
+                                ? "192.168.10.101"
+                                : QString::fromStdString(config.testConfigIp);
+    QString username = config.testConfigUser.empty()
+                           ? "lucidtron1"
+                           : QString::fromStdString(config.testConfigUser);
+    QString password = config.testConfigPassword.empty()
+                           ? "Tony6763"
+                           : QString::fromStdString(config.testConfigPassword);
+    QString destinationPath = config.testConfigDestination.empty()
+                                  ? "d:/test_results/"
+                                  : QString::fromStdString(config.testConfigDestination);
+
+    TRACE << "start exporting test results as " << resultsPath << destinationIP << username
+          << password << destinationPath;
+
+    auto sent = m_system->sendResults(resultsPath,
+                                      destinationIP,
+                                      username,
+                                      password,
+                                      destinationPath);
+
+    TRACE << "exporting test results ended " << sent;
 }

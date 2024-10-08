@@ -186,6 +186,8 @@ public:
 
     Q_INVOKABLE void switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType);
 
+    Q_INVOKABLE bool isTestsPassed();
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -244,6 +246,8 @@ private:
     static DeviceControllerCPP* sInstance;
 
     void startTestMode();
+
+    void publishTestResults(const QString &resultsPath);
 
     void setAdaptiveBrightness(const double adaptiveBrightness);
 

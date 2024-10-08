@@ -54,6 +54,12 @@ struct DeviceConfig
     // endpoint for access API and internet access check
     std::string endpoint;
 
+    // Configs to send test results to the specified cofigs
+    std::string testConfigIp;
+    std::string testConfigUser;
+    std::string testConfigPassword;
+    std::string testConfigDestination;
+
     // Enable/disable alert feature
     bool controlAlertEnabled;
 };

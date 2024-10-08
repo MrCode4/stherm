@@ -12,6 +12,38 @@
  * This class manage system requests.
  * ************************************************************************************************/
 namespace NUVE {
+
+using fileSenderCallback = std::function<void(QString error)>;
+
+class senderProcess : public QProcess
+{
+    Q_OBJECT
+public:
+    senderProcess() {}
+    void initialize(std::function<void(QString)> errorHandler, const QString &subject, const QString &joiner = " <br>");
+    virtual ~senderProcess() {}
+
+    bool busy() {
+        return state() != QProcess::NotRunning || !mCallbacks.isEmpty();
+    }
+
+    QStringList keys() {
+        return mCallbacks.keys();
+    }
+
+    void setRole(const QString& role, fileSenderCallback callback = nullptr)
+    {
+        setProperty("role", role);
+        mCallbacks.insert(role, callback);
+    }
+
+private:
+    QHash<QString, fileSenderCallback> mCallbacks;
+    std::function<void(QString)> mErrorHandler = nullptr;
+    QString mJoiner;
+    QString mSubject;
+};
+
 class System : public RestApiExecutor
 {
     Q_OBJECT
@@ -180,6 +212,9 @@ public:
 
     Q_INVOKABLE void sendFirstRunLog();
 
+    bool sendResults(const QString &filepath, const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination,
+                     bool createDirectory = false);
+
     Q_INVOKABLE void systemCtlRestartApp();
 
 
@@ -214,7 +249,6 @@ public:
 
 protected slots:
     void onSerialNumberReady();
-    void createLogDirectoryOnServer();
 
 signals:
     void serialNumberReady();
@@ -242,6 +276,8 @@ signals:
     void error(QString err);
 
     void alert(QString msg);
+
+    void testPublishFinished(QString msg = QString());
 
     //! Emit when need the system move to updating/restarting mode
     void systemUpdating();
@@ -283,7 +319,6 @@ signals:
     void warrantyReplacementFinished(bool success = false);
 
 private:
-
     //! verify dounloaded files and prepare to set up.
     bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true,
                                bool isBackdoor = false, const bool isResetVersion = false,
@@ -326,7 +361,13 @@ private:
     //! else disable service
     bool updateServiceState(const QString &serviceName, const bool &run);
 
+    void prepareResultsDirectory(const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination);
+    void prepareLogDirectory(fileSenderCallback callback = nullptr);
+    void prepareFirstRunLogDirectory();
     QString generateLog();
+    void sendFirstRunLogFile();
+    void sendLogFile();
+    void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
 
 private:
     Sync *mSync;
@@ -404,8 +445,10 @@ private:
     int mBackdoorRequiredMemory;
     int mBackdoorUpdateFileSize;
 
-    QProcess mLogSender;
+    senderProcess mLogSender;
+    senderProcess mFileSender;
     QString mLogRemoteFolder;
+    QString mLogRemoteFolderUID;
 };
 
 } // namespace NUVE

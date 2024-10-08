@@ -243,6 +243,7 @@ qt6_add_qml_module(appStherm
         View/Test/SystemUpdateOnTestModePage.qml
         View/Test/StartTestPage.qml
         View/Test/QRCodeTestPage.qml
+        View/Test/TestConfigPage.qml
 
         # Delegates
         View/Delegates/ShadeButtonDelegate.qml

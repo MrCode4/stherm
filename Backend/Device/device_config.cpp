@@ -80,6 +80,13 @@ void NUVE::DeviceConfig::load()
 
     endpoint = config.value("endpoint", API_SERVER_BASE_URL).toString().toStdString();
 
+    testConfigIp          = config.value("testConfigIp").toString().toStdString();
+    testConfigUser        = config.value("testConfigUser").toString().toStdString();
+#ifdef DEVELOPER_MODE
+    testConfigPassword    = config.value("testConfigPassword").toString().toStdString();
+#endif
+    testConfigDestination = config.value("testConfigDestination").toString().toStdString();
+
     bool ok;
     auto sr = config.value("sampleRate").toInt(&ok);
     if (ok)
@@ -94,6 +101,15 @@ void NUVE::DeviceConfig::save()
     config.setValue("serial_number", QString::fromStdString(serial_number));
     config.setValue("endpoint", QString::fromStdString(endpoint));
     config.setValue("sampleRate", QString::number(sampleRate));
+
+    config.setValue("testConfigIp",          QString::fromStdString(testConfigIp));
+    config.setValue("testConfigUser",        QString::fromStdString(testConfigUser));
+    //! to prevent security leak it should not be in normal mode
+#ifdef DEVELOPER_MODE
+    config.setValue("testConfigPassword",    QString::fromStdString(testConfigPassword));
+#endif
+    config.setValue("testConfigDestination", QString::fromStdString(testConfigDestination));
+
 }
 
 void NUVE::DeviceConfig::setEnv()
