@@ -75,14 +75,9 @@ PerfTestService::PerfTestService(QObject *parent)
     });
 
     mTimerRetrySending.setInterval(5 * 60 * PerfTest::OneSecInMS);
-    connect(&mTimerRetrySending, &QTimer::timeout, this, &PerfTestService::sendResultsToServer);
+    connect(&mTimerRetrySending, &QTimer::timeout, this, &PerfTestService::checkAndSendSavedResult);
 
-    QSettings settings;
-    if (settings.contains(PerfTest::Key_TestID)) {
-        mApiReqData = settings.value(PerfTest::Key_TestData).toByteArray();
-        sendResultsToServer();
-    }
-
+    checkAndSendSavedResult();
     scheduleNextCheck(QTime::currentTime());
 }
 
@@ -144,12 +139,20 @@ void PerfTestService::checkTestEligibility()
         return;
     }
 
-    mTimerRetrySending.stop();
     state(TestState::Checking);
-
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
         testId(data.value(PerfTest::Key_TestID).toInt());
+
+        QSettings settings;
+        if (settings.contains(PerfTest::Key_TestID)) {
+            if (settings.value(PerfTest::Key_TestID).toInt() == testId()) {
+                scheduleNextCheck(PerfTest::Noon12PM);
+                return;
+            }
+        }
+
+        mTimerRetrySending.stop();
 
         auto action = data.value("action").toString();
         if (action == PerfTest::Cooling) {
@@ -266,6 +269,24 @@ void PerfTestService::cleanupRunning()
     DeviceControllerCPP::instance()->revertPerfTest();
 }
 
+void PerfTestService::cancelTest()
+{
+    qCDebug(PerfTestLogCat) <<"Perf-test cancelled by user";
+    QJsonObject data;
+    data[PerfTest::Key_TestID] = testId();
+    data["sn"] = Device->serialNumber();
+    data["action"] = mode() == AppSpecCPP::Cooling ? PerfTest::Cooling : PerfTest::Heating;
+    data["result"] = PerfTest::Stopped;
+    data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
+    auto jsonData = QJsonDocument(data).toJson();
+    QSettings settings;
+    settings.setValue(PerfTest::Key_TestData, jsonData);
+
+    cleanupRunning();
+    sendResultsToServer(Device->serialNumber(), jsonData);
+    scheduleNextCheck(PerfTest::Noon12PM);
+}
+
 void PerfTestService::collectReading()
 {
     auto temperature = DeviceControllerCPP::instance()->getTemperature();
@@ -287,37 +308,43 @@ void PerfTestService::collectReading()
         data["result"] = PerfTest::Finished;
         data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
         data["data"] = mReadings;
-        mApiReqData = QJsonDocument(data).toJson();
+        auto json = QJsonDocument(data).toJson();
 
         QSettings settings;
         settings.setValue(PerfTest::Key_TestID, testId());
-        settings.setValue(PerfTest::Key_TestData, mApiReqData);
+        settings.setValue(PerfTest::Key_TestData, json);
 
         cleanupRunning();
-        sendResultsToServer();
+        sendResultsToServer(Device->serialNumber(), json);
         finishTimeLeft(PerfTest::FinishDelay);
         mTimerFinish.start();
         state(TestState::Complete);
     }
 }
 
-void PerfTestService::cancelTest()
+void PerfTestService::checkAndSendSavedResult()
 {
-    qCDebug(PerfTestLogCat) <<"Perf-test cancelled by user";
-    QJsonObject data;
-    data[PerfTest::Key_TestID] = testId();
-    data["sn"] = Device->serialNumber();
-    data["action"] = mode() == AppSpecCPP::Cooling ? PerfTest::Cooling : PerfTest::Heating;
-    data["result"] = PerfTest::Stopped;
-    data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
-    mApiReqData = QJsonDocument(data).toJson();
-
-    cleanupRunning();
-    sendResultsToServer();
-    scheduleNextCheck(PerfTest::Noon12PM);
+    QSettings settings;
+    if (settings.contains(PerfTest::Key_TestData)) {
+        auto data = settings.value(PerfTest::Key_TestData).toByteArray();
+        qCDebug(PerfTestLogCat) <<"Perf-test saved result found";
+        auto dataObj = QJsonDocument::fromJson(data).object();
+        auto sn = dataObj.value("sn").toString();
+        auto testTime = QDateTime::fromString(dataObj.value("time").toString(), DATETIME_FORMAT);
+        auto retryDays = dataObj.contains("data") ? 30 : 1;
+        if (testTime.isValid() && testTime.daysTo(QDateTime::currentDateTimeUtc()) <= retryDays) {
+            qCDebug(PerfTestLogCat) <<"Perf-test saved result sending retrying";
+            sendResultsToServer(sn, data);
+        }
+        else {
+            qCDebug(PerfTestLogCat) <<"Perf-test saved result expired, cleaning up";
+            settings.remove(PerfTest::Key_TestID);
+            settings.remove(PerfTest::Key_TestData);
+        }
+    }
 }
 
-void PerfTestService::sendResultsToServer()
+void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& data)
 {
     qCDebug(PerfTestLogCat) <<"sendResultsToServer";
 
@@ -340,9 +367,9 @@ void PerfTestService::sendResultsToServer()
         }
     };    
 
-    qCDebug(PerfTestLogCat) <<"sendResultsToServer Request " <<mApiReqData;
-    auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(Device->serialNumber());
-    callPostApi(url, mApiReqData, callback);
+    qCDebug(PerfTestLogCat) <<"sendResultsToServer Request " <<data;
+    auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(sn);
+    callPostApi(url, data, callback);
 }
 
 void PerfTestService::finishTest()

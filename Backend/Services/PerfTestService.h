@@ -55,13 +55,14 @@ private slots:
     void onCountdownStop();
     void onTempSchemeStateChanged(bool started);
     void collectReading();
+    void checkAndSendSavedResult();
 
 private:
     void scheduleNextCheck(const QTime& checkTime);
     void setupWarmup();
     void startRunning();
-    void cleanupRunning();
-    void sendResultsToServer();
+    void cleanupRunning();    
+    void sendResultsToServer(const QString& sn, const QByteArray& data);
 
 private:
     static PerfTestService* mMe;
@@ -72,5 +73,4 @@ private:
     QTimer mTimerFinish;
     QTimer mTimerRetrySending;
     QJsonArray mReadings;
-    QByteArray mApiReqData;
 };
