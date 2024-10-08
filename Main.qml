@@ -200,10 +200,10 @@ ApplicationWindow {
             contentWidth: width
             contentHeight: window.width
 
-            SimpleStackView {
-                id: simpleStackView
+            MainView {
+                id: mainView
                 anchors.fill: parent
-                Component.onCompleted: simpleStackView.push("qrc:/Stherm/View/MainView.qml", {"uiSession": uiSessionId});
+                uiSession: uiSessionId
             }
 
             Behavior on contentY {
@@ -223,10 +223,14 @@ ApplicationWindow {
         function onStateChanged(state) {
             console.log('Perf-test state changed to ', state);
             if (state >= PerfTestService.Eligible) {
-                simpleStackView.push("qrc:/Stherm/View/PerfTestPage.qml", {"uiSession": uiSessionId});
+                if (!perfTestPopup.opened) {
+                    popUpLayoutId.displayPopUp(perfTestPopup);
+                }
             }
             else {
-                simpleStackView.push("qrc:/Stherm/View/MainView.qml", {"uiSession": uiSessionId});
+                if (perfTestPopup.opened) {
+                    perfTestPopup.close()
+                }
             }
         }
     }
@@ -234,7 +238,6 @@ ApplicationWindow {
     //! Popup layout
     PopUpLayout {
         id: popUpLayoutId
-
         anchors.fill: parent
         mandatoryUpdate: uiSessionId.deviceController.mandatoryUpdate
     }
@@ -252,6 +255,11 @@ ApplicationWindow {
         uiSession: uiSessionId
 
         onOpened: uiSessionId.showHome();
+    }
+
+    PerfTestPopup {
+        id: perfTestPopup
+        uiSession: uiSessionId
     }
 
     //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1

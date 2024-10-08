@@ -474,7 +474,6 @@ qt6_add_qml_module(appStherm
         update_fw_nrf_seamless.sh
         getsshpass.sh
         nrf_fw_update.zip
-        QML_FILES View/PerfTestPage.qml
 )
 
 if (DEBUG_MODE)
