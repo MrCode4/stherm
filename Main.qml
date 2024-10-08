@@ -204,6 +204,7 @@ ApplicationWindow {
                 id: mainView
                 anchors.fill: parent
                 uiSession: uiSessionId
+                onStackViewDepthChanged: window.updatePerfTestServiceState()
             }
 
             Behavior on contentY {
@@ -240,6 +241,7 @@ ApplicationWindow {
         id: popUpLayoutId
         anchors.fill: parent
         mandatoryUpdate: uiSessionId.deviceController.mandatoryUpdate
+        onIsTherePopupChanged: window.updatePerfTestServiceState()
     }
 
     ShortcutManager {
@@ -260,6 +262,19 @@ ApplicationWindow {
     PerfTestPopup {
         id: perfTestPopup
         uiSession: uiSessionId
+    }
+
+    function updatePerfTestServiceState() {
+        console.assert('Stack-View-Depth', stackViewDepth);
+        if (mainView.stackViewDepth > 1 || (_screenSaver.visible == false && popUpLayoutId.isTherePopup)) {
+            let message = mainView.stackViewDepth > 1 ?
+                    "There are other views active on top of Home"
+                  : "There are popup active for the user to handle";
+            PerfTestService.postponeTest(message);
+        }
+        else {
+            PerfTestService.resumeTest();
+        }
     }
 
     //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1
