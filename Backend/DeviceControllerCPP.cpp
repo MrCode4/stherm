@@ -1442,7 +1442,7 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
                                 ? "192.168.10.101"
                                 : QString::fromStdString(config.testConfigIp);
     QString username = config.testConfigUser.empty()
-                           ? "lcidtron1"
+                           ? "lucidtron1"
                            : QString::fromStdString(config.testConfigUser);
     QString password = config.testConfigPassword.empty()
                            ? "Tony6763"
