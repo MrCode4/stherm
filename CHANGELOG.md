@@ -1,6 +1,30 @@
 
 Release Note
 -------------
+## Release R 1.3.1
+ 9th October 2024
+ Branch- r1_3_1, commit- 15c6fb9c
+ 
+### Release Articles
+update-V.1.3.1.zip
+
+### Reason
+Add new feature and fix some issues
+
+### What’s Brand New
+- Send test results to the specified server in test mode.
+
+### What Been Updated
+- Sync dual fuel threshold with the server.
+
+### What’s Been Fixed
+- Fixed dual fuel UI issue in the first run flow.
+- The user interface of the main and settings menus was polished.
+- Fixed the registration flow bugs.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
 ## Release R 1.3.0
  5th October 2024
  Branch- r1_3_0, commit- d1b02075b0
