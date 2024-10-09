@@ -28,19 +28,12 @@ QtObject {
     //! Minimum value for temperature slider (Fah)
     //! - Has schedule effect
     property real               _minimumTemperatureUIF: {
-        if (currentSchedule) {
-            return AppSpec.autoMinimumTemperatureF;
-        }
-
         return _minimumTemperatureF;
     }
 
     //! Maximum value for temperature slider
     //! - Has schedule effect
     property real               _maximumTemperatureUIF: {
-        if (currentSchedule) {
-            return AppSpec.autoMaximumTemperatureF;
-        }
 
         return _maximumTemperatureF;
     }

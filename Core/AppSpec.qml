@@ -208,10 +208,11 @@ AppSpecCPP {
     property real autoMaximumTemperatureF: 90
 
     //! Get default schedule
-    function getDefaultSchedule (type: int) : SceduleCPP {
+    function getDefaultSchedule (type: int, systemMode) : SceduleCPP {
 
         var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"]);
         newSchedule.type = type;
+        newSchedule.systemMode = systemMode;
 
         switch (type) {
         case AppSpecCPP.Away: {

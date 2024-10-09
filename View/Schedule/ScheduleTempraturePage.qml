@@ -27,8 +27,26 @@ BasePageView {
     readonly property bool           isCelcius:  temperatureUnit === AppSpec.TempratureUnit.Cel
 
     //! Temperature value: this is always in celsius
-    readonly property real  minimumTemperature: (isCelcius ? _tempSlider.first.value : Utils.fahrenheitToCelsius(_tempSlider.first.value))
-    readonly property real  maximumTemperature: (isCelcius ? _tempSlider.second.value : Utils.fahrenheitToCelsius(_tempSlider.second.value))
+    readonly property real  minimumTemperature: {
+        var temperatureValue = _tempSlider.first.value;
+        if (schedule.systemMode === AppSpec.Heating) {
+            temperatureValue = singleTemperatureSlider.control.value;
+        }
+
+        return (isCelcius ? temperatureValue : Utils.fahrenheitToCelsius(temperatureValue));
+    }
+
+    readonly property real  maximumTemperature: {
+        var temperatureValue = _tempSlider.second.value;
+        if (schedule.systemMode === AppSpec.Cooling) {
+            temperatureValue = singleTemperatureSlider.control.value;
+
+        }
+
+        return (isCelcius ? temperatureValue : Utils.fahrenheitToCelsius(temperatureValue))
+    }
+
+
 
     //! Minimum temperature
     property real               minTemperature: isCelcius ? AppSpec.autoMinimumTemperatureC : AppSpec.autoMinimumTemperatureF
@@ -73,17 +91,20 @@ BasePageView {
         }
     }
 
+    // Use in the Auto mode
     ColumnLayout {
         anchors.centerIn: parent
         width: parent.width * 0.9
 
-
-        spacing: 40
+        visible: schedule.systemMode !== AppSpec.Heating && schedule.systemMode !== AppSpec.Cooling
+        spacing: 32
 
         RowLayout {
-            spacing: 25
             Layout.preferredWidth: parent.width * 0.9
             Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 32
+
+            spacing: 25
 
             //! Temperature icon
             RoniaTextIcon {
@@ -131,7 +152,7 @@ BasePageView {
         RowLayout {
             spacing: 20
             Layout.preferredWidth: parent.width
-            Layout.topMargin: 20
+            Layout.topMargin: 40
 
             Label {
                 Layout.preferredWidth: parent.width / 2 - 5
@@ -165,15 +186,59 @@ BasePageView {
     }
 
 
+    //! Use in the heating/cooling mode
+    ColumnLayout {
+        anchors.centerIn: parent
+        width: parent.width * 0.9
+        spacing: 60
+
+        visible: schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.Cooling
+
+        SingleTemperatureSlider {
+            id: singleTemperatureSlider
+
+            Layout.fillWidth: true
+
+            leftSideColor:  "#ea0600"
+            rightSideColor: "#0097cd"
+            labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
+            control.from: deviceController._minimumTemperatureUI;
+            control.to: deviceController._maximumTemperatureUI;
+        }
+
+        Label {
+            Layout.preferredWidth: parent.width
+
+            text: "<b>" + (schedule.systemMode === AppSpec.Heating ? "Heating" : "Cooling") + " schedule</b> - to set the " +
+                  (schedule.systemMode === AppSpec.Heating ? "heat" : "cool") + " setpoint for the selected period"
+            wrapMode: Text.WordWrap
+            textFormat: Text.RichText
+            horizontalAlignment: Qt.AlignLeft
+            font.pointSize: root.font.pointSize * 0.7
+        }
+
+    }
+
     /* Functions
      * ****************************************************************************************/
 
     function updateSliderValues() {
-        _tempSlider.first.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? _tempSlider.from, temperatureUnit,
-                                                       minTemperature, maxTemperature - _tempSlider.difference)
+        if (schedule.systemMode === AppSpec.Heating) {
+            singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
+                                                                                      deviceController._minimumTemperatureUI,  deviceController._maximumTemperatureUI);
 
-        _tempSlider.second.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? _tempSlider.to, temperatureUnit,
-                                                        _tempSlider.first.value + _tempSlider.difference, maxTemperature)
+        } else if (schedule.systemMode === AppSpec.Cooling) {
+            singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
+                                                                         deviceController._minimumTemperatureUI,  deviceController._maximumTemperatureUI);
+
+        } else {
+            //! Create schedule in auto and off mode.
+            _tempSlider.first.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? _tempSlider.from, temperatureUnit,
+                                                                        minTemperature, maxTemperature - _tempSlider.difference);
+
+            _tempSlider.second.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? _tempSlider.to, temperatureUnit,
+                                                                         _tempSlider.first.value + _tempSlider.difference, maxTemperature);
+        }
 
     }
 }
