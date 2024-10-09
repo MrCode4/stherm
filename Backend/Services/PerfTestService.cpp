@@ -45,6 +45,11 @@ PerfTestService* PerfTestService::me()
 PerfTestService::PerfTestService(QObject *parent)
     : DevApiExecutor{parent}
 {
+    {
+        QSettings settings;
+        settings.remove(PerfTest::Key_TestID);
+        settings.remove(PerfTest::Key_TestData);
+    }
     TRACE_CAT(PerfTestLogCat) <<"PerfTestService";
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
@@ -166,8 +171,9 @@ void PerfTestService::checkTestEligibility()
             mode(AppSpecCPP::Off);
         }        
 
-        if (testId() > 0 && mode() != AppSpecCPP::Off) {
+        if (testId() > 0 && mode() != AppSpecCPP::Off) {            
             if (isPostponed()) {
+                TRACE_CAT(PerfTestLogCat) << "Elligible to perf-test but UI is busy, so postponing now until UI resumes";
                 mWasEligibleBeforePostpone = true;
                 // Check if blocking is not resumed by 12PM, ublock and schedule for next day
                 QTimer::singleShot(qMax(PerfTest::OneSecInMS, QTime::currentTime().msecsTo(PerfTest::Noon12PM)), [this] () {

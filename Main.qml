@@ -184,6 +184,7 @@ ApplicationWindow {
         id: uiSessionId
         popupLayout: popUpLayoutId
         toastManager:toastManagerId
+        onIsAnyPopupVisibleChanged: window.updatePerfTestServiceState()
     }
 
     StackLayout {
@@ -219,29 +220,11 @@ ApplicationWindow {
         }
     }
 
-    Connections {
-        target: PerfTestService
-        function onStateChanged(state) {
-            console.log('Perf-test state changed to ', state);
-            if (state >= PerfTestService.Eligible) {
-                if (!perfTestPopup.opened) {
-                    popUpLayoutId.displayPopUp(perfTestPopup);
-                }
-            }
-            else {
-                if (perfTestPopup.opened) {
-                    perfTestPopup.close()
-                }
-            }
-        }
-    }
-
     //! Popup layout
     PopUpLayout {
         id: popUpLayoutId
         anchors.fill: parent
         mandatoryUpdate: uiSessionId.deviceController.mandatoryUpdate
-        onIsTherePopupChanged: window.updatePerfTestServiceState()
     }
 
     ShortcutManager {
@@ -252,7 +235,7 @@ ApplicationWindow {
     ScreenSaver {
         id: _screenSaver
         anchors.centerIn: parent
-        visible: ScreenSaverManager.state === ScreenSaverManager.Timeout && PerfTestService.state < PerfTestService.Eligible
+        visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
 
         uiSession: uiSessionId
 
@@ -260,13 +243,14 @@ ApplicationWindow {
     }
 
     PerfTestPopup {
-        id: perfTestPopup
         uiSession: uiSessionId
+        z: _screenSaver.z + 1
+        visible: PerfTestService.state >= PerfTestService.Eligible
     }
 
     function updatePerfTestServiceState() {
-        console.assert('Stack-View-Depth', mainView.stackViewDepth);
-        if (mainView.stackViewDepth > 1 || (_screenSaver.visible == false && popUpLayoutId.isTherePopup)) {
+        console.log('Stack-View-Depth-and-Popup', _screenSaver.visible, uiSessionId.isAnyPopupVisible, mainView.stackViewDepth);
+        if (mainView.stackViewDepth > 1 || (_screenSaver.visible == false && uiSessionId.isAnyPopupVisible)) {
             let message = mainView.stackViewDepth > 1 ?
                     "There are other views active on top of Home"
                   : "There are popup active for the user to handle";

@@ -70,6 +70,8 @@ Item {
         parent: root
     }
 
+    readonly property bool isAnyPopupVisible: popUps.isAnyPopupOpened || popupLayout.isTherePopup
+
     //! Ui Preferences (Units, etc)
     property UiPreferences      uiPreferences:  UiPreferences {}
 
