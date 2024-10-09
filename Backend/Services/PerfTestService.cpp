@@ -142,16 +142,19 @@ void PerfTestService::checkTestEligibility()
     state(TestState::Checking);
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
-        testId(data.value(PerfTest::Key_TestID).toInt());
+        auto perfId= data.value(PerfTest::Key_TestID).toInt();
+        qCDebug(PerfTestLogCat) <<"CheckTestEligibility Response " <<perfId <<rawData ;
 
         QSettings settings;
         if (settings.contains(PerfTest::Key_TestID)) {
-            if (settings.value(PerfTest::Key_TestID).toInt() == testId()) {
+            if (settings.value(PerfTest::Key_TestID).toInt() == perfId) {
+                qCDebug(PerfTestLogCat) <<"in checkTestEligibility, elligible test id is already finished testing and retrying uploading "<< perfId;
                 scheduleNextCheck(PerfTest::Noon12PM);
                 return;
             }
         }
 
+        testId(perfId);
         mTimerRetrySending.stop();
 
         auto action = data.value("action").toString();
@@ -161,15 +164,13 @@ void PerfTestService::checkTestEligibility()
             mode(AppSpecCPP::Heating);
         } else {
             mode(AppSpecCPP::Off);
-        }
-
-        qCDebug(PerfTestLogCat) <<"CheckTestEligibility Response " <<testId() <<mode() <<rawData ;
+        }        
 
         if (testId() > 0 && mode() != AppSpecCPP::Off) {
             if (isPostponed()) {
                 mWasEligibleBeforePostpone = true;
                 // Check if blocking is not resumed by 12PM, ublock and schedule for next day
-                QTimer::singleShot(qMax(1000, QTime::currentTime().msecsTo(PerfTest::Noon12PM)), [this] () {
+                QTimer::singleShot(qMax(PerfTest::OneSecInMS, QTime::currentTime().msecsTo(PerfTest::Noon12PM)), [this] () {
                     if (isPostponed()) {
                         qCDebug(PerfTestLogCat) <<"Perf-test was not resumed by 12 noon, so going for next-day";
                         isPostponed(false);
@@ -241,14 +242,16 @@ void PerfTestService::onCountdownStop()
 void PerfTestService::onTempSchemeStateChanged(bool started)
 {
     qCDebug(PerfTestLogCat) <<"onTempSchemeStateChanged: " <<started;
-    if (started) {
-        testTimeLeft(PerfTest::TestDuration);
+    if (started) {        
         startRunning();
     }
 }
 
 void PerfTestService::startRunning()
 {
+    if (state() == TestState::Running) return;
+
+    testTimeLeft(PerfTest::TestDuration);
     qCDebug(PerfTestLogCat) <<"startRunning";
     qCDebug(PerfTestLogCat) <<"State: " <<state();
     startTimeLeft(0);
@@ -360,7 +363,7 @@ void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& d
             settings.remove(PerfTest::Key_TestData);
         }
         else {
-            qCDebug(PerfTestLogCat) <<"Perf-test result uploading failed";
+            qCDebug(PerfTestLogCat) <<"Perf-test result uploading failed, retry scheduled";
             if (!mTimerRetrySending.isActive()) {
                 mTimerRetrySending.start();
             }

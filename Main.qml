@@ -265,7 +265,7 @@ ApplicationWindow {
     }
 
     function updatePerfTestServiceState() {
-        console.assert('Stack-View-Depth', stackViewDepth);
+        console.assert('Stack-View-Depth', mainView.stackViewDepth);
         if (mainView.stackViewDepth > 1 || (_screenSaver.visible == false && popUpLayoutId.isTherePopup)) {
             let message = mainView.stackViewDepth > 1 ?
                     "There are other views active on top of Home"
