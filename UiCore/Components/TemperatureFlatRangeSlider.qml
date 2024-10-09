@@ -12,7 +12,7 @@ RangeSliderLabeled {
     /* Object properties
      * ****************************************************************************************/
     showMinMax: true
-    leftHandlerLaberOnTop: true
+    rightHandlerLaberOnTop: true
 
     background: Rectangle {
         x: control.leftPadding + (control.horizontal ? 0 : (control.availableWidth - width) / 2)
@@ -27,12 +27,12 @@ RangeSliderLabeled {
             orientation: Gradient.Horizontal
             GradientStop {
                 position: 0.0
-                color: true ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+                color: enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
             }
 
             GradientStop {
                 position: 1.0
-                color: true ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+                color: enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
             }
         }
 

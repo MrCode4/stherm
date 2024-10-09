@@ -8,7 +8,7 @@ import Stherm
  *  ScheduleTempraturePage is a page for setting temprature in AddSchedulePage
  * ***********************************************************************************************/
 BasePageView {
-    id: _root
+    id: root
 
     /* Property declaration
      * ****************************************************************************************/
@@ -39,12 +39,6 @@ BasePageView {
 
     /* Object properties
      * ****************************************************************************************/
-    implicitWidth: contentItem.children.length === 1 ? contentItem.children[0].implicitWidth + leftPadding + rightPadding : 0
-    implicitHeight: contentItem.children.length === 1 ? contentItem.children[0].implicitHeight + implicitHeaderHeight
-                                                        + implicitFooterHeight + topPadding + bottomPadding
-                                                      : 0
-    leftPadding: 8 * scaleFactor
-    rightPadding: 8 * scaleFactor
     title: "Temperature (\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit)) + ")"
     backButtonVisible: false
     titleHeadeingLevel: 4
@@ -57,7 +51,7 @@ BasePageView {
      * ****************************************************************************************/
     //! Confirm button: only visible if is editing
     ToolButton {
-        parent: schedule ? _root.header.contentItem : _root
+        parent: schedule ? root.header.contentItem : root
         visible: editMode
         contentItem: RoniaTextIcon {
             text: FAIcons.check
@@ -79,52 +73,100 @@ BasePageView {
         }
     }
 
-    RowLayout {
+    ColumnLayout {
         anchors.centerIn: parent
-        width: parent.width * 0.85
+        width: parent.width * 0.9
 
-        spacing: 20
 
-        //! Temperature icon
-        RoniaTextIcon {
-            Layout.leftMargin: 24
-            font.pointSize: _root.font.pointSize * 2
-            text: "\uf2c8" //! temperature-three-quarters icon
-        }
+        spacing: 40
 
-        TemperatureFlatRangeSlider {
-            id: _tempSlider
+        RowLayout {
+            spacing: 25
+            Layout.preferredWidth: parent.width * 0.9
+            Layout.alignment: Qt.AlignHCenter
 
-            Layout.fillWidth: true
+            //! Temperature icon
+            RoniaTextIcon {
+                Layout.leftMargin: 5
+                font.pointSize: root.font.pointSize * 1.5
+                text: "\uf2c8" //! temperature-three-quarters icon
+            }
 
-            from: minTemperature
-            to: maxTemperature
+            TemperatureFlatRangeSlider {
+                id: _tempSlider
 
-            difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
+                Layout.fillWidth: true
 
-            first.onPressedChanged: {
-                if (deviceController && !first.pressed) {
-                    schedule.minimumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                from: minTemperature
+                to: maxTemperature
+
+                difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
+
+                first.onPressedChanged: {
+                    if (deviceController && !first.pressed) {
+                        schedule.minimumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(first.value)
                                                        : first.value);
-                    deviceController.saveSettings();
+                        deviceController.saveSettings();
+                    }
                 }
-            }
 
-            second.onPressedChanged: {
-                if (deviceController && !second.pressed) {
-                    schedule.maximumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                second.onPressedChanged: {
+                    if (deviceController && !second.pressed) {
+                        schedule.maximumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(second.value)
                                                        : second.value);
-                    deviceController.saveSettings();
+                        deviceController.saveSettings();
+                    }
                 }
+
+                labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))
+                leftLabelPrefix:  "<p style='color:#ea0600; font-size:12px;'>Heat to</p>"
+                rightLabelPrefix: "<p style='color:#0097cd; font-size:12px;'>Cool to</p>"
+                fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
+                toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
+            }
+        }
+
+        RowLayout {
+            spacing: 20
+            Layout.preferredWidth: parent.width
+            Layout.topMargin: 20
+
+            Label {
+                Layout.preferredWidth: parent.width / 2 - 5
+
+                text: "<span style='color:#ea0600;'>Heat to</span> - Heating will be turned off when the indoor temperature is above this value"
+                wrapMode: Text.WordWrap
+                textFormat: Text.RichText
+                horizontalAlignment: Qt.AlignLeft
+                font.pointSize: root.font.pointSize * 0.7
             }
 
-            labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))
-            fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
-            toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
+            Label {
+                Layout.preferredWidth: parent.width / 2 - 5
+
+                text: "<span style='color:#0097cd;'>Cool to</span> - Cooling will be turned off when the indoor temperature is below this value"
+                wrapMode: Text.WordWrap
+                textFormat: Text.RichText
+                horizontalAlignment: Qt.AlignLeft
+                font.pointSize: root.font.pointSize * 0.7
+            }
+        }
+
+        Label {
+            Layout.preferredWidth: parent.width
+
+            horizontalAlignment: Qt.AlignHCenter
+            wrapMode: Text.WordWrap
+            font.pointSize: root.font.pointSize * 0.7
+            text: "After activation the schedule will override the current Auto mode temperature settings."
         }
     }
+
+
+    /* Functions
+     * ****************************************************************************************/
 
     function updateSliderValues() {
         _tempSlider.first.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? _tempSlider.from, temperatureUnit,

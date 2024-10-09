@@ -15,6 +15,10 @@ LimitedRangeSlider {
     //! Labels postfix
     property string     labelSuffix:    ""
 
+    //! Left and right label prefix in the HTML format.
+    property string     leftLabelPrefix:    ""
+    property string     rightLabelPrefix:    ""
+
     //! Show min and max values
     property bool       showMinMax:     false
 
@@ -36,7 +40,9 @@ LimitedRangeSlider {
         }
         parent: _root.first.handle
         font.pointSize: _root.font.pointSize * 0.9
-        text: Number(_root.first.value).toLocaleString(locale, "f", 0) + labelSuffix
+        textFormat: Text.RichText
+        lineHeight: 0.5
+        text: leftLabelPrefix + Number(_root.first.value).toLocaleString(locale, "f", 0) + labelSuffix
     }
 
     //! Right label
@@ -49,7 +55,9 @@ LimitedRangeSlider {
         }
         parent: _root.second.handle
         font.pointSize: _root.font.pointSize * 0.9
-        text: Number(_root.second.value).toLocaleString(locale, "f", 0) + labelSuffix
+        textFormat: Text.RichText
+        lineHeight: 0.5
+        text: rightLabelPrefix + Number(_root.second.value).toLocaleString(locale, "f", 0) + labelSuffix
     }
 
     //! Min and Max value labels
