@@ -49,10 +49,39 @@ BasePageView {
 
 
     //! Minimum temperature
-    property real               minTemperature: isCelcius ? AppSpec.autoMinimumTemperatureC : AppSpec.autoMinimumTemperatureF
+    property real               minTemperature: {
+        var minTemp;
+
+        if (schedule.systemMode === AppSpec.Cooling) {
+            minTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.minimumCoolingTemperatiureF) : AppSpec.minimumCoolingTemperatiureF;
+
+        } else if (schedule.systemMode === AppSpec.Heating) {
+            minTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.minimumHeatingTemperatiureF) : AppSpec.minimumHeatingTemperatiureF;
+
+        } else {
+            minTemp = isCelcius ? AppSpec.autoMinimumTemperatureC : AppSpec.autoMinimumTemperatureF;
+        }
+
+        return minTemp;
+    }
 
     //! Maximum temperature
-    property real               maxTemperature: isCelcius ? AppSpec.autoMaximumTemperatureC : AppSpec.autoMaximumTemperatureF
+    property real               maxTemperature: {
+        var maxTemp;
+
+        if (schedule.systemMode === AppSpec.Cooling) {
+            maxTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.maximumCoolingTemperatiureF) : AppSpec.maximumCoolingTemperatiureF;
+
+        } else if (schedule.systemMode === AppSpec.Heating) {
+            maxTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.maximumHeatingTemperatiureF) : AppSpec.maximumHeatingTemperatiureF;
+
+        } else {
+            maxTemp = isCelcius ? AppSpec.autoMaximumTemperatureC : AppSpec.autoMaximumTemperatureF;
+        }
+
+        return maxTemp;
+    }
+
 
 
     /* Object properties
@@ -76,17 +105,7 @@ BasePageView {
         }
 
         onClicked: {
-            if (schedule) {
-                if (temperatureUnit === AppSpec.TempratureUnit.Cel) {
-                    schedule.minimumTemperature = _tempSlider.first.value;
-                    schedule.maximumTemperature = _tempSlider.second.value;
-
-                } else {
-                    schedule.minimumTemperature = Utils.fahrenheitToCelsius(_tempSlider.first.value);
-                    schedule.maximumTemperature = Utils.fahrenheitToCelsius(_tempSlider.second.value);
-                }
-            }
-
+            save();
             backButtonCallback();
         }
     }
@@ -202,8 +221,8 @@ BasePageView {
             leftSideColor:  "#ea0600"
             rightSideColor: "#0097cd"
             labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
-            control.from: deviceController._minimumTemperatureUI;
-            control.to: deviceController._maximumTemperatureUI;
+            control.from: minTemperature;
+            control.to: maxTemperature;
         }
 
         Label {
@@ -216,7 +235,6 @@ BasePageView {
             horizontalAlignment: Qt.AlignLeft
             font.pointSize: root.font.pointSize * 0.7
         }
-
     }
 
     /* Functions
@@ -225,11 +243,11 @@ BasePageView {
     function updateSliderValues() {
         if (schedule.systemMode === AppSpec.Heating) {
             singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
-                                                                                      deviceController._minimumTemperatureUI,  deviceController._maximumTemperatureUI);
+                                                                                      minTemperature, maxTemperature);
 
         } else if (schedule.systemMode === AppSpec.Cooling) {
             singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
-                                                                         deviceController._minimumTemperatureUI,  deviceController._maximumTemperatureUI);
+                                                                                      minTemperature, maxTemperature);
 
         } else {
             //! Create schedule in auto and off mode.
@@ -239,6 +257,29 @@ BasePageView {
             _tempSlider.second.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? _tempSlider.to, temperatureUnit,
                                                                          _tempSlider.first.value + _tempSlider.difference, maxTemperature);
         }
+    }
 
+    //! Save the schedule temperature
+    function save() {
+        if (schedule) {
+            var minTemperature = _tempSlider.first.value;
+            var maxTemperature = _tempSlider.second.value;
+
+            if (schedule.systemMode === AppSpec.Heating) {
+                // Update minimum temperature as heating temperature
+                minTemperature = singleTemperatureSlider.control.value;
+
+            } else if (schedule.systemMode === AppSpec.Cooling) {
+                // Update maximum temperature as cooling temperature
+                maxTemperature = singleTemperatureSlider.control.value;
+            }
+
+            // Save temperatures as celcius.
+            schedule.minimumTemperature = isCelcius ? minTemperature : Utils.fahrenheitToCelsius(minTemperature);
+            schedule.maximumTemperature = isCelcius ? maxTemperature : Utils.fahrenheitToCelsius(maxTemperature);
+
+        } else {
+            console.log("Schedule temperature page: Schedule is undefined, so we can not save it.")
+        }
     }
 }

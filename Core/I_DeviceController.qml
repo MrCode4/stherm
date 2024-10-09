@@ -48,13 +48,13 @@ QtObject {
 
             switch(device.systemSetup.systemMode) {
             case AppSpec.Heating: {
-                minimumTemperature = 40;
-                maximumTemperature = 85;
+                minimumTemperature = AppSpec.minimumHeatingTemperatiureF;
+                maximumTemperature = AppSpec.maximumHeatingTemperatiureF;
             } break;
 
             case AppSpec.Cooling: {
-                minimumTemperature = 60;
-                maximumTemperature = 90;
+                minimumTemperature = AppSpec.minimumCoolingTemperatiureF;
+                maximumTemperature = AppSpec.maximumCoolingTemperatiureF;
             } break;
 
             case AppSpec.Auto: {
