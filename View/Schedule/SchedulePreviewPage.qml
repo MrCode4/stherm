@@ -196,13 +196,32 @@ BasePageView {
 
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
-                        text: Number(Utils.convertedTemperature(scheduleToDisplay?.minimumTemperature ?? 10,
-                                                                appModel?.setting?.tempratureUnit)
-                                     ).toLocaleString(locale, "f", 0) + " - " +
-                              Number(Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0,
-                                                                appModel?.setting?.tempratureUnit)
-                                     ).toLocaleString(locale, "f", 0)
-                              + ` \u00b0${unit}`
+                        text: {
+                            if (scheduleToDisplay.systemMode === AppSpec.Heating) {
+                                // Show the minimum temperature
+                                return Number(Utils.convertedTemperature(scheduleToDisplay?.minimumTemperature ?? 10,
+                                                                         appModel?.setting?.tempratureUnit)
+                                              ).toLocaleString(locale, "f", 0) + ` \u00b0${unit}`;
+
+                            } else if (scheduleToDisplay.systemMode === AppSpec.Cooling) {
+                                // Show the maximum temperature
+                                return Number(Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0,
+                                                                         appModel?.setting?.tempratureUnit)
+                                              ).toLocaleString(locale, "f", 0)
+                                        + ` \u00b0${unit}`;
+
+                            } else {
+
+                                // Show the maximum and minimum temperature values.
+                                return Number(Utils.convertedTemperature(scheduleToDisplay?.minimumTemperature ?? 10,
+                                                                         appModel?.setting?.tempratureUnit)
+                                              ).toLocaleString(locale, "f", 0) + " - " +
+                                        Number(Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0,
+                                                                          appModel?.setting?.tempratureUnit)
+                                               ).toLocaleString(locale, "f", 0)
+                                        + ` \u00b0${unit}`
+                            }
+                        }
                     }
                 }
 
@@ -432,7 +451,9 @@ BasePageView {
 
         //! A copy of _root.schedule in edit mode so user can preview changes and confirm before
         //! saving changes to the original schedule.
-        property ScheduleCPP scheduleToEdit: ScheduleCPP { }
+        property ScheduleCPP scheduleToEdit: ScheduleCPP {
+            systemMode: deviceController.device.systemSetup.systemMode
+        }
 
         //! Overlapping schedules
         property var         overlappingSchedules: []
@@ -453,6 +474,7 @@ BasePageView {
                 scheduleToEdit.endTime = _root.schedule.endTime;
                 scheduleToEdit.repeats = _root.schedule.repeats;
                 scheduleToEdit.dataSource = _root.schedule.dataSource;
+                scheduleToEdit.systemMode = _root.schedule.systemMode;
             }
         }
 
@@ -588,6 +610,7 @@ BasePageView {
         _root.schedule.endTime = internal.scheduleToEdit.endTime;
         _root.schedule.repeats = internal.scheduleToEdit.repeats;
         _root.schedule.dataSource = internal.scheduleToEdit.dataSource;
+        _root.schedule.systemMode = internal.scheduleToEdit.systemMode;
 
         // Emit schedule changed to call updateCurrentSchedules function in schedule controller.
         appModel.schedulesChanged();
