@@ -32,6 +32,15 @@ public:
                     .toStdString() \
                     .c_str()
 
+#define TRACE_CAT(category) \
+    qCDebug(category) << QString("%0 - %1  Method: %2 Line: %3 Log: ") \
+                    .arg(QDateTime::currentDateTime().toString("dd MMM yyyy hh:mm:ss"), \
+                         __FILE__, \
+                         __METHOD__) \
+                    .arg(__LINE__) \
+                    .toStdString() \
+                    .c_str()
+
 
 #define TRACE_CHECK(check) if (check) TRACE
 

@@ -45,7 +45,7 @@ PerfTestService* PerfTestService::me()
 PerfTestService::PerfTestService(QObject *parent)
     : DevApiExecutor{parent}
 {
-    qCDebug(PerfTestLogCat) <<"PerfTestService";
+    TRACE_CAT(PerfTestLogCat) <<"PerfTestService";
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
     mTimerDelay.setInterval(PerfTest::OneSecInMS);
@@ -65,7 +65,7 @@ PerfTestService::PerfTestService(QObject *parent)
     mTimerFinish.setInterval(PerfTest::OneSecInMS);
     connect(&mTimerFinish, &QTimer::timeout, [this]() {
         auto timeLeft = finishTimeLeft();
-        qCDebug(PerfTestLogCat) <<"finishTimeLeft " <<timeLeft;
+        TRACE_CAT(PerfTestLogCat) <<"finishTimeLeft " <<timeLeft;
         if (timeLeft > 0) {
             finishTimeLeft(timeLeft - 1);
         }
@@ -84,11 +84,11 @@ PerfTestService::PerfTestService(QObject *parent)
 void PerfTestService::postponeTest(const QString &reason)
 {
     if (state() > Checking) {
-        qCDebug(PerfTestLogCat) <<"Perf-test can't be postponed since it's already running";
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test can't be postponed since it's already running";
     }
     else {
         isPostponed(true);
-        qCDebug(PerfTestLogCat) <<"Perf-test is postponed, reason: " <<reason;
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test is postponed, reason: " <<reason;
     }
 }
 
@@ -98,13 +98,13 @@ void PerfTestService::resumeTest()
     isPostponed(false);
 
     if (mWasEligibleBeforePostpone) {
-        qCDebug(PerfTestLogCat) <<"Perf-test is elligible while resuming";
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test is elligible while resuming";
         mWasEligibleBeforePostpone = false;
         state(TestState::Eligible);
         setupWarmup();
     }
     else {
-        qCDebug(PerfTestLogCat) <<"Perf-test was not elligible while resuming";
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test was not elligible while resuming";
     }
 }
 
@@ -127,14 +127,14 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
     }
 
     auto msecsToNextCheck = timeToCheckFrom.msecsTo(nextScheduleMark);
-    qCDebug(PerfTestLogCat) <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<" ms";
+    TRACE_CAT(PerfTestLogCat) <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<" ms";
     QTimer::singleShot(60000, this, &PerfTestService::checkTestEligibility); //TODO: msecsToNextCheck
 }
 
 void PerfTestService::checkTestEligibility()
 {
     if (Device->serialNumber().isEmpty()) {
-        qCDebug(PerfTestLogCat) <<"Sn is not ready! can not check perf-test-eligibility";
+        TRACE_CAT(PerfTestLogCat) <<"Sn is not ready! can not check perf-test-eligibility";
         scheduleNextCheck(QTime::currentTime().addSecs(PerfTest::TestDuration / 3));
         return;
     }
@@ -143,12 +143,12 @@ void PerfTestService::checkTestEligibility()
 
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
         auto perfId= data.value(PerfTest::Key_TestID).toInt();
-        qCDebug(PerfTestLogCat) <<"CheckTestEligibility Response " <<perfId <<rawData ;
+        TRACE_CAT(PerfTestLogCat) <<"CheckTestEligibility Response " <<perfId <<rawData ;
 
         QSettings settings;
         if (settings.contains(PerfTest::Key_TestID)) {
             if (settings.value(PerfTest::Key_TestID).toInt() == perfId) {
-                qCDebug(PerfTestLogCat) <<"in checkTestEligibility, elligible test id is already finished testing and retrying uploading "<< perfId;
+                TRACE_CAT(PerfTestLogCat) <<"in checkTestEligibility, elligible test id is already finished testing and retrying uploading "<< perfId;
                 scheduleNextCheck(PerfTest::Noon12PM);
                 return;
             }
@@ -172,7 +172,7 @@ void PerfTestService::checkTestEligibility()
                 // Check if blocking is not resumed by 12PM, ublock and schedule for next day
                 QTimer::singleShot(qMax(PerfTest::OneSecInMS, QTime::currentTime().msecsTo(PerfTest::Noon12PM)), [this] () {
                     if (isPostponed()) {
-                        qCDebug(PerfTestLogCat) <<"Perf-test was not resumed by 12 noon, so going for next-day";
+                        TRACE_CAT(PerfTestLogCat) <<"Perf-test was not resumed by 12 noon, so going for next-day";
                         isPostponed(false);
                         mWasEligibleBeforePostpone = false;
                         scheduleNextCheck(PerfTest::Noon12PM);
@@ -194,7 +194,7 @@ void PerfTestService::checkTestEligibility()
 
 void PerfTestService::setupWarmup()
 {
-    qCDebug(PerfTestLogCat) <<"setupWarmup";
+    TRACE_CAT(PerfTestLogCat) <<"setupWarmup";
 
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
@@ -209,7 +209,7 @@ void PerfTestService::setupWarmup()
         bool isCoolable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::HeatingOnly;
 
         if ((mode() == AppSpecCPP::Heating && !isHeatable) || (mode() == AppSpecCPP::Cooling && !isCoolable)) {
-            qCDebug(PerfTestLogCat) <<"Test requested mode is not compatible. Requested-mode=" <<mode()
+            TRACE_CAT(PerfTestLogCat) <<"Test requested mode is not compatible. Requested-mode=" <<mode()
                                      <<", Device-type=" <<DeviceControllerCPP::instance()->systemSetup()->systemType;
             scheduleNextCheck(PerfTest::Noon12PM);
         }
@@ -224,8 +224,8 @@ void PerfTestService::setupWarmup()
 void PerfTestService::onCountdownStart(AppSpecCPP::SystemMode mode, int delay)
 {
     actualMode(mode);    
-    qCDebug(PerfTestLogCat) <<"onCountdownStart " <<mode <<", " <<delay;
-    qCDebug(PerfTestLogCat) <<"State: " <<state();
+    TRACE_CAT(PerfTestLogCat) <<"onCountdownStart " <<mode <<", " <<delay;
+    TRACE_CAT(PerfTestLogCat) <<"State: " <<state();
     startTimeLeft(delay/PerfTest::OneSecInMS);
     mTimerDelay.start();
     mTimerGetTemp.stop();
@@ -234,14 +234,14 @@ void PerfTestService::onCountdownStart(AppSpecCPP::SystemMode mode, int delay)
 
 void PerfTestService::onCountdownStop()
 {
-    qCDebug(PerfTestLogCat) <<"onCountdownStop";
-    qCDebug(PerfTestLogCat) <<"State: " <<state();
+    TRACE_CAT(PerfTestLogCat) <<"onCountdownStop";
+    TRACE_CAT(PerfTestLogCat) <<"State: " <<state();
     startRunning();
 }
 
 void PerfTestService::onTempSchemeStateChanged(bool started)
 {
-    qCDebug(PerfTestLogCat) <<"onTempSchemeStateChanged: " <<started;
+    TRACE_CAT(PerfTestLogCat) <<"onTempSchemeStateChanged: " <<started;
     if (started) {        
         startRunning();
     }
@@ -252,8 +252,8 @@ void PerfTestService::startRunning()
     if (state() == TestState::Running) return;
 
     testTimeLeft(PerfTest::TestDuration);
-    qCDebug(PerfTestLogCat) <<"startRunning";
-    qCDebug(PerfTestLogCat) <<"State: " <<state();
+    TRACE_CAT(PerfTestLogCat) <<"startRunning";
+    TRACE_CAT(PerfTestLogCat) <<"State: " <<state();
     startTimeLeft(0);
     mTimerDelay.stop();
     mTimerGetTemp.start();
@@ -262,7 +262,7 @@ void PerfTestService::startRunning()
 
 void PerfTestService::cleanupRunning()
 {
-    qCDebug(PerfTestLogCat) <<"cleanupRunning";
+    TRACE_CAT(PerfTestLogCat) <<"cleanupRunning";
     while (mReadings.count() > 0) mReadings.removeLast();
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
@@ -274,7 +274,7 @@ void PerfTestService::cleanupRunning()
 
 void PerfTestService::cancelTest()
 {
-    qCDebug(PerfTestLogCat) <<"Perf-test cancelled by user";
+    TRACE_CAT(PerfTestLogCat) <<"Perf-test cancelled by user";
     QJsonObject data;
     data[PerfTest::Key_TestID] = testId();
     data["sn"] = Device->serialNumber();
@@ -293,16 +293,16 @@ void PerfTestService::cancelTest()
 void PerfTestService::collectReading()
 {
     auto temperature = DeviceControllerCPP::instance()->getTemperature();
-    qCDebug(PerfTestLogCat) <<"collectReading " <<temperature;    
+    TRACE_CAT(PerfTestLogCat) <<"collectReading " <<temperature;
     testTimeLeft(testTimeLeft() - mTimerGetTemp.interval() / PerfTest::OneSecInMS);
-    qCDebug(PerfTestLogCat) <<"testTimeLeft " <<testTimeLeft();
+    TRACE_CAT(PerfTestLogCat) <<"testTimeLeft " <<testTimeLeft();
     QJsonObject item;
     item["timestamp"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
     item["temperature"] = temperature;
     mReadings.append(item);
 
     if (testTimeLeft() <= 0) {
-        qCDebug(PerfTestLogCat) <<"Perf-test getting readings completed";
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test getting readings completed";
 
         QJsonObject data;
         data[PerfTest::Key_TestID] = testId();
@@ -330,17 +330,17 @@ void PerfTestService::checkAndSendSavedResult()
     QSettings settings;
     if (settings.contains(PerfTest::Key_TestData)) {
         auto data = settings.value(PerfTest::Key_TestData).toByteArray();
-        qCDebug(PerfTestLogCat) <<"Perf-test saved result found";
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test saved result found";
         auto dataObj = QJsonDocument::fromJson(data).object();
         auto sn = dataObj.value("sn").toString();
         auto testTime = QDateTime::fromString(dataObj.value("time").toString(), DATETIME_FORMAT);
         auto retryDays = dataObj.contains("data") ? 30 : 1;
         if (testTime.isValid() && testTime.daysTo(QDateTime::currentDateTimeUtc()) <= retryDays) {
-            qCDebug(PerfTestLogCat) <<"Perf-test saved result sending retrying";
+            TRACE_CAT(PerfTestLogCat) <<"Perf-test saved result sending retrying";
             sendResultsToServer(sn, data);
         }
         else {
-            qCDebug(PerfTestLogCat) <<"Perf-test saved result expired, cleaning up";
+            TRACE_CAT(PerfTestLogCat) <<"Perf-test saved result expired, cleaning up";
             settings.remove(PerfTest::Key_TestID);
             settings.remove(PerfTest::Key_TestData);
         }
@@ -349,28 +349,28 @@ void PerfTestService::checkAndSendSavedResult()
 
 void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& data)
 {
-    qCDebug(PerfTestLogCat) <<"sendResultsToServer";
+    TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer";
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        qCDebug(PerfTestLogCat) <<"sendResultsToServer Response " <<rawData;
+        TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer Response " <<rawData;
 
         if (reply->error() == QNetworkReply::NoError) {
             mTimerRetrySending.stop();
-            qCDebug(PerfTestLogCat) <<"Perf-test result uploaded successfully";
+            TRACE_CAT(PerfTestLogCat) <<"Perf-test result uploaded successfully";
 
             QSettings settings;
             settings.remove(PerfTest::Key_TestID);
             settings.remove(PerfTest::Key_TestData);
         }
         else {
-            qCDebug(PerfTestLogCat) <<"Perf-test result uploading failed, retry scheduled";
-            if (!mTimerRetrySending.isActive()) {
+            TRACE_CAT(PerfTestLogCat) <<"Perf-test result uploading failed, retry scheduled";
+            if (state() != PerfTestService::Running && !mTimerRetrySending.isActive()) {
                 mTimerRetrySending.start();
             }
         }
     };    
 
-    qCDebug(PerfTestLogCat) <<"sendResultsToServer Request " <<data;
+    TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer Request " <<data;
     auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(sn);
     callPostApi(url, data, callback);
 }
@@ -378,7 +378,7 @@ void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& d
 void PerfTestService::finishTest()
 {
     if (state() == TestState::Complete) {
-        qCDebug(PerfTestLogCat) <<"finishTest, testing done, scheduling next check.";
+        TRACE_CAT(PerfTestLogCat) <<"finishTest, testing done, scheduling next check.";
         mTimerFinish.stop();
         scheduleNextCheck(PerfTest::Noon12PM);
     }
