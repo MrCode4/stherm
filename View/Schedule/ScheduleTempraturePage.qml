@@ -116,12 +116,12 @@ BasePageView {
         width: parent.width * 0.9
 
         visible: schedule.systemMode !== AppSpec.Heating && schedule.systemMode !== AppSpec.Cooling
-        spacing: 32
+        spacing: 16
 
         RowLayout {
             Layout.preferredWidth: parent.width * 0.9
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 32
+            Layout.topMargin: 100
 
             spacing: 25
 
