@@ -50,4 +50,6 @@ QtObject {
     readonly property string message_middle:                    "\ue1e1"
     readonly property string sun_bright:                        "\ue28f"
     readonly property string envelope:                          "\uf0e0"
+    readonly property string trashCan:                          "\uf2ed"
+    readonly property string arrowLeft:                         "\uf060"
 }
