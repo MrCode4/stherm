@@ -115,10 +115,7 @@ BasePageView {
 
         onButtonClicked: button => {
                              if (button === MessageDialog.Apply) {
-                                 if (schedulesController) {
-                                     scheduleDelegateToDelete.removed();
-                                     schedulesController.removeSchedule(scheduleToDelete);
-                                 }
+                                 scheduleDelegateToDelete.removeRequestAccepted();
                              }
                          }
     }

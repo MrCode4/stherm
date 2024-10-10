@@ -13,7 +13,6 @@ ItemDelegate {
     /* Signals
      * ****************************************************************************************/
     signal sendRemovedRequest()
-    signal removed()
 
     /* Property declaration
      * ****************************************************************************************/
@@ -31,11 +30,6 @@ ItemDelegate {
 
     /* Object properties
      * ****************************************************************************************/
-
-    onRemoved: {
-        //! Remove this item
-        _removeAnima.running = true;
-    }
 
     /* Children
      * ****************************************************************************************/
@@ -197,6 +191,12 @@ ItemDelegate {
             to: -_root.width
             duration: 200
         }
+
+        onFinished: {
+            if (schedulesController) {
+                schedulesController.removeSchedule(schedule);
+            }
+        }
     }
 
     function setActive()
@@ -231,6 +231,12 @@ ItemDelegate {
     function disconnect() {
         uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(setActive);
         uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(disconnect);
+    }
+
+    //! The remove request accepted by the parent
+    function removeRequestAccepted() {
+        //! Remove this item
+        _removeAnima.running = true;
     }
 }
 
