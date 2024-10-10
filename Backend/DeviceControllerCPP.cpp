@@ -1486,6 +1486,8 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
                                       destinationPath);
 
     TRACE << "exporting test results ended " << sent;
+}
+
 void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 {
     if (mSystemSetup && mSystemSetup->systemMode != mode) {

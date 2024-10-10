@@ -43,7 +43,6 @@ public:
     Q_INVOKABLE void fetchUserData();
 
     Q_INVOKABLE QString baseURL();
-    void fetchPerfTestSchedule();
 
     Q_INVOKABLE void pushLockState(const QString& pin, bool lock);
 

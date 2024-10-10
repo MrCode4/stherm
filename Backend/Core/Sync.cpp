@@ -88,31 +88,6 @@ QString Sync::getSerialNumber() const { return mSerialNumber;}
 bool Sync::hasClient() const { return mHasClient; }
 QVariantMap Sync::getContractorInfo() const { return mContractorInfo; }
 
-void Sync::setApiAuth(QNetworkRequest& request)
-{
-    RestApiExecutor::setApiAuth(request);
-    auto authData = mSystemUuid + mSerialNumber.toStdString();
-    // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain
-    // the header compression context for the connection"
-    request.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(authData, QCryptographicHash::Sha256).toHex());
-}
-
-QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
-{
-    const QJsonObject rootObject = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
-    QJsonObject data;
-
-    if (rootObject.contains("data")) {
-        data = rootObject.value("data").toObject();
-    }
-    else {
-        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object:" << rootObject;
-    }
-
-    return data;
-}
-
-
 void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 {
     QEventLoop* eventLoop = nullptr;
