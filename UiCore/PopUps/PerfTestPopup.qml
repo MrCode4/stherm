@@ -82,6 +82,7 @@ I_PopUp {
                     else {
                         if (root.showConfirmationToStop) {
                             PerfTestService.cancelTest();
+                            root.showConfirmationToStop = false;
                         }
                         else {
                             root.showConfirmationToStop = true;
