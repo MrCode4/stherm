@@ -50,6 +50,7 @@ BasePageView {
         id: contactContractorBtn
 
         touchMargin: 30
+        visible: false
 
         anchors.right: parent.right
         anchors.bottom: parent.bottom
