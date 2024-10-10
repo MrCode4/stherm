@@ -33,8 +33,11 @@ I_PopUp {
     //! Reject button text
     property string rejectText: qsTr("No")
 
-    //! Support the `No`, `Yes`, `Cancel` and `Discard` for now
-    //! `Cancel` and `Discard` are ButtonInverted and the others are Button type
+    //! Apply button text to edit for any action
+    property string applyText: qsTr("Apply")
+
+    //! Support the `No`, `Yes`, `Cancel`, `Apply` and `Discard` for now
+    //! `Cancel`, `Apply` and `Discard` are ButtonInverted and the others are Button type
     //! TODO: Supports two buttons, UI should be modified for more than two bottons
     property int buttons : MessageDialog.Yes | MessageDialog.No
 
@@ -119,6 +122,18 @@ I_PopUp {
 
                 onClicked: {
                     buttonClicked(MessageDialog.Discard);
+                    close();
+                }
+            }
+
+            ButtonInverted {
+                Layout.fillWidth: true
+                text: applyText
+                textColor: "#CB0C0A"
+                visible: (buttons & MessageDialog.Apply) === MessageDialog.Apply
+
+                onClicked: {
+                    buttonClicked(MessageDialog.Apply);
                     close();
                 }
             }

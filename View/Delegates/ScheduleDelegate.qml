@@ -12,6 +12,7 @@ ItemDelegate {
 
     /* Signals
      * ****************************************************************************************/
+    signal sendRemovedRequest()
     signal removed()
 
     /* Property declaration
@@ -30,6 +31,11 @@ ItemDelegate {
 
     /* Object properties
      * ****************************************************************************************/
+
+    onRemoved: {
+        //! Remove this item
+        _removeAnima.running = true;
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -163,8 +169,7 @@ ItemDelegate {
             }
 
             onClicked: {
-                //! Remove this item
-                _removeAnima.running = true;
+                sendRemovedRequest();
             }
         }
     }
@@ -191,10 +196,6 @@ ItemDelegate {
             property: "x"
             to: -_root.width
             duration: 200
-        }
-
-        onFinished: {
-            removed();
         }
     }
 

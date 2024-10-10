@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 import Ronia
 import Stherm
@@ -60,6 +61,8 @@ BasePageView {
         clip: true
         model: appModel?.schedules ?? []
         delegate: ScheduleDelegate {
+            id: scheduleDelegate
+
             required property var modelData
             required property int index
 
@@ -69,10 +72,10 @@ BasePageView {
             schedule: (modelData instanceof ScheduleCPP) ? modelData : null
             delegateIndex: index
 
-            onRemoved: {
-                if (schedulesController) {
-                    schedulesController.removeSchedule(schedule);
-                }
+            onSendRemovedRequest: {
+                deleteScheduleConfirmPopup.scheduleDelegateToDelete = scheduleDelegate;
+                deleteScheduleConfirmPopup.open();
+
             }
 
             onClicked: {
@@ -93,5 +96,30 @@ BasePageView {
             backButtonVisible: true
             isEditable: true
         }
+    }
+
+    //! Use a ConfirmPopup for delete schedules.
+    property ConfirmPopup deleteScheduleConfirmPopup: ConfirmPopup {
+
+        property ScheduleDelegate scheduleDelegateToDelete: null
+        property ScheduleCPP scheduleToDelete: scheduleDelegateToDelete?.schedule ?? null
+
+        message: "Delete the Schedule?"
+        detailMessage: `Are you sure you want to delete ${scheduleToDelete?.name ?? ""}?`
+        applyText: qsTr("Delete")
+
+        visible: false
+        icon: FAIcons.trashCan
+        iconWeight: FAIcons.Light
+        buttons: MessageDialog.Cancel | MessageDialog.Apply
+
+        onButtonClicked: button => {
+                             if (button === MessageDialog.Apply) {
+                                 if (schedulesController) {
+                                     scheduleDelegateToDelete.removed();
+                                     schedulesController.removeSchedule(scheduleToDelete);
+                                 }
+                             }
+                         }
     }
 }
