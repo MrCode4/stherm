@@ -68,7 +68,8 @@ private:
     static PerfTestService* mMe;
 
     bool mWasEligibleBeforePostpone = false;
-    QTimer mTimerDelay;
+    QTimer mTimerPostponeWatcher;
+    QTimer mTimerDelay;    
     QTimer mTimerGetTemp;
     QTimer mTimerFinish;
     QTimer mTimerRetrySending;

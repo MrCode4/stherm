@@ -64,6 +64,15 @@ PerfTestService::PerfTestService(QObject *parent)
         }
     });
 
+    connect(&mTimerPostponeWatcher, &QTimer::timeout, [this]() {
+        mTimerPostponeWatcher.stop();
+        if (!isPostponed()) return;
+        isPostponed(false);
+        mWasEligibleBeforePostpone = false;
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test was not resumed by 12 noon, so going for next-day";
+        scheduleNextCheck(PerfTest::Noon12PM);
+    });
+
     mTimerGetTemp.setInterval(PerfTest::DataPickInterval * PerfTest::OneSecInMS);
     connect(&mTimerGetTemp, &QTimer::timeout, this, &PerfTestService::collectReading);
 
@@ -100,6 +109,7 @@ void PerfTestService::postponeTest(const QString &reason)
 void PerfTestService::resumeTest()
 {
     if (!isPostponed()) return;
+    mTimerPostponeWatcher.stop();
     isPostponed(false);
 
     if (mWasEligibleBeforePostpone) {
@@ -176,14 +186,8 @@ void PerfTestService::checkTestEligibility()
                 TRACE_CAT(PerfTestLogCat) << "Elligible to perf-test but UI is busy, so postponing now until UI resumes";
                 mWasEligibleBeforePostpone = true;
                 // Check if blocking is not resumed by 12PM, ublock and schedule for next day
-                QTimer::singleShot(qMax(PerfTest::OneSecInMS, QTime::currentTime().msecsTo(PerfTest::Noon12PM)), [this] () {
-                    if (isPostponed()) {
-                        TRACE_CAT(PerfTestLogCat) <<"Perf-test was not resumed by 12 noon, so going for next-day";
-                        isPostponed(false);
-                        mWasEligibleBeforePostpone = false;
-                        scheduleNextCheck(PerfTest::Noon12PM);
-                    }
-                });
+                mTimerPostponeWatcher.setInterval(qMax(PerfTest::OneSecInMS, QTime::currentTime().msecsTo(PerfTest::Noon12PM)));
+                mTimerPostponeWatcher.start();
             }
             else {
                 state(TestState::Eligible);
@@ -298,7 +302,7 @@ void PerfTestService::cancelTest()
 
 void PerfTestService::collectReading()
 {
-    auto temperature = DeviceControllerCPP::instance()->getTemperature();
+    auto temperature = (DeviceControllerCPP::instance()->getTemperature() - 32) / 1.8;;
     TRACE_CAT(PerfTestLogCat) <<"collectReading " <<temperature;
     testTimeLeft(testTimeLeft() - mTimerGetTemp.interval() / PerfTest::OneSecInMS);
     TRACE_CAT(PerfTestLogCat) <<"testTimeLeft " <<testTimeLeft();
