@@ -33,6 +33,8 @@ Popup {
     //! Icon of popup: this should be a font-awesome icon
     property string                     icon:               ""
 
+    property int                        iconWeight:         FAIcons.Solid
+
     //! Popup content item
     default property list<QtObject>     contents
 
@@ -107,6 +109,7 @@ Popup {
             visible: Boolean(icon)
             font.pointSize: Qt.application.font.pointSize * 2.4
             text: icon
+            font.weight: iconWeight
         }
 
         //! Content
