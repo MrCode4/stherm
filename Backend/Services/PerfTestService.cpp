@@ -151,7 +151,13 @@ void PerfTestService::checkTestEligibility()
         return;
     }
 
-    auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
+    auto callback = [this](QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() != QNetworkReply::NoError) {
+            TRACE_CAT(PerfTestLogCat) <<"CheckTestEligibility API failed, going to retry in 15 minutes";
+            scheduleNextCheck(QTime::currentTime().addSecs(PerfTest::TestDuration));
+            return;
+        }
+
         auto perfId= data.value(PerfTest::Key_TestID).toInt();
         TRACE_CAT(PerfTestLogCat) <<"CheckTestEligibility Response " <<perfId <<rawData ;
 
