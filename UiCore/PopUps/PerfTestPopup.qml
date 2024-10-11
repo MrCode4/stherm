@@ -128,7 +128,8 @@ I_PopUp {
                     color: Style.foreground
                     visible: PerfTestService.startTimeLeft > 0
                     wrapMode: Text.Wrap
-                    text: "Cooling will start in " + PerfTestService.startTimeLeft + " sec."
+                    text: (PerfTestService.mode == AppSpecCPP.Cooling ? "Cooling" : "Heating") +
+                          " will start in " + PerfTestService.startTimeLeft + " sec."
                 }
             }
         }

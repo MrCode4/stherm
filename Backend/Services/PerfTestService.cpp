@@ -20,9 +20,10 @@ const int OneSecInMS = 1000;
 const int OneMinInMS = 60 * OneSecInMS;
 const QTime Noon12PM = QTime::fromString("12:00:00");
 const QTime TenAM = QTime::fromString("10:00:00");
-const int TestDuration = 2 * 60; //TODO: 15 * 60
-const int DataPickInterval = 2; //TODO: 15
-const int FinishDelay = 10; //TODO: 5 * 60
+// In seconds
+const int TestDuration = 15 * 60;
+const int DataPickInterval = 15;
+const int FinishDelay = 5 * 60;
 
 const QString Heating("heating");
 const QString Cooling("cooling");
@@ -45,11 +46,6 @@ PerfTestService* PerfTestService::me()
 PerfTestService::PerfTestService(QObject *parent)
     : DevApiExecutor{parent}
 {
-    {
-        QSettings settings;
-        settings.remove(PerfTest::Key_TestID);
-        settings.remove(PerfTest::Key_TestData);
-    }
     TRACE_CAT(PerfTestLogCat) <<"PerfTestService";
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
@@ -58,8 +54,7 @@ PerfTestService::PerfTestService(QObject *parent)
         auto timeLeft = startTimeLeft();        
         if (timeLeft > 0) {
             startTimeLeft(timeLeft - 1);
-        }
-        else {
+        } else {
             startRunning();
         }
     });
@@ -82,8 +77,7 @@ PerfTestService::PerfTestService(QObject *parent)
         TRACE_CAT(PerfTestLogCat) <<"finishTimeLeft " <<timeLeft;
         if (timeLeft > 0) {
             finishTimeLeft(timeLeft - 1);
-        }
-        else {
+        } else {
             finishTest();
         }
     });
@@ -99,8 +93,7 @@ void PerfTestService::postponeTest(const QString &reason)
 {
     if (state() > Checking) {
         TRACE_CAT(PerfTestLogCat) <<"Perf-test can't be postponed since it's already running";
-    }
-    else {
+    } else {
         isPostponed(true);
         TRACE_CAT(PerfTestLogCat) <<"Perf-test is postponed, reason: " <<reason;
     }
@@ -117,8 +110,7 @@ void PerfTestService::resumeTest()
         mWasEligibleBeforePostpone = false;
         state(TestState::Eligible);
         setupWarmup();
-    }
-    else {
+    } else {
         TRACE_CAT(PerfTestLogCat) <<"Perf-test was not elligible while resuming";
     }
 }
@@ -136,8 +128,7 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
     if (timeToCheckFrom.secsTo(QDateTime(QDate::currentDate(), PerfTest::Noon12PM.addSecs(-1 * PerfTest::TestDuration))) >= 0) {
         auto time = checkTime > PerfTest::TenAM ? checkTime : PerfTest::TenAM;
         nextScheduleMark = QDateTime(QDate::currentDate(), time);
-    }
-    else {
+    } else {
         nextScheduleMark = QDateTime(QDate::currentDate().addDays(1), PerfTest::TenAM);
     }
 
@@ -188,13 +179,11 @@ void PerfTestService::checkTestEligibility()
                 // Check if blocking is not resumed by 12PM, ublock and schedule for next day
                 mTimerPostponeWatcher.setInterval(qMax(PerfTest::OneSecInMS, QTime::currentTime().msecsTo(PerfTest::Noon12PM)));
                 mTimerPostponeWatcher.start();
-            }
-            else {
+            } else {
                 state(TestState::Eligible);
                 setupWarmup();
             }
-        }
-        else {
+        } else {
             scheduleNextCheck(PerfTest::Noon12PM);
         }
     };
@@ -213,8 +202,7 @@ void PerfTestService::setupWarmup()
     if (DeviceControllerCPP::instance()->systemSetup()->systemMode == mode()) {
         NetworkManager::instance()->isEnable(false);
         startRunning();
-    }
-    else {
+    } else {
         bool isHeatable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::CoolingOnly;
         bool isCoolable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::HeatingOnly;
 
@@ -222,8 +210,7 @@ void PerfTestService::setupWarmup()
             TRACE_CAT(PerfTestLogCat) <<"Test requested mode is not compatible. Requested-mode=" <<mode()
                                      <<", Device-type=" <<DeviceControllerCPP::instance()->systemSetup()->systemType;
             scheduleNextCheck(PerfTest::Noon12PM);
-        }
-        else {
+        } else {
             state(TestState::Warmup);
             NetworkManager::instance()->isEnable(false);
             DeviceControllerCPP::instance()->doPerfTest(mode());
@@ -348,8 +335,7 @@ void PerfTestService::checkAndSendSavedResult()
         if (testTime.isValid() && testTime.daysTo(QDateTime::currentDateTimeUtc()) <= retryDays) {
             TRACE_CAT(PerfTestLogCat) <<"Perf-test saved result sending retrying";
             sendResultsToServer(sn, data);
-        }
-        else {
+        } else {
             TRACE_CAT(PerfTestLogCat) <<"Perf-test saved result expired, cleaning up";
             settings.remove(PerfTest::Key_TestID);
             settings.remove(PerfTest::Key_TestData);
@@ -371,8 +357,7 @@ void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& d
             QSettings settings;
             settings.remove(PerfTest::Key_TestID);
             settings.remove(PerfTest::Key_TestData);
-        }
-        else {
+        } else {
             TRACE_CAT(PerfTestLogCat) <<"Perf-test result uploading failed, retry scheduled";
             if (state() != PerfTestService::Running && !mTimerRetrySending.isActive()) {
                 mTimerRetrySending.start();
