@@ -7,6 +7,7 @@ import Stherm
 I_PopUp {
     id: root
     title: PerfTestService.state != PerfTestService.Complete && root.showConfirmationToStop ? "Stop the Performance Test" : "Performance Test"
+    dim: false
     leftPadding: 24; rightPadding: 24; topPadding: 20; bottomPadding: 24
     closeButtonEnabled: false
     closePolicy: Popup.NoAutoClose

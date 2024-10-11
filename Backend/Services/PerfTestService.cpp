@@ -97,7 +97,7 @@ void PerfTestService::postponeTest(const QString &reason)
         TRACE_CAT(PerfTestLogCat) <<"Perf-test can't be postponed since it's already running";
     } else {
         isPostponed(true);
-        TRACE_CAT(PerfTestLogCat) <<"Perf-test is postponed, reason: " <<reason;
+        TRACE_CAT_CHECK(PerfTestLogCat, state() != Idle) <<"Perf-test is postponed, reason: " <<reason;
     }
 }
 
@@ -112,7 +112,7 @@ void PerfTestService::resumeTest()
         mWasEligibleBeforePostpone = false;
         checkWarmupOrRun();
     } else {
-        TRACE_CAT(PerfTestLogCat) <<"Perf-test was not eligible while resuming";
+        TRACE_CAT_CHECK(PerfTestLogCat, state() != Idle) <<"Perf-test was not eligible while resuming";
     }
 }
 
@@ -136,7 +136,7 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
     }
 
     auto msecsToNextCheck = timeToCheckFrom.msecsTo(nextScheduleMark);
-    TRACE_CAT(PerfTestLogCat) <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<" s";
+    TRACE_CAT(PerfTestLogCat) <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<"seconds";
     mTimerScheduleWatcher.setInterval(msecsToNextCheck);
     mTimerScheduleWatcher.start();
 }
@@ -229,9 +229,7 @@ void PerfTestService::checkWarmupOrRun()
 
 void PerfTestService::onCountdownStart(AppSpecCPP::SystemMode mode, int delay)
 {
-    actualMode(mode);    
-    TRACE_CAT(PerfTestLogCat) <<"onCountdownStart " <<mode <<", " <<delay;
-    TRACE_CAT(PerfTestLogCat) <<"State: " <<state();
+    TRACE_CAT(PerfTestLogCat) <<"onCountdownStart " <<mode <<", " <<delay <<state();
     startTimeLeft(delay/PerfTest::OneSecInMS);
     mTimerDelay.start();
     mTimerGetTemp.stop();
@@ -240,8 +238,7 @@ void PerfTestService::onCountdownStart(AppSpecCPP::SystemMode mode, int delay)
 
 void PerfTestService::onCountdownStop()
 {
-    TRACE_CAT(PerfTestLogCat) <<"onCountdownStop";
-    TRACE_CAT(PerfTestLogCat) <<"State: " <<state();
+    TRACE_CAT(PerfTestLogCat) <<"onCountdownStop"<< state();
     startRunning();
 }
 

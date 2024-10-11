@@ -44,6 +44,8 @@ public:
 
 #define TRACE_CHECK(check) if (check) TRACE
 
+#define TRACE_CAT_CHECK(category, check) if (check) TRACE_CAT(category)
+
 
 #define LOG_PRINT \
     qDebug() << QString("%0 - Log: ") \
