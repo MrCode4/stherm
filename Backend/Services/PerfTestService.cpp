@@ -183,7 +183,7 @@ void PerfTestService::checkTestEligibility()
                 TRACE_CAT(PerfTestLogCat) << "Eligible to perf-test but UI is busy, so postponing now until UI resumes";
                 mWasEligibleBeforePostpone = true;
                 // Check if blocking is not resumed by 12PM, ublock and schedule for next day
-                mTimerPostponeWatcher.setInterval(qMax(PerfTest::OneSecInMS, QTime::currentTime().msecsTo(PerfTest::Noon12PM)));
+                mTimerPostponeWatcher.setInterval(12 * 60 * PerfTest::OneMinInMS);
                 mTimerPostponeWatcher.start();
             } else {
                 TRACE_CAT(PerfTestLogCat) << "Eligible to perf-test, so going for it now.";

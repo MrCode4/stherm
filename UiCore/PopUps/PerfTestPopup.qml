@@ -128,7 +128,7 @@ I_PopUp {
                     visible: PerfTestService.startTimeLeft > 0
                     wrapMode: Text.Wrap
                     text: (PerfTestService.mode == AppSpecCPP.Cooling ? "Cooling" : "Heating") +
-                          " will start in " + PerfTestService.startTimeLeft + " sec."
+                          " will start in " + PerfTestService.startTimeLeft + (PerfTestService.startTimeLeft > 1 ? " secs." : " sec.")
                 }
             }
         }
@@ -160,7 +160,8 @@ I_PopUp {
                 font.weight: 400
                 color: Style.foreground
                 wrapMode: Text.Wrap
-                text: "Remaining time " + Math.ceil((PerfTestService.testTimeLeft/60).toFixed()) + " secs"
+                property int remaintingTime : Math.ceil(PerfTestService.testTimeLeft.toFixed()/60)
+                text: "Remaining time " + remaintingTime + (remaintingTime > 1 ? " minutes" : " minute");
             }
         }
     }
