@@ -8,7 +8,7 @@
 
 #include <QCoreApplication>
 #include <QLoggingCategory>
-#include <QRandomGenerator64>
+#include <QRandomGenerator>
 #include <QSettings>
 #include <QTimer>
 
@@ -121,16 +121,18 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
     startTimeLeft(0);
     testTimeLeft(0);
     finishTimeLeft(0);
-    state(TestState::Waiting);
+    state(TestState::Idle);
 
     QDateTime nextScheduleMark;
     QDateTime timeToCheckFrom = QDateTime(QDate::currentDate(), checkTime);
 
+    auto randomDelaySecs = QRandomGenerator::global()->bounded(0, PerfTest::TestDuration);
+
     if (timeToCheckFrom.secsTo(QDateTime(QDate::currentDate(), PerfTest::Noon12PM.addSecs(-1 * PerfTest::TestDuration))) >= 0) {
-        auto time = checkTime > PerfTest::TenAM ? checkTime : PerfTest::TenAM;
+        auto time = checkTime > PerfTest::TenAM ? checkTime : PerfTest::TenAM.addSecs(randomDelaySecs);
         nextScheduleMark = QDateTime(QDate::currentDate(), time);
     } else {
-        nextScheduleMark = QDateTime(QDate::currentDate().addDays(1), PerfTest::TenAM);
+        nextScheduleMark = QDateTime(QDate::currentDate().addDays(1), PerfTest::TenAM.addSecs(randomDelaySecs));
     }
 
     auto msecsToNextCheck = timeToCheckFrom.msecsTo(nextScheduleMark);
@@ -140,12 +142,12 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
 }
 
 void PerfTestService::checkTestEligibility()
-{
+{    
     mTimerScheduleWatcher.stop();
 
     if (Device->serialNumber().isEmpty()) {
-        TRACE_CAT(PerfTestLogCat) <<"Sn is not ready! can not check perf-test-eligibility";
-        scheduleNextCheck(QTime::currentTime().addSecs(PerfTest::TestDuration / 3));
+        TRACE_CAT(PerfTestLogCat) <<"Sn is not ready! can not check perf-test-eligibility, will try next day";
+        scheduleNextCheck(PerfTest::Noon12PM);
         return;
     }
 
@@ -174,7 +176,9 @@ void PerfTestService::checkTestEligibility()
             mode(AppSpecCPP::Off);
         }        
 
-        if (testId() > 0 && mode() != AppSpecCPP::Off) {            
+        if (testId() > 0 && mode() != AppSpecCPP::Off) {
+            state(Eligible);
+
             if (isPostponed()) {
                 TRACE_CAT(PerfTestLogCat) << "Eligible to perf-test but UI is busy, so postponing now until UI resumes";
                 mWasEligibleBeforePostpone = true;
@@ -182,6 +186,7 @@ void PerfTestService::checkTestEligibility()
                 mTimerPostponeWatcher.setInterval(qMax(PerfTest::OneSecInMS, QTime::currentTime().msecsTo(PerfTest::Noon12PM)));
                 mTimerPostponeWatcher.start();
             } else {
+                TRACE_CAT(PerfTestLogCat) << "Eligible to perf-test, so going for it now.";
                 checkWarmupOrRun();
             }
         } else {
@@ -189,6 +194,7 @@ void PerfTestService::checkTestEligibility()
         }
     };
 
+    state(Checking);
     callGetApi(API_SERVER_BASE_URL + QString("api/sync/perftest/schedule?sn=%0").arg(Device->serialNumber()), callback);
 }
 

@@ -32,7 +32,9 @@ public:
     static PerfTestService* create(QQmlEngine*, QJSEngine*) {return me();}
 
     enum TestState {
-        Waiting = 0,
+        Idle = 0,
+        Checking,
+        Eligible,
         Warmup,
         Running,
         Complete
