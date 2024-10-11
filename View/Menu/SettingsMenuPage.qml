@@ -127,6 +127,15 @@ BasePageView {
                 text: "System Alerts",
                 color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/Menu/SystemAlertsPage.qml"
+            },
+            {
+                icon: FAIcons.circleCheck,
+                text: "Perf Test",
+                color: Style.hiddenMenuColor,
+                action: () => {
+                    PerfTestService.checkTestEligibility();
+                    uiSession.showHome();
+                }
             }
         ]
 
