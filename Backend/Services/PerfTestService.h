@@ -42,13 +42,13 @@ public:
 signals:
 
 public slots:
+    Q_INVOKABLE void checkTestEligibility();
     Q_INVOKABLE void postponeTest(const QString& reason);
     Q_INVOKABLE void resumeTest();
     Q_INVOKABLE void cancelTest();
     Q_INVOKABLE void finishTest();
 
 private slots:
-    void checkTestEligibility();
     void onCountdownStart(AppSpecCPP::SystemMode mode, int delay);
     void onCountdownStop();
     void onTempSchemeStateChanged(bool started);
@@ -66,6 +66,7 @@ private:
     static PerfTestService* mMe;
 
     bool mWasEligibleBeforePostpone = false;
+    QTimer mTimerScheduleWatcher;
     QTimer mTimerPostponeWatcher;
     QTimer mTimerDelay;    
     QTimer mTimerGetTemp;

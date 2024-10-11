@@ -49,6 +49,8 @@ PerfTestService::PerfTestService(QObject *parent)
     TRACE_CAT(PerfTestLogCat) <<"PerfTestService";
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
+    connect(&mTimerScheduleWatcher, &QTimer::timeout, this, &PerfTestService::checkTestEligibility);
+
     mTimerDelay.setInterval(PerfTest::OneSecInMS);
     connect(&mTimerDelay, &QTimer::timeout, [this]() {
         auto timeLeft = startTimeLeft();        
@@ -133,11 +135,14 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
 
     auto msecsToNextCheck = timeToCheckFrom.msecsTo(nextScheduleMark);
     TRACE_CAT(PerfTestLogCat) <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<" s";
-    QTimer::singleShot(msecsToNextCheck, this, &PerfTestService::checkTestEligibility);
+    mTimerScheduleWatcher.setInterval(msecsToNextCheck);
+    mTimerScheduleWatcher.start();
 }
 
 void PerfTestService::checkTestEligibility()
 {
+    mTimerScheduleWatcher.stop();
+
     if (Device->serialNumber().isEmpty()) {
         TRACE_CAT(PerfTestLogCat) <<"Sn is not ready! can not check perf-test-eligibility";
         scheduleNextCheck(QTime::currentTime().addSecs(PerfTest::TestDuration / 3));
