@@ -159,7 +159,7 @@ I_PopUp {
                 font.weight: 400
                 color: Style.foreground
                 wrapMode: Text.Wrap
-                text: "Remaining time " + Math.ceil(PerfTestService.testTimeLeft.toFixed()) + " secs"
+                text: "Remaining time " + Math.ceil((PerfTestService.testTimeLeft/60).toFixed()) + " secs"
             }
         }
     }

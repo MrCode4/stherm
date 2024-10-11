@@ -132,8 +132,8 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
     }
 
     auto msecsToNextCheck = timeToCheckFrom.msecsTo(nextScheduleMark);
-    TRACE_CAT(PerfTestLogCat) <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<" ms";
-    QTimer::singleShot(60000, this, &PerfTestService::checkTestEligibility); //TODO: msecsToNextCheck
+    TRACE_CAT(PerfTestLogCat) <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<" s";
+    QTimer::singleShot(msecsToNextCheck, this, &PerfTestService::checkTestEligibility);
 }
 
 void PerfTestService::checkTestEligibility()
