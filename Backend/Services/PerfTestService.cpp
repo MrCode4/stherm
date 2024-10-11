@@ -91,7 +91,7 @@ PerfTestService::PerfTestService(QObject *parent)
 
 void PerfTestService::postponeTest(const QString &reason)
 {
-    if (state() > Checking) {
+    if (state() >= Warmup) {
         TRACE_CAT(PerfTestLogCat) <<"Perf-test can't be postponed since it's already running";
     } else {
         isPostponed(true);
@@ -106,12 +106,11 @@ void PerfTestService::resumeTest()
     isPostponed(false);
 
     if (mWasEligibleBeforePostpone) {
-        TRACE_CAT(PerfTestLogCat) <<"Perf-test is elligible while resuming";
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test is eligible while resuming";
         mWasEligibleBeforePostpone = false;
-        state(TestState::Eligible);
-        setupWarmup();
+        checkWarmupOrRun();
     } else {
-        TRACE_CAT(PerfTestLogCat) <<"Perf-test was not elligible while resuming";
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test was not eligible while resuming";
     }
 }
 
@@ -145,8 +144,6 @@ void PerfTestService::checkTestEligibility()
         return;
     }
 
-    state(TestState::Checking);
-
     auto callback = [this](QNetworkReply *, const QByteArray &rawData, QJsonObject &data) {
         auto perfId= data.value(PerfTest::Key_TestID).toInt();
         TRACE_CAT(PerfTestLogCat) <<"CheckTestEligibility Response " <<perfId <<rawData ;
@@ -154,7 +151,7 @@ void PerfTestService::checkTestEligibility()
         QSettings settings;
         if (settings.contains(PerfTest::Key_TestID)) {
             if (settings.value(PerfTest::Key_TestID).toInt() == perfId) {
-                TRACE_CAT(PerfTestLogCat) <<"in checkTestEligibility, elligible test id is already finished testing and retrying uploading "<< perfId;
+                TRACE_CAT(PerfTestLogCat) <<"in checkTestEligibility, eligible test id is already finished testing and retrying uploading "<< perfId;
                 scheduleNextCheck(PerfTest::Noon12PM);
                 return;
             }
@@ -174,14 +171,13 @@ void PerfTestService::checkTestEligibility()
 
         if (testId() > 0 && mode() != AppSpecCPP::Off) {            
             if (isPostponed()) {
-                TRACE_CAT(PerfTestLogCat) << "Elligible to perf-test but UI is busy, so postponing now until UI resumes";
+                TRACE_CAT(PerfTestLogCat) << "Eligible to perf-test but UI is busy, so postponing now until UI resumes";
                 mWasEligibleBeforePostpone = true;
                 // Check if blocking is not resumed by 12PM, ublock and schedule for next day
                 mTimerPostponeWatcher.setInterval(qMax(PerfTest::OneSecInMS, QTime::currentTime().msecsTo(PerfTest::Noon12PM)));
                 mTimerPostponeWatcher.start();
             } else {
-                state(TestState::Eligible);
-                setupWarmup();
+                checkWarmupOrRun();
             }
         } else {
             scheduleNextCheck(PerfTest::Noon12PM);
@@ -191,30 +187,32 @@ void PerfTestService::checkTestEligibility()
     callGetApi(API_SERVER_BASE_URL + QString("api/sync/perftest/schedule?sn=%0").arg(Device->serialNumber()), callback);
 }
 
-void PerfTestService::setupWarmup()
+void PerfTestService::checkWarmupOrRun()
 {
     TRACE_CAT(PerfTestLogCat) <<"setupWarmup";
+
+    bool isHeatable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::CoolingOnly;
+    bool isCoolable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::HeatingOnly;
+    if ((mode() == AppSpecCPP::Heating && !isHeatable) || (mode() == AppSpecCPP::Cooling && !isCoolable)) {
+        TRACE_CAT(PerfTestLogCat) <<"Test requested mode is not compatible. Requested-mode=" <<mode()
+                                  <<", Device-type=" <<DeviceControllerCPP::instance()->systemSetup()->systemType;
+        scheduleNextCheck(PerfTest::Noon12PM);
+        return;
+    }
 
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::tempSchemeStateChanged, this, &PerfTestService::onTempSchemeStateChanged);
+    NetworkManager::instance()->isEnable(false);
 
     if (DeviceControllerCPP::instance()->systemSetup()->systemMode == mode()) {
-        NetworkManager::instance()->isEnable(false);
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test mode is same as current mode, so going for straight check " <<mode();
         startRunning();
     } else {
-        bool isHeatable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::CoolingOnly;
-        bool isCoolable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::HeatingOnly;
-
-        if ((mode() == AppSpecCPP::Heating && !isHeatable) || (mode() == AppSpecCPP::Cooling && !isCoolable)) {
-            TRACE_CAT(PerfTestLogCat) <<"Test requested mode is not compatible. Requested-mode=" <<mode()
-                                     <<", Device-type=" <<DeviceControllerCPP::instance()->systemSetup()->systemType;
-            scheduleNextCheck(PerfTest::Noon12PM);
-        } else {
-            state(TestState::Warmup);
-            NetworkManager::instance()->isEnable(false);
-            DeviceControllerCPP::instance()->doPerfTest(mode());
-        }
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test mode is different than current mode, so going mode change "
+                                  <<DeviceControllerCPP::instance()->systemSetup()->systemMode <<mode();
+        state(TestState::Warmup);
+        DeviceControllerCPP::instance()->doPerfTest(mode());
     }
 }
 
@@ -264,8 +262,9 @@ void PerfTestService::cleanupRunning()
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::tempSchemeStateChanged, this, &PerfTestService::onTempSchemeStateChanged);
-    NetworkManager::instance()->isEnable(true);
+
     mTimerGetTemp.stop();
+    NetworkManager::instance()->isEnable(true);    
     DeviceControllerCPP::instance()->revertPerfTest();
 }
 

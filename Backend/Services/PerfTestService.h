@@ -33,8 +33,6 @@ public:
 
     enum TestState {
         Waiting = 0,
-        Checking,
-        Eligible,
         Warmup,
         Running,
         Complete
@@ -59,7 +57,7 @@ private slots:
 
 private:
     void scheduleNextCheck(const QTime& checkTime);
-    void setupWarmup();
+    void checkWarmupOrRun();
     void startRunning();
     void cleanupRunning();    
     void sendResultsToServer(const QString& sn, const QByteArray& data);

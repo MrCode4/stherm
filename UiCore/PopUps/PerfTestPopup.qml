@@ -38,11 +38,9 @@ I_PopUp {
                 }
                 else {
                     switch(PerfTestService.state) {
-                        case PerfTestService.Eligible:
                         case PerfTestService.Warmup:
                             return compWarmup;
                         case PerfTestService.Running:
-                        case PerfTestService.Sending:
                             return compRunning;
                         case PerfTestService.Complete:
                             return compComplete;

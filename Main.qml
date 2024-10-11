@@ -245,7 +245,7 @@ ApplicationWindow {
     PerfTestPopup {
         uiSession: uiSessionId
         z: _screenSaver.z + 1
-        visible: PerfTestService.state >= PerfTestService.Eligible
+        visible: PerfTestService.state >= PerfTestService.Warmup
     }
 
     function updatePerfTestServiceState() {
