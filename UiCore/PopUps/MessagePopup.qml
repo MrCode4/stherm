@@ -121,7 +121,7 @@ I_PopUp {
                 leftPadding: 4;
                 rightPadding: 4
                 background: null
-                textFormat: Utils.textFormat(text)
+                textFormat: Text.MarkdownText
                 wrapMode: Text.WordWrap
                 lineHeight: 1.3
                 font.pointSize: Qt.application.font.pointSize * 0.8

@@ -137,7 +137,7 @@ Item {
 
         var newNotifPopup = null;
         if (message.sourceType === Message.SourceType.Server) {
-            //! Create an instance of AlertNotifPopup
+            //! Create an instance of MessagePopup
             newNotifPopup = _serverMessagePopupCompo.createObject(root, {
                                                                       "message": message
                                                                   });

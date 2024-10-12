@@ -123,14 +123,28 @@ QtObject {
         {}
 
         messages.forEach(message => {
+
+                             //! Check the necessary fields in the message.
+                             if (!message.hasOwnProperty("message_id") || !message.hasOwnProperty("message") || !message.hasOwnProperty("created") || !message.hasOwnProperty("type")) {
+                                 console.log("Message has wrong format. ", JSON.stringify(message), message.hasOwnProperty("message_id"),
+                                             message.hasOwnProperty("message"), message.hasOwnProperty("created"), message.hasOwnProperty("type"));
+                                 return;
+                             }
+
                              if (message.message === "")
                              return;
 
                              // we need this for now as server sents every message only once, so it should be false so user don't lose it
-                             message.isRead = false;
+                             message.is_read = false;
 
                              var messageDatetime = message.created === null ? "" : message.created;
-                             var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : message.type;
+
+                             // Type be defual is Notification
+                             var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : (message?.type ?? Message.Type.Notification);
+
+                             if (type !== Message.Type.Notification) {
+                                 console.info(`Message from server: type mismatch, type is ${type}, id is ${message.message_id}`);
+                             }
 
                              // Find Schedule in the model
                              var foundMessage = device.messages.find(messageModel => (messageModel.sourceType === Message.SourceType.Server &&
@@ -144,15 +158,16 @@ QtObject {
                                                                                       ));
 
                              if (foundMessage) {
-                                 // isRead in the server is wrong. So I use the isRead condition from the local.
-                                 // foundMessage.isRead = message.isRead;
+                                 // is_read in the server is wrong. So I use the isRead condition from the local.
+                                 // foundMessage.isRead = message.is_read;
                                  foundMessage.id = message.message_id ?? foundMessage.id;
 
                                  console.log("Message found: ", foundMessage.id, foundMessage.message, ", ignored.")
 
                              } else { // new message, TODO: Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
-                                 addNewMessageFromData(type, message.message, message.created, message.isRead, icon, message.message_id, Message.SourceType.Server, message.title);
+                                 addNewMessageFromData(type, message.message, message.created, message?.is_read ?? false,
+                                                       icon, message.message_id, Message.SourceType.Server, message?.title ?? "");
                              }
                          });
     }
@@ -164,7 +179,9 @@ QtObject {
             return;
         }
 
-        if (!activeAlerts) {
+        //! We should show server messages immediately, If the device receives messages from the server but ignore them,
+        //! the device will permanently lose those messages.
+        if (!activeAlerts && sourceType !== Message.SourceType.Server) {
             console.log("ignored message: ______________________________________\n", "type : ", type, ",message:", message, "\n----------------------------------------------");
             return;
         }

@@ -1066,7 +1066,7 @@ I_DeviceController {
                                             "icon": message.icon,
                                             "message": message.message,
                                             "type": message.type,
-                                            "isRead": message.isRead,
+                                            "is_read": message.isRead,
                                             "created": message.datetime,
                                         })
                                 })
