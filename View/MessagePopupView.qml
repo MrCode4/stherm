@@ -81,6 +81,30 @@ Item {
         }
     }
 
+    //! Server message popup (Messages)
+    Component {
+        id: _serverMessagePopupCompo
+
+        MessagePopup {
+
+            onClosed: {
+                if (messageController && message && message.type !== Message.Type.SystemNotification) {
+                    message.isRead = true;
+                    uiSession.deviceController.updateEditMode(AppSpec.EMMessages);
+                    uiSession.deviceController.saveSettings();
+                }
+
+                // Remove message from showing messages
+                messageController.removeShowingMessage(message);
+
+                // Message Updated
+                uiSession.appModel.messagesChanged();
+
+                destroy(this);
+            }
+        }
+    }
+
     //! Wifi and Internet connection alerts
     AlertNotifPopup {
         id: wifiInternetConnectionAlert
@@ -111,16 +135,25 @@ Item {
             return;
         }
 
-        //! Create an instance of AlertNotifPopup
-        var newAlertPopup = _messagePopupCompo.createObject(root, {
+        var newNotifPopup = null;
+        if (message.sourceType === Message.SourceType.Server) {
+            //! Create an instance of AlertNotifPopup
+            newNotifPopup = _serverMessagePopupCompo.createObject(root, {
+                                                                      "message": message
+                                                                  });
+
+        } else {
+            //! Create an instance of AlertNotifPopup
+            newNotifPopup = _messagePopupCompo.createObject(root, {
                                                                 "message": message
                                                             });
+        }
 
-        if (newAlertPopup) {
+        if (newNotifPopup) {
             messageController.addShowingMessage(message);
 
             //! Ask PopUpLayout to open popup
-            uiSession.popupLayout.displayPopUp(newAlertPopup);
+            uiSession.popupLayout.displayPopUp(newNotifPopup);
         }
     }
 }

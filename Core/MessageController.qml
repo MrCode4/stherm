@@ -152,12 +152,12 @@ QtObject {
 
                              } else { // new message, TODO: Check empty message
                                  let icon = (message.icon === null) ? "" : message.icon;
-                                 addNewMessageFromData(type, message.message, message.created, message.isRead, icon, message.message_id, Message.SourceType.Server);
+                                 addNewMessageFromData(type, message.message, message.created, message.isRead, icon, message.message_id, Message.SourceType.Server, message.title);
                              }
                          });
     }
 
-    function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", id = -1, sourceType = Message.SourceType.Device)
+    function addNewMessageFromData(type, message, datetime, isRead = false, icon = "", id = -1, sourceType = Message.SourceType.Device, title = "")
     {
         if (message.length === 0) {
             console.log("addNewMessageFromData: The message is empty!")
@@ -215,6 +215,7 @@ QtObject {
 
         newMessage.type = type;
         newMessage.message = message;
+        newMessage.title   = title;
         newMessage.datetime = datetime;
         newMessage.isRead = modifiedIsRead;
         newMessage.sourceType = sourceType;
