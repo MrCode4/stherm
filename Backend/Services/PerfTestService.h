@@ -64,7 +64,7 @@ private:
     void startRunning();
     void cleanupRunning();    
     void sendResultsToServer(const QString& sn, const QByteArray& data);
-    void handleResultUpload(const QJsonObject& data);
+    void handleResultUpload(QNetworkReply* reply, const QString& resultType, const QJsonObject& data);
 
 private:
     static PerfTestService* mMe;

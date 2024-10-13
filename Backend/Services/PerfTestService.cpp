@@ -48,7 +48,7 @@ PerfTestService* PerfTestService::me()
 PerfTestService::PerfTestService(QObject *parent)
     : DevApiExecutor{parent}
 {
-    TRACE_CAT(PerfTestLogCat) <<"PerfTestService";
+    TRACE_CAT(PerfTestLogCat) <<"PerfTestService Initialize";
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
     connect(&mTimerScheduleWatcher, &QTimer::timeout, this, &PerfTestService::checkTestEligibility);
@@ -166,7 +166,7 @@ void PerfTestService::checkTestEligibility()
         }
 
         auto perfId= data.value(PerfTest::Key_TestID).toInt();
-        TRACE_CAT(PerfTestLogCat) <<"CheckTestEligibility Response " <<perfId <<rawData ;
+        TRACE_CAT(PerfTestLogCat) <<"CheckTestEligibility response" <<perfId <<rawData ;
 
         QSettings settings;
         if (settings.contains(PerfTest::Key_TestID)) {
@@ -342,13 +342,12 @@ void PerfTestService::prepareAndSendApiResult(const QString &act)
         data["data"] = mReadings;
     }
 
-    auto json = QJsonDocument(data).toJson();
-
-    // Save to retry after reboot in case sending fails
-    QSettings settings;
-    settings.setValue(PerfTest::Key_TestData, json);
+    auto json = QJsonDocument(data).toJson();    
 
     if (act == PerfTest::Act_Finished) {
+        // Save to retry after reboot in case sending fails
+        QSettings settings;
+        settings.setValue(PerfTest::Key_TestData, json);
         settings.setValue(PerfTest::Key_TestID, testId());
     }
 
@@ -377,38 +376,40 @@ void PerfTestService::checkAndSendSavedResult(bool checkTestId)
     }
 }
 
-void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& result)
+void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& resultData)
 {
-    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer Response " <<rawData;
+    auto resultType = QJsonDocument::fromJson(resultData).object().value("result").toString();
+
+    auto callback = [this, resultType](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer response of type:" <<resultType <<", data:" <<rawData;
 
         if (reply->error() == QNetworkReply::NoError) {
             mTimerRetrySending.stop();
-            TRACE_CAT(PerfTestLogCat) <<"Perf-test result uploaded successfully";
+            TRACE_CAT(PerfTestLogCat) <<"Perf-test result API called successfully";
 
             QSettings settings;
             settings.remove(PerfTest::Key_TestID);
-            settings.remove(PerfTest::Key_TestData);
-
-            handleResultUpload(data);
+            settings.remove(PerfTest::Key_TestData);            
         }
-        else {
-            TRACE_CAT(PerfTestLogCat) <<"Perf-test result uploading failed, retry scheduled";
-            if (state() != PerfTestService::Running && !mTimerRetrySending.isActive()) {
+        else {            
+            if (resultType == PerfTest::Act_Finished && !mTimerRetrySending.isActive()) {
+                TRACE_CAT(PerfTestLogCat) <<"Perf-test result uploading failed, retry scheduled";
                 mTimerRetrySending.start();
             }
         }
-    };    
 
-    TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer Request " <<result;
+        handleResultUpload(reply, resultType, data);
+    };
+
+    TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer request type:" <<resultType <<", data:" <<resultData;
     auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(sn);
-    callPostApi(url, result, callback);
+    callPostApi(url, resultData, callback);
 }
 
-void PerfTestService::handleResultUpload(const QJsonObject &data)
+void PerfTestService::handleResultUpload(QNetworkReply* reply, const QString& resultType, const QJsonObject& data)
 {
-    if (state() == Eligible) {
-        TRACE_CAT(PerfTestLogCat) <<"Sending running result to server is success, going to start test";
+    if (resultType == PerfTest::Act_Running) {
+        TRACE_CAT(PerfTestLogCat) <<"Sent running status update to server";
         checkWarmupOrRun();
     }
 }
