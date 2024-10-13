@@ -115,7 +115,7 @@ void PerfTestService::resumeTest()
     if (mWasEligibleBeforePostpone) {
         TRACE_CAT(PerfTestLogCat) <<"Perf-test is eligible while resuming";
         mWasEligibleBeforePostpone = false;
-        checkWarmupOrRun();
+        prepareStartRunning();
     }
     else {
         TRACE_CAT_CHECK(PerfTestLogCat, state() != Idle) <<"Perf-test was not eligible while resuming";
@@ -216,12 +216,18 @@ void PerfTestService::checkTestEligibility()
         }
         else {
             TRACE_CAT(PerfTestLogCat) << "Eligible to perf-test, so going for it now.";
-            checkWarmupOrRun();
+            prepareStartRunning();
         }
     };
 
     state(Checking);
     callGetApi(API_SERVER_BASE_URL + QString("api/sync/perftest/schedule?sn=%0").arg(Device->serialNumber()), callback);
+}
+
+void PerfTestService::prepareStartRunning()
+{
+    TRACE_CAT(PerfTestLogCat) <<"prepareStartRunning";
+    prepareAndSendApiResult(PerfTest::Act_Running);
 }
 
 void PerfTestService::checkWarmupOrRun()
@@ -371,10 +377,8 @@ void PerfTestService::checkAndSendSavedResult(bool checkTestId)
     }
 }
 
-void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& data)
+void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& result)
 {
-    TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer";
-
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer Response " <<rawData;
 
@@ -385,6 +389,8 @@ void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& d
             QSettings settings;
             settings.remove(PerfTest::Key_TestID);
             settings.remove(PerfTest::Key_TestData);
+
+            handleResultUpload(data);
         }
         else {
             TRACE_CAT(PerfTestLogCat) <<"Perf-test result uploading failed, retry scheduled";
@@ -394,9 +400,17 @@ void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& d
         }
     };    
 
-    TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer Request " <<data;
+    TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer Request " <<result;
     auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(sn);
-    callPostApi(url, data, callback);
+    callPostApi(url, result, callback);
+}
+
+void PerfTestService::handleResultUpload(const QJsonObject &data)
+{
+    if (state() == Eligible) {
+        TRACE_CAT(PerfTestLogCat) <<"Sending running result to server is success, going to start test";
+        checkWarmupOrRun();
+    }
 }
 
 void PerfTestService::finishTest()

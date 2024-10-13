@@ -58,11 +58,13 @@ private slots:
 
 private:
     void scheduleNextCheck(const QTime& checkTime);
+    void prepareStartRunning();
     void checkWarmupOrRun();
     void prepareAndSendApiResult(const QString& act);
     void startRunning();
     void cleanupRunning();    
     void sendResultsToServer(const QString& sn, const QByteArray& data);
+    void handleResultUpload(const QJsonObject& data);
 
 private:
     static PerfTestService* mMe;
