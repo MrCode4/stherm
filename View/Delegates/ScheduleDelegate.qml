@@ -48,7 +48,8 @@ ItemDelegate {
 
         //! Schedule icon
         RoniaTextIcon {
-            Layout.alignment: Qt.AlignCenter
+            Layout.topMargin: 10
+            Layout.alignment: Qt.AlignTop | Qt.AlignLeft
             Layout.preferredWidth: 24
             font.pointSize: Style.fontIconSize.smallPt
             text: {
@@ -69,42 +70,82 @@ ItemDelegate {
             horizontalAlignment: Text.AlignHCenter
         }
 
-        //! Schedule name
-        Label {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignCenter
-            font.bold: true
-            text: schedule?.name ?? ""
-            elide: "ElideRight"
-        }
+        ColumnLayout {
+            Layout.topMargin: 10
+            Layout.alignment: Qt.AlignVCenter
+            Layout.fillHeight: true
 
-        //! Schedule repeat
-        Item {
-            Layout.preferredWidth: _fontMetric.advanceWidth("MuTuWeThFrSuSa") + 6
-            Layout.preferredHeight: Material.delegateHeight
-            opacity: 0.8
+            //! Schedule name
+            Label {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignLeft
+                font.bold: true
+                text: schedule?.name ?? ""
+                elide: "ElideRight"
+            }
+
+            Label {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignLeft
+                elide: Text.ElideLeft
+                font.pointSize: Qt.application.font.pointSize * 0.8
+                text: {
+                    if (schedule.systemMode === AppSpec.Cooling) {
+                        return "Cooling mode";
+
+                    } else if (schedule.systemMode === AppSpec.Heating) {
+                        return "Heating mode";
+
+                    }
+
+                    return "Auto mode";
+                }
+            }
 
             RowLayout {
-                anchors.centerIn: parent
-                spacing: 1
+                spacing: 8
+                Layout.fillWidth: true
+                Layout.leftMargin: 0
+                Layout.topMargin: 0
+                opacity: 0.8
 
-                Repeater {
-                    model: schedule?.repeats.length > 0 ? schedule.repeats.split(",") : ["No repeat"]
-                    delegate: Label {
-                        font: _fontMetric.font
-                        Layout.alignment: Qt.AlignTop
-                        text: modelData
+                //! Schedule repeat
+                Item {
+                    Layout.preferredWidth: _fontMetric.advanceWidth("MTWTFSS")
+                    Layout.preferredHeight: Material.delegateHeight
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignTop
 
-                        Rectangle {
-                            anchors {
-                                top: parent.bottom
-                                horizontalCenter: parent.horizontalCenter
+                    RowLayout {
+                        spacing: 2
+                        Layout.alignment: Qt.AlignLeft
+
+                        Repeater {
+                            model: schedule?.repeats.length > 0 ? schedule.repeats.split(",").map(day => day.charAt(0)) : ["No repeat"]
+                            delegate: Label {
+                                font: _fontMetric.font
+                                Layout.alignment: Qt.AlignTop
+                                text: modelData
+
+                                Rectangle {
+                                    anchors {
+                                        top: parent.bottom
+                                        horizontalCenter: parent.horizontalCenter
+                                    }
+                                    width: 4
+                                    height: 4
+                                    radius: 2
+                                }
                             }
-                            width: 4
-                            height: 4
-                            radius: 2
                         }
                     }
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                    elide: Text.ElideLeft
+                    font.pointSize: Qt.application.font.pointSize * 0.75
+                    text: schedule.startTime + " - " + schedule.endTime
                 }
             }
         }
@@ -170,7 +211,7 @@ ItemDelegate {
 
     FontMetrics {
         id: _fontMetric
-        font.pointSize: _root.font.pointSize * 0.85
+        font.pointSize: _root.font.pointSize * 0.8
     }
 
     ParallelAnimation {

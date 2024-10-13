@@ -176,6 +176,40 @@ BasePageView {
                 }
             }
 
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Material.delegateHeight
+                Layout.leftMargin: 8
+                Layout.rightMargin: 8
+
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 16
+
+                    Label {
+                        // Layout.fillWidth: true
+                        font.bold: true
+                        text: "Mode"
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Qt.AlignRight
+                        elide: Text.ElideRight
+                        text: {
+                            if (scheduleToDisplay.systemMode === AppSpec.Cooling) {
+                                return "Cooling";
+
+                            } else if (scheduleToDisplay.systemMode === AppSpec.Heating) {
+                                return "Heating";
+                            }
+
+                            return "Auto";
+                        }
+                    }
+                }
+            }
+
             ItemDelegate {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Material.delegateHeight
