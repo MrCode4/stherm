@@ -155,6 +155,17 @@ BasePageView {
                 }
             }
         }
+
+        Label {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.preferredHeight: 35
+
+            font.pointSize: Application.font.pointSize * 0.7
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment:Text.AlignBottom
+            text: "Contact Nuve Support: (657) 626-4887 for issues."
+        }
     }
 
     Label {
