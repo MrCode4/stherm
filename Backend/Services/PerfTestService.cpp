@@ -25,10 +25,12 @@ const int TestDuration = 15 * 60;
 const int DataPickInterval = 15;
 const int FinishDelay = 5 * 60;
 
-const QString Heating("heating");
-const QString Cooling("cooling");
-const QString Finished("finished");
-const QString Stopped("stopped");
+const QString Mode_Heating("heating");
+const QString Mode_Cooling("cooling");
+
+const QString Act_Running("running");
+const QString Act_Stopped("stopped");
+const QString Act_Finished("finished");
 
 const QString Key_TestID("perftest_id");
 const QString Key_TestData("perftest_data");
@@ -84,10 +86,10 @@ PerfTestService::PerfTestService(QObject *parent)
         }
     });
 
-    mTimerRetrySending.setInterval(5 * 60 * PerfTest::OneSecInMS);
-    connect(&mTimerRetrySending, &QTimer::timeout, this, &PerfTestService::checkAndSendSavedResult);
+    mTimerRetrySending.setInterval(5 * PerfTest::OneMinInMS);
+    connect(&mTimerRetrySending, &QTimer::timeout, [this]() {checkAndSendSavedResult();});
 
-    checkAndSendSavedResult();
+    checkAndSendSavedResult(true);
     scheduleNextCheck(QTime::currentTime());
 }
 
@@ -174,9 +176,9 @@ void PerfTestService::checkTestEligibility()
         mTimerRetrySending.stop();
 
         auto action = data.value("action").toString();
-        if (action == PerfTest::Cooling) {
+        if (action == PerfTest::Mode_Cooling) {
             mode(AppSpecCPP::Cooling);
-        } else if (action == PerfTest::Heating) {
+        } else if (action == PerfTest::Mode_Heating) {
             mode(AppSpecCPP::Heating);
         } else {
             mode(AppSpecCPP::Off);
@@ -271,8 +273,7 @@ void PerfTestService::startRunning()
 
 void PerfTestService::cleanupRunning()
 {
-    TRACE_CAT(PerfTestLogCat) <<"cleanupRunning";
-    while (mReadings.count() > 0) mReadings.removeLast();
+    TRACE_CAT(PerfTestLogCat) <<"cleanupRunning";    
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::tempSchemeStateChanged, this, &PerfTestService::onTempSchemeStateChanged);
@@ -285,18 +286,9 @@ void PerfTestService::cleanupRunning()
 void PerfTestService::cancelTest()
 {
     TRACE_CAT(PerfTestLogCat) <<"Perf-test cancelled by user";
-    QJsonObject data;
-    data[PerfTest::Key_TestID] = testId();
-    data["sn"] = Device->serialNumber();
-    data["action"] = mode() == AppSpecCPP::Cooling ? PerfTest::Cooling : PerfTest::Heating;
-    data["result"] = PerfTest::Stopped;
-    data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
-    auto jsonData = QJsonDocument(data).toJson();
-    QSettings settings;
-    settings.setValue(PerfTest::Key_TestData, jsonData);
-
     cleanupRunning();
-    sendResultsToServer(Device->serialNumber(), jsonData);
+    prepareAndSendApiResult(PerfTest::Act_Stopped);
+    while (mReadings.count() > 0) mReadings.removeLast();
     scheduleNextCheck(PerfTest::Noon12PM);
 }
 
@@ -305,7 +297,7 @@ void PerfTestService::collectReading()
     auto temperature = (DeviceControllerCPP::instance()->getTemperature() - 32) / 1.8;;
     TRACE_CAT(PerfTestLogCat) <<"collectReading " <<temperature;
     testTimeLeft(testTimeLeft() - mTimerGetTemp.interval() / PerfTest::OneSecInMS);
-    TRACE_CAT(PerfTestLogCat) <<"testTimeLeft " <<testTimeLeft();
+    TRACE_CAT(PerfTestLogCat) <<"testTimeLeft " <<testTimeLeft();    
     QJsonObject item;
     item["timestamp"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
     item["temperature"] = temperature;
@@ -313,32 +305,44 @@ void PerfTestService::collectReading()
 
     if (testTimeLeft() <= 0) {
         TRACE_CAT(PerfTestLogCat) <<"Perf-test getting readings completed";
-
-        QJsonObject data;
-        data[PerfTest::Key_TestID] = testId();
-        data["sn"] = Device->serialNumber();
-        data["action"] = mode() == AppSpecCPP::Cooling ? PerfTest::Cooling : PerfTest::Heating;
-        data["result"] = PerfTest::Finished;
-        data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
-        data["data"] = mReadings;
-        auto json = QJsonDocument(data).toJson();
-
-        QSettings settings;
-        settings.setValue(PerfTest::Key_TestID, testId());
-        settings.setValue(PerfTest::Key_TestData, json);
-
         cleanupRunning();
-        sendResultsToServer(Device->serialNumber(), json);
+        prepareAndSendApiResult(PerfTest::Act_Finished);
+        while (mReadings.count() > 0) mReadings.removeLast();
         finishTimeLeft(PerfTest::FinishDelay);
         mTimerFinish.start();
         state(TestState::Complete);
     }
 }
 
-void PerfTestService::checkAndSendSavedResult()
+void PerfTestService::prepareAndSendApiResult(const QString &act)
+{
+    QJsonObject data;
+    data[PerfTest::Key_TestID] = testId();
+    data["sn"] = Device->serialNumber();
+    data["action"] = mode() == AppSpecCPP::Cooling ? PerfTest::Mode_Cooling : PerfTest::Mode_Heating;
+    data["result"] = act;
+    data["time"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
+    if (act == PerfTest::Act_Finished) {
+        data["data"] = mReadings;
+    }
+
+    auto json = QJsonDocument(data).toJson();
+
+    // Save to retry after reboot in case sending fails
+    QSettings settings;
+    settings.setValue(PerfTest::Key_TestData, json);
+
+    if (act == PerfTest::Act_Finished) {
+        settings.setValue(PerfTest::Key_TestID, testId());
+    }
+
+    sendResultsToServer(Device->serialNumber(), json);
+}
+
+void PerfTestService::checkAndSendSavedResult(bool checkTestId)
 {
     QSettings settings;
-    if (settings.contains(PerfTest::Key_TestData)) {
+    if ((!checkTestId || settings.contains(PerfTest::Key_TestID)) && settings.contains(PerfTest::Key_TestData)) {
         auto data = settings.value(PerfTest::Key_TestData).toByteArray();
         TRACE_CAT(PerfTestLogCat) <<"Perf-test saved result found";
         auto dataObj = QJsonDocument::fromJson(data).object();

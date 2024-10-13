@@ -54,11 +54,12 @@ private slots:
     void onCountdownStop();
     void onTempSchemeStateChanged(bool started);
     void collectReading();
-    void checkAndSendSavedResult();
+    void checkAndSendSavedResult(bool checkTestId = false);
 
 private:
     void scheduleNextCheck(const QTime& checkTime);
     void checkWarmupOrRun();
+    void prepareAndSendApiResult(const QString& act);
     void startRunning();
     void cleanupRunning();    
     void sendResultsToServer(const QString& sn, const QByteArray& data);
