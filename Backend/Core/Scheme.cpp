@@ -70,6 +70,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         auto sys = mDataProvider.data()->systemSetup();
         bool dualFuelLog = mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::DualFuelHeating;
 
+        qInfo() << "App Version: " << QCoreApplication::applicationVersion();
         LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
         LOG_CHECK(isRunning()) << "Temperature scheme version: " << QString(TEMPERATURE_SCHEME_VERSION);
         LOG_CHECK(isRunning() && sys) << "systemMode: " << sys->systemMode << "systemType: " << sys->systemType;

@@ -1042,6 +1042,7 @@ I_DeviceController {
                 "heatPumpOBState": device.systemSetup.heatPumpOBState,
                 "heatPumpEmergency": device.systemSetup.heatPumpEmergency,
                 "systemRunDelay": device.systemSetup.systemRunDelay,
+                "dualFuelThreshold": device.systemSetup.dualFuelThreshod,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
@@ -1214,7 +1215,7 @@ I_DeviceController {
         else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
             setSystemDualFuelHeating(settings.heatPumpEmergency, settings.coolStage, settings.heatStage,
                                      settings.heatPumpOBState,
-                                     settings.dual_fuel_threshod ?? device.systemSetup.dualFuelThreshod);
+                                     settings.dualFuelThreshold ?? device.systemSetup.dualFuelThreshod);
         else
             console.warn("System type unknown", settings.type)
     }

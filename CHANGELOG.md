@@ -1,6 +1,64 @@
 
 Release Note
 -------------
+## Release R 1.3.1
+ 9th October 2024
+ Branch- r1_3_1, commit- 15c6fb9c
+ 
+### Release Articles
+update-V.1.3.1.zip
+
+### Reason
+Add new feature and fix some issues
+
+### What’s Brand New
+- Send test results to the specified server in test mode.
+
+### What Been Updated
+- Sync dual fuel threshold with the server.
+
+### What’s Been Fixed
+- Fixed dual fuel UI issue in the first run flow.
+- The user interface of the main and settings menus was polished.
+- Fixed the registration flow bugs.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
+## Release R 1.3.0
+ 5th October 2024
+ Branch- r1_3_0, commit- d1b02075b0
+ 
+### Release Articles
+update-V.1.3.0.zip
+
+### Reason
+Add new features and fix some issues specifically schedules and dual fuel heating.
+
+### What’s Brand New
+- Added dual fuel heating.
+- Added UI to manage the main endpoint in test mode.
+- Added icon to display if wifi has password or not.
+
+### What Been Updated
+- Schedules sync with the server with new APIs using new APIs for adding, editing, and deleting schedules..
+- Display message creation times in local time. .
+- Limit the number of stored messages to 50 to optimize performance.
+- Update messages id with the server.
+- Mobile app page updated with the new QR code based on the serial number.
+- Send log when SN fetching fails and show fetch SN retry in wifi page in first run flow. 
+
+### What’s Been Fixed
+- Fixed schedules issues.
+- Fixed message comparison logic to avoid duplicates.
+- Fixed some wifi issues.
+- Fixed temperature unit in the scheme data provider to stop cooling in the correct way.
+- Fixed start/stop schedule running issue.
+
+### Known Issues
+- Push dueal fuel threshold to server and fetch it from server.
+- CPU usage in some cases should be check.
+
 ## Release R 1.2.1.1
  26th September 2024
  Branch- r1_2_1, commit- 6d5a44614
