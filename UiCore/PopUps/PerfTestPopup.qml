@@ -16,6 +16,7 @@ I_PopUp {
     property UiSession uiSession
     property I_Device appModel: uiSession?.appModel ?? null
     property bool showConfirmationToStop: false
+    property bool showTestResults: false
 
     background: Rectangle {
         border.width: 4
@@ -32,11 +33,15 @@ I_PopUp {
 
         Loader {
             id: loader
-            Layout.fillWidth: true;
+            Layout.fillWidth: true
+            Layout.fillHeight: true
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             sourceComponent: {
                 if (PerfTestService.state != PerfTestService.Complete && root.showConfirmationToStop) {
                     return compCancel
+                }
+                if (PerfTestService.state == PerfTestService.Complete && root.showTestResults) {
+                    return compResult
                 }
                 else {
                     switch(PerfTestService.state) {
@@ -45,7 +50,7 @@ I_PopUp {
                         case PerfTestService.Running:
                             return compRunning;
                         case PerfTestService.Complete:
-                            return compResult;
+                            return compComplete;
                     }
                 }
             }
@@ -57,10 +62,17 @@ I_PopUp {
             ButtonInverted {
                 leftPadding: 8
                 rightPadding: 8
-                text: "Cancel"
+                text: root.showConfirmationToStop ? "Cancel" : "Result"
                 font.bold: true
-                visible: root.showConfirmationToStop
-                onClicked: root.showConfirmationToStop = false
+                visible: (PerfTestService.state == PerfTestService.Complete && !root.showTestResults) || root.showConfirmationToStop
+                onClicked:{
+                    if (PerfTestService.state == PerfTestService.Complete) {
+                        root.showTestResults = true;
+                    }
+                    else {
+                        root.showConfirmationToStop = false;
+                    }
+                }
             }
 
             Item {
@@ -78,6 +90,7 @@ I_PopUp {
                 onClicked: {
                     if (PerfTestService.state == PerfTestService.Complete) {
                         PerfTestService.finishTest();
+                        root.showTestResults = false;
                     }
                     else {
                         if (root.showConfirmationToStop) {
@@ -138,9 +151,8 @@ I_PopUp {
     Component {
         id: compRunning
         ColumnLayout {
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             spacing: 20
-
-            Item {Layout.fillWidth: true; Layout.preferredHeight: 30}
 
             Text {
                 Layout.fillWidth: true
@@ -171,8 +183,6 @@ I_PopUp {
         id: compComplete
         ColumnLayout {
             spacing: 20
-
-            Item {Layout.fillWidth: true; Layout.preferredHeight: 30}
 
             Text {
                 Layout.fillWidth: true
@@ -240,22 +250,43 @@ I_PopUp {
 
     Component {
         id: compResult
+
         TableView {
-            anchors.fill: parent
-            rowSpacing: 1
-            columnSpacing: 1
+            id: tableView
+            rowSpacing: 5
+            columnSpacing: 15
             clip: true
+            boundsMovement: Flickable.StopAtBounds
+            ScrollIndicator.vertical: ScrollIndicator {
+                x: parent.width - width - 4
+                y: tableView.contentItem.y
+                parent: tableView
+                height: tableView.contentItem.height - 30
+            }
 
             delegate: Text {
                 color: Style.foreground
-                font.pixelSize: 14
+                font.pixelSize: 20
                 text: display
             }
 
             model: TableModel {
+                TableModelColumn { display: "index" }
                 TableModelColumn { display: "timestamp" }
                 TableModelColumn { display: "temperature" }
-                Component.onCompleted: rows = PerfTestService.getTestData();
+                Component.onCompleted: {
+                    let result = PerfTestService.getTestData();
+                    let dataRows = [];
+                    for(let i = 0; i < result.length; i++) {
+                        let row = {
+                            index: i + 1,
+                            timestamp: result[i].timestamp,
+                            temperature: result[i].temperature.toFixed(3)
+                        };
+                        dataRows.push(row);
+                    }
+                    rows = dataRows;
+                }
             }
         }
     }
