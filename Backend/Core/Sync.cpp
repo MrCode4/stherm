@@ -676,15 +676,25 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
         setting.setValue(cWarrantySerialNumberKey, oldSN);
 
         auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+            QString error;
             bool success = false;
             if (reply->error() == QNetworkReply::NoError) {
                 // get the last update
                 auto message = data.value("message").toString();
                 TRACE << "warrantyReplacement message:" << message;
                 success = true;
+
+            } else {
+                error = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() :
+                               reply->errorString();
+
+                if (error.isEmpty()) {
+                    error = reply->errorString();
+                }
+                error.remove(reply->url().toString());
             }
 
-            emit warrantyReplacementFinished(success);
+            emit warrantyReplacementFinished(success, error, reply->error() != QNetworkReply::UnknownContentError);
         };
 
         QJsonObject reqData;
@@ -697,7 +707,7 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
             //            emit warrantyReplacementFinished(false);
         }
     } else {
-        emit warrantyReplacementFinished(false);
+        emit warrantyReplacementFinished(false, QString("The old and new serial numbers are the same."));
     }
 }
 

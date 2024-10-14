@@ -428,13 +428,6 @@ I_DeviceController {
             console.log("udpate checked.")
         }
 
-        //! TODO: replace new model with the current model
-        function onWarrantyReplacementFinished(success: bool) {
-            // TODO: action for now
-            if (success) {
-            }
-        }
-
         function onSerialNumberReady() {
             // "If the software update is not currently checked,
             // initiate a check for updates.

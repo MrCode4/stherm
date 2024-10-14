@@ -14,14 +14,44 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
-    property System system:     deviceController?.deviceControllerCPP?.system ?? null
+    property System system: deviceController?.system ?? null
+
+    property Sync   sync:   deviceController?.sync   ?? null
+
+
+    //! Busy due to warranty replacment operation
+    property bool isBusy: false
 
     /* Object properties
      * ****************************************************************************************/
     title: "Warranty Replacement"
 
+    onVisibleChanged: {
+        if (!visible) {
+            tryTimer.stop();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
+
+    //! Wifi status
+    WifiButton {
+        parent: root.header.contentItem
+        visible: !NetworkInterface.hasInternet
+
+        onClicked: {
+            //! Open WifiPage
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup,
+                                             "nextButtonEnabled": false
+                                         });
+            }
+        }
+    }
+
     Label {
         id: warranryReplacementInfo
 
@@ -144,6 +174,24 @@ BasePageView {
         }
     }
 
+    BusyIndicator {
+        anchors.right: replaceBtn.left
+        anchors.verticalCenter: replaceBtn.verticalCenter
+
+        height: 45
+        width: 45
+        visible: isBusy
+        running: visible
+
+        TapHandler {
+            enabled: isBusy && errorPopup.errorMessage.length > 0
+
+            onTapped: {
+                errorPopup.open();
+            }
+        }
+    }
+
     //! Replace button
     ButtonInverted {
         id: replaceBtn
@@ -160,8 +208,46 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
-            system?.warrantyReplacement(oldSNTf.text, newSNTf.text);
+            isBusy = true;
+            tryTimer.triggered()
         }
     }
 
+    Timer {
+        id: tryTimer
+
+        interval: 5000
+        repeat: false
+        running: false
+
+        onTriggered: {
+             sync?.warrantyReplacement(oldSNTf.text, newSNTf.text);
+        }
+    }
+
+    InitialFlowErrorPopup {
+        id: errorPopup
+
+        deviceController: uiSession.deviceController
+    }
+
+    Connections {
+        target: sync
+
+        function onWarrantyReplacementFinished(success: bool, error: string, needToRetry: bool) {
+            isBusy = !success && needToRetry;
+
+            if (!success) {
+
+                errorPopup.errorMessage = error;
+
+                if (needToRetry) {
+                    tryTimer.start();
+
+                } else {
+                    errorPopup.open();
+                }
+            }
+        }
+    }
 }

@@ -57,7 +57,7 @@ public:
 
     void fetchServiceTitanInformation();
 
-    void warrantyReplacement(const QString& oldSN, const QString& newSN);
+    Q_INVOKABLE void warrantyReplacement(const QString& oldSN, const QString& newSN);
 
     //! Get job information with the job id
     Q_INVOKABLE void getJobIdInformation(const QString &jobID);
@@ -127,7 +127,7 @@ signals:
 
     //! TODO: send new data to device controller
     //! maybe rename to warrantyReplacementDataReady
-    void warrantyReplacementFinished(bool success = false);
+    void warrantyReplacementFinished(bool success = false, QString error = QString(), bool needToRetry = false);
 
     void jobInformationReady(bool success, QVariantMap data, QString error);
 
