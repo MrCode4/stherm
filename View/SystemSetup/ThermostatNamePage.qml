@@ -124,6 +124,18 @@ BasePageView {
         }
     }
 
+    Label {
+        anchors.bottom: submitBtn.top
+        anchors.bottomMargin: 10
+        anchors.left: parent.left
+        width: parent.width
+
+        font.pointSize: Application.font.pointSize * 0.7
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment:Text.AlignBottom
+        text: "Contact Nuve Support: (657) 626-4887 for issues."
+    }
+
     //! Submit button
     ButtonInverted {
         id: submitBtn
