@@ -65,7 +65,7 @@ BasePageView {
         onClicked: {
             //! Open technician access page
             if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/UserGuidePage.qml", {
+                root.StackView.view.push("qrc:/Stherm/View/UnlockEmergencyPage.qml", {
                                              "uiSession": uiSession,
                                              "openFromUnlockPage": true,
                                              "encodedMasterPin": root.encodedMasterPin

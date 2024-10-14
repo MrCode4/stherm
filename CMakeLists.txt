@@ -216,6 +216,7 @@ qt6_add_qml_module(appStherm
         View/MobileAppPage.qml
         View/LockPage.qml
         View/UnlockPage.qml
+        View/UnlockEmergencyPage.qml
 
         # Service Titan pages
         View/ServiceTitan/JobNumberPage.qml
