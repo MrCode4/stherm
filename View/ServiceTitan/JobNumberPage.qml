@@ -21,6 +21,11 @@ BasePageView {
      * ****************************************************************************************/
     title: "Job Number"
 
+    onVisibleChanged: {
+        if (!visible)
+            retryTimer.stop();
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Info button in initial setup mode.
@@ -88,6 +93,7 @@ BasePageView {
 
             onTextChanged: {
                 isBusy = false;
+                retryTimer.stop();
             }
 
             inputMethodHints: Qt.ImhPreferNumbers
@@ -202,7 +208,7 @@ BasePageView {
     //! Temp connection to go to the next page.
     Connections {
         target: deviceController.sync
-        enabled: root.visible
+        enabled: root.visible && isBusy
 
         function onJobInformationReady(success: bool, data: var, error: string) {
 
