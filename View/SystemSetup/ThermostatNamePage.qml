@@ -159,9 +159,7 @@ BasePageView {
 
             appModel.thermostatName = nameTf.text;
 
-            if (initialSetup) {
-                deviceController.pushInitialSetupInformation();
-            }
+           retryTimer.triggered();
 
             submitBtn.submitted = true;
         }
@@ -177,14 +175,13 @@ BasePageView {
         }
 
         function onInstallFailed(err : string, needToRetry : bool) {
-            isBusy = false;
+            isBusy = needToRetry;
             errorPopup.errorMessage = err;
 
             if (needToRetry) {
                 retryTimer.start();
 
             } else {
-                isBusy = false;
                 errorPopup.open();
             }
         }
@@ -205,7 +202,9 @@ BasePageView {
         running: false
 
         onTriggered: {
-            deviceController.pushInitialSetupInformation();
+            if (initialSetup) {
+                deviceController.pushInitialSetupInformation();
+            }
         }
     }
 
