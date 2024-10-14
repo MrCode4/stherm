@@ -357,6 +357,11 @@ void PerfTestService::prepareAndSendApiResult(const QString &act)
     sendResultsToServer(Device->serialNumber(), json);
 }
 
+QJsonArray PerfTestService::getTestData() const
+{
+    return mReadings;
+}
+
 void PerfTestService::checkAndSendSavedResult(bool checkTestId)
 {
     QSettings settings;

@@ -49,6 +49,7 @@ public slots:
     Q_INVOKABLE void resumeTest();
     Q_INVOKABLE void cancelTest();
     Q_INVOKABLE void finishTest();
+    Q_INVOKABLE QJsonArray getTestData() const;
 
 private slots:
     void onCountdownStart(AppSpecCPP::SystemMode mode, int delay);

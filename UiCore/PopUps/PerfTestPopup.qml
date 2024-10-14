@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Qt.labs.qmlmodels
 
 import Ronia
 import Stherm
@@ -44,7 +45,7 @@ I_PopUp {
                         case PerfTestService.Running:
                             return compRunning;
                         case PerfTestService.Complete:
-                            return compComplete;
+                            return compResult;
                     }
                 }
             }
@@ -233,6 +234,28 @@ I_PopUp {
                 color: Style.foreground
                 text: "Are you sure you want to stop?"
                 wrapMode: Text.Wrap
+            }
+        }
+    }
+
+    Component {
+        id: compResult
+        TableView {
+            anchors.fill: parent
+            rowSpacing: 1
+            columnSpacing: 1
+            clip: true
+
+            delegate: Text {
+                color: Style.foreground
+                font.pixelSize: 14
+                text: display
+            }
+
+            model: TableModel {
+                TableModelColumn { display: "timestamp" }
+                TableModelColumn { display: "temperature" }
+                Component.onCompleted: rows = PerfTestService.getTestData();
             }
         }
     }
