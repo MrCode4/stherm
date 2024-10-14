@@ -106,19 +106,6 @@ BasePageView {
         }
     }
 
-    Label {
-        id: errorLabel
-
-        anchors.bottom: submitBtn.top
-        anchors.bottomMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        font.pointSize: root.font.pointSize * 0.7
-        text: ""
-        color: AppStyle.primaryRed
-        visible: text.length > 0 && !isBusy
-    }
-
     BusyIndicator {
         anchors.right: submitBtn.left
         anchors.verticalCenter: submitBtn.verticalCenter
@@ -157,7 +144,6 @@ BasePageView {
 
         onClicked: {
             isBusy = true;
-            errorLabel.text = "";
 
             appModel.thermostatName = nameTf.text;
 

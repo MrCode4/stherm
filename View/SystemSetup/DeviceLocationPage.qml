@@ -115,20 +115,6 @@ BasePageView {
         }
     }
 
-
-    Label {
-        id: errorLabel
-
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        font.pointSize: root.font.pointSize * 0.7
-        text: ""
-        color: AppStyle.primaryRed
-        visible: text.length > 0 && !isBusy
-    }
-
     BusyIndicator {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
@@ -202,7 +188,6 @@ BasePageView {
                                      });
         } else {
             isBusy = true;
-            errorLabel.text = "";
             deviceController.pushInitialSetupInformation();
         }
     }
