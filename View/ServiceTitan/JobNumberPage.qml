@@ -38,8 +38,6 @@ BasePageView {
 
         //! Wifi status
         WifiButton {
-            id: _wifiBtn
-
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.bottom
             anchors.topMargin: -10

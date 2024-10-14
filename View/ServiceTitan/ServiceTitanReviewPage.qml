@@ -25,6 +25,12 @@ BasePageView {
      * ****************************************************************************************/
     title: "Review"
 
+    onVisibleChanged: {
+        if (!visible) {
+            retryTimer.stop();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Info button in initial setup mode.
@@ -40,6 +46,27 @@ BasePageView {
             }
 
         }
+
+        //! Wifi status
+        WifiButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.bottom
+            anchors.topMargin: -10
+            visible: !NetworkInterface.hasInternet
+
+            z: 1
+
+            onClicked: {
+                //! Open WifiPage
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup,
+                                                 "nextButtonEnabled": false
+                                             });
+                }
+            }
+        }
     }
 
     Label {
@@ -49,7 +76,7 @@ BasePageView {
         anchors.topMargin: 25
         anchors.horizontalCenter: parent.horizontalCenter
 
-        width: parent.width * 0.9
+        width: parent.width * 0.7
         text: "Please confirm with the customer that the information below is correct."
         elide: Text.ElideMiddle
         horizontalAlignment: Text.AlignHCenter
@@ -130,11 +157,9 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
-            errorLabel.text = "";
-            isBusyCustomer = true;
             isBusyZip = true;
             // get needed values from api
-            deviceController.getJobInformationManual();
+            deviceController.getZipCodeJobInformationManual();
         }
     }
 
@@ -146,19 +171,14 @@ BasePageView {
         width: 45
         visible: isBusy
         running: visible
-    }
 
-    Label {
-        id: errorLabel
+        TapHandler {
+            enabled: isBusy && errorPopup.errorMessage.length > 0
 
-        anchors.bottom: nextBtn.top
-        anchors.bottomMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        font.pointSize: root.font.pointSize * 0.7
-        text: ""
-        color: AppStyle.primaryRed
-        visible: text.length > 0 && !isBusy
+            onTapped: {
+                errorPopup.open();
+            }
+        }
     }
 
     //! Temp connection to go to the next page.
@@ -167,23 +187,52 @@ BasePageView {
         enabled: root.visible
         function onCustomerInfoReady(error) {
             if (error.length > 0) {
-                errorLabel.text = error + " retry.";
+                errorPopup.errorMessage = "Customer information is not ready, " + error + " retry.";
+
+            } else {
+                isBusyCustomer = false;
             }
 
-            isBusyCustomer = false;
 
             nextPage();
         }
 
         function onZipCodeInfoReady(error) {
             if (error.length > 0) {
-                errorLabel.text = error + " retry.";
+                errorLabel.text = "ZIP code information is not ready, " + error + " retry.";
+
+            } else {
+                // Get the customer information
+                isBusyCustomer = true;
+                deviceController.getEmailJobInformationManual();
+                isBusyZip = false;
             }
-
-            isBusyZip = false;
-
-            nextPage();
         }
+    }
+
+
+    Timer {
+        id: retryTimer
+
+        interval: 5000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            if (isBusyCustomer) {
+                deviceController.getEmailJobInformationManual();
+
+            } else if (isBusyZip) {
+                deviceController.getZipCodeJobInformationManual();
+
+            }
+        }
+    }
+
+    InitialFlowErrorPopup {
+        id: errorPopup
+
+        deviceController: uiSession.deviceController
     }
 
     /* Functions
@@ -192,7 +241,7 @@ BasePageView {
     //! Go to CustomerDetailsPage
     function nextPage() {
         //! we prevent to go next page as one of calls is busy or has error
-        if (errorLabel.text.length > 0 || isBusy)
+        if (isBusy)
             return;
 
         // Go to next page

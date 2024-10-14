@@ -23,6 +23,12 @@ BasePageView {
      * ****************************************************************************************/
     title: "Device Location"
 
+    onVisibleChanged: {
+        if (!visible) {
+            retryTimer.stop();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Info button in initial setup mode.
@@ -37,6 +43,27 @@ BasePageView {
                                          });
             }
 
+        }
+
+        //! Wifi status
+        WifiButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.bottom
+            anchors.topMargin: -10
+            visible: !NetworkInterface.hasInternet
+
+            z: 1
+
+            onClicked: {
+                //! Open WifiPage
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup,
+                                                 "nextButtonEnabled": false
+                                             });
+                }
+            }
         }
     }
 
@@ -80,6 +107,7 @@ BasePageView {
                         appModel.whereInstalled = index;
                         appModel.deviceLocation = String(modelData);
                         appModel.thermostatName = String(modelData);
+
                         nextPage();
                     }
                 }
@@ -109,8 +137,35 @@ BasePageView {
         width: 45
         visible: isBusy
         running: visible
+
+
+        TapHandler {
+            enabled: isBusy && errorPopup.errorMessage.length > 0
+
+            onTapped: {
+                errorPopup.open();
+            }
+        }
     }
 
+    InitialFlowErrorPopup {
+        id: errorPopup
+
+        deviceController: uiSession.deviceController
+    }
+
+
+    Timer {
+        id: retryTimer
+
+        interval: 5000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            deviceController.pushInitialSetupInformation();
+        }
+    }
 
     //! Temp connection to end busy
     Connections {
@@ -121,9 +176,16 @@ BasePageView {
             isBusy = false;
         }
 
-        function onInstallFailed() {
-            isBusy = false;
-            errorLabel.text = "Please try again!";
+        function onInstallFailed(err : string, needToRetry : bool) {
+            errorPopup.errorMessage = err;
+
+            if (needToRetry) {
+                retryTimer.start();
+
+            } else {
+                isBusy = false;
+                errorPopup.open();
+            }
         }
     }
 
@@ -131,6 +193,8 @@ BasePageView {
      * ****************************************************************************************/
 
     function nextPage() {
+        retryTimer.stop();
+
         if (root.StackView.view && appModel.deviceLocation === "Other") {
             root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ThermostatNamePage.qml", {
                                          "uiSession": Qt.binding(() => uiSession),

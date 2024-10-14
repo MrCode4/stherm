@@ -110,7 +110,7 @@ signals:
     void pushFailed();
 
     void installedSuccess();
-    void installFailed();
+    void installFailed(QString err, bool needToRetry);
 
     void autoModePush(bool isSuccess);
 

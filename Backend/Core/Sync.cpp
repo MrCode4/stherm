@@ -651,7 +651,15 @@ void Sync::installDevice(const QVariantMap &data)
             emit installedSuccess();
         }
         else {
-            emit installFailed();
+
+            auto err = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() :
+                           reply->errorString();
+            if (err.isEmpty()) {
+                err = reply->errorString();
+            }
+            err.remove(reply->url().toString());
+
+            emit installFailed(err, reply->error() != QNetworkReply::UnknownContentError);
             TRACE << rawData << data;
         }
     };

@@ -21,6 +21,12 @@ BasePageView {
      * ****************************************************************************************/
     title: "Thermostat Name"
 
+    onVisibleChanged: {
+        if (!visible) {
+            retryTimer.stop();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Info button in initial setup mode.
@@ -33,6 +39,27 @@ BasePageView {
                 root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
                                              "uiSession": Qt.binding(() => uiSession)
                                          });
+            }
+        }
+
+        //! Wifi status
+        WifiButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.bottom
+            anchors.topMargin: -10
+            visible: !NetworkInterface.hasInternet
+
+            z: 1
+
+            onClicked: {
+                //! Open WifiPage
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup,
+                                                 "nextButtonEnabled": false
+                                             });
+                }
             }
         }
     }
@@ -100,6 +127,14 @@ BasePageView {
         width: 45
         visible: isBusy
         running: visible
+
+        TapHandler {
+            enabled: isBusy && errorPopup.errorMessage.length > 0
+
+            onTapped: {
+                errorPopup.open();
+            }
+        }
     }
 
     //! Submit button
@@ -143,11 +178,37 @@ BasePageView {
             isBusy = false;
         }
 
-        function onInstallFailed() {
+        function onInstallFailed(err : string, needToRetry : bool) {
             isBusy = false;
-            errorLabel.text = "Please try again!";
+            errorPopup.errorMessage = err;
+
+            if (needToRetry) {
+                retryTimer.start();
+
+            } else {
+                isBusy = false;
+                errorPopup.open();
+            }
         }
 
+    }
+
+    InitialFlowErrorPopup {
+        id: errorPopup
+
+        deviceController: uiSession.deviceController
+    }
+
+    Timer {
+        id: retryTimer
+
+        interval: 5000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            deviceController.pushInitialSetupInformation();
+        }
     }
 
 }

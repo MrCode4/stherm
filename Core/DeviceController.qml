@@ -1619,14 +1619,16 @@ I_DeviceController {
         sync.installDevice(send_data);
     }
 
-    //! as both data needs to be fetched together and each may return error
     //! we do not resend it if last time it was success so we have better chance in total
-    function getJobInformationManual() {
+    function getZipCodeJobInformationManual() {
         if (internal.syncReturnedZip !== device.serviceTitan.zipCode)
             sync.getAddressInformationManual(device.serviceTitan.zipCode);
         else
             zipCodeInfoReady("");
+    }
 
+    //! we do not resend it if last time it was success so we have better chance in total
+    function getEmailJobInformationManual() {
         if (internal.syncReturnedEmail !== device.serviceTitan.email)
             sync.getCustomerInformationManual(device.serviceTitan.email)
         else
