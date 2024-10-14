@@ -23,22 +23,22 @@ if you are using Windows:
 
 ## How to build?
 1. Set CMake build type to Release
-     - Qt Creator: </br>
-        Navigate to `Projects` > `Edit build configuration` > `Release`
+  - Qt Creator: </br>
+    Navigate to `Projects` > `Edit build configuration` > `Release`
 2. Generate makefiles:
-     - Qt Creator: </br> 
-        Navigate to `Build` > `Run CMake`
-     - CMake: 
-        ```properties
-        cmake -S . -B ./build/release
-        ```
+  - Qt Creator: </br> 
+    Navigate to `Build` > `Run CMake`
+  - CMake: 
+    ```properties
+    cmake -S . -B ./build/release
+    ```
 3. Build project
-     - Qt Creator: </br>
-        Navigate to `Build` > `Build Project`
-     - CMake: 
-        ```properties
-        cmake --build ./build/release --target ALL_BUILD --config Release
-        ```
+  - Qt Creator: </br>
+    Navigate to `Build` > `Build Project`
+  - CMake: 
+    ```properties
+    cmake --build ./build/release --target ALL_BUILD --config Release
+    ```
 
 ## How to Fake a Serial Number?
 To enable fake serial mode, set `FAKE_UID_MODE` option to `ON` in your `CMakeLists` file and create a new fake serial ID. Please follow the steps below: </br>
@@ -63,7 +63,7 @@ cmake -DFAKE_UID_MODE:BOOL=ON -DFAKE_UID=$YOUR_FAKE_UID .
 
 > **_WARNING:_** Ensure your fake serial number is not a valid serial number connected to a real device. Any changes you make in the app will appear on the device.
 
-## Devloper Mode
+## Developer Mode
 If you want to test the UI without needing a valid serial number or connecting to a device, you can set `userLevel` to `DEVELOPER` in `UiSession.qml`:
 ```QML
     // property int userLevel: UiSession.UserLevel.USER
@@ -74,14 +74,14 @@ If you want to test the UI without needing a valid serial number or connecting t
 
 ### What is initial setup exactly?
 The initial setup flow involves configuring several settings for your device. These include:
-- Selecting the system type:
+- Selecting the system type, such as:
     - Traditional 
     - Heat Pump
     - Cool only
     - Heat Only
-- Configuring the settings for the chosen system type.
+- Configuring the specific settings based on the selected system type.
 - Specifying the accessories your device has.
-You can select between a humidifier, dehumidifier, or none. Each accessory may have additional options.
+You can select either a humidifier, dehumidifier, or none. Each accessory may have additional options.
 - Setting the system run delay.
 - Enabling technician access, which displays a QR code. By scanning the QR code, you can view information about the device after logging into your [nuvehvac.com](https://https://www.nuvehvac.com/#EN/USA/user/login/) account.
 
@@ -114,21 +114,21 @@ When you enable Test mode, you have the ability to physically test your device t
 
 ### How to move the app to the test mode?
 
-You can enter Test mode in several ways:
+You can enter test mode in several ways:
 
-1. To run the app in test mode, set `TEST_MODE` option to ON in your `CMakeLists` file. Please follow the steps below: </br>
-    Qt Creator: </br>
+1. To run the app in test mode, set `TROUBLESHOOTING_MODE` option to ON in your `CMakeLists` file. Please follow the steps below: </br>
+Qt Creator: </br>
 
     1. Go to `Projects` (Ctrl + 5).
     2. Under the currently selected kit, click on `Build`.
     3. In the `CMake Section`, select the `Current Configuration` tab.
-    4. Search for `TEST_MODE`.
+    4. Search for `TROUBLESHOOTING_MODE`.
     5. Check the box to turn it ON.
     6. Finally, click on `Run CMake`.
 
     CMake: </br>
     ```properties
-    cmake -DTEST_MODE:BOOL=ON .
+    cmake -DTROUBLESHOOTING_MODE:BOOL=ON .
     ```
 
 Alternatively, if your device doesn't have GPIO or the `START_MODE_GPIO` is set to zero in the parameter definitions:
@@ -138,7 +138,24 @@ Alternatively, if your device doesn't have GPIO or the `START_MODE_GPIO` is set 
 #define START_MODE_GPIO         0
 ```
 
-2- By pressing and holding the `device information` for 10 seconds in the device menu.
+2. To run the app in test mode, set `SERIAL_TEST_MODE` option to ON in your `CMakeLists` file. Please follow the steps below: </br>
+Qt Creator: </br>
+
+    1. Go to `Projects` (Ctrl + 5).
+    2. Under the currently selected kit, click on `Build`.
+    3. In the `CMake Section`, select the `Current Configuration` tab.
+    4. Search for `SERIAL_TEST_MODE`.
+    5. Check the box to turn it ON.
+    6. Search for `SERIAL_TEST_DELAY_COUNTER`.
+    7. Set your desired delay counter value.
+    8. Finally, click on `Run CMake`.
+
+    CMake: </br>
+    ```properties
+    cmake -DSERIAL_TEST_MODE:BOOL=ON -DSERIAL_TEST_DELAY_COUNTER=3 .
+    ```
+
+3. By pressing and holding the `device information` for 10 seconds in the device menu.
 
 </br>
 <center>
@@ -148,7 +165,7 @@ Alternatively, if your device doesn't have GPIO or the `START_MODE_GPIO` is set 
 
 After enabling Test mode, you will see new buttons on the device information page that allow you to update the NRF, restart the app, or forget the device.
 
-3- By pressing and holding the `system update` option for 10 seconds in the device menu.
+4. By pressing and holding the `system update` option for 10 seconds in the device menu.
 
 </br>
 <center>
@@ -159,7 +176,7 @@ After enabling Test mode, you will see new buttons on the device information pag
 After this, a new option for manual updates will appear on the system update page.
 
 
-4- By tapping 10 times on the `FCC ID` in the device information page in the device menu.
+5. By tapping 10 times on the `FCC ID` in the device information page in the device menu.
 
 </br>
 <center>

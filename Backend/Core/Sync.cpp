@@ -7,6 +7,13 @@
 #include "device_config.h"
 
 /* ************************************************************************************************
+ * Static variables
+ * ************************************************************************************************/
+#ifdef SERIAL_TEST_MODE_ON
+int NUVE::Sync::serialTestDelayCounter = SERIAL_TEST_DELAY_COUNTER;
+#endif
+
+/* ************************************************************************************************
  * Network information
  * ************************************************************************************************/
 namespace NUVE {
@@ -112,6 +119,14 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 
 #ifdef INITIAL_SETUP_MODE_ON
             mHasClient = false;
+#elif defined(SERIAL_TEST_MODE_ON)
+            if (NUVE::Sync::serialTestDelayCounter > 0) {
+                mHasClient = false;
+                sn = "";
+                --NUVE::Sync::serialTestDelayCounter;
+            } else {
+                mHasClient = data.value("has_client").toBool();
+            }
 #else
             mHasClient = data.value("has_client").toBool();
 #endif

@@ -153,5 +153,9 @@ private:
     QDateTime mAutoModeLastPushTime;
     QVariantMap mContractorInfo;
     cpuid_t mSystemUuid;
+
+#ifdef SERIAL_TEST_MODE_ON
+    static int serialTestDelayCounter;
+#endif
 };
 }

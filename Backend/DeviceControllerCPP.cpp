@@ -540,7 +540,7 @@ void DeviceControllerCPP::startDevice()
     int startMode;
 #ifdef INITIAL_SETUP_MODE_ON
     startMode = 1;
-#elif defined(TEST_MODE_ON)
+#elif defined(TROUBLESHOOTING_MODE_ON)
     startMode = 0;
 #else
     startMode = getStartMode();

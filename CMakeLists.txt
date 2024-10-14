@@ -13,12 +13,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Temperature scheme version and update date.
 set(TEMPERATURE_SCHEME_VERSION_C "V.1.94 (02.10.2024)")
 set(FAKE_UID "" CACHE STRING "The fake UID used for testing purposes")
+set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT "Delay counter for serial test")
 
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
 option (INITIAL_SETUP_MODE "Force the app to run in the initial setup pages" OFF)
 option (FAKE_UID_MODE "Run app with a fake UID stored in FAKE_UID" OFF)
-option (TEST_MODE "Run app with starting test device mode" OFF)
+option (TROUBLESHOOTING_MODE "Run app with starting troubleshooting device mode" OFF)
+option (SERIAL_TEST_MODE "Run app with serial number testing mdoe")
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
     QuickControls2 Multimedia Concurrent
@@ -473,8 +475,13 @@ if(INITIAL_SETUP_MODE)
     target_compile_definitions(appStherm PRIVATE INITIAL_SETUP_MODE_ON)
 endif()
 
-if(TEST_MODE)
-    target_compile_definitions(appStherm PRIVATE TEST_MODE_ON)
+if(TROUBLESHOOTING_MODE)
+    target_compile_definitions(appStherm PRIVATE TROUBLESHOOTING_MODE_ON)
+endif()
+
+if(SERIAL_TEST_MODE)
+    target_compile_definitions(appStherm PRIVATE SERIAL_TEST_MODE_ON)
+    target_compile_definitions(appStherm PRIVATE SERIAL_TEST_DELAY_COUNTER=${SERIAL_TEST_DELAY_COUNTER})
 endif()
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
