@@ -589,9 +589,16 @@ void Sync::fetchServiceTitanInformation()
 void Sync::getJobIdInformation(const QString& jobID)
 {
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        auto err = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() :
+                       reply->errorString();
+        if (err.isEmpty()) {
+            err = reply->errorString();
+        }
+
         TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
 
-        emit jobInformationReady(!data.isEmpty(), data.toVariantMap(), reply->errorString());
+        err.remove(reply->url().toString());
+        emit jobInformationReady(!data.isEmpty(), data.toVariantMap(), err);
     };
 
     auto netReply =  callGetApi(cBaseUrl + QString("/api/technicians/service-titan/customer/%0?sn=%1").arg(jobID, mSerialNumber), callback);

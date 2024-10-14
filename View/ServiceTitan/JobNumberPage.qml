@@ -216,8 +216,16 @@ BasePageView {
             } else {
                 errorPopup.errorMessage = "Job number operation failed, " + error;
 
-                // Retry
-                retryTimer.start();
+                if (retryTimer.retryCount < 5){
+                    // Retry
+                    retryTimer.start();
+                    retryTimer.retryCount++;
+
+                } else {
+                    isBusy = false;
+                    retryTimer.retryCount = 0;
+                    errorPopup.open();
+                }
             }
         }
 
@@ -234,7 +242,6 @@ BasePageView {
 
         onTriggered: {
             deviceController.sync.getJobIdInformation(appModel.serviceTitan.jobNumber);
-            retryCount++;
         }
     }
 
