@@ -106,6 +106,10 @@ BasePageView {
                 } else {
                     updateText = text;
                 }
+
+                //! Serial number changed, abort the request.
+                isBusy = false;
+                tryTimer.stop();
             }
 
             validator: RegularExpressionValidator {
@@ -162,6 +166,10 @@ BasePageView {
                 } else {
                     updateText = text;
                 }
+
+                //! Serial number changed, abort the request.
+                isBusy = false;
+                tryTimer.stop();
             }
 
             validator: RegularExpressionValidator {
@@ -222,7 +230,8 @@ BasePageView {
         running: false
 
         onTriggered: {
-             sync?.warrantyReplacement(oldSNTf.text, newSNTf.text);
+             if (isBusy)
+                 sync?.warrantyReplacement(oldSNTf.text, newSNTf.text);
         }
     }
 
@@ -234,6 +243,9 @@ BasePageView {
 
     Connections {
         target: sync
+
+        // To avoid restart the aborted request.
+        enabled: isBusy
 
         function onWarrantyReplacementFinished(success: bool, error: string, needToRetry: bool) {
             isBusy = !success && needToRetry;
