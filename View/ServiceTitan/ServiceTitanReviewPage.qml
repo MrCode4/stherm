@@ -73,11 +73,12 @@ BasePageView {
         id: confirmInfoLabel
 
         anchors.top: parent.top
-        anchors.topMargin: 25
+        anchors.topMargin: 15
         anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.7
         text: "Please confirm with the customer that the information below is correct."
+        font.pointSize: Application.font.pointSize * 0.9
         elide: Text.ElideMiddle
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap

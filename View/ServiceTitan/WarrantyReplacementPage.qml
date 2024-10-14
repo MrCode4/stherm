@@ -25,6 +25,7 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
     title: "Warranty Replacement"
+    titleHeadeingLevel: 4
 
     onVisibleChanged: {
         if (!visible) {
@@ -56,7 +57,7 @@ BasePageView {
         id: warranryReplacementInfo
 
         anchors.top: parent.top
-        anchors.topMargin: 5
+        anchors.topMargin: -5
 
         width: parent.width * 0.95
         wrapMode: Text.WordWrap
@@ -70,7 +71,7 @@ BasePageView {
 
     ColumnLayout {
         anchors.top: warranryReplacementInfo.bottom
-        anchors.topMargin: 10
+        anchors.topMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.9

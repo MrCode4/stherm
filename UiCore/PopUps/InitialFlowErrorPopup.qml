@@ -50,7 +50,7 @@ I_PopUp {
         Flickable {
             id: errorFlick
 
-            Layout.preferredHeight: parent.height * 0.5
+            Layout.preferredHeight: root.height * 0.4
             Layout.fillWidth: true
 
             ScrollIndicator.vertical: ScrollIndicator {
@@ -82,7 +82,7 @@ I_PopUp {
             Layout.fillWidth: true
             Layout.preferredHeight: 35
 
-            font.pointSize: Application.font.pointSize * 0.7
+            font.pointSize: Application.font.pointSize * 0.65
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment:Text.AlignBottom
             text: "Contact Nuve Support: (657) 626-4887 for issues."
@@ -106,9 +106,10 @@ I_PopUp {
     Popup {
         id: logBusyPop
 
+        anchors.centerIn: parent
         width: Math.max(implicitWidth, root.width * 0.5)
         height: root.height * 0.5
-        anchors.centerIn: root.parent
+        parent: root.parent
         modal: true
 
         onOpened: {
