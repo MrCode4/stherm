@@ -29,6 +29,8 @@ BasePageView {
 
     property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
 
+    property bool nextButtonEnabled: initialSetup
+
     /* Object properties
      * ****************************************************************************************/
     title: "Wi-Fi Settings"
@@ -53,7 +55,7 @@ BasePageView {
     ToolButton {
         parent: root.header.contentItem
 
-        visible: initialSetup
+        visible: nextButtonEnabled
 
         contentItem: RoniaTextIcon {
             text: FAIcons.arrowRight

@@ -129,7 +129,7 @@ signals:
     //! maybe rename to warrantyReplacementDataReady
     void warrantyReplacementFinished(bool success = false);
 
-    void jobInformationReady(bool success, QVariantMap data);
+    void jobInformationReady(bool success, QVariantMap data, QString error);
 
     void zipCodeInfoReady(bool success, QVariantMap data);
     void customerInfoReady(bool success, QVariantMap data);

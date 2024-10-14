@@ -121,6 +121,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/AboutPopUp.qml
         UiCore/PopUps/ConfirmPopup.qml
         UiCore/PopUps/UpdatePopup.qml
+        UiCore/PopUps/InitialFlowErrorPopup.qml
         UiCore/ShortcutManager.qml
         UiCore/SimpleStackView.qml
         UiCore/Components/SemiCircleSlider.qml

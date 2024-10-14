@@ -19,6 +19,8 @@ I_DeviceController {
 
     property MessageController   messageController
 
+    property System system: deviceControllerCPP?.system ?? null
+
     property Sync sync: deviceControllerCPP?.sync ?? null
 
     property int editMode: AppSpec.EMNone
@@ -300,7 +302,7 @@ I_DeviceController {
         }
     }
 
-    property Connections system: Connections {
+    property Connections systemConnection: Connections {
         target: deviceControllerCPP.system
 
         function onSettingsReady(settings) {

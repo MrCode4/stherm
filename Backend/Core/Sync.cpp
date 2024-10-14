@@ -591,7 +591,7 @@ void Sync::getJobIdInformation(const QString& jobID)
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
 
-        emit jobInformationReady(!data.isEmpty(), data.toVariantMap());
+        emit jobInformationReady(!data.isEmpty(), data.toVariantMap(), reply->errorString());
     };
 
     auto netReply =  callGetApi(cBaseUrl + QString("/api/technicians/service-titan/customer/%0?sn=%1").arg(jobID, mSerialNumber), callback);

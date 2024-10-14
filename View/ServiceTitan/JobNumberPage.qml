@@ -35,7 +35,31 @@ BasePageView {
                                          });
             }
         }
+
+        //! Wifi status
+        WifiButton {
+            id: _wifiBtn
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.bottom
+            anchors.topMargin: -10
+            visible: !NetworkInterface.hasInternet
+
+            z: 1
+
+            onClicked: {
+                //! Open WifiPage
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup,
+                                                 "nextButtonEnabled": false
+                                             });
+                }
+            }
+        }
     }
+
 
     GridLayout {
         anchors.top: parent.top
@@ -65,7 +89,7 @@ BasePageView {
             }
 
             onTextChanged: {
-                errorLabel.text = "";
+                isBusy = false;
             }
 
             inputMethodHints: Qt.ImhPreferNumbers
@@ -79,6 +103,15 @@ BasePageView {
                 width: 45
                 visible: isBusy
                 running: visible
+
+                TapHandler {
+                    enabled: isBusy && errorPopup.errorMessage.length > 0
+
+                    onTapped: {
+                        errorPopup.open();
+                    }
+                }
+
             }
         }
 
@@ -98,11 +131,11 @@ BasePageView {
 
                     if (jobNumberTf.text.length > 0) {
                         isBusy = true;
-                        errorLabel.text = "";
 
                         appModel.serviceTitan.isSTManualMode = false;
 
-                        deviceController.sync.getJobIdInformation(appModel.serviceTitan.jobNumber)
+                        if (!retryTimer.running)
+                            retryTimer.triggered();
 
                     } else {
                         // Skip
@@ -168,35 +201,47 @@ BasePageView {
         }
     }
 
-    Label {
-        id: errorLabel
-
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        font.pointSize: root.font.pointSize * 0.7
-        text: ""
-        color: AppStyle.primaryRed
-        visible: text.length > 0 && !isBusy
-    }
-
     //! Temp connection to go to the next page.
     Connections {
         target: deviceController.sync
         enabled: root.visible
 
-        function onJobInformationReady(success: bool, data: var) {
-            isBusy = false;
+        function onJobInformationReady(success: bool, data: var, error: string) {
 
-            if (!success) {
-                errorLabel.text = "Job number operation failed, retry.";
+            if (success) {
+                isBusy = false;
+                errorPopup.errorMessage = "";
+                nextPage();
 
             } else {
-                nextPage();
+                errorPopup.errorMessage = "Job number operation failed, " + error;
+
+                // Retry
+                retryTimer.start();
             }
         }
 
+    }
+
+    Timer {
+        id: retryTimer
+
+        property int retryCount: 0
+
+        interval: 5000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            deviceController.sync.getJobIdInformation(appModel.serviceTitan.jobNumber);
+            retryCount++;
+        }
+    }
+
+    InitialFlowErrorPopup {
+        id: errorPopup
+
+        deviceController: uiSession.deviceController
     }
 
     /* Functions
