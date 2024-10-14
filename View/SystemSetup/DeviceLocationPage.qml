@@ -156,7 +156,7 @@ BasePageView {
     //! Temp connection to end busy
     Connections {
         target: deviceController.sync
-        enabled: root.visible
+        enabled: root.visible && isBusy
 
         function onInstalledSuccess() {
             isBusy = false;
@@ -188,7 +188,7 @@ BasePageView {
                                      });
         } else {
             isBusy = true;
-            deviceController.pushInitialSetupInformation();
+            retryTimer.triggered();
         }
     }
 }
