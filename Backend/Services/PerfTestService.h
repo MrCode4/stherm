@@ -41,6 +41,7 @@ public:
     Q_ENUM(TestState)
 
 signals:
+    void eligibilityChecked(const QString& errorMsg);
 
 public slots:
     Q_INVOKABLE void checkTestEligibility();

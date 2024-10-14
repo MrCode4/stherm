@@ -161,6 +161,7 @@ void PerfTestService::checkTestEligibility()
     auto callback = [this](QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError) {
             TRACE_CAT(PerfTestLogCat) <<"CheckTestEligibility API failed, going to retry in 15 minutes";
+            emit eligibilityChecked("Failed due to network issues, will retry in 15 mininutes");
             scheduleNextCheck(QTime::currentTime().addSecs(PerfTest::TestDuration));
             return;
         }
@@ -172,40 +173,42 @@ void PerfTestService::checkTestEligibility()
         if (settings.contains(PerfTest::Key_TestID)) {
             if (settings.value(PerfTest::Key_TestID).toInt() == perfId) {
                 TRACE_CAT(PerfTestLogCat) <<"in checkTestEligibility, eligible test id is already finished testing and retrying uploading "<< perfId;
+                emit eligibilityChecked(QString("Eligible, but the test with id %1 have already performed once and now retrying sending the results back.").arg((perfId)));
                 scheduleNextCheck(PerfTest::Noon12PM);
                 return;
             }
-        }
-
-        mTimerRetrySending.stop();
-        testId(perfId);
+        }        
 
         auto action = data.value("action").toString();
+        AppSpecCPP::SystemMode testMode = AppSpecCPP::Off;
         if (action == PerfTest::Mode_Cooling) {
-            mode(AppSpecCPP::Cooling);
+            testMode = AppSpecCPP::Cooling;
         }
         else if (action == PerfTest::Mode_Heating) {
-            mode(AppSpecCPP::Heating);
-        }
-        else {
-            mode(AppSpecCPP::Off);
-        }
-
-        if (testId() <= 0 || mode() == AppSpecCPP::Off) {
-            scheduleNextCheck(PerfTest::Noon12PM);
-            return;
+            testMode = AppSpecCPP::Heating;
         }
 
         bool isHeatable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::CoolingOnly;
         bool isCoolable = DeviceControllerCPP::instance()->systemSetup()->systemType != AppSpecCPP::HeatingOnly;
-        if ((mode() == AppSpecCPP::Heating && !isHeatable) || (mode() == AppSpecCPP::Cooling && !isCoolable)) {
-            TRACE_CAT(PerfTestLogCat) <<"Perf-test is eligible but requested mode is not compatible. Requested-mode=" <<mode()
+        if ((testMode == AppSpecCPP::Heating && !isHeatable) || (testMode == AppSpecCPP::Cooling && !isCoolable)) {
+            TRACE_CAT(PerfTestLogCat) <<"Perf-test is eligible but requested mode is not compatible. Requested-mode=" <<testMode
                                       <<", Device-type=" <<DeviceControllerCPP::instance()->systemSetup()->systemType;
+            emit eligibilityChecked("Perf-test is eligible but requested mode is not compatible with system type.");
             scheduleNextCheck(PerfTest::Noon12PM);
             return;
         }
 
-        state(Eligible);
+        if (perfId <= 0 || testMode == AppSpecCPP::Off) {
+            emit eligibilityChecked(QString("Eligible, however, the test with id %1 have already performed once and now retrying sending the results back.").arg((perfId)));
+            scheduleNextCheck(PerfTest::Noon12PM);
+            return;
+        }
+
+        mTimerRetrySending.stop();
+        testId(perfId);
+        mode(testMode);
+        state(Eligible);        
+        emit eligibilityChecked("");
 
         if (isPostponed()) {
             TRACE_CAT(PerfTestLogCat) << "Eligible to perf-test but UI is busy, so postponing now until UI resumes";
