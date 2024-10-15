@@ -17,19 +17,77 @@ I_PopUp {
 
     property DeviceController deviceController
 
+    property bool isBusy: false
+
+    /* Signals
+     * ****************************************************************************************/
+    signal stopped();
+
     /* Object properties
      * ****************************************************************************************/
-    title: "Error"
     width: AppStyle.size * 0.85
     height: AppStyle.size * 0.85
+    titleBar: false
+
+    onOpened: {
+        if (NetworkInterface.hasInternet)
+            deviceController.system.sendLog();
+    }
 
     /* Children
      * ****************************************************************************************/
+
     ColumnLayout {
-        width: parent?.width * 0.95 ?? 0
-        anchors.centerIn: parent
+
+        anchors.fill: parent
         spacing: 16
 
+        //! Header
+        RowLayout {
+            property int labelMargin: 0
+
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+            Layout.fillHeight: false
+
+            spacing: 16
+
+            //! Icon
+            RoniaTextIcon {
+                Layout.alignment: Qt.AlignCenter
+                font.pointSize: Qt.application.font.pointSize * 2
+                text: FAIcons.triangleExclamation
+            }
+
+
+            Label {
+                Layout.fillWidth: true
+                Layout.leftMargin: parent.labelMargin
+                horizontalAlignment: "AlignHCenter"
+                textFormat: "MarkdownText"
+                text: `${"#".repeat(titleHeadingLevel)} Error`
+                elide: "ElideRight"
+                color: enabled ? Style.foreground : Style.hintTextColor
+                linkColor: Style.linkColor
+            }
+
+            ToolButton {
+                Layout.rightMargin: -root.rightPadding + 4
+                contentItem: RoniaTextIcon {
+                    font.pointSize: Application.font.pointSize * 1.2
+                    text: FAIcons.xmark
+                }
+
+                onClicked: {
+                    root.close();
+                }
+
+                Component.onCompleted: {
+                    parent.labelMargin = Qt.binding(() => width);
+                }
+            }
+        }
+
+        //! Serial number:
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.button.buttonHeight
@@ -73,7 +131,7 @@ I_PopUp {
                 text: errorMessage
                 wrapMode: Text.WordWrap
                 verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
+                horizontalAlignment: Text.AlignLeft
                 font.pointSize: Application.font.pointSize * 0.7
             }
         }
@@ -89,40 +147,37 @@ I_PopUp {
         }
 
 
-        //! Connect/Disconnect button
-        ButtonInverted {
-            text: "Send log"
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Style.button.buttonHeight
+            visible: isBusy
 
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: {
-                if (NetworkInterface.hasInternet)
-                    logBusyPop.open();
-                else
-                    deviceController.system.alert("No Internet, Please check your connection before sending log.")
+            BusyIndicator {
+                Layout.leftMargin: 10
+                Layout.alignment: Qt.AlignLeft
+                height: 45
+                width: 45
+                visible: isBusy
+                running: isBusy
             }
-        }
-    }
 
-    Popup {
-        id: logBusyPop
+            Label {
+                Layout.fillWidth: true
+                text: "Trying ..."
+                horizontalAlignment: Text.AlignLeft
+                font.pointSize: Application.font.pointSize * 0.9
+            }
 
-        anchors.centerIn: parent
-        width: Math.max(implicitWidth, root.width * 0.5)
-        height: root.height * 0.5
-        parent: root.parent
-        modal: true
+            //! Stop the current process button
+            ButtonInverted {
+                Layout.alignment: Qt.AlignRight
+                Layout.rightMargin: 10
 
-        onOpened: {
-            //! Call sendLog()
-            deviceController.system.sendLog();
-            close();
-        }
-
-        contentItem: Label {
-            text: "Preparing log, \nplease wait ..."
-            horizontalAlignment: "AlignHCenter"
-            verticalAlignment: "AlignVCenter"
-            lineHeight: 1.4
+                text: "Stop"
+                onClicked: {
+                    stopped();
+                }
+            }
         }
     }
 }
