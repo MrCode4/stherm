@@ -87,6 +87,7 @@ BasePageView {
 
             Layout.preferredWidth: parent.width * 0.8
 
+            enabled: !isBusy
             placeholderText: "Input the job number"
             text: appModel?.serviceTitan?.jobNumber ?? ""
             validator: RegularExpressionValidator {
