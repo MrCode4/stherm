@@ -22,8 +22,10 @@ BasePageView {
     title: "Job Number"
 
     onVisibleChanged: {
-        if (!visible)
+        if (!visible) {
             retryTimer.stop();
+            errorPopup.close();
+        }
     }
 
     /* Children

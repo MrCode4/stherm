@@ -46,7 +46,7 @@ BasePageView {
         property bool once : false
 
         repeat: false
-        running: !once && root.visible && initialSetupReady
+        running: !once && root.visible && initialSetupReady &&  nextButtonEnabled
         interval: 10000
         onTriggered: nextPage()
     }
