@@ -235,11 +235,12 @@ BasePageView {
                     // Retry
                     retryTimer.start();
                 }
+
+                if (!isNeedRetry || (retryTimer.retryCount % 2 === 0)) {
+                    errorPopup.open();
+                }
             }
 
-            if (!isNeedRetry || (retryTimer.retryCount % 2 === 0)) {
-                errorPopup.open();
-            }
         }
 
     }
