@@ -40,9 +40,7 @@ public:
     void fetchWirings(const QString& uid);
     void requestJob(QString type);
 
-    Q_INVOKABLE void fetchUserData();
-
-    Q_INVOKABLE QString baseURL();
+    Q_INVOKABLE void fetchUserData();    
 
     Q_INVOKABLE void pushLockState(const QString& pin, bool lock);
 

@@ -224,7 +224,7 @@ void PerfTestService::checkTestEligibility()
     };
 
     state(Checking);
-    callGetApi(API_SERVER_BASE_URL + QString("api/sync/perftest/schedule?sn=%0").arg(Device->serialNumber()), callback);
+    callGetApi(baseUrl() + QString("api/sync/perftest/schedule?sn=%0").arg(Device->serialNumber()), callback);
 }
 
 void PerfTestService::prepareStartRunning()
@@ -406,7 +406,7 @@ void PerfTestService::sendResultsToServer(const QString& sn, const QByteArray& r
     };
 
     TRACE_CAT(PerfTestLogCat) <<"sendResultsToServer request type:" <<resultType <<", data:" <<resultData;
-    auto url = API_SERVER_BASE_URL + QString("api/sync/perftest/result?sn=%0").arg(sn);
+    auto url = baseUrl() + QString("api/sync/perftest/result?sn=%0").arg(sn);
     callPostApi(url, resultData, callback);
 }
 

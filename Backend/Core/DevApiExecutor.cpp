@@ -1,10 +1,18 @@
 #include "DevApiExecutor.h"
 #include "DeviceInfo.h"
 #include "LogHelper.h"
+#include "Config.h"
 
 DevApiExecutor::DevApiExecutor(QObject *parent)
     : RestApiExecutor(parent)
 {
+    auto url = qEnvironmentVariable("API_SERVER_BASE_URL", API_SERVER_BASE_URL);
+    if (!url.endsWith('/')) {
+        qWarning() << "sync base url is not valid" << url;
+        url += '/';
+    }
+
+    baseUrl(url);
 }
 
 void DevApiExecutor::setApiAuth(QNetworkRequest& request)
