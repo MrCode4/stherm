@@ -61,8 +61,8 @@ I_PopUp {
 
             Label {
                 Layout.fillWidth: true
-                Layout.leftMargin: parent.labelMargin
-                horizontalAlignment: "AlignHCenter"
+                Layout.leftMargin: 15
+                horizontalAlignment: Text.AlignLeft
                 textFormat: "MarkdownText"
                 text: `${"#".repeat(titleHeadingLevel)} Error`
                 elide: "ElideRight"
