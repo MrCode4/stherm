@@ -24,6 +24,7 @@ BasePageView {
     onVisibleChanged: {
         if (!visible) {
             retryTimer.stop();
+            errorPopup.close();
         }
     }
 
@@ -159,19 +160,25 @@ BasePageView {
 
             appModel.thermostatName = nameTf.text;
 
-           retryTimer.triggered();
+            if (NetworkInterface.hasInternet) {
+                retryTimer.triggered();
+                submitBtn.submitted = true;
 
-            submitBtn.submitted = true;
+            } else {
+                errorPopup.errorMessage = "No internet connection. Please check your internet connection.";
+                errorPopup.open();
+            }
         }
     }
 
     //! Temp connection to end busy
     Connections {
         target: deviceController.sync
-        enabled: root.visible
+        enabled: root.visible && isBusy
 
         function onInstalledSuccess() {
             isBusy = false;
+            retryTimer.retryCounter = 0;
         }
 
         function onInstallFailed(err : string, needToRetry : bool) {
@@ -180,8 +187,9 @@ BasePageView {
 
             if (needToRetry) {
                 retryTimer.start();
+            }
 
-            } else {
+            if (!needToRetry || (retryTimer.retryCounter % 2 === 0)) {
                 errorPopup.open();
             }
         }
@@ -191,11 +199,19 @@ BasePageView {
     InitialFlowErrorPopup {
         id: errorPopup
 
+        isBusy: root.isBusy
         deviceController: uiSession.deviceController
+
+        onStopped: {
+            root.isBusy = false;
+            retryTimer.stop();
+        }
     }
 
     Timer {
         id: retryTimer
+
+        property int retryCounter: 0
 
         interval: 5000
         repeat: false
@@ -203,6 +219,7 @@ BasePageView {
 
         onTriggered: {
             if (initialSetup) {
+                retryCounter++;
                 deviceController.pushInitialSetupInformation();
             }
         }

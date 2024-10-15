@@ -265,7 +265,7 @@ BasePageView {
         deviceController: uiSession.deviceController
 
         onStopped: {
-            isBusy = false;
+            root.isBusy = false;
             retryTimer.stop();
         }
     }

@@ -217,28 +217,42 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
-            isBusy = true;
-            tryTimer.triggered()
+            if (NetworkInterface.hasInternet) {
+                isBusy = true;
+                tryTimer.triggered()
+
+            } else {
+                errorPopup.errorMessage = "No internet connection. Please check your internet connection.";
+                errorPopup.open();
+            }
         }
     }
 
     Timer {
         id: tryTimer
 
+        property int retryCounter: 0
+
         interval: 5000
         repeat: false
         running: false
 
         onTriggered: {
-             if (isBusy)
-                 sync?.warrantyReplacement(oldSNTf.text, newSNTf.text);
+            retryCounter++;
+            sync?.warrantyReplacement(oldSNTf.text, newSNTf.text);
         }
     }
 
     InitialFlowErrorPopup {
         id: errorPopup
 
+        isBusy: root.isBusy
         deviceController: uiSession.deviceController
+
+        onStopped: {
+            root.isBusy = false;
+            tryTimer.stop();
+        }
     }
 
     Connections {
@@ -251,13 +265,14 @@ BasePageView {
             isBusy = !success && needToRetry;
 
             if (!success) {
-
                 errorPopup.errorMessage = error;
 
                 if (needToRetry) {
                     tryTimer.start();
 
-                } else {
+                }
+
+                if ((tryTimer.retryCounter % 2 === 0) || !needToRetry){
                     errorPopup.open();
                 }
             }

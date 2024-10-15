@@ -26,6 +26,7 @@ BasePageView {
     onVisibleChanged: {
         if (!visible) {
             retryTimer.stop();
+            errorPopup.close();
         }
     }
 
@@ -137,18 +138,27 @@ BasePageView {
     InitialFlowErrorPopup {
         id: errorPopup
 
+        isBusy: root.isBusy
         deviceController: uiSession.deviceController
+
+        onStopped: {
+            isBusy = false;
+            retryTimer.stop();
+        }
     }
 
 
     Timer {
         id: retryTimer
 
+        property int retryCounter: 0
+
         interval: 5000
         repeat: false
         running: false
 
         onTriggered: {
+            retryCounter++;
             deviceController.pushInitialSetupInformation();
         }
     }
@@ -160,16 +170,18 @@ BasePageView {
 
         function onInstalledSuccess() {
             isBusy = false;
+            retryTimer.retryCounter = 0;
         }
 
         function onInstallFailed(err : string, needToRetry : bool) {
+            isBusy = needToRetry;
             errorPopup.errorMessage = err;
 
             if (needToRetry) {
                 retryTimer.start();
+            }
 
-            } else {
-                isBusy = false;
+            if (!needToRetry || (retryTimer.retryCounter % 2 === 0)) {
                 errorPopup.open();
             }
         }
@@ -187,8 +199,15 @@ BasePageView {
                                          "initialSetup":  root.initialSetup
                                      });
         } else {
-            isBusy = true;
-            retryTimer.triggered();
+            if (NetworkInterface.hasInternet) {
+                isBusy = true;
+                retryTimer.retryCounter = 0;
+                retryTimer.triggered();
+
+            } else {
+                errorPopup.errorMessage = "No internet connection. Please check your internet connection.";
+                errorPopup.open();
+            }
         }
     }
 }

@@ -159,6 +159,9 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
+            retryTimer.retryZIPCounter = 0;
+            retryTimer.retryEmailCounter = 0;
+
             if (NetworkInterface.hasInternet) {
                 isBusyZip = true;
                 // get needed values from api
@@ -267,7 +270,15 @@ BasePageView {
     InitialFlowErrorPopup {
         id: errorPopup
 
+        isBusy: isBusyCustomer|| isBusyZip
         deviceController: uiSession.deviceController
+
+        onStopped: {
+            isBusyCustomer = false;
+            isBusyZip = false;
+            retryTimer.stop();
+        }
+
     }
 
     /* Functions
