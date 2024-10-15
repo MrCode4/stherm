@@ -78,8 +78,13 @@ BasePageView {
             height: root.contentItem.height - 16
         }
 
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: infoLabel.top
+        anchors.bottomMargin: 10
         anchors.rightMargin: 10
+
         clip: true
         enabled: !isBusy
         boundsBehavior: Flickable.StopAtBounds
@@ -114,6 +119,21 @@ BasePageView {
                 }
             }
         }
+    }
+
+
+    Label {
+        id: infoLabel
+
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+        anchors.left: parent.left
+        width: parent.width
+
+        font.pointSize: Application.font.pointSize * 0.7
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment:Text.AlignBottom
+        text: "Contact Nuve Support: (657) 626-4887 for issues."
     }
 
     BusyIndicator {
