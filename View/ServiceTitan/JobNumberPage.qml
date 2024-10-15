@@ -115,7 +115,6 @@ BasePageView {
                         errorPopup.open();
                     }
                 }
-
             }
         }
 
@@ -134,12 +133,18 @@ BasePageView {
                     appModel.serviceTitan.jobNumber = jobNumberTf.text;
 
                     if (jobNumberTf.text.length > 0) {
-                        isBusy = true;
+                        if (NetworkInterface.hasInternet) {
+                            isBusy = true;
 
-                        appModel.serviceTitan.isSTManualMode = false;
+                            appModel.serviceTitan.isSTManualMode = false;
 
-                        if (!retryTimer.running)
-                            retryTimer.triggered();
+                            if (!retryTimer.running)
+                                retryTimer.triggered();
+
+                        } else {
+                            errorPopup.errorMessage = "No internet connection. Please check your internet connection.";
+                            errorPopup.open();
+                        }
 
                     } else {
                         // Skip
@@ -210,11 +215,11 @@ BasePageView {
         target: deviceController.sync
         enabled: root.visible && isBusy
 
-        function onJobInformationReady(success: bool, data: var, error: string) {
+        function onJobInformationReady(success: bool, data: var, error: string, isNeedRetry: bool) {
+            isBusy = !success && isNeedRetry;
 
             if (success) {
-                isBusy = false;
-
+                retryTimer.retryCount = 0;
                 errorPopup.errorMessage = "";
                 errorPopup.close();
 
@@ -223,16 +228,14 @@ BasePageView {
             } else {
                 errorPopup.errorMessage = "Job number operation failed, " + error;
 
-                if (retryTimer.retryCount < 5){
+                if (isNeedRetry) {
                     // Retry
                     retryTimer.start();
-                    retryTimer.retryCount++;
-
-                } else {
-                    isBusy = false;
-                    retryTimer.retryCount = 0;
-                    errorPopup.open();
                 }
+            }
+
+            if (!isNeedRetry || (retryTimer.retryCount % 2 === 0)) {
+                errorPopup.open();
             }
         }
 
@@ -248,6 +251,7 @@ BasePageView {
         running: false
 
         onTriggered: {
+            retryCount++;
             deviceController.sync.getJobIdInformation(appModel.serviceTitan.jobNumber);
         }
     }
@@ -255,7 +259,13 @@ BasePageView {
     InitialFlowErrorPopup {
         id: errorPopup
 
+        isBusy: root.isBusy
         deviceController: uiSession.deviceController
+
+        onStopped: {
+            isBusy = false;
+            retryTimer.stop();
+        }
     }
 
     /* Functions
