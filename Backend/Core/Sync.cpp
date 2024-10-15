@@ -613,8 +613,17 @@ void Sync::getCustomerInformationManual(const QString &email)
     auto callbackCustomer = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
 
+        auto err = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() :
+                       reply->errorString();
+        if (err.isEmpty()) {
+            err = reply->errorString();
+        }
+
+        err.remove(reply->url().toString());
+
         // data can be empty when email is new
-        emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap());
+        bool isNeedRetry = !(data.isEmpty() && reply->error() == QNetworkReply::NoError) && reply->error() != QNetworkReply::UnknownContentError;
+        emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap(), err, isNeedRetry);
     };
 
     auto netReply =  callGetApi(cBaseUrl + QString("/api/customer?email=%0").arg(email), callbackCustomer);
@@ -627,9 +636,10 @@ void Sync::getCustomerInformationManual(const QString &email)
 void Sync::getAddressInformationManual(const QString &zipCode)
 {
     auto callbackZip = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Address Information error: " << reply->errorString();
 
-        emit zipCodeInfoReady(!data.isEmpty(), data.toVariantMap());
+        bool isNeedRetry = !(data.isEmpty() && reply->error() == QNetworkReply::NoError) && reply->error() != QNetworkReply::UnknownContentError;
+        emit zipCodeInfoReady(!data.isEmpty(), data.toVariantMap(), isNeedRetry);
     };
 
     auto netReply =  callGetApi(cBaseUrl + QString("/api/zipCode?code=%0").arg(zipCode), callbackZip);

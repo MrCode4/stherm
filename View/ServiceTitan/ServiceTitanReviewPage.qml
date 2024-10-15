@@ -27,6 +27,7 @@ BasePageView {
 
     onVisibleChanged: {
         if (!visible) {
+            errorPopup.close();
             retryTimer.stop();
         }
     }
@@ -158,9 +159,15 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
-            isBusyZip = true;
-            // get needed values from api
-            deviceController.getZipCodeJobInformationManual();
+            if (NetworkInterface.hasInternet) {
+                isBusyZip = true;
+                // get needed values from api
+                deviceController.getZipCodeJobInformationManual();
+
+            } else {
+                errorPopup.errorMessage = "No internet connection. Please check your internet connection.";
+                errorPopup.open();
+            }
         }
     }
 
@@ -185,28 +192,48 @@ BasePageView {
     //! Temp connection to go to the next page.
     Connections {
         target: deviceController
-        enabled: root.visible
-        function onCustomerInfoReady(error) {
+        enabled: root.visible && (isBusyCustomer || isBusyZip)
+
+        function onCustomerInfoReady(error, isNeedRetry) {
+            isBusyCustomer = isNeedRetry && error.length > 0;
+
             if (error.length > 0) {
-                errorPopup.errorMessage = "Customer information is not ready, " + error + " retry.";
+                errorPopup.errorMessage = "Customer information is not ready, " + error;
 
-            } else {
-                isBusyCustomer = false;
+                if (isNeedRetry) {
+                    retryTimer.start();
+                }
+
+                if ((retryTimer.retryEmailCounter % 2 === 0) || !isNeedRetry) {
+                    errorPopup.open();
+                }
+
+            }  else {
+                retryTimer.retryEmailCounter = 0
+                nextPage();
             }
-
-
-            nextPage();
         }
 
-        function onZipCodeInfoReady(error) {
+        function onZipCodeInfoReady(error, isNeedRetry) {
+            isBusyZip = isNeedRetry && error.length > 0;
+
             if (error.length > 0) {
-                errorLabel.text = "ZIP code information is not ready, " + error + " retry.";
+                errorPopup.errorMessage = "ZIP code information is not ready, " + error;
+
+                if (isNeedRetry) {
+                    retryTimer.start();
+                }
+
+                if ((retryTimer.retryZIPCounter % 2 === 0) || !isNeedRetry) {
+                    errorPopup.open();
+                }
 
             } else {
+                retryTimer.retryZIPCounter = 0;
+
                 // Get the customer information
                 isBusyCustomer = true;
                 deviceController.getEmailJobInformationManual();
-                isBusyZip = false;
             }
         }
     }
@@ -219,13 +246,20 @@ BasePageView {
         repeat: false
         running: false
 
+        property int retryZIPCounter: 0
+        property int retryEmailCounter: 0
+
         onTriggered: {
             if (isBusyCustomer) {
+                retryEmailCounter++;
                 deviceController.getEmailJobInformationManual();
 
             } else if (isBusyZip) {
+                retryZIPCounter++;
                 deviceController.getZipCodeJobInformationManual();
 
+            } else {
+                retryTimer.stop();
             }
         }
     }

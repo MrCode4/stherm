@@ -482,10 +482,10 @@ I_DeviceController {
             device.serviceTitan.address2 = data?.address2 ?? "";
         }
 
-        function onZipCodeInfoReady(success: bool, data: var) {
+        function onZipCodeInfoReady(success: bool, data: var, isNeedRetry: bool) {
             if (!success || !data  || !device || !device.serviceTitan) {
                 internal.syncReturnedZip = "";
-                zipCodeInfoReady("Getting zip code information failed.");
+                zipCodeInfoReady("Getting zip code information failed.", isNeedRetry);
                 return;
             }
 
@@ -499,22 +499,22 @@ I_DeviceController {
             device.serviceTitan.state_id  = data.state?.id ?? -1;
 
             internal.syncReturnedZip = data.code;
-            zipCodeInfoReady("");
+            zipCodeInfoReady("", false);
         }
 
-        function onCustomerInfoReady(success: bool, data: var) {
+        function onCustomerInfoReady(success: bool, data: var, error: string, isNeedRetry: bool) {
             //! we keep this empty in case of any error so it can be retry
             internal.syncReturnedEmail = "";
 
             if (!success || !device || !device.serviceTitan) {
-                customerInfoReady("Getting customer information failed.");
+                customerInfoReady("Getting customer information failed. " + error, isNeedRetry);
                 return;
             }
 
             //! data can be empty without having error on new emails
             if (!data) {
                 console.log("Returned data is empty! maybe email is new!");
-                customerInfoReady("");
+                customerInfoReady("", false);
                 return;
             }
 
@@ -527,7 +527,7 @@ I_DeviceController {
             device.serviceTitan.phone    = data.phone ?? "";
 
             internal.syncReturnedEmail = data.email ?? "";
-            customerInfoReady("");
+            customerInfoReady("", false);
         }
 
         function onInstalledSuccess() {
@@ -670,8 +670,8 @@ I_DeviceController {
     signal initialSetupFinished();
 
     //! first run flow manual data needs in same page
-    signal zipCodeInfoReady(var error);
-    signal customerInfoReady(var error);
+    signal zipCodeInfoReady(var error, bool isNeedRetry);
+    signal customerInfoReady(var error, bool isNeedRetry);
 
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************");
@@ -1617,14 +1617,14 @@ I_DeviceController {
         if (internal.syncReturnedZip !== device.serviceTitan.zipCode)
             sync.getAddressInformationManual(device.serviceTitan.zipCode);
         else
-            zipCodeInfoReady("");
+            zipCodeInfoReady("", false);
     }
 
     //! we do not resend it if last time it was success so we have better chance in total
     function getEmailJobInformationManual() {
         if (internal.syncReturnedEmail !== device.serviceTitan.email)
-            sync.getCustomerInformationManual(device.serviceTitan.email)
+            sync.getCustomerInformationManual("device.serviceTitan.email")
         else
-            customerInfoReady("");
+            customerInfoReady("", false);
     }
 }

@@ -131,8 +131,8 @@ signals:
 
     void jobInformationReady(bool success, QVariantMap data, QString error);
 
-    void zipCodeInfoReady(bool success, QVariantMap data);
-    void customerInfoReady(bool success, QVariantMap data);
+    void zipCodeInfoReady(bool success, QVariantMap data, bool needToRetry = false);
+    void customerInfoReady(bool success, QVariantMap data,  QString error, bool needToRetry = false);
 
     void outdoorTemperatureReady(bool success = false, double temp = -1.0);
 

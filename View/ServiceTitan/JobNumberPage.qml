@@ -214,7 +214,10 @@ BasePageView {
 
             if (success) {
                 isBusy = false;
+
                 errorPopup.errorMessage = "";
+                errorPopup.close();
+
                 nextPage();
 
             } else {
