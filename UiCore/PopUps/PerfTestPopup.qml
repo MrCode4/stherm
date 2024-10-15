@@ -296,7 +296,7 @@ I_PopUp {
                 TableModelColumn { display: "timestamp" }
                 TableModelColumn { display: "temperature" }
                 Component.onCompleted: {
-                    let result = PerfTestService.getTestData();
+                    let result = PerfTestService.lastReadings;
                     let dataRows = [];
                     for(let i = 0; i < result.length; i++) {
                         let row = {

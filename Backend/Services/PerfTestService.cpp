@@ -199,7 +199,7 @@ void PerfTestService::checkTestEligibility()
         }
 
         if (perfId <= 0 || testMode == AppSpecCPP::Off) {
-            emit eligibilityChecked(QString("Eligible, however, the test with id %1 have already performed once and now retrying sending the results back.").arg((perfId)));
+            emit eligibilityChecked("No performance tests scheduled to execute.");
             scheduleNextCheck(PerfTest::Noon12PM);
             return;
         }
@@ -321,6 +321,7 @@ void PerfTestService::collectReading()
     item["timestamp"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
     item["temperature"] = temperature;
     mReadings.append(item);
+    lastReadings(mReadings.toVariantList());
 
     if (testTimeLeft() <= 0) {
         TRACE_CAT(PerfTestLogCat) <<"Perf-test getting readings completed";
@@ -355,11 +356,6 @@ void PerfTestService::prepareAndSendApiResult(const QString &act)
     }
 
     sendResultsToServer(Device->serialNumber(), json);
-}
-
-QVariantList PerfTestService::getTestData() const
-{
-    return mReadings.toVariantList();
 }
 
 void PerfTestService::checkAndSendSavedResult(bool checkTestId)

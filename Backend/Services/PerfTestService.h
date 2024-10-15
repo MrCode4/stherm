@@ -15,13 +15,14 @@ class PerfTestService : public DevApiExecutor
     QML_ELEMENT
     QML_SINGLETON
 
-    PROPERTY_PRI_DEF_VAL(int, testId, 1)
+    PROPERTY_PRI_DEF_VAL(int, testId, 0)
     PROPERTY_PRI_DEF_VAL(int, state, 0)
     PROPERTY_PRI_DEF_VAL(AppSpecCPP::SystemMode, mode, AppSpecCPP::Cooling)
     PROPERTY_PRI_DEF_VAL(int, startTimeLeft, 0) // in seconds
     PROPERTY_PRI_DEF_VAL(int, testTimeLeft, 0) // in seconds
     PROPERTY_PRI_DEF_VAL(int, finishTimeLeft, 0) // in seconds
     PROPERTY_PRI_DEF_VAL(bool, isPostponed, false)
+    PROPERTY_PRI(QVariantList, lastReadings)
 
 private:
     explicit PerfTestService(QObject* parent = nullptr);
@@ -49,7 +50,6 @@ public slots:
     Q_INVOKABLE void resumeTest();
     Q_INVOKABLE void cancelTest();
     Q_INVOKABLE void finishTest();
-    Q_INVOKABLE QVariantList getTestData() const;
 
 private slots:
     void onCountdownStart(AppSpecCPP::SystemMode mode, int delay);
