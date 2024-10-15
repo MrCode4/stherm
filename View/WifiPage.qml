@@ -276,14 +276,11 @@ BasePageView {
             }
         }
 
-        Label {
+        ContactNuveSupportLabel {
             Layout.preferredHeight: 35
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
             visible: infoButton.visible
-            font.pointSize: Application.font.pointSize * 0.7
-            horizontalAlignment: Text.AlignHCenter
-            text: "Contact Nuve Support: (657) 626-4887 for issues."
         }
 
         Item {

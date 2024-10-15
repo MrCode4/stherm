@@ -154,6 +154,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/HorizontalTimeTumbler.qml
         UiCore/Components/TemperatureFlatRangeSlider.qml
         UiCore/Components/SingleTemperatureSlider.qml
+        UiCore/Components/ContactNuveSupportLabel.qml
 
 
         # Views and Widgets
