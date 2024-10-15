@@ -1623,7 +1623,7 @@ I_DeviceController {
     //! we do not resend it if last time it was success so we have better chance in total
     function getEmailJobInformationManual() {
         if (internal.syncReturnedEmail !== device.serviceTitan.email)
-            sync.getCustomerInformationManual("device.serviceTitan.email")
+            sync.getCustomerInformationManual(device.serviceTitan.email);
         else
             customerInfoReady("", false);
     }
