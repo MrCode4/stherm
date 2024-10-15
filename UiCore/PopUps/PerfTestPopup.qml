@@ -111,6 +111,8 @@ I_PopUp {
         ColumnLayout {
             spacing: 40
 
+            Item {width: 1; Layout.fillHeight: true}
+
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -145,6 +147,8 @@ I_PopUp {
                           " will start in " + PerfTestService.startTimeLeft + (PerfTestService.startTimeLeft > 1 ? " secs." : " sec.")
                 }
             }
+
+            Item {width: 1; Layout.fillHeight: true}
         }
     }
 
@@ -153,6 +157,8 @@ I_PopUp {
         ColumnLayout {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             spacing: 20
+
+            Item {width: 1; Layout.fillHeight: true}
 
             Text {
                 Layout.fillWidth: true
@@ -176,6 +182,8 @@ I_PopUp {
                 property int remaintingTime : Math.ceil(PerfTestService.testTimeLeft.toFixed()/60)
                 text: "Remaining time " + remaintingTime + (remaintingTime > 1 ? " minutes" : " minute");
             }
+
+            Item {width: 1; Layout.fillHeight: true}
         }
     }
 
@@ -183,6 +191,9 @@ I_PopUp {
         id: compComplete
         ColumnLayout {
             spacing: 20
+
+            Item {width: 1; Layout.fillHeight: true;}
+            Item {width: 1; Layout.fillHeight: true;}
 
             Text {
                 Layout.fillWidth: true
@@ -205,13 +216,17 @@ I_PopUp {
                 wrapMode: Text.Wrap
                 text: "You will be contacted if there is any potential risk related to your HVAC."
             }
+
+            Item {width: 1; Layout.fillHeight: true}
         }
     }
 
     Component {
         id: compCancel
         ColumnLayout {
-            spacing: 20
+            spacing: 0
+
+            Item {width: 1; Layout.fillHeight: true}
 
             Text {
                 Layout.fillWidth: true
@@ -224,6 +239,8 @@ I_PopUp {
                 wrapMode: Text.Wrap
             }
 
+            Item {width: 1; Layout.fillHeight: true}
+
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -235,6 +252,8 @@ I_PopUp {
                 wrapMode: Text.Wrap
             }
 
+            Item {width: 1; Layout.fillHeight: true}
+
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -245,6 +264,8 @@ I_PopUp {
                 text: "Are you sure you want to stop?"
                 wrapMode: Text.Wrap
             }
+
+            Item {width: 1; Layout.fillHeight: true}
         }
     }
 
