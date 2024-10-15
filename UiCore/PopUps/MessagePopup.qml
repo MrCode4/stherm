@@ -75,7 +75,7 @@ I_PopUp {
             Layout.preferredHeight: 30
             Layout.leftMargin: parent.labelMargin
 
-            visible: text !== ""
+            visible: (message.title ?? "") !== ""
             horizontalAlignment: Text.AlignLeft
             textFormat: Text.MarkdownText
             text: `${"#".repeat(5)} ${message.title}`
@@ -89,8 +89,6 @@ I_PopUp {
         Flickable {
             id: flick
 
-            property bool isRead: false
-
             Layout.fillHeight: true
             Layout.fillWidth: true
 
@@ -98,11 +96,6 @@ I_PopUp {
                 parent: flick
                 height: parent.height
                 x: parent.width
-
-                onPositionChanged: {
-                    if (!flick.isRead)
-                        flick.isRead = position > 0.98;
-                }
             }
 
             clip: true

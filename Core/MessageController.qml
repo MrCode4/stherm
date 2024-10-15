@@ -139,7 +139,7 @@ QtObject {
 
                              var messageDatetime = message.created === null ? "" : message.created;
 
-                             // Type be defual is Notification
+                             // Type by default is Notification, we are using 3 for notification but server sends 2.
                              var type = (message.type === Message.Type.SystemNotification) ? Message.Type.Notification : (message?.type ?? Message.Type.Notification);
 
                              if (type !== Message.Type.Notification) {
