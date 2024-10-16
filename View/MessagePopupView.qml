@@ -66,7 +66,7 @@ Item {
             onClosed: {
                 if (messageController && message && message.type !== Message.Type.SystemNotification) {
                     message.isRead = true;
-                    uiSession.deviceController.updateEditMode(AppSpec.EMMessages);
+                    // uiSession.deviceController.updateEditMode(AppSpec.EMMessages);
                     uiSession.deviceController.saveSettings();
                 }
 
@@ -88,9 +88,8 @@ Item {
         MessagePopup {
 
             onClosed: {
-                if (messageController && message && message.type !== Message.Type.SystemNotification) {
+                if (messageController && message) {
                     message.isRead = true;
-                    uiSession.deviceController.updateEditMode(AppSpec.EMMessages);
                     uiSession.deviceController.saveSettings();
                 }
 

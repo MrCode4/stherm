@@ -260,7 +260,7 @@ QtObject {
             device.messagesChanged();
 
             // Send messages to server
-            deviceController.updateEditMode(AppSpec.EMMessages);
+            // deviceController.updateEditMode(AppSpec.EMMessages);
             deviceController.saveSettings();
         }
     }
