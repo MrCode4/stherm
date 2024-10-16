@@ -21,6 +21,9 @@ I_PopUp {
 
     height: Math.min(AppStyle.size * 0.80, flick.contentHeight + headerLayout.height + 100)
     width: AppStyle.size * 0.80
+    bottomPadding: 5
+    leftPadding: 10
+    rightPadding: 5
 
     closePolicy: Popup.NoAutoClose
 
@@ -73,9 +76,10 @@ I_PopUp {
         Label {
             Layout.fillWidth: true
             Layout.preferredHeight: 30
+            Layout.topMargin: -5
             Layout.leftMargin: parent.labelMargin
 
-            visible: (message.title ?? "") !== ""
+            visible: (message?.title ?? "") !== ""
             horizontalAlignment: Text.AlignLeft
             textFormat: Text.MarkdownText
             text: `${"#".repeat(5)} ${message.title}`
@@ -109,7 +113,6 @@ I_PopUp {
                 anchors.fill: parent
 
                 text: message?.message ?? ""
-
                 elide: Text.ElideLeft
                 leftPadding: 4;
                 rightPadding: 4
