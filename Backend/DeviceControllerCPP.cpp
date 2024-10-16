@@ -338,6 +338,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
     connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
+    connect(m_scheme, &Scheme::actualModeStarted, this, &DeviceControllerCPP::actualModeStarted);
     connect(m_scheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
     connect(m_scheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
         m_HumidityScheme->setCanSendRelays(!isRunning);
@@ -1490,10 +1491,11 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
 
 void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 {
-    if (mSystemSetup && mSystemSetup->systemMode != mode) {
+    if (mSystemSetup) {
         mSavedMode = mSystemSetup->systemMode;
         qDebug() << "Requested Performance Test Mode: " <<  mode << ", running mode: " << mSystemSetup->systemMode;
         mSystemSetup->systemMode = mode;
+        mSystemSetup->isPerfTestRunning = true;
 
         if (m_scheme) {
             m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
@@ -1504,9 +1506,15 @@ void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 
 void DeviceControllerCPP::revertPerfTest()
 {
-    if (mSystemSetup && mSavedMode >= 0 && mSystemSetup->systemMode != mSavedMode) {
+    if (mSystemSetup && mSavedMode != AppSpecCPP::Off) {
         qDebug() << "Reverting to old mode before perf-test: " <<  mSavedMode << ", running mode: " << mSystemSetup->systemMode;
-        mSystemSetup->updateMode((AppSpecCPP::SystemMode)mSavedMode);
-        mSavedMode = -1;
+        mSystemSetup->updateMode(mSavedMode);
+        mSavedMode = AppSpecCPP::Off;
+        mSystemSetup->isPerfTestRunning = false;
+
+        if (m_scheme) {
+            m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
+            m_scheme->restartWork(true);
+        }
     }
 }

@@ -54,9 +54,9 @@ public slots:
 private slots:
     void onCountdownStart(AppSpecCPP::SystemMode mode, int delay);
     void onCountdownStop();
-    void onTempSchemeStateChanged(bool started);
+    void onActualModeStarted(AppSpecCPP::SystemMode mode);
     void collectReading();
-    void checkAndSendSavedResult(bool checkTestId = false);
+    void checkAndSendSavedResult(bool checkTestId = false);    
 
 private:
     void scheduleNextCheck(const QTime& checkTime);

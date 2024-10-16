@@ -237,21 +237,13 @@ void PerfTestService::checkWarmupOrRun()
 {
     TRACE_CAT(PerfTestLogCat) <<"checkWarmupOrRun";
 
-    connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
-    connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
-    connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::tempSchemeStateChanged, this, &PerfTestService::onTempSchemeStateChanged);
     NetworkManager::instance()->isEnable(false);
+    connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::actualModeStarted, this, &PerfTestService::onActualModeStarted);
+    connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
+    connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);            
 
-    if (DeviceControllerCPP::instance()->systemSetup()->systemMode == mode()) {
-        TRACE_CAT(PerfTestLogCat) <<"Perf-test mode is same as current mode, so going for straight check " <<mode();
-        startRunning();
-    }
-    else {
-        TRACE_CAT(PerfTestLogCat) <<"Perf-test mode is different than current mode, so going mode change "
-                                  <<DeviceControllerCPP::instance()->systemSetup()->systemMode <<mode();
-        state(TestState::Warmup);
-        DeviceControllerCPP::instance()->doPerfTest(mode());
-    }
+    state(TestState::Warmup);
+    DeviceControllerCPP::instance()->doPerfTest(mode());
 }
 
 void PerfTestService::onCountdownStart(AppSpecCPP::SystemMode mode, int delay)
@@ -269,12 +261,10 @@ void PerfTestService::onCountdownStop()
     startRunning();
 }
 
-void PerfTestService::onTempSchemeStateChanged(bool started)
+void PerfTestService::onActualModeStarted(AppSpecCPP::SystemMode mode)
 {
-    TRACE_CAT(PerfTestLogCat) <<"onTempSchemeStateChanged: " <<started;
-    if (started) {        
-        startRunning();
-    }
+    TRACE_CAT(PerfTestLogCat) <<"onActualModeStarted: " <<mode;
+    startRunning();
 }
 
 void PerfTestService::startRunning()
@@ -282,8 +272,7 @@ void PerfTestService::startRunning()
     if (state() == TestState::Running) return;
 
     testTimeLeft(PerfTest::TestDuration);
-    TRACE_CAT(PerfTestLogCat) <<"startRunning";
-    TRACE_CAT(PerfTestLogCat) <<"State: " <<state();
+    TRACE_CAT(PerfTestLogCat) <<"startRunning" <<state();
     startTimeLeft(0);
     mTimerDelay.stop();
     mTimerGetTemp.start();
@@ -292,10 +281,10 @@ void PerfTestService::startRunning()
 
 void PerfTestService::cleanupRunning()
 {
-    TRACE_CAT(PerfTestLogCat) <<"cleanupRunning";    
+    TRACE_CAT(PerfTestLogCat) <<"cleanupRunning";
+    disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::actualModeStarted, this, &PerfTestService::onActualModeStarted);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
-    disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::tempSchemeStateChanged, this, &PerfTestService::onTempSchemeStateChanged);
 
     mTimerGetTemp.stop();
     NetworkManager::instance()->isEnable(true);    

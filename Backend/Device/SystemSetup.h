@@ -66,6 +66,8 @@ public:
     //! Celsius
     double dualFuelThreshod;
 
+    bool isPerfTestRunning = false;
+
 signals:
     void systemTypeChanged();
     void heatPumpOBStateChanged();

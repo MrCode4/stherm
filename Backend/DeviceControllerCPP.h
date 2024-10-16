@@ -214,6 +214,7 @@ Q_SIGNALS:
     void snModeChanged(int snMode);
 
     void startModeChanged(int startMode);
+    void actualModeStarted(AppSpecCPP::SystemMode mode);
 
     void tiVersionChanged();
     void nrfVersionChanged();
@@ -374,5 +375,5 @@ private:
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 
-    int mSavedMode = -1;
+    AppSpecCPP::SystemMode mSavedMode = AppSpecCPP::Off;
 };

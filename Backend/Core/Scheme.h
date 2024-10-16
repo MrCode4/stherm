@@ -65,6 +65,8 @@ signals:
     //! Active system mode changed due to dual fuel heating
     void dfhSystemTypeChanged(AppSpecCPP::SystemType activeSystemType);
 
+    void actualModeStarted(AppSpecCPP::SystemMode mode);
+
 protected:
     void run() override;
 

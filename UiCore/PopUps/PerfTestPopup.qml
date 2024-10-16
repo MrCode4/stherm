@@ -109,9 +109,7 @@ I_PopUp {
     Component {
         id: compWarmup
         ColumnLayout {
-            spacing: 40
-
-            Item {width: 1; Layout.fillHeight: true}
+            spacing: 5
 
             Text {
                 Layout.fillWidth: true
@@ -123,6 +121,8 @@ I_PopUp {
                 wrapMode: Text.Wrap
                 text: "Your HVAC system needs to perform a 15-minute system check to ensure it is ready for the season."
             }
+
+            Item {width: 1; Layout.fillHeight: true}
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
