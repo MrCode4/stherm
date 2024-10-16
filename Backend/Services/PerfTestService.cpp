@@ -60,7 +60,7 @@ PerfTestService::PerfTestService(QObject *parent)
             startTimeLeft(timeLeft - 1);
         }
         else {
-            startRunning();
+            mTimerDelay.stop();
         }
     });
 
@@ -286,6 +286,7 @@ void PerfTestService::cleanupRunning()
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     disconnect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);
 
+    mTimerDelay.stop();
     mTimerGetTemp.stop();
     NetworkManager::instance()->isEnable(true);    
     DeviceControllerCPP::instance()->revertPerfTest();
