@@ -104,23 +104,21 @@ BasePageView {
                 text: "Night Mode",
                 visible: false,
                 view: "qrc:/Stherm/View/NightModePage.qml"
-            }
-        ]
-
-        property var hiddenItems: [
-            {isSeparator: true},
+            },
             {
                 icon: FAIcons.screwdriver_wrench,
                 text: "Technician Access",
-                color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/UserGuidePage.qml"
             },
             {
                 icon: FAIcons.sliders,
                 text: "System Setup",
-                color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/SystemSetupPage.qml"
-            },
+            }
+        ]
+
+        property var hiddenItems: [
+            {isSeparator: true},            
             {
                 icon: FAIcons.triangleExclamation,
                 text: "System Alerts",

@@ -21,7 +21,7 @@ ListView {
     delegate: ItemDelegate {
         id: delegate
         width: ListView.view.width
-        height: (modelData?.visible ?? true) ? implicitHeight : 0
+        height: (modelData?.visible ?? true) ? (modelData?.isSeparator ? 16 : implicitHeight) : 0
         visible: modelData?.visible ?? true
         leftPadding: 4 * scaleFactor
         contentItem: Loader {
@@ -31,7 +31,7 @@ ListView {
         }
 
         MouseArea {
-            enabled: !modelData.isSeparator
+            visible: !modelData.isSeparator
             anchors.fill: parent            
             propagateComposedEvents: true
             pressAndHoldInterval: 10000
