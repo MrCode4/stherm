@@ -67,6 +67,7 @@ public:
     double dualFuelThreshod;
 
     bool isPerfTestRunning = false;
+    AppSpecCPP::SystemMode mModeBeforePerfTest = AppSpecCPP::Off;
 
 signals:
     void systemTypeChanged();

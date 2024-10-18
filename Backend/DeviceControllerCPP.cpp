@@ -1492,8 +1492,8 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
 void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 {
     if (mSystemSetup) {
-        mSavedMode = mSystemSetup->systemMode;
-        qDebug() << "Requested Performance Test Mode: " <<  mode << ", running mode: " << mSystemSetup->systemMode;
+        qDebug() <<"doPerfTest: " <<mode <<", current mode: " <<mSystemSetup->systemMode;
+        mSystemSetup->mModeBeforePerfTest = mSystemSetup->systemMode;
         mSystemSetup->systemMode = mode;
         mSystemSetup->isPerfTestRunning = true;
 
@@ -1506,10 +1506,10 @@ void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 
 void DeviceControllerCPP::revertPerfTest()
 {
-    if (mSystemSetup && mSavedMode != AppSpecCPP::Off) {
-        qDebug() << "Reverting to old mode before perf-test: " <<  mSavedMode << ", running mode: " << mSystemSetup->systemMode;
-        mSystemSetup->updateMode(mSavedMode);
-        mSavedMode = AppSpecCPP::Off;
+    if (mSystemSetup && mSystemSetup->isPerfTestRunning) {
+        qDebug() << "revertPerfTest: " << mSystemSetup->mModeBeforePerfTest <<", current mode: " << mSystemSetup->systemMode;
+        mSystemSetup->updateMode(mSystemSetup->mModeBeforePerfTest);
+        mSystemSetup->mModeBeforePerfTest = AppSpecCPP::Off;
         mSystemSetup->isPerfTestRunning = false;
 
         if (m_scheme) {

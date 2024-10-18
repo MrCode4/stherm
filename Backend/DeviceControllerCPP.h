@@ -374,6 +374,4 @@ private:
     QStringList mAllTestNames; // to keep them in order
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
-
-    AppSpecCPP::SystemMode mSavedMode = AppSpecCPP::Off;
 };

@@ -54,7 +54,7 @@ PerfTestService::PerfTestService(QObject *parent)
     connect(&mTimerScheduleWatcher, &QTimer::timeout, this, &PerfTestService::checkTestEligibility);
 
     mTimerDelay.setInterval(PerfTest::OneSecInMS);
-    connect(&mTimerDelay, &QTimer::timeout, [this]() {
+    connect(&mTimerDelay, &QTimer::timeout, this, [this]() {
         auto timeLeft = startTimeLeft();        
         if (timeLeft > 0) {
             startTimeLeft(timeLeft - 1);
@@ -64,7 +64,7 @@ PerfTestService::PerfTestService(QObject *parent)
         }
     });
 
-    connect(&mTimerPostponeWatcher, &QTimer::timeout, [this]() {
+    connect(&mTimerPostponeWatcher, &QTimer::timeout, this, [this]() {
         mTimerPostponeWatcher.stop();
         if (!isPostponed()) return;
         isPostponed(false);
@@ -77,7 +77,7 @@ PerfTestService::PerfTestService(QObject *parent)
     connect(&mTimerGetTemp, &QTimer::timeout, this, &PerfTestService::collectReading);
 
     mTimerFinish.setInterval(PerfTest::OneSecInMS);
-    connect(&mTimerFinish, &QTimer::timeout, [this]() {
+    connect(&mTimerFinish, &QTimer::timeout, this, [this]() {
         auto timeLeft = finishTimeLeft();
         TRACE_CAT(PerfTestLogCat) <<"finishTimeLeft " <<timeLeft;
         if (timeLeft > 0) {
@@ -89,7 +89,7 @@ PerfTestService::PerfTestService(QObject *parent)
     });
 
     mTimerRetrySending.setInterval(5 * PerfTest::OneMinInMS);
-    connect(&mTimerRetrySending, &QTimer::timeout, [this]() {checkAndSendSavedResult();});
+    connect(&mTimerRetrySending, &QTimer::timeout, this, [this]() {checkAndSendSavedResult();});
 
     checkAndSendSavedResult(true);
     scheduleNextCheck(QTime::currentTime());
