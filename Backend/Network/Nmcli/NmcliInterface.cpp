@@ -293,7 +293,14 @@ void NmcliInterface::onWifiListRefreshFinished(QProcess* process)
             line = process->readLine();
             line.remove(line.length() - 1, 1); //! Remove '\n'
             const int securityLen = 9;
-            parsedWi.setSecurity(line.size() > securityLen ? line.sliced(securityLen) : "");
+
+            QString secrityTypeText = line.size() > securityLen ? line.sliced(securityLen) : "";
+
+            if(mBssToCorrectSecurityMap.contains(parsedWi.bssid()) && (secrityTypeText.isEmpty() == false)) {
+                secrityTypeText = mBssToCorrectSecurityMap[parsedWi.bssid()];
+            }
+
+            parsedWi.setSecurity(secrityTypeText);
 
             //! Skip it if there is a wifi with this bssid in the list or if ssid is an empty string
             auto wiInstance = std::find_if(mWifis.begin(), mWifis.end(), [&parsedWi](WifiInfo* wi) {
@@ -529,72 +536,62 @@ void NmcliInterface::parseBssidToCorrectSsidMap(QProcess* process)
 
     QString iwOutStr = process->readAllStandardOutput();
 
-    //! Regular expression to find BSS and SSID
-    static QRegularExpression bssSsidRegex(R"((BSS\s([a-zA-Z0-9]{2}\:)+[a-zA-Z0-9]{2})[\s\S]*?(?=SSID\:)(SSID\:\s.*))");
+    // Regular expression to match and extract Wi-Fi details:
+    // 1. BSS MAC address in the format xx:xx:xx:xx:xx:xx
+    // 2. SSID (network name), which can contain any characters except newline or carriage return
+    // 3. Authentication suites, which may include various authentication methods
+    static QRegularExpression wifiDetailsRegex(R"(BSS\s([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})|SSID:\s([^\n\r]+)|Authentication suites:\s(.+))");
 
-    QRegularExpressionMatchIterator bssMatch = bssSsidRegex.globalMatch(iwOutStr);
+    QRegularExpressionMatchIterator wifiMatchIterator = wifiDetailsRegex.globalMatch(iwOutStr);
 
-    //! Regular expression to match the hexadecimal representation
-    static QRegularExpression unknownCharsRegex("\\\\x([0-9A-Fa-f]{2})");
+    QString bssid{}, ssid{}, auth{};
 
-    while (bssMatch.hasNext()) {
-        QRegularExpressionMatch mch = bssMatch.next();
+    enum IterationState { Continue = 0, Finalize, Done };
 
-        QString bssid = mch.captured(1);
-        QString ssid = mch.captured(3);
+    IterationState iterationState = IterationState::Continue;
 
-        //! Find if this ssid contains hex numbers (it probabely contains unknown chars)
-        QRegularExpressionMatchIterator matchIterator = unknownCharsRegex.globalMatch(ssid);
+    while (iterationState != IterationState::Done) {
+        QRegularExpressionMatch currentMatch = wifiMatchIterator.next();
 
-        if (matchIterator.hasNext()) {
-            // find and append all consecutive matches
-            std::map<QString, QString> matchStrs;
-            QString matchStr;
-            QByteArray byteArray;
-            int lastCaptureEnd = -1;
-            int numberOfHexPair = 0; //! For unsopported characters hex value has 3 pair of numbers
+        bool isBSSIDChanged = (currentMatch.captured(1).isEmpty() == false)
+                              && (bssid.isEmpty() == false)
+                              && (bssid != currentMatch.captured(1).toUpper());
 
-            while (matchIterator.hasNext()) {
-                QRegularExpressionMatch match = matchIterator.next();
-                // reset and search for next consecutive
-                if (lastCaptureEnd != -1 && (match.capturedStart() > lastCaptureEnd || numberOfHexPair == 3)) {
-                    numberOfHexPair = 0;
+        // Check if the BSSID has changed or if this is the last iteration.
+        // If so, save the current SSID and authentication type to the respective maps if they are valid.
+        if (isBSSIDChanged == true || iterationState == IterationState::Finalize) {
+            QString replacedHexSSID = decodeHexToChars(ssid);
 
-                    // insert current match
-                    if (!matchStr.isEmpty()) {
-                        if (matchStrs.count(matchStr) == 0) {
-                            // insert the equivalent
-                            matchStrs.insert({matchStr, QString::fromUtf8(byteArray)});
-                        }
-                    }
-
-                    matchStr = {};
-                    byteArray = {};
-                }
-
-                numberOfHexPair++;
-                lastCaptureEnd = match.capturedEnd();
-                matchStr.append(match.captured());
-                QString hexString = match.captured(1); // Extract the hexadecimal characters
-                byteArray.append(static_cast<char>(hexString.toInt(nullptr, 16))); // Convert hexadecimal to integer and then to char
+            bool isSSIDReplaced = (ssid.isEmpty() == false) && (replacedHexSSID != ssid)
+                                  && (bssid.isEmpty() == false);
+            if (isSSIDReplaced) {
+                mBssToCorrectSsidMap[bssid] = replacedHexSSID;
             }
 
-            // insert last match
-            if (!matchStr.isEmpty()) {
-                if (matchStrs.count(matchStr) == 0) {
-                    // insert the equivalent
-                    matchStrs.insert({matchStr, QString::fromUtf8(byteArray)});
-                }
+            if ((auth.isEmpty() == false) && (bssid.isEmpty() == false)) {
+                mBssToCorrectSecurityMap[bssid] = auth;
             }
 
-            for (const QPair<QString, QString>& currMatch : matchStrs) {
-                ssid.replace(currMatch.first, currMatch.second);
-            }
+            bssid.clear();
+            ssid.clear();
+            auth.clear();
+        }
 
-            ssid = ssid.sliced(6);
-            bssid = bssid.sliced(4);
+        // Store new Wi-Fi details if captured by the regex.
+        if (currentMatch.captured(1).isEmpty() == false) {
+            bssid = currentMatch.captured(1).toUpper();
+        } else if (currentMatch.captured(2).isEmpty() == false) {
+            ssid = currentMatch.captured(2);
+        } else if (currentMatch.captured(3).isEmpty() == false) {
+            auth = currentMatch.captured(3);
+        }
 
-            mBssToCorrectSsidMap[bssid.toUpper()] = ssid;
+        // Switch to Finalize when no matches remain, allowing final handling of the last Wi-Fi details.
+        if (wifiMatchIterator.hasNext() == false && iterationState == IterationState::Continue) {
+            iterationState = IterationState::Finalize;
+        }
+        else if (iterationState == IterationState::Finalize) {
+            iterationState = IterationState::Done;
         }
     }
 
@@ -654,7 +651,7 @@ void NmcliInterface::updateNextConnectionProfile(QSharedPointer<QTextStream> str
                     mConProfiles.emplace_back(ssid, seenBssids);
                 }
                 updateNextConnectionProfile(stream, profiles);
-        });
+            });
     } else {
         //! The connection already exists, push it to mConProfiles
         mConProfiles.push_back(*wi);
@@ -692,4 +689,62 @@ void NmcliInterface::initializeConProfilesWatcher()
     connect(mConProfilesWatcher, &QFileSystemWatcher::directoryChanged, this, [this](const QString& path) {
         scanConProfiles();
     });
+}
+
+QString NmcliInterface::decodeHexToChars(const QString &ssid)
+{
+    QString replacedSSID{ssid};
+    //! Regular expression to match the hexadecimal representation
+    static QRegularExpression unknownCharsRegex("\\\\x([0-9A-Fa-f]{2})");
+
+    //! Find if this ssid contains hex numbers (it probabely contains unknown chars)
+    QRegularExpressionMatchIterator matchIterator = unknownCharsRegex.globalMatch(ssid);
+
+    if (matchIterator.hasNext()) {
+        // find and append all consecutive matches
+        std::map<QString, QString> matchStrs;
+        QString matchStr;
+        QByteArray byteArray;
+        int lastCaptureEnd = -1;
+        int numberOfHexPair = 0; //! For unsopported characters hex value has 3 pair of numbers
+
+        while (matchIterator.hasNext()) {
+            QRegularExpressionMatch match = matchIterator.next();
+            // reset and search for next consecutive
+            if (lastCaptureEnd != -1 && (match.capturedStart() > lastCaptureEnd || numberOfHexPair == 3)) {
+                numberOfHexPair = 0;
+
+                // insert current match
+                if (!matchStr.isEmpty()) {
+                    if (matchStrs.count(matchStr) == 0) {
+                        // insert the equivalent
+                        matchStrs.insert({matchStr, QString::fromUtf8(byteArray)});
+                    }
+                }
+
+                matchStr.clear();
+                byteArray.clear();
+            }
+
+            numberOfHexPair++;
+            lastCaptureEnd = match.capturedEnd();
+            matchStr.append(match.captured());
+            QString hexString = match.captured(1); // Extract the hexadecimal characters
+            byteArray.append(static_cast<char>(hexString.toInt(nullptr, 16))); // Convert hexadecimal to integer and then to char
+        }
+
+        // insert last match
+        if (matchStr.isEmpty() == false) {
+            if (matchStrs.count(matchStr) == 0) {
+                // insert the equivalent
+                matchStrs.insert({matchStr, QString::fromUtf8(byteArray)});
+            }
+        }
+
+        for (const QPair<QString, QString>& currMatch : matchStrs) {
+            replacedSSID.replace(currMatch.first, currMatch.second);
+        }
+    }
+
+    return replacedSSID;
 }

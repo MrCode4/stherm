@@ -221,6 +221,21 @@ private:
      */
     void    initializeConProfilesWatcher();
 
+    /*!
+    * \brief Decodes hexadecimal escape sequences in a string into their corresponding characters.
+    *
+    * This function scans the provided string for hexadecimal escape sequences (e.g., \x41)
+    * and converts them into their corresponding characters (e.g., 'A').
+    * It is useful for decoding strings that contain encoded hexadecimal values,
+    * commonly found in network SSIDs or other encoded text formats.
+    *
+    * \param ssid The input QString containing the hexadecimal escape sequences.
+    * \return A QString where all hexadecimal escape sequences have been replaced 
+    *         by their corresponding characters.
+    */
+
+    QString decodeHexToChars(const QString &ssid);
+
 private slots:
     /*!
      * \brief onWifiListRefreshFinished This slot is connected to \a\b QProcess::finished() as
@@ -320,6 +335,16 @@ private:
      * ssid of the wifis in nmcli
      */
     QMap<QString, QString>  mBssToCorrectSsidMap;
+
+    /*!
+    * \brief mBssToCorrectSecurityMap A map that stores the correct security information for Wi-Fi networks.
+    *
+    * Since `nmcli` does not always return the correct security type for some Wi-Fi networks (e.g., WPA3 or WPA2),
+    * this map is used to associate BSS (Basic Service Set) MAC addresses with their correct security type.
+    *
+    * The key is a QString representing the BSS MAC address, and the value is a QString representing the correct security type.
+    */
+    QMap<QString, QString> mBssToCorrectSecurityMap;
 
     /*!
      * \brief mBusyRefreshing Indicates if it's busy refreshing wifi lists
