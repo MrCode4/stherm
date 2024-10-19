@@ -296,7 +296,7 @@ void NmcliInterface::onWifiListRefreshFinished(QProcess* process)
 
             QString secrityTypeText = line.size() > securityLen ? line.sliced(securityLen) : "";
 
-            if(mBssToCorrectSecurityMap.contains(parsedWi.bssid()) && (secrityTypeText.isEmpty() == false)) {
+            if (mBssToCorrectSecurityMap.contains(parsedWi.bssid())) {
                 secrityTypeText = mBssToCorrectSecurityMap[parsedWi.bssid()];
             }
 
