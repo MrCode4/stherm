@@ -155,7 +155,7 @@ private:
     cpuid_t mSystemUuid;
 
 #ifdef SERIAL_TEST_MODE_ON
-    static int serialTestDelayCounter;
+    int mSerialTestDelayCounter{SERIAL_TEST_DELAY_COUNTER};
 #endif
 };
 }
