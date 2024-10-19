@@ -164,8 +164,10 @@ I_DeviceController {
         property int tryCount: 0
 
         onTriggered: {
-            tryCount++;
-            console.log("trying to checkSN:", tryCount)
+            if (NetworkInterface.connectedWifi) {
+                tryCount++;
+                console.log("trying to checkSN:", tryCount)
+            }
 
             deviceControllerCPP.checkSN();
 
@@ -174,7 +176,7 @@ I_DeviceController {
             if (deviceControllerCPP.system.serialNumber.length === 0) {
 
                 // sending log automatically if fails to get SN on first RUN
-                if (tryCount > 0 && initialSetup) {
+                if (tryCount > 0 && initialSetup && NetworkInterface.connectedWifi) {
                     deviceControllerCPP.system.sendFirstRunLog();
                 }
 

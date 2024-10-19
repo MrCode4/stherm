@@ -37,8 +37,12 @@ Sync::Sync(QObject *parent)
     , m_fetchingUserData(false)
 {
     QSettings setting;
+
+#if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
     mHasClient = setting.value(cHasClientSetting).toBool();
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
+#endif
+
     mContractorInfo = setting.value(cContractorSettings).toMap();
 
     cBaseUrl = qEnvironmentVariable("API_SERVER_BASE_URL", API_SERVER_BASE_URL);
@@ -52,7 +56,9 @@ Sync::Sync(QObject *parent)
 void Sync::setSerialNumber(const QString &serialNumber)
 {
     if (serialNumber.isEmpty() || serialNumber == mSerialNumber){
-        TRACE << "serial number not set:" << serialNumber << ", current is :" << mSerialNumber;
+        TRACE << "serial number not set:" << serialNumber << ", current is :" << mSerialNumber
+              << ", has client is :" << mHasClient << ", set to true";
+        mHasClient            = true;
         return;
     }
 
@@ -103,7 +109,21 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
     auto callback = [this, &eventLoop, notifyUser](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (data.contains("serial_number")) {
             auto sn = data.value("serial_number").toString();
+
+#ifdef INITIAL_SETUP_MODE_ON
+            mHasClient = false;
+#elif defined(SERIAL_TEST_MODE_ON)
+            if (mSerialTestDelayCounter > 0) {
+                mHasClient = false;
+                sn = "";
+                --mSerialTestDelayCounter;
+            } else {
+                mHasClient = data.value("has_client").toBool();
+            }
+#else
             mHasClient = data.value("has_client").toBool();
+#endif
+
             TRACE << sn << mHasClient;
 
             if (!mHasClient) {
@@ -143,9 +163,11 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             }
 
             // Save the serial number in settings
+#if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
             QSettings setting;
             setting.setValue(cHasClientSetting, mHasClient);
             setting.setValue(cSerialNumberSetting, mSerialNumber);
+#endif
         }
         else {
             if (reply->error() == QNetworkReply::NoError) {
