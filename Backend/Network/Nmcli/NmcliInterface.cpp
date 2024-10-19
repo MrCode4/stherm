@@ -540,7 +540,8 @@ void NmcliInterface::parseBssidToCorrectSsidMap(QProcess* process)
     // 1. BSS MAC address in the format xx:xx:xx:xx:xx:xx
     // 2. SSID (network name), which can contain any characters except newline or carriage return
     // 3. Authentication suites, which may include various authentication methods
-    static QRegularExpression wifiDetailsRegex(R"(BSS\s([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})|SSID:\s([^\n\r]+)|Authentication suites:\s(.+))");
+    static const QRegularExpression wifiDetailsRegex(
+        R"(BSS\s([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})|SSID:\s([^\n\r]+)|Authentication suites:\s(.+))");
 
     QRegularExpressionMatchIterator wifiMatchIterator = wifiDetailsRegex.globalMatch(iwOutStr);
 
