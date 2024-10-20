@@ -236,10 +236,11 @@ ApplicationWindow {
         id: _screenSaver
         anchors.centerIn: parent
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
-
         uiSession: uiSessionId
-
-        onOpened: uiSessionId.showHome();
+        onOpened: {
+            uiSessionId.showHome();
+            window.updatePerfTestServiceState();
+        }
     }
 
     PerfTestPopup {
@@ -250,7 +251,7 @@ ApplicationWindow {
 
     function updatePerfTestServiceState() {
         console.log('Stack-View-Depth-and-Popup', _screenSaver.visible, uiSessionId.isAnyPopupVisible, mainView.stackViewDepth);
-        if (mainView.stackViewDepth > 1 || (_screenSaver.visible == false && uiSessionId.isAnyPopupVisible)) {
+        if (_screenSaver.opened == false && (mainView.stackViewDepth > 1 || uiSessionId.isAnyPopupVisible)) {
             let message = mainView.stackViewDepth > 1 ?
                     "There are other views active on top of Home"
                   : "There are popup active for the user to handle";
