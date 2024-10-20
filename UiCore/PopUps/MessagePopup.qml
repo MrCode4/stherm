@@ -74,10 +74,11 @@ I_PopUp {
         }
 
         Label {
+            id: labelTitle
             Layout.fillWidth: true
             Layout.preferredHeight: 30
             Layout.topMargin: -5
-            Layout.leftMargin: parent.labelMargin
+            Layout.leftMargin: 0
 
             property string processedTitle: message?.title ?? ""
 
@@ -91,6 +92,31 @@ I_PopUp {
             color: enabled ? Style.foreground : Style.hintTextColor
             linkColor: Style.linkColor
             clip: true
+
+            Component.onCompleted: {
+                titleAnimationTimer.needed = labelTitle.contentWidth > labelTitle.width + 10
+            }
+
+            Timer {
+                id: titleAnimationTimer
+                running: labelTitle.visible && needed
+                interval: 50
+                repeat: true
+
+                property int endAnimationDelay: 10
+                property bool needed : false
+
+                onTriggered: {
+                   labelTitle.leftPadding = labelTitle.leftPadding - 1;
+                    if (labelTitle.contentWidth + labelTitle.leftPadding  < labelTitle.width + 1)
+                        endAnimationDelay--;
+
+                    if (endAnimationDelay == 0){
+                        endAnimationDelay = 10;
+                        labelTitle.leftPadding = 10;
+                    }
+                }
+            }
         }
 
         Flickable {
