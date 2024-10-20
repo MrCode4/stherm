@@ -16,7 +16,6 @@ I_PopUp {
     property UiSession uiSession
     property I_Device appModel: uiSession?.appModel ?? null
     property bool showConfirmationToStop: false
-    property bool showTestResults: false
 
     background: Rectangle {
         border.width: 4
@@ -40,9 +39,6 @@ I_PopUp {
                 if (PerfTestService.state != PerfTestService.Complete && root.showConfirmationToStop) {
                     return compCancel
                 }
-                if (PerfTestService.state == PerfTestService.Complete && root.showTestResults) {
-                    return compResult
-                }
                 else {
                     switch(PerfTestService.state) {
                         case PerfTestService.Warmup:
@@ -62,17 +58,10 @@ I_PopUp {
             ButtonInverted {
                 leftPadding: 8
                 rightPadding: 8
-                text: root.showConfirmationToStop ? "Cancel" : "Result"
+                text: "Cancel"
                 font.bold: true
-                visible: (PerfTestService.state == PerfTestService.Complete && !root.showTestResults) || root.showConfirmationToStop
-                onClicked:{
-                    if (PerfTestService.state == PerfTestService.Complete) {
-                        root.showTestResults = true;
-                    }
-                    else {
-                        root.showConfirmationToStop = false;
-                    }
-                }
+                visible: root.showConfirmationToStop
+                onClicked: root.showConfirmationToStop = false
             }
 
             Item {
@@ -90,7 +79,7 @@ I_PopUp {
                 onClicked: {
                     if (PerfTestService.state == PerfTestService.Complete) {
                         PerfTestService.finishTest();
-                        root.showTestResults = false;
+                        root.showConfirmationToStop = false;
                     }
                     else {
                         if (root.showConfirmationToStop) {
@@ -266,49 +255,6 @@ I_PopUp {
             }
 
             Item {width: 1; Layout.fillHeight: true}
-        }
-    }
-
-    Component {
-        id: compResult
-
-        TableView {
-            id: tableView
-            rowSpacing: 5
-            columnSpacing: 15
-            clip: true
-            boundsMovement: Flickable.StopAtBounds
-            ScrollIndicator.vertical: ScrollIndicator {
-                x: parent.width - width - 4
-                y: tableView.contentItem.y
-                parent: tableView
-                height: tableView.contentItem.height - 30
-            }
-
-            delegate: Text {
-                color: Style.foreground
-                font.pixelSize: 20
-                text: display
-            }
-
-            model: TableModel {
-                TableModelColumn { display: "index" }
-                TableModelColumn { display: "timestamp" }
-                TableModelColumn { display: "temperature" }
-                Component.onCompleted: {
-                    let result = PerfTestService.lastReadings;
-                    let dataRows = [];
-                    for(let i = 0; i < result.length; i++) {
-                        let row = {
-                            index: i + 1,
-                            timestamp: result[i].timestamp,
-                            temperature: result[i].temperature.toFixed(3)
-                        };
-                        dataRows.push(row);
-                    }
-                    rows = dataRows;
-                }
-            }
         }
     }
 }
