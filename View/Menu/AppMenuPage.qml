@@ -99,7 +99,8 @@ BasePageView {
                 {
                     icon: FAIcons.gear,
                     text: "Settings",
-                    view: "qrc:/Stherm/View/Menu/SettingsMenuPage.qml"
+                    view: "qrc:/Stherm/View/Menu/SettingsMenuPage.qml",
+                    hasNotification: uiSession.hasUpdateNotification
                 },
                 {
                     icon: FAIcons.headSet,
