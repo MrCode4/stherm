@@ -372,8 +372,7 @@ Control {
                 if (mainStackView) {
                     mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
                                            "uiSession": uiSession,
-                                           "backButtonVisible": false,
-                                           "initialSetup": true
+                                           "backButtonVisible": false
                                        });
                 }
             }
@@ -393,7 +392,7 @@ Control {
                 interval = 4000;
                 restart();
 
-                console.log("Wait for settings fetching ...")
+                console.log("Initial setup: ", deviceController.initialSetup, "Wait for settings fetching ...")
                 return;
             }
 
@@ -404,8 +403,6 @@ Control {
 
             // Send  check contractor info
             deviceController.deviceControllerCPP.checkContractorInfo();
-
-            deviceController.setInitialSetup(false);
         }
     }
 
@@ -438,6 +435,9 @@ Control {
             startupTimer.start()
             // Disable check SN mode connections to prevent unnecessary show home
             startupSN.enabled = false;
+
+            //! Initial setup finished.
+            deviceController.setInitialSetup(false);
         }
     }
 
@@ -446,9 +446,13 @@ Control {
         id: startupSN
         target: deviceController.deviceControllerCPP
 
-        //! This action should occur when the SN mode is set to 0.
+        //! The SnModeChanged event is triggered whenever the checkSN function is called.
+        //! snMode can be 0: When the serial number and settings are saved and hasClient is true. This connection will be disabled after first checkSN
+        //! snMode can be 1: When the serial number is not available in the device config file (e.g., after forgetting the device) but get from api resulted into true has_client.
+        //! Because the hasClient is true, we also need to fetch settings. This connection will be disabled after first checkSN.
+        //! snMode can be 2: When the serial number and hasClient are not available. In this case, we need to fetch both from the server. The hasClient is false, so the initial setup will be started.
+        //! This connection will remain inactive until the snMode is updated to 1.
         function onSnModeChanged(snMode: int) {
-            // snMode === 0
             var snTestMode = deviceController.deviceControllerCPP.getSNTestMode();
             if (snMode !== 2 || snTestMode) {
 
@@ -460,6 +464,9 @@ Control {
                 startupTimer.start()
                 // Disable check SN mode connections to prevent unnecessary show home
                 startupSN.enabled = false;
+
+                //! Device is not in initial setup mode
+                deviceController.setInitialSetup(false);
 
                 if (snMode === 1) {
                     console.log("SnModeChanged: SN mode is 1.")
@@ -498,7 +505,7 @@ Control {
     }
 
     /* States and Transitions
-     * ****************************************************************************************/
+             * ****************************************************************************************/
     state: "idle"
     states: [
         State {
@@ -509,7 +516,7 @@ Control {
                 target: _desiredTempItem
                 font.pointSize: Qt.application.font.pointSize * 2.8
                 labelVerticalOffset: (device?.systemSetup?.systemMode === AppSpec.Auto
-                                     || _desiredTempItem.currentSchedule) ? -12 : -28
+                                      || _desiredTempItem.currentSchedule) ? -12 : -28
                 enableAnimations: true
             }
 

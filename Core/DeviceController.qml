@@ -13,6 +13,8 @@ I_DeviceController {
     /* Property Declarations
      * ****************************************************************************************/
 
+    property var  uiSession
+
     property SchedulesController schedulesController
 
     property MessageController   messageController
@@ -27,6 +29,7 @@ I_DeviceController {
     //! Use LockMode to handle in progress edit
     property int lockMode: AppSpec.EMNone
 
+    //! initialSetup: When initialSetup is true the settingsLoader is disabled
     property bool initialSetup: false;
 
     readonly property int  checkSNTryCount: checkSNTimer.tryCount;
@@ -44,8 +47,6 @@ I_DeviceController {
     //! Set to true when in initial setup exist new update
     //! more usage in future like force update with permission
     property bool mandatoryUpdate: false;
-
-    property var  uiSession
 
     //! Night mode brightness when screen saver is off.
     property real nightModeBrightness: -1
@@ -846,7 +847,7 @@ I_DeviceController {
 
     function checkToUpdateSystemMode(systemMode: int) {
         // Deactivate the incompatible schedules when mode changed from server or ui
-        uiSession.schedulesController.deactivateIncompatibleSchedules(systemMode);
+        schedulesController.deactivateIncompatibleSchedules(systemMode);
 
         device.systemSetup.systemMode = systemMode;
     }
