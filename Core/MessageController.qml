@@ -231,10 +231,7 @@ QtObject {
         }
 
         newMessage.type = type;
-
-        //! The device is unable to recognize the asterisk followed by a space ("* ") as a valid bullet point. Therefore,
-        //! we have implemented a workaround to replace it with a hyphen followed by a space ("- ").
-        newMessage.message = message.replace(/\* /g, '- ');
+        newMessage.message = message;
 
         newMessage.title   = title;
         newMessage.datetime = datetime;
@@ -263,8 +260,7 @@ QtObject {
         if (hasMessagesChanges) {
             device.messagesChanged();
 
-            // Send messages to server
-            // deviceController.updateEditMode(AppSpec.EMMessages);
+            // Messages are not being synchronized with the server for now.
             deviceController.saveSettings();
         }
     }

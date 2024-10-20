@@ -79,13 +79,15 @@ I_PopUp {
             Layout.topMargin: -5
             Layout.leftMargin: parent.labelMargin
 
-            visible: (message?.title ?? "") !== ""
+            property string processedTitle: message?.title ?? ""
+
+            visible: processedTitle !== ""
             horizontalAlignment: Text.AlignLeft
             textFormat: Text.MarkdownText
-            text: `${"#".repeat(5)} ${message.title}`
+            text: `${"#".repeat(5)} ${processedTitle}`
             font.bold: true
+            elide: Text.ElideRight
             font.pointSize: Application.font.pointSize * 1.1
-            elide: Text.ElideLeft
             color: enabled ? Style.foreground : Style.hintTextColor
             linkColor: Style.linkColor
         }
@@ -110,10 +112,13 @@ I_PopUp {
             Label {
                 id: messageLabel
 
+                //! The device is unable to recognize the asterisk followed by a space ("* ") as a valid bullet point. Therefore,
+                //! we have implemented a workaround to replace it with a hyphen followed by a space ("- ").
+                property string processedMessage: message?.message?.replace(/\* /g, '- ') ?? ""
+
                 anchors.fill: parent
 
-                text: message?.message ?? ""
-                elide: Text.ElideLeft
+                text: processedMessage
                 leftPadding: 4;
                 rightPadding: 4
                 background: null

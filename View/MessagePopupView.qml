@@ -66,7 +66,7 @@ Item {
             onClosed: {
                 if (messageController && message && message.type !== Message.Type.SystemNotification) {
                     message.isRead = true;
-                    // uiSession.deviceController.updateEditMode(AppSpec.EMMessages);
+                    //! Messages are not being synchronized with the server for now.
                     uiSession.deviceController.saveSettings();
                 }
 
