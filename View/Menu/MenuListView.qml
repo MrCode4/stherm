@@ -58,7 +58,7 @@ ListView {
 
         gradient: Gradient {
             GradientStop { position: 0; color: Qt.alpha(AppStyle.backgroundColor, 0.0) }
-            GradientStop { position: 1; color: Qt.alpha(AppStyle.backgroundColor, 1.0) }
+            GradientStop { position: 1; color: Qt.alpha(AppStyle.backgroundColor, 0.7) }
         }
 
         //! Attach the animations

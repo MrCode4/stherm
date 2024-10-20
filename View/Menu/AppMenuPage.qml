@@ -65,9 +65,6 @@ BasePageView {
         }
 
         contentItem: MenuListView {
-            //! Bottom item should be partially visible
-            spacing: 4;
-
             onMenuActivated: function(item) {
                 let newProps = {};
                 Object.assign(newProps, item.properties);
