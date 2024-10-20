@@ -90,6 +90,7 @@ I_PopUp {
             font.pointSize: Application.font.pointSize * 1.1
             color: enabled ? Style.foreground : Style.hintTextColor
             linkColor: Style.linkColor
+            clip: true
         }
 
         Flickable {
