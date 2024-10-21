@@ -13,7 +13,9 @@ ListView {
 
     signal menuActivated(itemModel: var)
 
-    ScrollIndicator.vertical: ScrollIndicator {}
+    ScrollIndicator.vertical: ScrollIndicator {
+        id: scrollIndicator
+    }
     implicitWidth: AppStyle.size
     implicitHeight: contentHeight
     clip: true
@@ -44,6 +46,29 @@ ListView {
             }
 
             onPressAndHold: if (modelData.longPressAction instanceof Function) modelData.longPressAction();
+        }
+    }
+
+    //! Use for gradient in the menu
+    Rectangle {
+        width: root.width
+        height:  root.height * 0.45
+        y:  ((scrollIndicator.position + scrollIndicator.size) < 0.97) ? root.height * 0.55 :  root.height
+
+
+        gradient: Gradient {
+            GradientStop { position: 0; color: Qt.alpha(AppStyle.backgroundColor, 0.0) }
+            GradientStop { position: 1; color: Qt.alpha(AppStyle.backgroundColor, 0.7) }
+        }
+
+        //! Attach the animations
+        //! Behaviour on y
+        Behavior on y {
+            enabled : ((scrollIndicator.position + scrollIndicator.size) > 0.97)
+            NumberAnimation {
+                duration: 1000
+                easing.type: Easing.OutCubic
+            }
         }
     }
 

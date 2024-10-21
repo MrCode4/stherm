@@ -27,9 +27,6 @@ BasePageView {
     }
 
     contentItem: MenuListView {
-        //! Bottom item should be partially visible
-        spacing: 4;
-
         onCountChanged: {
             if (root.showHiddenItems && count == model.length) {
                 positionViewAtEnd();

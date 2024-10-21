@@ -65,9 +65,6 @@ BasePageView {
         }
 
         contentItem: MenuListView {
-            //! Bottom item should be partially visible
-            spacing: 4;
-
             onMenuActivated: function(item) {
                 let newProps = {};
                 Object.assign(newProps, item.properties);
@@ -99,7 +96,8 @@ BasePageView {
                 {
                     icon: FAIcons.gear,
                     text: "Settings",
-                    view: "qrc:/Stherm/View/Menu/SettingsMenuPage.qml"
+                    view: "qrc:/Stherm/View/Menu/SettingsMenuPage.qml",
+                    hasNotification: uiSession.hasUpdateNotification
                 },
                 {
                     icon: FAIcons.headSet,
