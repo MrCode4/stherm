@@ -12,9 +12,7 @@
 
 #include <csignal>
 
-#include "LogHelper.h"
 #include "UtilityHelper.h"
-#include "AppUtilities.h"
 
 void signalHandler(int signal) {
     if (signal == SIGTERM
