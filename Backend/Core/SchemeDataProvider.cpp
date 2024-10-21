@@ -65,7 +65,7 @@ double SchemeDataProvider::effectiveTemperature() const
 {
     double effTemperature = setPointTemperature();
 
-    if (systemSetup()->isPerfTestRunning) {
+    if (systemSetup()->isPerfTestRunning()) {
         return systemSetup()->systemMode == AppSpecCPP::Heating ? 90 : 40;
     }
 

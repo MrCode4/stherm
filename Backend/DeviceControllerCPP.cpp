@@ -1492,10 +1492,7 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
 void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 {
     if (mSystemSetup) {
-        qDebug() <<"doPerfTest: " <<mode <<", current mode: " <<mSystemSetup->systemMode;
-        mSystemSetup->mModeBeforePerfTest = mSystemSetup->systemMode;
-        mSystemSetup->systemMode = mode;
-        mSystemSetup->isPerfTestRunning = true;
+        mSystemSetup->setupPerfTest(mode);
 
         if (m_scheme) {
             m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
@@ -1506,11 +1503,8 @@ void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 
 void DeviceControllerCPP::revertPerfTest()
 {
-    if (mSystemSetup && mSystemSetup->isPerfTestRunning) {
-        qDebug() << "revertPerfTest: " << mSystemSetup->mModeBeforePerfTest <<", current mode: " << mSystemSetup->systemMode;
-        mSystemSetup->updateMode(mSystemSetup->mModeBeforePerfTest);
-        mSystemSetup->mModeBeforePerfTest = AppSpecCPP::Off;
-        mSystemSetup->isPerfTestRunning = false;
+    if (mSystemSetup && mSystemSetup->isPerfTestRunning()) {
+        mSystemSetup->revertPerfTest();
 
         if (m_scheme) {
             m_scheme->setCurrentSysMode(mSystemSetup->systemMode);

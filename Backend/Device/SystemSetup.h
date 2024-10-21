@@ -7,10 +7,12 @@
 #include "SystemAccessories.h"
 #include "UtilityHelper.h"
 #include "QtQuickStream/Core/QSObjectCpp.h"
+#include "Property.h"
 
 class SystemSetup : public QSObjectCpp
 {
     Q_OBJECT
+    QML_ELEMENT
 
     Q_PROPERTY(SystemAccessories* systemAccessories MEMBER systemAccessories NOTIFY systemAccessoriesChanged FINAL)
 
@@ -32,7 +34,7 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
-    QML_ELEMENT
+    PROPERTY_PRI_DEF_VAL(bool, isPerfTestRunning, false)
 
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
@@ -66,8 +68,12 @@ public:
     //! Celsius
     double dualFuelThreshod;
 
-    bool isPerfTestRunning = false;
+    void setupPerfTest(AppSpecCPP::SystemMode mode);
+    void revertPerfTest();
+
+private:
     AppSpecCPP::SystemMode mModeBeforePerfTest = AppSpecCPP::Off;
+    bool mVacationBeforePerfTest = false;
 
 signals:
     void systemTypeChanged();

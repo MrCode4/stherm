@@ -290,6 +290,7 @@ qt6_add_qml_module(appStherm
 
     SOURCES
         Backend/Property.h
+        Backend/Config.h
         Backend/DeviceInfo.h
         Backend/DeviceInfo.cpp
         Backend/AppSpecCPP.h
