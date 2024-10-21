@@ -608,6 +608,10 @@ QtObject {
                                           schedule.enable = false;
                                           editScheduleInServer(schedule);
                                       });
+
+        // Some schedules disabled, so we must safely update the current schedules.
+        if (incompatibleSchedules.length > 0)
+            device.schedulesChanged();
     }
 
     //! Find schedules that are incompatible with the current system mode.
@@ -727,7 +731,7 @@ QtObject {
                 deviceController.setActivatedSchedule(null);
         }
 
-        //! Add/remove schedules
+        //! Add/remove/enable/disable schedules
         function onSchedulesChanged() {
             updateCurrentSchedules();
         }
@@ -738,7 +742,7 @@ QtObject {
 
         function onEnableChanged() {
             deviceController.setActivatedSchedule(null);
-            findRunningSchedule();
+            updateCurrentSchedules();
         }
     }
 
