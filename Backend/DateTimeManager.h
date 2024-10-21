@@ -126,6 +126,7 @@ signals:
     void currentTimeZoneChanged();
     void nowChanged();
     void effectDstChanged();
+    void systemUpdated();
 
 private:
     static DateTimeManager* mMe;

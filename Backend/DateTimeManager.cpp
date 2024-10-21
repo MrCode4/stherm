@@ -297,6 +297,8 @@ QString DateTimeManager::nowUTC(const QString& outputFormat)
 
 void DateTimeManager::callProcessFinished(const QJSValueList& args)
 {
+    emit systemUpdated();
+
     if (mProcessFinishCb.isCallable()) {
         QJSValue result = mProcessFinishCb.call(args);
 

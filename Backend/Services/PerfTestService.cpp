@@ -5,6 +5,7 @@
 #include "AppSpecCPP.h"
 #include "DeviceControllerCPP.h"
 #include "NetworkManager.h"
+#include "DateTimeManager.h"
 
 #include <QCoreApplication>
 #include <QLoggingCategory>
@@ -51,6 +52,13 @@ PerfTestService::PerfTestService(QObject *parent)
     TRACE_CAT(PerfTestLogCat) <<"PerfTestService Initialize";
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
+    connect(DateTimeManager::me(), &DateTimeManager::systemUpdated, this, [this]() {
+        if (state() == TestState::Idle) {
+            TRACE_CAT(PerfTestLogCat) <<"Datetime changes applied in settings, rescheduling check.";
+            scheduleNextCheck(QTime::currentTime());
+        }
+    });
+
     connect(&mTimerScheduleWatcher, &QTimer::timeout, this, &PerfTestService::checkTestEligibility);
 
     mTimerDelay.setInterval(PerfTest::OneSecInMS);
@@ -93,33 +101,6 @@ PerfTestService::PerfTestService(QObject *parent)
 
     checkAndSendSavedResult(true);
     scheduleNextCheck(QTime::currentTime());
-}
-
-void PerfTestService::postponeTest(const QString &reason)
-{
-    if (state() >= Warmup) {
-        TRACE_CAT(PerfTestLogCat) <<"Perf-test can't be postponed since it's already running";
-    }
-    else {
-        isPostponed(true);
-        TRACE_CAT_CHECK(PerfTestLogCat, state() != Idle) <<"Perf-test is postponed, reason: " <<reason;
-    }
-}
-
-void PerfTestService::resumeTest()
-{
-    if (!isPostponed()) return;
-    mTimerPostponeWatcher.stop();
-    isPostponed(false);
-
-    if (mWasEligibleBeforePostpone) {
-        TRACE_CAT(PerfTestLogCat) <<"Perf-test is eligible while resuming";
-        mWasEligibleBeforePostpone = false;
-        prepareStartRunning();
-    }
-    else {
-        TRACE_CAT_CHECK(PerfTestLogCat, state() != Idle) <<"Perf-test was not eligible while resuming";
-    }
 }
 
 void PerfTestService::scheduleNextCheck(const QTime& checkTime)
@@ -225,6 +206,33 @@ void PerfTestService::checkTestEligibility()
 
     state(Checking);
     callGetApi(baseUrl() + QString("api/sync/perftest/schedule?sn=%0").arg(Device->serialNumber()), callback);
+}
+
+void PerfTestService::postponeTest(const QString &reason)
+{
+    if (state() >= Warmup) {
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test can't be postponed since it's already running";
+    }
+    else {
+        isPostponed(true);
+        TRACE_CAT_CHECK(PerfTestLogCat, state() != Idle) <<"Perf-test is postponed, reason: " <<reason;
+    }
+}
+
+void PerfTestService::resumeTest()
+{
+    if (!isPostponed()) return;
+    mTimerPostponeWatcher.stop();
+    isPostponed(false);
+
+    if (mWasEligibleBeforePostpone) {
+        TRACE_CAT(PerfTestLogCat) <<"Perf-test is eligible while resuming";
+        mWasEligibleBeforePostpone = false;
+        prepareStartRunning();
+    }
+    else {
+        TRACE_CAT_CHECK(PerfTestLogCat, state() != Idle) <<"Perf-test was not eligible while resuming";
+    }
 }
 
 void PerfTestService::prepareStartRunning()
