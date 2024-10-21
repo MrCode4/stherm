@@ -105,7 +105,8 @@ BasePageView {
             {
                 icon: FAIcons.screwdriver_wrench,
                 text: "Technician Access",
-                view: "qrc:/Stherm/View/UserGuidePage.qml"
+                view: "qrc:/Stherm/View/UserGuidePage.qml",
+                visible: false
             },
             {
                 icon: FAIcons.sliders,
