@@ -1059,18 +1059,6 @@ I_DeviceController {
             }
         }
 
-        device.messages.forEach(message =>
-                                {
-                                    send_data.messages.push(
-                                        {
-                                            "icon": message.icon,
-                                            "message": message.message,
-                                            "type": message.type,
-                                            "isRead": message.isRead,
-                                            "created": message.datetime,
-                                        })
-                                })
-
         device._sensors.forEach(sensor =>
                                 {
                                     send_data.sensors.push(

@@ -278,6 +278,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/PrivacyPolicyPopup.qml
         UiCore/PopUps/SuccessPopup.qml
         UiCore/PopUps/SwitchHeatingPopup.qml
+        UiCore/PopUps/MessagePopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml

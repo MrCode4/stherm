@@ -54,4 +54,22 @@ QtObject {
     function fahrenheitToCelsius(fahrTemp: real) : real {
         return (fahrTemp - 32) / 1.8;
     }
+
+    function textFormat(text : string) : int {
+        // Regular expressions to match Markdown and HTML elements
+        const markdownRegex = /^(?:\s*#|\s*##|\s*###|\s*####|\s*#####|\s*######|\s*\*|\s*\_|\s*\~\~|\s*\+\+|\s*\-\-|\s*\>\>|\s*\<\<|\s*\=\=|\s*\:\:|\s*\.\.\.|\s*\d+\.\s*|\s*\>\)|\s*\<\(|\s*\[\^\]\(\s*\)|\s*\[\]\(\s*\))/;
+        const htmlRegex = /^(?:\s*<\/?\w+[^>]*>)/;
+
+        // Check if the text starts with a Markdown or HTML element
+        if (markdownRegex.test(text)) {
+            return Text.MarkdownText;
+
+        } else if (htmlRegex.test(text)) {
+            return Text.RichText;
+
+        } else {
+            // If neither regex matches, it's likely plain text
+            return Text.PlainText;
+        }
+    }
 }

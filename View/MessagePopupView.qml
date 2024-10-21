@@ -66,7 +66,30 @@ Item {
             onClosed: {
                 if (messageController && message && message.type !== Message.Type.SystemNotification) {
                     message.isRead = true;
-                    uiSession.deviceController.updateEditMode(AppSpec.EMMessages);
+                    //! Messages are not being synchronized with the server for now.
+                    uiSession.deviceController.saveSettings();
+                }
+
+                // Remove message from showing messages
+                messageController.removeShowingMessage(message);
+
+                // Message Updated
+                uiSession.appModel.messagesChanged();
+
+                destroy(this);
+            }
+        }
+    }
+
+    //! Server message popup (Messages)
+    Component {
+        id: _serverMessagePopupCompo
+
+        MessagePopup {
+
+            onClosed: {
+                if (messageController && message) {
+                    message.isRead = true;
                     uiSession.deviceController.saveSettings();
                 }
 
@@ -111,16 +134,25 @@ Item {
             return;
         }
 
-        //! Create an instance of AlertNotifPopup
-        var newAlertPopup = _messagePopupCompo.createObject(root, {
+        var newNotifPopup = null;
+        if (message.sourceType === Message.SourceType.Server) {
+            //! Create an instance of MessagePopup
+            newNotifPopup = _serverMessagePopupCompo.createObject(root, {
+                                                                      "message": message
+                                                                  });
+
+        } else {
+            //! Create an instance of AlertNotifPopup
+            newNotifPopup = _messagePopupCompo.createObject(root, {
                                                                 "message": message
                                                             });
+        }
 
-        if (newAlertPopup) {
+        if (newNotifPopup) {
             messageController.addShowingMessage(message);
 
             //! Ask PopUpLayout to open popup
-            uiSession.popupLayout.displayPopUp(newAlertPopup);
+            uiSession.popupLayout.displayPopUp(newNotifPopup);
         }
     }
 }
