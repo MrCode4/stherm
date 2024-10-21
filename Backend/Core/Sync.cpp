@@ -35,6 +35,7 @@ Sync::Sync(QObject *parent)
     : RestApiExecutor(parent)
     , mHasClient(false)
     , m_fetchingUserData(false)
+    , m_pushingLockState(false)
 {
     QSettings setting;
 
@@ -450,6 +451,27 @@ QString Sync::baseURL()
     }
 
     return url;
+}
+
+void Sync::pushLockState(const QString& pin, bool lock)
+{
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "Sn is not ready! can not update lock status!";
+        return;
+    }
+
+    auto callback = [this](QNetworkReply *, const QByteArray &, QJsonObject &data) {
+        emit lockStatePushed(data.contains("locked"), data.value("locked").toBool());
+        pushingLockState(false);
+    };
+
+    TRACE << "Pushing device lock state changes: " << lock;
+    pushingLockState(true);
+
+    auto endpoint = QString("api/sync/screen-%1?sn=%2").arg(lock ? "lock" : "unlock").arg(mSerialNumber);
+    QJsonObject requestBody;
+    requestBody["pin"] = pin;
+    callPostApi(cBaseUrl + endpoint, QJsonDocument(requestBody).toJson(), callback);
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)

@@ -12,7 +12,6 @@
 
 #include <csignal>
 
-#include "LogHelper.h"
 #include "UtilityHelper.h"
 
 void signalHandler(int signal) {
