@@ -57,7 +57,6 @@ set_source_files_properties(
     Core/Utils.qml
     UiCore/AppStyle.qml
     UiCore/FAIcons.qml
-    Core/DateTimeManager.qml
     PROPERTIES
         QT_QML_SINGLETON_TYPE True
 )
@@ -95,7 +94,6 @@ qt6_add_qml_module(appStherm
         Core/Vacation.qml
         Core/Setting.qml
         Core/Utils.qml
-        Core/DateTimeManager.qml
         Core/ContactContractor.qml
         Core/NightMode.qml
         Core/ToastManager.qml
@@ -297,8 +295,8 @@ qt6_add_qml_module(appStherm
         Backend/AppSpecCPP.cpp
         Backend/ScreenSaverManager.h
         Backend/ScreenSaverManager.cpp
-        Backend/DateTimeManagerCPP.h
-        Backend/DateTimeManagerCPP.cpp
+        Backend/DateTimeManager.h
+        Backend/DateTimeManager.cpp
         Backend/TimezonesDSTMap.h
 
         Backend/Data/UserData.h

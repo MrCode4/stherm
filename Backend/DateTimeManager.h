@@ -1,5 +1,4 @@
-#ifndef DATETIMEMANAGERCPP_H
-#define DATETIMEMANAGERCPP_H
+#pragma once
 
 #include <QObject>
 #include <QQmlEngine>
@@ -7,6 +6,7 @@
 #include <QTimeZone>
 #include <QTimer>
 
+#include "PerfTestService.h"
 #include "TimezonesDSTMap.h"
 
 #define TDC_COMMAND         "timedatectl"
@@ -17,12 +17,14 @@
 #define TDC_NTP_PROPERTY    "--property=NTP"
 
 /*!
- * \brief The DateTimeManagerCPP class provides an interface to interact with system date and time
+ * \brief The DateTimeManager class provides an interface to interact with system date and time
  * useing \a\b timedatectl.
  */
-class DateTimeManagerCPP : public QObject
+class DateTimeManager : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
 
     Q_PROPERTY(QVariant currentTimeZone READ currentTimeZone WRITE setCurrentTimeZone NOTIFY currentTimeZoneChanged FINAL)
     Q_PROPERTY(bool hasDST READ hasDST NOTIFY currentTimeZoneChanged)
@@ -31,9 +33,12 @@ class DateTimeManagerCPP : public QObject
     Q_PROPERTY(QDateTime now READ now NOTIFY nowChanged)
     Q_PROPERTY(bool effectDst READ effectDst WRITE setEffectDst NOTIFY effectDstChanged FINAL)
 
-    QML_ELEMENT
+private:
+    explicit DateTimeManager(QObject *parent = nullptr);
+
 public:
-    explicit DateTimeManagerCPP(QObject *parent = nullptr);
+    static DateTimeManager* me();
+    static DateTimeManager* create(QQmlEngine*, QJSEngine*) {return me();}
 
     /*!
      * \brief isRunning Checks if internal process is running
@@ -123,6 +128,8 @@ signals:
     void effectDstChanged();
 
 private:
+    static DateTimeManager* mMe;
+
     //!
     //! \brief mProcess The process that is used to call timedatectl
     //!
@@ -174,4 +181,3 @@ private:
  */
 bool operator!=(const QJSValue& left, const QJSValue& right);
 
-#endif // DATETIMEMANAGERCPP_H

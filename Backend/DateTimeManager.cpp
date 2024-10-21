@@ -1,16 +1,28 @@
-#include "DateTimeManagerCPP.h"
+#include "DateTimeManager.h"
 
 #include <QTimeZone>
+#include <QCoreApplication>
 
 #include "LogHelper.h"
 
-DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
+DateTimeManager* DateTimeManager::mMe = nullptr;
+
+DateTimeManager* DateTimeManager::me()
+{
+    if (!mMe) mMe = new DateTimeManager(qApp);
+
+    return mMe;
+}
+
+DateTimeManager::DateTimeManager(QObject *parent)
     : QObject{parent}
     , mAutoUpdateTime { true }
     , mCurrentTimeZone { QTimeZone::systemTimeZone() }
     , mNow { QDateTime::currentDateTime() }
     , mEffectDst { true }
 {
+    QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
+
     mProcess.setReadChannel(QProcess::StandardOutput);
 
     //! Check auto-update time
@@ -26,12 +38,12 @@ DateTimeManagerCPP::DateTimeManagerCPP(QObject *parent)
     });
 }
 
-bool DateTimeManagerCPP::isRunning() const
+bool DateTimeManager::isRunning() const
 {
     return (mProcess.state() == QProcess::Starting || mProcess.state() == QProcess::Running);
 }
 
-void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
+void DateTimeManager::setAutoUpdateTime(bool autoUpdate)
 {
     if (isRunning() || mAutoUpdateTime == autoUpdate) {
         return;
@@ -54,12 +66,12 @@ void DateTimeManagerCPP::setAutoUpdateTime(bool autoUpdate)
     }
 }
 
-bool DateTimeManagerCPP::autoUpdateTime() const
+bool DateTimeManager::autoUpdateTime() const
 {
     return mAutoUpdateTime;
 }
 
-QVariant DateTimeManagerCPP::currentTimeZone() const
+QVariant DateTimeManager::currentTimeZone() const
 {
     const QString tzId = mCurrentTimeZone.id();
     int minutesOffset = mCurrentTimeZone.offsetFromUtc(QDateTime::currentDateTime()) / 60;
@@ -84,7 +96,7 @@ QVariant DateTimeManagerCPP::currentTimeZone() const
                         });
 }
 
-void DateTimeManagerCPP::setCurrentTimeZone(const QVariant& timezoneId)
+void DateTimeManager::setCurrentTimeZone(const QVariant& timezoneId)
 {
     QTimeZone newCurrentTimezone(timezoneId.toByteArray());
 
@@ -113,12 +125,12 @@ void DateTimeManagerCPP::setCurrentTimeZone(const QVariant& timezoneId)
     setTimezoneTo(newCurrentTimezone);
 }
 
-bool DateTimeManagerCPP::effectDst() const
+bool DateTimeManager::effectDst() const
 {
     return mEffectDst;
 }
 
-void DateTimeManagerCPP::setEffectDst(bool newEffectDst)
+void DateTimeManager::setEffectDst(bool newEffectDst)
 {
     if (mEffectDst == newEffectDst) {
         return;
@@ -149,17 +161,17 @@ void DateTimeManagerCPP::setEffectDst(bool newEffectDst)
     emit effectDstChanged();
 }
 
-bool DateTimeManagerCPP::hasDST() const
+bool DateTimeManager::hasDST() const
 {
     return mCurrentTimeZone.hasDaylightTime() && mTzMap.map.contains(mCurrentTimeZone.id());
 }
 
-QDateTime DateTimeManagerCPP::now() const
+QDateTime DateTimeManager::now() const
 {
     return mNow;
 }
 
-void DateTimeManagerCPP::setDateTime(const QDateTime& datetime)
+void DateTimeManager::setDateTime(const QDateTime& datetime)
 {
     if (isRunning() || QDateTime::currentDateTime() == datetime) {
         return;
@@ -177,7 +189,7 @@ void DateTimeManagerCPP::setDateTime(const QDateTime& datetime)
                                 });
 }
 
-QVariantList DateTimeManagerCPP::timezones() const
+QVariantList DateTimeManager::timezones() const
 {
     QVariantList timezones;
 
@@ -237,7 +249,7 @@ QVariantList DateTimeManagerCPP::timezones() const
     return timezones;
 }
 
-void DateTimeManagerCPP::checkAutoUpdateTime()
+void DateTimeManager::checkAutoUpdateTime()
 {
     mProcess.start(TDC_COMMAND, {
                                     TDC_SHOW,
@@ -256,7 +268,7 @@ void DateTimeManagerCPP::checkAutoUpdateTime()
     qWarning() << "Error: DTM checkAutoUpdateTime failed to read output";
 }
 
-QString DateTimeManagerCPP::utcDateTimeToLocalString(const QString& utcDateTime,
+QString DateTimeManager::utcDateTimeToLocalString(const QString& utcDateTime,
                                                      const QString& inputFormat,
                                                      const QString& outputFormat)
 {
@@ -278,12 +290,12 @@ QString DateTimeManagerCPP::utcDateTimeToLocalString(const QString& utcDateTime,
     return output;
 }
 
-QString DateTimeManagerCPP::nowUTC(const QString& outputFormat)
+QString DateTimeManager::nowUTC(const QString& outputFormat)
 {
     return QDateTime::currentDateTimeUtc().toString(outputFormat);
 }
 
-void DateTimeManagerCPP::callProcessFinished(const QJSValueList& args)
+void DateTimeManager::callProcessFinished(const QJSValueList& args)
 {
     if (mProcessFinishCb.isCallable()) {
         QJSValue result = mProcessFinishCb.call(args);
@@ -300,7 +312,7 @@ void DateTimeManagerCPP::callProcessFinished(const QJSValueList& args)
     }
 }
 
-void DateTimeManagerCPP::setTimezoneTo(const QTimeZone& timezone)
+void DateTimeManager::setTimezoneTo(const QTimeZone& timezone)
 {
     //! Set system time zone
     mProcess.start(TDC_COMMAND, {
