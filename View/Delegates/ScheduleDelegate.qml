@@ -39,50 +39,44 @@ ItemDelegate {
         property var overlappingSchedules: []
     }
 
-    //! Schedule icon
-    RoniaTextIcon {
-        id: scheduleIcon
-
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.margins: 10
-        anchors.topMargin: 15
-
-        width: 24
-        font.pointSize: Style.fontIconSize.smallPt
-        text: {
-            switch(schedule?.type) {
-            case AppSpec.Away:
-                return "\uf30d";
-            case AppSpec.Night:
-                return "\uf186"
-            case AppSpec.Home:
-                return "\uf015"
-            case AppSpec.Custom:
-                return "\uf1de"
-            }
-
-            return "-";
-        }
-        verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignHCenter
-    }
-
     ColumnLayout {
-        anchors.top: parent.top
-        anchors.left: scheduleIcon.right
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.fill: parent
         anchors.margins: 4
-        anchors.topMargin: 0
+
+        Layout.topMargin: 15
+        Layout.leftMargin: 10
 
         spacing: 10
 
         RowLayout {
             spacing: 8
             Layout.fillWidth: true
-            Layout.leftMargin: 0
             Layout.topMargin: 0
+
+            //! Schedule icon
+            RoniaTextIcon {
+                id: scheduleIcon
+
+
+                width: 24
+                font.pointSize: Style.fontIconSize.smallPt
+                text: {
+                    switch(schedule?.type) {
+                    case AppSpec.Away:
+                        return "\uf30d";
+                    case AppSpec.Night:
+                        return "\uf186"
+                    case AppSpec.Home:
+                        return "\uf015"
+                    case AppSpec.Custom:
+                        return "\uf1de"
+                    }
+
+                    return "-";
+                }
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+            }
 
             //! Schedule name
             Label {
