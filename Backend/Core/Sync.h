@@ -18,8 +18,9 @@ class Sync : public DevApiExecutor
     Q_OBJECT
     QML_ELEMENT
 
-    PROPERTY_PRI(bool, fetchingUserData)
-    PROPERTY_PRI(bool, pushingLockState)
+    PROPERTY_PRI_DEF_VAL(bool, fetchingUserData, false)
+    PROPERTY_PRI_DEF_VAL(bool, pushingLockState, false)
+
 public:
     Sync(QObject *parent = nullptr);
 

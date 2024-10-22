@@ -36,8 +36,6 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 Sync::Sync(QObject *parent)
     : DevApiExecutor(parent)
     , mHasClient(false)
-    , m_fetchingUserData(false)
-    , m_pushingLockState(false)
 {
     QSettings setting;
 
@@ -442,7 +440,7 @@ void Sync::pushLockState(const QString& pin, bool lock)
     auto endpoint = QString("api/sync/screen-%1?sn=%2").arg(lock ? "lock" : "unlock").arg(mSerialNumber);
     QJsonObject requestBody;
     requestBody["pin"] = pin;
-    callPostApi(cBaseUrl + endpoint, QJsonDocument(requestBody).toJson(), callback);
+    callPostApi(baseUrl() + endpoint, QJsonDocument(requestBody).toJson(), callback);
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
