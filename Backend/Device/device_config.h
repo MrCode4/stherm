@@ -1,8 +1,7 @@
 #pragma once
 
 #include "nuve_types.h"
-
-#define API_SERVER_BASE_URL "https://devapi.nuvehvac.com/"
+#include "Config.h"
 
 namespace NUVE {
 
