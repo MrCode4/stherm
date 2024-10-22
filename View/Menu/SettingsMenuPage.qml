@@ -138,7 +138,7 @@ BasePageView {
                     popupPerfTest.isBusyMode = true;
                     popupPerfTest.open();
                     PerfTestService.eligibilityChecked.connect(root.onPerfTestEligibilityChecked);
-                    PerfTestService.checkTestEligibility();                    
+                    PerfTestService.checkTestEligibility();
                 }
             }
         ]
