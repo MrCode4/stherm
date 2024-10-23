@@ -20,6 +20,7 @@ class Sync : public RestApiExecutor
 
     //! useful for showing busy indicator when needed
     PROPERTY_PRI(bool, fetchingUserData)
+    PROPERTY_PRI(bool, pushingLockState)
 public:
     Sync(QObject *parent = nullptr);
 
@@ -43,6 +44,8 @@ public:
     Q_INVOKABLE void fetchUserData();
 
     Q_INVOKABLE QString baseURL();
+
+    Q_INVOKABLE void pushLockState(const QString& pin, bool lock);
 
     void pushSettingsToServer(const QVariantMap &settings);
     void pushAlertToServer(const QVariantMap &settings);
@@ -101,6 +104,8 @@ signals:
 
     void alert(QString msg);
 
+    void lockStatePushed(bool success, bool locked);
+
     void pushSuccess();
     void pushFailed();
 
@@ -153,5 +158,9 @@ private:
     QDateTime mAutoModeLastPushTime;
     QVariantMap mContractorInfo;
     cpuid_t mSystemUuid;
+
+#ifdef SERIAL_TEST_MODE_ON
+    int mSerialTestDelayCounter{SERIAL_TEST_DELAY_COUNTER};
+#endif
 };
 }

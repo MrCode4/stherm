@@ -27,9 +27,6 @@ BasePageView {
     }
 
     contentItem: MenuListView {
-        //! Bottom item should be partially visible
-        spacing: 4;
-
         onCountChanged: {
             if (root.showHiddenItems && count == model.length) {
                 positionViewAtEnd();
@@ -104,23 +101,22 @@ BasePageView {
                 text: "Night Mode",
                 visible: false,
                 view: "qrc:/Stherm/View/NightModePage.qml"
-            }
-        ]
-
-        property var hiddenItems: [
-            {isSeparator: true},
+            },
             {
                 icon: FAIcons.screwdriver_wrench,
                 text: "Technician Access",
-                color: Style.hiddenMenuColor,
-                view: "qrc:/Stherm/View/UserGuidePage.qml"
+                view: "qrc:/Stherm/View/UserGuidePage.qml",
+                visible: false
             },
             {
                 icon: FAIcons.sliders,
                 text: "System Setup",
-                color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/SystemSetupPage.qml"
-            },
+            }
+        ]
+
+        property var hiddenItems: [
+            {isSeparator: true},            
             {
                 icon: FAIcons.triangleExclamation,
                 text: "System Alerts",

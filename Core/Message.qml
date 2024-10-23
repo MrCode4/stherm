@@ -33,6 +33,9 @@ QSObject {
 
     property int        sourceType: Message.SourceType.Device
 
+    //! Message title
+    property string     title:      ""
+
     //! Message text
     property string     message:    ""
 

@@ -23,11 +23,11 @@ AppSpecCPP {
 
     //! Maximum value of first temperature handler (left) in auto mode
     //! Celcius
-    property real maxAutoMinTemp: 29.4444
+    property real maxAutoMinTemp: 29.4444   // 85 F
 
     //! Minimum value of second temperature handler (right) in auto mode
     //! Celcius
-    property real minAutoMaxTemp: 15.5556
+    property real minAutoMaxTemp: 15.5556   // 60 F
 
     //! Default of requested temperature
     //! Celcius

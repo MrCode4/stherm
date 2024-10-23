@@ -537,8 +537,15 @@ void DeviceControllerCPP::startDevice()
 
     // Start by calling runDevice, which will load and populate the device config
     _deviceAPI->runDevice();
+    int startMode;
+#ifdef INITIAL_SETUP_MODE_ON
+    startMode = 1;
+#elif defined(TROUBLESHOOTING_MODE_ON)
+    startMode = 0;
+#else
+    startMode = getStartMode();
+#endif
 
-    int startMode = getStartMode();
     emit startModeChanged(startMode);
 
     mIsDeviceStarted = true;

@@ -24,7 +24,8 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
 
-    property bool initialSetup: false
+    //! Use deviceController to bind better.
+    property bool initialSetup: deviceController.initialSetup
 
     property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
 

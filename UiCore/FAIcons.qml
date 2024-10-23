@@ -49,4 +49,5 @@ QtObject {
     readonly property string lock:                              "\uf30d"
     readonly property string message_middle:                    "\ue1e1"
     readonly property string sun_bright:                        "\ue28f"
+    readonly property string envelope:                          "\uf0e0"
 }

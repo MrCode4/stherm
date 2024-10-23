@@ -11,11 +11,6 @@ import Stherm
 BasePageView {
     id: root
 
-    /* Property declaration
-     * ****************************************************************************************/
-
-    property Lock lock: appModel._lock
-
     /* Object properties
      * ****************************************************************************************/
     title: "Lock"
@@ -40,7 +35,7 @@ BasePageView {
             Layout.fillHeight: true
 
             onSendPIN: pin => {
-                           var locked = deviceController.lock(true, pin);
+                           let locked = deviceController.updateAppLockState(true, pin);
                            updatePinStatus(locked);
                        }
         }

@@ -1984,7 +1984,8 @@ void NUVE::System::sendResultsFile(const QString &filepath,
     TRACE << "sending file to remote " << destination;
 
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o "
+    //! timeout set to 10 seconds as the file is pretty small and should be copied locally to prevent long waiting
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"ConnectTimeout=10\" -o \"UserKnownHostsFile=/dev/null\" -o "
                                "\"StrictHostKeyChecking=no\" \"%2\" %3@%4:%5")
                            .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
     mFileSender.start("/bin/bash", {"-c", copyFile});

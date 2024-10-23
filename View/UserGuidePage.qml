@@ -19,9 +19,6 @@ BasePageView {
     //! Use in unlock page
     property bool openFromUnlockPage: false
 
-    //! Use in unlock page
-    property string encodedMasterPin: ""
-
     /* Object properties
      * ****************************************************************************************/
     title: "Technician Access"
@@ -67,16 +64,6 @@ BasePageView {
             x: (parent.width - width) / 2
             font.pointSize: Application.font.pointSize * 0.9
             text: "For any issues or questions, please contact\nour tech support by calling\n(657) 626-4887."
-        }
-
-        Label {
-            visible: openFromUnlockPage
-            horizontalAlignment: Qt.AlignHCenter
-            topPadding: 10
-            x: (parent.width - width) / 2
-            font.pointSize: Application.font.pointSize * 0.9
-            font.bold: true
-            text: "YOUR CODE: " + root.encodedMasterPin
         }
     }
 }

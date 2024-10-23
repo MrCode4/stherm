@@ -16,7 +16,6 @@ DeviceAPI::DeviceAPI(QObject *parent)
 {
 #ifdef __unix__
     _uid = UtilityHelper::getCPUInfo().toStdString();
-
 #else
     // Use in test
     _uid = m_deviceConfig.uid;
