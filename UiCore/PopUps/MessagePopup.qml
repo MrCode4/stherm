@@ -141,7 +141,7 @@ I_PopUp {
 
                 //! The device is unable to recognize the asterisk followed by a space ("* ") as a valid bullet point. Therefore,
                 //! we have implemented a workaround to replace it with a hyphen followed by a space ("- ").
-                property string processedMessage: message?.message?.replace(/\* /g, '- ') ?? ""
+                property string processedMessage: processMessage(message?.message ?? "")
 
                 anchors.fill: parent
 
@@ -156,5 +156,19 @@ I_PopUp {
             }
 
         }
+    }
+
+    /*! ***********************************************************************************************
+     * Functions
+     * ************************************************************************************************/
+
+    //! Process message to show
+    function processMessage(msg) {
+        // replace the * with - to correct markup indicators issues due to font
+        msg = msg.replace(/^\*\s/g, '- ');
+        msg = msg.replace(/\n\*\s/g, '\n- ');
+        msg = msg.replace(/\s\*\s/g, ' - ');
+
+        return msg;
     }
 }
