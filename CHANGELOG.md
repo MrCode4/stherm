@@ -1,6 +1,30 @@
 
 Release Note
 -------------
+## Release R 1.4.0
+ 926th October 2024
+ Branch- r1_4_0, commit- d81ff8bc
+ 
+### Release Articles
+update-V.1.4.0.zip
+
+### Reason
+Add new feature and fix some issues
+
+### What’s Brand New
+- Added some CMAKE options for developer tests.
+- Added gradient to menus like main and settings menu, messages, alert and system alert lists.
+- Added Lock/Unlock API.
+
+### What Been Updated
+- Implemented the new UI design for server messages.
+
+### What’s Been Fixed
+- Fixed showing notification dot in the main menu.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
 ## Release R 1.3.1
  9th October 2024
  Branch- r1_3_1, commit- 15c6fb9c
