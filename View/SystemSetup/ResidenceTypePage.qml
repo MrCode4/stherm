@@ -7,12 +7,8 @@ import Stherm
 /*! ***********************************************************************************************
  * ResidenceTypePage provides ui for choosing residence type and device location
  * ***********************************************************************************************/
-BasePageView {
+InitialSetupBasePageView {
     id: root
-
-    /* Property declaration
-     * ****************************************************************************************/
-    property bool initialSetup: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -20,22 +16,6 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-
-    //! Info button in initial setup mode.
-    InfoToolButton {
-        parent: root.header.contentItem
-        visible: initialSetup
-
-        onClicked: {
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession),
-                                             "initialSetup": root.initialSetup
-                                         });
-            }
-
-        }
-    }
 
     ColumnLayout {
         anchors.centerIn: parent
