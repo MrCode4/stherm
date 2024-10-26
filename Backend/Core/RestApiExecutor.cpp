@@ -3,6 +3,7 @@
 #include "LogHelper.h"
 
 #include <QNetworkAccessManager>
+#include <QUrl>
 
 RestApiExecutor::RestApiExecutor(QObject *parent)
     : HttpExecutor(parent)
@@ -136,4 +137,14 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
     } else {
         TRACE << "Can not find the callback: " << key;
     }
+}
+
+QString RestApiExecutor::prepareUrlWithEmail(const QString &baseUrl, const QString &email) {
+    QUrl url(baseUrl);
+
+    QUrlQuery query;
+    query.addQueryItem("email", QUrl::toPercentEncoding(email));
+
+    url.setQuery(query);
+    return url.toString();
 }

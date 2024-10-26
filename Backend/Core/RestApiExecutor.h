@@ -26,6 +26,11 @@ protected:
     virtual QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const;
     void processNetworkReply(QNetworkReply* reply) override;
 
+    //! Prepare URL with email
+    //! convert email string to askii
+    //! return baseUrl?email=encodedEmail as string.
+    QString prepareUrlWithEmail(const QString &baseUrl, const QString &email);
+
 private:
     QString prepareHashKey(int operation, const QString& endpoint);
 
