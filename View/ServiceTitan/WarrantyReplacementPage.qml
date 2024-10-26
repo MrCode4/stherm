@@ -220,7 +220,7 @@ BasePageView {
             if (NetworkInterface.hasInternet) {
                 isBusy = true;
                 tryTimer.stop();
-                tryTimer.triggered()
+                tryTimer.triggered();
 
             } else {
                 errorPopup.errorMessage = deviceController.deviceInternetError();
@@ -270,7 +270,6 @@ BasePageView {
 
                 if (needToRetry) {
                     tryTimer.start();
-
                 }
 
                 if ((tryTimer.retryCounter % 2 === 0) || !needToRetry){

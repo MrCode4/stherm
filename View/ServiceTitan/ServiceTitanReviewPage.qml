@@ -160,6 +160,7 @@ BasePageView {
             if (NetworkInterface.hasInternet) {
                 isBusyZip = true;
                 // get needed values from api
+                retryTimer.stop();
                 retryTimer.triggered();
 
             } else {
