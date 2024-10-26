@@ -483,7 +483,13 @@ I_DeviceController {
         }
 
         function onZipCodeInfoReady(success: bool, data: var, isNeedRetry: bool) {
-            if (!success || !data  || !device || !device.serviceTitan) {
+            if (!device || !device.serviceTitan) {
+                internal.syncReturnedZip = "";
+                zipCodeInfoReady("Getting zip code information failed. Device is not ready!", false);
+                return;
+            }
+
+            if (!success || !data) {
                 internal.syncReturnedZip = "";
                 zipCodeInfoReady("Getting zip code information failed.", isNeedRetry);
                 return;
@@ -506,7 +512,12 @@ I_DeviceController {
             //! we keep this empty in case of any error so it can be retry
             internal.syncReturnedEmail = "";
 
-            if (!success || !device || !device.serviceTitan) {
+            if (!device || !device.serviceTitan) {
+                customerInfoReady("Getting customer information failed. Device is not ready!", false);
+                return;
+            }
+
+            if (!success) {
                 customerInfoReady("Getting customer information failed. " + error, isNeedRetry);
                 return;
             }
