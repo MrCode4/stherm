@@ -160,7 +160,7 @@ BasePageView {
             if (NetworkInterface.hasInternet) {
                 isBusyZip = true;
                 // get needed values from api
-                deviceController.getZipCodeJobInformationManual();
+                retryTimer.triggered();
 
             } else {
                 errorPopup.errorMessage = deviceController.deviceInternetError();

@@ -141,8 +141,8 @@ BasePageView {
 
                             appModel.serviceTitan.isSTManualMode = false;
 
-                            if (!retryTimer.running)
-                                retryTimer.triggered();
+                            retryTimer.stop();
+                            retryTimer.triggered();
 
                         } else {
                             errorPopup.errorMessage = deviceController.deviceInternetError();

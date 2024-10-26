@@ -212,7 +212,7 @@ BasePageView {
 
         text: "Replace"
         visible: !oldSNTf.activeFocus && !newSNTf.activeFocus
-        enabled: oldSNTf.acceptableInput && newSNTf.acceptableInput
+        enabled: oldSNTf.acceptableInput && newSNTf.acceptableInput && !isBusy
         leftPadding: 25
         rightPadding: 25
 
