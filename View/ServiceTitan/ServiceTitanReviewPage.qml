@@ -163,7 +163,7 @@ BasePageView {
                 deviceController.getZipCodeJobInformationManual();
 
             } else {
-                errorPopup.errorMessage = "No internet connection. Please check your internet connection.";
+                errorPopup.errorMessage = deviceController.deviceInternetError();
                 errorPopup.open();
             }
         }

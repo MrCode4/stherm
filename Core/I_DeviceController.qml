@@ -115,6 +115,18 @@ QtObject {
     /* Functions
      * ****************************************************************************************/
 
+    //! Check device internet and return the proper error.
+    function deviceInternetError() : string {
+        if (!NetworkInterface.connectedWifi) {
+            return AppSpec.noWIFIErrorString
+
+        } else if (!NetworkInterface.hasInternet) {
+            return AppSpec.noInternetErrorString;
+        }
+
+        return "";
+    }
+
     function updateBacklight(isOn, hue, brightness, shadeIndex) {}
 
     //! These methods should be overriden by subclasses to provide implementation

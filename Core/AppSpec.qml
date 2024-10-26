@@ -279,4 +279,8 @@ AppSpecCPP {
 
     //! Icon for show notification when a message is available (Use in the screen saver page)
     readonly property string messageIcon: "qrc:/Stherm/Images/icons8-message-50.png"
+
+    readonly property string noWIFIErrorString:     "No Wi-Fi connection. Please check your Wi-Fi connection.";
+
+    readonly property string noInternetErrorString: "No internet connection. Please check your internet connection.";
 }

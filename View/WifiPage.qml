@@ -29,6 +29,8 @@ BasePageView {
 
     property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
 
+    //! To conditionally display and hide/show the "Next" button and disable/enable the next timer based on specific scenarios,
+    //! such as during initial device setup in warranty replacment page.
     property bool nextButtonEnabled: initialSetup
 
     /* Object properties

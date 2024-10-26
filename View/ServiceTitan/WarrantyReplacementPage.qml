@@ -219,10 +219,11 @@ BasePageView {
         onClicked: {
             if (NetworkInterface.hasInternet) {
                 isBusy = true;
+                tryTimer.stop();
                 tryTimer.triggered()
 
             } else {
-                errorPopup.errorMessage = "No internet connection. Please check your internet connection.";
+                errorPopup.errorMessage = deviceController.deviceInternetError();
                 errorPopup.open();
             }
         }

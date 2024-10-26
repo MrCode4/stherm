@@ -136,10 +136,6 @@ BasePageView {
     ButtonInverted {
         id: submitBtn
 
-        //! Has the initial flow been submitted?
-        //! TODO: When thermostatName changed, the model should be submitted again.
-        property bool submitted: false
-
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.margins: 10
@@ -157,10 +153,9 @@ BasePageView {
 
             if (NetworkInterface.hasInternet) {
                 retryTimer.triggered();
-                submitBtn.submitted = true;
 
             } else {
-                errorPopup.errorMessage = "No internet connection. Please check your internet connection.";
+                errorPopup.errorMessage = deviceController.deviceInternetError();
                 errorPopup.open();
             }
         }
