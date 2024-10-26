@@ -87,6 +87,7 @@ BasePageView {
 
             Layout.preferredWidth: parent.width * 0.8
 
+            // if this is enabled when busy, changing the value will stop retrying
             enabled: !isBusy
             placeholderText: "Input the job number"
             text: appModel?.serviceTitan?.jobNumber ?? ""
@@ -94,6 +95,8 @@ BasePageView {
                 regularExpression: /^\d+$/
             }
 
+            //! can not be changed for now while isBusy,
+            //! kept for future usage when is always enabled
             onTextChanged: {
                 isBusy = false;
                 retryTimer.stop();

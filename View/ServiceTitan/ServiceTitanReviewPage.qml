@@ -158,6 +158,7 @@ BasePageView {
             retryTimer.retryEmailCounter = 0;
 
             if (NetworkInterface.hasInternet) {
+                // needed for timer logics to call getZipCodeJobInformationManual
                 isBusyZip = true;
                 // get needed values from api
                 retryTimer.stop();
