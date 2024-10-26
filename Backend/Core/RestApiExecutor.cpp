@@ -159,3 +159,19 @@ QString RestApiExecutor::getReplyError(const QNetworkReply *reply) {
 
     return err;
 }
+
+bool RestApiExecutor::isNeedRetryNetRequest(const QNetworkReply *reply) {
+    auto replyError = reply->error();
+
+    bool isNeedRetry = replyError != QNetworkReply::NoError &&
+                       replyError != QNetworkReply::ContentAccessDenied &&
+                       replyError != QNetworkReply::ContentOperationNotPermittedError &&
+                       replyError != QNetworkReply::ContentNotFoundError &&
+                       replyError != QNetworkReply::AuthenticationRequiredError &&
+                       replyError != QNetworkReply::ContentReSendError &&
+                       replyError != QNetworkReply::ContentConflictError &&
+                       replyError != QNetworkReply::ContentGoneError &&
+                       replyError != QNetworkReply::UnknownContentError;
+
+    return isNeedRetry;
+}

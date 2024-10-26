@@ -36,6 +36,10 @@ protected:
     //! Otherwise, return the general reply error message.
     QString getReplyError(const QNetworkReply *reply);
 
+    //! A 2xx NetworkError status code signifies a successful request completion (exist server error).
+    //! Therefore, retrying such requests is unnecessary and may lead to redundant operations.
+    bool isNeedRetryNetRequest(const QNetworkReply *reply);
+
 private:
     QString prepareHashKey(int operation, const QString& endpoint);
 

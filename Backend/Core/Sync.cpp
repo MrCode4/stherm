@@ -593,8 +593,7 @@ void Sync::getJobIdInformation(const QString& jobID)
 
         TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << err;
 
-        bool isNeedRetry = reply->error() != QNetworkReply::NoError && reply->error() != QNetworkReply::UnknownContentError;
-
+        auto isNeedRetry = isNeedRetryNetRequest(reply);
         emit jobInformationReady(!data.isEmpty(), data.toVariantMap(), err, data.isEmpty() && reply->error() != QNetworkReply::UnknownContentError);
     };
 
@@ -613,7 +612,7 @@ void Sync::getCustomerInformationManual(const QString &email)
         auto err = getReplyError(reply);
 
         // data can be empty when email is new
-        bool isNeedRetry = reply->error() != QNetworkReply::NoError && reply->error() != QNetworkReply::UnknownContentError;
+        auto isNeedRetry = isNeedRetryNetRequest(reply);
         emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap(), err, isNeedRetry);
     };
 
@@ -629,7 +628,7 @@ void Sync::getAddressInformationManual(const QString &zipCode)
     auto callbackZip = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Address Information error: " << reply->errorString();
 
-        bool isNeedRetry = !(data.isEmpty() && reply->error() == QNetworkReply::NoError) && reply->error() != QNetworkReply::UnknownContentError;
+        auto isNeedRetry = isNeedRetryNetRequest(reply);
         emit zipCodeInfoReady(!data.isEmpty(), data.toVariantMap(), isNeedRetry);
     };
 
@@ -655,7 +654,8 @@ void Sync::installDevice(const QVariantMap &data)
 
             auto err = getReplyError(reply);
 
-            emit installFailed(err, reply->error() != QNetworkReply::UnknownContentError);
+            auto isNeedRetry = isNeedRetryNetRequest(reply);
+            emit installFailed(err, isNeedRetry);
             TRACE << rawData << data;
         }
     };
