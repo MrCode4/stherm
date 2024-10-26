@@ -148,3 +148,14 @@ QString RestApiExecutor::prepareUrlWithEmail(const QString &baseUrl, const QStri
     url.setQuery(query);
     return url.toString();
 }
+
+QString RestApiExecutor::getReplyError(const QNetworkReply *reply) {
+    QString err = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() : "";
+
+    if(err.isEmpty()) {
+        err = reply->errorString();
+        err.remove(reply->url().toString());
+    }
+
+    return err;
+}

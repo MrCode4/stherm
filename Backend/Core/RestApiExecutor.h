@@ -31,6 +31,11 @@ protected:
     //! return baseUrl?email=encodedEmail as string.
     QString prepareUrlWithEmail(const QString &baseUrl, const QString &email);
 
+    //! Extract and return an appropriate error message from the network reply.
+    //! If a UnknownContentError occurred, retrieve the `message` from `the server_field_errors` field.
+    //! Otherwise, return the general reply error message.
+    QString getReplyError(const QNetworkReply *reply);
+
 private:
     QString prepareHashKey(int operation, const QString& endpoint);
 

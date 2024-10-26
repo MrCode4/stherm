@@ -589,15 +589,12 @@ void Sync::fetchServiceTitanInformation()
 void Sync::getJobIdInformation(const QString& jobID)
 {
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        auto err = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() :
-                       reply->errorString();
-        if (err.isEmpty()) {
-            err = reply->errorString();
-        }
+        QString err = getReplyError(reply);
 
-        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << err;
 
-        err.remove(reply->url().toString());
+        bool isNeedRetry = reply->error() != QNetworkReply::NoError && reply->error() != QNetworkReply::UnknownContentError;
+
         emit jobInformationReady(!data.isEmpty(), data.toVariantMap(), err, data.isEmpty() && reply->error() != QNetworkReply::UnknownContentError);
     };
 
@@ -613,16 +610,10 @@ void Sync::getCustomerInformationManual(const QString &email)
     auto callbackCustomer = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
 
-        auto err = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() :
-                       reply->errorString();
-        if (err.isEmpty()) {
-            err = reply->errorString();
-        }
-
-        err.remove(reply->url().toString());
+        auto err = getReplyError(reply);
 
         // data can be empty when email is new
-        bool isNeedRetry = !(data.isEmpty() && reply->error() == QNetworkReply::NoError) && reply->error() != QNetworkReply::UnknownContentError;
+        bool isNeedRetry = reply->error() != QNetworkReply::NoError && reply->error() != QNetworkReply::UnknownContentError;
         emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap(), err, isNeedRetry);
     };
 
@@ -662,12 +653,7 @@ void Sync::installDevice(const QVariantMap &data)
         }
         else {
 
-            auto err = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() :
-                           reply->errorString();
-            if (err.isEmpty()) {
-                err = reply->errorString();
-            }
-            err.remove(reply->url().toString());
+            auto err = getReplyError(reply);
 
             emit installFailed(err, reply->error() != QNetworkReply::UnknownContentError);
             TRACE << rawData << data;
@@ -686,7 +672,7 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
         setting.setValue(cWarrantySerialNumberKey, oldSN);
 
         auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-            QString error;
+            QString err;
             bool success = false;
             if (reply->error() == QNetworkReply::NoError) {
                 // get the last update
@@ -695,16 +681,10 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
                 success = true;
 
             } else {
-                error = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() :
-                               reply->errorString();
-
-                if (error.isEmpty()) {
-                    error = reply->errorString();
-                }
-                error.remove(reply->url().toString());
+                err = getReplyError(reply);
             }
 
-            emit warrantyReplacementFinished(success, error, reply->error() != QNetworkReply::UnknownContentError);
+            emit warrantyReplacementFinished(success, err, reply->error() != QNetworkReply::UnknownContentError);
         };
 
         QJsonObject reqData;
