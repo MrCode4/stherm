@@ -616,7 +616,8 @@ void Sync::getCustomerInformationManual(const QString &email)
         emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap(), err, isNeedRetry);
     };
 
-    auto netReply =  callGetApi(prepareUrlWithEmail(cBaseUrl + QString("/api/customer"), email), callbackCustomer);
+    auto api = prepareUrlWithEmail(cBaseUrl + QString("/api/customer"), email);
+    auto netReply =  callGetApi(api, callbackCustomer);
     if (!netReply) {
         TRACE << "call get api canceled for customer";
         //        emit customerInfoReady(false, QVariantMap());
