@@ -117,15 +117,26 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
         return;
     }
 
-    QByteArray rawData;
+    QByteArray rawData = reply->readAll();
     QJsonObject data;
 
     if (reply->error() != QNetworkReply::NoError) {
-        qWarning() << "API ERROR (" << endpoint << ") # code: "<< reply->error() << ", message: " << reply->errorString();
-    }
-    else {
-        rawData = reply->readAll();
+        // Handle All Errors
+        if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
+            // Prepare errors
+            const auto errdoc = QJsonDocument::fromJson(rawData);
+            reply->setProperty("server_field_errors", errdoc.object());
 
+            qWarning() << "API ERROR (" << endpoint << ") # code: "<< reply->error() <<
+                ", network error: " << reply->errorString() <<
+                ", Server error: " << errdoc.toJson().toStdString().c_str();
+
+        } else {
+            qWarning()  << "API ERROR (" << endpoint << ")" << ", The network reply is not json. " << rawData;
+        }
+
+    } else {
+        // Handle The response
         if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
 
             data = prepareJsonResponse(endpoint, rawData);
@@ -140,6 +151,9 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
                 QString strJson(doc.toJson(QJsonDocument::Indented));
                 TRACE << "API RESPONSE (" << endpoint << ") : " << strJson.toStdString().c_str();
             }
+
+        } else {
+            qWarning() << "API RESPONSE (" << endpoint << ")" << ", The network reply is not json. " << rawData;
         }
     }
 

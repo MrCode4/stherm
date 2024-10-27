@@ -52,14 +52,4 @@ QNetworkReply* NetworkManager::put(const QNetworkRequest& request, const QByteAr
 
 void NetworkManager::processNetworkReply(QNetworkReply *netReply)
 {
-    // Handle All Errors
-    if (netReply->error() != QNetworkReply::NoError && netReply->isOpen()) {
-        qDebug() << Q_FUNC_INFO <<__LINE__<< netReply->error()<<netReply->errorString();
-        const auto errdoc = QJsonDocument::fromJson(netReply->readAll());
-        const QJsonObject errObj = errdoc.object();
-        QStringList errMsg = errObj.value("non_field_errors").toVariant().toStringList();
-        TRACE << errdoc.toJson().toStdString().c_str();
-
-         netReply->setProperty("server_field_errors", errObj);
-    }
 }
