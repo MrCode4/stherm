@@ -25,6 +25,13 @@ BasePageView {
      * ****************************************************************************************/
     title: "Review"
 
+    onVisibleChanged: {
+        if (!visible) {
+            errorPopup.close();
+            retryTimer.stop();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Info button in initial setup mode.
@@ -40,17 +47,39 @@ BasePageView {
             }
 
         }
+
+        //! Wifi status
+        WifiButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.bottom
+            anchors.topMargin: -10
+            visible: !NetworkInterface.hasInternet
+
+            z: 1
+
+            onClicked: {
+                //! Open WifiPage
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup,
+                                                 "nextButtonEnabled": false
+                                             });
+                }
+            }
+        }
     }
 
     Label {
         id: confirmInfoLabel
 
         anchors.top: parent.top
-        anchors.topMargin: 25
+        anchors.topMargin: 15
         anchors.horizontalCenter: parent.horizontalCenter
 
-        width: parent.width * 0.9
+        width: parent.width * 0.7
         text: "Please confirm with the customer that the information below is correct."
+        font.pointSize: Application.font.pointSize * 0.9
         elide: Text.ElideMiddle
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
@@ -102,6 +131,14 @@ BasePageView {
         }
     }
 
+
+    ContactNuveSupportLabel {
+        anchors.bottom: nextBtn.top
+        anchors.bottomMargin: 10
+        anchors.left: parent.left
+        width: parent.width
+    }
+
     //! Next button
     ButtonInverted {
         id: nextBtn
@@ -117,11 +154,20 @@ BasePageView {
         rightPadding: 25
 
         onClicked: {
-            errorLabel.text = "";
-            isBusyCustomer = true;
-            isBusyZip = true;
-            // get needed values from api
-            deviceController.getJobInformationManual();
+            retryTimer.retryZIPCounter = 0;
+            retryTimer.retryEmailCounter = 0;
+
+            if (NetworkInterface.hasInternet) {
+                // needed for timer logics to call getZipCodeJobInformationManual
+                isBusyZip = true;
+                // get needed values from api
+                retryTimer.stop();
+                retryTimer.triggered();
+
+            } else {
+                errorPopup.errorMessage = deviceController.deviceInternetError();
+                errorPopup.open();
+            }
         }
     }
 
@@ -133,44 +179,103 @@ BasePageView {
         width: 45
         visible: isBusy
         running: visible
-    }
 
-    Label {
-        id: errorLabel
+        TapHandler {
+            enabled: isBusy && errorPopup.errorMessage.length > 0
 
-        anchors.bottom: nextBtn.top
-        anchors.bottomMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        font.pointSize: root.font.pointSize * 0.7
-        text: ""
-        color: AppStyle.primaryRed
-        visible: text.length > 0 && !isBusy
+            onTapped: {
+                errorPopup.open();
+            }
+        }
     }
 
     //! Temp connection to go to the next page.
     Connections {
         target: deviceController
-        enabled: root.visible
-        function onCustomerInfoReady(error) {
-            if (error.length > 0) {
-                errorLabel.text = error + " retry.";
-            }
+        enabled: root.visible && (isBusyCustomer || isBusyZip)
 
+        function onCustomerInfoReady(error, isNeedRetry) {
+            isBusyCustomer = isNeedRetry && error.length > 0;
+
+            if (error.length > 0) {
+                errorPopup.errorMessage = "Customer information is not ready, " + error;
+
+                if (isNeedRetry) {
+                    retryTimer.start();
+                }
+
+                if ((retryTimer.retryEmailCounter % 2 === 0) || !isNeedRetry) {
+                    errorPopup.open();
+                }
+
+            }  else {
+                retryTimer.retryEmailCounter = 0
+                nextPage();
+            }
+        }
+
+        function onZipCodeInfoReady(error, isNeedRetry) {
+            isBusyZip = isNeedRetry && error.length > 0;
+
+            if (error.length > 0) {
+                errorPopup.errorMessage = "ZIP code information is not ready, " + error;
+
+                if (isNeedRetry) {
+                    retryTimer.start();
+                }
+
+                if ((retryTimer.retryZIPCounter % 2 === 0) || !isNeedRetry) {
+                    errorPopup.open();
+                }
+
+            } else {
+                retryTimer.retryZIPCounter = 0;
+
+                // Get the customer information
+                isBusyCustomer = true;
+                deviceController.getEmailJobInformationManual();
+            }
+        }
+    }
+
+
+    Timer {
+        id: retryTimer
+
+        interval: 5000
+        repeat: false
+        running: false
+
+        property int retryZIPCounter: 0
+        property int retryEmailCounter: 0
+
+        onTriggered: {
+            if (isBusyCustomer) {
+                retryEmailCounter++;
+                deviceController.getEmailJobInformationManual();
+
+            } else if (isBusyZip) {
+                retryZIPCounter++;
+                deviceController.getZipCodeJobInformationManual();
+
+            } else {
+                retryTimer.stop();
+            }
+        }
+    }
+
+    InitialFlowErrorPopup {
+        id: errorPopup
+
+        isBusy: isBusyCustomer|| isBusyZip
+        deviceController: uiSession.deviceController
+
+        onStopped: {
             isBusyCustomer = false;
-
-            nextPage();
-        }
-
-        function onZipCodeInfoReady(error) {
-            if (error.length > 0) {
-                errorLabel.text = error + " retry.";
-            }
-
             isBusyZip = false;
-
-            nextPage();
+            retryTimer.stop();
         }
+
     }
 
     /* Functions
@@ -179,7 +284,7 @@ BasePageView {
     //! Go to CustomerDetailsPage
     function nextPage() {
         //! we prevent to go next page as one of calls is busy or has error
-        if (errorLabel.text.length > 0 || isBusy)
+        if (isBusy)
             return;
 
         // Go to next page

@@ -121,6 +121,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/AboutPopUp.qml
         UiCore/PopUps/ConfirmPopup.qml
         UiCore/PopUps/UpdatePopup.qml
+        UiCore/PopUps/InitialFlowErrorPopup.qml
         UiCore/ShortcutManager.qml
         UiCore/SimpleStackView.qml
         UiCore/Components/SemiCircleSlider.qml
@@ -153,6 +154,7 @@ qt6_add_qml_module(appStherm
         UiCore/Components/HorizontalTimeTumbler.qml
         UiCore/Components/TemperatureFlatRangeSlider.qml
         UiCore/Components/SingleTemperatureSlider.qml
+        UiCore/Components/ContactNuveSupportLabel.qml
 
 
         # Views and Widgets

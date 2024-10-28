@@ -23,6 +23,13 @@ BasePageView {
      * ****************************************************************************************/
     title: "Device Location"
 
+    onVisibleChanged: {
+        if (!visible) {
+            retryTimer.stop();
+            errorPopup.close();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Info button in initial setup mode.
@@ -38,6 +45,27 @@ BasePageView {
             }
 
         }
+
+        //! Wifi status
+        WifiButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.bottom
+            anchors.topMargin: -10
+            visible: !NetworkInterface.hasInternet
+
+            z: 1
+
+            onClicked: {
+                //! Open WifiPage
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup,
+                                                 "nextButtonEnabled": false
+                                             });
+                }
+            }
+        }
     }
 
     Flickable {
@@ -50,8 +78,13 @@ BasePageView {
             height: root.contentItem.height - 16
         }
 
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: infoLabel.top
+        anchors.bottomMargin: 10
         anchors.rightMargin: 10
+
         clip: true
         enabled: !isBusy
         boundsBehavior: Flickable.StopAtBounds
@@ -80,6 +113,7 @@ BasePageView {
                         appModel.whereInstalled = index;
                         appModel.deviceLocation = String(modelData);
                         appModel.thermostatName = String(modelData);
+
                         nextPage();
                     }
                 }
@@ -88,17 +122,13 @@ BasePageView {
     }
 
 
-    Label {
-        id: errorLabel
+    ContactNuveSupportLabel {
+        id: infoLabel
 
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        font.pointSize: root.font.pointSize * 0.7
-        text: ""
-        color: AppStyle.primaryRed
-        visible: text.length > 0 && !isBusy
+        anchors.left: parent.left
+        width: parent.width
     }
 
     BusyIndicator {
@@ -109,21 +139,66 @@ BasePageView {
         width: 45
         visible: isBusy
         running: visible
+
+
+        TapHandler {
+            enabled: isBusy && errorPopup.errorMessage.length > 0
+
+            onTapped: {
+                errorPopup.open();
+            }
+        }
     }
 
+    InitialFlowErrorPopup {
+        id: errorPopup
+
+        isBusy: root.isBusy
+        deviceController: uiSession.deviceController
+
+        onStopped: {
+            root.isBusy = false;
+            retryTimer.stop();
+        }
+    }
+
+
+    Timer {
+        id: retryTimer
+
+        property int retryCounter: 0
+
+        interval: 5000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            retryCounter++;
+            deviceController.pushInitialSetupInformation();
+        }
+    }
 
     //! Temp connection to end busy
     Connections {
         target: deviceController.sync
-        enabled: root.visible
+        enabled: root.visible && isBusy
 
         function onInstalledSuccess() {
             isBusy = false;
+            retryTimer.retryCounter = 0;
         }
 
-        function onInstallFailed() {
-            isBusy = false;
-            errorLabel.text = "Please try again!";
+        function onInstallFailed(err : string, needToRetry : bool) {
+            isBusy = needToRetry;
+            errorPopup.errorMessage = err;
+
+            if (needToRetry) {
+                retryTimer.start();
+            }
+
+            if (!needToRetry || (retryTimer.retryCounter % 2 === 0)) {
+                errorPopup.open();
+            }
         }
     }
 
@@ -131,15 +206,23 @@ BasePageView {
      * ****************************************************************************************/
 
     function nextPage() {
-        if (root.StackView.view && appModel.deviceLocation === "Other") {
+        retryTimer.stop();
+
+        if (root.StackView.view && appModel.deviceLocation === "Custom") {
             root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ThermostatNamePage.qml", {
                                          "uiSession": Qt.binding(() => uiSession),
                                          "initialSetup":  root.initialSetup
                                      });
         } else {
-            isBusy = true;
-            errorLabel.text = "";
-            deviceController.pushInitialSetupInformation();
+            if (NetworkInterface.hasInternet) {
+                isBusy = true;
+                retryTimer.retryCounter = 0;
+                retryTimer.triggered();
+
+            } else {
+                errorPopup.errorMessage = deviceController.deviceInternetError();
+                errorPopup.open();
+            }
         }
     }
 }

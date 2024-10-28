@@ -3,6 +3,7 @@
 #include "LogHelper.h"
 
 #include <QNetworkAccessManager>
+#include <QUrl>
 
 RestApiExecutor::RestApiExecutor(QObject *parent)
     : HttpExecutor(parent)
@@ -136,4 +137,41 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
     } else {
         TRACE << "Can not find the callback: " << key;
     }
+}
+
+QString RestApiExecutor::prepareUrlWithEmail(const QString &baseUrl, const QString &email) {
+    QUrl url(baseUrl);
+
+    QUrlQuery query;
+    query.addQueryItem("email", QUrl::toPercentEncoding(email));
+
+    url.setQuery(query);
+    return url.toString();
+}
+
+QString RestApiExecutor::getReplyError(const QNetworkReply *reply) {
+    QString err = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() : "";
+
+    if (err.isEmpty()) {
+        err = reply->errorString();
+        err.remove(reply->url().toString());
+    }
+
+    return err;
+}
+
+bool RestApiExecutor::isNeedRetryNetRequest(const QNetworkReply *reply) {
+    auto replyError = reply->error();
+
+    bool isNeedRetry = replyError != QNetworkReply::NoError &&
+                       replyError != QNetworkReply::ContentAccessDenied &&
+                       replyError != QNetworkReply::ContentOperationNotPermittedError &&
+                       replyError != QNetworkReply::ContentNotFoundError &&
+                       replyError != QNetworkReply::AuthenticationRequiredError &&
+                       replyError != QNetworkReply::ContentReSendError &&
+                       replyError != QNetworkReply::ContentConflictError &&
+                       replyError != QNetworkReply::ContentGoneError &&
+                       replyError != QNetworkReply::UnknownContentError;
+
+    return isNeedRetry;
 }

@@ -29,6 +29,10 @@ BasePageView {
 
     property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
 
+    //! To conditionally display and hide/show the "Next" button and disable/enable the next timer based on specific scenarios,
+    //! such as during initial device setup in warranty replacment page.
+    property bool nextButtonEnabled: initialSetup
+
     /* Object properties
      * ****************************************************************************************/
     title: "Wi-Fi Settings"
@@ -44,7 +48,7 @@ BasePageView {
         property bool once : false
 
         repeat: false
-        running: !once && root.visible && initialSetupReady
+        running: !once && root.visible && initialSetupReady &&  nextButtonEnabled
         interval: 10000
         onTriggered: nextPage()
     }
@@ -53,7 +57,7 @@ BasePageView {
     ToolButton {
         parent: root.header.contentItem
 
-        visible: initialSetup
+        visible: nextButtonEnabled
 
         contentItem: RoniaTextIcon {
             text: FAIcons.arrowRight
@@ -274,6 +278,13 @@ BasePageView {
             }
         }
 
+        ContactNuveSupportLabel {
+            Layout.preferredHeight: 35
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
+            visible: infoButton.visible
+        }
+
         Item {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.button.buttonHeight
@@ -303,6 +314,7 @@ BasePageView {
             }
 
             InfoToolButton {
+                id: infoButton
                 anchors.centerIn: parent
 
                 visible: initialSetup

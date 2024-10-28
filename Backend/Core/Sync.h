@@ -57,7 +57,7 @@ public:
 
     void fetchServiceTitanInformation();
 
-    void warrantyReplacement(const QString& oldSN, const QString& newSN);
+    Q_INVOKABLE void warrantyReplacement(const QString& oldSN, const QString& newSN);
 
     //! Get job information with the job id
     Q_INVOKABLE void getJobIdInformation(const QString &jobID);
@@ -110,7 +110,7 @@ signals:
     void pushFailed();
 
     void installedSuccess();
-    void installFailed();
+    void installFailed(QString err, bool needToRetry);
 
     void autoModePush(bool isSuccess);
 
@@ -127,12 +127,12 @@ signals:
 
     //! TODO: send new data to device controller
     //! maybe rename to warrantyReplacementDataReady
-    void warrantyReplacementFinished(bool success = false);
+    void warrantyReplacementFinished(bool success = false, QString error = QString(), bool needToRetry = false);
 
-    void jobInformationReady(bool success, QVariantMap data);
+    void jobInformationReady(bool success, QVariantMap data, QString error, bool needToRetry = false);
 
-    void zipCodeInfoReady(bool success, QVariantMap data);
-    void customerInfoReady(bool success, QVariantMap data);
+    void zipCodeInfoReady(bool success, QVariantMap data, bool needToRetry = false);
+    void customerInfoReady(bool success, QVariantMap data,  QString error, bool needToRetry = false);
 
     void outdoorTemperatureReady(bool success = false, double temp = -1.0);
 

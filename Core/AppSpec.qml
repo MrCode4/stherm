@@ -133,8 +133,8 @@ AppSpecCPP {
         types[`${AppSpec.ResidenceTypes.Residental}`] = ["Basement", "Bedroom", "Dinning room",
                                                          "Downstairs", "Guesthouse", "Kids room",
                                                          "Living room", "Main floor", "Master bedroom",
-                                                         "Office", "Upstairs", "Other"];
-        types[`${AppSpec.ResidenceTypes.Commercial}`] = ["Lunchroom", "Office", "Warehouse", "Other"];
+                                                         "Office", "Upstairs", "Custom"];
+        types[`${AppSpec.ResidenceTypes.Commercial}`] = ["Lunchroom", "Office", "Warehouse", "Custom"];
 
         types[`${AppSpec.ResidenceTypes.Unknown}`]    = [];
 
@@ -279,4 +279,8 @@ AppSpecCPP {
 
     //! Icon for show notification when a message is available (Use in the screen saver page)
     readonly property string messageIcon: "qrc:/Stherm/Images/icons8-message-50.png"
+
+    readonly property string noWIFIErrorString:     "No Wi-Fi connection. Please check your Wi-Fi connection.";
+
+    readonly property string noInternetErrorString: "No internet connection. Please check your internet connection.";
 }

@@ -507,7 +507,7 @@ QtObject {
 
         // Wifi message type is SystemNotification, so related to alerts
         if ((device.setting.enabledAlerts || !is_control_alert_feature_enable) && !connectedWifi) {
-            var message = "No Wi-Fi connection. Please check your Wi-Fi connection.";
+            var message = AppSpec.noWIFIErrorString
             showWifiInternetAlert(message, (new Date()).toLocaleString());
         }
 
@@ -519,7 +519,7 @@ QtObject {
 
         // Wifi message type is SystemNotification, so related to alerts
         if ((device.setting.enabledAlerts || !is_control_alert_feature_enable) && !hasInternet) {
-            var message = "No internet connection. Please check your internet connection.";
+            var message = AppSpec.noInternetErrorString;
             showWifiInternetAlert(message, (new Date()).toLocaleString());
         }
 

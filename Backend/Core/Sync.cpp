@@ -589,9 +589,12 @@ void Sync::fetchServiceTitanInformation()
 void Sync::getJobIdInformation(const QString& jobID)
 {
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+        QString err = getReplyError(reply);
 
-        emit jobInformationReady(!data.isEmpty(), data.toVariantMap());
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << err;
+
+        auto isNeedRetry = isNeedRetryNetRequest(reply);
+        emit jobInformationReady(!data.isEmpty(), data.toVariantMap(), err, data.isEmpty() && reply->error() != QNetworkReply::UnknownContentError);
     };
 
     auto netReply =  callGetApi(cBaseUrl + QString("/api/technicians/service-titan/customer/%0?sn=%1").arg(jobID, mSerialNumber), callback);
@@ -606,11 +609,15 @@ void Sync::getCustomerInformationManual(const QString &email)
     auto callbackCustomer = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
 
+        auto err = getReplyError(reply);
+
         // data can be empty when email is new
-        emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap());
+        auto isNeedRetry = isNeedRetryNetRequest(reply);
+        emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap(), err, isNeedRetry);
     };
 
-    auto netReply =  callGetApi(cBaseUrl + QString("/api/customer?email=%0").arg(email), callbackCustomer);
+    auto api = prepareUrlWithEmail(cBaseUrl + QString("/api/customer"), email);
+    auto netReply =  callGetApi(api, callbackCustomer);
     if (!netReply) {
         TRACE << "call get api canceled for customer";
         //        emit customerInfoReady(false, QVariantMap());
@@ -620,9 +627,10 @@ void Sync::getCustomerInformationManual(const QString &email)
 void Sync::getAddressInformationManual(const QString &zipCode)
 {
     auto callbackZip = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Address Information error: " << reply->errorString();
 
-        emit zipCodeInfoReady(!data.isEmpty(), data.toVariantMap());
+        auto isNeedRetry = isNeedRetryNetRequest(reply);
+        emit zipCodeInfoReady(!data.isEmpty(), data.toVariantMap(), isNeedRetry);
     };
 
     auto netReply =  callGetApi(cBaseUrl + QString("/api/zipCode?code=%0").arg(zipCode), callbackZip);
@@ -644,7 +652,11 @@ void Sync::installDevice(const QVariantMap &data)
             emit installedSuccess();
         }
         else {
-            emit installFailed();
+
+            auto err = getReplyError(reply);
+
+            auto isNeedRetry = isNeedRetryNetRequest(reply);
+            emit installFailed(err, isNeedRetry);
             TRACE << rawData << data;
         }
     };
@@ -661,15 +673,19 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
         setting.setValue(cWarrantySerialNumberKey, oldSN);
 
         auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+            QString err;
             bool success = false;
             if (reply->error() == QNetworkReply::NoError) {
                 // get the last update
                 auto message = data.value("message").toString();
                 TRACE << "warrantyReplacement message:" << message;
                 success = true;
+
+            } else {
+                err = getReplyError(reply);
             }
 
-            emit warrantyReplacementFinished(success);
+            emit warrantyReplacementFinished(success, err, reply->error() != QNetworkReply::UnknownContentError);
         };
 
         QJsonObject reqData;
@@ -682,7 +698,7 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
             //            emit warrantyReplacementFinished(false);
         }
     } else {
-        emit warrantyReplacementFinished(false);
+        emit warrantyReplacementFinished(false, QString("The old and new serial numbers are the same."));
     }
 }
 

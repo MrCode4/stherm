@@ -21,6 +21,13 @@ BasePageView {
      * ****************************************************************************************/
     title: "Thermostat Name"
 
+    onVisibleChanged: {
+        if (!visible) {
+            retryTimer.stop();
+            errorPopup.close();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Info button in initial setup mode.
@@ -33,6 +40,27 @@ BasePageView {
                 root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
                                              "uiSession": Qt.binding(() => uiSession)
                                          });
+            }
+        }
+
+        //! Wifi status
+        WifiButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.bottom
+            anchors.topMargin: -10
+            visible: !NetworkInterface.hasInternet
+
+            z: 1
+
+            onClicked: {
+                //! Open WifiPage
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup,
+                                                 "nextButtonEnabled": false
+                                             });
+                }
             }
         }
     }
@@ -79,19 +107,6 @@ BasePageView {
         }
     }
 
-    Label {
-        id: errorLabel
-
-        anchors.bottom: submitBtn.top
-        anchors.bottomMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        font.pointSize: root.font.pointSize * 0.7
-        text: ""
-        color: AppStyle.primaryRed
-        visible: text.length > 0 && !isBusy
-    }
-
     BusyIndicator {
         anchors.right: submitBtn.left
         anchors.verticalCenter: submitBtn.verticalCenter
@@ -100,15 +115,26 @@ BasePageView {
         width: 45
         visible: isBusy
         running: visible
+
+        TapHandler {
+            enabled: isBusy && errorPopup.errorMessage.length > 0
+
+            onTapped: {
+                errorPopup.open();
+            }
+        }
+    }
+
+    ContactNuveSupportLabel {
+        anchors.bottom: submitBtn.top
+        anchors.bottomMargin: 10
+        anchors.left: parent.left
+        width: parent.width
     }
 
     //! Submit button
     ButtonInverted {
         id: submitBtn
-
-        //! Has the initial flow been submitted?
-        //! TODO: When thermostatName changed, the model should be submitted again.
-        property bool submitted: false
 
         anchors.bottom: parent.bottom
         anchors.right: parent.right
@@ -122,32 +148,71 @@ BasePageView {
 
         onClicked: {
             isBusy = true;
-            errorLabel.text = "";
 
             appModel.thermostatName = nameTf.text;
 
-            if (initialSetup) {
-                deviceController.pushInitialSetupInformation();
-            }
+            if (NetworkInterface.hasInternet) {
+                retryTimer.triggered();
 
-            submitBtn.submitted = true;
+            } else {
+                errorPopup.errorMessage = deviceController.deviceInternetError();
+                errorPopup.open();
+            }
         }
     }
 
     //! Temp connection to end busy
     Connections {
         target: deviceController.sync
-        enabled: root.visible
+        enabled: root.visible && isBusy
 
         function onInstalledSuccess() {
             isBusy = false;
+            retryTimer.retryCounter = 0;
         }
 
-        function onInstallFailed() {
-            isBusy = false;
-            errorLabel.text = "Please try again!";
+        function onInstallFailed(err : string, needToRetry : bool) {
+            isBusy = needToRetry;
+            errorPopup.errorMessage = err;
+
+            if (needToRetry) {
+                retryTimer.start();
+            }
+
+            if (!needToRetry || (retryTimer.retryCounter % 2 === 0)) {
+                errorPopup.open();
+            }
         }
 
+    }
+
+    InitialFlowErrorPopup {
+        id: errorPopup
+
+        isBusy: root.isBusy
+        deviceController: uiSession.deviceController
+
+        onStopped: {
+            root.isBusy = false;
+            retryTimer.stop();
+        }
+    }
+
+    Timer {
+        id: retryTimer
+
+        property int retryCounter: 0
+
+        interval: 5000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            if (initialSetup) {
+                retryCounter++;
+                deviceController.pushInitialSetupInformation();
+            }
+        }
     }
 
 }

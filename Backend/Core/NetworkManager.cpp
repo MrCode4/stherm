@@ -59,5 +59,7 @@ void NetworkManager::processNetworkReply(QNetworkReply *netReply)
         const QJsonObject errObj = errdoc.object();
         QStringList errMsg = errObj.value("non_field_errors").toVariant().toStringList();
         TRACE << errdoc.toJson().toStdString().c_str();
+
+         netReply->setProperty("server_field_errors", errObj);
     }
 }

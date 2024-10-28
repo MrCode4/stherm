@@ -137,8 +137,11 @@ Item {
                 updateNotificationPopup.open();
             }
         }
+}
+    Connections {
+        target: deviceController.sync
 
-        function onWarrantyReplacementFinished(success: bool) {
+        function onWarrantyReplacementFinished(success: bool, error: string, needToRetry: bool) {
             console.log("WarrantyReplacementFinished", success);
 
             if (success) {

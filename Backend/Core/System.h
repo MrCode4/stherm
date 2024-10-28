@@ -245,8 +245,6 @@ public:
 
     Q_INVOKABLE void fetchServiceTitanInformation();
 
-    Q_INVOKABLE void warrantyReplacement(const QString& oldSN, const QString& newSN);
-
 protected slots:
     void onSerialNumberReady();
 
@@ -315,8 +313,6 @@ signals:
 
     void serviceTitanInformationReady(bool hasError, bool isActive,
                                       QString email, QString zipCode);
-
-    void warrantyReplacementFinished(bool success = false);
 
 private:
     //! verify dounloaded files and prepare to set up.
