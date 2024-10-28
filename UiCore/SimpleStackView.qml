@@ -31,7 +31,7 @@ Item {
     }
 
     function push(page, props) {
-        if (sv.stack.length > 0 && sv.stack[sv.stack.length-1].page == page) {
+        if (sv.stack.length > 0 && sv.stack[sv.stack.length - 1].page == page) {
             return false;
         }
 

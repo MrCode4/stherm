@@ -59,7 +59,7 @@ private slots:
     void checkAndSendSavedResult(bool checkTestId = false);    
 
 private:
-    void scheduleNextCheck(const QTime& checkTime);
+    QDateTime scheduleNextCheck(const QTime& checkTime);
     void prepareStartRunning();
     void checkWarmupOrRun();
     void prepareAndSendApiResult(const QString& act);

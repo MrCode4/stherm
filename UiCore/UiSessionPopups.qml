@@ -36,14 +36,7 @@ Item {
     //!
     property alias errorPopup:              errorPop
 
-    readonly property bool isAnyPopupOpened : exitConfPop.opened
-                                                || schOverlapPop.opened
-                                                || errorPop.opened
-                                                || downloadingPopup.opened
-                                                || updateInterruptionPopup.opened
-                                                || installConfirmation.opened
-                                                || updateNotificationPopup.opened
-                                                || updatePopup.opened
+    readonly property bool isAnyPopupOpened : updateNotificationPopup.opened
                                                 || successPopup.opened
 
 

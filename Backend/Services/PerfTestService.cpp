@@ -105,7 +105,7 @@ PerfTestService::PerfTestService(QObject *parent)
     scheduleNextCheck(QTime::currentTime());
 }
 
-void PerfTestService::scheduleNextCheck(const QTime& checkTime)
+QDateTime PerfTestService::scheduleNextCheck(const QTime& checkTime)
 {
     startTimeLeft(0);
     testTimeLeft(0);
@@ -129,6 +129,7 @@ void PerfTestService::scheduleNextCheck(const QTime& checkTime)
     PERF_LOG <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<"seconds";
     mTimerScheduleWatcher.setInterval(msecsToNextCheck);
     mTimerScheduleWatcher.start();
+    return nextScheduleMark;
 }
 
 void PerfTestService::checkTestEligibility()
@@ -144,8 +145,8 @@ void PerfTestService::checkTestEligibility()
     auto callback = [this](QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError) {
             PERF_LOG <<"CheckTestEligibility API failed, going to retry in 15 minutes";
-            emit eligibilityChecked("Failed due to network issues, will retry in 15 mininutes");
-            scheduleNextCheck(QTime::currentTime().addSecs(PerfTest::TestDuration));
+            auto scheduledTime = scheduleNextCheck(QTime::currentTime().addSecs(PerfTest::TestDuration));
+            emit eligibilityChecked("Failed due to network issues, retry scheduled at " + scheduledTime.toString(DATETIME_FORMAT));
             return;
         }
 
