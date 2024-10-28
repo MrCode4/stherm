@@ -6,7 +6,6 @@
 #include <QTimeZone>
 #include <QTimer>
 
-#include "PerfTestService.h"
 #include "TimezonesDSTMap.h"
 
 #define TDC_COMMAND         "timedatectl"
