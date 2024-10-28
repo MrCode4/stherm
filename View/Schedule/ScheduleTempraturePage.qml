@@ -180,7 +180,7 @@ BasePageView {
                 wrapMode: Text.WordWrap
                 textFormat: Text.RichText
                 horizontalAlignment: Qt.AlignLeft
-                font.pointSize: root.font.pointSize * 0.7
+                font.pointSize: root.font.pointSize * 0.67
             }
 
             Label {
@@ -190,7 +190,7 @@ BasePageView {
                 wrapMode: Text.WordWrap
                 textFormat: Text.RichText
                 horizontalAlignment: Qt.AlignLeft
-                font.pointSize: root.font.pointSize * 0.7
+                font.pointSize: root.font.pointSize * 0.67
             }
         }
 
