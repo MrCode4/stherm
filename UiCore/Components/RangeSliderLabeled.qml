@@ -37,12 +37,14 @@ LimitedRangeSlider {
             bottom: leftHandlerLaberOnTop ? parent.top : undefined
             horizontalCenter: parent.horizontalCenter
             bottomMargin: 6
+            topMargin: 6
         }
         parent: _root.first.handle
         font.pointSize: _root.font.pointSize * 0.9
         textFormat: Text.RichText
         lineHeight: 0.5
-        text: leftLabelPrefix + Number(_root.first.value).toLocaleString(locale, "f", 0) + labelSuffix
+        text: leftHandlerLaberOnTop ? leftLabelPrefix + Number(_root.first.value).toLocaleString(locale, "f", 0) + labelSuffix:
+                                      Number(_root.first.value).toLocaleString(locale, "f", 0) + labelSuffix + leftLabelPrefix
     }
 
     //! Right label
@@ -51,13 +53,14 @@ LimitedRangeSlider {
             top: rightHandlerLaberOnTop ? undefined : parent.bottom
             bottom: rightHandlerLaberOnTop ? parent.top : undefined
             horizontalCenter: parent.horizontalCenter
-            margins: 6
+            margins: 4
         }
         parent: _root.second.handle
         font.pointSize: _root.font.pointSize * 0.9
         textFormat: Text.RichText
         lineHeight: 0.5
-        text: rightLabelPrefix + Number(_root.second.value).toLocaleString(locale, "f", 0) + labelSuffix
+        text: rightHandlerLaberOnTop ? rightLabelPrefix + Number(_root.second.value).toLocaleString(locale, "f", 0) + labelSuffix :
+                                       Number(_root.second.value).toLocaleString(locale, "f", 0) + labelSuffix + rightLabelPrefix
     }
 
     //! Min and Max value labels
