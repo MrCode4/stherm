@@ -233,6 +233,27 @@ InitialSetupBasePageView {
             root.isBusy = false;
             retryTimer.stop();
         }
+
+        Text {
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.margins: 10
+            anchors.bottomMargin: 35
+
+            visible: !isBusy
+            text: qsTr("Skip")
+            color: "#43E0F8"
+
+            TapHandler {
+                enabled: !isBusy
+
+                onTapped: {
+                    // Skip
+                    appModel.serviceTitan.isSTManualMode = true;
+                    nextPage();
+                }
+            }
+        }
     }
 
     /* Functions
