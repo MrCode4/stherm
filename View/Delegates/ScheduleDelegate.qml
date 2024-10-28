@@ -98,7 +98,7 @@ ItemDelegate {
                     if (uiSession && schedule && schedule.enable !== checked) {
                         if (checked) {
                             //! First check the schedule compability
-                            if (schedulesController.checkScheduleCompatibility(schedule, uiSession.appModel.systemSetup.systemMode)) {
+                            if (schedulesController.isScheduleIncompatible(schedule, uiSession.appModel.systemSetup.systemMode)) {
                                 //! Show an error popup
                                 uiSession.popUps.errorPopup.errorMessage = "Incompatible system mode. The schedule can not be activated.";
                                 uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup);

@@ -618,10 +618,8 @@ QtObject {
 
     //! Find schedules that are incompatible with the current system mode.
     function findIncompatibleSchedules(checkWithSystemMode : int) {
-        var incompatibleSchedules = [];
-
-        incompatibleSchedules = device.schedules.filter(schedule =>
-                                                        checkScheduleCompatibility(schedule, checkWithSystemMode) &&
+        var incompatibleSchedules = device.schedules.filter(schedule =>
+                                                        isScheduleIncompatible(schedule, checkWithSystemMode) &&
                                                         schedule.enable);
 
         return incompatibleSchedules;
@@ -635,7 +633,7 @@ QtObject {
     //! and will remain active.
     //! In the vacation and off mode schedule do not function so we keep the enabled schedule.
     //! Return true if the schedule is incompatible with the checkWithSystemMode.
-    function checkScheduleCompatibility(schedule: ScheduleCPP, checkWithSystemMode : int) : bool {
+    function isScheduleIncompatible(schedule: ScheduleCPP, checkWithSystemMode : int) : bool {
 
         return   schedule.systemMode !== checkWithSystemMode &&
                 ((checkWithSystemMode === AppSpec.Cooling && schedule.systemMode === AppSpec.Heating) ||
