@@ -184,7 +184,7 @@ ApplicationWindow {
         id: uiSessionId
         popupLayout: popUpLayoutId
         toastManager:toastManagerId
-        onIsAnyPopupVisibleChanged: window.updatePerfTestServiceState()
+        onIsAnyPopupVisibleChanged: window.postponeOrResumePerfTest()
     }
 
     StackLayout {
@@ -205,7 +205,7 @@ ApplicationWindow {
                 id: mainView
                 anchors.fill: parent
                 uiSession: uiSessionId
-                onStackViewDepthChanged: window.updatePerfTestServiceState()
+                onStackViewDepthChanged: window.postponeOrResumePerfTest()
             }
 
             Behavior on contentY {
@@ -239,7 +239,7 @@ ApplicationWindow {
         uiSession: uiSessionId
         onOpened: {
             uiSessionId.showHome();
-            window.updatePerfTestServiceState();
+            window.postponeOrResumePerfTest();
         }
     }
 
@@ -250,7 +250,7 @@ ApplicationWindow {
                  (uiSession.appModel.lock.isLock == false || _screenSaver.visible)
     }
 
-    function updatePerfTestServiceState() {
+    function postponeOrResumePerfTest() {
         console.log('Stack-View-Depth-and-Popup', _screenSaver.visible, uiSessionId.isAnyPopupVisible, mainView.stackViewDepth);
         if (_screenSaver.opened == false && (mainView.stackViewDepth > 1 || uiSessionId.isAnyPopupVisible)) {
             let message = mainView.stackViewDepth > 1 ?
