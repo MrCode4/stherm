@@ -71,6 +71,7 @@ public:
 
     //!
     Q_INVOKABLE QVariantMap getMainData();
+    Q_INVOKABLE double getTemperature();
 
     //!
     Q_INVOKABLE void writeTestResult(const QString &fileName, const QString& testName, const QString& testResult, const QString& description="");
@@ -187,10 +188,15 @@ public:
     Q_INVOKABLE void switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType);
 
     Q_INVOKABLE bool isTestsPassed();
+    void doPerfTest(AppSpecCPP::SystemMode mode);
+    void revertPerfTest();
 
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
+
+    void tempSchemeStateChanged(bool started);
+    void humiditySchemeStateChanged(bool started);
 
     //! Send alert to ui
     void alert(STHERM::AlertLevel alertLevel,
@@ -208,6 +214,7 @@ Q_SIGNALS:
     void snModeChanged(int snMode);
 
     void startModeChanged(int startMode);
+    void actualModeStarted(AppSpecCPP::SystemMode mode);
 
     void tiVersionChanged();
     void nrfVersionChanged();

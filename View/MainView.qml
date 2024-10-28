@@ -14,6 +14,7 @@ Item {
     /* Property Declarations
      * ****************************************************************************************/
     property UiSession  uiSession
+    readonly property int stackViewDepth: _mainStackView.depth
 
     //! unlockPage, use property to avoid delete the page in pop of stack view.
     property UnlockPage unlockPage: UnlockPage {

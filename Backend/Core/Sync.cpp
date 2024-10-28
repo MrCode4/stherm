@@ -1,4 +1,7 @@
 #include "Sync.h"
+#include "LogHelper.h"
+#include "Config.h"
+#include "DeviceInfo.h"
 
 #include <QImage>
 #include <QUrl>
@@ -10,7 +13,6 @@
  * Network information
  * ************************************************************************************************/
 namespace NUVE {
-static QString cBaseUrl = API_SERVER_BASE_URL;
 const QString cSerialNumberSetting = QString("NUVE/SerialNumber");
 const QString cHasClientSetting = QString("NUVE/SerialNumberClient");
 const QString cContractorSettings = QString("NUVE/Contractor");
@@ -32,10 +34,8 @@ inline QDateTime updateTimeStringToTime(const QString &timeStr) {
 
 
 Sync::Sync(QObject *parent)
-    : RestApiExecutor(parent)
+    : DevApiExecutor(parent)
     , mHasClient(false)
-    , m_fetchingUserData(false)
-    , m_pushingLockState(false)
 {
     QSettings setting;
 
@@ -45,8 +45,6 @@ Sync::Sync(QObject *parent)
 #endif
 
     mContractorInfo = setting.value(cContractorSettings).toMap();
-
-    cBaseUrl = qEnvironmentVariable("API_SERVER_BASE_URL", API_SERVER_BASE_URL);
 
     connect(this, &Sync::contractorInfoReady, this, [this]() {
         QSettings setting;
@@ -63,45 +61,27 @@ void Sync::setSerialNumber(const QString &serialNumber)
         return;
     }
 
-    mHasClient            = true;
+    mHasClient = true;
     // Update SN for get settings
-    mSerialNumber         = serialNumber;
+    mSerialNumber = serialNumber;
     // Force to update with new settings
     mLastPushTime = QDateTime();
     mAutoModeLastPushTime = QDateTime();
     // Fetch with new serial number
     emit serialNumberChanged();
+
+    Device->updateSerialNumber(serialNumber, true);
 }
 
-void Sync::setUID(cpuid_t accessUid) { mSystemUuid = accessUid; }
+void Sync::setUID(cpuid_t accessUid)
+{
+    mSystemUuid = accessUid;
+    Device->uid(accessUid);
+}
+
 QString Sync::getSerialNumber() const { return mSerialNumber;}
 bool Sync::hasClient() const { return mHasClient; }
 QVariantMap Sync::getContractorInfo() const { return mContractorInfo; }
-
-void Sync::setApiAuth(QNetworkRequest& request)
-{
-    RestApiExecutor::setApiAuth(request);
-    auto authData = mSystemUuid + mSerialNumber.toStdString();
-    // Get error: QNetworkReply::ProtocolFailure "Server is unable to maintain
-    // the header compression context for the connection"
-    request.setRawHeader("Authorization", "Bearer " + QCryptographicHash::hash(authData, QCryptographicHash::Sha256).toHex());
-}
-
-QJsonObject Sync::prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const
-{
-    const QJsonObject rootObject = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
-    QJsonObject data;
-
-    if (rootObject.contains("data")) {
-        data = rootObject.value("data").toObject();
-    }
-    else {
-        TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object:" << rootObject;
-    }
-
-    return data;
-}
-
 
 void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 {
@@ -169,6 +149,7 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             setting.setValue(cHasClientSetting, mHasClient);
             setting.setValue(cSerialNumberSetting, mSerialNumber);
 #endif
+            Device->updateSerialNumber(mSerialNumber, mHasClient);
         }
         else {
             if (reply->error() == QNetworkReply::NoError) {
@@ -187,7 +168,7 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
         }
     };
 
-    auto netReply = callGetApi(cBaseUrl + QString("api/sync/getSn?uid=%0").arg(uid), callback, false);
+    auto netReply = callGetApi(baseUrl() + QString("api/sync/getSn?uid=%0").arg(uid), callback, false);
 
     if (netReply) {
         // block if the first serial is invalid or client is not set yet
@@ -246,7 +227,7 @@ bool Sync::fetchContractorInfo()
         }
     };
 
-    return callGetApi(cBaseUrl + QString("api/sync/getContractorInfo?sn=%0").arg(mSerialNumber), callback) != nullptr;
+    return callGetApi(baseUrl() + QString("api/sync/getContractorInfo?sn=%0").arg(mSerialNumber), callback) != nullptr;
 }
 
 void Sync::fetchContractorLogo(const QString &url)
@@ -348,7 +329,7 @@ bool Sync::fetchSettings()
         fetchAutoModeSetings(success);
     };
 
-    auto reply = callGetApi(cBaseUrl + QString("api/sync/getSettings?sn=%0").arg(mSerialNumber), callback);
+    auto reply = callGetApi(baseUrl() + QString("api/sync/getSettings?sn=%0").arg(mSerialNumber), callback);
     if (reply) {
         reply->setProperty("noContentLog", true);
     }
@@ -393,7 +374,7 @@ bool Sync::fetchAutoModeSetings(bool success)
         emit settingsFetched(success && !data.isEmpty());
     };
 
-    return callGetApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), callback) != nullptr;
+    return callGetApi(baseUrl() + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), callback) != nullptr;
 }
 
 bool Sync::fetchMessages()
@@ -407,7 +388,7 @@ bool Sync::fetchMessages()
         emit messagesLoaded();
     };
 
-    return callGetApi(cBaseUrl + QString("api/sync/messages?sn=%0").arg(mSerialNumber), callback) != nullptr;
+    return callGetApi(baseUrl() + QString("api/sync/messages?sn=%0").arg(mSerialNumber), callback) != nullptr;
 }
 
 void Sync::fetchWirings(const QString& uid)
@@ -416,7 +397,7 @@ void Sync::fetchWirings(const QString& uid)
         emit wiringReady();
     };
 
-    callGetApi(cBaseUrl + QString("api/sync/getWirings?uid=%0").arg(uid), callback);
+    callGetApi(baseUrl() + QString("api/sync/getWirings?uid=%0").arg(uid), callback);
 }
 
 void Sync::fetchUserData()
@@ -438,19 +419,7 @@ void Sync::fetchUserData()
     };
 
     fetchingUserData(true);
-    callGetApi(cBaseUrl + QString("api/sync/client?sn=%0").arg(mSerialNumber), callback);
-}
-
-QString Sync::baseURL()
-{
-    QString url = cBaseUrl;
-
-    if (!url.endsWith('/')) {
-        qWarning() << "sync base url is not valid" << url;
-        url += '/';
-    }
-
-    return url;
+    callGetApi(baseUrl() + QString("api/sync/client?sn=%0").arg(mSerialNumber), callback);
 }
 
 void Sync::pushLockState(const QString& pin, bool lock)
@@ -471,7 +440,7 @@ void Sync::pushLockState(const QString& pin, bool lock)
     auto endpoint = QString("api/sync/screen-%1?sn=%2").arg(lock ? "lock" : "unlock").arg(mSerialNumber);
     QJsonObject requestBody;
     requestBody["pin"] = pin;
-    callPostApi(cBaseUrl + endpoint, QJsonDocument(requestBody).toJson(), callback);
+    callPostApi(baseUrl() + endpoint, QJsonDocument(requestBody).toJson(), callback);
 }
 
 QByteArray Sync::preparePacket(QString className, QString method, QJsonArray params)
@@ -494,7 +463,7 @@ void Sync::requestJob(QString type)
     QJsonArray paramsArray;
     paramsArray.append(mSerialNumber);
     paramsArray.append(type);
-    callPostApi(cBaseUrl + "engine/index.php", preparePacket("sync", "requestJob", paramsArray));
+    callPostApi(baseUrl() + "engine/index.php", preparePacket("sync", "requestJob", paramsArray));
 }
 
 void Sync::pushSettingsToServer(const QVariantMap &settings)
@@ -524,7 +493,7 @@ void Sync::pushSettingsToServer(const QVariantMap &settings)
         }
     };
 
-    callPostApi(cBaseUrl + "api/sync/update", QJsonDocument(reqData).toJson(), callback);
+    callPostApi(baseUrl() + "api/sync/update", QJsonDocument(reqData).toJson(), callback);
 }
 
 void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high)
@@ -559,7 +528,7 @@ void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &a
         }
     };
 
-    callPostApi(cBaseUrl + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), QJsonDocument(reqData).toJson(), callback);
+    callPostApi(baseUrl() + QString("api/sync/autoMode?sn=%0").arg(mSerialNumber), QJsonDocument(reqData).toJson(), callback);
 }
 
 void Sync::fetchServiceTitanInformation()
@@ -589,12 +558,15 @@ void Sync::fetchServiceTitanInformation()
 void Sync::getJobIdInformation(const QString& jobID)
 {
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+        QString err = getReplyError(reply);
 
-        emit jobInformationReady(!data.isEmpty(), data.toVariantMap());
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << err;
+
+        auto isNeedRetry = isNeedRetryNetRequest(reply);
+        emit jobInformationReady(!data.isEmpty(), data.toVariantMap(), err, data.isEmpty() && reply->error() != QNetworkReply::UnknownContentError);
     };
 
-    auto netReply =  callGetApi(cBaseUrl + QString("/api/technicians/service-titan/customer/%0?sn=%1").arg(jobID, mSerialNumber), callback);
+    auto netReply =  callGetApi(baseUrl() + QString("/api/technicians/service-titan/customer/%0?sn=%1").arg(jobID, mSerialNumber), callback);
     if (!netReply) {
         TRACE << "call get api canceled for getJobIdInformation";
         //        emit jobInformationReady(false, QVariantMap());
@@ -606,11 +578,15 @@ void Sync::getCustomerInformationManual(const QString &email)
     auto callbackCustomer = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
 
+        auto err = getReplyError(reply);
+
         // data can be empty when email is new
-        emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap());
+        auto isNeedRetry = isNeedRetryNetRequest(reply);
+        emit customerInfoReady(reply->error() == QNetworkReply::NoError, data.toVariantMap(), err, isNeedRetry);
     };
 
-    auto netReply =  callGetApi(cBaseUrl + QString("/api/customer?email=%0").arg(email), callbackCustomer);
+    auto api = prepareUrlWithEmail(baseUrl() + QString("/api/customer"), email);
+    auto netReply =  callGetApi(api, callbackCustomer);
     if (!netReply) {
         TRACE << "call get api canceled for customer";
         //        emit customerInfoReady(false, QVariantMap());
@@ -620,12 +596,13 @@ void Sync::getCustomerInformationManual(const QString &email)
 void Sync::getAddressInformationManual(const QString &zipCode)
 {
     auto callbackZip = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Job Information error: " << reply->errorString();
+        TRACE_CHECK(reply->error() != QNetworkReply::NoError) << "Address Information error: " << reply->errorString();
 
-        emit zipCodeInfoReady(!data.isEmpty(), data.toVariantMap());
+        auto isNeedRetry = isNeedRetryNetRequest(reply);
+        emit zipCodeInfoReady(!data.isEmpty(), data.toVariantMap(), isNeedRetry);
     };
 
-    auto netReply =  callGetApi(cBaseUrl + QString("/api/zipCode?code=%0").arg(zipCode), callbackZip);
+    auto netReply =  callGetApi(baseUrl() + QString("/api/zipCode?code=%0").arg(zipCode), callbackZip);
     if (!netReply) {
         TRACE << "call get api canceled for zip";
         //        emit zipCodeInfoReady(false, QVariantMap());
@@ -644,13 +621,17 @@ void Sync::installDevice(const QVariantMap &data)
             emit installedSuccess();
         }
         else {
-            emit installFailed();
+
+            auto err = getReplyError(reply);
+
+            auto isNeedRetry = isNeedRetryNetRequest(reply);
+            emit installFailed(err, isNeedRetry);
             TRACE << rawData << data;
         }
     };
 
     TRACE << QJsonDocument(reqData).toJson();
-    callPostApi(cBaseUrl + "/api/technicians/device/install", QJsonDocument(reqData).toJson(), callback);
+    callPostApi(baseUrl() + "/api/technicians/device/install", QJsonDocument(reqData).toJson(), callback);
 }
 
 void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
@@ -661,28 +642,32 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
         setting.setValue(cWarrantySerialNumberKey, oldSN);
 
         auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+            QString err;
             bool success = false;
             if (reply->error() == QNetworkReply::NoError) {
                 // get the last update
                 auto message = data.value("message").toString();
                 TRACE << "warrantyReplacement message:" << message;
                 success = true;
+
+            } else {
+                err = getReplyError(reply);
             }
 
-            emit warrantyReplacementFinished(success);
+            emit warrantyReplacementFinished(success, err, reply->error() != QNetworkReply::UnknownContentError);
         };
 
         QJsonObject reqData;
         reqData["old_sn"] = oldSN;
         reqData["new_sn"] = newSN;
 
-        auto netReply =  callPostApi(cBaseUrl + QString("/api/technicians/warranty"), QJsonDocument(reqData).toJson(), callback);
+        auto netReply =  callPostApi(baseUrl() + QString("/api/technicians/warranty"), QJsonDocument(reqData).toJson(), callback);
         if (!netReply) {
             TRACE << "call get api canceled for warranty";
             //            emit warrantyReplacementFinished(false);
         }
     } else {
-        emit warrantyReplacementFinished(false);
+        emit warrantyReplacementFinished(false, QString("The old and new serial numbers are the same."));
     }
 }
 
@@ -695,7 +680,7 @@ void Sync::pushAlertToServer(const QVariantMap &settings)
     QJsonArray requestDataObjAlertArr;
     requestDataObjAlertArr.append(requestDataObjAlert);
     requestDataObj["alerts"] = requestDataObjAlertArr;
-    callPostApi(cBaseUrl + "api/sync/alerts", QJsonDocument(requestDataObj).toJson());
+    callPostApi(baseUrl() + "api/sync/alerts", QJsonDocument(requestDataObj).toJson());
 }
 
 void Sync::forgetDevice()
@@ -709,6 +694,7 @@ void Sync::forgetDevice()
     setting.setValue(cHasClientSetting, mHasClient);
     setting.setValue(cSerialNumberSetting, mSerialNumber);
     setting.setValue(cContractorSettings, mContractorInfo);
+    Device->reset();
 }
 
 void Sync::clearSchedule(const int &scheduleID)
@@ -727,7 +713,7 @@ void Sync::clearSchedule(const int &scheduleID)
         emit scheduleCleared(scheduleID, success);
     };
 
-    auto reply = callPostApi(cBaseUrl + QString("api/sync/clearSchedules?sn=%0&id=%1").arg(mSerialNumber, QString::number(scheduleID)), QJsonDocument().toJson(), callback);
+    auto reply = callPostApi(baseUrl() + QString("api/sync/clearSchedules?sn=%0&id=%1").arg(mSerialNumber, QString::number(scheduleID)), QJsonDocument().toJson(), callback);
     if (reply) {// returned response has no data object and values are in root
         reply->setProperty("noDataObject", true);
     }
@@ -748,7 +734,7 @@ void Sync::editSchedule(const int &scheduleID, const QVariantMap &schedule)
         }
     };
 
-    auto reply = callPutApi(cBaseUrl + QString("api/sync/schedules/%0").arg(QString::number(scheduleID)), QJsonDocument(reqData).toJson(), callback);
+    auto reply = callPutApi(baseUrl() + QString("api/sync/schedules/%0").arg(QString::number(scheduleID)), QJsonDocument(reqData).toJson(), callback);
     if (reply) {// returned response has no data object and values are in root
         reply->setProperty("noDataObject", true);
     }
@@ -769,7 +755,7 @@ void Sync::addSchedule(const QString &scheduleUid, const QVariantMap &schedule)
         }
     };
 
-    auto reply = callPostApi(cBaseUrl + QString("api/sync/schedules"), QJsonDocument(reqData).toJson(), callback);
+    auto reply = callPostApi(baseUrl() + QString("api/sync/schedules"), QJsonDocument(reqData).toJson(), callback);
     if (reply) {// returned response has no data object and values are in root
         reply->setProperty("noDataObject", true);
     }
@@ -788,7 +774,7 @@ void Sync::getOutdoorTemperature() {
         }
     };
 
-    auto reply = callGetApi(cBaseUrl + QString("/api/weather?sn=%0").arg(mSerialNumber), callback);
+    auto reply = callGetApi(baseUrl() + QString("/api/weather?sn=%0").arg(mSerialNumber), callback);
     if (reply) {// returned response has no data object and values are in root
         reply->setProperty("noDataObject", true);
     }

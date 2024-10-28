@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Templates as T
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 import Ronia
 import Stherm
@@ -15,6 +16,8 @@ I_PopUp {
      * ****************************************************************************************/
     signal accepted()
     signal rejected()
+    signal buttonClicked(button: int)
+
 
     /* Property declaration
      * ****************************************************************************************/
@@ -30,6 +33,13 @@ I_PopUp {
     //! Reject button text
     property string rejectText: qsTr("No")
 
+    //! Apply button text to edit for any action
+    property string applyText: qsTr("Apply")
+
+    //! Support the `No`, `Yes`, `Cancel`, `Apply` and `Discard` for now
+    //! `Cancel`, `Apply` and `Discard` are ButtonInverted and the others are Button type
+    //! TODO: Supports two buttons, UI should be modified for more than two bottons
+    property int buttons : MessageDialog.Yes | MessageDialog.No
 
     /* Object properties
      * ****************************************************************************************/
@@ -71,8 +81,11 @@ I_PopUp {
                 Layout.fillWidth: true
                 text: acceptText
 
+                visible: (buttons & MessageDialog.Yes) === MessageDialog.Yes
+
                 onClicked: {
                     accepted();
+                    buttonClicked(MessageDialog.Yes);
                     close();
                 }
             }
@@ -80,9 +93,47 @@ I_PopUp {
             Button {
                 Layout.fillWidth: true
                 text: rejectText
+                visible: (buttons & MessageDialog.No) === MessageDialog.No
 
                 onClicked: {
                     rejected();
+                    buttonClicked(MessageDialog.No);
+                    close();
+                }
+            }
+
+            ButtonInverted {
+                Layout.fillWidth: true
+                text: "Cancel"
+
+                visible: (buttons & MessageDialog.Cancel) === MessageDialog.Cancel
+
+                onClicked: {
+                    buttonClicked(MessageDialog.Cancel);
+                    close();
+                }
+            }
+
+            ButtonInverted {
+                Layout.fillWidth: true
+                text: "Discard"
+                textColor: "#CB0C0A"
+                visible: (buttons & MessageDialog.Discard) === MessageDialog.Discard
+
+                onClicked: {
+                    buttonClicked(MessageDialog.Discard);
+                    close();
+                }
+            }
+
+            ButtonInverted {
+                Layout.fillWidth: true
+                text: applyText
+                textColor: "#CB0C0A"
+                visible: (buttons & MessageDialog.Apply) === MessageDialog.Apply
+
+                onClicked: {
+                    buttonClicked(MessageDialog.Apply);
                     close();
                 }
             }

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 import Ronia
 import Stherm
@@ -26,7 +27,7 @@ BasePageView {
         ToolButton {
             visible: _newSchedulePages.depth > 1
             contentItem: RoniaTextIcon {
-                text: "\uf060"
+                text: FAIcons.arrowLeft
             }
 
             onClicked: {
@@ -34,7 +35,11 @@ BasePageView {
             }
         }
     }
-    backButtonTextIcon: _newSchedulePages.depth > 1 ? "\uf00d" : "\uf060"
+    backButtonTextIcon: _newSchedulePages.depth > 1 ? FAIcons.xmark : FAIcons.arrowLeft
+
+    backButtonCallback: function() {
+        skipConfirmPopup.open();
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -250,6 +255,22 @@ BasePageView {
             uiSession: root.uiSession
             schedule: _internal.newSchedule
         }
+    }
+
+    property ConfirmPopup skipConfirmPopup: ConfirmPopup {
+        message: "Discard the changes?"
+        detailMessage: "Are you sure you want to discard the changes?"
+
+        visible: false
+        icon: FAIcons.triangleExclamation
+        iconWeight: FAIcons.Light
+        buttons: MessageDialog.Cancel | MessageDialog.Discard
+
+        onButtonClicked: button => {
+                             if (button === MessageDialog.Discard) {
+                                 tryGoBack();
+                             }
+                         }
     }
 
     /* Methods

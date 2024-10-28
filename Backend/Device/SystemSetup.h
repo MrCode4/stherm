@@ -7,10 +7,12 @@
 #include "SystemAccessories.h"
 #include "UtilityHelper.h"
 #include "QtQuickStream/Core/QSObjectCpp.h"
+#include "Property.h"
 
 class SystemSetup : public QSObjectCpp
 {
     Q_OBJECT
+    QML_ELEMENT
 
     Q_PROPERTY(SystemAccessories* systemAccessories MEMBER systemAccessories NOTIFY systemAccessoriesChanged FINAL)
 
@@ -32,13 +34,15 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
-    QML_ELEMENT
+    PROPERTY_PRI_DEF_VAL(bool, isPerfTestRunning, false)
 
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
 
 public:
     AppSpecCPP::SystemType systemType;
+
+    void updateMode(AppSpecCPP::SystemMode mode);
 
     // 0: cooling, 1: heating
     int heatPumpOBState;
@@ -63,6 +67,13 @@ public:
     //! at which the heat pump becomes less efficient than the furnace.
     //! Celsius
     double dualFuelThreshod;
+
+    void setupPerfTest(AppSpecCPP::SystemMode mode);
+    void revertPerfTest();
+
+private:
+    AppSpecCPP::SystemMode mModeBeforePerfTest = AppSpecCPP::Off;
+    bool mVacationBeforePerfTest = false;
 
 signals:
     void systemTypeChanged();

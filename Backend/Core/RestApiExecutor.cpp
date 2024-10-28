@@ -1,8 +1,8 @@
 #include "RestApiExecutor.h"
-
 #include "LogHelper.h"
 
 #include <QNetworkAccessManager>
+#include <QUrl>
 
 RestApiExecutor::RestApiExecutor(QObject *parent)
     : HttpExecutor(parent)
@@ -35,9 +35,14 @@ QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCall
     else {
         mCallbacks.insert(key, callback);
         auto reply = get(prepareApiRequest(endpoint, setAuth));
-        reply->ignoreSslErrors();
-        reply->setProperty("endpoint", endpoint);
-        reply->setProperty("isJson", true);
+        if (reply) {
+            reply->ignoreSslErrors();
+            reply->setProperty("endpoint", endpoint);
+            reply->setProperty("isJson", true);
+        }
+        else {
+            mCallbacks.remove(key);
+        }
         return reply;
     }
 }
@@ -51,8 +56,13 @@ QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByte
     else {
         mCallbacks.insert(key, callback);
         auto reply = post(prepareApiRequest(endpoint, setAuth), postData);
-        reply->setProperty("endpoint", endpoint);
-        reply->setProperty("isJson", true);
+        if (reply) {
+            reply->setProperty("endpoint", endpoint);
+            reply->setProperty("isJson", true);
+        }
+        else {
+            mCallbacks.remove(key);
+        }
         return reply;
     }
 }
@@ -79,12 +89,17 @@ QNetworkReply* RestApiExecutor::downloadFile(const QString &url, ResponseCallbac
         return nullptr;
     }
     else {
+        mCallbacks.insert(key, callback);
         QNetworkRequest request(url);
         if (setAuth) setApiAuth(request);
         QNetworkReply *reply = get(request);
-        reply->setProperty("isJson", jsonFile);
-        reply->setProperty("endpoint", url);
-        mCallbacks.insert(key, callback);
+        if (reply) {
+            reply->setProperty("isJson", jsonFile);
+            reply->setProperty("endpoint", url);
+        }
+        else {
+            mCallbacks.remove(key);
+        }
         return reply;
     }
 }
@@ -136,4 +151,41 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
     } else {
         TRACE << "Can not find the callback: " << key;
     }
+}
+
+QString RestApiExecutor::prepareUrlWithEmail(const QString &baseUrl, const QString &email) {
+    QUrl url(baseUrl);
+
+    QUrlQuery query;
+    query.addQueryItem("email", QUrl::toPercentEncoding(email));
+
+    url.setQuery(query);
+    return url.toString();
+}
+
+QString RestApiExecutor::getReplyError(const QNetworkReply *reply) {
+    QString err = reply->error() == QNetworkReply::UnknownContentError ? reply->property("server_field_errors").toJsonObject().value("message").toString() : "";
+
+    if (err.isEmpty()) {
+        err = reply->errorString();
+        err.remove(reply->url().toString());
+    }
+
+    return err;
+}
+
+bool RestApiExecutor::isNeedRetryNetRequest(const QNetworkReply *reply) {
+    auto replyError = reply->error();
+
+    bool isNeedRetry = replyError != QNetworkReply::NoError &&
+                       replyError != QNetworkReply::ContentAccessDenied &&
+                       replyError != QNetworkReply::ContentOperationNotPermittedError &&
+                       replyError != QNetworkReply::ContentNotFoundError &&
+                       replyError != QNetworkReply::AuthenticationRequiredError &&
+                       replyError != QNetworkReply::ContentReSendError &&
+                       replyError != QNetworkReply::ContentConflictError &&
+                       replyError != QNetworkReply::ContentGoneError &&
+                       replyError != QNetworkReply::UnknownContentError;
+
+    return isNeedRetry;
 }

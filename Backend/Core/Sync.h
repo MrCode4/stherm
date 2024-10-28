@@ -4,8 +4,8 @@
 #include <QtNetwork>
 #include <QQmlEngine>
 
+#include "DevApiExecutor.h"
 #include "nuve_types.h"
-#include "RestApiExecutor.h"
 #include "Property.h"
 
 /*! ***********************************************************************************************
@@ -13,14 +13,14 @@
  * ************************************************************************************************/
 
 namespace NUVE {
-class Sync : public RestApiExecutor
+class Sync : public DevApiExecutor
 {
     Q_OBJECT
     QML_ELEMENT
 
-    //! useful for showing busy indicator when needed
-    PROPERTY_PRI(bool, fetchingUserData)
-    PROPERTY_PRI(bool, pushingLockState)
+    PROPERTY_PRI_DEF_VAL(bool, fetchingUserData, false)
+    PROPERTY_PRI_DEF_VAL(bool, pushingLockState, false)
+
 public:
     Sync(QObject *parent = nullptr);
 
@@ -43,8 +43,6 @@ public:
 
     Q_INVOKABLE void fetchUserData();
 
-    Q_INVOKABLE QString baseURL();
-
     Q_INVOKABLE void pushLockState(const QString& pin, bool lock);
 
     void pushSettingsToServer(const QVariantMap &settings);
@@ -57,7 +55,7 @@ public:
 
     void fetchServiceTitanInformation();
 
-    void warrantyReplacement(const QString& oldSN, const QString& newSN);
+    Q_INVOKABLE void warrantyReplacement(const QString& oldSN, const QString& newSN);
 
     //! Get job information with the job id
     Q_INVOKABLE void getJobIdInformation(const QString &jobID);
@@ -110,7 +108,7 @@ signals:
     void pushFailed();
 
     void installedSuccess();
-    void installFailed();
+    void installFailed(QString err, bool needToRetry);
 
     void autoModePush(bool isSuccess);
 
@@ -127,12 +125,12 @@ signals:
 
     //! TODO: send new data to device controller
     //! maybe rename to warrantyReplacementDataReady
-    void warrantyReplacementFinished(bool success = false);
+    void warrantyReplacementFinished(bool success = false, QString error = QString(), bool needToRetry = false);
 
-    void jobInformationReady(bool success, QVariantMap data);
+    void jobInformationReady(bool success, QVariantMap data, QString error, bool needToRetry = false);
 
-    void zipCodeInfoReady(bool success, QVariantMap data);
-    void customerInfoReady(bool success, QVariantMap data);
+    void zipCodeInfoReady(bool success, QVariantMap data, bool needToRetry = false);
+    void customerInfoReady(bool success, QVariantMap data,  QString error, bool needToRetry = false);
 
     void outdoorTemperatureReady(bool success = false, double temp = -1.0);
 
@@ -146,10 +144,6 @@ private slots:
 
 private:
     QByteArray preparePacket(QString className, QString method, QJsonArray params);
-
-protected:
-    void setApiAuth(QNetworkRequest& request) override;
-    QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const override;
 
 private:
     bool mHasClient;

@@ -33,6 +33,8 @@ Popup {
     //! Icon of popup: this should be a font-awesome icon
     property string                     icon:               ""
 
+    property int                        iconWeight:         FAIcons.Solid
+
     //! Popup content item
     default property list<QtObject>     contents
 
@@ -96,7 +98,7 @@ Popup {
                 }
 
                 Component.onCompleted: {
-                    parent.labelMargin = Qt.binding(() => width);
+                    parent.labelMargin = Qt.binding(() => visible ? width : 0);
                 }
             }
         }
@@ -107,6 +109,7 @@ Popup {
             visible: Boolean(icon)
             font.pointSize: Qt.application.font.pointSize * 2.4
             text: icon
+            font.weight: iconWeight
         }
 
         //! Content

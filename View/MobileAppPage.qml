@@ -61,7 +61,7 @@ BasePageView {
                 Component.onCompleted: fetchUserData()
 
                 function fetchUserData() {
-                    baseURL = deviceController?.deviceControllerCPP?.sync.baseURL();
+                    baseURL = deviceController?.deviceControllerCPP?.sync.baseUrl;
                     deviceController?.deviceControllerCPP?.sync.fetchUserData();
                 }
             }

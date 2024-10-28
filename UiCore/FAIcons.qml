@@ -3,6 +3,13 @@ pragma Singleton
 import QtQuick
 
 QtObject {
+    enum FontWeight {
+        Thin    = 100,
+        Regular = 400,
+        Light   = 300,
+        Solid   = 900
+    }
+
     readonly property string triangleExclamation:               "\uf071"
     readonly property string bell:                              "\uf0f3"
     readonly property string xmark:                             "\uf00d"
@@ -50,4 +57,6 @@ QtObject {
     readonly property string message_middle:                    "\ue1e1"
     readonly property string sun_bright:                        "\ue28f"
     readonly property string envelope:                          "\uf0e0"
+    readonly property string trashCan:                          "\uf2ed"
+    readonly property string arrowLeft:                         "\uf060"
 }

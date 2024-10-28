@@ -37,12 +37,12 @@ void NetworkManager::clearCache()
 
 QNetworkReply* NetworkManager::get(const QNetworkRequest& request)
 {
-    return mNetManager->get(request);
+    return isEnable() ? mNetManager->get(request) : nullptr;
 }
 
 QNetworkReply* NetworkManager::post(const QNetworkRequest& request, const QByteArray& data)
 {
-    return mNetManager->post(request, data);
+    return isEnable() ? mNetManager->post(request, data) : nullptr;
 }
 
 QNetworkReply* NetworkManager::put(const QNetworkRequest& request, const QByteArray& data)
@@ -59,5 +59,7 @@ void NetworkManager::processNetworkReply(QNetworkReply *netReply)
         const QJsonObject errObj = errdoc.object();
         QStringList errMsg = errObj.value("non_field_errors").toVariant().toStringList();
         TRACE << errdoc.toJson().toStdString().c_str();
+
+         netReply->setProperty("server_field_errors", errObj);
     }
 }

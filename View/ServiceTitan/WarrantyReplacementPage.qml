@@ -14,19 +14,50 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
-    property System system:     deviceController?.deviceControllerCPP?.system ?? null
+    property System system: deviceController?.system ?? null
+
+    property Sync   sync:   deviceController?.sync   ?? null
+
+
+    //! Busy due to warranty replacment operation
+    property bool isBusy: false
 
     /* Object properties
      * ****************************************************************************************/
     title: "Warranty Replacement"
+    titleHeadeingLevel: 4
+
+    onVisibleChanged: {
+        if (!visible) {
+            tryTimer.stop();
+        }
+    }
 
     /* Children
      * ****************************************************************************************/
+
+    //! Wifi status
+    WifiButton {
+        parent: root.header.contentItem
+        visible: !NetworkInterface.hasInternet
+
+        onClicked: {
+            //! Open WifiPage
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup,
+                                             "nextButtonEnabled": false
+                                         });
+            }
+        }
+    }
+
     Label {
         id: warranryReplacementInfo
 
         anchors.top: parent.top
-        anchors.topMargin: 5
+        anchors.topMargin: -5
 
         width: parent.width * 0.95
         wrapMode: Text.WordWrap
@@ -40,7 +71,7 @@ BasePageView {
 
     ColumnLayout {
         anchors.top: warranryReplacementInfo.bottom
-        anchors.topMargin: 10
+        anchors.topMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.9
@@ -75,6 +106,10 @@ BasePageView {
                 } else {
                     updateText = text;
                 }
+
+                //! Serial number changed, abort the request.
+                isBusy = false;
+                tryTimer.stop();
             }
 
             validator: RegularExpressionValidator {
@@ -131,6 +166,10 @@ BasePageView {
                 } else {
                     updateText = text;
                 }
+
+                //! Serial number changed, abort the request.
+                isBusy = false;
+                tryTimer.stop();
             }
 
             validator: RegularExpressionValidator {
@@ -141,6 +180,24 @@ BasePageView {
         Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
+        }
+    }
+
+    BusyIndicator {
+        anchors.right: replaceBtn.left
+        anchors.verticalCenter: replaceBtn.verticalCenter
+
+        height: 45
+        width: 45
+        visible: isBusy
+        running: visible
+
+        TapHandler {
+            enabled: isBusy && errorPopup.errorMessage.length > 0
+
+            onTapped: {
+                errorPopup.open();
+            }
         }
     }
 
@@ -155,13 +212,70 @@ BasePageView {
 
         text: "Replace"
         visible: !oldSNTf.activeFocus && !newSNTf.activeFocus
-        enabled: oldSNTf.acceptableInput && newSNTf.acceptableInput
+        enabled: oldSNTf.acceptableInput && newSNTf.acceptableInput && !isBusy
         leftPadding: 25
         rightPadding: 25
 
         onClicked: {
-            system?.warrantyReplacement(oldSNTf.text, newSNTf.text);
+            if (NetworkInterface.hasInternet) {
+                isBusy = true;
+                tryTimer.stop();
+                tryTimer.triggered();
+
+            } else {
+                errorPopup.errorMessage = deviceController.deviceInternetError();
+                errorPopup.open();
+            }
         }
     }
 
+    Timer {
+        id: tryTimer
+
+        property int retryCounter: 0
+
+        interval: 5000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            retryCounter++;
+            sync?.warrantyReplacement(oldSNTf.text, newSNTf.text);
+        }
+    }
+
+    InitialFlowErrorPopup {
+        id: errorPopup
+
+        isBusy: root.isBusy
+        deviceController: uiSession.deviceController
+
+        onStopped: {
+            root.isBusy = false;
+            tryTimer.stop();
+        }
+    }
+
+    Connections {
+        target: sync
+
+        // To avoid restart the aborted request.
+        enabled: isBusy
+
+        function onWarrantyReplacementFinished(success: bool, error: string, needToRetry: bool) {
+            isBusy = !success && needToRetry;
+
+            if (!success) {
+                errorPopup.errorMessage = error;
+
+                if (needToRetry) {
+                    tryTimer.start();
+                }
+
+                if ((tryTimer.retryCounter % 2 === 0) || !needToRetry){
+                    errorPopup.open();
+                }
+            }
+        }
+    }
 }

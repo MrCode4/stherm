@@ -12,7 +12,7 @@ ItemDelegate {
 
     /* Signals
      * ****************************************************************************************/
-    signal removed()
+    signal sendRemovedRequest()
 
     /* Property declaration
      * ****************************************************************************************/
@@ -163,8 +163,7 @@ ItemDelegate {
             }
 
             onClicked: {
-                //! Remove this item
-                _removeAnima.running = true;
+                sendRemovedRequest();
             }
         }
     }
@@ -194,7 +193,9 @@ ItemDelegate {
         }
 
         onFinished: {
-            removed();
+            if (schedulesController) {
+                schedulesController.removeSchedule(schedule);
+            }
         }
     }
 
@@ -230,6 +231,12 @@ ItemDelegate {
     function disconnect() {
         uiSession.popUps.scheduleOverlapPopup.accepted.disconnect(setActive);
         uiSession.popUps.scheduleOverlapPopup.rejected.disconnect(disconnect);
+    }
+
+    //! The remove request accepted by the parent
+    function removeRequestAccepted() {
+        //! Remove this item
+        _removeAnima.running = true;
     }
 }
 

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Templates as T
 
 import Ronia
 import Stherm
@@ -34,10 +35,15 @@ BasePageView {
         }
 
         onMenuActivated: function(item) {
-            let newProps = {};
-            Object.assign(newProps, item.props);
-            Object.assign(newProps, {"uiSession": Qt.binding(() => uiSession)});
-            root.StackView.view.push(item.view, newProps);
+            if (item.view) {
+                let newProps = {};
+                Object.assign(newProps, item.props);
+                Object.assign(newProps, {"uiSession": Qt.binding(() => uiSession)});
+                root.StackView.view.push(item.view, newProps);
+            }
+            else if(item.action instanceof Function) {
+                item.action();
+            }
         }
 
         property var commonItems: [
@@ -122,6 +128,12 @@ BasePageView {
                 text: "System Alerts",
                 color: Style.hiddenMenuColor,
                 view: "qrc:/Stherm/View/Menu/SystemAlertsPage.qml"
+            },
+            {
+                icon: FAIcons.circleCheck,
+                text: "Performance Test",
+                color: Style.hiddenMenuColor,
+                action: () => uiSession.popUps.perfTestCheckPopup.checkPerfTestEligibility()
             }
         ]
 
