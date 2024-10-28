@@ -131,7 +131,7 @@ BasePageView {
             },
             {
                 icon: FAIcons.circleCheck,
-                text: "Perf Test",
+                text: "Performance Test",
                 color: Style.hiddenMenuColor,
                 action: () => uiSession.popUps.perfTestCheckPopup.checkPerfTestEligibility()
             }

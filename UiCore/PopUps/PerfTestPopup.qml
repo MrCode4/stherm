@@ -100,12 +100,10 @@ I_PopUp {
         ColumnLayout {
             spacing: 5
 
-            Text {
+            Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
+                font.pointSize: Qt.application.font.pointSize * 0.6
                 color: Style.foreground
                 wrapMode: Text.Wrap
                 text: "Your HVAC system needs to perform a 15-minute system check to ensure it is ready for the season."
@@ -123,12 +121,10 @@ I_PopUp {
                     source: "qrc:/Stherm/Images/%1".arg(PerfTestService.mode == AppSpecCPP.Cooling ? "cool.png" : "sun.png")
                 }
 
-                Text {
+                Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    font.family: "Montserrat"
-                    font.pixelSize: 14
-                    font.weight: 400
+                    font.pointSize: Qt.application.font.pointSize * 0.6
                     color: Style.foreground
                     visible: PerfTestService.startTimeLeft > 0
                     wrapMode: Text.Wrap
@@ -149,23 +145,21 @@ I_PopUp {
 
             Item {width: 1; Layout.fillHeight: true}
 
-            Text {
+            Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
+                font.pointSize: Qt.application.font.pointSize * 0.6
                 color: Style.foreground
                 wrapMode: Text.Wrap
                 text: "Performance check is in progress"
             }
 
-            Text {
+            Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
+                font.pointSize: Qt.application.font.pointSize * 0.6
                 color: Style.foreground
                 wrapMode: Text.Wrap
                 property int remaintingTime : Math.ceil(PerfTestService.testTimeLeft.toFixed()/60)
@@ -184,23 +178,20 @@ I_PopUp {
             Item {width: 1; Layout.fillHeight: true;}
             Item {width: 1; Layout.fillHeight: true;}
 
-            Text {
+            Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
+                font.pointSize: Qt.application.font.pointSize * 0.6
                 color: Style.foreground
                 wrapMode: Text.Wrap
                 text: "The check is complete, and the results have been sent to your contractor."
             }
 
-            Text {
+            Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
+                font.pointSize: Qt.application.font.pointSize * 0.6
                 color: Style.foreground
                 wrapMode: Text.Wrap
                 text: "You will be contacted if there is any potential risk related to your HVAC."
@@ -217,12 +208,10 @@ I_PopUp {
 
             Item {width: 1; Layout.fillHeight: true}
 
-            Text {
+            Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
+                font.pointSize: Qt.application.font.pointSize * 0.6
                 color: Style.foreground
                 text: "Stopping the performance check will prevent the contractor from identifying potential issues with your HVAC system."
                 wrapMode: Text.Wrap
@@ -230,12 +219,10 @@ I_PopUp {
 
             Item {width: 1; Layout.fillHeight: true}
 
-            Text {
+            Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
+                font.pointSize: Qt.application.font.pointSize * 0.6
                 color: Style.foreground
                 text: "Your thermostat will return to the previous mode."
                 wrapMode: Text.Wrap
@@ -243,12 +230,10 @@ I_PopUp {
 
             Item {width: 1; Layout.fillHeight: true}
 
-            Text {
+            Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                font.family: "Montserrat"
-                font.pixelSize: 14
-                font.weight: 400
+                font.pointSize: Qt.application.font.pointSize * 0.6
                 color: Style.foreground
                 text: "Are you sure you want to stop?"
                 wrapMode: Text.Wrap

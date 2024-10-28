@@ -119,7 +119,7 @@ Item {
                 Layout.topMargin: 10
                 Layout.leftMargin: 24
                 Layout.rightMargin: 24
-                font.pointSize: root.font.pointSize * 0.7
+                font.pointSize: Qt.application.font.pointSize * 0.7
                 horizontalAlignment: Qt.AlignHCenter
                 wrapMode: Text.WordWrap
                 text: popupPerfTest.message
@@ -157,7 +157,7 @@ Item {
             popupPerfTest.message = "Checking Eligibility";
             popupPerfTest.isBusyMode = true;
             popupPerfTest.open();
-            PerfTestService.eligibilityChecked.connect(root.onPerfTestEligibilityChecked);
+            PerfTestService.eligibilityChecked.connect(popupPerfTest.onPerfTestEligibilityChecked);
             PerfTestService.checkTestEligibility();
         }
     }
