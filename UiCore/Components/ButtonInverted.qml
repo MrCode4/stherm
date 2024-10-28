@@ -14,11 +14,14 @@ Button {
 
     property color      frameColor: Style.frameColor
 
+    property color textColor: !control.enabled ? Style.hintTextColor
+                                               : Style.background
+
     contentItem: Label {
         font: control.font
         text: control.text
-        color: !control.enabled ? Style.hintTextColor
-                                : Style.background
+        color: textColor
+
         verticalAlignment: "AlignVCenter"
         horizontalAlignment: "AlignHCenter"
     }

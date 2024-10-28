@@ -28,7 +28,7 @@ Page {
     property var                    backButtonCallback
 
     //! FontAwesome text icon of backbutton
-    property string                 backButtonTextIcon: "\uf060"
+    property string                 backButtonTextIcon: FAIcons.arrowLeft
 
     //! Controls visibility of backbutton
     property bool                   backButtonVisible: true
