@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Templates as T
 
+import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
@@ -35,6 +37,7 @@ Item {
 
     //!
     property alias errorPopup:              errorPop
+    property alias perfTestCheckPopup: popupPerfTest
 
     readonly property bool isAnyPopupOpened : updateNotificationPopup.opened
                                                 || successPopup.opened
@@ -95,6 +98,68 @@ Item {
 
     SuccessPopup {
         id: successPopup
+    }
+
+    Popup {
+        id: popupPerfTest
+        parent: T.Overlay.overlay
+        width: parent.width * 0.6
+        anchors.centerIn: parent
+        modal: true
+
+        property bool isBusyMode: true
+        property string message: "Checking Eligibility"
+
+        contentItem: ColumnLayout {
+            anchors.fill: parent
+            spacing: 15
+
+            Label {
+                Layout.fillWidth: true
+                Layout.topMargin: 10
+                Layout.leftMargin: 24
+                Layout.rightMargin: 24
+                font.pointSize: root.font.pointSize * 0.7
+                horizontalAlignment: Qt.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: popupPerfTest.message
+            }
+
+            BusyIndicator {
+                Layout.alignment: Qt.AlignHCenter
+                height: 45
+                width: 45
+                running: visible
+                visible: popupPerfTest.isBusyMode
+            }
+
+            Button {
+                Layout.alignment: Qt.AlignHCenter
+                visible: !popupPerfTest.isBusyMode
+                onClicked: popupPerfTest.close()
+                text: "OK"
+            }
+        }
+
+        function onPerfTestEligibilityChecked(errMsg) {
+            PerfTestService.eligibilityChecked.disconnect(popupPerfTest.onPerfTestEligibilityChecked);
+            if (!errMsg) {
+                popupPerfTest.close();
+                uiSession.showHome();
+            }
+            else {
+                popupPerfTest.message = errMsg;
+                popupPerfTest.isBusyMode = false;
+            }
+        }
+
+        function checkPerfTestEligibility() {
+            popupPerfTest.message = "Checking Eligibility";
+            popupPerfTest.isBusyMode = true;
+            popupPerfTest.open();
+            PerfTestService.eligibilityChecked.connect(root.onPerfTestEligibilityChecked);
+            PerfTestService.checkTestEligibility();
+        }
     }
 
     //! Connections to show installConfirmation popup
