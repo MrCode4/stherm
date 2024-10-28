@@ -38,7 +38,11 @@ BasePageView {
     backButtonTextIcon: _newSchedulePages.depth > 1 ? FAIcons.xmark : FAIcons.arrowLeft
 
     backButtonCallback: function() {
-        skipConfirmPopup.open();
+
+        if(_newSchedulePages.currentItem instanceof ScheduleNamePage)
+            tryGoBack();
+        else
+            skipConfirmPopup.open();
     }
 
     /* Children
