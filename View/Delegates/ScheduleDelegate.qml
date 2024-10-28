@@ -98,7 +98,6 @@ ItemDelegate {
                     if (uiSession && schedule && schedule.enable !== checked) {
                         if (checked) {
                             //! First check the schedule compability
-                            var incompatibleSchedules = schedulesController.findIncompatibleSchedules(uiSession.appModel.systemSetup.systemMode);
                             if (schedulesController.checkScheduleCompatibility(schedule, uiSession.appModel.systemSetup.systemMode)) {
                                 //! Show an error popup
                                 uiSession.popUps.errorPopup.errorMessage = "Incompatible system mode. The schedule can not be activated.";
@@ -187,10 +186,19 @@ ItemDelegate {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
-                property var scheduleRepeats: schedule?.repeats.length > 0 ? schedule.repeats.split(",").map(day => day.charAt(0)) : ["No repeat"]
+                property color disableColor: Qt.alpha(AppStyle.primaryTextColor, 0.3)
 
+                //! Schedule repeats with HTML format based on schedule.repeats.
+                property string formattedScheduleRepeats: `<span style='color:${Boolean(schedule.repeats.includes("Mo")) ? AppStyle.primaryTextColor : disableColor};'>M</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Tu")) ? AppStyle.primaryTextColor : disableColor};'>T</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("We")) ? AppStyle.primaryTextColor : disableColor};'>W</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Th")) ? AppStyle.primaryTextColor : disableColor};'>T</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Fr")) ? AppStyle.primaryTextColor : disableColor};'>F</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Sa")) ? AppStyle.primaryTextColor : disableColor};'>S</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Su")) ? AppStyle.primaryTextColor : disableColor};'>S</span> `;
                 font: _fontMetric.font
-                text: scheduleRepeats.join(" ")
+                text: formattedScheduleRepeats
+                textFormat: Text.RichText
                 horizontalAlignment: Text.AlignRight
             }
 
