@@ -96,9 +96,19 @@ ItemDelegate {
 
                 onToggled: {
                     if (uiSession && schedule && schedule.enable !== checked) {
-                        //! First find if there is any overlapping schedules
                         if (checked) {
+                            //! First check the schedule compability
+                            var incompatibleSchedules = schedulesController.findIncompatibleSchedules(uiSession.appModel.systemSetup.systemMode);
+                            if (schedulesController.checkScheduleCompatibility(schedule, uiSession.appModel.systemSetup.systemMode)) {
+                                //! Show an error popup
+                                uiSession.popUps.errorPopup.errorMessage = "Incompatible system mode. The schedule can not be activated.";
+                                uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup);
 
+                                toggle();
+                                return;
+                            }
+
+                            //! Then find if there is any overlapping schedules
                             internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
                                         schedule.startTime, schedule.endTime,
                                         schedule.repeats, schedule);

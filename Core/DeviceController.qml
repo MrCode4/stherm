@@ -890,9 +890,6 @@ I_DeviceController {
     }
 
     function checkToUpdateSystemMode(systemMode: int) {
-        // Deactivate the incompatible schedules when mode changed from server or ui
-        schedulesController.deactivateIncompatibleSchedules(systemMode);
-
         device.systemSetup.systemMode = systemMode;
     }
 

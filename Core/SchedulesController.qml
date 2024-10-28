@@ -609,38 +609,45 @@ QtObject {
                                           editScheduleInServer(schedule);
                                       });
 
+        updateSystemModeInCompatibleSchadules(checkWithSystemMode);
+
         // Some schedules disabled, so we must safely update the current schedules.
         if (incompatibleSchedules.length > 0)
             device.schedulesChanged();
     }
 
     //! Find schedules that are incompatible with the current system mode.
+    function findIncompatibleSchedules(checkWithSystemMode : int) {
+        var incompatibleSchedules = [];
+
+        incompatibleSchedules = device.schedules.filter(schedule =>
+                                                        checkScheduleCompatibility(schedule, checkWithSystemMode) &&
+                                                        schedule.enable);
+
+        return incompatibleSchedules;
+    }
+
+    //! Validate the compatibility of Scheduleds with the system mode.
     //! If the current system mode is cooling or heating, and it's changed
-    //! to heating or cooling (respectively) or auto, the current schedule will be
-    //! automatically disabled. However, if the system mode is changed from
+    //! to heating or cooling (respectively) or auto, the current schedule is incompatible.
+    //! However, if the system mode is changed from
     //! auto to cooling or heating, the schedule will not be considered incompatible
     //! and will remain active.
     //! In the vacation and off mode schedule do not function so we keep the enabled schedule.
-    function findIncompatibleSchedules(checkWithSystemMode : int) {
-        var currentSystemMode = device.systemSetup.systemMode;
-        var incompatibleSchedules = [];
+    //! Return true if the schedule is incompatible with the checkWithSystemMode.
+    function checkScheduleCompatibility(schedule: ScheduleCPP, checkWithSystemMode : int) : bool {
 
-        if (checkWithSystemMode !== currentSystemMode) {
+        return   schedule.systemMode !== checkWithSystemMode &&
+                ((checkWithSystemMode === AppSpec.Cooling && schedule.systemMode === AppSpec.Heating) ||
+                 (checkWithSystemMode === AppSpec.Heating && schedule.systemMode === AppSpec.Cooling) ||
+                 (checkWithSystemMode === AppSpec.Auto    && (schedule.systemMode === AppSpec.Cooling || schedule.systemMode === AppSpec.Heating)))
+    }
 
-            //! Heating to cooling or auto
-            var incompatibleCondition = ((checkWithSystemMode === AppSpec.Cooling || checkWithSystemMode === AppSpec.Auto) && currentSystemMode === AppSpec.Heating);
-
-            //! Cooling to heating or auto
-            incompatibleCondition |= (currentSystemMode === AppSpec.Cooling && (checkWithSystemMode === AppSpec.Heating || checkWithSystemMode === AppSpec.Auto));
-
-            if (incompatibleCondition) {
-                incompatibleSchedules = device.schedules.filter(schedule =>
-                                                                schedule.systemMode === currentSystemMode &&
-                                                                schedule.enable);
-            }
-        }
-
-        return incompatibleSchedules;
+    //! Update system mode of campatible schedules.
+    function updateSystemModeInCompatibleSchadules(checkWithSystemMode : int) {
+        device.schedules.filter(schedule => schedule.enable).forEach(schedule => {
+                                                                        schedule.systemMode = checkWithSystemMode;
+                                                                     });
     }
 
     function clearScheduleFromServer(id: int) {
@@ -761,14 +768,10 @@ QtObject {
             if (currentSystemMode === AppSpec.Off) {
                 deviceController.setActivatedSchedule(null);
 
+            } else {
+                // Deactivate the incompatible schedules when mode changed from server or ui
+                deactivateIncompatibleSchedules(currentSystemMode);
             }
-            // TODO: auto -> cooling/heating == will be disable the incompatible schedules
-            // else if (currentSystemMode === AppSpec.Cooling) {
-            //     deactivateIncompatibleSchedules(AppSpec.Heating);
-
-            // } else if (currentSystemMode === AppSpec.Heating) {
-            //     deactivateIncompatibleSchedules(AppSpec.Cooling);
-            // }
         }
     }
 
