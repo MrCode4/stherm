@@ -39,9 +39,16 @@ Sync::Sync(QObject *parent)
 {
     QSettings setting;
 
-#if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
-    mHasClient = setting.value(cHasClientSetting).toBool();
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
+    mHasClient = setting.value(cHasClientSetting).toBool();
+
+#if defined(FAKE_UID_MODE_ON)
+    mSerialNumber = "";
+    mHasClient = false;
+#endif
+
+#if defined(INITIAL_SETUP_MODE_ON)
+    mHasClient = false;
 #endif
 
     mContractorInfo = setting.value(cContractorSettings).toMap();
@@ -160,6 +167,11 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             }
             else {
                 qWarning() << "Unable to fetch the device serial number, error: " << reply->errorString();
+
+                if (!mSerialNumber.isEmpty()) {
+                    TRACE << "Serial number has error but was filled previously. " << mSerialNumber;
+                    emit serialNumberReady();
+                }
             }
         }
 
