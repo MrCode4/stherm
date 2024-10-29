@@ -609,7 +609,8 @@ QtObject {
                                           editScheduleInServer(schedule);
                                       });
 
-        updateSystemModeInCompatibleSchadules(checkWithSystemMode);
+        // All incompatible schedules should be disabled befor call the updateSystemModeInCompatibleSchedules function.
+        updateSystemModeInCompatibleSchedules(checkWithSystemMode);
 
         // Some schedules disabled, so we must safely update the current schedules.
         if (incompatibleSchedules.length > 0)
@@ -642,7 +643,7 @@ QtObject {
     }
 
     //! Update system mode of campatible schedules.
-    function updateSystemModeInCompatibleSchadules(checkWithSystemMode : int) {
+    function updateSystemModeInCompatibleSchedules(checkWithSystemMode : int) {
         device.schedules.filter(schedule => schedule.enable).forEach(schedule => {
                                                                         schedule.systemMode = checkWithSystemMode;
                                                                      });
