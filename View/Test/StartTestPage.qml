@@ -110,16 +110,19 @@ BasePageView {
             }
 
             if (testCounter === allTests) {
-                nextPageTimer.start();
+                nextPageTimer.canStart = true;
             }
         }
     }
 
     Timer {
         id: nextPageTimer
+
+        property bool canStart: false
+
         interval: 3000
         repeat: false
-        running: false
+        running: root.visible && canStart && !uiSession.popupLayout.isTherePopup
 
         onTriggered: {
             nextPage();
@@ -162,7 +165,7 @@ BasePageView {
     }
 
     function nextPage() {
-        nextPageTimer.stop()
+        nextPageTimer.canStart = false;
         testsStackView.updateProps("qrc:/Stherm/View/Test/StartTestPage.qml", {"testCounter": testCounter});
         //! Load next page
         gotoPage("qrc:/Stherm/View/Test/TouchTestPage.qml", {
