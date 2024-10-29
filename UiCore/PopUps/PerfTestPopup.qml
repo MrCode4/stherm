@@ -116,9 +116,9 @@ I_PopUp {
                 Layout.fillWidth: true
                 spacing: 5
 
-                Image {
+                RoniaTextIcon {
                     Layout.alignment: Qt.AlignHCenter
-                    source: "qrc:/Stherm/Images/%1".arg(PerfTestService.mode == AppSpecCPP.Cooling ? "cool.png" : "sun.png")
+                    text: PerfTestService.mode == AppSpecCPP.Cooling ? FAIcons.snowflake : FAIcons.sun_bright
                 }
 
                 Label {

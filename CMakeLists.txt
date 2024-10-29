@@ -422,8 +422,6 @@ qt6_add_qml_module(appStherm
         Images/smart-phone.png
         Images/mobile-app-link.png
         Images/auto.png
-        Images/cool.png
-        Images/sun.png
         Images/condition-good.png
         Images/condition-moderate.png
         Images/condition-poor.png

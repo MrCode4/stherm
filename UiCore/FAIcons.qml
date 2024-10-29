@@ -59,4 +59,5 @@ QtObject {
     readonly property string envelope:                          "\uf0e0"
     readonly property string trashCan:                          "\uf2ed"
     readonly property string arrowLeft:                         "\uf060"
+    readonly property string snowflake:                         "\uf2dc"
 }
