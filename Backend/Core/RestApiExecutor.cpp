@@ -36,7 +36,6 @@ QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCall
         mCallbacks.insert(key, callback);
         auto reply = get(prepareApiRequest(endpoint, setAuth));
         if (reply) {
-            reply->ignoreSslErrors();
             reply->setProperty("endpoint", endpoint);
             reply->setProperty("isJson", true);
         }
