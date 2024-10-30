@@ -1,8 +1,35 @@
 
 Release Note
 -------------
+## Release R 1.4.1
+ 30th October 2024
+ Branch- r1_4_1, commit- 81d0cd22
+ 
+### Release Articles
+update-V.1.4.1.zip
+
+### Reason
+Add new features and fix some issues
+
+### What’s Brand New
+- Added a confirmation message when clicking x on add schedule wizard.
+- Added confirmation on delete schedule.
+- Added "Contact Nuve Support: (657) 626-4887 for issues." on specific first run flow pages.
+- Added performance test.
+
+### What Been Updated
+- Show all errors in the first run flow requests.
+- Redesign the UI and underlying logic for schedules.
+
+### What’s Been Fixed
+- Fixed some issues.
+
+### Known Issues
+- CPU usage in some cases should be check.
+- Performance test hase some issues.
+
 ## Release R 1.4.0
- 926th October 2024
+ 26th October 2024
  Branch- r1_4_0, commit- d81ff8bc
  
 ### Release Articles
