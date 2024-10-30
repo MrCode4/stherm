@@ -5,6 +5,11 @@
 #include <QSettings>
 #include <QDebug>
 
+namespace NUVE {
+const QString Key_SN("NUVE/SerialNumber");
+const QString Key_Hasclient("NUVE/SerialNumberClient");
+}
+
 DeviceInfo* DeviceInfo::mMe = nullptr;
 
 DeviceInfo* DeviceInfo::me()
@@ -23,8 +28,8 @@ DeviceInfo::DeviceInfo(QObject *parent)
 
 #if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
     QSettings setting;
-    hasClient(setting.value("NUVE/SerialNumberClient").toBool());
-    serialNumber(setting.value("NUVE/SerialNumber").toString());
+    hasClient(setting.value(NUVE::Key_Hasclient).toBool());
+    serialNumber(setting.value(NUVE::Key_SN).toString());
 #endif
 }
 
@@ -40,8 +45,8 @@ bool DeviceInfo::updateSerialNumber(const QString& sn, bool clientSet)
 
 #if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
     QSettings setting;
-    setting.setValue("NUVE/SerialNumberClient", hasClient());
-    setting.setValue("NUVE/SerialNumber", serialNumber());
+    setting.setValue(NUVE::Key_Hasclient, hasClient());
+    setting.setValue(NUVE::Key_SN, serialNumber());
 #endif
     return true;
 }
