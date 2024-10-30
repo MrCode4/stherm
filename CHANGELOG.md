@@ -2,7 +2,32 @@
 Release Note
 -------------
 ## Release R 1.4.1
- 30th October 2024
+ 31st October 2024
+ Branch- r1_4_2, commit- 3375189532
+ 
+### Release Articles
+update-V.1.4.2.zip
+
+### Reason
+Update Schedule and fix some issues
+
+### What’s Brand New
+- Skipping when Job id has error from error page.
+
+### What Been Updated
+- UI and underlying logic for schedules redesigned.
+
+### What’s Been Fixed
+- Some issues regarding performance test
+- Some issues regarding first run flow
+- Pop up orders during factory registration
+
+### Known Issues
+- CPU usage in some cases should be check.
+- Performance test hase some issues.
+
+## Release R 1.4.1
+ 29th October 2024
  Branch- r1_4_1, commit- 81d0cd22
  
 ### Release Articles
@@ -19,7 +44,6 @@ Add new features and fix some issues
 
 ### What Been Updated
 - Show all errors in the first run flow requests.
-- Redesign the UI and underlying logic for schedules.
 
 ### What’s Been Fixed
 - Fixed some issues.
