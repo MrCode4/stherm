@@ -117,27 +117,36 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
         return;
     }
 
-    TRACE << "if reply is open to read" << reply->isOpen();
-    QByteArray rawData = reply->readAll();
+    QByteArray rawData;
     QJsonObject data;
 
     if (reply->error() != QNetworkReply::NoError) {
-        // Handle All Errors
-        if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
-            const auto errdoc = QJsonDocument::fromJson(rawData);
-            reply->setProperty("server_field_errors", errdoc.object());
+        QString serverError;
+        if (reply->isOpen()){
+            // the same rawData is filled as it maybe usefull in callbacks in case of error
+            rawData = reply->readAll();
 
-            qWarning() << "API ERROR (" << endpoint << ") # code: "<< reply->error() <<
-                ", network error: " << reply->errorString() <<
-                ", Server error: " << errdoc.toJson().toStdString().c_str();
+            // Handle All Errors
+            if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
+                const auto errdoc = QJsonDocument::fromJson(rawData);
+                reply->setProperty("server_field_errors", errdoc.object());
+                serverError = errdoc.toJson();
+
+            } else {
+                serverError = "The network reply is not json, raw data: " + rawData;
+            }
 
         } else {
-            qWarning() << "API ERROR (" << endpoint << ") # code: " << reply->error()
-                       << ", network error: " << reply->errorString()
-                       << ", The network reply is not json, Server error: " << rawData;
+            serverError = "The network reply is not open for reading error";
         }
 
+        qWarning() << "API ERROR (" << endpoint << ") # code: "<< reply->error() <<
+            ", network error: " << reply->errorString() <<
+            ", Server error: " << serverError.toStdString().c_str();
+
     } else {
+        rawData = reply->readAll();
+
         // process The response, only if json, otherwise no need to even log! will be handled in callback if needed
         if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
 
