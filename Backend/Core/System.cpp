@@ -809,7 +809,6 @@ QString NUVE::System::getCurrentTime()
     auto netReply = callGetApi(QString("https://worldtimeapi.org/api/timezone/Etc/UTC"), callback, false);
 
     if (netReply) {
-        netReply->ignoreSslErrors();
         QEventLoop loop;
         eventLoop = &loop;
         loop.exec();

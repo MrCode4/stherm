@@ -1,6 +1,4 @@
 #pragma once
 
 #define API_SERVER_BASE_URL "https://devapi.nuvehvac.com/"
-
-// Enable/disable alert feature
-#define IS_CONTROL_ALERT_FEATURE_ENABLE false
+#define DATETIME_FORMAT "yyyy-MM-dd hh:mm:ss"

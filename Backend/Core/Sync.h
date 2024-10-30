@@ -4,8 +4,8 @@
 #include <QtNetwork>
 #include <QQmlEngine>
 
+#include "DevApiExecutor.h"
 #include "nuve_types.h"
-#include "RestApiExecutor.h"
 #include "Property.h"
 
 /*! ***********************************************************************************************
@@ -13,14 +13,14 @@
  * ************************************************************************************************/
 
 namespace NUVE {
-class Sync : public RestApiExecutor
+class Sync : public DevApiExecutor
 {
     Q_OBJECT
     QML_ELEMENT
 
-    //! useful for showing busy indicator when needed
-    PROPERTY_PRI(bool, fetchingUserData)
-    PROPERTY_PRI(bool, pushingLockState)
+    PROPERTY_PRI_DEF_VAL(bool, fetchingUserData, false)
+    PROPERTY_PRI_DEF_VAL(bool, pushingLockState, false)
+
 public:
     Sync(QObject *parent = nullptr);
 
@@ -42,8 +42,6 @@ public:
     void requestJob(QString type);
 
     Q_INVOKABLE void fetchUserData();
-
-    Q_INVOKABLE QString baseURL();
 
     Q_INVOKABLE void pushLockState(const QString& pin, bool lock);
 
@@ -146,10 +144,6 @@ private slots:
 
 private:
     QByteArray preparePacket(QString className, QString method, QJsonArray params);
-
-protected:
-    void setApiAuth(QNetworkRequest& request) override;
-    QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const override;
 
 private:
     bool mHasClient;

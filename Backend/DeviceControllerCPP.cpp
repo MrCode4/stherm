@@ -132,6 +132,19 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setBacklight(colorData, true);
     });
 
+    connect(m_scheme, &Scheme::started, this, [this]() {
+        emit tempSchemeStateChanged(true);
+    });
+    connect(m_scheme, &Scheme::finished, this, [this]() {
+        emit tempSchemeStateChanged(false);
+    });
+    connect(m_HumidityScheme, &Scheme::started, this, [this]() {
+        emit humiditySchemeStateChanged(true);
+    });
+    connect(m_HumidityScheme, &Scheme::finished, this, [this]() {
+        emit humiditySchemeStateChanged(false);
+    });
+
     connect(m_scheme, &Scheme::alert, this, [this]() {
         emit alert(STHERM::AlertLevel::LVL_Emergency,
                    AppSpecCPP::AlertTypes::Alert_Efficiency_Issue,
@@ -325,6 +338,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
     connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
     connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
+    connect(m_scheme, &Scheme::actualModeStarted, this, &DeviceControllerCPP::actualModeStarted);
     connect(m_scheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
     connect(m_scheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
         m_HumidityScheme->setCanSendRelays(!isRunning);
@@ -982,6 +996,11 @@ QVariantMap DeviceControllerCPP::getMainData()
     return mainData;
 }
 
+double DeviceControllerCPP::getTemperature()
+{
+    return mSchemeDataProvider->currentTemperature();
+}
+
 void DeviceControllerCPP::writeTestResult(const QString &fileName, const QString &testName, const QString& testResult, const QString &description)
 {
     QFile file(fileName);
@@ -1468,4 +1487,28 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
                                       destinationPath);
 
     TRACE << "exporting test results ended " << sent;
+}
+
+void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
+{
+    if (mSystemSetup) {
+        mSystemSetup->setupPerfTest(mode);
+
+        if (m_scheme) {
+            m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
+            m_scheme->restartWork(true);
+        }
+    }
+}
+
+void DeviceControllerCPP::revertPerfTest()
+{
+    if (mSystemSetup && mSystemSetup->isPerfTestRunning()) {
+        mSystemSetup->revertPerfTest();
+
+        if (m_scheme) {
+            m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
+            m_scheme->restartWork(true);
+        }
+    }
 }

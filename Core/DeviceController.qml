@@ -641,8 +641,8 @@ I_DeviceController {
     property Timer lockStatePusher: Timer {
         property bool isPushing : false
         running: isPushing && !deviceControllerCPP.sync.pushingLockState
-        interval: 1000;        
-        onTriggered: sendData();
+        interval: 1000
+        onTriggered: sendData()
 
         function stopPushing() {
             isPushing = false;

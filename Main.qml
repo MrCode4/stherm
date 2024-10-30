@@ -184,6 +184,7 @@ ApplicationWindow {
         id: uiSessionId
         popupLayout: popUpLayoutId
         toastManager:toastManagerId
+        onIsAnyPopupVisibleChanged: window.postponeOrResumePerfTest()
     }
 
     StackLayout {
@@ -204,6 +205,7 @@ ApplicationWindow {
                 id: mainView
                 anchors.fill: parent
                 uiSession: uiSessionId
+                onStackViewDepthChanged: window.postponeOrResumePerfTest()
             }
 
             Behavior on contentY {
@@ -221,7 +223,6 @@ ApplicationWindow {
     //! Popup layout
     PopUpLayout {
         id: popUpLayoutId
-
         anchors.fill: parent
         mandatoryUpdate: uiSessionId.deviceController.mandatoryUpdate
     }
@@ -235,10 +236,31 @@ ApplicationWindow {
         id: _screenSaver
         anchors.centerIn: parent
         visible: ScreenSaverManager.state === ScreenSaverManager.Timeout
-
         uiSession: uiSessionId
+        onOpened: {
+            uiSessionId.showHome();
+            window.postponeOrResumePerfTest();
+        }
+    }
 
-        onOpened: uiSessionId.showHome();
+    PerfTestPopup {
+        uiSession: uiSessionId
+        z: _screenSaver.z + 1
+        visible: PerfTestService.state >= PerfTestService.Warmup &&
+                 (uiSession.appModel.lock.isLock == false || _screenSaver.visible)
+    }
+
+    function postponeOrResumePerfTest() {
+        console.log('Stack-View-Depth-and-Popup', _screenSaver.visible, uiSessionId.isAnyPopupVisible, mainView.stackViewDepth);
+        if (_screenSaver.opened == false && (mainView.stackViewDepth > 1 || uiSessionId.isAnyPopupVisible)) {
+            let message = mainView.stackViewDepth > 1 ?
+                    "There are other views active on top of Home"
+                  : "There are popup active for the user to handle";
+            PerfTestService.postponeTest(message);
+        }
+        else {
+            PerfTestService.resumeTest();
+        }
     }
 
     //! A Timer to periodically refresh wifis (every 20 seconds); First refresh wifis after 1

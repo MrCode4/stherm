@@ -98,7 +98,7 @@ Popup {
                 }
 
                 Component.onCompleted: {
-                    parent.labelMargin = Qt.binding(() => width);
+                    parent.labelMargin = Qt.binding(() => visible ? width : 0);
                 }
             }
         }

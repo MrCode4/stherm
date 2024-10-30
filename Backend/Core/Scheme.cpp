@@ -321,6 +321,8 @@ void Scheme::CoolingLoop()
             if (stopWork)
                 return;
 
+            emit actualModeStarted(AppSpecCPP::Cooling);
+
             internalCoolingLoopStage1();
             break;
         }
@@ -382,6 +384,7 @@ void Scheme::HeatingLoop()
         TRACE_CHECK(false) << "HeatPump" << mDataProvider.data()->currentTemperature() << effectiveTemperature();
         // get time threshold ETime
         if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
+            emit actualModeStarted(AppSpecCPP::Heating);
             if (mDataProvider.data()->currentTemperature() < ET && mDataProvider.data()->systemSetup()->heatPumpEmergency) {
                 TRACE << "Emergency";
                 EmergencyHeating();
@@ -395,6 +398,7 @@ void Scheme::HeatingLoop()
     case AppSpecCPP::SystemType::HeatingOnly:
         TRACE << "Conventional" << mDataProvider.data()->currentTemperature() << effectiveTemperature();
         if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= STAGE1_ON_RANGE) {
+            emit actualModeStarted(AppSpecCPP::Heating);
             internalHeatingLoopStage1();
         }
         break;

@@ -198,6 +198,9 @@ AppSpecCPP {
     property real vacationMinimumTemperatureF: 40
     property real vacationMaximumTemperatureF: 90
 
+    property real perftestCoolingMinimumTemperatureF: 40
+    property real perfTestHeatingMaximumTemperatureF: 90
+
     //! Minimum and maximum temperature in the vacation (Celcius)
     property real autoMinimumTemperatureC: 4
     property real autoMaximumTemperatureC: 32

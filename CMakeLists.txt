@@ -39,6 +39,7 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Core)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Data)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Services)
 
 # Add any include directories
 #include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
@@ -56,7 +57,6 @@ set_source_files_properties(
     Core/Utils.qml
     UiCore/AppStyle.qml
     UiCore/FAIcons.qml
-    Core/DateTimeManager.qml
     PROPERTIES
         QT_QML_SINGLETON_TYPE True
 )
@@ -94,7 +94,6 @@ qt6_add_qml_module(appStherm
         Core/Vacation.qml
         Core/Setting.qml
         Core/Utils.qml
-        Core/DateTimeManager.qml
         Core/ContactContractor.qml
         Core/NightMode.qml
         Core/ToastManager.qml
@@ -281,6 +280,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/SuccessPopup.qml
         UiCore/PopUps/SwitchHeatingPopup.qml
         UiCore/PopUps/MessagePopup.qml
+        UiCore/PopUps/PerfTestPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
@@ -288,12 +288,15 @@ qt6_add_qml_module(appStherm
 
     SOURCES
         Backend/Property.h
+        Backend/Config.h
+        Backend/DeviceInfo.h
+        Backend/DeviceInfo.cpp
         Backend/AppSpecCPP.h
         Backend/AppSpecCPP.cpp
         Backend/ScreenSaverManager.h
         Backend/ScreenSaverManager.cpp
-        Backend/DateTimeManagerCPP.h
-        Backend/DateTimeManagerCPP.cpp
+        Backend/DateTimeManager.h
+        Backend/DateTimeManager.cpp
         Backend/TimezonesDSTMap.h
 
         Backend/Data/UserData.h
@@ -354,6 +357,8 @@ qt6_add_qml_module(appStherm
         Backend/Core/HttpExecutor.cpp
         Backend/Core/RestApiExecutor.h
         Backend/Core/RestApiExecutor.cpp
+        Backend/Core/DevApiExecutor.h
+        Backend/Core/DevApiExecutor.cpp
         Backend/Core/System.h
         Backend/Core/System.cpp
         Backend/Core/Sync.h
@@ -403,6 +408,9 @@ qt6_add_qml_module(appStherm
         Backend/Network/WifiInfo.h
         Backend/Network/WifiInfo.cpp
 
+        Backend/Services/PerfTestService.h
+        Backend/Services/PerfTestService.cpp
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
@@ -414,7 +422,6 @@ qt6_add_qml_module(appStherm
         Images/smart-phone.png
         Images/mobile-app-link.png
         Images/auto.png
-        Images/cool.png
         Images/condition-good.png
         Images/condition-moderate.png
         Images/condition-poor.png

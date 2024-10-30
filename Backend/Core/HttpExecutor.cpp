@@ -10,16 +10,20 @@ HttpExecutor::HttpExecutor(QObject *parent)
 QNetworkReply* HttpExecutor::get(const QNetworkRequest& request)
 {
     QNetworkReply* reply = NetworkManager::instance()->get(request);
-    connect(reply, &QNetworkReply::finished, this,  &HttpExecutor::onRequestFinished);
-    reply->ignoreSslErrors();
+    if (reply) {
+        connect(reply, &QNetworkReply::finished, this,  &HttpExecutor::onRequestFinished);
+        reply->ignoreSslErrors();
+    }
     return reply;
 }
 
 QNetworkReply* HttpExecutor::post(const QNetworkRequest& request, const QByteArray& data)
 {
     QNetworkReply* reply = NetworkManager::instance()->post(request, data);
-    connect(reply, &QNetworkReply::finished, this,  &HttpExecutor::onRequestFinished);
-    reply->ignoreSslErrors();
+    if (reply) {
+        connect(reply, &QNetworkReply::finished, this,  &HttpExecutor::onRequestFinished);
+        reply->ignoreSslErrors();
+    }
     return reply;
 }
 
