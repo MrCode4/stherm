@@ -129,7 +129,17 @@ QDateTime PerfTestService::scheduleNextCheck(const QTime& checkTime)
     PERF_LOG <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<"seconds";
     mTimerScheduleWatcher.setInterval(msecsToNextCheck);
     mTimerScheduleWatcher.start();
+    mCheckTimeAt = nextScheduleMark;
+    mCheckTimeSetAt = QDateTime::currentDateTime();
     return nextScheduleMark;
+}
+
+void PerfTestService::checkTestEligibilityManually()
+{
+    PERF_LOG << "Checking perf-test manually";
+    mCheckTimeAt = QDateTime::currentDateTime();
+    mCheckTimeSetAt = QDateTime::currentDateTime();
+    checkTestEligibility();
 }
 
 void PerfTestService::checkTestEligibility()
@@ -143,9 +153,11 @@ void PerfTestService::checkTestEligibility()
     }
 
     auto callback = [this](QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
+        PERF_LOG << "CheckTestEligibility API call done. Check was set at " <<mCheckTimeSetAt <<" , and scheduled at " <<mCheckTimeAt ;
+
         if (reply->error() != QNetworkReply::NoError) {
-            PERF_LOG <<"CheckTestEligibility API failed, going to retry in 15 minutes";
             auto scheduledTime = scheduleNextCheck(QTime::currentTime().addSecs(PerfTest::TestDuration));
+            PERF_LOG <<"CheckTestEligibility API failed, going to retry scheduled at " << scheduledTime ;
             emit eligibilityChecked("Failed due to network issues, retry scheduled at " + scheduledTime.toString(DATETIME_FORMAT));
             return;
         }

@@ -127,9 +127,11 @@ ToolButton {
             spacing: 2
 
             //! COOLING mode icon
-            Image {
+            RoniaTextIcon {
                 Layout.alignment: Qt.AlignCenter
-                source: "qrc:/Stherm/Images/cool.png"
+                text: FAIcons.snowflake
+                font.weight: 300
+                color: heatingLabel.color
             }
 
             Label {

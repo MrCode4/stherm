@@ -165,8 +165,8 @@ QString AppSpecCPP::systemModeToString(SystemMode systemMode) {
     case AppSpecCPP::Auto:
         return "Auto";
 
-    case Off:
-    case Emergency:
+    case AppSpecCPP::Off:
+    case AppSpecCPP::Emergency:
         break;
     }
 

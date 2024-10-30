@@ -15,6 +15,10 @@ RowLayout {
     //! Labels postfix
     property string     labelSuffix:    ""
 
+    //! Left and right colors to handle the slider color gradient.
+    property string leftSideColor:  "#0097cd"
+    property string rightSideColor: "#ea0600"
+
     property alias      control: _control
 
     RoniaTextIcon {
@@ -31,7 +35,7 @@ RowLayout {
     Label {
         opacity: 0.6
         font.pointSize: Qt.application.font.pointSize * 0.9
-        text: _control.from.toLocaleString(locale, "f", 0)
+        text: _control.from.toLocaleString(locale, "f", 0) + labelSuffix
     }
 
     Slider {
@@ -64,12 +68,12 @@ RowLayout {
                 orientation: Gradient.Horizontal
                 GradientStop {
                     position: 0.0
-                    color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+                    color: _control.enabled ? leftSideColor : Qt.darker(leftSideColor, _control.darkerShade)
                 }
 
                 GradientStop {
                     position: 1.0
-                    color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+                    color: _control.enabled ? rightSideColor : Qt.darker(rightSideColor, _control.darkerShade)
                 }
             }
         }
@@ -78,6 +82,6 @@ RowLayout {
     Label {
         opacity: 0.6
         font.pointSize: Qt.application.font.pointSize * 0.9
-        text: _control.to.toLocaleString(locale, "f", 0)
+        text: _control.to.toLocaleString(locale, "f", 0) + labelSuffix
     }
 }

@@ -39,9 +39,16 @@ Sync::Sync(QObject *parent)
 {
     QSettings setting;
 
-#if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
-    mHasClient = setting.value(cHasClientSetting).toBool();
     mSerialNumber = setting.value(cSerialNumberSetting).toString();
+    mHasClient = setting.value(cHasClientSetting).toBool();
+
+#if defined(FAKE_UID_MODE_ON) || defined(SERIAL_TEST_MODE_ON)
+    mSerialNumber = "";
+    mHasClient = false;
+#endif
+
+#if defined(INITIAL_SETUP_MODE_ON)
+    mHasClient = false;
 #endif
 
     mContractorInfo = setting.value(cContractorSettings).toMap();
@@ -64,6 +71,10 @@ void Sync::setSerialNumber(const QString &serialNumber)
     mHasClient = true;
     // Update SN for get settings
     mSerialNumber = serialNumber;
+    QSettings setting;
+    setting.setValue(cHasClientSetting, mHasClient);
+    setting.setValue(cSerialNumberSetting, mSerialNumber);
+
     // Force to update with new settings
     mLastPushTime = QDateTime();
     mAutoModeLastPushTime = QDateTime();
@@ -85,7 +96,7 @@ QVariantMap Sync::getContractorInfo() const { return mContractorInfo; }
 
 void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 {
-    QEventLoop* eventLoop = nullptr;
+    QPointer<QEventLoop> eventLoop;
 
     auto callback = [this, &eventLoop, notifyUser](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (data.contains("serial_number")) {
@@ -144,7 +155,7 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             }
 
             // Save the serial number in settings
-#if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON)
+#if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON) && !defined(SERIAL_TEST_MODE_ON)
             QSettings setting;
             setting.setValue(cHasClientSetting, mHasClient);
             setting.setValue(cSerialNumberSetting, mSerialNumber);
@@ -160,10 +171,15 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             }
             else {
                 qWarning() << "Unable to fetch the device serial number, error: " << reply->errorString();
+
+                if (!mSerialNumber.isEmpty()) {
+                    TRACE << "Serial number has error but was filled previously. " << mSerialNumber;
+                    emit serialNumberReady();
+                }
             }
         }
 
-        if (eventLoop) {
+        if (eventLoop && eventLoop->isRunning()) {
             eventLoop->quit();
         }
     };
@@ -176,6 +192,8 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             QEventLoop loop;
             eventLoop = &loop;
             loop.exec();
+
+            eventLoop.clear();  // Clear the pointer after exec completes
         }
     }
 }
@@ -538,7 +556,7 @@ void Sync::fetchServiceTitanInformation()
     // We can get customers information such as Email, Phone number, Zip code and
     // address BUT only Email and ZIP code need to be reflected
 
-    QEventLoop* eventLoop = nullptr;
+    QPointer<QEventLoop> eventLoop;
 
     auto callback = [this, &eventLoop](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
     };
@@ -550,6 +568,7 @@ void Sync::fetchServiceTitanInformation()
         eventLoop = &loop;
         loop.exec();
 
+        eventLoop.clear();
     } else {
         emit serviceTitanInformationReady(false);
     }
@@ -626,7 +645,7 @@ void Sync::installDevice(const QVariantMap &data)
 
             auto isNeedRetry = isNeedRetryNetRequest(reply);
             emit installFailed(err, isNeedRetry);
-            TRACE << rawData << data;
+            TRACE << rawData << data << err;
         }
     };
 

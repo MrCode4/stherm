@@ -172,7 +172,14 @@ BasePageView {
     function checkAndUpdateSystemMode(systemMode : int) {
         if (uiSession.schedulesController.findIncompatibleSchedules(systemMode).length > 0) {
 
-            confirmPopup.detailMessage = `There are active Schedule(s) configured for ${AppSpec.systemModeToString(device.systemSetup.systemMode)} mode that are incompatible with the new ${AppSpec.systemModeToString(systemMode)} mode. These Schedules will be automatically disabled.`
+            if (device.systemSetup.systemMode === AppSpecCPP.Off) {
+                confirmPopup.detailMessage = `There are active Schedule(s)`
+
+            } else {
+                confirmPopup.detailMessage = `There are active Schedule(s) configured for ${AppSpec.systemModeToString(device.systemSetup.systemMode)} mode`
+            }
+
+            confirmPopup.detailMessage += ` that are incompatible with the new ${AppSpec.systemModeToString(systemMode)} mode. These Schedules will be automatically disabled.`
             confirmPopup.accepted.connect(saveAndDisconnect.bind(this, systemMode));
             confirmPopup.rejected.connect(rejectAndDisconnect);
             confirmPopup.open();

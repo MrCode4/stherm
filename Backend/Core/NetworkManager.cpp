@@ -35,31 +35,40 @@ void NetworkManager::clearCache()
     mNetManager->clearConnectionCache();
 }
 
-QNetworkReply* NetworkManager::get(const QNetworkRequest& request)
+QNetworkReply *NetworkManager::get(const QNetworkRequest &request, bool noCheckError)
 {
-    return isEnable() ? mNetManager->get(request) : nullptr;
+    auto reply = isEnable() ? mNetManager->get(request) : nullptr
+    if (reply) reply->setProperty("noCheckError", noCheckError);
+    return reply;
 }
 
-QNetworkReply* NetworkManager::post(const QNetworkRequest& request, const QByteArray& data)
+QNetworkReply *NetworkManager::post(const QNetworkRequest &request,
+                                    const QByteArray &data,
+                                    bool noCheckError)
 {
-    return isEnable() ? mNetManager->post(request, data) : nullptr;
+    auto reply = isEnable() ? mNetManager->post(request, data) : nullptr;
+    if (reply) reply->setProperty("noCheckError", noCheckError);
+    return reply;
 }
 
-QNetworkReply* NetworkManager::put(const QNetworkRequest& request, const QByteArray& data)
+QNetworkReply *NetworkManager::put(const QNetworkRequest &request,
+                                   const QByteArray &data,
+                                   bool noCheckError)
 {
-    return mNetManager->put(request, data);
+    auto reply = mNetManager->put(request, data);
+    reply->setProperty("noCheckError", noCheckError);
+    return reply;
 }
 
 void NetworkManager::processNetworkReply(QNetworkReply *netReply)
 {
+    bool noCheckError = netReply->property("noCheckError").toBool();
     // Handle All Errors
-    if (netReply->error() != QNetworkReply::NoError && netReply->isOpen()) {
-        qDebug() << Q_FUNC_INFO <<__LINE__<< netReply->error()<<netReply->errorString();
-        const auto errdoc = QJsonDocument::fromJson(netReply->readAll());
-        const QJsonObject errObj = errdoc.object();
-        QStringList errMsg = errObj.value("non_field_errors").toVariant().toStringList();
-        TRACE << errdoc.toJson().toStdString().c_str();
-
-         netReply->setProperty("server_field_errors", errObj);
+    if (!noCheckError && netReply->error() != QNetworkReply::NoError && netReply->isOpen()) {
+        const auto reply = netReply->readAll();
+        qWarning() << "network request finished with error:" << netReply->error()
+                   << netReply->errorString() << reply;
+        netReply->setProperty("errorReply", reply);
+        setProperty("lastError", reply);
     }
 }

@@ -48,6 +48,16 @@ AppSpecCPP {
     property real maximumDualFuelThresholdF: 45
     property real minimumDualFuelThresholdF: 15
 
+    //! Heating temperature range
+    //! Fahrenheit
+    property real minimumHeatingTemperatiureF: 40
+    property real maximumHeatingTemperatiureF: 85
+
+    //! Cooling temperature range
+    //! Fahrenheit
+    property real minimumCoolingTemperatiureF: 60
+    property real maximumCoolingTemperatiureF: 90
+
     //! Percent
     property int defaultBrightness: 100
     //! Percent
@@ -208,10 +218,11 @@ AppSpecCPP {
     property real autoMaximumTemperatureF: 90
 
     //! Get default schedule
-    function getDefaultSchedule (type: int) : SceduleCPP {
+    function getDefaultSchedule (type: int, systemMode) : SceduleCPP {
 
         var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"]);
         newSchedule.type = type;
+        newSchedule.systemMode = systemMode;
 
         switch (type) {
         case AppSpecCPP.Away: {

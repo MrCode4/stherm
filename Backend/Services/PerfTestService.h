@@ -45,13 +45,14 @@ signals:
     void eligibilityChecked(const QString& errorMsg);
 
 public slots:
-    Q_INVOKABLE void checkTestEligibility();
+    Q_INVOKABLE void checkTestEligibilityManually();
     Q_INVOKABLE void postponeTest(const QString& reason);
     Q_INVOKABLE void resumeTest();
     Q_INVOKABLE void cancelTest();
     Q_INVOKABLE void finishTest();
 
 private slots:
+    Q_INVOKABLE void checkTestEligibility();
     void onCountdownStart(AppSpecCPP::SystemMode mode, int delay);
     void onCountdownStop();
     void onActualModeStarted(AppSpecCPP::SystemMode mode);
@@ -72,6 +73,8 @@ private:
     static PerfTestService* mMe;
 
     bool mWasEligibleBeforePostpone = false;
+    QDateTime mCheckTimeAt;
+    QDateTime mCheckTimeSetAt;
     QTimer mTimerScheduleWatcher;
     QTimer mTimerPostponeWatcher;
     QTimer mTimerDelay;    

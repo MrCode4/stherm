@@ -7,12 +7,11 @@ import Stherm
 /*! ***********************************************************************************************
  * CustomerDetailsPage
  * ***********************************************************************************************/
-BasePageView {
+InitialSetupBasePageView {
     id: root
 
     /* Property declaration
      * ****************************************************************************************/
-    property bool initialSetup: false
     property bool manualEntry: appModel?.serviceTitan?.isSTManualMode ?? true
 
 
@@ -22,20 +21,6 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Info button in initial setup mode.
-    InfoToolButton {
-        parent: root.header.contentItem
-        visible: initialSetup
-
-        onClicked: {
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession)
-                                         });
-            }
-        }
-    }
-
     ColumnLayout {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter

@@ -7,19 +7,19 @@ import Stherm
 /*! ***********************************************************************************************
  * JobNumberPage: TOOD: Needs to be completed.
  * ***********************************************************************************************/
-BasePageView {
+InitialSetupBasePageView {
     id: root
 
     /* Property declaration
      * ****************************************************************************************/
-    property bool initialSetup: false
-
     //! Busy due to get the job number information
     property bool isBusy: false
 
     /* Object properties
      * ****************************************************************************************/
     title: "Job Number"
+
+    showWifiButton: true
 
     onVisibleChanged: {
         if (!visible) {
@@ -30,41 +30,6 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Info button in initial setup mode.
-    InfoToolButton {
-        parent: root.header.contentItem
-        visible: initialSetup
-
-        onClicked: {
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession)
-                                         });
-            }
-        }
-
-        //! Wifi status
-        WifiButton {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.bottom
-            anchors.topMargin: -10
-            visible: !NetworkInterface.hasInternet
-
-            z: 1
-
-            onClicked: {
-                //! Open WifiPage
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
-                                                 "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup,
-                                                 "nextButtonEnabled": false
-                                             });
-                }
-            }
-        }
-    }
-
 
     GridLayout {
         anchors.top: parent.top
@@ -267,6 +232,27 @@ BasePageView {
         onStopped: {
             root.isBusy = false;
             retryTimer.stop();
+        }
+
+        Text {
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.margins: 10
+            anchors.bottomMargin: 35
+
+            visible: !isBusy
+            text: qsTr("Skip")
+            color: "#43E0F8"
+
+            TapHandler {
+                enabled: !isBusy
+
+                onTapped: {
+                    // Skip
+                    appModel.serviceTitan.isSTManualMode = true;
+                    nextPage();
+                }
+            }
         }
     }
 

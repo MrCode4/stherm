@@ -17,7 +17,7 @@ BasePageView {
 
     // Start the test mode
     Component.onCompleted: {
-        timer.start();
+        timer.canStart = true;
     }
 
     /* Children
@@ -31,7 +31,7 @@ BasePageView {
         }
         onClicked: {
             //! Load next page
-            timer.stop();
+            timer.canStart = false;
             if (root.StackView.view) {
                 root.StackView.view.push("qrc:/Stherm/View/Test/TestsHostPage.qml", {
                                              "uiSession": uiSession,
@@ -100,7 +100,9 @@ BasePageView {
     Timer {
         id: timer
 
-        running: false
+        property bool canStart: false
+
+        running: root.visible && canStart && !uiSession.popupLayout.isTherePopup
         repeat: false
         interval: 5000
 

@@ -608,29 +608,45 @@ QtObject {
                                           schedule.enable = false;
                                           editScheduleInServer(schedule);
                                       });
+
+        // All incompatible schedules should be disabled befor call the updateSystemModeInCompatibleSchedules function.
+        updateSystemModeInCompatibleSchedules(checkWithSystemMode);
+
+        // Some schedules disabled, so we must safely update the current schedules.
+        if (incompatibleSchedules.length > 0)
+            device.schedulesChanged();
     }
 
     //! Find schedules that are incompatible with the current system mode.
-    //! If the current system mode is cooling or heating, and it's changed
-    //! to heating or cooling (respectively), the current schedule will be
-    //! automatically disabled. However, if the system mode is changed from
-    //! auto to cooling or heating, the schedule will not be considered incompatible
-    //! and will remain active.
     function findIncompatibleSchedules(checkWithSystemMode : int) {
-        var currentSystemMode = device.systemSetup.systemMode;
-        var incompatibleSchedules = [];
-
-        // TODO: Check the vacation (schedule do not function when vacation is on)
-        // Also check the Off mode
-        if (checkWithSystemMode !== currentSystemMode &&
-                ((checkWithSystemMode === AppSpec.Cooling && currentSystemMode === AppSpec.Heating) ||
-                (checkWithSystemMode === AppSpec.Heating  && currentSystemMode === AppSpec.Cooling))) {
-            incompatibleSchedules = device.schedules.filter(schedule =>
-                                                            schedule.systemMode === currentSystemMode &&
-                                                            schedule.enable);
-        }
+        var incompatibleSchedules = device.schedules.filter(schedule =>
+                                                        isScheduleIncompatible(schedule, checkWithSystemMode) &&
+                                                        schedule.enable);
 
         return incompatibleSchedules;
+    }
+
+    //! Validate the compatibility of Scheduleds with the system mode.
+    //! If the current system mode is cooling or heating, and it's changed
+    //! to heating or cooling (respectively) or auto, the current schedule is incompatible.
+    //! However, if the system mode is changed from
+    //! auto to cooling or heating, the schedule will not be considered incompatible
+    //! and will remain active.
+    //! In the vacation and off mode schedule do not function so we keep the enabled schedule.
+    //! Return true if the schedule is incompatible with the checkWithSystemMode.
+    function isScheduleIncompatible(schedule: ScheduleCPP, checkWithSystemMode : int) : bool {
+
+        return   schedule.systemMode !== checkWithSystemMode &&
+                ((checkWithSystemMode === AppSpec.Cooling && schedule.systemMode === AppSpec.Heating) ||
+                 (checkWithSystemMode === AppSpec.Heating && schedule.systemMode === AppSpec.Cooling) ||
+                 (checkWithSystemMode === AppSpec.Auto    && (schedule.systemMode === AppSpec.Cooling || schedule.systemMode === AppSpec.Heating)))
+    }
+
+    //! Update system mode of campatible schedules.
+    function updateSystemModeInCompatibleSchedules(checkWithSystemMode : int) {
+        device.schedules.filter(schedule => schedule.enable).forEach(schedule => {
+                                                                        schedule.systemMode = checkWithSystemMode;
+                                                                     });
     }
 
     function clearScheduleFromServer(id: int) {
@@ -721,7 +737,7 @@ QtObject {
                 deviceController.setActivatedSchedule(null);
         }
 
-        //! Add/remove schedules
+        //! Add/remove/enable/disable schedules
         function onSchedulesChanged() {
             updateCurrentSchedules();
         }
@@ -732,7 +748,7 @@ QtObject {
 
         function onEnableChanged() {
             deviceController.setActivatedSchedule(null);
-            findRunningSchedule();
+            updateCurrentSchedules();
         }
     }
 
@@ -751,14 +767,10 @@ QtObject {
             if (currentSystemMode === AppSpec.Off) {
                 deviceController.setActivatedSchedule(null);
 
+            } else {
+                // Deactivate the incompatible schedules when mode changed from server or ui
+                deactivateIncompatibleSchedules(currentSystemMode);
             }
-            // TODO: auto -> cooling/heating == will be disable the incompatible schedules
-            // else if (currentSystemMode === AppSpec.Cooling) {
-            //     deactivateIncompatibleSchedules(AppSpec.Heating);
-
-            // } else if (currentSystemMode === AppSpec.Heating) {
-            //     deactivateIncompatibleSchedules(AppSpec.Cooling);
-            // }
         }
     }
 
