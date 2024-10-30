@@ -158,7 +158,7 @@ Item {
             popupPerfTest.isBusyMode = true;
             popupPerfTest.open();
             PerfTestService.eligibilityChecked.connect(popupPerfTest.onPerfTestEligibilityChecked);
-            PerfTestService.checkTestEligibility();
+            PerfTestService.checkTestEligibilityManually();
         }
     }
 
