@@ -9,17 +9,18 @@ HttpExecutor::HttpExecutor(QObject *parent)
 
 QNetworkReply* HttpExecutor::get(const QNetworkRequest& request)
 {
-    QNetworkReply* reply = NetworkManager::instance()->get(request);
+    QNetworkReply *reply = NetworkManager::instance()->get(request, errorHandled());
     if (reply) {
         connect(reply, &QNetworkReply::finished, this,  &HttpExecutor::onRequestFinished);
         reply->ignoreSslErrors();
     }
+
     return reply;
 }
 
 QNetworkReply* HttpExecutor::post(const QNetworkRequest& request, const QByteArray& data)
 {
-    QNetworkReply* reply = NetworkManager::instance()->post(request, data);
+    QNetworkReply *reply = NetworkManager::instance()->post(request, data, errorHandled());
     if (reply) {
         connect(reply, &QNetworkReply::finished, this,  &HttpExecutor::onRequestFinished);
         reply->ignoreSslErrors();
@@ -29,7 +30,7 @@ QNetworkReply* HttpExecutor::post(const QNetworkRequest& request, const QByteArr
 
 QNetworkReply* HttpExecutor::put(const QNetworkRequest& request, const QByteArray& data)
 {
-    QNetworkReply* reply = NetworkManager::instance()->put(request, data);
+    QNetworkReply *reply = NetworkManager::instance()->put(request, data, errorHandled());
     connect(reply, &QNetworkReply::finished, this,  &HttpExecutor::onRequestFinished);
     reply->ignoreSslErrors();
     return reply;
@@ -43,4 +44,9 @@ void HttpExecutor::onRequestFinished()
     reply->deleteLater();
 }
 
-void HttpExecutor::processNetworkReply(QNetworkReply*) {}
+void HttpExecutor::processNetworkReply(QNetworkReply *) {}
+
+bool HttpExecutor::errorHandled()
+{
+    return false;
+}

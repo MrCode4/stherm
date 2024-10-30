@@ -26,9 +26,13 @@ public:
 
     void clearCache();
 
-    QNetworkReply* get(const QNetworkRequest& request);
-    QNetworkReply* post(const QNetworkRequest& request, const QByteArray& data);
-    QNetworkReply* put(const QNetworkRequest& request, const QByteArray& data);
+    QNetworkReply *get(const QNetworkRequest &request, bool noCheckError = false);
+    QNetworkReply *post(const QNetworkRequest &request,
+                        const QByteArray &data,
+                        bool noCheckError = false);
+    QNetworkReply *put(const QNetworkRequest &request,
+                       const QByteArray &data,
+                       bool noCheckError = false);
 
 private slots:
     void processNetworkReply(QNetworkReply *netReply);

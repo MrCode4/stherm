@@ -21,10 +21,13 @@ public:
     QNetworkReply* downloadFile(const QString& url, ResponseCallback callback = nullptr, bool jsonFile = true, bool setAuth = false);
 
 protected:
+    QNetworkRequest prepareApiRequest(const QString &endpoint, bool setAuth = true);
+
     virtual void setApiAuth(QNetworkRequest& request);
-    QNetworkRequest prepareApiRequest(const QString& endpoint, bool setAuth = true);
     virtual QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const;
-    void processNetworkReply(QNetworkReply* reply) override;
+
+    void processNetworkReply(QNetworkReply *reply) override;
+    bool errorHandled() override { return true; }
 
     //! Prepare URL with email
     //! convert email string to askii

@@ -20,6 +20,7 @@ public:
 
 protected:
     virtual void processNetworkReply(QNetworkReply* reply);
+    virtual bool errorHandled();
 
 private slots:
     void onRequestFinished();
