@@ -37,7 +37,7 @@ void NetworkManager::clearCache()
 
 QNetworkReply *NetworkManager::get(const QNetworkRequest &request, bool noCheckError)
 {
-    auto reply = isEnable() ? mNetManager->get(request) : nullptr
+    auto reply = isEnable() ? mNetManager->get(request) : nullptr;
     if (reply) reply->setProperty("noCheckError", noCheckError);
     return reply;
 }
