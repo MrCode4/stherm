@@ -7,13 +7,11 @@ import Stherm
 /*! ***********************************************************************************************
  * ServiceTitanReviewPage
  * ***********************************************************************************************/
-BasePageView {
+InitialSetupBasePageView {
     id: root
 
     /* Property declaration
      * ****************************************************************************************/
-    property bool initialSetup: false
-
     property bool fetchMnaual: appModel?.serviceTitan?.isSTManualMode ?? true
 
     //! Busy due to multiple api calls
@@ -25,6 +23,8 @@ BasePageView {
      * ****************************************************************************************/
     title: "Review"
 
+    showWifiButton: true
+
     onVisibleChanged: {
         if (!visible) {
             errorPopup.close();
@@ -34,41 +34,6 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
-    //! Info button in initial setup mode.
-    InfoToolButton {
-        parent: root.header.contentItem
-        visible: initialSetup
-
-        onClicked: {
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/AboutDevicePage.qml", {
-                                             "uiSession": Qt.binding(() => uiSession)
-                                         });
-            }
-
-        }
-
-        //! Wifi status
-        WifiButton {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.bottom
-            anchors.topMargin: -10
-            visible: !NetworkInterface.hasInternet
-
-            z: 1
-
-            onClicked: {
-                //! Open WifiPage
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/WifiPage.qml", {
-                                                 "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup,
-                                                 "nextButtonEnabled": false
-                                             });
-                }
-            }
-        }
-    }
 
     Label {
         id: confirmInfoLabel

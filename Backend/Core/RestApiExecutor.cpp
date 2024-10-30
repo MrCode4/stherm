@@ -121,11 +121,33 @@ void RestApiExecutor::processNetworkReply(QNetworkReply *reply)
     QJsonObject data;
 
     if (reply->error() != QNetworkReply::NoError) {
-        qWarning() << "API ERROR (" << endpoint << ") # code: "<< reply->error() << ", message: " << reply->errorString();
-    }
-    else {
+        QString serverError;
+        if (reply->isOpen()){
+            // the same rawData is filled as it maybe usefull in callbacks in case of error
+            rawData = reply->readAll();
+
+            // Handle All Errors
+            if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
+                const auto errdoc = QJsonDocument::fromJson(rawData);
+                reply->setProperty("server_field_errors", errdoc.object());
+                serverError = errdoc.toJson();
+
+            } else {
+                serverError = "The network reply is not json, raw data: " + rawData;
+            }
+
+        } else {
+            serverError = "The network reply is not open for reading error";
+        }
+
+        qWarning() << "API ERROR (" << endpoint << ") # code: "<< reply->error() <<
+            ", network error: " << reply->errorString() <<
+            ", Server error: " << serverError.toStdString().c_str();
+
+    } else {
         rawData = reply->readAll();
 
+        // process The response, only if json, otherwise no need to even log! will be handled in callback if needed
         if (reply->property("isJson").isValid() && reply->property("isJson").value<bool>()) {
 
             data = prepareJsonResponse(endpoint, rawData);
