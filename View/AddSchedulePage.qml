@@ -18,7 +18,7 @@ BasePageView {
     //! Device reference
     property I_Device                device:              uiSession?.appModel ?? null
 
-    readonly property ScheduleCPP    defaultSchedule:     AppSpec.getDefaultSchedule(_internal.newSchedule.type);
+    readonly property ScheduleCPP    defaultSchedule:     AppSpec.getDefaultSchedule(_internal.newSchedule.type, _internal.newSchedule.systemMode);
 
     /* Object properties
      * ****************************************************************************************/
@@ -38,7 +38,11 @@ BasePageView {
     backButtonTextIcon: _newSchedulePages.depth > 1 ? FAIcons.xmark : FAIcons.arrowLeft
 
     backButtonCallback: function() {
-        skipConfirmPopup.open();
+
+        if(_newSchedulePages.currentItem instanceof ScheduleNamePage)
+            tryGoBack();
+        else
+            skipConfirmPopup.open();
     }
 
     /* Children
@@ -107,7 +111,11 @@ BasePageView {
     QtObject {
         id: _internal
 
-        property ScheduleCPP newSchedule: ScheduleCPP { }
+        property ScheduleCPP newSchedule: ScheduleCPP {
+
+            //! Check when mode changed from the server
+            systemMode: device.systemSetup.systemMode
+        }
 
         property var overlappingSchedules: []
     }

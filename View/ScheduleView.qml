@@ -67,7 +67,7 @@ BasePageView {
             required property int index
 
             width: ListView.view.width
-            height: Style.delegateHeight
+            height: Style.delegateHeight * 1.7
             uiSession: _root.uiSession
             schedule: (modelData instanceof ScheduleCPP) ? modelData : null
             delegateIndex: index

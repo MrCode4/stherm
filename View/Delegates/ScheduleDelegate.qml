@@ -8,7 +8,7 @@ import Stherm
  * ScheduleDelegate provides a delegate for displaying schedules in ScheduleView
  * ***********************************************************************************************/
 ItemDelegate {
-    id: _root
+    id: root
 
     /* Signals
      * ****************************************************************************************/
@@ -39,138 +39,183 @@ ItemDelegate {
         property var overlappingSchedules: []
     }
 
-    RowLayout {
-        id: _delegateContent
-        parent: _root.contentItem
-        width: parent.width
-        anchors.centerIn: parent
-        spacing: 4
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 4
 
-        //! Schedule icon
-        RoniaTextIcon {
-            Layout.alignment: Qt.AlignCenter
-            Layout.preferredWidth: 24
-            font.pointSize: Style.fontIconSize.smallPt
-            text: {
-                switch(schedule?.type) {
-                case AppSpec.Away:
-                    return "\uf30d";
-                case AppSpec.Night:
-                    return "\uf186"
-                case AppSpec.Home:
-                    return "\uf015"
-                case AppSpec.Custom:
-                    return "\uf1de"
-                }
+        Layout.topMargin: 15
+        Layout.leftMargin: 10
 
-                return "-";
-            }
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-        }
+        spacing: 10
 
-        //! Schedule name
-        Label {
+        RowLayout {
+            spacing: 8
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignCenter
-            font.bold: true
-            text: schedule?.name ?? ""
-            elide: "ElideRight"
-        }
+            Layout.topMargin: 0
 
-        //! Schedule repeat
-        Item {
-            Layout.preferredWidth: _fontMetric.advanceWidth("MuTuWeThFrSuSa") + 6
-            Layout.preferredHeight: Material.delegateHeight
-            opacity: 0.8
+            //! Schedule icon
+            RoniaTextIcon {
+                id: scheduleIcon
 
-            RowLayout {
-                anchors.centerIn: parent
-                spacing: 1
 
-                Repeater {
-                    model: schedule?.repeats.length > 0 ? schedule.repeats.split(",") : ["No repeat"]
-                    delegate: Label {
-                        font: _fontMetric.font
-                        Layout.alignment: Qt.AlignTop
-                        text: modelData
+                width: 24
+                font.pointSize: Style.fontIconSize.smallPt
+                text: {
+                    switch(schedule?.type) {
+                    case AppSpec.Away:
+                        return "\uf30d";
+                    case AppSpec.Night:
+                        return "\uf186"
+                    case AppSpec.Home:
+                        return "\uf015"
+                    case AppSpec.Custom:
+                        return "\uf1de"
+                    }
 
-                        Rectangle {
-                            anchors {
-                                top: parent.bottom
-                                horizontalCenter: parent.horizontalCenter
+                    return "-";
+                }
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            //! Schedule name
+            Label {
+                id: scheduleNameLabel
+
+                Layout.fillWidth: true
+                font.bold: true
+                text: schedule?.name ?? ""
+                elide: Text.ElideRight
+                horizontalAlignment: Text.AlignLeft
+            }
+
+            //! Enable switch
+            Switch {
+                id: _scheduleEnableSw
+                checked: schedule?.enable ?? false
+
+                onToggled: {
+                    if (uiSession && schedule && schedule.enable !== checked) {
+                        if (checked) {
+                            //! First check the schedule compability
+                            if (schedulesController.isScheduleIncompatible(schedule, uiSession.appModel.systemSetup.systemMode)) {
+                                //! Show an error popup
+                                uiSession.popUps.errorPopup.errorMessage = "Incompatible system mode. The schedule can not be activated.";
+                                uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup);
+
+                                toggle();
+                                return;
                             }
-                            width: 4
-                            height: 4
-                            radius: 2
+
+                            //! Then find if there is any overlapping schedules
+                            internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
+                                        schedule.startTime, schedule.endTime,
+                                        schedule.repeats, schedule);
+
+                            if (internal.overlappingSchedules.length > 0) {
+                                //! First uncheck this Switch
+                                toggle() //! This won't emit toggled() signal so no recursion occurs
+
+                                uiSession.popUps.scheduleOverlapPopup.accepted.connect(setActive);
+                                uiSession.popUps.scheduleOverlapPopup.rejected.connect(disconnect);
+                                uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
+                                return;
+                            }
                         }
+
+                        schedule.enable = checked;
+                        if (checked) {
+                            // Update system mode
+                            schedule.systemMode = uiSession.appModel.systemSetup.systemMode;
+                        }
+
+                        uiSession.appModel.schedulesChanged();
+
+                        //Shows a proper toast message upon activation of a schedule
+                        if(schedule.enable === true) {
+                            var dt = schedulesController.prepareToastMessage(schedule);
+                            uiSession.toastManager.showToast(dt.message, dt.detail);
+                        }
+
+                        // Send Data to server when a schedule changed...
+                        // Edit schedule
+                        schedulesController.editScheduleInServer(schedule);
+                        uiSession.deviceController.saveSettings();
                     }
+                }
+            }
+
+            //! Delete button
+            ToolButton {
+                contentItem: RoniaTextIcon {
+                    text: "\uf2ed"
+                }
+
+                onClicked: {
+                    sendRemovedRequest();
                 }
             }
         }
 
-        //! Enable switch
-        Switch {
-            id: _scheduleEnableSw
-            checked: schedule?.enable ?? false
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            opacity: 0.8
+            spacing: 16
 
-            onToggled: {
-                if (uiSession && schedule && schedule.enable !== checked) {
-                    //! First find if there is any overlapping schedules
-                    if (checked) {
+            Label {
+                Layout.fillHeight: true
 
-                        internal.overlappingSchedules = schedulesController.findOverlappingSchedules(
-                                    schedule.startTime, schedule.endTime,
-                                    schedule.repeats, schedule);
+                width: _fontMetric.advanceWidth(" Heating ")
+                font.pointSize: Qt.application.font.pointSize * 0.8
+                text: {
+                    if (schedule.systemMode === AppSpec.Cooling) {
+                        return "Cooling";
 
-                        if (internal.overlappingSchedules.length > 0) {
-                            //! First uncheck this Switch
-                            toggle() //! This won't emit toggled() signal so no recursion occurs
+                    } else if (schedule.systemMode === AppSpec.Heating) {
+                        return "Heating";
 
-                            uiSession.popUps.scheduleOverlapPopup.accepted.connect(setActive);
-                            uiSession.popUps.scheduleOverlapPopup.rejected.connect(disconnect);
-                            uiSession.popupLayout.displayPopUp(uiSession.popUps.scheduleOverlapPopup);
-                            return;
-                        }
                     }
 
-                    schedule.enable = checked;
-                    if (checked) {
-                        // Update system mode
-                        schedule.systemMode = uiSession.appModel.systemSetup.systemMode;
-                    }
-
-                    uiSession.appModel.schedulesChanged();
-
-                    //Shows a proper toast message upon activation of a schedule
-                    if(schedule.enable === true) {
-                        var dt = schedulesController.prepareToastMessage(schedule);
-                        uiSession.toastManager.showToast(dt.message, dt.detail);
-                    }
-
-                    // Send Data to server when a schedule changed...
-                    // Edit schedule
-                    schedulesController.editScheduleInServer(schedule);
-                    uiSession.deviceController.saveSettings();
+                    return "Auto";
                 }
             }
-        }
 
-        //! Delete button
-        ToolButton {
-            contentItem: RoniaTextIcon {
-                text: "\uf2ed"
+            //! Schedule repeats
+            Label {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                property color disableColor: Qt.alpha(AppStyle.primaryTextColor, 0.3)
+
+                //! Schedule repeats with HTML format based on schedule.repeats.
+                property string formattedScheduleRepeats: `<span style='color:${Boolean(schedule.repeats.includes("Mo")) ? AppStyle.primaryTextColor : disableColor};'>M</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Tu")) ? AppStyle.primaryTextColor : disableColor};'>T</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("We")) ? AppStyle.primaryTextColor : disableColor};'>W</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Th")) ? AppStyle.primaryTextColor : disableColor};'>T</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Fr")) ? AppStyle.primaryTextColor : disableColor};'>F</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Sa")) ? AppStyle.primaryTextColor : disableColor};'>S</span> ` +
+                                      `<span style='color:${Boolean(schedule.repeats.includes("Su")) ? AppStyle.primaryTextColor : disableColor};'>S</span> `;
+                font: _fontMetric.font
+                text: formattedScheduleRepeats
+                textFormat: Text.RichText
+                horizontalAlignment: Text.AlignRight
             }
 
-            onClicked: {
-                sendRemovedRequest();
+            //! Schedule time
+            Label {
+                Layout.fillHeight: true
+
+                horizontalAlignment: Text.AlignRight
+                font.pointSize: Qt.application.font.pointSize * 0.75
+                text: `${schedule.startTime} - ${schedule.endTime}`
             }
         }
     }
 
     FontMetrics {
         id: _fontMetric
-        font.pointSize: _root.font.pointSize * 0.85
+        font.pointSize: root.font.pointSize * 0.8
     }
 
     ParallelAnimation {
@@ -179,16 +224,16 @@ ItemDelegate {
         loops: 1
 
         NumberAnimation {
-            target: _root
+            target: root
             property: "opacity"
             to: 0
             duration: 200
         }
 
         NumberAnimation {
-            target: _root
+            target: root
             property: "x"
-            to: -_root.width
+            to: -root.width
             duration: 200
         }
 

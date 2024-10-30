@@ -3,10 +3,11 @@ pragma Singleton
 import QtQuick
 
 QtObject {
+    //! Font weight for font awesome
     enum FontWeight {
         Thin    = 100,
-        Regular = 400,
         Light   = 300,
+        Regular = 400,
         Solid   = 900
     }
 
