@@ -86,8 +86,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , _deviceAPI(new DeviceAPI(this))
     , mSystemSetup(nullptr)
     , mSchemeDataProvider(new SchemeDataProvider(this))
-    , m_scheme(new Scheme(_deviceAPI, mSchemeDataProvider, this))
-    , m_HumidityScheme(new HumidityScheme(_deviceAPI, mSchemeDataProvider, this))
+    , mTempScheme(new Scheme(_deviceAPI, mSchemeDataProvider, this))
+    , mHumidityScheme(new HumidityScheme(_deviceAPI, mSchemeDataProvider, this))
 {
 
     m_system = _deviceAPI->system();
@@ -132,20 +132,20 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         setBacklight(colorData, true);
     });
 
-    connect(m_scheme, &Scheme::started, this, [this]() {
+    connect(mTempScheme, &Scheme::started, this, [this]() {
         emit tempSchemeStateChanged(true);
     });
-    connect(m_scheme, &Scheme::finished, this, [this]() {
+    connect(mTempScheme, &Scheme::finished, this, [this]() {
         emit tempSchemeStateChanged(false);
     });
-    connect(m_HumidityScheme, &Scheme::started, this, [this]() {
+    connect(mHumidityScheme, &Scheme::started, this, [this]() {
         emit humiditySchemeStateChanged(true);
     });
-    connect(m_HumidityScheme, &Scheme::finished, this, [this]() {
+    connect(mHumidityScheme, &Scheme::finished, this, [this]() {
         emit humiditySchemeStateChanged(false);
     });
 
-    connect(m_scheme, &Scheme::alert, this, [this]() {
+    connect(mTempScheme, &Scheme::alert, this, [this]() {
         emit alert(STHERM::AlertLevel::LVL_Emergency,
                    AppSpecCPP::AlertTypes::Alert_Efficiency_Issue,
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_Efficiency_Issue));
@@ -303,7 +303,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         }
     });
 
-    connect(m_scheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
+    connect(mTempScheme, &Scheme::changeBacklight, this, [this](QVariantList color, QVariantList afterColor) {
 
         if (mBacklightTimer.isActive())
             mBacklightTimer.stop();
@@ -331,30 +331,30 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         mBacklightTimer.setProperty("color", afterColor);
     });
 
-    connect(m_scheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
+    connect(mTempScheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
         _deviceIO->updateRelays(relays);
     });
 
-    connect(m_scheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
-    connect(m_scheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
-    connect(m_scheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
-    connect(m_scheme, &Scheme::actualModeStarted, this, &DeviceControllerCPP::actualModeStarted);
-    connect(m_scheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
-    connect(m_scheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
-        m_HumidityScheme->setCanSendRelays(!isRunning);
+    connect(mTempScheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
+    connect(mTempScheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
+    connect(mTempScheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
+    connect(mTempScheme, &Scheme::actualModeStarted, this, &DeviceControllerCPP::actualModeStarted);
+    connect(mTempScheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
+    connect(mTempScheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        mHumidityScheme->setCanSendRelays(!isRunning);
     });
 
-    connect(m_HumidityScheme, &HumidityScheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
-        m_scheme->setCanSendRelays(!isRunning);
+    connect(mHumidityScheme, &HumidityScheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        mTempScheme->setCanSendRelays(!isRunning);
     });
 
-    connect(m_HumidityScheme, &HumidityScheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
+    connect(mHumidityScheme, &HumidityScheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
         _deviceIO->updateRelays(relays);
     });
 
     if (m_system) {
         connect(m_system, &NUVE::System::systemUpdating, this, [this]() {
-            m_scheme->moveToUpdatingMode();
+            mTempScheme->moveToUpdatingMode();
         });
 
         // Thge system prepare the direcories for usage
@@ -594,11 +594,11 @@ void DeviceControllerCPP::runTemperatureScheme(bool start)
         // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
         // This function will execute after provided sensor data has been received,
         // so we do not need more delay.
-        if (!m_scheme->isRunning())
-            m_scheme->restartWork(true);
+        if (!mTempScheme->isRunning())
+            mTempScheme->restartWork(true);
 
     } else {
-        m_scheme->stop();
+        mTempScheme->stop();
     }
 }
 
@@ -610,11 +610,11 @@ void DeviceControllerCPP::runHumidityScheme(bool start)
         // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
         // This function will execute after provided sensor data has been received,
         // so we do not need more delay.
-        if (!m_HumidityScheme->isRunning())
-            m_HumidityScheme->restartWork(true);
+        if (!mHumidityScheme->isRunning())
+            mHumidityScheme->restartWork(true);
 
     } else {
-        m_HumidityScheme->stop();
+        mHumidityScheme->stop();
     }
 }
 
@@ -872,8 +872,8 @@ void DeviceControllerCPP::setOverrideMainData(QVariantMap mainDataOverride)
 
 bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
 {
-    if (m_scheme) {
-        m_scheme->setFan(fanMode, newFanWPH);
+    if (mTempScheme) {
+        mTempScheme->setFan(fanMode, newFanWPH);
         return true;
     }
 
@@ -881,7 +881,7 @@ bool DeviceControllerCPP::setFan(AppSpecCPP::FanMode fanMode, int newFanWPH)
 }
 
 void DeviceControllerCPP::switchDFHActiveSysType(AppSpecCPP::SystemType activeSystemType) {
-    m_scheme->switchDFHActiveSysType(activeSystemType);
+    mTempScheme->switchDFHActiveSysType(activeSystemType);
 }
 
 bool DeviceControllerCPP::isTestsPassed()
@@ -1494,9 +1494,9 @@ void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
     if (mSystemSetup) {
         mSystemSetup->setupPerfTest(mode);
 
-        if (m_scheme) {
-            m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
-            m_scheme->restartWork(true);
+        if (mTempScheme) {
+            mTempScheme->setCurrentSysMode(mSystemSetup->systemMode);
+            mTempScheme->restartWork(true);
         }
     }
 }
@@ -1506,9 +1506,9 @@ void DeviceControllerCPP::revertPerfTest()
     if (mSystemSetup && mSystemSetup->isPerfTestRunning()) {
         mSystemSetup->revertPerfTest();
 
-        if (m_scheme) {
-            m_scheme->setCurrentSysMode(mSystemSetup->systemMode);
-            m_scheme->restartWork(true);
+        if (mTempScheme) {
+            mTempScheme->setCurrentSysMode(mSystemSetup->systemMode);
+            mTempScheme->restartWork(true);
         }
     }
 }
