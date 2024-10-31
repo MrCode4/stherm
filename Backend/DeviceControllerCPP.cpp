@@ -620,7 +620,7 @@ void DeviceControllerCPP::runHumidityScheme(bool start)
 
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
 {
-    if (schedule && mSystemSetup->systemMode == AppSpecCPP::Off) {
+    if (schedule && mSchemeDataProvider->effectiveSystemMode() == AppSpecCPP::Off) {
         TRACE << "An schedule with name " << schedule->name << "is active while mode is off";
     } else if (schedule) {
         TRACE_CHECK(false) << "An schedule with name " << schedule->name
@@ -628,7 +628,7 @@ void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
     } else {
         TRACE_CHECK(false)
             << "The schedule is inactive, hence the system reverts to its previous mode ("
-            << mSystemSetup->systemMode << ").";
+            << mSchemeDataProvider->effectiveSystemMode() << ").";
     }
 
     if (!mSchemeDataProvider.isNull())
@@ -1491,24 +1491,36 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
 
 void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 {
-    if (mSystemSetup) {
-        mSystemSetup->setupPerfTest(mode);
+    if (!mSchemeDataProvider || mSchemeDataProvider->isPerfTestRunning()) {
+        return;
+    }
 
-        if (mTempScheme) {
-            mTempScheme->setCurrentSysMode(mSystemSetup->systemMode);
-            mTempScheme->restartWork(true);
-        }
+    mSchemeDataProvider->perfTestSystemMode(mode);
+    mSchemeDataProvider->isPerfTestRunning(true);
+
+    if (mTempScheme) {
+        mTempScheme->restartWork(true);
+    }
+
+    if (mHumidityScheme) {
+        mHumidityScheme->restartWork(true);
     }
 }
 
 void DeviceControllerCPP::revertPerfTest()
 {
-    if (mSystemSetup && mSystemSetup->isPerfTestRunning()) {
-        mSystemSetup->revertPerfTest();
+    if (!mSchemeDataProvider || !mSchemeDataProvider->isPerfTestRunning()) {
+        return;
+    }
 
-        if (mTempScheme) {
-            mTempScheme->setCurrentSysMode(mSystemSetup->systemMode);
-            mTempScheme->restartWork(true);
-        }
+    mSchemeDataProvider->isPerfTestRunning(false);
+    mSchemeDataProvider->perfTestSystemMode(AppSpecCPP::Off);
+
+    if (mTempScheme) {
+        mTempScheme->restartWork(true);
+    }
+
+    if (mHumidityScheme) {
+        mHumidityScheme->restartWork(true);
     }
 }

@@ -61,15 +61,30 @@ AppSpecCPP::AccessoriesWireType SchemeDataProvider::getAccessoriesWireType() con
     return mSystemSetup->systemAccessories->getAccessoriesWireType();
 }
 
+bool SchemeDataProvider::isVacationEffective() const
+{
+    return isPerfTestRunning() ? false : systemSetup()->isVacation;
+}
+
+AppSpecCPP::SystemMode SchemeDataProvider::effectiveSystemMode() const
+{
+    if (isPerfTestRunning()) {
+        return perfTestSystemMode();
+    }
+    else {
+        return systemSetup()->systemMode;
+    }
+}
+
 double SchemeDataProvider::effectiveTemperature() const
 {
     double effTemperature = setPointTemperature();
 
-    if (systemSetup()->isPerfTestRunning()) {
-        return systemSetup()->systemMode == AppSpecCPP::Heating ? 90 : 40;
+    if (isPerfTestRunning()) {
+        return perfTestSystemMode() == AppSpecCPP::Heating ? 90 : 40;
     }
 
-    if (systemSetup()->isVacation) {
+    if (isVacationEffective()) {
         //! Vacation properites (Fahrenheit)
         double minimumTemperature = UtilityHelper::toFahrenheit(mVacation.minimumTemperature);
         double maximumTemperature = UtilityHelper::toFahrenheit(mVacation.maximumTemperature);
@@ -81,12 +96,12 @@ double SchemeDataProvider::effectiveTemperature() const
             effTemperature = maximumTemperature;
         }
 
-    } else if (schedule() || systemSetup()->systemMode == AppSpecCPP::SystemMode::Auto) {
+    } else if (schedule() || effectiveSystemMode() == AppSpecCPP::SystemMode::Auto) {
 
         // The mode can be heating or cooling
         // In off mode schedule() is null
-        if (schedule() && systemSetup()->systemMode != AppSpecCPP::SystemMode::Auto) {
-            effTemperature = UtilityHelper::toFahrenheit(schedule()->effectiveTemperature(systemSetup()->systemMode));
+        if (schedule() && effectiveSystemMode() != AppSpecCPP::SystemMode::Auto) {
+            effTemperature = UtilityHelper::toFahrenheit(schedule()->effectiveTemperature(effectiveSystemMode()));
 
         } else {
 

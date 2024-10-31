@@ -43,7 +43,7 @@ void HumidityScheme::run()
 
         auto sysSetup = mDataProvider->systemSetup();
         if (sysSetup->systemAccessories->getAccessoriesWireType() == AppSpecCPP::None ||
-            sysSetup->systemMode == AppSpecCPP::SystemMode::Off) {
+            mDataProvider.data()->effectiveSystemMode() == AppSpecCPP::SystemMode::Off) {
             OffLoop();
 
             if (stopWork)
@@ -53,7 +53,7 @@ void HumidityScheme::run()
         }
 
         // Vacation has a higher priority compared to other processes.
-        if (sysSetup->isVacation) {
+        if (mDataProvider.data()->isVacationEffective()) {
             VacationLoop();
 
         } else {
@@ -111,13 +111,13 @@ void HumidityScheme::setSystemSetup()
     const auto sys = mDataProvider.data()->systemSetup();
 
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
-        TRACE<< "systemModeChanged: "<< sys->systemMode;
+        TRACE<< "systemModeChanged: "<< mDataProvider.data()->effectiveSystemMode();
 
         restartWork();
     });
 
     connect(sys, &SystemSetup::isVacationChanged, this, [=] {
-        TRACE<< "isVacationChanged: "<< sys->isVacation;
+        TRACE<< "isVacationChanged: "<< mDataProvider.data()->isVacationEffective();
 
         restartWork();
     });
