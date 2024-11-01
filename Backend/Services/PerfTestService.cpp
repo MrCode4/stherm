@@ -258,6 +258,7 @@ void PerfTestService::prepareStartRunning()
 
 void PerfTestService::checkWarmupOrRun()
 {
+    isTestRunning(true);
     PERF_LOG <<"checkWarmupOrRun";
 
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::actualModeStarted, this, &PerfTestService::onActualModeStarted);
@@ -310,6 +311,8 @@ void PerfTestService::cleanupRunning()
 
     mTimerDelay.stop();
     mTimerGetTemp.stop();
+    isTestRunning(false);
+
     DeviceControllerCPP::instance()->revertPerfTest();
 }
 

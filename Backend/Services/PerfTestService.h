@@ -29,6 +29,7 @@ private:
 
     PROPERTY_PRI_DEF_VAL(int, testId, 0)
     PROPERTY_PRI_DEF_VAL(TestState, state, Idle)
+    PROPERTY_PRI_DEF_VAL(bool, isTestRunning, false)
     PROPERTY_PRI_DEF_VAL(AppSpecCPP::SystemMode, mode, AppSpecCPP::Cooling)
     PROPERTY_PRI_DEF_VAL(int, startTimeLeft, 0) // in seconds
     PROPERTY_PRI_DEF_VAL(int, testTimeLeft, 0) // in seconds

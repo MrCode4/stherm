@@ -759,11 +759,6 @@ I_DeviceController {
     }
 
     function editModeEnabled(mode : int) {
-        // ignore all server changes if perf-test is running
-        if (PerfTestService.state == PerfTestService.Warmup ||
-                PerfTestService.state == PerfTestService.Running) {
-            return true;
-        }
         return (root.editMode & mode) === mode ||
                 (root.lockMode & mode) === mode ||
                 (root.stageMode & mode) === mode;

@@ -13,7 +13,7 @@ I_PopUp {
     closeButtonEnabled: false
     closePolicy: Popup.NoAutoClose
 
-    property UiSession uiSession
+    required property UiSession uiSession
     property I_Device appModel: uiSession?.appModel ?? null
     property bool showConfirmationToStop: false
 
@@ -240,6 +240,22 @@ I_PopUp {
             }
 
             Item {width: 1; Layout.fillHeight: true}
+        }
+    }
+
+    Connections {
+        target: PerfTestService
+        function onIsTestRunningChanged() {
+            console.log('PerfTestServiceLog: isTestRunning', PerfTestService.isTestRunning);
+            uiSession.deviceController.updateLockMode(AppSpec.EMSchedule, PerfTestService.isTestRunning);
+            uiSession.deviceController.updateLockMode(AppSpec.EMVacation, PerfTestService.isTestRunning);
+            uiSession.deviceController.updateLockMode(AppSpec.EMRequestedHumidity, PerfTestService.isTestRunning);
+            uiSession.deviceController.updateLockMode(AppSpec.EMDesiredTemperature, PerfTestService.isTestRunning);
+            uiSession.deviceController.updateLockMode(AppSpec.EMSettings, PerfTestService.isTestRunning);
+            uiSession.deviceController.updateLockMode(AppSpec.EMSystemSetup, PerfTestService.isTestRunning);
+            uiSession.deviceController.updateLockMode(AppSpec.EMSystemMode, PerfTestService.isTestRunning);
+            uiSession.deviceController.updateLockMode(AppSpec.EMAutoMode, PerfTestService.isTestRunning);
+            uiSession.deviceController.updateLockMode(AppSpec.EMMessages, PerfTestService.isTestRunning);
         }
     }
 }
