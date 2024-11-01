@@ -260,7 +260,6 @@ void PerfTestService::checkWarmupOrRun()
 {
     PERF_LOG <<"checkWarmupOrRun";
 
-    NetworkManager::instance()->isEnable(false);
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::actualModeStarted, this, &PerfTestService::onActualModeStarted);
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::startSystemDelayCountdown, this, &PerfTestService::onCountdownStart);
     connect(DeviceControllerCPP::instance(), &DeviceControllerCPP::stopSystemDelayCountdown, this, &PerfTestService::onCountdownStop);            
@@ -311,7 +310,6 @@ void PerfTestService::cleanupRunning()
 
     mTimerDelay.stop();
     mTimerGetTemp.stop();
-    NetworkManager::instance()->isEnable(true);    
     DeviceControllerCPP::instance()->revertPerfTest();
 }
 
@@ -334,7 +332,6 @@ void PerfTestService::collectReading()
     item["timestamp"] = QDateTime::currentDateTimeUtc().toString(DATETIME_FORMAT);
     item["temperature"] = temperature;
     mReadings.append(item);
-    lastReadings(mReadings.toVariantList());
 
     if (testTimeLeft() <= 0) {
         PERF_LOG <<"Perf-test getting readings completed";

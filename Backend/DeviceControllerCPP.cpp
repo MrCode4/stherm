@@ -1492,6 +1492,7 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
 void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 {
     if (!mSchemeDataProvider || mSchemeDataProvider->isPerfTestRunning()) {
+        TRACE << "doPerfTest: Perf-test is already running";
         return;
     }
 
@@ -1510,11 +1511,14 @@ void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 void DeviceControllerCPP::revertPerfTest()
 {
     if (!mSchemeDataProvider || !mSchemeDataProvider->isPerfTestRunning()) {
+        TRACE << "revertPerfTest: No perf-test is running to revert";
         return;
     }
 
     mSchemeDataProvider->isPerfTestRunning(false);
     mSchemeDataProvider->perfTestSystemMode(AppSpecCPP::Off);
+
+    if (mSystemSetup) mSystemSetup->mimicModeUpdated();
 
     if (mTempScheme) {
         mTempScheme->restartWork(true);

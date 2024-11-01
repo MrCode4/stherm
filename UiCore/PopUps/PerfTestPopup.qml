@@ -9,7 +9,7 @@ I_PopUp {
     id: root
     title: PerfTestService.state != PerfTestService.Complete && root.showConfirmationToStop ? "Stop the Performance Test" : "Performance Test"
     dim: false
-    leftPadding: 24; rightPadding: 24; topPadding: 20; bottomPadding: 24
+    leftPadding: 20; rightPadding: 20; topPadding: 16; bottomPadding: 16
     closeButtonEnabled: false
     closePolicy: Popup.NoAutoClose
 
