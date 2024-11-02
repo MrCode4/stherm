@@ -5,21 +5,14 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * SuccessPopup
+ * ScheduleSystemModeErrorPopup
  * ***********************************************************************************************/
 I_PopUp {
     id: root
 
-    /* Property declaration
-     * ****************************************************************************************/
-    property ScheduleCPP         schedule
-
-    //! text
-    property string message: ""
-
     /* Signals
      * ****************************************************************************************/
-    signal duplicateSchedule(schedule : ScheduleCPP)
+    signal duplicateSchedule()
 
     /* Object properties
      * ****************************************************************************************/
@@ -116,7 +109,7 @@ I_PopUp {
                 text: "Duplicate"
 
                 onClicked: {
-                    duplicateSchedule(schedule)
+                    duplicateSchedule()
                     close();
                 }
             }

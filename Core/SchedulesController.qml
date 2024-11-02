@@ -95,6 +95,7 @@ QtObject {
         return newSchedule;
     }
 
+    //! Check if the entered schedule name is already being used in the existing schedule list.
     function isScheduleNameExist(name : string) : bool {
         let foundSchedule = device.schedules.find(sch => sch.name === name);
 

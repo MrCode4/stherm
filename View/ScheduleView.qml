@@ -127,29 +127,34 @@ BasePageView {
 
     property ScheduleSystemModeErrorPopup scheduleSystemModeErrorPopup: ScheduleSystemModeErrorPopup {
 
-        onDuplicateSchedule: schedule => {
-                                 var clonedSchedule = schedulesController.saveNewSchedule(schedule);
-                                 clonedSchedule.enable = false;
+        property ScheduleCPP schedule
 
-                                 //! Find the proper name for schedule.
-                                 var scheduleName = clonedSchedule.name.replace(/_\d+$/, '');
-                                 var num = 1;
-                                 while (schedulesController.isScheduleNameExist(scheduleName)) {
-                                     scheduleName = clonedSchedule.name.replace(/_\d+$/, '') + `_${num}`;
-                                     num++;
-                                 }
+        onDuplicateSchedule: {
+            var clonedSchedule = schedulesController.saveNewSchedule(schedule);
+            clonedSchedule.enable = false;
 
-                                 clonedSchedule.name = scheduleName;
+            //! Find the proper name for schedule.
+            var scheduleName = clonedSchedule.name.replace(/_\d+$/, '');
+            var num = 1;
+            while (schedulesController.isScheduleNameExist(scheduleName)) {
+                scheduleName = clonedSchedule.name.replace(/_\d+$/, '') + `_${num}`;
+                num++;
+            }
 
-                                 if (_root.StackView.view) {
-                                     if (_root.StackView.view) {
-                                         _root.StackView.view.push(schedulePreview, {
-                                                                       "schedule": clonedSchedule
-                                                                   });
-                                     }
-                                 }
+            clonedSchedule.name = scheduleName;
 
-                             }
+            // Send to server
+            schedulesController.editScheduleInServer(clonedSchedule);
+
+            if (_root.StackView.view) {
+                if (_root.StackView.view) {
+                    _root.StackView.view.push(schedulePreview, {
+                                                  "schedule": clonedSchedule
+                                              });
+                }
+            }
+
+        }
 
     }
 }
