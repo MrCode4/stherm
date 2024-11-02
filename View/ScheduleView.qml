@@ -128,20 +128,20 @@ BasePageView {
     property ScheduleSystemModeErrorPopup scheduleSystemModeErrorPopup: ScheduleSystemModeErrorPopup {
 
         onDuplicateSchedule: schedule => {
+                                 var clonedSchedule = schedulesController.saveNewSchedule(schedule);
+                                 clonedSchedule.enable = false;
+
+                                 //! Find the proper name for schedule.
+                                 var scheduleName = clonedSchedule.name.replace(/_\d+$/, '');
+                                 var num = 1;
+                                 while (schedulesController.isScheduleNameExist(scheduleName)) {
+                                     scheduleName = clonedSchedule.name.replace(/_\d+$/, '') + `_${num}`;
+                                     num++;
+                                 }
+
+                                 clonedSchedule.name = scheduleName;
+
                                  if (_root.StackView.view) {
-                                     var clonedSchedule = schedulesController.saveNewSchedule(schedule);
-                                     clonedSchedule.enable = false;
-
-                                     //! Find the proper name for schedule.
-                                     var scheduleName = clonedSchedule.name;
-                                     var num = 1;
-                                     while (schedulesController.isScheduleNameExist(scheduleName)) {
-                                         scheduleName += `_${num}`;
-                                         num++;
-                                     }
-
-                                      clonedSchedule.name = scheduleName;
-
                                      if (_root.StackView.view) {
                                          _root.StackView.view.push(schedulePreview, {
                                                                        "schedule": clonedSchedule
@@ -149,7 +149,7 @@ BasePageView {
                                      }
                                  }
 
-        }
+                             }
 
     }
 }
