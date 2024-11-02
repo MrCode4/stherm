@@ -74,8 +74,7 @@ BasePageView {
 
             onSendRemovedRequest: {
                 deleteScheduleConfirmPopup.scheduleDelegateToDelete = scheduleDelegate;
-                deleteScheduleConfirmPopup.open();
-
+                uiSession.popupLayout.displayPopUp(deleteScheduleConfirmPopup);
             }
 
             onIsScheduleIncomaptible: {
