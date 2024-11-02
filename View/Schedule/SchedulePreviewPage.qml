@@ -24,6 +24,10 @@ BasePageView {
     //!
     readonly property ScheduleCPP   scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
 
+    /* Signals
+     * ****************************************************************************************/
+    signal done();
+
     /* Object properties
      * ****************************************************************************************/
     rightPadding: 4
@@ -44,7 +48,7 @@ BasePageView {
                 return;
             }
         }
-
+        done();
         goBack();
     }
 

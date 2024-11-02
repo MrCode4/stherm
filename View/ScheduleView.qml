@@ -146,13 +146,13 @@ BasePageView {
             // Send to server
             schedulesController.editScheduleInServer(clonedSchedule);
 
-            // Scroll to the newly created item
-            schedulesList.positionViewAtEnd();
-
             if (_root.StackView.view) {
                 if (_root.StackView.view) {
                     _root.StackView.view.push(schedulePreview, {
                                                   "schedule": clonedSchedule
+                                              }).done.connect(function() {
+                                                  // Scroll to the newly created item
+                                                  schedulesList.positionViewAtEnd();
                                               });
                 }
             }
