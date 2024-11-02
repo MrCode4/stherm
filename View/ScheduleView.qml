@@ -49,6 +49,7 @@ BasePageView {
 
     //! Contents should be a list of current schedules
     ListView {
+        id: schedulesList
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
             y: _root.contentItem.y
@@ -144,6 +145,9 @@ BasePageView {
 
             // Send to server
             schedulesController.editScheduleInServer(clonedSchedule);
+
+            // Scroll to the newly created item
+            schedulesList.positionViewAtEnd();
 
             if (_root.StackView.view) {
                 if (_root.StackView.view) {
