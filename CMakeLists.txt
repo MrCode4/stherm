@@ -282,6 +282,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/SwitchHeatingPopup.qml
         UiCore/PopUps/MessagePopup.qml
         UiCore/PopUps/PerfTestPopup.qml
+        UiCore/PopUps/ScheduleSystemModeErrorPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml

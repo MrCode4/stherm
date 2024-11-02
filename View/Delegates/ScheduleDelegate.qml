@@ -13,6 +13,7 @@ ItemDelegate {
     /* Signals
      * ****************************************************************************************/
     signal sendRemovedRequest()
+    signal isScheduleIncomaptible()
 
     /* Property declaration
      * ****************************************************************************************/
@@ -99,10 +100,7 @@ ItemDelegate {
                         if (checked) {
                             //! First check the schedule compability
                             if (schedulesController.isScheduleIncompatible(schedule, uiSession.appModel.systemSetup.systemMode)) {
-                                //! Show an error popup
-                                uiSession.popUps.errorPopup.errorMessage = "Incompatible system mode. The schedule can not be activated.";
-                                uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup);
-
+                                isScheduleIncomaptible();
                                 toggle();
                                 return;
                             }
