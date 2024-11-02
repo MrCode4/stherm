@@ -421,6 +421,7 @@ qt6_add_qml_module(appStherm
         Fonts/Montserrat-Regular.ttf
         Fonts/RobotoMono-Regular.ttf
         Fonts/Roboto-Regular.ttf
+        Fonts/unifont.otf
         Images/smart-phone.png
         Images/mobile-app-link.png
         Images/auto.png
