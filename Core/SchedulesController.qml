@@ -60,7 +60,7 @@ QtObject {
     //! Saves new schedule
     function saveNewSchedule(schedule: ScheduleCPP)
     {
-        var newSchedule = cloneSchedule(schedule, AppCore.defaultRepo); QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
+        var newSchedule = cloneSchedule(schedule, AppCore.defaultRepo);
 
         // Update the created schedule with the current system mode
         newSchedule.systemMode = device.systemSetup.systemMode;
