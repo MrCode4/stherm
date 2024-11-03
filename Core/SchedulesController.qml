@@ -349,9 +349,11 @@ QtObject {
             schElement.active = isActive;
         })
 
-        // !this function is called even if device is off or hold!
+        //! this function is called even if device is off or hold!
+        //! We should no use a current schedule when device is on Hold, in Off Mode,
+        //! in perf test or when emergency shut off!
         if (device.isHold || ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) ||
-                device?.systemSetup?._isSystemShutoff) {
+                device?.systemSetup?._isSystemShutoff || PerfTestService.isTestRunning) {
             currentSchedule = null;
         }
 
