@@ -81,7 +81,7 @@ I_PopUp {
             font.pointSize: Application.font.pointSize * 0.75
             wrapMode: Text.WordWrap
             verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
+            horizontalAlignment: Text.AlignLeft
         }
 
         RowLayout {
