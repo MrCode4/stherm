@@ -11,26 +11,7 @@
 
 class PerfTestService : public DevApiExecutor
 {
-    Q_OBJECT
-    QML_ELEMENT
-    QML_SINGLETON
-
-    PROPERTY_PRI_DEF_VAL(int, testId, 0)
-    PROPERTY_PRI_DEF_VAL(int, state, 0)
-    PROPERTY_PRI_DEF_VAL(AppSpecCPP::SystemMode, mode, AppSpecCPP::Cooling)
-    PROPERTY_PRI_DEF_VAL(int, startTimeLeft, 0) // in seconds
-    PROPERTY_PRI_DEF_VAL(int, testTimeLeft, 0) // in seconds
-    PROPERTY_PRI_DEF_VAL(int, finishTimeLeft, 0) // in seconds
-    PROPERTY_PRI_DEF_VAL(bool, isPostponed, false)
-    PROPERTY_PRI(QVariantList, lastReadings)
-
-private:
-    explicit PerfTestService(QObject* parent = nullptr);
-
 public:
-    static PerfTestService* me();
-    static PerfTestService* create(QQmlEngine*, QJSEngine*) {return me();}
-
     enum TestState {
         Idle = 0,
         Checking,
@@ -40,6 +21,27 @@ public:
         Complete
     };
     Q_ENUM(TestState)
+
+private:
+    Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
+
+    PROPERTY_PRI_DEF_VAL(int, testId, 0)
+    PROPERTY_PRI_DEF_VAL(TestState, state, Idle)
+    PROPERTY_PRI_DEF_VAL(bool, isTestRunning, false)
+    PROPERTY_PRI_DEF_VAL(AppSpecCPP::SystemMode, mode, AppSpecCPP::Cooling)
+    PROPERTY_PRI_DEF_VAL(int, startTimeLeft, 0) // in seconds
+    PROPERTY_PRI_DEF_VAL(int, testTimeLeft, 0) // in seconds
+    PROPERTY_PRI_DEF_VAL(int, finishTimeLeft, 0) // in seconds
+    PROPERTY_PRI_DEF_VAL(bool, isPostponed, false)
+
+private:
+    explicit PerfTestService(QObject* parent = nullptr);
+
+public:
+    static PerfTestService* me();
+    static PerfTestService* create(QQmlEngine*, QJSEngine*) {return me();}
 
 signals:
     void eligibilityChecked(const QString& errorMsg);

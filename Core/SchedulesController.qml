@@ -60,18 +60,7 @@ QtObject {
     //! Saves new schedule
     function saveNewSchedule(schedule: ScheduleCPP)
     {
-        var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
-        newSchedule._qsRepo = AppCore.defaultRepo;
-        newSchedule.enable = schedule.enable;
-        newSchedule.name = schedule.name;
-        newSchedule.type = schedule.type;
-        newSchedule.minimumTemperature = schedule.minimumTemperature;
-        newSchedule.maximumTemperature = schedule.maximumTemperature;
-        newSchedule.humidity = schedule.humidity;
-        newSchedule.startTime = schedule.startTime;
-        newSchedule.endTime = schedule.endTime;
-        newSchedule.repeats = schedule.repeats;
-        newSchedule.dataSource = schedule.dataSource;
+        var newSchedule = cloneSchedule(schedule, AppCore.defaultRepo);
 
         // Update the created schedule with the current system mode
         newSchedule.systemMode = device.systemSetup.systemMode;
@@ -83,6 +72,34 @@ QtObject {
         addScheduleToServer(newSchedule)
 
         deviceController.saveSettings();
+
+        return newSchedule;
+    }
+
+    //! Clone a schedule
+    function cloneSchedule(schedule: ScheduleCPP, qsRepo = null) : ScheduleCPP {
+        var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"],  AppCore.defaultRepo);
+        newSchedule._qsRepo = qsRepo;
+        newSchedule.enable = schedule.enable;
+        newSchedule.name = schedule.name;
+        newSchedule.type = schedule.type;
+        newSchedule.minimumTemperature = schedule.minimumTemperature;
+        newSchedule.maximumTemperature = schedule.maximumTemperature;
+        newSchedule.humidity = schedule.humidity;
+        newSchedule.startTime = schedule.startTime;
+        newSchedule.endTime = schedule.endTime;
+        newSchedule.repeats = schedule.repeats;
+        newSchedule.dataSource = schedule.dataSource;
+        newSchedule.systemMode = schedule.systemMode;
+
+        return newSchedule;
+    }
+
+    //! Check if the entered schedule name is already being used in the existing schedule list.
+    function isScheduleNameExist(name : string) : bool {
+        let foundSchedule = device.schedules.find(sch => sch.name === name);
+
+        return (foundSchedule !== undefined);
     }
 
     //! Remove an schedule
@@ -349,9 +366,11 @@ QtObject {
             schElement.active = isActive;
         })
 
-        // !this function is called even if device is off or hold!
+        //! this function is called even if device is off or hold!
+        //! We should no use a current schedule when device is on Hold, in Off Mode,
+        //! in perf test or when emergency shut off!
         if (device.isHold || ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) ||
-                device?.systemSetup?._isSystemShutoff) {
+                device?.systemSetup?._isSystemShutoff || PerfTestService.isTestRunning) {
             currentSchedule = null;
         }
 

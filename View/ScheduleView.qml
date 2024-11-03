@@ -49,6 +49,7 @@ BasePageView {
 
     //! Contents should be a list of current schedules
     ListView {
+        id: schedulesList
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
             y: _root.contentItem.y
@@ -74,8 +75,12 @@ BasePageView {
 
             onSendRemovedRequest: {
                 deleteScheduleConfirmPopup.scheduleDelegateToDelete = scheduleDelegate;
-                deleteScheduleConfirmPopup.open();
+                uiSession.popupLayout.displayPopUp(deleteScheduleConfirmPopup);
+            }
 
+            onIsScheduleIncomaptible: {
+                scheduleSystemModeErrorPopup.schedule = schedule;
+                uiSession.popupLayout.displayPopUp(scheduleSystemModeErrorPopup);
             }
 
             onClicked: {
@@ -118,5 +123,41 @@ BasePageView {
                                  scheduleDelegateToDelete.removeRequestAccepted();
                              }
                          }
+    }
+
+    property ScheduleSystemModeErrorPopup scheduleSystemModeErrorPopup: ScheduleSystemModeErrorPopup {
+
+        property ScheduleCPP schedule
+
+        onDuplicateSchedule: {
+            var clonedSchedule = schedulesController.saveNewSchedule(schedule);
+            clonedSchedule.enable = false;
+
+            //! Find the proper name for schedule.
+            var scheduleName = clonedSchedule.name.replace(/_\d+$/, '');
+            var num = 1;
+            while (schedulesController.isScheduleNameExist(scheduleName)) {
+                scheduleName = clonedSchedule.name.replace(/_\d+$/, '') + `_${num}`;
+                num++;
+            }
+
+            clonedSchedule.name = scheduleName;
+
+            // Send to server
+            schedulesController.editScheduleInServer(clonedSchedule);
+
+            if (_root.StackView.view) {
+                if (_root.StackView.view) {
+                    _root.StackView.view.push(schedulePreview, {
+                                                  "schedule": clonedSchedule
+                                              }).done.connect(function() {
+                                                  // Scroll to the newly created item
+                                                  schedulesList.positionViewAtEnd();
+                                              });
+                }
+            }
+
+        }
+
     }
 }

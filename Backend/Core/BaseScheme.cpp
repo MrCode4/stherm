@@ -50,10 +50,15 @@ double BaseScheme::effectiveSetHumidity() const
 {
     double effHumidity = mDataProvider->setPointHumidity();
 
+    if (mDataProvider->isPerfTestRunning()) {
+        return effHumidity;
+    }
+
     auto currentHumidity = mDataProvider.data()->currentHumidity();
 
+
     // will not happen for now, in vacation it is handled internally
-    if (mDataProvider.data()->systemSetup()->isVacation) {
+    if (mDataProvider.data()->isVacationEffective()) {
         double vacationMinimumHumidity = mDataProvider->vacation().minimumHumidity;
         double vacationMaximumHumidity = mDataProvider->vacation().maximumHumidity;
 
