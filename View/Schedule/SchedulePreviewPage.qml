@@ -24,6 +24,10 @@ BasePageView {
     //!
     readonly property ScheduleCPP   scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
 
+    /* Signals
+     * ****************************************************************************************/
+    signal done();
+
     /* Object properties
      * ****************************************************************************************/
     rightPadding: 4
@@ -44,7 +48,7 @@ BasePageView {
                 return;
             }
         }
-
+        done();
         goBack();
     }
 
@@ -132,7 +136,7 @@ BasePageView {
                     //! Open ScheduleNamePage for editing
                     if (_root.StackView.view) {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleNamePage.qml", {
-                                                      "backButtonVisible": true,
+                                                      "backButtonVisible": _root.backButtonVisible,
                                                       "uiSession": uiSession,
                                                       "schedule": internal.scheduleToEdit
                                                   });
@@ -168,7 +172,7 @@ BasePageView {
                     //! Open ScheduleNamePage for editing
                     if (_root.StackView.view) {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTypePage.qml", {
-                                                      "backButtonVisible": true,
+                                                      "backButtonVisible": _root.backButtonVisible,
                                                       "uiSession": uiSession,
                                                       "schedule": internal.scheduleToEdit
                                                   });
@@ -264,7 +268,7 @@ BasePageView {
                     //! Open ScheduleNamePage for editing
                     if (_root.StackView.view) {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTempraturePage.qml", {
-                                                      "backButtonVisible": true,
+                                                      "backButtonVisible": _root.backButtonVisible,
                                                       "uiSession": uiSession,
                                                       "schedule": internal.scheduleToEdit,
                                                       "editMode": true
@@ -326,7 +330,7 @@ BasePageView {
                     //! Open ScheduleNamePage for editing
                     if (_root.StackView.view) {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
-                                                      "backButtonVisible": true,
+                                                      "backButtonVisible": _root.backButtonVisible,
                                                       "uiSession": uiSession,
                                                       "schedule": internal.scheduleToEdit,
                                                       "editMode": true
@@ -362,7 +366,7 @@ BasePageView {
                     //! Open ScheduleNamePage for editing
                     if (_root.StackView.view) {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleTimePage.qml", {
-                                                      "backButtonVisible": true,
+                                                      "backButtonVisible": _root.backButtonVisible,
                                                       "uiSession": uiSession,
                                                       "schedule": internal.scheduleToEdit,
                                                       "editMode": true
@@ -417,7 +421,7 @@ BasePageView {
                     //! Open ScheduleNamePage for editing
                     if (_root.StackView.view) {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleRepeatPage.qml", {
-                                                      "backButtonVisible": true,
+                                                      "backButtonVisible": _root.backButtonVisible,
                                                       "uiSession": uiSession,
                                                       "schedule": internal.scheduleToEdit,
                                                       "editMode": true
@@ -455,7 +459,7 @@ BasePageView {
                     //! Open ScheduleNamePage for editing
                     if (_root.StackView.view) {
                         _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleDataSourcePage.qml", {
-                                                      "backButtonVisible": true,
+                                                      "backButtonVisible": _root.backButtonVisible,
                                                       "uiSession": uiSession,
                                                       "schedule": internal.scheduleToEdit
                                                   });
