@@ -309,10 +309,10 @@ private:
     QSharedPointer<SchemeDataProvider> mSchemeDataProvider;
 
     //! Object to manage temperature control
-    Scheme      *m_scheme;
+    Scheme* mTempScheme;
 
     //! Object to manage humidity control
-    HumidityScheme *m_HumidityScheme;
+    HumidityScheme* mHumidityScheme;
 
     QTimer mGetOutdoorTemperatureTimer;
 

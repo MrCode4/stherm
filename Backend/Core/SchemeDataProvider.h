@@ -5,6 +5,7 @@
 
 #include "ScheduleCPP.h"
 #include "SystemSetup.h"
+#include "Property.h"
 
 /*! ***********************************************************************************************
  * This class provides data for Scheme and HumidityScheme.
@@ -13,6 +14,8 @@
 class SchemeDataProvider : public QObject
 {
     Q_OBJECT
+    PROPERTY_PUB_DEF_VAL(bool, isPerfTestRunning, false)
+    PROPERTY_PUB_DEF_VAL(AppSpecCPP::SystemMode, perfTestSystemMode, AppSpecCPP::Off)
 
 public:
     /* Public Constructors & Destructor
@@ -77,6 +80,9 @@ public:
     //! result should be in Fahrenheit as well.
     double effectiveTemperature() const;
 
+    bool isVacationEffective() const;
+
+    AppSpecCPP::SystemMode effectiveSystemMode() const;
 
     void setAutoMinReqTempF(const double &fah_value);
 
