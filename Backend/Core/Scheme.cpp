@@ -74,8 +74,9 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
         LOG_CHECK(isRunning()) << "Temperature scheme version: " << QString(TEMPERATURE_SCHEME_VERSION);
         LOG_CHECK(isRunning() && sys) << "systemMode: " << mDataProvider->effectiveSystemMode() << "systemType: " << sys->systemType;
-        LOG_CHECK(isRunning() && mDataProvider->isPerfTestRunning())<< "Effective system-mode: "<< mDataProvider->effectiveSystemMode();
-        LOG_CHECK(isRunning() && sys) << "systemRunDelay: " << sys->systemRunDelay << "isVacation: " << sys->isVacation;
+        LOG_CHECK(isRunning() && mDataProvider->isPerfTestRunning())<< "Perf test actual system-mode: "<< sys->systemMode;
+        LOG_CHECK(isRunning() && sys) << "systemRunDelay: " << sys->systemRunDelay << "isVacation: " << mDataProvider->isVacationEffective();
+        LOG_CHECK(isRunning() && mDataProvider->isPerfTestRunning())<< "Perf test actual isVacation: "<<  sys->isVacation;
         LOG_CHECK(isRunning() && sys) << "heatStage: "  << sys->heatStage << "coolStage: " <<sys->coolStage;
         LOG_CHECK(isRunning() && sys) << "heatPumpEmergency: "  << sys->heatPumpEmergency << "heatPumpOBState: " << (sys->heatPumpOBState == 0 ? "cooling" : "heating");
         LOG_CHECK(isRunning() && sys) << "systemAccessories (wire, typ): " << sys->systemAccessories->property("accessoriesWireType") <<  sys->systemAccessories->property("accessoriesType");
@@ -226,7 +227,7 @@ void Scheme::run()
                 EmergencyLoop();
                 break;
             default:
-                qWarning() << "Unsupported Mode in controller loop" << mDataProvider.data()->systemSetup()->systemMode;
+                qWarning() << "Unsupported Mode in controller loop" << mDataProvider->effectiveSystemMode() << "system mode:" << mDataProvider.data()->systemSetup()->systemMode;
                 break;
             }
         }
@@ -1175,7 +1176,9 @@ void Scheme::setSystemSetup()
                                AppSpecCPP::Off);
 
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
-        TRACE<< "systemModeChanged: "<< sys;
+        TRACE << "systemModeChanged: " << sys->systemMode;
+        TRACE_CHECK(mDataProvider->isPerfTestRunning())
+            << "Effective system-mode: " << mDataProvider->effectiveSystemMode();
 
         restartWork();
     });

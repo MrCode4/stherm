@@ -63,7 +63,6 @@ public:
     //! Celsius
     double dualFuelThreshod;
 
-    void mimicModeUpdated();
 
 signals:
     void systemTypeChanged();
