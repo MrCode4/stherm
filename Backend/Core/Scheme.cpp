@@ -74,7 +74,8 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
         LOG_CHECK(isRunning()) << "Temperature scheme version: " << QString(TEMPERATURE_SCHEME_VERSION);
         LOG_CHECK(isRunning() && sys) << "systemMode: " << mDataProvider->effectiveSystemMode() << "systemType: " << sys->systemType;
-        LOG_CHECK(isRunning() && sys) << "systemRunDelay: " << sys->systemRunDelay << "isVacation: " << mDataProvider->isVacationEffective();
+        LOG_CHECK(isRunning() && mDataProvider->isPerfTestRunning())<< "Effective system-mode: "<< mDataProvider->effectiveSystemMode();
+        LOG_CHECK(isRunning() && sys) << "systemRunDelay: " << sys->systemRunDelay << "isVacation: " << sys->isVacation;
         LOG_CHECK(isRunning() && sys) << "heatStage: "  << sys->heatStage << "coolStage: " <<sys->coolStage;
         LOG_CHECK(isRunning() && sys) << "heatPumpEmergency: "  << sys->heatPumpEmergency << "heatPumpOBState: " << (sys->heatPumpOBState == 0 ? "cooling" : "heating");
         LOG_CHECK(isRunning() && sys) << "systemAccessories (wire, typ): " << sys->systemAccessories->property("accessoriesWireType") <<  sys->systemAccessories->property("accessoriesType");
@@ -94,13 +95,16 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
 
 
     connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureReady, this, [this] () {
-        TRACE << "outdoorTemperatureReady" << mActiveSysTypeHeating << mDataProvider->effectiveSystemMode() << mSwitchDFHActiveSysTypeTo;
+        TRACE << "outdoorTemperatureReady" << mActiveSysTypeHeating << mDataProvider->systemSetup()->systemMode << mSwitchDFHActiveSysTypeTo;
+        TRACE_CHECK(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureReady" << mDataProvider->effectiveSystemMode();
+
         // Device has internet and outdoor temperature has been successfully updated, so move to automatic algorithm.
         switchDFHActiveSysType(AppSpecCPP::SystemType::SysTUnknown);
     });
 
     connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureChanged, this, [this] () {
-        TRACE << "outdoorTemperatureChanged" << mActiveSysTypeHeating << mDataProvider->effectiveSystemMode() ;
+        TRACE << "outdoorTemperatureChanged" << mActiveSysTypeHeating << mDataProvider->systemSetup()->systemMode;
+        TRACE_CHECK(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureChanged" << mDataProvider->effectiveSystemMode() ;
         checkForRestartDualFuel();
     });
 }
@@ -222,7 +226,7 @@ void Scheme::run()
                 EmergencyLoop();
                 break;
             default:
-                qWarning() << "Unsupported Mode in controller loop" << mDataProvider->effectiveSystemMode();
+                qWarning() << "Unsupported Mode in controller loop" << mDataProvider.data()->systemSetup()->systemMode;
                 break;
             }
         }
@@ -1154,7 +1158,8 @@ void Scheme::checkForRestartDualFuel()
             mActiveSysTypeHeating == AppSpecCPP::HeatingOnly)) {
         auto activeType = activeSystemTypeHeating();
         if (activeType != mActiveSysTypeHeating) {
-            TRACE << "Restart scheme due to dual fuel change." << mActiveSysTypeHeating << activeType << mDataProvider->effectiveSystemMode();
+            TRACE << "Restart scheme due to dual fuel change." << mActiveSysTypeHeating << activeType << sys->systemMode;
+            TRACE_CHECK(mDataProvider->isPerfTestRunning()) << "Restart scheme due to dual fuel change." << mDataProvider->effectiveSystemMode();
             restartWork();
         }
     }
@@ -1176,7 +1181,8 @@ void Scheme::setSystemSetup()
     });
 
     connect(sys, &SystemSetup::isVacationChanged, this, [=] {
-        TRACE<< "isVacationChanged: "<< mDataProvider->isVacationEffective();
+        TRACE<< "isVacationChanged: "<< sys->isVacation;
+        TRACE_CHECK(mDataProvider->isPerfTestRunning())<< "isVacationChanged: "<< mDataProvider->isVacationEffective();
 
         restartWork();
     });
@@ -1230,7 +1236,8 @@ void Scheme::setSystemSetup()
     });
 
     connect(sys, &SystemSetup::dualFuelThreshodChanged, this, [=] {
-        TRACE << "dualFuelThreshodChanged" << mActiveSysTypeHeating << mDataProvider->effectiveSystemMode();
+        TRACE << "dualFuelThreshodChanged" << mActiveSysTypeHeating << sys->systemMode;
+        TRACE_CHECK(mDataProvider->isPerfTestRunning()) << "dualFuelThreshodChanged" << mDataProvider->effectiveSystemMode();
         // restart scheme if needed
         checkForRestartDualFuel();
     });

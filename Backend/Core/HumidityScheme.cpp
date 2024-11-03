@@ -111,7 +111,8 @@ void HumidityScheme::setSystemSetup()
     const auto sys = mDataProvider.data()->systemSetup();
 
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
-        TRACE<< "systemModeChanged: "<< mDataProvider.data()->effectiveSystemMode();
+        TRACE<< "systemModeChanged: "<< sys->systemMode;
+        TRACE_CHECK(mDataProvider->isPerfTestRunning())<< "Effective system-mode: "<< mDataProvider->effectiveSystemMode();
 
         restartWork();
     });

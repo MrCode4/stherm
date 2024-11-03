@@ -18,6 +18,10 @@ class NetworkManager : public QObject
     Q_OBJECT
     NetworkManager(QObject* parent = nullptr);
 
+    // If disabled, all the network calls will be ignored. We can use this when we need to block all
+    // internet communications, e.g., when perf-test is running.
+    PROPERTY_PUB_DEF_VAL(bool, isEnable, true)
+
 public:
     static NetworkManager* instance();
 

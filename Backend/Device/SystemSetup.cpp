@@ -22,12 +22,3 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
 
     dualFuelThreshod = 1.666667; // 35 Fahrenheit
 }
-
-void SystemSetup::mimicModeUpdated()
-{
-    emit systemModeChanged();
-
-    if (isVacation) {
-        emit isVacationChanged();
-    }
-}

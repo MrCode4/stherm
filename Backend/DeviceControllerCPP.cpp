@@ -1518,8 +1518,6 @@ void DeviceControllerCPP::revertPerfTest()
     mSchemeDataProvider->isPerfTestRunning(false);
     mSchemeDataProvider->perfTestSystemMode(AppSpecCPP::Off);
 
-    if (mSystemSetup) mSystemSetup->mimicModeUpdated();
-
     if (mTempScheme) {
         mTempScheme->restartWork(true);
     }

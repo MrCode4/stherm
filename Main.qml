@@ -245,7 +245,7 @@ ApplicationWindow {
 
     PerfTestPopup {
         uiSession: uiSessionId
-        z: _screenSaver.z + 1        
+        z: _screenSaver.z + 1
         visible: PerfTestService.state >= PerfTestService.Warmup &&
                  (uiSession.appModel.lock.isLock == false || _screenSaver.visible)
     }
