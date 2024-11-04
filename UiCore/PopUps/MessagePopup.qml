@@ -139,9 +139,7 @@ I_PopUp {
             Label {
                 id: messageLabel
 
-                //! The device is unable to recognize the asterisk followed by a space ("* ") as a valid bullet point. Therefore,
-                //! we have implemented a workaround to replace it with a hyphen followed by a space ("- ").
-                property string processedMessage: message?.message?.replace(/\* /g, '- ') ?? ""
+                property string processedMessage: message?.message ?? ""
 
                 anchors.fill: parent
 

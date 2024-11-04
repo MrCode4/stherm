@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # ##################################################################################################
 # Project Settings
 # ##################################################################################################
-project(Stherm VERSION 1.3.1 LANGUAGES CXX)
+project(Stherm VERSION 1.4.3 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -421,6 +421,7 @@ qt6_add_qml_module(appStherm
         Fonts/Montserrat-Regular.ttf
         Fonts/RobotoMono-Regular.ttf
         Fonts/Roboto-Regular.ttf
+        Fonts/unifont.otf
         Images/smart-phone.png
         Images/mobile-app-link.png
         Images/auto.png
