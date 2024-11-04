@@ -1,6 +1,105 @@
 
 Release Note
 -------------
+## Release R 1.4.3
+ 4th Novemeber 2024
+ Branch- r1_4_3, commit- 9e211cac39
+ 
+### Release Articles
+update-V.1.4.3.zip
+
+### Reason
+Fix Performance test and update some text
+
+### What’s Brand New
+- Duplicate option for schedules on type error
+
+### What Been Updated
+- Text of the error for schedules type error
+
+### What’s Been Fixed
+- Device shown offline during performance test
+- Schedules activating during performance test
+- Not Showing some certaing bullets in messages and etc.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
+## Release R 1.4.2
+ 31st October 2024
+ Branch- r1_4_2, commit- 3375189532
+ 
+### Release Articles
+update-V.1.4.2.zip
+
+### Reason
+Update Schedule and fix some issues
+
+### What’s Brand New
+- Skipping when Job id has error from error page.
+
+### What Been Updated
+- UI and underlying logic for schedules redesigned.
+
+### What’s Been Fixed
+- Some issues regarding performance test
+- Some issues regarding first run flow
+- Pop up orders during factory registration
+
+### Known Issues
+- CPU usage in some cases should be check.
+- Performance test hase some issues.
+
+## Release R 1.4.1
+ 29th October 2024
+ Branch- r1_4_1, commit- 81d0cd22
+ 
+### Release Articles
+update-V.1.4.1.zip
+
+### Reason
+Add new features and fix some issues
+
+### What’s Brand New
+- Added a confirmation message when clicking x on add schedule wizard.
+- Added confirmation on delete schedule.
+- Added "Contact Nuve Support: (657) 626-4887 for issues." on specific first run flow pages.
+- Added performance test.
+
+### What Been Updated
+- Show all errors in the first run flow requests.
+
+### What’s Been Fixed
+- Fixed some issues.
+
+### Known Issues
+- CPU usage in some cases should be check.
+- Performance test hase some issues.
+
+## Release R 1.4.0
+ 26th October 2024
+ Branch- r1_4_0, commit- d81ff8bc
+ 
+### Release Articles
+update-V.1.4.0.zip
+
+### Reason
+Add new feature and fix some issues
+
+### What’s Brand New
+- Added some CMAKE options for developer tests.
+- Added gradient to menus like main and settings menu, messages, alert and system alert lists.
+- Added Lock/Unlock API.
+
+### What Been Updated
+- Implemented the new UI design for server messages.
+
+### What’s Been Fixed
+- Fixed showing notification dot in the main menu.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
 ## Release R 1.3.1
  9th October 2024
  Branch- r1_3_1, commit- 15c6fb9c
