@@ -1,7 +1,31 @@
 
 Release Note
 -------------
-## Release R 1.4.1
+## Release R 1.4.3
+ 4th Novemeber 2024
+ Branch- r1_4_3, commit- 9e211cac39
+ 
+### Release Articles
+update-V.1.4.3.zip
+
+### Reason
+Fix Performance test and update some text
+
+### What’s Brand New
+- Duplicate option for schedules on type error
+
+### What Been Updated
+- Text of the error for schedules type error
+
+### What’s Been Fixed
+- Device shown offline during performance test
+- Schedules activating during performance test
+- Not Showing some certaing bullets in messages and etc.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
+## Release R 1.4.2
  31st October 2024
  Branch- r1_4_2, commit- 3375189532
  
