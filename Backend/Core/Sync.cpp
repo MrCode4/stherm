@@ -9,6 +9,9 @@
 #include "LogHelper.h"
 #include "device_config.h"
 
+Q_LOGGING_CATEGORY(SyncLogCat, "SyncLog")
+#define SYNC_LOG TRACE_CATEGORY(SyncLogCat)
+
 /* ************************************************************************************************
  * Network information
  * ************************************************************************************************/
@@ -797,6 +800,33 @@ void Sync::getOutdoorTemperature() {
     if (reply) {// returned response has no data object and values are in root
         reply->setProperty("noDataObject", true);
     }
+}
+
+void Sync::reportCommandResponse(ReportCommandCallback callback, const QString& command, const QString& response, int retryCount)
+{
+    if (mSerialNumber.isEmpty()) {
+        SYNC_LOG <<"Sn is not ready! can not report command" << command;
+        if (callback != nullptr) {
+            callback(false, QJsonObject());
+        }
+        return;
+    }
+
+    auto apiCallback = [this, callback, command, response, retryCount] (QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() != QNetworkReply::NoError && retryCount > 0) {
+            SYNC_LOG << "Reporting Command failed, retrying. Retry left" << retryCount - 1;
+            reportCommandResponse(callback, command, response, retryCount - 1);
+        }
+        else if (callback != nullptr) {
+            SYNC_LOG << "Reporting command" <<command <<"success";
+            callback(reply->error() == QNetworkReply::NoError, data);
+        }
+    };
+
+    QJsonObject body;
+    body["data"] = response;
+    SYNC_LOG <<"Reporting command" <<command << "with data" <<response;
+    callPostApi(baseUrl() + QString("api/monitor/report?sn=%0").arg(mSerialNumber), QJsonDocument(body).toJson(), apiCallback);
 }
 
 } // namespace NUVE

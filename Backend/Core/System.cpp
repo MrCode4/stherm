@@ -5,6 +5,9 @@
 #include <QDebug>
 #include <QUrl>
 
+Q_LOGGING_CATEGORY(SystemLogCat, "SystemLog")
+#define SYS_LOG TRACE_CATEGORY(SystemLogCat)
+
 /* ************************************************************************************************
  * Network information
  * ************************************************************************************************/
@@ -40,6 +43,8 @@ const QString m_IsManualUpdateSetting      = QString("Stherm/IsManualUpdate");
 const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
+
+const QString Cmd_PushLogs = "push_logs";
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -126,7 +131,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::serialNumberReady, this, &NUVE::System::onSerialNumberReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
-    connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
+    connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::onAppDataReady);
     connect(mSync, &NUVE::Sync::serviceTitanInformationReady, this, &NUVE::System::serviceTitanInformationReady);
 
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, [this](const QVariantMap& settings, bool isValid) {
@@ -1345,6 +1350,37 @@ void NUVE::System::onSerialNumberReady()
     emit serialNumberReady();
 }
 
+void NUVE::System::onAppDataReady(QVariantMap data)
+{
+    emit appDataReady(data);
+
+    if (!data.contains("setting")) return;
+    auto command = data.value("setting").toJsonObject().value("command").toString();
+    if (command.isEmpty()) return;
+    auto commandTime = data.value("setting").toJsonObject().value("command_time").toString();
+
+    if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == commandTime) {
+        return;
+    }
+
+    SYS_LOG <<"Command received" << command <<commandTime;
+
+    if (command == Cmd_PushLogs) {
+        if (mLogSender.busy()) {
+            SYS_LOG << "LOG_PUSHING: "<< "Log-sender is busy, at this momemnt";
+        }
+        else {
+            SYS_LOG << "Applying" <<command <<commandTime;
+            if (sendLog(false)) {
+                mLastReceivedCommands[command] = commandTime;
+            }
+            else {
+                SYS_LOG <<"Command failed" <<command <<commandTime;
+            }
+        }
+    }
+}
+
 bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
     auto updateDoc = QJsonDocument::fromJson(updateData);
     if (updateDoc.isNull()) {
@@ -1706,25 +1742,25 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
     return true;
 }
 
-void NUVE::System::sendLog()
+bool NUVE::System::sendLog(bool showAlert)
 {
     if (!installSSHPass()){
         QString error("Device is not ready to send log!");
         qWarning() << error;
-        emit alert(error);
-        return;
+        if (showAlert) emit alert(error);
+        return false;
     }
 
     if (mLogSender.busy()){
         QString error("Previous session is in progress, please try again later.");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        emit alert(error);
-        return;
+        if (showAlert) emit alert(error);
+        return false;
     }
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
-        sendLogFile();
+        return sendLogFile(showAlert);
 
     } else {
         qWarning() << "Folder was not created successfully, trying again...";
@@ -1735,19 +1771,20 @@ void NUVE::System::sendLog()
             if (!error.isEmpty()) {
                 error = "error while creating log directory on remote: " + error;
                 qWarning() << error;
-                emit alert(error);
+                if (showAlert) emit alert(error);
                 return;
             }
 
             TRACE << "Folder created in server successfully";
             mLogSender.setProperty("initialized", true);
 
-            sendLogFile();
+            sendLogFile(showAlert);
         };
 
         mLogSender.setRole("dirLog", dirCreatorCallback);
 
         prepareLogDirectory(dirCreatorCallback);
+        return true;
     }
 }
 
@@ -1941,24 +1978,33 @@ void NUVE::System::sendFirstRunLogFile()
     mLogSender.start("/bin/bash", {"-c", copyFile});
 }
 
-void NUVE::System::sendLogFile()
+bool NUVE::System::sendLogFile(bool showAlert)
 {
     auto filename = generateLog();
     if (filename.isEmpty())
-        return;
+        return false;
 
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
         TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
 
+        if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+            SYS_LOG <<"Reporting" <<Cmd_PushLogs;
+            auto callback = [this] (bool success, const QJsonObject& data) {
+                mLastReceivedCommands.remove(Cmd_PushLogs);
+                SYS_LOG <<"Command Cleared" <<Cmd_PushLogs;
+            };
+            mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
+        }
+
         if (!error.isEmpty()) {
             error = "error while sending log directory on remote: " + error;
             qWarning() << error;
-            emit alert(error);
+            if (showAlert) emit alert(error);
             return;
         }
 
-        emit alert("Log is sent!");
+        if (showAlert) emit alert("Log is sent!");
     };
 
     mLogSender.setRole("sendLog", sendCallback);
@@ -1968,6 +2014,7 @@ void NUVE::System::sendLogFile()
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
+    return true;
 }
 
 void NUVE::System::sendResultsFile(const QString &filepath,

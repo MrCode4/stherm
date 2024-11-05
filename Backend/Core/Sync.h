@@ -22,6 +22,9 @@ class Sync : public DevApiExecutor
     PROPERTY_PRI_DEF_VAL(bool, pushingLockState, false)
 
 public:
+    using ReportCommandCallback = std::function<void(bool success, const QJsonObject& data)>;
+
+public:
     Sync(QObject *parent = nullptr);
 
     void setUID(cpuid_t accessUid);
@@ -74,6 +77,8 @@ public:
     Q_INVOKABLE void editSchedule(const int &scheduleID, const QVariantMap &schedule);
 
     Q_INVOKABLE void addSchedule(const QString &scheduleUid, const QVariantMap &schedule);
+
+    void reportCommandResponse(ReportCommandCallback callback, const QString& command, const QString& data, int retryCount = 3);
 
 signals:
     void settingsFetched(bool success);
