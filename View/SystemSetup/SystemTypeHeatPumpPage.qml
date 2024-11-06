@@ -294,7 +294,7 @@ BasePageView {
                 Layout.rightMargin: 30
                 Layout.bottomMargin: 10
 
-                visible: !initialSetup
+                visible: initialSetup
                 leftPadding: 25
                 rightPadding: 25
 
