@@ -812,10 +812,13 @@ void Sync::reportCommandResponse(ReportCommandCallback callback, const QString& 
         return;
     }
 
-    auto apiCallback = [this, callback, command, response, retryCount] (QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    auto apiCallback = [=] (QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() != QNetworkReply::NoError && retryCount > 0) {
-            SYNC_LOG << "Reporting Command failed, retrying. Retry left" << retryCount - 1;
-            reportCommandResponse(callback, command, response, retryCount - 1);
+            SYNC_LOG << "Reporting Command failed, will retry in 1 minute. Retry left" << retryCount - 1;
+            QTimer::singleShot(60 * 1000, this, [=]() {
+                SYNC_LOG << "Reporting Command retring";
+                reportCommandResponse(callback, command, response, retryCount - 1);
+            });
         }
         else if (callback != nullptr) {
             SYNC_LOG << "Reporting command" <<command <<"success";

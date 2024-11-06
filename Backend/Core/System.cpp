@@ -1981,30 +1981,38 @@ void NUVE::System::sendFirstRunLogFile()
 bool NUVE::System::sendLogFile(bool showAlert)
 {
     auto filename = generateLog();
-    if (filename.isEmpty())
+    if (filename.isEmpty()) {
+        if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+            SYS_LOG <<"Log file generation failed. Command cleared" <<Cmd_PushLogs;
+            mLastReceivedCommands.remove(Cmd_PushLogs);
+        }
         return false;
+    }
 
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
-        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
+        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;        
 
-        if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-            SYS_LOG <<"Reporting" <<Cmd_PushLogs;
-            auto callback = [this] (bool success, const QJsonObject& data) {
-                mLastReceivedCommands.remove(Cmd_PushLogs);
-                SYS_LOG <<"Command Cleared" <<Cmd_PushLogs;
-            };
-            mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
+        if (error.isEmpty()) {
+            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG <<"Reporting" <<Cmd_PushLogs;
+                auto callback = [this] (bool success, const QJsonObject& data) {
+                    mLastReceivedCommands.remove(Cmd_PushLogs);
+                    SYS_LOG <<"Log sending success. Command cleared" <<Cmd_PushLogs;
+                };
+                mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
+            }
+            if (showAlert) emit alert("Log is sent!");
         }
-
-        if (!error.isEmpty()) {
+        else {
+            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG <<"Log sending failed. Command cleared" <<Cmd_PushLogs;
+                mLastReceivedCommands.remove(Cmd_PushLogs);
+            }
             error = "error while sending log directory on remote: " + error;
             qWarning() << error;
             if (showAlert) emit alert(error);
-            return;
         }
-
-        if (showAlert) emit alert("Log is sent!");
     };
 
     mLogSender.setRole("sendLog", sendCallback);

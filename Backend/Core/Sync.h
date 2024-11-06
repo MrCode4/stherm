@@ -78,7 +78,8 @@ public:
 
     Q_INVOKABLE void addSchedule(const QString &scheduleUid, const QVariantMap &schedule);
 
-    void reportCommandResponse(ReportCommandCallback callback, const QString& command, const QString& data, int retryCount = 3);
+public slots:
+    void reportCommandResponse(ReportCommandCallback callback, const QString& command, const QString& data, int retryCount = 2);
 
 signals:
     void settingsFetched(bool success);
