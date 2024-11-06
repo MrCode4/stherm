@@ -36,7 +36,7 @@ RowLayout {
     //! Total tick count to show
     property int    ticksCount: 15
 
-    property int scaleValue: 1
+    property int    scaleValue: 1
 
     property real from: 0
     property real to:   0

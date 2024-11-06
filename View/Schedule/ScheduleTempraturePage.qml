@@ -213,16 +213,17 @@ BasePageView {
 
         visible: schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.Cooling
 
-        SingleTemperatureSlider {
+        SingleIconSlider {
             id: singleTemperatureSlider
 
             Layout.fillWidth: true
 
+            icon: "\uf2c8"
             leftSideColor:  "#ea0600"
             rightSideColor: "#0097cd"
             labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
-            control.from: minTemperature;
-            control.to: maxTemperature;
+            from: minTemperature;
+            to: maxTemperature;
         }
 
         Label {
