@@ -271,7 +271,9 @@ BasePageView {
                     Layout.topMargin: 15
                     Layout.fillWidth: true
 
-                    visible: autoRB.checked && (temperatureDiffSlider.value / (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1)) !== AppSpec.defaultAuxiliaryTemperatureDiffrence
+                    visible: autoRB.checked && (temperatureDiffSlider.value  !== (deviceController.temperatureUnit === AppSpec.TempratureUnit.Cel ?
+                                                                                      AppSpec.defaultAuxiliaryTemperatureDiffrenceC :
+                                                                                      AppSpec.defaultAuxiliaryTemperatureDiffrenceF))
                     height: 60
                     text: `Using the auxiliary heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
                 }
