@@ -15,11 +15,13 @@ const double HUM_MIN                 = 20;
 const double HUM_STEP                = 10;
 const double STAGE0_RANGE            = 0;
 const double STAGE1_ON_RANGE         = 0.9;
-const double STAGE2_ON_RANGE         = 2.9;
+const double STAGE2_ON_RANGE         = 2.9; // DO NOT USED
 const double STAGE3_ON_RANGE         = 5.9;
 const double STAGE1_OFF_RANGE        = 0.5;
 const double STAGE2_OFF_RANGE        = 0.9; // F
 const double STAGE3_OFF_RANGE        = 4.9;
+const double COOLING_ON_RANGE        = 1.9;
+const double HEATING_ON_RANGE        = 2.9;
 const double ALERT_TIME              = 120;
 const double CHANGE_STAGE_TIME       = 40;
 const double CHANGE_STAGE_TIME_WO_OB = 10;
@@ -480,7 +482,7 @@ void Scheme::internalCoolingLoopStage1()
 
         // coolStage: In the heat pump or dual fuel heating the cool stage and heat pump stage are the same.
         if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider.data()->systemSetup()->coolStage == 2) {
-            if (mDataProvider.data()->currentTemperature() - effectiveTemperature() >= 2.9
+            if (mDataProvider.data()->currentTemperature() - effectiveTemperature() >= COOLING_ON_RANGE
                 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
                 if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
                     if (!internalCoolingLoopStage2()) {
@@ -591,7 +593,7 @@ void Scheme::internalHeatingLoopStage1()
         TRACE << "Current Temperature: " << mDataProvider->currentTemperature() << ", Effective Temperature: " << effectiveTemperature();
 
         if (mRelay->relays().w2 != STHERM::RelayMode::NoWire && mDataProvider.data()->systemSetup()->heatStage >= 2) {
-            if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= 2.9
+            if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= HEATING_ON_RANGE
                 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
                 if (!internalHeatingLoopStage2())
                     break;
@@ -803,7 +805,7 @@ void Scheme::internalPumpHeatingLoopStage1()
                   << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
 
             if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider->heatPumpStage() >= 2) {
-                if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= 2.9
+                if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= HEATING_ON_RANGE
                     || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
                     if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
                         if (!internalPumpHeatingLoopStage2()) {
