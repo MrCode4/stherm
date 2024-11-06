@@ -588,6 +588,8 @@ void Scheme::internalHeatingLoopStage1()
     while (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
         TRACE_CHECK(true) << mRelay->relays().w2 << mDataProvider.data()->systemSetup()->heatStage
                           << mTiming->s1uptime.isValid() << mTiming->s1uptime.elapsed();
+        TRACE << "Current Temperature: " << mDataProvider->currentTemperature() << ", Effective Temperature: " << effectiveTemperature();
+
         if (mRelay->relays().w2 != STHERM::RelayMode::NoWire && mDataProvider.data()->systemSetup()->heatStage >= 2) {
             if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= 2.9
                 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
@@ -989,10 +991,14 @@ void Scheme::sendRelays(bool forceSend)
     auto relaysConfig = mRelay->relays();
     auto lastConfigs = mRelay->relaysLast();
 
-    if (lastConfigs == relaysConfig) {
+    // To prevent initial mismatches in device relays after updates, we'll skip the comparison on the first run. Use shouldComapre for all instances of the class.
+    static bool shouldCompare = false;
+    if (shouldCompare && lastConfigs == relaysConfig) {
         TRACE_CHECK(false) << "no change";
         return;
     }
+
+    shouldCompare = true;
 
     if (!mCanSendRelay) {
         waitLoop(-1, AppSpecCPP::ctSendRelay);
