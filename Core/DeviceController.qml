@@ -1225,14 +1225,20 @@ I_DeviceController {
         }
     }
 
-    function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
-        device.systemSetup.heatPumpEmergency = emergency;
+    function setSystemHeatPump(auxiliaryHeating: bool, stage: int, obState: int,
+                               minimumAuxiliaryTime: int, auxiliaryControlType: int,
+                               auxiliaryTemperatureDiffrence: real) {
+        device.systemSetup.auxiliaryHeating = auxiliaryHeating;
 
         // coolStage controls the Y wires.
         device.systemSetup.coolStage = stage;
 
         device.systemSetup.heatPumpOBState = obState;
         device.systemSetup.systemType = AppSpecCPP.HeatPump;
+
+        device.systemSetup.minimumAuxiliaryTime = minimumAuxiliaryTime;
+        device.systemSetup.auxiliaryControlType = auxiliaryControlType;
+        device.systemSetup.auxiliaryTemperatureDiffrence = auxiliaryTemperatureDiffrence;
     }
 
     function setSystemTraditional(coolStage: int, heatStage: int) {

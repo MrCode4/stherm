@@ -162,6 +162,8 @@ BasePageView {
                 }
 
                 SingleIconSlider {
+                    id: minimumAuxiliaryTimeSlider
+
                     Layout.fillWidth: true
                     Layout.leftMargin: 5
                     Layout.rightMargin: 5
@@ -207,25 +209,15 @@ BasePageView {
                     RadioButton {
                         id: manuallyRB
 
-                        checked: heatPumpOBStateLayout?.auxiliaryControlType !== AppSpecCPP.ACTAuto
-                        onCheckedChanged: {
-                            if (checked)
-                                checked: heatPumpOBStateLayout.auxiliaryControlType === AppSpecCPP.ACTManually;
-                        }
+                        checked: appModel.systemSetup?.auxiliaryControlType !== AppSpecCPP.ACTAuto
                         text: "Manually"
                     }
 
                     RadioButton {
                         id: autoRB
 
-                        onCheckedChanged: {
-                            if (checked)
-                                checked: heatPumpOBStateLayout.auxiliaryControlType === AppSpecCPP.ACTAuto
-                        }
-
                         text: "Auto"
-
-                        checked: heatPumpOBStateLayout?.auxiliaryControlType === AppSpecCPP.ACTAuto
+                        checked: appModel.systemSetup?.auxiliaryControlType === AppSpecCPP.ACTAuto
                     }
                 }
 
@@ -279,7 +271,7 @@ BasePageView {
                     Layout.topMargin: 15
                     Layout.fillWidth: true
 
-                    visible: autoRB.checked && appModel.systemSetup.auxiliaryTemperatureDiffrence !== AppSpec.defaultAuxiliaryTemperatureDiffrence
+                    visible: autoRB.checked && (temperatureDiffSlider.value / (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1)) !== AppSpec.defaultAuxiliaryTemperatureDiffrence
                     height: 60
                     text: `Using the auxiliary heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
                 }
@@ -300,7 +292,7 @@ BasePageView {
                 Layout.rightMargin: 30
                 Layout.bottomMargin: 10
 
-                visible: initialSetup
+                visible: !initialSetup
                 leftPadding: 25
                 rightPadding: 25
 
@@ -322,7 +314,10 @@ BasePageView {
         if (deviceController) {
             deviceController.setSystemHeatPump(auxiliaryHeatingSwh.checked,
                                                heatPumpStageLayout.heatPumpStage,
-                                               heatPumpOBStateLayout.heatPumpOBState)
+                                               heatPumpOBStateLayout.heatPumpOBState,
+                                               minimumAuxiliaryTimeSlider.value,
+                                               autoRB.checked ? AppSpecCPP.ACTAuto : AppSpecCPP.ACTManually,
+                                               temperatureDiffSlider.value / (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1))
         }
     }
 
