@@ -21,4 +21,10 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     _mIsSystemShutoff = false;
 
     dualFuelThreshod = 1.666667; // 35 Fahrenheit
+
+    auxiliaryHeating = false;
+    minimumAuxiliaryTime = 9;
+    auxiliaryControlType = AppSpecCPP::ACTManually;
+    auxiliaryTemperatureDiffrence = 1.6;
+
 }

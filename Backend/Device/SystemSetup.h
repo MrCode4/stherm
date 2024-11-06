@@ -33,6 +33,11 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
+    Q_PROPERTY(bool   auxiliaryHeating               MEMBER auxiliaryHeating NOTIFY auxiliaryHeatingChanged FINAL)
+    Q_PROPERTY(double auxiliaryTemperatureDiffrence  MEMBER auxiliaryTemperatureDiffrence NOTIFY auxiliaryTemperatureDiffrenceChanged FINAL)
+    Q_PROPERTY(int    minimumAuxiliaryTime           MEMBER minimumAuxiliaryTime  NOTIFY minimumAuxiliaryTimeChanged FINAL)
+    Q_PROPERTY(AppSpecCPP::AuxiliaryControlType    auxiliaryControlType           MEMBER auxiliaryControlType  NOTIFY auxiliaryControlTypeChanged FINAL)
+
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
 
@@ -63,6 +68,15 @@ public:
     //! Celsius
     double dualFuelThreshod;
 
+    bool auxiliaryHeating;
+
+    //! In minutes
+    int minimumAuxiliaryTime;
+
+    AppSpecCPP::AuxiliaryControlType auxiliaryControlType;
+
+    //! In celcius
+    double auxiliaryTemperatureDiffrence;
 
 signals:
     void systemTypeChanged();
@@ -76,5 +90,9 @@ signals:
     void isVacationChanged();
     void isSystemShutoffChanged();
     void dualFuelThreshodChanged();
+    void auxiliaryTemperatureDiffrenceChanged();
+    void auxiliaryHeatingChanged();
+    void minimumAuxiliaryTimeChanged();
+    void auxiliaryControlTypeChanged();
 
 };

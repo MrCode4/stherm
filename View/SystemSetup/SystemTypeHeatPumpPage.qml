@@ -180,6 +180,7 @@ BasePageView {
                     majorTickCount: 3
                     from: 1
                     to: 18
+                    control.value: appModel.systemSetup.minimumAuxiliaryTime
                 }
 
                 CautionRectangle {
@@ -199,29 +200,32 @@ BasePageView {
                     wrapMode: Text.WordWrap
                 }
 
+                //! Auxiliary Control Type
                 RowLayout {
                     Layout.fillWidth: true
 
                     RadioButton {
                         id: manuallyRB
 
-                        checked: appModel.systemSetup.heatPumpOBState === 0
+                        checked: heatPumpOBStateLayout?.auxiliaryControlType !== AppSpecCPP.ACTAuto
                         onCheckedChanged: {
                             if (checked)
-                                heatPumpOBStateLayout.heatPumpOBState = 0;
+                                checked: heatPumpOBStateLayout.auxiliaryControlType === AppSpecCPP.ACTManually;
                         }
                         text: "Manually"
                     }
 
                     RadioButton {
                         id: autoRB
-                        checked: appModel.systemSetup.heatPumpOBState === 1
+
                         onCheckedChanged: {
                             if (checked)
-                                heatPumpOBStateLayout.heatPumpOBState = 1;
+                                checked: heatPumpOBStateLayout.auxiliaryControlType === AppSpecCPP.ACTAuto
                         }
 
                         text: "Auto"
+
+                        checked: heatPumpOBStateLayout?.auxiliaryControlType === AppSpecCPP.ACTAuto
                     }
                 }
 
@@ -260,7 +264,6 @@ BasePageView {
                     iconSize: Qt.application.font.pointSize * 1.2
                     showRange: false
                     showTicks: true
-                    control.stepSize: 0.1
                     title: "Temp"
                     ticksCount: 18
                     majorTickCount: 3
@@ -268,17 +271,25 @@ BasePageView {
                     to:   deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 3.8 : 2.1
                     labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
                     scaleValue: 10
+                    control.stepSize: 0.1
+                    control.value:  appModel.systemSetup.auxiliaryTemperatureDiffrence * (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1) * scaleValue
                 }
 
                 CautionRectangle {
                     Layout.topMargin: 15
                     Layout.fillWidth: true
 
-                    visible: autoRB.checked
+                    visible: autoRB.checked && appModel.systemSetup.auxiliaryTemperatureDiffrence !== AppSpec.defaultAuxiliaryTemperatureDiffrence
                     height: 60
                     text: `Using the auxiliary heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
                 }
 
+            }
+
+            Item {
+                id: spacer
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
 
             //! Next button in initial setup flow
@@ -286,7 +297,7 @@ BasePageView {
                 text: "Next"
 
                 Layout.alignment: Qt.AlignRight
-                Layout.rightMargin: -30
+                Layout.rightMargin: 30
                 Layout.bottomMargin: 10
 
                 visible: initialSetup

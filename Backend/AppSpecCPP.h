@@ -180,6 +180,12 @@ public:
     };
     Q_ENUM(AlertTypes)
 
+    // Useage in QML: ex. AppSpecCPP.Cooling
+    enum AuxiliaryControlType {
+        ACTManually = 0,
+        ACTAuto
+    };
+    Q_ENUM(AuxiliaryControlType)
 
     Q_INVOKABLE QVariant readFromFile(const QString &fileUrl);
 
