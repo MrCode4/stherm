@@ -12,12 +12,12 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property bool initialSetup: false
+    property bool initialSetup: true
 
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 48
-    rightPadding: 48
+    leftPadding: 10
+    rightPadding: 10
     title: "Heat Pump"
 
     /* Children
@@ -40,119 +40,268 @@ BasePageView {
         }
     }
 
-    //! Next button in initial setup flow
-    ButtonInverted {
-        text: "Next"
-
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.rightMargin: -30
-        anchors.bottomMargin: 10
-
-        visible: initialSetup
-        leftPadding: 25
-        rightPadding: 25
-
-        onClicked: {
-           updateModel();
-
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
-            }
-        }
-    }
-
-    ColumnLayout {
-        anchors.centerIn: parent
-        width: parent.width
-        spacing: 16
-
-        RowLayout {
-            spacing: 24
-            Label {
-                Layout.fillWidth: true
-                text: "Emergency Heating"
-            }
-
-            Switch {
-                id: _emergencyHeatingSwh
-
-                checked: appModel.systemSetup.heatPumpEmergency
-            }
+    Flickable {
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width - 4
+            y: root.contentItem.y
+            parent: root
+            height: root.contentItem.height - 30
         }
 
-        RowLayout {
-            spacing: 24
+        anchors.fill: parent
+        anchors.rightMargin: 10
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        contentWidth: width
+        contentHeight: _contentCol.implicitHeight
 
-            Label {
-                Layout.fillWidth: true
-                text: "Heat Pump Stages"
+        ColumnLayout {
+            id: _contentCol
+
+            width: parent.width
+            spacing: 8
+
+            RowLayout {
+                spacing: 24
+
+                Label {
+                    text: "Heat Pump Stages"
+                }
+
+                RowLayout {
+                    id: heatPumpStageLayout
+
+                    Layout.fillWidth: true
+
+                    property int heatPumpStage: 1
+
+
+                    RadioButton {
+                        checked: appModel.systemSetup.coolStage === Number(text)
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpStageLayout.heatPumpStage = Number(text);
+                        }
+
+                        text: "1"
+                    }
+
+                    RadioButton {
+                        checked: appModel.systemSetup.coolStage === Number(text)
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpStageLayout.heatPumpStage = Number(text);
+                        }
+
+                        text: "2"
+                    }
+                }
             }
 
             RowLayout {
-                id: heatPumpStageLayout
+                id: heatPumpOBStateLayout
 
-                Layout.fillWidth: false
+                spacing: 24
 
-                property int heatPumpStage: 1
+                property int heatPumpOBState: 1
 
-
-                RadioButton {
-                    checked: appModel.systemSetup.coolStage === Number(text)
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpStageLayout.heatPumpStage = Number(text);
-                    }
-
-                    text: "1"
+                Label {
+                    text: "O/B on State"
                 }
 
-                RadioButton {
-                    checked: appModel.systemSetup.coolStage === Number(text)
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpStageLayout.heatPumpStage = Number(text);
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    RadioButton {
+                        checked: appModel.systemSetup.heatPumpOBState === 0
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpOBStateLayout.heatPumpOBState = 0;
+                        }
+                        text: "Cool"
                     }
 
-                    text: "2"
+                    RadioButton {
+                        checked: appModel.systemSetup.heatPumpOBState === 1
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpOBStateLayout.heatPumpOBState = 1;
+                        }
+
+                        text: "Heat"
+                    }
                 }
-            }
-        }
-
-        RowLayout {
-            id: heatPumpOBStateLayout
-
-            spacing: 24
-
-            property int heatPumpOBState: 1
-
-            Label {
-                text: "O/B on State"
             }
 
             RowLayout {
-                Layout.fillWidth: true
-
-                RadioButton {
-                    checked: appModel.systemSetup.heatPumpOBState === 0
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpOBStateLayout.heatPumpOBState = 0;
-                    }
-                    text: "Cool"
+                spacing: 24
+                Label {
+                    Layout.fillWidth: true
+                    text: "Auxiliary Heating"
                 }
 
-                RadioButton {
-                    checked: appModel.systemSetup.heatPumpOBState === 1
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpOBStateLayout.heatPumpOBState = 1;
+                Switch {
+                    id: auxiliaryHeatingSwh
+                    checked: appModel.systemSetup.auxiliaryHeating
+                }
+            }
+
+            ColumnLayout {
+                width: parent.width
+                spacing: 8
+
+                visible: auxiliaryHeatingSwh.checked
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 10
+
+                    text: "Set the minimum time for Auxiliary heat to run during the call."
+                    font.pointSize: Application.font.pointSize * 0.9
+                    wrapMode: Text.WordWrap
+                }
+
+                SingleIconSlider {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 5
+                    Layout.rightMargin: 5
+                    Layout.topMargin: 10
+
+                    height: 90
+                    leftSideColor: "#9BD2F7"
+                    rightSideColor: "#484848"
+                    icon: FAIcons.clockThree
+                    iconSize: Qt.application.font.pointSize * 1.2
+                    showRange: false
+                    showTicks: true
+                    title: "min"
+                    control.stepSize: 1
+                    ticksCount: 18
+                    majorTickCount: 3
+                    from: 1
+                    to: 18
+                }
+
+                CautionRectangle {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 10
+
+                    height: 60
+                    text: "Settings wrong runtime can cause system damage."
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 10
+
+                    text: "Would you like to control auxiliary heat manually or automatically (via thermostat)?"
+                    font.pointSize: Application.font.pointSize * 0.9
+                    wrapMode: Text.WordWrap
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    RadioButton {
+                        id: manuallyRB
+
+                        checked: appModel.systemSetup.heatPumpOBState === 0
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpOBStateLayout.heatPumpOBState = 0;
+                        }
+                        text: "Manually"
                     }
 
-                    text: "Heat"
+                    RadioButton {
+                        id: autoRB
+                        checked: appModel.systemSetup.heatPumpOBState === 1
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpOBStateLayout.heatPumpOBState = 1;
+                        }
+
+                        text: "Auto"
+                    }
+                }
+
+                CautionRectangle {
+                    Layout.fillWidth: true
+                    height: 100
+
+                    visible: manuallyRB.checked
+                    text: "Auxiliary heat will only activate when <span style='color:#ea0600;'>Auxiliary Heat(AUX)</span> is selected in system mode or when initiated by Defrost controller board (if equipped)."
+                    icon: FAIcons.circleInfo
+                    iconColor: "#94A3B8"
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 10
+
+                    visible: autoRB.checked
+
+                    text: "Set the temperature difference between the set point and room temperature to engage auxiliary heat."
+                    font.pointSize: Application.font.pointSize * 0.9
+                    wrapMode: Text.WordWrap
+                }
+
+                SingleIconSlider {
+                    id: temperatureDiffSlider
+
+                    Layout.topMargin: 10
+                    Layout.leftMargin: 5
+                    Layout.rightMargin: 5
+
+                    visible: autoRB.checked
+                    leftSideColor: "#9BD2F7"
+                    rightSideColor: "#484848"
+                    icon: FAIcons.temperatureHigh
+                    iconSize: Qt.application.font.pointSize * 1.2
+                    showRange: false
+                    showTicks: true
+                    control.stepSize: 0.1
+                    title: "Temp"
+                    ticksCount: 18
+                    majorTickCount: 3
+                    from: deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2 : 1.1
+                    to:   deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 3.8 : 2.1
+                    labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
+                    scaleValue: 10
+                }
+
+                CautionRectangle {
+                    Layout.topMargin: 15
+                    Layout.fillWidth: true
+
+                    visible: autoRB.checked
+                    height: 60
+                    text: `Using the auxiliary heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
+                }
+
+            }
+
+            //! Next button in initial setup flow
+            ButtonInverted {
+                text: "Next"
+
+                Layout.alignment: Qt.AlignRight
+                Layout.rightMargin: -30
+                Layout.bottomMargin: 10
+
+                visible: initialSetup
+                leftPadding: 25
+                rightPadding: 25
+
+                onClicked: {
+                    updateModel();
+
+                    if (root.StackView.view) {
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup
+                                                 });
+                    }
                 }
             }
         }
@@ -160,7 +309,7 @@ BasePageView {
 
     function updateModel() {
         if (deviceController) {
-            deviceController.setSystemHeatPump(_emergencyHeatingSwh.checked,
+            deviceController.setSystemHeatPump(auxiliaryHeatingSwh.checked,
                                                heatPumpStageLayout.heatPumpStage,
                                                heatPumpOBStateLayout.heatPumpOBState)
         }
