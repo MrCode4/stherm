@@ -25,7 +25,7 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     //! Initialize emergency properties
     emergencyHeating = false;
     emergencyMinimumTime = 2;
-    emergencyControlType = AppSpecCPP::ACTManually;
+    emergencyControlType = AppSpecCPP::ECTManually;
     emergencyTemperatureDiffrence = 1.6;
 
 }

@@ -216,7 +216,7 @@ BasePageView {
                     RadioButton {
                         id: manuallyRB
 
-                        checked: appModel.systemSetup?.emergencyControlType !== AppSpecCPP.ACTAuto
+                        checked: appModel.systemSetup?.emergencyControlType !== AppSpecCPP.ECTAuto
                         text: "Manually"
                     }
 
@@ -224,7 +224,7 @@ BasePageView {
                         id: autoRB
 
                         text: "Auto"
-                        checked: appModel.systemSetup?.emergencyControlType === AppSpecCPP.ACTAuto
+                        checked: appModel.systemSetup?.emergencyControlType === AppSpecCPP.ECTAuto
                     }
                 }
 
@@ -340,7 +340,7 @@ BasePageView {
                                                heatPumpStageLayout.heatPumpStage,
                                                heatPumpOBStateLayout.heatPumpOBState,
                                                emergencyMinimumTimeSlider.value,
-                                               autoRB.checked ? AppSpecCPP.ACTAuto : AppSpecCPP.ACTManually,
+                                               autoRB.checked ? AppSpecCPP.ECTAuto : AppSpecCPP.ECTManually,
                                                temperatureDiffSlider.value / (isFahrenheit ? 1.8 : 1))
         }
     }

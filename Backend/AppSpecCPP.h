@@ -183,8 +183,8 @@ public:
 
     // Useage in QML: ex. AppSpecCPP.Cooling
     enum emergencyControlType {
-        ACTManually = 0,
-        ACTAuto
+        ECTManually = 0,
+        ECTAuto
     };
     Q_ENUM(emergencyControlType)
 
