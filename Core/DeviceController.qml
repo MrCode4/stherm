@@ -1279,8 +1279,8 @@ I_DeviceController {
             setSystemTraditional(settings.coolStage, settings.heatStage);
         else if(settings.type === "heating")
             setSystemHeatOnly(settings.heatStage)
-        else if(settings.type === "heat_pump")
-            setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState)
+        else if(settings.type === "heat_pump") {} // TODO
+            // setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState)
         else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
         else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
