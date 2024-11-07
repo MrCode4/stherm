@@ -14,6 +14,8 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: true
 
+    property bool isFahrenheit: deviceController.temperatureUnit != AppSpec.TempratureUnit.Cel
+
     /* Object properties
      * ****************************************************************************************/
     leftPadding: 10
@@ -258,10 +260,10 @@ BasePageView {
                     showRange: false
                     showTicks: true
                     title: "Temp"
-                    ticksCount: 18
-                    majorTickCount: 3
-                    from: deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2 : 1.1
-                    to:   deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 3.8 : 2.1
+                    ticksCount: isFahrenheit? 18 : 10
+                    majorTickCount: isFahrenheit ? 3 : 2
+                    from: isFahrenheit ? 2 : 1.1
+                    to:   isFahrenheit ? 3.8 : 2.1
                     labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
                     scaleValue: 10
                     control.stepSize: 0.1
@@ -272,9 +274,8 @@ BasePageView {
                     Layout.topMargin: 15
                     Layout.fillWidth: true
 
-                    visible: autoRB.checked && (temperatureDiffSlider.value  !== (deviceController.temperatureUnit === AppSpec.TempratureUnit.Cel ?
-                                                                                      AppSpec.defaultAuxiliaryTemperatureDiffrenceC :
-                                                                                      AppSpec.defaultAuxiliaryTemperatureDiffrenceF))
+                    visible: autoRB.checked && (temperatureDiffSlider.value  !== (isFahrenheit ? AppSpec.defaultAuxiliaryTemperatureDiffrenceC :
+                                                                                                 AppSpec.defaultAuxiliaryTemperatureDiffrenceF))
                     height: 60
                     text: `Using the auxiliary heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
                 }
@@ -320,7 +321,7 @@ BasePageView {
                                                heatPumpOBStateLayout.heatPumpOBState,
                                                minimumAuxiliaryTimeSlider.value,
                                                autoRB.checked ? AppSpecCPP.ACTAuto : AppSpecCPP.ACTManually,
-                                               temperatureDiffSlider.value / (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1))
+                                               temperatureDiffSlider.value / (isFahrenheit ? 1.8 : 1))
         }
     }
 
