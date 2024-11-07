@@ -1,5 +1,6 @@
 #include "System.h"
 #include "LogHelper.h"
+#include "PerfTestService.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -45,6 +46,7 @@ const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 
 const QString Cmd_PushLogs = "push_logs";
+const QString Cmd_PerfTest = "perf_test";
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -1367,7 +1369,7 @@ void NUVE::System::onAppDataReady(QVariantMap data)
 
     if (command == Cmd_PushLogs) {
         if (mLogSender.busy()) {
-            SYS_LOG << "LOG_PUSHING: "<< "Log-sender is busy, at this momemnt";
+            SYS_LOG << "Log-sender is busy at this momemnt";
         }
         else {
             SYS_LOG << "Applying" <<command <<commandTime;
@@ -1377,6 +1379,15 @@ void NUVE::System::onAppDataReady(QVariantMap data)
             else {
                 SYS_LOG <<"Command failed" <<command <<commandTime;
             }
+        }
+    }
+    else if (command == Cmd_PerfTest) {
+        SYS_LOG << "Applying" <<command <<commandTime;
+        if (PerfTestService::me()->checkTestEligibilityManually("Command")) {
+            mLastReceivedCommands[command] = commandTime;
+        }
+        else {
+            SYS_LOG <<"Command failed" <<command <<commandTime;
         }
     }
 }

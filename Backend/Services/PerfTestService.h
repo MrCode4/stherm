@@ -47,7 +47,7 @@ signals:
     void eligibilityChecked(const QString& errorMsg);
 
 public slots:
-    Q_INVOKABLE void checkTestEligibilityManually();
+    Q_INVOKABLE bool checkTestEligibilityManually(const QString& source);
     Q_INVOKABLE void postponeTest(const QString& reason);
     Q_INVOKABLE void resumeTest();
     Q_INVOKABLE void cancelTest();

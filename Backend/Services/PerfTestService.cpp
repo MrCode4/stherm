@@ -135,12 +135,19 @@ QDateTime PerfTestService::scheduleNextCheck(QTime checkTime)
     return nextScheduleMark;
 }
 
-void PerfTestService::checkTestEligibilityManually()
+bool PerfTestService::checkTestEligibilityManually(const QString& source)
 {
-    PERF_LOG << "Checking perf-test manually";
-    mCheckTimeAt = QDateTime::currentDateTime();
-    mCheckTimeSetAt = QDateTime::currentDateTime();
-    checkTestEligibility();
+    if (state() == Idle) {
+        PERF_LOG << "Checking perf-test manually, source" <<source;
+        mCheckTimeAt = QDateTime::currentDateTime();
+        mCheckTimeSetAt = QDateTime::currentDateTime();
+        checkTestEligibility();
+        return true;
+    }
+    else {
+        PERF_LOG << "Checking perf-test aborted for source" <<source << "as state is" <<state();
+        return false;
+    }
 }
 
 void PerfTestService::checkTestEligibility()
