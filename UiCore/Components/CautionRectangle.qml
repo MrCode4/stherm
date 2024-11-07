@@ -21,9 +21,12 @@ Rectangle {
      * ****************************************************************************************/
     color: "#19140C"
     radius: 5
-    height: textLabel.background.implicitHeight + 40
+
+    //! In RichText, the implicitHeight could not detect correctly
+    height: contenmtLayout.implicitHeight
 
     RowLayout {
+        id: contenmtLayout
         Layout.alignment: Qt.AlignHCenter
 
         width: parent.width * 0.9
@@ -55,6 +58,4 @@ Rectangle {
 
         }
     }
-
-
 }

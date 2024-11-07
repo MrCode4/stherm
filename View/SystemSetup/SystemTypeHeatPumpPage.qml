@@ -192,7 +192,7 @@ BasePageView {
                     Layout.fillWidth: true
                     Layout.topMargin: 10
 
-                    height: 60
+                    height: 70
                     text: "Settings wrong runtime can cause system damage."
                 }
 
@@ -277,7 +277,7 @@ BasePageView {
                     visible: autoRB.checked && !temperatureDiffSlider.control.pressed &&
                              (temperatureDiffSlider.value  !== (isFahrenheit ? AppSpec.defaultAuxiliaryTemperatureDiffrenceC :
                                                                                AppSpec.defaultAuxiliaryTemperatureDiffrenceF))
-                    height: 60
+                    height: 90
                     text: `Using the auxiliary heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
                 }
 
