@@ -59,6 +59,7 @@ BasePageView {
             id: _contentCol
 
             width: parent.width
+            height:  Math.max(_contentCol.implicitHeight, root.height * 0.85)
             spacing: 8
 
             RowLayout {
@@ -290,8 +291,8 @@ BasePageView {
             ButtonInverted {
                 text: "Next"
 
-                Layout.alignment: Qt.AlignRight
-                Layout.rightMargin: 30
+                Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+                Layout.rightMargin: 10
                 Layout.bottomMargin: 10
 
                 visible: initialSetup
