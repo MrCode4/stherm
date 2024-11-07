@@ -41,6 +41,9 @@ RowLayout {
     property real from: 0
     property real to:   0
 
+    //! Slider snap mode
+    property int snapMode: Slider.NoSnap
+
     //! To get the scaled control value
     readonly property real value: control.value / scaleValue
 
@@ -88,14 +91,14 @@ RowLayout {
     Slider {
         id: _control
 
-        Layout.fillWidth: true
+        readonly property int majorTickInterval: majorTickCount * tickStepSize
+        readonly property real tickStepSize: Math.abs(_control.to - _control.from) / ticksCount * scaleValue
 
+        Layout.fillWidth: true
 
         from: root.from * scaleValue
         to: root.to * scaleValue
-
-        readonly property real tickStepSize: Math.abs(_control.to - _control.from) / ticksCount * scaleValue
-        readonly property int majorTickInterval: majorTickCount * tickStepSize
+        snapMode: root.snapMode
 
         //! Value label
         Label {

@@ -66,6 +66,7 @@ public:
         Vacation,
         Off,
         Emergency,
+        EmergencyHeat,
     };
     Q_ENUM(SystemMode)
 
@@ -181,11 +182,11 @@ public:
     Q_ENUM(AlertTypes)
 
     // Useage in QML: ex. AppSpecCPP.Cooling
-    enum AuxiliaryControlType {
+    enum emergencyControlType {
         ACTManually = 0,
         ACTAuto
     };
-    Q_ENUM(AuxiliaryControlType)
+    Q_ENUM(emergencyControlType)
 
     Q_INVOKABLE QVariant readFromFile(const QString &fileUrl);
 

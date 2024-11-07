@@ -64,10 +64,10 @@ AppSpecCPP {
     property int defaultVolume:     50
 
     //! Celcius
-    property real defaultAuxiliaryTemperatureDiffrenceC: 1.6
+    property real defaultEmergencyTemperatureDiffrenceC: 1.6
 
     //! Fahrenheit
-    property real defaultAuxiliaryTemperatureDiffrenceF: 2.9
+    property real defaultEmergencyTemperatureDiffrenceF: 2.9
 
 
     //! To improve efficiency, we should delete any messages that exceed

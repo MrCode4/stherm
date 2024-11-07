@@ -33,10 +33,10 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
-    Q_PROPERTY(bool   auxiliaryHeating               MEMBER auxiliaryHeating NOTIFY auxiliaryHeatingChanged FINAL)
-    Q_PROPERTY(double auxiliaryTemperatureDiffrence  MEMBER auxiliaryTemperatureDiffrence NOTIFY auxiliaryTemperatureDiffrenceChanged FINAL)
-    Q_PROPERTY(int    minimumAuxiliaryTime           MEMBER minimumAuxiliaryTime  NOTIFY minimumAuxiliaryTimeChanged FINAL)
-    Q_PROPERTY(AppSpecCPP::AuxiliaryControlType    auxiliaryControlType           MEMBER auxiliaryControlType  NOTIFY auxiliaryControlTypeChanged FINAL)
+    Q_PROPERTY(bool   emergencyHeating               MEMBER emergencyHeating NOTIFY emergencyHeatingChanged FINAL)
+    Q_PROPERTY(double emergencyTemperatureDiffrence  MEMBER emergencyTemperatureDiffrence NOTIFY emergencyTemperatureDiffrenceChanged FINAL)
+    Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
+    Q_PROPERTY(AppSpecCPP::emergencyControlType    emergencyControlType           MEMBER emergencyControlType  NOTIFY emergencyControlTypeChanged FINAL)
 
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
@@ -68,15 +68,16 @@ public:
     //! Celsius
     double dualFuelThreshod;
 
-    bool auxiliaryHeating;
+    //! Emergency properties
+    bool emergencyHeating;
 
     //! In minutes
-    int minimumAuxiliaryTime;
+    int emergencyMinimumTime;
 
-    AppSpecCPP::AuxiliaryControlType auxiliaryControlType;
+    AppSpecCPP::emergencyControlType emergencyControlType;
 
     //! In celcius
-    double auxiliaryTemperatureDiffrence;
+    double emergencyTemperatureDiffrence;
 
 signals:
     void systemTypeChanged();
@@ -90,9 +91,9 @@ signals:
     void isVacationChanged();
     void isSystemShutoffChanged();
     void dualFuelThreshodChanged();
-    void auxiliaryTemperatureDiffrenceChanged();
-    void auxiliaryHeatingChanged();
-    void minimumAuxiliaryTimeChanged();
-    void auxiliaryControlTypeChanged();
+    void emergencyTemperatureDiffrenceChanged();
+    void emergencyHeatingChanged();
+    void emergencyMinimumTimeChanged();
+    void emergencyControlTypeChanged();
 
 };

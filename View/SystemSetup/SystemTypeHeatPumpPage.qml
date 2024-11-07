@@ -136,16 +136,18 @@ BasePageView {
                 }
             }
 
+            //! Enables or disables emergency heating, meaning if the system is equipped with emergency heating (like heat stripes)
+            //! then toggle should be enabled.
             RowLayout {
                 spacing: 24
                 Label {
                     Layout.fillWidth: true
-                    text: "Auxiliary Heating"
+                    text: "Emergency Heating"
                 }
 
                 Switch {
-                    id: auxiliaryHeatingSwh
-                    checked: appModel.systemSetup.auxiliaryHeating
+                    id: emergencyHeatingSwh
+                    checked: appModel.systemSetup.emergencyHeating
                 }
             }
 
@@ -153,19 +155,19 @@ BasePageView {
                 width: parent.width
                 spacing: 8
 
-                visible: auxiliaryHeatingSwh.checked
+                visible: emergencyHeatingSwh.checked
 
                 Label {
                     Layout.fillWidth: true
                     Layout.topMargin: 10
 
-                    text: "Set the minimum time for Auxiliary heat to run during the call."
+                    text: "Set the minimum time for Emergency heat to run during the call."
                     font.pointSize: Application.font.pointSize * 0.9
                     wrapMode: Text.WordWrap
                 }
 
                 SingleIconSlider {
-                    id: minimumAuxiliaryTimeSlider
+                    id: emergencyMinimumTimeSlider
 
                     Layout.fillWidth: true
                     Layout.leftMargin: 5
@@ -181,11 +183,12 @@ BasePageView {
                     showTicks: true
                     title: "min"
                     control.stepSize: 1
-                    ticksCount: 18
-                    majorTickCount: 3
-                    from: 1
-                    to: 18
-                    control.value: appModel.systemSetup.minimumAuxiliaryTime
+                    ticksCount: 3
+                    majorTickCount: 1
+                    from: 2
+                    to: 5
+                    snapMode: Slider.SnapAlways
+                    control.value: appModel.systemSetup.emergencyMinimumTime
                 }
 
                 CautionRectangle {
@@ -200,7 +203,7 @@ BasePageView {
                     Layout.fillWidth: true
                     Layout.topMargin: 10
 
-                    text: "Would you like to control auxiliary heat manually or automatically (via thermostat)?"
+                    text: "Would you like to control emergency heat manually or automatically (via thermostat)?"
                     font.pointSize: Application.font.pointSize * 0.9
                     wrapMode: Text.WordWrap
                 }
@@ -209,10 +212,11 @@ BasePageView {
                 RowLayout {
                     Layout.fillWidth: true
 
+                    //! Manual emenrgency: When users select Manual for emergency heating, an additional button labeled Emergency appears in the System Mode menu
                     RadioButton {
                         id: manuallyRB
 
-                        checked: appModel.systemSetup?.auxiliaryControlType !== AppSpecCPP.ACTAuto
+                        checked: appModel.systemSetup?.emergencyControlType !== AppSpecCPP.ACTAuto
                         text: "Manually"
                     }
 
@@ -220,7 +224,7 @@ BasePageView {
                         id: autoRB
 
                         text: "Auto"
-                        checked: appModel.systemSetup?.auxiliaryControlType === AppSpecCPP.ACTAuto
+                        checked: appModel.systemSetup?.emergencyControlType === AppSpecCPP.ACTAuto
                     }
                 }
 
@@ -229,7 +233,7 @@ BasePageView {
                     height: 100
 
                     visible: manuallyRB.checked
-                    text: "Auxiliary heat will only activate when <span style='color:#ea0600;'>Auxiliary Heat(AUX)</span> is selected in system mode or when initiated by Defrost controller board (if equipped)."
+                    text: "Emergency heat will only activate when Emergency is selected in system mode or when initiated by Defrost controller board (if equipped)."
                     icon: FAIcons.circleInfo
                     iconColor: "#94A3B8"
                 }
@@ -240,13 +244,15 @@ BasePageView {
 
                     visible: autoRB.checked
 
-                    text: "Set the temperature difference between the set point and room temperature to engage auxiliary heat."
+                    text: "Set the temperature difference between the set point and room temperature to engage emergency heat."
                     font.pointSize: Application.font.pointSize * 0.9
                     wrapMode: Text.WordWrap
                 }
 
                 SingleIconSlider {
                     id: temperatureDiffSlider
+
+                    property real tempValue: value
 
                     Layout.topMargin: 10
                     Layout.leftMargin: 5
@@ -260,25 +266,33 @@ BasePageView {
                     showRange: false
                     showTicks: true
                     title: "Temp"
-                    ticksCount: isFahrenheit? 18 : 10
+                    ticksCount: isFahrenheit? 18 : 12
                     majorTickCount: isFahrenheit ? 3 : 2
-                    from: isFahrenheit ? 2 : 1.1
-                    to:   isFahrenheit ? 3.8 : 2.1
+                    from: isFahrenheit ? 2 : 1.0
+                    to:   isFahrenheit ? 3.8 : 2.2
                     labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
                     scaleValue: 10
-                    control.stepSize: 0.1
-                    control.value:  appModel.systemSetup.auxiliaryTemperatureDiffrence * (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1) * scaleValue
+                    control.stepSize: 0.1 * scaleValue
+                    snapMode: Slider.SnapAlways
+                    control.value:  appModel.systemSetup.emergencyTemperatureDiffrence * (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1) * scaleValue
+                    control.onPressedChanged: {
+                        if (!control.pressed) {
+                            tempValue = value.toFixed(1);
+                        }
+                    }
                 }
 
                 CautionRectangle {
+                    id: temperatureDiffCaution
+
                     Layout.topMargin: 15
                     Layout.fillWidth: true
 
-                    visible: autoRB.checked && !temperatureDiffSlider.control.pressed &&
-                             (temperatureDiffSlider.value  !== (isFahrenheit ? AppSpec.defaultAuxiliaryTemperatureDiffrenceC :
-                                                                               AppSpec.defaultAuxiliaryTemperatureDiffrenceF))
+                    visible: autoRB.checked && (temperatureDiffSlider.tempValue  !== (isFahrenheit ? AppSpec.defaultEmergencyTemperatureDiffrenceF :
+                                                                               AppSpec.defaultEmergencyTemperatureDiffrenceC))
+
                     height: 90
-                    text: `Using the auxiliary heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
+                    text: `Using the emergency heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
                 }
 
                 Item {
@@ -322,10 +336,10 @@ BasePageView {
 
     function updateModel() {
         if (deviceController) {
-            deviceController.setSystemHeatPump(auxiliaryHeatingSwh.checked,
+            deviceController.setSystemHeatPump(emergencyHeatingSwh.checked,
                                                heatPumpStageLayout.heatPumpStage,
                                                heatPumpOBStateLayout.heatPumpOBState,
-                                               minimumAuxiliaryTimeSlider.value,
+                                               emergencyMinimumTimeSlider.value,
                                                autoRB.checked ? AppSpecCPP.ACTAuto : AppSpecCPP.ACTManually,
                                                temperatureDiffSlider.value / (isFahrenheit ? 1.8 : 1))
         }
