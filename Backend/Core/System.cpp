@@ -45,8 +45,11 @@ const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 
+const QString Key_LastRebootAt = "LastRebootCommandAt";
+
 const QString Cmd_PushLogs = "push_logs";
 const QString Cmd_PerfTest = "perf_test";
+const QString Cmd_Reboot = "reboot";
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -122,6 +125,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
     mIsManualUpdate          = setting.value(m_IsManualUpdateSetting, false).toBool();
     mStartedWithManualUpdate = mIsManualUpdate;
+    if (setting.contains(Key_LastRebootAt)) {
+        mLastReceivedCommands[Cmd_Reboot] = setting.value(Key_LastRebootAt).toString();
+    }
 
     mStartedWithFWServerUpdate = setting.value(m_IsFWServerUpdateSetting, false).toBool();
 
@@ -1390,6 +1396,12 @@ void NUVE::System::onAppDataReady(QVariantMap data)
             SYS_LOG <<"Command failed" <<command <<commandTime;
         }
     }
+    else if (command == Cmd_Reboot) {
+        SYS_LOG << "Applying" <<command <<commandTime;
+        mLastReceivedCommands[command] = commandTime;
+        {QSettings settings; settings.setValue(Key_LastRebootAt, commandTime);}
+        rebootDevice();
+    }
 }
 
 bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
@@ -1461,6 +1473,16 @@ void NUVE::System::setUID(cpuid_t uid)
 void NUVE::System::setSerialNumber(const QString &sn)
 {
     mSync->setSerialNumber(sn);
+
+    if (mLastReceivedCommands.contains(Cmd_Reboot)) {
+        auto callback = [this] (bool success, const QJsonObject& data) {
+            mLastReceivedCommands.remove(Cmd_PushLogs);
+            QSettings settings;
+            settings.remove(Key_LastRebootAt);
+            SYS_LOG <<"Reporting reboot success. Command cleared" <<Cmd_Reboot;
+        };
+        mSync->reportCommandResponse(callback, Cmd_Reboot, "booted");
+    }
 }
 
 QString NUVE::System::systemUID()
