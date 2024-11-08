@@ -42,7 +42,7 @@ BasePageView {
     ColumnLayout {
         id: _buttonsLay
         anchors.centerIn: parent
-        width: parent.width * 0.5
+        width: parent.width * 0.65
         spacing: 12
 
         Button {
@@ -218,7 +218,8 @@ BasePageView {
         _coolingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Cooling;
         _heatingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Heating;
         _autoButton.checked    = device?.systemSetup.systemMode === AppSpecCPP.Auto;
-        _offButton.checked     = device?.systemSetup.systemMode === AppSpecCPP.Off;
+        _offButton.checked     = device?.systAemSetup.systemMode === AppSpecCPP.Off;
+        emergencyHeatButton.checked  = device?.systAemSetup.systemMode === AppSpecCPP.EmergencyHeat;
     }
 
     //! Save the systemMode and disconnect the confirmPopup
