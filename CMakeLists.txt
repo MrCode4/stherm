@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Temperature scheme version and update date.
 set(TEMPERATURE_SCHEME_VERSION_C "V.1.94 (02.10.2024)")
 set(FAKE_UID "" CACHE STRING "The fake UID used for testing purposes")
+set(FAKE_SERIALID "" CACHE STRING "The fake SERIAL ID used for testing purposes")
 set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT "Delay counter for serial test")
 
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
@@ -484,6 +485,7 @@ endif()
 if(FAKE_UID_MODE)
     target_compile_definitions(appStherm PRIVATE FAKE_UID_MODE_ON)
     target_compile_definitions(appStherm PRIVATE FAKE_UID="${FAKE_UID}")
+    target_compile_definitions(appStherm PRIVATE FAKE_SERIALID="${FAKE_SERIALID}")
 endif()
 
 if(INITIAL_SETUP_MODE)
