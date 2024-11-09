@@ -108,6 +108,8 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         TRACE_CHECK(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureChanged" << mDataProvider->effectiveSystemMode() ;
         checkForRestartDualFuel();
     });
+
+    mManualEmergencyChecked = false;
 }
 
 void Scheme::stop()
@@ -893,8 +895,13 @@ void Scheme::emergencyHeating()
         return;
     }
 
+    if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
+        mManualEmergencyChecked && mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() <= mDataProvider->effectiveEmergencyHeatingThreshold()) {
+        TRACE << "System should be off, the conditions are not changed!";
+        return;
+    }
+
     mRelay->setAllOff();
-    mRelay->emergencyHeating1();
 
     if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
         emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000);
@@ -904,8 +911,12 @@ void Scheme::emergencyHeating()
 
     // 5 Sec
     emit changeBacklight(emergencyColor, emergencyColorS);
-    sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+
+    TRACE << "Emergency heating - " << "effectiveTemperature:"
+          << mDataProvider->effectiveTemperature() << "- currentTemperature:" << mDataProvider->currentTemperature()
+          << " - effectiveEmergencyHeatingThreshold:" << mDataProvider->effectiveEmergencyHeatingThreshold();
+
 
     while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThreshold() ||
            mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
@@ -916,6 +927,7 @@ void Scheme::emergencyHeating()
 
         } else if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
             emit manualEmergencyModeUnblockedAfter(0);
+            mManualEmergencyChecked = true;
         }
 
         mRelay->emergencyHeating3();
@@ -938,7 +950,8 @@ void Scheme::emergencyHeating()
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-    internalPumpHeatingLoopStage1();
+    if (mDataProvider->effectiveSystemMode() != AppSpecCPP::EmergencyHeat)
+        internalPumpHeatingLoopStage1();
 }
 
 void Scheme::sendAlertIfNeeded()

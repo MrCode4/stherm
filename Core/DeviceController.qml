@@ -946,10 +946,7 @@ I_DeviceController {
             uiSession.popUps.errorPopup.errorMessage = Qt.binding(function() {
                 //! Show an error popup
                 var remainigTime = ""
-                if (remainigTimeToUnblockSystemMode < 1000) {
-                   remainigTime = remainigTimeToUnblockSystemMode + ' mili-seconds';
-
-                 } else if (remainigTimeToUnblockSystemMode < 60000) {
+                 if (remainigTimeToUnblockSystemMode < 60000) {
                    remainigTime = (remainigTimeToUnblockSystemMode / 1000).toFixed(0) + ' seconds';
 
                  } else if (remainigTimeToUnblockSystemMode < 3600000) {

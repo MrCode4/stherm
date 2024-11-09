@@ -160,6 +160,7 @@ private:
 
     //! Use for minimum run time of emergency heating
     QElapsedTimer mTEONTimer;
+    bool mManualEmergencyChecked;
 
     //! Switch active system type in the dual fuel heating to ...
     //! Used in internet connection troubleshooting
