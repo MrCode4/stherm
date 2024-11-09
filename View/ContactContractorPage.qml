@@ -20,74 +20,98 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     OrganizationIcon {
+        id: organizationIcon
         appModel: root.appModel
-
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.5
         height: parent.height * 0.25
+
+        anchors {
+            top: parent.top
+            horizontalCenter: parent.horizontalCenter
+        }
     }
 
-    GridLayout {
-        height: Math.min(root.availableHeight, implicitHeight)
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        columns: 2
-        rowSpacing: 16
-        columnSpacing: 32
+    Column {
+        width: parent.width
+        spacing: 24
 
-        Item {
-
-            Layout.columnSpan: 2
-            Layout.alignment: Qt.AlignHCenter
-            Layout.bottomMargin: 48
-            Layout.preferredHeight: root.height / 8
-            Layout.fillWidth: true
-            Layout.preferredWidth: 0
+        anchors {
+            top: organizationIcon.bottom
+            topMargin: 40
+            bottom: requestButton.top
         }
 
-        //! Phone
-        RoniaTextIcon {
-            text: FAIcons.circlePhone
-        }
+        RowLayout {
+            width: parent.width
 
-        Label {
-            Layout.alignment: Qt.AlignCenter
-            text: appModel.contactContractor.phoneNumber
-        }
+            //! Phone
+            Item {
+                Layout.preferredWidth: parent.width/3
 
-        //! Nuve Url
-        RoniaTextIcon {
-            text: FAIcons.globe
-        }
+                RoniaTextIcon {
+                    text: FAIcons.circlePhone
 
-        Image {
-            Layout.alignment: Qt.AlignCenter
-
-            source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg(appModel.contactContractor.qrURL, Style.foreground)}`
-            sourceSize.height: 130
-            sourceSize.width: 130
-        }
-
-        //! Request a Tech
-        RoniaTextIcon {
-            text: FAIcons.briefcase
-            visible: false
-        }
-
-        ButtonInverted {
-            Layout.alignment: Qt.AlignCenter
-            font.bold: true
-            text: "Request a Tech"
-            visible: false
-
-            onClicked: {
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/RequestTechPriorityPage.qml", {
-                                                  "uiSession": uiSession
-                                              });
+                    anchors {
+                        centerIn: parent
+                    }
                 }
+            }
+
+            Label {
+                Layout.fillWidth: true
+                text: appModel.contactContractor.phoneNumber
+            }
+        }
+
+        RowLayout {
+            width: parent.width
+
+            //! Nuve Url
+            Item {
+                Layout.preferredWidth: parent.width/3
+
+                RoniaTextIcon {
+                    text: FAIcons.globe
+
+                    anchors {
+                        centerIn: parent
+                    }
+                }
+            }
+
+            Item {
+                Layout.preferredHeight: 130
+                Layout.fillWidth: true
+
+                Image {
+                    source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg(appModel.contactContractor.qrURL, Style.foreground)}`
+                    sourceSize: Qt.size(130, 130)
+                }
+            }
+        }
+    }
+
+    ButtonInverted {
+        id: requestButton
+
+        text: "Request a Tech"
+
+        font {
+            bold: true
+        }
+
+        anchors {
+            bottom: parent.bottom
+            bottomMargin: 20
+            horizontalCenter: parent.horizontalCenter
+        }
+
+        onClicked: {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/RequestTechPriorityPage.qml", {
+                                             "uiSession": uiSession
+                                         });
             }
         }
     }

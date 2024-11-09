@@ -141,19 +141,20 @@ Popup {
 
         //! Spacer
         Item {
-            height: 120
+            height: 24
             Layout.fillWidth: true
         }
     }
 
     //! Organization icon
     OrganizationIcon {
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottomMargin: 3
-
         appModel: _root.device
         width: parent.width * 0.5
         height: parent.height * 0.25
-    }
+
+        anchors {
+            bottom: parent.bottom
+            horizontalCenter: parent.horizontalCenter
+            bottomMargin: 24
+        }}
 }
