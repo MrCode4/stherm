@@ -943,7 +943,7 @@ I_DeviceController {
         if (remainigTimeToUnblockSystemMode > 0) {
 
 
-            uiSession.popUps.errorPopup.errorMessage = Qt.binding(function() {
+            uiSession.popUps.emergencyModeErrorPopup.errorMessage = Qt.binding(function() {
                 //! Show an error popup
                 var remainigTime = ""
                  if (remainigTimeToUnblockSystemMode < 60000) {
@@ -957,12 +957,16 @@ I_DeviceController {
                         remainigTime += ` ${seconds} second(s)`;
                     }
                  }
+                 if (remainigTimeToUnblockSystemMode <= 0) {
+                     uiSession.popUps.emergencyModeErrorPopup.close()
+                 }
+
                 return `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;;
 
             });
-            uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.emergencyModeErrorPopup, true);
 
-            console.log("Ignore system mode, ", uiSession.popUps.errorPopup.errorMessage);
+            console.log("Ignore system mode, ", uiSession.popUps.emergencyModeErrorPopup.errorMessage);
             return false;
         }
 

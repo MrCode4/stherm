@@ -146,6 +146,8 @@ Scheme::~Scheme()
 
 void Scheme::restartWork(bool forceStart)
 {
+    mManualEmergencyChecked = false;
+
     if (isRunning()) {
         TRACE << "restarting HVAC" << stopWork;
         if (stopWork) // restart is already in progress
@@ -924,10 +926,10 @@ void Scheme::emergencyHeating()
         if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
             mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
             emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed());
+            mManualEmergencyChecked = true;
 
         } else if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
             emit manualEmergencyModeUnblockedAfter(0);
-            mManualEmergencyChecked = true;
         }
 
         mRelay->emergencyHeating3();

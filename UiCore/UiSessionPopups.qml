@@ -38,6 +38,7 @@ Item {
     //!
     property alias errorPopup:              errorPop
     property alias perfTestCheckPopup: popupPerfTest
+    property alias emergencyModeErrorPopup: emergencyModeErrorPopup
 
     readonly property bool isAnyPopupOpened : updateNotificationPopup.opened
                                                 || successPopup.opened
@@ -61,6 +62,10 @@ Item {
 
     ErrorPopup {
         id: errorPop
+    }
+
+    ErrorPopup {
+        id: emergencyModeErrorPopup
     }
 
     DownloadingPopup {
