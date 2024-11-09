@@ -50,9 +50,11 @@ Qt Creator: </br>
 4. Search for `FAKE_UID_MODE`.
 5. Check the box to turn it ON.
 6. Search for `FAKE_UID`
-7. Set your fake serial ID as the value
+7. Set your fake Unique ID as the value
     > **_Note:_** Remember, the value must be 16 characters long and can include both digits and letters.
-8. Finally, click on `Run CMake`.
+6. Search for `FAKE_SERIALID`
+8. Set your fake serial ID as the value
+9. Finally, click on `Run CMake`.
 
 CMake: </br>
 ```properties
