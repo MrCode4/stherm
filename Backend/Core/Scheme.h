@@ -67,6 +67,10 @@ signals:
 
     void actualModeStarted(AppSpecCPP::SystemMode mode);
 
+    //! To block mode change in UI
+    //! The system mode change will be unblock after `miliSecs` mili-seconds.
+    void manualEmergencyModeUnblockedAfter(int miliSecs);
+
 protected:
     void run() override;
 
@@ -92,7 +96,10 @@ private:
 
     void internalPumpHeatingLoopStage1();
     bool internalPumpHeatingLoopStage2();
-    void EmergencyHeating();
+
+    //! Users manually activate emergency heat., meaning Emergency heating will only be active when the system mode is set to Emergency or
+    //!  emergency heating will be triggered by the Defrost Controller Board (if equipped) or based on system needs.
+    void emergencyHeating();
     void sendAlertIfNeeded();
 
     //! Send relays into ti
@@ -150,6 +157,9 @@ private:
 
     bool isVacation;
     bool mRestarting;
+
+    //! Use for minimum run time of emergency heating
+    QElapsedTimer mTEONTimer;
 
     //! Switch active system type in the dual fuel heating to ...
     //! Used in internet connection troubleshooting

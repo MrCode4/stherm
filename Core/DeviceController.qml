@@ -302,7 +302,13 @@ I_DeviceController {
             ProtoDataManager.setCurrentHeatingStage(currentHeatingStage);
             ProtoDataManager.setCurrentCoolingStage(currentCoolingStage);
         }
+
+        function onManualEmergencyModeUnblockedAfter(miliSecs: int) {
+            remainigTimeToUnblockSystemMode = miliSecs;
+        }
     }
+
+    property int remainigTimeToUnblockSystemMode: 0
 
     property Connections networkInterface: Connections {
         target: NetworkInterface
@@ -904,6 +910,28 @@ I_DeviceController {
 
     function setSystemModeTo(systemMode: int)
     {
+        // Block due to emergency heating.
+        if (remainigTimeToUnblockSystemMode > 0) {
+
+            //! Show an error popup
+            var remainigTime = ""
+            if (remainigTimeToUnblockSystemMode < 1000) {
+               remainigTime = remainigTimeToUnblockSystemMode + ' mili-seconds';
+
+             } else if (remainigTimeToUnblockSystemMode < 60000) {
+               remainigTime = (remainigTimeToUnblockSystemMode / 1000).toFixed(0) + ' seconds';
+
+             } else if (remainigTimeToUnblockSystemMode < 3600000) {
+               remainigTime = (remainigTimeToUnblockSystemMode / 60000).toFixed(0) + ' minute(s)';
+             }
+
+            uiSession.popUps.errorPopup.errorMessage = `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
+
+            console.log("Ignore system mode, ", uiSession.popUps.errorPopup.errorMessage);
+            return;
+        }
+
         if (device.systemSetup._isSystemShutoff) {
             console.log("Ignore system mode, system is shutoff by alert manager.")
             return;
@@ -912,13 +940,16 @@ I_DeviceController {
         if (systemMode === AppSpecCPP.Vacation) {
             setVacationOn(true);
 
-        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
+        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.EmergencyHeat) {
             //! TODo required actions if any
 
             checkToUpdateSystemMode(systemMode);
             updateEditMode(AppSpec.EMSystemMode);
             // to let all dependant parameters being updated and save all
             Qt.callLater(saveSettings);
+
+        } else {
+            console.log("Wrong systenm mode!", systemMode);
         }
     }
 
@@ -1228,7 +1259,7 @@ I_DeviceController {
     function setSystemHeatPump(emergencyHeating: bool, stage: int, obState: int,
                                emergencyMinimumTime: int, emergencyControlType: int,
                                emergencyTemperatureDiffrence: real) {
-        device.systemSetup.emergencyHeating = emergencyHeating;
+        device.systemSetup.heatPumpEmergency = emergencyHeating;
 
         // coolStage controls the Y wires.
         device.systemSetup.coolStage = stage;

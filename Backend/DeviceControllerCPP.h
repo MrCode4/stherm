@@ -251,6 +251,9 @@ Q_SIGNALS:
 
     void effectiveTemperatureChanged(double effectiveTemperatureC);
 
+    //! To block mode change in UI
+    void manualEmergencyModeUnblockedAfter(int secs);
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData, bool addToData = false);

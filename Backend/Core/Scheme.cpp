@@ -206,7 +206,6 @@ void Scheme::run()
         if (mDataProvider.data()->isVacationEffective()) {
             VacationLoop();
 
-
         } else {
             switch (mDataProvider.data()->effectiveSystemMode()) {
             case AppSpecCPP::SystemMode::Auto:
@@ -223,6 +222,10 @@ void Scheme::run()
             case AppSpecCPP::SystemMode::Off:
                 OffLoop();
                 break;
+            case AppSpecCPP::SystemMode::EmergencyHeat:
+                emergencyHeating();
+                break;
+
             case AppSpecCPP::SystemMode::Emergency:
                 EmergencyLoop();
                 break;
@@ -390,9 +393,9 @@ void Scheme::HeatingLoop()
         // get time threshold ETime
         if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
             emit actualModeStarted(AppSpecCPP::Heating);
-            if (mDataProvider.data()->currentTemperature() < ET && mDataProvider.data()->systemSetup()->heatPumpEmergency) {
+            if (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThreshold()) {
                 TRACE << "Emergency";
-                EmergencyHeating();
+                emergencyHeating();
             } else {
                 TRACE << "Normal";
                 internalPumpHeatingLoopStage1();
@@ -881,23 +884,51 @@ bool Scheme::internalPumpHeatingLoopStage2()
     return true;
 }
 
-void Scheme::EmergencyHeating()
+void Scheme::emergencyHeating()
 {
+    auto sysSetup = mDataProvider->systemSetup();
+    if (!sysSetup->heatPumpEmergency) {
+        TRACE << "Emergency heating is OFF, back to Normal.";
+        internalPumpHeatingLoopStage1();
+        return;
+    }
+
     mRelay->setAllOff();
     mRelay->emergencyHeating1();
+
+    if (sysSetup->emergencyControlType == AppSpecCPP::ECTManually) {
+        emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000);
+    }
+
+    mTEONTimer.restart();
 
     // 5 Sec
     emit changeBacklight(emergencyColor, emergencyColorS);
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-    while (mDataProvider->currentTemperature() < HPT) {
-            mRelay->emergencyHeating3();
-            sendRelays();
-            waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
-            // we need break condition here!
+    while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThreshold() ||
+           mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
+
+        if (mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 <= mTEONTimer.elapsed()) {
+            emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed());
+        }
+
+        mRelay->emergencyHeating3();
+        sendRelays();
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+
+        // we need break condition here!
+        if (!sysSetup->heatPumpEmergency) {
+            break;
+        }
     }
 
+    if (sysSetup->emergencyControlType == AppSpecCPP::ECTManually) {
+        emit manualEmergencyModeUnblockedAfter(0);
+    }
+
+    mTEONTimer.invalidate();
     emit changeBacklight();
     mRelay->turnOffEmergencyHeating();
     sendRelays();

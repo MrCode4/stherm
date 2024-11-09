@@ -65,8 +65,8 @@ public:
         Auto,
         Vacation,
         Off,
-        Emergency,
         EmergencyHeat,
+        Emergency
     };
     Q_ENUM(SystemMode)
 

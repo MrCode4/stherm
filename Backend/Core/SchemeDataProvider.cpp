@@ -211,6 +211,17 @@ int SchemeDataProvider::heatPumpStage() const
     return mSystemSetup->coolStage;
 }
 
+double SchemeDataProvider::effectiveEmergencyHeatingThreshold()
+{
+    // Default is Auto mode.
+    auto effThreshold = mSystemSetup->emergencyTemperatureDiffrence * 1.8;
+    if (mSystemSetup->emergencyControlType == AppSpecCPP::ECTManually) {
+        effThreshold = -1;
+    }
+
+    return effThreshold;
+}
+
 double SchemeDataProvider::autoMaxReqTempF() const
 {
     return mAutoMaxReqTempF;

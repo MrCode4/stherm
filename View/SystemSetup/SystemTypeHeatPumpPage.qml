@@ -147,7 +147,7 @@ BasePageView {
 
                 Switch {
                     id: emergencyHeatingSwh
-                    checked: appModel.systemSetup.emergencyHeating
+                    checked: appModel.systemSetup.heatPumpEmergency
                 }
             }
 
