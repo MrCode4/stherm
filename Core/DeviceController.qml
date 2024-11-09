@@ -942,24 +942,27 @@ I_DeviceController {
         // Block due to emergency heating.
         if (remainigTimeToUnblockSystemMode > 0) {
 
-            //! Show an error popup
-            var remainigTime = ""
-            if (remainigTimeToUnblockSystemMode < 1000) {
-               remainigTime = remainigTimeToUnblockSystemMode + ' mili-seconds';
 
-             } else if (remainigTimeToUnblockSystemMode < 60000) {
-               remainigTime = (remainigTimeToUnblockSystemMode / 1000).toFixed(0) + ' seconds';
+            uiSession.popUps.errorPopup.errorMessage = Qt.binding(function() {
+                //! Show an error popup
+                var remainigTime = ""
+                if (remainigTimeToUnblockSystemMode < 1000) {
+                   remainigTime = remainigTimeToUnblockSystemMode + ' mili-seconds';
 
-             } else if (remainigTimeToUnblockSystemMode < 3600000) {
-                var minutes = (remainigTimeToUnblockSystemMode / 60000).toFixed(0);
-                var seconds = ((remainigTimeToUnblockSystemMode  - minutes * 60000) / 1000).toFixed(0);
-                remainigTime = `${minutes} minute(s)`;
-                if (seconds > 0) {
-                    remainigTime += ` ${seconds} second(s)`;
-                }
-             }
+                 } else if (remainigTimeToUnblockSystemMode < 60000) {
+                   remainigTime = (remainigTimeToUnblockSystemMode / 1000).toFixed(0) + ' seconds';
 
-            uiSession.popUps.errorPopup.errorMessage = `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;
+                 } else if (remainigTimeToUnblockSystemMode < 3600000) {
+                    var minutes = (remainigTimeToUnblockSystemMode / 60000).toFixed(0);
+                    var seconds = ((remainigTimeToUnblockSystemMode  - minutes * 60000) / 1000).toFixed(0);
+                    remainigTime = `${minutes} minute(s)`;
+                    if (seconds > 0) {
+                        remainigTime += ` ${seconds} second(s)`;
+                    }
+                 }
+                return `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;;
+
+            });
             uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
 
             console.log("Ignore system mode, ", uiSession.popUps.errorPopup.errorMessage);
