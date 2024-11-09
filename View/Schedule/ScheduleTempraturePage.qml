@@ -26,10 +26,13 @@ BasePageView {
     //! Is Celsius selected as the unit?
     readonly property bool           isCelcius:  temperatureUnit === AppSpec.TempratureUnit.Cel
 
+    readonly property bool           isHeating:   schedule.systemMode === AppSpec.Heating || scheduleToDisplay.systemMode === AppSpec.EmergencyHeat
+    readonly property bool           isCooling:   schedule.systemMode === AppSpec.Cooling
+
     //! Temperature value: this is always in celsius
     readonly property real  minimumTemperature: {
         var temperatureValue = _tempSlider.first.value;
-        if (schedule.systemMode === AppSpec.Heating) {
+        if (isHeating) {
             temperatureValue = singleTemperatureSlider.control.value;
         }
 
@@ -38,7 +41,7 @@ BasePageView {
 
     readonly property real  maximumTemperature: {
         var temperatureValue = _tempSlider.second.value;
-        if (schedule.systemMode === AppSpec.Cooling) {
+        if (isCooling) {
             temperatureValue = singleTemperatureSlider.control.value;
 
         }
@@ -52,10 +55,10 @@ BasePageView {
     property real               minTemperature: {
         var minTemp;
 
-        if (schedule.systemMode === AppSpec.Cooling) {
+        if (isCooling) {
             minTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.minimumCoolingTemperatiureF) : AppSpec.minimumCoolingTemperatiureF;
 
-        } else if (schedule.systemMode === AppSpec.Heating) {
+        } else if (isHeating) {
             minTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.minimumHeatingTemperatiureF) : AppSpec.minimumHeatingTemperatiureF;
 
         } else {
@@ -69,10 +72,10 @@ BasePageView {
     property real               maxTemperature: {
         var maxTemp;
 
-        if (schedule.systemMode === AppSpec.Cooling) {
+        if (isCooling) {
             maxTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.maximumCoolingTemperatiureF) : AppSpec.maximumCoolingTemperatiureF;
 
-        } else if (schedule.systemMode === AppSpec.Heating) {
+        } else if (isHeating) {
             maxTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.maximumHeatingTemperatiureF) : AppSpec.maximumHeatingTemperatiureF;
 
         } else {
@@ -115,7 +118,7 @@ BasePageView {
         anchors.centerIn: parent
         width: parent.width * 0.9
 
-        visible: schedule.systemMode !== AppSpec.Heating && schedule.systemMode !== AppSpec.Cooling
+        visible: !isHeating && !isCooling
         spacing: 16
 
         RowLayout {
@@ -211,7 +214,7 @@ BasePageView {
         width: parent.width * 0.9
         spacing: 60
 
-        visible: schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.Cooling
+        visible: isHeating || isCooling
 
         SingleIconSlider {
             id: singleTemperatureSlider
@@ -229,8 +232,8 @@ BasePageView {
         Label {
             Layout.preferredWidth: parent.width
 
-            text: "<b>" + (schedule.systemMode === AppSpec.Heating ? "Heating" : "Cooling") + " schedule</b> - to set the " +
-                  (schedule.systemMode === AppSpec.Heating ? "heat" : "cool") + " setpoint for the selected period"
+            text: "<b>" + (isHeating ? "Heating" : "Cooling") + " schedule</b> - to set the " +
+                  (isHeating ? "heat" : "cool") + " setpoint for the selected period"
             wrapMode: Text.WordWrap
             textFormat: Text.RichText
             horizontalAlignment: Qt.AlignLeft
@@ -242,11 +245,11 @@ BasePageView {
      * ****************************************************************************************/
 
     function updateSliderValues() {
-        if (schedule.systemMode === AppSpec.Heating) {
+        if (isHeating) {
             singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
                                                                                       minTemperature, maxTemperature);
 
-        } else if (schedule.systemMode === AppSpec.Cooling) {
+        } else if (isCooling) {
             singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
                                                                                       minTemperature, maxTemperature);
 
@@ -266,11 +269,11 @@ BasePageView {
             var minTemperature = _tempSlider.first.value;
             var maxTemperature = _tempSlider.second.value;
 
-            if (schedule.systemMode === AppSpec.Heating) {
+            if (isHeating) {
                 // Update minimum temperature as heating temperature
                 minTemperature = singleTemperatureSlider.control.value;
 
-            } else if (schedule.systemMode === AppSpec.Cooling) {
+            } else if (isCooling) {
                 // Update maximum temperature as cooling temperature
                 maxTemperature = singleTemperatureSlider.control.value;
             }

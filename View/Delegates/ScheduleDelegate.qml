@@ -170,7 +170,7 @@ ItemDelegate {
                     if (schedule.systemMode === AppSpec.Cooling) {
                         return "Cooling";
 
-                    } else if (schedule.systemMode === AppSpec.Heating) {
+                    } else if (schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.EmergencyHeat) {
                         return "Heating";
 
                     } else if (schedule.systemMode === AppSpec.Auto) {
