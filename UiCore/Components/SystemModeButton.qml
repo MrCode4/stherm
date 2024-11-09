@@ -78,7 +78,7 @@ ToolButton {
             id: _heatingStateItem
             anchors.centerIn: parent
             visible: opacity > 0
-            opacity: _control.state === "heating" ? 1. : 0.
+            opacity: (_control.state === "heating" || _control.state === "emergency") ? 1. : 0.
             spacing: 2
 
             //! HEATING mode icon
@@ -97,6 +97,9 @@ ToolButton {
                 Layout.alignment: Qt.AlignCenter
                 font.pointSize: Application.font.pointSize * 0.65
                 text: {
+                    if (_control.state === "emergency")
+                        return "Emergency"
+
                     if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet) {
 
                         if (dfhSystemType === AppSpec.HeatingOnly) {
@@ -238,6 +241,9 @@ ToolButton {
             // if design added the order should be specified as well as the next state in onClicked
         case AppSpecCPP.Auto:
             return "auto";
+        case AppSpecCPP.EmergencyHeat:
+            return "emergency";
+
         default:
             return "off"
         }

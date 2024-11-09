@@ -910,6 +910,29 @@ I_DeviceController {
 
     function setSystemModeTo(systemMode: int)
     {
+        if (device.systemSetup._isSystemShutoff) {
+            console.log("Ignore system mode, system is shutoff by alert manager.")
+            return;
+        }
+
+        if (systemMode === AppSpecCPP.Vacation) {
+            setVacationOn(true);
+
+        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.EmergencyHeat) {
+            //! TODo required actions if any
+
+            if (checkToUpdateSystemMode(systemMode)) {
+                updateEditMode(AppSpec.EMSystemMode);
+                // to let all dependant parameters being updated and save all
+                Qt.callLater(saveSettings);
+            }
+
+        } else {
+            console.log("Wrong systenm mode!", systemMode);
+        }
+    }
+
+    function checkToUpdateSystemMode(systemMode: int) {
         // Block due to emergency heating.
         if (remainigTimeToUnblockSystemMode > 0) {
 
@@ -929,32 +952,11 @@ I_DeviceController {
             uiSession.popupLayout.displayPopUp(uiSession.popUps.errorPopup, true);
 
             console.log("Ignore system mode, ", uiSession.popUps.errorPopup.errorMessage);
-            return;
+            return false;
         }
 
-        if (device.systemSetup._isSystemShutoff) {
-            console.log("Ignore system mode, system is shutoff by alert manager.")
-            return;
-        }
-
-        if (systemMode === AppSpecCPP.Vacation) {
-            setVacationOn(true);
-
-        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.EmergencyHeat) {
-            //! TODo required actions if any
-
-            checkToUpdateSystemMode(systemMode);
-            updateEditMode(AppSpec.EMSystemMode);
-            // to let all dependant parameters being updated and save all
-            Qt.callLater(saveSettings);
-
-        } else {
-            console.log("Wrong systenm mode!", systemMode);
-        }
-    }
-
-    function checkToUpdateSystemMode(systemMode: int) {
         device.systemSetup.systemMode = systemMode;
+        return true;
     }
 
     //! On/off the vacation from server.
@@ -1192,7 +1194,7 @@ I_DeviceController {
         } else {
             var modeInt = parseInt(mode_id) - 1;
             //! Vacation will be handled using setVacationServer
-            if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Off &&
+            if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Emergency &&
                     modeInt !== AppSpec.Vacation) {
                 checkToUpdateSystemMode(modeInt);
             }
