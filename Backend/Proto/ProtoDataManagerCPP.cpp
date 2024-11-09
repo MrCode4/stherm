@@ -52,6 +52,7 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
     });
 
     mDataPointLogger.setInterval(30 * 1000);
+    mDataPointLogger.setSingleShot(true);
     connect(&mDataPointLogger, &QTimer::timeout, this, [this]() {
         logStashData();
     });
@@ -61,6 +62,8 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
         updateChangeMode(CMAll);
         logStashData();
     });
+    mCreatGeneralBufferTimer.start();
+
 }
 
 ProtoDataManagerCPP::~ProtoDataManagerCPP()
