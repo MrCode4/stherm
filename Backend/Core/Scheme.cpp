@@ -896,7 +896,7 @@ void Scheme::emergencyHeating()
     mRelay->setAllOff();
     mRelay->emergencyHeating1();
 
-    if (sysSetup->emergencyControlType == AppSpecCPP::ECTManually) {
+    if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
         emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000);
     }
 
@@ -910,11 +910,11 @@ void Scheme::emergencyHeating()
     while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThreshold() ||
            mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
 
-        if (sysSetup->emergencyControlType == AppSpecCPP::ECTManually &&
+        if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
             mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
             emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed());
 
-        } else if (sysSetup->emergencyControlType == AppSpecCPP::ECTManually) {
+        } else if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
             emit manualEmergencyModeUnblockedAfter(0);
         }
 
@@ -928,7 +928,7 @@ void Scheme::emergencyHeating()
         }
     }
 
-    if (sysSetup->emergencyControlType == AppSpecCPP::ECTManually) {
+    if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
         emit manualEmergencyModeUnblockedAfter(0);
     }
 

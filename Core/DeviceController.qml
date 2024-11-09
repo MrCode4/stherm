@@ -908,11 +908,11 @@ I_DeviceController {
         device.vacation.hum_max  = hum_max ;
     }
 
-    function setSystemModeTo(systemMode: int)
+    function setSystemModeTo(systemMode: int) : bool
     {
         if (device.systemSetup._isSystemShutoff) {
             console.log("Ignore system mode, system is shutoff by alert manager.")
-            return;
+            return false;
         }
 
         if (systemMode === AppSpecCPP.Vacation) {
@@ -925,11 +925,17 @@ I_DeviceController {
                 updateEditMode(AppSpec.EMSystemMode);
                 // to let all dependant parameters being updated and save all
                 Qt.callLater(saveSettings);
+
+            } else {
+                return false;
             }
 
         } else {
             console.log("Wrong systenm mode!", systemMode);
+            return false;
         }
+
+        return true;
     }
 
     function checkToUpdateSystemMode(systemMode: int) {
@@ -945,7 +951,12 @@ I_DeviceController {
                remainigTime = (remainigTimeToUnblockSystemMode / 1000).toFixed(0) + ' seconds';
 
              } else if (remainigTimeToUnblockSystemMode < 3600000) {
-               remainigTime = (remainigTimeToUnblockSystemMode / 60000).toFixed(0) + ' minute(s)';
+                var minutes = (remainigTimeToUnblockSystemMode / 60000).toFixed(0);
+                var seconds = ((remainigTimeToUnblockSystemMode  - minutes * 60000) / 1000).toFixed(0);
+                remainigTime = `${minutes} minute(s)`;
+                if (seconds > 0) {
+                    remainigTime += ` ${seconds} second(s)`;
+                }
              }
 
             uiSession.popUps.errorPopup.errorMessage = `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;

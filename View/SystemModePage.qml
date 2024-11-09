@@ -214,12 +214,16 @@ BasePageView {
         confirmPopup.accepted.disconnect(saveAndDisconnect.bind(this));
         confirmPopup.rejected.disconnect(rejectAndDisconnect);
 
-        // Back to state of the model
+        backToModel();
+    }
+
+    //! Back to state of the model
+    function backToModel() {
         _coolingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Cooling;
         _heatingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Heating;
         _autoButton.checked    = device?.systemSetup.systemMode === AppSpecCPP.Auto;
-        _offButton.checked     = device?.systAemSetup.systemMode === AppSpecCPP.Off;
-        emergencyHeatButton.checked  = device?.systAemSetup.systemMode === AppSpecCPP.EmergencyHeat;
+        _offButton.checked     = device?.systemSetup.systemMode === AppSpecCPP.Off;
+        emergencyHeatButton.checked  = device?.systemSetup.systemMode === AppSpecCPP.EmergencyHeat;
     }
 
     //! Save the systemMode and disconnect the confirmPopup
@@ -231,7 +235,9 @@ BasePageView {
 
     //! Update the system mode
     function save(systemMode : int) {
-        deviceController.setSystemModeTo(systemMode);
-        backButtonCallback();
+        if (deviceController.setSystemModeTo(systemMode))
+            backButtonCallback();
+        else
+            backToModel();
     }
 }
