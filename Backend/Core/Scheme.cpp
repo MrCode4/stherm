@@ -910,8 +910,12 @@ void Scheme::emergencyHeating()
     while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThreshold() ||
            mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
 
-        if (mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 <= mTEONTimer.elapsed()) {
+        if (sysSetup->emergencyControlType == AppSpecCPP::ECTManually &&
+            mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
             emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed());
+
+        } else if (sysSetup->emergencyControlType == AppSpecCPP::ECTManually) {
+            emit manualEmergencyModeUnblockedAfter(0);
         }
 
         mRelay->emergencyHeating3();
