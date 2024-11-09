@@ -63,4 +63,6 @@ QtObject {
     readonly property string snowflake:                         "\uf2dc"
     readonly property string temperatureHigh:                   "\uf769"
     readonly property string temperatureThreeQuarters:          "\uf2c8"
+    readonly property string shield:                            "\uf132"
+
 }
