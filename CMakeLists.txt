@@ -41,6 +41,7 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Data)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Services)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Proto)
 
 # Add any include directories
 #include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
@@ -413,6 +414,9 @@ qt6_add_qml_module(appStherm
 
         Backend/Services/PerfTestService.h
         Backend/Services/PerfTestService.cpp
+
+        Backend/Proto/ProtoDataManagerCPP.h
+        Backend/Proto/ProtoDataManagerCPP.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf

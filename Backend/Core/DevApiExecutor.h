@@ -16,6 +16,5 @@ public:
 
 protected:
     virtual void setApiAuth(QNetworkRequest& request) override;
-    QNetworkRequest prepareApiRequest(const QString& endpoint, bool setAuth = true);
     QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const override;
 };
