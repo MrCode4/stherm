@@ -124,7 +124,7 @@ ItemDelegate {
                         schedule.enable = checked;
                         if (checked) {
                             // Update system mode
-                            updateScheduleMode(schedule, uiSession.appModel.systemSetup.systemMode);
+                            schedulesController.setSchduleMode(schedule, uiSession.appModel.systemSetup.systemMode);
                         }
 
                         uiSession.appModel.schedulesChanged();
@@ -257,7 +257,7 @@ ItemDelegate {
         if (schedule?.enable === false) {
             schedule.enable = true;
             // Update system mode
-            updateScheduleMode(schedule, uiSession.appModel.systemSetup.systemMode);
+            schedulesController.setSchduleMode(schedule, uiSession.appModel.systemSetup.systemMode);
 
             // Send Data to server when a schedule changed...
             // Edit schedule
@@ -282,14 +282,6 @@ ItemDelegate {
     function removeRequestAccepted() {
         //! Remove this item
         _removeAnima.running = true;
-    }
-
-    //! update schedule Mode based on SystemMode if in one of cooling, heating or Auto Modes
-    function updateScheduleMode(schedule, systemMode) {
-        if (systemMode === AppSpec.Cooling ||
-                systemMode === AppSpec.Heating ||
-                systemMode === Auto)
-            schedule.systemMode = systemMode;
     }
 }
 

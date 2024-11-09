@@ -62,6 +62,8 @@ QtObject {
     {
         var newSchedule = cloneSchedule(schedule, AppCore.defaultRepo);
 
+        setSchduleMode(newSchedule, device.systemSetup.systemMode);
+
         // Update the created schedule with the current system mode
         newSchedule.systemMode = device.systemSetup.systemMode;
 
@@ -657,7 +659,7 @@ QtObject {
 
         return   schedule.systemMode !== checkWithSystemMode &&
                 ((checkWithSystemMode === AppSpec.Cooling && schedule.systemMode === AppSpec.Heating) ||
-                 ((checkWithSystemMode === AppSpec.Heating || checkWithSystemMode === AppSpec.EmergencyHeat)&& schedule.systemMode === AppSpec.Cooling) ||
+                 ((checkWithSystemMode === AppSpec.Heating || checkWithSystemMode === AppSpec.EmergencyHeat) && schedule.systemMode === AppSpec.Cooling) ||
                  (checkWithSystemMode === AppSpec.Auto    && (schedule.systemMode === AppSpec.Cooling || schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.EmergencyHeat)))
     }
 
@@ -734,6 +736,15 @@ QtObject {
         schedulePacket.weekdays   = schedule.repeats.split(',');
 
         return schedulePacket;
+    }
+
+    function setSchduleMode(schedule: ScheduleCPP, systemMode: int) {
+        var sysMode = systemMode;
+        if (sysMode === AppSpec.EmergencyHeat)
+            sysMode = AppSpec.Heating;
+
+        // Update the created schedule with the current system mode
+        schedule.systemMode = sysMode;
     }
 
     property Timer _checkRunningTimer: Timer {

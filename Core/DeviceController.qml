@@ -958,13 +958,14 @@ I_DeviceController {
                     }
                  }
                  if (remainigTimeToUnblockSystemMode <= 0) {
-                     uiSession.popUps.emergencyModeErrorPopup.close()
+                     uiSession.popUps.emergencyModeErrorPopup.close();
+                     uiSession.popUps.emergencyModeErrorPopup.aboutToHide();
                  }
 
                 return `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;;
 
             });
-            uiSession.popupLayout.displayPopUp(uiSession.popUps.emergencyModeErrorPopup, true);
+            uiSession.popupLayout.onPopupClosedDestroyed(uiSession.popUps.emergencyModeErrorPopup, true);
 
             console.log("Ignore system mode, ", uiSession.popUps.emergencyModeErrorPopup.errorMessage);
             return false;
