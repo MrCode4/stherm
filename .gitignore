@@ -2,7 +2,6 @@
 *.slo
 *.lo
 *.o
-*.a
 *.la
 *.lai
 *.so
@@ -53,3 +52,6 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+# Ignore everything in 3rdparty/protobufLibs
+3rdparty/protobufLibs/*

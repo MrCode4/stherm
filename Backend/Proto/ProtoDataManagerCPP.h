@@ -5,16 +5,90 @@
 
 #include "DevApiExecutor.h"
 
+#include "streamdata.pb.h"
+
 class ProtoDataManagerCPP : public DevApiExecutor
 {
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
 
+private:
+    //! Change mode
+    enum ChangeMode {
+        CMNone                = 0,
+        CMSetTemperature      = 1 << 0,
+        CMSetHumidity         = 1 << 1,
+        CMCurrentTemperature  = 1 << 2,
+        CMCurrentHumidity     = 1 << 3,
+        CMMCUTemperature      = 1 << 4,
+        CMAirPressure         = 1 << 5,
+        CMCurrentAirQuality   = 1 << 6,
+        CMCurrentCoolingStage = 1 << 7,
+        CMCurrentHeatingStage = 1 << 8,
+        CMCurrentFanStatus    = 1 << 9,
+        CMLedStatus           = 1 << 10,
+        CMAll                 = CMSetTemperature | CMSetHumidity | CMCurrentTemperature | CMCurrentHumidity |
+                                CMMCUTemperature | CMAirPressure | CMCurrentCoolingStage |
+                                CMCurrentHeatingStage | CMCurrentFanStatus | CMLedStatus
+    };
+    // Q_ENUM(ChangeMode)
+
 public:
     explicit ProtoDataManagerCPP(QObject *parent = nullptr);
+    ~ProtoDataManagerCPP();
 
     Q_INVOKABLE void updateData();
+
+    Q_INVOKABLE void setSetTemperature(const double &temprature);
+    Q_INVOKABLE void setSetHumidity(const double &humidity);
+    Q_INVOKABLE void setCurrentTemperature(const double &temprature);
+    Q_INVOKABLE void setCurrentHumidity(const double &humidity);
+    Q_INVOKABLE void setMCUTemperature(const double &mcuTemprature);
+    Q_INVOKABLE void setAirPressure(const int &airQuality);
+    Q_INVOKABLE void setCurrentAirQuality(const int &airQuality);
+    Q_INVOKABLE void setCurrentCoolingStage(const int &coolingStage);
+    Q_INVOKABLE void setCurrentHeatingStage(const bool &heatingStage);
+    Q_INVOKABLE void setCurrentFanStatus(const bool &falStatus);
+    Q_INVOKABLE void setLedStatus(const bool &ledStatus);
+
+
 signals:
+
+private:
+    LiveDataPoint *addNewPoint();
+
+    void logStashData();
+
+    void updateChangeMode(ChangeMode cm);
+
+private:
+
+        /*
+         * Array of points:
+         *      time                          - timestamp in seconds in UTC
+         *      set_temperature               - target set temperature (set manually or by scheduler)
+         *      set_humidity                  - target humidity (set manually or by scheduler)
+         *      current_temperature_embedded  - embedded temperature sensor value in Celsius
+         *      current_humidity_embedded     - embedded humidity sensor value in %
+         *      current_temperature_MCU       - CPU temperature in Celsius
+         *      air_pressure_embedded         - embedded pressure sensor value in hPa
+         *      current_air_quality           - air quality indicator (1,2 or 3)
+         *      current_cooling_stage         - currently running cooling stage (0 means cooling is off)
+         *      current_heating_stage         - currently running heating stage (0 means heating is off)
+         *      current_fan_status            - fan state (0 means is off)
+         *      led_status                    - led lights state (0 means is off)
+         *      is_sync                       - indication of synchronization packet (package should contain all 11 values). Should be at least every hour.
+        */
+    LiveDataPointList mLiveDataPointList;
+
+    //! Keep the latest data values.
+    LiveDataPoint *mLateastDataPoint;
+
+    QTimer mSenderTimer;
+    QTimer mDataPointLogger;
+    QTimer mCreatGeneralBufferTimer;
+
+    int changeMode;
 };
 
