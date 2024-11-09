@@ -23,6 +23,17 @@ Control {
     //! Index in ListView
     property int        delegateIndex
 
+    property bool isWPA3: _root.isSecuredByWPA3(wifi?.security ?? "")
+
+    function isSecuredByWPA3(security: string)
+    {
+        security = security.toUpperCase();
+        const isWPA3Secured = security.includes("WPA3") || security.includes("SAE")
+
+        return isWPA3Secured
+
+    }
+
     /* Object properties
      * ****************************************************************************************/
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
@@ -68,16 +79,35 @@ Control {
                     strength: wifi?.strength ?? 0
                 }
 
-                // security indicator
                 RoniaTextIcon {
+                    id: shieldTextIcon
+
+                    visible: _root.isWPA3 && lockTextIcon.visible
                     anchors {
                         right: parent.right
                         bottom: parent.bottom
+                        rightMargin: -4
+                        bottomMargin: -4
+                    }
+                    //! strength > 0 means don't display lock for non-in-range wifis
+                    font.pointSize: Application.font.pointSize * 0.9
+                    text: FAIcons.shield
+                }
+
+                // security indicator
+                RoniaTextIcon {
+                    id: lockTextIcon
+
+                    anchors {
+                        centerIn: _root.isWPA3? shieldTextIcon: undefined
+                        right: _root.isWPA3?undefined: parent.right
+                        bottom: _root.isWPA3?undefined: parent.bottom
                     }
                     //! strength > 0 means don't display lock for non-in-range wifis
                     visible: wifi?.strength > 0 && wifi?.security !== ""
                     font.pointSize: Application.font.pointSize * 0.5
                     text: FAIcons.lock
+                    color: enabled ? _root.isWPA3?Style.background: Style.foreground: Style.hintTextColor
                 }
             }
 
