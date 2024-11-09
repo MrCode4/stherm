@@ -33,7 +33,7 @@ double ScheduleCPP::effectiveTemperature(const AppSpecCPP::SystemMode &sysMode) 
         // Cool to
         eff = maximumTemperature;
 
-    } else if (sysMode == AppSpecCPP::SystemMode::Heating) {
+    } else if (sysMode == AppSpecCPP::SystemMode::Heating || sysMode == AppSpecCPP::SystemMode::EmergencyHeat) {
         // Heat to
         eff = minimumTemperature;
 

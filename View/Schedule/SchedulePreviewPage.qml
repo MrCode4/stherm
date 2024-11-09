@@ -204,7 +204,7 @@ BasePageView {
                             if (scheduleToDisplay.systemMode === AppSpec.Cooling) {
                                 return "Cooling";
 
-                            } else if (scheduleToDisplay.systemMode === AppSpec.Heating) {
+                            } else if (scheduleToDisplay.systemMode === AppSpec.Heating || scheduleToDisplay.systemMode === AppSpec.EmergencyHeat) {
                                 return "Heating";
                             }
 

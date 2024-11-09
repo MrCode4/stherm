@@ -369,7 +369,7 @@ QtObject {
         //! this function is called even if device is off or hold!
         //! We should no use a current schedule when device is on Hold, in Off Mode,
         //! in perf test or when emergency shut off!
-        if (device.isHold || ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) ||
+        if (device.isHold || ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off || device.systemSetup.systemMode === AppSpec.EmergencyHeat) ||
                 device?.systemSetup?._isSystemShutoff || PerfTestService.isTestRunning) {
             currentSchedule = null;
         }
@@ -657,8 +657,8 @@ QtObject {
 
         return   schedule.systemMode !== checkWithSystemMode &&
                 ((checkWithSystemMode === AppSpec.Cooling && schedule.systemMode === AppSpec.Heating) ||
-                 (checkWithSystemMode === AppSpec.Heating && schedule.systemMode === AppSpec.Cooling) ||
-                 (checkWithSystemMode === AppSpec.Auto    && (schedule.systemMode === AppSpec.Cooling || schedule.systemMode === AppSpec.Heating)))
+                 ((checkWithSystemMode === AppSpec.Heating || checkWithSystemMode === AppSpec.EmergencyHeat)&& schedule.systemMode === AppSpec.Cooling) ||
+                 (checkWithSystemMode === AppSpec.Auto    && (schedule.systemMode === AppSpec.Cooling || schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.EmergencyHeat)))
     }
 
     //! Update system mode of campatible schedules.
@@ -783,7 +783,7 @@ QtObject {
 
         function onSystemModeChanged() {
             var currentSystemMode = device.systemSetup.systemMode;
-            if (currentSystemMode === AppSpec.Off) {
+            if (currentSystemMode === AppSpec.Off || currentSystemMode === AppSpec.EmergencyHeat) {
                 deviceController.setActivatedSchedule(null);
 
             } else {
