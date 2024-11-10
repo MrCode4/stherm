@@ -42,51 +42,54 @@ BasePageView {
             bottom: requestButton.top
         }
 
-        RowLayout {
+        Item {
             width: parent.width
+            height: phoneNumberText.height
 
             //! Phone
-            Item {
-                Layout.preferredWidth: parent.width/3
+            RoniaTextIcon {
+                text: FAIcons.circlePhone
 
-                RoniaTextIcon {
-                    text: FAIcons.circlePhone
-
-                    anchors {
-                        centerIn: parent
-                    }
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    horizontalCenterOffset: -125
+                    verticalCenter: phoneNumberText.verticalCenter
                 }
             }
 
             Label {
-                Layout.fillWidth: true
+                id: phoneNumberText
+
                 text: appModel.contactContractor.phoneNumber
+
+                anchors {
+                    centerIn: parent
+                }
             }
         }
 
-        RowLayout {
+        Item {
             width: parent.width
+            height: qrCodeImage.height
 
             //! Nuve Url
-            Item {
-                Layout.preferredWidth: parent.width/3
+            RoniaTextIcon {
+                text: FAIcons.globe
 
-                RoniaTextIcon {
-                    text: FAIcons.globe
-
-                    anchors {
-                        centerIn: parent
-                    }
+                anchors {
+                    centerIn: parent
+                    horizontalCenterOffset: -125
                 }
             }
 
-            Item {
-                Layout.preferredHeight: 130
-                Layout.fillWidth: true
+            Image {
+                id: qrCodeImage
 
-                Image {
-                    source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg(appModel.contactContractor.qrURL, Style.foreground)}`
-                    sourceSize: Qt.size(130, 130)
+                source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg(appModel.contactContractor.qrURL, Style.foreground)}`
+                sourceSize: Qt.size(130, 130)
+
+                anchors {
+                    centerIn: parent
                 }
             }
         }
@@ -96,6 +99,7 @@ BasePageView {
         id: requestButton
 
         text: "Request a Tech"
+        visible: false
 
         font {
             bold: true
