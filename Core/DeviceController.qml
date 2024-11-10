@@ -938,9 +938,9 @@ I_DeviceController {
         return true;
     }
 
-    function checkToUpdateSystemMode(systemMode: int) {
+    function checkToUpdateSystemMode(systemMode: int, force = false) {
         // Block due to emergency heating.
-        if (systemMode !== AppSpec.EmergencyHeat && remainigTimeToUnblockSystemMode > 0) {
+        if (!force && systemMode !== AppSpec.EmergencyHeat && remainigTimeToUnblockSystemMode > 0) {
             uiSession.popUps.emergencyModeErrorPopup.errorMessage = Qt.binding(function() {
                 //! Show an error popup
                 var remainigTime = ""
@@ -961,7 +961,7 @@ I_DeviceController {
                     uiSession.popUps.emergencyModeErrorPopup.aboutToHide();
                 }
 
-                return `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;;
+                return `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;
 
             });
             uiSession.popupLayout.displayPopUp(uiSession.popUps.emergencyModeErrorPopup, true);
@@ -1258,7 +1258,7 @@ I_DeviceController {
 
     function setSystemCoolingOnly(stage: int) {
         device.systemSetup.coolStage  = stage;
-        device.systemSetup.systemType = AppSpecCPP.CoolingOnly;
+        setSystemTypeTo(AppSpecCPP.CoolingOnly);
 
         if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== AppSpecCPP.Vacation)  {
             setSystemModeTo(AppSpecCPP.Cooling)
@@ -1267,7 +1267,7 @@ I_DeviceController {
 
     function setSystemHeatOnly(stage: int) {
         device.systemSetup.heatStage  = stage;
-        device.systemSetup.systemType = AppSpecCPP.HeatingOnly;
+        setSystemTypeTo(AppSpecCPP.HeatingOnly);
         if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== AppSpecCPP.Vacation)  {
             setSystemModeTo(AppSpecCPP.Heating)
         }
@@ -1282,7 +1282,7 @@ I_DeviceController {
         device.systemSetup.coolStage = stage;
 
         device.systemSetup.heatPumpOBState = obState;
-        device.systemSetup.systemType = AppSpecCPP.HeatPump;
+        setSystemTypeTo(AppSpecCPP.HeatPump);
 
         device.systemSetup.emergencyMinimumTime = emergencyMinimumTime;
         device.systemSetup.emergencyControlType = emergencyControlType;
@@ -1292,7 +1292,7 @@ I_DeviceController {
     function setSystemTraditional(coolStage: int, heatStage: int) {
         device.systemSetup.coolStage = coolStage;
         device.systemSetup.heatStage = heatStage;
-        device.systemSetup.systemType = AppSpecCPP.Conventional;
+        setSystemTypeTo(AppSpecCPP.Conventional);
     }
 
     function setSystemDualFuelHeating(emergency: bool, heatPumpStage: int, stage: int, obState: int, dualFuelThreshod: real) {
@@ -1305,9 +1305,27 @@ I_DeviceController {
         device.systemSetup.heatPumpOBState = obState;
 
         device.systemSetup.dualFuelThreshod = dualFuelThreshod;
-        device.systemSetup.systemType = AppSpec.DualFuelHeating;
+        setSystemTypeTo(AppSpec.DualFuelHeating);
     }
 
+    function setSystemTypeTo(systemType: int) {
+        device.systemSetup.systemType = systemType;
+
+        if (device.systemSetup.systemMode === AppSpecCPP.EmergencyHeat && systemType !== AppSpecCPP.HeatPump) {
+            switch (systemType) {
+            case AppSpec.Conventional:
+            case AppSpec.HeatingOnly:
+            case AppSpec.DualFuelHeating: {
+                setSystemModeTo(AppSpecCPP.Heating, true);
+            } break;
+
+            case AppSpec.CoolingOnly: {
+                setSystemModeTo(AppSpecCPP.Cooling, true);
+
+            } break;
+            }
+        }
+    }
 
     function setSystemSetupServer(settings: var) {
 
