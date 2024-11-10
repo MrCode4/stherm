@@ -141,7 +141,7 @@ Popup {
 
         //! Spacer
         Item {
-            height: 24
+            height: 120
             Layout.fillWidth: true
         }
     }
@@ -155,7 +155,7 @@ Popup {
         anchors {
             bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
-            bottomMargin: 24
+            bottomMargin: 8
         }
     }
 }
