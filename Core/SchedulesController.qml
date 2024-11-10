@@ -174,16 +174,34 @@ QtObject {
         return nextRepeats.join(",");
     }
 
-    //! assuming the data is same and just the time differs between variables
+    //! Assuming the date is same and just the time differs between variables
     function timeInRange(time: Date, schStartTime: Date, schEndTime: Date) {
-        if (schStartTime < schEndTime) { // normal
-            if (time >= schStartTime && time < schEndTime)
+        var todayTime = adjustDateToToday(time);
+        var startTime = adjustDateToToday(schStartTime);
+        var endTime   = adjustDateToToday(schEndTime);
+
+        if (startTime < endTime) { // normal
+            if (todayTime >= startTime && todayTime < endTime)
                 return true;
         } else { // overnight
-            if (time >= schStartTime || time < schEndTime)
+            if (todayTime >= startTime || todayTime < endTime)
                 return true;
         }
         return false;
+    }
+
+    //! Convert the day to today
+    function adjustDateToToday(time: Date) {
+      // Create a new Date object for today
+      let today = new Date();
+
+      // Set the time of today to the time of the time object
+      today.setHours(time.getHours());
+      today.setMinutes(time.getMinutes());
+      today.setSeconds(time.getSeconds());
+      today.setMilliseconds(time.getMilliseconds());
+
+      return today;
     }
 
     //! Find running days with repeat and start time.
@@ -345,11 +363,12 @@ QtObject {
         //! find the active schedule
         let currentSchedule = deviceCurrentSchedules.find(
                 schedule => {
+                    now.setDate()
                     //! Compare time and running days to start it.
                     if (schedule.scheduleElement.enable &&
                         schedule.runningDays.includes(currentDate)) {
-                        if (now >= schedule.startTime && // should be replaced by timeInRange
-                            now <= schedule.endTime) { // logical compare would be, but in this case we miss one minute for overnight schedules
+                         // logical compare would be, but in this case we miss one second for overnight schedules
+                        if (timeInRange(now, schedule.startTime, schedule.endTime)) {
                             return true;
                         }
                     }
