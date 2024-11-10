@@ -923,9 +923,10 @@ void Scheme::emergencyHeating()
     while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThreshold() ||
            mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
 
+        auto emergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000;
         if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
-            mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
-            emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed());
+            emergencyMinimumTimeMS > mTEONTimer.elapsed()) {
+            emit manualEmergencyModeUnblockedAfter(emergencyMinimumTimeMS - mTEONTimer.elapsed());
             mManualEmergencyChecked = true;
 
         } else if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {

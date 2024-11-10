@@ -796,8 +796,9 @@ QtObject {
             var currentSystemMode = device.systemSetup.systemMode;
             if (currentSystemMode === AppSpec.Off || currentSystemMode === AppSpec.EmergencyHeat) {
                 deviceController.setActivatedSchedule(null);
+            }
 
-            } else {
+            if (currentSystemMode !== AppSpec.Off) {
                 // Deactivate the incompatible schedules when mode changed from server or ui
                 deactivateIncompatibleSchedules(currentSystemMode);
             }

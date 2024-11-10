@@ -940,9 +940,7 @@ I_DeviceController {
 
     function checkToUpdateSystemMode(systemMode: int) {
         // Block due to emergency heating.
-        if (remainigTimeToUnblockSystemMode > 0) {
-
-
+        if (systemMode !== AppSpec.EmergencyHeat && remainigTimeToUnblockSystemMode > 0) {
             uiSession.popUps.emergencyModeErrorPopup.errorMessage = Qt.binding(function() {
                 //! Show an error popup
                 var remainigTime = ""
@@ -950,7 +948,7 @@ I_DeviceController {
                    remainigTime = (remainigTimeToUnblockSystemMode / 1000).toFixed(0) + ' seconds';
 
                  } else if (remainigTimeToUnblockSystemMode < 3600000) {
-                    var minutes = (remainigTimeToUnblockSystemMode / 60000).toFixed(0);
+                    var minutes = Math.floor(remainigTimeToUnblockSystemMode / 60000);
                     var seconds = ((remainigTimeToUnblockSystemMode  - minutes * 60000) / 1000).toFixed(0);
                     remainigTime = `${minutes} minute(s)`;
                     if (seconds > 0) {
@@ -965,7 +963,7 @@ I_DeviceController {
                 return `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;;
 
             });
-            uiSession.popupLayout.onPopupClosedDestroyed(uiSession.popUps.emergencyModeErrorPopup, true);
+            uiSession.popupLayout.displayPopUp(uiSession.popUps.emergencyModeErrorPopup, true);
 
             console.log("Ignore system mode, ", uiSession.popUps.emergencyModeErrorPopup.errorMessage);
             return false;
