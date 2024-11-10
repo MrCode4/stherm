@@ -156,5 +156,6 @@ Popup {
             bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
             bottomMargin: 24
-        }}
+        }
+    }
 }
