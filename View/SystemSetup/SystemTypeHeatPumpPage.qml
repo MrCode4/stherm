@@ -43,6 +43,8 @@ BasePageView {
     }
 
     Flickable {
+        id: contentFlickable
+
         ScrollIndicator.vertical: ScrollIndicator {
             x: parent.width - width - 4
             y: root.contentItem.y
@@ -56,6 +58,12 @@ BasePageView {
         boundsBehavior: Flickable.StopAtBounds
         contentWidth: width
         contentHeight: _contentCol.implicitHeight
+
+        Behavior on contentY {
+            NumberAnimation {
+                duration: 250
+            }
+        }
 
         ColumnLayout {
             id: _contentCol
@@ -279,6 +287,7 @@ BasePageView {
                     control.onPressedChanged: {
                         if (!control.pressed) {
                             tempValue = value.toFixed(1);
+                            flickToBottomTimer.start();
                         }
                     }
                 }
@@ -332,6 +341,19 @@ BasePageView {
                     }
                 }
             }
+        }
+    }
+
+    //! Timer to move the flickable to bottom
+    //! Ensure to contentHeight is up-to-date.
+    Timer {
+        id: flickToBottomTimer
+
+        interval: 50
+        repeat: false
+        running: false
+        onTriggered: {
+              contentFlickable.contentY  = contentFlickable.contentHeight - contentFlickable.height;
         }
     }
 
