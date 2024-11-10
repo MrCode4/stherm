@@ -12,7 +12,7 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property bool initialSetup: true
+    property bool initialSetup: false
 
     property bool isFahrenheit: deviceController.temperatureUnit != AppSpec.TempratureUnit.Cel
 
@@ -171,7 +171,7 @@ BasePageView {
 
                     Layout.fillWidth: true
                     Layout.leftMargin: 5
-                    Layout.rightMargin: 5
+                    Layout.rightMargin: 10
                     Layout.topMargin: 10
 
                     height: 90
@@ -230,12 +230,13 @@ BasePageView {
 
                 CautionRectangle {
                     Layout.fillWidth: true
-                    height: 100
+                    height: 110
 
                     visible: manuallyRB.checked
                     text: "Emergency heat will only activate when Emergency is selected in system mode or when initiated by Defrost controller board (if equipped)."
                     icon: FAIcons.circleInfo
                     iconColor: "#94A3B8"
+                    contentFontSize: Application.font.pointSize * 0.7
                 }
 
                 Label {
@@ -256,7 +257,7 @@ BasePageView {
 
                     Layout.topMargin: 10
                     Layout.leftMargin: 5
-                    Layout.rightMargin: 5
+                    Layout.rightMargin: 10
 
                     visible: autoRB.checked
                     leftSideColor: "#9BD2F7"

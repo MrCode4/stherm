@@ -17,6 +17,8 @@ Rectangle {
 
     property color  iconColor: "#F59E0B"
 
+    property real contentFontSize: Application.font.pointSize * 0.8
+
     /* Object properties
      * ****************************************************************************************/
     color: "#19140C"
@@ -54,7 +56,7 @@ Rectangle {
             textFormat: Text.RichText
             text: root.text
             wrapMode: Text.WordWrap
-            font.pointSize: Application.font.pointSize * 0.8
+            font.pointSize: contentFontSize
 
         }
     }

@@ -181,7 +181,6 @@ public:
     };
     Q_ENUM(AlertTypes)
 
-    // Useage in QML: ex. AppSpecCPP.Cooling
     enum emergencyControlType {
         ECTManually = 0,
         ECTAuto

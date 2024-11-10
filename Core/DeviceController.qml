@@ -944,21 +944,22 @@ I_DeviceController {
             uiSession.popUps.emergencyModeErrorPopup.errorMessage = Qt.binding(function() {
                 //! Show an error popup
                 var remainigTime = ""
-                 if (remainigTimeToUnblockSystemMode < 60000) {
-                   remainigTime = (remainigTimeToUnblockSystemMode / 1000).toFixed(0) + ' seconds';
+                if (remainigTimeToUnblockSystemMode < 60000) {
+                    var seconds = (remainigTimeToUnblockSystemMode / 1000).toFixed(0)
+                    remainigTime = `${seconds} second${(seconds > 1) ? "s" : ""}`;
 
-                 } else if (remainigTimeToUnblockSystemMode < 3600000) {
+                } else if (remainigTimeToUnblockSystemMode < 3600000) {
                     var minutes = Math.floor(remainigTimeToUnblockSystemMode / 60000);
                     var seconds = ((remainigTimeToUnblockSystemMode  - minutes * 60000) / 1000).toFixed(0);
-                    remainigTime = `${minutes} minute(s)`;
+                    remainigTime = `${minutes} minute${(minutes > 1) ? "s" : ""}`;
                     if (seconds > 0) {
-                        remainigTime += ` ${seconds} second(s)`;
+                        remainigTime += ` ${seconds} second${(seconds > 1) ? "s" : ""}`;
                     }
-                 }
-                 if (remainigTimeToUnblockSystemMode <= 0) {
-                     uiSession.popUps.emergencyModeErrorPopup.close();
-                     uiSession.popUps.emergencyModeErrorPopup.aboutToHide();
-                 }
+                }
+                if (remainigTimeToUnblockSystemMode <= 0) {
+                    uiSession.popUps.emergencyModeErrorPopup.close();
+                    uiSession.popUps.emergencyModeErrorPopup.aboutToHide();
+                }
 
                 return `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;;
 
