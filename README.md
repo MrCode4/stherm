@@ -52,9 +52,10 @@ Qt Creator: </br>
 6. Search for `FAKE_UID`
 7. Set your fake Unique ID as the value
     > **_Note:_** Remember, the value must be 16 characters long and can include both digits and letters.
-6. Search for `FAKE_SERIALID`
-8. Set your fake serial ID as the value
-9. Finally, click on `Run CMake`.
+8. Search for `FAKE_SERIALID`
+9. Set your fake serial ID as the value
+    > **_Note:_** If you don't set the `FAKE_SERIALID`, the app will go through the first-run flow, and if the API responds, it will navigate to the home screen.
+10. Finally, click on `Run CMake`.
 
 CMake: </br>
 ```properties
