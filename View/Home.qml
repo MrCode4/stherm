@@ -200,7 +200,7 @@ Control {
 
             anchors {
                 left: parent.left
-                top: _dateTimeHolder.bottom
+                top: _dateTimeHolder.top
                 leftMargin: 24
             }
 
@@ -220,7 +220,7 @@ Control {
 
             anchors {
                 right: parent.right
-                top: _dateTimeHolder.bottom
+                top: _dateTimeHolder.top
                 rightMargin: 24
             }
         }
