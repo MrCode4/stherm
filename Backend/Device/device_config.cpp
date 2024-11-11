@@ -77,6 +77,7 @@ void NUVE::DeviceConfig::load()
     QSettings config("/usr/local/bin/device_config.ini", QSettings::IniFormat);
 #ifdef FAKE_UID_MODE_ON
     uid = FAKE_UID;
+    serial_number = FAKE_SERIALID;
 #else
     uid = config.value("uid").toString().toStdString();
 #endif
@@ -84,7 +85,6 @@ void NUVE::DeviceConfig::load()
 #if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON) && !defined(SERIAL_TEST_MODE_ON)
     serial_number = config.value("serial_number").toString().toStdString();
 #endif
-
 
     endpoint = config.value("endpoint", API_SERVER_BASE_URL).toString().toStdString();
 
