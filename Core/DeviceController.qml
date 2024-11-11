@@ -727,8 +727,17 @@ I_DeviceController {
             uiSession.showHome();
         }
 
-        //! To initialize the proro data manager.
-        ProtoDataManagerCPP;
+        //! Initialize the ProtoDataManagerCPP data with the loaded model.
+        ProtoDataManagerCPP.setSetHumidity(deviceControllerCPP.effectiveHumidity());
+        ProtoDataManagerCPP.setMCUTemperature(system.cpuTemperature());
+        ProtoDataManagerCPP.setSetTemperature(device.requestedTemp);
+        ProtoDataManagerCPP.setCurrentTemperature(device.currentTemp);
+        ProtoDataManagerCPP.setCurrentHumidity(device.currentHum);
+        ProtoDataManagerCPP.setCurrentAirQuality(device._co2_id);
+        ProtoDataManagerCPP.setLedStatus(device.backlight.on);
+        //! TODO
+        //! Set default 101325 kPa
+        ProtoDataManagerCPP.setAirPressure(101325);
     }
 
     onStopDeviceRequested: {
@@ -825,6 +834,9 @@ I_DeviceController {
             device.backlight.hue = hue;
             device.backlight.value = brightness;
             device.backlight.shadeIndex = shadeIndex;
+
+            // Send backlight data to ProtoDataManagerCPP
+            ProtoDataManagerCPP.setLedStatus(isOn);
 
         } else {
             console.log("revert the backlight in model: ")
@@ -1380,13 +1392,11 @@ I_DeviceController {
 
         ProtoDataManagerCPP.setSetHumidity(deviceControllerCPP.effectiveHumidity());
         ProtoDataManagerCPP.setMCUTemperature(system.cpuTemperature());
-        ProtoDataManagerCPP.setLedStatus(device.backlight.on);
+        ProtoDataManagerCPP.setCurrentTemperature(device.currentTemp);
+        ProtoDataManagerCPP.setCurrentHumidity(device.currentHum);
+        ProtoDataManagerCPP.setCurrentAirQuality(device._co2_id);
 
         if (isNeedToPushToServer) {
-            ProtoDataManagerCPP.setCurrentTemperature(device.currentTemp);
-            ProtoDataManagerCPP.setCurrentHumidity(device.currentHum);
-            ProtoDataManagerCPP.setCurrentAirQuality(device._co2_id);
-
             updateEditMode(AppSpec.EMSensorValues);
         }
 

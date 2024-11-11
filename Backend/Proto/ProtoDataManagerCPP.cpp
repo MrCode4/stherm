@@ -43,10 +43,6 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
     });
     mCreatGeneralBufferTimer.start();
 
-    //! TODO
-    //! Set default
-    setAirPressure(101325);
-
     mChangeMode = CMNone;
 
     // Send the old data to server.
@@ -136,7 +132,8 @@ void ProtoDataManagerCPP::createBinFile() {
 
 void ProtoDataManagerCPP::setSetTemperature(const double &tempratureC)
 {
-    if ((mLateastDataPoint->set_temperature() - tempratureC) < 1 / 1.8) {
+    if (mLateastDataPoint->has_set_temperature() &&
+        qAbs(mLateastDataPoint->set_temperature() - tempratureC) < 1 / 1.8) {
         return;
     }
 
@@ -146,7 +143,8 @@ void ProtoDataManagerCPP::setSetTemperature(const double &tempratureC)
 
 void ProtoDataManagerCPP::setSetHumidity(const double &humidity)
 {
-    if ((mLateastDataPoint->set_humidity() - humidity) < 1.0) {
+    if (mLateastDataPoint->has_set_humidity() &&
+        qAbs(mLateastDataPoint->set_humidity() - humidity) < 1.0) {
         return;
     }
 
@@ -156,7 +154,8 @@ void ProtoDataManagerCPP::setSetHumidity(const double &humidity)
 
 void ProtoDataManagerCPP::setCurrentTemperature(const double &tempratureC)
 {
-    if ((mLateastDataPoint->current_temperature_embedded() - tempratureC) < 1 / 1.8) {
+    if (mLateastDataPoint->has_current_temperature_embedded() &&
+        qAbs(mLateastDataPoint->current_temperature_embedded() - tempratureC) < 1 / 1.8) {
         return;
     }
 
@@ -166,7 +165,8 @@ void ProtoDataManagerCPP::setCurrentTemperature(const double &tempratureC)
 
 void ProtoDataManagerCPP::setCurrentHumidity(const double &humidity)
 {
-    if ((mLateastDataPoint->current_humidity_embedded() - humidity) < 1.0) {
+    if (mLateastDataPoint->has_current_humidity_embedded() &&
+        qAbs(mLateastDataPoint->current_humidity_embedded() - humidity) < 1.0) {
         return;
     }
 
@@ -176,7 +176,8 @@ void ProtoDataManagerCPP::setCurrentHumidity(const double &humidity)
 
 void ProtoDataManagerCPP::setMCUTemperature(const double &mcuTempratureC)
 {
-    if ((mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) < 1.0) {
+    if (mLateastDataPoint->has_current_temperature_mcu() &&
+        qAbs(mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) < 1.0) {
         return;
     }
 
@@ -186,7 +187,8 @@ void ProtoDataManagerCPP::setMCUTemperature(const double &mcuTempratureC)
 
 void ProtoDataManagerCPP::setAirPressure(const int &airPressureHPa)
 {
-    if ((mLateastDataPoint->air_pressure_embedded() - airPressureHPa) < 1.0) {
+    if (mLateastDataPoint->has_air_pressure_embedded() &&
+        qAbs(mLateastDataPoint->air_pressure_embedded() - airPressureHPa) < 1.0) {
         return;
     }
 
@@ -197,7 +199,8 @@ void ProtoDataManagerCPP::setAirPressure(const int &airPressureHPa)
 void ProtoDataManagerCPP::setCurrentAirQuality(const int &airQuality)
 {
     const AirQuality airQualityE = (AirQuality)(airQuality + 1);
-    if (mLateastDataPoint->current_air_quality() == airQualityE) {
+    if (mLateastDataPoint->has_current_air_quality() &&
+        mLateastDataPoint->current_air_quality() == airQualityE) {
         return;
     }
 
@@ -208,7 +211,8 @@ void ProtoDataManagerCPP::setCurrentAirQuality(const int &airQuality)
 void ProtoDataManagerCPP::setCurrentCoolingStage(const int &coolingStage)
 {
     const CoolingStage coolingStageE = (CoolingStage)coolingStage;
-    if (mLateastDataPoint->current_cooling_stage() == coolingStageE) {
+    if (mLateastDataPoint-> has_current_cooling_stage() &&
+        mLateastDataPoint->current_cooling_stage() == coolingStageE) {
         return;
     }
 
@@ -219,7 +223,8 @@ void ProtoDataManagerCPP::setCurrentCoolingStage(const int &coolingStage)
 void ProtoDataManagerCPP::setCurrentHeatingStage(const bool &heatingStage)
 {
     const HeatingStage heatingStageE = (HeatingStage)heatingStage;
-    if (mLateastDataPoint->current_heating_stage() == heatingStageE) {
+    if (mLateastDataPoint->has_current_heating_stage() &&
+        mLateastDataPoint->current_heating_stage() == heatingStageE) {
         return;
     }
 
@@ -230,7 +235,8 @@ void ProtoDataManagerCPP::setCurrentHeatingStage(const bool &heatingStage)
 void ProtoDataManagerCPP::setCurrentFanStatus(const bool &fanStatus)
 {
     const FanStatus fanStatusE = (FanStatus)(fanStatus ? 1 : 0);
-    if (mLateastDataPoint->current_fan_status() == fanStatusE) {
+    if (mLateastDataPoint->has_current_fan_status() &&
+        mLateastDataPoint->current_fan_status() == fanStatusE) {
         return;
     }
 
@@ -241,7 +247,8 @@ void ProtoDataManagerCPP::setCurrentFanStatus(const bool &fanStatus)
 void ProtoDataManagerCPP::setLedStatus(const bool &ledStatus)
 {
     const LedStatus ledStatusE = (LedStatus)(ledStatus ? 1 : 0);
-    if (mLateastDataPoint->led_status() == ledStatusE) {
+    if (mLateastDataPoint->has_led_status() &&
+        mLateastDataPoint->led_status() == ledStatusE) {
         return;
     }
 
