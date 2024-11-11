@@ -47,6 +47,8 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
     //! Set default
     setAirPressure(101325);
 
+    mChangeMode = CMNone;
+
     // Send the old data to server.
     sendDataToServer();
 }
@@ -75,7 +77,7 @@ void ProtoDataManagerCPP::sendDataToServer() {
     }
 
     if (!fileExists) {
-        PROTO_LOG << "Sending data points: " << mLiveDataPointList.add_data_points();
+        PROTO_LOG << "Sending data points: " << mLiveDataPointList.data_points_size();
         createBinFile();
 
     } else {
