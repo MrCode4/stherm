@@ -285,7 +285,7 @@ I_DeviceController {
             dfhSystemType = activeSystemType;
         }
 
-        function effectiveTemperatureChanged(effectiveTemperatureC: real) {
+        function onEffectiveTemperatureChanged(effectiveTemperatureC: real) {
             ProtoDataManagerCPP.setSetTemperature(effectiveTemperatureC);
         }
 
