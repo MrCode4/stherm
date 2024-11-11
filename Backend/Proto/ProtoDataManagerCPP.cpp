@@ -7,7 +7,8 @@
 #include "DeviceInfo.h"
 #include "LogHelper.h"
 
-
+const QString BINPATH = QString ("/usr/local/bin/output.bin");
+const int     MEMORYLIMITAIONRECORDS = 3000;
 
 Q_LOGGING_CATEGORY(ProtobufferDataManager, "ProtobufferDataManager")
 #define PROTO_LOG TRACE_CATEGORY(ProtobufferDataManager)
@@ -23,12 +24,13 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
 
     mSenderTimer.setInterval(30 * 60 * 1000);
     connect(&mSenderTimer, &QTimer::timeout, this, [this]() {
-        std::fstream output("/usr/local/bin/output.bin", std::ios::out | std::ios::binary);
+        PROTO_LOG << "Sending data points: " << mLiveDataPointList.add_data_points();
+        std::fstream output(BINPATH.toStdString(), std::ios::out | std::ios::binary);
         mLiveDataPointList.SerializeToOstream(&output);
         output.close();
 
         QByteArray serializedData;
-        QFile file("/usr/local/bin/output.bin");
+        QFile file(BINPATH);
         if (file.exists() && file.open(QIODevice::ReadOnly)) {
             TRACE << file.errorString();
             serializedData = file.readAll();
@@ -40,7 +42,14 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
 
         auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
         auto callback = [this](QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
-            PROTO_LOG << "MAK tersa" << reply->errorString();
+            if (reply->error() == QNetworkReply::NoError) {
+                mLiveDataPointList.clear_data_points();
+                if (QFileInfo::exists(BINPATH)) {
+                    PROTO_LOG << BINPATH << "File sent, remove: " << QFile::remove(BINPATH);
+                }
+            } else {
+                qWarning() << "ERROR: " << reply->errorString();
+            }
 
         };
 
@@ -221,8 +230,11 @@ void ProtoDataManagerCPP::setLedStatus(const bool &ledStatus)
 
 LiveDataPoint *ProtoDataManagerCPP::addNewPoint()
 {
-    if (mLiveDataPointList.data_points_size() > 3000)
-        mLiveDataPointList.mutable_data_points()->DeleteSubrange(0, 1);
+    if (mLiveDataPointList.data_points_size() > 0 && mLiveDataPointList.data_points_size() > MEMORYLIMITAIONRECORDS) {
+        PROTO_LOG << "Delete the first data point in the list due to memory limitation. Deleted point time:" << mLiveDataPointList.data_points(0).time().seconds()
+        << ", Deleted range: 0-" << (mLiveDataPointList.data_points_size() - MEMORYLIMITAIONRECORDS) << mLiveDataPointList.data_points_size();
+        mLiveDataPointList.mutable_data_points()->DeleteSubrange(0, mLiveDataPointList.data_points_size() - MEMORYLIMITAIONRECORDS);
+    }
 
     auto newPoint = mLiveDataPointList.add_data_points();
 
@@ -236,6 +248,8 @@ void ProtoDataManagerCPP::logStashData()
 {
     if (mChangeMode != CMNone) {
         auto newPoint = addNewPoint();
+
+        PROTO_LOG << "New ponit created due to " << mChangeMode;
 
         if (mChangeMode & CMSetTemperature) {
             newPoint->set_set_temperature(mLateastDataPoint->set_temperature());
