@@ -247,6 +247,8 @@ Q_SIGNALS:
     void temperatureSensorStatus(bool status = true);
     void humiditySensorStatus(bool status = true);
 
+    void effectiveTemperatureChanged(double effectiveTemperatureC);
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData, bool addToData = false);

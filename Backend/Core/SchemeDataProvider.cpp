@@ -76,7 +76,7 @@ AppSpecCPP::SystemMode SchemeDataProvider::effectiveSystemMode() const
     }
 }
 
-double SchemeDataProvider::effectiveTemperature() const
+double SchemeDataProvider::effectiveTemperature()
 {
     double effTemperature = setPointTemperature();
 
@@ -135,6 +135,8 @@ double SchemeDataProvider::effectiveTemperature() const
             }
         }
     }
+
+    emit effectiveTemperatureChanged(UtilityHelper::toCelsius(effTemperature));
 
     return effTemperature;
 }

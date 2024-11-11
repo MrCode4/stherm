@@ -13,6 +13,10 @@ class ProtoDataManagerCPP : public DevApiExecutor
     QML_ELEMENT
     QML_SINGLETON
 
+public:
+    explicit ProtoDataManagerCPP(QObject *parent = nullptr);
+    ~ProtoDataManagerCPP();
+
 private:
     //! Change mode
     enum ChangeMode {
@@ -35,17 +39,15 @@ private:
     // Q_ENUM(ChangeMode)
 
 public:
-    explicit ProtoDataManagerCPP(QObject *parent = nullptr);
-    ~ProtoDataManagerCPP();
 
     Q_INVOKABLE void updateData();
 
-    Q_INVOKABLE void setSetTemperature(const double &temprature);
+    Q_INVOKABLE void setSetTemperature(const double &tempratureC);
     Q_INVOKABLE void setSetHumidity(const double &humidity);
-    Q_INVOKABLE void setCurrentTemperature(const double &temprature);
+    Q_INVOKABLE void setCurrentTemperature(const double &tempratureC);
     Q_INVOKABLE void setCurrentHumidity(const double &humidity);
-    Q_INVOKABLE void setMCUTemperature(const double &mcuTemprature);
-    Q_INVOKABLE void setAirPressure(const int &airQuality);
+    Q_INVOKABLE void setMCUTemperature(const double &mcuTempratureC);
+    Q_INVOKABLE void setAirPressure(const int &airPressureHPa);
     Q_INVOKABLE void setCurrentAirQuality(const int &airQuality);
     Q_INVOKABLE void setCurrentCoolingStage(const int &coolingStage);
     Q_INVOKABLE void setCurrentHeatingStage(const bool &heatingStage);
@@ -63,7 +65,6 @@ private:
     void updateChangeMode(ChangeMode cm);
 
 private:
-
         /*
          * Array of points:
          *      time                          - timestamp in seconds in UTC

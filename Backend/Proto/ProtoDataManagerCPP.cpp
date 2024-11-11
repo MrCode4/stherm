@@ -101,45 +101,73 @@ void ProtoDataManagerCPP::updateData() {
     callPostApi(url, serializedData, callback, true, "application/x-protobuf");
 }
 
-void ProtoDataManagerCPP::setSetTemperature(const double &temprature)
+void ProtoDataManagerCPP::setSetTemperature(const double &tempratureC)
 {
-    mLateastDataPoint->set_set_temperature(temprature);
+    if ((mLateastDataPoint->set_temperature() - tempratureC) < 1 / 1.8) {
+        return;
+    }
+
+    mLateastDataPoint->set_set_temperature(tempratureC);
     updateChangeMode(CMSetTemperature);
 }
 
 void ProtoDataManagerCPP::setSetHumidity(const double &humidity)
 {
+    if ((mLateastDataPoint->set_humidity() - humidity) < 1.0) {
+        return;
+    }
+
     mLateastDataPoint->set_set_humidity(humidity);
     updateChangeMode(CMSetHumidity);
 }
 
-void ProtoDataManagerCPP::setCurrentTemperature(const double &temprature)
+void ProtoDataManagerCPP::setCurrentTemperature(const double &tempratureC)
 {
-    mLateastDataPoint->set_current_temperature_embedded(temprature);
+    if ((mLateastDataPoint->current_temperature_embedded() - tempratureC) < 1 / 1.8) {
+        return;
+    }
+
+    mLateastDataPoint->set_current_temperature_embedded(tempratureC);
     updateChangeMode(CMCurrentTemperature);
 }
 
 void ProtoDataManagerCPP::setCurrentHumidity(const double &humidity)
 {
+    if ((mLateastDataPoint->current_humidity_embedded() - humidity) < 1.0) {
+        return;
+    }
+
     mLateastDataPoint->set_current_humidity_embedded(humidity);
     updateChangeMode(CMCurrentHumidity);
 }
 
-void ProtoDataManagerCPP::setMCUTemperature(const double &mcuTemprature)
+void ProtoDataManagerCPP::setMCUTemperature(const double &mcuTempratureC)
 {
-    mLateastDataPoint->set_current_temperature_mcu(mcuTemprature);
+    if ((mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) < 1.0) {
+        return;
+    }
+
+    mLateastDataPoint->set_current_temperature_mcu(mcuTempratureC);
     updateChangeMode(CMMCUTemperature);
 }
 
-void ProtoDataManagerCPP::setAirPressure(const int &airQuality)
+void ProtoDataManagerCPP::setAirPressure(const int &airPressureHPa)
 {
-    mLateastDataPoint->set_air_pressure_embedded(airQuality);
+    if ((mLateastDataPoint->air_pressure_embedded() - airPressureHPa) < 1.0) {
+        return;
+    }
+
+    mLateastDataPoint->set_air_pressure_embedded(airPressureHPa);
     updateChangeMode(CMAirPressure);
 }
 
 void ProtoDataManagerCPP::setCurrentAirQuality(const int &airQuality)
 {
     const AirQuality airQualityE = (AirQuality)(airQuality + 1);
+    if (mLateastDataPoint->current_air_quality() == airQualityE) {
+        return;
+    }
+
     mLateastDataPoint->set_current_air_quality(airQualityE);
     updateChangeMode(CMCurrentAirQuality);
 }
@@ -147,6 +175,10 @@ void ProtoDataManagerCPP::setCurrentAirQuality(const int &airQuality)
 void ProtoDataManagerCPP::setCurrentCoolingStage(const int &coolingStage)
 {
     const CoolingStage coolingStageE = (CoolingStage)coolingStage;
+    if (mLateastDataPoint->current_cooling_stage() == coolingStageE) {
+        return;
+    }
+
     mLateastDataPoint->set_current_cooling_stage(coolingStageE);
     updateChangeMode(CMCurrentCoolingStage);
 }
@@ -154,6 +186,10 @@ void ProtoDataManagerCPP::setCurrentCoolingStage(const int &coolingStage)
 void ProtoDataManagerCPP::setCurrentHeatingStage(const bool &heatingStage)
 {
     const HeatingStage heatingStageE = (HeatingStage)heatingStage;
+    if (mLateastDataPoint->current_heating_stage() == heatingStageE) {
+        return;
+    }
+
     mLateastDataPoint->set_current_heating_stage(heatingStageE);
     updateChangeMode(CMCurrentHeatingStage);
 }
@@ -161,6 +197,10 @@ void ProtoDataManagerCPP::setCurrentHeatingStage(const bool &heatingStage)
 void ProtoDataManagerCPP::setCurrentFanStatus(const bool &falStatus)
 {
     const FanStatus fanStatusE = (FanStatus)(falStatus ? 1 : 0);
+    if (mLateastDataPoint->current_fan_status() == fanStatusE) {
+        return;
+    }
+
     mLateastDataPoint->set_current_fan_status(fanStatusE);
     updateChangeMode(CMCurrentFanStatus);
 }
@@ -168,6 +208,10 @@ void ProtoDataManagerCPP::setCurrentFanStatus(const bool &falStatus)
 void ProtoDataManagerCPP::setLedStatus(const bool &ledStatus)
 {
     const LedStatus ledStatusE = (LedStatus)(ledStatus ? 1 : 0);
+    if (mLateastDataPoint->led_status() == ledStatusE) {
+        return;
+    }
+
     mLateastDataPoint->set_led_status(ledStatusE);
     updateChangeMode(CMLedStatus);
 }

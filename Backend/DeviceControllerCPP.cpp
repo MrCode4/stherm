@@ -1,6 +1,7 @@
 #include "DeviceControllerCPP.h"
 
 #include "LogHelper.h"
+#include "ProtoDataManagerCPP.h"
 #include "SchemeDataProvider.h"
 #include "ScreenSaverManager.h"
 
@@ -99,6 +100,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                                      info.value("logo").toString(), info.value("url").toString(),
                                      info.value("tech").toString());
     });
+
+    // When system is OFF, the set temperature will remain constant
+    connect(mSchemeDataProvider.get(), &SchemeDataProvider::effectiveTemperatureChanged, this, &DeviceControllerCPP::effectiveTemperatureChanged);
 
     mAdaptiveBrightness = 50;
 
