@@ -64,6 +64,9 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
     });
     mCreatGeneralBufferTimer.start();
 
+    //! TODO
+    //! Set default
+    setAirPressure(101325);
 }
 
 ProtoDataManagerCPP::~ProtoDataManagerCPP()
@@ -194,9 +197,9 @@ void ProtoDataManagerCPP::setCurrentHeatingStage(const bool &heatingStage)
     updateChangeMode(CMCurrentHeatingStage);
 }
 
-void ProtoDataManagerCPP::setCurrentFanStatus(const bool &falStatus)
+void ProtoDataManagerCPP::setCurrentFanStatus(const bool &fanStatus)
 {
-    const FanStatus fanStatusE = (FanStatus)(falStatus ? 1 : 0);
+    const FanStatus fanStatusE = (FanStatus)(fanStatus ? 1 : 0);
     if (mLateastDataPoint->current_fan_status() == fanStatusE) {
         return;
     }

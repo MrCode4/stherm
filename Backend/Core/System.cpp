@@ -1676,6 +1676,23 @@ QStringList NUVE::System::cpuInformation() {
     return cpuTempList;
 }
 
+double NUVE::System::cpuTemperature()
+{
+    auto cpuInfo = cpuInformation();
+    double cpuTemperature = 0;
+
+    if (cpuInfo.length() > 0) {
+        bool isOK = false;
+        cpuTemperature = cpuInfo.first().toDouble(&isOK);
+        if (!isOK) {
+            cpuTemperature = 0;
+        }
+    }
+
+    // Convert mili Centigrade to Centigrade.
+    return cpuTemperature / 1000;
+}
+
 bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t minimumSizeBytes)
 {
 #ifdef __unix__

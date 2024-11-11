@@ -80,6 +80,8 @@ public:
     //! result should be in Fahrenheit as well.
     double effectiveTemperature();
 
+    double effectiveHumidity();
+
     bool isVacationEffective() const;
 
     AppSpecCPP::SystemMode effectiveSystemMode() const;

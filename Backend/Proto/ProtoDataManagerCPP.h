@@ -47,11 +47,11 @@ public:
     Q_INVOKABLE void setCurrentTemperature(const double &tempratureC);
     Q_INVOKABLE void setCurrentHumidity(const double &humidity);
     Q_INVOKABLE void setMCUTemperature(const double &mcuTempratureC);
-    Q_INVOKABLE void setAirPressure(const int &airPressureHPa);
+    Q_INVOKABLE void setAirPressure(const int &airPressureHPa); //TODO
     Q_INVOKABLE void setCurrentAirQuality(const int &airQuality);
     Q_INVOKABLE void setCurrentCoolingStage(const int &coolingStage);
     Q_INVOKABLE void setCurrentHeatingStage(const bool &heatingStage);
-    Q_INVOKABLE void setCurrentFanStatus(const bool &falStatus);
+    Q_INVOKABLE void setCurrentFanStatus(const bool &fanStatus);
     Q_INVOKABLE void setLedStatus(const bool &ledStatus);
 
 

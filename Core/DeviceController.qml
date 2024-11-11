@@ -284,6 +284,19 @@ I_DeviceController {
         function onDfhSystemTypeChanged(activeSystemType: int) {
             dfhSystemType = activeSystemType;
         }
+
+        function effectiveTemperatureChanged(effectiveTemperatureC: real) {
+            ProtoDataManagerCPP.setSetTemperature(effectiveTemperatureC);
+        }
+
+        function onFanWorkChanged(fanState: bool) {
+            ProtoDataManagerCPP.setCurrentFanStatus(fanState);
+        }
+
+        function onCurrentSystemModeChanged(state: int) {
+            ProtoDataManagerCPP.setCurrentCoolingStage(state === AppSpec.Cooling ? device.systemSetup.coolStage : 0);
+            ProtoDataManagerCPP.setCurrentHeatingStage(state === AppSpec.Heating ? device.systemSetup.heatStage : 0);
+        }
     }
 
     property Connections networkInterface: Connections {
@@ -1361,7 +1374,16 @@ I_DeviceController {
 
         //        device.fan.mode?
 
+
+        ProtoDataManagerCPP.setSetHumidity(deviceControllerCPP.effectiveTemperaure());
+        ProtoDataManagerCPP.setMCUTemperature(system.cpuTemperature);
+        ProtoDataManagerCPP.setLedStatus(device.backlight.on);
+
         if (isNeedToPushToServer) {
+            ProtoDataManagerCPP.setCurrentTemperature(device.currentTemp)();
+            ProtoDataManagerCPP.setCurrentHumidity(device.currentHum);
+            ProtoDataManagerCPP.setCurrentAirQuality(device._co2_id);
+
             updateEditMode(AppSpec.EMSensorValues);
         }
 

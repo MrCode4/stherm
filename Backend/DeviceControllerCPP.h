@@ -191,6 +191,8 @@ public:
     void doPerfTest(AppSpecCPP::SystemMode mode);
     void revertPerfTest();
 
+    Q_INVOKABLE double effectiveHumidity();
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/

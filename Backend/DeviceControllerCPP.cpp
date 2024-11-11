@@ -1530,3 +1530,7 @@ void DeviceControllerCPP::revertPerfTest()
         mHumidityScheme->restartWork(true);
     }
 }
+
+double DeviceControllerCPP::effectiveHumidity() {
+    return mSchemeDataProvider->effectiveHumidity();
+}
