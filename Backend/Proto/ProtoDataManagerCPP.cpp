@@ -329,7 +329,9 @@ void ProtoDataManagerCPP::updateChangeMode(ChangeMode cm)
         return;
     }
 
-    if ((mChangeMode & cm) == 0)
+    if (cm == CMAll)
+        mChangeMode = cm;
+    else if ((mChangeMode != CMAll) && (mChangeMode & cm) == 0)
         mChangeMode |= cm;
 
     if (!mDataPointLogger.isActive())

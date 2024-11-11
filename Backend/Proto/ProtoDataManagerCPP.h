@@ -36,7 +36,6 @@ private:
                                 CMMCUTemperature | CMAirPressure | CMCurrentCoolingStage |
                                 CMCurrentHeatingStage | CMCurrentFanStatus | CMLedStatus
     };
-    // Q_ENUM(ChangeMode)
 
 public:
 
