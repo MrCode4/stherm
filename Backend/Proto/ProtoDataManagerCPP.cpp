@@ -24,36 +24,7 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
 
     mSenderTimer.setInterval(30 * 60 * 1000);
     connect(&mSenderTimer, &QTimer::timeout, this, [this]() {
-        PROTO_LOG << "Sending data points: " << mLiveDataPointList.add_data_points();
-        std::fstream output(BINPATH.toStdString(), std::ios::out | std::ios::binary);
-        mLiveDataPointList.SerializeToOstream(&output);
-        output.close();
-
-        QByteArray serializedData;
-        QFile file(BINPATH);
-        if (file.exists() && file.open(QIODevice::ReadOnly)) {
-            TRACE << file.errorString();
-            serializedData = file.readAll();
-            file.close();
-        } else {
-            qWarning() << "Error opening file: " << file.errorString();
-            return;
-        }
-
-        auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
-        auto callback = [this](QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
-            if (reply->error() == QNetworkReply::NoError) {
-                mLiveDataPointList.clear_data_points();
-                if (QFileInfo::exists(BINPATH)) {
-                    PROTO_LOG << BINPATH << "File sent, remove: " << QFile::remove(BINPATH);
-                }
-            } else {
-                qWarning() << "ERROR: " << reply->errorString();
-            }
-
-        };
-
-        callPostApi(url, serializedData, callback, true, "application/x-protobuf");
+        sendDataToServer();
     });
 
     connect(&mCreatGeneralBufferTimer, &QTimer::timeout, this, [this]() {
@@ -76,11 +47,14 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
     //! TODO
     //! Set default
     setAirPressure(101325);
+
+    // Send the old data to server.
+    sendDataToServer();
 }
 
 ProtoDataManagerCPP::~ProtoDataManagerCPP()
 {
-    logStashData();
+    createBinFile();
 
     mDataPointLogger.stop();
     mSenderTimer.stop();
@@ -92,25 +66,64 @@ ProtoDataManagerCPP::~ProtoDataManagerCPP()
     google::protobuf::ShutdownProtobufLibrary();
 }
 
-void ProtoDataManagerCPP::updateData() {
-    auto callback = [this](QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
-        TRACE << "test: " << reply->errorString();
+void ProtoDataManagerCPP::sendDataToServer() {
 
-    };
+    bool fileExists = QFileInfo::exists(BINPATH);
+
+    if (mLiveDataPointList.data_points_size() < 1 && !fileExists) {
+        PROTO_LOG << "No data for sending.";
+    }
+
+    if (!fileExists) {
+        PROTO_LOG << "Sending data points: " << mLiveDataPointList.add_data_points();
+        createBinFile();
+
+    } else {
+        PROTO_LOG << "Sending old data points in the file: " << fileExists;
+    }
 
     QByteArray serializedData;
-    QFile file("/usr/local/bin/response2.bin");
+    QFile file(BINPATH);
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
+        TRACE << file.errorString();
         serializedData = file.readAll();
         file.close();
+
     } else {
         qWarning() << "Error opening file: " << file.errorString();
         return;
     }
 
-    QString sn = Device->serialNumber();
-    auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(sn);
+    auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
+    auto callback = [this, fileExists] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+
+            if (QFileInfo::exists(BINPATH)) {
+                PROTO_LOG << BINPATH << "File sent, remove: " << QFile::remove(BINPATH);
+            }
+
+            if(!fileExists) {
+                mLiveDataPointList.clear_data_points();
+
+            } else if (mLiveDataPointList.data_points_size() > 1) {
+                QTimer::singleShot(10000, this, [this] {
+                    sendDataToServer();
+                });
+            }
+
+        } else {
+            qWarning() << reply->url() << " - ERROR: " << reply->errorString();
+        }
+
+    };
+
     callPostApi(url, serializedData, callback, true, "application/x-protobuf");
+}
+
+void ProtoDataManagerCPP::createBinFile() {
+    std::fstream output(BINPATH.toStdString(), std::ios::out | std::ios::binary);
+    mLiveDataPointList.SerializeToOstream(&output);
+    output.close();
 }
 
 void ProtoDataManagerCPP::setSetTemperature(const double &tempratureC)

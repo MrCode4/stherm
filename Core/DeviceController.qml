@@ -726,6 +726,9 @@ I_DeviceController {
             ScreenSaverManager.lockDevice(true);
             uiSession.showHome();
         }
+
+        //! To initialize the proro data manager.
+        ProtoDataManagerCPP;
     }
 
     onStopDeviceRequested: {

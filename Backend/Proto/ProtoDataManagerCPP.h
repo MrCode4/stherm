@@ -40,7 +40,6 @@ private:
 
 public:
 
-    Q_INVOKABLE void updateData();
 
     Q_INVOKABLE void setSetTemperature(const double &tempratureC);
     Q_INVOKABLE void setSetHumidity(const double &humidity);
@@ -63,6 +62,12 @@ private:
     void logStashData();
 
     void updateChangeMode(ChangeMode cm);
+
+    //! Create the binary file
+    void createBinFile();
+
+    //! Send the binary data to server
+    void sendDataToServer();
 
 private:
         /*
