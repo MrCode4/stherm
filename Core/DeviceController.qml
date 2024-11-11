@@ -1379,7 +1379,7 @@ I_DeviceController {
 
 
         ProtoDataManagerCPP.setSetHumidity(deviceControllerCPP.effectiveHumidity());
-        ProtoDataManagerCPP.setMCUTemperature(system.cpuTemperature);
+        ProtoDataManagerCPP.setMCUTemperature(system.cpuTemperature());
         ProtoDataManagerCPP.setLedStatus(device.backlight.on);
 
         if (isNeedToPushToServer) {

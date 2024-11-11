@@ -7,7 +7,7 @@
 #include "DeviceInfo.h"
 #include "LogHelper.h"
 
-const QString BINPATH = QString ("/usr/local/bin/output.bin");
+const QString BINARYFILEPATH         = QString ("/usr/local/bin/output.bin");
 const int     MEMORYLIMITAIONRECORDS = 3000;
 
 Q_LOGGING_CATEGORY(ProtobufferDataManager, "ProtobufferDataManager")
@@ -70,22 +70,28 @@ ProtoDataManagerCPP::~ProtoDataManagerCPP()
 
 void ProtoDataManagerCPP::sendDataToServer() {
 
-    bool fileExists = QFileInfo::exists(BINPATH);
+    QFileInfo binFile(BINARYFILEPATH);
+    bool existValidBinaryFile = binFile.exists() && binFile.size() > 0;
 
-    if (mLiveDataPointList.data_points_size() < 1 && !fileExists) {
+    if (mLiveDataPointList.data_points_size() < 1 && !existValidBinaryFile) {
         PROTO_LOG << "No data for sending.";
+
+        if (binFile.size() == 0)
+           PROTO_LOG << BINARYFILEPATH << " - Invalid file removed: " << QFile::remove(BINARYFILEPATH);
+
+        return;
     }
 
-    if (!fileExists) {
+    if (!existValidBinaryFile) {
         PROTO_LOG << "Sending data points: " << mLiveDataPointList.data_points_size();
         createBinFile();
 
     } else {
-        PROTO_LOG << "Sending old data points in the file: " << fileExists;
+        PROTO_LOG << "Sending old data points in the file: " << existValidBinaryFile;
     }
 
     QByteArray serializedData;
-    QFile file(BINPATH);
+    QFile file(BINARYFILEPATH);
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
         TRACE << file.errorString();
         serializedData = file.readAll();
@@ -97,14 +103,14 @@ void ProtoDataManagerCPP::sendDataToServer() {
     }
 
     auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
-    auto callback = [this, fileExists] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
+    auto callback = [this, existValidBinaryFile] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() == QNetworkReply::NoError) {
 
-            if (QFileInfo::exists(BINPATH)) {
-                PROTO_LOG << BINPATH << "File sent, remove: " << QFile::remove(BINPATH);
+            if (QFileInfo::exists(BINARYFILEPATH)) {
+                PROTO_LOG << BINARYFILEPATH << "File sent, remove: " << QFile::remove(BINARYFILEPATH);
             }
 
-            if(!fileExists) {
+            if(!existValidBinaryFile) {
                 mLiveDataPointList.clear_data_points();
 
             } else if (mLiveDataPointList.data_points_size() > 1) {
@@ -123,7 +129,7 @@ void ProtoDataManagerCPP::sendDataToServer() {
 }
 
 void ProtoDataManagerCPP::createBinFile() {
-    std::fstream output(BINPATH.toStdString(), std::ios::out | std::ios::binary);
+    std::fstream output(BINARYFILEPATH.toStdString(), std::ios::out | std::ios::binary);
     mLiveDataPointList.SerializeToOstream(&output);
     output.close();
 }
