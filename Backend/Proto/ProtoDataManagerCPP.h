@@ -64,7 +64,7 @@ private:
     void updateChangeMode(ChangeMode cm);
 
     //! Create the binary file
-    void createBinFile();
+    void generateBinaryFile();
 
     //! Send the binary data to server
     void sendDataToServer();

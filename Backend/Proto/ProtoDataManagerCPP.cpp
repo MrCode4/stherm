@@ -9,6 +9,7 @@
 
 const QString BINARYFILEPATH         = QString ("/usr/local/bin/output.bin");
 const int     MEMORYLIMITAIONRECORDS = 3000;
+const double  TEMPERATURETHRESHOLD   = 1 / 1.8;
 
 Q_LOGGING_CATEGORY(ProtobufferDataManager, "ProtobufferDataManager")
 #define PROTO_LOG TRACE_CATEGORY(ProtobufferDataManager)
@@ -51,7 +52,7 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
 
 ProtoDataManagerCPP::~ProtoDataManagerCPP()
 {
-    createBinFile();
+    generateBinaryFile();
 
     mDataPointLogger.stop();
     mSenderTimer.stop();
@@ -72,7 +73,7 @@ void ProtoDataManagerCPP::sendDataToServer() {
     if (mLiveDataPointList.data_points_size() < 1 && !existValidBinaryFile) {
         PROTO_LOG << "No data for sending.";
 
-        if (binFile.size() == 0)
+        if (binFile.exists())
            PROTO_LOG << BINARYFILEPATH << " - Invalid file removed: " << QFile::remove(BINARYFILEPATH);
 
         return;
@@ -80,7 +81,7 @@ void ProtoDataManagerCPP::sendDataToServer() {
 
     if (!existValidBinaryFile) {
         PROTO_LOG << "Sending data points: " << mLiveDataPointList.data_points_size();
-        createBinFile();
+        generateBinaryFile();
 
     } else {
         PROTO_LOG << "Sending old data points in the file: " << existValidBinaryFile;
@@ -103,7 +104,7 @@ void ProtoDataManagerCPP::sendDataToServer() {
         if (reply->error() == QNetworkReply::NoError) {
 
             if (QFileInfo::exists(BINARYFILEPATH)) {
-                PROTO_LOG << BINARYFILEPATH << "File sent, remove: " << QFile::remove(BINARYFILEPATH);
+                PROTO_LOG << BINARYFILEPATH << " file sent, remove: " << QFile::remove(BINARYFILEPATH);
             }
 
             if(!existValidBinaryFile) {
@@ -124,7 +125,7 @@ void ProtoDataManagerCPP::sendDataToServer() {
     callPostApi(url, serializedData, callback, true, "application/x-protobuf");
 }
 
-void ProtoDataManagerCPP::createBinFile() {
+void ProtoDataManagerCPP::generateBinaryFile() {
     std::fstream output(BINARYFILEPATH.toStdString(), std::ios::out | std::ios::binary);
     mLiveDataPointList.SerializeToOstream(&output);
     output.close();
@@ -133,7 +134,7 @@ void ProtoDataManagerCPP::createBinFile() {
 void ProtoDataManagerCPP::setSetTemperature(const double &tempratureC)
 {
     if (mLateastDataPoint->has_set_temperature() &&
-        qAbs(mLateastDataPoint->set_temperature() - tempratureC) < 1 / 1.8) {
+        qAbs(mLateastDataPoint->set_temperature() - tempratureC) < TEMPERATURETHRESHOLD) {
         return;
     }
 
@@ -155,7 +156,7 @@ void ProtoDataManagerCPP::setSetHumidity(const double &humidity)
 void ProtoDataManagerCPP::setCurrentTemperature(const double &tempratureC)
 {
     if (mLateastDataPoint->has_current_temperature_embedded() &&
-        qAbs(mLateastDataPoint->current_temperature_embedded() - tempratureC) < 1 / 1.8) {
+        qAbs(mLateastDataPoint->current_temperature_embedded() - tempratureC) < TEMPERATURETHRESHOLD) {
         return;
     }
 
@@ -177,7 +178,7 @@ void ProtoDataManagerCPP::setCurrentHumidity(const double &humidity)
 void ProtoDataManagerCPP::setMCUTemperature(const double &mcuTempratureC)
 {
     if (mLateastDataPoint->has_current_temperature_mcu() &&
-        qAbs(mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) < 1.0) {
+        qAbs(mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) <  TEMPERATURETHRESHOLD) {
         return;
     }
 
@@ -259,9 +260,10 @@ void ProtoDataManagerCPP::setLedStatus(const bool &ledStatus)
 LiveDataPoint *ProtoDataManagerCPP::addNewPoint()
 {
     if (mLiveDataPointList.data_points_size() > 0 && mLiveDataPointList.data_points_size() > MEMORYLIMITAIONRECORDS) {
-        PROTO_LOG << "Delete the first data point in the list due to memory limitation. Deleted point time:" << mLiveDataPointList.data_points(0).time().seconds()
-        << ", Deleted range: 0-" << (mLiveDataPointList.data_points_size() - MEMORYLIMITAIONRECORDS) << mLiveDataPointList.data_points_size();
-        mLiveDataPointList.mutable_data_points()->DeleteSubrange(0, mLiveDataPointList.data_points_size() - MEMORYLIMITAIONRECORDS);
+        int outRangeIndex = mLiveDataPointList.data_points_size() - MEMORYLIMITAIONRECORDS;
+        PROTO_LOG << "Delete the first data points in the list due to memory limitation."
+        << ", Deleted range: 0 to " << outRangeIndex << mLiveDataPointList.data_points_size();
+        mLiveDataPointList.mutable_data_points()->DeleteSubrange(0, outRangeIndex);
     }
 
     auto newPoint = mLiveDataPointList.add_data_points();
@@ -313,7 +315,7 @@ void ProtoDataManagerCPP::logStashData()
             newPoint->set_led_status(mLateastDataPoint->led_status());
         }
 
-        newPoint->set_is_sync(mChangeMode & CMAll);
+        newPoint->set_is_sync(mChangeMode == CMAll);
 
         updateChangeMode(CMNone);
     }
@@ -324,9 +326,12 @@ void ProtoDataManagerCPP::updateChangeMode(ChangeMode cm)
     if (cm == CMNone) {
         mChangeMode = cm;
         mDataPointLogger.stop();
+        return;
     }
 
-    mChangeMode |= cm;
+    if ((mChangeMode & cm) == 0)
+        mChangeMode |= cm;
+
     if (!mDataPointLogger.isActive())
         mDataPointLogger.start();
 }
