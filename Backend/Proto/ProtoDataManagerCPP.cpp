@@ -23,13 +23,12 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
     mLateastDataPoint = new LiveDataPoint();
 
     mSenderTimer.setInterval(30 * 60 * 1000);
+    mSenderTimer.setSingleShot(false);
     connect(&mSenderTimer, &QTimer::timeout, this, [this]() {
         sendDataToServer();
     });
 
-    connect(&mCreatGeneralBufferTimer, &QTimer::timeout, this, [this]() {
-        auto newPoint = addNewPoint();
-    });
+    mSenderTimer.start();
 
     mDataPointLogger.setInterval(30 * 1000);
     mDataPointLogger.setSingleShot(true);
@@ -58,6 +57,7 @@ ProtoDataManagerCPP::~ProtoDataManagerCPP()
 
     mDataPointLogger.stop();
     mSenderTimer.stop();
+    mCreatGeneralBufferTimer.stop();
 
     delete mLateastDataPoint;
     mLateastDataPoint->Clear();
@@ -262,7 +262,7 @@ void ProtoDataManagerCPP::logStashData()
     if (mChangeMode != CMNone) {
         auto newPoint = addNewPoint();
 
-        PROTO_LOG << "New ponit created due to " << mChangeMode;
+        PROTO_LOG << "New point created due to " << mChangeMode;
 
         if (mChangeMode & CMSetTemperature) {
             newPoint->set_set_temperature(mLateastDataPoint->set_temperature());
