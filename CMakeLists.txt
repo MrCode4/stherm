@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
 # Temperature scheme version and update date.
-set(TEMPERATURE_SCHEME_VERSION_C "V.2.0.0 (24.10.2024)")
+set(TEMPERATURE_SCHEME_VERSION_C "V.2.0.1 (11.11.2024)")
 set(FAKE_UID "" CACHE STRING "The fake UID used for testing purposes")
 set(FAKE_SERIALID "" CACHE STRING "The fake SERIAL ID used for testing purposes")
 set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT "Delay counter for serial test")
