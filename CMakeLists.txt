@@ -87,8 +87,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 message("Protocol Buffers founded - : " ${Protobuf_FOUND} " - " ${Protobuf_VERSION})
 if (Protobuf_FOUND)
-    set (PROTO_SRCS Backend/proto/streamdata.pb.cc)
-    set (PROTO_HDRS Backend/proto/streamdata.pb.h)
+    set (PROTO_SRCS Backend/Proto/streamdata.pb.cc)
+    set (PROTO_HDRS Backend/Proto/streamdata.pb.h)
     # set_source_files_properties(PROTO_SRCS PROTO_HDRS PROPERTIES GENERATED TRUE)
     # PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS  ${CMAKE_CURRENT_SOURCE_DIR}/Resources/streamdata.proto)
     message("protobuf files generated in " ${PROTO_SRCS} " - " ${PROTO_HDRS})
@@ -464,10 +464,10 @@ qt6_add_qml_module(appStherm
         Backend/Services/PerfTestService.h
         Backend/Services/PerfTestService.cpp
 
-    ${PROTO_HDRS}
-    ${PROTO_SRCS}
-    Backend/Proto/ProtoDataManagerCPP.h
-    Backend/Proto/ProtoDataManagerCPP.cpp
+        ${PROTO_HDRS}
+        ${PROTO_SRCS}
+        Backend/Proto/ProtoDataManagerCPP.h
+        Backend/Proto/ProtoDataManagerCPP.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf

@@ -1375,12 +1375,12 @@ I_DeviceController {
         //        device.fan.mode?
 
 
-        ProtoDataManagerCPP.setSetHumidity(deviceControllerCPP.effectiveTemperaure());
+        ProtoDataManagerCPP.setSetHumidity(deviceControllerCPP.effectiveHumidity());
         ProtoDataManagerCPP.setMCUTemperature(system.cpuTemperature);
         ProtoDataManagerCPP.setLedStatus(device.backlight.on);
 
         if (isNeedToPushToServer) {
-            ProtoDataManagerCPP.setCurrentTemperature(device.currentTemp)();
+            ProtoDataManagerCPP.setCurrentTemperature(device.currentTemp);
             ProtoDataManagerCPP.setCurrentHumidity(device.currentHum);
             ProtoDataManagerCPP.setCurrentAirQuality(device._co2_id);
 

@@ -234,42 +234,44 @@ LiveDataPoint *ProtoDataManagerCPP::addNewPoint()
 
 void ProtoDataManagerCPP::logStashData()
 {
-    if (changeMode != CMNone) {
+    if (mChangeMode != CMNone) {
         auto newPoint = addNewPoint();
 
-        if (changeMode & CMSetTemperature) {
+        if (mChangeMode & CMSetTemperature) {
             newPoint->set_set_temperature(mLateastDataPoint->set_temperature());
         }
-        if (changeMode & CMSetHumidity) {
+        if (mChangeMode & CMSetHumidity) {
             newPoint->set_set_humidity(mLateastDataPoint->set_humidity());
         }
-        if (changeMode & CMCurrentTemperature) {
+        if (mChangeMode & CMCurrentTemperature) {
             newPoint->set_current_temperature_embedded(mLateastDataPoint->current_temperature_embedded());
         }
-        if (changeMode & CMCurrentHumidity) {
+        if (mChangeMode & CMCurrentHumidity) {
             newPoint->set_current_humidity_embedded(mLateastDataPoint->current_humidity_embedded());
         }
-        if (changeMode & CMMCUTemperature) {
+        if (mChangeMode & CMMCUTemperature) {
             newPoint->set_current_temperature_mcu(mLateastDataPoint->current_temperature_mcu());
         }
-        if (changeMode & CMAirPressure) {
+        if (mChangeMode & CMAirPressure) {
             newPoint->set_air_pressure_embedded(mLateastDataPoint->air_pressure_embedded());
         }
-        if (changeMode & CMCurrentAirQuality) {
+        if (mChangeMode & CMCurrentAirQuality) {
             newPoint->set_current_air_quality(mLateastDataPoint->current_air_quality());
         }
-        if (changeMode & CMCurrentCoolingStage) {
+        if (mChangeMode & CMCurrentCoolingStage) {
             newPoint->set_current_cooling_stage(mLateastDataPoint->current_cooling_stage());
         }
-        if (changeMode & CMCurrentHeatingStage) {
+        if (mChangeMode & CMCurrentHeatingStage) {
             newPoint->set_current_heating_stage(mLateastDataPoint->current_heating_stage());
         }
-        if (changeMode & CMCurrentFanStatus) {
+        if (mChangeMode & CMCurrentFanStatus) {
             newPoint->set_current_fan_status(mLateastDataPoint->current_fan_status());
         }
-        if (changeMode & CMLedStatus) {
+        if (mChangeMode & CMLedStatus) {
             newPoint->set_led_status(mLateastDataPoint->led_status());
         }
+
+        newPoint->set_is_sync(mChangeMode & CMAll);
 
         updateChangeMode(CMNone);
     }
@@ -278,11 +280,11 @@ void ProtoDataManagerCPP::logStashData()
 void ProtoDataManagerCPP::updateChangeMode(ChangeMode cm)
 {
     if (cm == CMNone) {
-        changeMode = cm;
+        mChangeMode = cm;
         mDataPointLogger.stop();
     }
 
-    changeMode |= cm;
+    mChangeMode |= cm;
     if (!mDataPointLogger.isActive())
         mDataPointLogger.start();
 }

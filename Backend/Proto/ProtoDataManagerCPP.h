@@ -90,6 +90,7 @@ private:
     QTimer mDataPointLogger;
     QTimer mCreatGeneralBufferTimer;
 
-    int changeMode;
+    //! Flag to stash data
+    int mChangeMode;
 };
 
