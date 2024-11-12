@@ -15,13 +15,13 @@ protected:
 public:
     RestApiExecutor(QObject *parent = nullptr);
 
-    QNetworkReply* callGetApi(const QString& endpoint, ResponseCallback callback = nullptr, bool setAuth = true);
-    QNetworkReply* callPostApi(const QString& endpoint, const QByteArray &postData, ResponseCallback callback = nullptr, bool setAuth = true);
-    QNetworkReply* callPutApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth = true);
+    QNetworkReply* callGetApi(const QString& endpoint, ResponseCallback callback = nullptr, bool setAuth = true, QString contentTypeHeader = "application/json");
+    QNetworkReply* callPostApi(const QString& endpoint, const QByteArray &postData, ResponseCallback callback = nullptr, bool setAuth = true, QString contentTypeHeader = "application/json");
+    QNetworkReply* callPutApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth = true, QString contentTypeHeader = "application/json");
     QNetworkReply* downloadFile(const QString& url, ResponseCallback callback = nullptr, bool jsonFile = true, bool setAuth = false);
 
 protected:
-    QNetworkRequest prepareApiRequest(const QString &endpoint, bool setAuth = true);
+    QNetworkRequest prepareApiRequest(const QString &endpoint, bool setAuth = true, QString contentTypeHeader = "application/json");
 
     virtual void setApiAuth(QNetworkRequest& request);
     virtual QJsonObject prepareJsonResponse(const QString& endpoint, const QByteArray& rawData) const;

@@ -30,7 +30,17 @@ ToolButton {
         id: logoImage
         sourceSize.width: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
         sourceSize.height: Style.fontIconSize.largePt * 1.3334 //! 16px = 12pt
-        source: "qrc:/Stherm/Images/fan-on.png"
+        source: {
+            if (deviceController.activeSystemMode === AppSpec.Cooling) {
+                return "qrc:/Stherm/Images/fan-cool.svg";
+
+            } else if (deviceController.activeSystemMode === AppSpec.Heating ||
+                       deviceController.activeSystemMode === AppSpec.Emergency) {
+                return "qrc:/Stherm/Images/fan-heat.svg";
+            }
+
+            return "qrc:/Stherm/Images/fan-on.png";
+        }
 
         //! Animation for rotatin
         //! will cost almost 10% cpu usage even when not visible
@@ -81,18 +91,6 @@ ToolButton {
             } else {
                 fanAnimation.stop();
                 logoImage.rotation = 0;
-            }
-        }
-
-        function onCurrentSystemModeChanged(state: int) {
-            if (state === AppSpec.Cooling) {
-                logoImage.source = "qrc:/Stherm/Images/fan-cool.svg";
-
-            } else if (state === AppSpec.Heating || state === AppSpec.Emergency) {
-                logoImage.source = "qrc:/Stherm/Images/fan-heat.svg";
-
-            } else {
-                logoImage.source = "qrc:/Stherm/Images/fan-on.png";
             }
         }
 

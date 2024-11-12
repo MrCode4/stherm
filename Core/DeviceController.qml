@@ -62,6 +62,9 @@ I_DeviceController {
     //! Active system mode in dual fuel heating
     property int dfhSystemType: AppSpec.SysTUnknown
 
+    //! Current active system mode.
+    property int activeSystemMode: AppSpec.Off
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -283,6 +286,21 @@ I_DeviceController {
         //! Update active system mode in the dual fuel heating
         function onDfhSystemTypeChanged(activeSystemType: int) {
             dfhSystemType = activeSystemType;
+        }
+
+        function onEffectiveTemperatureChanged(effectiveTemperatureC: real) {
+            ProtoDataManager.setSetTemperature(effectiveTemperatureC);
+        }
+
+        function onFanWorkChanged(fanState: bool) {
+            ProtoDataManager.setCurrentFanStatus(fanState);
+        }
+
+        function onCurrentSystemModeChanged(state: int, currentHeatingStage: int, currentCoolingStage: int) {
+            activeSystemMode = state;
+
+            ProtoDataManager.setCurrentHeatingStage(currentHeatingStage);
+            ProtoDataManager.setCurrentCoolingStage(currentCoolingStage);
         }
     }
 
@@ -713,6 +731,18 @@ I_DeviceController {
             ScreenSaverManager.lockDevice(true);
             uiSession.showHome();
         }
+
+        //! Initialize the ProtoDataManager data with the loaded model.
+        ProtoDataManager.setSetHumidity(deviceControllerCPP.effectiveHumidity());
+        ProtoDataManager.setMCUTemperature(system.cpuTemperature());
+        ProtoDataManager.setSetTemperature(device.requestedTemp);
+        ProtoDataManager.setCurrentTemperature(device.currentTemp);
+        ProtoDataManager.setCurrentHumidity(device.currentHum);
+        ProtoDataManager.setCurrentAirQuality(device._co2_id);
+        ProtoDataManager.setLedStatus(device.backlight.on);
+        //! TODO
+        //! Set default 101325 kPa
+        ProtoDataManager.setAirPressure(101325);
     }
 
     onStopDeviceRequested: {
@@ -809,6 +839,9 @@ I_DeviceController {
             device.backlight.hue = hue;
             device.backlight.value = brightness;
             device.backlight.shadeIndex = shadeIndex;
+
+            // Send backlight data to ProtoDataManager
+            ProtoDataManager.setLedStatus(isOn);
 
         } else {
             console.log("revert the backlight in model: ")
@@ -1360,6 +1393,13 @@ I_DeviceController {
         //        device.setting.brightness = result?.brightness ?? 0
 
         //        device.fan.mode?
+
+
+        ProtoDataManager.setSetHumidity(deviceControllerCPP.effectiveHumidity());
+        ProtoDataManager.setMCUTemperature(system.cpuTemperature());
+        ProtoDataManager.setCurrentTemperature(device.currentTemp);
+        ProtoDataManager.setCurrentHumidity(device.currentHum);
+        ProtoDataManager.setCurrentAirQuality(device._co2_id);
 
         if (isNeedToPushToServer) {
             updateEditMode(AppSpec.EMSensorValues);

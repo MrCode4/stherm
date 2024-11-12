@@ -100,6 +100,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                                      info.value("tech").toString());
     });
 
+    // When system is OFF, the set temperature will remain constant
+    connect(mSchemeDataProvider.get(), &SchemeDataProvider::effectiveTemperatureChanged, this, &DeviceControllerCPP::effectiveTemperatureChanged);
+
     mAdaptiveBrightness = 50;
 
     QDir backdoorDir(m_backdoorPath);
@@ -1525,4 +1528,8 @@ void DeviceControllerCPP::revertPerfTest()
     if (mHumidityScheme) {
         mHumidityScheme->restartWork(true);
     }
+}
+
+double DeviceControllerCPP::effectiveHumidity() {
+    return mSchemeDataProvider->effectiveHumidity();
 }

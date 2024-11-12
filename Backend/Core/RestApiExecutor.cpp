@@ -16,17 +16,17 @@ QString RestApiExecutor::prepareHashKey(int operation, const QString& endpoint)
     return QString("%1:%2").arg(operation).arg(endpoint);
 }
 
-QNetworkRequest RestApiExecutor::prepareApiRequest(const QString &endpoint, bool setAuth)
+QNetworkRequest RestApiExecutor::prepareApiRequest(const QString &endpoint, bool setAuth, QString contentTypeHeader)
 {
     QNetworkRequest request(endpoint);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::ContentTypeHeader, contentTypeHeader);
     request.setRawHeader("accept", "application/json");
     request.setTransferTimeout(8000);
     if (setAuth) setApiAuth(request);
     return request;
 }
 
-QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCallback callback, bool setAuth)
+QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCallback callback, bool setAuth, QString contentTypeHeader)
 {
     auto key = prepareHashKey(QNetworkAccessManager::Operation::GetOperation, endpoint);
     if (mCallbacks.contains(key)) {
@@ -34,7 +34,7 @@ QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCall
     }
     else {
         mCallbacks.insert(key, callback);
-        auto reply = get(prepareApiRequest(endpoint, setAuth));
+        auto reply = get(prepareApiRequest(endpoint, setAuth, contentTypeHeader));
         if (reply) {
             reply->setProperty("endpoint", endpoint);
             reply->setProperty("isJson", true);
@@ -46,7 +46,7 @@ QNetworkReply* RestApiExecutor::callGetApi(const QString &endpoint, ResponseCall
     }
 }
 
-QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth)
+QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth, QString contentTypeHeader)
 {
     auto key = prepareHashKey(QNetworkAccessManager::Operation::PostOperation, endpoint);
     if (mCallbacks.contains(key)) {
@@ -54,7 +54,7 @@ QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByte
     }
     else {
         mCallbacks.insert(key, callback);
-        auto reply = post(prepareApiRequest(endpoint, setAuth), postData);
+        auto reply = post(prepareApiRequest(endpoint, setAuth, contentTypeHeader), postData);
         if (reply) {
             reply->setProperty("endpoint", endpoint);
             reply->setProperty("isJson", true);
@@ -66,7 +66,7 @@ QNetworkReply* RestApiExecutor::callPostApi(const QString &endpoint, const QByte
     }
 }
 
-QNetworkReply* RestApiExecutor::callPutApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth)
+QNetworkReply* RestApiExecutor::callPutApi(const QString &endpoint, const QByteArray &postData, ResponseCallback callback, bool setAuth, QString contentTypeHeader)
 {
     auto key = prepareHashKey(QNetworkAccessManager::Operation::PutOperation, endpoint);
     if (mCallbacks.contains(key)) {
@@ -74,7 +74,7 @@ QNetworkReply* RestApiExecutor::callPutApi(const QString &endpoint, const QByteA
     }
     else {
         mCallbacks.insert(key, callback);
-        auto reply = put(prepareApiRequest(endpoint, setAuth), postData);
+        auto reply = put(prepareApiRequest(endpoint, setAuth, contentTypeHeader), postData);
         reply->setProperty("endpoint", endpoint);
         reply->setProperty("isJson", true);
         return reply;

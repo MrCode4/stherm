@@ -220,6 +220,9 @@ public:
 
     QStringList cpuInformation();
 
+    //! Return the first cpu temperature: Device has ONE cpu
+    Q_INVOKABLE double cpuTemperature();
+
     bool mountDirectory(const QString targetDirectory, const QString targetFolder);
 
     //! Check: the directory is valid and has minimum free space
