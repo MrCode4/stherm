@@ -1169,6 +1169,9 @@ I_DeviceController {
                 "heatPumpEmergency": device.systemSetup.heatPumpEmergency,
                 "systemRunDelay": device.systemSetup.systemRunDelay,
                 "dualFuelThreshold": device.systemSetup.dualFuelThreshod,
+                "emergencyMinimumTime": device.systemSetup.emergencyMinimumTime,
+                "emergencyControlType": device.systemSetup.emergencyControlType,
+                "emergencyTemperatureDifference": device.systemSetup.emergencyTemperatureDifference,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
@@ -1346,9 +1349,13 @@ I_DeviceController {
             setSystemTraditional(settings.coolStage, settings.heatStage);
         else if(settings.type === "heating")
             setSystemHeatOnly(settings.heatStage)
-        else if(settings.type === "heat_pump") {} // TODO
-            // setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState)
-        else if(settings.type === "cooling")
+        else if(settings.type === "heat_pump") {
+            setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState,
+                              settings.emergencyMinimumTime ?? device.systemSetup.emergencyMinimumTime,
+                              settings.emergencyControlType ?? device.systemSetup.emergencyControlType,
+                              settings.emergencyTemperatureDifference ?? device.systemSetup.emergencyTemperatureDiffrence)
+
+        } else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
         else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
             setSystemDualFuelHeating(settings.heatPumpEmergency, settings.coolStage, settings.heatStage,
