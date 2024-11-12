@@ -69,7 +69,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             visible: device?.systemSetup.systemType !== AppSpec.DualFuelHeating || device?.systemSetup.isAUXAuto
-            checked: device?.systemSetup.systemMode === AppSpecCPP.Heating
+            checked: visible && device?.systemSetup.systemMode === AppSpecCPP.Heating
             enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Heating"
 
@@ -86,7 +86,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             visible:  device?.systemSetup.systemType === AppSpec.DualFuelHeating && !device?.systemSetup.isAUXAuto
-            checked: device?.systemSetup.systemMode === AppSpecCPP.Heating && !device?.systemSetup.isHeatingAUX
+            checked: visible && device?.systemSetup.systemMode === AppSpecCPP.Heating && !device?.systemSetup.isHeatingAUX
             enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Heating (Heat pump)"
 
@@ -103,7 +103,7 @@ BasePageView {
             rightPadding: 24
             checkable: true
             visible:  device?.systemSetup.systemType === AppSpec.DualFuelHeating && !device?.systemSetup.isAUXAuto
-            checked: device?.systemSetup.systemMode === AppSpecCPP.Heating && device?.systemSetup.isHeatingAUX
+            checked: visible && device?.systemSetup.systemMode === AppSpecCPP.Heating && device?.systemSetup.isHeatingAUX
             enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Heating (Aux)"
 
