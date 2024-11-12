@@ -345,11 +345,13 @@ I_DeviceController {
 
             // The temperature might change several times due to mode change or temperature, but the last recorded value is the correct one.
             setDesiredTemperatureFromServer(settings.temp)
-            setSystemModeServer(settings.mode_id)
             setSchedulesFromServer(settings.schedule)
             setVacationServer(settings.vacation)
             checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
+
+            //! TODO: refactor
+            setSystemModeServer(settings.mode_id, settings.system.isHeatingAUX ?? device.systemSetup.isHeatingAUX)
 
             if (!lockStatePusher.isPushing) {
                 updateAppLockState(settings.locked, settings.pin, true);
@@ -1192,7 +1194,7 @@ I_DeviceController {
         }
     }
 
-    function setSystemModeServer(mode_id) {
+    function setSystemModeServer(mode_id, isHeatingAUX) {
         if (editModeEnabled(AppSpec.EMSystemMode)) {
             console.log("The system setup is being edited and cannot be updated (mode_id) by the server.")
         } else {
@@ -1200,7 +1202,7 @@ I_DeviceController {
             //! Vacation will be handled using setVacationServer
             if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Emergency &&
                     modeInt !== AppSpec.Vacation) {
-                checkToUpdateSystemMode(modeInt);
+                checkToUpdateSystemMode(modeInt, false, isHeatingAUX);
             }
         }
     }
@@ -1350,9 +1352,10 @@ I_DeviceController {
         } else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
         else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
-            setSystemDualFuelHeating(settings.heatPumpEmergency, settings.coolStage, settings.heatStage,
+            setSystemDualFuelHeating(settings.coolStage, settings.heatStage,
                                      settings.heatPumpOBState,
-                                     settings.dualFuelThreshold ?? device.systemSetup.dualFuelThreshod);
+                                     settings.dualFuelThreshold ?? device.systemSetup.dualFuelThreshod,
+                                     settings.isAUXAuto ?? device.systemSetup.isAUXAuto);
         else
             console.warn("System type unknown", settings.type)
     }
