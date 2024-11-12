@@ -125,6 +125,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
     mIsManualUpdate          = setting.value(m_IsManualUpdateSetting, false).toBool();
     mStartedWithManualUpdate = mIsManualUpdate;
+
+    // Check if last boot was from command; if so, update the map so that
+    // the device does not fall into reboot loop due to same command
     if (setting.contains(Key_LastRebootAt)) {
         mLastReceivedCommands[Cmd_Reboot] = setting.value(Key_LastRebootAt).toString();
     }
@@ -1366,42 +1369,7 @@ void NUVE::System::onAppDataReady(QVariantMap data)
     auto command = data.value("setting").toJsonObject().value("command").toString();
     if (command.isEmpty()) return;
     auto commandTime = data.value("setting").toJsonObject().value("command_time").toString();
-
-    if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == commandTime) {
-        return;
-    }
-
-    SYS_LOG <<"Command received" << command <<commandTime;
-
-    if (command == Cmd_PushLogs) {
-        if (mLogSender.busy()) {
-            SYS_LOG << "Log-sender is busy at this momemnt";
-        }
-        else {
-            SYS_LOG << "Applying" <<command <<commandTime;
-            if (sendLog(false)) {
-                mLastReceivedCommands[command] = commandTime;
-            }
-            else {
-                SYS_LOG <<"Command failed" <<command <<commandTime;
-            }
-        }
-    }
-    else if (command == Cmd_PerfTest) {
-        SYS_LOG << "Applying" <<command <<commandTime;
-        if (PerfTestService::me()->checkTestEligibilityManually("Command")) {
-            mLastReceivedCommands[command] = commandTime;
-        }
-        else {
-            SYS_LOG <<"Command failed" <<command <<commandTime;
-        }
-    }
-    else if (command == Cmd_Reboot) {
-        SYS_LOG << "Applying" <<command <<commandTime;
-        mLastReceivedCommands[command] = commandTime;
-        {QSettings settings; settings.setValue(Key_LastRebootAt, commandTime);}
-        rebootDevice();
-    }
+    attemptToRunCommand(command, commandTime);
 }
 
 bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
@@ -1474,6 +1442,7 @@ void NUVE::System::setSerialNumber(const QString &sn)
 {
     mSync->setSerialNumber(sn);
 
+    // if device started from reboot, let's inform server that the device is booted
     if (mLastReceivedCommands.contains(Cmd_Reboot)) {
         auto callback = [this] (bool success, const QJsonObject& data) {
             mLastReceivedCommands.remove(Cmd_PushLogs);
@@ -2089,6 +2058,47 @@ void NUVE::System::sendResultsFile(const QString &filepath,
                                "\"StrictHostKeyChecking=no\" \"%2\" %3@%4:%5")
                            .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
     mFileSender.start("/bin/bash", {"-c", copyFile});
+}
+
+void NUVE::System::attemptToRunCommand(const QString& command, QString& tag)
+{
+    if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag) {
+        return false;
+    }
+
+    SYS_LOG <<"Attempting command" << command <<tag;
+
+    if (command == Cmd_PushLogs) {
+        if (mLogSender.busy()) {
+            SYS_LOG << "Log-sender is busy at this momemnt";
+        }
+        else {
+            SYS_LOG << "Applying" <<command <<tag;
+            if (sendLog(false)) {
+                mLastReceivedCommands[command] = tag;
+            }
+            else {
+                SYS_LOG <<"Command failed" <<command <<tag;
+            }
+        }
+    }
+    else if (command == Cmd_PerfTest) {
+        SYS_LOG << "Applying" <<command <<tag;
+        if (PerfTestService::me()->checkTestEligibilityManually("Command")) {
+            mLastReceivedCommands[command] = tag;
+        }
+        else {
+            SYS_LOG <<"Command failed" <<command <<tag;
+        }
+    }
+    else if (command == Cmd_Reboot) {
+        SYS_LOG << "Applying" <<command <<tag;
+        mLastReceivedCommands[command] = tag;
+        {QSettings settings; settings.setValue(Key_LastRebootAt, tag);}
+        rebootDevice();
+    }
+
+    return mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag;
 }
 
 void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler, const QString &subject, const QString &joiner)

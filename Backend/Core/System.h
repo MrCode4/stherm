@@ -243,6 +243,8 @@ public:
 
     Q_INVOKABLE void fetchServiceTitanInformation();
 
+    Q_INVOKABLE bool attemptToRunCommand(const QString& command, QString& tag);
+
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);
