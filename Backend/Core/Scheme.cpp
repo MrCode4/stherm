@@ -397,13 +397,14 @@ void Scheme::HeatingLoop()
         // get time threshold ETime
         if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
             emit actualModeStarted(AppSpecCPP::Heating);
-            if (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF()) {
+            if (mDataProvider->systemSetup()->heatPumpEmergency && (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF())) {
                 TRACE << "Emergency";
                 emergencyHeating();
             } else {
                 TRACE << "Normal";
-                internalPumpHeatingLoopStage1();
             }
+
+            internalPumpHeatingLoopStage1();
         }
     } break;
     case AppSpecCPP::SystemType::Conventional:
@@ -893,7 +894,6 @@ void Scheme::emergencyHeating()
     auto sysSetup = mDataProvider->systemSetup();
     if (!sysSetup->heatPumpEmergency) {
         TRACE << "Emergency heating is OFF, back to Normal.";
-        internalPumpHeatingLoopStage1();
         return;
     }
 
@@ -954,9 +954,6 @@ void Scheme::emergencyHeating()
     mRelay->turnOffEmergencyHeating();
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
-
-    if (mDataProvider->effectiveSystemMode() != AppSpecCPP::EmergencyHeat)
-        internalPumpHeatingLoopStage1();
 }
 
 void Scheme::sendAlertIfNeeded()
