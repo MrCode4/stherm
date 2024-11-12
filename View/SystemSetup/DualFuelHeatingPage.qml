@@ -268,7 +268,7 @@ BasePageView {
 
                 Layout.fillWidth: true
 
-                icon: "\uf2c8"
+                icon: FAIcons.temperatureThreeQuarters
                 labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
                 from: isCelsius ? Utils.fahrenheitToCelsius(AppSpec.minimumDualFuelThresholdF) : AppSpec.minimumDualFuelThresholdF;
                 to:   isCelsius ? Utils.fahrenheitToCelsius(AppSpec.maximumDualFuelThresholdF) : AppSpec.maximumDualFuelThresholdF;

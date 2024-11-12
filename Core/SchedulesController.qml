@@ -62,10 +62,8 @@ QtObject {
     {
         var newSchedule = cloneSchedule(schedule, AppCore.defaultRepo);
 
-        setSchduleMode(newSchedule, device.systemSetup.systemMode);
-
         // Update the created schedule with the current system mode
-        setSchduleMode(newSchedule, device.systemSetup.systemMode)
+        setSchduleMode(newSchedule, device.systemSetup.systemMode);
 
         device.schedules.push(newSchedule);
         device.schedulesChanged();

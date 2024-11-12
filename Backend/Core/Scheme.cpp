@@ -924,7 +924,7 @@ void Scheme::emergencyHeating()
     while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF() ||
            mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
 
-        // Disable UI interactions during manual emergency mode until the minimum duration is reached.
+        // Disable UI interactions in system mode page during manual emergency mode until the minimum duration is reached.
         auto emergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000;
         if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
             emergencyMinimumTimeMS > mTEONTimer.elapsed()) {

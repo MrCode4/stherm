@@ -132,7 +132,7 @@ BasePageView {
             RoniaTextIcon {
                 Layout.leftMargin: 5
                 font.pointSize: root.font.pointSize * 1.5
-                text: "\uf2c8" //! temperature-three-quarters icon
+                text: FAIcons.temperatureThreeQuarters
             }
 
             TemperatureFlatRangeSlider {
@@ -221,7 +221,7 @@ BasePageView {
 
             Layout.fillWidth: true
 
-            icon: "\uf2c8"
+            icon: FAIcons.temperatureThreeQuarters
             leftSideColor:  "#ea0600"
             rightSideColor: "#0097cd"
             labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
