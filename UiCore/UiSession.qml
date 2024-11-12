@@ -87,6 +87,9 @@ Item {
     //! This property can be used to disable wifi refreshing temporarily
     property bool               refreshWifiEnabled: true
 
+    //! Use to block the system mode page when system mode is emergency
+    property int remainigTimeToUnblockSystemMode: 0
+
     //! Retrieve device information at one-second intervals.
     property Timer timer:   Timer {
         running: true

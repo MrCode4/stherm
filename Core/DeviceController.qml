@@ -304,11 +304,10 @@ I_DeviceController {
         }
 
         function onManualEmergencyModeUnblockedAfter(miliSecs: int) {
-            remainigTimeToUnblockSystemMode = miliSecs;
+            uiSession.remainigTimeToUnblockSystemMode = miliSecs;
         }
     }
 
-    property int remainigTimeToUnblockSystemMode: 0
 
     property Connections networkInterface: Connections {
         target: NetworkInterface
@@ -708,6 +707,9 @@ I_DeviceController {
     signal zipCodeInfoReady(var error, bool isNeedRetry);
     signal customerInfoReady(var error, bool isNeedRetry);
 
+    //! Show emergency error popup
+    signal showEmergencyModeError();
+
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************");
         //! initialize the device and config
@@ -940,34 +942,12 @@ I_DeviceController {
     }
 
     function checkToUpdateSystemMode(systemMode: int, force = false) {
-        // Block due to emergency heating.
-        if (!force && systemMode !== AppSpec.EmergencyHeat && remainigTimeToUnblockSystemMode > 0) {
-            uiSession.popUps.emergencyModeErrorPopup.errorMessage = Qt.binding(function() {
-                //! Show an error popup
-                var remainigTime = ""
-                if (remainigTimeToUnblockSystemMode < 60000) {
-                    var seconds = (remainigTimeToUnblockSystemMode / 1000).toFixed(0)
-                    remainigTime = `${seconds} second${(seconds > 1) ? "s" : ""}`;
+        // Block due to manual emergency heating.
+        if (!force && systemMode !== AppSpec.EmergencyHeat && uiSession.remainigTimeToUnblockSystemMode > 0) {
 
-                } else if (remainigTimeToUnblockSystemMode < 3600000) {
-                    var minutes = Math.floor(remainigTimeToUnblockSystemMode / 60000);
-                    var seconds = ((remainigTimeToUnblockSystemMode  - minutes * 60000) / 1000).toFixed(0);
-                    remainigTime = `${minutes} minute${(minutes > 1) ? "s" : ""}`;
-                    if (seconds > 0) {
-                        remainigTime += ` ${seconds} second${(seconds > 1) ? "s" : ""}`;
-                    }
-                }
-                if (remainigTimeToUnblockSystemMode <= 0) {
-                    uiSession.popUps.emergencyModeErrorPopup.close();
-                    uiSession.popUps.emergencyModeErrorPopup.aboutToHide();
-                }
+            showEmergencyModeError();
 
-                return `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;
-
-            });
-            uiSession.popupLayout.displayPopUp(uiSession.popUps.emergencyModeErrorPopup, true);
-
-            console.log("Ignore system mode, ", uiSession.popUps.emergencyModeErrorPopup.errorMessage);
+            console.log("Ignore system mode due to blocking of system mode changes by manual emergency heating.");
             return false;
         }
 
@@ -1286,11 +1266,14 @@ I_DeviceController {
         device.systemSetup.coolStage = stage;
 
         device.systemSetup.heatPumpOBState = obState;
-        setSystemTypeTo(AppSpecCPP.HeatPump);
 
         device.systemSetup.emergencyMinimumTime = emergencyMinimumTime;
         device.systemSetup.emergencyControlType = emergencyControlType;
         device.systemSetup.emergencyTemperatureDiffrence = emergencyTemperatureDiffrence;
+
+        //! This function requires a valid emergencyControlType
+        //! so the emergencyControlType must be set before calling this function in the HeatPump type
+        setSystemTypeTo(AppSpecCPP.HeatPump);
     }
 
     function setSystemTraditional(coolStage: int, heatStage: int) {
@@ -1315,7 +1298,9 @@ I_DeviceController {
     function setSystemTypeTo(systemType: int) {
         device.systemSetup.systemType = systemType;
 
-        if (device.systemSetup.systemMode === AppSpecCPP.EmergencyHeat && systemType !== AppSpecCPP.HeatPump) {
+        if (device.systemSetup.systemMode === AppSpecCPP.EmergencyHeat &&
+                (device.systemSetup.emergencyControlType !== AppSpec.ECTManually ||
+                systemType !== AppSpecCPP.HeatPump)) {
             switch (systemType) {
             case AppSpec.Conventional:
             case AppSpec.HeatingOnly:

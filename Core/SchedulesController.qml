@@ -63,7 +63,7 @@ QtObject {
         var newSchedule = cloneSchedule(schedule, AppCore.defaultRepo);
 
         // Update the created schedule with the current system mode
-        setSchduleMode(newSchedule, device.systemSetup.systemMode);
+        setScheduleMode(newSchedule, device.systemSetup.systemMode);
 
         device.schedules.push(newSchedule);
         device.schedulesChanged();
@@ -754,7 +754,10 @@ QtObject {
         return schedulePacket;
     }
 
-    function setSchduleMode(schedule: ScheduleCPP, systemMode: int) {
+    //! Set schedule mode
+    //! If the system is Off, it will switch to Auto mode
+    //! If the system is Emergency Heating, it will switch to Heating mode
+    function setScheduleMode(schedule: ScheduleCPP, systemMode: int) {
         var sysMode = AppSpec.getScheduleModeWithSysMode(systemMode);
 
         // Update the created schedule with the current system mode

@@ -227,7 +227,7 @@ void Scheme::run()
                 OffLoop();
                 break;
             case AppSpecCPP::SystemMode::EmergencyHeat:
-                emergencyHeating();
+                manualEmergencyHeating();
                 break;
 
             case AppSpecCPP::SystemMode::Emergency:
@@ -397,13 +397,12 @@ void Scheme::HeatingLoop()
         // get time threshold ETime
         if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
             emit actualModeStarted(AppSpecCPP::Heating);
-            if (mDataProvider->systemSetup()->heatPumpEmergency && (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF())) {
+            if (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF()) {
                 TRACE << "Emergency";
-                emergencyHeating();
-            } else {
-                TRACE << "Normal";
+                emergencyHeatingLoop();
             }
 
+            TRACE << "Normal, emergency heating is enable:" << mDataProvider->systemSetup()->heatPumpEmergency;
             internalPumpHeatingLoopStage1();
         }
     } break;
@@ -889,36 +888,54 @@ bool Scheme::internalPumpHeatingLoopStage2()
     return true;
 }
 
-void Scheme::emergencyHeating()
+void Scheme::manualEmergencyHeating()
 {
     auto sysSetup = mDataProvider->systemSetup();
-    if (!sysSetup->heatPumpEmergency) {
-        TRACE << "Emergency heating is OFF, back to Normal.";
+
+    TRACE << "heatPumpEmergency: " << sysSetup->heatPumpEmergency
+          << " - emergencyControlType: " << sysSetup->emergencyControlType
+          << " - emergencyMinimumTime: " << sysSetup->emergencyMinimumTime;
+
+    if (!sysSetup->heatPumpEmergency && sysSetup->emergencyControlType != AppSpecCPP::ECTManually) {
+        TRACE << "Emergency heating is OFF or emergency control type is manually.";
         return;
     }
 
-    // Optimize emergency mode to prevent unnecessary backlight and heating activation.
+    // Optimize emergency mode to prevent unnecessary backlight and emergency heating activation.
+    // This will restrict the activation of emergency heating to instances
+    // where there's a significant change in temperature to met the temperature conditions.
     if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
         mManualEmergencyChecked && mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() <= mDataProvider->effectiveEmergencyHeatingThresholdF()) {
         TRACE << "System should be off, the conditions are not changed!";
         return;
     }
 
-    mRelay->setAllOff();
+    emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000);
 
-    if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
-        emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000);
+    emergencyHeatingLoop();
+
+    // This will unblock the UI after some times (wait loop in the emergencyHeatingLoop)
+    emit manualEmergencyModeUnblockedAfter(0);
+}
+
+void Scheme::emergencyHeatingLoop()
+{
+    auto sysSetup = mDataProvider->systemSetup();
+    if (!sysSetup->heatPumpEmergency) {
+        TRACE << "Emergency heating is OFF.";
+        return;
     }
 
+    mRelay->setAllOff();
     mTEONTimer.restart();
 
+    // Emergency wirings will be active due to the reset of the mTEONTimer.
     // 5 Sec
     emit changeBacklight(emergencyColor, emergencyColorS);
-    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-    TRACE << "Emergency heating - " << "effectiveTemperature:"
-          << mDataProvider->effectiveTemperature() << "- currentTemperature:" << mDataProvider->currentTemperature()
-          << " - effectiveEmergencyHeatingThreshold:" << mDataProvider->effectiveEmergencyHeatingThresholdF();
+    TRACE << "Emergency heating - " << "effectiveTemperature: " << mDataProvider->effectiveTemperature()
+          << " - currentTemperature: " << mDataProvider->currentTemperature()
+          << " - effectiveEmergencyHeatingThreshold: " << mDataProvider->effectiveEmergencyHeatingThresholdF();
 
 
     while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF() ||
@@ -926,13 +943,15 @@ void Scheme::emergencyHeating()
 
         // Disable UI interactions in system mode page during manual emergency mode until the minimum duration is reached.
         auto emergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000;
-        if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
-            emergencyMinimumTimeMS > mTEONTimer.elapsed()) {
-            emit manualEmergencyModeUnblockedAfter(emergencyMinimumTimeMS - mTEONTimer.elapsed());
-            mManualEmergencyChecked = true;
 
-        } else if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
-            emit manualEmergencyModeUnblockedAfter(0);
+        if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
+            mManualEmergencyChecked = true;
+            if (emergencyMinimumTimeMS > mTEONTimer.elapsed()) {
+                emit manualEmergencyModeUnblockedAfter(emergencyMinimumTimeMS - mTEONTimer.elapsed());
+
+            } else {
+                emit manualEmergencyModeUnblockedAfter(0);
+            }
         }
 
         mRelay->emergencyHeating3();
@@ -945,6 +964,8 @@ void Scheme::emergencyHeating()
         }
     }
 
+    // To unblock system mode UI in emergency states like system mode or system type changes.
+    // Unblock immediately
     if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
         emit manualEmergencyModeUnblockedAfter(0);
     }

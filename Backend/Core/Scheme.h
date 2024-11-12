@@ -99,7 +99,7 @@ private:
 
     //! Users manually activate emergency heat., meaning Emergency heating will only be active when the system mode is set to Emergency or
     //!  emergency heating will be triggered by the Defrost Controller Board (if equipped) or based on system needs.
-    void emergencyHeating();
+    void emergencyHeatingLoop();
     void sendAlertIfNeeded();
 
     //! Send relays into ti
@@ -125,6 +125,8 @@ private:
     void fanWork(bool isOn);
 
     void checkForRestartDualFuel();
+
+    void manualEmergencyHeating();
 
 private:
     /* Attributes

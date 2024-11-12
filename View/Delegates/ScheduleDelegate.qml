@@ -290,7 +290,7 @@ ItemDelegate {
                 systemMode === AppSpec.Heating ||
                 systemMode === AppSpec.EmergencyHeat ||
                 systemMode === AppSpec.Auto)
-            schedulesController.setSchduleMode(schedule, systemMode);
+            schedulesController.setScheduleMode(schedule, systemMode);
     }
 }
 

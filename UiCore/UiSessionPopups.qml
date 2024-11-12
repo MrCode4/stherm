@@ -38,7 +38,6 @@ Item {
     //!
     property alias errorPopup:              errorPop
     property alias perfTestCheckPopup: popupPerfTest
-    property alias emergencyModeErrorPopup: emergencyModeErrorPopup
 
     readonly property bool isAnyPopupOpened : updateNotificationPopup.opened
                                                 || successPopup.opened
@@ -66,6 +65,30 @@ Item {
 
     ErrorPopup {
         id: emergencyModeErrorPopup
+
+        errorMessage: {
+            //! Show an error popup
+            var remainigTime = ""
+            if (uiSession.remainigTimeToUnblockSystemMode < 60000) {
+                var seconds = (uiSession.remainigTimeToUnblockSystemMode / 1000).toFixed(0)
+                remainigTime = `${seconds} second${(seconds > 1) ? "s" : ""}`;
+
+            } else if (uiSession.remainigTimeToUnblockSystemMode < 3600000) {
+                var minutes = Math.floor(uiSession.remainigTimeToUnblockSystemMode / 60000);
+                var seconds = ((uiSession.remainigTimeToUnblockSystemMode  - minutes * 60000) / 1000).toFixed(0);
+                remainigTime = `${minutes} minute${(minutes > 1) ? "s" : ""}`;
+                if (seconds > 0) {
+                    remainigTime += ` ${seconds} second${(seconds > 1) ? "s" : ""}`;
+                }
+            }
+            if (uiSession.remainigTimeToUnblockSystemMode <= 0) {
+                close();
+                aboutToHide();
+            }
+
+            return `System mode change blocked due to emergency mode. Will resume in ${remainigTime}.`;
+
+        }
     }
 
     DownloadingPopup {
@@ -245,6 +268,16 @@ Item {
             ScreenSaverManager.setActive();
         }
     }
+
+    Connections {
+        target: deviceController
+
+        function onShowEmergencyModeError() {
+            uiSession.popupLayout.displayPopUp(emergencyModeErrorPopup);
+        }
+    }
+
+
 
     function warrantyReplacementFinished() {
         deviceController.firstRunFlowEnded();

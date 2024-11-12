@@ -23,7 +23,7 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     id   = -1;
 
     // Off
-    systemMode = AppSpecCPP::SystemMode::Off;
+    systemMode = AppSpecCPP::SystemMode::Auto;
 }
 
 double ScheduleCPP::effectiveTemperature(const AppSpecCPP::SystemMode &sysMode) {
