@@ -78,7 +78,7 @@ public:
     //! Ensure all temperature attributes involved in this calculation
     //! are expressed in Fahrenheit, and the final effective temperature
     //! result should be in Fahrenheit as well.
-    double effectiveTemperature();
+    double effectiveTemperature() const;
 
     double effectiveHumidity();
 
@@ -112,7 +112,7 @@ signals:
     void outdoorTemperatureReady();
     void outdoorTemperatureChanged();
 
-    void effectiveTemperatureChanged(double effectiveTemperatureC);
+    void effectiveTemperatureChanged(double effectiveTemperatureC) const;
     void effectiveHumidityChanged(double effectiveHumidity);
 
 private:

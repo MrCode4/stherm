@@ -85,7 +85,7 @@ find_package(utf8_range REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-message("Protocol Buffers founded - : " ${Protobuf_FOUND} " - " ${Protobuf_VERSION})
+message("Protocol Buffers found: " ${Protobuf_FOUND} " - " ${Protobuf_VERSION})
 if (Protobuf_FOUND)
     set (PROTO_SRCS Backend/Proto/streamdata.pb.cc)
     set (PROTO_HDRS Backend/Proto/streamdata.pb.h)
