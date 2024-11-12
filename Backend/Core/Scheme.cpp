@@ -959,16 +959,14 @@ void Scheme::emergencyHeatingLoop()
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
         // we need break condition here!
-        if (!sysSetup->heatPumpEmergency) {
+        if (!sysSetup->heatPumpEmergency || stopWork) {
             break;
         }
     }
 
     // To unblock system mode UI in emergency states like system mode or system type changes.
     // Unblock immediately
-    if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
-        emit manualEmergencyModeUnblockedAfter(0);
-    }
+    emit manualEmergencyModeUnblockedAfter(0);
 
     mTEONTimer.invalidate();
     emit changeBacklight();
