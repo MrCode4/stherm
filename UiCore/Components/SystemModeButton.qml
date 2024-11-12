@@ -103,10 +103,10 @@ ToolButton {
                     if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet) {
 
                         if (dfhSystemType === AppSpec.HeatingOnly) {
-                            return "Heating by furnace"
+                            return "Heating (Aux)"
 
                         } else if (dfhSystemType === AppSpec.HeatPump) {
-                            return "Heating by heat pump"
+                            return "Heating (Heat pump)"
                         }
                     }
 
