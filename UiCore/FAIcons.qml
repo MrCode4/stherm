@@ -61,4 +61,6 @@ QtObject {
     readonly property string trashCan:                          "\uf2ed"
     readonly property string arrowLeft:                         "\uf060"
     readonly property string snowflake:                         "\uf2dc"
+    readonly property string temperatureHigh:                   "\uf769"
+    readonly property string temperatureThreeQuarters:          "\uf2c8"
 }

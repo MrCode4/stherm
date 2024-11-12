@@ -146,7 +146,7 @@ ItemDelegate {
             //! Delete button
             ToolButton {
                 contentItem: RoniaTextIcon {
-                    text: "\uf2ed"
+                    text: FAIcons.trashCan
                 }
 
                 onClicked: {
@@ -170,7 +170,7 @@ ItemDelegate {
                     if (schedule.systemMode === AppSpec.Cooling) {
                         return "Cooling";
 
-                    } else if (schedule.systemMode === AppSpec.Heating) {
+                    } else if (schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.EmergencyHeat) {
                         return "Heating";
 
                     } else if (schedule.systemMode === AppSpec.Auto) {
@@ -284,12 +284,13 @@ ItemDelegate {
         _removeAnima.running = true;
     }
 
-    //! update schedule Mode based on SystemMode if in one of cooling, heating or Auto Modes
+    //! update schedule Mode based on SystemMode if in one of cooling, heating, Auto or EmergencyHeat Modes
     function updateScheduleMode(schedule, systemMode) {
         if (systemMode === AppSpec.Cooling ||
                 systemMode === AppSpec.Heating ||
-                systemMode === Auto)
-            schedule.systemMode = systemMode;
+                systemMode === AppSpec.EmergencyHeat ||
+                systemMode === AppSpec.Auto)
+            schedulesController.setScheduleMode(schedule, systemMode);
     }
 }
 

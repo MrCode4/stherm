@@ -263,14 +263,15 @@ BasePageView {
                 font.pointSize: Qt.application.font.pointSize * 0.9
             }
 
-            SingleTemperatureSlider {
+            SingleIconSlider {
                 id: temperature
 
                 Layout.fillWidth: true
 
+                icon: FAIcons.temperatureThreeQuarters
                 labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
-                control.from: isCelsius ? Utils.fahrenheitToCelsius(AppSpec.minimumDualFuelThresholdF) : AppSpec.minimumDualFuelThresholdF;
-                control.to:   isCelsius ? Utils.fahrenheitToCelsius(AppSpec.maximumDualFuelThresholdF) : AppSpec.maximumDualFuelThresholdF;
+                from: isCelsius ? Utils.fahrenheitToCelsius(AppSpec.minimumDualFuelThresholdF) : AppSpec.minimumDualFuelThresholdF;
+                to:   isCelsius ? Utils.fahrenheitToCelsius(AppSpec.maximumDualFuelThresholdF) : AppSpec.maximumDualFuelThresholdF;
 
                 control.value: Utils.convertedTemperature(appModel.systemSetup.dualFuelThreshod, deviceController.temperatureUnit);
             }

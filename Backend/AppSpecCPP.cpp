@@ -18,6 +18,18 @@ AppSpecCPP *AppSpecCPP::instance()
     return mInstance;
 }
 
+double AppSpecCPP::defaultEmergencyTemperatureDiffrenceF() {
+    return 2.9;
+}
+
+double AppSpecCPP::defaultEmergencyTemperatureDiffrenceC() {
+    return 1.6;
+}
+
+int AppSpecCPP::defaultEmergencyMinimumTime() {
+    return 2;
+}
+
 QString AppSpecCPP::systemTypeString(SystemType systemType) {
     switch (systemType) {
     case Conventional:
@@ -164,6 +176,9 @@ QString AppSpecCPP::systemModeToString(SystemMode systemMode) {
         return "Vacation";
     case AppSpecCPP::Auto:
         return "Auto";
+
+    case AppSpecCPP::EmergencyHeat:
+        return "Emergency Heat";
 
     case AppSpecCPP::Off:
     case AppSpecCPP::Emergency:

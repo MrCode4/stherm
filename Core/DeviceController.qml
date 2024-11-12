@@ -302,7 +302,12 @@ I_DeviceController {
             ProtoDataManager.setCurrentHeatingStage(currentHeatingStage);
             ProtoDataManager.setCurrentCoolingStage(currentCoolingStage);
         }
+
+        function onManualEmergencyModeUnblockedAfter(miliSecs: int) {
+            uiSession.remainigTimeToUnblockSystemMode = miliSecs;
+        }
     }
+
 
     property Connections networkInterface: Connections {
         target: NetworkInterface
@@ -702,6 +707,9 @@ I_DeviceController {
     signal zipCodeInfoReady(var error, bool isNeedRetry);
     signal customerInfoReady(var error, bool isNeedRetry);
 
+    //! Show emergency error popup
+    signal showEmergencyModeError();
+
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************");
         //! initialize the device and config
@@ -902,28 +910,49 @@ I_DeviceController {
         device.vacation.hum_max  = hum_max ;
     }
 
-    function setSystemModeTo(systemMode: int)
+    function setSystemModeTo(systemMode: int, force = false) : bool
     {
         if (device.systemSetup._isSystemShutoff) {
             console.log("Ignore system mode, system is shutoff by alert manager.")
-            return;
+            return false;
         }
 
         if (systemMode === AppSpecCPP.Vacation) {
             setVacationOn(true);
 
-        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.Off) {
+        } else if (systemMode >= 0 && systemMode < AppSpecCPP.SMUnknown) {
             //! TODo required actions if any
 
-            checkToUpdateSystemMode(systemMode);
-            updateEditMode(AppSpec.EMSystemMode);
-            // to let all dependant parameters being updated and save all
-            Qt.callLater(saveSettings);
+            if (checkToUpdateSystemMode(systemMode, force)) {
+                updateEditMode(AppSpec.EMSystemMode);
+                // to let all dependant parameters being updated and save all
+                Qt.callLater(saveSettings);
+
+            } else {
+                console.log("Core/DeviceController.qml, setSystemModeTo: Ignore system mode due to checkToUpdateSystemMode conditions. ", systemMode);
+                return false;
+            }
+
+        } else {
+            console.log("Core/DeviceController.qml, setSystemModeTo: Wrong system mode! ", systemMode);
+            return false;
         }
+
+        return true;
     }
 
-    function checkToUpdateSystemMode(systemMode: int) {
+    function checkToUpdateSystemMode(systemMode: int, force = false) {
+        // Block due to manual emergency heating.
+        if (!force && systemMode !== AppSpec.EmergencyHeat && uiSession.remainigTimeToUnblockSystemMode > 0) {
+
+            showEmergencyModeError();
+
+            console.log("Ignore system mode due to blocking of system mode changes by manual emergency heating.");
+            return false;
+        }
+
         device.systemSetup.systemMode = systemMode;
+        return true;
     }
 
     //! On/off the vacation from server.
@@ -1120,6 +1149,9 @@ I_DeviceController {
                 "heatPumpEmergency": device.systemSetup.heatPumpEmergency,
                 "systemRunDelay": device.systemSetup.systemRunDelay,
                 "dualFuelThreshold": device.systemSetup.dualFuelThreshod,
+                "emergencyMinimumTime": device.systemSetup.emergencyMinimumTime,
+                "emergencyControlType": device.systemSetup.emergencyControlType,
+                "emergencyTemperatureDifference": device.systemSetup.emergencyTemperatureDifference,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
@@ -1161,7 +1193,7 @@ I_DeviceController {
         } else {
             var modeInt = parseInt(mode_id) - 1;
             //! Vacation will be handled using setVacationServer
-            if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Off &&
+            if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Emergency &&
                     modeInt !== AppSpec.Vacation) {
                 checkToUpdateSystemMode(modeInt);
             }
@@ -1210,7 +1242,7 @@ I_DeviceController {
 
     function setSystemCoolingOnly(stage: int) {
         device.systemSetup.coolStage  = stage;
-        device.systemSetup.systemType = AppSpecCPP.CoolingOnly;
+        setSystemTypeTo(AppSpecCPP.CoolingOnly);
 
         if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== AppSpecCPP.Vacation)  {
             setSystemModeTo(AppSpecCPP.Cooling)
@@ -1219,26 +1251,35 @@ I_DeviceController {
 
     function setSystemHeatOnly(stage: int) {
         device.systemSetup.heatStage  = stage;
-        device.systemSetup.systemType = AppSpecCPP.HeatingOnly;
+        setSystemTypeTo(AppSpecCPP.HeatingOnly);
         if (device.systemSetup.systemMode !== AppSpecCPP.Off && device.systemSetup.systemMode !== AppSpecCPP.Vacation)  {
             setSystemModeTo(AppSpecCPP.Heating)
         }
     }
 
-    function setSystemHeatPump(emergency: bool, stage: int, obState: int) {
-        device.systemSetup.heatPumpEmergency = emergency;
+    function setSystemHeatPump(emergencyHeating: bool, stage: int, obState: int,
+                               emergencyMinimumTime: int, emergencyControlType: int,
+                               emergencyTemperatureDiffrence: real) {
+        device.systemSetup.heatPumpEmergency = emergencyHeating;
 
         // coolStage controls the Y wires.
         device.systemSetup.coolStage = stage;
 
         device.systemSetup.heatPumpOBState = obState;
-        device.systemSetup.systemType = AppSpecCPP.HeatPump;
+
+        device.systemSetup.emergencyMinimumTime = emergencyMinimumTime;
+        device.systemSetup.emergencyControlType = emergencyControlType;
+        device.systemSetup.emergencyTemperatureDiffrence = emergencyTemperatureDiffrence;
+
+        //! This function requires a valid emergencyControlType and heatPumpEmergency
+        //! so the emergencyControlType must be set before calling this function in the HeatPump type
+        setSystemTypeTo(AppSpecCPP.HeatPump);
     }
 
     function setSystemTraditional(coolStage: int, heatStage: int) {
         device.systemSetup.coolStage = coolStage;
         device.systemSetup.heatStage = heatStage;
-        device.systemSetup.systemType = AppSpecCPP.Conventional;
+        setSystemTypeTo(AppSpecCPP.Conventional);
     }
 
     function setSystemDualFuelHeating(emergency: bool, heatPumpStage: int, stage: int, obState: int, dualFuelThreshod: real) {
@@ -1251,9 +1292,31 @@ I_DeviceController {
         device.systemSetup.heatPumpOBState = obState;
 
         device.systemSetup.dualFuelThreshod = dualFuelThreshod;
-        device.systemSetup.systemType = AppSpec.DualFuelHeating;
+        setSystemTypeTo(AppSpec.DualFuelHeating);
     }
 
+    function setSystemTypeTo(systemType: int) {
+        device.systemSetup.systemType = systemType;
+
+        if (device.systemSetup.systemMode === AppSpecCPP.EmergencyHeat &&
+                (!device.systemSetup.heatPumpEmergency ||
+                 device.systemSetup.emergencyControlType !== AppSpec.ECTManually ||
+                systemType !== AppSpecCPP.HeatPump)) {
+            switch (systemType) {
+            case AppSpec.Conventional:
+            case AppSpec.HeatPump:
+            case AppSpec.HeatingOnly:
+            case AppSpec.DualFuelHeating: {
+                setSystemModeTo(AppSpecCPP.Heating, true);
+            } break;
+
+            case AppSpec.CoolingOnly: {
+                setSystemModeTo(AppSpecCPP.Cooling, true);
+
+            } break;
+            }
+        }
+    }
 
     function setSystemSetupServer(settings: var) {
 
@@ -1273,9 +1336,13 @@ I_DeviceController {
             setSystemTraditional(settings.coolStage, settings.heatStage);
         else if(settings.type === "heating")
             setSystemHeatOnly(settings.heatStage)
-        else if(settings.type === "heat_pump")
-            setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState)
-        else if(settings.type === "cooling")
+        else if(settings.type === "heat_pump") {
+            setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState,
+                              settings.emergencyMinimumTime ?? device.systemSetup.emergencyMinimumTime,
+                              settings.emergencyControlType ?? device.systemSetup.emergencyControlType,
+                              settings.emergencyTemperatureDifference ?? device.systemSetup.emergencyTemperatureDiffrence)
+
+        } else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
         else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
             setSystemDualFuelHeating(settings.heatPumpEmergency, settings.coolStage, settings.heatStage,

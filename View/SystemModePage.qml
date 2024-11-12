@@ -42,7 +42,7 @@ BasePageView {
     ColumnLayout {
         id: _buttonsLay
         anchors.centerIn: parent
-        width: parent.width * 0.5
+        width: parent.width * 0.65
         spacing: 12
 
         Button {
@@ -106,6 +106,28 @@ BasePageView {
                 if (_root.StackView.view) {
                     _root.StackView.view.push(_vacationPageCompo);
                 }
+            }
+        }
+
+        //! Emergency Heat
+        Button {
+            id: emergencyHeatButton
+
+            Layout.fillWidth: true
+            leftPadding: 24
+            rightPadding: 24
+            checkable: true
+
+            //! When users select Manual for emergency heating, an additional button labeled Emergency appears in the System Mode menu
+            visible: device?.systemSetup.systemType === AppSpec.HeatPump &&
+                     device?.systemSetup.emergencyControlType === AppSpec.ECTManually &&
+                     device?.systemSetup.heatPumpEmergency
+
+            checked: device?.systemSetup.systemMode === AppSpecCPP.EmergencyHeat  && !device?.systemSetup._isSystemShutoff
+            text: "Emergency Heat"
+
+            onClicked: {
+                checkAndUpdateSystemMode(AppSpecCPP.EmergencyHeat);
             }
         }
 
@@ -194,11 +216,16 @@ BasePageView {
         confirmPopup.accepted.disconnect(saveAndDisconnect.bind(this));
         confirmPopup.rejected.disconnect(rejectAndDisconnect);
 
-        // Back to state of the model
+        backToModel();
+    }
+
+    //! Back to state of the model
+    function backToModel() {
         _coolingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Cooling;
         _heatingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Heating;
         _autoButton.checked    = device?.systemSetup.systemMode === AppSpecCPP.Auto;
         _offButton.checked     = device?.systemSetup.systemMode === AppSpecCPP.Off;
+        emergencyHeatButton.checked  = device?.systemSetup.systemMode === AppSpecCPP.EmergencyHeat;
     }
 
     //! Save the systemMode and disconnect the confirmPopup
@@ -210,7 +237,9 @@ BasePageView {
 
     //! Update the system mode
     function save(systemMode : int) {
-        deviceController.setSystemModeTo(systemMode);
-        backButtonCallback();
+        if (deviceController.setSystemModeTo(systemMode))
+            backButtonCallback();
+        else
+            backToModel();
     }
 }

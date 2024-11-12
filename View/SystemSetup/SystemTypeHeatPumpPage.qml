@@ -14,10 +14,12 @@ BasePageView {
      * ****************************************************************************************/
     property bool initialSetup: false
 
+    property bool isFahrenheit: deviceController.temperatureUnit != AppSpec.TempratureUnit.Cel
+
     /* Object properties
      * ****************************************************************************************/
-    leftPadding: 48
-    rightPadding: 48
+    leftPadding: 10
+    rightPadding: 10
     title: "Heat Pump"
 
     /* Children
@@ -40,129 +42,329 @@ BasePageView {
         }
     }
 
-    //! Next button in initial setup flow
-    ButtonInverted {
-        text: "Next"
+    Flickable {
+        id: contentFlickable
 
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.rightMargin: -30
-        anchors.bottomMargin: 10
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width - 4
+            y: root.contentItem.y
+            parent: root
+            height: root.contentItem.height - 30
+        }
 
-        visible: initialSetup
-        leftPadding: 25
-        rightPadding: 25
+        anchors.fill: parent
+        anchors.rightMargin: 10
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        contentWidth: width
+        contentHeight: _contentCol.implicitHeight
 
-        onClicked: {
-           updateModel();
+        Behavior on contentY {
+            NumberAnimation {
+                duration: 250
+            }
+        }
 
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
+        ColumnLayout {
+            id: _contentCol
+
+            width: parent.width
+            height:  Math.max(_contentCol.implicitHeight, root.height * 0.85)
+            spacing: 8
+
+            RowLayout {
+                spacing: 24
+
+                Label {
+                    text: "Heat Pump Stages"
+                }
+
+                RowLayout {
+                    id: heatPumpStageLayout
+
+                    Layout.fillWidth: true
+
+                    property int heatPumpStage: 1
+
+
+                    RadioButton {
+                        checked: appModel.systemSetup.coolStage === Number(text)
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpStageLayout.heatPumpStage = Number(text);
+                        }
+
+                        text: "1"
+                    }
+
+                    RadioButton {
+                        checked: appModel.systemSetup.coolStage === Number(text)
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpStageLayout.heatPumpStage = Number(text);
+                        }
+
+                        text: "2"
+                    }
+                }
+            }
+
+            RowLayout {
+                id: heatPumpOBStateLayout
+
+                spacing: 24
+
+                property int heatPumpOBState: 1
+
+                Label {
+                    text: "O/B on State"
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    RadioButton {
+                        checked: appModel.systemSetup.heatPumpOBState === 0
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpOBStateLayout.heatPumpOBState = 0;
+                        }
+                        text: "Cool"
+                    }
+
+                    RadioButton {
+                        checked: appModel.systemSetup.heatPumpOBState === 1
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpOBStateLayout.heatPumpOBState = 1;
+                        }
+
+                        text: "Heat"
+                    }
+                }
+            }
+
+            //! Enables or disables emergency heating, meaning if the system is equipped with emergency heating (like heat stripes)
+            //! then toggle should be enabled.
+            RowLayout {
+                spacing: 24
+                Label {
+                    Layout.fillWidth: true
+                    text: "Emergency Heating"
+                }
+
+                Switch {
+                    id: emergencyHeatingSwh
+                    checked: appModel.systemSetup.heatPumpEmergency
+                }
+            }
+
+            ColumnLayout {
+                width: parent.width
+                spacing: 8
+
+                visible: emergencyHeatingSwh.checked
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 10
+
+                    text: "Set the minimum time for Emergency heat to run during the call."
+                    font.pointSize: Application.font.pointSize * 0.9
+                    wrapMode: Text.WordWrap
+                }
+
+                SingleIconSlider {
+                    id: emergencyMinimumTimeSlider
+
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 5
+                    Layout.rightMargin: 10
+                    Layout.topMargin: 10
+
+                    height: 90
+                    leftSideColor: "#9BD2F7"
+                    rightSideColor: "#484848"
+                    icon: FAIcons.clockThree
+                    iconSize: Qt.application.font.pointSize * 1.2
+                    showRange: false
+                    showTicks: true
+                    title: "min"
+                    control.stepSize: 1
+                    ticksCount: 3
+                    majorTickCount: 1
+                    from: 2
+                    to: 5
+                    snapMode: Slider.SnapAlways
+                    control.value: appModel.systemSetup.emergencyMinimumTime
+                }
+
+                CautionRectangle {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 10
+
+                    height: 70
+                    text: "Settings wrong runtime can cause system damage."
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 10
+
+                    text: "Would you like to control emergency heat manually or automatically (via thermostat)?"
+                    font.pointSize: Application.font.pointSize * 0.9
+                    wrapMode: Text.WordWrap
+                }
+
+                //! Auxiliary Control Type
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    //! Manual emenrgency: When users select Manual for emergency heating, an additional button labeled Emergency appears in the System Mode menu
+                    RadioButton {
+                        id: manuallyRB
+
+                        checked: appModel.systemSetup?.emergencyControlType !== AppSpecCPP.ECTAuto
+                        text: "Manually"
+                    }
+
+                    RadioButton {
+                        id: autoRB
+
+                        text: "Auto"
+                        checked: appModel.systemSetup?.emergencyControlType === AppSpecCPP.ECTAuto
+                    }
+                }
+
+                CautionRectangle {
+                    Layout.fillWidth: true
+                    height: 110
+
+                    visible: manuallyRB.checked
+                    text: "Emergency heat will only activate when Emergency is selected in system mode or when initiated by Defrost controller board (if equipped)."
+                    icon: FAIcons.circleInfo
+                    iconColor: "#94A3B8"
+                    contentFontSize: Application.font.pointSize * 0.7
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 10
+
+                    visible: autoRB.checked
+
+                    text: "Set the temperature difference between the set point and room temperature to engage emergency heat."
+                    font.pointSize: Application.font.pointSize * 0.9
+                    wrapMode: Text.WordWrap
+                }
+
+                SingleIconSlider {
+                    id: temperatureDiffSlider
+
+                    property real tempValue: value
+
+                    Layout.topMargin: 10
+                    Layout.leftMargin: 5
+                    Layout.rightMargin: 10
+
+                    visible: autoRB.checked
+                    leftSideColor: "#9BD2F7"
+                    rightSideColor: "#484848"
+                    icon: FAIcons.temperatureHigh
+                    iconSize: Qt.application.font.pointSize * 1.2
+                    showRange: false
+                    showTicks: true
+                    title: "Temp"
+                    ticksCount: isFahrenheit? 18 : 12
+                    majorTickCount: isFahrenheit ? 3 : 2
+                    from: isFahrenheit ? 2 : 1.0
+                    to:   isFahrenheit ? 3.8 : 2.2
+                    labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
+                    scaleValue: 10
+                    control.stepSize: 0.1 * scaleValue
+                    snapMode: Slider.SnapAlways
+                    control.value:  appModel.systemSetup.emergencyTemperatureDiffrence * (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1) * scaleValue
+                    control.onPressedChanged: {
+                        if (!control.pressed) {
+                            tempValue = value.toFixed(1);
+                            flickToBottomTimer.start();
+                        }
+                    }
+                }
+
+                CautionRectangle {
+                    id: temperatureDiffCaution
+
+                    Layout.topMargin: 15
+                    Layout.fillWidth: true
+
+                    visible: autoRB.checked && (temperatureDiffSlider.tempValue  !== (isFahrenheit ? AppSpec.defaultEmergencyTemperatureDiffrenceF :
+                                                                               AppSpec.defaultEmergencyTemperatureDiffrenceC))
+
+                    height: 90
+                    text: `Using the emergency heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    height: 20
+                }
+
+            }
+
+            Item {
+                id: spacer
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+
+            //! Next button in initial setup flow
+            ButtonInverted {
+                text: "Next"
+
+                Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+                Layout.rightMargin: 10
+                Layout.bottomMargin: 10
+
+                visible: initialSetup
+                leftPadding: 25
+                rightPadding: 25
+
+                onClicked: {
+                    updateModel();
+
+                    if (root.StackView.view) {
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup
+                                                 });
+                    }
+                }
             }
         }
     }
 
-    ColumnLayout {
-        anchors.centerIn: parent
-        width: parent.width
-        spacing: 16
+    //! Timer to move the flickable to bottom
+    //! Ensure to contentHeight is up-to-date.
+    Timer {
+        id: flickToBottomTimer
 
-        RowLayout {
-            spacing: 24
-            Label {
-                Layout.fillWidth: true
-                text: "Emergency Heating"
-            }
-
-            Switch {
-                id: _emergencyHeatingSwh
-
-                checked: appModel.systemSetup.heatPumpEmergency
-            }
-        }
-
-        RowLayout {
-            spacing: 24
-
-            Label {
-                Layout.fillWidth: true
-                text: "Heat Pump Stages"
-            }
-
-            RowLayout {
-                id: heatPumpStageLayout
-
-                Layout.fillWidth: false
-
-                property int heatPumpStage: 1
-
-
-                RadioButton {
-                    checked: appModel.systemSetup.coolStage === Number(text)
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpStageLayout.heatPumpStage = Number(text);
-                    }
-
-                    text: "1"
-                }
-
-                RadioButton {
-                    checked: appModel.systemSetup.coolStage === Number(text)
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpStageLayout.heatPumpStage = Number(text);
-                    }
-
-                    text: "2"
-                }
-            }
-        }
-
-        RowLayout {
-            id: heatPumpOBStateLayout
-
-            spacing: 24
-
-            property int heatPumpOBState: 1
-
-            Label {
-                text: "O/B on State"
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-
-                RadioButton {
-                    checked: appModel.systemSetup.heatPumpOBState === 0
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpOBStateLayout.heatPumpOBState = 0;
-                    }
-                    text: "Cool"
-                }
-
-                RadioButton {
-                    checked: appModel.systemSetup.heatPumpOBState === 1
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpOBStateLayout.heatPumpOBState = 1;
-                    }
-
-                    text: "Heat"
-                }
-            }
+        interval: 50
+        repeat: false
+        running: false
+        onTriggered: {
+              contentFlickable.contentY  = contentFlickable.contentHeight - contentFlickable.height;
         }
     }
 
     function updateModel() {
         if (deviceController) {
-            deviceController.setSystemHeatPump(_emergencyHeatingSwh.checked,
+            deviceController.setSystemHeatPump(emergencyHeatingSwh.checked,
                                                heatPumpStageLayout.heatPumpStage,
-                                               heatPumpOBStateLayout.heatPumpOBState)
+                                               heatPumpOBStateLayout.heatPumpOBState,
+                                               emergencyMinimumTimeSlider.value,
+                                               autoRB.checked ? AppSpecCPP.ECTAuto : AppSpecCPP.ECTManually,
+                                               temperatureDiffSlider.value / (isFahrenheit ? 1.8 : 1))
         }
     }
 
