@@ -108,8 +108,6 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         TRACE_CHECK(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureChanged" << mDataProvider->effectiveSystemMode() ;
         checkForRestartDualFuel();
     });
-
-    mManualEmergencyChecked = false;
 }
 
 void Scheme::stop()
@@ -146,8 +144,6 @@ Scheme::~Scheme()
 
 void Scheme::restartWork(bool forceStart)
 {
-    mManualEmergencyChecked = false;
-
     if (isRunning()) {
         TRACE << "restarting HVAC" << stopWork;
         if (stopWork) // restart is already in progress
@@ -905,7 +901,7 @@ void Scheme::manualEmergencyHeating()
     // This will restrict the activation of emergency heating to instances
     // where there's a significant change in temperature to met the temperature conditions.
     if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
-        mManualEmergencyChecked && mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() <= mDataProvider->effectiveEmergencyHeatingThresholdF()) {
+        mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() <= mDataProvider->effectiveEmergencyHeatingThresholdF()) {
         TRACE << "System should be off, the conditions are not changed!";
         return;
     }
@@ -945,7 +941,6 @@ void Scheme::emergencyHeatingLoop()
         auto emergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000;
 
         if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
-            mManualEmergencyChecked = true;
             if (emergencyMinimumTimeMS > mTEONTimer.elapsed()) {
                 emit manualEmergencyModeUnblockedAfter(emergencyMinimumTimeMS - mTEONTimer.elapsed());
 

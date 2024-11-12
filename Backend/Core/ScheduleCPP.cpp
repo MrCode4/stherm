@@ -22,7 +22,7 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     // Invalid id
     id   = -1;
 
-    // Off
+    // Auto
     systemMode = AppSpecCPP::SystemMode::Auto;
 }
 
