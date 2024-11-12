@@ -63,13 +63,6 @@ AppSpecCPP {
     //! Percent
     property int defaultVolume:     50
 
-    //! Celcius
-    property real defaultEmergencyTemperatureDiffrenceC: 1.6
-
-    //! Fahrenheit
-    property real defaultEmergencyTemperatureDiffrenceF: 2.9
-
-
     //! To improve efficiency, we should delete any messages that exceed
     //! the maximum limit of messagesLimit messages.
     property int messagesLimits: 50

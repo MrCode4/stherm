@@ -918,7 +918,7 @@ I_DeviceController {
         if (systemMode === AppSpecCPP.Vacation) {
             setVacationOn(true);
 
-        } else if (systemMode >= 0 && systemMode <= AppSpecCPP.EmergencyHeat) {
+        } else if (systemMode >= 0 && systemMode < AppSpecCPP.SMUnknown) {
             //! TODo required actions if any
 
             if (checkToUpdateSystemMode(systemMode)) {
@@ -927,11 +927,12 @@ I_DeviceController {
                 Qt.callLater(saveSettings);
 
             } else {
+                console.log("Core/DeviceController.qml, setSystemModeTo: Ignore system mode due to checkToUpdateSystemMode conditions. ", systemMode);
                 return false;
             }
 
         } else {
-            console.log("Wrong systenm mode!", systemMode);
+            console.log("Core/DeviceController.qml, setSystemModeTo: Wrong system mode! ", systemMode);
             return false;
         }
 

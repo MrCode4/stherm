@@ -397,7 +397,7 @@ void Scheme::HeatingLoop()
         // get time threshold ETime
         if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
             emit actualModeStarted(AppSpecCPP::Heating);
-            if (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThreshold()) {
+            if (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF()) {
                 TRACE << "Emergency";
                 emergencyHeating();
             } else {
@@ -897,8 +897,9 @@ void Scheme::emergencyHeating()
         return;
     }
 
+    // Optimize emergency mode to prevent unnecessary backlight and heating activation.
     if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
-        mManualEmergencyChecked && mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() <= mDataProvider->effectiveEmergencyHeatingThreshold()) {
+        mManualEmergencyChecked && mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() <= mDataProvider->effectiveEmergencyHeatingThresholdF()) {
         TRACE << "System should be off, the conditions are not changed!";
         return;
     }
@@ -917,12 +918,13 @@ void Scheme::emergencyHeating()
 
     TRACE << "Emergency heating - " << "effectiveTemperature:"
           << mDataProvider->effectiveTemperature() << "- currentTemperature:" << mDataProvider->currentTemperature()
-          << " - effectiveEmergencyHeatingThreshold:" << mDataProvider->effectiveEmergencyHeatingThreshold();
+          << " - effectiveEmergencyHeatingThreshold:" << mDataProvider->effectiveEmergencyHeatingThresholdF();
 
 
-    while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThreshold() ||
+    while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF() ||
            mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
 
+        // Disable UI interactions during manual emergency mode until the minimum duration is reached.
         auto emergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000;
         if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
             emergencyMinimumTimeMS > mTEONTimer.elapsed()) {

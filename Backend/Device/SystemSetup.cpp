@@ -23,8 +23,8 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     dualFuelThreshod = 1.666667; // 35 Fahrenheit
 
     //! Initialize emergency properties
-    emergencyMinimumTime = 2;
+    emergencyMinimumTime = AppSpecCPP::defaultEmergencyMinimumTime();
     emergencyControlType = AppSpecCPP::ECTManually;
-    emergencyTemperatureDiffrence = 1.6;
+    emergencyTemperatureDiffrence = AppSpecCPP::defaultEmergencyTemperatureDiffrenceC();
 
 }

@@ -18,6 +18,18 @@ AppSpecCPP *AppSpecCPP::instance()
     return mInstance;
 }
 
+double AppSpecCPP::defaultEmergencyTemperatureDiffrenceF() {
+    return 2.9;
+}
+
+double AppSpecCPP::defaultEmergencyTemperatureDiffrenceC() {
+    return 1.6;
+}
+
+int AppSpecCPP::defaultEmergencyMinimumTime() {
+    return 2;
+}
+
 QString AppSpecCPP::systemTypeString(SystemType systemType) {
     switch (systemType) {
     case Conventional:

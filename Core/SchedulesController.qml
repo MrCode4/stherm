@@ -65,7 +65,7 @@ QtObject {
         setSchduleMode(newSchedule, device.systemSetup.systemMode);
 
         // Update the created schedule with the current system mode
-        newSchedule.systemMode = device.systemSetup.systemMode;
+        setSchduleMode(newSchedule, device.systemSetup.systemMode)
 
         device.schedules.push(newSchedule);
         device.schedulesChanged();
@@ -363,7 +363,6 @@ QtObject {
         //! find the active schedule
         let currentSchedule = deviceCurrentSchedules.find(
                 schedule => {
-                    now.setDate()
                     //! Compare time and running days to start it.
                     if (schedule.scheduleElement.enable &&
                         schedule.runningDays.includes(currentDate)) {
