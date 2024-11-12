@@ -910,7 +910,7 @@ I_DeviceController {
         device.vacation.hum_max  = hum_max ;
     }
 
-    function setSystemModeTo(systemMode: int, force = false) : bool
+    function setSystemModeTo(systemMode: int, force = false, isHeatingAUX = false) : bool
     {
         if (device.systemSetup._isSystemShutoff) {
             console.log("Ignore system mode, system is shutoff by alert manager.")
@@ -923,7 +923,7 @@ I_DeviceController {
         } else if (systemMode >= 0 && systemMode < AppSpecCPP.SMUnknown) {
             //! TODo required actions if any
 
-            if (checkToUpdateSystemMode(systemMode, force)) {
+            if (checkToUpdateSystemMode(systemMode, force, isHeatingAUX)) {
                 updateEditMode(AppSpec.EMSystemMode);
                 // to let all dependant parameters being updated and save all
                 Qt.callLater(saveSettings);
@@ -941,7 +941,7 @@ I_DeviceController {
         return true;
     }
 
-    function checkToUpdateSystemMode(systemMode: int, force = false) {
+    function checkToUpdateSystemMode(systemMode: int, force = false, isHeatingAUX = false) {
         // Block due to manual emergency heating.
         if (!force && systemMode !== AppSpec.EmergencyHeat && uiSession.remainigTimeToUnblockSystemMode > 0) {
 
@@ -952,6 +952,11 @@ I_DeviceController {
         }
 
         device.systemSetup.systemMode = systemMode;
+
+        //! Igonre to update isHeatingAUX when system type is not dual fuel
+        if (device.systemSetup.systemType === AppSpec.DualFuelHeating)
+            device.systemSetup.isHeatingAUX = isHeatingAUX;
+
         return true;
     }
 
@@ -1307,11 +1312,11 @@ I_DeviceController {
             case AppSpec.HeatPump:
             case AppSpec.HeatingOnly:
             case AppSpec.DualFuelHeating: {
-                setSystemModeTo(AppSpecCPP.Heating, true);
+                setSystemModeTo(AppSpecCPP.Heating, true, device.systemSetup.isHeatingAUX);
             } break;
 
             case AppSpec.CoolingOnly: {
-                setSystemModeTo(AppSpecCPP.Cooling, true);
+                setSystemModeTo(AppSpecCPP.Cooling, true, device.systemSetup.isHeatingAUX);
 
             } break;
             }

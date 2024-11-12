@@ -66,9 +66,44 @@ BasePageView {
             leftPadding: 24
             rightPadding: 24
             checkable: true
+            visible: device?.systemSetup.systemType !== AppSpec.DualFuelHeating || device?.systemSetup.isAUXAuto
             checked: device?.systemSetup.systemMode === AppSpecCPP.Heating
             enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Heating"
+
+            onClicked: {
+                checkAndUpdateSystemMode(AppSpecCPP.Heating);
+            }
+        }
+
+        //! Heating by heat pump
+        Button {
+            id: _heatingHeatPumpButton
+            Layout.fillWidth: true
+            leftPadding: 24
+            rightPadding: 24
+            checkable: true
+            visible:  device?.systemSetup.systemType === AppSpec.DualFuelHeating && !device?.systemSetup.isAUXAuto
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Heating && !device?.systemSetup.isHeatingAUX
+            enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
+            text: "Heating (Heat pump)"
+
+            onClicked: {
+                checkAndUpdateSystemMode(AppSpecCPP.Heating);
+            }
+        }
+
+        //!  Heating by AUX
+        Button {
+            id: _heatingAuxButton
+            Layout.fillWidth: true
+            leftPadding: 24
+            rightPadding: 24
+            checkable: true
+            visible:  device?.systemSetup.systemType === AppSpec.DualFuelHeating && !device?.systemSetup.isAUXAuto
+            checked: device?.systemSetup.systemMode === AppSpecCPP.Heating && device?.systemSetup.isHeatingAUX
+            enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
+            text: "Heating (Aux)"
 
             onClicked: {
                 checkAndUpdateSystemMode(AppSpecCPP.Heating);
@@ -222,10 +257,12 @@ BasePageView {
     //! Back to state of the model
     function backToModel() {
         _coolingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Cooling;
-        _heatingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Heating;
+        _heatingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Heating && _heatingButton.visible;
         _autoButton.checked    = device?.systemSetup.systemMode === AppSpecCPP.Auto;
         _offButton.checked     = device?.systemSetup.systemMode === AppSpecCPP.Off;
         emergencyHeatButton.checked  = device?.systemSetup.systemMode === AppSpecCPP.EmergencyHeat;
+        _heatingHeatPumpButton.checked  = device?.systemSetup.systemMode === AppSpecCPP.Heating && _heatingHeatPumpButton.visible;
+        _heatingAuxButton.checked  = device?.systemSetup.systemMode === AppSpecCPP.Heating && _heatingAuxButton.visible;
     }
 
     //! Save the systemMode and disconnect the confirmPopup
@@ -237,7 +274,7 @@ BasePageView {
 
     //! Update the system mode
     function save(systemMode : int) {
-        if (deviceController.setSystemModeTo(systemMode))
+        if (deviceController.setSystemModeTo(systemMode, false, _heatingAuxButton.checked))
             backButtonCallback();
         else
             backToModel();

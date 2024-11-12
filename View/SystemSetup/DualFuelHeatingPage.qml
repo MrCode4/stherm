@@ -12,7 +12,7 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property bool initialSetup: true
+    property bool initialSetup: false
 
     property bool isCelsius: deviceController.temperatureUnit === AppSpec.Cel
 

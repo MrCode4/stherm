@@ -31,6 +31,7 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(bool isVacation        MEMBER isVacation        NOTIFY isVacationChanged FINAL)
     Q_PROPERTY(bool _isSystemShutoff  MEMBER _mIsSystemShutoff NOTIFY isSystemShutoffChanged FINAL)
     Q_PROPERTY(bool isAUXAuto  MEMBER isAUXAuto NOTIFY isAUXAutoChanged FINAL)
+    Q_PROPERTY(bool isHeatingAUX  MEMBER isHeatingAUX NOTIFY isHeatingAUXChanged FINAL)
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
@@ -69,6 +70,7 @@ public:
     double dualFuelThreshod;
 
     bool   isAUXAuto;
+    bool   isHeatingAUX;
 
     //! Emergency properties
     //! In minutes
@@ -95,5 +97,6 @@ signals:
     void emergencyMinimumTimeChanged();
     void emergencyControlTypeChanged();
     void isAUXAutoChanged();
+    void isHeatingAUXChanged();
 
 };
