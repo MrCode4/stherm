@@ -12,7 +12,7 @@ BasePageView {
 
     /* Property declaration
      * ****************************************************************************************/
-    property bool initialSetup: false
+    property bool initialSetup: true
 
     property bool isCelsius: deviceController.temperatureUnit === AppSpec.Cel
 
@@ -44,251 +44,272 @@ BasePageView {
         }
     }
 
-    //! Next button in initial setup flow
-    ButtonInverted {
-        text: "Next"
+    Flickable {
+        id: contentFlickable
 
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
+        ScrollIndicator.vertical: ScrollIndicator {
+            x: parent.width - width - 4
+            y: root.contentItem.y
+            parent: root
+            height: root.contentItem.height - 30
+        }
+
+        anchors.fill: parent
         anchors.rightMargin: 10
-        anchors.bottomMargin: 10
-
-        visible: initialSetup
-        leftPadding: 25
-        rightPadding: 25
-
-        onClicked: {
-           updateModel();
-
-            if (root.StackView.view) {
-                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
-                                              "uiSession": uiSession,
-                                             "initialSetup": root.initialSetup
-                                          });
-            }
-        }
-    }
-
-    ColumnLayout {
-        // anchors.centerIn: parent
-        anchors.top: parent.top
-        width: parent.width
-        spacing: initialSetup ? -5 : 4
-
-        //! Emergency Heating
-        RowLayout {
-            spacing: 24
-            Label {
-                Layout.fillWidth: true
-                text: "Emergency Heating"
-            }
-
-            Switch {
-                id: emergencyHeatingSwh
-
-                checked: appModel.systemSetup.heatPumpEmergency
-            }
-        }
-
-
-        //! Emergency Heat Stages
-        RowLayout {
-            spacing: 24
-
-            visible: false
-            Label {
-                Layout.fillWidth: true
-                text: "Em. Heat Stages"
-            }
-
-            RowLayout {
-                id: emHeatStageLayout
-
-                Layout.fillWidth: false
-
-                property int emHeatStage: 1
-
-
-                RadioButton {
-                    // checked: appModel.systemSetup.heatStage === Number(text)
-                    onCheckedChanged: {
-                        if (checked)
-                            emHeatStageLayout.emHeatStage = Number(text);
-                    }
-
-                    text: "1"
-                }
-
-                RadioButton {
-                    // checked: appModel.systemSetup.heatStage === Number(text)
-                    onCheckedChanged: {
-                        if (checked)
-                            emHeatStageLayout.emHeatStage = Number(text);
-                    }
-
-                    text: "2"
-                }
-            }
-        }
-
-        //! Heat Pump Stages
-        RowLayout {
-            spacing: 24
-
-            Label {
-                Layout.fillWidth: true
-                text: "Heat Pump Stages"
-            }
-
-            RowLayout {
-                id: heatPumpStageLayout
-
-                Layout.fillWidth: false
-
-                property int heatPumpStage: 1
-
-
-                RadioButton {
-                    checked: appModel.systemSetup.coolStage === Number(text)
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpStageLayout.heatPumpStage = Number(text);
-                    }
-
-                    text: "1"
-                }
-
-                RadioButton {
-                    checked: appModel.systemSetup.coolStage === Number(text)
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpStageLayout.heatPumpStage = Number(text);
-                    }
-
-                    text: "2"
-                }
-            }
-        }
-
-        //! O/B on State
-        RowLayout {
-            id: heatPumpOBStateLayout
-
-            spacing: 24
-
-            property int heatPumpOBState: 1
-
-            Label {
-                text: "O/B on State"
-            }
-
-            Item {
-
-                Layout.fillWidth: true
-                height: parent.height
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-
-                RadioButton {
-                    checked: appModel.systemSetup.heatPumpOBState === 0
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpOBStateLayout.heatPumpOBState = 0;
-                    }
-                    text: "Cool"
-                }
-
-                RadioButton {
-                    checked: appModel.systemSetup.heatPumpOBState === 1
-                    onCheckedChanged: {
-                        if (checked)
-                            heatPumpOBStateLayout.heatPumpOBState = 1;
-                    }
-
-                    text: "Heat"
-                }
-            }
-        }
-
-
-        //! Furnace Stages
-        RowLayout {
-            spacing: 24
-
-            Label {
-                Layout.fillWidth: true
-                text: "Furnace Stages"
-            }
-
-            RowLayout {
-                id: furnaceStageLayout
-
-                Layout.fillWidth: false
-
-                property int furnaceStage: 1
-
-
-                RadioButton {
-                    checked: appModel.systemSetup.heatStage !== 2
-                    onCheckedChanged: {
-                        if (checked)
-                            furnaceStageLayout.furnaceStage = Number(text);
-                    }
-
-                    text: "1"
-                }
-
-                RadioButton {
-                    checked: appModel.systemSetup.heatStage === Number(text)
-                    onCheckedChanged: {
-                        if (checked)
-                            furnaceStageLayout.furnaceStage = Number(text);
-                    }
-
-                    text: "2"
-                }
-            }
-        }
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
+        contentWidth: width
+        contentHeight: _contentCol.implicitHeight
 
         ColumnLayout {
+            id: _contentCol
 
-            Layout.fillWidth: true
+            width: parent.width
+            height:  Math.max(_contentCol.implicitHeight, root.height * 0.85)
+            spacing: 8
+            // spacing: initialSetup ? -5 : 4
+
+
+            //! Heat Pump Stages
+            RowLayout {
+                spacing: 24
+
+                Label {
+                    Layout.fillWidth: true
+                    text: "Heat Pump Stages"
+                }
+
+                RowLayout {
+                    id: heatPumpStageLayout
+
+                    Layout.fillWidth: false
+
+                    property int heatPumpStage: 1
+
+
+                    RadioButton {
+                        checked: appModel.systemSetup.coolStage === Number(text)
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpStageLayout.heatPumpStage = Number(text);
+                        }
+
+                        text: "1"
+                    }
+
+                    RadioButton {
+                        checked: appModel.systemSetup.coolStage === Number(text)
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpStageLayout.heatPumpStage = Number(text);
+                        }
+
+                        text: "2"
+                    }
+                }
+            }
+
+            //! O/B on State
+            RowLayout {
+                id: heatPumpOBStateLayout
+
+                spacing: 24
+
+                property int heatPumpOBState: 1
+
+                Label {
+                    text: "O/B on State"
+                }
+
+                Item {
+
+                    Layout.fillWidth: true
+                    height: parent.height
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    RadioButton {
+                        checked: appModel.systemSetup.heatPumpOBState === 0
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpOBStateLayout.heatPumpOBState = 0;
+                        }
+                        text: "Cool"
+                    }
+
+                    RadioButton {
+                        checked: appModel.systemSetup.heatPumpOBState === 1
+                        onCheckedChanged: {
+                            if (checked)
+                                heatPumpOBStateLayout.heatPumpOBState = 1;
+                        }
+
+                        text: "Heat"
+                    }
+                }
+            }
+
+
+            //! Auxiliary Stages
+            RowLayout {
+                spacing: 24
+
+                Label {
+                    Layout.fillWidth: true
+                    text: "Auxiliary Stages"
+                }
+
+                RowLayout {
+                    id: auxStageLayout
+
+                    Layout.fillWidth: false
+
+                    property int auxStage: 1
+
+
+                    RadioButton {
+                        checked: appModel.systemSetup.heatStage !== 2
+                        onCheckedChanged: {
+                            if (checked)
+                                auxStageLayout.auxStage = Number(text);
+                        }
+
+                        text: "1"
+                    }
+
+                    RadioButton {
+                        checked: appModel.systemSetup.heatStage === Number(text)
+                        onCheckedChanged: {
+                            if (checked)
+                                auxStageLayout.auxStage = Number(text);
+                        }
+
+                        text: "2"
+                    }
+
+                    RadioButton {
+                        checked: appModel.systemSetup.heatStage === Number(text)
+                        onCheckedChanged: {
+                            if (checked)
+                                auxStageLayout.auxStage = Number(text);
+                        }
+
+                        text: "3"
+                    }
+                }
+            }
 
             Label {
                 Layout.fillWidth: true
-                text: "Use furnace to heat when temperature outside is below"
+                Layout.topMargin: 10
+
+                text: "Do you want the thermostat to automatically switch over to auxiliary heat?"
+                font.pointSize: Application.font.pointSize * 0.9
                 wrapMode: Text.WordWrap
-                font.pointSize: Qt.application.font.pointSize * 0.9
             }
 
-            SingleIconSlider {
-                id: temperature
+            //! Auxiliary Control Type
+            RowLayout {
+                Layout.fillWidth: true
+
+                //! Manual emenrgency: When users select Manual for emergency heating, an additional button labeled Emergency appears in the System Mode menu
+                RadioButton {
+                    id: yesAutoRB
+
+                    checked: appModel.systemSetup?.isAUXAuto ?? true
+                    text: "Yes"
+                }
+
+                RadioButton {
+                    id: noAutoRB
+
+                    text: "No"
+                    checked: !(appModel.systemSetup?.isAUXAuto ?? true)
+                }
+            }
+
+            ColumnLayout {
 
                 Layout.fillWidth: true
 
-                icon: FAIcons.temperatureThreeQuarters
-                labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
-                from: isCelsius ? Utils.fahrenheitToCelsius(AppSpec.minimumDualFuelThresholdF) : AppSpec.minimumDualFuelThresholdF;
-                to:   isCelsius ? Utils.fahrenheitToCelsius(AppSpec.maximumDualFuelThresholdF) : AppSpec.maximumDualFuelThresholdF;
+                visible: yesAutoRB.checked
 
-                control.value: Utils.convertedTemperature(appModel.systemSetup.dualFuelThreshod, deviceController.temperatureUnit);
+                Label {
+                    Layout.fillWidth: true
+                    text: "Use auxiliary to heat when temperature outside is below"
+                    wrapMode: Text.WordWrap
+                    font.pointSize: Qt.application.font.pointSize * 0.9
+                }
+
+                SingleIconSlider {
+                    id: temperature
+
+                    Layout.fillWidth: true
+
+                    icon: FAIcons.temperatureThreeQuarters
+                    labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
+                    from: isCelsius ? Utils.fahrenheitToCelsius(AppSpec.minimumDualFuelThresholdF) : AppSpec.minimumDualFuelThresholdF;
+                    to:   isCelsius ? Utils.fahrenheitToCelsius(AppSpec.maximumDualFuelThresholdF) : AppSpec.maximumDualFuelThresholdF;
+
+                    control.value: Utils.convertedTemperature(appModel.systemSetup.dualFuelThreshod, deviceController.temperatureUnit);
+                }
+            }
+
+            CautionRectangle {
+                Layout.topMargin: 15
+                Layout.fillWidth: true
+
+                visible: noAutoRB.checked
+                icon: FAIcons.circleInfo
+                iconColor: "#94A3B8"
+                height: 90
+                text: "The auxiliary (Aux) can be only used when manually selected form system mode."
+            }
+
+
+            Item {
+                Layout.fillWidth: true
+                height: 20
+            }
+
+            //! Next button in initial setup flow
+            ButtonInverted {
+                text: "Next"
+
+                Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+                Layout.rightMargin: 10
+                Layout.bottomMargin: 10
+
+                visible: initialSetup
+                leftPadding: 25
+                rightPadding: 25
+
+                onClicked: {
+                    updateModel();
+
+                    if (root.StackView.view) {
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemAccessoriesPage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup
+                                                 });
+                    }
+                }
             }
         }
     }
-
     /* Functions
      * ****************************************************************************************/
 
     function updateModel() {
         if (deviceController) {
             var temperatureC = isCelsius ? temperature.control.value : Utils.fahrenheitToCelsius(temperature.control.value);
-            deviceController.setSystemDualFuelHeating(emergencyHeatingSwh.checked,
-                                                      heatPumpStageLayout.heatPumpStage,
-                                                      furnaceStageLayout.furnaceStage,
+            deviceController.setSystemDualFuelHeating(heatPumpStageLayout.heatPumpStage,
+                                                      auxStageLayout.auxStage,
                                                       heatPumpOBStateLayout.heatPumpOBState,
-                                                      temperatureC)
+                                                      temperatureC,
+                                                      yesAutoRB.checked)
         }
     }
 

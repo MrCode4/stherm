@@ -1282,8 +1282,8 @@ I_DeviceController {
         setSystemTypeTo(AppSpecCPP.Conventional);
     }
 
-    function setSystemDualFuelHeating(emergency: bool, heatPumpStage: int, stage: int, obState: int, dualFuelThreshod: real) {
-        device.systemSetup.heatPumpEmergency = emergency;
+    function setSystemDualFuelHeating(heatPumpStage: int, stage: int, obState: int, dualFuelThreshod: real, isAUXAuto: bool) {
+        device.systemSetup.isAUXAuto = isAUXAuto;
 
         // coolStage controls the Y wires.
         device.systemSetup.coolStage = heatPumpStage;

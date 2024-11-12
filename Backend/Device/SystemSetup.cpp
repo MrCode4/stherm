@@ -21,6 +21,7 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     _mIsSystemShutoff = false;
 
     dualFuelThreshod = 1.666667; // 35 Fahrenheit
+    isAUXAuto = true;
 
     //! Initialize emergency properties
     emergencyMinimumTime = AppSpecCPP::defaultEmergencyMinimumTime();
