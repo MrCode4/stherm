@@ -52,9 +52,6 @@ public:
     Q_INVOKABLE void setCurrentFanStatus(const bool &fanStatus);
     Q_INVOKABLE void setLedStatus(const bool &ledStatus);
 
-
-signals:
-
 private:
     LiveDataPoint *addNewPoint();
 

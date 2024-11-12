@@ -461,3 +461,31 @@ void Relay::setRelaysLast(STHERM::RelayConfigs last)
 {
     mRelayLast = last;
 }
+
+int Relay::currentCoolingStage() {
+    int currentCoolingStage = 0;
+    if (currentState() == AppSpecCPP::SystemMode::Cooling) {
+        currentCoolingStage = (mRelay.y1 == STHERM::RelayMode::ON) +
+                              (mRelay.y2 == STHERM::RelayMode::ON);
+    }
+
+    return currentCoolingStage;
+}
+
+int Relay::currentHeatingStage() {
+    int currentHeatingStage = 0;
+    if (currentState() == AppSpecCPP::SystemMode::Heating) {
+        currentHeatingStage = (mRelay.y1 == STHERM::RelayMode::ON) +
+                              (mRelay.y2 == STHERM::RelayMode::ON) +
+                              (mRelay.w1 == STHERM::RelayMode::ON) +
+                              (mRelay.w2 == STHERM::RelayMode::ON) +
+                              (mRelay.w3 == STHERM::RelayMode::ON);
+
+        // Just for safty
+        if (currentHeatingStage > 3) {
+            currentHeatingStage = 3;
+        }
+    }
+
+    return currentHeatingStage;
+}

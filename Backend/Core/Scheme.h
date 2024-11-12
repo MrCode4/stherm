@@ -53,7 +53,7 @@ signals:
 
     void alert();
 
-    void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
+    void currentSystemModeChanged(AppSpecCPP::SystemMode obState, int currentHeatingStage, int currentCoolingStage);
 
     //! Start system delay timer in ui to show in home page
     //! delay: miliseconds

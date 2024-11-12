@@ -224,7 +224,7 @@ Q_SIGNALS:
     void nrfUpdateStarted();
 
     void fanWorkChanged(bool fanState);
-    void currentSystemModeChanged(AppSpecCPP::SystemMode fanState);
+    void currentSystemModeChanged(AppSpecCPP::SystemMode obState, int currentHeatingStage, int currentCoolingStage);
 
     //! Active system mode changed due to dual fuel heating
     void dfhSystemTypeChanged(AppSpecCPP::SystemType activeSystemType);

@@ -62,6 +62,9 @@ I_DeviceController {
     //! Active system mode in dual fuel heating
     property int dfhSystemType: AppSpec.SysTUnknown
 
+    //! Current active system mode.
+    property int activeSystemMode: AppSpec.Off
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -293,9 +296,11 @@ I_DeviceController {
             ProtoDataManagerCPP.setCurrentFanStatus(fanState);
         }
 
-        function onCurrentSystemModeChanged(state: int) {
-            ProtoDataManagerCPP.setCurrentCoolingStage(state === AppSpec.Cooling ? device.systemSetup.coolStage : 0);
-            ProtoDataManagerCPP.setCurrentHeatingStage(state === AppSpec.Heating ? device.systemSetup.heatStage : 0);
+        function onCurrentSystemModeChanged(state: int, currentHeatingStage: int, currentCoolingStage: int) {
+            activeSystemMode = state;
+
+            ProtoDataManagerCPP.setCurrentHeatingStage(currentHeatingStage);
+            ProtoDataManagerCPP.setCurrentCoolingStage(currentCoolingStage);
         }
     }
 

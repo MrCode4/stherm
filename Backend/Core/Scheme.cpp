@@ -986,7 +986,9 @@ void Scheme::sendRelays(bool forceSend)
         emit updateRelays(relaysConfig);
     }
 
-    emit currentSystemModeChanged(mRelay->currentState());
+    emit currentSystemModeChanged(mRelay->currentState(),
+                                  mRelay->currentHeatingStage(),
+                                  mRelay->currentCoolingStage());
 
     TRACE_CHECK(false) << "finished";
 
