@@ -124,7 +124,7 @@ ItemDelegate {
                         schedule.enable = checked;
                         if (checked) {
                             // Update system mode
-                            schedulesController.setSchduleMode(schedule, uiSession.appModel.systemSetup.systemMode);
+                            updateScheduleMode(schedule, uiSession.appModel.systemSetup.systemMode);
                         }
 
                         uiSession.appModel.schedulesChanged();
@@ -146,7 +146,7 @@ ItemDelegate {
             //! Delete button
             ToolButton {
                 contentItem: RoniaTextIcon {
-                    text: "\uf2ed"
+                    text: FAIcons.trashCan
                 }
 
                 onClicked: {
@@ -257,7 +257,7 @@ ItemDelegate {
         if (schedule?.enable === false) {
             schedule.enable = true;
             // Update system mode
-            schedulesController.setSchduleMode(schedule, uiSession.appModel.systemSetup.systemMode);
+            updateScheduleMode(schedule, uiSession.appModel.systemSetup.systemMode);
 
             // Send Data to server when a schedule changed...
             // Edit schedule
@@ -282,6 +282,15 @@ ItemDelegate {
     function removeRequestAccepted() {
         //! Remove this item
         _removeAnima.running = true;
+    }
+
+    //! update schedule Mode based on SystemMode if in one of cooling, heating, Auto or EmergencyHeat Modes
+    function updateScheduleMode(schedule, systemMode) {
+        if (systemMode === AppSpec.Cooling ||
+                systemMode === AppSpec.Heating ||
+                systemMode === AppSpec.EmergencyHeat ||
+                systemMode === AppSpec.Auto)
+            schedulesController.setSchduleMode(schedule, systemMode);
     }
 }
 

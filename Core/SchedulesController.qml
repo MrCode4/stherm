@@ -755,9 +755,7 @@ QtObject {
     }
 
     function setSchduleMode(schedule: ScheduleCPP, systemMode: int) {
-        var sysMode = systemMode;
-        if (sysMode === AppSpec.EmergencyHeat)
-            sysMode = AppSpec.Heating;
+        var sysMode = AppSpec.getScheduleModeWithSysMode(systemMode);
 
         // Update the created schedule with the current system mode
         schedule.systemMode = sysMode;
