@@ -289,18 +289,18 @@ I_DeviceController {
         }
 
         function onEffectiveTemperatureChanged(effectiveTemperatureC: real) {
-            ProtoDataManagerCPP.setSetTemperature(effectiveTemperatureC);
+            ProtoDataManager.setSetTemperature(effectiveTemperatureC);
         }
 
         function onFanWorkChanged(fanState: bool) {
-            ProtoDataManagerCPP.setCurrentFanStatus(fanState);
+            ProtoDataManager.setCurrentFanStatus(fanState);
         }
 
         function onCurrentSystemModeChanged(state: int, currentHeatingStage: int, currentCoolingStage: int) {
             activeSystemMode = state;
 
-            ProtoDataManagerCPP.setCurrentHeatingStage(currentHeatingStage);
-            ProtoDataManagerCPP.setCurrentCoolingStage(currentCoolingStage);
+            ProtoDataManager.setCurrentHeatingStage(currentHeatingStage);
+            ProtoDataManager.setCurrentCoolingStage(currentCoolingStage);
         }
     }
 
@@ -732,17 +732,17 @@ I_DeviceController {
             uiSession.showHome();
         }
 
-        //! Initialize the ProtoDataManagerCPP data with the loaded model.
-        ProtoDataManagerCPP.setSetHumidity(deviceControllerCPP.effectiveHumidity());
-        ProtoDataManagerCPP.setMCUTemperature(system.cpuTemperature());
-        ProtoDataManagerCPP.setSetTemperature(device.requestedTemp);
-        ProtoDataManagerCPP.setCurrentTemperature(device.currentTemp);
-        ProtoDataManagerCPP.setCurrentHumidity(device.currentHum);
-        ProtoDataManagerCPP.setCurrentAirQuality(device._co2_id);
-        ProtoDataManagerCPP.setLedStatus(device.backlight.on);
+        //! Initialize the ProtoDataManager data with the loaded model.
+        ProtoDataManager.setSetHumidity(deviceControllerCPP.effectiveHumidity());
+        ProtoDataManager.setMCUTemperature(system.cpuTemperature());
+        ProtoDataManager.setSetTemperature(device.requestedTemp);
+        ProtoDataManager.setCurrentTemperature(device.currentTemp);
+        ProtoDataManager.setCurrentHumidity(device.currentHum);
+        ProtoDataManager.setCurrentAirQuality(device._co2_id);
+        ProtoDataManager.setLedStatus(device.backlight.on);
         //! TODO
         //! Set default 101325 kPa
-        ProtoDataManagerCPP.setAirPressure(101325);
+        ProtoDataManager.setAirPressure(101325);
     }
 
     onStopDeviceRequested: {
@@ -840,8 +840,8 @@ I_DeviceController {
             device.backlight.value = brightness;
             device.backlight.shadeIndex = shadeIndex;
 
-            // Send backlight data to ProtoDataManagerCPP
-            ProtoDataManagerCPP.setLedStatus(isOn);
+            // Send backlight data to ProtoDataManager
+            ProtoDataManager.setLedStatus(isOn);
 
         } else {
             console.log("revert the backlight in model: ")
@@ -1395,11 +1395,11 @@ I_DeviceController {
         //        device.fan.mode?
 
 
-        ProtoDataManagerCPP.setSetHumidity(deviceControllerCPP.effectiveHumidity());
-        ProtoDataManagerCPP.setMCUTemperature(system.cpuTemperature());
-        ProtoDataManagerCPP.setCurrentTemperature(device.currentTemp);
-        ProtoDataManagerCPP.setCurrentHumidity(device.currentHum);
-        ProtoDataManagerCPP.setCurrentAirQuality(device._co2_id);
+        ProtoDataManager.setSetHumidity(deviceControllerCPP.effectiveHumidity());
+        ProtoDataManager.setMCUTemperature(system.cpuTemperature());
+        ProtoDataManager.setCurrentTemperature(device.currentTemp);
+        ProtoDataManager.setCurrentHumidity(device.currentHum);
+        ProtoDataManager.setCurrentAirQuality(device._co2_id);
 
         if (isNeedToPushToServer) {
             updateEditMode(AppSpec.EMSensorValues);

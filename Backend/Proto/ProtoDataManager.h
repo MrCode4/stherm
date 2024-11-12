@@ -7,15 +7,15 @@
 
 #include "streamdata.pb.h"
 
-class ProtoDataManagerCPP : public DevApiExecutor
+class ProtoDataManager : public DevApiExecutor
 {
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
 
 public:
-    explicit ProtoDataManagerCPP(QObject *parent = nullptr);
-    ~ProtoDataManagerCPP();
+    explicit ProtoDataManager(QObject *parent = nullptr);
+    ~ProtoDataManager();
 
 private:
     //! Change mode

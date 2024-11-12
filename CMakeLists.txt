@@ -466,8 +466,8 @@ qt6_add_qml_module(appStherm
 
         ${PROTO_HDRS}
         ${PROTO_SRCS}
-        Backend/Proto/ProtoDataManagerCPP.h
-        Backend/Proto/ProtoDataManagerCPP.cpp
+        Backend/Proto/ProtoDataManager.h
+        Backend/Proto/ProtoDataManager.cpp
 
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf

@@ -1,4 +1,4 @@
-#include "ProtoDataManagerCPP.h"
+#include "ProtoDataManager.h"
 
 #include <ctime>
 #include <fstream>
@@ -16,7 +16,7 @@ Q_LOGGING_CATEGORY(ProtobufferDataManager, "ProtobufferDataManager")
 
 using google::protobuf::util::TimeUtil;
 
-ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
+ProtoDataManager::ProtoDataManager(QObject *parent)
     : DevApiExecutor{parent}
 {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -50,7 +50,7 @@ ProtoDataManagerCPP::ProtoDataManagerCPP(QObject *parent)
     sendDataToServer();
 }
 
-ProtoDataManagerCPP::~ProtoDataManagerCPP()
+ProtoDataManager::~ProtoDataManager()
 {
     generateBinaryFile();
 
@@ -65,7 +65,7 @@ ProtoDataManagerCPP::~ProtoDataManagerCPP()
     google::protobuf::ShutdownProtobufLibrary();
 }
 
-void ProtoDataManagerCPP::sendDataToServer() {
+void ProtoDataManager::sendDataToServer() {
 
     QFileInfo binFile(BINARYFILEPATH);
     bool existValidBinaryFile = binFile.exists() && binFile.size() > 0;
@@ -125,13 +125,13 @@ void ProtoDataManagerCPP::sendDataToServer() {
     callPostApi(url, serializedData, callback, true, "application/x-protobuf");
 }
 
-void ProtoDataManagerCPP::generateBinaryFile() {
+void ProtoDataManager::generateBinaryFile() {
     std::fstream output(BINARYFILEPATH.toStdString(), std::ios::out | std::ios::binary);
     mLiveDataPointList.SerializeToOstream(&output);
     output.close();
 }
 
-void ProtoDataManagerCPP::setSetTemperature(const double &tempratureC)
+void ProtoDataManager::setSetTemperature(const double &tempratureC)
 {
     if (mLateastDataPoint->has_set_temperature() &&
         qAbs(mLateastDataPoint->set_temperature() - tempratureC) < TEMPERATURETHRESHOLD) {
@@ -142,7 +142,7 @@ void ProtoDataManagerCPP::setSetTemperature(const double &tempratureC)
     updateChangeMode(CMSetTemperature);
 }
 
-void ProtoDataManagerCPP::setSetHumidity(const double &humidity)
+void ProtoDataManager::setSetHumidity(const double &humidity)
 {
     if (mLateastDataPoint->has_set_humidity() &&
         qAbs(mLateastDataPoint->set_humidity() - humidity) < 1.0) {
@@ -153,7 +153,7 @@ void ProtoDataManagerCPP::setSetHumidity(const double &humidity)
     updateChangeMode(CMSetHumidity);
 }
 
-void ProtoDataManagerCPP::setCurrentTemperature(const double &tempratureC)
+void ProtoDataManager::setCurrentTemperature(const double &tempratureC)
 {
     if (mLateastDataPoint->has_current_temperature_embedded() &&
         qAbs(mLateastDataPoint->current_temperature_embedded() - tempratureC) < TEMPERATURETHRESHOLD) {
@@ -164,7 +164,7 @@ void ProtoDataManagerCPP::setCurrentTemperature(const double &tempratureC)
     updateChangeMode(CMCurrentTemperature);
 }
 
-void ProtoDataManagerCPP::setCurrentHumidity(const double &humidity)
+void ProtoDataManager::setCurrentHumidity(const double &humidity)
 {
     if (mLateastDataPoint->has_current_humidity_embedded() &&
         qAbs(mLateastDataPoint->current_humidity_embedded() - humidity) < 1.0) {
@@ -175,7 +175,7 @@ void ProtoDataManagerCPP::setCurrentHumidity(const double &humidity)
     updateChangeMode(CMCurrentHumidity);
 }
 
-void ProtoDataManagerCPP::setMCUTemperature(const double &mcuTempratureC)
+void ProtoDataManager::setMCUTemperature(const double &mcuTempratureC)
 {
     if (mLateastDataPoint->has_current_temperature_mcu() &&
         qAbs(mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) <  TEMPERATURETHRESHOLD) {
@@ -186,7 +186,7 @@ void ProtoDataManagerCPP::setMCUTemperature(const double &mcuTempratureC)
     updateChangeMode(CMMCUTemperature);
 }
 
-void ProtoDataManagerCPP::setAirPressure(const int &airPressureHPa)
+void ProtoDataManager::setAirPressure(const int &airPressureHPa)
 {
     if (mLateastDataPoint->has_air_pressure_embedded() &&
         qAbs(mLateastDataPoint->air_pressure_embedded() - airPressureHPa) < 1.0) {
@@ -197,7 +197,7 @@ void ProtoDataManagerCPP::setAirPressure(const int &airPressureHPa)
     updateChangeMode(CMAirPressure);
 }
 
-void ProtoDataManagerCPP::setCurrentAirQuality(const int &airQuality)
+void ProtoDataManager::setCurrentAirQuality(const int &airQuality)
 {
     const AirQuality airQualityE = (AirQuality)(airQuality + 1);
     if (mLateastDataPoint->has_current_air_quality() &&
@@ -209,7 +209,7 @@ void ProtoDataManagerCPP::setCurrentAirQuality(const int &airQuality)
     updateChangeMode(CMCurrentAirQuality);
 }
 
-void ProtoDataManagerCPP::setCurrentCoolingStage(const int &coolingStage)
+void ProtoDataManager::setCurrentCoolingStage(const int &coolingStage)
 {
     const CoolingStage coolingStageE = (CoolingStage)coolingStage;
     if (mLateastDataPoint-> has_current_cooling_stage() &&
@@ -221,7 +221,7 @@ void ProtoDataManagerCPP::setCurrentCoolingStage(const int &coolingStage)
     updateChangeMode(CMCurrentCoolingStage);
 }
 
-void ProtoDataManagerCPP::setCurrentHeatingStage(const bool &heatingStage)
+void ProtoDataManager::setCurrentHeatingStage(const bool &heatingStage)
 {
     const HeatingStage heatingStageE = (HeatingStage)heatingStage;
     if (mLateastDataPoint->has_current_heating_stage() &&
@@ -233,7 +233,7 @@ void ProtoDataManagerCPP::setCurrentHeatingStage(const bool &heatingStage)
     updateChangeMode(CMCurrentHeatingStage);
 }
 
-void ProtoDataManagerCPP::setCurrentFanStatus(const bool &fanStatus)
+void ProtoDataManager::setCurrentFanStatus(const bool &fanStatus)
 {
     const FanStatus fanStatusE = (FanStatus)(fanStatus ? 1 : 0);
     if (mLateastDataPoint->has_current_fan_status() &&
@@ -245,7 +245,7 @@ void ProtoDataManagerCPP::setCurrentFanStatus(const bool &fanStatus)
     updateChangeMode(CMCurrentFanStatus);
 }
 
-void ProtoDataManagerCPP::setLedStatus(const bool &ledStatus)
+void ProtoDataManager::setLedStatus(const bool &ledStatus)
 {
     const LedStatus ledStatusE = (LedStatus)(ledStatus ? 1 : 0);
     if (mLateastDataPoint->has_led_status() &&
@@ -257,7 +257,7 @@ void ProtoDataManagerCPP::setLedStatus(const bool &ledStatus)
     updateChangeMode(CMLedStatus);
 }
 
-LiveDataPoint *ProtoDataManagerCPP::addNewPoint()
+LiveDataPoint *ProtoDataManager::addNewPoint()
 {
     if (mLiveDataPointList.data_points_size() > 0 && mLiveDataPointList.data_points_size() > MEMORYLIMITAIONRECORDS) {
         int outRangeIndex = mLiveDataPointList.data_points_size() - MEMORYLIMITAIONRECORDS;
@@ -274,7 +274,7 @@ LiveDataPoint *ProtoDataManagerCPP::addNewPoint()
     return newPoint;
 }
 
-void ProtoDataManagerCPP::logStashData()
+void ProtoDataManager::logStashData()
 {
     if (mChangeMode != CMNone) {
         auto newPoint = addNewPoint();
@@ -321,7 +321,7 @@ void ProtoDataManagerCPP::logStashData()
     }
 }
 
-void ProtoDataManagerCPP::updateChangeMode(ChangeMode cm)
+void ProtoDataManager::updateChangeMode(ChangeMode cm)
 {
     if (cm == CMNone) {
         mChangeMode = cm;
