@@ -30,7 +30,7 @@ BasePageView {
     ToolButton {
         parent: root.header.contentItem
         contentItem: RoniaTextIcon {
-            text: "\uf00c"
+            text: FAIcons.check
         }
 
         visible: !initialSetup
@@ -72,7 +72,7 @@ BasePageView {
 
             //! Heat Pump Stages
             RowLayout {
-                spacing: 24
+                spacing: 12
 
                 Label {
                     Layout.fillWidth: true
@@ -86,6 +86,7 @@ BasePageView {
 
                     property int heatPumpStage: 1
 
+                    spacing: 5
 
                     RadioButton {
                         checked: appModel.systemSetup.coolStage === Number(text)
@@ -113,7 +114,7 @@ BasePageView {
             RowLayout {
                 id: heatPumpOBStateLayout
 
-                spacing: 24
+                spacing: 12
 
                 property int heatPumpOBState: 1
 
@@ -154,7 +155,7 @@ BasePageView {
 
             //! Auxiliary Stages
             RowLayout {
-                spacing: 24
+                spacing: 12
 
                 Label {
                     Layout.fillWidth: true

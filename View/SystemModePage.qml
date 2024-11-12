@@ -42,7 +42,9 @@ BasePageView {
     ColumnLayout {
         id: _buttonsLay
         anchors.centerIn: parent
-        width: parent.width * 0.8
+        width: fontMetrics.boundingRect(_heatingHeatPumpButton.visible ? "Heating (Heat pump)" :
+                                                                                 (emergencyHeatButton.visible ? "Emergency Heat" : " Vacation ")).width +
+                       _root.rightPadding + _root.leftPadding + 60
         spacing: 12
 
         Button {
@@ -221,6 +223,9 @@ BasePageView {
         onHid: rejected()
     }
 
+    FontMetrics {
+        id: fontMetrics
+    }
 
     /* Functions
      * ****************************************************************************************/

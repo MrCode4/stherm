@@ -26,6 +26,7 @@ ToolButton {
     property int dfhSystemType: deviceController.dfhSystemType
 
     property bool dfhTroubleshootingMode: device?.systemSetup?.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet &&
+                                          device.systemSetup.isAUXAuto &&
                                           (dfhSystemType === AppSpec.HeatingOnly || dfhSystemType === AppSpec.HeatPump)
 
 
