@@ -12,7 +12,7 @@ I_PopUp {
     /* Property declaration
      * ****************************************************************************************/
     property DeviceController deviceController
-    property string           detailMessage: "The thermostat is currently offline, and or no response from weather server," +
+    property string           detailMessage: "The thermostat is currently offline, and or no response from weather server, " +
                                              (deviceController.dfhSystemType === AppSpec.HeatPump ? "your heat pump is managing the heating.\n\nWould you like to switch to heating through the auxiliary instead?" :
                                                                                                     "your auxiliary is managing the heating.\n\nWould you like to switch to heating through the heat pump instead?")
 
@@ -94,8 +94,9 @@ I_PopUp {
                 text: "Switch"
 
                 onClicked: {
+                    deviceController.device.systemSetup.isHeatingAUX = !deviceController.device.systemSetup.isHeatingAUX;
                     var switchTo = AppSpec.HeatPump;
-                    if (deviceController.dfhSystemType === AppSpec.HeatPump){
+                    if (deviceController.dfhSystemType === AppSpec.HeatPump) {
                         switchTo = AppSpec.HeatingOnly;
                     }
 
