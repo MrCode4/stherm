@@ -353,7 +353,7 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
             activeSysType = mSwitchDFHActiveSysTypeTo;
 
         } else if (!mDataProvider->systemSetup()->isAUXAuto) {
-            // Select system mode based on the selected heating type in the system mode page.
+            // Select active system type based on the selected heating type in the system mode page.
             activeSysType = mDataProvider->systemSetup()->isHeatingAUX ? AppSpecCPP::SystemType::HeatingOnly : AppSpecCPP::SystemType::HeatPump;
 
             // in the cold outdoor heatpump can not function good so we use it only above threshold
@@ -361,7 +361,7 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
             // Start the heat pump (Y wires)
             activeSysType = AppSpecCPP::SystemType::HeatPump;
         } else {
-            // Start the heating using Furnace (W wires)
+            // Start the heating using Aux (W wires)
             activeSysType = AppSpecCPP::SystemType::HeatingOnly;
         }
 
