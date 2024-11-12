@@ -119,7 +119,9 @@ BasePageView {
             checkable: true
 
             //! When users select Manual for emergency heating, an additional button labeled Emergency appears in the System Mode menu
-            visible: device?.systemSetup.systemType === AppSpec.HeatPump && device?.systemSetup.emergencyControlType === AppSpec.ECTManually
+            visible: device?.systemSetup.systemType === AppSpec.HeatPump &&
+                     device?.systemSetup.emergencyControlType === AppSpec.ECTManually &&
+                     device?.systemSetup.heatPumpEmergency
 
             checked: device?.systemSetup.systemMode === AppSpecCPP.EmergencyHeat  && !device?.systemSetup._isSystemShutoff
             text: "Emergency Heat"

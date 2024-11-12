@@ -910,7 +910,7 @@ I_DeviceController {
         device.vacation.hum_max  = hum_max ;
     }
 
-    function setSystemModeTo(systemMode: int) : bool
+    function setSystemModeTo(systemMode: int, force = false) : bool
     {
         if (device.systemSetup._isSystemShutoff) {
             console.log("Ignore system mode, system is shutoff by alert manager.")
@@ -923,7 +923,7 @@ I_DeviceController {
         } else if (systemMode >= 0 && systemMode < AppSpecCPP.SMUnknown) {
             //! TODo required actions if any
 
-            if (checkToUpdateSystemMode(systemMode)) {
+            if (checkToUpdateSystemMode(systemMode, force)) {
                 updateEditMode(AppSpec.EMSystemMode);
                 // to let all dependant parameters being updated and save all
                 Qt.callLater(saveSettings);
@@ -1271,7 +1271,7 @@ I_DeviceController {
         device.systemSetup.emergencyControlType = emergencyControlType;
         device.systemSetup.emergencyTemperatureDiffrence = emergencyTemperatureDiffrence;
 
-        //! This function requires a valid emergencyControlType
+        //! This function requires a valid emergencyControlType and heatPumpEmergency
         //! so the emergencyControlType must be set before calling this function in the HeatPump type
         setSystemTypeTo(AppSpecCPP.HeatPump);
     }
@@ -1299,10 +1299,12 @@ I_DeviceController {
         device.systemSetup.systemType = systemType;
 
         if (device.systemSetup.systemMode === AppSpecCPP.EmergencyHeat &&
-                (device.systemSetup.emergencyControlType !== AppSpec.ECTManually ||
+                (!device.systemSetup.heatPumpEmergency ||
+                 device.systemSetup.emergencyControlType !== AppSpec.ECTManually ||
                 systemType !== AppSpecCPP.HeatPump)) {
             switch (systemType) {
             case AppSpec.Conventional:
+            case AppSpec.HeatPump:
             case AppSpec.HeatingOnly:
             case AppSpec.DualFuelHeating: {
                 setSystemModeTo(AppSpecCPP.Heating, true);
