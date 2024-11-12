@@ -1,7 +1,6 @@
 #include "DeviceControllerCPP.h"
 
 #include "LogHelper.h"
-#include "ProtoDataManagerCPP.h"
 #include "SchemeDataProvider.h"
 #include "ScreenSaverManager.h"
 
