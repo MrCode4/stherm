@@ -399,7 +399,11 @@ void Scheme::HeatingLoop()
         // get time threshold ETime
         if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
             emit actualModeStarted(AppSpecCPP::Heating);
-            if (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF()) {
+            // Skip the emergency heating when actual system type is DualFuelHeating.
+            // When emergency manual mode is active we should discard the auto emergency, this mode only activate from the system mode page.
+            if (mDataProvider->systemSetup()->systemType != AppSpecCPP::DualFuelHeating &&
+                mDataProvider->systemSetup()->systemMode != AppSpecCPP::EmergencyHeat &&
+                mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF()) {
                 TRACE << "Emergency";
                 emergencyHeatingLoop();
             }
