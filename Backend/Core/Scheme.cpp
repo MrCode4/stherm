@@ -917,12 +917,7 @@ void Scheme::manualEmergencyHeating()
         return;
     }
 
-    emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000);
-
     emergencyHeatingLoop();
-
-    // This will unblock the UI after some times (wait loop in the emergencyHeatingLoop)
-    emit manualEmergencyModeUnblockedAfter(0);
 }
 
 void Scheme::emergencyHeatingLoop()
@@ -936,6 +931,9 @@ void Scheme::emergencyHeatingLoop()
     mRelay->setAllOff();
     mTEONTimer.restart();
 
+    // Block the UI
+    emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000);
+
     // Emergency wirings will be active due to the reset of the mTEONTimer.
     // 5 Sec
     emit changeBacklight(emergencyColor, emergencyColorS);
@@ -948,16 +946,15 @@ void Scheme::emergencyHeatingLoop()
     while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF() ||
            mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
 
-        // Disable UI interactions in system mode page during manual emergency mode until the minimum duration is reached.
-        auto emergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000;
+        // Disable UI interactions in system mode page during manual or auto emergency mode until the minimum duration is reached.
+        if (mTEONTimer.isValid()) {
+            auto remainigEmergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed();
 
-        if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat) {
-            if (emergencyMinimumTimeMS > mTEONTimer.elapsed()) {
-                emit manualEmergencyModeUnblockedAfter(emergencyMinimumTimeMS - mTEONTimer.elapsed());
-
-            } else {
-                emit manualEmergencyModeUnblockedAfter(0);
+            if (remainigEmergencyMinimumTimeMS <= 0) {
+                mTEONTimer.invalidate();
             }
+
+            emit manualEmergencyModeUnblockedAfter(mTEONTimer.isValid() ? remainigEmergencyMinimumTimeMS : 0) ;
         }
 
         mRelay->emergencyHeating3();
@@ -973,8 +970,8 @@ void Scheme::emergencyHeatingLoop()
     // To unblock system mode UI in emergency states like system mode or system type changes.
     // Unblock immediately
     emit manualEmergencyModeUnblockedAfter(0);
-
     mTEONTimer.invalidate();
+
     emit changeBacklight();
     mRelay->turnOffEmergencyHeating();
     sendRelays();
