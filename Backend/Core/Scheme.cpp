@@ -900,7 +900,7 @@ void Scheme::manualEmergencyHeating()
           << " - emergencyControlType: " << sysSetup->emergencyControlType
           << " - emergencyMinimumTime: " << sysSetup->emergencyMinimumTime;
 
-    if (!sysSetup->heatPumpEmergency && sysSetup->emergencyControlType != AppSpecCPP::ECTManually) {
+    if (!sysSetup->heatPumpEmergency) {
         TRACE << "Emergency heating is OFF or emergency control type is manually.";
         return;
     }
@@ -908,8 +908,7 @@ void Scheme::manualEmergencyHeating()
     // Optimize emergency mode to prevent unnecessary backlight and emergency heating activation.
     // This will restrict the activation of emergency heating to instances
     // where there's a significant change in temperature to met the temperature conditions.
-    if (mDataProvider->effectiveSystemMode() == AppSpecCPP::EmergencyHeat &&
-        mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() <= mDataProvider->effectiveEmergencyHeatingThresholdF()) {
+    if (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() <= 0) {
         TRACE << "System should be off, the conditions are not changed!";
         return;
     }
