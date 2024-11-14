@@ -35,7 +35,8 @@ ToolButton {
                 return "qrc:/Stherm/Images/fan-cool.svg";
 
             } else if (deviceController.activeSystemMode === AppSpec.Heating ||
-                       deviceController.activeSystemMode === AppSpec.Emergency) {
+                       deviceController.activeSystemMode === AppSpec.Emergency ||
+                       deviceController.activeSystemMode === AppSpec.EmergencyHeat) {
                 return "qrc:/Stherm/Images/fan-heat.svg";
             }
 
