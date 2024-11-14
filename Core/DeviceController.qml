@@ -1304,17 +1304,15 @@ I_DeviceController {
     function setSystemTypeTo(systemType: int) {
         var dualFuelManualHeating = AppSpec.DFMOff;
 
-        if (systemType === AppSpecCPP.DualFuelHeating && !device.systemSetup.isAUXAuto) {
+        if (systemType === AppSpecCPP.DualFuelHeating && !device.systemSetup.isAUXAuto && device.systemSetup.systemMode === AppSpec.Heating) {
             switch (device.systemSetup.systemType) {
             case AppSpec.Conventional:
             case AppSpec.HeatingOnly: {
-                if (device.systemSetup.systemMode === AppSpec.Heating)
-                    dualFuelManualHeating = AppSpec.DFMAuxiliary;
+                dualFuelManualHeating = AppSpec.DFMAuxiliary;
             } break;
 
             case AppSpec.HeatPump: {
-                if (device.systemSetup.systemMode === AppSpec.Heating)
-                    dualFuelManualHeating = AppSpec.DFMHeatPump;
+                dualFuelManualHeating = AppSpec.DFMHeatPump;
 
             } break;
 
