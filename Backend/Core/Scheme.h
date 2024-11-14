@@ -126,7 +126,7 @@ private:
 
     void checkForRestart();
 
-    AppSpecCPP::SystemMode activeHeatPumpMode();
+    AppSpecCPP::SystemMode activeHeatPumpMode(const bool &checkWithManualEmergency = false);
 
     void manualEmergencyHeating();
 
