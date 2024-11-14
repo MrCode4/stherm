@@ -923,6 +923,14 @@ void Scheme::manualEmergencyHeating()
 void Scheme::emergencyHeatingLoop()
 {
     auto sysSetup = mDataProvider->systemSetup();
+
+    // Sanity check
+    if (sysSetup->systemType != AppSpecCPP::HeatPump) {
+        TRACE << "The system type is incompatible with the manual emergency mode, The emergency mode can be activate only when system type is heat pump . " << sysSetup->systemType;
+        return;
+    }
+
+    // Sanity check
     if (!sysSetup->heatPumpEmergency) {
         TRACE << "Emergency heating is OFF.";
         return;
