@@ -944,6 +944,11 @@ I_DeviceController {
     }
 
     function checkToUpdateSystemMode(systemMode: int, force = false, dualFuelManualHeating = AppSpecCPP.DFMOff) {
+
+        if (device.systemSetup.systemMode === systemMode && device.systemSetup.dualFuelManualHeating === dualFuelManualHeating) {
+            return true;
+        }
+
         // Block due to manual emergency heating.
         if (!force && systemMode !== AppSpec.EmergencyHeat && uiSession.remainigTimeToUnblockSystemMode > 0) {
 
