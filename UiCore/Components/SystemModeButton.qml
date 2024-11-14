@@ -101,13 +101,12 @@ ToolButton {
                     if (_control.state === "emergency")
                         return "Emergency"
 
-                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !device.systemSetup.isAUXAuto) {
+                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && (!device.systemSetup.isAUXAuto || dfhTroubleshootingMode)) {
 
                         if (device.systemSetup.isHeatingAUX) {
                             return "Heating (Aux)"
 
-                        } else if (dfhSystemType === AppSpec.HeatPump && !device.systemSetup.isHeatingAUX
-                                   && !NetworkInterface.hasInternet) {
+                        } else if (dfhSystemType === AppSpec.HeatPump && dfhTroubleshootingMode) {
                             return "Heating (Heat pump)"
                         }
                     }
