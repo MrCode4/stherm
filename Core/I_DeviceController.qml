@@ -47,6 +47,7 @@ QtObject {
             var maximumTemperature = _maximumTemperatureF;
 
             switch(device.systemSetup.systemMode) {
+            case AppSpec.EmergencyHeat:
             case AppSpec.Heating: {
                 minimumTemperature = AppSpec.minimumHeatingTemperatiureF;
                 maximumTemperature = AppSpec.maximumHeatingTemperatiureF;
