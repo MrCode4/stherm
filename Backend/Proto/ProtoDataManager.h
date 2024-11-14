@@ -33,7 +33,7 @@ private:
         CMCurrentFanStatus    = 1 << 9,
         CMLedStatus           = 1 << 10,
         CMAll                 = CMSetTemperature | CMSetHumidity | CMCurrentTemperature | CMCurrentHumidity |
-                                CMMCUTemperature | CMAirPressure | CMCurrentCoolingStage |
+                                CMMCUTemperature | CMAirPressure | CMCurrentAirQuality | CMCurrentCoolingStage |
                                 CMCurrentHeatingStage | CMCurrentFanStatus | CMLedStatus
     };
 
