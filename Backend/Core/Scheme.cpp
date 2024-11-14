@@ -364,7 +364,13 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
 
         } else if (!mDataProvider->systemSetup()->isAUXAuto) {
             // Select active system type based on the selected heating type in the system mode page.
-            activeSysType = mDataProvider->systemSetup()->isHeatingAUX ? AppSpecCPP::SystemType::HeatingOnly : AppSpecCPP::SystemType::HeatPump;
+            auto dualFuelManualHeating = mDataProvider->systemSetup()->dualFuelManualHeating;
+            if (dualFuelManualHeating == AppSpecCPP::DFMAuxiliary) {
+                activeSysType = AppSpecCPP::SystemType::HeatingOnly;
+
+            } else if (dualFuelManualHeating == AppSpecCPP::DFMHeatPump) {
+                activeSysType = AppSpecCPP::SystemType::HeatPump;
+            }
 
             // in the cold outdoor heatpump can not function good so we use it only above threshold
         } else if (mDataProvider->outdoorTemperatureF() > mDataProvider->dualFuelThreshodF()) {
@@ -1364,8 +1370,8 @@ void Scheme::setSystemSetup()
         checkForRestart();
     });
 
-    connect(sys, &SystemSetup::isHeatingAUXChanged, this, [=] {
-        TRACE << "isHeatingAUXChanged";
+    connect(sys, &SystemSetup::dualFuelManualHeatingChanged, this, [=] {
+        TRACE << "dualFuelManualHeatingChanged";
         // restart scheme if needed
         checkForRestart();
     });

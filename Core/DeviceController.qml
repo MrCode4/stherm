@@ -351,7 +351,7 @@ I_DeviceController {
             setSystemSetupServer(settings.system)
 
             //! TODO: refactor
-            setSystemModeServer(settings.mode_id, settings.system.isHeatingAUX ?? device.systemSetup.isHeatingAUX)
+            setSystemModeServer(settings.mode_id, settings.system.dualFuelManualHeating ?? device.systemSetup.dualFuelManualHeating)
 
             if (!lockStatePusher.isPushing) {
                 updateAppLockState(settings.locked, settings.pin, true);
@@ -912,7 +912,7 @@ I_DeviceController {
         device.vacation.hum_max  = hum_max ;
     }
 
-    function setSystemModeTo(systemMode: int, force = false, isHeatingAUX = false) : bool
+    function setSystemModeTo(systemMode: int, force = false, dualFuelManualHeating = false) : bool
     {
         if (device.systemSetup._isSystemShutoff) {
             console.log("Ignore system mode, system is shutoff by alert manager.")
@@ -925,7 +925,7 @@ I_DeviceController {
         } else if (systemMode >= 0 && systemMode < AppSpecCPP.SMUnknown) {
             //! TODo required actions if any
 
-            if (checkToUpdateSystemMode(systemMode, force, isHeatingAUX)) {
+            if (checkToUpdateSystemMode(systemMode, force, dualFuelManualHeating)) {
                 updateEditMode(AppSpec.EMSystemMode);
                 // to let all dependant parameters being updated and save all
                 Qt.callLater(saveSettings);
@@ -943,7 +943,7 @@ I_DeviceController {
         return true;
     }
 
-    function checkToUpdateSystemMode(systemMode: int, force = false, isHeatingAUX = false) {
+    function checkToUpdateSystemMode(systemMode: int, force = false, dualFuelManualHeating = AppSpecCPP.DFMOff) {
         // Block due to manual emergency heating.
         if (!force && systemMode !== AppSpec.EmergencyHeat && uiSession.remainigTimeToUnblockSystemMode > 0) {
 
@@ -954,10 +954,7 @@ I_DeviceController {
         }
 
         device.systemSetup.systemMode = systemMode;
-
-        //! Igonre to update isHeatingAUX when system type is not dual fuel
-        if (device.systemSetup.systemType === AppSpec.DualFuelHeating)
-            device.systemSetup.isHeatingAUX = isHeatingAUX;
+        device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
 
         return true;
     }
@@ -1156,6 +1153,8 @@ I_DeviceController {
                 "heatPumpEmergency": device.systemSetup.heatPumpEmergency,
                 "systemRunDelay": device.systemSetup.systemRunDelay,
                 "dualFuelThreshold": device.systemSetup.dualFuelThreshod,
+                "isAUXAuto": device.systemSetup.isAUXAuto,
+                "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
                 "emergencyMinimumTime": device.systemSetup.emergencyMinimumTime,
                 "emergencyControlType": device.systemSetup.emergencyControlType,
                 "emergencyTemperatureDifference": device.systemSetup.emergencyTemperatureDifference,
@@ -1194,7 +1193,7 @@ I_DeviceController {
         }
     }
 
-    function setSystemModeServer(mode_id, isHeatingAUX) {
+    function setSystemModeServer(mode_id, dualFuelManualHeating) {
         if (editModeEnabled(AppSpec.EMSystemMode)) {
             console.log("The system setup is being edited and cannot be updated (mode_id) by the server.")
         } else {
@@ -1202,7 +1201,7 @@ I_DeviceController {
             //! Vacation will be handled using setVacationServer
             if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Emergency &&
                     modeInt !== AppSpec.Vacation) {
-                checkToUpdateSystemMode(modeInt, false, isHeatingAUX);
+                checkToUpdateSystemMode(modeInt, false, dualFuelManualHeating);
             }
         }
     }
@@ -1303,6 +1302,33 @@ I_DeviceController {
     }
 
     function setSystemTypeTo(systemType: int) {
+        var dualFuelManualHeating = AppSpec.DFMOff;
+
+        if (systemType === AppSpecCPP.DualFuelHeating && !device.systemSetup.isAUXAuto) {
+            switch (device.systemSetup.systemType) {
+            case AppSpec.Conventional:
+            case AppSpec.HeatingOnly: {
+                if (device.systemSetup.systemMode === AppSpec.Heating)
+                    dualFuelManualHeating = AppSpec.DFMAuxiliary;
+            } break;
+
+            case AppSpec.HeatPump: {
+                if (device.systemSetup.systemMode === AppSpec.Heating)
+                    dualFuelManualHeating = AppSpec.DFMHeatPump;
+
+            } break;
+
+            case AppSpec.DualFuelHeating: {
+                dualFuelManualHeating = (device.systemSetup.dualFuelManualHeating !== AppSpec.DFMOff) ? device.systemSetup.dualFuelManualHeating : AppSpec.DFMHeatPump;
+            } break;
+
+            default: {
+                dualFuelManualHeating = AppSpec.DFMOff;
+            }
+            }
+        }
+
+        device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
         device.systemSetup.systemType = systemType;
 
         if (device.systemSetup.systemMode === AppSpecCPP.EmergencyHeat &&
@@ -1314,15 +1340,16 @@ I_DeviceController {
             case AppSpec.HeatPump:
             case AppSpec.HeatingOnly:
             case AppSpec.DualFuelHeating: {
-                setSystemModeTo(AppSpecCPP.Heating, true, device.systemSetup.isHeatingAUX);
+                setSystemModeTo(AppSpecCPP.Heating, true, device.systemSetup.dualFuelManualHeating);
             } break;
 
             case AppSpec.CoolingOnly: {
-                setSystemModeTo(AppSpecCPP.Cooling, true, device.systemSetup.isHeatingAUX);
+                setSystemModeTo(AppSpecCPP.Cooling, true, device.systemSetup.dualFuelManualHeating);
 
             } break;
             }
         }
+
     }
 
     function setSystemSetupServer(settings: var) {

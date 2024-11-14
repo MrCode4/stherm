@@ -94,7 +94,6 @@ I_PopUp {
                 text: "Switch"
 
                 onClicked: {
-                    deviceController.device.systemSetup.isHeatingAUX = !deviceController.device.systemSetup.isHeatingAUX;
                     var switchTo = AppSpec.HeatPump;
                     if (deviceController.dfhSystemType === AppSpec.HeatPump) {
                         switchTo = AppSpec.HeatingOnly;

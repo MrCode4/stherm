@@ -103,7 +103,7 @@ ToolButton {
 
                     if (device.systemSetup.systemType === AppSpec.DualFuelHeating && (!device.systemSetup.isAUXAuto || dfhTroubleshootingMode)) {
 
-                        if (device.systemSetup.isHeatingAUX) {
+                        if (dfhSystemType === AppSpec.HeatingOnly) {
                             return "Heating (Aux)"
 
                         } else if (dfhSystemType === AppSpec.HeatPump && dfhTroubleshootingMode) {

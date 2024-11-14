@@ -95,6 +95,14 @@ public:
     };
     Q_ENUM(SystemType)
 
+    enum DualFuelManualHeating
+    {
+        DFMAuxiliary = 0,
+        DFMHeatPump,
+        DFMOff,
+    };
+    Q_ENUM(DualFuelManualHeating)
+
 
     Q_INVOKABLE QString systemTypeString(SystemType systemType);
     Q_INVOKABLE SystemType systemTypeToEnum(QString systemTypeStr);

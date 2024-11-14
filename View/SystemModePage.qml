@@ -86,12 +86,12 @@ BasePageView {
             rightPadding: 24
             checkable: true
             visible:  device?.systemSetup.systemType === AppSpec.DualFuelHeating && !device?.systemSetup.isAUXAuto
-            checked: visible && device?.systemSetup.systemMode === AppSpecCPP.Heating && !device?.systemSetup.isHeatingAUX
+            checked: visible && (device?.systemSetup.dualFuelManualHeating === AppSpec.DFMHeatPump)
             enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Heating (Heat pump)"
 
             onClicked: {
-                checkAndUpdateSystemMode(AppSpecCPP.Heating);
+                checkAndUpdateSystemMode(AppSpecCPP.Heating, AppSpec.DFMHeatPump);
             }
         }
 
@@ -103,12 +103,12 @@ BasePageView {
             rightPadding: 24
             checkable: true
             visible:  device?.systemSetup.systemType === AppSpec.DualFuelHeating && !device?.systemSetup.isAUXAuto
-            checked: visible && device?.systemSetup.systemMode === AppSpecCPP.Heating && device?.systemSetup.isHeatingAUX
+            checked: visible && (device?.systemSetup.dualFuelManualHeating === AppSpec.DFMAuxiliary)
             enabled: heatAvailable && !device?.systemSetup._isSystemShutoff
             text: "Heating (Aux)"
 
             onClicked: {
-                checkAndUpdateSystemMode(AppSpecCPP.Heating);
+                checkAndUpdateSystemMode(AppSpecCPP.Heating, AppSpec.DFMAuxiliary);
             }
         }
 
@@ -231,7 +231,7 @@ BasePageView {
      * ****************************************************************************************/
 
     //! Check new system mode has conflict with schedules or not.
-    function checkAndUpdateSystemMode(systemMode : int) {
+    function checkAndUpdateSystemMode(systemMode : int, dualFuelManualHeating = AppSpec.DFMOff) {
         if (uiSession.schedulesController.findIncompatibleSchedules(systemMode).length > 0) {
 
             if (device.systemSetup.systemMode === AppSpecCPP.Off) {
@@ -242,12 +242,12 @@ BasePageView {
             }
 
             confirmPopup.detailMessage += ` that are incompatible with the new ${AppSpec.systemModeToString(systemMode)} mode. These Schedules will be automatically disabled.`
-            confirmPopup.accepted.connect(saveAndDisconnect.bind(this, systemMode));
+            confirmPopup.accepted.connect(saveAndDisconnect.bind(this, systemMode, dualFuelManualHeating));
             confirmPopup.rejected.connect(rejectAndDisconnect);
             confirmPopup.open();
 
         } else {
-            save(systemMode);
+            save(systemMode, dualFuelManualHeating);
         }
     }
 
@@ -261,25 +261,25 @@ BasePageView {
 
     //! Back to state of the model
     function backToModel() {
-        _coolingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Cooling;
-        _heatingButton.checked = device?.systemSetup.systemMode === AppSpecCPP.Heating && _heatingButton.visible;
-        _autoButton.checked    = device?.systemSetup.systemMode === AppSpecCPP.Auto;
-        _offButton.checked     = device?.systemSetup.systemMode === AppSpecCPP.Off;
-        emergencyHeatButton.checked  = device?.systemSetup.systemMode === AppSpecCPP.EmergencyHeat;
-        _heatingHeatPumpButton.checked  = device?.systemSetup.systemMode === AppSpecCPP.Heating && _heatingHeatPumpButton.visible;
-        _heatingAuxButton.checked  = device?.systemSetup.systemMode === AppSpecCPP.Heating && _heatingAuxButton.visible;
+        _coolingButton.checked = Qt.binding(() => device?.systemSetup.systemMode === AppSpecCPP.Cooling);
+        _heatingButton.checked = Qt.binding(() => _heatingButton.visible && device?.systemSetup.systemMode === AppSpecCPP.Heating);
+        _autoButton.checked    = Qt.binding(() => device?.systemSetup.systemMode === AppSpecCPP.Auto);
+        _offButton.checked     = Qt.binding(() => device?.systemSetup.systemMode === AppSpecCPP.Off);
+        emergencyHeatButton.checked     = Qt.binding(() => emergencyHeatButton.visible && device?.systemSetup.systemMode === AppSpecCPP.EmergencyHeat);
+        _heatingHeatPumpButton.checked  = Qt.binding(() => _heatingHeatPumpButton.visible &&  (device?.systemSetup.dualFuelManualHeating === AppSpec.DFMHeatPump));
+        _heatingAuxButton.checked       = Qt.binding(() =>  _heatingAuxButton.visible &&  (device?.systemSetup.dualFuelManualHeating === AppSpec.DFMAuxiliary));
     }
 
     //! Save the systemMode and disconnect the confirmPopup
-    function saveAndDisconnect(systemMode : int) {
+    function saveAndDisconnect(systemMode : int, dualFuelManualHeating: int) {
         confirmPopup.accepted.disconnect(saveAndDisconnect.bind(this));
         confirmPopup.rejected.disconnect(rejectAndDisconnect);
-        save(systemMode)
+        save(systemMode, dualFuelManualHeating)
     }
 
     //! Update the system mode
-    function save(systemMode : int) {
-        if (deviceController.setSystemModeTo(systemMode, false, _heatingAuxButton.checked))
+    function save(systemMode : int, dualFuelManualHeating = AppSpec.DFMOff) {
+        if (deviceController.setSystemModeTo(systemMode, false, dualFuelManualHeating))
             backButtonCallback();
         else
             backToModel();
