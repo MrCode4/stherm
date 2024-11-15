@@ -221,7 +221,7 @@ void ProtoDataManager::setCurrentCoolingStage(const int &coolingStage)
     updateChangeMode(CMCurrentCoolingStage);
 }
 
-void ProtoDataManager::setCurrentHeatingStage(const bool &heatingStage)
+void ProtoDataManager::setCurrentHeatingStage(const int &heatingStage)
 {
     const HeatingStage heatingStageE = (HeatingStage)heatingStage;
     if (mLateastDataPoint->has_current_heating_stage() &&

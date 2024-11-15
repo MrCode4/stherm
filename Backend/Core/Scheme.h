@@ -124,7 +124,9 @@ private:
 
     void fanWork(bool isOn);
 
-    void checkForRestartDualFuel();
+    void checkForRestart();
+
+    AppSpecCPP::SystemMode activeHeatPumpMode(const bool &checkWithManualEmergency = false);
 
     void manualEmergencyHeating();
 
@@ -168,4 +170,6 @@ private:
     AppSpecCPP::SystemType mSwitchDFHActiveSysTypeTo;
     //! Used in deciding if we need to restart on some changes in dual fuel
     AppSpecCPP::SystemType mActiveSysTypeHeating;
+
+    AppSpecCPP::SystemMode mActiveHeatPumpMode;
 };

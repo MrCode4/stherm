@@ -33,7 +33,7 @@ private:
         CMCurrentFanStatus    = 1 << 9,
         CMLedStatus           = 1 << 10,
         CMAll                 = CMSetTemperature | CMSetHumidity | CMCurrentTemperature | CMCurrentHumidity |
-                                CMMCUTemperature | CMAirPressure | CMCurrentCoolingStage |
+                                CMMCUTemperature | CMAirPressure | CMCurrentAirQuality | CMCurrentCoolingStage |
                                 CMCurrentHeatingStage | CMCurrentFanStatus | CMLedStatus
     };
 
@@ -48,7 +48,7 @@ public:
     Q_INVOKABLE void setAirPressure(const int &airPressureHPa); //TODO
     Q_INVOKABLE void setCurrentAirQuality(const int &airQuality);
     Q_INVOKABLE void setCurrentCoolingStage(const int &coolingStage);
-    Q_INVOKABLE void setCurrentHeatingStage(const bool &heatingStage);
+    Q_INVOKABLE void setCurrentHeatingStage(const int &heatingStage);
     Q_INVOKABLE void setCurrentFanStatus(const bool &fanStatus);
     Q_INVOKABLE void setLedStatus(const bool &ledStatus);
 

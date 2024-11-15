@@ -382,7 +382,7 @@ bool Relay::emergencyHeating3()
 
     mRelay.w3 = STHERM::RelayMode::ON;
 
-    current_state = AppSpecCPP::SystemMode::Emergency;
+    current_state = AppSpecCPP::SystemMode::EmergencyHeat;
 
     return true;
 }
@@ -393,7 +393,8 @@ bool Relay::turnOffEmergencyHeating()
     mRelay.w2  = STHERM::RelayMode::OFF;
     mRelay.w3 = STHERM::RelayMode::OFF;
 
-    // update current_state
+    //! we are sure that everything is off as it may not proceed to next loop correctly
+    current_state = AppSpecCPP::SystemMode::Off;
 
     return true;
 }
@@ -474,7 +475,9 @@ int Relay::currentCoolingStage() {
 
 int Relay::currentHeatingStage() {
     int currentHeatingStage = 0;
-    if (currentState() == AppSpecCPP::SystemMode::Heating) {
+    if (currentState() == AppSpecCPP::SystemMode::Heating ||
+        currentState() == AppSpecCPP::SystemMode::EmergencyHeat||
+        currentState() == AppSpecCPP::SystemMode::Emergency) {
         currentHeatingStage = (mRelay.y1 == STHERM::RelayMode::ON) +
                               (mRelay.y2 == STHERM::RelayMode::ON) +
                               (mRelay.w1 == STHERM::RelayMode::ON) +

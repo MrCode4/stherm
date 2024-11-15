@@ -26,6 +26,7 @@ ToolButton {
     property int dfhSystemType: deviceController.dfhSystemType
 
     property bool dfhTroubleshootingMode: device?.systemSetup?.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet &&
+                                          device.systemSetup.isAUXAuto &&
                                           (dfhSystemType === AppSpec.HeatingOnly || dfhSystemType === AppSpec.HeatPump)
 
 
@@ -100,13 +101,13 @@ ToolButton {
                     if (_control.state === "emergency")
                         return "Emergency"
 
-                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet) {
+                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && (!device.systemSetup.isAUXAuto || dfhTroubleshootingMode)) {
 
                         if (dfhSystemType === AppSpec.HeatingOnly) {
-                            return "Heating by furnace"
+                            return "Heating (Aux)"
 
-                        } else if (dfhSystemType === AppSpec.HeatPump) {
-                            return "Heating by heat pump"
+                        } else if (dfhSystemType === AppSpec.HeatPump && dfhTroubleshootingMode) {
+                            return "Heating (Heat pump)"
                         }
                     }
 
