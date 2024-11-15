@@ -107,9 +107,12 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
     });
 
     connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureChanged, this, [this] () {
-        TRACE << "outdoorTemperatureChanged" << mActiveSysTypeHeating << mDataProvider->systemSetup()->systemMode;
-        TRACE_CHECK(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureChanged" << mDataProvider->effectiveSystemMode() ;
-        checkForRestart();
+        auto system = mDataProvider->systemSetup();
+        TRACE << "outdoorTemperatureChanged" << mActiveSysTypeHeating << system->systemMode;
+        TRACE_CHECK(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureChanged" << mDataProvider->effectiveSystemMode();
+        if (system->systemType == AppSpecCPP::SystemType::DualFuelHeating && system->isAUXAuto) {
+            checkForRestart();
+        }
     });
 
     connect(mDataProvider.get(), &SchemeDataProvider::currentTemperatureChanged, this, [this] () {
@@ -1300,7 +1303,14 @@ void Scheme::checkForRestart()
 
     } else if (sys->systemType == AppSpecCPP::SystemType::HeatPump) {
         auto activeHeatPump = activeHeatPumpMode(true);
-        if (activeHeatPump != mActiveHeatPumpMode && mActiveHeatPumpMode != AppSpecCPP::SMUnknown) {
+        //! we should restart to go to emergency from non emergency as it has not direct route
+        if (activeHeatPump == AppSpecCPP::EmergencyHeat && mActiveHeatPumpMode == AppSpecCPP::Heating) {
+            restartWork();
+
+        } //! we should restart vice versa only heating set in manual
+        //! we may do this inside emergency loop
+        else if (activeHeatPump == AppSpecCPP::Heating && sys->emergencyControlType == AppSpecCPP::ECTManually &&
+            mActiveHeatPumpMode == AppSpecCPP::EmergencyHeat) {
             restartWork();
         }
     }
@@ -1382,24 +1392,29 @@ void Scheme::setSystemSetup()
         TRACE << "dualFuelThreshodChanged" << mActiveSysTypeHeating << sys->systemMode;
         TRACE_CHECK(mDataProvider->isPerfTestRunning()) << "dualFuelThreshodChanged" << mDataProvider->effectiveSystemMode();
         // restart scheme if needed
-        checkForRestart();
+        if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && sys->isAUXAuto) {
+            checkForRestart();
+        }
     });
 
     connect(sys, &SystemSetup::isAUXAutoChanged, this, [=] {
         TRACE << "isAUXAutoChanged";
         // restart scheme if needed
-        checkForRestart();
+        if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating)
+            checkForRestart();
     });
 
     connect(sys, &SystemSetup::dualFuelManualHeatingChanged, this, [=] {
-        TRACE << "dualFuelManualHeatingChanged";
+        TRACE << "dualFuelManualHeatingChanged" << sys->dualFuelManualHeating;
         // restart scheme if needed
-        checkForRestart();
+        if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && !sys->isAUXAuto)
+            checkForRestart();
     });
 
     connect(sys, &SystemSetup::emergencyControlTypeChanged, this, [=] {
         TRACE << "emergencyControlType changed to " << sys->emergencyControlType;
-        checkForRestart();
+        if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
+            checkForRestart();
     });
 }
 
