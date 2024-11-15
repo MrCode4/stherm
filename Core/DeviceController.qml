@@ -912,23 +912,40 @@ I_DeviceController {
         device.vacation.hum_max  = hum_max ;
     }
 
-    function setSystemModeTo(systemMode: int, force = false, dualFuelManualHeating = false) : bool
+    function setSystemModeTo(systemMode: int, force = false, dualFuelManualHeating = AppSpecCPP.DFMOff, save = true) : bool
     {
         if (device.systemSetup._isSystemShutoff) {
             console.log("Ignore system mode, system is shutoff by alert manager.")
             return false;
         }
 
+        // Update the dualFuelManualHeating option in the Auto system mode
+        if (device.systemSetup.systemType === AppSpec.DualFuelHeating &&
+                (systemMode === AppSpec.Auto || systemMode === AppSpecCPP.Vacation) &&
+                !device.systemSetup.isAUXAuto && dualFuelManualHeating === AppSpecCPP.DFMOff) {
+            dualFuelManualHeating = AppSpec.DFMHeatPump;
+        }
+
+
+        // Update the system mode
         if (systemMode === AppSpecCPP.Vacation) {
+            // In vacation mode, we should keep the model if it is necessary.
+            if (device.systemSetup.systemType === AppSpec.DualFuelHeating)
+                device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
+
             setVacationOn(true);
 
-        } else if (systemMode >= 0 && systemMode < AppSpecCPP.SMUnknown) {
+        } else if (systemMode >= AppSpec.Cooling && systemMode < AppSpec.SMUnknown) {
             //! TODo required actions if any
 
-            if (checkToUpdateSystemMode(systemMode, force, dualFuelManualHeating)) {
-                updateEditMode(AppSpec.EMSystemMode);
-                // to let all dependant parameters being updated and save all
-                Qt.callLater(saveSettings);
+            if (checkToUpdateSystemMode(systemMode, force)) {
+                device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
+
+                if (save) {
+                    updateEditMode(AppSpec.EMSystemMode);
+                    // to let all dependant parameters being updated and save all
+                    Qt.callLater(saveSettings);
+                }
 
             } else {
                 console.log("Core/DeviceController.qml, setSystemModeTo: Ignore system mode due to checkToUpdateSystemMode conditions. ", systemMode);
@@ -943,9 +960,9 @@ I_DeviceController {
         return true;
     }
 
-    function checkToUpdateSystemMode(systemMode: int, force = false, dualFuelManualHeating = AppSpecCPP.DFMOff) {
-
-        if (device.systemSetup.systemMode === systemMode && device.systemSetup.dualFuelManualHeating === dualFuelManualHeating) {
+    //! This function should only be called from within the setSystemModeTo function.
+    function checkToUpdateSystemMode(systemMode: int, force = false) {
+        if (device.systemSetup.systemMode === systemMode) {
             return true;
         }
 
@@ -959,7 +976,6 @@ I_DeviceController {
         }
 
         device.systemSetup.systemMode = systemMode;
-        device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
 
         return true;
     }
@@ -1204,9 +1220,8 @@ I_DeviceController {
         } else {
             var modeInt = parseInt(mode_id) - 1;
             //! Vacation will be handled using setVacationServer
-            if (modeInt >= AppSpec.Cooling && modeInt <= AppSpec.Emergency &&
-                    modeInt !== AppSpec.Vacation) {
-                checkToUpdateSystemMode(modeInt, false, dualFuelManualHeating);
+            if (modeInt !== AppSpec.Vacation) {
+                setSystemModeTo(modeInt, false, dualFuelManualHeating, false);
             }
         }
     }

@@ -131,7 +131,7 @@ QtObject {
 
     function setVacation(temp_min, temp_max, hum_min, hum_max) {}
 
-    function setSystemModeTo(systemMode: int) {}
+    function setSystemModeTo(systemMode: int, force = false, dualFuelManualHeating = false, save = true) {}
 
     function setVacationOn(on: bool) {}
 

@@ -267,7 +267,7 @@ BasePageView {
                 icon: FAIcons.circleInfo
                 iconColor: "#94A3B8"
                 height: 90
-                text: "The auxiliary (Aux) can be only used when manually selected form system mode."
+                text: "The auxiliary (Aux) can be only used when manually selected from system mode."
             }
 
 
