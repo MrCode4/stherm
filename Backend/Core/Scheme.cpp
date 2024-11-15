@@ -888,6 +888,12 @@ void Scheme::internalPumpHeatingLoopStage1()
         break;
     }
 
+    // Stop countdown
+    if (hasDelay) {
+        emit stopSystemDelayCountdown();
+        hasDelay = false;
+    }
+
     TRACE << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished pump heat" << stopWork;
     mActiveHeatPumpMode = AppSpecCPP:: SMUnknown;
 }
@@ -1415,6 +1421,15 @@ void Scheme::setSystemSetup()
         TRACE << "emergencyControlType changed to " << sys->emergencyControlType;
         if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
             checkForRestart();
+    });
+
+    connect(sys, &SystemSetup::emergencyTemperatureDiffrenceChanged, this, [=] {
+        TRACE << "emergencyTemperatureDiffrenceChanged" << mActiveSysTypeHeating << sys->systemMode;
+
+        // restart scheme if needed
+        if (sys->systemType == AppSpecCPP::SystemType::HeatPump && sys->emergencyControlType == AppSpecCPP::ECTAuto) {
+            checkForRestart();
+        }
     });
 }
 

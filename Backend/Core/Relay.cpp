@@ -393,7 +393,8 @@ bool Relay::turnOffEmergencyHeating()
     mRelay.w2  = STHERM::RelayMode::OFF;
     mRelay.w3 = STHERM::RelayMode::OFF;
 
-    // update current_state
+    //! we are sure that everything is off as it may not proceed to next loop correctly
+    current_state = AppSpecCPP::SystemMode::Off;
 
     return true;
 }
