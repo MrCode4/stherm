@@ -80,6 +80,8 @@ public:
     //! result should be in Fahrenheit as well.
     double effectiveTemperature() const;
 
+    double effectiveHumidity();
+
     bool isVacationEffective() const;
 
     AppSpecCPP::SystemMode effectiveSystemMode() const;
@@ -95,6 +97,8 @@ public:
     //! Since the heat pump and cool stages both determine the Y wires, they're essentially the same.
     int heatPumpStage() const;
 
+    double effectiveEmergencyHeatingThresholdF();
+
 signals:
 
     /* Public Signals
@@ -109,6 +113,9 @@ signals:
 
     void outdoorTemperatureReady();
     void outdoorTemperatureChanged();
+
+    void effectiveTemperatureChanged(double effectiveTemperatureC) const;
+    void effectiveHumidityChanged(double effectiveHumidity);
 
 private:
     /* Attributes

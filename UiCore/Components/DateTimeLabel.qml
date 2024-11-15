@@ -39,20 +39,30 @@ Control {
         spacing: 4
 
         //! Time Label
-        Row {
+        RowLayout {
             Layout.alignment: Qt.AlignCenter
+            spacing: 0
 
             Label {
                 id: _timeLbl
-                font.pointSize: _root.font.pointSize * 1.4
                 text: "00:00"
+                Layout.fillHeight: true
+
+                font{
+                    pointSize: _root.font.pointSize * 1.4
+                }
             }
 
             Label {
                 id: amPmLbl
-                y: parent.height - height
+
                 visible: is12Hour
-                font.pointSize: _root.font.pointSize * 0.8
+                Layout.fillHeight: true
+                verticalAlignment: Text.AlignBottom
+
+                font {
+                    pointSize: _root.font.pointSize * 0.8
+                }
             }
         }
 

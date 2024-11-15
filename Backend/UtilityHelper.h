@@ -523,6 +523,9 @@ public:
     static double CPUUsage();
 
     //! Convert Celcius to Fahrenheit
-    static double toFahrenheit(double celsius);
+    static double toFahrenheit(const double &celsius);
+
+    //! Convert Fahrenheit to Celcius
+    static double toCelsius(const double &fahrenheit);
 };
 

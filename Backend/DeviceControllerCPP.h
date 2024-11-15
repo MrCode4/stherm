@@ -191,6 +191,8 @@ public:
     void doPerfTest(AppSpecCPP::SystemMode mode);
     void revertPerfTest();
 
+    Q_INVOKABLE double effectiveHumidity();
+
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -222,7 +224,7 @@ Q_SIGNALS:
     void nrfUpdateStarted();
 
     void fanWorkChanged(bool fanState);
-    void currentSystemModeChanged(AppSpecCPP::SystemMode fanState);
+    void currentSystemModeChanged(AppSpecCPP::SystemMode obState, int currentHeatingStage, int currentCoolingStage);
 
     //! Active system mode changed due to dual fuel heating
     void dfhSystemTypeChanged(AppSpecCPP::SystemType activeSystemType);
@@ -246,6 +248,11 @@ Q_SIGNALS:
 
     void temperatureSensorStatus(bool status = true);
     void humiditySensorStatus(bool status = true);
+
+    void effectiveTemperatureChanged(double effectiveTemperatureC);
+
+    //! To block mode change in UI
+    void manualEmergencyModeUnblockedAfter(int secs);
 
 private:
     // update main data and send data to scheme.

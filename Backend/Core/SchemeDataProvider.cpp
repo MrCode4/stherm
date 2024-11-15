@@ -81,10 +81,9 @@ double SchemeDataProvider::effectiveTemperature() const
     double effTemperature = setPointTemperature();
 
     if (isPerfTestRunning()) {
-        return perfTestSystemMode() == AppSpecCPP::Heating ? 90 : 40;
-    }
+        effTemperature = perfTestSystemMode() == AppSpecCPP::Heating ? 90 : 40;
 
-    if (isVacationEffective()) {
+    } else if (isVacationEffective()) {
         //! Vacation properites (Fahrenheit)
         double minimumTemperature = UtilityHelper::toFahrenheit(mVacation.minimumTemperature);
         double maximumTemperature = UtilityHelper::toFahrenheit(mVacation.maximumTemperature);
@@ -136,7 +135,36 @@ double SchemeDataProvider::effectiveTemperature() const
         }
     }
 
+    emit effectiveTemperatureChanged(UtilityHelper::toCelsius(effTemperature));
+
     return effTemperature;
+}
+
+double SchemeDataProvider::effectiveHumidity()
+{
+    double effectiveHumidity = setPointHumidity();
+
+    if (isVacationEffective()) {
+        if (getAccessoriesType() == AppSpecCPP::AccessoriesType::Humidifier) {
+            effectiveHumidity = mVacation.minimumHumidity;
+            if ((mVacation.minimumHumidity - currentHumidity()) > 0.001) {
+                effectiveHumidity = mVacation.maximumHumidity;
+            }
+
+        } else if (getAccessoriesType() == AppSpecCPP::AccessoriesType::Dehumidifier) {
+            effectiveHumidity = mVacation.maximumHumidity;
+            if (currentHumidity() - mVacation.maximumHumidity > 0.001) {
+                effectiveHumidity = mVacation.minimumHumidity;
+            }
+        }
+
+    } else if (mSchedule) {
+        //! TODO
+    }
+
+    emit effectiveHumidityChanged(effectiveHumidity);
+
+    return effectiveHumidity;
 }
 
 void SchemeDataProvider::setAutoMinReqTempF(const double &fah_value)
@@ -181,6 +209,17 @@ double SchemeDataProvider::dualFuelThreshodF() const
 int SchemeDataProvider::heatPumpStage() const
 {
     return mSystemSetup->coolStage;
+}
+
+double SchemeDataProvider::effectiveEmergencyHeatingThresholdF()
+{
+    // Default is manual emergency mode (1 F).
+    auto  effThreshold = -1.0;
+    if (mSystemSetup->emergencyControlType == AppSpecCPP::ECTAuto) {
+        effThreshold = mSystemSetup->emergencyTemperatureDiffrence * 1.8;
+    }
+
+    return effThreshold;
 }
 
 double SchemeDataProvider::autoMaxReqTempF() const

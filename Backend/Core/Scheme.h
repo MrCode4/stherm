@@ -53,7 +53,7 @@ signals:
 
     void alert();
 
-    void currentSystemModeChanged(AppSpecCPP::SystemMode obState);
+    void currentSystemModeChanged(AppSpecCPP::SystemMode obState, int currentHeatingStage, int currentCoolingStage);
 
     //! Start system delay timer in ui to show in home page
     //! delay: miliseconds
@@ -66,6 +66,10 @@ signals:
     void dfhSystemTypeChanged(AppSpecCPP::SystemType activeSystemType);
 
     void actualModeStarted(AppSpecCPP::SystemMode mode);
+
+    //! To block mode change in UI
+    //! The system mode change will be unblock after `miliSecs` mili-seconds.
+    void manualEmergencyModeUnblockedAfter(int miliSecs);
 
 protected:
     void run() override;
@@ -92,7 +96,10 @@ private:
 
     void internalPumpHeatingLoopStage1();
     bool internalPumpHeatingLoopStage2();
-    void EmergencyHeating();
+
+    //! Users manually activate emergency heat., meaning Emergency heating will only be active when the system mode is set to Emergency or
+    //!  emergency heating will be triggered by the Defrost Controller Board (if equipped) or based on system needs.
+    void emergencyHeatingLoop();
     void sendAlertIfNeeded();
 
     //! Send relays into ti
@@ -117,7 +124,11 @@ private:
 
     void fanWork(bool isOn);
 
-    void checkForRestartDualFuel();
+    void checkForRestart();
+
+    AppSpecCPP::SystemMode activeHeatPumpMode(const bool &checkWithManualEmergency = false);
+
+    void manualEmergencyHeating();
 
 private:
     /* Attributes
@@ -151,9 +162,14 @@ private:
     bool isVacation;
     bool mRestarting;
 
+    //! Use for minimum run time of emergency heating
+    QElapsedTimer mTEONTimer;
+
     //! Switch active system type in the dual fuel heating to ...
     //! Used in internet connection troubleshooting
     AppSpecCPP::SystemType mSwitchDFHActiveSysTypeTo;
     //! Used in deciding if we need to restart on some changes in dual fuel
     AppSpecCPP::SystemType mActiveSysTypeHeating;
+
+    AppSpecCPP::SystemMode mActiveHeatPumpMode;
 };

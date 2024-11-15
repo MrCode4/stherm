@@ -26,6 +26,7 @@ ToolButton {
     property int dfhSystemType: deviceController.dfhSystemType
 
     property bool dfhTroubleshootingMode: device?.systemSetup?.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet &&
+                                          device.systemSetup.isAUXAuto &&
                                           (dfhSystemType === AppSpec.HeatingOnly || dfhSystemType === AppSpec.HeatPump)
 
 
@@ -78,7 +79,7 @@ ToolButton {
             id: _heatingStateItem
             anchors.centerIn: parent
             visible: opacity > 0
-            opacity: _control.state === "heating" ? 1. : 0.
+            opacity: (_control.state === "heating" || _control.state === "emergency") ? 1. : 0.
             spacing: 2
 
             //! HEATING mode icon
@@ -97,13 +98,16 @@ ToolButton {
                 Layout.alignment: Qt.AlignCenter
                 font.pointSize: Application.font.pointSize * 0.65
                 text: {
-                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet) {
+                    if (_control.state === "emergency")
+                        return "Emergency"
+
+                    if (device.systemSetup.systemType === AppSpec.DualFuelHeating && (!device.systemSetup.isAUXAuto || dfhTroubleshootingMode)) {
 
                         if (dfhSystemType === AppSpec.HeatingOnly) {
-                            return "Heating by furnace"
+                            return "Heating (Aux)"
 
-                        } else if (dfhSystemType === AppSpec.HeatPump) {
-                            return "Heating by heat pump"
+                        } else if (dfhSystemType === AppSpec.HeatPump && dfhTroubleshootingMode) {
+                            return "Heating (Heat pump)"
                         }
                     }
 
@@ -238,6 +242,9 @@ ToolButton {
             // if design added the order should be specified as well as the next state in onClicked
         case AppSpecCPP.Auto:
             return "auto";
+        case AppSpecCPP.EmergencyHeat:
+            return "emergency";
+
         default:
             return "off"
         }

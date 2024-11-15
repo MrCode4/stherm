@@ -30,8 +30,14 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(bool isVacation        MEMBER isVacation        NOTIFY isVacationChanged FINAL)
     Q_PROPERTY(bool _isSystemShutoff  MEMBER _mIsSystemShutoff NOTIFY isSystemShutoffChanged FINAL)
+    Q_PROPERTY(bool isAUXAuto  MEMBER isAUXAuto NOTIFY isAUXAutoChanged FINAL)
+    Q_PROPERTY(AppSpecCPP::DualFuelManualHeating dualFuelManualHeating  MEMBER dualFuelManualHeating NOTIFY dualFuelManualHeatingChanged FINAL)
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
+
+    Q_PROPERTY(double emergencyTemperatureDiffrence  MEMBER emergencyTemperatureDiffrence NOTIFY emergencyTemperatureDiffrenceChanged FINAL)
+    Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
+    Q_PROPERTY(AppSpecCPP::emergencyControlType    emergencyControlType           MEMBER emergencyControlType  NOTIFY emergencyControlTypeChanged FINAL)
 
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
@@ -63,6 +69,17 @@ public:
     //! Celsius
     double dualFuelThreshod;
 
+    bool   isAUXAuto;
+    AppSpecCPP::DualFuelManualHeating   dualFuelManualHeating;
+
+    //! Emergency properties
+    //! In minutes
+    int emergencyMinimumTime;
+
+    AppSpecCPP::emergencyControlType emergencyControlType;
+
+    //! In celcius
+    double emergencyTemperatureDiffrence;
 
 signals:
     void systemTypeChanged();
@@ -76,5 +93,10 @@ signals:
     void isVacationChanged();
     void isSystemShutoffChanged();
     void dualFuelThreshodChanged();
+    void emergencyTemperatureDiffrenceChanged();
+    void emergencyMinimumTimeChanged();
+    void emergencyControlTypeChanged();
+    void isAUXAutoChanged();
+    void dualFuelManualHeatingChanged();
 
 };

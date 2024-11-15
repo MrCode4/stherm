@@ -89,7 +89,7 @@ BasePageView {
         RoniaTextIcon {
             Layout.leftMargin: 24
             font.pointSize: _root.font.pointSize * 2
-            text: "\uf2c8" //! temperature-three-quarters icon
+            text: FAIcons.temperatureThreeQuarters
         }
 
         //! Temprature range

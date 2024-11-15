@@ -9,10 +9,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 17)
 
 # Temperature scheme version and update date.
-set(TEMPERATURE_SCHEME_VERSION_C "V.1.94 (02.10.2024)")
+set(TEMPERATURE_SCHEME_VERSION_C "V.2.0.2 (13.11.2024)")
 set(FAKE_UID "" CACHE STRING "The fake UID used for testing purposes")
+set(FAKE_SERIALID "" CACHE STRING "The fake SERIAL ID used for testing purposes")
 set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT "Delay counter for serial test")
 
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
@@ -40,11 +42,60 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Data)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Services)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Proto)
 
 # Add any include directories
 #include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
 
 # Dependencies
+message( "Protocol Buffers Configuring...")
+include(protobuf.cmake)
+
+if (UNIX)
+    set(PROTOBUF_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/include")
+    set(PROTOBUF_LIBRARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib")
+
+    set(protobuf_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib/cmake/protobuf")
+    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf.a)
+    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf-lite.a)
+    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotoc.a)
+
+    set(absl_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib/cmake/absl")
+    set(utf8_range_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib/cmake/utf8_range")
+
+else ()
+    set(PROTOBUF_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/include")
+    set(PROTOBUF_LIBRARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib")
+
+    set(protobuf_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib/cmake/protobuf")
+    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf.lib)
+    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf-lite.lib)
+    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotoc.lib)
+
+    set(absl_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib/cmake/absl")
+    set(utf8_range_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib/cmake/utf8_range")
+
+endif ()
+
+find_package(Protobuf CONFIG)
+find_package(Protobuf REQUIRED)
+find_package(absl REQUIRED)
+find_package(utf8_range REQUIRED)
+
+include_directories(${PROTOBUF_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+message("Protocol Buffers found: " ${Protobuf_FOUND} " - " ${Protobuf_VERSION})
+if (Protobuf_FOUND)
+    set (PROTO_SRCS Backend/Proto/streamdata.pb.cc)
+    set (PROTO_HDRS Backend/Proto/streamdata.pb.h)
+    # set_source_files_properties(PROTO_SRCS PROTO_HDRS PROPERTIES GENERATED TRUE)
+    # PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS  ${CMAKE_CURRENT_SOURCE_DIR}/Resources/streamdata.proto)
+    message("protobuf files generated in " ${PROTO_SRCS} " - " ${PROTO_HDRS})
+
+else ()
+    message(FATAL_ERROR "ERROR: Protobuf not found.")
+endif()
 add_subdirectory(QtQuickStream)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/QtQuickStream/include)
 
@@ -152,8 +203,9 @@ qt6_add_qml_module(appStherm
         UiCore/Components/InfoToolButton.qml
         UiCore/Components/HorizontalTimeTumbler.qml
         UiCore/Components/TemperatureFlatRangeSlider.qml
-        UiCore/Components/SingleTemperatureSlider.qml
+        UiCore/Components/SingleIconSlider.qml
         UiCore/Components/ContactNuveSupportLabel.qml
+        UiCore/Components/CautionRectangle.qml
 
 
         # Views and Widgets
@@ -413,6 +465,11 @@ qt6_add_qml_module(appStherm
         Backend/Services/PerfTestService.h
         Backend/Services/PerfTestService.cpp
 
+        ${PROTO_HDRS}
+        ${PROTO_SRCS}
+        Backend/Proto/ProtoDataManager.h
+        Backend/Proto/ProtoDataManager.cpp
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
@@ -484,6 +541,7 @@ endif()
 if(FAKE_UID_MODE)
     target_compile_definitions(appStherm PRIVATE FAKE_UID_MODE_ON)
     target_compile_definitions(appStherm PRIVATE FAKE_UID="${FAKE_UID}")
+    target_compile_definitions(appStherm PRIVATE FAKE_SERIALID="${FAKE_SERIALID}")
 endif()
 
 if(INITIAL_SETUP_MODE)
@@ -540,6 +598,20 @@ target_link_libraries(appStherm
     QtQuickStreamplugin
     RoniaStyle
     RoniaStyleplugin
+
+    ${Protobuf_LIBRARIES}
+
+     absl::log_internal_message
+     absl::log_internal_check_op
+     absl::flags_parse
+     absl::status
+     absl::statusor
+     absl::container_common
+     absl::strings
+     absl::log_streamer
+
+     utf8_range::utf8_range
+     utf8_range::utf8_validity
 )
 
 include(GNUInstallDirs)

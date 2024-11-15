@@ -20,74 +20,102 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
     OrganizationIcon {
+        id: organizationIcon
         appModel: root.appModel
-
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
 
         width: parent.width * 0.5
         height: parent.height * 0.25
+
+        anchors {
+            top: parent.top
+            horizontalCenter: parent.horizontalCenter
+        }
     }
 
-    GridLayout {
-        height: Math.min(root.availableHeight, implicitHeight)
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        columns: 2
-        rowSpacing: 16
-        columnSpacing: 32
+    Column {
+        width: parent.width
+        spacing: 24
+
+        anchors {
+            top: organizationIcon.bottom
+            topMargin: 40
+            bottom: requestButton.top
+        }
 
         Item {
+            width: parent.width
+            height: phoneNumberText.height
 
-            Layout.columnSpan: 2
-            Layout.alignment: Qt.AlignHCenter
-            Layout.bottomMargin: 48
-            Layout.preferredHeight: root.height / 8
-            Layout.fillWidth: true
-            Layout.preferredWidth: 0
-        }
+            //! Phone
+            RoniaTextIcon {
+                text: FAIcons.circlePhone
 
-        //! Phone
-        RoniaTextIcon {
-            text: FAIcons.circlePhone
-        }
-
-        Label {
-            Layout.alignment: Qt.AlignCenter
-            text: appModel.contactContractor.phoneNumber
-        }
-
-        //! Nuve Url
-        RoniaTextIcon {
-            text: FAIcons.globe
-        }
-
-        Image {
-            Layout.alignment: Qt.AlignCenter
-
-            source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg(appModel.contactContractor.qrURL, Style.foreground)}`
-            sourceSize.height: 130
-            sourceSize.width: 130
-        }
-
-        //! Request a Tech
-        RoniaTextIcon {
-            text: FAIcons.briefcase
-            visible: false
-        }
-
-        ButtonInverted {
-            Layout.alignment: Qt.AlignCenter
-            font.bold: true
-            text: "Request a Tech"
-            visible: false
-
-            onClicked: {
-                if (root.StackView.view) {
-                    root.StackView.view.push("qrc:/Stherm/View/RequestTechPriorityPage.qml", {
-                                                  "uiSession": uiSession
-                                              });
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    horizontalCenterOffset: -125
+                    verticalCenter: phoneNumberText.verticalCenter
                 }
+            }
+
+            Label {
+                id: phoneNumberText
+
+                text: appModel.contactContractor.phoneNumber
+
+                anchors {
+                    centerIn: parent
+                }
+            }
+        }
+
+        Item {
+            width: parent.width
+            height: qrCodeImage.height
+
+            //! Nuve Url
+            RoniaTextIcon {
+                text: FAIcons.globe
+
+                anchors {
+                    centerIn: parent
+                    horizontalCenterOffset: -125
+                }
+            }
+
+            Image {
+                id: qrCodeImage
+
+                source: `data:image/svg+xml;utf8,${QRCodeGenerator.getQRCodeSvg(appModel.contactContractor.qrURL, Style.foreground)}`
+                sourceSize: Qt.size(130, 130)
+
+                anchors {
+                    centerIn: parent
+                }
+            }
+        }
+    }
+
+    ButtonInverted {
+        id: requestButton
+
+        text: "Request a Tech"
+        visible: false
+
+        font {
+            bold: true
+        }
+
+        anchors {
+            bottom: parent.bottom
+            bottomMargin: 20
+            horizontalCenter: parent.horizontalCenter
+        }
+
+        onClicked: {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/RequestTechPriorityPage.qml", {
+                                             "uiSession": uiSession
+                                         });
             }
         }
     }

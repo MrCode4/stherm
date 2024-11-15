@@ -63,7 +63,7 @@ QtObject {
         var newSchedule = cloneSchedule(schedule, AppCore.defaultRepo);
 
         // Update the created schedule with the current system mode
-        newSchedule.systemMode = device.systemSetup.systemMode;
+        setScheduleMode(newSchedule, device.systemSetup.systemMode);
 
         device.schedules.push(newSchedule);
         device.schedulesChanged();
@@ -172,16 +172,34 @@ QtObject {
         return nextRepeats.join(",");
     }
 
-    //! assuming the data is same and just the time differs between variables
+    //! Assuming the date is same and just the time differs between variables
     function timeInRange(time: Date, schStartTime: Date, schEndTime: Date) {
-        if (schStartTime < schEndTime) { // normal
-            if (time >= schStartTime && time < schEndTime)
+        var todayTime = adjustDateToToday(time);
+        var startTime = adjustDateToToday(schStartTime);
+        var endTime   = adjustDateToToday(schEndTime);
+
+        if (startTime < endTime) { // normal
+            if (todayTime >= startTime && todayTime < endTime)
                 return true;
         } else { // overnight
-            if (time >= schStartTime || time < schEndTime)
+            if (todayTime >= startTime || todayTime < endTime)
                 return true;
         }
         return false;
+    }
+
+    //! Convert the day to today
+    function adjustDateToToday(time: Date) {
+      // Create a new Date object for today
+      let today = new Date();
+
+      // Set the time of today to the time of the time object
+      today.setHours(time.getHours());
+      today.setMinutes(time.getMinutes());
+      today.setSeconds(time.getSeconds());
+      today.setMilliseconds(time.getMilliseconds());
+
+      return today;
     }
 
     //! Find running days with repeat and start time.
@@ -346,8 +364,8 @@ QtObject {
                     //! Compare time and running days to start it.
                     if (schedule.scheduleElement.enable &&
                         schedule.runningDays.includes(currentDate)) {
-                        if (now >= schedule.startTime && // should be replaced by timeInRange
-                            now <= schedule.endTime) { // logical compare would be, but in this case we miss one minute for overnight schedules
+                         // logical compare would be, but in this case we miss one second for overnight schedules
+                        if (timeInRange(now, schedule.startTime, schedule.endTime)) {
                             return true;
                         }
                     }
@@ -369,7 +387,7 @@ QtObject {
         //! this function is called even if device is off or hold!
         //! We should no use a current schedule when device is on Hold, in Off Mode,
         //! in perf test or when emergency shut off!
-        if (device.isHold || ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off) ||
+        if (device.isHold || ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off || device.systemSetup.systemMode === AppSpec.EmergencyHeat) ||
                 device?.systemSetup?._isSystemShutoff || PerfTestService.isTestRunning) {
             currentSchedule = null;
         }
@@ -657,8 +675,8 @@ QtObject {
 
         return   schedule.systemMode !== checkWithSystemMode &&
                 ((checkWithSystemMode === AppSpec.Cooling && schedule.systemMode === AppSpec.Heating) ||
-                 (checkWithSystemMode === AppSpec.Heating && schedule.systemMode === AppSpec.Cooling) ||
-                 (checkWithSystemMode === AppSpec.Auto    && (schedule.systemMode === AppSpec.Cooling || schedule.systemMode === AppSpec.Heating)))
+                 ((checkWithSystemMode === AppSpec.Heating || checkWithSystemMode === AppSpec.EmergencyHeat) && schedule.systemMode === AppSpec.Cooling) ||
+                 (checkWithSystemMode === AppSpec.Auto    && (schedule.systemMode === AppSpec.Cooling || schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.EmergencyHeat)))
     }
 
     //! Update system mode of campatible schedules.
@@ -736,6 +754,16 @@ QtObject {
         return schedulePacket;
     }
 
+    //! Set schedule mode
+    //! If the system is Off, it will switch to Auto mode
+    //! If the system is Emergency Heating, it will switch to Heating mode
+    function setScheduleMode(schedule: ScheduleCPP, systemMode: int) {
+        var sysMode = AppSpec.getScheduleModeWithSysMode(systemMode);
+
+        // Update the created schedule with the current system mode
+        schedule.systemMode = sysMode;
+    }
+
     property Timer _checkRunningTimer: Timer {
 
         running: runningScheduleEnabled
@@ -783,10 +811,11 @@ QtObject {
 
         function onSystemModeChanged() {
             var currentSystemMode = device.systemSetup.systemMode;
-            if (currentSystemMode === AppSpec.Off) {
+            if (currentSystemMode === AppSpec.Off || currentSystemMode === AppSpec.EmergencyHeat) {
                 deviceController.setActivatedSchedule(null);
+            }
 
-            } else {
+            if (currentSystemMode !== AppSpec.Off) {
                 // Deactivate the incompatible schedules when mode changed from server or ui
                 deactivateIncompatibleSchedules(currentSystemMode);
             }

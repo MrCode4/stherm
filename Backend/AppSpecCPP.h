@@ -30,10 +30,23 @@ class AppSpecCPP : public QObject
 
     Q_PROPERTY(QString api_base_server_url READ apiBaseServerUrl  CONSTANT)
 
+    Q_PROPERTY(double defaultEmergencyTemperatureDiffrenceF READ defaultEmergencyTemperatureDiffrenceF  CONSTANT)
+    Q_PROPERTY(double defaultEmergencyTemperatureDiffrenceC READ defaultEmergencyTemperatureDiffrenceC  CONSTANT)
+
+    Q_PROPERTY(double defaultEmergencyMinimumTime READ defaultEmergencyMinimumTime  CONSTANT)
+
     QML_ELEMENT
 public:
     explicit AppSpecCPP(QObject *parent = nullptr);
     static AppSpecCPP *instance();
+
+    //! Fahrenheit
+    static double defaultEmergencyTemperatureDiffrenceF();
+    //! Celcius
+    static double defaultEmergencyTemperatureDiffrenceC();
+
+    //! Minutes
+    static int defaultEmergencyMinimumTime();
 
     enum ChangeType {
         ctNone               = 0,
@@ -65,7 +78,9 @@ public:
         Auto,
         Vacation,
         Off,
+        EmergencyHeat,
         Emergency,
+        SMUnknown
     };
     Q_ENUM(SystemMode)
 
@@ -79,6 +94,14 @@ public:
         SysTUnknown
     };
     Q_ENUM(SystemType)
+
+    enum DualFuelManualHeating
+    {
+        DFMAuxiliary = 0,
+        DFMHeatPump,
+        DFMOff,
+    };
+    Q_ENUM(DualFuelManualHeating)
 
 
     Q_INVOKABLE QString systemTypeString(SystemType systemType);
@@ -180,6 +203,11 @@ public:
     };
     Q_ENUM(AlertTypes)
 
+    enum emergencyControlType {
+        ECTManually = 0,
+        ECTAuto
+    };
+    Q_ENUM(emergencyControlType)
 
     Q_INVOKABLE QVariant readFromFile(const QString &fileUrl);
 

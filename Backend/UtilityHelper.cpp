@@ -20,8 +20,12 @@
 // Minimum packet length
 #define PacketMinLength 5
 
-double UtilityHelper::toFahrenheit(double celsius) {
+double UtilityHelper::toFahrenheit(const double &celsius) {
     return celsius * 9 / 5 + 32.0;
+}
+
+double UtilityHelper::toCelsius(const double &fahrenheit) {
+    return (fahrenheit - 32.0) * 5 / 9;
 }
 
 bool UtilityHelper::configurePins(int gpio)

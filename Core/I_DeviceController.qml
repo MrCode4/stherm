@@ -47,6 +47,7 @@ QtObject {
             var maximumTemperature = _maximumTemperatureF;
 
             switch(device.systemSetup.systemMode) {
+            case AppSpec.EmergencyHeat:
             case AppSpec.Heating: {
                 minimumTemperature = AppSpec.minimumHeatingTemperatiureF;
                 maximumTemperature = AppSpec.maximumHeatingTemperatiureF;
@@ -130,7 +131,7 @@ QtObject {
 
     function setVacation(temp_min, temp_max, hum_min, hum_max) {}
 
-    function setSystemModeTo(systemMode: int) {}
+    function setSystemModeTo(systemMode: int, force = false, dualFuelManualHeating = false, save = true) {}
 
     function setVacationOn(on: bool) {}
 
@@ -144,7 +145,9 @@ QtObject {
     function setSystemRunDelay(delay: int) {}
     function setSystemCoolingOnly(stage: int) {}
     function setSystemHeatOnly(stage: int) {}
-    function setSystemHeatPump(emergency: bool, stage: int, obState: int) {}
+    function setSystemHeatPump(emergencyHeating: bool, stage: int, obState: int,
+                               emergencyMinimumTime: int, emergencyControlType: int,
+                               emergencyTemperatureDiffrence: real) {}
     function setSystemTraditional(coolStage: int, heatStage: int) {}
     function setSystemDualFuelHeating(emergency: bool, stage: int, obState: int, dualFuelThreshod: real) {}
     function setSystemAccessories(accType: int, wireType: int) {}

@@ -100,6 +100,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                                      info.value("tech").toString());
     });
 
+    // When system is OFF, the set temperature will remain constant
+    connect(mSchemeDataProvider.get(), &SchemeDataProvider::effectiveTemperatureChanged, this, &DeviceControllerCPP::effectiveTemperatureChanged);
+
     mAdaptiveBrightness = 50;
 
     QDir backdoorDir(m_backdoorPath);
@@ -340,6 +343,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(mTempScheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
     connect(mTempScheme, &Scheme::actualModeStarted, this, &DeviceControllerCPP::actualModeStarted);
     connect(mTempScheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
+    connect(mTempScheme, &Scheme::manualEmergencyModeUnblockedAfter, this, &DeviceControllerCPP::manualEmergencyModeUnblockedAfter);
     connect(mTempScheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
         mHumidityScheme->setCanSendRelays(!isRunning);
     });
@@ -1525,4 +1529,8 @@ void DeviceControllerCPP::revertPerfTest()
     if (mHumidityScheme) {
         mHumidityScheme->restartWork(true);
     }
+}
+
+double DeviceControllerCPP::effectiveHumidity() {
+    return mSchemeDataProvider->effectiveHumidity();
 }

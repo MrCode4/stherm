@@ -80,6 +80,8 @@ public:
     //! This function turn on the w3 as emergency wire.
     bool emergencyHeating3();
 
+    int currentCoolingStage();
+    int currentHeatingStage();
 private:
     explicit Relay();
 

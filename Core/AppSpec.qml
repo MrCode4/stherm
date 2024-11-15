@@ -63,7 +63,6 @@ AppSpecCPP {
     //! Percent
     property int defaultVolume:     50
 
-
     //! To improve efficiency, we should delete any messages that exceed
     //! the maximum limit of messagesLimit messages.
     property int messagesLimits: 50
@@ -222,7 +221,7 @@ AppSpecCPP {
 
         var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"]);
         newSchedule.type = type;
-        newSchedule.systemMode = systemMode;
+        newSchedule.systemMode = getScheduleModeWithSysMode(systemMode);
 
         switch (type) {
         case AppSpecCPP.Away: {
@@ -255,6 +254,18 @@ AppSpecCPP {
         }
 
         return newSchedule;
+    }
+
+    //! Check and return the proper schedule mode based on system mode.
+    function getScheduleModeWithSysMode(systemMode: int) {
+        var sysMode = systemMode;
+
+        if (sysMode === AppSpec.EmergencyHeat)
+            sysMode = AppSpec.Heating;
+        else if (sysMode === AppSpec.Off)
+            sysMode = AppSpec.Auto;
+
+        return sysMode;
     }
 
     //! Convert temperature unit to string

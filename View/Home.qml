@@ -189,37 +189,39 @@ Control {
                     visible: deviceController.airConditionSensorHealth
                 }
             }
+        }
 
-            //! Fan
-            FanButton {
-                id: _fanButton
+        //! Fan
+        FanButton {
+            id: _fanButton
 
-                deviceController: uiSession.deviceController
-                appModel: uiSession.appModel
+            deviceController: uiSession.deviceController
+            appModel: uiSession.appModel
 
-                anchors {
-                    left: parent.left
-                    bottom: parent.bottom
-                    leftMargin: -8
-                }
-
-                onClicked: {
-                    _root.StackView.view.push("qrc:/Stherm/View/FanPage.qml",
-                                              {
-                                                  "uiSession": Qt.binding(() => uiSession)
-                                              });
-                }
+            anchors {
+                left: parent.left
+                top: _dateTimeHolder.top
+                leftMargin: 24
             }
 
-            //! Hold button
-            HoldButton {
-                id: _holdBtn
-                anchors {
-                    right: parent.right
-                    bottom: parent.bottom
-                    rightMargin: 8
-                }
-                uiSession: _root.uiSession
+            onClicked: {
+                _root.StackView.view.push("qrc:/Stherm/View/FanPage.qml",
+                                          {
+                                              "uiSession": Qt.binding(() => uiSession)
+                                          });
+            }
+        }
+
+        //! Hold button
+        HoldButton {
+            id: _holdBtn
+
+            uiSession: _root.uiSession
+
+            anchors {
+                right: parent.right
+                top: _dateTimeHolder.top
+                rightMargin: 24
             }
         }
 
@@ -238,6 +240,7 @@ Control {
             DateTimeLabel {
                 id: _dateTimeLbl
                 anchors.centerIn: parent
+                showDate: false
                 is12Hour: device?.setting?.timeFormat === AppSpec.TimeFormat.Hour12
             }
 
@@ -252,13 +255,15 @@ Control {
         OrganizationIcon {
             id: _logo
 
-            anchors.bottom: parent.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottomMargin: 5
-
             appModel: _root.device
-            width: parent.width * 0.5
-            height: parent.height * 0.2
+            width: parent.width * 0.5 // 240
+            height: parent.height * 0.25 // 120
+
+            anchors {
+                bottom: parent.bottom
+                horizontalCenter: parent.horizontalCenter
+                bottomMargin: 16
+            }
 
             TapHandler {
                 onTapped: {

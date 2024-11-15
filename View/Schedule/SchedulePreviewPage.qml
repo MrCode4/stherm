@@ -204,7 +204,7 @@ BasePageView {
                             if (scheduleToDisplay.systemMode === AppSpec.Cooling) {
                                 return "Cooling";
 
-                            } else if (scheduleToDisplay.systemMode === AppSpec.Heating) {
+                            } else if (scheduleToDisplay.systemMode === AppSpec.Heating || scheduleToDisplay.systemMode === AppSpec.EmergencyHeat) {
                                 return "Heating";
                             }
 
@@ -235,7 +235,7 @@ BasePageView {
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
                         text: {
-                            if (scheduleToDisplay.systemMode === AppSpec.Heating) {
+                            if (scheduleToDisplay.systemMode === AppSpec.Heating || scheduleToDisplay.systemMode === AppSpec.EmergencyHeat) {
                                 // Show the minimum temperature
                                 return Number(Utils.convertedTemperature(scheduleToDisplay?.minimumTemperature ?? 10,
                                                                          appModel?.setting?.tempratureUnit)

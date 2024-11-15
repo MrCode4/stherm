@@ -166,12 +166,19 @@ BasePageView {
                         }
                     },
                     {
+                        text: "Forget Device", visible: deviceController.initialSetup, action: () => {
+                            deviceController.forgetDevice();
+                            rebootPopup.cancelEnable = false;
+                            rebootPopup.open();
+                        }
+                    },
+                    {
                         text: "Exit", visible: system.testMode, action: () => {
                             exitPopup.open();
                         },
                         buddies: [
                             {
-                                text: "Forget Device", action: () => {
+                                text: "Forget Device", visible: deviceController.initialSetup, action: () => {
                                     deviceController.forgetDevice();
                                     rebootPopup.cancelEnable = false;
                                     rebootPopup.open();
