@@ -919,21 +919,12 @@ I_DeviceController {
             return false;
         }
 
-        // Update the dualFuelManualHeating option in the Auto system mode
-        if (device.systemSetup.systemType === AppSpec.DualFuelHeating &&
-                (systemMode === AppSpec.Auto || systemMode === AppSpecCPP.Vacation) &&
-                !device.systemSetup.isAUXAuto && dualFuelManualHeating === AppSpecCPP.DFMOff) {
-            dualFuelManualHeating = AppSpec.DFMHeatPump;
-        }
-
-
         // Update the system mode
         if (systemMode === AppSpecCPP.Vacation) {
             // In vacation mode, we should keep the model if it is necessary.
             if (device.systemSetup.systemType === AppSpec.DualFuelHeating)
                 device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
-
-            setVacationOn(true);
+                setVacationOn(true);
 
         } else if (systemMode >= AppSpec.Cooling && systemMode < AppSpec.SMUnknown) {
             //! TODo required actions if any
@@ -977,19 +968,37 @@ I_DeviceController {
 
         device.systemSetup.systemMode = systemMode;
 
+        updateDualFuelManualHeating();
+
         return true;
     }
 
     //! On/off the vacation from server.
     function setVacationOnFromServer(on: bool) {
-        device.systemSetup.isVacation = on;
+        setVacationOn(on, false)
     }
 
     //! On/off the vacation.
-    function setVacationOn(on: bool) {
+    function setVacationOn(on: bool, save = true) {
         device.systemSetup.isVacation = on;
-        updateEditMode(AppSpec.EMVacation);
-        saveSettings();
+        updateDualFuelManualHeating();
+
+        if (save) {
+            updateEditMode(AppSpec.EMVacation);
+            saveSettings();
+        }
+    }
+
+    //! Update the dualFuelManualHeating based on the mode
+    function updateDualFuelManualHeating() {
+        var systemMode = device.systemSetup.systemMode;
+        var needToCheck = device.systemSetup.isVacation || systemMode === AppSpec.Auto || systemMode === AppSpecCPP.Vacation
+
+        // Update the dualFuelManualHeating option in the vacation and Auto system mode
+        if (needToCheck && device.systemSetup.systemType === AppSpec.DualFuelHeating &&
+                !device.systemSetup.isAUXAuto && device.systemSetup.dualFuelManualHeating === AppSpecCPP.DFMOff) {
+            device.systemSetup.dualFuelManualHeating = AppSpec.DFMHeatPump;
+        }
     }
 
     //! Set time format
