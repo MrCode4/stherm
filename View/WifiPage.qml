@@ -33,6 +33,9 @@ BasePageView {
     //! such as during initial device setup in warranty replacment page.
     property bool nextButtonEnabled: initialSetup
 
+
+    property bool doesDeviceSupportWPA: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Wi-Fi Settings"
@@ -346,6 +349,12 @@ BasePageView {
                     if (text === "Connect") {
                         var wifi = _wifisRepeater.currentItem.wifi;
 
+                        if((_wifisRepeater.currentItem.isWPA3 === true) && (root.doesDeviceSupportWPA === false))
+                        {
+                            wpa3WifiAlert.open()
+                            return
+                        }
+
                         //! Check if we need user prompt for password, i.e., access point is open or is saved and has a profile.
                         if (wifi.security === "" || NetworkInterface.isWifiSaved(wifi)) {
                             NetworkInterface.connectWifi(wifi, "");
@@ -422,6 +431,20 @@ BasePageView {
             running: _errorDrawer.opened
             repeat: false
             onTriggered: _errorDrawer.close()
+        }
+    }
+
+    //! Wifi and Internet connection alerts
+    AlertNotifPopup {
+        id: wpa3WifiAlert
+        objectName: "WPA3Popup"
+
+        uiSession: root.uiSession
+
+        message: Message {
+            title: "Network Not Supported"
+            type: Message.Type.Alert
+            message: "The selected Wi-Fi network uses WPA3 encryption, which is not supported by thermostat. Please choose a different network to connect."
         }
     }
 
