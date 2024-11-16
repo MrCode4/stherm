@@ -4,31 +4,36 @@ import QtQuick.Layouts
 import Ronia
 import Stherm
 
+
 /*! ***********************************************************************************************
  * A delegate to be used in WifiPage
  * ***********************************************************************************************/
 Control {
     id: _root
 
+
     /* Signals
      * ****************************************************************************************/
-    signal clicked()
-    signal forgetClicked()
+    signal clicked
+    signal forgetClicked
+
 
     /* Property declaration
      * ****************************************************************************************/
     //! WifiInfo
-    property WifiInfo   wifi
+    property WifiInfo wifi
 
     //! Index in ListView
-    property int        delegateIndex
+    property int delegateIndex
 
     property bool isWPA3: false
 
+
     /* Object properties
      * ****************************************************************************************/
-    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
-                             _delegateContentRow.implicitHeight + topPadding + bottomPadding)
+    implicitHeight: Math.max(
+                        implicitBackgroundHeight + topInset + bottomInset,
+                        _delegateContentRow.implicitHeight + topPadding + bottomPadding)
     hoverEnabled: true
     background: Rectangle {
         implicitHeight: Style.delegateHeight
@@ -40,6 +45,7 @@ Control {
             color: _root.hovered ? Style.rippleColor : "transparent"
         }
     }
+
 
     /* Children
      * ****************************************************************************************/
@@ -63,42 +69,52 @@ Control {
                 Layout.preferredWidth: height
 
                 WifiIcon {
-                    anchors.fill: parent
 
                     isConnected: wifi?.connected ?? false
                     hasInternet: NetworkInterface.hasInternet
                     strength: wifi?.strength ?? 0
+
+                    anchors {
+                        fill: parent
+                    }
                 }
 
                 RoniaTextIcon {
                     id: shieldTextIcon
 
                     visible: _root.isWPA3 && lockTextIcon.visible
+                    text: FAIcons.shield
+
+                    font {
+                        pointSize: Application.font.pointSize * 0.9
+                    }
+
                     anchors {
                         right: parent.right
                         bottom: parent.bottom
                         rightMargin: -4
                         bottomMargin: -4
                     }
-                    //! strength > 0 means don't display lock for non-in-range wifis
-                    font.pointSize: Application.font.pointSize * 0.9
-                    text: FAIcons.shield
                 }
 
                 // security indicator
                 RoniaTextIcon {
                     id: lockTextIcon
 
-                    anchors {
-                        centerIn: _root.isWPA3? shieldTextIcon: undefined
-                        right: _root.isWPA3?undefined: parent.right
-                        bottom: _root.isWPA3?undefined: parent.bottom
-                    }
                     //! strength > 0 means don't display lock for non-in-range wifis
                     visible: wifi?.strength > 0 && wifi?.security !== ""
-                    font.pointSize: Application.font.pointSize * 0.5
                     text: FAIcons.lock
-                    color: enabled ? _root.isWPA3?Style.background: Style.foreground: Style.hintTextColor
+                    color: enabled ? _root.isWPA3 ? Style.background : Style.foreground : Style.hintTextColor
+
+                    font {
+                        pointSize: Application.font.pointSize * 0.5
+                    }
+
+                    anchors {
+                        centerIn: _root.isWPA3 ? shieldTextIcon : undefined
+                        right: _root.isWPA3 ? undefined : parent.right
+                        bottom: _root.isWPA3 ? undefined : parent.bottom
+                    }
                 }
             }
 
@@ -115,9 +131,12 @@ Control {
                 Label {
                     opacity: 0.7
                     visible: wifi?.connected ?? false
-                    font.pointSize: _root.font.pointSize * 0.8
                     color: wifi?.connected ? Style.accent : Style.foreground
                     text: "Connected"
+
+                    font {
+                        pointSize: _root.font.pointSize * 0.8
+                    }
                 }
             }
 
@@ -135,21 +154,28 @@ Control {
 
             ToolButton {
                 id: forgetBtn
+
                 Layout.alignment: Qt.AlignCenter
                 visible: (wifi?.isSaved && !wifi?.connected) ?? false
+
                 contentItem: RoniaTextIcon {
                     font.pointSize: Style.fontIconSize.normalPt
                     color: _root.Material.foreground
                     text: FAIcons.xmark
                 }
 
-                onClicked: forgetClicked()
+                onClicked: {
+                    forgetClicked()
+                }
             }
         }
 
-        onClicked: _root.clicked();
+        onClicked: {
+            _root.clicked()
+        }
     }
 
-    Behavior on height { NumberAnimation { } }
+    Behavior on height {
+        NumberAnimation {}
+    }
 }
-
