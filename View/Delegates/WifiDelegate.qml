@@ -23,16 +23,7 @@ Control {
     //! Index in ListView
     property int        delegateIndex
 
-    property bool isWPA3: _root.isSecuredByWPA3(wifi?.security ?? "")
-
-    function isSecuredByWPA3(security: string)
-    {
-        security = security.toUpperCase();
-        const isWPA3Secured = security.includes("WPA3") || security.includes("SAE")
-
-        return isWPA3Secured
-
-    }
+    property bool isWPA3: false
 
     /* Object properties
      * ****************************************************************************************/

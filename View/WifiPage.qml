@@ -156,6 +156,8 @@ BasePageView {
             visible: wifi
 
             wifi: NetworkInterface.connectedWifi
+            isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
+
             delegateIndex: -1
             onClicked: {
                 _wifisRepeater.currentIndex = -1;
@@ -221,6 +223,8 @@ BasePageView {
                         Layout.fillWidth: true
 
                         wifi: (modelData instanceof WifiInfo) ? modelData : null
+                        isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
+
                         delegateIndex: index
                         onClicked: {
                             _wifisRepeater.currentIndex = index;
@@ -473,5 +477,13 @@ BasePageView {
                 }
             }
         }
+    }
+
+    function isSecuredByWPA3(security: string)
+    {
+        security = security.toUpperCase();
+        const isWPA3Secured = security.includes("WPA3") || security.includes("SAE")
+
+        return isWPA3Secured
     }
 }
