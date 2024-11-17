@@ -370,6 +370,7 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
             // Select active system type based on the selected heating type in the system mode page.
             auto dualFuelManualHeating = mDataProvider->systemSetup()->dualFuelManualHeating;
 
+            // Use default dual fuel heating mode in Auto or Vacation.
             if (mDataProvider->systemSetup()->systemMode == AppSpecCPP::Auto ||
                 mDataProvider->systemSetup()->isVacation) {
                 dualFuelManualHeating = mDataProvider->systemSetup()->dualFuelHeatingModeDefault;
