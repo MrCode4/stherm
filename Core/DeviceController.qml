@@ -346,12 +346,11 @@ I_DeviceController {
             // The temperature might change several times due to mode change or temperature, but the last recorded value is the correct one.
             setDesiredTemperatureFromServer(settings.temp)
             setSchedulesFromServer(settings.schedule)
-            setVacationServer(settings.vacation)
-            checkSensors(settings.sensors)
             setSystemSetupServer(settings.system)
+            checkSensors(settings.sensors)
 
-            //! TODO: refactor
-            setSystemModeServer(settings.mode_id, settings.system.dualFuelManualHeating ?? device.systemSetup.dualFuelManualHeating)
+            setVacationServer(settings.vacation)
+            setSystemModeServer(settings.mode_id, settings.dualFuelManualHeating ?? device.systemSetup.dualFuelManualHeating)
 
             if (!lockStatePusher.isPushing) {
                 updateAppLockState(settings.locked, settings.pin, true);
@@ -997,7 +996,7 @@ I_DeviceController {
         // Update the dualFuelManualHeating option in the vacation and Auto system mode
         if (needToCheck && device.systemSetup.systemType === AppSpec.DualFuelHeating &&
                 !device.systemSetup.isAUXAuto && device.systemSetup.dualFuelManualHeating === AppSpecCPP.DFMOff) {
-            device.systemSetup.dualFuelManualHeating = AppSpec.DFMHeatPump;
+            device.systemSetup.dualFuelManualHeating = dualFuelHeatingModeDefault;
         }
     }
 
@@ -1145,6 +1144,7 @@ I_DeviceController {
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
+            "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
             // "auto_temp_high" : device.autoMaxReqTemp,
             // "auto_temp_low" : device.autoMinReqTemp,
             "fan" : {
@@ -1184,7 +1184,7 @@ I_DeviceController {
                 "systemRunDelay": device.systemSetup.systemRunDelay,
                 "dualFuelThreshold": device.systemSetup.dualFuelThreshod,
                 "isAUXAuto": device.systemSetup.isAUXAuto,
-                "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
+                "dualFuelHeatingModeDefault": device.systemSetup.dualFuelHeatingModeDefault,
                 "emergencyMinimumTime": device.systemSetup.emergencyMinimumTime,
                 "emergencyControlType": device.systemSetup.emergencyControlType,
                 "emergencyTemperatureDifference": device.systemSetup.emergencyTemperatureDifference,
@@ -1317,8 +1317,10 @@ I_DeviceController {
         setSystemTypeTo(AppSpecCPP.Conventional);
     }
 
-    function setSystemDualFuelHeating(heatPumpStage: int, stage: int, obState: int, dualFuelThreshod: real, isAUXAuto: bool) {
+    function setSystemDualFuelHeating(heatPumpStage: int, stage: int, obState: int,
+                                      dualFuelThreshod: real, isAUXAuto: bool, dualFuelHeatingModeDefault: int) {
         device.systemSetup.isAUXAuto = isAUXAuto;
+        device.systemSetup.dualFuelHeatingModeDefault = dualFuelHeatingModeDefault;
 
         // coolStage controls the Y wires.
         device.systemSetup.coolStage = heatPumpStage;
@@ -1409,7 +1411,8 @@ I_DeviceController {
             setSystemDualFuelHeating(settings.coolStage, settings.heatStage,
                                      settings.heatPumpOBState,
                                      settings.dualFuelThreshold ?? device.systemSetup.dualFuelThreshod,
-                                     settings.isAUXAuto ?? device.systemSetup.isAUXAuto);
+                                     settings.isAUXAuto ?? device.systemSetup.isAUXAuto,
+                                     settings.dualFuelHeatingModeDefault ?? device.systemSetup.dualFuelHeatingModeDefault);
         else
             console.warn("System type unknown", settings.type)
     }

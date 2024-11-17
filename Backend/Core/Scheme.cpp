@@ -369,6 +369,12 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
         } else if (!mDataProvider->systemSetup()->isAUXAuto) {
             // Select active system type based on the selected heating type in the system mode page.
             auto dualFuelManualHeating = mDataProvider->systemSetup()->dualFuelManualHeating;
+
+            if (mDataProvider->systemSetup()->systemMode == AppSpecCPP::Auto ||
+                mDataProvider->systemSetup()->isVacation) {
+                dualFuelManualHeating = mDataProvider->systemSetup()->dualFuelHeatingModeDefault;
+            }
+
             if (dualFuelManualHeating == AppSpecCPP::DFMAuxiliary) {
                 activeSysType = AppSpecCPP::SystemType::HeatingOnly;
 
@@ -1419,7 +1425,16 @@ void Scheme::setSystemSetup()
     connect(sys, &SystemSetup::dualFuelManualHeatingChanged, this, [=] {
         TRACE << "dualFuelManualHeatingChanged" << sys->dualFuelManualHeating;
         // restart scheme if needed
-        if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && !sys->isAUXAuto)
+        if (sys->systemMode != AppSpecCPP::Auto && !sys->isVacation &&
+            sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && !sys->isAUXAuto)
+            checkForRestart();
+    });
+
+    connect(sys, &SystemSetup::dualFuelHeatingModeDefaultChanged, this, [=] {
+        TRACE << "dualFuelHeatingModeDefaultChanged" << sys->dualFuelHeatingModeDefault;
+        // restart scheme if needed
+        if ((sys->systemMode == AppSpecCPP::Auto || sys->isVacation) &&
+            sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && !sys->isAUXAuto)
             checkForRestart();
     });
 

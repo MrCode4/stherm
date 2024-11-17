@@ -23,6 +23,7 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     dualFuelThreshod = 1.666667; // 35 Fahrenheit
     isAUXAuto = true;
     dualFuelManualHeating = AppSpecCPP::DFMOff;
+    dualFuelHeatingModeDefault = AppSpecCPP::DFMHeatPump;
 
     //! Initialize emergency properties
     emergencyMinimumTime = AppSpecCPP::defaultEmergencyMinimumTime();
