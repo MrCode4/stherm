@@ -967,8 +967,6 @@ I_DeviceController {
 
         device.systemSetup.systemMode = systemMode;
 
-        updateDualFuelManualHeating();
-
         return true;
     }
 
@@ -980,23 +978,10 @@ I_DeviceController {
     //! On/off the vacation.
     function setVacationOn(on: bool, save = true) {
         device.systemSetup.isVacation = on;
-        updateDualFuelManualHeating();
 
         if (save) {
             updateEditMode(AppSpec.EMVacation);
             saveSettings();
-        }
-    }
-
-    //! Update the dualFuelManualHeating based on the mode
-    function updateDualFuelManualHeating() {
-        var systemMode = device.systemSetup.systemMode;
-        var needToCheck = device.systemSetup.isVacation || systemMode === AppSpec.Auto || systemMode === AppSpecCPP.Vacation
-
-        // Update the dualFuelManualHeating option in the vacation and Auto system mode
-        if (needToCheck && device.systemSetup.systemType === AppSpec.DualFuelHeating &&
-                !device.systemSetup.isAUXAuto && device.systemSetup.dualFuelManualHeating === AppSpecCPP.DFMOff) {
-            device.systemSetup.dualFuelManualHeating = dualFuelHeatingModeDefault;
         }
     }
 
