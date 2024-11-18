@@ -195,7 +195,7 @@ I_DeviceController {
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
-        running: device.nightMode.mode === AppSpec.NMOn
+        running: device.nightMode.mode === AppSpec.NMOn && deviceControllerCPP.deviceAPI.nightModeControlEnabled()
 
         interval: 1000
 
@@ -208,6 +208,8 @@ I_DeviceController {
     //! Manage the night mode
     property Connections nightModeController: Connections {
         target: device.nightMode
+
+        enabled: deviceControllerCPP.deviceAPI.nightModeControlEnabled()
 
         function onModeChanged() {
             if (device.nightMode.mode === AppSpec.NMOff) {
@@ -225,7 +227,8 @@ I_DeviceController {
     property Connections nightMode_screenSaverController: Connections {
         target: ScreenSaverManager
 
-        enabled: device.nightMode._running
+        enabled: device.nightMode._running &&
+                 deviceControllerCPP.deviceAPI.nightModeControlEnabled()
 
         function onStateChanged() {
             if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {

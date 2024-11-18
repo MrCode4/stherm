@@ -136,3 +136,6 @@ QVariantMap DeviceAPI::testConfigs() const
     return testConfig;
 }
 
+bool DeviceAPI::nightModeControlEnabled() const {
+    return m_deviceConfig.nightModeControlEnabled;
+}

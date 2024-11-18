@@ -61,6 +61,9 @@ struct DeviceConfig
 
     // Enable/disable alert feature
     bool controlAlertEnabled;
+
+    // Enable/disable night (quite) mode feature
+    bool nightModeControlEnabled;
 };
 
 } // namespace NUVE

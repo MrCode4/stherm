@@ -47,6 +47,8 @@ public:
 
     Q_INVOKABLE QVariantMap testConfigs() const;
 
+    Q_INVOKABLE bool nightModeControlEnabled() const;
+
 signals:
     void uidChanged();
 

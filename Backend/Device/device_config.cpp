@@ -62,6 +62,7 @@ void NUVE::DeviceConfig::init()
     system_type = 1;
     endpoint = API_SERVER_BASE_URL;
     controlAlertEnabled = false;
+    nightModeControlEnabled = false;
 }
 
 void NUVE::DeviceConfig::setSampleRate(const uint32_t& sr) {
