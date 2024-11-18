@@ -1,6 +1,31 @@
 
 Release Note
 -------------
+## Release R 1.4.4
+ 15th November 2024
+ Branch- r1_4_4_2, commit- 12d33a9f
+ 
+### Release Articles
+update-V.1.4.4.2.zip
+
+### Reason
+Add new features and fix some issues.
+
+### What’s Brand New
+- Implemented sensor data transmission in Protobuf format.
+
+### What Been Updated
+- Updated heat pump system type in both the user interface and backend logic.
+- Updated dual fuel system type in both the user interface and backend logic.
+- Adjust logo field.
+- Update temperature scheme logics based on the new version of scheme block diagram (V2.0.2)
+
+### What’s Been Fixed
+- Fix temperature scheme bugs.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
 ## Release R 1.4.3
  4th Novemeber 2024
  Branch- r1_4_3, commit- 9e211cac39

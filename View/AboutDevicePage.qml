@@ -178,7 +178,8 @@ BasePageView {
                         },
                         buddies: [
                             {
-                                text: "Forget Device", visible: deviceController.initialSetup, action: () => {
+                                //! Forget device is visible in another row on initial setup
+                                text: "Forget Device", visible: !deviceController.initialSetup, action: () => {
                                     deviceController.forgetDevice();
                                     rebootPopup.cancelEnable = false;
                                     rebootPopup.open();
