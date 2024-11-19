@@ -1007,7 +1007,7 @@ void Scheme::emergencyHeatingLoop()
 
 
     while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF() ||
-           mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()) {
+           (mTEONTimer.isValid() && mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed())) {
 
         // Disable UI interactions in system mode page during manual or auto emergency mode until the minimum duration is reached.
         if (mTEONTimer.isValid()) {
