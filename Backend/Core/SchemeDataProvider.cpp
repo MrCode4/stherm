@@ -216,7 +216,7 @@ double SchemeDataProvider::effectiveEmergencyHeatingThresholdF()
     // Default is manual emergency mode (1 F).
     auto  effThreshold = -1.0;
     if (mSystemSetup->emergencyControlType == AppSpecCPP::ECTAuto) {
-        effThreshold = mSystemSetup->emergencyTemperatureDiffrence * 1.8;
+        effThreshold = mSystemSetup->emergencyTemperatureDifference * 1.8;
     }
 
     return effThreshold;

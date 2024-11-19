@@ -1423,8 +1423,8 @@ void Scheme::setSystemSetup()
             checkForRestart();
     });
 
-    connect(sys, &SystemSetup::emergencyTemperatureDiffrenceChanged, this, [=] {
-        TRACE << "emergencyTemperatureDiffrenceChanged" << mActiveSysTypeHeating << sys->systemMode;
+    connect(sys, &SystemSetup::emergencyTemperatureDifferenceChanged, this, [=] {
+        TRACE << "emergencyTemperatureDifferenceChanged" << mActiveSysTypeHeating << sys->systemMode;
 
         // restart scheme if needed
         if (sys->systemType == AppSpecCPP::SystemType::HeatPump && sys->emergencyControlType == AppSpecCPP::ECTAuto) {

@@ -1285,7 +1285,7 @@ I_DeviceController {
 
     function setSystemHeatPump(emergencyHeating: bool, stage: int, obState: int,
                                emergencyMinimumTime: int, emergencyControlType: int,
-                               emergencyTemperatureDiffrence: real) {
+                               emergencyTemperatureDifference: real) {
         device.systemSetup.heatPumpEmergency = emergencyHeating;
 
         // coolStage controls the Y wires.
@@ -1295,7 +1295,7 @@ I_DeviceController {
 
         device.systemSetup.emergencyMinimumTime = emergencyMinimumTime;
         device.systemSetup.emergencyControlType = emergencyControlType;
-        device.systemSetup.emergencyTemperatureDiffrence = emergencyTemperatureDiffrence;
+        device.systemSetup.emergencyTemperatureDifference = emergencyTemperatureDifference;
 
         //! This function requires a valid emergencyControlType and heatPumpEmergency
         //! so the emergencyControlType must be set before calling this function in the HeatPump type
@@ -1392,7 +1392,7 @@ I_DeviceController {
             setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState,
                               settings.emergencyMinimumTime ?? device.systemSetup.emergencyMinimumTime,
                               settings.emergencyControlType ?? device.systemSetup.emergencyControlType,
-                              settings.emergencyTemperatureDifference ?? device.systemSetup.emergencyTemperatureDiffrence)
+                              settings.emergencyTemperatureDifference ?? device.systemSetup.emergencyTemperatureDifference)
 
         } else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)

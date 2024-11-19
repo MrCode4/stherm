@@ -35,7 +35,7 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
-    Q_PROPERTY(double emergencyTemperatureDiffrence  MEMBER emergencyTemperatureDiffrence NOTIFY emergencyTemperatureDiffrenceChanged FINAL)
+    Q_PROPERTY(double emergencyTemperatureDifference  MEMBER emergencyTemperatureDifference NOTIFY emergencyTemperatureDifferenceChanged FINAL)
     Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
     Q_PROPERTY(AppSpecCPP::emergencyControlType    emergencyControlType           MEMBER emergencyControlType  NOTIFY emergencyControlTypeChanged FINAL)
 
@@ -79,7 +79,7 @@ public:
     AppSpecCPP::emergencyControlType emergencyControlType;
 
     //! In celcius
-    double emergencyTemperatureDiffrence;
+    double emergencyTemperatureDifference;
 
 signals:
     void systemTypeChanged();
@@ -93,7 +93,7 @@ signals:
     void isVacationChanged();
     void isSystemShutoffChanged();
     void dualFuelThreshodChanged();
-    void emergencyTemperatureDiffrenceChanged();
+    void emergencyTemperatureDifferenceChanged();
     void emergencyMinimumTimeChanged();
     void emergencyControlTypeChanged();
     void isAUXAutoChanged();
