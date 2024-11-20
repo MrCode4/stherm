@@ -1069,6 +1069,12 @@ void Scheme::sendRelays(bool forceSend)
         return;
     }
 
+    if (!shouldCompare) {
+        // Send the last relays
+        emit updateRelays(lastConfigs);
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+    }
+
     shouldCompare = true;
 
     if (!mCanSendRelay) {
