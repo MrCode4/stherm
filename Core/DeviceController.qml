@@ -923,7 +923,8 @@ I_DeviceController {
             // In vacation mode, we should keep the model if it is necessary.
             if (device.systemSetup.systemType === AppSpec.DualFuelHeating)
                 device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
-                setVacationOn(true);
+
+            setVacationOn(true);
 
         } else if (systemMode >= AppSpec.Cooling && systemMode < AppSpec.SMUnknown) {
             //! TODo required actions if any
