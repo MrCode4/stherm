@@ -6,15 +6,16 @@
 
 //! Methods implementations
 
-NmcliInterface::NmcliInterface(QObject* parent)
-    : QObject { parent }
-    , mNmcliObserver { new NmcliObserver(this) }
-    , mConnectedWifi { nullptr }
-    , mConProfilesWatcher { new QFileSystemWatcher(this) }
+NmcliInterface::NmcliInterface(QObject *parent)
+    : QObject{parent}
+    , mNmcliObserver{new NmcliObserver(this)}
+    , mConnectedWifi{nullptr}
+    , mConProfilesWatcher{new QFileSystemWatcher(this)}
     , mCliCommon(new NmCli(this))
     , mCliRefresh(new NmCli(this))
     , mCliWifi(new NmCli(this))
     , mCliProfiles(new NmCli(this))
+    , mCliCipers(new NmCli(this))
 {
     connect(mCliRefresh, &ProcessExecutor::finished, this, [&](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit && exitCode != 0) {
@@ -26,6 +27,8 @@ NmcliInterface::NmcliInterface(QObject* parent)
             emit errorOccured(NmcliInterface::Error(exitCode));
         }
     });
+
+    readDeviceSupportedCiphersFromIW();
 
     setupObserver();
 
@@ -679,6 +682,11 @@ void NmcliInterface::updateConProfilesList(QProcess* process)
     }
 }
 
+QStringList NmcliInterface::getDeviceSupportedCiphersList() const
+{
+    return mDeviceSupportedCiphersList;
+}
+
 void NmcliInterface::initializeConProfilesWatcher()
 {
     if (!mConProfilesWatcher) {
@@ -748,4 +756,19 @@ QString NmcliInterface::decodeHexToChars(const QString &ssid)
     }
 
     return replacedSSID;
+}
+
+void NmcliInterface::readDeviceSupportedCiphersFromIW()
+{
+    // Run the command using 'bash' because we need to execute a pipeline with 'awk'
+    mCliCipers->execAsync("bash",
+                          {"-c",
+                           "iw list | awk '/Supported Ciphers/,/Available Antennas/"
+                           "{if ($1 == \"*\") print $2}'"},
+                          [this](QProcess *process) {
+                              QString output = process->readAllStandardOutput();
+                              this->mDeviceSupportedCiphersList = output.split('\n',
+                                                                               Qt::SkipEmptyParts);
+                              emit this->ciphersAreReady();
+                          });
 }

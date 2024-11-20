@@ -33,9 +33,6 @@ BasePageView {
     //! such as during initial device setup in warranty replacment page.
     property bool nextButtonEnabled: initialSetup
 
-
-    property bool doesDeviceSupportWPA: false
-
     /* Object properties
      * ****************************************************************************************/
     title: "Wi-Fi Settings"
@@ -349,9 +346,8 @@ BasePageView {
                     if (text === "Connect") {
                         var wifi = _wifisRepeater.currentItem.wifi;
 
-                        if((_wifisRepeater.currentItem.isWPA3 === true) && (root.doesDeviceSupportWPA === false))
-                        {
-                            wpa3WifiAlert.open()
+                        if ((root.isSecuredByWPA3(wifi.security) === true) && (NetworkInterface.doesDeviceSupportWPA3 === false)) {
+                             uiSession.popupLayout.displayPopUp(wpa3WifiAlert)
                             return
                         }
 

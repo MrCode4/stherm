@@ -165,6 +165,12 @@ public:
      */
     QString getConnectedWifiBssid() const;
 
+    /*!
+     * \brief Gets the list of ciphers supported by the device.
+     * \return A QStringList containing the supported ciphers.
+     */
+    QStringList getDeviceSupportedCiphersList() const;
+
 private:
     /*!
      * \brief connectToWifi This is an overloaded method and connects to the given wifi without any
@@ -235,6 +241,13 @@ private:
     */
 
     QString decodeHexToChars(const QString &ssid);
+    /*!
+     * \brief Reads the supported ciphers of the device using the `iw list` command.
+     * 
+     * \note This operation is asynchronous and will trigger the `ciphersAreReady()` signal
+     * once the ciphers list is obtained.
+     */
+    void readDeviceSupportedCiphersFromIW();
 
 private slots:
     /*!
@@ -292,6 +305,10 @@ signals:
      * \brief deviceIsOnChanged
      */
     void    deviceIsOnChanged();
+    /*!
+     * \brief ciphersAreReady
+     */
+    void ciphersAreReady();
 
 private:
     /*!
@@ -312,6 +329,10 @@ private:
      */
     NmCli*  mCliWifi;
 
+    /*!
+     * \brief mCliCipers is used to execute the `iw list` command asynchronously.
+     */
+    NmCli *mCliCipers;
 
     /*!
      * \brief mWifis Stores all the retrieved wifis
@@ -345,6 +366,11 @@ private:
     * The key is a QString representing the BSS MAC address, and the value is a QString representing the correct security type.
     */
     QMap<QString, QString> mBssToCorrectSecurityMap;
+
+    /*!
+     * \brief Holds the list of supported ciphers for the device.
+     */
+    QStringList mDeviceSupportedCiphersList;
 
     /*!
      * \brief mBusyRefreshing Indicates if it's busy refreshing wifi lists
