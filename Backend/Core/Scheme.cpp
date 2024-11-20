@@ -371,16 +371,21 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
             auto dualFuelManualHeating = mDataProvider->systemSetup()->dualFuelManualHeating;
 
             // Use default dual fuel heating mode in Auto or Vacation.
-            if (mDataProvider->systemSetup()->systemMode == AppSpecCPP::Auto ||
-                mDataProvider->systemSetup()->isVacation) {
+            if (mDataProvider->effectiveSystemMode() == AppSpecCPP::Auto ||
+                mDataProvider->isVacationEffective()) {
                 dualFuelManualHeating = mDataProvider->systemSetup()->dualFuelHeatingModeDefault;
             }
 
             if (dualFuelManualHeating == AppSpecCPP::DFMAuxiliary) {
                 activeSysType = AppSpecCPP::SystemType::HeatingOnly;
 
-            } else if (dualFuelManualHeating == AppSpecCPP::DFMHeatPump) {
+            } else {
+                // Default
                 activeSysType = AppSpecCPP::SystemType::HeatPump;
+
+                TRACE_CHECK(dualFuelManualHeating == AppSpecCPP::DFMOff) << mDataProvider->effectiveSystemMode()
+                                                                         << mDataProvider->isVacationEffective()
+                                                                         << mDataProvider->systemSetup()->dualFuelHeatingModeDefault;
             }
 
             // in the cold outdoor heatpump can not function good so we use it only above threshold
@@ -410,6 +415,11 @@ void Scheme::switchDFHActiveSysType(AppSpecCPP::SystemType to)
 AppSpecCPP::SystemMode Scheme::activeHeatPumpMode(const bool &checkWithManualEmergency)
 {
     auto heatPumpMode = AppSpecCPP::Heating;
+
+    // Use heating in performance test
+    if (mDataProvider->isPerfTestRunning()) {
+        return heatPumpMode;
+    }
 
     // Off emergency mode
     if (!mDataProvider->systemSetup()->heatPumpEmergency || mDataProvider->systemSetup()->systemType != AppSpecCPP::HeatPump) {
@@ -1426,7 +1436,7 @@ void Scheme::setSystemSetup()
     connect(sys, &SystemSetup::dualFuelManualHeatingChanged, this, [=] {
         TRACE << "dualFuelManualHeatingChanged" << sys->dualFuelManualHeating;
         // restart scheme if needed
-        if (sys->systemMode != AppSpecCPP::Auto && !sys->isVacation &&
+        if (mDataProvider->effectiveSystemMode() != AppSpecCPP::Auto && !mDataProvider->isVacationEffective() &&
             sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && !sys->isAUXAuto)
             checkForRestart();
     });
@@ -1434,7 +1444,7 @@ void Scheme::setSystemSetup()
     connect(sys, &SystemSetup::dualFuelHeatingModeDefaultChanged, this, [=] {
         TRACE << "dualFuelHeatingModeDefaultChanged" << sys->dualFuelHeatingModeDefault;
         // restart scheme if needed
-        if ((sys->systemMode == AppSpecCPP::Auto || sys->isVacation) &&
+        if ((mDataProvider->effectiveSystemMode() == AppSpecCPP::Auto || mDataProvider->isVacationEffective()) &&
             sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && !sys->isAUXAuto)
             checkForRestart();
     });
