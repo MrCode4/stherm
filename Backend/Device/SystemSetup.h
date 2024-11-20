@@ -39,6 +39,9 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
     Q_PROPERTY(AppSpecCPP::emergencyControlType    emergencyControlType           MEMBER emergencyControlType  NOTIFY emergencyControlTypeChanged FINAL)
 
+
+    Q_PROPERTY(double emergencyTemperatureDiffrence MEMBER emergencyTemperatureDiffrence NOTIFY emergencyTemperatureDiffrenceChanged FINAL)
+
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
 
@@ -81,6 +84,10 @@ public:
     //! In celcius
     double emergencyTemperatureDifference;
 
+
+    //! TODO: Remove later
+    double emergencyTemperatureDiffrence;
+
 signals:
     void systemTypeChanged();
     void heatPumpOBStateChanged();
@@ -98,5 +105,8 @@ signals:
     void emergencyControlTypeChanged();
     void isAUXAutoChanged();
     void dualFuelManualHeatingChanged();
+
+
+    void emergencyTemperatureDiffrenceChanged();
 
 };

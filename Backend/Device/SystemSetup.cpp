@@ -29,4 +29,8 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     emergencyControlType = AppSpecCPP::ECTManually;
     emergencyTemperatureDifference = AppSpecCPP::defaultEmergencyTemperatureDifferenceC();
 
+
+    connect(this, &SystemSetup::emergencyTemperatureDiffrenceChanged, this, [this] () {
+        emergencyTemperatureDifference = emergencyTemperatureDiffrence;
+    });
 }
