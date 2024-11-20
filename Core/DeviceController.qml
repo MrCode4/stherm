@@ -350,7 +350,7 @@ I_DeviceController {
             checkSensors(settings.sensors)
 
             setVacationServer(settings.vacation)
-            setSystemModeServer(settings.mode_id, settings.dualFuelManualHeating ?? device.systemSetup.dualFuelManualHeating)
+            setSystemModeServer(settings.mode_id, settings.system.dualFuelManualHeating ?? device.systemSetup.dualFuelManualHeating)
 
             if (!lockStatePusher.isPushing) {
                 updateAppLockState(settings.locked, settings.pin, true);
@@ -1130,7 +1130,6 @@ I_DeviceController {
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
-            "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
             // "auto_temp_high" : device.autoMaxReqTemp,
             // "auto_temp_low" : device.autoMinReqTemp,
             "fan" : {
@@ -1170,6 +1169,7 @@ I_DeviceController {
                 "systemRunDelay": device.systemSetup.systemRunDelay,
                 "dualFuelThreshold": device.systemSetup.dualFuelThreshod,
                 "isAUXAuto": device.systemSetup.isAUXAuto,
+                "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
                 "dualFuelHeatingModeDefault": device.systemSetup.dualFuelHeatingModeDefault,
                 "emergencyMinimumTime": device.systemSetup.emergencyMinimumTime,
                 "emergencyControlType": device.systemSetup.emergencyControlType,
