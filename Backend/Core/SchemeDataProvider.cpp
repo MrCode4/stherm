@@ -6,6 +6,7 @@
 
 SchemeDataProvider::SchemeDataProvider(QObject *parent) :
     mOutdoorTemperature(25.0),
+    mIsRelaysInitialized(false),
     QObject{parent}
 {
 }
@@ -220,6 +221,14 @@ double SchemeDataProvider::effectiveEmergencyHeatingThresholdF()
     }
 
     return effThreshold;
+}
+
+bool SchemeDataProvider::isRelaysInitialized() {
+    return mIsRelaysInitialized;
+}
+
+void SchemeDataProvider::setIsRelaysInitialized(const bool &isRelaysInitialized) {
+    mIsRelaysInitialized = isRelaysInitialized;
 }
 
 double SchemeDataProvider::autoMaxReqTempF() const

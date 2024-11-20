@@ -99,6 +99,9 @@ public:
 
     double effectiveEmergencyHeatingThresholdF();
 
+    bool  isRelaysInitialized();
+    void setIsRelaysInitialized(const bool &isRelaysInitialized);
+
 signals:
 
     /* Public Signals
@@ -147,6 +150,8 @@ private:
     //! Outdoot temperature
     //! Celsius
     double mOutdoorTemperature;
+
+    bool mIsRelaysInitialized;
 
 };
 
