@@ -47,7 +47,7 @@ signals:
     void canSendRelay();
 
     //! Send relay to DeviceIOController and update relays into ti board.
-    void updateRelays(STHERM::RelayConfigs);
+    void updateRelays(STHERM::RelayConfigs, bool force = false);
 
     void currentTemperatureChanged();
 

@@ -30,8 +30,8 @@ class AppSpecCPP : public QObject
 
     Q_PROPERTY(QString api_base_server_url READ apiBaseServerUrl  CONSTANT)
 
-    Q_PROPERTY(double defaultEmergencyTemperatureDiffrenceF READ defaultEmergencyTemperatureDiffrenceF  CONSTANT)
-    Q_PROPERTY(double defaultEmergencyTemperatureDiffrenceC READ defaultEmergencyTemperatureDiffrenceC  CONSTANT)
+    Q_PROPERTY(double defaultEmergencyTemperatureDifferenceF READ defaultEmergencyTemperatureDifferenceF  CONSTANT)
+    Q_PROPERTY(double defaultEmergencyTemperatureDifferenceC READ defaultEmergencyTemperatureDifferenceC  CONSTANT)
 
     Q_PROPERTY(double defaultEmergencyMinimumTime READ defaultEmergencyMinimumTime  CONSTANT)
 
@@ -41,9 +41,9 @@ public:
     static AppSpecCPP *instance();
 
     //! Fahrenheit
-    static double defaultEmergencyTemperatureDiffrenceF();
+    static double defaultEmergencyTemperatureDifferenceF();
     //! Celcius
-    static double defaultEmergencyTemperatureDiffrenceC();
+    static double defaultEmergencyTemperatureDifferenceC();
 
     //! Minutes
     static int defaultEmergencyMinimumTime();

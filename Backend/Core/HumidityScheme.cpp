@@ -151,7 +151,8 @@ void HumidityScheme::sendRelays(bool forceSend)
     auto relaysConfig = mRelay->relays();
     auto lastConfigs = mRelay->relaysLast();
 
-    if (lastConfigs == relaysConfig) {
+    if (mDataProvider->isRelaysInitialized() &&
+        (lastConfigs == relaysConfig)) {
         TRACE_CHECK(false) << "no change";
         return;
     }
@@ -164,6 +165,14 @@ void HumidityScheme::sendRelays(bool forceSend)
     mRelay->setRelaysLast(relaysConfig);
 
     emit sendRelayIsRunning(true);
+
+    if (!mDataProvider->isRelaysInitialized()) {
+        // Send the last relays
+        emit updateRelays(relaysConfig, true);
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+    }
+
+    mDataProvider->setIsRelaysInitialized(true);
 
     if (debugMode) {
         auto steps = lastConfigs.changeStepsSorted(relaysConfig);

@@ -6,6 +6,7 @@
 
 SchemeDataProvider::SchemeDataProvider(QObject *parent) :
     mOutdoorTemperature(25.0),
+    mIsRelaysInitialized(false),
     QObject{parent}
 {
 }
@@ -216,10 +217,18 @@ double SchemeDataProvider::effectiveEmergencyHeatingThresholdF()
     // Default is manual emergency mode (1 F).
     auto  effThreshold = -1.0;
     if (mSystemSetup->emergencyControlType == AppSpecCPP::ECTAuto) {
-        effThreshold = mSystemSetup->emergencyTemperatureDiffrence * 1.8;
+        effThreshold = mSystemSetup->emergencyTemperatureDifference * 1.8;
     }
 
     return effThreshold;
+}
+
+bool SchemeDataProvider::isRelaysInitialized() {
+    return mIsRelaysInitialized;
+}
+
+void SchemeDataProvider::setIsRelaysInitialized(const bool &isRelaysInitialized) {
+    mIsRelaysInitialized = isRelaysInitialized;
 }
 
 double SchemeDataProvider::autoMaxReqTempF() const

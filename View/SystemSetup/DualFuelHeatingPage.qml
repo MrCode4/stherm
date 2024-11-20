@@ -259,6 +259,37 @@ BasePageView {
                 }
             }
 
+            Label {
+                Layout.fillWidth: true
+                Layout.topMargin: 10
+
+                visible: noAutoRB.checked
+                text: "Please select the heating type for Auto Mode/Vacation/Schedules (Auto)"
+                font.pointSize: Application.font.pointSize * 0.9
+                wrapMode: Text.WordWrap
+            }
+
+            //! Auxiliary Control Type
+            RowLayout {
+                Layout.fillWidth: true
+
+                visible: noAutoRB.checked
+
+                RadioButton {
+                    id: manualHeatPumpRadio
+
+                    checked: appModel.systemSetup?.dualFuelHeatingModeDefault !== AppSpec.DFMAuxiliary ?? true
+                    text: "Heat Pump"
+                }
+
+                RadioButton {
+                    id: manualAuxRadio
+
+                    text: "Auxiliary"
+                    checked: appModel.systemSetup?.dualFuelHeatingModeDefault === AppSpec.DFMAuxiliary ?? false
+                }
+            }
+
             CautionRectangle {
                 Layout.topMargin: 15
                 Layout.fillWidth: true
@@ -311,7 +342,8 @@ BasePageView {
                                                       auxStageLayout.auxStage,
                                                       heatPumpOBStateLayout.heatPumpOBState,
                                                       temperatureC,
-                                                      yesAutoRB.checked)
+                                                      yesAutoRB.checked,
+                                                      manualAuxRadio.checked ? AppSpec.DFMAuxiliary : AppSpec.DFMHeatPump)
         }
     }
 

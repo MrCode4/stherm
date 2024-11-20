@@ -18,11 +18,11 @@ AppSpecCPP *AppSpecCPP::instance()
     return mInstance;
 }
 
-double AppSpecCPP::defaultEmergencyTemperatureDiffrenceF() {
+double AppSpecCPP::defaultEmergencyTemperatureDifferenceF() {
     return 2.9;
 }
 
-double AppSpecCPP::defaultEmergencyTemperatureDiffrenceC() {
+double AppSpecCPP::defaultEmergencyTemperatureDifferenceC() {
     return 1.6;
 }
 

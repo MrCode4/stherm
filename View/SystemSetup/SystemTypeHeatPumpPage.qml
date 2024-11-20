@@ -283,7 +283,7 @@ BasePageView {
                     scaleValue: 10
                     control.stepSize: 0.1 * scaleValue
                     snapMode: Slider.SnapAlways
-                    control.value:  appModel.systemSetup.emergencyTemperatureDiffrence * (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1) * scaleValue
+                    control.value:  appModel.systemSetup.emergencyTemperatureDifference * (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1) * scaleValue
                     control.onPressedChanged: {
                         if (!control.pressed) {
                             tempValue = value.toFixed(1);
@@ -298,8 +298,8 @@ BasePageView {
                     Layout.topMargin: 15
                     Layout.fillWidth: true
 
-                    visible: autoRB.checked && (temperatureDiffSlider.tempValue  !== (isFahrenheit ? AppSpec.defaultEmergencyTemperatureDiffrenceF :
-                                                                               AppSpec.defaultEmergencyTemperatureDiffrenceC))
+                    visible: autoRB.checked && (temperatureDiffSlider.tempValue  !== (isFahrenheit ? AppSpec.defaultEmergencyTemperatureDifferenceF :
+                                                                               AppSpec.defaultEmergencyTemperatureDifferenceC))
 
                     height: 90
                     text: `Using the emergency heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
