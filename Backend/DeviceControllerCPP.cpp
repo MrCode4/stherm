@@ -334,8 +334,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         mBacklightTimer.setProperty("color", afterColor);
     });
 
-    connect(mTempScheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
-        _deviceIO->updateRelays(relays);
+    connect(mTempScheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays, bool force) {
+        _deviceIO->updateRelays(relays, force);
     });
 
     connect(mTempScheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
@@ -352,8 +352,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         mTempScheme->setCanSendRelays(!isRunning);
     });
 
-    connect(mHumidityScheme, &HumidityScheme::updateRelays, this, [this](STHERM::RelayConfigs relays) {
-        _deviceIO->updateRelays(relays);
+    connect(mHumidityScheme, &HumidityScheme::updateRelays, this, [this](STHERM::RelayConfigs relays, bool force) {
+        _deviceIO->updateRelays(relays, force);
     });
 
     if (m_system) {

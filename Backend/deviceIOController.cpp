@@ -635,15 +635,17 @@ bool DeviceIOController::update_nRF_Firmware()
     return result;
 }
 
-void DeviceIOController::updateRelays(STHERM::RelayConfigs relays)
+void DeviceIOController::updateRelays(STHERM::RelayConfigs relays, bool force)
 {
     //! In daemon: main.cpp: Line 1495 to 1518
 
     // check
-    if (m_p->mRelaysIn == relays)
+    if (!force && m_p->mRelaysIn == relays)
         return;
 
     m_p->mRelaysIn = relays;
+
+    TRACE_CHECK(force) << "Send relays by force: " << relays.printStr();
 
     sendRelays();
 }

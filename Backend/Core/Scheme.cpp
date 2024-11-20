@@ -1063,19 +1063,11 @@ void Scheme::sendRelays(bool forceSend)
     auto lastConfigs = mRelay->relaysLast();
 
     // To prevent initial mismatches in device relays after updates, we'll skip the comparison on the first run. Use shouldComapre for all instances of the class.
-    static bool shouldCompare = false;
-    if (shouldCompare && lastConfigs == relaysConfig) {
+    static bool initRelays = true;
+    if (!initRelays && lastConfigs == relaysConfig) {
         TRACE_CHECK(false) << "no change";
         return;
     }
-
-    if (!shouldCompare) {
-        // Send the last relays
-        emit updateRelays(lastConfigs);
-        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
-    }
-
-    shouldCompare = true;
 
     if (!mCanSendRelay) {
         waitLoop(-1, AppSpecCPP::ctSendRelay);
@@ -1085,6 +1077,14 @@ void Scheme::sendRelays(bool forceSend)
     mRelay->setRelaysLast(relaysConfig);
 
     emit sendRelayIsRunning(true);
+
+    if (initRelays) {
+        // Send the last relays
+        emit updateRelays(lastConfigs, true);
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+    }
+
+    initRelays = false;
 
     if (debugMode) {
         auto steps = lastConfigs.changeStepsSorted(relaysConfig);
