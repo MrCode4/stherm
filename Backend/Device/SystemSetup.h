@@ -87,7 +87,7 @@ public:
     double emergencyTemperatureDifference;
 
 
-    //! TODO: Remove later
+    //! TODO: Remove later, kept for consistency check, In celcius
     double emergencyTemperatureDiffrence;
 
 signals:
