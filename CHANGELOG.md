@@ -1,6 +1,30 @@
 
 Release Note
 -------------
+## Release R 1.4.5
+ 20th November 2024
+ Branch- r1_4_5, commit- 1a4ed723ac
+ 
+### Release Articles
+update-V.1.4.5.zip
+
+### Reason
+Fix some issues and enhanced dual fuel heating functionality.
+
+### What’s Brand New
+
+### What Been Updated
+- Add dualFuelHeatingModeDefault to the dual fuel heating page.
+- Synchronized "dualFuelManualHeating" with the server.
+
+### What’s Been Fixed
+- Fixed manual emergency issues
+- Fixed relays issues during app startup.
+- Fix performance test issues in the temperature scheme.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
 ## Release R 1.4.4
  15th November 2024
  Branch- r1_4_4_2, commit- 12d33a9f
