@@ -32,12 +32,16 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(bool _isSystemShutoff  MEMBER _mIsSystemShutoff NOTIFY isSystemShutoffChanged FINAL)
     Q_PROPERTY(bool isAUXAuto  MEMBER isAUXAuto NOTIFY isAUXAutoChanged FINAL)
     Q_PROPERTY(AppSpecCPP::DualFuelManualHeating dualFuelManualHeating  MEMBER dualFuelManualHeating NOTIFY dualFuelManualHeatingChanged FINAL)
+    Q_PROPERTY(AppSpecCPP::DualFuelManualHeating dualFuelHeatingModeDefault  MEMBER dualFuelHeatingModeDefault NOTIFY dualFuelHeatingModeDefaultChanged FINAL)
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
-    Q_PROPERTY(double emergencyTemperatureDiffrence  MEMBER emergencyTemperatureDiffrence NOTIFY emergencyTemperatureDiffrenceChanged FINAL)
+    Q_PROPERTY(double emergencyTemperatureDifference  MEMBER emergencyTemperatureDifference NOTIFY emergencyTemperatureDifferenceChanged FINAL)
     Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
     Q_PROPERTY(AppSpecCPP::emergencyControlType    emergencyControlType           MEMBER emergencyControlType  NOTIFY emergencyControlTypeChanged FINAL)
+
+
+    Q_PROPERTY(double emergencyTemperatureDiffrence MEMBER emergencyTemperatureDiffrence NOTIFY emergencyTemperatureDiffrenceChanged FINAL)
 
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
@@ -71,6 +75,7 @@ public:
 
     bool   isAUXAuto;
     AppSpecCPP::DualFuelManualHeating   dualFuelManualHeating;
+    AppSpecCPP::DualFuelManualHeating   dualFuelHeatingModeDefault;
 
     //! Emergency properties
     //! In minutes
@@ -79,6 +84,10 @@ public:
     AppSpecCPP::emergencyControlType emergencyControlType;
 
     //! In celcius
+    double emergencyTemperatureDifference;
+
+
+    //! TODO: Remove later, kept for consistency check, In celcius
     double emergencyTemperatureDiffrence;
 
 signals:
@@ -93,10 +102,14 @@ signals:
     void isVacationChanged();
     void isSystemShutoffChanged();
     void dualFuelThreshodChanged();
-    void emergencyTemperatureDiffrenceChanged();
+    void emergencyTemperatureDifferenceChanged();
     void emergencyMinimumTimeChanged();
     void emergencyControlTypeChanged();
     void isAUXAutoChanged();
     void dualFuelManualHeatingChanged();
+    void dualFuelHeatingModeDefaultChanged();
+
+
+    void emergencyTemperatureDiffrenceChanged();
 
 };

@@ -52,7 +52,7 @@ public:
 
     bool update_nRF_Firmware();
 
-    void updateRelays(STHERM::RelayConfigs relays);
+    void updateRelays(STHERM::RelayConfigs relays, bool force = false);
     bool testRelays(QVariantList relaysData);
 
     double backlightFactor();

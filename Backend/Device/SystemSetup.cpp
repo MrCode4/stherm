@@ -23,10 +23,17 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     dualFuelThreshod = 1.666667; // 35 Fahrenheit
     isAUXAuto = true;
     dualFuelManualHeating = AppSpecCPP::DFMOff;
+    dualFuelHeatingModeDefault = AppSpecCPP::DFMHeatPump;
 
     //! Initialize emergency properties
     emergencyMinimumTime = AppSpecCPP::defaultEmergencyMinimumTime();
     emergencyControlType = AppSpecCPP::ECTManually;
-    emergencyTemperatureDiffrence = AppSpecCPP::defaultEmergencyTemperatureDiffrenceC();
+    emergencyTemperatureDifference = AppSpecCPP::defaultEmergencyTemperatureDifferenceC();
+    emergencyTemperatureDiffrence = AppSpecCPP::defaultEmergencyTemperatureDifferenceC();
 
+    connect(this, &SystemSetup::emergencyTemperatureDiffrenceChanged, this, [this] () {
+        // we will not apply if the other already has change
+        if (emergencyTemperatureDifference == AppSpecCPP::defaultEmergencyTemperatureDifferenceC())
+            emergencyTemperatureDifference = emergencyTemperatureDiffrence;
+    });
 }

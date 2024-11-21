@@ -1661,7 +1661,9 @@ QStringList NUVE::System::cpuInformation() {
             int temperature = line.toInt(&ok);
             if (ok) {
                 cpuTempList.append(line);
+#ifdef DEBUG_MODE
                 TRACE << "CPU" << i << "Temperature:" << temperature << "mili Centigrade";
+#endif
             } else {
                 cpuTempList.append("invalid");
                 TRACE << "Failed to parse temperature for CPU" << i;
