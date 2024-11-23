@@ -333,6 +333,8 @@ BasePageView {
 
             //! Connect/Disconnect button
             ButtonInverted {
+                id: connectBtn
+
                 anchors.right: parent.right
                 anchors.rightMargin: 8
                 visible: _wifisRepeater.currentItem?.wifi ?? false
@@ -375,6 +377,21 @@ BasePageView {
                     }
 
                     _wifisRepeater.currentIndex = -2;
+                }
+            }
+
+            //! Skip, No wifi installation
+            ButtonInverted {
+                anchors.right: parent.right
+                anchors.rightMargin: 8
+
+                visible: root.initialSetup && !NetworkInterface.connectedWifi && !connectBtn.visible
+                text: "  Skip  "
+
+                onClicked: {
+                    deviceController.initialSetupNoWIFI = true;
+
+                    nextPage();
                 }
             }
         }
@@ -476,7 +493,7 @@ BasePageView {
     function nextPage() {
         if (root.StackView.view) {
             nextPageTimer.once = true;
-            if (system.serialNumber.length > 0) {
+            if (system.serialNumber.length > 0 || deviceController.initialSetupNoWIFI) {
 
                 // Check contractor info once without retrying in the initial setup
                 deviceController.deviceControllerCPP.checkContractorInfo();

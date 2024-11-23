@@ -34,6 +34,8 @@ I_DeviceController {
     //! initialSetup: When initialSetup is true the settingsLoader is disabled
     property bool initialSetup: false;
 
+    property bool initialSetupNoWIFI: false;
+
     readonly property int  checkSNTryCount: checkSNTimer.tryCount;
 
     //! Air condition health
