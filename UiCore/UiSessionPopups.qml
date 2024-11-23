@@ -190,6 +190,16 @@ Item {
         }
     }
 
+    Component {
+        id: skipWIFIConnectionPopupComponent
+
+        SkipWIFIConnectionPopup {
+            onSkipWiFi: {
+                deviceController.initialSetupNoWIFI = true;
+            }
+        }
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -282,5 +292,10 @@ Item {
     function warrantyReplacementFinished() {
         deviceController.firstRunFlowEnded();
         successPopup.hid.disconnect(warrantyReplacementFinished);
+    }
+
+    //! Get skip wifi connection popup object
+    function skipWIFIConnectionPopup() {
+        return skipWIFIConnectionPopupComponent.createObject(root);
     }
 }

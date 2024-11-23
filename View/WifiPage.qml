@@ -27,6 +27,8 @@ BasePageView {
     //! Use deviceController to bind better.
     property bool initialSetup: deviceController.initialSetup
 
+    property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
+
     property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
 
     //! To conditionally display and hide/show the "Next" button and disable/enable the next timer based on specific scenarios,
@@ -38,6 +40,11 @@ BasePageView {
     title: "Wi-Fi Settings"
     topPadding: bottomPadding + 12
 
+    onInitialSetupNoWIFIChanged: {
+        if (initialSetupNoWIFI) {
+           nextPage();
+        }
+    }
     /* Children
      * ****************************************************************************************/
 
@@ -389,9 +396,9 @@ BasePageView {
                 text: "  Skip  "
 
                 onClicked: {
-                    deviceController.initialSetupNoWIFI = true;
-
-                    nextPage();
+                    let skipWIFIConnectionPopup = uiSession.popUps.skipWIFIConnectionPopup();
+                    if (skipWIFIConnectionPopup)
+                        uiSession.popupLayout.displayPopUp(skipWIFIConnectionPopup);
                 }
             }
         }
