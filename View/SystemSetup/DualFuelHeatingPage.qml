@@ -259,12 +259,23 @@ BasePageView {
                 }
             }
 
+            CautionRectangle {
+                Layout.topMargin: 15
+                Layout.fillWidth: true
+
+                visible: noAutoRB.checked
+                icon: FAIcons.circleInfo
+                iconColor: "#94A3B8"
+                height: 90
+                text: "The auxiliary (Aux) can be only used when manually selected from system mode."
+            }
+
             Label {
                 Layout.fillWidth: true
                 Layout.topMargin: 10
 
                 visible: noAutoRB.checked
-                text: "Please select the heating type for Auto Mode/Vacation/Schedules (Auto)"
+                text: "Please select the heating type during Auto and Vacation modes"
                 font.pointSize: Application.font.pointSize * 0.9
                 wrapMode: Text.WordWrap
             }
@@ -297,8 +308,8 @@ BasePageView {
                 visible: noAutoRB.checked
                 icon: FAIcons.circleInfo
                 iconColor: "#94A3B8"
-                height: 90
-                text: "The auxiliary (Aux) can be only used when manually selected from system mode."
+                height: 95
+                text: "The selected heat type will stay as a default until manually changed from the system setup."
             }
 
 
