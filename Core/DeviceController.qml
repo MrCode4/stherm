@@ -494,6 +494,8 @@ I_DeviceController {
             internal.syncReturnedEmail   = device.serviceTitan.email;
 
             device.serviceTitan.zipCode  = data?.zip?.code ?? (data?.zip ?? "");
+
+            device.serviceTitan.country  = data?.country?.name ?? ("US");
             //! if there is no new data to fetch than jobid in review page
             //internal.syncReturnedZip = device.serviceTitan.zipCode;
 
@@ -1740,6 +1742,7 @@ I_DeviceController {
         var deviceObj = {
          "sn": deviceControllerCPP.system.serialNumber,
          "zip_code": device.serviceTitan.zipCode,
+         "country": AppSpec.supportedCountries.indexOf(device.serviceTitan.country),
          "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
          "resident_type_id": device.residenceType, // or maybe using condition
          "where_installed_id": device.whereInstalled

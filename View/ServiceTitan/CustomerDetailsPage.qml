@@ -87,24 +87,40 @@ InitialSetupBasePageView {
         }
 
 
-        Item {
+        GridLayout {
             Layout.fillWidth: true
             height: zipCodeTf.implicitHeight + 5
 
+            columns: 2
+            columnSpacing: 15
+            rowSpacing: 0
+
             Label {
-                anchors.top: parent.top
+                text: "Country"
+                font.pointSize: root.font.pointSize * 0.9
+            }
+
+            Label {
                 text: "ZIP code"
                 font.pointSize: root.font.pointSize * 0.9
             }
 
+            ComboBox {
+                id: countryCombobox
+
+                Layout.preferredWidth: root.availableWidth / 2 - 10
+                Layout.alignment: Qt.AlignBottom
+
+                font.pointSize: root.font.pointSize * 0.8
+                model: AppSpec.supportedCountries
+                currentIndex: appModel?.serviceTitan?.country.length > 0 ?
+                                  AppSpec.supportedCountries.indexOf(appModel?.serviceTitan?.country) : 0
+            }
 
             TextField {
                 id: zipCodeTf
 
-                anchors.top: parent.top
-                anchors.topMargin: 5
-                anchors.right: parent.right
-                anchors.left: parent.left
+                Layout.preferredWidth: root.availableWidth  / 2 - 10
 
                 placeholderText: "Input the ZIP code"
                 text: appModel?.serviceTitan?.zipCode ?? ""
@@ -166,6 +182,7 @@ InitialSetupBasePageView {
         onClicked: {
             appModel.serviceTitan.email   = emailTf.text;
             appModel.serviceTitan.zipCode = zipCodeTf.text;
+            appModel.serviceTitan.country = countryCombobox.currentText;
 
             nextPage();
         }
