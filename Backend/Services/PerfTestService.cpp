@@ -105,15 +105,16 @@ PerfTestService::PerfTestService(QObject *parent)
     scheduleNextCheck(QTime::currentTime());
 }
 
-QDateTime PerfTestService::scheduleNextCheck(const QTime& checkTime)
+QDateTime PerfTestService::scheduleNextCheck(QTime checkTime)
 {
     startTimeLeft(0);
     testTimeLeft(0);
     finishTimeLeft(0);
     state(TestState::Idle);
 
-    QDateTime nextScheduleMark;
+    if (checkTime <= QTime::currentTime()) checkTime = QTime::currentTime().addSecs(10);
     QDateTime timeToCheckFrom = QDateTime(QDate::currentDate(), checkTime);
+    QDateTime nextScheduleMark;    
 
     auto randomDelaySecs = QRandomGenerator::global()->bounded(0, PerfTest::TestDuration);
 
@@ -125,7 +126,7 @@ QDateTime PerfTestService::scheduleNextCheck(const QTime& checkTime)
         nextScheduleMark = QDateTime(QDate::currentDate().addDays(1), PerfTest::TenAM.addSecs(randomDelaySecs));
     }
 
-    auto msecsToNextCheck = timeToCheckFrom.msecsTo(nextScheduleMark);
+    auto msecsToNextCheck = QDateTime::currentDateTime().msecsTo(nextScheduleMark);
     PERF_LOG <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<"seconds";
     mTimerScheduleWatcher.setInterval(msecsToNextCheck);
     mTimerScheduleWatcher.start();
