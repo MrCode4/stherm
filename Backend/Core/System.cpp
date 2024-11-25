@@ -2060,7 +2060,7 @@ void NUVE::System::sendResultsFile(const QString &filepath,
     mFileSender.start("/bin/bash", {"-c", copyFile});
 }
 
-void NUVE::System::attemptToRunCommand(const QString& command, QString& tag)
+bool NUVE::System::attemptToRunCommand(const QString& command, QString& tag)
 {
     if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag) {
         return false;
