@@ -623,7 +623,7 @@ I_DeviceController {
     property Timer limitedModeTimer: Timer {
         interval: 30000
         repeat: true
-        running: initialSetupNoWIFI && !NetworkInterface.hasInternet && limitedModeRemainigTime > 0
+        running: initialSetupNoWIFI && limitedModeRemainigTime > 0
 
         onTriggered: {
             limitedModeRemainigTime -= 30000

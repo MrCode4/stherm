@@ -190,6 +190,18 @@ InitialSetupBasePageView {
         }
     }
 
+    BusyIndicator {
+        anchors.bottom: submitBtn.top
+        anchors.horizontalCenter: submitBtn.horizontalCenter
+        anchors.margins: 10
+
+        height: 45
+        width: 45
+        visible: deviceController.isSendingInitialSetupData && submitBtn.visible
+        running: visible
+    }
+
+
     //! Submit button
     ButtonInverted {
         id: submitBtn
