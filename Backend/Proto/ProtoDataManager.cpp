@@ -16,6 +16,15 @@ Q_LOGGING_CATEGORY(ProtobufferDataManager, "ProtobufferDataManager")
 
 using google::protobuf::util::TimeUtil;
 
+ProtoDataManager* ProtoDataManager::mMe = nullptr;
+
+ProtoDataManager* ProtoDataManager::me()
+{
+    if (!mMe) mMe = new ProtoDataManager(qApp);
+
+    return mMe;
+}
+
 ProtoDataManager::ProtoDataManager(QObject *parent)
     : DevApiExecutor{parent}
 {

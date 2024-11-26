@@ -13,8 +13,12 @@ class ProtoDataManager : public DevApiExecutor
     QML_ELEMENT
     QML_SINGLETON
 
-public:
+private:
     explicit ProtoDataManager(QObject *parent = nullptr);
+
+public:
+    static ProtoDataManager* me();
+    static ProtoDataManager* create(QQmlEngine*, QJSEngine*) {return me();}
     ~ProtoDataManager();
 
 private:
@@ -51,8 +55,12 @@ public:
     Q_INVOKABLE void setCurrentHeatingStage(const int &heatingStage);
     Q_INVOKABLE void setCurrentFanStatus(const bool &fanStatus);
     Q_INVOKABLE void setLedStatus(const bool &ledStatus);
+    //! Send the binary data to server
+    Q_INVOKABLE void sendDataToServer();
 
 private:
+    static ProtoDataManager* mMe;
+
     LiveDataPoint *addNewPoint();
 
     void logStashData();
@@ -60,10 +68,7 @@ private:
     void updateChangeMode(ChangeMode cm);
 
     //! Create the binary file
-    void generateBinaryFile();
-
-    //! Send the binary data to server
-    void sendDataToServer();
+    void generateBinaryFile();    
 
 private:
         /*

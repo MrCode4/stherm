@@ -243,7 +243,7 @@ public:
 
     Q_INVOKABLE void fetchServiceTitanInformation();
 
-    Q_INVOKABLE bool attemptToRunCommand(const QString& command, QString& tag);
+    Q_INVOKABLE bool attemptToRunCommand(const QString& command, const QString& tag);
 
 protected slots:
     void onSerialNumberReady();
