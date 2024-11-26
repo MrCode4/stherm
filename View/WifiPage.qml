@@ -392,13 +392,11 @@ BasePageView {
                 anchors.right: parent.right
                 anchors.rightMargin: 8
 
-                visible: root.initialSetup && !NetworkInterface.connectedWifi && !connectBtn.visible
+                visible: root.initialSetup && !NetworkInterface.connectedWifi && (deviceController.limitedModeRemainigTime > 0) && !connectBtn.visible
                 text: "  Skip  "
 
                 onClicked: {
-                    let skipWIFIConnectionPopup = uiSession.popUps.skipWIFIConnectionPopup();
-                    if (skipWIFIConnectionPopup)
-                        uiSession.popupLayout.displayPopUp(skipWIFIConnectionPopup);
+                    uiSession.popUps.showSkipWIFIConnectionPopup();
                 }
             }
         }

@@ -45,6 +45,7 @@ const QString m_IsManualUpdateSetting      = QString("Stherm/IsManualUpdate");
 const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
+const QString m_LimitedModeRemainigTime = "LimitedModeRemainigTime";
 
 const QString Key_LastRebootAt = "LastRebootCommandAt";
 
@@ -863,6 +864,16 @@ void NUVE::System::ignoreManualUpdateMode(bool checkUpdate)
 bool NUVE::System::isFWServerUpdate()
 {
     return mStartedWithFWServerUpdate;
+}
+
+void NUVE::System::setLimitedModeRemainigTime(const int &limitedModeRemainigTime) {
+    QSettings settings;
+    settings.setValue(m_LimitedModeRemainigTime, limitedModeRemainigTime);
+}
+
+int NUVE::System::limitedModeRemainigTime() {
+    QSettings settings;
+    return settings.value(m_LimitedModeRemainigTime, 100 * 60 * 60 * 1000).toInt();
 }
 
 QVariantMap NUVE::System::getContractorInfo() const

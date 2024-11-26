@@ -82,8 +82,8 @@ Item {
         _internal.popupQueue.forEach((popup) => {
                                          //! Avoid to close the UpdateNotificationPopup on mandatory update mode
                                          //! Avoid to close the AlertNotifPopup
-                                         if (!(popup instanceof MessagePopup) && !(popup instanceof AlertNotifPopup) && popup instanceof Popup &&
-                                                (!mandatoryUpdate || !(popup instanceof UpdateNotificationPopup))) {
+                                         if (!(popup instanceof LimitedInitialSetupPopup) && !(popup instanceof MessagePopup) &&
+                                             !(popup instanceof AlertNotifPopup) && popup instanceof Popup && (!mandatoryUpdate || !(popup instanceof UpdateNotificationPopup))) {
                                              popup.close();
                                          }
                                      })

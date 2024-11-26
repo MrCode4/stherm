@@ -37,6 +37,7 @@ I_DeviceController {
     property bool initialSetupNoWIFI: false;
     property bool _initialSetupDataPushed: false;
     property bool isSendingInitialSetupData: false;
+    property int  limitedModeRemainigTime : system.limitedModeRemainigTime()
 
     readonly property int  checkSNTryCount: checkSNTimer.tryCount;
 
@@ -326,6 +327,7 @@ I_DeviceController {
                     if (!_initialSetupDataPushed) {
                         pushInitialSetupInformation();
                     }
+                    initialSetupNoWIFI = false;
                 }
 
             } else {
@@ -609,6 +611,7 @@ I_DeviceController {
             }
         }
     }
+
     property Timer initialSetupDataPushTimer: Timer {
         property int retryCounter: 0
 
@@ -621,6 +624,19 @@ I_DeviceController {
             _pushInitialSetupInformation()();
         }
     }
+
+    //! To Check the limited mode
+    property Timer limitedModeTimer: Timer {
+        interval: 30000
+        repeat: true
+        running: initialSetupNoWIFI && !NetworkInterface.hasInternet
+
+        onTriggered: {
+            limitedModeRemainigTime -= 30000
+            system.setLimitedModeRemainigTime(limitedModeRemainigTime);
+        }
+    }
+
     property Timer  settingsPush: Timer {
         repeat: true // should repeat if not pushed
         running: !isPushing &&

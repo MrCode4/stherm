@@ -216,6 +216,16 @@ Item {
         }
     }
 
+    property LimitedInitialSetupPopup _limitedInitialSetupPopup: null
+    Component {
+        id: limitedInitialSetupPopupComponent
+
+        LimitedInitialSetupPopup {
+            uiSession: uiSession
+            remainigTime: deviceController.limitedModeRemainigTime
+        }
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -312,9 +322,13 @@ Item {
                 uiSession.popupLayout.displayPopUp(_initialFlowErrorPopup);
             }
         }
+
+        function onLimitedModeRemainigTimeChanged() {
+            if (deviceController.limitedModeRemainigTime <= 0) {
+                showLimitedInitialSetupPopup();
+            }
+        }
     }
-
-
 
     function warrantyReplacementFinished() {
         deviceController.firstRunFlowEnded();
@@ -322,11 +336,22 @@ Item {
     }
 
     //! Get skip wifi connection popup object
-    function skipWIFIConnectionPopup() {
+    function showSkipWIFIConnectionPopup() {
         if (!_skipWIFIConnectionPopup) {
             _skipWIFIConnectionPopup = skipWIFIConnectionPopupComponent.createObject(root);
         }
 
-        return _skipWIFIConnectionPopup;
+        if (_skipWIFIConnectionPopup)
+            uiSession.popupLayout.displayPopUp(_skipWIFIConnectionPopup);
+    }
+
+    function showLimitedInitialSetupPopup() {
+        if (!_limitedInitialSetupPopup) {
+            _limitedInitialSetupPopup = limitedInitialSetupPopupComponent.createObject(root);
+        }
+
+        if (_limitedInitialSetupPopup) {
+            uiSession.popupLayout.displayPopUp(_limitedInitialSetupPopup);
+        }
     }
 }

@@ -39,6 +39,10 @@ Item {
     Connections {
         target: uiSession
 
+        function onOpenUnlockPage() {
+            _mainStackView.push(unlockPage);
+        }
+
         function onShowHome()
         {
             if (!ScreenSaverManager.isAppActivated()) {

@@ -91,12 +91,7 @@ Control {
             z: 1
 
             onClicked: {
-                //! Open WifiPage
-                if (mainStackView) {
-                    mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
-                                           "uiSession": uiSession
-                                       });
-                }
+                 uiSession.openWifiPage(true);
             }
         }
 
@@ -373,13 +368,7 @@ Control {
 
             } else {
                 deviceController.setInitialSetup(true);
-                //! Open WifiPage
-                if (mainStackView) {
-                    mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
-                                           "uiSession": uiSession,
-                                           "backButtonVisible": false
-                                       });
-                }
+                uiSession.openWifiPage(false);
             }
         }
     }
@@ -420,6 +409,15 @@ Control {
             if (mainStackView) {
                 mainStackView.push("qrc:/Stherm/View/SystemModePage.qml", {
                                        "uiSession": Qt.binding(() => uiSession)
+                                   });
+            }
+        }
+
+        function onOpenWifiPage(backButtonVisible: bool) {
+            if (mainStackView) {
+                mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
+                                       "uiSession": uiSession,
+                                       "backButtonVisible": backButtonVisible
                                    });
             }
         }

@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * SkipWIFIConnectionPopup: Get confirm .
+ * SkipWIFIConnectionPopup: Get confirm to skip wifi connection.
  * ***********************************************************************************************/
 I_PopUp {
     /* Signals

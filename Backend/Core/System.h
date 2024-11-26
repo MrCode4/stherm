@@ -124,6 +124,9 @@ public:
 
     Q_INVOKABLE bool isFWServerUpdate();
 
+    Q_INVOKABLE void setLimitedModeRemainigTime(const int &limitedModeRemainigTime);
+    Q_INVOKABLE int  limitedModeRemainigTime();
+
     void wifiConnected(bool hasInternet);
 
     //! Get Contractor Information
@@ -314,6 +317,8 @@ signals:
 
     void serviceTitanInformationReady(bool hasError, bool isActive,
                                       QString email, QString zipCode);
+
+    void limitedModeRemainigTimeChanged();
 
 private:
     //! verify dounloaded files and prepare to set up.
