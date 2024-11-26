@@ -828,6 +828,10 @@ I_DeviceController {
      * ****************************************************************************************/
 
     function setInitialSetup(init: bool) {
+        if (initialSetupNoWIFI) {
+            return;
+        }
+
         initialSetup = init;
         //! we set to false elsewhere! i.e., in system
         if (init)
