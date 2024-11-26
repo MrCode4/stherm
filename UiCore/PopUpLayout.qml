@@ -57,6 +57,13 @@ Item {
             return;
         }
 
+        // If the popup is already in the popup queue, we close it and reopen it with a new priority.
+        // This prevents signal disconnections in the `onPopupClosedDestroyed` function when the first popup is closed.
+        var pIndx = _internal.popupQueue.findIndex(element => element === popup);
+        if (pIndx > -1) {
+            popup.close();
+        }
+
         popup.hid.connect(_internal.onPopupClosedDestroyed);
         popup.destructed.connect(_internal.onPopupClosedDestroyed);
 
