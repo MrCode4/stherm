@@ -35,7 +35,6 @@ I_DeviceController {
     property bool initialSetup: false;
 
     property bool initialSetupNoWIFI: false;
-    property bool _initialSetupDataPushed: false;
     property bool isSendingInitialSetupData: false;
     property int  limitedModeRemainigTime : system.limitedModeRemainigTime()
 
@@ -323,11 +322,6 @@ I_DeviceController {
             if (NetworkInterface.hasInternet) {
                 if (deviceControllerCPP.system.serialNumber.length > 0) {
                     fetchContractorInfoTimer.start();
-
-                    if (!_initialSetupDataPushed) {
-                        pushInitialSetupInformation();
-                    }
-                    initialSetupNoWIFI = false;
                 }
 
             } else {
@@ -584,7 +578,7 @@ I_DeviceController {
         function onInstalledSuccess() {
 
             isSendingInitialSetupData = false;
-            _initialSetupDataPushed = true;
+            initialSetupNoWIFI = false;
 
             // Go to home
             firstRunFlowEnded();

@@ -41,7 +41,7 @@ BasePageView {
     topPadding: bottomPadding + 12
 
     onInitialSetupNoWIFIChanged: {
-        if (initialSetupNoWIFI) {
+        if (root.visible && initialSetupNoWIFI) {
            nextPage();
         }
     }
@@ -397,6 +397,7 @@ BasePageView {
 
                 onClicked: {
                     uiSession.popUps.showSkipWIFIConnectionPopup();
+                        uiSession.popupLayout.displayPopUp(skipWIFIConnectionPopup);
                 }
             }
         }
@@ -498,17 +499,27 @@ BasePageView {
     function nextPage() {
         if (root.StackView.view) {
             nextPageTimer.once = true;
-            if (system.serialNumber.length > 0 || deviceController.initialSetupNoWIFI) {
+            if (system.serialNumber.length > 0 || (deviceController.initialSetupNoWIFI && !NetworkInterface.connectedWifi)) {
 
-                // Check contractor info once without retrying in the initial setup
-                deviceController.deviceControllerCPP.checkContractorInfo();
+                if (NetworkInterface.connectedWifi) {
+                    // Check contractor info once without retrying in the initial setup
+                    deviceController.deviceControllerCPP.checkContractorInfo();
+                }
 
                 //! If privacy policy not accepted in normal mode load the PrivacyPolicyPage
                 if (appModel.userPolicyTerms.acceptedVersion === appModel.userPolicyTerms.currentVersion) {
-                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                                 "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                             });
+                    if ((deviceController.initialSetupNoWIFI && NetworkInterface.connectedWifi)) {
+                        root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup
+                                                 });
+
+                    } else {
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup
+                                                 });
+                    }
 
                 } else {
                     root.StackView.view.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {

@@ -14,6 +14,7 @@ InitialSetupBasePageView {
      * ****************************************************************************************/
     property bool manualEntry: appModel?.serviceTitan?.isSTManualMode ?? true
 
+    property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
 
     /* Object properties
      * ****************************************************************************************/
@@ -146,7 +147,7 @@ InitialSetupBasePageView {
         Text {
             id: warrantyReplacementText
 
-            visible: manualEntry
+            visible: manualEntry && !initialSetupNoWIFI
             text: qsTr("Warranty Replacement")
             font.underline: true
             color: "#43E0F8"
@@ -178,7 +179,7 @@ InitialSetupBasePageView {
         anchors.margins: 10
 
         text: "Next"
-        visible: !emailTf.activeFocus && !zipCodeTf.activeFocus
+        visible: !initialSetupNoWIFI && !emailTf.activeFocus && !zipCodeTf.activeFocus
         enabled: emailTf.acceptableInput && zipCodeTf.acceptableInput
         leftPadding: 25
         rightPadding: 25
@@ -189,6 +190,27 @@ InitialSetupBasePageView {
             appModel.serviceTitan.country = countryCombobox.currentText;
 
             nextPage();
+        }
+    }
+
+    //! Submit button
+    ButtonInverted {
+        id: submitBtn
+
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.margins: 50
+        anchors.bottomMargin: 10
+
+        enabled: emailTf.acceptableInput && zipCodeTf.acceptableInput
+        text: "Submit"
+        visible: initialSetupNoWIFI && !emailTf.activeFocus && !zipCodeTf.activeFocus
+        leftPadding: 25
+        rightPadding: 25
+
+        onClicked: {
+            deviceController.pushInitialSetupInformation();
         }
     }
 

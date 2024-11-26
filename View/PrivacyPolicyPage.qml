@@ -53,6 +53,11 @@ BasePageView {
                                                  "backButtonVisible" : false
                                              });
 
+                } else if ((deviceController.initialSetupNoWIFI && NetworkInterface.hasInternet)) {
+                    root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                             });
                 } else {
                     appModel.userPolicyTerms.acceptedTimeUser = system.getCurrentTime();
                     appModel.userPolicyTerms.acceptedVersion = appModel.userPolicyTerms.currentVersion;
