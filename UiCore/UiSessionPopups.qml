@@ -190,12 +190,28 @@ Item {
         }
     }
 
+    property SkipWIFIConnectionPopup _skipWIFIConnectionPopup: null
+
     Component {
         id: skipWIFIConnectionPopupComponent
 
         SkipWIFIConnectionPopup {
             onSkipWiFi: {
                 deviceController.initialSetupNoWIFI = true;
+            }
+        }
+    }
+
+    property InitialFlowErrorPopup _initialFlowErrorPopup: null
+    Component {
+        id: initialFlowErrorPopupComponent
+
+        InitialFlowErrorPopup {
+            isBusy: deviceController.isSendingInitialSetupData
+            deviceController: uiSession.deviceController
+
+            onStopped: {
+                deviceController.isSendingInitialSetupData = false;
             }
         }
     }
@@ -285,6 +301,17 @@ Item {
         function onShowEmergencyModeError() {
             uiSession.popupLayout.displayPopUp(emergencyModeErrorPopup);
         }
+
+        function onShowInitialSetupPushError(err: string) {
+            if (!_initialFlowErrorPopup) {
+                _initialFlowErrorPopup = initialFlowErrorPopupComponent.createObject(root);
+            }
+
+            if (_initialFlowErrorPopup) {
+                _initialFlowErrorPopup.errorMessage = err;
+                uiSession.popupLayout.displayPopUp(_initialFlowErrorPopup);
+            }
+        }
     }
 
 
@@ -296,6 +323,10 @@ Item {
 
     //! Get skip wifi connection popup object
     function skipWIFIConnectionPopup() {
-        return skipWIFIConnectionPopupComponent.createObject(root);
+        if (!_skipWIFIConnectionPopup) {
+            _skipWIFIConnectionPopup = skipWIFIConnectionPopupComponent.createObject(root);
+        }
+
+        return _skipWIFIConnectionPopup;
     }
 }

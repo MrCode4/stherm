@@ -35,6 +35,8 @@ I_DeviceController {
     property bool initialSetup: false;
 
     property bool initialSetupNoWIFI: false;
+    property bool _initialSetupDataPushed: false;
+    property bool isSendingInitialSetupData: false;
 
     readonly property int  checkSNTryCount: checkSNTimer.tryCount;
 
@@ -318,8 +320,13 @@ I_DeviceController {
             deviceControllerCPP.wifiConnected(NetworkInterface.hasInternet);
 
             if (NetworkInterface.hasInternet) {
-                if (deviceControllerCPP.system.serialNumber.length > 0)
+                if (deviceControllerCPP.system.serialNumber.length > 0) {
                     fetchContractorInfoTimer.start();
+
+                    if (!_initialSetupDataPushed) {
+                        pushInitialSetupInformation();
+                    }
+                }
 
             } else {
                 fetchContractorInfoTimer.stop();
@@ -573,10 +580,21 @@ I_DeviceController {
         }
 
         function onInstalledSuccess() {
+
+            isSendingInitialSetupData = false;
+            _initialSetupDataPushed = true;
+
+            // Go to home
             firstRunFlowEnded();
         }
 
-        function onInstallFailed() {
+        function onInstallFailed(err : string, needToRetry : bool) {
+            isSendingInitialSetupData = needToRetry;
+
+            if (!needToRetry || (initialSetupDataPushTimer.retryCounter % 2 === 0)) {
+                showInitialSetupPushError(err);
+            }
+
             console.warn("install failed try again.")
         }
 
@@ -591,7 +609,18 @@ I_DeviceController {
             }
         }
     }
+    property Timer initialSetupDataPushTimer: Timer {
+        property int retryCounter: 0
 
+        interval: 5000
+        repeat: true
+        running: isSendingInitialSetupData
+
+        onTriggered: {
+            retryCounter++;
+            _pushInitialSetupInformation()();
+        }
+    }
     property Timer  settingsPush: Timer {
         repeat: true // should repeat if not pushed
         running: !isPushing &&
@@ -717,6 +746,8 @@ I_DeviceController {
 
     //! Show emergency error popup
     signal showEmergencyModeError();
+
+    signal showInitialSetupPushError(err: string);
 
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************");
@@ -1724,8 +1755,19 @@ I_DeviceController {
         initialSetupFinished();
     }
 
-    //! Push initial setup information
     function pushInitialSetupInformation() {
+        if (NetworkInterface.hasInternet) {
+            isSendingInitialSetupData = true;
+            initialSetupDataPushTimer.retryCounter = 0;
+            initialSetupDataPushTimer.triggered();
+
+        } else {
+            showInitialSetupPushError(deviceInternetError());
+        }
+    }
+
+    //! Push initial setup information
+    function _pushInitialSetupInformation() {
         // Initialize the client object
         var clientData = {};
 
