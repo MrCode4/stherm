@@ -2068,6 +2068,7 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
         return false;
     }
 
+    bool isApplied = false;
     SYS_LOG <<"Attempting command" << command <<tag;
 
     if (command == Cmd_PushLogs) {
@@ -2102,9 +2103,10 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
     else if (command == Cmd_PushLiveData) {
         SYS_LOG << "Applying" <<command <<tag;
         ProtoDataManager::me()->sendDataToServer();
+        isApplied = true;
     }
 
-    return mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag;
+    return isApplied || mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag;
 }
 
 void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler, const QString &subject, const QString &joiner)
