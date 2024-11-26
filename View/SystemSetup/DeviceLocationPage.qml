@@ -21,7 +21,7 @@ InitialSetupBasePageView {
      * ****************************************************************************************/
     title: "Device Location"
 
-    showWifiButton: true
+    showWifiButton: !deviceController.initialSetupNoWIFI
 
     onVisibleChanged: {
         if (!visible) {
