@@ -91,7 +91,7 @@ Control {
             z: 1
 
             onClicked: {
-                 uiSession.openWifiPage(true);
+                 uiSession.openWifiPage(true, false);
             }
         }
 
@@ -368,7 +368,7 @@ Control {
 
             } else {
                 deviceController.setInitialSetup(true);
-                uiSession.openWifiPage(false);
+                uiSession.openWifiPage(false, false);
             }
         }
     }
@@ -413,11 +413,12 @@ Control {
             }
         }
 
-        function onOpenWifiPage(backButtonVisible: bool) {
+        function onOpenWifiPage(backButtonVisible: bool, openFromNoWiFiInstallation = false) {
             if (mainStackView) {
                 mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
                                        "uiSession": uiSession,
-                                       "backButtonVisible": backButtonVisible
+                                       "backButtonVisible": backButtonVisible,
+                                       "openFromNoWiFiInstallation": openFromNoWiFiInstallation
                                    });
             }
         }

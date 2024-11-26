@@ -69,7 +69,7 @@ I_PopUp {
                 text: "  Connect to WiFi  "
 
                 onClicked: {
-                    uiSession.openWifiPage(remainigTime > 0);
+                    uiSession.openWifiPage(remainigTime > 0, true);
                     close();
                 }
             }

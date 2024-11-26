@@ -28,8 +28,9 @@ BasePageView {
     property bool initialSetup: deviceController.initialSetup
 
     property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
+    property bool openFromNoWiFiInstallation: false
 
-    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate && NetworkInterface.connectedWifi
 
     //! To conditionally display and hide/show the "Next" button and disable/enable the next timer based on specific scenarios,
     //! such as during initial device setup in warranty replacment page.
@@ -464,6 +465,12 @@ BasePageView {
     Connections {
         target: NetworkInterface
 
+        function onConnectedWifiChanged() {
+            // To address the issue of users reconnecting to Wi-Fi after navigating back from other pages.
+            if (NetworkInterface.connectedWifi)
+                deviceController.initialSetupNoWIFI = false;
+        }
+
         function onIncorrectWifiPassword(wifi: WifiInfo)
         {
             console.log('incorrect pass for: ', wifi.ssid);
@@ -490,10 +497,14 @@ BasePageView {
 
         function onGoToInitialSetupNoWIFIMode() {
             if (root.visible && initialSetupNoWIFI) {
-               nextPage();
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                             });
+                }
             }
         }
-
     }
 
     onSortedWifisChanged: _wifisRepeater.currentIndexChanged();
@@ -505,7 +516,7 @@ BasePageView {
     function nextPage() {
         if (root.StackView.view) {
             nextPageTimer.once = true;
-            if (system.serialNumber.length > 0 || (deviceController.initialSetupNoWIFI && !NetworkInterface.connectedWifi)) {
+            if (system.serialNumber.length > 0) {
 
                 if (NetworkInterface.connectedWifi) {
                     // Check contractor info once without retrying in the initial setup
@@ -514,13 +525,16 @@ BasePageView {
 
                 //! If privacy policy not accepted in normal mode load the PrivacyPolicyPage
                 if (appModel.userPolicyTerms.acceptedVersion === appModel.userPolicyTerms.currentVersion) {
-                    if ((deviceController.initialSetupNoWIFI && NetworkInterface.connectedWifi)) {
+                    if ((openFromNoWiFiInstallation && NetworkInterface.connectedWifi)) {
                         root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
                                                      "uiSession": uiSession,
-                                                     "initialSetup": root.initialSetup
+                                                     "initialSetup": root.initialSetup,
+                                                     "openFromNoWiFiInstallation": root.openFromNoWiFiInstallation
                                                  });
 
-                    } else {
+                    }
+
+                    if (!openFromNoWiFiInstallation) {
                         root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                                      "uiSession": uiSession,
                                                      "initialSetup": root.initialSetup
@@ -530,7 +544,8 @@ BasePageView {
                 } else {
                     root.StackView.view.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
                                                  "uiSession": Qt.binding(() => uiSession),
-                                                 "initialSetup": root.initialSetup
+                                                 "initialSetup": root.initialSetup,
+                                                 "openFromNoWiFiInstallation": root.openFromNoWiFiInstallation
                                              });
                 }
             }

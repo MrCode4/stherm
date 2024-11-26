@@ -14,7 +14,7 @@ InitialSetupBasePageView {
      * ****************************************************************************************/
     property bool manualEntry: appModel?.serviceTitan?.isSTManualMode ?? true
 
-    property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
+    property bool openFromNoWiFiInstallation: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -147,7 +147,7 @@ InitialSetupBasePageView {
         Text {
             id: warrantyReplacementText
 
-            visible: manualEntry && !initialSetupNoWIFI
+            visible: manualEntry && !openFromNoWiFiInstallation
             text: qsTr("Warranty Replacement")
             font.underline: true
             color: "#43E0F8"
@@ -179,7 +179,7 @@ InitialSetupBasePageView {
         anchors.margins: 10
 
         text: "Next"
-        visible: !initialSetupNoWIFI && !emailTf.activeFocus && !zipCodeTf.activeFocus
+        visible: !openFromNoWiFiInstallation && !emailTf.activeFocus && !zipCodeTf.activeFocus
         enabled: emailTf.acceptableInput && zipCodeTf.acceptableInput
         leftPadding: 25
         rightPadding: 25
@@ -202,7 +202,7 @@ InitialSetupBasePageView {
 
         enabled: !deviceController.isSendingInitialSetupData && emailTf.acceptableInput && zipCodeTf.acceptableInput
         text: "Submit"
-        visible: initialSetupNoWIFI && !emailTf.activeFocus && !zipCodeTf.activeFocus
+        visible: openFromNoWiFiInstallation && !emailTf.activeFocus && !zipCodeTf.activeFocus
         leftPadding: 25
         rightPadding: 25
 
