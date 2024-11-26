@@ -147,6 +147,7 @@ Item {
     signal openSystemModePage();
     signal openWifiPage(backButtonVisible : bool);
     signal openUnlockPage();
+    signal goToInitialSetupNoWIFIMode();
 
     /* Signal Handlers
      * ****************************************************************************************/

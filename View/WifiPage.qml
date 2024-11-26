@@ -40,11 +40,6 @@ BasePageView {
     title: "Wi-Fi Settings"
     topPadding: bottomPadding + 12
 
-    onInitialSetupNoWIFIChanged: {
-        if (root.visible && initialSetupNoWIFI) {
-           nextPage();
-        }
-    }
     /* Children
      * ****************************************************************************************/
 
@@ -397,7 +392,6 @@ BasePageView {
 
                 onClicked: {
                     uiSession.popUps.showSkipWIFIConnectionPopup();
-                        uiSession.popupLayout.displayPopUp(skipWIFIConnectionPopup);
                 }
             }
         }
@@ -488,6 +482,18 @@ BasePageView {
                                          })
             }
         }
+    }
+
+    Connections {
+        target: uiSession
+        enabled: root.visible && initialSetupNoWIFI
+
+        function onGoToInitialSetupNoWIFIMode() {
+            if (root.visible && initialSetupNoWIFI) {
+               nextPage();
+            }
+        }
+
     }
 
     onSortedWifisChanged: _wifisRepeater.currentIndexChanged();

@@ -198,6 +198,7 @@ Item {
         SkipWIFIConnectionPopup {
             onSkipWiFi: {
                 deviceController.initialSetupNoWIFI = true;
+                uiSession.goToInitialSetupNoWIFIMode();
             }
         }
     }
@@ -207,8 +208,8 @@ Item {
         id: initialFlowErrorPopupComponent
 
         InitialFlowErrorPopup {
+            deviceController: root.uiSession.deviceController
             isBusy: deviceController.isSendingInitialSetupData
-            deviceController: uiSession.deviceController
 
             onStopped: {
                 deviceController.isSendingInitialSetupData = false;
@@ -221,7 +222,7 @@ Item {
         id: limitedInitialSetupPopupComponent
 
         LimitedInitialSetupPopup {
-            uiSession: uiSession
+            uiSession: root.uiSession
             remainigTime: deviceController.limitedModeRemainigTime
         }
     }

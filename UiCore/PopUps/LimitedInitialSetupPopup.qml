@@ -21,6 +21,7 @@ I_PopUp {
     closePolicy: remainigTime > 0 ? (Popup.CloseOnReleaseOutside | Popup.CloseOnEscape) :
                                     Popup.NoAutoClose
     closeButtonEnabled: false
+    topPadding: 20
 
     /* Children
      * ****************************************************************************************/
@@ -33,15 +34,15 @@ I_PopUp {
             property string remainigTimeString: {
                 var rts = "";
 
-                var hours = Math.floor(remainigTime / 60000);
-                var minutes = Math.floor((remainigTime - remainigTime * 60000) / 60000);
+                var hours = Math.floor(remainigTime / 60000 / 60);
+                var minutes = Math.floor((remainigTime - hours * 60000 * 60) / 60000);
 
                 if (hours >= 0) {
-                    rts = hours + "hrs";
+                    rts = `${hours} hrs`;
                 }
 
                 if (minutes >= 0) {
-                    rts = minutes + " : mins";
+                    rts += ` : ${minutes} mins`;
                 }
 
                 return rts;
@@ -65,7 +66,7 @@ I_PopUp {
 
             ButtonInverted {
                 Layout.fillWidth: true
-                text: "Connect to WiFi"
+                text: "  Connect to WiFi  "
 
                 onClicked: {
                     uiSession.openWifiPage(remainigTime > 0);
@@ -88,11 +89,14 @@ I_PopUp {
         RoniaTextIcon {
             Layout.margins: 10
             Layout.alignment: Qt.AlignBottom | Qt.AlignRight
-            font.pointSize: Style.fontIconSize.largePt
+            font.pointSize: Style.fontIconSize.smallPt
+            visible: remainigTime <= 0
             text: FAIcons.headSet
+
             TapHandler {
                 onTapped: {
                    uiSession.openUnlockPage();
+                    close();
                 }
             }
         }

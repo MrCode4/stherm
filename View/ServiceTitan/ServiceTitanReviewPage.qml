@@ -23,7 +23,7 @@ InitialSetupBasePageView {
      * ****************************************************************************************/
     title: "Review"
 
-    showWifiButton: true
+    showWifiButton: !deviceController.initialSetupNoWIFI
 
     onVisibleChanged: {
         if (!visible) {

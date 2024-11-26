@@ -17,6 +17,7 @@ I_PopUp {
      * ****************************************************************************************/
     title: "Skip Wi-Fi Connection?"
     closeButtonEnabled: false
+    topPadding: 20
 
     /* Children
      * ****************************************************************************************/
@@ -43,7 +44,7 @@ I_PopUp {
 
             ButtonInverted {
                 Layout.fillWidth: true
-                text: "Connect to WiFi"
+                text: "  Connect to WiFi  "
 
                 onClicked: {
                     connectToWiFi();

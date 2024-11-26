@@ -119,7 +119,7 @@ BasePageView {
         running: !(appModel?.serviceTitan?._fetched ?? false) && initialSetup
         height: 50
         width: 50
-        visible: running
+        visible: !deviceController.initialSetupNoWIFI && running
     }
 
     Label {
