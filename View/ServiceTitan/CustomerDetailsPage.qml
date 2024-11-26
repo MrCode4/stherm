@@ -203,7 +203,7 @@ InitialSetupBasePageView {
         anchors.margins: 50
         anchors.bottomMargin: 10
 
-        enabled: emailTf.acceptableInput && zipCodeTf.acceptableInput
+        enabled: !deviceController.isSendingInitialSetupData && emailTf.acceptableInput && zipCodeTf.acceptableInput
         text: "Submit"
         visible: initialSetupNoWIFI && !emailTf.activeFocus && !zipCodeTf.activeFocus
         leftPadding: 25
