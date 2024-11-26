@@ -146,7 +146,13 @@ BasePageView {
     function nextPage() {
         if (root.StackView.view) {
             // TODO
-            if (true/*appModel?.serviceTitan?.isActive ?? false*/) {
+            if (deviceController.initialSetupNoWIFI) {
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/InstallationTypePage.qml", {
+                                              "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                          });
+
+            } else if (true/*appModel?.serviceTitan?.isActive ?? false*/) {
                 root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/JobNumberPage.qml", {
                                              "uiSession": uiSession,
                                              "initialSetup": root.initialSetup

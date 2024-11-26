@@ -19,7 +19,7 @@ InitialSetupBasePageView {
      * ****************************************************************************************/
     title: "Thermostat Name"
 
-    showWifiButton: true
+    showWifiButton: !deviceController.initialSetupNoWIFI
 
     onVisibleChanged: {
         if (!visible) {
@@ -107,7 +107,7 @@ InitialSetupBasePageView {
         anchors.margins: 10
 
         enabled: !isBusy
-        text: "Submit"
+        text: deviceController.initialSetupNoWIFI ? "Finish" : "Submit"
         visible: !nameTf.activeFocus
         leftPadding: 25
         rightPadding: 25
@@ -117,12 +117,17 @@ InitialSetupBasePageView {
 
             appModel.thermostatName = nameTf.text;
 
-            if (NetworkInterface.hasInternet) {
-                retryTimer.triggered();
+            if (!deviceController.initialSetupNoWIFI) {
+                if (NetworkInterface.hasInternet) {
+                    retryTimer.triggered();
+
+                } else {
+                    errorPopup.errorMessage = deviceController.deviceInternetError();
+                    errorPopup.open();
+                }
 
             } else {
-                errorPopup.errorMessage = deviceController.deviceInternetError();
-                errorPopup.open();
+                deviceController.initialSetupFinished();
             }
         }
     }
@@ -130,7 +135,7 @@ InitialSetupBasePageView {
     //! Temp connection to end busy
     Connections {
         target: deviceController.sync
-        enabled: root.visible && isBusy
+        enabled: root.visible && !deviceController.initialSetupNoWIFI && isBusy
 
         function onInstalledSuccess() {
             isBusy = false;

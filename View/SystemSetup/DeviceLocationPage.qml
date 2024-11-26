@@ -146,7 +146,7 @@ InitialSetupBasePageView {
     //! Temp connection to end busy
     Connections {
         target: deviceController.sync
-        enabled: root.visible && isBusy
+        enabled: root.visible && !deviceController.initialSetupNoWIFI && isBusy
 
         function onInstalledSuccess() {
             isBusy = false;
@@ -178,7 +178,8 @@ InitialSetupBasePageView {
                                          "uiSession": Qt.binding(() => uiSession),
                                          "initialSetup":  root.initialSetup
                                      });
-        } else {
+
+        } else if (!deviceController.initialSetupNoWIFI) {
             if (NetworkInterface.hasInternet) {
                 isBusy = true;
                 retryTimer.retryCounter = 0;
@@ -188,6 +189,9 @@ InitialSetupBasePageView {
                 errorPopup.errorMessage = deviceController.deviceInternetError();
                 errorPopup.open();
             }
+
+        } else {
+            deviceController.initialSetupFinished();
         }
     }
 }
