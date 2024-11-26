@@ -18,6 +18,9 @@ I_PopUp {
     /* Object properties
      * ****************************************************************************************/
     title: "Limited Mode Active"
+    closePolicy: remainigTime > 0 ? (Popup.CloseOnReleaseOutside | Popup.CloseOnEscape) :
+                                    Popup.NoAutoClose
+    closeButtonEnabled: remainigTime > 0
 
     /* Children
      * ****************************************************************************************/
