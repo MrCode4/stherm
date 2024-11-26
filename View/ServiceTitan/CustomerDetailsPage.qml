@@ -185,10 +185,7 @@ InitialSetupBasePageView {
         rightPadding: 25
 
         onClicked: {
-            appModel.serviceTitan.email   = emailTf.text;
-            appModel.serviceTitan.zipCode = zipCodeTf.text;
-            appModel.serviceTitan.country = countryCombobox.currentText;
-
+            updateModel();
             nextPage();
         }
     }
@@ -210,12 +207,19 @@ InitialSetupBasePageView {
         rightPadding: 25
 
         onClicked: {
+            updateModel();
             deviceController.pushInitialSetupInformation();
         }
     }
 
     /* Functions
      * ****************************************************************************************/
+
+    function updateModel() {
+        appModel.serviceTitan.email   = emailTf.text;
+        appModel.serviceTitan.zipCode = zipCodeTf.text;
+        appModel.serviceTitan.country = countryCombobox.currentText;
+    }
 
     //! Go to CustomerDetailsPage
     function nextPage() {
