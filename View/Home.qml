@@ -91,7 +91,7 @@ Control {
             z: 1
 
             onClicked: {
-                 uiSession.openWifiPage(true, false);
+                 uiSession.openWifiPage(true, deviceController.initialSetupNoWIFI);
             }
         }
 

@@ -30,7 +30,8 @@ BasePageView {
     property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
     property bool openFromNoWiFiInstallation: false
 
-    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate && NetworkInterface.connectedWifi
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 &&
+                                      deviceController.checkedSWUpdate && NetworkInterface.connectedWifi
 
     //! To conditionally display and hide/show the "Next" button and disable/enable the next timer based on specific scenarios,
     //! such as during initial device setup in warranty replacment page.
@@ -388,7 +389,8 @@ BasePageView {
                 anchors.right: parent.right
                 anchors.rightMargin: 8
 
-                visible: root.initialSetup && !NetworkInterface.connectedWifi && (deviceController.limitedModeRemainigTime > 0) && !connectBtn.visible
+                visible: root.initialSetup && !root.openFromNoWiFiInstallation && !NetworkInterface.connectedWifi &&
+                         (deviceController.limitedModeRemainigTime > 0) && !connectBtn.visible
                 text: "  Skip  "
 
                 onClicked: {
@@ -467,7 +469,7 @@ BasePageView {
 
         function onConnectedWifiChanged() {
             // To address the issue of users reconnecting to Wi-Fi after navigating back from other pages.
-            if (NetworkInterface.connectedWifi)
+            if (NetworkInterface.connectedWifi && !openFromNoWiFiInstallation)
                 deviceController.initialSetupNoWIFI = false;
         }
 
