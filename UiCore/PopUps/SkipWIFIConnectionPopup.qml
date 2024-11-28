@@ -44,7 +44,7 @@ I_PopUp {
 
             ButtonInverted {
                 Layout.fillWidth: true
-                text: "  Connect to WiFi  "
+                text: "  Connect to Wi-Fi  "
 
                 onClicked: {
                     connectToWiFi();

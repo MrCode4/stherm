@@ -66,7 +66,7 @@ I_PopUp {
 
             ButtonInverted {
                 Layout.fillWidth: true
-                text: "  Connect to WiFi  "
+                text: "  Connect to Wi-Fi  "
 
                 onClicked: {
                     uiSession.openWifiPage(remainigTime > 0, true);
@@ -76,7 +76,7 @@ I_PopUp {
 
             ButtonInverted {
                 Layout.fillWidth: true
-                text: "close"
+                text: "Close"
                 visible: remainigTime > 0
 
                 onClicked: {

@@ -579,6 +579,7 @@ I_DeviceController {
 
             isSendingInitialSetupData = false;
             initialSetupNoWIFI = false;
+            initialSetupDataPushTimer.retryCounter = 0;
 
             // Go to home
             firstRunFlowEnded();
