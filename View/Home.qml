@@ -366,6 +366,12 @@ Control {
                     }
                 }
 
+            } else if (deviceController.initialSetupNoWIFI) {
+                // Device is installed with the no wifi
+                console.log("Device started due to pre-installation with no Wi-Fi.");
+                deviceController.setInitialSetup(true);
+                deviceController.initialSetupFinished();
+
             } else {
                 deviceController.setInitialSetup(true);
                 uiSession.openWifiPage(false, false);
@@ -397,6 +403,11 @@ Control {
 
             // Send  check contractor info
             deviceController.deviceControllerCPP.checkContractorInfo();
+
+            // Show initial setup in no wifi mode conutdown timer for first time.
+            if (deviceController.initialSetupNoWIFI) {
+                uiSession.popUps.showLimitedInitialSetupPopup();
+            }
         }
     }
 
@@ -442,6 +453,9 @@ Control {
 
             //! Initial setup finished.
             deviceController.setInitialSetup(false);
+
+            //! Save the initial setup process.
+            deviceController.system.setInitialSetupWithNoWIFI(deviceController.initialSetupNoWIFI);
         }
     }
 

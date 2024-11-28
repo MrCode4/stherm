@@ -46,6 +46,7 @@ const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 const QString m_LimitedModeRemainigTime = "LimitedModeRemainigTime";
+const QString m_InitialSetupWithNoWIFI  = "InitialSetupWithNoWIFI";
 
 const QString Key_LastRebootAt = "LastRebootCommandAt";
 
@@ -876,6 +877,18 @@ int NUVE::System::limitedModeRemainigTime() {
     return settings.value(m_LimitedModeRemainigTime, 100 * 60 * 60 * 1000).toInt();
 }
 
+void NUVE::System::setInitialSetupWithNoWIFI(const bool &initialSetupNoWIFI)
+{
+    QSettings settings;
+    settings.setValue(m_InitialSetupWithNoWIFI, initialSetupNoWIFI);
+}
+
+bool NUVE::System::initialSetupWithNoWIFI()
+{
+    QSettings settings;
+    return settings.value(m_InitialSetupWithNoWIFI, false).toBool();
+}
+
 QVariantMap NUVE::System::getContractorInfo() const
 {
     return mSync->getContractorInfo();
@@ -974,9 +987,10 @@ void NUVE::System::forgetDevice()
     mAreSettingsFetched = false;
 
     QSettings settings;
-    settings.setValue(m_updateOnStartKey, false);
-    settings.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
-    settings.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
+    settings.remove(m_updateOnStartKey);
+    settings.remove(m_InstalledUpdateDateSetting);
+    settings.remove(m_IsManualUpdateSetting);
+    settings.remove(m_InitialSetupWithNoWIFI);
 
     mSync->forgetDevice();
 }

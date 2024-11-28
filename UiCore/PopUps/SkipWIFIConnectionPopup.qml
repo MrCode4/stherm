@@ -37,14 +37,14 @@ I_PopUp {
         }
 
         RowLayout {
-            Layout.leftMargin: 24
-            Layout.rightMargin: 24
+            Layout.leftMargin: 20
+            Layout.rightMargin: 20
             Layout.topMargin: 24
             spacing: 24
 
             ButtonInverted {
                 Layout.fillWidth: true
-                text: "  Connect to Wi-Fi  "
+                text: "   Connect to Wi-Fi   "
 
                 onClicked: {
                     connectToWiFi();

@@ -127,6 +127,9 @@ public:
     Q_INVOKABLE void setLimitedModeRemainigTime(const int &limitedModeRemainigTime);
     Q_INVOKABLE int  limitedModeRemainigTime();
 
+    Q_INVOKABLE void setInitialSetupWithNoWIFI(const bool &initialSetupNoWIFI);
+    Q_INVOKABLE bool initialSetupWithNoWIFI();
+
     void wifiConnected(bool hasInternet);
 
     //! Get Contractor Information

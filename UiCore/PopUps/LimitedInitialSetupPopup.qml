@@ -59,14 +59,14 @@ I_PopUp {
         }
 
         RowLayout {
-            Layout.leftMargin: 24
-            Layout.rightMargin: 24
+            Layout.leftMargin: 15
+            Layout.rightMargin: 15
             Layout.topMargin: 24
             spacing: 24
 
             ButtonInverted {
                 Layout.fillWidth: true
-                text: "  Connect to Wi-Fi  "
+                text: "   Connect to Wi-Fi   "
 
                 onClicked: {
                     uiSession.openWifiPage(remainigTime > 0, true);
@@ -95,7 +95,7 @@ I_PopUp {
 
             TapHandler {
                 onTapped: {
-                   uiSession.openUnlockPage();
+                    uiSession.openUnlockPage();
                     close();
                 }
             }
