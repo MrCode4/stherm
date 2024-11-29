@@ -874,7 +874,13 @@ void NUVE::System::setLimitedModeRemainigTime(const int &limitedModeRemainigTime
 
 int NUVE::System::limitedModeRemainigTime() {
     QSettings settings;
-    return settings.value(m_LimitedModeRemainigTime, 100 * 60 * 60 * 1000).toInt();
+    int maxLimit = 100 * 60 * 60 * 1000;
+    auto limitedModeRemainigTimeTemp = settings.value(m_LimitedModeRemainigTime, maxLimit).toInt();
+
+    if (limitedModeRemainigTimeTemp > maxLimit)
+        limitedModeRemainigTimeTemp = maxLimit;
+
+    return limitedModeRemainigTimeTemp;
 }
 
 void NUVE::System::setInitialSetupWithNoWIFI(const bool &initialSetupNoWIFI)
