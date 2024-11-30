@@ -125,8 +125,12 @@ InitialSetupBasePageView {
                 placeholderText: "Input the ZIP code"
                 text: appModel?.serviceTitan?.zipCode ?? ""
                 font.pointSize: root.font.pointSize * 0.8
+
+                // Australia: 4 digits
+                // Canada: 6 letter + digits
+                // US: 09498 or in ZIP+4 format: 09498-0048
                 validator: RegularExpressionValidator {
-                    regularExpression: /^\d{5}(-\d{4})?$/
+                    regularExpression: /^[A-Z\d]{4,6}(-[A-Z\d]{4})?$/i
                 }
 
                 inputMethodHints: Qt.ImhPreferNumbers
