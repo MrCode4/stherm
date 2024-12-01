@@ -2106,7 +2106,7 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
         isApplied = true;
     }
 
-    return isApplied || mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag;
+    return isApplied || (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag);
 }
 
 void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler, const QString &subject, const QString &joiner)
