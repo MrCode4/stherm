@@ -1,6 +1,7 @@
 #include "System.h"
 #include "LogHelper.h"
 #include "PerfTestService.h"
+#include "ProtoDataManager.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -50,6 +51,7 @@ const QString Key_LastRebootAt = "LastRebootCommandAt";
 const QString Cmd_PushLogs = "push_logs";
 const QString Cmd_PerfTest = "perf_test";
 const QString Cmd_Reboot = "reboot";
+const QString Cmd_PushLiveData = "push_live_data";
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -2060,12 +2062,13 @@ void NUVE::System::sendResultsFile(const QString &filepath,
     mFileSender.start("/bin/bash", {"-c", copyFile});
 }
 
-void NUVE::System::attemptToRunCommand(const QString& command, QString& tag)
+bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)
 {
     if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag) {
         return false;
     }
 
+    bool isApplied = false;
     SYS_LOG <<"Attempting command" << command <<tag;
 
     if (command == Cmd_PushLogs) {
@@ -2097,8 +2100,13 @@ void NUVE::System::attemptToRunCommand(const QString& command, QString& tag)
         {QSettings settings; settings.setValue(Key_LastRebootAt, tag);}
         rebootDevice();
     }
+    else if (command == Cmd_PushLiveData) {
+        SYS_LOG << "Applying" <<command <<tag;
+        ProtoDataManager::me()->sendDataToServer();
+        isApplied = true;
+    }
 
-    return mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag;
+    return isApplied || (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag);
 }
 
 void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler, const QString &subject, const QString &joiner)
