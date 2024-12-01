@@ -156,6 +156,8 @@ BasePageView {
             visible: wifi
 
             wifi: NetworkInterface.connectedWifi
+            isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
+
             delegateIndex: -1
             onClicked: {
                 _wifisRepeater.currentIndex = -1;
@@ -221,6 +223,8 @@ BasePageView {
                         Layout.fillWidth: true
 
                         wifi: (modelData instanceof WifiInfo) ? modelData : null
+                        isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
+
                         delegateIndex: index
                         onClicked: {
                             _wifisRepeater.currentIndex = index;
@@ -342,6 +346,11 @@ BasePageView {
                     if (text === "Connect") {
                         var wifi = _wifisRepeater.currentItem.wifi;
 
+                        if ((root.isSecuredByWPA3(wifi.security) === true) && (NetworkInterface.doesDeviceSupportWPA3 === false)) {
+                             uiSession.popupLayout.displayPopUp(wpa3WifiAlert)
+                            return
+                        }
+
                         //! Check if we need user prompt for password, i.e., access point is open or is saved and has a profile.
                         if (wifi.security === "" || NetworkInterface.isWifiSaved(wifi)) {
                             NetworkInterface.connectWifi(wifi, "");
@@ -421,6 +430,20 @@ BasePageView {
         }
     }
 
+    //! Wifi and Internet connection alerts
+    AlertNotifPopup {
+        id: wpa3WifiAlert
+        objectName: "WPA3Popup"
+
+        uiSession: root.uiSession
+
+        message: Message {
+            title: "Network Not Supported"
+            type: Message.Type.Alert
+            message: "The selected Wi-Fi network uses WPA3 encryption, which is not supported by thermostat. Please choose a different network to connect."
+        }
+    }
+
     Connections {
         target: NetworkInterface
 
@@ -473,5 +496,13 @@ BasePageView {
                 }
             }
         }
+    }
+
+    function isSecuredByWPA3(security: string)
+    {
+        security = security.toUpperCase();
+        const isWPA3Secured = security.includes("WPA3") || security.includes("SAE")
+
+        return isWPA3Secured
     }
 }

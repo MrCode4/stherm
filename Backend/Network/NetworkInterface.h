@@ -25,6 +25,7 @@ class NetworkInterface : public QObject
     Q_PROPERTY(bool deviceIsOn                  READ deviceIsOn      NOTIFY deviceIsOnChanged)
     Q_PROPERTY(bool hasInternet                 READ hasInternet     NOTIFY hasInternetChanged)
     Q_PROPERTY(QString ipv4Address              READ ipv4Address     CONSTANT)
+    Q_PROPERTY(bool doesDeviceSupportWPA3 READ doesDeviceSupportWPA3 CONSTANT)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -56,21 +57,25 @@ public:
 
     QString             ipv4Address() const;
 
-    Q_INVOKABLE void    refereshWifis(bool forced = false);
-    Q_INVOKABLE void    connectWifi(WifiInfo* wifiInfo, const QString& password = "");
-    Q_INVOKABLE void    disconnectWifi(WifiInfo* wifiInfo);
-    Q_INVOKABLE void    forgetWifi(WifiInfo* wifiInfo);
-    Q_INVOKABLE bool    isWifiSaved(WifiInfo* wifiInfo);
-    Q_INVOKABLE void    turnOn();
-    Q_INVOKABLE void    turnOff();
-    Q_INVOKABLE void    addConnection(const QString& name,
-                                   const QString& ssid,
-                                   const QString& ip4,
-                                   const QString& gw4,
-                                   const QString& dns,
-                                   const QString& security,
-                                   const QString& password);
+    /*!
+     * \brief Gets This getter function returns the value of `mDoesDeviceSupportWPA3`
+     */
+    bool doesDeviceSupportWPA3() const;
 
+    Q_INVOKABLE void refereshWifis(bool forced = false);
+    Q_INVOKABLE void connectWifi(WifiInfo *wifiInfo, const QString &password = "");
+    Q_INVOKABLE void disconnectWifi(WifiInfo *wifiInfo);
+    Q_INVOKABLE void forgetWifi(WifiInfo *wifiInfo);
+    Q_INVOKABLE bool isWifiSaved(WifiInfo *wifiInfo);
+    Q_INVOKABLE void turnOn();
+    Q_INVOKABLE void turnOff();
+    Q_INVOKABLE void addConnection(const QString &name,
+                                   const QString &ssid,
+                                   const QString &ip4,
+                                   const QString &gw4,
+                                   const QString &dns,
+                                   const QString &security,
+                                   const QString &password);
 
     /* Private methods and slots
      * ****************************************************************************************/
@@ -83,6 +88,11 @@ private:
      * \param hasInternet
      */
     inline void         setHasInternet(bool hasInternet);
+
+    /*!
+     * \brief checkWPA3Support Checks if WPA3 is supported on the device based on supported ciphers.
+     */
+    bool checkWPA3Support();
 
 private slots:
     void                onErrorOccured(int error); //! error is: NmcliInterface::Error
@@ -121,6 +131,11 @@ private:
      * \brief mHasInternet Holds whether there is a wifi connection AND it has full internet access
      */
     bool                    mHasInternet;
+
+    /*!
+     * \brief mDoesDeviceSupportWPA3 Indicates if WPA3 is supported by the device.
+     */
+    bool mDoesDeviceSupportWPA3;
 
     /*!
      * \brief mCheckInternetAccessTmr A timer to check internet access
