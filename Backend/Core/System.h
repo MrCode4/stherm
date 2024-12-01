@@ -47,9 +47,9 @@ private:
 class System : public RestApiExecutor
 {
     Q_OBJECT
+    QML_ELEMENT
 
     Q_PROPERTY(QStringList availableVersions READ availableVersions NOTIFY availableVersionsChanged FINAL)
-
     Q_PROPERTY(QString lastInstalledUpdateDate READ lastInstalledUpdateDate NOTIFY lastInstalledUpdateDateChanged FINAL)
     Q_PROPERTY(QString latestVersion          READ latestVersion           NOTIFY latestVersionChanged FINAL)
     Q_PROPERTY(QString latestVersionDate      READ latestVersionDate       NOTIFY latestVersionChanged FINAL)
@@ -58,20 +58,15 @@ class System : public RestApiExecutor
     Q_PROPERTY(QString serialNumber           READ serialNumber            NOTIFY serialNumberReady FINAL)
     Q_PROPERTY(QString systemUID              READ systemUID               NOTIFY systemUIDChanged FINAL)
     Q_PROPERTY(QString backdoorLog            READ backdoorLog             NOTIFY backdoorLogChanged FINAL)
-
     Q_PROPERTY(bool areSettingsFetched  READ areSettingsFetched   NOTIFY areSettingsFetchedChanged FINAL)
     Q_PROPERTY(bool updateAvailable  READ updateAvailable   NOTIFY updateAvailableChanged FINAL)
     Q_PROPERTY(bool testMode         READ testMode WRITE setTestMode   NOTIFY testModeChanged FINAL)
     Q_PROPERTY(bool isManualUpdate   READ isManualMode  NOTIFY isManualModeChanged FINAL)
     //! Enable/disable alert feature
     Q_PROPERTY(bool controlAlertEnabled   READ controlAlertEnabled  NOTIFY controlAlertEnabledChanged FINAL)
-
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY forceUpdateChanged FINAL)
-
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
-
-    QML_ELEMENT
 
 public:
     /* Public Constructors & Destructor
@@ -208,7 +203,7 @@ public:
 
     Q_INVOKABLE bool findBackdoorVersion(const QString fileName);
 
-    Q_INVOKABLE void sendLog();
+    Q_INVOKABLE bool sendLog(bool showAlert = true);
 
     Q_INVOKABLE void sendFirstRunLog();
 
@@ -248,8 +243,11 @@ public:
 
     Q_INVOKABLE void fetchServiceTitanInformation();
 
+    Q_INVOKABLE bool attemptToRunCommand(const QString& command, const QString& tag);
+
 protected slots:
     void onSerialNumberReady();
+    void onAppDataReady(QVariantMap data);
 
 signals:
     void serialNumberReady();
@@ -365,7 +363,7 @@ private:
     void prepareFirstRunLogDirectory();
     QString generateLog();
     void sendFirstRunLogFile();
-    void sendLogFile();
+    bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
 
 private:
@@ -448,6 +446,7 @@ private:
     senderProcess mFileSender;
     QString mLogRemoteFolder;
     QString mLogRemoteFolderUID;
+    QMap<QString, QString> mLastReceivedCommands;
 };
 
 } // namespace NUVE

@@ -1,9 +1,14 @@
 #include "System.h"
 #include "LogHelper.h"
+#include "PerfTestService.h"
+#include "ProtoDataManager.h"
 
 #include <QProcess>
 #include <QDebug>
 #include <QUrl>
+
+Q_LOGGING_CATEGORY(SystemLogCat, "SystemLog")
+#define SYS_LOG TRACE_CATEGORY(SystemLogCat)
 
 /* ************************************************************************************************
  * Network information
@@ -40,6 +45,13 @@ const QString m_IsManualUpdateSetting      = QString("Stherm/IsManualUpdate");
 const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
+
+const QString Key_LastRebootAt = "LastRebootCommandAt";
+
+const QString Cmd_PushLogs = "push_logs";
+const QString Cmd_PerfTest = "perf_test";
+const QString Cmd_Reboot = "reboot";
+const QString Cmd_PushLiveData = "push_live_data";
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -116,6 +128,12 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     mIsManualUpdate          = setting.value(m_IsManualUpdateSetting, false).toBool();
     mStartedWithManualUpdate = mIsManualUpdate;
 
+    // Check if last boot was from command; if so, update the map so that
+    // the device does not fall into reboot loop due to same command
+    if (setting.contains(Key_LastRebootAt)) {
+        mLastReceivedCommands[Cmd_Reboot] = setting.value(Key_LastRebootAt).toString();
+    }
+
     mStartedWithFWServerUpdate = setting.value(m_IsFWServerUpdateSetting, false).toBool();
 
     // reformat if it was saved with old format
@@ -126,7 +144,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     connect(mSync, &NUVE::Sync::serialNumberReady, this, &NUVE::System::onSerialNumberReady);
     connect(mSync, &NUVE::Sync::alert, this, &NUVE::System::alert);
     connect(mSync, &NUVE::Sync::settingsReady, this, &NUVE::System::settingsReady);
-    connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::appDataReady);
+    connect(mSync, &NUVE::Sync::appDataReady, this, &NUVE::System::onAppDataReady);
     connect(mSync, &NUVE::Sync::serviceTitanInformationReady, this, &NUVE::System::serviceTitanInformationReady);
 
     connect(mSync, &NUVE::Sync::autoModeSettingsReady, this, [this](const QVariantMap& settings, bool isValid) {
@@ -1345,6 +1363,17 @@ void NUVE::System::onSerialNumberReady()
     emit serialNumberReady();
 }
 
+void NUVE::System::onAppDataReady(QVariantMap data)
+{
+    emit appDataReady(data);
+
+    if (!data.contains("setting")) return;
+    auto command = data.value("setting").toJsonObject().value("command").toString();
+    if (command.isEmpty()) return;
+    auto commandTime = data.value("setting").toJsonObject().value("command_time").toString();
+    attemptToRunCommand(command, commandTime);
+}
+
 bool NUVE::System::checkUpdateFile(const QByteArray updateData) {
     auto updateDoc = QJsonDocument::fromJson(updateData);
     if (updateDoc.isNull()) {
@@ -1414,6 +1443,17 @@ void NUVE::System::setUID(cpuid_t uid)
 void NUVE::System::setSerialNumber(const QString &sn)
 {
     mSync->setSerialNumber(sn);
+
+    // if device started from reboot, let's inform server that the device is booted
+    if (mLastReceivedCommands.contains(Cmd_Reboot)) {
+        auto callback = [this] (bool success, const QJsonObject& data) {
+            mLastReceivedCommands.remove(Cmd_PushLogs);
+            QSettings settings;
+            settings.remove(Key_LastRebootAt);
+            SYS_LOG <<"Reporting reboot success. Command cleared" <<Cmd_Reboot;
+        };
+        mSync->reportCommandResponse(callback, Cmd_Reboot, "booted");
+    }
 }
 
 QString NUVE::System::systemUID()
@@ -1706,25 +1746,25 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
     return true;
 }
 
-void NUVE::System::sendLog()
+bool NUVE::System::sendLog(bool showAlert)
 {
     if (!installSSHPass()){
         QString error("Device is not ready to send log!");
         qWarning() << error;
-        emit alert(error);
-        return;
+        if (showAlert) emit alert(error);
+        return false;
     }
 
     if (mLogSender.busy()){
         QString error("Previous session is in progress, please try again later.");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        emit alert(error);
-        return;
+        if (showAlert) emit alert(error);
+        return false;
     }
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
-        sendLogFile();
+        return sendLogFile(showAlert);
 
     } else {
         qWarning() << "Folder was not created successfully, trying again...";
@@ -1735,19 +1775,20 @@ void NUVE::System::sendLog()
             if (!error.isEmpty()) {
                 error = "error while creating log directory on remote: " + error;
                 qWarning() << error;
-                emit alert(error);
+                if (showAlert) emit alert(error);
                 return;
             }
 
             TRACE << "Folder created in server successfully";
             mLogSender.setProperty("initialized", true);
 
-            sendLogFile();
+            sendLogFile(showAlert);
         };
 
         mLogSender.setRole("dirLog", dirCreatorCallback);
 
         prepareLogDirectory(dirCreatorCallback);
+        return true;
     }
 }
 
@@ -1941,24 +1982,41 @@ void NUVE::System::sendFirstRunLogFile()
     mLogSender.start("/bin/bash", {"-c", copyFile});
 }
 
-void NUVE::System::sendLogFile()
+bool NUVE::System::sendLogFile(bool showAlert)
 {
     auto filename = generateLog();
-    if (filename.isEmpty())
-        return;
+    if (filename.isEmpty()) {
+        if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+            SYS_LOG <<"Log file generation failed. Command cleared" <<Cmd_PushLogs;
+            mLastReceivedCommands.remove(Cmd_PushLogs);
+        }
+        return false;
+    }
 
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
-        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
+        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;        
 
-        if (!error.isEmpty()) {
+        if (error.isEmpty()) {
+            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG <<"Reporting" <<Cmd_PushLogs;
+                auto callback = [this] (bool success, const QJsonObject& data) {
+                    mLastReceivedCommands.remove(Cmd_PushLogs);
+                    SYS_LOG <<"Log sending success. Command cleared" <<Cmd_PushLogs;
+                };
+                mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
+            }
+            if (showAlert) emit alert("Log is sent!");
+        }
+        else {
+            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG <<"Log sending failed. Command cleared" <<Cmd_PushLogs;
+                mLastReceivedCommands.remove(Cmd_PushLogs);
+            }
             error = "error while sending log directory on remote: " + error;
             qWarning() << error;
-            emit alert(error);
-            return;
+            if (showAlert) emit alert(error);
         }
-
-        emit alert("Log is sent!");
     };
 
     mLogSender.setRole("sendLog", sendCallback);
@@ -1968,6 +2026,7 @@ void NUVE::System::sendLogFile()
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
+    return true;
 }
 
 void NUVE::System::sendResultsFile(const QString &filepath,
@@ -2001,6 +2060,53 @@ void NUVE::System::sendResultsFile(const QString &filepath,
                                "\"StrictHostKeyChecking=no\" \"%2\" %3@%4:%5")
                            .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
     mFileSender.start("/bin/bash", {"-c", copyFile});
+}
+
+bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)
+{
+    if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag) {
+        return false;
+    }
+
+    bool isApplied = false;
+    SYS_LOG <<"Attempting command" << command <<tag;
+
+    if (command == Cmd_PushLogs) {
+        if (mLogSender.busy()) {
+            SYS_LOG << "Log-sender is busy at this momemnt";
+        }
+        else {
+            SYS_LOG << "Applying" <<command <<tag;
+            if (sendLog(false)) {
+                mLastReceivedCommands[command] = tag;
+            }
+            else {
+                SYS_LOG <<"Command failed" <<command <<tag;
+            }
+        }
+    }
+    else if (command == Cmd_PerfTest) {
+        SYS_LOG << "Applying" <<command <<tag;
+        if (PerfTestService::me()->checkTestEligibilityManually("Command")) {
+            mLastReceivedCommands[command] = tag;
+        }
+        else {
+            SYS_LOG <<"Command failed" <<command <<tag;
+        }
+    }
+    else if (command == Cmd_Reboot) {
+        SYS_LOG << "Applying" <<command <<tag;
+        mLastReceivedCommands[command] = tag;
+        {QSettings settings; settings.setValue(Key_LastRebootAt, tag);}
+        rebootDevice();
+    }
+    else if (command == Cmd_PushLiveData) {
+        SYS_LOG << "Applying" <<command <<tag;
+        ProtoDataManager::me()->sendDataToServer();
+        isApplied = true;
+    }
+
+    return isApplied || (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag);
 }
 
 void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler, const QString &subject, const QString &joiner)
