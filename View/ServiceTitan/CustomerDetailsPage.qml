@@ -127,10 +127,10 @@ InitialSetupBasePageView {
                 font.pointSize: root.font.pointSize * 0.8
 
                 // Australia: 4 digits
-                // Canada: 6 letter + digits
-                // US: 09498 or in ZIP+4 format: 09498-0048
+                // Canada: 6 letters + digits
+                // US: 5 digits: 10498
                 validator: RegularExpressionValidator {
-                    regularExpression: /^[A-Z\d]{4,6}(-[A-Z\d]{4})?$/i
+                    regularExpression: /^(?:\d{4,5}|[A-Z\d]{6})$/i
                 }
 
                 inputMethodHints: Qt.ImhPreferNumbers
