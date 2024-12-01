@@ -616,7 +616,7 @@ I_DeviceController {
 
         onTriggered: {
             retryCounter++;
-            _pushInitialSetupInformation()();
+            _pushInitialSetupInformation();
         }
     }
 
