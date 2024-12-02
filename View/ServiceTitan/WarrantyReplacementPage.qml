@@ -39,7 +39,7 @@ BasePageView {
     //! Wifi status
     WifiButton {
         parent: root.header.contentItem
-        visible: !NetworkInterface.hasInternet
+        visible: !deviceController.initialSetupNoWIFI && !NetworkInterface.hasInternet
 
         onClicked: {
             //! Open WifiPage

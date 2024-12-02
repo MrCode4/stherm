@@ -66,6 +66,10 @@ NetworkInterface::NetworkInterface(QObject *parent)
               << "settings no internet";
         setHasInternet(false);
     });
+
+    connect(mNmcliInterface, &NmcliInterface::ciphersAreReady, this, [this]() {
+        this->mDoesDeviceSupportWPA3 = checkWPA3Support();
+    });
 }
 
 NetworkInterface::WifisQmlList NetworkInterface::wifis()
@@ -194,6 +198,19 @@ qsizetype NetworkInterface::networkCount(WifisQmlList* list)
     return 0;
 }
 
+bool NetworkInterface::checkWPA3Support()
+{
+    QStringList deviceSupportedCiphersList = mNmcliInterface->getDeviceSupportedCiphersList();
+
+    for (const QString &cipher : deviceSupportedCiphersList) {
+        if (cipher.contains("GCMP", Qt::CaseInsensitive)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void NetworkInterface::checkHasInternet()
 {
     auto connectedWifiInfo = connectedWifi();
@@ -234,6 +251,11 @@ void NetworkInterface::checkHasInternet()
 void NetworkInterface::clearDNSCache()
 {
     NetworkManager::instance()->clearCache();
+}
+
+bool NetworkInterface::doesDeviceSupportWPA3() const
+{
+    return mDoesDeviceSupportWPA3;
 }
 
 void NetworkInterface::onErrorOccured(int error)

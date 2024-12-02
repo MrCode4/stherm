@@ -15,20 +15,13 @@ InitialSetupBasePageView {
     property string deviceLocation: appModel?.deviceLocation ?? ""
 
     //! Busy due to get the Install operation
-    property bool isBusy: false
+    property bool isBusy: deviceController.isSendingInitialSetupData
 
     /* Object properties
      * ****************************************************************************************/
     title: "Device Location"
 
-    showWifiButton: true
-
-    onVisibleChanged: {
-        if (!visible) {
-            retryTimer.stop();
-            errorPopup.close();
-        }
-    }
+    showWifiButton: !deviceController.initialSetupNoWIFI
 
     /* Children
      * ****************************************************************************************/
@@ -104,90 +97,23 @@ InitialSetupBasePageView {
         width: 45
         visible: isBusy
         running: visible
-
-
-        TapHandler {
-            enabled: isBusy && errorPopup.errorMessage.length > 0
-
-            onTapped: {
-                errorPopup.open();
-            }
-        }
-    }
-
-    InitialFlowErrorPopup {
-        id: errorPopup
-
-        isBusy: root.isBusy
-        deviceController: uiSession.deviceController
-
-        onStopped: {
-            root.isBusy = false;
-            retryTimer.stop();
-        }
-    }
-
-
-    Timer {
-        id: retryTimer
-
-        property int retryCounter: 0
-
-        interval: 5000
-        repeat: false
-        running: false
-
-        onTriggered: {
-            retryCounter++;
-            deviceController.pushInitialSetupInformation();
-        }
-    }
-
-    //! Temp connection to end busy
-    Connections {
-        target: deviceController.sync
-        enabled: root.visible && isBusy
-
-        function onInstalledSuccess() {
-            isBusy = false;
-            retryTimer.retryCounter = 0;
-        }
-
-        function onInstallFailed(err : string, needToRetry : bool) {
-            isBusy = needToRetry;
-            errorPopup.errorMessage = err;
-
-            if (needToRetry) {
-                retryTimer.start();
-            }
-
-            if (!needToRetry || (retryTimer.retryCounter % 2 === 0)) {
-                errorPopup.open();
-            }
-        }
     }
 
     /* Functions
      * ****************************************************************************************/
 
     function nextPage() {
-        retryTimer.stop();
-
         if (root.StackView.view && appModel.deviceLocation === "Custom") {
             root.StackView.view.push("qrc:/Stherm/View/SystemSetup/ThermostatNamePage.qml", {
                                          "uiSession": Qt.binding(() => uiSession),
                                          "initialSetup":  root.initialSetup
                                      });
-        } else {
-            if (NetworkInterface.hasInternet) {
-                isBusy = true;
-                retryTimer.retryCounter = 0;
-                retryTimer.triggered();
 
-            } else {
-                errorPopup.errorMessage = deviceController.deviceInternetError();
-                errorPopup.open();
-            }
+        } else if (!deviceController.initialSetupNoWIFI) {
+            deviceController.pushInitialSetupInformation();
+
+        } else {
+            deviceController.initialSetupFinished();
         }
     }
 }

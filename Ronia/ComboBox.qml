@@ -33,6 +33,7 @@ T.ComboBox {
         Material.foreground: control.currentIndex === index ? ListView.view.contentItem.Material.accent : ListView.view.contentItem.Material.foreground
         highlighted: control.highlightedIndex === index
         hoverEnabled: control.hoverEnabled
+        font: control.font
     }
 
     indicator: ColorImage {

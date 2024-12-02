@@ -91,12 +91,7 @@ Control {
             z: 1
 
             onClicked: {
-                //! Open WifiPage
-                if (mainStackView) {
-                    mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
-                                           "uiSession": uiSession
-                                       });
-                }
+                 uiSession.openWifiPage(true, deviceController.initialSetupNoWIFI);
             }
         }
 
@@ -371,15 +366,19 @@ Control {
                     }
                 }
 
+            } else if (deviceController.initialSetupNoWIFI) {
+                // Device is installed with the no wifi
+                console.log("Device started due to pre-installation with no Wi-Fi.");
+
+                // Initial setup should be true when initialSetupNoWIFI is true, Used in the Wi-Fi page.
+                deviceController.setInitialSetup(true);
+
+                // When device was installed with the `No Wi-Fi`, App should be active and Go to home directly.
+                deviceController.initialSetupFinished();
+
             } else {
                 deviceController.setInitialSetup(true);
-                //! Open WifiPage
-                if (mainStackView) {
-                    mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
-                                           "uiSession": uiSession,
-                                           "backButtonVisible": false
-                                       });
-                }
+                uiSession.openWifiPage(false, false);
             }
         }
     }
@@ -408,6 +407,11 @@ Control {
 
             // Send  check contractor info
             deviceController.deviceControllerCPP.checkContractorInfo();
+
+            // Show initial setup in no wifi mode conutdown timer for first time.
+            if (deviceController.initialSetupNoWIFI) {
+                uiSession.popUps.showLimitedInitialSetupPopup();
+            }
         }
     }
 
@@ -420,6 +424,16 @@ Control {
             if (mainStackView) {
                 mainStackView.push("qrc:/Stherm/View/SystemModePage.qml", {
                                        "uiSession": Qt.binding(() => uiSession)
+                                   });
+            }
+        }
+
+        function onOpenWifiPage(backButtonVisible: bool, openFromNoWiFiInstallation = false) {
+            if (mainStackView) {
+                mainStackView.push("qrc:/Stherm/View/WifiPage.qml", {
+                                       "uiSession": uiSession,
+                                       "backButtonVisible": backButtonVisible,
+                                       "openFromNoWiFiInstallation": openFromNoWiFiInstallation
                                    });
             }
         }
@@ -443,6 +457,9 @@ Control {
 
             //! Initial setup finished.
             deviceController.setInitialSetup(false);
+
+            //! Save the initial setup process.
+            deviceController.system.setInitialSetupWithNoWIFI(deviceController.initialSetupNoWIFI);
         }
     }
 

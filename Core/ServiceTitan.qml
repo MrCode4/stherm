@@ -29,6 +29,8 @@ QSObject {
 
     property string address2:       ""
 
+    property string country:        ""
+
     property string city:           ""
 
     property string state:          ""

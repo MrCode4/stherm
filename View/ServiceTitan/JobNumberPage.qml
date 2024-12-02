@@ -19,7 +19,7 @@ InitialSetupBasePageView {
      * ****************************************************************************************/
     title: "Job Number"
 
-    showWifiButton: true
+    showWifiButton: !deviceController.initialSetupNoWIFI
 
     onVisibleChanged: {
         if (!visible) {

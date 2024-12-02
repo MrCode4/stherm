@@ -19,6 +19,8 @@ BasePageView {
 
     property System system: deviceController.deviceControllerCPP.system
 
+    property bool openFromNoWiFiInstallation: false
+
     /* Object properties
      * ****************************************************************************************/
 
@@ -53,6 +55,12 @@ BasePageView {
                                                  "backButtonVisible" : false
                                              });
 
+                } else if (openFromNoWiFiInstallation) {
+                    root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup,
+                                                 "openFromNoWiFiInstallation": true
+                                             });
                 } else {
                     appModel.userPolicyTerms.acceptedTimeUser = system.getCurrentTime();
                     appModel.userPolicyTerms.acceptedVersion = appModel.userPolicyTerms.currentVersion;

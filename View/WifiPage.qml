@@ -27,7 +27,11 @@ BasePageView {
     //! Use deviceController to bind better.
     property bool initialSetup: deviceController.initialSetup
 
-    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
+    property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
+    property bool openFromNoWiFiInstallation: false
+
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 &&
+                                      deviceController.checkedSWUpdate && NetworkInterface.connectedWifi
 
     //! To conditionally display and hide/show the "Next" button and disable/enable the next timer based on specific scenarios,
     //! such as during initial device setup in warranty replacment page.
@@ -156,6 +160,8 @@ BasePageView {
             visible: wifi
 
             wifi: NetworkInterface.connectedWifi
+            isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
+
             delegateIndex: -1
             onClicked: {
                 _wifisRepeater.currentIndex = -1;
@@ -221,6 +227,8 @@ BasePageView {
                         Layout.fillWidth: true
 
                         wifi: (modelData instanceof WifiInfo) ? modelData : null
+                        isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
+
                         delegateIndex: index
                         onClicked: {
                             _wifisRepeater.currentIndex = index;
@@ -329,6 +337,8 @@ BasePageView {
 
             //! Connect/Disconnect button
             ButtonInverted {
+                id: connectBtn
+
                 anchors.right: parent.right
                 anchors.rightMargin: 8
                 visible: _wifisRepeater.currentItem?.wifi ?? false
@@ -341,6 +351,11 @@ BasePageView {
 
                     if (text === "Connect") {
                         var wifi = _wifisRepeater.currentItem.wifi;
+
+                        if ((root.isSecuredByWPA3(wifi.security) === true) && (NetworkInterface.doesDeviceSupportWPA3 === false)) {
+                             uiSession.popupLayout.displayPopUp(wpa3WifiAlert)
+                            return
+                        }
 
                         //! Check if we need user prompt for password, i.e., access point is open or is saved and has a profile.
                         if (wifi.security === "" || NetworkInterface.isWifiSaved(wifi)) {
@@ -366,6 +381,20 @@ BasePageView {
                     }
 
                     _wifisRepeater.currentIndex = -2;
+                }
+            }
+
+            //! Skip, No wifi installation
+            ButtonInverted {
+                anchors.right: parent.right
+                anchors.rightMargin: 8
+
+                visible: root.initialSetup && !root.openFromNoWiFiInstallation && !NetworkInterface.connectedWifi &&
+                         (deviceController.limitedModeRemainigTime > 0) && !connectBtn.visible
+                text: "  Skip  "
+
+                onClicked: {
+                    uiSession.popUps.showSkipWIFIConnectionPopup();
                 }
             }
         }
@@ -421,8 +450,28 @@ BasePageView {
         }
     }
 
+    //! Wifi and Internet connection alerts
+    AlertNotifPopup {
+        id: wpa3WifiAlert
+        objectName: "WPA3Popup"
+
+        uiSession: root.uiSession
+
+        message: Message {
+            title: "Network Not Supported"
+            type: Message.Type.Alert
+            message: "The selected Wi-Fi network uses WPA3 encryption, which is not supported by thermostat. Please choose a different network to connect."
+        }
+    }
+
     Connections {
         target: NetworkInterface
+
+        function onConnectedWifiChanged() {
+            // To address the issue of users reconnecting to Wi-Fi after navigating back from other pages.
+            if (NetworkInterface.connectedWifi && !openFromNoWiFiInstallation)
+                deviceController.initialSetupNoWIFI = false;
+        }
 
         function onIncorrectWifiPassword(wifi: WifiInfo)
         {
@@ -444,6 +493,22 @@ BasePageView {
         }
     }
 
+    Connections {
+        target: uiSession
+        enabled: root.visible && initialSetupNoWIFI
+
+        function onGoToInitialSetupNoWIFIMode() {
+            if (root.visible && initialSetupNoWIFI) {
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                             });
+                }
+            }
+        }
+    }
+
     onSortedWifisChanged: _wifisRepeater.currentIndexChanged();
 
     /* Functions
@@ -455,23 +520,45 @@ BasePageView {
             nextPageTimer.once = true;
             if (system.serialNumber.length > 0) {
 
-                // Check contractor info once without retrying in the initial setup
-                deviceController.deviceControllerCPP.checkContractorInfo();
+                if (NetworkInterface.connectedWifi) {
+                    // Check contractor info once without retrying in the initial setup
+                    deviceController.deviceControllerCPP.checkContractorInfo();
+                }
 
                 //! If privacy policy not accepted in normal mode load the PrivacyPolicyPage
                 if (appModel.userPolicyTerms.acceptedVersion === appModel.userPolicyTerms.currentVersion) {
-                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                                 "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                             });
+                    if ((openFromNoWiFiInstallation && NetworkInterface.connectedWifi)) {
+                        root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup,
+                                                     "openFromNoWiFiInstallation": root.openFromNoWiFiInstallation
+                                                 });
+
+                    }
+
+                    if (!openFromNoWiFiInstallation) {
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup
+                                                 });
+                    }
 
                 } else {
                     root.StackView.view.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
                                                  "uiSession": Qt.binding(() => uiSession),
-                                                 "initialSetup": root.initialSetup
+                                                 "initialSetup": root.initialSetup,
+                                                 "openFromNoWiFiInstallation": root.openFromNoWiFiInstallation
                                              });
                 }
             }
         }
+    }
+
+    function isSecuredByWPA3(security: string)
+    {
+        security = security.toUpperCase();
+        const isWPA3Secured = security.includes("WPA3") || security.includes("SAE")
+
+        return isWPA3Secured
     }
 }

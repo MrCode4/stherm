@@ -243,6 +243,12 @@ ApplicationWindow {
             uiSessionId.showHome();
             window.postponeOrResumePerfTest();
         }
+
+        onClosed: {
+            if (deviceController.initialSetupNoWIFI) {
+                uiSession.popUps.showLimitedInitialSetupPopup();
+            }
+        }
     }
 
     PerfTestPopup {

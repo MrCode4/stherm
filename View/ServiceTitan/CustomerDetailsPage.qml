@@ -14,6 +14,7 @@ InitialSetupBasePageView {
      * ****************************************************************************************/
     property bool manualEntry: appModel?.serviceTitan?.isSTManualMode ?? true
 
+    property bool openFromNoWiFiInstallation: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -87,30 +88,50 @@ InitialSetupBasePageView {
         }
 
 
-        Item {
+        GridLayout {
             Layout.fillWidth: true
             height: zipCodeTf.implicitHeight + 5
 
+            columns: 2
+            columnSpacing: 15
+            rowSpacing: 0
+
             Label {
-                anchors.top: parent.top
+                text: "Country"
+                font.pointSize: root.font.pointSize * 0.9
+            }
+
+            Label {
                 text: "ZIP code"
                 font.pointSize: root.font.pointSize * 0.9
             }
 
+            ComboBox {
+                id: countryCombobox
+
+                Layout.preferredWidth: root.availableWidth / 2 - 10
+                Layout.alignment: Qt.AlignBottom
+
+                font.pointSize: root.font.pointSize * 0.8
+                model: AppSpec.supportedCountries
+                currentIndex: appModel?.serviceTitan?.country.length > 0 ?
+                                  AppSpec.supportedCountries.indexOf(appModel?.serviceTitan?.country) : 0
+            }
 
             TextField {
                 id: zipCodeTf
 
-                anchors.top: parent.top
-                anchors.topMargin: 5
-                anchors.right: parent.right
-                anchors.left: parent.left
+                Layout.preferredWidth: root.availableWidth  / 2 - 10
 
                 placeholderText: "Input the ZIP code"
                 text: appModel?.serviceTitan?.zipCode ?? ""
                 font.pointSize: root.font.pointSize * 0.8
+
+                // Australia: 4 digits
+                // Canada: 6 letters + digits
+                // US: 5 digits: 10498
                 validator: RegularExpressionValidator {
-                    regularExpression: /^\d{5}(-\d{4})?$/
+                    regularExpression: /^(?:\d{4,5}|[A-Z\d]{6})$/i
                 }
 
                 inputMethodHints: Qt.ImhPreferNumbers
@@ -126,7 +147,7 @@ InitialSetupBasePageView {
         Text {
             id: warrantyReplacementText
 
-            visible: manualEntry
+            visible: manualEntry && !openFromNoWiFiInstallation
             text: qsTr("Warranty Replacement")
             font.underline: true
             color: "#43E0F8"
@@ -158,21 +179,59 @@ InitialSetupBasePageView {
         anchors.margins: 10
 
         text: "Next"
-        visible: !emailTf.activeFocus && !zipCodeTf.activeFocus
+        visible: !openFromNoWiFiInstallation && !emailTf.activeFocus && !zipCodeTf.activeFocus
         enabled: emailTf.acceptableInput && zipCodeTf.acceptableInput
         leftPadding: 25
         rightPadding: 25
 
         onClicked: {
-            appModel.serviceTitan.email   = emailTf.text;
-            appModel.serviceTitan.zipCode = zipCodeTf.text;
-
+            updateModel();
             nextPage();
+        }
+    }
+
+    BusyIndicator {
+        anchors.bottom: submitBtn.top
+        anchors.horizontalCenter: submitBtn.horizontalCenter
+        anchors.margins: 10
+
+        height: 45
+        width: 45
+        visible: deviceController.isSendingInitialSetupData && submitBtn.visible
+        running: visible
+    }
+
+
+    //! Submit button
+    ButtonInverted {
+        id: submitBtn
+
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.margins: 50
+        anchors.bottomMargin: 10
+
+        enabled: !deviceController.isSendingInitialSetupData && emailTf.acceptableInput && zipCodeTf.acceptableInput
+        text: "Submit"
+        visible: openFromNoWiFiInstallation && !emailTf.activeFocus && !zipCodeTf.activeFocus
+        leftPadding: 25
+        rightPadding: 25
+
+        onClicked: {
+            updateModel();
+            deviceController.pushInitialSetupInformation();
         }
     }
 
     /* Functions
      * ****************************************************************************************/
+
+    function updateModel() {
+        appModel.serviceTitan.email   = emailTf.text;
+        appModel.serviceTitan.zipCode = zipCodeTf.text;
+        appModel.serviceTitan.country = countryCombobox.currentText;
+    }
 
     //! Go to CustomerDetailsPage
     function nextPage() {

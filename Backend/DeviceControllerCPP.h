@@ -37,6 +37,9 @@ class DeviceControllerCPP  : public QObject
     // for quiet mode bind
     Q_PROPERTY(double  adaptiveBrightness READ  adaptiveBrightness NOTIFY adaptiveBrightnessChanged)
 
+    Q_PROPERTY(bool  isNeedOutdoorTemperature READ  isNeedOutdoorTemperature NOTIFY isNeedOutdoorTemperatureChanged)
+    Q_PROPERTY(bool  isEligibleOutdoorTemperature READ  isEligibleOutdoorTemperature NOTIFY isEligibleOutdoorTemperatureChanged)
+
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
 
@@ -254,6 +257,9 @@ Q_SIGNALS:
     //! To block mode change in UI
     void manualEmergencyModeUnblockedAfter(int secs);
 
+    void isNeedOutdoorTemperatureChanged();
+    void isEligibleOutdoorTemperatureChanged();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData, bool addToData = false);
@@ -270,6 +276,12 @@ private:
     bool isFanON();
 
     void writeSensorData(const QVariantMap &data);
+
+    void updateIsNeedOutdoorTemperature();
+    bool isNeedOutdoorTemperature();
+
+    void updateIsEligibleOutdoorTemperature();
+    bool isEligibleOutdoorTemperature();
 
 private Q_SLOTS:
     /* Private Slots
@@ -288,6 +300,9 @@ private:
     void processFanSettings(const QString &path);
     void processBrightnessSettings(const QString &path);
     QByteArray defaultSettings(const QString &path);
+
+    //! Start/Stop the timer for get the outdoor temperature
+    void checkForOutdoorTemperature();
 
 private:
     /* Attributes
@@ -347,6 +362,14 @@ private:
     QString mGeneralSystemDatafilePath;
 
     bool mIsNightModeRunning;
+
+    bool mDeviceHasInternet;
+
+    //! Is the outdoor temperature required?
+    bool mIsNeedOutdoorTemperature;
+
+    //! Check the feasibility of sending outdoor temperature request.
+    bool mIsEligibleOutdoorTemperature;
 
     int mFanSpeed;
     bool mFanOff;

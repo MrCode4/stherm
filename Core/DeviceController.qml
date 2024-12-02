@@ -34,6 +34,15 @@ I_DeviceController {
     //! initialSetup: When initialSetup is true the settingsLoader is disabled
     property bool initialSetup: false;
 
+    //! Initialize the `initialSetupNoWIFI` flag with the `initialSetupWithNoWIFI()` function.
+    //! The binding to this flag will be broken in `onInstalledSuccess` or other relevant pages.
+    property bool initialSetupNoWIFI: system.initialSetupWithNoWIFI();
+    property bool isSendingInitialSetupData: false;
+
+    //! Initialize the `limitedModeRemainigTime` flag with the `limitedModeRemainigTime()` function
+    //! The binding to this flag will be broken in `limitedModeTimer`
+    property int  limitedModeRemainigTime : system.limitedModeRemainigTime()
+
     readonly property int  checkSNTryCount: checkSNTimer.tryCount;
 
     //! Air condition health
@@ -316,8 +325,9 @@ I_DeviceController {
             deviceControllerCPP.wifiConnected(NetworkInterface.hasInternet);
 
             if (NetworkInterface.hasInternet) {
-                if (deviceControllerCPP.system.serialNumber.length > 0)
+                if (deviceControllerCPP.system.serialNumber.length > 0) {
                     fetchContractorInfoTimer.start();
+                }
 
             } else {
                 fetchContractorInfoTimer.stop();
@@ -493,6 +503,11 @@ I_DeviceController {
             internal.syncReturnedEmail   = device.serviceTitan.email;
 
             device.serviceTitan.zipCode  = data?.zip?.code ?? (data?.zip ?? "");
+
+            device.serviceTitan.country  = data?.country?.name ?? ("US");
+            if (device.serviceTitan.country === "United States")
+                device.serviceTitan.country = "US";
+
             //! if there is no new data to fetch than jobid in review page
             //internal.syncReturnedZip = device.serviceTitan.zipCode;
 
@@ -566,10 +581,22 @@ I_DeviceController {
         }
 
         function onInstalledSuccess() {
+
+            isSendingInitialSetupData = false;
+            initialSetupNoWIFI = false;
+            initialSetupDataPushTimer.retryCounter = 0;
+
+            // Go to home
             firstRunFlowEnded();
         }
 
-        function onInstallFailed() {
+        function onInstallFailed(err : string, needToRetry : bool) {
+            isSendingInitialSetupData = needToRetry;
+
+            if (!needToRetry || (initialSetupDataPushTimer.retryCounter % 2 === 0)) {
+                showInitialSetupPushError(err);
+            }
+
             console.warn("install failed try again.")
         }
 
@@ -582,6 +609,31 @@ I_DeviceController {
                 lockStatePusher.interval = Math.min(lockStatePusher.interval * 2, 60 * 1000);
                 console.error('Pushing app lock state failed, retry internal is ', lockStatePusher.interval);
             }
+        }
+    }
+
+    property Timer initialSetupDataPushTimer: Timer {
+        property int retryCounter: 0
+
+        interval: 5000
+        repeat: true
+        running: isSendingInitialSetupData
+
+        onTriggered: {
+            retryCounter++;
+            _pushInitialSetupInformation();
+        }
+    }
+
+    //! To Check the limited mode
+    property Timer limitedModeTimer: Timer {
+        interval: 30000
+        repeat: true
+        running: initialSetupNoWIFI && limitedModeRemainigTime > 0
+
+        onTriggered: {
+            limitedModeRemainigTime -= 30000
+            system.setLimitedModeRemainigTime(limitedModeRemainigTime);
         }
     }
 
@@ -711,6 +763,8 @@ I_DeviceController {
     //! Show emergency error popup
     signal showEmergencyModeError();
 
+    signal showInitialSetupPushError(err: string);
+
     onStartDeviceRequested: {
         console.log("************** Initialize and create connections **************");
         //! initialize the device and config
@@ -780,9 +834,11 @@ I_DeviceController {
      * ****************************************************************************************/
 
     function setInitialSetup(init: bool) {
-        initialSetup = init;
+        // Initial setup should remain true when initial setup finished with `No Wi-Fi` method.
+        initialSetup = init || initialSetupNoWIFI;
+
         //! we set to false elsewhere! i.e., in system
-        if (init)
+        if (initialSetup)
             deviceControllerCPP.system.setIsInitialSetup(true);
     }
 
@@ -1551,7 +1607,7 @@ I_DeviceController {
     function setSystemAccessories(accType: int, wireType: int) {
         device.systemSetup.systemAccessories.setSystemAccessories(accType, wireType);
     }
-    
+
     function testRelays(relays) {
         var send_data = [relays.isR, relays.isC, relays.isG, relays.isY1, relays.isY2, relays.isT2,
                          relays.isW1, relays.isW2, relays.isW3, relays.isOB, relays.isT1p, relays.isT1n];
@@ -1717,8 +1773,19 @@ I_DeviceController {
         initialSetupFinished();
     }
 
-    //! Push initial setup information
     function pushInitialSetupInformation() {
+        if (NetworkInterface.hasInternet) {
+            isSendingInitialSetupData = true;
+            initialSetupDataPushTimer.retryCounter = 0;
+            initialSetupDataPushTimer.triggered();
+
+        } else {
+            showInitialSetupPushError(deviceInternetError());
+        }
+    }
+
+    //! Push initial setup information
+    function _pushInitialSetupInformation() {
         // Initialize the client object
         var clientData = {};
 
@@ -1738,6 +1805,7 @@ I_DeviceController {
         var deviceObj = {
          "sn": deviceControllerCPP.system.serialNumber,
          "zip_code": device.serviceTitan.zipCode,
+         "country": AppSpec.supportedCountries.indexOf(device.serviceTitan.country) + 1,
          "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
          "resident_type_id": device.residenceType, // or maybe using condition
          "where_installed_id": device.whereInstalled

@@ -105,15 +105,16 @@ PerfTestService::PerfTestService(QObject *parent)
     scheduleNextCheck(QTime::currentTime());
 }
 
-QDateTime PerfTestService::scheduleNextCheck(const QTime& checkTime)
+QDateTime PerfTestService::scheduleNextCheck(QTime checkTime)
 {
     startTimeLeft(0);
     testTimeLeft(0);
     finishTimeLeft(0);
     state(TestState::Idle);
 
-    QDateTime nextScheduleMark;
+    if (checkTime <= QTime::currentTime()) checkTime = QTime::currentTime().addSecs(10);
     QDateTime timeToCheckFrom = QDateTime(QDate::currentDate(), checkTime);
+    QDateTime nextScheduleMark;    
 
     auto randomDelaySecs = QRandomGenerator::global()->bounded(0, PerfTest::TestDuration);
 
@@ -125,7 +126,7 @@ QDateTime PerfTestService::scheduleNextCheck(const QTime& checkTime)
         nextScheduleMark = QDateTime(QDate::currentDate().addDays(1), PerfTest::TenAM.addSecs(randomDelaySecs));
     }
 
-    auto msecsToNextCheck = timeToCheckFrom.msecsTo(nextScheduleMark);
+    auto msecsToNextCheck = QDateTime::currentDateTime().msecsTo(nextScheduleMark);
     PERF_LOG <<"Next Schedule time " <<nextScheduleMark <<msecsToNextCheck/(PerfTest::OneSecInMS) <<"seconds";
     mTimerScheduleWatcher.setInterval(msecsToNextCheck);
     mTimerScheduleWatcher.start();
@@ -134,12 +135,19 @@ QDateTime PerfTestService::scheduleNextCheck(const QTime& checkTime)
     return nextScheduleMark;
 }
 
-void PerfTestService::checkTestEligibilityManually()
+bool PerfTestService::checkTestEligibilityManually(const QString& source)
 {
-    PERF_LOG << "Checking perf-test manually";
-    mCheckTimeAt = QDateTime::currentDateTime();
-    mCheckTimeSetAt = QDateTime::currentDateTime();
-    checkTestEligibility();
+    if (state() == Idle) {
+        PERF_LOG << "Checking perf-test manually, source" <<source;
+        mCheckTimeAt = QDateTime::currentDateTime();
+        mCheckTimeSetAt = QDateTime::currentDateTime();
+        checkTestEligibility();
+        return true;
+    }
+    else {
+        PERF_LOG << "Checking perf-test aborted for source" <<source << "as state is" <<state();
+        return false;
+    }
 }
 
 void PerfTestService::checkTestEligibility()

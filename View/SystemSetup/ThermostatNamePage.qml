@@ -13,20 +13,13 @@ InitialSetupBasePageView {
     /* Property declaration
      * ****************************************************************************************/
     //! Busy due to get the Install operation
-    property bool isBusy: false
+    property bool isBusy: deviceController.isSendingInitialSetupData
 
     /* Object properties
      * ****************************************************************************************/
     title: "Thermostat Name"
 
-    showWifiButton: true
-
-    onVisibleChanged: {
-        if (!visible) {
-            retryTimer.stop();
-            errorPopup.close();
-        }
-    }
+    showWifiButton: !deviceController.initialSetupNoWIFI
 
     /* Children
      * ****************************************************************************************/
@@ -81,14 +74,6 @@ InitialSetupBasePageView {
         width: 45
         visible: isBusy
         running: visible
-
-        TapHandler {
-            enabled: isBusy && errorPopup.errorMessage.length > 0
-
-            onTapped: {
-                errorPopup.open();
-            }
-        }
     }
 
     ContactNuveSupportLabel {
@@ -107,78 +92,20 @@ InitialSetupBasePageView {
         anchors.margins: 10
 
         enabled: !isBusy
-        text: "Submit"
+        text: deviceController.initialSetupNoWIFI ? "Finish" : "Submit"
         visible: !nameTf.activeFocus
         leftPadding: 25
         rightPadding: 25
 
         onClicked: {
-            isBusy = true;
-
             appModel.thermostatName = nameTf.text;
 
-            if (NetworkInterface.hasInternet) {
-                retryTimer.triggered();
+            if (!deviceController.initialSetupNoWIFI) {
+                deviceController.pushInitialSetupInformation();
 
             } else {
-                errorPopup.errorMessage = deviceController.deviceInternetError();
-                errorPopup.open();
+                deviceController.initialSetupFinished();
             }
         }
     }
-
-    //! Temp connection to end busy
-    Connections {
-        target: deviceController.sync
-        enabled: root.visible && isBusy
-
-        function onInstalledSuccess() {
-            isBusy = false;
-            retryTimer.retryCounter = 0;
-        }
-
-        function onInstallFailed(err : string, needToRetry : bool) {
-            isBusy = needToRetry;
-            errorPopup.errorMessage = err;
-
-            if (needToRetry) {
-                retryTimer.start();
-            }
-
-            if (!needToRetry || (retryTimer.retryCounter % 2 === 0)) {
-                errorPopup.open();
-            }
-        }
-
-    }
-
-    InitialFlowErrorPopup {
-        id: errorPopup
-
-        isBusy: root.isBusy
-        deviceController: uiSession.deviceController
-
-        onStopped: {
-            root.isBusy = false;
-            retryTimer.stop();
-        }
-    }
-
-    Timer {
-        id: retryTimer
-
-        property int retryCounter: 0
-
-        interval: 5000
-        repeat: false
-        running: false
-
-        onTriggered: {
-            if (initialSetup) {
-                retryCounter++;
-                deviceController.pushInitialSetupInformation();
-            }
-        }
-    }
-
 }
