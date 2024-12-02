@@ -92,6 +92,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , mTempScheme(new Scheme(_deviceAPI, mSchemeDataProvider, this))
     , mHumidityScheme(new HumidityScheme(_deviceAPI, mSchemeDataProvider, this))
     , mDeviceHasInternet(false)
+    , mIsNeedOutdoorTemperature(false)
+    , mIsEligibleOutdoorTemperature(false)
 {
 
     m_system = _deviceAPI->system();
@@ -684,17 +686,21 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
         checkForOutdoorTemperature();
     });
 
+    // To provide outdoor temperature
+    connect(mSystemSetup, &SystemSetup::isAUXAutoChanged, this, [=] {
+        checkForOutdoorTemperature();
+    });
+
     checkForOutdoorTemperature();
 
     emit systemSetupChanged();
 }
 
 void DeviceControllerCPP::checkForOutdoorTemperature() {
-    bool canSendRequest = mDeviceHasInternet && // Check the Internet
-                          // Check the Device has serial number with true hasClient
-                          !Device->serialNumber().isEmpty() && Device->hasClient();
+    updateIsEligibleOutdoorTemperature();
+    updateIsNeedOutdoorTemperature();
 
-    if (canSendRequest && mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
+    if (mIsEligibleOutdoorTemperature && mIsNeedOutdoorTemperature) {
 
         if (!mGetOutdoorTemperatureTimer.isActive()) {
             m_sync->getOutdoorTemperature();
@@ -702,7 +708,7 @@ void DeviceControllerCPP::checkForOutdoorTemperature() {
         }
 
         // To cache the outdoor temperature, it will be stop when get data successfully in the other system types
-    } else if (canSendRequest && !mGetOutdoorTemperatureTimer.property(m_GetOutdoorTemperatureReceived).toBool()) {
+    } else if (mIsEligibleOutdoorTemperature && !mGetOutdoorTemperatureTimer.property(m_GetOutdoorTemperatureReceived).toBool()) {
 
         m_sync->getOutdoorTemperature();
         if (!mGetOutdoorTemperatureTimer.isActive())
@@ -1493,6 +1499,37 @@ void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
     } else {
         TRACE << "Failed to open the file for writing/Reading." << directoryHasSpace;
     }
+}
+
+void DeviceControllerCPP::updateIsNeedOutdoorTemperature()
+{
+    auto isNeedOutdoorTemperature = mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating && mSystemSetup->isAUXAuto;
+    if (mIsNeedOutdoorTemperature == isNeedOutdoorTemperature) {
+        return;
+    }
+
+    mIsNeedOutdoorTemperature = isNeedOutdoorTemperature;
+    emit isNeedOutdoorTemperatureChanged();
+}
+
+bool DeviceControllerCPP::isNeedOutdoorTemperature() {
+    return mIsNeedOutdoorTemperature;
+}
+
+void DeviceControllerCPP::updateIsEligibleOutdoorTemperature()
+{
+    auto isEligibleOutdoorTemperature = Device->hasClient() && !Device->serialNumber().isEmpty() && mDeviceHasInternet;
+    if (mIsEligibleOutdoorTemperature == isEligibleOutdoorTemperature) {
+        return;
+    }
+
+    mIsEligibleOutdoorTemperature = isEligibleOutdoorTemperature;
+    emit isEligibleOutdoorTemperatureChanged();
+}
+
+bool DeviceControllerCPP::isEligibleOutdoorTemperature()
+{
+    return mIsEligibleOutdoorTemperature;
 }
 
 void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
