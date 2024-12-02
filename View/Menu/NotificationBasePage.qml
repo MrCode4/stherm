@@ -10,23 +10,25 @@ BasePageView {
     property var filters: []
     property MessageController  messageController: uiSession.messageController
 
+    property var filteredItems:  {
+        let allItems = appModel?.messages ?? [];
+        let filteredItems = [];
+        if (allItems?.length === 0 || filters?.length == 0) {
+            filteredItems = allItems;
+
+        } else {
+            allItems.forEach(message => {if (filters.indexOf(message.type) >= 0) filteredItems.push(message);});
+        }
+
+        return filteredItems;
+    }
+
     ListView {
         spacing: 4
         anchors.fill: parent
         anchors.rightMargin: 10
         clip: true
-        model: {
-            let allItems = appModel?.messages ?? [];
-            let filteredItems = [];
-            if (allItems?.length == 0 || filters?.length == 0) {
-                filteredItems = allItems;
-            }
-            else {
-                allItems.forEach(message => {if (filters.indexOf(message.type) >= 0) filteredItems.push(message);});
-            }
-
-            return filteredItems;
-        }
+        model: filteredItems
 
         ScrollIndicator.vertical: ScrollIndicator {
             id: scrollIndicator
