@@ -190,6 +190,43 @@ Item {
         }
     }
 
+    property SkipWIFIConnectionPopup _skipWIFIConnectionPopup: null
+
+    Component {
+        id: skipWIFIConnectionPopupComponent
+
+        SkipWIFIConnectionPopup {
+            onSkipWiFi: {
+                deviceController.initialSetupNoWIFI = true;
+                uiSession.goToInitialSetupNoWIFIMode();
+            }
+        }
+    }
+
+    property InitialFlowErrorPopup _initialFlowErrorPopup: null
+    Component {
+        id: initialFlowErrorPopupComponent
+
+        InitialFlowErrorPopup {
+            deviceController: root.uiSession.deviceController
+            isBusy: deviceController.isSendingInitialSetupData
+
+            onStopped: {
+                deviceController.isSendingInitialSetupData = false;
+            }
+        }
+    }
+
+    property LimitedInitialSetupPopup _limitedInitialSetupPopup: null
+    Component {
+        id: limitedInitialSetupPopupComponent
+
+        LimitedInitialSetupPopup {
+            uiSession: root.uiSession
+            remainigTime: deviceController.limitedModeRemainigTime
+        }
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -275,12 +312,47 @@ Item {
         function onShowEmergencyModeError() {
             uiSession.popupLayout.displayPopUp(emergencyModeErrorPopup);
         }
+
+        function onShowInitialSetupPushError(err: string) {
+            if (!_initialFlowErrorPopup) {
+                _initialFlowErrorPopup = initialFlowErrorPopupComponent.createObject(root);
+            }
+
+            if (_initialFlowErrorPopup) {
+                _initialFlowErrorPopup.errorMessage = err;
+                uiSession.popupLayout.displayPopUp(_initialFlowErrorPopup);
+            }
+        }
+
+        function onLimitedModeRemainigTimeChanged() {
+            if (deviceController.limitedModeRemainigTime <= 0) {
+                showLimitedInitialSetupPopup();
+            }
+        }
     }
-
-
 
     function warrantyReplacementFinished() {
         deviceController.firstRunFlowEnded();
         successPopup.hid.disconnect(warrantyReplacementFinished);
+    }
+
+    //! Get skip wifi connection popup object
+    function showSkipWIFIConnectionPopup() {
+        if (!_skipWIFIConnectionPopup) {
+            _skipWIFIConnectionPopup = skipWIFIConnectionPopupComponent.createObject(root);
+        }
+
+        if (_skipWIFIConnectionPopup)
+            uiSession.popupLayout.displayPopUp(_skipWIFIConnectionPopup);
+    }
+
+    function showLimitedInitialSetupPopup() {
+        if (!_limitedInitialSetupPopup) {
+            _limitedInitialSetupPopup = limitedInitialSetupPopupComponent.createObject(root);
+        }
+
+        if (_limitedInitialSetupPopup) {
+            uiSession.popupLayout.displayPopUp(_limitedInitialSetupPopup);
+        }
     }
 }

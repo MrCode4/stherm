@@ -502,6 +502,10 @@ QtObject {
      * ****************************************************************************************/
 
     function checkWifiConnection() : bool {
+        //! No need to check the Wi-Fi
+        if (deviceController.initialSetupNoWIFI) {
+            return true;
+        }
 
         var connectedWifi = NetworkInterface.connectedWifi;
 
@@ -515,6 +519,11 @@ QtObject {
     }
 
     function checkInternetConnection() : bool {
+        //! No need to check the internet
+        if (deviceController.initialSetupNoWIFI) {
+            return true;
+        }
+
         var hasInternet = NetworkInterface.hasInternet;
 
         // Wifi message type is SystemNotification, so related to alerts

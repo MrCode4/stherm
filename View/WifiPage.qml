@@ -27,7 +27,11 @@ BasePageView {
     //! Use deviceController to bind better.
     property bool initialSetup: deviceController.initialSetup
 
-    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 && deviceController.checkedSWUpdate
+    property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
+    property bool openFromNoWiFiInstallation: false
+
+    property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 &&
+                                      deviceController.checkedSWUpdate && NetworkInterface.connectedWifi
 
     //! To conditionally display and hide/show the "Next" button and disable/enable the next timer based on specific scenarios,
     //! such as during initial device setup in warranty replacment page.
@@ -333,6 +337,8 @@ BasePageView {
 
             //! Connect/Disconnect button
             ButtonInverted {
+                id: connectBtn
+
                 anchors.right: parent.right
                 anchors.rightMargin: 8
                 visible: _wifisRepeater.currentItem?.wifi ?? false
@@ -375,6 +381,20 @@ BasePageView {
                     }
 
                     _wifisRepeater.currentIndex = -2;
+                }
+            }
+
+            //! Skip, No wifi installation
+            ButtonInverted {
+                anchors.right: parent.right
+                anchors.rightMargin: 8
+
+                visible: root.initialSetup && !root.openFromNoWiFiInstallation && !NetworkInterface.connectedWifi &&
+                         (deviceController.limitedModeRemainigTime > 0) && !connectBtn.visible
+                text: "  Skip  "
+
+                onClicked: {
+                    uiSession.popUps.showSkipWIFIConnectionPopup();
                 }
             }
         }
@@ -447,6 +467,12 @@ BasePageView {
     Connections {
         target: NetworkInterface
 
+        function onConnectedWifiChanged() {
+            // To address the issue of users reconnecting to Wi-Fi after navigating back from other pages.
+            if (NetworkInterface.connectedWifi && !openFromNoWiFiInstallation)
+                deviceController.initialSetupNoWIFI = false;
+        }
+
         function onIncorrectWifiPassword(wifi: WifiInfo)
         {
             console.log('incorrect pass for: ', wifi.ssid);
@@ -467,6 +493,22 @@ BasePageView {
         }
     }
 
+    Connections {
+        target: uiSession
+        enabled: root.visible && initialSetupNoWIFI
+
+        function onGoToInitialSetupNoWIFIMode() {
+            if (root.visible && initialSetupNoWIFI) {
+                if (root.StackView.view) {
+                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                                 "uiSession": uiSession,
+                                                 "initialSetup": root.initialSetup
+                                             });
+                }
+            }
+        }
+    }
+
     onSortedWifisChanged: _wifisRepeater.currentIndexChanged();
 
     /* Functions
@@ -478,20 +520,34 @@ BasePageView {
             nextPageTimer.once = true;
             if (system.serialNumber.length > 0) {
 
-                // Check contractor info once without retrying in the initial setup
-                deviceController.deviceControllerCPP.checkContractorInfo();
+                if (NetworkInterface.connectedWifi) {
+                    // Check contractor info once without retrying in the initial setup
+                    deviceController.deviceControllerCPP.checkContractorInfo();
+                }
 
                 //! If privacy policy not accepted in normal mode load the PrivacyPolicyPage
                 if (appModel.userPolicyTerms.acceptedVersion === appModel.userPolicyTerms.currentVersion) {
-                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                                 "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                             });
+                    if ((openFromNoWiFiInstallation && NetworkInterface.connectedWifi)) {
+                        root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup,
+                                                     "openFromNoWiFiInstallation": root.openFromNoWiFiInstallation
+                                                 });
+
+                    }
+
+                    if (!openFromNoWiFiInstallation) {
+                        root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                                     "uiSession": uiSession,
+                                                     "initialSetup": root.initialSetup
+                                                 });
+                    }
 
                 } else {
                     root.StackView.view.push("qrc:/Stherm/View/PrivacyPolicyPage.qml", {
                                                  "uiSession": Qt.binding(() => uiSession),
-                                                 "initialSetup": root.initialSetup
+                                                 "initialSetup": root.initialSetup,
+                                                 "openFromNoWiFiInstallation": root.openFromNoWiFiInstallation
                                              });
                 }
             }

@@ -145,6 +145,9 @@ Item {
     signal requestShowToast(string message);
     signal showHome(); //! This signal can be emitted to request going back to Home
     signal openSystemModePage();
+    signal openWifiPage(backButtonVisible : bool, openFromNoWiFiInstallation: bool);
+    signal openUnlockPage();
+    signal goToInitialSetupNoWIFIMode();
 
     /* Signal Handlers
      * ****************************************************************************************/

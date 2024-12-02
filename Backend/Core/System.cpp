@@ -45,6 +45,8 @@ const QString m_IsManualUpdateSetting      = QString("Stherm/IsManualUpdate");
 const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
+const QString m_LimitedModeRemainigTime = "LimitedModeRemainigTime";
+const QString m_InitialSetupWithNoWIFI  = "InitialSetupWithNoWIFI";
 
 const QString Key_LastRebootAt = "LastRebootCommandAt";
 
@@ -865,6 +867,34 @@ bool NUVE::System::isFWServerUpdate()
     return mStartedWithFWServerUpdate;
 }
 
+void NUVE::System::setLimitedModeRemainigTime(const int &limitedModeRemainigTime) {
+    QSettings settings;
+    settings.setValue(m_LimitedModeRemainigTime, limitedModeRemainigTime);
+}
+
+int NUVE::System::limitedModeRemainigTime() {
+    QSettings settings;
+    int maxLimit = 100 * 60 * 60 * 1000;
+    auto limitedModeRemainigTimeTemp = settings.value(m_LimitedModeRemainigTime, maxLimit).toInt();
+
+    if (limitedModeRemainigTimeTemp > maxLimit)
+        limitedModeRemainigTimeTemp = maxLimit;
+
+    return limitedModeRemainigTimeTemp;
+}
+
+void NUVE::System::setInitialSetupWithNoWIFI(const bool &initialSetupNoWIFI)
+{
+    QSettings settings;
+    settings.setValue(m_InitialSetupWithNoWIFI, initialSetupNoWIFI);
+}
+
+bool NUVE::System::initialSetupWithNoWIFI()
+{
+    QSettings settings;
+    return settings.value(m_InitialSetupWithNoWIFI, false).toBool();
+}
+
 QVariantMap NUVE::System::getContractorInfo() const
 {
     return mSync->getContractorInfo();
@@ -963,9 +993,13 @@ void NUVE::System::forgetDevice()
     mAreSettingsFetched = false;
 
     QSettings settings;
-    settings.setValue(m_updateOnStartKey, false);
-    settings.setValue(m_InstalledUpdateDateSetting, mLastInstalledUpdateDate);
-    settings.setValue(m_IsManualUpdateSetting, mIsManualUpdate);
+    settings.remove(m_updateOnStartKey);
+    settings.remove(m_InstalledUpdateDateSetting);
+    settings.remove(m_IsManualUpdateSetting);
+    settings.remove(m_InitialSetupWithNoWIFI);
+
+    // We keep the `m_LimitedModeRemainigTime` variable to prevent unnecessary timer restarts when forgetting a device.
+    // settings.remove(m_LimitedModeRemainigTime);
 
     mSync->forgetDevice();
 }

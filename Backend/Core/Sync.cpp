@@ -785,6 +785,11 @@ void Sync::addSchedule(const QString &scheduleUid, const QVariantMap &schedule)
 
 void Sync::getOutdoorTemperature() {
 
+    if (mSerialNumber.isEmpty()) {
+        qWarning() << "Sn is not ready! can not get outdoor temperature!";
+        return;
+    }
+
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() == QNetworkReply::NoError) {
             auto var = data.value("value");

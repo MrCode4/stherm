@@ -25,8 +25,8 @@ ToolButton {
 
     property int dfhSystemType: deviceController.dfhSystemType
 
-    property bool dfhTroubleshootingMode: device?.systemSetup?.systemType === AppSpec.DualFuelHeating && !NetworkInterface.hasInternet &&
-                                          device.systemSetup.isAUXAuto &&
+    property bool dfhTroubleshootingMode: deviceController.deviceControllerCPP.isNeedOutdoorTemperature &&
+                                          !deviceController.deviceControllerCPP.isEligibleOutdoorTemperature &&
                                           (dfhSystemType === AppSpec.HeatingOnly || dfhSystemType === AppSpec.HeatPump)
 
 
