@@ -389,10 +389,29 @@ QtObject {
         //! in perf test or when emergency shut off!
         if (device.isHold || ((device?.systemSetup?.systemMode ?? AppSpec.Off) === AppSpec.Off || device.systemSetup.systemMode === AppSpec.EmergencyHeat) ||
                 device?.systemSetup?._isSystemShutoff || PerfTestService.isTestRunning) {
-            currentSchedule = null;
+            deviceController.setActivatedSchedule(null);
+            return;
         }
 
-        deviceController.setActivatedSchedule(currentSchedule?.scheduleElement ?? null);
+        if (currentSchedule.scheduleElement) {
+            setScheduleNullTimer.stop();
+            deviceController.setActivatedSchedule(currentSchedule.scheduleElement);
+
+        } else {
+            setScheduleNullTimer.start();
+        }
+
+    }
+
+    //! Set the active schedule to null to prevent unintended changes around midnight
+    //! when skipping the interval between 23:59:59 and 00:00:00.
+    property Timer setScheduleNullTimer: Timer {
+        interval: 1500
+        repeat: false
+        running: false
+        onTriggered: {
+            deviceController.setActivatedSchedule(null);
+        }
     }
 
     //! Conver 24 hours to 12 hours format
