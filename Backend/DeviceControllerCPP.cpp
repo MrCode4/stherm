@@ -3,6 +3,7 @@
 #include "LogHelper.h"
 #include "SchemeDataProvider.h"
 #include "ScreenSaverManager.h"
+#include "DeviceInfo.h"
 
 /* ************************************************************************************************
  * Log properties
@@ -302,7 +303,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     // Get the outdoor temperature when serial number is ready.
     connect(m_sync, &NUVE::Sync::serialNumberReady, this, [this]() {
-        getOutdoorTemperature();
+        checkForOutdoorTemperature();
     });
 
     connect(m_sync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
@@ -311,7 +312,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             mSchemeDataProvider->setOutdoorTemperature(temp);
 
             mGetOutdoorTemperatureTimer.setProperty(m_GetOutdoorTemperatureReceived, true);
-            getOutdoorTemperature();
+            checkForOutdoorTemperature();
         }
     });
 
@@ -680,25 +681,29 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
     // To provide outdoor temperature
     connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [=] {
-        getOutdoorTemperature();
+        checkForOutdoorTemperature();
     });
 
-    getOutdoorTemperature();
+    checkForOutdoorTemperature();
 
     emit systemSetupChanged();
 }
-void DeviceControllerCPP::getOutdoorTemperature() {
-    if (mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
-        mDeviceHasInternet &&
-        !m_sync->getSerialNumber().isEmpty()) {
+void DeviceControllerCPP::checkForOutdoorTemperature() {
+    bool canSendRequest = mDeviceHasInternet && // Check the Internet
+                          // Check the Device has serial number
+                          !Device->serialNumber().isEmpty() && Device->hasClient();
 
-        m_sync->getOutdoorTemperature();
-        mGetOutdoorTemperatureTimer.start();
+    if (canSendRequest && mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
+
+        if (!mGetOutdoorTemperatureTimer.isActive()) {
+            m_sync->getOutdoorTemperature();
+            mGetOutdoorTemperatureTimer.start();
+        }
 
         // To cache the outdoor temperature, it will be stop when get data successfully in the other system types
-    } else if (!mGetOutdoorTemperatureTimer.property(m_GetOutdoorTemperatureReceived).toBool() &&
-               mDeviceHasInternet &&
-               !m_sync->getSerialNumber().isEmpty()) {
+    } else if (canSendRequest && !mGetOutdoorTemperatureTimer.property(m_GetOutdoorTemperatureReceived).toBool()) {
+
+        m_sync->getOutdoorTemperature();
         if (!mGetOutdoorTemperatureTimer.isActive())
             mGetOutdoorTemperatureTimer.start();
 
@@ -791,7 +796,7 @@ void DeviceControllerCPP::wifiConnected(bool hasInternet)
 
     mDeviceHasInternet = hasInternet;
 
-    getOutdoorTemperature();
+    checkForOutdoorTemperature();
 }
 
 void DeviceControllerCPP::lockDeviceController(bool isLock)

@@ -290,7 +290,7 @@ private:
     QByteArray defaultSettings(const QString &path);
 
     //! Start/Stop the timer for get the outdoor temperature
-    void getOutdoorTemperature();
+    void checkForOutdoorTemperature();
 
 private:
     /* Attributes
