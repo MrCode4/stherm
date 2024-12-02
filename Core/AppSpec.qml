@@ -184,6 +184,9 @@ AppSpecCPP {
         return names
     }
 
+
+    readonly property var supportedCountries: ["US", "Canada", "Australia"]
+
     function scheduleNameToType(typeName: string) {
         var type = AppSpec.STUnknown;
         let index = Object.values(scheduleTypeNames).findIndex(elem => elem === typeName);
