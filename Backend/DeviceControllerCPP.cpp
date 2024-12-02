@@ -26,6 +26,8 @@ static  const QString m_T1                    = "Temperature compensation T1 (F)
 #endif
 static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
+static  const char* m_GetOutdoorTemperatureReceived  = "GetOutdoorTemperatureRecieved";
+
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
     "green": 255,
@@ -88,6 +90,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , mSchemeDataProvider(new SchemeDataProvider(this))
     , mTempScheme(new Scheme(_deviceAPI, mSchemeDataProvider, this))
     , mHumidityScheme(new HumidityScheme(_deviceAPI, mSchemeDataProvider, this))
+    , mDeviceHasInternet(false)
 {
 
     m_system = _deviceAPI->system();
@@ -291,8 +294,15 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     mGetOutdoorTemperatureTimer.setInterval(60 * 1000);
     mGetOutdoorTemperatureTimer.setSingleShot(false);
+    // To get the outdoor temperature for first time.
+    mGetOutdoorTemperatureTimer.setProperty(m_GetOutdoorTemperatureReceived, false);
     connect(&mGetOutdoorTemperatureTimer, &QTimer::timeout, this, [this]() {
         m_sync->getOutdoorTemperature();
+    });
+
+    // Get the outdoor temperature when serial number is ready.
+    connect(m_sync, &NUVE::Sync::serialNumberReady, this, [this]() {
+        getOutdoorTemperature();
     });
 
     connect(m_sync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
@@ -300,9 +310,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         if (success) {
             mSchemeDataProvider->setOutdoorTemperature(temp);
 
-            if (systemSetup()->systemType != AppSpecCPP::DualFuelHeating) {
-                mGetOutdoorTemperatureTimer.stop();
-            }
+            mGetOutdoorTemperatureTimer.setProperty(m_GetOutdoorTemperatureReceived, true);
+            getOutdoorTemperature();
         }
     });
 
@@ -671,20 +680,32 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
     // To provide outdoor temperature
     connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [=] {
-        if (mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
-            m_sync->getOutdoorTemperature();
-            mGetOutdoorTemperatureTimer.start();
-
-        } else {
-            mGetOutdoorTemperatureTimer.stop();
-        }
+        getOutdoorTemperature();
     });
 
-    // To cache the outdoor temperature, it will be stop when get data successfully in the other system types
-    m_sync->getOutdoorTemperature();
-    mGetOutdoorTemperatureTimer.start();
+    getOutdoorTemperature();
 
     emit systemSetupChanged();
+}
+void DeviceControllerCPP::getOutdoorTemperature() {
+    if (mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
+        mDeviceHasInternet &&
+        !m_sync->getSerialNumber().isEmpty()) {
+
+        m_sync->getOutdoorTemperature();
+        mGetOutdoorTemperatureTimer.start();
+
+        // To cache the outdoor temperature, it will be stop when get data successfully in the other system types
+    } else if (!mGetOutdoorTemperatureTimer.property(m_GetOutdoorTemperatureReceived).toBool() &&
+               mDeviceHasInternet &&
+               !m_sync->getSerialNumber().isEmpty()) {
+        if (!mGetOutdoorTemperatureTimer.isActive())
+            mGetOutdoorTemperatureTimer.start();
+
+    } else if (mGetOutdoorTemperatureTimer.isActive()) {
+        TRACE << "Stop to get the outdoor temperature " << mDeviceHasInternet << mSystemSetup->systemType << m_sync->getSerialNumber();
+        mGetOutdoorTemperatureTimer.stop();
+    }
 }
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
@@ -767,6 +788,10 @@ bool DeviceControllerCPP::checkUpdateMode()
 void DeviceControllerCPP::wifiConnected(bool hasInternet)
 {
     m_system->wifiConnected(hasInternet);
+
+    mDeviceHasInternet = hasInternet;
+
+    getOutdoorTemperature();
 }
 
 void DeviceControllerCPP::lockDeviceController(bool isLock)
