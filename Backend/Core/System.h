@@ -321,8 +321,6 @@ signals:
     void serviceTitanInformationReady(bool hasError, bool isActive,
                                       QString email, QString zipCode);
 
-    void limitedModeRemainigTimeChanged();
-
 private:
     //! verify dounloaded files and prepare to set up.
     bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true,

@@ -34,8 +34,13 @@ I_DeviceController {
     //! initialSetup: When initialSetup is true the settingsLoader is disabled
     property bool initialSetup: false;
 
+    //! Initialize the `initialSetupNoWIFI` flag with the `initialSetupWithNoWIFI()` function.
+    //! The binding to this flag will be broken in `onInstalledSuccess` or other relevant pages.
     property bool initialSetupNoWIFI: system.initialSetupWithNoWIFI();
     property bool isSendingInitialSetupData: false;
+
+    //! Initialize the `limitedModeRemainigTime` flag with the `limitedModeRemainigTime()` function
+    //! The binding to this flag will be broken in `limitedModeTimer`
     property int  limitedModeRemainigTime : system.limitedModeRemainigTime()
 
     readonly property int  checkSNTryCount: checkSNTimer.tryCount;

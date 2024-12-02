@@ -992,6 +992,9 @@ void NUVE::System::forgetDevice()
     settings.remove(m_IsManualUpdateSetting);
     settings.remove(m_InitialSetupWithNoWIFI);
 
+    // We keep the `m_LimitedModeRemainigTime` variable to prevent unnecessary timer restarts when forgetting a device.
+    // settings.remove(m_LimitedModeRemainigTime);
+
     mSync->forgetDevice();
 }
 

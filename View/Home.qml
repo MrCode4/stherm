@@ -369,7 +369,11 @@ Control {
             } else if (deviceController.initialSetupNoWIFI) {
                 // Device is installed with the no wifi
                 console.log("Device started due to pre-installation with no Wi-Fi.");
+
+                // Initial setup should be true when initialSetupNoWIFI is true, Used in the Wi-Fi page.
                 deviceController.setInitialSetup(true);
+
+                // When device was installed with the `No Wi-Fi`, App should be active and Go to home directly.
                 deviceController.initialSetupFinished();
 
             } else {
