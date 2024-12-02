@@ -688,9 +688,10 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
 
     emit systemSetupChanged();
 }
+
 void DeviceControllerCPP::checkForOutdoorTemperature() {
     bool canSendRequest = mDeviceHasInternet && // Check the Internet
-                          // Check the Device has serial number
+                          // Check the Device has serial number with true hasClient
                           !Device->serialNumber().isEmpty() && Device->hasClient();
 
     if (canSendRequest && mSystemSetup->systemType == AppSpecCPP::SystemType::DualFuelHeating) {
