@@ -1,6 +1,6 @@
 #include "BaseScheme.h"
 
-#include "LogHelper.h"
+#include "Logger.h"
 #include "SchemeDataProvider.h"
 
 BaseScheme::BaseScheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> sharedData, QObject *parent) :
@@ -36,7 +36,7 @@ void BaseScheme::setCanSendRelays(const bool &csr)
 
 void BaseScheme::onScheduleChanged()
 {
-    TRACE << "restarting as the schedule is changed";
+    SCHEME_LOG << "restarting as the schedule is changed";
 
     restartWork();
 }
