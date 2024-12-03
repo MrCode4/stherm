@@ -166,6 +166,13 @@ BasePageView {
                         }
                     },
                     {
+                        text: "No Wi-Fi Config", visible: system.testMode, action: () => {
+                            if (root.StackView.view) {
+                                root.StackView.view.push("qrc:/Stherm/View/Menu/LimitedModeRemainigTimePage.qml", {"uiSession": uiSession});
+                            }
+                        }
+                    },
+                    {
                         text: "Forget Device", visible: deviceController.initialSetup, action: () => {
                             deviceController.forgetDevice();
                             rebootPopup.cancelEnable = false;

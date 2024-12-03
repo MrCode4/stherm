@@ -214,6 +214,7 @@ qt6_add_qml_module(appStherm
         # Views and Widgets
         View/Home.qml
         View/SplashScreen.qml
+
         View/Menu/MenuListView.qml
         View/Menu/AppMenuPage.qml
         View/Menu/SettingsMenuPage.qml
@@ -222,6 +223,8 @@ qt6_add_qml_module(appStherm
         View/Menu/AlertsPage.qml
         View/Menu/SystemAlertsPage.qml
         View/Menu/ManageEndpoint.qml
+        View/Menu/LimitedModeRemainigTimePage.qml
+
         View/BasePageView.qml
         View/ScheduleView.qml
         View/BacklightPage.qml

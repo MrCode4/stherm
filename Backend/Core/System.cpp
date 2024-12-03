@@ -2,6 +2,7 @@
 #include "LogHelper.h"
 #include "PerfTestService.h"
 #include "ProtoDataManager.h"
+#include "DeviceInfo.h"
 
 #include <QProcess>
 #include <QDebug>
@@ -998,8 +999,9 @@ void NUVE::System::forgetDevice()
     settings.remove(m_IsManualUpdateSetting);
     settings.remove(m_InitialSetupWithNoWIFI);
 
-    // We keep the `m_LimitedModeRemainigTime` variable to prevent unnecessary timer restarts when forgetting a device.
-    // settings.remove(m_LimitedModeRemainigTime);
+    // User can forget the m_LimitedModeRemainigTime only when the has client is true.
+    if (Device->hasClient())
+        settings.remove(m_LimitedModeRemainigTime);
 
     mSync->forgetDevice();
 }
