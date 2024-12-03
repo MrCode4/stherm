@@ -1,22 +1,16 @@
 #include "PerfTestService.h"
 #include "Config.h"
 #include "DeviceInfo.h"
-#include "LogHelper.h"
 #include "AppSpecCPP.h"
 #include "DeviceControllerCPP.h"
 #include "NetworkManager.h"
 #include "DateTimeManager.h"
+#include "LogCategoires.h"
 
 #include <QCoreApplication>
-#include <QLoggingCategory>
 #include <QRandomGenerator>
 #include <QSettings>
 #include <QTimer>
-
-
-Q_LOGGING_CATEGORY(PerfTestLogCat, "PerfTestServiceLog")
-
-#define PERF_LOG TRACE_CATEGORY(PerfTestLogCat)
 
 namespace PerfTest {
 const int OneSecInMS = 1000;
@@ -238,7 +232,7 @@ void PerfTestService::postponeTest(const QString &reason)
     }
     else {
         isPostponed(true);
-        TRACE_CATEGORY_CHECK(PerfTestLogCat, state() != Idle) <<"Perf-test is postponed, reason: " <<reason;
+        PERF_LOG_CHECK(state() != Idle) <<"Perf-test is postponed, reason: " <<reason;
     }
 }
 
@@ -254,7 +248,7 @@ void PerfTestService::resumeTest()
         prepareStartRunning();
     }
     else {
-        TRACE_CATEGORY_CHECK(PerfTestLogCat, state() != Idle) <<"Perf-test was not eligible while resuming";
+        PERF_LOG_CHECK(state() != Idle) <<"Perf-test was not eligible while resuming";
     }
 }
 
