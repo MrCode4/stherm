@@ -1,51 +1,35 @@
 
 Release Note
 -------------
-## Release R 1.4.5
- 20th November 2024
- Branch- r1_4_5, commit- 1a4ed723ac
+## Release R 1.4.6
+ 3rd December 2024
+ Branch- r1_4_6, commit- 50f3bb0c
  
 ### Release Articles
-update-V.1.4.5.zip
-
-### Reason
-Fix some issues and enhanced dual fuel heating functionality.
-
-### What’s Brand New
-
-### What Been Updated
-- Add dualFuelHeatingModeDefault to the dual fuel heating page.
-- Synchronized "dualFuelManualHeating" with the server.
-
-### What’s Been Fixed
-- Fixed manual emergency issues
-- Fixed relays issues during app startup.
-- Fix performance test issues in the temperature scheme.
-
-### Known Issues
-- CPU usage in some cases should be check.
-
-## Release R 1.4.4
- 15th November 2024
- Branch- r1_4_4_2, commit- 12d33a9f
- 
-### Release Articles
-update-V.1.4.4.2.zip
+update-V.1.4.6.zip
 
 ### Reason
 Add new features and fix some issues.
 
 ### What’s Brand New
-- Implemented sensor data transmission in Protobuf format.
+- Add `No Wi-Fi flow for initial setup.
+- Enable installation for other countries.
+- Add an Easter Egg to remove all Messages from device.
+- Handle the commands requests like push live data, push logs, performance test and reboot device.
+- Show alert for unsupported WPA3 networks
+
 
 ### What Been Updated
-- Updated heat pump system type in both the user interface and backend logic.
-- Updated dual fuel system type in both the user interface and backend logic.
-- Adjust logo field.
-- Update temperature scheme logics based on the new version of scheme block diagram (V2.0.2)
+- Update the zip code validation.
+- Update UI for WPA3-secured networks.
+- Update the Dual Fuel heating UI and logics
 
 ### What’s Been Fixed
-- Fix temperature scheme bugs.
+- Fix schedule issue: Restart Scheme controllers in the mid-night for overnight schedules.
+- Fix some IW auth type to resolve WPA3 issue.
+- Fix performance test issue.
+- Fix send relay issue on startup.
+- Fix emergency heating issue.
 
 ### Known Issues
 - CPU usage in some cases should be check.
