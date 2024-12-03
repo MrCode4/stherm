@@ -1,6 +1,6 @@
 #include "BaseScheme.h"
 
-#include "Logger.h"
+#include "LogCategoires.h"
 #include "SchemeDataProvider.h"
 
 BaseScheme::BaseScheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> sharedData, QObject *parent) :

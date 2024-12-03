@@ -5,7 +5,7 @@
 #include "DeviceControllerCPP.h"
 #include "NetworkManager.h"
 #include "DateTimeManager.h"
-#include "Logger.h"
+#include "LogCategoires.h"
 
 #include <QCoreApplication>
 #include <QRandomGenerator>

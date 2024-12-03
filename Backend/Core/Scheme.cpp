@@ -4,7 +4,7 @@
 #include <QEventLoop>
 #include <QTimer>
 
-#include "Logger.h"
+#include "LogCategoires.h"
 #include "SchemeDataProvider.h"
 
 const double ET                      = 40;                 // 40 F or 4.5 C
