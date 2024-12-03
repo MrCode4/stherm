@@ -17,7 +17,7 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Limited Mode Active"
+    title: remainigTime > 0 ? "Limited Mode Active" : "Connection Required"
     closePolicy: remainigTime > 0 ? (Popup.CloseOnReleaseOutside | Popup.CloseOnEscape) :
                                     Popup.NoAutoClose
     closeButtonEnabled: false
@@ -34,15 +34,28 @@ I_PopUp {
             property string remainigTimeString: {
                 var rts = "";
 
+                if (remainigTime <= 0) {
+                    rts = "00 hrs : 00 mins";
+                    return rts;
+                }
+
                 var hours = Math.floor(remainigTime / 60000 / 60);
                 var minutes = Math.floor((remainigTime - hours * 60000 * 60) / 60000);
 
-                if (hours >= 0) {
-                    rts = `${hours} hrs`;
+                let hoursStr = hours.toString().padStart(2, '0');
+                if (hours > 0) {
+                    rts = `${hoursStr} hrs`;
+
+                } else {
+                    rts = "00 hrs"
                 }
 
-                if (minutes >= 0) {
-                    rts += ` : ${minutes} mins`;
+                let minutesStr = minutes.toString().padStart(2, '0');
+                if (minutes > 0) {
+                    rts += ` : ${minutesStr} mins`;
+
+                } else {
+                    rts += " : 00 mins";
                 }
 
                 return rts;
@@ -90,7 +103,7 @@ I_PopUp {
             Layout.margins: 10
             Layout.alignment: Qt.AlignBottom | Qt.AlignRight
             font.pointSize: Style.fontIconSize.smallPt
-            visible: remainigTime <= 0
+            visible: remainigTime <= 0 && false
             text: FAIcons.headSet
 
             TapHandler {

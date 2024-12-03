@@ -70,17 +70,30 @@ BasePageView {
 
             property string remainigTimeString: {
                 var rts = "";
+
                 var rt = remainingTimeTF.text
+                if (rt <= 0) {
+                   rts = "00 hrs : 00 mins";
+                    return rts;
+                }
 
                 var hours = Math.floor(rt / 60 / 60);
                 var minutes = Math.floor((rt - hours * 60 * 60) / 60);
 
-                if (hours >= 0) {
-                    rts = `${hours} hrs`;
+                let hoursStr = hours.toString().padStart(2, '0');
+                if (hours > 0) {
+                    rts = `${hoursStr} hrs`;
+
+                } else {
+                    rts = "00 hrs"
                 }
 
-                if (minutes >= 0) {
-                    rts += ` : ${minutes} mins`;
+                let minutesStr = minutes.toString().padStart(2, '0');
+                if (minutes > 0) {
+                    rts += ` : ${minutesStr} mins`;
+
+                } else {
+                    rts += " : 00 mins";
                 }
 
                 return rts;
