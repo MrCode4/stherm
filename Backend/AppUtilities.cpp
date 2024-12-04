@@ -7,8 +7,8 @@
 
 QString AppUtilities::generateRandomPassword()
 {
-    const QString possibleCharacters("abcdefghijklmnopqrstuvwxyz0123456789");
-    const int randomStringLength = 8;
+    const QString possibleCharacters("0123456789");
+    const int randomStringLength = 6;
 
     QString randomString;
     for(int i = 0; i < randomStringLength; ++i)
@@ -31,7 +31,7 @@ QString AppUtilities::decodeLockPassword(QString pass)
 {
     const int MOD = 10000;  // Modulo to ensure a 4-digit number
     int hashValue = 0;
-    int prime = 31;  // A small prime number to generate a unique hash
+    int prime = 26;  // A small prime number to generate a unique hash
 
     for (char c : pass.toStdString()) {
         // Calculate the contribution of each character (a=1, b=2, ..., z=26)
