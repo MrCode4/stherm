@@ -74,33 +74,33 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         bool dualFuelLog = mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::DualFuelHeating;
 
         SCHEME_LOG << "App Version: " << QCoreApplication::applicationVersion();
-        SCHEME_LOG_CHECK(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
-        SCHEME_LOG_CHECK(isRunning()) << "Temperature scheme version: " << QString(TEMPERATURE_SCHEME_VERSION);
-        SCHEME_LOG_CHECK(isRunning() && sys) << "systemMode: " << mDataProvider->effectiveSystemMode() << "systemType: " << sys->systemType;
-        SCHEME_LOG_CHECK(isRunning() && mDataProvider->isPerfTestRunning())<< "Perf test actual system-mode: "<< sys->systemMode;
-        SCHEME_LOG_CHECK(isRunning() && sys) << "systemRunDelay: " << sys->systemRunDelay << "isVacation: " << mDataProvider->isVacationEffective();
-        SCHEME_LOG_CHECK(isRunning() && mDataProvider->isPerfTestRunning())<< "Perf test actual isVacation: "<<  sys->isVacation;
-        SCHEME_LOG_CHECK(isRunning() && sys) << "heatStage: "  << sys->heatStage << "coolStage: " <<sys->coolStage;
-        SCHEME_LOG_CHECK(isRunning() && sys) << "heatPumpEmergency: "  << sys->heatPumpEmergency << "heatPumpOBState: " << (sys->heatPumpOBState == 0 ? "cooling" : "heating");
-        SCHEME_LOG_CHECK(isRunning() && sys) << "systemAccessories (wire, typ): " << sys->systemAccessories->property("accessoriesWireType") <<  sys->systemAccessories->property("accessoriesType");
-        SCHEME_LOG_CHECK(isRunning() && mRelay) << "getOb_state: "  << mRelay->getOb_state() << "relays: " << mRelay->relays().printStr();
-        SCHEME_LOG_CHECK(isRunning() && mDataProvider.data()->schedule()) << "Schedule : " << mDataProvider.data()->schedule()->name;
-        SCHEME_LOG_CHECK(isRunning()) << "Timing S1UT: " << mTiming->s1uptime.elapsed() << "S2UT: " << mTiming->s2uptime.elapsed();
-        SCHEME_LOG_CHECK(isRunning()) << "S2OT: " << mTiming->s2Offtime.elapsed() << "uptime: " << mTiming->uptime.elapsed();
-        SCHEME_LOG_CHECK(isRunning()) << "alert:" << mTiming->alerts << "s3hold:" << mTiming->s3hold << "s2hold:" << mTiming->s2hold;
-        SCHEME_LOG_CHECK(isRunning() && mFanHourTimer.isActive()) << "fan on 1 hour stage finishes in " << mFanHourTimer.remainingTime() / 60000 << "minutes";
-        SCHEME_LOG_CHECK(isRunning() && mFanWPHTimer.isActive()) << "fan on stage finishes in " << mFanWPHTimer.remainingTime() / 60000 << "minutes";
-        SCHEME_LOG_CHECK(isRunning()) << "Current Temperature : " << effectiveCurrentTemperature() << "Effective Set Temperature: " << effectiveTemperature();
-        SCHEME_LOG_CHECK(isRunning()) << "Current Humidity : " << mDataProvider.data()->currentHumidity() << "Effective Set Humidity: " << effectiveSetHumidity();
-        SCHEME_LOG_CHECK(isRunning() && dualFuelLog) << "Current Outdoor temperature : " << mDataProvider.data()->outdoorTemperatureF();
-        SCHEME_LOG_CHECK(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
-        SCHEME_LOG_CHECK(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";
+        LOG_CHECK_SCHEME(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
+        LOG_CHECK_SCHEME(isRunning()) << "Temperature scheme version: " << QString(TEMPERATURE_SCHEME_VERSION);
+        LOG_CHECK_SCHEME(isRunning() && sys) << "systemMode: " << mDataProvider->effectiveSystemMode() << "systemType: " << sys->systemType;
+        LOG_CHECK_SCHEME(isRunning() && mDataProvider->isPerfTestRunning())<< "Perf test actual system-mode: "<< sys->systemMode;
+        LOG_CHECK_SCHEME(isRunning() && sys) << "systemRunDelay: " << sys->systemRunDelay << "isVacation: " << mDataProvider->isVacationEffective();
+        LOG_CHECK_SCHEME(isRunning() && mDataProvider->isPerfTestRunning())<< "Perf test actual isVacation: "<<  sys->isVacation;
+        LOG_CHECK_SCHEME(isRunning() && sys) << "heatStage: "  << sys->heatStage << "coolStage: " <<sys->coolStage;
+        LOG_CHECK_SCHEME(isRunning() && sys) << "heatPumpEmergency: "  << sys->heatPumpEmergency << "heatPumpOBState: " << (sys->heatPumpOBState == 0 ? "cooling" : "heating");
+        LOG_CHECK_SCHEME(isRunning() && sys) << "systemAccessories (wire, typ): " << sys->systemAccessories->property("accessoriesWireType") <<  sys->systemAccessories->property("accessoriesType");
+        LOG_CHECK_SCHEME(isRunning() && mRelay) << "getOb_state: "  << mRelay->getOb_state() << "relays: " << mRelay->relays().printStr();
+        LOG_CHECK_SCHEME(isRunning() && mDataProvider.data()->schedule()) << "Schedule : " << mDataProvider.data()->schedule()->name;
+        LOG_CHECK_SCHEME(isRunning()) << "Timing S1UT: " << mTiming->s1uptime.elapsed() << "S2UT: " << mTiming->s2uptime.elapsed();
+        LOG_CHECK_SCHEME(isRunning()) << "S2OT: " << mTiming->s2Offtime.elapsed() << "uptime: " << mTiming->uptime.elapsed();
+        LOG_CHECK_SCHEME(isRunning()) << "alert:" << mTiming->alerts << "s3hold:" << mTiming->s3hold << "s2hold:" << mTiming->s2hold;
+        LOG_CHECK_SCHEME(isRunning() && mFanHourTimer.isActive()) << "fan on 1 hour stage finishes in " << mFanHourTimer.remainingTime() / 60000 << "minutes";
+        LOG_CHECK_SCHEME(isRunning() && mFanWPHTimer.isActive()) << "fan on stage finishes in " << mFanWPHTimer.remainingTime() / 60000 << "minutes";
+        LOG_CHECK_SCHEME(isRunning()) << "Current Temperature : " << effectiveCurrentTemperature() << "Effective Set Temperature: " << effectiveTemperature();
+        LOG_CHECK_SCHEME(isRunning()) << "Current Humidity : " << mDataProvider.data()->currentHumidity() << "Effective Set Humidity: " << effectiveSetHumidity();
+        LOG_CHECK_SCHEME(isRunning() && dualFuelLog) << "Current Outdoor temperature : " << mDataProvider.data()->outdoorTemperatureF();
+        LOG_CHECK_SCHEME(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
+        LOG_CHECK_SCHEME(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";
     });
 
 
     connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureReady, this, [this] () {
         SCHEME_LOG << "outdoorTemperatureReady" << mActiveSysTypeHeating << mDataProvider->systemSetup()->systemMode << mSwitchDFHActiveSysTypeTo;
-        SCHEME_LOG_CHECK(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureReady" << mDataProvider->effectiveSystemMode();
+        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureReady" << mDataProvider->effectiveSystemMode();
 
         // Device has internet and outdoor temperature has been successfully updated, so move to automatic algorithm.
         switchDFHActiveSysType(AppSpecCPP::SystemType::SysTUnknown);
@@ -109,7 +109,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
     connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureChanged, this, [this] () {
         auto system = mDataProvider->systemSetup();
         SCHEME_LOG << "outdoorTemperatureChanged" << mActiveSysTypeHeating << system->systemMode;
-        SCHEME_LOG_CHECK(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureChanged" << mDataProvider->effectiveSystemMode();
+        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning())<< "outdoorTemperatureChanged" << mDataProvider->effectiveSystemMode();
         if (system->systemType == AppSpecCPP::SystemType::DualFuelHeating && system->isAUXAuto) {
             checkForRestart();
         }
@@ -297,7 +297,7 @@ void Scheme::AutoModeLoop()
 
 void Scheme::CoolingLoop()
 {
-    SCHEME_LOG_CHECK(false) << "Cooling started " << mDataProvider.data()->systemSetup()->systemType;
+    LOG_CHECK_SCHEME(false) << "Cooling started " << mDataProvider.data()->systemSetup()->systemType;
 
     bool heatPump = false;
     // s1 time threshold
@@ -312,7 +312,7 @@ void Scheme::CoolingLoop()
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::CoolingOnly: {
         auto effectiveTemp = effectiveTemperature();
-        SCHEME_LOG_CHECK(false) << heatPump << mDataProvider.data()->currentTemperature() << effectiveTemp;
+        LOG_CHECK_SCHEME(false) << heatPump << mDataProvider.data()->currentTemperature() << effectiveTemp;
 
         bool hasDelay = false;
         while (mDataProvider.data()->currentTemperature() - effectiveTemp >= STAGE1_ON_RANGE) {
@@ -383,7 +383,7 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
                 // Default
                 activeSysType = AppSpecCPP::SystemType::HeatPump;
 
-                SCHEME_LOG_CHECK(dualFuelManualHeating == AppSpecCPP::DFMOff)
+                LOG_CHECK_SCHEME(dualFuelManualHeating == AppSpecCPP::DFMOff)
                     << mDataProvider->effectiveSystemMode()
                     << mDataProvider->isVacationEffective()
                     << mDataProvider->systemSetup()->dualFuelHeatingModeDefault;
@@ -446,7 +446,7 @@ AppSpecCPP::SystemMode Scheme::activeHeatPumpMode(const bool &checkWithManualEme
 
 void Scheme::HeatingLoop()
 {
-    SCHEME_LOG_CHECK(false) << "Heating started " << mDataProvider.data()->systemSetup()->systemType;
+    LOG_CHECK_SCHEME(false) << "Heating started " << mDataProvider.data()->systemSetup()->systemType;
 
     mActiveSysTypeHeating = activeSystemTypeHeating();
     emit dfhSystemTypeChanged(mActiveSysTypeHeating);
@@ -458,7 +458,7 @@ void Scheme::HeatingLoop()
     switch (mActiveSysTypeHeating) {
     case AppSpecCPP::SystemType::HeatPump: // emergency as well?
     {
-        SCHEME_LOG_CHECK(false) << "HeatPump" << mDataProvider.data()->currentTemperature() << effectiveTemperature();
+        LOG_CHECK_SCHEME(false) << "HeatPump" << mDataProvider.data()->currentTemperature() << effectiveTemperature();
         // get time threshold ETime
         auto activeHeatpumpMode = activeHeatPumpMode();
         if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
@@ -658,7 +658,7 @@ void Scheme::internalHeatingLoopStage1()
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
     while (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
-        SCHEME_LOG_CHECK(true) << mRelay->relays().w2 << mDataProvider.data()->systemSetup()->heatStage
+        LOG_CHECK_SCHEME(true) << mRelay->relays().w2 << mDataProvider.data()->systemSetup()->heatStage
                                << mTiming->s1uptime.isValid() << mTiming->s1uptime.elapsed();
         SCHEME_LOG << "Current Temperature: " << mDataProvider->currentTemperature() << ", Effective Temperature: " << effectiveTemperature();
 
@@ -1083,7 +1083,7 @@ void Scheme::sendRelays(bool forceSend)
     // To prevent initial mismatches in device relays after updates, we'll skip the comparison on the first run.
     if (mDataProvider->isRelaysInitialized() &&
         (lastConfigs == relaysConfig)) {
-        SCHEME_LOG_CHECK(false) << "no change";
+        LOG_CHECK_SCHEME(false) << "no change";
         return;
     }
 
@@ -1155,7 +1155,7 @@ void Scheme::sendRelays(bool forceSend)
                                   mRelay->currentHeatingStage(),
                                   mRelay->currentCoolingStage());
 
-    SCHEME_LOG_CHECK(false) << "finished";
+    LOG_CHECK_SCHEME(false) << "finished";
 
     emit sendRelayIsRunning(false);
 }
@@ -1327,7 +1327,7 @@ void Scheme::checkForRestart()
         auto activeType = activeSystemTypeHeating();
         if (activeType != mActiveSysTypeHeating) {
             SCHEME_LOG << "Restart scheme due to dual fuel change." << mActiveSysTypeHeating << activeType << sys->systemMode;
-            SCHEME_LOG_CHECK(mDataProvider->isPerfTestRunning()) << "Restart scheme due to dual fuel change." << mDataProvider->effectiveSystemMode();
+            LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning()) << "Restart scheme due to dual fuel change." << mDataProvider->effectiveSystemMode();
             restartWork();
         }
 
@@ -1357,7 +1357,7 @@ void Scheme::setSystemSetup()
 
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
         SCHEME_LOG << "systemModeChanged: " << sys->systemMode;
-        SCHEME_LOG_CHECK(mDataProvider->isPerfTestRunning())
+        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning())
             << "Effective system-mode: " << mDataProvider->effectiveSystemMode();
 
         restartWork();
@@ -1365,7 +1365,7 @@ void Scheme::setSystemSetup()
 
     connect(sys, &SystemSetup::isVacationChanged, this, [=] {
         SCHEME_LOG<< "isVacationChanged: "<< sys->isVacation;
-        SCHEME_LOG_CHECK(mDataProvider->isPerfTestRunning())<< "isVacationChanged: "<< mDataProvider->isVacationEffective();
+        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning())<< "isVacationChanged: "<< mDataProvider->isVacationEffective();
 
         restartWork();
     });
@@ -1418,7 +1418,7 @@ void Scheme::setSystemSetup()
 
     connect(sys, &SystemSetup::dualFuelThreshodChanged, this, [=] {
         SCHEME_LOG << "dualFuelThreshodChanged" << mActiveSysTypeHeating << sys->systemMode;
-        SCHEME_LOG_CHECK(mDataProvider->isPerfTestRunning()) << "dualFuelThreshodChanged" << mDataProvider->effectiveSystemMode();
+        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning()) << "dualFuelThreshodChanged" << mDataProvider->effectiveSystemMode();
         // restart scheme if needed
         if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && sys->isAUXAuto) {
             checkForRestart();

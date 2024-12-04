@@ -112,7 +112,7 @@ void HumidityScheme::setSystemSetup()
 
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
         SCHEME_LOG<< "systemModeChanged: "<< sys->systemMode;
-        SCHEME_LOG_CHECK(mDataProvider->isPerfTestRunning())<< "Effective system-mode: "<< mDataProvider->effectiveSystemMode();
+        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning())<< "Effective system-mode: "<< mDataProvider->effectiveSystemMode();
 
         restartWork();
     });
@@ -153,7 +153,7 @@ void HumidityScheme::sendRelays(bool forceSend)
 
     if (mDataProvider->isRelaysInitialized() &&
         (lastConfigs == relaysConfig)) {
-        SCHEME_LOG_CHECK(false) << "no change";
+        LOG_CHECK_SCHEME(false) << "no change";
         return;
     }
 
@@ -210,7 +210,7 @@ void HumidityScheme::sendRelays(bool forceSend)
         emit updateRelays(relaysConfig);
     }
 
-    SCHEME_LOG_CHECK(false) << "finished";
+    LOG_CHECK_SCHEME(false) << "finished";
 
     emit sendRelayIsRunning(false);
 }

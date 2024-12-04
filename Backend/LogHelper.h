@@ -46,15 +46,6 @@ public:
 
 #define TRACE_CATEGORY_CHECK(category, check) if (check) TRACE_CATEGORY(category)
 
-
-#define LOG_PRINT \
-    qDebug() << QString("%0 - Log: ") \
-                    .arg(QDateTime::currentDateTime().toString("dd MMM yyyy hh:mm:ss")) \
-                    .toStdString() \
-                    .c_str()
-
-#define LOG_CHECK(check) if (check) LOG_PRINT
-
 #define LOG_DEBUG(message) Logger::logDebug(message, __FILE__, __LINE__)
 
 // Example usage:
