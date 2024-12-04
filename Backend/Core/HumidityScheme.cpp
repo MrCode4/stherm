@@ -16,25 +16,25 @@ HumidityScheme::~HumidityScheme()
 
 void HumidityScheme::stop()
 {
-    LOG_SCHEME << "stopping HVAC (Humidity control)" ;
+    SCHEME_LOG << "stopping HVAC (Humidity control)" ;
 
     stopWork = true;
     emit stopWorkRequested();
 
     // Stop worker.
     terminate();
-    LOG_SCHEME << "terminated HVAC (Humidity control)" ;
+    SCHEME_LOG << "terminated HVAC (Humidity control)" ;
     wait();
 
-    LOG_SCHEME << "stopped HVAC (Humidity control)" ;
+    SCHEME_LOG << "stopped HVAC (Humidity control)" ;
 }
 
 void HumidityScheme::run()
 {
-    LOG_SCHEME << "-- startWork is running fro Humidity control." << QThread::currentThreadId();
+    SCHEME_LOG << "-- startWork is running fro Humidity control." << QThread::currentThreadId();
 
     if (!mDataProvider.data()->systemSetup()) {
-        LOG_SCHEME << "-- SystemSetup is not ready.";
+        SCHEME_LOG << "-- SystemSetup is not ready.";
         return;
     }
 
@@ -75,7 +75,7 @@ void HumidityScheme::run()
 void HumidityScheme::restartWork(bool forceStart)
 {
     if (isRunning()) {
-        LOG_SCHEME << "restarting Humidity scheme" << stopWork;
+        SCHEME_LOG << "restarting Humidity scheme" << stopWork;
         if (stopWork) // restart is already in progress
             return;
         // Any finished signal should not start the worker.
@@ -84,7 +84,7 @@ void HumidityScheme::restartWork(bool forceStart)
             &HumidityScheme::finished,
             this,
             [=]() {
-                LOG_SCHEME << "restarted Humidity scheme";
+                SCHEME_LOG << "restarted Humidity scheme";
                 stopWork = false;
                 // mLogTimer.start();
                 this->start();
@@ -96,13 +96,13 @@ void HumidityScheme::restartWork(bool forceStart)
         this->wait(QDeadlineTimer(1000, Qt::PreciseTimer));
 
     } else if (forceStart){
-        LOG_SCHEME << "started Humidity scheme";
+        SCHEME_LOG << "started Humidity scheme";
         stopWork = false;
         // mLogTimer.start();
         this->start();
 
     } else {
-        LOG_SCHEME << "trying to start before main start";
+        SCHEME_LOG << "trying to start before main start";
     }
 }
 
@@ -111,23 +111,23 @@ void HumidityScheme::setSystemSetup()
     const auto sys = mDataProvider.data()->systemSetup();
 
     connect(sys, &SystemSetup::systemModeChanged, this, [=] {
-        LOG_SCHEME<< "systemModeChanged: "<< sys->systemMode;
-        SCHEME_LOG_CHECK(mDataProvider->isPerfTestRunning())<< "Effective system-mode: "<< mDataProvider->effectiveSystemMode();
+        SCHEME_LOG<< "systemModeChanged: "<< sys->systemMode;
+        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning())<< "Effective system-mode: "<< mDataProvider->effectiveSystemMode();
 
         restartWork();
     });
 
     connect(sys, &SystemSetup::isVacationChanged, this, [=] {
-        LOG_SCHEME<< "isVacationChanged: "<< mDataProvider.data()->isVacationEffective();
+        SCHEME_LOG<< "isVacationChanged: "<< mDataProvider.data()->isVacationEffective();
 
         restartWork();
     });
 
     connect(sys->systemAccessories, &SystemAccessories::accessoriesChanged, this, [=] {
-        LOG_SCHEME<< "Accessories Type: "<< mDataProvider->getAccessoriesType();
+        SCHEME_LOG<< "Accessories Type: "<< mDataProvider->getAccessoriesType();
 
 
-        LOG_SCHEME<< "Accessories Wire Type: "<< mDataProvider->getAccessoriesWireType();
+        SCHEME_LOG<< "Accessories Wire Type: "<< mDataProvider->getAccessoriesWireType();
 
         if (mDataProvider->getAccessoriesWireType() == AppSpecCPP::None) {
             stopWork = true;
@@ -153,7 +153,7 @@ void HumidityScheme::sendRelays(bool forceSend)
 
     if (mDataProvider->isRelaysInitialized() &&
         (lastConfigs == relaysConfig)) {
-        SCHEME_LOG_CHECK(false) << "no change";
+        LOG_CHECK_SCHEME(false) << "no change";
         return;
     }
 
@@ -178,22 +178,22 @@ void HumidityScheme::sendRelays(bool forceSend)
         auto steps = lastConfigs.changeStepsSorted(relaysConfig);
         for (int var = 0; var < steps.size(); var++) {
             auto step = steps.at(var);
-            LOG_SCHEME << step.first.c_str() << step.second;
+            SCHEME_LOG << step.first.c_str() << step.second;
             if (step.first == "g"){
                 lastConfigs.g = relaysConfig.g;
-                LOG_SCHEME << relaysConfig.g;
+                SCHEME_LOG << relaysConfig.g;
 
             } else if (step.first == "acc2"){
                 lastConfigs.acc2 = relaysConfig.acc2;
-                LOG_SCHEME << relaysConfig.acc2;
+                SCHEME_LOG << relaysConfig.acc2;
 
             } else if (step.first == "acc1p"){
                 lastConfigs.acc1p = relaysConfig.acc1p;
-                LOG_SCHEME << relaysConfig.acc1p;
+                SCHEME_LOG << relaysConfig.acc1p;
 
             } else if (step.first == "acc1n"){
                 lastConfigs.acc1n = relaysConfig.acc1n;
-                LOG_SCHEME << relaysConfig.acc1n << relaysConfig.acc1p;
+                SCHEME_LOG << relaysConfig.acc1n << relaysConfig.acc1p;
 
             } else {
                 // To ignore Temperature relays
@@ -210,7 +210,7 @@ void HumidityScheme::sendRelays(bool forceSend)
         emit updateRelays(relaysConfig);
     }
 
-    SCHEME_LOG_CHECK(false) << "finished";
+    LOG_CHECK_SCHEME(false) << "finished";
 
     emit sendRelayIsRunning(false);
 }
@@ -219,12 +219,12 @@ void HumidityScheme::VacationLoop()
 {
     // In vacation range
     if (checkVacationRange()) {
-        LOG_SCHEME << "VacationLoop: Vacation in range";
+        SCHEME_LOG << "VacationLoop: Vacation in range";
         turnOffAccessoriesRelays();
         return;
     }
 
-    LOG_SCHEME << "Start VacationLoop, AccessoriesType: " << mDataProvider->getAccessoriesType() <<
+    SCHEME_LOG << "Start VacationLoop, AccessoriesType: " << mDataProvider->getAccessoriesType() <<
         " - mVacationMinimumHumidity" << mVacationMinimumHumidity <<
         " - mVacationMaximumHumidity" << mVacationMaximumHumidity <<
         " - currentHumidity" <<mDataProvider.data()->currentHumidity();
@@ -267,7 +267,7 @@ void HumidityScheme::VacationLoop()
         }
     }
 
-    LOG_SCHEME << "END VacationLoop, current relay state:" << mRelay->currentState();
+    SCHEME_LOG << "END VacationLoop, current relay state:" << mRelay->currentState();
 }
 
 bool HumidityScheme::checkVacationRange() {
@@ -278,7 +278,7 @@ bool HumidityScheme::checkVacationRange() {
 
 void HumidityScheme::normalLoop()
 {
-    LOG_SCHEME << "AccessoriesType: " << mDataProvider->getAccessoriesType() <<
+    SCHEME_LOG << "AccessoriesType: " << mDataProvider->getAccessoriesType() <<
         " - currentHumidity: " << mDataProvider->currentHumidity() <<
         " - effectiveSetHumidity: " << effectiveSetHumidity();
 
@@ -318,10 +318,10 @@ void HumidityScheme::normalLoop()
         }
 
     } else {
-        LOG_SCHEME << "Wrong Accessories Type" << mDataProvider->getAccessoriesType();
+        SCHEME_LOG << "Wrong Accessories Type" << mDataProvider->getAccessoriesType();
     }
 
-    LOG_SCHEME << "END normalLoop, current relay state:" << mRelay->currentState();
+    SCHEME_LOG << "END normalLoop, current relay state:" << mRelay->currentState();
 }
 
 void HumidityScheme::setVacation()
