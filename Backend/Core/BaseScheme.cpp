@@ -36,7 +36,7 @@ void BaseScheme::setCanSendRelays(const bool &csr)
 
 void BaseScheme::onScheduleChanged()
 {
-    SCHEME_LOG << "restarting as the schedule is changed";
+    LOG_SCHEME << "restarting as the schedule is changed";
 
     restartWork();
 }
