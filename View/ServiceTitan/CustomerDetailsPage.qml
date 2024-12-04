@@ -131,7 +131,7 @@ InitialSetupBasePageView {
                 // Canada: 6 letters + digits
                 // US: 5 digits: 10498
                 validator: RegularExpressionValidator {
-                    regularExpression: /^(?:\d{4,5}|[A-Z\d]{6})$/
+                    regularExpression: /^(?:\d{4,5}|[A-Z\d]{6})$/i
                 }
 
                 inputMethodHints: Qt.ImhPreferNumbers | Qt.ImhPreferUppercase
