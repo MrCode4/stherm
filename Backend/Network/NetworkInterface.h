@@ -26,6 +26,7 @@ class NetworkInterface : public QObject
     Q_PROPERTY(bool hasInternet                 READ hasInternet     NOTIFY hasInternetChanged)
     Q_PROPERTY(QString ipv4Address              READ ipv4Address     CONSTANT)
     Q_PROPERTY(bool doesDeviceSupportWPA3 READ doesDeviceSupportWPA3 CONSTANT)
+    Q_PROPERTY(bool forgettingAllWifis          READ forgettingAllWifis NOTIFY forgettingAllWifisChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -77,6 +78,11 @@ public:
                                    const QString &security,
                                    const QString &password);
 
+    //! Forget All saved and/or connected Wi-Fis
+    Q_INVOKABLE void forgetAllWifis();
+
+    bool forgettingAllWifis();
+
     /* Private methods and slots
      * ****************************************************************************************/
 private:
@@ -94,10 +100,14 @@ private:
      */
     bool checkWPA3Support();
 
+    void setForgettingWifis(const bool &forgettingWifis);
+
 private slots:
     void                onErrorOccured(int error); //! error is: NmcliInterface::Error
     void                checkHasInternet();
     void                clearDNSCache();
+
+    void processForgettingWiFis();
 
     /* Signals
      * ****************************************************************************************/
@@ -118,6 +128,8 @@ signals:
     void                errorOccured(QString error, QString ssid);
 
     void                incorrectWifiPassword(WifiInfo* wifi);
+
+    void                forgettingAllWifisChanged();
 
     /* Private attributes
      * ****************************************************************************************/
@@ -170,6 +182,8 @@ private:
      * \brief mRequestedToConnectedWifi The wifi that is requested to connect to
      */
     WifiInfo*               mRequestedToConnectedWifi;
+
+    bool                    mForgettingWifis;
 };
 
 inline void NetworkInterface::setHasInternet(bool hasInternet)

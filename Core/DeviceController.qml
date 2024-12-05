@@ -333,6 +333,10 @@ I_DeviceController {
                 fetchContractorInfoTimer.stop();
             }
         }
+
+        function onForgettingAllWifisChanged() {
+            console.log("Forgetting Wifis ", (NetworkInterface.forgettingAllWifis ? "started." : "finished."))
+        }
     }
 
     property Connections systemConnection: Connections {
