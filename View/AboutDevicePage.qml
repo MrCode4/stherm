@@ -166,7 +166,7 @@ BasePageView {
                         }
                     },
                     {
-                        text: "Contractor Flow", visible: deviceController.testMode, action: () => {
+                        text: "Contractor Flow", visible: system.testMode, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
                                                              "uiSession": uiSession,

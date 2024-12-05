@@ -40,7 +40,7 @@ BasePageView {
     //! Next/Confirm button
     ToolButton {
         parent: root.header.contentItem
-        enabled: visible && !mandatoryUpdate
+        enabled: visible && !mandatoryUpdate && deviceController.checkedSWUpdate
         visible: contractorFlow
 
         RoniaTextIcon {
