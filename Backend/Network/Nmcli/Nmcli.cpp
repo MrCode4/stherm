@@ -359,14 +359,18 @@ void NmCli::forgetWifi(const QString& ssid, ExitedCallback callback)
     execAsync(NC_COMMAND, args, callback);
 }
 
-QString NmCli::securityToNmcliKeyMgmt(const QString& security)
+QString NmCli::securityToNmcliKeyMgmt(const QString &security)
 {
-    if (security == "WPA2" || security == "WPA2 WPA3") {
+    if (security == "WPA2" || security == "WPA2 WPA3" || security == "PSK") {
         return "wpa-psk";
     }
 
     if (security == "WPA3") {
         return "sae";
+    }
+
+    if (security.isEmpty() == false) {
+        qDebug() << "nmcli: securityToNmcliKeyMgmt: security:" << security;
     }
 
     return ""; //! For example when security is "" (no password)
