@@ -13,6 +13,23 @@ BasePageView {
     /* Property delcaration
      * ****************************************************************************************/
 
+    property bool isBusy: false
+
+    /* Object properties
+     * ****************************************************************************************/
+
+    title: "Contractor Information"
+
+    onVisibleChanged: {
+        isBusy = visible;
+
+        if (visible) {
+            getContractorInfoTimer.triggered();
+        } else {
+            getContractorInfoTimer.stop();
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Next/Confirm button
@@ -31,7 +48,6 @@ BasePageView {
                                          });
             }
         }
-
     }
 
     Flickable {
@@ -52,62 +68,60 @@ BasePageView {
         GridLayout {
             id: _contentCol
 
+            width: parent.width
             columns: 2
             columnSpacing: 8
             rowSpacing: 8
 
             Label {
                 text: "Serial No "
-                visible: deviceController.system.serialNumber.length > 0
                 font.pixelSize: Qt.application.font.pointSize * 1.2
                 horizontalAlignment: Qt.AlignLeft
             }
 
             Label {
                 text: deviceController.system.serialNumber
-                visible: deviceController.system.serialNumber.length > 0
-                font.pixelSize: Qt.application.font.pointSize * 0.8
+                font.pixelSize: Qt.application.font.pointSize * 0.9
                 horizontalAlignment: Qt.AlignLeft
             }
             Label {
                 text: "Brand name "
-                visible: appModel.contactContractor.brandName.length > 0
                 font.pixelSize: Qt.application.font.pointSize * 1.2
                 horizontalAlignment: Qt.AlignLeft
             }
 
             Label {
                 text: appModel.contactContractor.brandName
-                visible: appModel.contactContractor.brandName.length > 0
-                font.pixelSize: Qt.application.font.pointSize * 0.8
+                font.pixelSize: Qt.application.font.pointSize * 0.9
                 horizontalAlignment: Qt.AlignLeft
             }
 
             Label {
-                text: "Phone number: "
-                visible: appModel.contactContractor.phoneNumber.length > 0
+                text: "Phone number "
                 font.pixelSize: Qt.application.font.pointSize * 1.2
                 horizontalAlignment: Qt.AlignLeft
             }
 
             Label {
                 text: appModel.contactContractor.phoneNumber
-                visible: appModel.contactContractor.phoneNumber.length > 0
-                font.pixelSize: Qt.application.font.pointSize * 0.8
+                font.pixelSize: Qt.application.font.pointSize * 0.9
                 horizontalAlignment: Qt.AlignLeft
             }
 
             Label {
-                text: "QR URL: "
-                visible: appModel.contactContractor.qrURL.length > 0
+                Layout.columnSpan: 2
+
+                text: "QR URL "
                 font.pixelSize: Qt.application.font.pointSize * 1.2
                 horizontalAlignment: Qt.AlignLeft
             }
 
             Label {
+                Layout.columnSpan: 2
+
                 text: appModel.contactContractor.qrURL
-                visible: appModel.contactContractor.qrURL.length > 0
-                font.pixelSize: Qt.application.font.pointSize * 0.8
+                font.pixelSize: Qt.application.font.pointSize * 0.9
+                wrapMode: Text.WordWrap
                 horizontalAlignment: Qt.AlignLeft
             }
 
@@ -121,26 +135,51 @@ BasePageView {
                 height: root.height * 0.25
             }
 
+            Item {
+                id: spacer
+
+                Layout.columnSpan: 2
+                height: 35
+                width: 35
+            }
+
             ButtonInverted {
-                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+                Layout.columnSpan: 2
+                enabled: !isBusy
+
                 text: "Update Contractor Info"
 
                 onClicked: {
-                    getContractorInfo.stop();
-                    getContractorInfo.triggered();
+                    getContractorInfoTimer.stop();
+                    getContractorInfoTimer.triggered();
                 }
             }
 
         }
     }
 
+    BusyIndicator {
+        id: busyIndicator
+
+       anchors.bottom: parent.bottom
+       anchors.horizontalCenter: parent.horizontalCenter
+       anchors.bottomMargin: 70
+
+        height: 45
+        width: 45
+        visible: isBusy
+        running: isBusy
+    }
+
     Timer {
-        id: getContractorInfo
+        id: getContractorInfoTimer
         repeat: false
         running: false
         interval: 10000
 
         onTriggered: {
+            isBusy = true;
             deviceController.deviceControllerCPP.checkContractorInfo();
         }
     }
@@ -151,10 +190,11 @@ BasePageView {
         enabled: root.visible
 
         function onContractorInfoReady(getDataFromServerSuccessfully : bool) {
+            isBusy = !getDataFromServerSuccessfully;
             if (getDataFromServerSuccessfully)
-                fetchContractorInfoTimer.stop();
+                getContractorInfoTimer.stop();
             else
-                fetchContractorInfoTimer.restart();
+                getContractorInfoTimer.restart();
         }
     }
 }

@@ -11,17 +11,20 @@ import Stherm
 BasePageView {
     id: root
 
+    title: "Finish Contractor Flow"
+
     /* Children
      * ****************************************************************************************/
     ColumnLayout {
-        spacing: 10
+        anchors.centerIn: parent
+        spacing: 12
+        width: parent.width * 0.65
 
         ButtonInverted {
             Layout.fillWidth: true
             text: "   Forget Wi-Fis   "
 
             onClicked: {
-                // TODO
                 forgetWiFiPopup.cancelEnable = true;
                 forgetWiFiPopup.open()
             }
@@ -29,7 +32,7 @@ BasePageView {
 
         ButtonInverted {
             Layout.fillWidth: true
-            text: "   Restart App   "
+            text: "   Restart Device   "
 
             onClicked: {
                 rebootPopup.cancelEnable = true;
