@@ -95,7 +95,6 @@ I_PopUp {
 
             TapHandler {
                 onTapped: {
-                    alternativeNoWiFi = true;
                     uiSession.openUnlockPage();
                     close();
                 }

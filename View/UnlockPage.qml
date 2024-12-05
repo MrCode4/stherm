@@ -14,8 +14,16 @@ BasePageView {
     //! Use in unlock page
     property string encodedMasterPin: ""
 
+    property bool showUnlockEmergency: deviceController.initialSetupNoWIFI
+
     /* Object properties
      * ****************************************************************************************/
+
+    Component.onCompleted: {
+        if (deviceController.initialSetupNoWIFI)
+            generateMasterPin();
+    }
+
     title: ""
     backButtonVisible: false
     header: null
@@ -43,10 +51,8 @@ BasePageView {
 
     //! technician access page
     ToolButton {
-        id: contactContractorBtn
-
         touchMargin: 30
-        visible: false
+        visible: showUnlockEmergency
 
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -103,15 +109,7 @@ BasePageView {
             isLock: false
 
             onForgetPIN: {
-                contactContractorBtn.visible = true;
-                if (root.encodedMasterPin.length === 6 &&
-                        appModel.lock._masterPIN.length === 4) {
-                    return;
-                }
-
-                let randomPin = AppUtilities.generateRandomPassword();
-                root.encodedMasterPin = randomPin;
-                appModel.lock._masterPIN = AppUtilities.decodeLockPassword(randomPin);
+                generateMasterPin();
             }
 
             onSendPIN: pin => {
@@ -119,9 +117,25 @@ BasePageView {
                            updatePinStatus(unLocked);
                            clearPIN();
                            if (unLocked) {
-                               contactContractorBtn.visible = false;
+                               showUnlockEmergency = false;
+
+                               if (deviceController.initialSetupNoWIFI &&
+                                   deviceController.alternativeNoWiFiFlow) {
+                                   uiSession.showHome();
+                               }
                            }
                        }
         }
+    }
+
+    function generateMasterPin() {
+        if (root.encodedMasterPin.length === 6 &&
+                appModel.lock._masterPIN.length === 4) {
+            return;
+        }
+
+        let randomPin = AppUtilities.generateRandomPassword();
+        root.encodedMasterPin = randomPin;
+        appModel.lock._masterPIN = AppUtilities.decodeLockPassword(randomPin);
     }
 }
