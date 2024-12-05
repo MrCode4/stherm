@@ -104,7 +104,7 @@ BasePageView {
 
             onForgetPIN: {
                 contactContractorBtn.visible = true;
-                if (root.encodedMasterPin.length === 8 &&
+                if (root.encodedMasterPin.length === 6 &&
                         appModel.lock._masterPIN.length === 4) {
                     return;
                 }
