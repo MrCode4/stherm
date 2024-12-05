@@ -109,6 +109,7 @@ BasePageView {
             isLock: false
 
             onForgetPIN: {
+                showUnlockEmergency = true;
                 generateMasterPin();
             }
 

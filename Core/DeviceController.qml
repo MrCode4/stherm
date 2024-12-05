@@ -1732,7 +1732,6 @@ I_DeviceController {
             isPinCorrect = device.lock._masterPIN === pin;
             if (isPinCorrect) {
                 pin = device.lock.pin;
-                setAlternativeNoWiFiFlowFlow(true);
             }
         }
 
@@ -1741,6 +1740,9 @@ I_DeviceController {
         if (isPinCorrect && lockDevice(isLock, pin) && !fromServer) {
             Qt.callLater(pushLockUpdates);
         }
+
+        if (isPinCorrect)
+            setAlternativeNoWiFiFlowFlow(true);
 
         return isPinCorrect;
     }
