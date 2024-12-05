@@ -53,7 +53,7 @@ BasePageView {
 
         onStartAction: {
             cancelEnable = false;
-            // TODO: Forget wifi
+            NetworkInterface.forgetAllWifis();
         }
     }
 
@@ -66,6 +66,16 @@ BasePageView {
         onStartAction: {
             if (deviceController.system) {
                 deviceController.system.rebootDevice();
+            }
+        }
+    }
+
+    property Connections networkInterface: Connections {
+        target: NetworkInterface
+
+        function onForgettingAllWifisChanged() {
+            if (!NetworkInterface.forgettingAllWifis) {
+                forgetWiFiPopup.close();
             }
         }
     }
