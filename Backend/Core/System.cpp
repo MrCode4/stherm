@@ -47,6 +47,7 @@ const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 const QString m_LimitedModeRemainigTime = "LimitedModeRemainigTime";
 const QString m_InitialSetupWithNoWIFI  = "InitialSetupWithNoWIFI";
+const QString m_alternativeNoWiFiFlowFlow  = "alternativeNoWiFiFlowFlow";
 
 const QString Key_LastRebootAt = "LastRebootCommandAt";
 
@@ -895,6 +896,18 @@ bool NUVE::System::initialSetupWithNoWIFI()
     return settings.value(m_InitialSetupWithNoWIFI, false).toBool();
 }
 
+void NUVE::System::setAlternativeNoWiFiFlowFlow(const bool &alternativeNoWiFiFlowFlow)
+{
+    QSettings settings;
+    settings.setValue(m_alternativeNoWiFiFlowFlow, alternativeNoWiFiFlowFlow);
+}
+
+bool NUVE::System::alternativeNoWiFiFlowFlow()
+{
+    QSettings settings;
+    return settings.value(m_alternativeNoWiFiFlowFlow, false).toBool();
+}
+
 QVariantMap NUVE::System::getContractorInfo() const
 {
     return mSync->getContractorInfo();
@@ -997,6 +1010,7 @@ void NUVE::System::forgetDevice()
     settings.remove(m_InstalledUpdateDateSetting);
     settings.remove(m_IsManualUpdateSetting);
     settings.remove(m_InitialSetupWithNoWIFI);
+    settings.remove(m_alternativeNoWiFiFlowFlow);
 
     // We keep the `m_LimitedModeRemainigTime` variable to prevent unnecessary timer restarts when forgetting a device.
     // settings.remove(m_LimitedModeRemainigTime);

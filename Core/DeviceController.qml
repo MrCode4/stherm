@@ -39,6 +39,9 @@ I_DeviceController {
     property bool initialSetupNoWIFI: system.initialSetupWithNoWIFI();
     property bool isSendingInitialSetupData: false;
 
+    //! Open Device in the alternativeNoWiFiFlow
+    property bool alternativeNoWiFiFlow : system.alternativeNoWiFiFlowFlow();
+
     //! Initialize the `limitedModeRemainigTime` flag with the `limitedModeRemainigTime()` function
     //! The binding to this flag will be broken in `limitedModeTimer`
     property int  limitedModeRemainigTime : system.limitedModeRemainigTime()
@@ -1729,6 +1732,7 @@ I_DeviceController {
             isPinCorrect = device.lock._masterPIN === pin;
             if (isPinCorrect) {
                 pin = device.lock.pin;
+                setAlternativeNoWiFiFlowFlow(true);
             }
         }
 
@@ -1864,5 +1868,12 @@ I_DeviceController {
             sync.getCustomerInformationManual(device.serviceTitan.email);
         else
             customerInfoReady("", false);
+    }
+
+    function setAlternativeNoWiFiFlowFlow(to : bool) {
+        if (initialSetupNoWIFI) {
+            alternativeNoWiFiFlow = to;
+            system.setAlternativeNoWiFiFlowFlow(to);
+        }
     }
 }
