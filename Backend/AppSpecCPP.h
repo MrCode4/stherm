@@ -169,6 +169,9 @@ public:
         EMSensorValues       = 1 << 13,
         EMMessages           = 1 << 14,
         EMGeneral            = 1 << 15,
+        EMAll                = EMHold | EMFan | EMVacation | EMRequestedHumidity |
+                               EMDesiredTemperature | EMSettings | EMBacklight | EMSystemSetup | EMSystemMode |
+                               EMSystemSetup | EMDateTime | EMAutoMode | EMSensorValues
     };
     Q_ENUM(EditMode)
 

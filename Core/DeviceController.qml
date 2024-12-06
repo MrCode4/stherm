@@ -589,6 +589,11 @@ I_DeviceController {
 
         function onInstalledSuccess() {
 
+            // Push all settings to the server after the No Wi-Fi installation flow completed.
+            // In a normal initial setup, the system setup will be sent from the system setup page.
+            if (initialSetupNoWIFI)
+                updateEditMode(AppSpec.EMAll);
+
             isSendingInitialSetupData = false;
             initialSetupNoWIFI = false;
             initialSetupDataPushTimer.retryCounter = 0;
@@ -1782,6 +1787,7 @@ I_DeviceController {
     function firstRunFlowEnded() {
         checkSNTimer.repeat = true;
         checkSNTimer.start();
+
         initialSetupFinished();
     }
 
