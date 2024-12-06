@@ -147,6 +147,8 @@ QString AppSpecCPP::systemModeToString(SystemMode systemMode) {
     case AppSpecCPP::Off:
     case AppSpecCPP::Emergency:
         break;
+    case AppSpecCPP::SMUnknown:
+        break;
     }
 
     return "Off";

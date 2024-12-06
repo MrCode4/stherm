@@ -17,6 +17,7 @@
 #define TI_SERIAL_PORT  "/dev/ttymxc3"
 
 #define TOF_IRQ_RANGE 1000    // mm
+#define TOF_SM_RANGE 600    // mm
 
 #define WIRING_CHECK_TIME 600 // ms
 
@@ -1712,8 +1713,9 @@ void DeviceIOController::checkTOFRangeValue(uint16_t range_mm)
 {
     LOG_CHECK_IO(false) << (QString("RangeMilliMeter (%0)").arg(range_mm));
 
-    // TOF sensor activate display when distance < 1 meter and time > 1 second (handled in firmware)
-    if (range_mm > 60 && range_mm <= TOF_IRQ_RANGE) {
+    // TOF sensor activate display when distance < 0.6 meter and time > 1 second (handled in firmware)
+    // TOF valued can not be greater than 1 meter
+    if (range_mm > 60 && range_mm <= TOF_SM_RANGE) {
         if (auto manager = ScreenSaverManager::instance()) {
             manager->triggerScreenSaverBasedOnTOF();
         }
