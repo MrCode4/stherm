@@ -279,6 +279,8 @@ qt6_add_qml_module(appStherm
         View/LockPage.qml
         View/UnlockPage.qml
         View/UnlockEmergencyPage.qml
+        View/ContractorInformationPage.qml
+        View/ContractorInformationFinishPage.qml
 
         # Service Titan pages
         View/ServiceTitan/InitialSetupBasePageView.qml

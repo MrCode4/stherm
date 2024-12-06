@@ -166,6 +166,16 @@ BasePageView {
                         }
                     },
                     {
+                        text: "Contractor Info Test", visible: deviceController.initialSetup, action: () => {
+                            if (root.StackView.view) {
+                                root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
+                                                             "uiSession": uiSession,
+                                                             "contractorFlow": true
+                                                         });
+                            }
+                        }
+                    },
+                    {
                         text: "Forget Device", visible: deviceController.initialSetup, action: () => {
                             deviceController.forgetDevice();
                             rebootPopup.cancelEnable = false;
