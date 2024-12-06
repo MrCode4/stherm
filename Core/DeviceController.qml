@@ -1743,7 +1743,7 @@ I_DeviceController {
 
         // During the initial setup, manual device locking is not allowed.
         // Therefore, unlocking the device can only be initiated through the emergency unlock process.
-        if (isPinCorrect)
+        if (!isLock && isPinCorrect)
             setAlternativeNoWiFiFlow(true);
 
         return isPinCorrect;
