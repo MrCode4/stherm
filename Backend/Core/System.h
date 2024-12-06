@@ -251,6 +251,9 @@ public:
 
     Q_INVOKABLE bool attemptToRunCommand(const QString& command, const QString& tag);
 
+    Q_INVOKABLE void setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow);
+    Q_INVOKABLE bool alternativeNoWiFiFlow();
+
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);

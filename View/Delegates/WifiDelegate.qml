@@ -34,7 +34,7 @@ Control {
     implicitHeight: Math.max(
                         implicitBackgroundHeight + topInset + bottomInset,
                         _delegateContentRow.implicitHeight + topPadding + bottomPadding)
-    hoverEnabled: true
+    hoverEnabled: false
     background: Rectangle {
         implicitHeight: Style.delegateHeight
 

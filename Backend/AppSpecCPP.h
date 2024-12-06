@@ -211,11 +211,6 @@ public:
 
     Q_INVOKABLE QVariant readFromFile(const QString &fileUrl);
 
-    //! Generating a Random Four-Digit Number
-    Q_INVOKABLE QString generateRandomPassword();
-
-    Q_INVOKABLE QString decodeLockPassword(QString pass);
-
     Q_INVOKABLE QString systemModeToString(SystemMode systemMode);
 
     QString apiBaseServerUrl();
