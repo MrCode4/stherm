@@ -19,14 +19,14 @@ BasePageView {
     /* Object properties
      * ****************************************************************************************/
 
-    Component.onCompleted: {
-        if (deviceController.initialSetupNoWIFI)
-            generateMasterPin();
-    }
 
     title: ""
     backButtonVisible: false
     header: null
+
+    Component.onCompleted: {
+        generateMasterPin();
+    }
 
     //! Wifi status
     WifiButton {
@@ -119,11 +119,6 @@ BasePageView {
                            clearPIN();
                            if (unLocked) {
                                showUnlockEmergency = false;
-
-                               if (deviceController.initialSetupNoWIFI &&
-                                   deviceController.alternativeNoWiFiFlow) {
-                                   uiSession.showHome();
-                               }
                            }
                        }
         }

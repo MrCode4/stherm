@@ -40,7 +40,7 @@ I_DeviceController {
     property bool isSendingInitialSetupData: false;
 
     //! Open Device in the alternativeNoWiFiFlow
-    property bool alternativeNoWiFiFlow : system.alternativeNoWiFiFlowFlow();
+    property bool alternativeNoWiFiFlow : system.alternativeNoWiFiFlow();
 
     //! Initialize the `limitedModeRemainigTime` flag with the `limitedModeRemainigTime()` function
     //! The binding to this flag will be broken in `limitedModeTimer`
@@ -1741,8 +1741,10 @@ I_DeviceController {
             Qt.callLater(pushLockUpdates);
         }
 
+        // During the initial setup, manual device locking is not allowed.
+        // Therefore, unlocking the device can only be initiated through the emergency unlock process.
         if (isPinCorrect)
-            setAlternativeNoWiFiFlowFlow(true);
+            setAlternativeNoWiFiFlow(true);
 
         return isPinCorrect;
     }
@@ -1872,10 +1874,13 @@ I_DeviceController {
             customerInfoReady("", false);
     }
 
-    function setAlternativeNoWiFiFlowFlow(to : bool) {
+    function setAlternativeNoWiFiFlow(to : bool) {
         if (initialSetupNoWIFI) {
             alternativeNoWiFiFlow = to;
-            system.setAlternativeNoWiFiFlowFlow(to);
+            system.setAlternativeNoWiFiFlow(to);
+
+            if (to)
+                Qt.callLater(uiSession.showHome);
         }
     }
 }
