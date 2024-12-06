@@ -19,6 +19,8 @@ BasePageView {
 
     property bool mandatoryUpdate: deviceController.mandatoryUpdate;
 
+    property bool contractorFlow: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "System Update"
@@ -35,6 +37,27 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+    //! Next/Confirm button
+    ToolButton {
+        parent: root.header.contentItem
+        enabled: visible && !mandatoryUpdate && deviceController.checkedSWUpdate
+        visible: contractorFlow
+
+        RoniaTextIcon {
+            anchors.centerIn: parent
+            text: FAIcons.arrowRight
+        }
+
+        onClicked: {
+            if (root.StackView.view) {
+                root.StackView.view.push("qrc:/Stherm/View/ContractorInformationPage.qml", {
+                                             "uiSession": uiSession
+                                         });
+            }
+        }
+
+    }
+
     GridLayout {
         height: Math.min(root.availableHeight, implicitHeight)
 

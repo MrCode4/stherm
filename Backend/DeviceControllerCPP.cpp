@@ -1,6 +1,6 @@
 #include "DeviceControllerCPP.h"
 
-#include "LogHelper.h"
+#include "LogCategoires.h"
 #include "SchemeDataProvider.h"
 #include "ScreenSaverManager.h"
 #include "DeviceInfo.h"
@@ -56,7 +56,7 @@ inline void setCPUGovernorMode(QString governer) {
     QDir cpuDir("/sys/devices/system/cpu/");
     QStringList cpuList = cpuDir.entryList(QStringList() << "cpu[0-9]*");
 
-    TRACE << "CPU List: =" << cpuList;
+    LOG_DC << "CPU List: =" << cpuList;
 
     foreach (const QString& cpu, cpuList) {
         QString governorFile = QString("/sys/devices/system/cpu/%1/cpufreq/scaling_governor").arg(cpu);
@@ -65,9 +65,9 @@ inline void setCPUGovernorMode(QString governer) {
             QTextStream out(&file);
             out << governer; // Set CPU governor
             file.close();
-            TRACE << "Set CPU" << cpu << "governor to " << governer;
+            LOG_DC << "Set CPU" << cpu << "governor to " << governer;
         } else {
-            TRACE << "Failed to set CPU" << cpu << "governor to performance";
+            LOG_DC << "Failed to set CPU" << cpu << "governor to performance";
         }
     }
 #endif
@@ -137,7 +137,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mBacklightTimer.setSingleShot(true);
     connect(&mBacklightTimer, &QTimer::timeout, this, [this]() {
         auto colorData = mBacklightTimer.property("color").value<QVariantList>();
-        TRACE << "restoring color with timer " << colorData;
+        LOG_DC << "restoring color with timer " << colorData;
         setBacklight(colorData, true);
     });
 
@@ -203,7 +203,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         }
 
 #ifdef DEBUG_MODE
-        TRACE << "Temperature Correction - T1: "<< mTEMPERATURE_COMPENSATION_T1 << "- Fan running: " << isFanON();
+        DC_LOG << "Temperature Correction - T1: "<< mTEMPERATURE_COMPENSATION_T1 << "- Fan running: " << isFanON();
 #endif
     });
     mTEMPERATURE_COMPENSATION_Timer.start();
@@ -218,25 +218,25 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mLogTimer.setTimerType(Qt::PreciseTimer);
     mLogTimer.start(1000);
     connect(&mLogTimer, &QTimer::timeout, this, [this]() {
-        TRACE << "---------------------- Start General System Data Log ----------------------";
+        DC_LOG << "---------------------- Start General System Data Log ----------------------";
 
         auto cpuData = m_system->cpuInformation();
         auto brightness = UtilityHelper::brightness();
 
-        TRACE << "Delta Correction: " << deltaCorrection() <<
+        DC_LOG << "Delta Correction: " << deltaCorrection() <<
             "- Delta Temperature Integrator: " << mDeltaTemperatureIntegrator <<
             "- backlightFactor: " << _deviceIO->backlightFactor();
 
 
-        TRACE << "Brightness: " << brightness;
+        DC_LOG << "Brightness: " << brightness;
 
-        TRACE << "Raw Temperature: " << mRawTemperature;
+        DC_LOG << "Raw Temperature: " << mRawTemperature;
 
-        TRACE << "Is night mode running: " << mIsNightModeRunning;
+        DC_LOG << "Is night mode running: " << mIsNightModeRunning;
 
         writeGeneralSysData(cpuData, brightness);
 
-        TRACE << "---------------------- End General System Data Log ----------------------";
+        DC_LOG << "---------------------- End General System Data Log ----------------------";
     });
 
 #endif
@@ -265,9 +265,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(_deviceIO, &DeviceIOController::nrfVersionUpdated, this, [this]() {
         emit nrfVersionChanged();
 
-        TRACE << getNRF_SW();
+        LOG_DC << getNRF_SW();
         if (getNRF_SW() != "01.10-RC1") {
-            TRACE << "start firmware update in 3 seconds";
+            LOG_DC << "start firmware update in 3 seconds";
             QTimer::singleShot(3000, this, [this]() {updateNRFFirmware();});
         } else if (!mBacklightModelData.empty()){
             setBacklight(mBacklightModelData, true);
@@ -309,7 +309,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(m_sync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
-        TRACE << "Outdoor temperature:" << success << temp;
+        LOG_DC << "Outdoor temperature:" << success << temp;
         if (success) {
             mSchemeDataProvider->setOutdoorTemperature(temp);
 
@@ -327,10 +327,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             return;
         }
 
-        TRACE_CHECK(false) << "Update backlight." << color << afterColor << mBacklightModelData;
+        LOG_CHECK_DC(false) << "Update backlight." << color << afterColor << mBacklightModelData;
 
         if (color.isEmpty()) {
-            TRACE << "restoring color with force " << mBacklightModelData;
+            LOG_DC << "restoring color with force " << mBacklightModelData;
             setBacklight(mBacklightModelData, true);
             return;
         }
@@ -385,9 +385,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     // update the timer intervals when sample rate changed.
     connect(&mSaveSensorDataTimer, &QTimer::timeout, this, [this]() {
         auto elapsed = mResponsivenessTimer.restart();
-        TRACE_CHECK(false) << "Operations took by :" << elapsed;
+        LOG_CHECK_DC(false) << "Operations took by :" << elapsed;
         if (elapsed - mSaveSensorDataTimer.interval() > 3000) {
-            TRACE << "Operations delayed by :" << elapsed << mSaveSensorDataTimer.interval();
+            LOG_DC << "Operations delayed by :" << elapsed << mSaveSensorDataTimer.interval();
         }
         writeSensorData(_mainData);
     });
@@ -588,7 +588,7 @@ void DeviceControllerCPP::startDevice()
     }
 
     if (!checkSN()){
-        TRACE << "INITAIL SETUP";
+        LOG_DC << "INITAIL SETUP";
         return;
     }
 
@@ -604,7 +604,7 @@ void DeviceControllerCPP::stopDevice()
 
 void DeviceControllerCPP::runTemperatureScheme(bool start)
 {
-    TRACE << "starting temperature scheme: " << (start && mIsDeviceStarted) << start;
+    LOG_DC << "starting temperature scheme: " << (start && mIsDeviceStarted) << start;
     if(start && mIsDeviceStarted) {
         // Start with delay to ensure the model loaded.
         // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
@@ -620,7 +620,7 @@ void DeviceControllerCPP::runTemperatureScheme(bool start)
 
 void DeviceControllerCPP::runHumidityScheme(bool start)
 {
-    TRACE << "starting humidity scheme: " << (start && mIsDeviceStarted) << start;
+    LOG_DC << "starting humidity scheme: " << (start && mIsDeviceStarted) << start;
     if(start && mIsDeviceStarted) {
         // Start with delay to ensure the model loaded.
         // will be loaded always, but should be OFF in initial setup mode as its default is OFF !!!
@@ -637,12 +637,12 @@ void DeviceControllerCPP::runHumidityScheme(bool start)
 void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
 {
     if (schedule && mSchemeDataProvider->effectiveSystemMode() == AppSpecCPP::Off) {
-        TRACE << "An schedule with name " << schedule->name << "is active while mode is off";
+        LOG_DC << "An schedule with name " << schedule->name << "is active while mode is off";
     } else if (schedule) {
-        TRACE_CHECK(false) << "An schedule with name " << schedule->name
+        LOG_CHECK_DC(false) << "An schedule with name " << schedule->name
                            << "is active while mode is off";
     } else {
-        TRACE_CHECK(false)
+        LOG_CHECK_DC(false)
             << "The schedule is inactive, hence the system reverts to its previous mode ("
             << mSchemeDataProvider->effectiveSystemMode() << ").";
     }
@@ -654,7 +654,7 @@ void DeviceControllerCPP::setActivatedSchedule(ScheduleCPP *schedule)
 int DeviceControllerCPP::getStartMode()
 {
     auto sm = _deviceAPI->getStartMode();
-    TRACE << "start mode is: " << sm;
+    LOG_DC << "start mode is: " << sm;
 
     return sm;
 }
@@ -715,7 +715,7 @@ void DeviceControllerCPP::checkForOutdoorTemperature() {
             mGetOutdoorTemperatureTimer.start();
 
     } else if (mGetOutdoorTemperatureTimer.isActive()) {
-        TRACE << "Stop to get the outdoor temperature " << mDeviceHasInternet << mSystemSetup->systemType << m_sync->getSerialNumber();
+        LOG_DC << "Stop to get the outdoor temperature " << mDeviceHasInternet << mSystemSetup->systemType << m_sync->getSerialNumber();
         mGetOutdoorTemperatureTimer.stop();
     }
 }
@@ -737,7 +737,7 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
             double dt = deltaCorrection();
             // Fan status effect:
             dt += mTEMPERATURE_COMPENSATION_T1;
-            TRACE_CHECK(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
+            LOG_CHECK_DC(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
             if (qAbs(dt) < 10) {
                 tc -= dt;
 
@@ -789,7 +789,7 @@ bool DeviceControllerCPP::checkUpdateMode()
     bool updateMode = getUpdateMode();
     if (updateMode) { // or intial mode, in this case disable fetching after one time fetching
         //            Run API to get settings from server (sync, getWirings, )
-        TRACE << "getting settings from server";
+        LOG_DC << "getting settings from server";
         //if (m_system)
         //    m_system->getUpdate();
     }
@@ -848,7 +848,7 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
 bool DeviceControllerCPP::checkSN()
 {
     auto state = _deviceAPI->checkSN();
-    TRACE << "checkSN : " << state;
+    LOG_DC << "checkSN : " << state;
 
     bool snMode = state != 2;
 
@@ -941,7 +941,7 @@ bool DeviceControllerCPP::isTestsPassed()
 void DeviceControllerCPP::setAutoMinReqTemp(const double cel_value)
 {
     if (mSchemeDataProvider.isNull()) {
-        TRACE << "The schedule data provider is not available.";
+        LOG_DC << "The schedule data provider is not available.";
         return;
     }
 
@@ -951,7 +951,7 @@ void DeviceControllerCPP::setAutoMinReqTemp(const double cel_value)
 void DeviceControllerCPP::setAutoMaxReqTemp(const double cel_value)
 {
     if (mSchemeDataProvider.isNull()) {
-        TRACE << "The schedule data provider is not available.";
+        LOG_DC << "The schedule data provider is not available.";
         return;
     }
 
@@ -961,7 +961,7 @@ void DeviceControllerCPP::setAutoMaxReqTemp(const double cel_value)
 bool DeviceControllerCPP::updateNRFFirmware()
 {
 
-    TRACE << "NRF Hardware: " << getNRF_HW() <<
+    LOG_DC << "NRF Hardware: " << getNRF_HW() <<
         "NRF software:" << getNRF_SW();
     if (m_system->installUpdate_NRF_FW_Service()){
         emit nrfUpdateStarted();
@@ -986,7 +986,7 @@ bool DeviceControllerCPP::checkNRFFirmwareVersion()
         return false;
     }
 
-    TRACE << "NRF  Version: " << nrfSW << " - Application version: " << appVersion;
+    LOG_DC << "NRF  Version: " << nrfSW << " - Application version: " << appVersion;
 
     bool firmwareUpdated = nrfSW == "01.10-RC1";
     bool appHasFirmwreUpdate = appVersion.at(0).toInt() > 0 ||
@@ -1010,18 +1010,18 @@ QVariantMap DeviceControllerCPP::getMainData()
     bool hasOverride = override.value("on").toBool();
     if (hasOverride) {
         auto overrideTemp = override.value("temp").toDouble();
-        TRACE_CHECK(!_override_by_file) <<"temperature will be overriden by value: " << overrideTemp << ", read from /usr/local/bin/override.ini file.";
+        LOG_CHECK_DC(!_override_by_file) <<"temperature will be overriden by value: " << overrideTemp << ", read from /usr/local/bin/override.ini file.";
         overrideData.insert("temperature", overrideTemp);
     }
 
     if (_override_by_file != hasOverride){
-        TRACE_CHECK(!hasOverride) << "temperature will not be overriden anymore.";
+        LOG_CHECK_DC(!hasOverride) << "temperature will not be overriden anymore.";
         _override_by_file = hasOverride;
     }
 #endif
 
     for (const auto &pair : overrideData.toStdMap()) {
-        TRACE << pair.first << "with value: " << mainData.value(pair.first) << ", replaced by: " << pair.second;
+        LOG_DC << pair.first << "with value: " << mainData.value(pair.first) << ", replaced by: " << pair.second;
         mainData.insert(pair.first, pair.second);
     }
 
@@ -1130,7 +1130,7 @@ void DeviceControllerCPP::testBrightness(int value)
 
 void DeviceControllerCPP::stopTestBrightness()
 {
-    TRACE;
+    LOG_DC;
     _deviceIO->setBrightnessTest(0, false);
 }
 
@@ -1140,7 +1140,7 @@ void DeviceControllerCPP::testFinished()
     QString sn = m_system->serialNumber();
     saveTestResult("SN", !sn.isEmpty(), sn);
 
-    TRACE << "test finsihed with SN: " << sn;
+    LOG_DC << "test finsihed with SN: " << sn;
 
 
     QStringList failedTests;
@@ -1151,7 +1151,7 @@ void DeviceControllerCPP::testFinished()
             failedTests.append(testName);
     }
 
-    TRACE_CHECK(!failedTests.empty()) << "Failed tests are:" << failedTests;
+    LOG_CHECK_DC(!failedTests.empty()) << "Failed tests are:" << failedTests;
 
     QString result = failedTests.empty() ? "PASS" : "FAIL";
     QString testResultsFileName = QString("/%1_%2.csv").arg(_deviceAPI->uid(), result);
@@ -1159,7 +1159,7 @@ void DeviceControllerCPP::testFinished()
     // Remove the file if exists
     if (QFileInfo::exists(testResultsFileName)) {
         if (!QFile::remove(testResultsFileName)) {
-            TRACE << "Could not remove the file: " << testResultsFileName;
+            LOG_DC << "Could not remove the file: " << testResultsFileName;
         }
     }
 
@@ -1185,7 +1185,7 @@ void DeviceControllerCPP::testFinished()
         settings.setValue(m_RestartAfetrSNTestMode, true);
     }
 
-    TRACE << "testFinished";
+    LOG_DC << "testFinished";
 }
 
 bool DeviceControllerCPP::getSNTestMode() {
@@ -1193,7 +1193,7 @@ bool DeviceControllerCPP::getSNTestMode() {
     auto snTestMode = settings.value(m_RestartAfetrSNTestMode, false).toBool();
     settings.setValue(m_RestartAfetrSNTestMode, false);
 
-    TRACE << "snTestMode" << snTestMode;
+    LOG_DC << "snTestMode" << snTestMode;
     return snTestMode;
 }
 
@@ -1315,10 +1315,10 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
         out << (dataStrList.join(",")) << "\n";
 
         file.close();
-        TRACE << "General System Data (csv) file written successfully in " << mGeneralSystemDatafilePath;
+        DC_LOG << "General System Data (csv) file written successfully in " << mGeneralSystemDatafilePath;
 
     } else {
-        TRACE << "General System Data (csv) Failed to open the file for writing/Reading.";
+        DC_LOG << "General System Data (csv) Failed to open the file for writing/Reading.";
     }
 #endif
 }
@@ -1494,10 +1494,10 @@ void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
         }
 
         file.close();
-        TRACE_CHECK(false) << "CSV file written successfully.";
+        LOG_CHECK_DC(false) << "CSV file written successfully.";
 
     } else {
-        TRACE << "Failed to open the file for writing/Reading." << directoryHasSpace;
+        LOG_DC << "Failed to open the file for writing/Reading." << directoryHasSpace;
     }
 }
 
@@ -1549,7 +1549,7 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
                                   ? "d:/test_results/"
                                   : QString::fromStdString(config.testConfigDestination);
 
-    TRACE << "start exporting test results as " << resultsPath << destinationIP << username
+    LOG_DC << "start exporting test results as " << resultsPath << destinationIP << username
           << password << destinationPath;
 
     auto sent = m_system->sendResults(resultsPath,
@@ -1558,13 +1558,13 @@ void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
                                       password,
                                       destinationPath);
 
-    TRACE << "exporting test results ended " << sent;
+    LOG_DC << "exporting test results ended " << sent;
 }
 
 void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 {
     if (!mSchemeDataProvider || mSchemeDataProvider->isPerfTestRunning()) {
-        TRACE << "doPerfTest: Perf-test is already running";
+        LOG_DC << "doPerfTest: Perf-test is already running";
         return;
     }
 
@@ -1583,7 +1583,7 @@ void DeviceControllerCPP::doPerfTest(AppSpecCPP::SystemMode mode)
 void DeviceControllerCPP::revertPerfTest()
 {
     if (!mSchemeDataProvider || !mSchemeDataProvider->isPerfTestRunning()) {
-        TRACE << "revertPerfTest: No perf-test is running to revert";
+        LOG_DC << "revertPerfTest: No perf-test is running to revert";
         return;
     }
 

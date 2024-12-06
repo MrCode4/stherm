@@ -1,6 +1,7 @@
 #include "System.h"
 #include "LogHelper.h"
 #include "PerfTestService.h"
+#include "DeviceInfo.h"
 #include "ProtoDataManager.h"
 #include "DeviceInfo.h"
 
@@ -48,6 +49,7 @@ const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 const QString m_LimitedModeRemainigTime = "LimitedModeRemainigTime";
 const QString m_InitialSetupWithNoWIFI  = "InitialSetupWithNoWIFI";
+const QString m_alternativeNoWiFiFlow   = "alternativeNoWiFiFlow";
 
 const QString Key_LastRebootAt = "LastRebootCommandAt";
 
@@ -896,6 +898,18 @@ bool NUVE::System::initialSetupWithNoWIFI()
     return settings.value(m_InitialSetupWithNoWIFI, false).toBool();
 }
 
+void NUVE::System::setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow)
+{
+    QSettings settings;
+    settings.setValue(m_alternativeNoWiFiFlow, alternativeNoWiFiFlow);
+}
+
+bool NUVE::System::alternativeNoWiFiFlow()
+{
+    QSettings settings;
+    return settings.value(m_alternativeNoWiFiFlow, false).toBool();
+}
+
 QVariantMap NUVE::System::getContractorInfo() const
 {
     return mSync->getContractorInfo();
@@ -1000,8 +1014,10 @@ void NUVE::System::forgetDevice()
     settings.remove(m_InitialSetupWithNoWIFI);
 
     // User can forget the m_LimitedModeRemainigTime only when the has client is true.
-    if (Device->hasClient())
+    if (Device->hasClient() || settings.value(m_alternativeNoWiFiFlow, false).toBool())
         settings.remove(m_LimitedModeRemainigTime);
+
+    settings.remove(m_alternativeNoWiFiFlow);
 
     mSync->forgetDevice();
 }

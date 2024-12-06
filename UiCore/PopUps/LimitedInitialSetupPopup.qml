@@ -98,9 +98,9 @@ I_PopUp {
             }
         }
 
-        //! TODO: Check
+        // Alternative flow for NoWiFi installation
         RoniaTextIcon {
-            Layout.margins: 10
+            Layout.margins: 6
             Layout.alignment: Qt.AlignBottom | Qt.AlignRight
             font.pointSize: Style.fontIconSize.smallPt
             visible: remainigTime <= 0 && false

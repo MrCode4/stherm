@@ -245,7 +245,7 @@ ApplicationWindow {
         }
 
         onClosed: {
-            if (deviceController.initialSetupNoWIFI) {
+            if (deviceController.initialSetupNoWIFI && !deviceController.alternativeNoWiFiFlow) {
                 uiSession.popUps.showLimitedInitialSetupPopup();
             }
         }

@@ -39,6 +39,9 @@ I_DeviceController {
     property bool initialSetupNoWIFI: system.initialSetupWithNoWIFI();
     property bool isSendingInitialSetupData: false;
 
+    //! Open Device in the alternativeNoWiFiFlow
+    property bool alternativeNoWiFiFlow : system.alternativeNoWiFiFlow();
+
     //! Initialize the `limitedModeRemainigTime` flag with the `limitedModeRemainigTime()` function
     //! The binding to this flag will be broken in `limitedModeTimer`
     property int  limitedModeRemainigTime : system.limitedModeRemainigTime()
@@ -333,6 +336,10 @@ I_DeviceController {
                 fetchContractorInfoTimer.stop();
             }
         }
+
+        function onForgettingAllWifisChanged() {
+            console.log("Forgetting Wifis ", (NetworkInterface.forgettingAllWifis ? "started." : "finished."))
+        }
     }
 
     property Connections systemConnection: Connections {
@@ -581,6 +588,11 @@ I_DeviceController {
         }
 
         function onInstalledSuccess() {
+
+            // Push all settings to the server after the No Wi-Fi installation flow completed.
+            // In a normal initial setup, the system setup will be sent from the system setup page.
+            if (initialSetupNoWIFI)
+                updateEditMode(AppSpec.EMAll);
 
             isSendingInitialSetupData = false;
             initialSetupNoWIFI = false;
@@ -1734,6 +1746,11 @@ I_DeviceController {
             Qt.callLater(pushLockUpdates);
         }
 
+        // During the initial setup, manual device locking is not allowed.
+        // Therefore, unlocking the device can only be initiated through the emergency unlock process.
+        if (!isLock && isPinCorrect)
+            setAlternativeNoWiFiFlow(true);
+
         return isPinCorrect;
     }
 
@@ -1770,6 +1787,7 @@ I_DeviceController {
     function firstRunFlowEnded() {
         checkSNTimer.repeat = true;
         checkSNTimer.start();
+
         initialSetupFinished();
     }
 
@@ -1860,5 +1878,15 @@ I_DeviceController {
             sync.getCustomerInformationManual(device.serviceTitan.email);
         else
             customerInfoReady("", false);
+    }
+
+    function setAlternativeNoWiFiFlow(to : bool) {
+        if (initialSetupNoWIFI) {
+            alternativeNoWiFiFlow = to;
+            system.setAlternativeNoWiFiFlow(to);
+
+            if (to)
+                Qt.callLater(uiSession.showHome);
+        }
     }
 }

@@ -409,7 +409,7 @@ Control {
             deviceController.deviceControllerCPP.checkContractorInfo();
 
             // Show initial setup in no wifi mode conutdown timer for first time.
-            if (deviceController.initialSetupNoWIFI) {
+            if (deviceController.initialSetupNoWIFI && !deviceController.alternativeNoWiFiFlow) {
                 uiSession.popUps.showLimitedInitialSetupPopup();
             }
         }
