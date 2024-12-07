@@ -103,7 +103,7 @@ I_PopUp {
             Layout.margins: 6
             Layout.alignment: Qt.AlignBottom | Qt.AlignRight
             font.pointSize: Style.fontIconSize.smallPt
-            visible: remainigTime <= 0 && false
+            visible: remainigTime <= 0
             text: FAIcons.headSet
 
             TapHandler {
