@@ -15,7 +15,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(TEMPERATURE_SCHEME_VERSION_C "V.2.0.2 (13.11.2024)")
 set(FAKE_UID "" CACHE STRING "The fake UID used for testing purposes")
 set(FAKE_SERIALID "" CACHE STRING "The fake SERIAL ID used for testing purposes")
-set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT "Delay counter for serial test")
+set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT 3 "Delay counter for serial test")
 
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
