@@ -20,21 +20,26 @@ set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT 3 "Delay counter for serial test")
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
 option (INITIAL_SETUP_MODE "Force the app to run in the initial setup pages" OFF)
-option (FAKE_UID_MODE "Run app with a fake UID stored in FAKE_UID" OFF)
-option (TROUBLESHOOTING_MODE "Run app with starting troubleshooting device mode" OFF)
-option (SERIAL_TEST_MODE "Run app with serial number testing mdoe")
+option (FAKE_UID_MODE "Run the app with a fake UID set in FAKE_UID" OFF)
+option (TROUBLESHOOTING_MODE "Run the app in troubleshooting device mode" OFF)
+option (SERIAL_TEST_MODE "Run the app in serial number testing mode" OFF)
+find_package(Qt6 REQUIRED COMPONENTS
+    Quick
+    Core
+    Gui
+    Qml
+    QuickControls2
+    Multimedia
+    Concurrent
+    Core5Compat
+    SerialPort
+)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
-    QuickControls2 Multimedia Concurrent
-    Core5Compat SerialPort )
-
-#qt_standard_project_setup()
-
-# ##################################################################################################
-# Dependencies
-# ##################################################################################################
 # Flatten generation of all sub-dependent libraries
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
+
+add_subdirectory(QtQuickStream)
+add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Core)
@@ -43,11 +48,11 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Services)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Proto)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/QtQuickStream/include)
 
-# Add any include directories
-#include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
-
+# ##################################################################################################
 # Dependencies
+# ##################################################################################################
 message( "Protocol Buffers Configuring...")
 include(protobuf.cmake)
 
@@ -96,10 +101,7 @@ if (Protobuf_FOUND)
 else ()
     message(FATAL_ERROR "ERROR: Protobuf not found.")
 endif()
-add_subdirectory(QtQuickStream)
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/QtQuickStream/include)
 
-add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
 
 # Extra QML File properties
 set_source_files_properties(
@@ -630,7 +632,6 @@ install(TARGETS appStherm
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-
 
 # ##################################################################################################
 # Qt Creator Fixes
