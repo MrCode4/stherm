@@ -20,12 +20,13 @@ BasePageView {
 
     title: "Contractor Information"
 
-    onVisibleChanged: {
-        isBusy = visible;
+    Component.onCompleted: {
+        getContractorInfoTimer.triggered();
+    }
 
-        if (visible) {
-            getContractorInfoTimer.triggered();
-        } else {
+    onVisibleChanged: {
+        if (!visible) {
+            isBusy = false;
             getContractorInfoTimer.stop();
         }
     }
