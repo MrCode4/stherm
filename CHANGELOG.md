@@ -2,11 +2,11 @@
 Release Note
 -------------
 ## Release R 1.4.7
- 7th December 2024
- Branch- r1_4_7, commit- bcf20d10
+ 8th December 2024
+ Branch- r1_4_7, commit- 1b180ba4
  
 ### Release Articles
-update-V.1.4.7.zip
+update-V.1.4.7.1.zip
 
 ### Reason
 Add new feature and fix some issues.
@@ -56,6 +56,55 @@ Add new features and fix some issues.
 - Fix performance test issue.
 - Fix send relay issue on startup.
 - Fix emergency heating issue.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
+## Release R 1.4.5
+ 20th November 2024
+ Branch- r1_4_5, commit- 1a4ed723ac
+ 
+### Release Articles
+update-V.1.4.5.zip
+
+### Reason
+Fix some issues and enhanced dual fuel heating functionality.
+
+### What’s Brand New
+
+### What Been Updated
+- Add dualFuelHeatingModeDefault to the dual fuel heating page.
+- Synchronized "dualFuelManualHeating" with the server.
+
+### What’s Been Fixed
+- Fixed manual emergency issues
+- Fixed relays issues during app startup.
+- Fix performance test issues in the temperature scheme.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
+## Release R 1.4.4
+ 15th November 2024
+ Branch- r1_4_4_2, commit- 12d33a9f
+ 
+### Release Articles
+update-V.1.4.4.2.zip
+
+### Reason
+Add new features and fix some issues.
+
+### What’s Brand New
+- Implemented sensor data transmission in Protobuf format.
+
+### What Been Updated
+- Updated heat pump system type in both the user interface and backend logic.
+- Updated dual fuel system type in both the user interface and backend logic.
+- Adjust logo field.
+- Update temperature scheme logics based on the new version of scheme block diagram (V2.0.2)
+
+### What’s Been Fixed
+- Fix temperature scheme bugs.
 
 ### Known Issues
 - CPU usage in some cases should be check.
