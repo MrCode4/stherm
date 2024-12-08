@@ -77,6 +77,9 @@ I_DeviceController {
     //! Current active system mode.
     property int activeSystemMode: AppSpec.Off
 
+    //! The current status of the system fan (not the device's fan).
+    property bool currentSystemFanState: false
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -306,12 +309,14 @@ I_DeviceController {
 
         function onFanWorkChanged(fanState: bool) {
             ProtoDataManager.setCurrentFanStatus(fanState);
+
+            currentSystemFanState = fanState;
+            checkLimitedModeRemainigTimer();
+
         }
 
         function onCurrentSystemModeChanged(state: int, currentHeatingStage: int, currentCoolingStage: int) {
             activeSystemMode = state;
-
-            checkLimitedModeRemainigTimer();
 
             ProtoDataManager.setCurrentHeatingStage(currentHeatingStage);
             ProtoDataManager.setCurrentCoolingStage(currentCoolingStage);
@@ -1909,7 +1914,7 @@ I_DeviceController {
 
     function checkLimitedModeRemainigTimer() {
         // Limited mode will count when relays is ON and device start to work
-        if (initialSetupNoWIFI && activeSystemMode !== AppSpec.Off && limitedModeRemainigTime > 0)
+        if (initialSetupNoWIFI && currentSystemFanState && limitedModeRemainigTime > 0)
             limitedModeTimer.start();
         else 
             limitedModeTimer.stop();
