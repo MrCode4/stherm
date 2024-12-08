@@ -481,7 +481,7 @@ BasePageView {
         function onConnectedWifiChanged() {
             // To address the issue of users reconnecting to Wi-Fi after navigating back from other pages.
             if (NetworkInterface.connectedWifi && !openFromNoWiFiInstallation)
-                deviceController.initialSetupNoWIFI = false;
+                deviceController.setInitialSetupNoWIFI(false);
         }
 
         function onIncorrectWifiPassword(wifi: WifiInfo)
