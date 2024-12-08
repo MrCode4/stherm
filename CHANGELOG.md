@@ -1,6 +1,32 @@
 
 Release Note
 -------------
+## Release R 1.4.7
+ 7th December 2024
+ Branch- r1_4_7, commit- bcf20d10
+ 
+### Release Articles
+update-V.1.4.7.zip
+
+### Reason
+Add new feature and fix some issues.
+
+### What’s Brand New
+- Add alternative first run flow for no Wi-Fi.
+
+### What Been Updated
+- Validate contractor data on first run flow.
+- Make master pin code simpler.
+- Make person detection activate only below 60 cm.
+
+### What’s Been Fixed
+- Fix schedule issue: Restart Scheme controllers in the mid-night for overnight schedules.
+- Fix bug that could stop Wi-Fi connection after entering a wrong password.
+- Minor improvements and bug fixes
+
+### Known Issues
+- CPU usage in some cases should be check.
+
 ## Release R 1.4.6
  3rd December 2024
  Branch- r1_4_6, commit- 50f3bb0c
