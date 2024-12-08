@@ -238,6 +238,7 @@ BasePageView {
         //! Enable forget device in this popup
         property bool withForget: false
 
+        title : withForget ? "   Forget Device   " :  " Restart Device   "
         anchors.centerIn: Template.Overlay.overlay
 
         onStartAction: {
