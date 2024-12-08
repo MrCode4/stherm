@@ -28,7 +28,7 @@ BasePageView {
     property bool initialSetup: deviceController.initialSetup
 
     property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
-    property bool openFromNoWiFiInstallation: false
+    property bool openFromNoWiFiInstallation: initialSetupNoWIFI
 
     property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 &&
                                       deviceController.checkedSWUpdate && NetworkInterface.connectedWifi
@@ -481,7 +481,7 @@ BasePageView {
         function onConnectedWifiChanged() {
             // To address the issue of users reconnecting to Wi-Fi after navigating back from other pages.
             if (NetworkInterface.connectedWifi && !openFromNoWiFiInstallation)
-                deviceController.initialSetupNoWIFI = false;
+                deviceController.setInitialSetupNoWIFI(false);
         }
 
         function onIncorrectWifiPassword(wifi: WifiInfo)

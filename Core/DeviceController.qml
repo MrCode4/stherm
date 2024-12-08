@@ -77,6 +77,9 @@ I_DeviceController {
     //! Current active system mode.
     property int activeSystemMode: AppSpec.Off
 
+    //! The current status of the system fan (not the device's fan).
+    property bool currentSystemFanState: false
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -306,6 +309,10 @@ I_DeviceController {
 
         function onFanWorkChanged(fanState: bool) {
             ProtoDataManager.setCurrentFanStatus(fanState);
+
+            currentSystemFanState = fanState;
+            checkLimitedModeRemainigTimer();
+
         }
 
         function onCurrentSystemModeChanged(state: int, currentHeatingStage: int, currentCoolingStage: int) {
@@ -595,7 +602,7 @@ I_DeviceController {
                 updateEditMode(AppSpec.EMAll);
 
             isSendingInitialSetupData = false;
-            initialSetupNoWIFI = false;
+            setInitialSetupNoWIFI(false);
             initialSetupDataPushTimer.retryCounter = 0;
 
             // Go to home
@@ -641,11 +648,15 @@ I_DeviceController {
     property Timer limitedModeTimer: Timer {
         interval: 30000
         repeat: true
-        running: initialSetupNoWIFI && limitedModeRemainigTime > 0
+        running: false
 
         onTriggered: {
-            limitedModeRemainigTime -= 30000
-            system.setLimitedModeRemainigTime(limitedModeRemainigTime);
+            if (limitedModeRemainigTime > 0) {
+                limitedModeRemainigTime -= 30000
+                system.setLimitedModeRemainigTime(limitedModeRemainigTime);
+            }
+
+            checkLimitedModeRemainigTimer();
         }
     }
 
@@ -837,6 +848,8 @@ I_DeviceController {
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour);
         deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
         deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
+
+        checkLimitedModeRemainigTimer();
     }
 
     /* Children
@@ -1888,5 +1901,22 @@ I_DeviceController {
             if (to)
                 Qt.callLater(uiSession.showHome);
         }
+    }
+
+    function setInitialSetupNoWIFI(isnw : bool) {
+        initialSetupNoWIFI = isnw;
+
+        if (initialSetupNoWIFI)
+            uiSession.goToInitialSetupNoWIFIMode();
+
+        checkLimitedModeRemainigTimer();
+    }
+
+    function checkLimitedModeRemainigTimer() {
+        // Limited mode will count when relays is ON and device start to work
+        if (initialSetupNoWIFI && currentSystemFanState && limitedModeRemainigTime > 0)
+            limitedModeTimer.start();
+        else 
+            limitedModeTimer.stop();
     }
 }

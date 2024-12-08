@@ -105,6 +105,7 @@ InitialSetupBasePageView {
 
             } else {
                 deviceController.initialSetupFinished();
+                deviceController.saveSettings();
             }
         }
     }
