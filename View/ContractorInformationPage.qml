@@ -139,15 +139,26 @@ BasePageView {
             Item {
                 id: spacer
 
+                Layout.fillWidth: true
                 Layout.columnSpan: 2
                 height: 35
-                width: 35
+
+                Label {
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    text: "No Internet"
+                    visible: !NetworkInterface.hasInternet
+                    color: AppStyle.primaryRed
+
+                }
             }
+
 
             ButtonInverted {
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
                 Layout.columnSpan: 2
-                enabled: !isBusy
+                enabled: !isBusy && NetworkInterface.hasInternet
 
                 text: "Update Contractor Info"
 
@@ -180,8 +191,10 @@ BasePageView {
         interval: 10000
 
         onTriggered: {
-            isBusy = true;
-            deviceController.deviceControllerCPP.checkContractorInfo();
+            isBusy = NetworkInterface.hasInternet;
+            if (isBusy) {
+                deviceController.deviceControllerCPP.checkContractorInfo();
+            }
         }
     }
 
