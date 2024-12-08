@@ -649,7 +649,6 @@ I_DeviceController {
             if (limitedModeRemainigTime > 0) {
                 limitedModeRemainigTime -= 30000
                 system.setLimitedModeRemainigTime(limitedModeRemainigTime);
-
             }
 
             checkLimitedModeRemainigTimer();
@@ -1909,6 +1908,7 @@ I_DeviceController {
     }
 
     function checkLimitedModeRemainigTimer() {
+        // Limited mode will count when relays is ON and device start to work
         if (initialSetupNoWIFI && activeSystemMode !== AppSpec.Off && limitedModeRemainigTime > 0)
             limitedModeTimer.start();
         else 
