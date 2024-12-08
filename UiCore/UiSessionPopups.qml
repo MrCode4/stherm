@@ -197,8 +197,7 @@ Item {
 
         SkipWIFIConnectionPopup {
             onSkipWiFi: {
-                deviceController.initialSetupNoWIFI = true;
-                uiSession.goToInitialSetupNoWIFIMode();
+                deviceController.setInitialSetupNoWIFI(true);
             }
         }
     }

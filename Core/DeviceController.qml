@@ -311,6 +311,8 @@ I_DeviceController {
         function onCurrentSystemModeChanged(state: int, currentHeatingStage: int, currentCoolingStage: int) {
             activeSystemMode = state;
 
+            checkLimitedModeRemainigTimer();
+
             ProtoDataManager.setCurrentHeatingStage(currentHeatingStage);
             ProtoDataManager.setCurrentCoolingStage(currentCoolingStage);
         }
@@ -595,7 +597,7 @@ I_DeviceController {
                 updateEditMode(AppSpec.EMAll);
 
             isSendingInitialSetupData = false;
-            initialSetupNoWIFI = false;
+            setInitialSetupNoWIFI(false);
             initialSetupDataPushTimer.retryCounter = 0;
 
             // Go to home
@@ -641,11 +643,16 @@ I_DeviceController {
     property Timer limitedModeTimer: Timer {
         interval: 30000
         repeat: true
-        running: initialSetupNoWIFI && limitedModeRemainigTime > 0
+        running: false
 
         onTriggered: {
-            limitedModeRemainigTime -= 30000
-            system.setLimitedModeRemainigTime(limitedModeRemainigTime);
+            if (limitedModeRemainigTime > 0) {
+                limitedModeRemainigTime -= 30000
+                system.setLimitedModeRemainigTime(limitedModeRemainigTime);
+
+            }
+
+            checkLimitedModeRemainigTimer();
         }
     }
 
@@ -837,6 +844,8 @@ I_DeviceController {
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour);
         deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
         deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
+
+        checkLimitedModeRemainigTimer();
     }
 
     /* Children
@@ -1888,5 +1897,21 @@ I_DeviceController {
             if (to)
                 Qt.callLater(uiSession.showHome);
         }
+    }
+
+    function setInitialSetupNoWIFI(isnw : bool) {
+        initialSetupNoWIFI = isnw;
+
+        if (initialSetupNoWIFI)
+            uiSession.goToInitialSetupNoWIFIMode();
+
+        checkLimitedModeRemainigTimer();
+    }
+
+    function checkLimitedModeRemainigTimer() {
+        if (initialSetupNoWIFI && activeSystemMode !== AppSpec.Off && limitedModeRemainigTime > 0)
+            limitedModeTimer.start();
+        else 
+            limitedModeTimer.stop();
     }
 }
