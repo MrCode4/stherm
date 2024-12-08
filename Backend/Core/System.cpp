@@ -3,9 +3,7 @@
 #include "PerfTestService.h"
 #include "DeviceInfo.h"
 
-#ifdef PROTOBUF_ENABLED
 #include "ProtoDataManager.h"
-#endif
 
 #include <QProcess>
 #include <QDebug>
@@ -2156,9 +2154,7 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
     }
     else if (command == Cmd_PushLiveData) {
         SYS_LOG << "Applying" <<command <<tag;
-#ifdef PROTOBUF_ENABLED
         ProtoDataManager::me()->sendDataToServer();
-#endif
         isApplied = true;
     }
 

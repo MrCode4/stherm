@@ -55,7 +55,7 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/QtQuickStream/include)
 # ##################################################################################################
 # Dependencies
 # ##################################################################################################
-if (!DISABLE_PROTOBUF)
+if (NOT DISABLE_PROTOBUF)
     message( "Protocol Buffers Configuring...")
     include(protobuf.cmake)
 
@@ -479,6 +479,9 @@ qt6_add_qml_module(appStherm
         Backend/Services/PerfTestService.h
         Backend/Services/PerfTestService.cpp
 
+        Backend/Proto/ProtoDataManager.h
+        Backend/Proto/ProtoDataManager.cpp
+
     RESOURCES
         Fonts/Font\ Awesome\ 6\ Pro-Thin-100.otf
         Fonts/Font\ Awesome\ 6\ Pro-Solid-900.otf
@@ -566,7 +569,7 @@ if(SERIAL_TEST_MODE)
     target_compile_definitions(appStherm PRIVATE SERIAL_TEST_DELAY_COUNTER=${SERIAL_TEST_DELAY_COUNTER})
 endif()
 
-if (!DISABLE_PROTOBUF)
+if (NOT DISABLE_PROTOBUF)
     target_compile_definitions(appStherm PRIVATE PROTOBUF_ENABLED)
 endif()
 
@@ -613,15 +616,12 @@ target_link_libraries(appStherm
     RoniaStyleplugin
 )
 
-if(!DISABLE_PROTOBUF)
+if(NOT DISABLE_PROTOBUF)
     target_sources(appStherm
         PRIVATE
 
         ${PROTO_HDRS}
         ${PROTO_SRCS}
-
-        Backend/Proto/ProtoDataManager.h
-        Backend/Proto/ProtoDataManager.cpp
     )
 
     target_link_libraries(appStherm
