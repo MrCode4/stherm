@@ -139,7 +139,7 @@ BasePageView {
                     },
                     {
                         text: "Restart Device", action: () => {
-                            rebootPopup.cancelEnable = true;
+                            rebootPopup.withForget = false;
                             rebootPopup.open();
                         },
                         buddies: [
@@ -177,8 +177,7 @@ BasePageView {
                     },
                     {
                         text: "Forget Device", visible: deviceController.initialSetup, action: () => {
-                            deviceController.forgetDevice();
-                            rebootPopup.cancelEnable = false;
+                            rebootPopup.withForget = true;
                             rebootPopup.open();
                         }
                     },
@@ -190,8 +189,7 @@ BasePageView {
                             {
                                 //! Forget device is visible in another row on initial setup
                                 text: "Forget Device", visible: !deviceController.initialSetup, action: () => {
-                                    deviceController.forgetDevice();
-                                    rebootPopup.cancelEnable = false;
+                                    rebootPopup.withForget = true;
                                     rebootPopup.open();
                                 }
                             }
@@ -230,9 +228,16 @@ BasePageView {
     RebootDevicePopup {
         id: rebootPopup
 
+        //! Enable forget device in this popup
+        property bool withForget: false
+
         anchors.centerIn: Template.Overlay.overlay
 
         onStartAction: {
+            if (withForget) {
+                deviceController.forgetDevice();
+            }
+
             if (system) {
                 system.rebootDevice();
             }

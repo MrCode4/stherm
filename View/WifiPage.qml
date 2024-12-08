@@ -28,7 +28,7 @@ BasePageView {
     property bool initialSetup: deviceController.initialSetup
 
     property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
-    property bool openFromNoWiFiInstallation: false
+    property bool openFromNoWiFiInstallation: initialSetupNoWIFI
 
     property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 &&
                                       deviceController.checkedSWUpdate && NetworkInterface.connectedWifi
