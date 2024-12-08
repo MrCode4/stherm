@@ -191,9 +191,12 @@ BasePageView {
         interval: 10000
 
         onTriggered: {
-            isBusy = NetworkInterface.hasInternet;
-            if (isBusy) {
+            if (NetworkInterface.hasInternet) {
+                isBusy = true;
                 deviceController.deviceControllerCPP.checkContractorInfo();
+
+            } else {
+                isBusy = false;
             }
         }
     }
