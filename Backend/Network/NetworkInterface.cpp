@@ -147,10 +147,11 @@ void NetworkInterface::forgetAllWifis() {
 }
 
 void NetworkInterface::processForgettingWiFis() {
+    setForgettingWifis(true);
+
     auto connectedWiFi = connectedWifi();
     if (connectedWiFi) {
         TRACE << "Disconnect from " << connectedWiFi->ssid();
-        setForgettingWifis(true);
         disconnectWifi(connectedWiFi);
 
     } else {
