@@ -55,6 +55,7 @@ BasePageView {
             //! Save
             deviceController.limitedModeRemainigTime = remainingTimeTF.text * 1000;
             deviceController.system.setLimitedModeRemainigTime(deviceController.limitedModeRemainigTime);
+            deviceController.checkLimitedModeRemainigTimer();
             tryGoBack()
         }
     }

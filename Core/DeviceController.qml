@@ -39,6 +39,9 @@ I_DeviceController {
     property bool initialSetupNoWIFI: system.initialSetupWithNoWIFI();
     property bool isSendingInitialSetupData: false;
 
+    //! Open Device in the alternativeNoWiFiFlow
+    property bool alternativeNoWiFiFlow : system.alternativeNoWiFiFlow();
+
     //! Initialize the `limitedModeRemainigTime` flag with the `limitedModeRemainigTime()` function
     //! The binding to this flag will be broken in `limitedModeTimer`
     property int  limitedModeRemainigTime : system.limitedModeRemainigTime()
@@ -73,6 +76,9 @@ I_DeviceController {
 
     //! Current active system mode.
     property int activeSystemMode: AppSpec.Off
+
+    //! The current status of the system fan (not the device's fan).
+    property bool currentSystemFanState: false
 
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
@@ -303,6 +309,10 @@ I_DeviceController {
 
         function onFanWorkChanged(fanState: bool) {
             ProtoDataManager.setCurrentFanStatus(fanState);
+
+            currentSystemFanState = fanState;
+            checkLimitedModeRemainigTimer();
+
         }
 
         function onCurrentSystemModeChanged(state: int, currentHeatingStage: int, currentCoolingStage: int) {
@@ -332,6 +342,10 @@ I_DeviceController {
             } else {
                 fetchContractorInfoTimer.stop();
             }
+        }
+
+        function onForgettingAllWifisChanged() {
+            console.log("Forgetting Wifis ", (NetworkInterface.forgettingAllWifis ? "started." : "finished."))
         }
     }
 
@@ -582,8 +596,13 @@ I_DeviceController {
 
         function onInstalledSuccess() {
 
+            // Push all settings to the server after the No Wi-Fi installation flow completed.
+            // In a normal initial setup, the system setup will be sent from the system setup page.
+            if (initialSetupNoWIFI)
+                updateEditMode(AppSpec.EMAll);
+
             isSendingInitialSetupData = false;
-            initialSetupNoWIFI = false;
+            setInitialSetupNoWIFI(false);
             initialSetupDataPushTimer.retryCounter = 0;
 
             // Go to home
@@ -629,11 +648,15 @@ I_DeviceController {
     property Timer limitedModeTimer: Timer {
         interval: 30000
         repeat: true
-        running: initialSetupNoWIFI && limitedModeRemainigTime > 0
+        running: false
 
         onTriggered: {
-            limitedModeRemainigTime -= 30000
-            system.setLimitedModeRemainigTime(limitedModeRemainigTime);
+            if (limitedModeRemainigTime > 0) {
+                limitedModeRemainigTime -= 30000
+                system.setLimitedModeRemainigTime(limitedModeRemainigTime);
+            }
+
+            checkLimitedModeRemainigTimer();
         }
     }
 
@@ -825,6 +848,8 @@ I_DeviceController {
         deviceControllerCPP?.setFan(device.fan.mode, device.fan.workingPerHour);
         deviceControllerCPP.setAutoMaxReqTemp(device.autoMaxReqTemp);
         deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
+
+        checkLimitedModeRemainigTimer();
     }
 
     /* Children
@@ -1734,6 +1759,11 @@ I_DeviceController {
             Qt.callLater(pushLockUpdates);
         }
 
+        // During the initial setup, manual device locking is not allowed.
+        // Therefore, unlocking the device can only be initiated through the emergency unlock process.
+        if (!isLock && isPinCorrect)
+            setAlternativeNoWiFiFlow(true);
+
         return isPinCorrect;
     }
 
@@ -1770,6 +1800,7 @@ I_DeviceController {
     function firstRunFlowEnded() {
         checkSNTimer.repeat = true;
         checkSNTimer.start();
+
         initialSetupFinished();
     }
 
@@ -1860,5 +1891,32 @@ I_DeviceController {
             sync.getCustomerInformationManual(device.serviceTitan.email);
         else
             customerInfoReady("", false);
+    }
+
+    function setAlternativeNoWiFiFlow(to : bool) {
+        if (initialSetupNoWIFI) {
+            alternativeNoWiFiFlow = to;
+            system.setAlternativeNoWiFiFlow(to);
+
+            if (to)
+                Qt.callLater(uiSession.showHome);
+        }
+    }
+
+    function setInitialSetupNoWIFI(isnw : bool) {
+        initialSetupNoWIFI = isnw;
+
+        if (initialSetupNoWIFI)
+            uiSession.goToInitialSetupNoWIFIMode();
+
+        checkLimitedModeRemainigTimer();
+    }
+
+    function checkLimitedModeRemainigTimer() {
+        // Limited mode will count when relays is ON and device start to work
+        if (initialSetupNoWIFI && currentSystemFanState && limitedModeRemainigTime > 0)
+            limitedModeTimer.start();
+        else 
+            limitedModeTimer.stop();
     }
 }

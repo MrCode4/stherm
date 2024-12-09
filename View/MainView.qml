@@ -40,8 +40,7 @@ Item {
         target: uiSession
 
         function onOpenUnlockPage() {
-            // TODO
-            // _mainStackView.push(unlockPage);
+            _mainStackView.push(unlockPage);
         }
 
         function onShowHome()

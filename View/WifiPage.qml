@@ -28,7 +28,7 @@ BasePageView {
     property bool initialSetup: deviceController.initialSetup
 
     property bool initialSetupNoWIFI: deviceController.initialSetupNoWIFI
-    property bool openFromNoWiFiInstallation: false
+    property bool openFromNoWiFiInstallation: initialSetupNoWIFI
 
     property bool initialSetupReady : initialSetup && system.serialNumber.length > 0 &&
                                       deviceController.checkedSWUpdate && NetworkInterface.connectedWifi
@@ -36,6 +36,8 @@ BasePageView {
     //! To conditionally display and hide/show the "Next" button and disable/enable the next timer based on specific scenarios,
     //! such as during initial device setup in warranty replacment page.
     property bool nextButtonEnabled: initialSetup
+
+    readonly property bool selectConnectedWifi: _wifisRepeater.currentIndex === -1
 
     /* Object properties
      * ****************************************************************************************/
@@ -123,6 +125,9 @@ BasePageView {
                 }
 
                 onClicked: {
+                    // Deselect the wifis.
+                    _wifisRepeater.currentIndex = -2;
+
                     //! Force refresh
                     if (NetworkInterface.deviceIsOn && !NetworkInterface.busyRefreshing) {
                         NetworkInterface.refereshWifis(true);
@@ -164,7 +169,10 @@ BasePageView {
 
             delegateIndex: -1
             onClicked: {
-                _wifisRepeater.currentIndex = -1;
+                if (selectConnectedWifi)
+                    _wifisRepeater.currentIndex = -2;
+                else
+                    _wifisRepeater.currentIndex = -1;
             }
         }
 
@@ -210,8 +218,8 @@ BasePageView {
                     id: _wifisRepeater
 
                     property int currentIndex: -2 //! -1 means _connectedWifiDelegate is current item
-                    readonly property WifiDelegate currentItem: currentIndex > -2 && currentIndex < count
-                                                                ? currentIndex === -1 ? _connectedWifiDelegate
+                    readonly property WifiDelegate currentItem: (currentIndex > -2 && currentIndex < count)
+                                                                ? selectConnectedWifi ? _connectedWifiDelegate
                                                                                       : itemAt(currentIndex)
                     : null
 
@@ -231,7 +239,10 @@ BasePageView {
 
                         delegateIndex: index
                         onClicked: {
-                            _wifisRepeater.currentIndex = index;
+                            if (_wifisRepeater.currentIndex === index)
+                                _wifisRepeater.currentIndex = -2;
+                            else
+                                _wifisRepeater.currentIndex = index;
                         }
 
                         onForgetClicked: {
@@ -470,7 +481,7 @@ BasePageView {
         function onConnectedWifiChanged() {
             // To address the issue of users reconnecting to Wi-Fi after navigating back from other pages.
             if (NetworkInterface.connectedWifi && !openFromNoWiFiInstallation)
-                deviceController.initialSetupNoWIFI = false;
+                deviceController.setInitialSetupNoWIFI(false);
         }
 
         function onIncorrectWifiPassword(wifi: WifiInfo)

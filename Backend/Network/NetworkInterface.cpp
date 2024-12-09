@@ -19,6 +19,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , mNamIsRunning { false }
     , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
                                                           "http://google.com")) }
+    , mForgettingWifis { false }
 {
     connect(mNmcliInterface, &NmcliInterface::deviceIsOnChanged, this,
             &NetworkInterface::deviceIsOnChanged);
@@ -70,6 +71,11 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(mNmcliInterface, &NmcliInterface::ciphersAreReady, this, [this]() {
         this->mDoesDeviceSupportWPA3 = checkWPA3Support();
     });
+
+    connect(this, &NetworkInterface::busyChanged, this, [this]() {
+        if (mForgettingWifis && !busy())
+            processForgettingWiFis();
+    });
 }
 
 NetworkInterface::WifisQmlList NetworkInterface::wifis()
@@ -110,7 +116,7 @@ void NetworkInterface::refereshWifis(bool forced)
 
 void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 {
-    if (!wifiInfo || wifiInfo->connected() || wifiInfo->isConnecting() || mNmcliInterface->busy()) {
+    if (!wifiInfo || wifiInfo->connected() || wifiInfo->isConnecting() || mNmcliInterface->busy() || mForgettingWifis) {
         return;
     }
 
@@ -134,6 +140,49 @@ void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
     }
 
     mNmcliInterface->forgetWifi(wifiInfo);
+}
+
+void NetworkInterface::forgetAllWifis() {
+    processForgettingWiFis();
+}
+
+void NetworkInterface::processForgettingWiFis() {
+    setForgettingWifis(true);
+
+    auto connectedWiFi = connectedWifi();
+    if (connectedWiFi) {
+        TRACE << "Disconnect from " << connectedWiFi->ssid();
+        disconnectWifi(connectedWiFi);
+
+    } else {
+        QList <WifiInfo *> forgettingSavedWifis;
+        std::copy_if(mWifiInfos.begin(), mWifiInfos.end(),
+                     std::back_inserter(forgettingSavedWifis), [](WifiInfo* obj) {
+                         return obj->isSaved();
+                     });
+
+        setForgettingWifis(!forgettingSavedWifis.empty());
+
+        if (!forgettingSavedWifis.empty()) {
+            auto forgetWF = forgettingSavedWifis.first();
+            TRACE << "Forget Wi-Fi with ssid " << forgetWF->ssid();
+            forgetWifi(forgetWF);
+        }
+
+    }
+}
+
+void NetworkInterface::setForgettingWifis(const bool &forgettingWifis) {
+    if (mForgettingWifis == forgettingWifis)
+        return;
+
+    mForgettingWifis = forgettingWifis;
+    emit forgettingAllWifisChanged();
+
+}
+
+bool NetworkInterface::forgettingAllWifis() {
+    return mForgettingWifis;
 }
 
 bool NetworkInterface::isWifiSaved(WifiInfo* wifiInfo)

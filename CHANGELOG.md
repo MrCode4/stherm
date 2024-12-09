@@ -1,6 +1,65 @@
 
 Release Note
 -------------
+## Release R 1.4.7
+ 8th December 2024
+ Branch- r1_4_7, commit- 1b180ba4
+ 
+### Release Articles
+update-V.1.4.7.1.zip
+
+### Reason
+Add new feature and fix some issues.
+
+### What’s Brand New
+- Add alternative first run flow for no Wi-Fi.
+
+### What Been Updated
+- Validate contractor data on first run flow.
+- Make master pin code simpler.
+- Make person detection activate only below 60 cm.
+
+### What’s Been Fixed
+- Fix schedule issue: Restart Scheme controllers in the mid-night for overnight schedules.
+- Fix bug that could stop Wi-Fi connection after entering a wrong password.
+- Minor improvements and bug fixes
+
+### Known Issues
+- CPU usage in some cases should be check.
+
+## Release R 1.4.6
+ 3rd December 2024
+ Branch- r1_4_6, commit- 50f3bb0c
+ 
+### Release Articles
+update-V.1.4.6.zip
+
+### Reason
+Add new features and fix some issues.
+
+### What’s Brand New
+- Add `No Wi-Fi flow for initial setup.
+- Enable installation for other countries.
+- Add an Easter Egg to remove all Messages from device.
+- Handle the commands requests like push live data, push logs, performance test and reboot device.
+- Show alert for unsupported WPA3 networks
+
+
+### What Been Updated
+- Update the zip code validation.
+- Update UI for WPA3-secured networks.
+- Update the Dual Fuel heating UI and logics
+
+### What’s Been Fixed
+- Fix schedule issue: Restart Scheme controllers in the mid-night for overnight schedules.
+- Fix some IW auth type to resolve WPA3 issue.
+- Fix performance test issue.
+- Fix send relay issue on startup.
+- Fix emergency heating issue.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
 ## Release R 1.4.5
  20th November 2024
  Branch- r1_4_5, commit- 1a4ed723ac
