@@ -15,26 +15,33 @@ set(CMAKE_CXX_STANDARD 17)
 set(TEMPERATURE_SCHEME_VERSION_C "V.2.0.2 (13.11.2024)")
 set(FAKE_UID "" CACHE STRING "The fake UID used for testing purposes")
 set(FAKE_SERIALID "" CACHE STRING "The fake SERIAL ID used for testing purposes")
-set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT "Delay counter for serial test")
+set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT 3 "Delay counter for serial test")
 
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
 option (INITIAL_SETUP_MODE "Force the app to run in the initial setup pages" OFF)
-option (FAKE_UID_MODE "Run app with a fake UID stored in FAKE_UID" OFF)
-option (TROUBLESHOOTING_MODE "Run app with starting troubleshooting device mode" OFF)
-option (SERIAL_TEST_MODE "Run app with serial number testing mdoe")
+option (FAKE_UID_MODE "Run the app with a fake UID set in FAKE_UID" OFF)
+option (TROUBLESHOOTING_MODE "Run the app in troubleshooting device mode" OFF)
+option (SERIAL_TEST_MODE "Run the app in serial number testing mode" OFF)
+option (DISABLE_PROTOBUF "Disable Protobuf on unsupported platforms" OFF)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Core Gui Qml
-    QuickControls2 Multimedia Concurrent
-    Core5Compat SerialPort )
+find_package(Qt6 REQUIRED COMPONENTS
+    Quick
+    Core
+    Gui
+    Qml
+    QuickControls2
+    Multimedia
+    Concurrent
+    Core5Compat
+    SerialPort
+)
 
-#qt_standard_project_setup()
-
-# ##################################################################################################
-# Dependencies
-# ##################################################################################################
 # Flatten generation of all sub-dependent libraries
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
+
+add_subdirectory(QtQuickStream)
+add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Core)
@@ -43,63 +50,60 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/php)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Device)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Services)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Proto)
-
-# Add any include directories
-#include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
-
-# Dependencies
-message( "Protocol Buffers Configuring...")
-include(protobuf.cmake)
-
-if (UNIX)
-    set(PROTOBUF_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/include")
-    set(PROTOBUF_LIBRARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib")
-
-    set(protobuf_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib/cmake/protobuf")
-    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf.a)
-    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf-lite.a)
-    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotoc.a)
-
-    set(absl_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib/cmake/absl")
-    set(utf8_range_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib/cmake/utf8_range")
-
-else ()
-    set(PROTOBUF_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/include")
-    set(PROTOBUF_LIBRARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib")
-
-    set(protobuf_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib/cmake/protobuf")
-    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf.lib)
-    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf-lite.lib)
-    list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotoc.lib)
-
-    set(absl_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib/cmake/absl")
-    set(utf8_range_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib/cmake/utf8_range")
-
-endif ()
-
-find_package(Protobuf CONFIG)
-find_package(Protobuf REQUIRED)
-find_package(absl REQUIRED)
-find_package(utf8_range REQUIRED)
-
-include_directories(${PROTOBUF_INCLUDE_DIR})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-message("Protocol Buffers found: " ${Protobuf_FOUND} " - " ${Protobuf_VERSION})
-if (Protobuf_FOUND)
-    set (PROTO_SRCS Backend/Proto/streamdata.pb.cc)
-    set (PROTO_HDRS Backend/Proto/streamdata.pb.h)
-    # set_source_files_properties(PROTO_SRCS PROTO_HDRS PROPERTIES GENERATED TRUE)
-    # PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS  ${CMAKE_CURRENT_SOURCE_DIR}/Resources/streamdata.proto)
-    message("protobuf files generated in " ${PROTO_SRCS} " - " ${PROTO_HDRS})
-
-else ()
-    message(FATAL_ERROR "ERROR: Protobuf not found.")
-endif()
-add_subdirectory(QtQuickStream)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/QtQuickStream/include)
 
-add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
+# ##################################################################################################
+# Dependencies
+# ##################################################################################################
+if (NOT DISABLE_PROTOBUF)
+    message( "Protocol Buffers Configuring...")
+    include(protobuf.cmake)
+
+    if (UNIX)
+        set(PROTOBUF_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/include")
+        set(PROTOBUF_LIBRARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib")
+
+        set(protobuf_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib/cmake/protobuf")
+        list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf.a)
+        list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf-lite.a)
+        list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotoc.a)
+
+        set(absl_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib/cmake/absl")
+        set(utf8_range_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/unix/lib/cmake/utf8_range")
+    else ()
+        set(PROTOBUF_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/include")
+        set(PROTOBUF_LIBRARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib")
+
+        set(protobuf_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib/cmake/protobuf")
+        list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf.lib)
+        list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotobuf-lite.lib)
+        list(APPEND Protobuf_LIBRARIES ${PROTOBUF_LIBRARY_DIR}/libprotoc.lib)
+
+        set(absl_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib/cmake/absl")
+        set(utf8_range_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/protobufLibs/win/lib/cmake/utf8_range")
+    endif ()
+
+    find_package(Protobuf CONFIG)
+    find_package(Protobuf REQUIRED)
+    find_package(absl REQUIRED)
+    find_package(utf8_range REQUIRED)
+
+    include_directories(${PROTOBUF_INCLUDE_DIR})
+    include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+    message("Protocol Buffers found: " ${Protobuf_FOUND} " - " ${Protobuf_VERSION})
+    if (Protobuf_FOUND)
+        set (PROTO_SRCS Backend/Proto/streamdata.pb.cc)
+        set (PROTO_HDRS Backend/Proto/streamdata.pb.h)
+        # set_source_files_properties(PROTO_SRCS PROTO_HDRS PROPERTIES GENERATED TRUE)
+        # PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS  ${CMAKE_CURRENT_SOURCE_DIR}/Resources/streamdata.proto)
+        message("protobuf files generated in " ${PROTO_SRCS} " - " ${PROTO_HDRS})
+
+    else ()
+        message(FATAL_ERROR "ERROR: Protobuf not found.")
+    endif()
+endif()
+
 
 # Extra QML File properties
 set_source_files_properties(
@@ -475,8 +479,6 @@ qt6_add_qml_module(appStherm
         Backend/Services/PerfTestService.h
         Backend/Services/PerfTestService.cpp
 
-        ${PROTO_HDRS}
-        ${PROTO_SRCS}
         Backend/Proto/ProtoDataManager.h
         Backend/Proto/ProtoDataManager.cpp
 
@@ -567,6 +569,10 @@ if(SERIAL_TEST_MODE)
     target_compile_definitions(appStherm PRIVATE SERIAL_TEST_DELAY_COUNTER=${SERIAL_TEST_DELAY_COUNTER})
 endif()
 
+if (NOT DISABLE_PROTOBUF)
+    target_compile_definitions(appStherm PRIVATE PROTOBUF_ENABLED)
+endif()
+
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
@@ -608,21 +614,34 @@ target_link_libraries(appStherm
     QtQuickStreamplugin
     RoniaStyle
     RoniaStyleplugin
-
-    ${Protobuf_LIBRARIES}
-
-     absl::log_internal_message
-     absl::log_internal_check_op
-     absl::flags_parse
-     absl::status
-     absl::statusor
-     absl::container_common
-     absl::strings
-     absl::log_streamer
-
-     utf8_range::utf8_range
-     utf8_range::utf8_validity
 )
+
+if(NOT DISABLE_PROTOBUF)
+    target_sources(appStherm
+        PRIVATE
+
+        ${PROTO_HDRS}
+        ${PROTO_SRCS}
+    )
+
+    target_link_libraries(appStherm
+        PRIVATE
+
+        ${Protobuf_LIBRARIES}
+
+        absl::log_internal_message
+        absl::log_internal_check_op
+        absl::flags_parse
+        absl::status
+        absl::statusor
+        absl::container_common
+        absl::strings
+        absl::log_streamer
+
+        utf8_range::utf8_range
+        utf8_range::utf8_validity
+    )
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS appStherm
@@ -630,7 +649,6 @@ install(TARGETS appStherm
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-
 
 # ##################################################################################################
 # Qt Creator Fixes
