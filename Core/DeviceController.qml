@@ -1835,7 +1835,7 @@ I_DeviceController {
         // construct object for device with minimal data required
         var deviceObj = {
          "sn": deviceControllerCPP.system.serialNumber,
-         "zip_code": device.serviceTitan.zipCode,
+         "zip_code": device.serviceTitan.zipCode.toUpperCase(),
          "country": AppSpec.supportedCountries.indexOf(device.serviceTitan.country) + 1,
          "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
          "resident_type_id": device.residenceType, // or maybe using condition

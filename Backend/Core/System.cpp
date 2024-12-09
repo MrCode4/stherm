@@ -3,6 +3,7 @@
 #include "PerfTestService.h"
 #include "DeviceInfo.h"
 #include "ProtoDataManager.h"
+#include "DeviceInfo.h"
 
 #include <QProcess>
 #include <QDebug>

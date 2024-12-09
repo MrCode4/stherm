@@ -124,7 +124,7 @@ InitialSetupBasePageView {
                 Layout.preferredWidth: root.availableWidth  / 2 - 10
 
                 placeholderText: "Input the ZIP code"
-                text: appModel?.serviceTitan?.zipCode ?? ""
+                text: appModel?.serviceTitan?.zipCode.toUpperCase() ?? ""
                 font.pointSize: root.font.pointSize * 0.8
 
                 // Australia: 4 digits
@@ -134,7 +134,7 @@ InitialSetupBasePageView {
                     regularExpression: /^(?:\d{4,5}|[A-Z\d]{6})$/i
                 }
 
-                inputMethodHints: Qt.ImhPreferNumbers
+                inputMethodHints: Qt.ImhPreferNumbers | Qt.ImhPreferUppercase
             }
         }
 

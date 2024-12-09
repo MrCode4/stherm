@@ -166,6 +166,13 @@ BasePageView {
                         }
                     },
                     {
+                        text: "No Wi-Fi Config", visible: system.testMode, action: () => {
+                            if (root.StackView.view) {
+                                root.StackView.view.push("qrc:/Stherm/View/Menu/LimitedModeRemainigTimePage.qml", {"uiSession": uiSession});
+                            }
+                        }
+                    },
+                    {
                         text: "Contractor Info Test", visible: deviceController.initialSetup, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
@@ -231,6 +238,7 @@ BasePageView {
         //! Enable forget device in this popup
         property bool withForget: false
 
+        title : withForget ? "   Forget Device   " :  " Restart Device   "
         anchors.centerIn: Template.Overlay.overlay
 
         onStartAction: {

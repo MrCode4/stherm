@@ -393,7 +393,7 @@ QtObject {
             return;
         }
 
-        if (currentSchedule.scheduleElement) {
+        if (currentSchedule?.scheduleElement ?? false) {
             setScheduleNullTimer.stop();
             deviceController.setActivatedSchedule(currentSchedule.scheduleElement);
 
