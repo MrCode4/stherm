@@ -18,6 +18,7 @@ Ensure you have the following software installed and configured before proceedin
 if you are using Windows:
 - MSVC 2019 64-bit with the following workloads:
   - Desktop development with C++ workload
+  - Change `DISABLE_PROTOBUF` option default to `ON` in the `CMakeList.txt` file
 
  > **_Note:_** If you're using Linux, make sure to run the app with `root` or `sudo` privileges.
 
