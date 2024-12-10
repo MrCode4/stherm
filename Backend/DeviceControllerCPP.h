@@ -299,6 +299,7 @@ private:
     void processBackLightSettings(const QString &path);
     void processFanSettings(const QString &path);
     void processBrightnessSettings(const QString &path);
+    void processRelaySettings(const QString &path);
     QByteArray defaultSettings(const QString &path);
 
     //! Start/Stop the timer for get the outdoor temperature
@@ -341,7 +342,7 @@ private:
     NUVE::System *m_system;
 
     QString m_backdoorPath = "/usr/local/bin/backdoor/";
-    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" };
+    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" , "relays.json" };
     QFileSystemWatcher m_fileSystemWatcher;
 
     QTimer mBacklightTimer;

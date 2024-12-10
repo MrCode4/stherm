@@ -48,6 +48,20 @@ static const QByteArray m_default_backdoor_fan = R"({
 }
 )";
 
+static const QByteArray m_default_backdoor_relays = R"({
+    "o_b": // 1,
+    "y1": //1,
+    "y2": // 1,
+    "w1": //1,
+    "w2": //1,
+    "w3": //1,
+    "acc2": //1,
+    "acc1p": //1,
+    "acc1n": //1,
+    "g": //1
+}
+)";
+
 
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
@@ -840,6 +854,8 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
         processFanSettings(path);
     } else if (path.endsWith("brightness.json")) {
         processBrightnessSettings(path);
+    } else if (path.endsWith("relays.json")) {
+        processRelaySettings(path);
     } else {
         qWarning() << "Incompatible backdoor file, processed nothing";
     }
@@ -1419,6 +1435,35 @@ void DeviceControllerCPP::processBrightnessSettings(const QString &path)
     _deviceIO->setSettings(data);
 }
 
+void DeviceControllerCPP::processRelaySettings(const QString &path)
+{
+    STHERM::RelayConfigs relays = Relay::instance()->relays();
+    QJsonObject json = processJsonFile(path, {"o_b", "y1", "y2", "w1", "w2", "w3", "acc2", "acc1p", "acc1n", "g"});
+
+    // Block sending relays by schemes.
+    mTempScheme->setCanSendRelays(json.isEmpty());
+    mHumidityScheme->setCanSendRelays(json.isEmpty());
+
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
+    {
+        relays.g = (STHERM::RelayMode)json.value("g").toInt(2);
+        relays.y1 = (STHERM::RelayMode)json.value("y1").toInt(2);
+        relays.y2 = (STHERM::RelayMode)json.value("y2").toInt(2);
+        relays.w1 = (STHERM::RelayMode)json.value("w1").toInt(2);
+        relays.w2 = (STHERM::RelayMode)json.value("w2").toInt(2);
+        relays.w3 = (STHERM::RelayMode)json.value("w3").toInt(2);
+        relays.acc2 = (STHERM::RelayMode)json.value("acc2").toInt(2);
+        relays.acc1p = (STHERM::RelayMode)json.value("acc1p").toInt(2);
+        relays.acc1n = (STHERM::RelayMode)json.value("acc1n").toInt(2);
+        relays.o_b  = (STHERM::RelayMode)json.value("o_b").toInt(2);
+
+        TRACE << "Update relays with backdoor. Relays: " << relays.printStr();
+    }
+
+    _deviceIO->updateRelays(relays, true);
+}
+
 QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 {
     if (path.endsWith("backlight.json")) {
@@ -1429,6 +1474,9 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 
     } else if (path.endsWith("brightness.json")) {
         return m_default_backdoor_brightness;
+
+    } else if (path.endsWith("relays.json")) {
+        return m_default_backdoor_relays;
 
     } else {
         qWarning() << "Incompatible backdoor file, returning empty values";
