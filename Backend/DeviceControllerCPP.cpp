@@ -659,6 +659,7 @@ void DeviceControllerCPP::startDevice()
 
     mIsDeviceStarted = true;
 
+    // means board not attached and test mode should be started
     if (startMode == 0) {
         startTestMode();
 

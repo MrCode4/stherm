@@ -2115,20 +2115,6 @@ bool NUVE::System::sendLog(bool showAlert)
 
 void NUVE::System::sendFirstRunLog()
 {
-    if (serialNumber().isEmpty()) {
-        static int tryWithoutSN = 0;
-        tryWithoutSN++;
-
-        if (tryWithoutSN < 3) {
-            qWarning() << "Serial number is empty. Ignore send log.";
-            return;
-
-        } else {
-            tryWithoutSN = 0;
-            TRACE << "Serial number is empty. Sending log...";
-        }
-    }
-
     if (!installSSHPass()) {
         QString error("Device is not ready to send log on First run!");
         qWarning() << error;
@@ -2321,6 +2307,18 @@ QString NUVE::System::generateLog()
 
 void NUVE::System::sendFirstRunLogFile()
 {
+    static int tryWithoutSN = 0;
+    tryWithoutSN++;
+
+    if (tryWithoutSN < 3) {
+        qWarning() << "Preventing to send too much logs";
+        return;
+
+    } else {
+        tryWithoutSN = 0;
+        TRACE << "Sending first run log file...";
+    }
+
     auto filename = generateLog();
     if (filename.isEmpty())
         return;

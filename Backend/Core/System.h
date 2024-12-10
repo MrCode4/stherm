@@ -234,7 +234,7 @@ public:
     Q_INVOKABLE bool findBackdoorVersion(const QString fileName);
 
     //! Send log
-    //! Note: Ignore send log if serial number is empty.
+    //! Note: send log will be ignored if serial number is empty before trying to check related directory.
     Q_INVOKABLE bool sendLog(bool showAlert = true);
 
     Q_INVOKABLE void sendFirstRunLog();
