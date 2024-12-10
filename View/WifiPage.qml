@@ -568,7 +568,12 @@ BasePageView {
     function isSecuredByWPA3(security: string)
     {
         security = security.toUpperCase();
-        const isWPA3Secured = security.includes("WPA3") || security.includes("SAE")
+
+        // SAE is WPA3 in the IW command
+        const isWPA3Secured = !security.includes("PSK") &&
+                            security.includes("SAE");
+
+        console.log("isSecuredByWPA3: ", security, isWPA3Secured)
 
         return isWPA3Secured
     }
