@@ -31,7 +31,7 @@ I_PopUp {
 
     onOpened: {
         if (NetworkInterface.hasInternet)
-            deviceController.system.sendLog();
+            deviceController.system.sendLog(false);
     }
 
     /* Children
