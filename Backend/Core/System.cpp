@@ -247,6 +247,12 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
     if (!serialNumber().isEmpty())
         onSerialNumberReady();
+
+    connect(&mLogSender, &QProcess::readyReadStandardOutput, this, [&](){
+        int progress = parseProgress(mLogSender.readAllStandardOutput());
+        if(progress > 0)
+            setSendLogProgress(progress);
+    });
 }
 
 NUVE::System::~System()
@@ -1070,6 +1076,12 @@ void NUVE::System::setControlAlertEnabled(bool enabled)
 void NUVE::System::setPartialUpdateProgress(int progress) {
     mPartialUpdateProgress = progress;
     emit partialUpdateProgressChanged();
+}
+
+void NUVE::System::setSendLogProgress(int progress)
+{
+    mSendLogProgress = progress;
+    emit sendLogProgressChanged();
 }
 
 void NUVE::System::partialUpdate(const bool isBackdoor) {
@@ -2073,11 +2085,14 @@ bool NUVE::System::sendLogFile(bool showAlert)
 
     mLogSender.setRole("sendLog", sendCallback);
 
+
+
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+    QString copyFile = QString("sshpass -p '%1' rsync -avzhe 'ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\"' --progress  %2 %3@%4:%5").
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
+
     return true;
 }
 
@@ -2222,3 +2237,22 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
         }
     });
 }
+
+int NUVE::System::sendLogProgress() const
+{
+    return mSendLogProgress;
+}
+
+int NUVE::System::parseProgress(const QString& in){
+    QRegularExpression regex(R"((\d+)%\s+\d+)");
+    QRegularExpressionMatch match = regex.match(in);
+
+    if (match.hasMatch()) {
+        QString progress = match.captured(1);
+        return progress.toInt();
+    }
+
+    return -1;
+}
+
+
