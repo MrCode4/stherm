@@ -288,6 +288,8 @@ public:
     Q_INVOKABLE void setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow);
     Q_INVOKABLE bool alternativeNoWiFiFlow();
 
+    void setFactoryTestMode(bool newFactoryTestMode);
+
     Q_INVOKABLE bool isBusylogSender() const;
     Q_INVOKABLE void setIsForgottenDevice(const bool &isDeviceForgotten);
 
@@ -485,6 +487,7 @@ private:
 
     //! System on test mode or not
     bool mTestMode;
+    bool mFactoryTestMode;
 
     bool mIsNightModeRunning;
 

@@ -515,6 +515,7 @@ Control {
             uiSession.settingsReady = true;
         }
 
+        //! Start test mode due to serial number issue.
         function onTestModeStarted() {
             if (uiSession.uiTestMode)
                 return;

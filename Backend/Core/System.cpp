@@ -197,7 +197,12 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         emit autoModeSettingsReady(settings, isValid);
     });
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
-    connect(mSync, &NUVE::Sync::testModeStarted, this, &NUVE::System::testModeStarted);
+    connect(mSync, &NUVE::Sync::testModeStarted, this, [this] () {
+        //! Start the factory test mode due to serial number issue.
+        setFactoryTestMode(true);
+        emit testModeStarted();
+    });
+
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
         emit pushSuccess();
     });
@@ -1923,7 +1928,7 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
 
             if (isForce) {
                 // Update the earlier force update that is greater than the current version
-                if (mTestMode || !obj.value(m_Staging).toBool()) {
+                if ((mTestMode && !mFactoryTestMode) || !obj.value(m_Staging).toBool()) {
                     mHasForceUpdate = true;
                     emit forceUpdateChanged();
                     latestVersionKey = keyVersion;
@@ -1989,7 +1994,7 @@ QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
 
     foreach (auto ver, versions) {
         auto latestVersionObj = updateJson.value(ver).toObject();
-        if (mTestMode || !latestVersionObj.value(m_Staging).toBool()) {
+        if ((mTestMode && !mFactoryTestMode) || !latestVersionObj.value(m_Staging).toBool()) {
             latestVersionKey = ver;
             break;
         }
@@ -2642,6 +2647,11 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
             mErrorHandler(error);
         }
     });
+}
+
+void NUVE::System::setFactoryTestMode(bool newFactoryTestMode)
+{
+    mFactoryTestMode = newFactoryTestMode;
 }
 
 void NUVE::System::saveNetworkLogs() {

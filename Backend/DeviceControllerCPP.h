@@ -273,6 +273,7 @@ private:
     void setMainData(QVariantMap mainData, bool addToData = false);
     static DeviceControllerCPP* sInstance;
 
+    //! Start the factory test mode with the board.
     void startTestMode();
 
     void publishTestResults(const QString &resultsPath);
