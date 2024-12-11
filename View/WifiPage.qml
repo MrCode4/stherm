@@ -368,6 +368,8 @@ BasePageView {
                             return
                         }
 
+                        console.log("connecting to wifi: ", wifi.ssid, ", security: ", wifi.security)
+
                         //! Check if we need user prompt for password, i.e., access point is open or is saved and has a profile.
                         if (wifi.security === "" || NetworkInterface.isWifiSaved(wifi)) {
                             NetworkInterface.connectWifi(wifi, "");
@@ -568,7 +570,14 @@ BasePageView {
     function isSecuredByWPA3(security: string)
     {
         security = security.toUpperCase();
-        const isWPA3Secured = security.includes("WPA3") || security.includes("SAE")
+
+        // SAE is WPA3 in the IW command
+        const isWPA3Secured = !security.includes("PSK") &&
+                            security.includes("SAE");
+
+        if (isWPA3Secured) {
+            console.log("securedByWPA3, security: ", security)
+        }
 
         return isWPA3Secured
     }
