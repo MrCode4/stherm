@@ -298,12 +298,12 @@ void NmcliInterface::onWifiListRefreshFinished(QProcess* process)
             const int securityLen = 9;
 
             QString secrityTypeText = line.size() > securityLen ? line.sliced(securityLen) : "";
-            qDebug() << "WPA3::ISSUE::ssid" << parsedWi.ssid()
-                     << "security from nmcli: " << secrityTypeText;
+            NC_DEBUG_IF(false) << "WPA3::ISSUE::ssid" << parsedWi.ssid()
+                               << "security from nmcli: " << secrityTypeText;
             if (mBssToCorrectSecurityMap.contains(parsedWi.bssid())) {
                 secrityTypeText = mBssToCorrectSecurityMap[parsedWi.bssid()];
-                qDebug() << "WPA3::ISSUE::ssid" << parsedWi.ssid()
-                         << "security frrom iw: " << secrityTypeText;
+                NC_DEBUG_IF(false) << "WPA3::ISSUE::ssid" << parsedWi.ssid()
+                                   << "security frrom iw: " << secrityTypeText;
             }
 
             parsedWi.setSecurity(secrityTypeText);
