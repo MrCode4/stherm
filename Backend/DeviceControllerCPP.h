@@ -405,4 +405,6 @@ private:
     QStringList mAllTestNames; // to keep them in order
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
+
+    bool mBackdoorSchemeEnabled = false;
 };

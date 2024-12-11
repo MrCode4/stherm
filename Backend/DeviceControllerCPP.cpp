@@ -371,14 +371,23 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(mTempScheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
     connect(mTempScheme, &Scheme::manualEmergencyModeUnblockedAfter, this, &DeviceControllerCPP::manualEmergencyModeUnblockedAfter);
     connect(mTempScheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        if (mBackdoorSchemeEnabled)
+            return;
+
         mHumidityScheme->setCanSendRelays(!isRunning);
     });
 
     connect(mHumidityScheme, &HumidityScheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        if (mBackdoorSchemeEnabled)
+            return;
+
         mTempScheme->setCanSendRelays(!isRunning);
     });
 
     connect(mHumidityScheme, &HumidityScheme::updateRelays, this, [this](STHERM::RelayConfigs relays, bool force) {
+        if (mBackdoorSchemeEnabled)
+            return;
+
         _deviceIO->updateRelays(relays, force);
     });
 
@@ -1440,13 +1449,14 @@ void DeviceControllerCPP::processRelaySettings(const QString &path)
     STHERM::RelayConfigs relays = Relay::instance()->relays();
     QJsonObject json = processJsonFile(path, {"o_b", "y1", "y2", "w1", "w2", "w3", "acc2", "acc1p", "acc1n", "g"});
 
-    // Block sending relays by schemes.
-    mTempScheme->setCanSendRelays(json.isEmpty());
-    mHumidityScheme->setCanSendRelays(json.isEmpty());
+    // if returned value is ok override the default values
+    if (!json.isEmpty()) {
+        //! stopping schemes from controlling relays
+        mBackdoorSchemeEnabled = true;
+        mTempScheme->stopSendingRelays();
+        mHumidityScheme->stopSendingRelays();
 
-    // if returned value is ok override the defaule values
-    if (!json.isEmpty())
-    {
+        //! overrding values based on parsed data
         relays.g = (STHERM::RelayMode)json.value("g").toInt(2);
         relays.y1 = (STHERM::RelayMode)json.value("y1").toInt(2);
         relays.y2 = (STHERM::RelayMode)json.value("y2").toInt(2);
@@ -1459,9 +1469,14 @@ void DeviceControllerCPP::processRelaySettings(const QString &path)
         relays.o_b  = (STHERM::RelayMode)json.value("o_b").toInt(2);
 
         TRACE << "Update relays with backdoor. Relays: " << relays.printStr();
-    }
+        _deviceIO->updateRelays(relays, true);
 
-    _deviceIO->updateRelays(relays, true);
+    } else { // restore last state and get back to normal behavior restarting schemes
+        _deviceIO->updateRelays(relays, true);
+        mTempScheme->resumeSendingRelays();
+        mHumidityScheme->resumeSendingRelays();
+        mBackdoorSchemeEnabled = false;
+    }
 }
 
 QByteArray DeviceControllerCPP::defaultSettings(const QString &path)

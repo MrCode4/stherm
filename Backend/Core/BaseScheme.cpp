@@ -7,6 +7,7 @@ BaseScheme::BaseScheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> 
     mDeviceAPI(deviceAPI),
     stopWork(true),
     mCanSendRelay(true),
+    mIsSendingRelay(false),
     debugMode(true),
     mDataProvider(sharedData),
     QThread{parent}
@@ -32,6 +33,34 @@ void BaseScheme::setCanSendRelays(const bool &csr)
     if (mCanSendRelay) {
         emit canSendRelay();
     }
+}
+
+void BaseScheme::setIsSendingRelays(bool sending)
+{
+    mIsSendingRelay = sending;
+    emit sendRelayIsRunning(sending);
+}
+
+void BaseScheme::stopSendingRelays()
+{
+    TRACE << this << "Sending relays stopping.";
+    mCanSendRelay = false;
+    if (isSendingRelay()){
+        TRACE << this << "Waiting to finish Ongoing.";
+        waitLoop(-1, AppSpecCPP::ctSendRelay);
+        TRACE << this << "Finished.";
+    }
+}
+
+void BaseScheme::resumeSendingRelays()
+{
+    mCanSendRelay = true;
+    emit canSendRelay(true);
+}
+
+bool BaseScheme::isSendingRelay()
+{
+    return mIsSendingRelay;
 }
 
 void BaseScheme::onScheduleChanged()
