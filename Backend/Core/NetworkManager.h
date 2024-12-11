@@ -35,6 +35,10 @@ public:
                        const QByteArray &data,
                        bool noCheckError = false);
 
+signals:
+    void cacheCleared();
+
+
 private slots:
     void processNetworkReply(QNetworkReply *netReply);
 
