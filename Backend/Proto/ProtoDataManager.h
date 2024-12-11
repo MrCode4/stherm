@@ -4,8 +4,9 @@
 #include <QQmlEngine>
 
 #include "DevApiExecutor.h"
-
+#ifdef PROTOBUF_ENABLED
 #include "streamdata.pb.h"
+#endif
 
 class ProtoDataManager : public DevApiExecutor
 {
@@ -61,7 +62,9 @@ public:
 private:
     static ProtoDataManager* mMe;
 
+#ifdef PROTOBUF_ENABLED
     LiveDataPoint *addNewPoint();
+#endif
 
     void logStashData();
 
@@ -87,10 +90,12 @@ private:
          *      led_status                    - led lights state (0 means is off)
          *      is_sync                       - indication of synchronization packet (package should contain all 11 values). Should be at least every hour.
         */
+#ifdef PROTOBUF_ENABLED
     LiveDataPointList mLiveDataPointList;
 
     //! Keep the latest data values.
     LiveDataPoint *mLateastDataPoint;
+#endif
 
     QTimer mSenderTimer;
     QTimer mDataPointLogger;

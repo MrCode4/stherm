@@ -2,7 +2,10 @@
 
 #include <ctime>
 #include <fstream>
+
+#ifdef PROTOBUF_ENABLED
 #include <google/protobuf/util/time_util.h>
+#endif
 
 #include "DeviceInfo.h"
 #include "LogHelper.h"
@@ -14,7 +17,9 @@ const double  TEMPERATURETHRESHOLD   = 1 / 1.8;
 Q_LOGGING_CATEGORY(ProtobufferDataManager, "ProtobufferDataManager")
 #define PROTO_LOG TRACE_CATEGORY(ProtobufferDataManager)
 
+#ifdef PROTOBUF_ENABLED
 using google::protobuf::util::TimeUtil;
+#endif
 
 ProtoDataManager* ProtoDataManager::mMe = nullptr;
 
@@ -28,6 +33,7 @@ ProtoDataManager* ProtoDataManager::me()
 ProtoDataManager::ProtoDataManager(QObject *parent)
     : DevApiExecutor{parent}
 {
+#ifdef PROTOBUF_ENABLED
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     mLateastDataPoint = new LiveDataPoint();
@@ -57,10 +63,12 @@ ProtoDataManager::ProtoDataManager(QObject *parent)
 
     // Send the old data to server.
     sendDataToServer();
+#endif
 }
 
 ProtoDataManager::~ProtoDataManager()
 {
+#ifdef PROTOBUF_ENABLED
     generateBinaryFile();
 
     mDataPointLogger.stop();
@@ -72,10 +80,12 @@ ProtoDataManager::~ProtoDataManager()
 
     // Optional:  Delete all global objects allocated by libprotobuf.
     google::protobuf::ShutdownProtobufLibrary();
+#endif
 }
 
-void ProtoDataManager::sendDataToServer() {
-
+void ProtoDataManager::sendDataToServer()
+{
+#ifdef PROTOBUF_ENABLED
     QFileInfo binFile(BINARYFILEPATH);
     bool existValidBinaryFile = binFile.exists() && binFile.size() > 0;
 
@@ -132,16 +142,21 @@ void ProtoDataManager::sendDataToServer() {
     };
 
     callPostApi(url, serializedData, callback, true, "application/x-protobuf");
+#endif
 }
 
-void ProtoDataManager::generateBinaryFile() {
+void ProtoDataManager::generateBinaryFile()
+{
+#ifdef PROTOBUF_ENABLED
     std::fstream output(BINARYFILEPATH.toStdString(), std::ios::out | std::ios::binary);
     mLiveDataPointList.SerializeToOstream(&output);
     output.close();
+#endif
 }
 
 void ProtoDataManager::setSetTemperature(const double &tempratureC)
 {
+#ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_set_temperature() &&
         qAbs(mLateastDataPoint->set_temperature() - tempratureC) < TEMPERATURETHRESHOLD) {
         return;
@@ -149,10 +164,12 @@ void ProtoDataManager::setSetTemperature(const double &tempratureC)
 
     mLateastDataPoint->set_set_temperature(tempratureC);
     updateChangeMode(CMSetTemperature);
+#endif
 }
 
 void ProtoDataManager::setSetHumidity(const double &humidity)
 {
+#ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_set_humidity() &&
         qAbs(mLateastDataPoint->set_humidity() - humidity) < 1.0) {
         return;
@@ -160,10 +177,12 @@ void ProtoDataManager::setSetHumidity(const double &humidity)
 
     mLateastDataPoint->set_set_humidity(humidity);
     updateChangeMode(CMSetHumidity);
+#endif
 }
 
 void ProtoDataManager::setCurrentTemperature(const double &tempratureC)
 {
+#ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_current_temperature_embedded() &&
         qAbs(mLateastDataPoint->current_temperature_embedded() - tempratureC) < TEMPERATURETHRESHOLD) {
         return;
@@ -171,10 +190,12 @@ void ProtoDataManager::setCurrentTemperature(const double &tempratureC)
 
     mLateastDataPoint->set_current_temperature_embedded(tempratureC);
     updateChangeMode(CMCurrentTemperature);
+#endif
 }
 
 void ProtoDataManager::setCurrentHumidity(const double &humidity)
 {
+#ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_current_humidity_embedded() &&
         qAbs(mLateastDataPoint->current_humidity_embedded() - humidity) < 1.0) {
         return;
@@ -182,10 +203,12 @@ void ProtoDataManager::setCurrentHumidity(const double &humidity)
 
     mLateastDataPoint->set_current_humidity_embedded(humidity);
     updateChangeMode(CMCurrentHumidity);
+#endif
 }
 
 void ProtoDataManager::setMCUTemperature(const double &mcuTempratureC)
 {
+#ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_current_temperature_mcu() &&
         qAbs(mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) <  TEMPERATURETHRESHOLD) {
         return;
@@ -193,10 +216,12 @@ void ProtoDataManager::setMCUTemperature(const double &mcuTempratureC)
 
     mLateastDataPoint->set_current_temperature_mcu(mcuTempratureC);
     updateChangeMode(CMMCUTemperature);
+#endif
 }
 
 void ProtoDataManager::setAirPressure(const int &airPressureHPa)
 {
+#ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_air_pressure_embedded() &&
         qAbs(mLateastDataPoint->air_pressure_embedded() - airPressureHPa) < 1.0) {
         return;
@@ -204,10 +229,12 @@ void ProtoDataManager::setAirPressure(const int &airPressureHPa)
 
     mLateastDataPoint->set_air_pressure_embedded(airPressureHPa);
     updateChangeMode(CMAirPressure);
+#endif
 }
 
 void ProtoDataManager::setCurrentAirQuality(const int &airQuality)
 {
+#ifdef PROTOBUF_ENABLED
     const AirQuality airQualityE = (AirQuality)(airQuality + 1);
     if (mLateastDataPoint->has_current_air_quality() &&
         mLateastDataPoint->current_air_quality() == airQualityE) {
@@ -216,10 +243,12 @@ void ProtoDataManager::setCurrentAirQuality(const int &airQuality)
 
     mLateastDataPoint->set_current_air_quality(airQualityE);
     updateChangeMode(CMCurrentAirQuality);
+#endif
 }
 
 void ProtoDataManager::setCurrentCoolingStage(const int &coolingStage)
 {
+#ifdef PROTOBUF_ENABLED
     const CoolingStage coolingStageE = (CoolingStage)coolingStage;
     if (mLateastDataPoint-> has_current_cooling_stage() &&
         mLateastDataPoint->current_cooling_stage() == coolingStageE) {
@@ -228,10 +257,12 @@ void ProtoDataManager::setCurrentCoolingStage(const int &coolingStage)
 
     mLateastDataPoint->set_current_cooling_stage(coolingStageE);
     updateChangeMode(CMCurrentCoolingStage);
+#endif
 }
 
 void ProtoDataManager::setCurrentHeatingStage(const int &heatingStage)
 {
+#ifdef PROTOBUF_ENABLED
     const HeatingStage heatingStageE = (HeatingStage)heatingStage;
     if (mLateastDataPoint->has_current_heating_stage() &&
         mLateastDataPoint->current_heating_stage() == heatingStageE) {
@@ -240,10 +271,12 @@ void ProtoDataManager::setCurrentHeatingStage(const int &heatingStage)
 
     mLateastDataPoint->set_current_heating_stage(heatingStageE);
     updateChangeMode(CMCurrentHeatingStage);
+#endif
 }
 
 void ProtoDataManager::setCurrentFanStatus(const bool &fanStatus)
 {
+#ifdef PROTOBUF_ENABLED
     const FanStatus fanStatusE = (FanStatus)(fanStatus ? 1 : 0);
     if (mLateastDataPoint->has_current_fan_status() &&
         mLateastDataPoint->current_fan_status() == fanStatusE) {
@@ -252,10 +285,12 @@ void ProtoDataManager::setCurrentFanStatus(const bool &fanStatus)
 
     mLateastDataPoint->set_current_fan_status(fanStatusE);
     updateChangeMode(CMCurrentFanStatus);
+#endif
 }
 
 void ProtoDataManager::setLedStatus(const bool &ledStatus)
 {
+#ifdef PROTOBUF_ENABLED
     const LedStatus ledStatusE = (LedStatus)(ledStatus ? 1 : 0);
     if (mLateastDataPoint->has_led_status() &&
         mLateastDataPoint->led_status() == ledStatusE) {
@@ -264,8 +299,10 @@ void ProtoDataManager::setLedStatus(const bool &ledStatus)
 
     mLateastDataPoint->set_led_status(ledStatusE);
     updateChangeMode(CMLedStatus);
+#endif
 }
 
+#ifdef PROTOBUF_ENABLED
 LiveDataPoint *ProtoDataManager::addNewPoint()
 {
     if (mLiveDataPointList.data_points_size() > 0 && mLiveDataPointList.data_points_size() > MEMORYLIMITAIONRECORDS) {
@@ -282,9 +319,11 @@ LiveDataPoint *ProtoDataManager::addNewPoint()
 
     return newPoint;
 }
+#endif
 
 void ProtoDataManager::logStashData()
 {
+#ifdef PROTOBUF_ENABLED
     if (mChangeMode != CMNone) {
         auto newPoint = addNewPoint();
 
@@ -328,10 +367,12 @@ void ProtoDataManager::logStashData()
 
         updateChangeMode(CMNone);
     }
+#endif
 }
 
 void ProtoDataManager::updateChangeMode(ChangeMode cm)
 {
+#ifdef PROTOBUF_ENABLED
     if (cm == CMNone) {
         mChangeMode = cm;
         mDataPointLogger.stop();
@@ -345,4 +386,5 @@ void ProtoDataManager::updateChangeMode(ChangeMode cm)
 
     if (!mDataPointLogger.isActive())
         mDataPointLogger.start();
+#endif
 }

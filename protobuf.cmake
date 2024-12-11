@@ -1,5 +1,5 @@
 # Define URLs for downloading protobufLibs
-# set(UNIX_PROTOBUF_URL "http://example.com/unix.tar.gz")
+set(UNIX_PROTOBUF_URL "http://fileserver.nuvehvac.com/libs/protobuf/unix.tar.gz")
 # set(WIN_PROTOBUF_URL "http://example.com/win.zip")
 
 # Define the destination directory for extraction
@@ -13,11 +13,9 @@ if(UNIX)
 
         # Check if 'unix.tar.gz' file exists
         if(NOT EXISTS "${CMAKE_SOURCE_DIR}/3rdparty/protobufLibs/unix.tar.gz")
-            message(FATAL_ERROR "File 3rdparty/protobufLibs/unix.tar.gz does not exist! Please download it manually.")
-
             # Download the file
-            # message(STATUS "File 3rdparty/protobufLibs/unix.tar.gz not found. Downloading...")
-            # file(DOWNLOAD ${UNIX_PROTOBUF_URL} "${CMAKE_SOURCE_DIR}/3rdparty/protobufLibs/unix.tar.gz" SHOW_PROGRESS)
+            message(STATUS "File 3rdparty/protobufLibs/unix.tar.gz not found. Downloading...")
+            file(DOWNLOAD ${UNIX_PROTOBUF_URL} "${CMAKE_SOURCE_DIR}/3rdparty/protobufLibs/unix.tar.gz" SHOW_PROGRESS)
         endif()
 
         # Extract the downloaded tar.gz file
