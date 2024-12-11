@@ -2113,25 +2113,25 @@ bool NUVE::System::sendLog(bool showAlert)
     return true;
 }
 
-void NUVE::System::sendFirstRunLog()
+void NUVE::System::sendFirstRunLog(bool showAlert)
 {
     if (!installSSHPass()) {
         QString error("Device is not ready to send log on First run!");
         qWarning() << error;
-        emit logAlert(error);
+        if (showAlert) emit logAlert(error);
         return;
     }
 
     if (isBusylogSender()){
         QString error("Sending log on first run is in progress!");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        emit logAlert(error);
+        if (showAlert) emit logAlert(error);
         return;
     }
 
     auto initialized = mLogSender.property("initializedUID");
     if (initialized.isValid() && initialized.toBool()){
-        sendFirstRunLogFile();
+        sendFirstRunLogFile(showAlert);
 
     } else {
         auto dirCreatorCallback = [=](QString error) {
@@ -2141,13 +2141,13 @@ void NUVE::System::sendFirstRunLog()
             if (!error.isEmpty()) {
                 error = "error while creating first run log directory on remote: " + error;
                 qWarning() << error;
-                emit logAlert(error);
+                if (showAlert) emit logAlert(error);
                 return;
             }
 
             mLogSender.setProperty("initializedUID", true);
 
-            sendFirstRunLogFile();
+            sendFirstRunLogFile(showAlert);
         };
 
         mLogSender.setRole("dirFirstRun", dirCreatorCallback);
@@ -2252,7 +2252,7 @@ void NUVE::System::prepareResultsDirectory(const QString &remoteIP,
     mFileSender.start("/bin/bash", {"-c", createPath});
 }
 
-QString NUVE::System::generateLog()
+QString NUVE::System::generateLog(bool showAlert)
 {
     // Validating the storage
     QStorageInfo storageInfo("/mnt/log/log/");
@@ -2262,7 +2262,7 @@ QString NUVE::System::generateLog()
     }
 
     if (!storageInfo.isValid() || !storageInfo.isReady()) {
-        emit logAlert("The Logging directory is not ready.");
+        if (showAlert) emit logAlert("The Logging directory is not ready.");
         return "";
     }
 
@@ -2279,7 +2279,7 @@ QString NUVE::System::generateLog()
         AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
 
         if (!hasFreeBytes()) {
-            emit logAlert("The Logging directory has no space.");
+            if (showAlert) emit logAlert("The Logging directory has no space.");
             return "";
         }
     }
@@ -2297,7 +2297,7 @@ QString NUVE::System::generateLog()
 
         QString error("Unable to create log file.");
         SYS_LOG << error << exitCode << removed;
-        emit logAlert(error);
+        if (showAlert) emit logAlert(error);
 
         return "";
     }
@@ -2305,7 +2305,7 @@ QString NUVE::System::generateLog()
     return filename;
 }
 
-void NUVE::System::sendFirstRunLogFile()
+void NUVE::System::sendFirstRunLogFile(bool showAlert)
 {
     static int tryWithoutSN = 0;
     tryWithoutSN++;
@@ -2319,7 +2319,7 @@ void NUVE::System::sendFirstRunLogFile()
         TRACE << "Sending first run log file...";
     }
 
-    auto filename = generateLog();
+    auto filename = generateLog(showAlert);
     if (filename.isEmpty())
         return;
 
@@ -2330,11 +2330,11 @@ void NUVE::System::sendFirstRunLogFile()
         if (!error.isEmpty()) {
             error = "error while sending first run log directory on remote: " + error;
             qWarning() << error;
-            emit logAlert(error);
+            if (showAlert) emit logAlert(error);
             return;
         }
 
-        emit logAlert("Log is sent for first run error!");
+        if (showAlert) emit logAlert("Log is sent for first run error!");
     };
 
     mLogSender.setRole("sendFirstRunLog", sendCallback);
@@ -2350,7 +2350,7 @@ void NUVE::System::sendFirstRunLogFile()
 
 bool NUVE::System::sendLogFile(bool showAlert)
 {
-    auto filename = generateLog();
+    auto filename = generateLog(showAlert);
     if (filename.isEmpty()) {
         if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
             SYS_LOG << "Log file generation failed. Command cleared" << Cmd_PushLogs;

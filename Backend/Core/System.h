@@ -237,7 +237,7 @@ public:
     //! Note: send log will be ignored if serial number is empty before trying to check related directory.
     Q_INVOKABLE bool sendLog(bool showAlert = true);
 
-    Q_INVOKABLE void sendFirstRunLog();
+    Q_INVOKABLE void sendFirstRunLog(bool showAlert = true);
 
     bool sendResults(const QString &filepath, const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination,
                      bool createDirectory = false);
@@ -429,8 +429,8 @@ private:
     void prepareResultsDirectory(const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination);
     void prepareLogDirectory(fileSenderCallback callback = nullptr);
     void prepareFirstRunLogDirectory();
-    QString generateLog();
-    void sendFirstRunLogFile();
+    QString generateLog(bool showAlert = true);
+    void sendFirstRunLogFile(bool showAlert = true);
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
 
