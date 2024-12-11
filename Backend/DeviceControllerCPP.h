@@ -419,6 +419,9 @@ private:
         return  correction;
     }
 
+    std::vector<double> mDeltaTemperatures;
+    uint8_t mDeltaTemperatureWindowSize = 10;
+
     // Testing
     std::map<QString, bool> mAllTestsResults;
     std::map<QString, QString> mAllTestsValues;

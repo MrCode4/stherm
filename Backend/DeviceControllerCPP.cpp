@@ -46,6 +46,8 @@ static  const char* m_GetOutdoorTemperatureReceived  = "GetOutdoorTemperatureRec
 
 static const double m_IncrementPerStep = 1.0; // Increment temperature smoothly by 1F per update
 
+static  const QString m_GetDeltaTempratureAvg  = "GetDeltaTempratureAvg";
+
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
     "green": 255,
@@ -212,7 +214,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(mTempScheme, &Scheme::auxiliaryStatusChanged, this, &DeviceControllerCPP::auxiliaryStatusChanged);
 
     // TODO should be loaded later for accounting previous session
-    mDeltaTemperatureIntegrator = 0;
+    QSettings settings;
+    auto avg = settings.value(m_GetDeltaTempratureAvg , 0);
+    mDeltaTemperatureIntegrator = avg.toDouble();
 
     // Default value
     mFanSpeed = 16;
@@ -299,6 +303,17 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(&mBacklightPowerTimer, &QTimer::timeout, this, [this]() {
         mDeltaTemperatureIntegrator *= TEMPERATURE_INTEGRATOR_DECAY_CONSTANT;
         mDeltaTemperatureIntegrator += _deviceIO->backlightFactor();
+
+        mDeltaTemperatures.push_back(mDeltaTemperatureIntegrator);
+        if (mDeltaTemperatures.size() > mDeltaTemperatureWindowSize) {
+
+            float sum = std::accumulate(mDeltaTemperatures.begin(), mDeltaTemperatures.end(), 0.0f);
+            float avg = sum / mDeltaTemperatures.size();
+            QSettings settings;
+            settings.setValue(m_GetDeltaTempratureAvg , avg);
+
+            mDeltaTemperatures.clear();
+        }
     });
     mBacklightPowerTimer.start();
 
