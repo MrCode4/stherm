@@ -69,6 +69,7 @@ void HumidityScheme::run()
             break;
 
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+        waitLoop();
     }
 }
 
