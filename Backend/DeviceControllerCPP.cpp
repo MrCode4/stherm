@@ -375,14 +375,14 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             return;
 
         mHumidityScheme->setCanSendRelays(!isRunning);
-    });
+        }, Qt::DirectConnection);
 
     connect(mHumidityScheme, &HumidityScheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
         if (mBackdoorSchemeEnabled)
             return;
 
         mTempScheme->setCanSendRelays(!isRunning);
-    });
+    }, Qt::DirectConnection);
 
     connect(mHumidityScheme, &HumidityScheme::updateRelays, this, [this](STHERM::RelayConfigs relays, bool force) {
         if (mBackdoorSchemeEnabled)

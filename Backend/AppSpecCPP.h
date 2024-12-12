@@ -56,7 +56,7 @@ public:
         ctCurrentHumidity    = 1 << 3,
         ctSetHumidity        = 1 << 4,
         ctSendRelay          = 1 << 5,
-        ctDefault            = ctSetTemperature | ctMode | ctCurrentHumidity,
+        ctDefault            = ctSetTemperature | ctMode | ctSetHumidity,
         ctAll                = ctDefault | ctCurrentTemperature | ctCurrentHumidity,
     };
     Q_ENUM(ChangeType)

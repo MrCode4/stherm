@@ -43,12 +43,12 @@ void BaseScheme::setIsSendingRelays(bool sending)
 
 void BaseScheme::stopSendingRelays()
 {
-    TRACE << this << "Sending relays stopping.";
+    SCHEME_LOG << this << "Sending relays stopping.";
     mCanSendRelay = false;
     if (isSendingRelay()){
-        TRACE << this << "Waiting to finish Ongoing.";
+        SCHEME_LOG << this << "Waiting to finish Ongoing.";
         waitLoop(-1, AppSpecCPP::ctSendRelay);
-        TRACE << this << "Finished.";
+        SCHEME_LOG << this << "Finished.";
     }
 }
 
