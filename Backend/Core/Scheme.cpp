@@ -699,6 +699,9 @@ void Scheme::internalHeatingLoopStage1()
 
 bool Scheme::internalHeatingLoopStage2()
 {
+    if (stopWork)
+        return false;
+
     SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
 
     mRelay->heatingStage2();
@@ -781,6 +784,9 @@ bool Scheme::internalHeatingLoopStage2()
 
 bool Scheme::internalHeatingLoopStage3()
 {
+    if (stopWork)
+        return false;
+
     SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s3hold;
 
     mRelay->heatingStage3();
@@ -831,6 +837,9 @@ bool Scheme::internalHeatingLoopStage3()
 
 void Scheme::internalPumpHeatingLoopStage1()
 {
+    if (stopWork)
+        return;
+
     mActiveHeatPumpMode =  AppSpecCPP::Heating;
 
     bool hasDelay = false;
@@ -923,6 +932,9 @@ void Scheme::internalPumpHeatingLoopStage1()
 
 bool Scheme::internalPumpHeatingLoopStage2()
 {
+    if (stopWork)
+        return false;
+
     SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
     // turn on stage 2
     mRelay->heatingStage2(true);

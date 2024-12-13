@@ -361,6 +361,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(mTempScheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays, bool force) {
+        if (mBackdoorSchemeEnabled)
+            return;
+
         _deviceIO->updateRelays(relays, force);
     });
 
@@ -1468,10 +1471,11 @@ void DeviceControllerCPP::processRelaySettings(const QString &path)
         relays.acc1n = (STHERM::RelayMode)json.value("acc1n").toInt(2);
         relays.o_b  = (STHERM::RelayMode)json.value("o_b").toInt(2);
 
-        TRACE << "Update relays with backdoor. Relays: " << relays.printStr();
+        SCHEME_LOG << "Update relays with backdoor. Relays: " << relays.printStr();
         _deviceIO->updateRelays(relays, true);
 
     } else if (mBackdoorSchemeEnabled) { // restore last state and get back to normal behavior restarting schemes
+        SCHEME_LOG << "Update relays with Original. Relays: " << relays.printStr();
         _deviceIO->updateRelays(relays, true);
         mTempScheme->resumeSendingRelays();
         mHumidityScheme->resumeSendingRelays();
