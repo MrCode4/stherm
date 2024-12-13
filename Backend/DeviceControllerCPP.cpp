@@ -244,7 +244,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         DC_LOG << "Brightness: " << brightness;
 
-        DC_LOG << "Raw Temperature: " << mRawTemperature;
+        DC_LOG << "Raw Temperature: " << mRawTemperature << _mainData.value(temperatureKey);
+        DC_LOG << "Corrected Temperature: " << mRawTemperature << _mainData.value(temperatureUIKey);
 
         DC_LOG << "Is night mode running: " << mIsNightModeRunning;
 
@@ -756,7 +757,7 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
 
     } else {
         bool isOk;
-        double tc = mainData.value(temperatreKey).toDouble(&isOk);
+        double tc = mainData.value(temperatureKey).toDouble(&isOk);
         if (isOk){
             mRawTemperature = tc;
 
@@ -767,7 +768,7 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
             if (qAbs(dt) < 10) {
                 tc -= dt;
 
-                mainData.insert(temperatreKey, tc);
+                mainData.insert(temperatureUIKey, tc);
             } else {
                 qWarning() << "dt is greater than 10! check for any error.";
             }
@@ -783,10 +784,10 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
 
         // Average of the last two temperature and humidity
         // Get temperature from _rawMainData
-        auto rt = _rawMainData.value(temperatreKey, tc).toDouble(&isOk);
+        auto rt = _rawMainData.value(temperatureUIKey, tc).toDouble(&isOk);
 
         if (isOk)
-            _mainData.insert(temperatreKey, (tc + rt) / 2);
+            _mainData.insert(temperatureUIKey, (tc + rt) / 2);
 
         auto mh = mainData.value(humidityKey, 0.0).toDouble();
         // Get humidity from _rawMainData
@@ -1514,7 +1515,7 @@ void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
     filePath = "/mnt/data/sensor/sensorData.csv";
 #endif
 
-    const QStringList header = {dateTimeHeader, temperatreKey, humidityKey,
+    const QStringList header = {dateTimeHeader, temperatureUIKey, humidityKey,
                                 co2Key, etohKey, TvocKey,
                                 iaqKey, pressureKey, RangeMilliMeterKey,
                                 brightnessKey, fanSpeedKey};
