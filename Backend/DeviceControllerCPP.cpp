@@ -245,7 +245,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         DC_LOG << "Brightness: " << brightness;
 
         DC_LOG << "Raw Temperature: " << mRawTemperature << _mainData.value(temperatureKey);
-        DC_LOG << "Corrected Temperature: " << mRawTemperature << _mainData.value(temperatureUIKey);
+        DC_LOG << "Corrected Temperature: " << _mainData.value(temperatureUIKey);
 
         DC_LOG << "Is night mode running: " << mIsNightModeRunning;
 
