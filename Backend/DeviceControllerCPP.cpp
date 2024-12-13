@@ -211,7 +211,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mTEMPERATURE_COMPENSATION_Timer.setSingleShot(false);
     connect(&mTEMPERATURE_COMPENSATION_Timer, &QTimer::timeout, this, [this]() {
         if (isFanON()) {
-            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (0.2 - mTEMPERATURE_COMPENSATION_T1) / 148.4788;
+            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (0.2 / 1.8 - mTEMPERATURE_COMPENSATION_T1) / 148.4788;
         } else {
             mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + ((2.847697 - deltaCorrection()) - mTEMPERATURE_COMPENSATION_T1) / 655.5680515;
         }

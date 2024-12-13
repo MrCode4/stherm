@@ -393,9 +393,12 @@ private:
     // const double TEMPERATURE_COMPENSATION_OFFSET = 0.25 + 2.0 / 1.8;
     const double TEMPERATURE_COMPENSATION_OFFSET = 1.0 / 1.8;
     const double TEMPERATURE_COMPENSATION_SCALER = 0.8 * 3.1 / 360;
+    //! in Celcius
     double deltaCorrection()
     {
-        return  TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
+        double correction = TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
+        // the hypothesis is correction value is in F and should be converted
+        return  correction / 1.8;
     }
 
     // Testing
