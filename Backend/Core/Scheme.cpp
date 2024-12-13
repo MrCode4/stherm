@@ -268,6 +268,8 @@ void Scheme::run()
 
         // all should be off! we can assert here
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+        // wait for change or at least wait 10 seconds preventing too much calling
+        waitLoop();
     }
 
     SCHEME_LOG << "-- startWork Stopped. working time(ms): " << mTiming->totUptime.elapsed();
@@ -513,6 +515,7 @@ void Scheme::EmergencyLoop()
 void Scheme::OffLoop()
 {
     //TODO
+    // we should check for system setup and if that is in default state, we should set relays off as well
     waitLoop(-1, AppSpecCPP::ctMode);
 }
 
@@ -1097,6 +1100,8 @@ void Scheme::sendRelays(bool forceSend)
             restartWork();
             return;
         }
+        if (!forceSend && stopWork)
+            return;
     }
 
     // To ensure the humidity relays updated.

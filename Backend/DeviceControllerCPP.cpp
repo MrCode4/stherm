@@ -1471,7 +1471,7 @@ void DeviceControllerCPP::processRelaySettings(const QString &path)
         TRACE << "Update relays with backdoor. Relays: " << relays.printStr();
         _deviceIO->updateRelays(relays, true);
 
-    } else { // restore last state and get back to normal behavior restarting schemes
+    } else if (mBackdoorSchemeEnabled) { // restore last state and get back to normal behavior restarting schemes
         _deviceIO->updateRelays(relays, true);
         mTempScheme->resumeSendingRelays();
         mHumidityScheme->resumeSendingRelays();

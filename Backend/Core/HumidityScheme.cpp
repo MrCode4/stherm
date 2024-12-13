@@ -58,7 +58,6 @@ void HumidityScheme::run()
 
         } else {
             normalLoop();
-
         }
 
         // all should be off
@@ -69,6 +68,7 @@ void HumidityScheme::run()
             break;
 
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+        // wait for change or at least wait 10 seconds preventing too much calling
         waitLoop();
     }
 }
@@ -165,6 +165,8 @@ void HumidityScheme::sendRelays(bool forceSend)
             restartWork();
             return;
         }
+        if (!forceSend && stopWork)
+            return;
     }
 
     // To ensure the temperature relays updated.
