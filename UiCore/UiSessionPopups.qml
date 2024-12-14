@@ -91,6 +91,10 @@ Item {
         }
     }
 
+    SendingLogPopup{
+        id:sendingLogPopup
+    }
+
     DownloadingPopup {
         id: downloadingPopup
 
@@ -269,6 +273,12 @@ Item {
 
                 uiSession.popupLayout.displayPopUp(updateNotificationPopup);
             }
+        }
+
+
+        function onSendingLogStarted(){
+            if(!sendingLogPopup.visible)
+                uiSession.popupLayout.displayPopUp(sendingLogPopup);
         }
 }
     Connections {

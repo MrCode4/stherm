@@ -293,9 +293,9 @@ BasePageView {
         }
 
         contentItem: Label {
-                text: "Preparing log, \nplease wait ..."
-                horizontalAlignment: "AlignHCenter"
-                verticalAlignment: "AlignVCenter"
+            text: "Preparing log, \nplease wait ..."
+            horizontalAlignment: "AlignHCenter"
+            verticalAlignment: "AlignVCenter"
             lineHeight: 1.4
         }
     }

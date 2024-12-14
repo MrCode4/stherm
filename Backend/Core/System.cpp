@@ -1822,6 +1822,7 @@ bool NUVE::System::sendLog(bool showAlert)
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
+        emit sendingLogStarted();
         return sendLogFile(showAlert);
 
     } else {
@@ -2232,12 +2233,7 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
     });
 }
 
-int NUVE::System::sendLogProgress() const
-{
-    return mSendLogProgress;
-}
-
-int NUVE::System::parseProgress(const QString& in){
+int NUVE::System::parseProgress(const QString& in) const{
     QRegularExpression regex(R"((\d+)%\s+\d+)");
     QRegularExpressionMatch match = regex.match(in);
 
