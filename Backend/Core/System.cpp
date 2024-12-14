@@ -250,8 +250,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
     connect(&mLogSender, &QProcess::readyReadStandardOutput, this, [&](){
         int progress = parseProgress(mLogSender.readAllStandardOutput());
-        if(progress > 0)
-            setSendLogProgress(progress);
+        if(progress > -1)
+            emit sendLogProgressChanged(progress);
     });
 }
 
@@ -1076,12 +1076,6 @@ void NUVE::System::setControlAlertEnabled(bool enabled)
 void NUVE::System::setPartialUpdateProgress(int progress) {
     mPartialUpdateProgress = progress;
     emit partialUpdateProgressChanged();
-}
-
-void NUVE::System::setSendLogProgress(int progress)
-{
-    mSendLogProgress = progress;
-    emit sendLogProgressChanged();
 }
 
 void NUVE::System::partialUpdate(const bool isBackdoor) {

@@ -67,7 +67,6 @@ class System : public RestApiExecutor
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY forceUpdateChanged FINAL)
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
-    Q_PROPERTY(int sendLogProgress            READ sendLogProgress          NOTIFY sendLogProgressChanged FINAL)
 
 public:
     /* Public Constructors & Destructor
@@ -178,8 +177,6 @@ public:
 
     void setPartialUpdateProgress(int progress);
 
-    void setSendLogProgress(int progress);
-
     void setUID(NUVE::cpuid_t uid);
     void setSerialNumber(const QString &sn);
 
@@ -257,8 +254,6 @@ public:
     Q_INVOKABLE void setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow);
     Q_INVOKABLE bool alternativeNoWiFiFlow();
 
-    int sendLogProgress() const;
-
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);
@@ -329,7 +324,9 @@ signals:
     void serviceTitanInformationReady(bool hasError, bool isActive,
                                       QString email, QString zipCode);
 
-    void sendLogProgressChanged();
+    // Start SendLog Process
+    void sendingLogStarted();
+    void sendLogProgressChanged(quint8 percent);
 
 private:
     //! verify dounloaded files and prepare to set up.
@@ -382,7 +379,7 @@ private:
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
 
-    int parseProgress(const QString &in);
+    int parseProgress(const QString &in) const;
 
 private:
     Sync *mSync;
@@ -465,8 +462,6 @@ private:
     QString mLogRemoteFolder;
     QString mLogRemoteFolderUID;
     QMap<QString, QString> mLastReceivedCommands;
-
-    int mSendLogProgress;
 };
 
 } // namespace NUVE
