@@ -13,17 +13,12 @@ I_PopUp {
     /* Object properties
      * ****************************************************************************************/
     title: ""
-
     titleBar: false
-
-    /* Property Declaration
-     * ****************************************************************************************/
-
 
     /* Children
      * ****************************************************************************************/
     Connections{
-        target: deviceController.deviceControllerCPP.system
+        target: deviceController.system
         function onSendLogProgressChanged(percent){
             progressBar.value = percent
         }
@@ -35,16 +30,28 @@ I_PopUp {
         anchors.centerIn: parent
         spacing: 16
 
+        //! Spacer
+        Item {
+            Layout.fillWidth: true
+            height: 2
+        }
+
         Label {
             Layout.fillWidth: true
-            font.pointSize: Application.font.pointSize * 0.75
-            text: "Sendin Log..."
-            horizontalAlignment: Text.AlignLeft
+            font.pointSize: Application.font.pointSize
+            text: "Sending Log..."
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        //! Spacer
+        Item {
+            Layout.fillWidth: true
+            height: 10
         }
 
         //! Sending progress bar
         ProgressBar {
-            Layout.preferredWidth: fontMetric.advanceWidth(" About     seconds remaining ") + 6
+            Layout.fillWidth: true
 
             id: progressBar
             from: 0.0
@@ -58,7 +65,6 @@ I_PopUp {
                     radius: 2
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
-
                         GradientStop { position: 0.0; color: "#80589F"}
                         GradientStop { position: 1.0; color: "#9BD1F7" }
                     }
@@ -66,30 +72,15 @@ I_PopUp {
             }
         }
 
+        //! Progress Value Label
         Label {
-            id: remainingLabel
+            id: progressLabel
 
             Layout.fillWidth: true
-            Layout.preferredWidth: fontMetric.advanceWidth(" About     seconds remaining ") + 6
 
             font.pointSize: Application.font.pointSize * 0.75
-            text: progressBar.value
-            horizontalAlignment: Text.AlignLeft
-
-        }
-
-        FontMetrics {
-            id: fontMetric
-            font.pointSize: remainingLabel.font.pointSize
-        }
-
-        Item {
-            id: spacer2
-
-            Layout.fillWidth: true
-            height: 10
-
+            text: progressBar.value + "%"
+            horizontalAlignment: Text.AlignHCenter
         }
     }
-
 }
