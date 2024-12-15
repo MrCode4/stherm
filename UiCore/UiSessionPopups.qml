@@ -277,8 +277,7 @@ Item {
 
 
         function onSendingLogStarted(){
-            if(!sendingLogPopup.visible)
-                uiSession.popupLayout.displayPopUp(sendingLogPopup);
+            uiSession.popupLayout.displayPopUp(sendingLogPopup);
         }
 }
     Connections {

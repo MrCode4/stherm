@@ -1816,12 +1816,14 @@ bool NUVE::System::sendLog(bool showAlert)
     if (mLogSender.busy()){
         QString error("Previous session is in progress, please try again later.");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        if (showAlert) emit alert(error);
+        if (showAlert) emit sendingLogStarted();
         return false;
     }
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
+        //! reset send log progress value
+        emit sendLogProgressChanged(0);
         emit sendingLogStarted();
         return sendLogFile(showAlert);
 
@@ -2239,7 +2241,12 @@ int NUVE::System::parseProgress(const QString& in) const{
 
     if (match.hasMatch()) {
         QString progress = match.captured(1);
-        return progress.toInt();
+
+        bool ok;
+        auto progressValue = progress.toInt(&ok);
+
+        if(ok)
+            return progressValue;
     }
 
     return -1;
