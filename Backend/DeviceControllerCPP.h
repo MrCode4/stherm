@@ -309,16 +309,12 @@ private:
     /* Attributes
      * ****************************************************************************************/
     // Store the raw main data
-    QVariantMap _rawMainData;
-
-
+    QVariantMap _lastMainData;
     QVariantMap _mainData;
     QVariantMap _mainData_override;
     bool _override_by_file = false;
     double _temperatureLast = 0.0;
 
-    // To avoid the first deviation in the average
-    bool _isFirstDataReceived = false;
 
     bool mIsDeviceStarted = false;
 

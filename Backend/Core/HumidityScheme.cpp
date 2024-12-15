@@ -185,8 +185,8 @@ void HumidityScheme::sendRelays(bool forceSend)
     if (debugMode) {
         auto steps = lastConfigs.changeStepsSorted(relaysConfig);
         for (int var = 0; var < steps.size(); var++) {
-            //!stop sending
-            if (!mCanSendRelay)
+            //! stop sending if not force (for quiting quickly when should align with backdoor)
+            if (!forceSend && !mCanSendRelay)
                 break;
             auto step = steps.at(var);
             SCHEME_LOG << step.first.c_str() << step.second;

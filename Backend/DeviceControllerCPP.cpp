@@ -267,12 +267,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mBacklightPowerTimer.start();
 
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
-        // To avoid the first deviation in the average
-        if (!_isFirstDataReceived) {
-            _rawMainData = data;
-            _isFirstDataReceived = true;
-        }
-
         setMainData(data);
     });
 
@@ -780,20 +774,14 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
         _mainData = mainData;
 
         // Average of the last two temperature and humidity
-        // Get temperature from _rawMainData
-        auto rt = _rawMainData.value(temperatureKey, tc).toDouble(&isOk);
-
-        if (isOk)
-            _mainData.insert(temperatureKey, (tc + rt) / 2);
+        auto rt = _lastMainData.value(temperatureKey, tc).toDouble();
+        _mainData.insert(temperatureKey, (tc + rt) / 2);
 
         auto mh = mainData.value(humidityKey, 0.0).toDouble();
-        // Get humidity from _rawMainData
-        auto rh = _rawMainData.value(humidityKey, mh).toDouble(&isOk);
+        auto rh = _lastMainData.value(humidityKey, mh).toDouble();
+        _mainData.insert(humidityKey, (mh + rh) / 2);
 
-        if (isOk)
-            _mainData.insert(humidityKey, (mh + rh) / 2);
-
-        _rawMainData = mainData;
+        _lastMainData = mainData;
     }
 
     if (!mSchemeDataProvider.isNull())

@@ -1000,7 +1000,7 @@ void Scheme::manualEmergencyHeating()
     // Optimize emergency mode to prevent unnecessary backlight and emergency heating activation.
     // This will restrict the activation of emergency heating to instances
     // where there's a significant change in temperature to met the temperature conditions.
-    if (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() <= 0) {
+    if (effectiveTemperature() - mDataProvider->currentTemperature() <= 0) {
         SCHEME_LOG << "System should be off, the conditions are not changed!";
         return;
     }
@@ -1037,12 +1037,12 @@ void Scheme::emergencyHeatingLoop()
     // 5 Sec
     emit changeBacklight(emergencyColor, emergencyColorS);
 
-    SCHEME_LOG << "Emergency heating - " << "effectiveTemperature: " << mDataProvider->effectiveTemperature()
+    SCHEME_LOG << "Emergency heating - " << "effectiveTemperature: " << effectiveTemperature()
                << " - currentTemperature: " << mDataProvider->currentTemperature()
                << " - effectiveEmergencyHeatingThreshold: " << mDataProvider->effectiveEmergencyHeatingThresholdF();
 
 
-    while (mDataProvider->effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF() ||
+    while (effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF() ||
            (mTEONTimer.isValid() && mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed())) {
 
         // Disable UI interactions in system mode page during manual or auto emergency mode until the minimum duration is reached.
@@ -1132,8 +1132,8 @@ void Scheme::sendRelays(bool forceSend)
     if (debugMode) {
         auto steps = lastConfigs.changeStepsSorted(relaysConfig);
         for (int var = 0; var < steps.size(); ++var) {
-            //!stop sending
-            if (!mCanSendRelay)
+            //! stop sending if not force (for quiting quickly when should align with backdoor)
+            if (!forceSend && !mCanSendRelay)
                 break;
             auto step = steps.at(var);
             SCHEME_LOG << step.first.c_str() << step.second;
