@@ -373,6 +373,8 @@ signals:
     void serviceTitanInformationReady(bool hasError, bool isActive,
                                       QString email, QString zipCode);
 
+    void systemAboutToBeShutDown();
+
     //! Log
     void logAlert(QString msg);
     void logPrepared(bool isSuccess);

@@ -1934,6 +1934,7 @@ void NUVE::System::rebootDevice(const bool &isResetFactory)
 #ifdef __unix__
     QProcess process;
     QString command = "reboot";
+    emit systemAboutToBeShutDown();
 
     mRestarting = true;
 
@@ -1955,6 +1956,7 @@ void NUVE::System::rebootDevice(const bool &isResetFactory)
 void NUVE::System::stopDevice()
 {
 #ifdef __unix__
+    emit systemAboutToBeShutDown();
     QTimer::singleShot(500, this, [](){
         int exitCode = QProcess::execute("/bin/bash", {"-c", "systemctl disable appStherm.service;systemctl stop appStherm.service;"});
         TRACE << exitCode;
