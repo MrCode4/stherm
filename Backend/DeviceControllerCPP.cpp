@@ -843,12 +843,12 @@ void DeviceControllerCPP::loadTempratures()
 {
     QSettings settings;
     quint64 currentUinxTime = QDateTime::currentDateTime().currentSecsSinceEpoch();
-    quint64 lastUnixTime = settings.value(m_UnixTime , 0);
+    quint64 lastUnixTime = settings.value(m_UnixTime , 0).toUInt();
     auto offUnixTime = currentUinxTime - lastUnixTime;
 
     if(offUnixTime > 0){
         mDeltaTemperatureIntegrator = pow(TEMPERATURE_INTEGRATOR_DECAY_CONSTANT , offUnixTime);
-        mTEMPERATURE_COMPENSATION_T1 = settings.value(m_TEMPERATURE_COMPENSATION_T1 , 0.2);
+        mTEMPERATURE_COMPENSATION_T1 = settings.value(m_TEMPERATURE_COMPENSATION_T1 , 0.2).toDouble();
     }else{
         mDeltaTemperatureIntegrator = 0;
     }
