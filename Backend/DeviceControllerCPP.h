@@ -304,6 +304,7 @@ private Q_SLOTS:
     void onCurrentSystemModeChanged(AppSpecCPP::SystemMode obState,
                                     int currentHeatingStage,
                                     int currentCoolingStage);
+    void saveTempratures();
 
 private:
     /* Private Functions
@@ -326,6 +327,8 @@ private:
     void checkForOutdoorTemperature();
 
     double calculateProcessedTemperature(const double &temperatureC) const;
+
+    void loadTempratures();
 
 private:
     /* Attributes
@@ -419,8 +422,7 @@ private:
         return  correction;
     }
 
-    std::vector<double> mDeltaTemperatures;
-    uint8_t mDeltaTemperatureWindowSize = 10;
+    QTimer mSaveTemperatureTimer;
 
     // Testing
     std::map<QString, bool> mAllTestsResults;

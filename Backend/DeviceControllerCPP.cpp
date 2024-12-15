@@ -46,7 +46,9 @@ static  const char* m_GetOutdoorTemperatureReceived  = "GetOutdoorTemperatureRec
 
 static const double m_IncrementPerStep = 1.0; // Increment temperature smoothly by 1F per update
 
-static  const QString m_GetDeltaTempratureAvg  = "GetDeltaTempratureAvg";
+static  const QString m_DeltaTemperatureIntegrator  = "DeltaTemperatureIntegrator";
+static  const QString m_TEMPERATURE_COMPENSATION_T1  = "TemperatureCompensationT1";
+static  const QString m_UnixTime  = "UnixTime";
 
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
@@ -214,9 +216,13 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(mTempScheme, &Scheme::auxiliaryStatusChanged, this, &DeviceControllerCPP::auxiliaryStatusChanged);
 
     // TODO should be loaded later for accounting previous session
-    QSettings settings;
-    auto avg = settings.value(m_GetDeltaTempratureAvg , 0);
-    mDeltaTemperatureIntegrator = avg.toDouble();
+
+    loadTempratures();
+    connect(&mSaveTemperatureTimer,&QTimer::timeout,this,&DeviceControllerCPP::saveTempratures);
+    connect(m_system, &NUVE::System::systemAboutToBeShutDown,this,&DeviceControllerCPP::saveTempratures);
+
+    mSaveTemperatureTimer.setInterval(10 * 1000);
+    mSaveTemperatureTimer.start();
 
     // Default value
     mFanSpeed = 16;
@@ -303,17 +309,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(&mBacklightPowerTimer, &QTimer::timeout, this, [this]() {
         mDeltaTemperatureIntegrator *= TEMPERATURE_INTEGRATOR_DECAY_CONSTANT;
         mDeltaTemperatureIntegrator += _deviceIO->backlightFactor();
-
-        mDeltaTemperatures.push_back(mDeltaTemperatureIntegrator);
-        if (mDeltaTemperatures.size() > mDeltaTemperatureWindowSize) {
-
-            float sum = std::accumulate(mDeltaTemperatures.begin(), mDeltaTemperatures.end(), 0.0f);
-            float avg = sum / mDeltaTemperatures.size();
-            QSettings settings;
-            settings.setValue(m_GetDeltaTempratureAvg , avg);
-
-            mDeltaTemperatures.clear();
-        }
     });
     mBacklightPowerTimer.start();
 
@@ -844,6 +839,21 @@ void DeviceControllerCPP::checkForOutdoorTemperature() {
     }
 }
 
+void DeviceControllerCPP::loadTempratures()
+{
+    QSettings settings;
+    quint64 currentUinxTime = QDateTime::currentDateTime().currentSecsSinceEpoch();
+    quint64 lastUnixTime = settings.value(m_UnixTime , 0);
+    auto offUnixTime = currentUinxTime - lastUnixTime;
+
+    if(offUnixTime > 0){
+        mDeltaTemperatureIntegrator = pow(TEMPERATURE_INTEGRATOR_DECAY_CONSTANT , offUnixTime);
+        mTEMPERATURE_COMPENSATION_T1 = settings.value(m_TEMPERATURE_COMPENSATION_T1 , 0.2);
+    }else{
+        mDeltaTemperatureIntegrator = 0;
+    }
+}
+
 void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
 {
     if (addToData) {
@@ -984,6 +994,15 @@ void DeviceControllerCPP::onCurrentSystemModeChanged(AppSpecCPP::SystemMode obSt
 {
     mActiveSystemMode = obState;
     emit currentSystemModeChanged(obState, currentHeatingStage, currentCoolingStage);
+}
+
+void DeviceControllerCPP::saveTempratures()
+{
+    QSettings settings;
+    quint64 currentUinxTime = QDateTime::currentDateTime().currentSecsSinceEpoch();
+    settings.setValue(m_UnixTime , currentUinxTime);
+    settings.setValue(m_DeltaTemperatureIntegrator , mDeltaTemperatureIntegrator);
+    settings.setValue(m_TEMPERATURE_COMPENSATION_T1 , mTEMPERATURE_COMPENSATION_T1);
 }
 
 bool DeviceControllerCPP::checkSN()
