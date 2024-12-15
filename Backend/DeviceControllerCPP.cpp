@@ -244,7 +244,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         DC_LOG << "Brightness: " << brightness;
 
-        DC_LOG << "Raw Temperature: " << mRawTemperature << _mainData.value(temperatureRawKey);
+        DC_LOG << "Raw Temperature: " << _mainData.value(temperatureRawKey);
         DC_LOG << "Corrected Temperature: " << _mainData.value(temperatureKey);
 
         DC_LOG << "Is night mode running: " << mIsNightModeRunning;
@@ -759,8 +759,6 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
         bool isOk;
         double tc = mainData.value(temperatureRawKey).toDouble(&isOk);
         if (isOk){
-            mRawTemperature = tc;
-
             double dt = deltaCorrection();
             // Fan status effect:
             dt += mTEMPERATURE_COMPENSATION_T1;
@@ -1288,7 +1286,8 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(brightness));
 
             } else if (key == m_RawTemperatureHeader) {
-                dataStrList.append(QString::number(mRawTemperature * 1.8 + 32));
+                auto rawTemperatureC = _mainData.value(temperatureRawKey).toDouble();
+                dataStrList.append(QString::number(rawTemperatureC * 1.8 + 32));
 
             } else if (key == m_NightModeHeader) {
                 dataStrList.append(mIsNightModeRunning ? "true" : "false");

@@ -375,9 +375,6 @@ private:
     int mFanSpeed;
     bool mFanOff;
 
-    //! TEMP, To keep raw temperature.
-    double mRawTemperature;
-
     //! percent value
     double mAdaptiveBrightness;
 
