@@ -81,7 +81,7 @@ BasePageView {
                 writeSensorResult(key, value, etohMin, etohMax, false)
             } else if (key === "fanSpeed") {
                 writeSensorResult(key, value, fanSpeedMin, fanSpeedMax, true)
-            } else if (key === "humidity") {
+            } else if (key === "humidity") {  // see AppSpecCPP.h for key definition humiditykey
                 writeSensorResult(key, value, humidityMin, humidityMax, true)
             } else if (key === "iaq") {
                 writeSensorResult(key, value, iaqMin, iaqMax, true)

@@ -29,7 +29,7 @@ void SchemeDataProvider::setMainData(QVariantMap mainData)
         mCurrentTemperature = currentTemp;
     }
 
-    double currentHumidity = mainData.value("humidity").toDouble(&isOk);
+    double currentHumidity = mainData.value(humidityKey).toDouble(&isOk);
 
     if (isOk && qAbs(currentHumidity - mCurrentHumidity) > 0.1) {
         mCurrentHumidity = currentHumidity;
