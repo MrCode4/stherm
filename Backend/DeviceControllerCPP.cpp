@@ -244,8 +244,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         DC_LOG << "Brightness: " << brightness;
 
-        DC_LOG << "Raw Temperature: " << mRawTemperature << _mainData.value(temperatureKey);
-        DC_LOG << "Corrected Temperature: " << _mainData.value(temperatureUIKey);
+        DC_LOG << "Raw Temperature: " << mRawTemperature << _mainData.value(temperatureRawKey);
+        DC_LOG << "Corrected Temperature: " << _mainData.value(temperatureKey);
 
         DC_LOG << "Is night mode running: " << mIsNightModeRunning;
 
@@ -757,7 +757,7 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
 
     } else {
         bool isOk;
-        double tc = mainData.value(temperatureKey).toDouble(&isOk);
+        double tc = mainData.value(temperatureRawKey).toDouble(&isOk);
         if (isOk){
             mRawTemperature = tc;
 
@@ -767,11 +767,10 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
             LOG_CHECK_DC(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
             if (qAbs(dt) < 10) {
                 tc -= dt;
-
-                mainData.insert(temperatureUIKey, tc);
             } else {
                 qWarning() << "dt is greater than 10! check for any error.";
             }
+            mainData.insert(temperatureKey, tc);
         }
 
         if (mFanOff)
@@ -784,10 +783,10 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
 
         // Average of the last two temperature and humidity
         // Get temperature from _rawMainData
-        auto rt = _rawMainData.value(temperatureUIKey, tc).toDouble(&isOk);
+        auto rt = _rawMainData.value(temperatureKey, tc).toDouble(&isOk);
 
         if (isOk)
-            _mainData.insert(temperatureUIKey, (tc + rt) / 2);
+            _mainData.insert(temperatureKey, (tc + rt) / 2);
 
         auto mh = mainData.value(humidityKey, 0.0).toDouble();
         // Get humidity from _rawMainData
@@ -1040,7 +1039,7 @@ QVariantMap DeviceControllerCPP::getMainData()
     if (hasOverride) {
         auto overrideTemp = override.value("temp").toDouble();
         LOG_CHECK_DC(!_override_by_file) <<"temperature will be overriden by value: " << overrideTemp << ", read from /usr/local/bin/override.ini file.";
-        overrideData.insert("temperature", overrideTemp);
+        overrideData.insert(temperatureKey, overrideTemp);
     }
 
     if (_override_by_file != hasOverride){
@@ -1056,7 +1055,7 @@ QVariantMap DeviceControllerCPP::getMainData()
 
     // to make effect of overriding instantly, TODO  remove or disable later
     bool isOk;
-    double currentTemp = mainData.value("temperature").toDouble(&isOk);
+    double currentTemp = mainData.value(temperatureKey).toDouble(&isOk);
     if (isOk && currentTemp != _temperatureLast) {
         _temperatureLast = currentTemp;
         if (mSchemeDataProvider.isNull())
@@ -1515,7 +1514,7 @@ void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
     filePath = "/mnt/data/sensor/sensorData.csv";
 #endif
 
-    const QStringList header = {dateTimeHeader, temperatureUIKey, humidityKey,
+    const QStringList header = {dateTimeHeader, temperatureKey, humidityKey,
                                 co2Key, etohKey, TvocKey,
                                 iaqKey, pressureKey, RangeMilliMeterKey,
                                 brightnessKey, fanSpeedKey};

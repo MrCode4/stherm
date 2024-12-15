@@ -1642,7 +1642,7 @@ I_DeviceController {
 
     function setTestData(temperature, on) {
         var send_data = {
-            "temperature": temperature,
+            "temperature": temperature, // see AppSpecCPP.h for key definition temperatureKey
         }
         deviceControllerCPP.setOverrideMainData(on ? send_data : {})
     }

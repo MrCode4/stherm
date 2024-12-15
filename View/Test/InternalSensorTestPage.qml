@@ -87,7 +87,7 @@ BasePageView {
                 writeSensorResult(key, value, iaqMin, iaqMax, true)
             } else if (key === "pressure") {
                 writeSensorResult(key, value, pressureMin, pressureMax, false)
-            } else if (key === "temperature") {
+            } else if (key === "temperature") { // see AppSpecCPP.h for key definition temperatureKey
                 writeSensorResult(key, value, temperatureMin, temperatureMax, true)
             }
         }

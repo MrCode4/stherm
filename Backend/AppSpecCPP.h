@@ -11,8 +11,8 @@
 /* ************************************************************************************************
  * Main data keys
  * ************************************************************************************************/
+const QString temperatureRawKey = QString("temperatureRaw");
 const QString temperatureKey = QString("temperature");
-const QString temperatureUIKey = QString("temperatureUI");
 const QString humidityKey   = QString("humidity");
 const QString co2Key        = QString("co2");
 const QString etohKey       = QString("etoh");
