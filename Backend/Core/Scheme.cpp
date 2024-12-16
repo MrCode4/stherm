@@ -548,7 +548,7 @@ void Scheme::internalCoolingLoopStage1()
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-    while (effectiveTemperature() - mDataProvider.data()->currentTemperature() < STAGE1_OFF_RANGE) {
+    while (!stopWork && effectiveTemperature() - mDataProvider.data()->currentTemperature() < STAGE1_OFF_RANGE) {
         SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
                    << mDataProvider.data()->systemSetup()->coolStage << mTiming->s1uptime.elapsed()
                    << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
@@ -574,9 +574,6 @@ void Scheme::internalCoolingLoopStage1()
             break;
 
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
-
-        if (stopWork)
-            break;
     }
 
     SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished cooling" << stopWork;
@@ -663,7 +660,7 @@ void Scheme::internalHeatingLoopStage1()
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-    while (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
+    while (!stopWork && mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
         LOG_CHECK_SCHEME(true) << mRelay->relays().w2 << mDataProvider.data()->systemSetup()->heatStage
                                << mTiming->s1uptime.isValid() << mTiming->s1uptime.elapsed();
         SCHEME_LOG << "Current Temperature: " << mDataProvider->currentTemperature() << ", Effective Temperature: " << effectiveTemperature();
@@ -686,9 +683,6 @@ void Scheme::internalHeatingLoopStage1()
 
         // TODO should we wait for temp update before new loop?
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
-
-        if (stopWork)
-            break;
     }
 
     SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished heating conventional" << stopWork;
@@ -885,7 +879,7 @@ void Scheme::internalPumpHeatingLoopStage1()
         sendRelays();
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-        while (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_ON_RANGE) {
+        while (!stopWork && mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_ON_RANGE) {
             SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
                        << mDataProvider->heatPumpStage() << mTiming->s1uptime.elapsed()
                        << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
@@ -911,9 +905,6 @@ void Scheme::internalPumpHeatingLoopStage1()
                 break;
 
             waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
-
-            if (stopWork)
-                break;
         }
 
         mTiming->s1Offtime.restart();
