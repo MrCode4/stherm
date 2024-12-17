@@ -1827,10 +1827,7 @@ bool NUVE::System::sendLog(bool showAlert)
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
         //! reset send log progress value
-        if (showAlert) {
-            emit sendLogProgressChanged(0);
-            emit showLogSendingProgress();
-        }
+
         return sendLogFile(showAlert);
 
     } else {
@@ -2051,6 +2048,12 @@ void NUVE::System::sendFirstRunLogFile()
 
 bool NUVE::System::sendLogFile(bool showAlert)
 {
+    // Start the sending log.
+    if (showAlert) {
+        emit sendLogProgressChanged(0);
+        emit showLogSendingProgress();
+    }
+
     auto filename = generateLog();
     if (filename.isEmpty()) {
         if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
