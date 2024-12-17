@@ -908,20 +908,27 @@ void Scheme::internalPumpHeatingLoopStage1()
         sendRelays();
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-        while (!stopWork && mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_ON_RANGE) {
-            SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
+        while (!stopWork && mDataProvider->currentTemperature() - effectiveTemperature() < 1) {
+            SCHEME_LOG << mDataProvider->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
                        << mDataProvider->heatPumpStage() << mTiming->s1uptime.elapsed()
                        << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
 
+            if (effectiveTemperature() - mDataProvider->currentTemperature() < T2 &&
+                (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() < 10 * 60000)) {
+                waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+                continue;
+            }
+
             if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider->heatPumpStage() >= 2) {
-                if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= HEATING_ON_RANGE
-                    || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 40 * 60000)) {
-                    if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
-                        if (!internalPumpHeatingLoopStage2()) {
-                            break;
-                        }
+                if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
+                    if (!internalPumpHeatingLoopStage2()) {
+                        break;
                     }
+                } else {
+                    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+                    continue;
                 }
+
             } else {
                 sendAlertIfNeeded();
                 // wait for temperature update?
@@ -955,28 +962,34 @@ bool Scheme::internalPumpHeatingLoopStage2()
     if (stopWork)
         return false;
 
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
+    SCHEME_LOG << mDataProvider->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
     // turn on stage 2
     mRelay->heatingStage2(true);
+
+    mTiming->s2uptime.restart();
+
     // 5 Sec
     emit changeBacklight(heatingColor);
     sendRelays();
 
     while (!stopWork) {
-        SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
+        SCHEME_LOG << mDataProvider->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
 
-        if (mTiming->s2hold) {
-            if (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
-                sendAlertIfNeeded();
-            } else {
-                return false;
-            }
-        } else {
-            if (effectiveTemperature() - mDataProvider.data()->currentTemperature() > STAGE1_ON_RANGE) {
-                sendAlertIfNeeded();
-            } else {
+        if (mDataProvider->currentTemperature() - effectiveTemperature() < 1.0) {
+            if (effectiveTemperature() - mDataProvider->currentTemperature() <= _HPT1) {
                 break;
+
+            } else if (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() >= 10 * 60000) {
+                // Go to the AUX
+
+            } else {
+                waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
+                continue;
             }
+
+        } else {
+            mTiming->s1Offtime.restart();
+            return false;
         }
 
         if (stopWork)
@@ -984,7 +997,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
 
         waitLoop(30000);
     }
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished stage 2 pump" << stopWork;
+    SCHEME_LOG << mDataProvider->currentTemperature() << effectiveTemperature() << "finished stage 2 pump" << stopWork;
 
     if (stopWork)
         return false;
