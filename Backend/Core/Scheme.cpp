@@ -27,6 +27,12 @@ const double CHANGE_STAGE_TIME       = 40;
 const double CHANGE_STAGE_TIME_WO_OB = 10;
 const double S2OFF_TIME              = 2;
 
+const double T1 = 0.9; // F
+const double T2 = 1.9; // F
+const double T3 = 2.9; // F
+const double T4 = 3.9; // F
+const double T5 = 4.9; // F
+
 // Status backlight color
 const QVariantList coolingColor      = QVariantList{0, 128, 255, STHERM::LedEffect::LED_FADE, "true"};
 const QVariantList heatingColor      = QVariantList{255, 68, 0, STHERM::LedEffect::LED_FADE,  "true"};
@@ -446,6 +452,22 @@ AppSpecCPP::SystemMode Scheme::activeHeatPumpMode(const bool &checkWithManualEme
     return heatPumpMode;
 }
 
+void Scheme::updateHeatPumpProperties() {
+    // In heat pump mode we use cool stage as heat pump stage that control the Y wires
+    if (mDataProvider->systemSetup()->coolStage == 2) {
+        _HPT1  = T1;
+        _HPT2  = T2;
+        _AUXT1 = T3;
+        _AUXT2 = T4;
+
+    } else {
+        // Default: we consider the cool stage is 1
+        _HPT1  = T1;
+        _AUXT1 = T2;
+        _AUXT2 = T3;
+    }
+}
+
 void Scheme::HeatingLoop()
 {
     LOG_CHECK_SCHEME(false) << "Heating started " << mDataProvider.data()->systemSetup()->systemType;
@@ -461,6 +483,8 @@ void Scheme::HeatingLoop()
     case AppSpecCPP::SystemType::HeatPump: // emergency as well?
     {
         LOG_CHECK_SCHEME(false) << "HeatPump" << mDataProvider.data()->currentTemperature() << effectiveTemperature();
+        updateHeatPumpProperties();
+
         // get time threshold ETime
         auto activeHeatpumpMode = activeHeatPumpMode();
         if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
@@ -837,15 +861,20 @@ void Scheme::internalPumpHeatingLoopStage1()
     mActiveHeatPumpMode =  AppSpecCPP::Heating;
 
     bool hasDelay = false;
-    while (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= STAGE1_ON_RANGE) {
-        auto obUpdated = updateOBState(AppSpecCPP::Heating);
+    while (effectiveTemperature() - mDataProvider->currentTemperature() >= T1) {
+        bool obUpdated = false;
+
+        if (mRelay->getOb_state() != AppSpecCPP::Heating) {
+            obUpdated = updateOBState(AppSpecCPP::Heating);
+        }
 
         if (obUpdated && !stopWork){
-            // sysDelay
+            // sysDelay because ob state is not "heating".
             runSystemDelay(AppSpecCPP::Heating);
 
         } else if (mTiming->s1Offtime.isValid() &&
-                   mTiming->s1Offtime.elapsed() < 2 * 60 * 1000){
+                   mTiming->s1Offtime.elapsed() < 2 * 60 * 1000) {
+            // This is not a system delay, this is due to s1Offtime.
             if (!hasDelay) {
                 hasDelay = true;
                 emit startSystemDelayCountdown(AppSpecCPP::Heating, 2 * 60 * 1000 - mTiming->s1Offtime.elapsed());

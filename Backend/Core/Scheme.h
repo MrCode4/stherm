@@ -172,4 +172,14 @@ private:
     AppSpecCPP::SystemType mActiveSysTypeHeating;
 
     AppSpecCPP::SystemMode mActiveHeatPumpMode;
+
+    //! Heat-Pump Stage 1 Turning ON temperature
+    double _HPT1;
+    //! Heat-Pump Stage 2 Turning ON temperature
+    double _HPT2;
+    //! Auxiliary Heating Stage 1 Turning ON temperature
+    double _AUXT1;
+    //! Auxiliary Heating Stage 2 Turning ON temperature
+    double _AUXT2;
+    void updateHeatPumpProperties();
 };
