@@ -1810,7 +1810,7 @@ bool NUVE::System::isBusylogSender() const {
 
 bool NUVE::System::sendLog(bool showAlert)
 {
-    if (mLogSender.busy()){
+    if (isBusylogSender()){
         QString error("Previous session is in progress, please try again later.");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
         if (showAlert) emit showLogSendingProgress();
@@ -1824,12 +1824,13 @@ bool NUVE::System::sendLog(bool showAlert)
         return false;
     }
 
-
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
         //! reset send log progress value
-        emit sendLogProgressChanged(0);
-        emit showLogSendingProgress();
+        if (showAlert) {
+            emit sendLogProgressChanged(0);
+            emit showLogSendingProgress();
+        }
         return sendLogFile(showAlert);
 
     } else {
@@ -1867,7 +1868,7 @@ void NUVE::System::sendFirstRunLog()
         return;
     }
 
-    if (mLogSender.busy()){
+    if (isBusylogSender()){
         QString error("Sending log on first run is in progress!");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
         emit logAlert(error);
@@ -2141,7 +2142,7 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
     SYS_LOG <<"Attempting command" << command <<tag;
 
     if (command == Cmd_PushLogs) {
-        if (mLogSender.busy()) {
+        if (isBusylogSender()) {
             SYS_LOG << "Log-sender is busy at this momemnt";
         }
         else {

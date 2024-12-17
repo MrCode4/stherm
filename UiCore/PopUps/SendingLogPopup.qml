@@ -12,8 +12,8 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Log "
-    width: AppStyle.size * 0.85
+    title: "Log Status"
+    width: AppStyle.size * 0.8
     height: AppStyle.size * 0.50
 
     /* Children
@@ -38,15 +38,29 @@ I_PopUp {
         anchors.centerIn: parent
         spacing: 16
 
-        Label {
-            id: logProgressStatus
-
-            Layout.topMargin: 2
+        RowLayout {
             Layout.fillWidth: true
+            spacing: 5
 
-            font.pointSize: Application.font.pointSize
-            text: "Sending Log..."
-            horizontalAlignment: Text.AlignHCenter
+            //! Icon
+            RoniaTextIcon {
+                Layout.alignment: Qt.AlignLeft
+
+                font.pointSize: Qt.application.font.pointSize * 2.4
+                text: FAIcons.circleInfo
+                font.weight: FAIcons.Light
+            }
+
+            Label {
+                id: logProgressStatus
+
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.fillWidth: true
+
+                font.pointSize: Application.font.pointSize
+                text: "Sending Log..."
+                horizontalAlignment: Text.AlignHCenter
+            }
         }
 
         //! Spacer

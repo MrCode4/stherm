@@ -22,7 +22,7 @@ QtObject {
 
     property bool activeAlerts: false
 
-    property bool is_control_alert_feature_enable : deviceController.deviceControllerCPP.system.controlAlertEnabled;
+    property bool is_control_alert_feature_enable : deviceController.system.controlAlertEnabled;
 
     //! alertInterval: Reshow specific alerts every 24 hours (if exist),
     //! but only if they haven't been displayed in the past 24 hours.
@@ -308,7 +308,7 @@ QtObject {
 
     // To add system alerts into messages.
     property Connections sytemConnections: Connections {
-        target: deviceController.deviceControllerCPP.system
+        target: deviceController.system
 
         function onAlert(message: string) {
             addNewMessageFromData(Message.Type.SystemNotification, message, DateTimeManager.nowUTC());
@@ -321,7 +321,7 @@ QtObject {
         //! Manage update notifications (a message type)
         function onUpdateAvailableChanged() {
             // hasUpdateNotification is a UiSession property, update when updateAvailableChanged
-            uiSession.hasUpdateNotification = deviceController.deviceControllerCPP.system.updateAvailable;
+            uiSession.hasUpdateNotification = deviceController.system.updateAvailable;
         }
     }
 

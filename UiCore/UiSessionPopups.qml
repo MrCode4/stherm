@@ -276,11 +276,13 @@ Item {
         }
 
         function onShowLogSendingProgress() {
-            uiSession.popupLayout.displayPopUp(sendingLogPopup);
+            if (!sendingLogPopup.visible)
+                uiSession.popupLayout.displayPopUp(sendingLogPopup);
         }
 
         function onLogSentSuccessfully() {
-            uiSession.popupLayout.displayPopUp(sendingLogPopup);
+            if (!sendingLogPopup.visible)
+                uiSession.popupLayout.displayPopUp(sendingLogPopup);
         }
 
         function onLogAlert(message: string) {
