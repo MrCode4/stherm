@@ -9,6 +9,7 @@ import Stherm
  * ***********************************************************************************************/
 
 I_PopUp {
+    id: root
 
     /* Object properties
      * ****************************************************************************************/
@@ -23,10 +24,15 @@ I_PopUp {
 
         function onSendLogProgressChanged(percent: int) {
             logProgressStatus.text = "Sending Log..."
+
+            if (percent >= 98)
+                percent = 98;
+
             progressBar.value = percent;
         }
 
         function onLogSentSuccessfully() {
+            progressBar.value = 100;
             logProgressStatus.text = "Log is sent!";
         }
     }
@@ -59,7 +65,7 @@ I_PopUp {
 
                 font.pointSize: Application.font.pointSize
                 text: "Sending Log..."
-                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
             }
         }
 
@@ -77,6 +83,15 @@ I_PopUp {
             from: 0.0
             to: 100
             value: 0
+
+            Behavior on value {
+                enabled: root.visible
+
+                NumberAnimation  {
+                    easing.type: Easing.InOutQuart
+                    duration: 500
+                }
+            }
 
             contentItem: Item {
                 Rectangle {
@@ -99,7 +114,7 @@ I_PopUp {
             Layout.fillWidth: true
 
             font.pointSize: Application.font.pointSize * 0.75
-            text: progressBar.value + "%"
+            text: `${progressBar.value.toFixed(0)}% uploaded`
             horizontalAlignment: Text.AlignHCenter
         }
     }
