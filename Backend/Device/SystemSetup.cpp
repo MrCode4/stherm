@@ -31,6 +31,12 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     emergencyTemperatureDifference = AppSpecCPP::defaultEmergencyTemperatureDifferenceC();
     emergencyTemperatureDiffrence = AppSpecCPP::defaultEmergencyTemperatureDifferenceC();
 
+    auxiliaryHeating = true;
+    useAuxiliaryParallelHeatPump = true;
+    driveAux1AndETogether = true;
+    enableEmergencyModeForAuxStages = true;
+
+
     connect(this, &SystemSetup::emergencyTemperatureDiffrenceChanged, this, [this] () {
         // we will not apply if the other already has change
         if (emergencyTemperatureDifference == AppSpecCPP::defaultEmergencyTemperatureDifferenceC())

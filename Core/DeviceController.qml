@@ -1359,19 +1359,22 @@ I_DeviceController {
         }
     }
 
-    function setSystemHeatPump(emergencyHeating: bool, stage: int, obState: int,
-                               emergencyMinimumTime: int, emergencyControlType: int,
-                               emergencyTemperatureDifference: real) {
-        device.systemSetup.heatPumpEmergency = emergencyHeating;
+    function setSystemHeatPump(auxiliaryHeating: bool, stage: int, obState: int,
+                               emergencyMinimumTime: int, auxiliaryStages: int,
+                               useAuxiliaryParallelHeatPump: bool,
+                               driveAux1AndETogether: bool,
+                               enableEmergencyModeForAuxStages: bool) {
+        device.systemSetup.auxiliaryHeating = auxiliaryHeating;
 
         // coolStage controls the Y wires.
         device.systemSetup.coolStage = stage;
-
+        device.systemSetup.heatStage = auxiliaryStages;
         device.systemSetup.heatPumpOBState = obState;
 
         device.systemSetup.emergencyMinimumTime = emergencyMinimumTime;
-        device.systemSetup.emergencyControlType = emergencyControlType;
-        device.systemSetup.emergencyTemperatureDifference = emergencyTemperatureDifference;
+        device.systemSetup.useAuxiliaryParallelHeatPump = useAuxiliaryParallelHeatPump;
+        device.systemSetup.driveAux1AndETogether = driveAux1AndETogether;
+        device.systemSetup.enableEmergencyModeForAuxStages = enableEmergencyModeForAuxStages;
 
         //! This function requires a valid emergencyControlType and heatPumpEmergency
         //! so the emergencyControlType must be set before calling this function in the HeatPump type
@@ -1467,10 +1470,13 @@ I_DeviceController {
         else if(settings.type === "heating")
             setSystemHeatOnly(settings.heatStage)
         else if(settings.type === "heat_pump") {
-            setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState,
+            setSystemHeatPump(settings.auxiliaryHeating ?? device.systemSetup.auxiliaryHeating,
+                              settings.coolStage, settings.heatPumpOBState,
                               settings.emergencyMinimumTime ?? device.systemSetup.emergencyMinimumTime,
-                              settings.emergencyControlType ?? device.systemSetup.emergencyControlType,
-                              settings.emergencyTemperatureDifference ?? device.systemSetup.emergencyTemperatureDifference)
+                              settings.heatStage,
+                              settings.useAuxiliaryParallelHeatPump ?? device.systemSetup.useAuxiliaryParallelHeatPump,
+                              settings.driveAux1AndETogether ?? device.systemSetup.driveAux1AndETogether,
+                              settings.enableEmergencyModeForAuxStages ?? device.systemSetup.enableEmergencyModeForAuxStages)
 
         } else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
