@@ -12,32 +12,38 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    title: ""
-    titleBar: false
+    title: "Log "
+    width: AppStyle.size * 0.85
+    height: AppStyle.size * 0.50
 
     /* Children
      * ****************************************************************************************/
-    Connections{
+    Connections {
         target: deviceController.system
-        function onSendLogProgressChanged(percent){
-            progressBar.value = percent
+
+        function onSendLogProgressChanged(percent: int) {
+            logProgressStatus.text = "Sending Log..."
+            progressBar.value = percent;
+        }
+
+        function onLogSentSuccessfully() {
+            logProgressStatus.text = "Log is sent!";
         }
     }
 
     ColumnLayout {
         id: mainLay
+
         width: parent?.width ?? 0
         anchors.centerIn: parent
         spacing: 16
 
-        //! Spacer
-        Item {
-            Layout.fillWidth: true
-            height: 2
-        }
-
         Label {
+            id: logProgressStatus
+
+            Layout.topMargin: 2
             Layout.fillWidth: true
+
             font.pointSize: Application.font.pointSize
             text: "Sending Log..."
             horizontalAlignment: Text.AlignHCenter

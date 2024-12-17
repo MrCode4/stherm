@@ -314,6 +314,10 @@ QtObject {
             addNewMessageFromData(Message.Type.SystemNotification, message, DateTimeManager.nowUTC());
         }
 
+        function onLogAlert(message: string) {
+            addNewMessageFromData(Message.Type.SystemNotification, message, DateTimeManager.nowUTC());
+        }
+
         //! Manage update notifications (a message type)
         function onUpdateAvailableChanged() {
             // hasUpdateNotification is a UiSession property, update when updateAvailableChanged

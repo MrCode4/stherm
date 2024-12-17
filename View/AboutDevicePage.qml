@@ -118,7 +118,17 @@ BasePageView {
                 model: [
                     {
                         text: "Send Log", action: () => {
-                            if (NetworkInterface.hasInternet) logBusyPop.open();
+                            if (NetworkInterface.hasInternet) {
+                                if (system.isBusylogSender()) {
+                                    // Log sender is busy, open the progress bar.
+                                    system.showLogSendingProgress();
+
+                                } else {
+                                    // Prepare the log
+                                    logBusyPop.open();
+                                }
+                            }
+
                             else system.alert("No Internet, Please check your connection before sending log.")
                         },
                         buddies: [

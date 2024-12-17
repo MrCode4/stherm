@@ -203,7 +203,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     downloaderTimer.setSingleShot(false);
 
     //! inits the connections of log sender responses
-    mLogSender.initialize([this](QString error){emit alert(error);}, "Log sender:", "\r\n");
+    mLogSender.initialize([this](QString error){emit logAlert(error);}, "Log sender:", "\r\n");
     //! inits the connections of file sender responses
     mFileSender.initialize([this](QString error){emit testPublishFinished(error);}, "Result sender:");
 
@@ -248,7 +248,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     if (!serialNumber().isEmpty())
         onSerialNumberReady();
 
-    connect(&mLogSender, &QProcess::readyReadStandardOutput, this, [&](){
+    connect(&mLogSender, &QProcess::readyReadStandardOutput, this, [&]() {
         int progress = parseProgress(mLogSender.readAllStandardOutput());
         if(progress > -1)
             emit sendLogProgressChanged(progress);
@@ -1804,27 +1804,32 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
     return true;
 }
 
+bool NUVE::System::isBusylogSender() const {
+    return mLogSender.busy();
+}
+
 bool NUVE::System::sendLog(bool showAlert)
 {
-    if (!installSSHPass()){
-        QString error("Device is not ready to send log!");
-        qWarning() << error;
-        if (showAlert) emit alert(error);
-        return false;
-    }
-
     if (mLogSender.busy()){
         QString error("Previous session is in progress, please try again later.");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        if (showAlert) emit sendingLogStarted();
+        if (showAlert) emit showLogSendingProgress();
         return false;
     }
+
+    if (!installSSHPass()){
+        QString error("Device is not ready to send log!");
+        qWarning() << error;
+        if (showAlert) emit logAlert(error);
+        return false;
+    }
+
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
         //! reset send log progress value
         emit sendLogProgressChanged(0);
-        emit sendingLogStarted();
+        emit showLogSendingProgress();
         return sendLogFile(showAlert);
 
     } else {
@@ -1836,7 +1841,7 @@ bool NUVE::System::sendLog(bool showAlert)
             if (!error.isEmpty()) {
                 error = "error while creating log directory on remote: " + error;
                 qWarning() << error;
-                if (showAlert) emit alert(error);
+                if (showAlert) emit logAlert(error);
                 return;
             }
 
@@ -1858,14 +1863,14 @@ void NUVE::System::sendFirstRunLog()
     if (!installSSHPass()) {
         QString error("Device is not ready to send log on First run!");
         qWarning() << error;
-        emit alert(error);
+        emit logAlert(error);
         return;
     }
 
     if (mLogSender.busy()){
         QString error("Sending log on first run is in progress!");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        emit alert(error);
+        emit logAlert(error);
         return;
     }
 
@@ -1882,7 +1887,7 @@ void NUVE::System::sendFirstRunLog()
             if (!error.isEmpty()) {
                 error = "error while creating first run log directory on remote: " + error;
                 qWarning() << error;
-                emit alert(error);
+                emit logAlert(error);
                 return;
             }
 
@@ -2005,7 +2010,7 @@ QString NUVE::System::generateLog()
     {
         QString error("Unable to create log file.");
         qWarning() << error << exitCode;
-        emit alert(error);
+        emit logAlert(error);
         return "";
     }
 
@@ -2025,11 +2030,11 @@ void NUVE::System::sendFirstRunLogFile()
         if (!error.isEmpty()) {
             error = "error while sending first run log directory on remote: " + error;
             qWarning() << error;
-            emit alert(error);
+            emit logAlert(error);
             return;
         }
 
-        emit alert("Log is sent for first run error!");
+        emit logAlert("Log is sent for first run error!");
     };
 
     mLogSender.setRole("sendFirstRunLog", sendCallback);
@@ -2067,7 +2072,7 @@ bool NUVE::System::sendLogFile(bool showAlert)
                 };
                 mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
             }
-            if (showAlert) emit alert("Log is sent!");
+            if (showAlert) emit logSentSuccessfully();
         }
         else {
             if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
@@ -2076,7 +2081,7 @@ bool NUVE::System::sendLogFile(bool showAlert)
             }
             error = "error while sending log directory on remote: " + error;
             qWarning() << error;
-            if (showAlert) emit alert(error);
+            if (showAlert) emit logAlert(error);
         }
     };
 

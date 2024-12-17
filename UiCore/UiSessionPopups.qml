@@ -275,11 +275,19 @@ Item {
             }
         }
 
-
-        function onSendingLogStarted(){
+        function onShowLogSendingProgress() {
             uiSession.popupLayout.displayPopUp(sendingLogPopup);
         }
-}
+
+        function onLogSentSuccessfully() {
+            uiSession.popupLayout.displayPopUp(sendingLogPopup);
+        }
+
+        function onLogAlert(message: string) {
+            sendingLogPopup.close();
+        }
+    }
+
     Connections {
         target: deviceController.sync
 
