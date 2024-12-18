@@ -113,7 +113,7 @@ private:
     //! Users manually activate emergency heat., meaning Emergency heating will only be active when the system mode is set to Emergency or
     //!  emergency heating will be triggered by the Defrost Controller Board (if equipped) or based on system needs.
     void emergencyHeatingLoop();
-    void sendAlertIfNeeded();
+    void sendAlertIfNeeded(bool checkEmergency = false);
 
     //! Send relays into ti
     void sendRelays(bool forceSend = false);
@@ -138,8 +138,6 @@ private:
     void fanWork(bool isOn);
 
     void checkForRestart();
-
-    AppSpecCPP::SystemMode activeHeatPumpMode(const bool &checkWithManualEmergency = false);
 
     void manualEmergencyHeating();
 

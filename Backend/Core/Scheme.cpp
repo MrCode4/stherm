@@ -421,37 +421,6 @@ void Scheme::switchDFHActiveSysType(AppSpecCPP::SystemType to)
     }
 }
 
-AppSpecCPP::SystemMode Scheme::activeHeatPumpMode(const bool &checkWithManualEmergency)
-{
-    auto heatPumpMode = AppSpecCPP::Heating;
-
-    // Use heating in performance test
-    if (mDataProvider->isPerfTestRunning()) {
-        return heatPumpMode;
-    }
-
-    // Off emergency mode
-    if (!mDataProvider->systemSetup()->heatPumpEmergency || mDataProvider->systemSetup()->systemType != AppSpecCPP::HeatPump) {
-        return heatPumpMode;
-    }
-
-    // Manual emergency mode
-    if (checkWithManualEmergency) {
-        if (mDataProvider->systemSetup()->emergencyControlType == AppSpecCPP::ECTManually && mDataProvider->systemSetup()->systemMode == AppSpecCPP::EmergencyHeat) {
-            heatPumpMode = AppSpecCPP::EmergencyHeat;
-            return heatPumpMode;
-        }
-    }
-
-    // Auto emergency mode
-    if (mDataProvider->systemSetup()->emergencyControlType != AppSpecCPP::ECTManually &&
-        effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF()) {
-        heatPumpMode = AppSpecCPP::EmergencyHeat;
-    }
-
-    return heatPumpMode;
-}
-
 void Scheme::updateHeatPumpProperties() {
     // In heat pump mode we use cool stage as heat pump stage that control the Y wires
     if (mDataProvider->systemSetup()->coolStage == 2) {
@@ -487,20 +456,15 @@ void Scheme::HeatingLoop()
         // Heat pump with auxiliary
         if (mDataProvider->systemSetup()->systemType == AppSpecCPP::HeatPump &&
             mDataProvider->systemSetup()->auxiliaryHeating) {
+            emit actualModeStarted(AppSpecCPP::Heating);
             updateHeatPumpProperties();
             internalPumpHeatingWithAuxLoopStage1();
 
         } else {
             // get time threshold ETime
-            auto activeHeatpumpMode = activeHeatPumpMode();
+            auto activeHeatpumpMode = AppSpecCPP::Heating;
             if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
-                emit actualModeStarted(AppSpecCPP::Heating);
-                // Emergency heating will function when the real system type is Heat pump
-                // When emergency manual mode is active we should discard the auto emergency, this mode only activate from the system mode page.
-                if (activeHeatpumpMode == AppSpecCPP::EmergencyHeat) {
-                    SCHEME_LOG << "Emergency";
-                    emergencyHeatingLoop();
-                }
+                emit actualModeStarted(activeHeatpumpMode);
 
                 SCHEME_LOG << "Normal, emergency heating is enable:" << mDataProvider->systemSetup()->heatPumpEmergency;
                 internalPumpHeatingLoopStage1();
@@ -1277,14 +1241,7 @@ void Scheme::manualEmergencyHeating()
 {
     auto sysSetup = mDataProvider->systemSetup();
 
-    SCHEME_LOG << "heatPumpEmergency: " << sysSetup->heatPumpEmergency
-               << " - emergencyControlType: " << sysSetup->emergencyControlType
-               << " - emergencyMinimumTime: " << sysSetup->emergencyMinimumTime;
-
-    if (!sysSetup->heatPumpEmergency) {
-        SCHEME_LOG << "Emergency heating is OFF or emergency control type is manually.";
-        return;
-    }
+    SCHEME_LOG << "Start the emergency heating mode ";
 
     // Optimize emergency mode to prevent unnecessary backlight and emergency heating activation.
     // This will restrict the activation of emergency heating to instances
@@ -1299,6 +1256,10 @@ void Scheme::manualEmergencyHeating()
 
 void Scheme::emergencyHeatingLoop()
 {
+    if (effectiveTemperature() >= effectiveCurrentTemperature()) {
+        return;
+    }
+
     auto sysSetup = mDataProvider->systemSetup();
 
     // Sanity check
@@ -1308,15 +1269,23 @@ void Scheme::emergencyHeatingLoop()
         return;
     }
 
-    // Sanity check
-    if (!sysSetup->heatPumpEmergency) {
-        SCHEME_LOG << "Emergency heating is OFF.";
-        return;
-    }
 
     mActiveHeatPumpMode =  AppSpecCPP::EmergencyHeat;
-
     mRelay->setAllOff();
+
+    if (mDataProvider->systemSetup()->auxiliaryHeating) {
+
+        if (mDataProvider->systemSetup()->heatStage == 1 || !mDataProvider->systemSetup()->enableEmergencyModeForAuxStages) {
+            mRelay->auxiliaryHeatingStage1(mDataProvider->systemSetup()->driveAux1AndETogether);
+
+        } else if (mDataProvider->systemSetup()->heatStage >= 2 &&  mDataProvider->systemSetup()->enableEmergencyModeForAuxStages) {
+            mRelay->heatingStage3();
+        }
+
+    } else {
+        mRelay->emergencyHeating3();
+    }
+
     mTEONTimer.restart();
 
     // Block the UI
@@ -1326,33 +1295,33 @@ void Scheme::emergencyHeatingLoop()
     // 5 Sec
     emit changeBacklight(emergencyColor, emergencyColorS);
 
+    sendRelays();
+    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+
     SCHEME_LOG << "Emergency heating - " << "effectiveTemperature: " << effectiveTemperature()
-               << " - currentTemperature: " << mDataProvider->currentTemperature()
-               << " - effectiveEmergencyHeatingThreshold: " << mDataProvider->effectiveEmergencyHeatingThresholdF();
+               << " - currentTemperature: " << effectiveCurrentTemperature();
 
 
-    while (effectiveTemperature() - mDataProvider->currentTemperature() > mDataProvider->effectiveEmergencyHeatingThresholdF() ||
-           (mTEONTimer.isValid() && mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed())) {
+    while (!stopWork && (effectiveTemperature() - effectiveCurrentTemperature() > -1 ||
+                         (mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()))) {
 
         // Disable UI interactions in system mode page during manual or auto emergency mode until the minimum duration is reached.
-        if (mTEONTimer.isValid()) {
-            auto remainigEmergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed();
+        auto remainigEmergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed();
 
-            if (remainigEmergencyMinimumTimeMS <= 0) {
-                mTEONTimer.invalidate();
-            }
+        // -5: To ensure that the signal with a value of zero is transmitted sent.
+        if (remainigEmergencyMinimumTimeMS > -1 * RELAYS_WAIT_MS * 5)
+            emit manualEmergencyModeUnblockedAfter(remainigEmergencyMinimumTimeMS > 0 ? remainigEmergencyMinimumTimeMS : 0) ;
 
-            emit manualEmergencyModeUnblockedAfter(mTEONTimer.isValid() ? remainigEmergencyMinimumTimeMS : 0) ;
+        if (effectiveTemperature() - effectiveCurrentTemperature() > -1) {
+            sendAlertIfNeeded(true);
         }
-
-        mRelay->emergencyHeating3();
-        sendRelays();
-        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
         // we need break condition here!
-        if (!sysSetup->heatPumpEmergency || stopWork) {
+        if (sysSetup->systemType != AppSpecCPP::HeatPump || stopWork) {
             break;
         }
+
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
     }
 
     // To unblock system mode UI in emergency states like system mode or system type changes.
@@ -1368,14 +1337,23 @@ void Scheme::emergencyHeatingLoop()
     mActiveHeatPumpMode = AppSpecCPP:: SMUnknown;
 }
 
-void Scheme::sendAlertIfNeeded()
+void Scheme::sendAlertIfNeeded(bool checkEmergencyAlert)
 {
-    // Generate Alert
-    if (!mTiming->alerts
-        && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() >= 120 * 60000)) {
-        SCHEME_LOG;
-        emit alert();
-        mTiming->alerts = true;
+    if (checkEmergencyAlert) {
+        // Generate alert for emergency mode
+        if (!mTiming->alerts && mTEONTimer.isValid() && mTEONTimer.elapsed() >= 30 * 60000) {
+            emit alert();
+            mTiming->alerts = true;
+        }
+
+    } else {
+        // Generate Alert
+        if (!mTiming->alerts
+            && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() >= 120 * 60000)) {
+            SCHEME_LOG;
+            emit alert();
+            mTiming->alerts = true;
+        }
     }
 }
 
