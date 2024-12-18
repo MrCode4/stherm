@@ -978,7 +978,7 @@ void Scheme::internalPumpHeatingWithAuxLoopStage1()
     mActiveHeatPumpMode =  AppSpecCPP::Heating;
 
     bool hasDelay = false;
-    while (effectiveTemperature() - mDataProvider->currentTemperature() >= T1) {
+    while (effectiveTemperature() - effectiveCurrentTemperature() >= T1) {
         bool obUpdated = false;
 
         if (mRelay->getOb_state() != AppSpecCPP::Heating) {
@@ -1025,12 +1025,12 @@ void Scheme::internalPumpHeatingWithAuxLoopStage1()
         sendRelays();
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-        while (!stopWork && mDataProvider->currentTemperature() - effectiveTemperature() < 1) {
-            SCHEME_LOG << mDataProvider->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
+        while (!stopWork && effectiveCurrentTemperature() - effectiveTemperature() < 1) {
+            SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mRelay->relays().y2
                        << mDataProvider->heatPumpStage() << mTiming->s1uptime.elapsed()
                        << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
 
-            if (effectiveTemperature() - mDataProvider->currentTemperature() < T2 &&
+            if (effectiveTemperature() - effectiveCurrentTemperature() < T2 &&
                 (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() < 10 * 60000)) {
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
                 continue;
@@ -1076,7 +1076,7 @@ void Scheme::internalPumpHeatingWithAuxLoopStage1()
         hasDelay = false;
     }
 
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished pump heat" << stopWork;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << "finished pump heat" << stopWork;
     mActiveHeatPumpMode = AppSpecCPP:: SMUnknown;
 }
 
@@ -1085,7 +1085,7 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
     if (stopWork)
         return Break;
 
-    SCHEME_LOG << mDataProvider->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold;
     // turn on stage 2
     mRelay->heatingStage2(true);
 
@@ -1096,10 +1096,10 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
     sendRelays();
 
     while (!stopWork) {
-        SCHEME_LOG << mDataProvider->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
+        SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold;
 
-        if (mDataProvider->currentTemperature() - effectiveTemperature() < 1.0) {
-            if (effectiveTemperature() - mDataProvider->currentTemperature() <= _HPT1) {
+        if (effectiveCurrentTemperature() - effectiveTemperature() < 1.0) {
+            if (effectiveTemperature() - effectiveCurrentTemperature() <= _HPT1) {
                 break;
 
             } else if (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() >= 10 * 60000) {
@@ -1124,7 +1124,7 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
 
         waitLoop(30000);
     }
-    SCHEME_LOG << mDataProvider->currentTemperature() << effectiveTemperature() << "finished stage 2 pump" << stopWork;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << "finished stage 2 pump" << stopWork;
 
     if (stopWork)
         return Break;
@@ -1146,11 +1146,14 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
 
 bool Scheme::auxiliaryHeatingLoopStage1()
 {
+    SCHEME_LOG << "auxiliaryHeatingLoopStage " << stopWork;
+
     if (stopWork)
         return true;
 
+
     if (mDataProvider->systemSetup()->auxiliaryHeating) {
-        if (effectiveTemperature() - mDataProvider->currentTemperature() < _AUXT1) {
+        if (effectiveTemperature() - effectiveCurrentTemperature() < _AUXT1) {
             return true;
         }
 
@@ -1172,9 +1175,9 @@ bool Scheme::auxiliaryHeatingLoopStage1()
         emit auxiliaryStatusChanged(true);
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-        while (!stopWork && mDataProvider->currentTemperature() - effectiveTemperature() < 1) {
+        while (!stopWork && effectiveCurrentTemperature() - effectiveTemperature() < 1) {
             if (mDataProvider->systemSetup()->heatStage >= 2 &&
-                (effectiveTemperature() - mDataProvider->currentTemperature() >= _AUXT2 ||
+                (effectiveTemperature() - effectiveCurrentTemperature() >= _AUXT2 ||
                  (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000))) {
 
                 if (auxiliaryHeatingLoopStage2())
@@ -1198,6 +1201,11 @@ bool Scheme::auxiliaryHeatingLoopStage1()
 
 bool Scheme::auxiliaryHeatingLoopStage2()
 {
+    if (stopWork)
+        return true;
+
+    SCHEME_LOG << "auxiliaryHeatingLoopStage2" << stopWork;
+
     // 5 secs
     emit changeBacklight(heatingColor);
 
@@ -1246,7 +1254,7 @@ void Scheme::manualEmergencyHeating()
     // Optimize emergency mode to prevent unnecessary backlight and emergency heating activation.
     // This will restrict the activation of emergency heating to instances
     // where there's a significant change in temperature to met the temperature conditions.
-    if (effectiveTemperature() - mDataProvider->currentTemperature() <= 0) {
+    if (effectiveTemperature() - effectiveCurrentTemperature() <= 0) {
         SCHEME_LOG << "System should be off, the conditions are not changed!";
         return;
     }
@@ -1256,10 +1264,6 @@ void Scheme::manualEmergencyHeating()
 
 void Scheme::emergencyHeatingLoop()
 {
-    if (effectiveTemperature() >= effectiveCurrentTemperature()) {
-        return;
-    }
-
     auto sysSetup = mDataProvider->systemSetup();
 
     // Sanity check
@@ -1268,7 +1272,6 @@ void Scheme::emergencyHeatingLoop()
                    << sysSetup->systemType;
         return;
     }
-
 
     mActiveHeatPumpMode =  AppSpecCPP::EmergencyHeat;
     mRelay->setAllOff();
@@ -1563,7 +1566,7 @@ double Scheme::effectiveTemperature()
 
 double Scheme::effectiveCurrentTemperature()
 {
-    return mDataProvider.data()->currentTemperature();
+    return mDataProvider->currentTemperature();
 }
 
 AppSpecCPP::FanMode Scheme::fanMode() const {
