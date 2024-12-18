@@ -102,8 +102,11 @@ private:
     bool internalHeatingLoopStage2();
     bool internalHeatingLoopStage3();
 
+    bool internalPumpHeatingLoopStage2();
     void internalPumpHeatingLoopStage1();
-    ReturnType internalPumpHeatingLoopStage2();
+
+    void internalPumpHeatingWithAuxLoopStage1();
+    ReturnType internalPumpHeatingWithAuxLoopStage2();
 
     //! Users manually activate emergency heat., meaning Emergency heating will only be active when the system mode is set to Emergency or
     //!  emergency heating will be triggered by the Defrost Controller Board (if equipped) or based on system needs.
@@ -201,5 +204,4 @@ private:
     double _AUXT1;
     //! Auxiliary Heating Stage 2 Turning ON temperature
     double _AUXT2;
-
 };
