@@ -1295,9 +1295,6 @@ void Scheme::emergencyHeatingLoop()
     // 5 Sec
     emit changeBacklight(emergencyColor, emergencyColorS);
 
-    sendRelays();
-    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
-
     SCHEME_LOG << "Emergency heating - " << "effectiveTemperature: " << effectiveTemperature()
                << " - currentTemperature: " << effectiveCurrentTemperature();
 
@@ -1321,6 +1318,7 @@ void Scheme::emergencyHeatingLoop()
             break;
         }
 
+        sendRelays();
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
     }
 
