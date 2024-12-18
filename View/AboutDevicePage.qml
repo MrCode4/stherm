@@ -35,6 +35,18 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+
+    Connections {
+        target: system
+        function onLogPrepared(isSuccess){
+            logBusyPop.close()
+            if (!isSuccess){
+                logBusyPop.message = "file generation failed"
+                logBusyPop.open()
+            }
+        }
+    }
+
     ListView {
         id: _infoLv
 
@@ -125,6 +137,7 @@ BasePageView {
 
                                 } else {
                                     // Prepare the log
+                                    logBusyPop.message = "Preparing log, \nplease wait ..."
                                     logBusyPop.open();
                                 }
                             }
@@ -290,6 +303,8 @@ BasePageView {
 
     Popup {
         id: logBusyPop
+        property string message: ""
+
         parent: Template.Overlay.overlay
         width: Math.max(implicitWidth, parent.width * 0.5)
         height: parent.height * 0.5
@@ -299,11 +314,10 @@ BasePageView {
         onOpened: {
             //! Call sendLog()
             system.sendLog();
-            close();
         }
 
         contentItem: Label {
-            text: "Preparing log, \nplease wait ..."
+            text: logBusyPop.message
             horizontalAlignment: "AlignHCenter"
             verticalAlignment: "AlignVCenter"
             lineHeight: 1.4

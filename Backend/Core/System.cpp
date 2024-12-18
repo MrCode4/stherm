@@ -253,6 +253,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             int progress = parseProgress(mLogSender.readAllStandardOutput());
             if (progress > -1)
                 emit sendLogProgressChanged(progress);
+            else
+                emit alert("Sending log failed");
         }
     });
 }
@@ -2057,9 +2059,13 @@ bool NUVE::System::sendLogFile(bool showAlert)
         if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
             SYS_LOG <<"Log file generation failed. Command cleared" <<Cmd_PushLogs;
             mLastReceivedCommands.remove(Cmd_PushLogs);
+            emit logPrepared(false);
         }
+
         return false;
     }
+
+    emit logPrepared(true);
 
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
@@ -2259,6 +2265,18 @@ int NUVE::System::parseProgress(const QString& in) const{
         if(ok)
             return progressValue;
     }
+    regex.setPattern(R"(\(code (\d+)\))");
+    match = regex.match(in);
+    if(match.hasMatch()){
+        bool ok;
+
+        int errorCode = match.captured(1).toInt(&ok);
+
+        //! rsync got error
+        if (errorCode != 0 || !ok)
+            return -1;
+    }
+
 
     return -1;
 }

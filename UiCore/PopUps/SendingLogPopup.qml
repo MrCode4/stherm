@@ -13,9 +13,9 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "Log Status"
-    width: AppStyle.size * 0.8
-    height: AppStyle.size * 0.50
+    title: ""
+    width: AppStyle.size * 0.6
+    height: AppStyle.size * 0.30
 
     /* Children
      * ****************************************************************************************/
@@ -44,35 +44,12 @@ I_PopUp {
         anchors.centerIn: parent
         spacing: 16
 
-        RowLayout {
+        Label {
+            id: logProgressStatus
             Layout.fillWidth: true
-            spacing: 5
-
-            //! Icon
-            RoniaTextIcon {
-                Layout.alignment: Qt.AlignLeft
-
-                font.pointSize: Qt.application.font.pointSize * 2.4
-                text: FAIcons.circleInfo
-                font.weight: FAIcons.Light
-            }
-
-            Label {
-                id: logProgressStatus
-
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.fillWidth: true
-
-                font.pointSize: Application.font.pointSize
-                text: "Sending Log..."
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        //! Spacer
-        Item {
-            Layout.fillWidth: true
-            height: 10
+            font.pointSize: Application.font.pointSize * 0.75
+            text:  "Sending Log..."
+            horizontalAlignment: Text.AlignLeft
         }
 
         //! Sending progress bar
@@ -117,5 +94,12 @@ I_PopUp {
             text: `${progressBar.value.toFixed(0)}% uploaded`
             horizontalAlignment: Text.AlignHCenter
         }
+
+        //! Spacer
+        Item {
+            Layout.fillWidth: true
+            height: 10
+        }
+
     }
 }

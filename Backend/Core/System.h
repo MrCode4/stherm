@@ -330,6 +330,7 @@ signals:
 
     //! Log
     void logAlert(QString msg);
+    void logPrepared(bool isSuccess);
     void logSentSuccessfully();
     void showLogSendingProgress();
     void sendLogProgressChanged(quint8 percent);
