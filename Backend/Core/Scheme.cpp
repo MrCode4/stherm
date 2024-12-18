@@ -1629,19 +1629,6 @@ void Scheme::checkForRestart()
             LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning()) << "Restart scheme due to dual fuel change." << mDataProvider->effectiveSystemMode();
             restartWork();
         }
-
-    } else if (sys->systemType == AppSpecCPP::SystemType::HeatPump) {
-        auto activeHeatPump = activeHeatPumpMode(true);
-        //! we should restart to go to emergency from non emergency as it has not direct route
-        if (activeHeatPump == AppSpecCPP::EmergencyHeat && mActiveHeatPumpMode == AppSpecCPP::Heating) {
-            restartWork();
-
-        } //! we should restart vice versa only heating set in manual
-        //! we may do this inside emergency loop
-        else if (activeHeatPump == AppSpecCPP::Heating && sys->emergencyControlType == AppSpecCPP::ECTManually &&
-            mActiveHeatPumpMode == AppSpecCPP::EmergencyHeat) {
-            restartWork();
-        }
     }
 }
 
@@ -1747,19 +1734,28 @@ void Scheme::setSystemSetup()
             checkForRestart();
     });
 
-    connect(sys, &SystemSetup::emergencyControlTypeChanged, this, [=] {
-        SCHEME_LOG << "emergencyControlType changed to " << sys->emergencyControlType;
+    connect(sys, &SystemSetup::auxiliaryHeatingChanged, this, [=] {
+        SCHEME_LOG << "auxiliaryHeating changed to " << sys->auxiliaryHeating;
         if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
-            checkForRestart();
+            restartWork();
     });
 
-    connect(sys, &SystemSetup::emergencyTemperatureDifferenceChanged, this, [=] {
-        SCHEME_LOG << "emergencyTemperatureDifferenceChanged" << mActiveSysTypeHeating << sys->systemMode;
+    connect(sys, &SystemSetup::useAuxiliaryParallelHeatPumpChanged, this, [=] {
+        SCHEME_LOG << "useAuxiliaryParallelHeatPump changed to " << sys->useAuxiliaryParallelHeatPump;
+        if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
+            restartWork();
+    });
 
-        // restart scheme if needed
-        if (sys->systemType == AppSpecCPP::SystemType::HeatPump && sys->emergencyControlType == AppSpecCPP::ECTAuto) {
-            checkForRestart();
-        }
+    connect(sys, &SystemSetup::driveAux1AndETogetherChanged, this, [=] {
+        SCHEME_LOG << "driveAux1AndETogether changed to " << sys->driveAux1AndETogether;
+        if (sys->systemType == AppSpecCPP::SystemType::HeatPump)
+            restartWork();
+    });
+
+    connect(sys, &SystemSetup::enableEmergencyModeForAuxStagesChanged, this, [=] {
+        SCHEME_LOG << "enableEmergencyModeForAuxStages changed to " << sys->enableEmergencyModeForAuxStages;
+        if (sys->systemType == AppSpecCPP::SystemType::HeatPump && mDataProvider->effectiveSystemMode() == AppSpecCPP::SystemMode::EmergencyHeat)
+            restartWork();
     });
 }
 
