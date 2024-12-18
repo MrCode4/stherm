@@ -13,6 +13,14 @@ class Scheme : public BaseScheme
 {
     Q_OBJECT
 
+private:
+    enum ReturnType {
+        Continue = 0,
+        Break,
+        Successful,
+        None
+    };
+
 public:
     explicit Scheme(DeviceAPI *deviceAPI, QSharedPointer<SchemeDataProvider> schemeDataProvider, QObject *parent = nullptr);
 
@@ -95,7 +103,7 @@ private:
     bool internalHeatingLoopStage3();
 
     void internalPumpHeatingLoopStage1();
-    bool internalPumpHeatingLoopStage2();
+    ReturnType internalPumpHeatingLoopStage2();
 
     //! Users manually activate emergency heat., meaning Emergency heating will only be active when the system mode is set to Emergency or
     //!  emergency heating will be triggered by the Defrost Controller Board (if equipped) or based on system needs.
@@ -129,6 +137,18 @@ private:
     AppSpecCPP::SystemMode activeHeatPumpMode(const bool &checkWithManualEmergency = false);
 
     void manualEmergencyHeating();
+
+    void updateHeatPumpProperties();
+
+    //! Auxiliary heating loop 1
+    //! Return true to break the parent loop
+    //! Return false to continue the parent loop
+    bool auxiliaryHeatingLoopStage1();
+
+    //! Auxiliary heating loop 2
+    //! Return true to break the parent loop
+    //! Return false to continue the parent loop
+    bool auxiliaryHeatingLoopStage2();
 
 private:
     /* Attributes
@@ -181,5 +201,5 @@ private:
     double _AUXT1;
     //! Auxiliary Heating Stage 2 Turning ON temperature
     double _AUXT2;
-    void updateHeatPumpProperties();
+
 };

@@ -82,6 +82,13 @@ public:
 
     int currentCoolingStage();
     int currentHeatingStage();
+
+    bool auxiliaryHeatingStage1(bool driveAux1AndETogether);
+    bool auxiliaryHeatingStage2(bool turnOn = true);
+
+    //! Turn off the heat pump, Y wires.
+    bool turnOffHeatPump();
+
 private:
     explicit Relay();
 
