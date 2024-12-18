@@ -80,6 +80,8 @@ I_DeviceController {
     //! The current status of the system fan (not the device's fan).
     property bool currentSystemFanState: false
 
+    property bool isRunningAuxiliaryHeating: false
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -324,6 +326,10 @@ I_DeviceController {
 
         function onManualEmergencyModeUnblockedAfter(miliSecs: int) {
             uiSession.remainigTimeToUnblockSystemMode = miliSecs;
+        }
+
+        function onAuxiliaryStatusChanged(isRunning: bool) {
+            isRunningAuxiliaryHeating = isRunning;
         }
     }
 

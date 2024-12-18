@@ -174,6 +174,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_Efficiency_Issue));
     });
 
+    connect(mTempScheme, &Scheme::auxiliaryStatusChanged, this, &DeviceControllerCPP::auxiliaryStatusChanged);
+
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
 

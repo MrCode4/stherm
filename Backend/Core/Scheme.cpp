@@ -1205,6 +1205,7 @@ bool Scheme::auxiliaryHeatingLoopStage1()
         }
         mRelay->auxiliaryHeatingStage1(mDataProvider->systemSetup()->driveAux1AndETogether);
         sendRelays();
+        emit auxiliaryStatusChanged(true);
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
         while (!stopWork && mDataProvider->currentTemperature() - effectiveTemperature() < 1) {
@@ -1225,6 +1226,8 @@ bool Scheme::auxiliaryHeatingLoopStage1()
             }
         }
     }
+
+    emit auxiliaryStatusChanged(false);
 
     return true;
 }

@@ -109,6 +109,10 @@ ToolButton {
                         } else if (dfhSystemType === AppSpec.HeatPump && dfhTroubleshootingMode) {
                             return "Heating (Heat pump)"
                         }
+
+                    } else if (device.systemSetup.systemType === AppSpec.HeatPump &&
+                               deviceController.isRunningAuxiliaryHeating) {
+                        return "Heating (Aux)"
                     }
 
                     return "Heating";

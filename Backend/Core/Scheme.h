@@ -79,6 +79,8 @@ signals:
     //! The system mode change will be unblock after `miliSecs` mili-seconds.
     void manualEmergencyModeUnblockedAfter(int miliSecs);
 
+    void auxiliaryStatusChanged(bool running);
+
 protected:
     void run() override;
 

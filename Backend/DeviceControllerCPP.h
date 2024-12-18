@@ -208,6 +208,8 @@ Q_SIGNALS:
                AppSpecCPP::AlertTypes alertType,
                QString alertMessage = QString());
 
+    void auxiliaryStatusChanged(bool running);
+
     void systemSetupChanged();
 
     void systemChanged();

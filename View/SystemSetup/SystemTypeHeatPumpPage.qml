@@ -168,7 +168,7 @@ BasePageView {
                     Layout.fillWidth: true
                     Layout.topMargin: 10
 
-                    text: "Set the minimum time for Emergency heat to run during the call."
+                    text: "Set the minimum time for Aux heat to run during the call."
                     font.pointSize: Application.font.pointSize * 0.9
                     wrapMode: Text.WordWrap
                 }
@@ -278,7 +278,6 @@ BasePageView {
                 RowLayout {
                     Layout.fillWidth: true
 
-                    //! Manual emenrgency: When users select Manual for emergency heating, an additional button labeled Emergency appears in the System Mode menu
                     RadioButton {
                         id: w1w3AuxRB
 
@@ -309,7 +308,6 @@ BasePageView {
 
                     visible: auxiliaryStageLayout.auxiliaryStage === 2
 
-                    //! Manual emenrgency: When users select Manual for emergency heating, an additional button labeled Emergency appears in the System Mode menu
                     RadioButton {
                         id: auxiliaryAsEmergencyRB
 
