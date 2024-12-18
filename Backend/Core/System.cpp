@@ -249,9 +249,11 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         onSerialNumberReady();
 
     connect(&mLogSender, &QProcess::readyReadStandardOutput, this, [&]() {
-        int progress = parseProgress(mLogSender.readAllStandardOutput());
-        if(progress > -1)
-            emit sendLogProgressChanged(progress);
+        if(isBusylogSender()){
+            int progress = parseProgress(mLogSender.readAllStandardOutput());
+            if (progress > -1)
+                emit sendLogProgressChanged(progress);
+        }
     });
 }
 
@@ -1210,7 +1212,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         }
     };
 
-    // Fetch the file from web location    
+    // Fetch the file from web location
     if (!versionAddressInServer.startsWith("/")) versionAddressInServer = "/" + versionAddressInServer;
     QNetworkReply* reply = downloadFile(m_updateServerUrl + versionAddressInServer, callback, false);
     if (!reply) {
@@ -1811,7 +1813,7 @@ bool NUVE::System::isBusylogSender() const {
 bool NUVE::System::sendLog(bool showAlert)
 {
     if (isBusylogSender()){
-        QString error("Previous session is in progress, please try again later.");
+        QString error("Previous session is in progress.");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
         if (showAlert) emit showLogSendingProgress();
         return false;
@@ -1827,6 +1829,7 @@ bool NUVE::System::sendLog(bool showAlert)
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
         //! reset send log progress value
+        emit sendLogProgressChanged(0);
 
         return sendLogFile(showAlert);
 
@@ -2048,11 +2051,6 @@ void NUVE::System::sendFirstRunLogFile()
 
 bool NUVE::System::sendLogFile(bool showAlert)
 {
-    // Start the sending log.
-    if (showAlert) {
-        emit sendLogProgressChanged(0);
-        emit showLogSendingProgress();
-    }
 
     auto filename = generateLog();
     if (filename.isEmpty()) {
@@ -2065,7 +2063,7 @@ bool NUVE::System::sendLogFile(bool showAlert)
 
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
-        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;        
+        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
 
         if (error.isEmpty()) {
             if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
@@ -2091,7 +2089,11 @@ bool NUVE::System::sendLogFile(bool showAlert)
 
     mLogSender.setRole("sendLog", sendCallback);
 
-
+    // Start the sending log.
+    if (showAlert) {
+        emit sendLogProgressChanged(0);
+        emit showLogSendingProgress();
+    }
 
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
     QString copyFile = QString("sshpass -p '%1' rsync -avzhe 'ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\"' --progress  %2 %3@%4:%5").
