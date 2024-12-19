@@ -1259,6 +1259,10 @@ I_DeviceController {
                 "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
                 "dualFuelHeatingModeDefault": device.systemSetup.dualFuelHeatingModeDefault,
                 "emergencyMinimumTime": device.systemSetup.emergencyMinimumTime,
+                "auxiliaryHeating": device.systemSetup.auxiliaryHeating,
+                "useAuxiliaryParallelHeatPump": device.systemSetup.useAuxiliaryParallelHeatPump,
+                "driveAux1AndETogether": device.systemSetup.driveAux1AndETogether,
+                "enableEmergencyModeForAuxStages": device.systemSetup.enableEmergencyModeForAuxStages,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
