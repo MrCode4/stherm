@@ -295,7 +295,7 @@ BasePageView {
                     Layout.fillWidth: true
                     Layout.topMargin: 10
 
-                    visible: auxiliaryStageLayout.auxiliaryStage === 2
+                    visible: auxiliaryStageLayout.auxiliaryStages === 2
 
                     text: "Do you want to drive all stages of auxiliary as Emergency?"
                     font.pointSize: Application.font.pointSize * 0.9
@@ -306,7 +306,7 @@ BasePageView {
                 RowLayout {
                     Layout.fillWidth: true
 
-                    visible: auxiliaryStageLayout.auxiliaryStage === 2
+                    visible: auxiliaryStageLayout.auxiliaryStages === 2
 
                     RadioButton {
                         id: auxiliaryAsEmergencyRB
