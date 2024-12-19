@@ -1084,7 +1084,8 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
     if (stopWork)
         return Break;
 
-    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold;
+    SCHEME_LOG << "Start the internalPumpHeatingWithAuxLoopStage2 loop" << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold << _HPT1;
+
     // turn on stage 2
     mRelay->heatingStage2(true);
 
@@ -1095,7 +1096,6 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
     sendRelays();
 
     while (!stopWork) {
-        SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold;
 
         if (effectiveCurrentTemperature() - effectiveTemperature() < 1.0) {
             if (effectiveTemperature() - effectiveCurrentTemperature() <= _HPT1) {
@@ -1123,7 +1123,8 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
 
         waitLoop(30000);
     }
-    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << "finished stage 2 pump" << stopWork;
+
+    SCHEME_LOG << "End the internalPumpHeatingWithAuxLoopStage2 loop" << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold << _HPT1;
 
     if (stopWork)
         return Break;
@@ -1145,7 +1146,7 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
 
 bool Scheme::auxiliaryHeatingLoopStage1()
 {
-    SCHEME_LOG << "auxiliaryHeatingLoopStage " << stopWork;
+    SCHEME_LOG << "auxiliaryHeatingLoopStage " << stopWork << mDataProvider->systemSetup()->driveAux1AndETogether;
 
     if (stopWork)
         return true;
