@@ -1219,12 +1219,6 @@ bool Scheme::auxiliaryHeatingLoopStage2()
 
         } else {
             sendAlertIfNeeded();
-
-            if (stopWork)
-                break;
-
-            waitLoop(30000);
-            continue;
         }
 
         mRelay->auxiliaryHeatingStage2();
