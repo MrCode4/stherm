@@ -87,7 +87,7 @@ QtObject {
     property Timer auxiliaryRunningTimer: Timer {
         repeat: true
         running: deviceController.isRunningAuxiliaryHeating
-        interval: 1 * 60 * 1000
+        interval: 1 * 60 * 60 * 1000
 
         onTriggered: {
             var alertMessage = "Auxiliary heating is running non stop for 1 hour, if this is normal for your HVAC system ignore the alert, otherwise please contact your Contractor";
