@@ -36,16 +36,11 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
-    Q_PROPERTY(double emergencyTemperatureDifference  MEMBER emergencyTemperatureDifference NOTIFY emergencyTemperatureDifferenceChanged FINAL)
     Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
-    Q_PROPERTY(AppSpecCPP::emergencyControlType    emergencyControlType           MEMBER emergencyControlType  NOTIFY emergencyControlTypeChanged FINAL)
     Q_PROPERTY(bool   useAuxiliaryParallelHeatPump    MEMBER useAuxiliaryParallelHeatPump     NOTIFY useAuxiliaryParallelHeatPumpChanged FINAL)
     Q_PROPERTY(bool   driveAux1AndETogether           MEMBER driveAux1AndETogether            NOTIFY driveAux1AndETogetherChanged FINAL)
     Q_PROPERTY(bool   enableEmergencyModeForAuxStages MEMBER enableEmergencyModeForAuxStages  NOTIFY enableEmergencyModeForAuxStagesChanged FINAL)
     Q_PROPERTY(bool   auxiliaryHeating                MEMBER auxiliaryHeating                 NOTIFY auxiliaryHeatingChanged FINAL)
-
-
-    Q_PROPERTY(double emergencyTemperatureDiffrence MEMBER emergencyTemperatureDiffrence NOTIFY emergencyTemperatureDiffrenceChanged FINAL)
 
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
@@ -85,15 +80,6 @@ public:
     //! In minutes
     int emergencyMinimumTime;
 
-    AppSpecCPP::emergencyControlType emergencyControlType;
-
-    //! In celcius
-    double emergencyTemperatureDifference;
-
-
-    //! TODO: Remove later, kept for consistency check, In celcius
-    double emergencyTemperatureDiffrence;
-
     //! Auxiliary properties
     //! Would you like to turn on auxiliary heating in parallel with your heat pump when it's cold outside and the heat pump alone can't keep up?
     bool useAuxiliaryParallelHeatPump;
@@ -118,14 +104,11 @@ signals:
     void isVacationChanged();
     void isSystemShutoffChanged();
     void dualFuelThreshodChanged();
-    void emergencyTemperatureDifferenceChanged();
     void emergencyMinimumTimeChanged();
-    void emergencyControlTypeChanged();
     void isAUXAutoChanged();
     void dualFuelManualHeatingChanged();
     void dualFuelHeatingModeDefaultChanged();
 
-    void emergencyTemperatureDiffrenceChanged();
     void useAuxiliaryParallelHeatPumpChanged();
     void driveAux1AndETogetherChanged();
     void enableEmergencyModeForAuxStagesChanged();

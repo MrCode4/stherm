@@ -207,12 +207,6 @@ public:
     };
     Q_ENUM(AlertTypes)
 
-    enum emergencyControlType {
-        ECTManually = 0,
-        ECTAuto
-    };
-    Q_ENUM(emergencyControlType)
-
     Q_INVOKABLE QVariant readFromFile(const QString &fileUrl);
 
     Q_INVOKABLE QString systemModeToString(SystemMode systemMode);

@@ -1073,7 +1073,6 @@ void Scheme::internalPumpHeatingWithAuxLoopStage1()
     // Stop countdown
     if (hasDelay) {
         emit stopSystemDelayCountdown();
-        hasDelay = false;
     }
 
     SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << "finished pump heat" << stopWork;

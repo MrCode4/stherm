@@ -1259,8 +1259,6 @@ I_DeviceController {
                 "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
                 "dualFuelHeatingModeDefault": device.systemSetup.dualFuelHeatingModeDefault,
                 "emergencyMinimumTime": device.systemSetup.emergencyMinimumTime,
-                "emergencyControlType": device.systemSetup.emergencyControlType,
-                "emergencyTemperatureDifference": device.systemSetup.emergencyTemperatureDifference,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
@@ -1382,8 +1380,6 @@ I_DeviceController {
         device.systemSetup.driveAux1AndETogether = driveAux1AndETogether;
         device.systemSetup.enableEmergencyModeForAuxStages = enableEmergencyModeForAuxStages;
 
-        //! This function requires a valid emergencyControlType and heatPumpEmergency
-        //! so the emergencyControlType must be set before calling this function in the HeatPump type
         setSystemTypeTo(AppSpecCPP.HeatPump);
     }
 
@@ -1437,9 +1433,7 @@ I_DeviceController {
         device.systemSetup.systemType = systemType;
 
         if (device.systemSetup.systemMode === AppSpecCPP.EmergencyHeat &&
-                (!device.systemSetup.heatPumpEmergency ||
-                 device.systemSetup.emergencyControlType !== AppSpec.ECTManually ||
-                systemType !== AppSpecCPP.HeatPump)) {
+                systemType !== AppSpecCPP.HeatPump) {
             switch (systemType) {
             case AppSpec.Conventional:
             case AppSpec.HeatPump:
