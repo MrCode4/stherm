@@ -72,9 +72,8 @@ AppSpecCPP::SystemMode SchemeDataProvider::effectiveSystemMode() const
     if (isPerfTestRunning()) {
         return perfTestSystemMode();
     }
-    else {
-        return systemSetup()->systemMode;
-    }
+
+    return systemSetup()->systemMode;
 }
 
 double SchemeDataProvider::effectiveTemperature() const

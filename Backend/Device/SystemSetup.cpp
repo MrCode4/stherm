@@ -31,5 +31,5 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     auxiliaryHeating = true;
     useAuxiliaryParallelHeatPump = true;
     driveAux1AndETogether = true;
-    enableEmergencyModeForAuxStages = true;
+    driveAuxAsEmergency = true;
 }

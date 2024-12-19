@@ -39,7 +39,7 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
     Q_PROPERTY(bool   useAuxiliaryParallelHeatPump    MEMBER useAuxiliaryParallelHeatPump     NOTIFY useAuxiliaryParallelHeatPumpChanged FINAL)
     Q_PROPERTY(bool   driveAux1AndETogether           MEMBER driveAux1AndETogether            NOTIFY driveAux1AndETogetherChanged FINAL)
-    Q_PROPERTY(bool   enableEmergencyModeForAuxStages MEMBER enableEmergencyModeForAuxStages  NOTIFY enableEmergencyModeForAuxStagesChanged FINAL)
+    Q_PROPERTY(bool   driveAuxAsEmergency MEMBER driveAuxAsEmergency  NOTIFY driveAuxAsEmergencyChanged FINAL)
     Q_PROPERTY(bool   auxiliaryHeating                MEMBER auxiliaryHeating                 NOTIFY auxiliaryHeatingChanged FINAL)
 
 public:
@@ -61,7 +61,7 @@ public:
 
     bool _mIsSystemShutoff;
 
-    bool heatPumpEmergency;
+    bool heatPumpEmergency = false;
 
     SystemAccessories* systemAccessories;
 
@@ -88,7 +88,7 @@ public:
     bool driveAux1AndETogether;
 
     //! Do you want to drive all stages of auxiliary as Emergency in Auxiliary mode?
-    bool enableEmergencyModeForAuxStages;
+    bool driveAuxAsEmergency;
 
     bool auxiliaryHeating;
 
@@ -111,7 +111,7 @@ signals:
 
     void useAuxiliaryParallelHeatPumpChanged();
     void driveAux1AndETogetherChanged();
-    void enableEmergencyModeForAuxStagesChanged();
+    void driveAuxAsEmergencyChanged();
     void auxiliaryHeatingChanged();
 
 };

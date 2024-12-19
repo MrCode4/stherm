@@ -311,7 +311,7 @@ BasePageView {
                     RadioButton {
                         id: auxiliaryAsEmergencyRB
 
-                        checked: appModel.systemSetup?.enableEmergencyModeForAuxStages ?? true
+                        checked: appModel.systemSetup?.driveAuxAsEmergency ?? true
                         text: "Yes"
                     }
 

@@ -156,7 +156,8 @@ BasePageView {
             checkable: true
 
             //! Enable emergency heating when system type is heat pump
-            visible: device?.systemSetup.systemType === AppSpec.HeatPump
+            visible: device?.systemSetup.systemType === AppSpec.HeatPump &&
+                     device?.systemSetup.auxiliaryHeating
 
             checked: visible && device?.systemSetup.systemMode === AppSpecCPP.EmergencyHeat  && !device?.systemSetup._isSystemShutoff
             text: "Emergency Heat"

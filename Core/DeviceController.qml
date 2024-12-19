@@ -1262,7 +1262,7 @@ I_DeviceController {
                 "auxiliaryHeating": device.systemSetup.auxiliaryHeating,
                 "useAuxiliaryParallelHeatPump": device.systemSetup.useAuxiliaryParallelHeatPump,
                 "driveAux1AndETogether": device.systemSetup.driveAux1AndETogether,
-                "enableEmergencyModeForAuxStages": device.systemSetup.enableEmergencyModeForAuxStages,
+                "driveAuxAsEmergency": device.systemSetup.driveAuxAsEmergency,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
@@ -1371,7 +1371,7 @@ I_DeviceController {
                                emergencyMinimumTime: int, auxiliaryStages: int,
                                useAuxiliaryParallelHeatPump: bool,
                                driveAux1AndETogether: bool,
-                               enableEmergencyModeForAuxStages: bool) {
+                               driveAuxAsEmergency: bool) {
         device.systemSetup.auxiliaryHeating = auxiliaryHeating;
 
         // coolStage controls the Y wires.
@@ -1382,7 +1382,7 @@ I_DeviceController {
         device.systemSetup.emergencyMinimumTime = emergencyMinimumTime;
         device.systemSetup.useAuxiliaryParallelHeatPump = useAuxiliaryParallelHeatPump;
         device.systemSetup.driveAux1AndETogether = driveAux1AndETogether;
-        device.systemSetup.enableEmergencyModeForAuxStages = enableEmergencyModeForAuxStages;
+        device.systemSetup.driveAuxAsEmergency = driveAuxAsEmergency;
 
         setSystemTypeTo(AppSpecCPP.HeatPump);
     }
@@ -1480,7 +1480,7 @@ I_DeviceController {
                               settings.heatStage,
                               settings.useAuxiliaryParallelHeatPump ?? device.systemSetup.useAuxiliaryParallelHeatPump,
                               settings.driveAux1AndETogether ?? device.systemSetup.driveAux1AndETogether,
-                              settings.enableEmergencyModeForAuxStages ?? device.systemSetup.enableEmergencyModeForAuxStages)
+                              settings.driveAuxAsEmergency ?? device.systemSetup.driveAuxAsEmergency)
 
         } else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)

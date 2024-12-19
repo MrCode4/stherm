@@ -87,7 +87,8 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK_SCHEME(isRunning() && sys) << "systemRunDelay: " << sys->systemRunDelay << "isVacation: " << mDataProvider->isVacationEffective();
         LOG_CHECK_SCHEME(isRunning() && mDataProvider->isPerfTestRunning())<< "Perf test actual isVacation: "<<  sys->isVacation;
         LOG_CHECK_SCHEME(isRunning() && sys) << "heatStage: "  << sys->heatStage << "coolStage: " <<sys->coolStage;
-        LOG_CHECK_SCHEME(isRunning() && sys) << "heatPumpEmergency: "  << sys->heatPumpEmergency << "heatPumpOBState: " << (sys->heatPumpOBState == 0 ? "cooling" : "heating");
+        LOG_CHECK_SCHEME(isRunning() && sys) << "auxiliaryHeating: "  << sys->auxiliaryHeating << ", heatPumpOBState: " << (sys->heatPumpOBState == 0 ? "cooling" : "heating");
+        LOG_CHECK_SCHEME(isRunning() && sys) << "useAuxiliaryParallelHeatPump: "  << sys->useAuxiliaryParallelHeatPump << ", driveAux1AndETogether: " << sys->driveAux1AndETogether << ", driveAuxAsEmergency: " << sys->driveAuxAsEmergency;
         LOG_CHECK_SCHEME(isRunning() && sys) << "systemAccessories (wire, typ): " << sys->systemAccessories->property("accessoriesWireType") <<  sys->systemAccessories->property("accessoriesType");
         LOG_CHECK_SCHEME(isRunning() && mRelay) << "getOb_state: "  << mRelay->getOb_state() << "relays: " << mRelay->relays().printStr();
         LOG_CHECK_SCHEME(isRunning() && mDataProvider.data()->schedule()) << "Schedule : " << mDataProvider.data()->schedule()->name;
@@ -444,7 +445,6 @@ void Scheme::HeatingLoop()
     mActiveSysTypeHeating = activeSystemTypeHeating();
     emit dfhSystemTypeChanged(mActiveSysTypeHeating);
 
-
     // update configs and ...
     // s1 & s2 time threshold
     //    Y1, Y2, O/B G W1 W2 W3
@@ -452,23 +452,23 @@ void Scheme::HeatingLoop()
     case AppSpecCPP::SystemType::HeatPump: // emergency as well?
     {
         LOG_CHECK_SCHEME(false) << "HeatPump" << mDataProvider.data()->currentTemperature() << effectiveTemperature();
+        SCHEME_LOG << "Heat pump, heating, " << mDataProvider->systemSetup()->systemType << mActiveSysTypeHeating;
 
-        // Heat pump with auxiliary
+        // Heat pump with auxiliary when the actual system type is heat pump
         if (mDataProvider->systemSetup()->systemType == AppSpecCPP::HeatPump &&
             mDataProvider->systemSetup()->auxiliaryHeating) {
+            SCHEME_LOG << "Heat pump with Aux " << mDataProvider->systemSetup()->auxiliaryHeating;
+
             emit actualModeStarted(AppSpecCPP::Heating);
             updateHeatPumpProperties();
             internalPumpHeatingWithAuxLoopStage1();
 
-        } else {
-            // get time threshold ETime
-            auto activeHeatpumpMode = AppSpecCPP::Heating;
-            if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
-                emit actualModeStarted(activeHeatpumpMode);
+            // When the active system type is Heat pump, the actual system type can be dual fuel
+        } else if (mDataProvider.data()->currentTemperature() < effectiveTemperature()) {
+            emit actualModeStarted(AppSpecCPP::Heating);
 
-                SCHEME_LOG << "Normal, emergency heating is enable:" << mDataProvider->systemSetup()->heatPumpEmergency;
-                internalPumpHeatingLoopStage1();
-            }
+            SCHEME_LOG << "Normal heat pump";
+            internalPumpHeatingLoopStage1();
         }
     } break;
     case AppSpecCPP::SystemType::Conventional:
@@ -1208,9 +1208,6 @@ bool Scheme::auxiliaryHeatingLoopStage2()
     // 5 secs
     emit changeBacklight(heatingColor);
 
-    mRelay->auxiliaryHeatingStage2();
-    sendRelays();
-    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
     while (!stopWork) {
         if (mTiming->s2hold && effectiveCurrentTemperature() - effectiveTemperature() >= 1) {
@@ -1226,7 +1223,12 @@ bool Scheme::auxiliaryHeatingLoopStage2()
                 break;
 
             waitLoop(30000);
+            continue;
         }
+
+        mRelay->auxiliaryHeatingStage2();
+        sendRelays();
+        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
     }
 
     if (!mRestarting && !stopWork) {
@@ -1246,8 +1248,6 @@ bool Scheme::auxiliaryHeatingLoopStage2()
 
 void Scheme::manualEmergencyHeating()
 {
-    auto sysSetup = mDataProvider->systemSetup();
-
     SCHEME_LOG << "Start the emergency heating mode ";
 
     // Optimize emergency mode to prevent unnecessary backlight and emergency heating activation.
@@ -1272,26 +1272,27 @@ void Scheme::emergencyHeatingLoop()
         return;
     }
 
+    if (!sysSetup->auxiliaryHeating) {
+        SCHEME_LOG << "Auxiliary heating is off.";
+
+        return;
+    }
+
     mActiveHeatPumpMode =  AppSpecCPP::EmergencyHeat;
     mRelay->setAllOff();
 
-    if (mDataProvider->systemSetup()->auxiliaryHeating) {
 
-        if (mDataProvider->systemSetup()->heatStage == 1 || !mDataProvider->systemSetup()->enableEmergencyModeForAuxStages) {
-            mRelay->auxiliaryHeatingStage1(mDataProvider->systemSetup()->driveAux1AndETogether);
+    if (sysSetup->heatStage == 1 || !sysSetup->driveAuxAsEmergency) {
+        mRelay->auxiliaryHeatingStage1(sysSetup->driveAux1AndETogether);
 
-        } else if (mDataProvider->systemSetup()->heatStage >= 2 &&  mDataProvider->systemSetup()->enableEmergencyModeForAuxStages) {
-            mRelay->heatingStage3();
-        }
-
-    } else {
-        mRelay->emergencyHeating3();
+    } else if (sysSetup->heatStage >= 2 &&  sysSetup->driveAuxAsEmergency) {
+        mRelay->heatingStage3();
     }
 
     mTEONTimer.restart();
 
     // Block the UI
-    emit manualEmergencyModeUnblockedAfter(mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000);
+    emit manualEmergencyModeUnblockedAfter(sysSetup->emergencyMinimumTime * 60 * 1000);
 
     // Emergency wirings will be active due to the reset of the mTEONTimer.
     // 5 Sec
@@ -1302,10 +1303,10 @@ void Scheme::emergencyHeatingLoop()
 
 
     while (!stopWork && (effectiveTemperature() - effectiveCurrentTemperature() > -1 ||
-                         (mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()))) {
+                         (sysSetup->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()))) {
 
         // Disable UI interactions in system mode page during manual or auto emergency mode until the minimum duration is reached.
-        auto remainigEmergencyMinimumTimeMS = mDataProvider->systemSetup()->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed();
+        auto remainigEmergencyMinimumTimeMS = sysSetup->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed();
 
         // -5: To ensure that the signal with a value of zero is transmitted sent.
         if (remainigEmergencyMinimumTimeMS > -1 * RELAYS_WAIT_MS * 5)
@@ -1698,11 +1699,6 @@ void Scheme::setSystemSetup()
     connect(sys, &SystemSetup::systemRunDelayChanged, this, [=] {
         SCHEME_LOG << "systemRunDelayChanged: " << sys->systemRunDelay << sys->systemType;
     });
-    connect(sys, &SystemSetup::heatPumpEmergencyChanged, this, [=] {
-        if (sys->systemType == AppSpecCPP::SystemType::HeatPump ||
-            sys->systemType == AppSpecCPP::SystemType::DualFuelHeating)
-            SCHEME_LOG << "heatPumpEmergencyChanged: " << sys->heatPumpEmergency;
-    });
 
     connect(sys, &SystemSetup::dualFuelThreshodChanged, this, [=] {
         SCHEME_LOG << "dualFuelThreshodChanged" << mActiveSysTypeHeating << sys->systemMode;
@@ -1754,8 +1750,8 @@ void Scheme::setSystemSetup()
             restartWork();
     });
 
-    connect(sys, &SystemSetup::enableEmergencyModeForAuxStagesChanged, this, [=] {
-        SCHEME_LOG << "enableEmergencyModeForAuxStages changed to " << sys->enableEmergencyModeForAuxStages;
+    connect(sys, &SystemSetup::driveAuxAsEmergencyChanged, this, [=] {
+        SCHEME_LOG << "driveAuxAsEmergency changed to " << sys->driveAuxAsEmergency;
         if (sys->systemType == AppSpecCPP::SystemType::HeatPump && mDataProvider->effectiveSystemMode() == AppSpecCPP::SystemMode::EmergencyHeat)
             restartWork();
     });
