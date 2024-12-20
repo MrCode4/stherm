@@ -208,6 +208,8 @@ Q_SIGNALS:
                AppSpecCPP::AlertTypes alertType,
                QString alertMessage = QString());
 
+    void auxiliaryStatusChanged(bool running);
+
     void systemSetupChanged();
 
     void systemChanged();
@@ -299,6 +301,7 @@ private:
     void processBackLightSettings(const QString &path);
     void processFanSettings(const QString &path);
     void processBrightnessSettings(const QString &path);
+    void processRelaySettings(const QString &path);
     QByteArray defaultSettings(const QString &path);
 
     //! Start/Stop the timer for get the outdoor temperature
@@ -308,16 +311,12 @@ private:
     /* Attributes
      * ****************************************************************************************/
     // Store the raw main data
-    QVariantMap _rawMainData;
-
-
+    QVariantMap _lastMainData;
     QVariantMap _mainData;
     QVariantMap _mainData_override;
     bool _override_by_file = false;
     double _temperatureLast = 0.0;
 
-    // To avoid the first deviation in the average
-    bool _isFirstDataReceived = false;
 
     bool mIsDeviceStarted = false;
 
@@ -341,7 +340,7 @@ private:
     NUVE::System *m_system;
 
     QString m_backdoorPath = "/usr/local/bin/backdoor/";
-    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" };
+    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" , "relays.json" };
     QFileSystemWatcher m_fileSystemWatcher;
 
     QTimer mBacklightTimer;
@@ -374,9 +373,6 @@ private:
     int mFanSpeed;
     bool mFanOff;
 
-    //! TEMP, To keep raw temperature.
-    double mRawTemperature;
-
     //! percent value
     double mAdaptiveBrightness;
 
@@ -392,9 +388,12 @@ private:
     // const double TEMPERATURE_COMPENSATION_OFFSET = 0.25 + 2.0 / 1.8;
     const double TEMPERATURE_COMPENSATION_OFFSET = 1.0 / 1.8;
     const double TEMPERATURE_COMPENSATION_SCALER = 0.8 * 3.1 / 360;
+    //! in Celcius
     double deltaCorrection()
     {
-        return  TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
+        double correction = TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
+        // the hypothesis is correction value is in F and should be converted
+        return  correction / 1.8;
     }
 
     // Testing
@@ -404,4 +403,6 @@ private:
     QStringList mAllTestNames; // to keep them in order
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
+
+    bool mBackdoorSchemeEnabled = false;
 };

@@ -48,6 +48,20 @@ static const QByteArray m_default_backdoor_fan = R"({
 }
 )";
 
+static const QByteArray m_default_backdoor_relays = R"({
+    "o_b": // 1,
+    "y1": //1,
+    "y2": // 1,
+    "w1": //1,
+    "w2": //1,
+    "w3": //1,
+    "acc2": //1,
+    "acc1p": //1,
+    "acc1n": //1,
+    "g": //1
+}
+)";
+
 
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
@@ -160,6 +174,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
                    STHERM::getAlertTypeString(AppSpecCPP::Alert_Efficiency_Issue));
     });
 
+    connect(mTempScheme, &Scheme::auxiliaryStatusChanged, this, &DeviceControllerCPP::auxiliaryStatusChanged);
+
     // TODO should be loaded later for accounting previous session
     mDeltaTemperatureIntegrator = 0;
 
@@ -197,7 +213,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mTEMPERATURE_COMPENSATION_Timer.setSingleShot(false);
     connect(&mTEMPERATURE_COMPENSATION_Timer, &QTimer::timeout, this, [this]() {
         if (isFanON()) {
-            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (0.2 - mTEMPERATURE_COMPENSATION_T1) / 148.4788;
+            mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + (0.2 / 1.8 - mTEMPERATURE_COMPENSATION_T1) / 148.4788;
         } else {
             mTEMPERATURE_COMPENSATION_T1 = mTEMPERATURE_COMPENSATION_T1 + ((2.847697 - deltaCorrection()) - mTEMPERATURE_COMPENSATION_T1) / 655.5680515;
         }
@@ -230,7 +246,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         DC_LOG << "Brightness: " << brightness;
 
-        DC_LOG << "Raw Temperature: " << mRawTemperature;
+        DC_LOG << "Raw Temperature: " << _mainData.value(temperatureRawKey);
+        DC_LOG << "Corrected Temperature: " << _mainData.value(temperatureKey);
 
         DC_LOG << "Is night mode running: " << mIsNightModeRunning;
 
@@ -252,12 +269,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mBacklightPowerTimer.start();
 
     connect(_deviceIO, &DeviceIOController::mainDataReady, this, [this](QVariantMap data) {
-        // To avoid the first deviation in the average
-        if (!_isFirstDataReceived) {
-            _rawMainData = data;
-            _isFirstDataReceived = true;
-        }
-
         setMainData(data);
     });
 
@@ -347,6 +358,9 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     connect(mTempScheme, &Scheme::updateRelays, this, [this](STHERM::RelayConfigs relays, bool force) {
+        if (mBackdoorSchemeEnabled)
+            return;
+
         _deviceIO->updateRelays(relays, force);
     });
 
@@ -357,14 +371,23 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(mTempScheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
     connect(mTempScheme, &Scheme::manualEmergencyModeUnblockedAfter, this, &DeviceControllerCPP::manualEmergencyModeUnblockedAfter);
     connect(mTempScheme, &Scheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        if (mBackdoorSchemeEnabled)
+            return;
+
         mHumidityScheme->setCanSendRelays(!isRunning);
-    });
+        }, Qt::DirectConnection);
 
     connect(mHumidityScheme, &HumidityScheme::sendRelayIsRunning, this, [this] (const bool& isRunning) {
+        if (mBackdoorSchemeEnabled)
+            return;
+
         mTempScheme->setCanSendRelays(!isRunning);
-    });
+    }, Qt::DirectConnection);
 
     connect(mHumidityScheme, &HumidityScheme::updateRelays, this, [this](STHERM::RelayConfigs relays, bool force) {
+        if (mBackdoorSchemeEnabled)
+            return;
+
         _deviceIO->updateRelays(relays, force);
     });
 
@@ -730,21 +753,18 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
 
     } else {
         bool isOk;
-        double tc = mainData.value(temperatreKey).toDouble(&isOk);
+        double tc = mainData.value(temperatureRawKey).toDouble(&isOk);
         if (isOk){
-            mRawTemperature = tc;
-
             double dt = deltaCorrection();
             // Fan status effect:
             dt += mTEMPERATURE_COMPENSATION_T1;
             LOG_CHECK_DC(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
             if (qAbs(dt) < 10) {
                 tc -= dt;
-
-                mainData.insert(temperatreKey, tc);
             } else {
                 qWarning() << "dt is greater than 10! check for any error.";
             }
+            mainData.insert(temperatureKey, tc);
         }
 
         if (mFanOff)
@@ -756,20 +776,14 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
         _mainData = mainData;
 
         // Average of the last two temperature and humidity
-        // Get temperature from _rawMainData
-        auto rt = _rawMainData.value(temperatreKey, tc).toDouble(&isOk);
-
-        if (isOk)
-            _mainData.insert(temperatreKey, (tc + rt) / 2);
+        auto rt = _lastMainData.value(temperatureKey, tc).toDouble();
+        _mainData.insert(temperatureKey, (tc + rt) / 2);
 
         auto mh = mainData.value(humidityKey, 0.0).toDouble();
-        // Get humidity from _rawMainData
-        auto rh = _rawMainData.value(humidityKey, mh).toDouble(&isOk);
+        auto rh = _lastMainData.value(humidityKey, mh).toDouble();
+        _mainData.insert(humidityKey, (mh + rh) / 2);
 
-        if (isOk)
-            _mainData.insert(humidityKey, (mh + rh) / 2);
-
-        _rawMainData = mainData;
+        _lastMainData = mainData;
     }
 
     if (!mSchemeDataProvider.isNull())
@@ -840,6 +854,8 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
         processFanSettings(path);
     } else if (path.endsWith("brightness.json")) {
         processBrightnessSettings(path);
+    } else if (path.endsWith("relays.json")) {
+        processRelaySettings(path);
     } else {
         qWarning() << "Incompatible backdoor file, processed nothing";
     }
@@ -1011,7 +1027,7 @@ QVariantMap DeviceControllerCPP::getMainData()
     if (hasOverride) {
         auto overrideTemp = override.value("temp").toDouble();
         LOG_CHECK_DC(!_override_by_file) <<"temperature will be overriden by value: " << overrideTemp << ", read from /usr/local/bin/override.ini file.";
-        overrideData.insert("temperature", overrideTemp);
+        overrideData.insert(temperatureKey, overrideTemp);
     }
 
     if (_override_by_file != hasOverride){
@@ -1027,7 +1043,7 @@ QVariantMap DeviceControllerCPP::getMainData()
 
     // to make effect of overriding instantly, TODO  remove or disable later
     bool isOk;
-    double currentTemp = mainData.value("temperature").toDouble(&isOk);
+    double currentTemp = mainData.value(temperatureKey).toDouble(&isOk);
     if (isOk && currentTemp != _temperatureLast) {
         _temperatureLast = currentTemp;
         if (mSchemeDataProvider.isNull())
@@ -1260,7 +1276,8 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(brightness));
 
             } else if (key == m_RawTemperatureHeader) {
-                dataStrList.append(QString::number(mRawTemperature * 1.8 + 32));
+                auto rawTemperatureC = _mainData.value(temperatureRawKey).toDouble();
+                dataStrList.append(QString::number(rawTemperatureC * 1.8 + 32));
 
             } else if (key == m_NightModeHeader) {
                 dataStrList.append(mIsNightModeRunning ? "true" : "false");
@@ -1419,6 +1436,42 @@ void DeviceControllerCPP::processBrightnessSettings(const QString &path)
     _deviceIO->setSettings(data);
 }
 
+void DeviceControllerCPP::processRelaySettings(const QString &path)
+{
+    STHERM::RelayConfigs relays = Relay::instance()->relays();
+    QJsonObject json = processJsonFile(path, {"o_b", "y1", "y2", "w1", "w2", "w3", "acc2", "acc1p", "acc1n", "g"});
+
+    // if returned value is ok override the default values
+    if (!json.isEmpty()) {
+        //! stopping schemes from controlling relays
+        mBackdoorSchemeEnabled = true;
+        mTempScheme->stopSendingRelays();
+        mHumidityScheme->stopSendingRelays();
+
+        //! overrding values based on parsed data
+        relays.g = (STHERM::RelayMode)json.value("g").toInt(2);
+        relays.y1 = (STHERM::RelayMode)json.value("y1").toInt(2);
+        relays.y2 = (STHERM::RelayMode)json.value("y2").toInt(2);
+        relays.w1 = (STHERM::RelayMode)json.value("w1").toInt(2);
+        relays.w2 = (STHERM::RelayMode)json.value("w2").toInt(2);
+        relays.w3 = (STHERM::RelayMode)json.value("w3").toInt(2);
+        relays.acc2 = (STHERM::RelayMode)json.value("acc2").toInt(2);
+        relays.acc1p = (STHERM::RelayMode)json.value("acc1p").toInt(2);
+        relays.acc1n = (STHERM::RelayMode)json.value("acc1n").toInt(2);
+        relays.o_b  = (STHERM::RelayMode)json.value("o_b").toInt(2);
+
+        SCHEME_LOG << "Update relays with backdoor. Relays: " << relays.printStr();
+        _deviceIO->updateRelays(relays, true);
+
+    } else if (mBackdoorSchemeEnabled) { // restore last state and get back to normal behavior restarting schemes
+        SCHEME_LOG << "Update relays with Original. Relays: " << relays.printStr();
+        _deviceIO->updateRelays(relays, true);
+        mTempScheme->resumeSendingRelays();
+        mHumidityScheme->resumeSendingRelays();
+        mBackdoorSchemeEnabled = false;
+    }
+}
+
 QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 {
     if (path.endsWith("backlight.json")) {
@@ -1429,6 +1482,9 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 
     } else if (path.endsWith("brightness.json")) {
         return m_default_backdoor_brightness;
+
+    } else if (path.endsWith("relays.json")) {
+        return m_default_backdoor_relays;
 
     } else {
         qWarning() << "Incompatible backdoor file, returning empty values";
@@ -1447,7 +1503,7 @@ void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
     filePath = "/mnt/data/sensor/sensorData.csv";
 #endif
 
-    const QStringList header = {dateTimeHeader, temperatreKey, humidityKey,
+    const QStringList header = {dateTimeHeader, temperatureKey, humidityKey,
                                 co2Key, etohKey, TvocKey,
                                 iaqKey, pressureKey, RangeMilliMeterKey,
                                 brightnessKey, fanSpeedKey};

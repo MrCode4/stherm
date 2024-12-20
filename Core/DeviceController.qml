@@ -80,6 +80,8 @@ I_DeviceController {
     //! The current status of the system fan (not the device's fan).
     property bool currentSystemFanState: false
 
+    property bool isRunningAuxiliaryHeating: false
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -324,6 +326,10 @@ I_DeviceController {
 
         function onManualEmergencyModeUnblockedAfter(miliSecs: int) {
             uiSession.remainigTimeToUnblockSystemMode = miliSecs;
+        }
+
+        function onAuxiliaryStatusChanged(isRunning: bool) {
+            isRunningAuxiliaryHeating = isRunning;
         }
     }
 
@@ -1253,8 +1259,10 @@ I_DeviceController {
                 "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
                 "dualFuelHeatingModeDefault": device.systemSetup.dualFuelHeatingModeDefault,
                 "emergencyMinimumTime": device.systemSetup.emergencyMinimumTime,
-                "emergencyControlType": device.systemSetup.emergencyControlType,
-                "emergencyTemperatureDifference": device.systemSetup.emergencyTemperatureDifference,
+                "auxiliaryHeating": device.systemSetup.auxiliaryHeating,
+                "useAuxiliaryParallelHeatPump": device.systemSetup.useAuxiliaryParallelHeatPump,
+                "driveAux1AndETogether": device.systemSetup.driveAux1AndETogether,
+                "driveAuxAsEmergency": device.systemSetup.driveAuxAsEmergency,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
@@ -1359,22 +1367,23 @@ I_DeviceController {
         }
     }
 
-    function setSystemHeatPump(emergencyHeating: bool, stage: int, obState: int,
-                               emergencyMinimumTime: int, emergencyControlType: int,
-                               emergencyTemperatureDifference: real) {
-        device.systemSetup.heatPumpEmergency = emergencyHeating;
+    function setSystemHeatPump(auxiliaryHeating: bool, stage: int, obState: int,
+                               emergencyMinimumTime: int, auxiliaryStages: int,
+                               useAuxiliaryParallelHeatPump: bool,
+                               driveAux1AndETogether: bool,
+                               driveAuxAsEmergency: bool) {
+        device.systemSetup.auxiliaryHeating = auxiliaryHeating;
 
         // coolStage controls the Y wires.
         device.systemSetup.coolStage = stage;
-
+        device.systemSetup.heatStage = auxiliaryStages;
         device.systemSetup.heatPumpOBState = obState;
 
         device.systemSetup.emergencyMinimumTime = emergencyMinimumTime;
-        device.systemSetup.emergencyControlType = emergencyControlType;
-        device.systemSetup.emergencyTemperatureDifference = emergencyTemperatureDifference;
+        device.systemSetup.useAuxiliaryParallelHeatPump = useAuxiliaryParallelHeatPump;
+        device.systemSetup.driveAux1AndETogether = driveAux1AndETogether;
+        device.systemSetup.driveAuxAsEmergency = driveAuxAsEmergency;
 
-        //! This function requires a valid emergencyControlType and heatPumpEmergency
-        //! so the emergencyControlType must be set before calling this function in the HeatPump type
         setSystemTypeTo(AppSpecCPP.HeatPump);
     }
 
@@ -1428,9 +1437,7 @@ I_DeviceController {
         device.systemSetup.systemType = systemType;
 
         if (device.systemSetup.systemMode === AppSpecCPP.EmergencyHeat &&
-                (!device.systemSetup.heatPumpEmergency ||
-                 device.systemSetup.emergencyControlType !== AppSpec.ECTManually ||
-                systemType !== AppSpecCPP.HeatPump)) {
+                systemType !== AppSpecCPP.HeatPump) {
             switch (systemType) {
             case AppSpec.Conventional:
             case AppSpec.HeatPump:
@@ -1467,10 +1474,13 @@ I_DeviceController {
         else if(settings.type === "heating")
             setSystemHeatOnly(settings.heatStage)
         else if(settings.type === "heat_pump") {
-            setSystemHeatPump(settings.heatPumpEmergency, settings.coolStage, settings.heatPumpOBState,
+            setSystemHeatPump(settings.auxiliaryHeating ?? device.systemSetup.auxiliaryHeating,
+                              settings.coolStage, settings.heatPumpOBState,
                               settings.emergencyMinimumTime ?? device.systemSetup.emergencyMinimumTime,
-                              settings.emergencyControlType ?? device.systemSetup.emergencyControlType,
-                              settings.emergencyTemperatureDifference ?? device.systemSetup.emergencyTemperatureDifference)
+                              settings.heatStage,
+                              settings.useAuxiliaryParallelHeatPump ?? device.systemSetup.useAuxiliaryParallelHeatPump,
+                              settings.driveAux1AndETogether ?? device.systemSetup.driveAux1AndETogether,
+                              settings.driveAuxAsEmergency ?? device.systemSetup.driveAuxAsEmergency)
 
         } else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
@@ -1642,7 +1652,7 @@ I_DeviceController {
 
     function setTestData(temperature, on) {
         var send_data = {
-            "temperature": temperature,
+            "temperature": temperature, // see AppSpecCPP.h for key definition temperatureKey
         }
         deviceControllerCPP.setOverrideMainData(on ? send_data : {})
     }

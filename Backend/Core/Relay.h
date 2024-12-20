@@ -82,6 +82,15 @@ public:
 
     int currentCoolingStage();
     int currentHeatingStage();
+
+    bool auxiliaryHeatingStage1(bool driveAux1AndETogether);
+
+    //! This function toggles the W1 and W2 wires, If we want to keep enable the W1, we should check it again with other functions.
+    bool auxiliaryHeatingStage2(bool turnOn = true);
+
+    //! Turn off the heat pump, Y wires.
+    bool turnOffHeatPump();
+
 private:
     explicit Relay();
 

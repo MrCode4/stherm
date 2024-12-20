@@ -19,7 +19,7 @@ void SchemeDataProvider::setMainData(QVariantMap mainData)
     _mainData = mainData;
 
     bool isOk;
-    double tc = mainData.value("temperature").toDouble(&isOk);
+    double tc = mainData.value(temperatureKey).toDouble(&isOk);
     double currentTemp = UtilityHelper::toFahrenheit(tc);
 
     if (isOk) {
@@ -29,7 +29,7 @@ void SchemeDataProvider::setMainData(QVariantMap mainData)
         mCurrentTemperature = currentTemp;
     }
 
-    double currentHumidity = mainData.value("humidity").toDouble(&isOk);
+    double currentHumidity = mainData.value(humidityKey).toDouble(&isOk);
 
     if (isOk && qAbs(currentHumidity - mCurrentHumidity) > 0.1) {
         mCurrentHumidity = currentHumidity;
@@ -72,9 +72,8 @@ AppSpecCPP::SystemMode SchemeDataProvider::effectiveSystemMode() const
     if (isPerfTestRunning()) {
         return perfTestSystemMode();
     }
-    else {
-        return systemSetup()->systemMode;
-    }
+
+    return systemSetup()->systemMode;
 }
 
 double SchemeDataProvider::effectiveTemperature() const
@@ -216,10 +215,6 @@ double SchemeDataProvider::effectiveEmergencyHeatingThresholdF()
 {
     // Default is manual emergency mode (1 F).
     auto  effThreshold = -1.0;
-    if (mSystemSetup->emergencyControlType == AppSpecCPP::ECTAuto) {
-        effThreshold = mSystemSetup->emergencyTemperatureDifference * 1.8;
-    }
-
     return effThreshold;
 }
 

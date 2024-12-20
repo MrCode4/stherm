@@ -144,18 +144,17 @@ BasePageView {
                 }
             }
 
-            //! Enables or disables emergency heating, meaning if the system is equipped with emergency heating (like heat stripes)
-            //! then toggle should be enabled.
+            //! Auxiliary Heating
             RowLayout {
                 spacing: 24
                 Label {
                     Layout.fillWidth: true
-                    text: "Emergency Heating"
+                    text: "Auxiliary Heating"
                 }
 
                 Switch {
-                    id: emergencyHeatingSwh
-                    checked: appModel.systemSetup.heatPumpEmergency
+                    id: auxiliaryHeatingSwh
+                    checked: appModel.systemSetup.auxiliaryHeating ?? true
                 }
             }
 
@@ -163,19 +162,19 @@ BasePageView {
                 width: parent.width
                 spacing: 8
 
-                visible: emergencyHeatingSwh.checked
+                visible: auxiliaryHeatingSwh.checked
 
                 Label {
                     Layout.fillWidth: true
                     Layout.topMargin: 10
 
-                    text: "Set the minimum time for Emergency heat to run during the call."
+                    text: "Set the minimum time for Aux heat to run during the call."
                     font.pointSize: Application.font.pointSize * 0.9
                     wrapMode: Text.WordWrap
                 }
 
                 SingleIconSlider {
-                    id: emergencyMinimumTimeSlider
+                    id: auxiliaryMinimumTimeSlider
 
                     Layout.fillWidth: true
                     Layout.leftMargin: 5
@@ -199,110 +198,127 @@ BasePageView {
                     control.value: appModel.systemSetup.emergencyMinimumTime
                 }
 
-                CautionRectangle {
-                    Layout.fillWidth: true
-                    Layout.topMargin: 10
+                //! Auxiliary Stages
+                RowLayout {
+                    spacing: 24
 
-                    height: 70
-                    text: "Settings wrong runtime can cause system damage."
+                    Label {
+                        text: "Auxiliary Stages"
+                    }
+
+                    RowLayout {
+                        id: auxiliaryStageLayout
+
+                        Layout.fillWidth: true
+
+                        property int auxiliaryStages: appModel.systemSetup.heatStage
+
+
+                        RadioButton {
+                            checked: appModel.systemSetup.heatStage !== 2
+                            onCheckedChanged: {
+                                if (checked)
+                                    auxiliaryStageLayout.auxiliaryStages = Number(text);
+                            }
+
+                            text: "1"
+                        }
+
+                        RadioButton {
+                            checked: appModel.systemSetup.heatStage === Number(text)
+                            onCheckedChanged: {
+                                if (checked)
+                                    auxiliaryStageLayout.auxiliaryStages = Number(text);
+                            }
+
+                            text: "2"
+                        }
+                    }
                 }
 
+                //! Would you like to turn on auxiliary heating in parallel with your heat pump when it's cold outside and the heat pump alone can't keep up?
                 Label {
                     Layout.fillWidth: true
                     Layout.topMargin: 10
 
-                    text: "Would you like to control emergency heat manually or automatically (via thermostat)?"
+                    text: "Would you like to turn on auxiliary heating in parallel with your heat pump when it's cold outside and the heat pump alone can't keep up?"
                     font.pointSize: Application.font.pointSize * 0.9
                     wrapMode: Text.WordWrap
                 }
 
-                //! Auxiliary Control Type
+                //! Parallel auxiliary
                 RowLayout {
                     Layout.fillWidth: true
 
-                    //! Manual emenrgency: When users select Manual for emergency heating, an additional button labeled Emergency appears in the System Mode menu
                     RadioButton {
-                        id: manuallyRB
+                        id: parallelAuxRB
 
-                        checked: appModel.systemSetup?.emergencyControlType !== AppSpecCPP.ECTAuto
-                        text: "Manually"
+                        checked: appModel.systemSetup?.useAuxiliaryParallelHeatPump ?? true
+                        text: "Yes"
                     }
 
                     RadioButton {
                         id: autoRB
 
-                        text: "Auto"
-                        checked: appModel.systemSetup?.emergencyControlType === AppSpecCPP.ECTAuto
+                        text: "No"
+                        checked: !parallelAuxRB.checked
                     }
                 }
 
-                CautionRectangle {
+                //! W1(Aux 1) and W3(E) terminals together
+                Label {
                     Layout.fillWidth: true
-                    height: 110
+                    Layout.topMargin: 10
 
-                    visible: manuallyRB.checked
-                    text: "Emergency heat will only activate when Emergency is selected in system mode or when initiated by Defrost controller board (if equipped)."
-                    icon: FAIcons.circleInfo
-                    iconColor: "#94A3B8"
-                    contentFontSize: Application.font.pointSize * 0.7
+                    text: "Do you want to drive W1(Aux 1) and W3(E) terminals together?"
+                    font.pointSize: Application.font.pointSize * 0.9
+                    wrapMode: Text.WordWrap
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    RadioButton {
+                        id: w1w3AuxRB
+
+                        checked: appModel.systemSetup?.driveAux1AndETogether ?? true
+                        text: "Yes"
+                    }
+
+                    RadioButton {
+                        text: "No"
+                        checked: !w1w3AuxRB.checked
+                    }
                 }
 
                 Label {
                     Layout.fillWidth: true
                     Layout.topMargin: 10
 
-                    visible: autoRB.checked
+                    visible: auxiliaryStageLayout.auxiliaryStages === 2
 
-                    text: "Set the temperature difference between the set point and room temperature to engage emergency heat."
+                    text: "Do you want to drive all stages of auxiliary as Emergency?"
                     font.pointSize: Application.font.pointSize * 0.9
                     wrapMode: Text.WordWrap
                 }
 
-                SingleIconSlider {
-                    id: temperatureDiffSlider
-
-                    property real tempValue: value
-
-                    Layout.topMargin: 10
-                    Layout.leftMargin: 5
-                    Layout.rightMargin: 10
-
-                    visible: autoRB.checked
-                    leftSideColor: "#9BD2F7"
-                    rightSideColor: "#484848"
-                    icon: FAIcons.temperatureHigh
-                    iconSize: Qt.application.font.pointSize * 1.2
-                    showRange: false
-                    showTicks: true
-                    title: "Temp"
-                    ticksCount: isFahrenheit? 18 : 12
-                    majorTickCount: isFahrenheit ? 3 : 2
-                    from: isFahrenheit ? 2 : 1.0
-                    to:   isFahrenheit ? 3.8 : 2.2
-                    labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
-                    scaleValue: 10
-                    control.stepSize: 0.1 * scaleValue
-                    snapMode: Slider.SnapAlways
-                    control.value:  appModel.systemSetup.emergencyTemperatureDifference * (deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? 1.8 : 1) * scaleValue
-                    control.onPressedChanged: {
-                        if (!control.pressed) {
-                            tempValue = value.toFixed(1);
-                            flickToBottomTimer.start();
-                        }
-                    }
-                }
-
-                CautionRectangle {
-                    id: temperatureDiffCaution
-
-                    Layout.topMargin: 15
+                //! Auxiliary as Emergency
+                RowLayout {
                     Layout.fillWidth: true
 
-                    visible: autoRB.checked && (temperatureDiffSlider.tempValue  !== (isFahrenheit ? AppSpec.defaultEmergencyTemperatureDifferenceF :
-                                                                               AppSpec.defaultEmergencyTemperatureDifferenceC))
+                    visible: auxiliaryStageLayout.auxiliaryStages === 2
 
-                    height: 90
-                    text: `Using the emergency heating is expensive. Recommended value is ${deviceController.temperatureUnit == AppSpec.TempratureUnit.Fah ? 2.9 : 1.6}\u00b0${AppSpec.temperatureUnitString(deviceController.temperatureUnit)}.`
+                    RadioButton {
+                        id: auxiliaryAsEmergencyRB
+
+                        checked: appModel.systemSetup?.driveAuxAsEmergency ?? true
+                        text: "Yes"
+                    }
+
+                    RadioButton {
+                        text: "No"
+                        checked: !auxiliaryAsEmergencyRB.checked
+                    }
                 }
 
                 Item {
@@ -359,12 +375,14 @@ BasePageView {
 
     function updateModel() {
         if (deviceController) {
-            deviceController.setSystemHeatPump(emergencyHeatingSwh.checked,
+            deviceController.setSystemHeatPump(auxiliaryHeatingSwh.checked,
                                                heatPumpStageLayout.heatPumpStage,
                                                heatPumpOBStateLayout.heatPumpOBState,
-                                               emergencyMinimumTimeSlider.value,
-                                               autoRB.checked ? AppSpecCPP.ECTAuto : AppSpecCPP.ECTManually,
-                                               temperatureDiffSlider.value / (isFahrenheit ? 1.8 : 1))
+                                               auxiliaryMinimumTimeSlider.value,
+                                               auxiliaryStageLayout.auxiliaryStages,
+                                               parallelAuxRB.checked,
+                                               w1w3AuxRB.checked,
+                                               auxiliaryAsEmergencyRB.checked)
         }
     }
 
