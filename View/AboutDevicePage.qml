@@ -226,6 +226,11 @@ BasePageView {
                                 }
                             }
                         ]
+                    },
+                    {
+                        text: "Reset Factory", visible: true, action: () => {
+                            resetFactoryPopUp.open();
+                        }
                     }
                 ]
 
@@ -324,6 +329,52 @@ BasePageView {
             horizontalAlignment: "AlignHCenter"
             verticalAlignment: "AlignVCenter"
             lineHeight: 1.4
+        }
+    }
+
+    ResetFactoryPopUp {
+        id: resetFactoryPopUp
+
+        onReset: {
+            busyPopUp.open()
+            deviceController.sync.resetFactory();
+            resetFactoryPopUp.close()
+        }
+    }
+
+    BusyPopUp {
+        id: busyPopUp
+    }
+
+    AlertNotifPopup {
+        id: alertNotifPopup
+        message: Message {
+            message: "Failed to remove the device from the server. Please try again."
+            type: Message.Alert
+        }
+
+        onClosed: {
+            destroy(this);
+        }
+    }
+
+    Connections{
+        target: deviceController?.sync ?? null
+
+        function onResetFactorySucceeded()
+        {
+            NetworkInterface.forgetAllWifis();
+            busyPopUp.close()
+
+            rebootPopup.cancelEnable = false
+            rebootPopup.withForget = true;
+            rebootPopup.open();
+        }
+
+        function onResetFactoryFailed()
+        {
+            alertNotifPopup.open()
+            busyPopUp.close()
         }
     }
 }

@@ -783,6 +783,28 @@ void Sync::addSchedule(const QString &scheduleUid, const QVariantMap &schedule)
     }
 }
 
+void Sync::resetFactory()
+{
+    QJsonObject reqData;
+    reqData["sn"] = mSerialNumber;
+
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit resetFactorySucceeded();
+        } else {
+            TRACE << "resetFactory" << reply->errorString();
+            emit resetFactoryFailed(reply->errorString());
+        }
+    };
+
+    auto reply = callPostApi(baseUrl() + QString("api/sync/forget?sn=%1").arg(mSerialNumber),
+                             QJsonDocument(reqData).toJson(),
+                             callback);
+    if (reply) { // returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
+
 void Sync::getOutdoorTemperature() {
 
     if (mSerialNumber.isEmpty()) {
