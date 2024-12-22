@@ -44,6 +44,9 @@ QtObject {
     //! Keep the show/open messages
     property var messagesShowing: []
 
+    //! Sending alerts to server
+    property var sendingAlertsToServer: []
+
     //! Active alerts after model is loaded
     property Timer activeAlertsTimer: Timer {
         running: device
@@ -64,6 +67,13 @@ QtObject {
                                             }
                                         });
             }
+
+            // Find alerts that were not successfully delivered to the server.
+            device.messages.forEach(message => {
+                                        if (message.id === -1) {
+                                            checkMessagesForServer(message)
+                                        }
+                                    });
         }
     }
 
@@ -93,6 +103,18 @@ QtObject {
         onTriggered: {
             var alertMessage = "Auxiliary heating is running non stop for 1 hour, if this is normal for your HVAC system ignore the alert, otherwise please contact your Contractor";
             addNewMessageFromData(Message.Type.SystemAlert, alertMessage, DateTimeManager.nowUTC());
+        }
+    }
+
+    //! Send alert to server
+    property Timer pushAlertToServerTimer: Timer {
+        running: false
+        repeat: false
+
+        interval: 6 * 1000
+
+        onTriggered: {
+            sendAlertToServer();
         }
     }
 
@@ -277,6 +299,8 @@ QtObject {
             // Messages are not being synchronized with the server for now.
             deviceController.saveSettings();
         }
+
+        checkMessagesForServer(newMessage);
     }
 
     function addNewMessage(message: Message)
@@ -307,7 +331,7 @@ QtObject {
      * ****************************************************************************************/
 
     // To add system alerts into messages.
-    property Connections sytemConnections: Connections {
+    property Connections systemConnections: Connections {
         target: deviceController.system
 
         function onAlert(message: string) {
@@ -325,6 +349,31 @@ QtObject {
         }
     }
 
+    property Connections syncConnections: Connections {
+        target: deviceController.sync
+
+        function onAlertPushed(alertUid: string, success: bool, alert: var) {
+            if (success) {
+                var pushedAlert = device.messages.find(elem => elem._qsUuid === alertUid);
+                if (pushedAlert) {
+                    console.log("Alert: alert pushed with id: ", alert.alert_id)
+                    pushedAlert.id = alert.alert_id;
+                    deviceController.saveSettings();
+                }
+
+                var alertId = sendingAlertsToServer.findIndex(elem => elem._qsUuid === alertUid);
+                if (alertId !== -1) {
+                    sendingAlertsToServer.splice(alertId, 1);
+                    sendingAlertsToServerChanged();
+                }
+            }
+
+            if (sendingAlertsToServer.length > 0) {
+                pushAlertToServerTimer.start();
+            }
+        }
+    }
+
     property Connections wifiConnection: Connections {
         target: NetworkInterface
 
@@ -336,6 +385,13 @@ QtObject {
             if (NetworkInterface.hasInternet) {
                 // Close the alert
                 closeWifiInternetAlert();
+
+                if (sendingAlertsToServer.length > 0) {
+                    pushAlertToServerTimer.start();
+                }
+
+            } else {
+                pushAlertToServerTimer.stop();
             }
         }
 
@@ -381,7 +437,7 @@ QtObject {
             if (!deviceController.airConditionSensorHealth)
                 return;
 
-            var message = "Poor air quality detected. Please ventilate the room.";
+            var message = AppSpec.alertTypeToMessage(AppSpec.Alert_Air_Quality);
 
             console.log("Air condition alert ", message)
             if (messagesShowing.find(element => message === element.message))
@@ -623,5 +679,43 @@ QtObject {
             msgMessageIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Notification));
             uiSession.hasUnreadMessages = msgMessageIndex > -1;
         }
+    }
+
+    //! Check messages to push to the server
+    function checkMessagesForServer(message: Message) {
+        //! Ignore the server messages/alerts.
+        if (message.sourceType === Message.SourceType.Server) {
+            return;
+        }
+
+        //! Send alerts to the server.
+        if (message.type === Message.Type.Alert || message.type === Message.Type.SystemAlert) {
+            sendingAlertsToServer.push(message);
+            sendingAlertsToServerChanged();
+        }
+
+        if (!pushAlertToServerTimer.running)
+            pushAlertToServerTimer.start();
+    }
+
+    function sendAlertToServer() {
+        if (sendingAlertsToServer.length === 0 || !NetworkInterface.hasInternet) {
+            return;
+        }
+
+        // Send first alert to server.
+        var fisrtAlert = sendingAlertsToServer[0];
+        var alertType = AppSpec.messageToAlertType(fisrtAlert.message);
+        var alertTypeString = AppSpec.alertTypeToString(alertType);
+
+        var sendData = {
+            "alerts": [
+                {
+                    "type": alertTypeString
+                }
+            ]
+        };
+
+         deviceController.sync.pushAlertToServer(fisrtAlert._qsUuid , sendData);
     }
 }
