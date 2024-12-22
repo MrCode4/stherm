@@ -49,7 +49,7 @@ public:
     Q_INVOKABLE void pushLockState(const QString& pin, bool lock);
 
     void pushSettingsToServer(const QVariantMap &settings);
-    void pushAlertToServer(const QVariantMap &settings);
+    Q_INVOKABLE void pushAlertToServer(const QString alertUid, const QVariantMap &alerts);
 
     void forgetDevice();
 
@@ -151,6 +151,7 @@ signals:
     void scheduleEdited(int id, bool success);
     void scheduleAdded(QString scheduleUid, bool success, QVariantMap schedule = QVariantMap());
 
+    void alertPushed(QString alertUid, bool success, QVariantMap alert = QVariantMap());
     void resetFactoryFinished(bool ok, const QString &message = "");
 
 private slots:

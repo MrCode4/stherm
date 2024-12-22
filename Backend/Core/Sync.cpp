@@ -704,16 +704,33 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
     }
 }
 
-void Sync::pushAlertToServer(const QVariantMap &settings)
+void Sync::pushAlertToServer(const QString alertUid, const QVariantMap &alerts)
 {
-    QJsonObject requestDataObj;
+    if (mSerialNumber.isEmpty()) {
+        SYNC_LOG <<"Sn is not ready!";
+        return;
+    }
+
+    QJsonObject requestDataObj = QJsonObject::fromVariantMap(alerts);;
     requestDataObj["sn"] = mSerialNumber;
-    QJsonObject requestDataObjAlert;
-    requestDataObjAlert["alert_id"] = 1;
-    QJsonArray requestDataObjAlertArr;
-    requestDataObjAlertArr.append(requestDataObjAlert);
-    requestDataObj["alerts"] = requestDataObjAlertArr;
-    callPostApi(baseUrl() + "api/sync/alerts", QJsonDocument(requestDataObj).toJson());
+
+    auto callback = [this, alertUid](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        bool success = reply->error() == QNetworkReply::NoError;
+
+        if (success) {
+            success = data.value("errors").isUndefined() || data.value("errors").toArray().empty();
+        }
+
+        if (!success) {
+            TRACE << "push alert: " << data.value("errors") << data.value("message") << reply->errorString();
+        }
+
+        auto dataArray = data.value("data").toArray();
+        success = !dataArray.isEmpty();
+        emit alertPushed(alertUid, success, success ? dataArray.first().toObject().toVariantMap() : QVariantMap());
+    };
+
+    callPostApi(baseUrl() + "api/sync/alerts", QJsonDocument(requestDataObj).toJson(), callback);
 }
 
 void Sync::forgetDevice()
