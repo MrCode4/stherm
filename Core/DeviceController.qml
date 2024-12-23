@@ -1585,8 +1585,9 @@ I_DeviceController {
         //! The settings on the server might be different from the settings on the device.
         //! This could be because the device sent old settings when other changes were happening (e.x. sensor data).
         //! So we should push the new applyed settings.
-        updateEditMode(AppSpec.EMSystemSetup);
-        saveSettings();
+        //! Pushed from SystemSetupPage (onDestruction)
+        // updateEditMode(AppSpec.EMSystemSetup);
+        // saveSettings();
     }
 
     //! If the clamping logic has changed, review the corresponding functionality in the

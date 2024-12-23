@@ -57,6 +57,7 @@ I_PopUp {
             Layout.fillWidth: true
             font.bold: true
             text: message
+            visible: text.length > 0
             wrapMode: "Wrap"
             horizontalAlignment: "AlignHCenter"
         }

@@ -38,6 +38,7 @@ I_PopUp {
     spacing: 10
     bottomPadding: 6
     horizontalPadding: 10
+    keepOpen: true
 
     /* Children
      * ****************************************************************************************/
@@ -96,7 +97,7 @@ I_PopUp {
                 close();
 
                 //! Open ContactContractorPage
-                uiSession.popUps.openPageFromHome("qrc:/Stherm/View/ContactContractorPage.qml");
+                uiSession.openPageFromHome("qrc:/Stherm/View/ContactContractorPage.qml");
 
             }
         }

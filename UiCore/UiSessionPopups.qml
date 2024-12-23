@@ -137,6 +137,7 @@ Item {
 
         ConfirmPopup {
             property var systemSetup
+            property bool applyChanges: false
 
             title: "Update system setup"
             message: ""
@@ -146,12 +147,18 @@ Item {
 
             onButtonClicked: button => {
                                  if (button === MessageDialog.Apply) {
+                                     applyChanges = true;
                                      deviceController.applySystemSetupServer(systemSetup);
                                      Qt.callLater(uiSession.openPageFromHome, "qrc:/Stherm/View/SystemSetupPage.qml");
                                  }
                              }
 
             onClosed: {
+                if (!applyChanges) {
+                    //! To ensure device and server are sync.
+                    Qt.callLater(deviceController.updateEditMode, AppSpec.EMSystemSetup);
+                }
+
                 _systemSetupConfirmationPopup.destroy();
                 _systemSetupConfirmationPopup = null;
             }
@@ -439,7 +446,7 @@ Item {
             _systemSetupConfirmationPopup = _systemSetupConfirmationComponent.createObject(root);
         }
 
-        if (_systemSetupConfirmationPopup) {
+        if (_systemSetupConfirmationPopup && !_systemSetupConfirmationPopup.visible) {
             _systemSetupConfirmationPopup.systemSetup = settings;
             uiSession.popupLayout.displayPopUp(_systemSetupConfirmationPopup);
         }

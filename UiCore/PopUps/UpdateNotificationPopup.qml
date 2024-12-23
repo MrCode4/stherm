@@ -21,6 +21,7 @@ I_PopUp {
 
     closeButtonEnabled: !mandatoryUpdate
     closePolicy: mandatoryUpdate ? Popup.NoAutoClose : (Popup.CloseOnReleaseOutside | Popup.CloseOnEscape)
+    keepOpen: mandatoryUpdate
 
     /* Signals
      * ****************************************************************************************/

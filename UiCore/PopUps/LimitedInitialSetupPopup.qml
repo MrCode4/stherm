@@ -22,6 +22,7 @@ I_PopUp {
                                     Popup.NoAutoClose
     closeButtonEnabled: false
     topPadding: 20
+    keepOpen: true
 
     /* Children
      * ****************************************************************************************/
