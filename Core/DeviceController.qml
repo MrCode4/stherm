@@ -1515,8 +1515,37 @@ I_DeviceController {
 
     }
 
-    function setSystemSetupServer(settings: var) {
 
+    function setSystemSetupServer(settings: var) {
+        if (editModeEnabled(AppSpec.EMSystemSetup)) {
+            console.log("The system setup is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        checkSystemSetupServer(settings);
+    }
+
+    //! Checks system setup properties comes from the server for existing changes compared to a device
+    function checkSystemSetupServer(settings: var) {
+
+        var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
+
+        // TODO: update the hasChanges after merge.
+        var hasChanges = AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type ||
+                device.systemSetup.heatPumpEmergency  != settings.heatPumpEmergency ||
+                device.systemSetup.heatStage  != settings.heatStage ||
+                device.systemSetup.coolStage  != settings.coolStage ||
+                device.systemSetup.heatPumpOBState  != settings.heatPumpOBState ||
+                device.systemSetup.systemRunDelay  != settings.systemRunDelay ||
+                device.systemSetup.systemAccessories.accessoriesType != settings.systemAccessories.mode ||
+                device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType;
+
+        if (hasChanges) {
+            uiSession.popUps.showSystemSetupUpdateConfirmation(settings);
+        }
+    }
+
+    function applySystemSetupServer(settings: var) {
         if (editModeEnabled(AppSpec.EMSystemSetup)) {
             console.log("The system setup is being edited and cannot be updated by the server.")
             return;
@@ -1551,7 +1580,13 @@ I_DeviceController {
                                      settings.isAUXAuto ?? device.systemSetup.isAUXAuto,
                                      settings.dualFuelHeatingModeDefault ?? device.systemSetup.dualFuelHeatingModeDefault);
         else
-            console.warn("System type unknown", settings.type)
+            console.warn("System type unknown", settings.type);
+
+        //! The settings on the server might be different from the settings on the device.
+        //! This could be because the device sent old settings when other changes were happening (e.x. sensor data).
+        //! So we should push the new applyed settings.
+        updateEditMode(AppSpec.EMSystemSetup);
+        saveSettings();
     }
 
     //! If the clamping logic has changed, review the corresponding functionality in the
