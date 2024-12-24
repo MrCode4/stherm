@@ -63,6 +63,36 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
+inline int parseProgress(const QString &in) {
+    QRegularExpression regex(R"((\d+)%\s+\d+)");
+    QRegularExpressionMatch match = regex.match(in);
+
+    if (match.hasMatch()) {
+        QString progress = match.captured(1);
+
+        bool ok;
+        auto progressValue = progress.toInt(&ok);
+
+        if(ok)
+            return progressValue;
+    }
+
+    // Attempt to parse error code
+    QRegularExpression errorRegex(R"(\(code (\d+)\))");
+    QRegularExpressionMatch errorMatch = errorRegex.match(in);
+    if (errorMatch.hasMatch()) {
+        bool ok;
+
+        int errorCode = errorMatch.captured(1).toInt(&ok);
+
+        //! rsync got error
+        if (errorCode != 0 || !ok)
+            return -2;
+    }
+
+    return -1;
+}
+
 //! isVersionNewer
 //! return true when version1 > version2
 //! return false when version1 <= version2
@@ -249,11 +279,13 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         onSerialNumberReady();
 
     connect(&mLogSender, &QProcess::readyReadStandardOutput, this, [&]() {
-        if(isBusylogSender()){
+        if (isBusylogSender()) {
             int progress = parseProgress(mLogSender.readAllStandardOutput());
+
+            // Send only valid values. readAllStandardOutput returns extra non-error outputs like `sending incremental file list\n` and file name.
             if (progress > -1)
                 emit sendLogProgressChanged(progress);
-            else
+            else if (progress == -2)
                 emit alert("Sending log failed");
         }
     });
@@ -1830,9 +1862,6 @@ bool NUVE::System::sendLog(bool showAlert)
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
-        //! reset send log progress value
-        emit sendLogProgressChanged(0);
-
         return sendLogFile(showAlert);
 
     } else {
@@ -2053,7 +2082,6 @@ void NUVE::System::sendFirstRunLogFile()
 
 bool NUVE::System::sendLogFile(bool showAlert)
 {
-
     auto filename = generateLog();
     if (filename.isEmpty()) {
         if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
@@ -2250,35 +2278,6 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
             mErrorHandler(error);
         }
     });
-}
-
-int NUVE::System::parseProgress(const QString& in) const{
-    QRegularExpression regex(R"((\d+)%\s+\d+)");
-    QRegularExpressionMatch match = regex.match(in);
-
-    if (match.hasMatch()) {
-        QString progress = match.captured(1);
-
-        bool ok;
-        auto progressValue = progress.toInt(&ok);
-
-        if(ok)
-            return progressValue;
-    }
-    regex.setPattern(R"(\(code (\d+)\))");
-    match = regex.match(in);
-    if(match.hasMatch()){
-        bool ok;
-
-        int errorCode = match.captured(1).toInt(&ok);
-
-        //! rsync got error
-        if (errorCode != 0 || !ok)
-            return -1;
-    }
-
-
-    return -1;
 }
 
 

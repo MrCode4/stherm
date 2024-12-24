@@ -286,9 +286,6 @@ signals:
 
     void alert(QString msg);
 
-
-
-
     void testPublishFinished(QString msg = QString());
 
     //! Emit when need the system move to updating/restarting mode
@@ -385,8 +382,6 @@ private:
     void sendFirstRunLogFile();
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
-
-    int parseProgress(const QString &in) const;
 
 private:
     Sync *mSync;
