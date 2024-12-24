@@ -71,6 +71,7 @@ Control {
             enabled: labelVisible && !currentSchedule
             from: minTemprature
             to: maxTemprature
+            decimalCount: 0
 
             //! Note: Can not bind the value as will be broken so we use Connections instead
             //! Also binding will be called before broken too many times as the values are loading one by one and
@@ -272,7 +273,7 @@ Control {
                 var temp = 0.0;
 
                 if (_tempSlider.pressed) {
-                    temp = _tempSlider.value.toFixed(0);
+                    temp = _tempSlider.getTruncatedvalue();
 
                 } else if (tempSliderDoubleHandle.first.pressed) {
                     temp = tempSliderDoubleHandle.first.value.toFixed(0);
@@ -509,7 +510,7 @@ Control {
                 x: (rightTempLabel.parent.width - rightTempLabel.width - rightUnitLbl.width) / 2
                 visible: labelVisible
                 opacity: 1
-                text: Number(_tempSlider.value).toFixed(0)
+                text: _tempSlider.getTruncatedvalue() //Number().toFixed(0)
             }
 
             PropertyChanges {
@@ -682,7 +683,8 @@ Control {
     //! Update model based on _tempSlider value in heating/cooling mode.
     function updateTemperatureModel() {
         var celValue = (temperatureUnit === AppSpec.TempratureUnit.Cel)
-                ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value);
+                ? _tempSlider.getTruncatedvalue() : Utils.fahrenheitToCelsius(_tempSlider.getTruncatedvalue());
+        console.log(_tempSlider.getTruncatedvalue() + " ----------------------- " + celValue)
         if (device && device.requestedTemp !== celValue) {
             deviceController.setDesiredTemperature(celValue);
             deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
