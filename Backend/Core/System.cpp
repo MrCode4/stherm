@@ -951,15 +951,6 @@ bool NUVE::System::alternativeNoWiFiFlow()
     return settings.value(m_alternativeNoWiFiFlow, false).toBool();
 }
 
-QVariantMap NUVE::System::getContractorInfo() const
-{
-    return mSync->getContractorInfo();
-}
-
-bool NUVE::System::fetchContractorInfo() {
-    return mSync->fetchContractorInfo();
-}
-
 QStringList NUVE::System::availableVersions()
 {
     std::sort(mAvailableVersions.begin(), mAvailableVersions.end(), isVersionNewer);

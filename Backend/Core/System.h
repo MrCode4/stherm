@@ -132,10 +132,6 @@ public:
 
     void wifiConnected(bool hasInternet);
 
-    //! Get Contractor Information
-    QVariantMap getContractorInfo() const;
-    bool fetchContractorInfo();
-
     //! Getters
     QStringList availableVersions();
 

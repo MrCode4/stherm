@@ -114,7 +114,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     m_sync = _deviceAPI->sync();
 
     connect(m_sync, &NUVE::Sync::contractorInfoReady, this, [this]() {
-        auto info = m_system->getContractorInfo();
+        auto info = m_sync->getContractorInfo();
         emit contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
                                      info.value("logo").toString(), info.value("url").toString(),
                                      info.value("tech").toString());
@@ -920,7 +920,7 @@ bool DeviceControllerCPP::checkSN()
 
 void DeviceControllerCPP::checkContractorInfo()
 {
-    m_system->fetchContractorInfo();
+    m_sync->fetchContractorInfo();
 }
 
 void DeviceControllerCPP::pushSettingsToServer(const QVariantMap &settings)
