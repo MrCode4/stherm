@@ -29,6 +29,9 @@ static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
 static  const char* m_GetOutdoorTemperatureReceived  = "GetOutdoorTemperatureRecieved";
 
+static const int m_SensorReadingsCount = 6; // 6 readings per 30 seconds
+static const double m_IncrementPerStep = 1.0; // Increment temperature smoothly by 1°F per update
+
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
     "green": 255,
@@ -417,6 +420,38 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mSaveSensorDataTimer.start(sampleRate * 60 * 1000);
     mResponsivenessTimer.start();
 
+    //! Temp Smooth changing
+    connect(&mUpdateDisplayTimer, &QTimer::timeout, this, [&](){
+
+        //! Init first Temprature value
+        if(mTemperatureBuffer.count() == 1)
+            mDisplayCurrentTemp = mTemperatureBuffer.first();
+
+
+        if (mTemperatureBuffer.count() < m_SensorReadingsCount) {
+            return; // If there are less than 6 readings, we don't proceed yet
+        }
+
+
+        double average = std::accumulate(mTemperatureBuffer.begin(), mTemperatureBuffer.end(), 0.0) / m_SensorReadingsCount;
+        double difference = average - mDisplayCurrentTemp;
+
+        if (std::abs(difference) >= m_IncrementPerStep) {
+            if (difference > 0) {
+                mDisplayCurrentTemp += m_IncrementPerStep;
+            } else if (difference < 0) {
+                mDisplayCurrentTemp -= m_IncrementPerStep;
+            }
+        } else {
+            mDisplayCurrentTemp = average;
+        }
+
+
+        emit displayCurrentTempChanged();
+
+    });
+    mUpdateDisplayTimer.start(30 * 1000);
+
     //! Set sInstance to this
     if (!sInstance) {
         sInstance = this;
@@ -793,6 +828,12 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
             LOG_CHECK_DC(qAbs(mDeltaTemperatureIntegrator) > 1E-3) << "Delta T correction: Tnow " << tc << ", Tdelta " << dt;
             if (qAbs(dt) < 10) {
                 tc -= dt;
+
+                //! buffer Temprature
+                if(mTemperatureBuffer.count() >= m_SensorReadingsCount)
+                    mTemperatureBuffer.removeFirst();
+                mTemperatureBuffer.append(tc);
+
             } else {
                 qWarning() << "dt is greater than 10! check for any error.";
             }
@@ -1727,4 +1768,9 @@ void DeviceControllerCPP::revertPerfTest()
 
 double DeviceControllerCPP::effectiveHumidity() {
     return mSchemeDataProvider->effectiveHumidity();
+}
+
+double DeviceControllerCPP::displayCurrentTemp() const
+{
+    return mDisplayCurrentTemp;
 }
