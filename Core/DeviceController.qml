@@ -270,6 +270,9 @@ I_DeviceController {
             root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName) : (iconUrl + "?version=" + version)
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
+
+            //! To load the contractor information as soon as the app starts, save it in the model. This avoids waiting for the ContractorInfoUpdated signal.
+            saveSettings();
         }
 
         //! Logics for check SN:
