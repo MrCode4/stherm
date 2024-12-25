@@ -446,6 +446,18 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
             mDisplayCurrentTemp = average;
         }
 
+        auto mode = mTempScheme->getCurrentSysMode();
+
+        switch (mode) {
+        case AppSpecCPP::SystemMode::Cooling:
+            mDisplayCurrentTemp = qCeil(mDisplayCurrentTemp);
+            break;
+        case AppSpecCPP::SystemMode::Heating:
+            mDisplayCurrentTemp = qFloor(mDisplayCurrentTemp);
+            break;
+        default:
+            break;
+        }
 
         emit displayCurrentTempChanged();
 
