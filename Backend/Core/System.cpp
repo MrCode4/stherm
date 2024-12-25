@@ -137,7 +137,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         emit areSettingsFetchedChanged(success);
     });
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
-    connect(mSync, &NUVE::Sync::contractorInfoReady, this, &NUVE::System::contractorInfoReady);
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
         if (!mIsNightModeRunning)

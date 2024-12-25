@@ -113,7 +113,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     m_system = _deviceAPI->system();
     m_sync = _deviceAPI->sync();
 
-    connect(m_system, &NUVE::System::contractorInfoReady, this, [this]() {
+    connect(m_sync, &NUVE::Sync::contractorInfoReady, this, [this]() {
         auto info = m_system->getContractorInfo();
         emit contractorInfoUpdated(info.value("brand").toString(), info.value("phone").toString(),
                                      info.value("logo").toString(), info.value("url").toString(),

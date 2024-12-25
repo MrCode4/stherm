@@ -201,8 +201,8 @@ BasePageView {
         }
     }
 
-    property Connections systemConnection: Connections {
-        target: deviceController.system
+    property Connections syncConnection: Connections {
+        target: deviceController.sync
 
         enabled: root.visible
 
