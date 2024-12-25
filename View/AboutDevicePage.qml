@@ -228,7 +228,7 @@ BasePageView {
                         ]
                     },
                     {
-                        text: "Reset Factory", visible: true, action: () => {
+                        text: "Reset Factory", visible: system.testMode, action: () => {
                             resetFactoryPopUp.open();
                         }
                     }
@@ -348,13 +348,10 @@ BasePageView {
 
     AlertNotifPopup {
         id: alertNotifPopup
+
         message: Message {
             message: "Failed to remove the device from the server. Please try again."
             type: Message.Alert
-        }
-
-        onClosed: {
-            destroy(this);
         }
     }
 

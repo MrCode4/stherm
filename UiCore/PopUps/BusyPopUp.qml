@@ -11,7 +11,5 @@ I_PopUp {
     bottomPadding: 24
     horizontalPadding: 24
 
-    contentItem: BusyIndicator {
-
-    }
+    contentItem: BusyIndicator {}
 }

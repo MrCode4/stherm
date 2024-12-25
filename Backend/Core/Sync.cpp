@@ -785,6 +785,13 @@ void Sync::addSchedule(const QString &scheduleUid, const QVariantMap &schedule)
 
 void Sync::resetFactory()
 {
+    // Forget request is unnecessary if the serial number is empty or, when the serial number is valid, if hasClient is false
+    // but the 2nd case is not important.
+    if (mSerialNumber.isEmpty()) {
+        emit resetFactorySucceeded();
+        return;
+    }
+
     QJsonObject reqData;
     reqData["sn"] = mSerialNumber;
 

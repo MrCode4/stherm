@@ -11,21 +11,20 @@ import Stherm
 I_PopUp {
     id: root
 
-    /* Property declaration
-     * ****************************************************************************************/
-    property alias message: messageLabel.text
-
-    signal reset
 
     /* Object Properties
      * ****************************************************************************************/
-    height: 315
+    height: AppStyle.size * 0.70
     width: AppStyle.size * 0.80
     bottomPadding: 5
     leftPadding: 10
     rightPadding: 5
 
     title: "You are about to factory reset your device. This action will:"
+
+    /* Signals
+     * ****************************************************************************************/
+    signal reset()
 
     /* Children
      * ****************************************************************************************/
@@ -46,10 +45,8 @@ I_PopUp {
             color: Style.foreground
             horizontalAlignment: Text.AlignHCenter
 
-            font {
-                bold: true
-                pointSize: 16
-            }
+            font.bold: true
+            font.pointSize: 16
         }
 
         Flickable {
@@ -84,9 +81,7 @@ I_PopUp {
 
 4. Clear all registration data."
 
-                font {
-                    pointSize: 12
-                }
+                font.pointSize: 12
             }
         }
 
@@ -98,11 +93,10 @@ I_PopUp {
             ButtonInverted {
                 Layout.alignment: Qt.AlignHCenter
 
+                leftPadding: 8
+                rightPadding: 8
                 text: "Cancel"
-
-                font {
-                    bold: true
-                }
+                font.pointSize: Qt.application.font.pointSize * 0.8
 
                 onClicked: {
                     root.close()
@@ -116,11 +110,10 @@ I_PopUp {
             ButtonInverted {
                 Layout.alignment: Qt.AlignHCenter
 
+                leftPadding: 8
+                rightPadding: 8
                 text: "Reset"
-
-                font {
-                    bold: true
-                }
+                font.pointSize: Qt.application.font.pointSize * 0.8
 
                 onClicked: {
                     root.reset()
