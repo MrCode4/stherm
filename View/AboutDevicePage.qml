@@ -297,6 +297,30 @@ BasePageView {
         }
     }
 
+    property RebootDevicePopup resetFactoryPopup: null
+    Component {
+        id: resetFactoryPopupComponent
+
+        RebootDevicePopup {
+            title : "   Forget Device   "
+            anchors.centerIn: Template.Overlay.overlay
+            cancelEnable: false
+
+            onStartAction: {
+                deviceController.resetDeviceToFactory();
+
+                if (system) {
+                    system.rebootDevice();
+                }
+            }
+
+            onClosed: {
+                destroy(this);
+                resetFactoryPopup = null;
+            }
+        }
+    }
+
     //! Exit popup with count down timer to send exit request to system
     ResetDevicePopup {
         id: exitPopup
@@ -358,20 +382,25 @@ BasePageView {
     Connections{
         target: deviceController?.sync ?? null
 
-        function onResetFactorySucceeded()
-        {
+        function onResetFactorySucceeded() {
             NetworkInterface.forgetAllWifis();
             busyPopUp.close()
 
-            rebootPopup.cancelEnable = false
-            rebootPopup.withForget = true;
-            rebootPopup.open();
+            showResetFactoryPopup();
         }
 
-        function onResetFactoryFailed()
-        {
+        function onResetFactoryFailed() {
             alertNotifPopup.open()
             busyPopUp.close()
         }
+    }
+
+    //! Show the reset factory popup.
+    function showResetFactoryPopup() {
+        if (!resetFactoryPopup) {
+            resetFactoryPopup = resetFactoryPopupComponent.createObject(root);
+        }
+
+        resetFactoryPopup.open();
     }
 }

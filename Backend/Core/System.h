@@ -239,6 +239,14 @@ public:
     //! Forget device settings and sync settings
     Q_INVOKABLE void forgetDevice();
 
+    //! Remove folders/files like
+    //! - /mnt/log/latestVersion/
+    //! - /mnt/log/sensor/
+    //! - /mnt/log/log/
+    //! - /mnt/log/nrf_fw/
+    //! - /mnt/log/recovery/
+    Q_INVOKABLE bool removeLogPartition();
+
     //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);
 
@@ -381,6 +389,7 @@ private:
     void sendFirstRunLogFile();
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
+    bool removeDirectory(const QString &path);
 
 private:
     Sync *mSync;

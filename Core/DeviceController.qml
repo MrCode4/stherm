@@ -1755,6 +1755,12 @@ I_DeviceController {
         deviceControllerCPP.forgetDevice();
     }
 
+    function resetDeviceToFactory() {
+        console.log("resetDeviceToFactory: start reset factory process");
+        forgetDevice();
+        deviceControllerCPP.removeLogPartition();
+    }
+
     //! Lock/unlock the application
     //! Call from device and server
     function updateAppLockState(isLock : bool, pin: string, fromServer = false) : bool {
