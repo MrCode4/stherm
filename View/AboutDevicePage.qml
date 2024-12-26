@@ -131,7 +131,7 @@ BasePageView {
             Repeater {
                 model: [
                     {
-                        text: "Send Log", action: () => {
+                        text: qsTr("Send Log"), action: () => {
                             if (NetworkInterface.hasInternet) {
                                 if (system.isBusylogSender()) {
                                     // Log sender is busy, open the progress bar.
@@ -148,14 +148,14 @@ BasePageView {
                         },
                         buddies: [
                             {
-                                text: "Update NRF", visible: system.testMode, action: () => {
+                                text: qsTr("Update NRF"), visible: system.testMode, action: () => {
                                     deviceController.deviceControllerCPP.updateNRFFirmware();
                                 }
                             }
                         ]
                     },
                     {
-                        text: "Test Mode", visible: root.showTestMode, action: () => {
+                        text: qsTr("Test Mode"), visible: root.showTestMode, action: () => {
                             if (root.StackView.view) {
                                 uiSession.uiTestMode = true;
                                 root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {"uiSession": uiSession});
@@ -163,13 +163,13 @@ BasePageView {
                         }
                     },
                     {
-                        text: "Restart Device", action: () => {
+                        text: qsTr("Restart Device"), action: () => {
                             rebootPopup.withForget = false;
                             rebootPopup.open();
                         },
                         buddies: [
                             {
-                                text: "Restart App", visible: root.showTestMode || system.testMode, action: () => {
+                                text: qsTr("Restart App"), visible: root.showTestMode || system.testMode, action: () => {
                                     restartAppPopup.open();
                                 }
                             }
@@ -177,28 +177,28 @@ BasePageView {
 
                     },
                     {
-                        text: "Manage Endpoint", visible: root.showTestMode  || system.testMode, action: () => {
+                        text: qsTr("Manage Endpoint"), visible: root.showTestMode  || system.testMode, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/Menu/ManageEndpoint.qml", {"uiSession": uiSession});
                             }
                         }
                     },
                     {
-                        text: "Test Config", visible: system.testMode, action: () => {
+                        text: qsTr("Test Config"), visible: system.testMode, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/Test/TestConfigPage.qml", {"uiSession": uiSession});
                             }
                         }
                     },
                     {
-                        text: "No Wi-Fi Config", visible: system.testMode, action: () => {
+                        text: qsTr("No Wi-Fi Config"), visible: system.testMode, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/Menu/LimitedModeRemainigTimePage.qml", {"uiSession": uiSession});
                             }
                         }
                     },
                     {
-                        text: "Contractor Info Test", visible: deviceController.initialSetup, action: () => {
+                        text: qsTr("Contractor Info Test"), visible: deviceController.initialSetup, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
                                                              "uiSession": uiSession,
@@ -208,19 +208,19 @@ BasePageView {
                         }
                     },
                     {
-                        text: "Forget Device", visible: deviceController.initialSetup, action: () => {
+                        text: qsTr("Forget Device"), visible: deviceController.initialSetup, action: () => {
                             rebootPopup.withForget = true;
                             rebootPopup.open();
                         }
                     },
                     {
-                        text: "Exit", visible: system.testMode, action: () => {
+                        text: qsTr("Exit"), visible: system.testMode, action: () => {
                             exitPopup.open();
                         },
                         buddies: [
                             {
                                 //! Forget device is visible in another row on initial setup
-                                text: "Forget Device", visible: !deviceController.initialSetup, action: () => {
+                                text: qsTr("Forget Device"), visible: !deviceController.initialSetup, action: () => {
                                     rebootPopup.withForget = true;
                                     rebootPopup.open();
                                 }
@@ -228,7 +228,7 @@ BasePageView {
                         ]
                     },
                     {
-                        text: "Reset Factory", visible: system.testMode, action: () => {
+                        text: qsTr("Reset Factory"), visible: system.testMode, action: () => {
                             resetFactoryPopUp.open();
                         }
                     }
@@ -374,7 +374,7 @@ BasePageView {
         id: alertNotifPopup
 
         message: Message {
-            message: "Failed to remove the device from the server. Please try again."
+            message: qsTr("Failed to remove the device from the server. Please try again.")
             type: Message.Alert
         }
     }
