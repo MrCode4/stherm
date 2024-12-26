@@ -66,6 +66,7 @@ I_PopUp {
 
         Label {
             Layout.fillWidth: true
+            wrapMode: Text.WordWrap
             font.pointSize: Application.font.pointSize * 1.5
             text: root.title
             horizontalAlignment: Text.AlignHCenter
