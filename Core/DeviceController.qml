@@ -1755,6 +1755,11 @@ I_DeviceController {
         console.log("removeSaveFiles: remove file in ", uiSession.recoveryConfigFilePath, ": ", resultRemoveRecoveryConfigFile);
     }
 
+    function forgetDevice() {
+        removeSaveFiles();
+        deviceControllerCPP.forgetDevice();
+    }
+
     function resetDeviceToFactory() {
         console.log("resetDeviceToFactory: start reset factory process");
         NetworkInterface.forgetAllWifis();
