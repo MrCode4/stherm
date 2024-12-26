@@ -25,6 +25,7 @@ I_PopUp {
     title: "title"
     titleBar: false
 
+    width: AppStyle.size * 0.80
     closePolicy: Popup.NoAutoClose
 
     onVisibleChanged: {
