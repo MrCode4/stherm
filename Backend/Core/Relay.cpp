@@ -263,6 +263,29 @@ bool Relay::coolingStage0()
     return true;
 }
 
+bool Relay::auxiliaryHeatingStage1(bool driveAux1AndETogether) {
+    mRelay.w1 = STHERM::RelayMode::ON;
+
+    if (driveAux1AndETogether)
+        mRelay.w3 = STHERM::RelayMode::ON;
+
+    return true;
+}
+
+bool Relay::turnOffHeatPump() {
+    mRelay.y1 = STHERM::RelayMode::OFF;
+    mRelay.y2 = STHERM::RelayMode::OFF;
+
+    return true;
+}
+
+bool Relay::auxiliaryHeatingStage2(bool turnOn) {
+    mRelay.w1 = turnOn ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+    mRelay.w2 = turnOn ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+
+    return true;
+}
+
 bool Relay::heatingStage1(bool heatpump)
 {
     mRelay.y1 = heatpump ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;

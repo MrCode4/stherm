@@ -82,6 +82,19 @@ QtObject {
         }
     }
 
+    //! Trigger an alert if the auxiliary system runs continuously for more than one hour.
+    //! TODO: Add more control for: In Case the Customer Ignores the message by clicking Ok or X the alert message should be repeated once again after 1 hour if the Aux heating was still running non stop during that second hour.
+    property Timer auxiliaryRunningTimer: Timer {
+        repeat: true
+        running: deviceController.isRunningAuxiliaryHeating
+        interval: 1 * 60 * 60 * 1000
+
+        onTriggered: {
+            var alertMessage = "Auxiliary heating is running non stop for 1 hour, if this is normal for your HVAC system ignore the alert, otherwise please contact your Contractor";
+            addNewMessageFromData(Message.Type.SystemAlert, alertMessage, DateTimeManager.nowUTC());
+        }
+    }
+
     Component.onCompleted: {
         // Filter out null/undefined messages from file data.
         device.messages = device.messages.filter(message => message !== null && message !== undefined);

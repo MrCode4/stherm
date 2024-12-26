@@ -11,7 +11,8 @@
 /* ************************************************************************************************
  * Main data keys
  * ************************************************************************************************/
-const QString temperatreKey = QString("temperature");
+const QString temperatureRawKey = QString("temperatureRaw");
+const QString temperatureKey = QString("temperature");
 const QString humidityKey   = QString("humidity");
 const QString co2Key        = QString("co2");
 const QString etohKey       = QString("etoh");
@@ -56,7 +57,7 @@ public:
         ctCurrentHumidity    = 1 << 3,
         ctSetHumidity        = 1 << 4,
         ctSendRelay          = 1 << 5,
-        ctDefault            = ctSetTemperature | ctMode | ctCurrentHumidity,
+        ctDefault            = ctSetTemperature | ctMode | ctSetHumidity,
         ctAll                = ctDefault | ctCurrentTemperature | ctCurrentHumidity,
     };
     Q_ENUM(ChangeType)
@@ -205,12 +206,6 @@ public:
         NO_ALlert
     };
     Q_ENUM(AlertTypes)
-
-    enum emergencyControlType {
-        ECTManually = 0,
-        ECTAuto
-    };
-    Q_ENUM(emergencyControlType)
 
     Q_INVOKABLE QVariant readFromFile(const QString &fileUrl);
 

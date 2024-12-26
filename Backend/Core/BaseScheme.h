@@ -37,6 +37,9 @@ public:
     virtual void setVacation() = 0;
 
     void setCanSendRelays(const bool& csr);
+    void stopSendingRelays();
+    void resumeSendingRelays();
+    bool isSendingRelay();
 
     void onScheduleChanged();
 
@@ -44,7 +47,7 @@ signals:
     void stopWorkRequested();
 
     void sendRelayIsRunning(const bool& isRunning);
-    void canSendRelay();
+    void canSendRelay(bool restart = false);
 
     //! Send relay to DeviceIOController and update relays into ti board.
     void updateRelays(STHERM::RelayConfigs, bool force = false);
@@ -65,6 +68,8 @@ protected:
     //! Return the effective humidity
     double effectiveSetHumidity() const;
 
+    void setIsSendingRelays(bool sending);
+
 protected:
     QSharedPointer<SchemeDataProvider> mDataProvider;
 
@@ -74,6 +79,7 @@ protected:
     bool stopWork;
 
     bool mCanSendRelay;
+    bool mIsSendingRelay;
 
     bool debugMode;
 };

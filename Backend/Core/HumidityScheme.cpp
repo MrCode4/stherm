@@ -58,7 +58,6 @@ void HumidityScheme::run()
 
         } else {
             normalLoop();
-
         }
 
         // all should be off
@@ -69,6 +68,8 @@ void HumidityScheme::run()
             break;
 
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+        // wait for change or at least wait 10 seconds preventing too much calling
+        waitLoop();
     }
 }
 
@@ -158,13 +159,20 @@ void HumidityScheme::sendRelays(bool forceSend)
     }
 
     if (!mCanSendRelay) {
-        waitLoop(-1, AppSpecCPP::ctSendRelay);
+        int exitCode = waitLoop(-1, AppSpecCPP::ctSendRelay);
+        if (exitCode != AppSpecCPP::ctSendRelay){
+            mRelay->setRelaysLast(mRelay->relays());
+            restartWork();
+            return;
+        }
+        if (!forceSend && stopWork)
+            return;
     }
 
     // To ensure the temperature relays updated.
     mRelay->setRelaysLast(relaysConfig);
 
-    emit sendRelayIsRunning(true);
+    setIsSendingRelays(true);
 
     if (!mDataProvider->isRelaysInitialized()) {
         // Send the last relays
@@ -177,6 +185,9 @@ void HumidityScheme::sendRelays(bool forceSend)
     if (debugMode) {
         auto steps = lastConfigs.changeStepsSorted(relaysConfig);
         for (int var = 0; var < steps.size(); var++) {
+            //! stop sending if not force (for quiting quickly when should align with backdoor)
+            if (!forceSend && !mCanSendRelay)
+                break;
             auto step = steps.at(var);
             SCHEME_LOG << step.first.c_str() << step.second;
             if (step.first == "g"){
@@ -212,7 +223,7 @@ void HumidityScheme::sendRelays(bool forceSend)
 
     LOG_CHECK_SCHEME(false) << "finished";
 
-    emit sendRelayIsRunning(false);
+    setIsSendingRelays(false);
 }
 
 void HumidityScheme::VacationLoop()
@@ -368,8 +379,14 @@ int HumidityScheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
     }
 
     if (overrideModes.testFlag(AppSpecCPP::ChangeType::ctSendRelay)){
-        connect(this, &HumidityScheme::canSendRelay, &loop, [&loop]() {
-            loop.exit(AppSpecCPP::ChangeType::ctSendRelay);
+        connect(this, &HumidityScheme::canSendRelay, &loop, [&loop](bool restart) {
+            loop.exit(restart ? AppSpecCPP::ChangeType::ctNone : AppSpecCPP::ChangeType::ctSendRelay);
+        });
+
+        //! to findout when sending finished after stopping
+        connect(this, &HumidityScheme::sendRelayIsRunning, &loop, [&loop](bool sending) {
+            if (!sending)
+                loop.exit(AppSpecCPP::ChangeType::ctNone);
         });
     }
 

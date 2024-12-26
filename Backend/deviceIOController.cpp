@@ -970,7 +970,7 @@ void DeviceIOController::processNRFResponse(STHERM::SIOPacket rxPacket, const ST
 
                 // Prepare data and send to ui
                 QVariantMap mainDataMap;
-                mainDataMap.insert(temperatreKey,     mainDataValues.temp);
+                mainDataMap.insert(temperatureRawKey,  mainDataValues.temp);
                 mainDataMap.insert(humidityKey,        mainDataValues.humidity);
                 mainDataMap.insert(co2Key,             mainDataValues.c02);
                 mainDataMap.insert(etohKey,            mainDataValues.etoh);

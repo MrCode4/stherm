@@ -36,12 +36,11 @@ class SystemSetup : public QSObjectCpp
 
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
 
-    Q_PROPERTY(double emergencyTemperatureDifference  MEMBER emergencyTemperatureDifference NOTIFY emergencyTemperatureDifferenceChanged FINAL)
     Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
-    Q_PROPERTY(AppSpecCPP::emergencyControlType    emergencyControlType           MEMBER emergencyControlType  NOTIFY emergencyControlTypeChanged FINAL)
-
-
-    Q_PROPERTY(double emergencyTemperatureDiffrence MEMBER emergencyTemperatureDiffrence NOTIFY emergencyTemperatureDiffrenceChanged FINAL)
+    Q_PROPERTY(bool   useAuxiliaryParallelHeatPump    MEMBER useAuxiliaryParallelHeatPump     NOTIFY useAuxiliaryParallelHeatPumpChanged FINAL)
+    Q_PROPERTY(bool   driveAux1AndETogether           MEMBER driveAux1AndETogether            NOTIFY driveAux1AndETogetherChanged FINAL)
+    Q_PROPERTY(bool   driveAuxAsEmergency MEMBER driveAuxAsEmergency  NOTIFY driveAuxAsEmergencyChanged FINAL)
+    Q_PROPERTY(bool   auxiliaryHeating                MEMBER auxiliaryHeating                 NOTIFY auxiliaryHeatingChanged FINAL)
 
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
@@ -62,7 +61,7 @@ public:
 
     bool _mIsSystemShutoff;
 
-    bool heatPumpEmergency;
+    bool heatPumpEmergency = false;
 
     SystemAccessories* systemAccessories;
 
@@ -81,14 +80,17 @@ public:
     //! In minutes
     int emergencyMinimumTime;
 
-    AppSpecCPP::emergencyControlType emergencyControlType;
+    //! Auxiliary properties
+    //! Would you like to turn on auxiliary heating in parallel with your heat pump when it's cold outside and the heat pump alone can't keep up?
+    bool useAuxiliaryParallelHeatPump;
 
-    //! In celcius
-    double emergencyTemperatureDifference;
+    //! Do you want to drive W1(Aux 1) and W3(E) terminals together?
+    bool driveAux1AndETogether;
 
+    //! Do you want to drive all stages of auxiliary as Emergency in Auxiliary mode?
+    bool driveAuxAsEmergency;
 
-    //! TODO: Remove later, kept for consistency check, In celcius
-    double emergencyTemperatureDiffrence;
+    bool auxiliaryHeating;
 
 signals:
     void systemTypeChanged();
@@ -102,14 +104,14 @@ signals:
     void isVacationChanged();
     void isSystemShutoffChanged();
     void dualFuelThreshodChanged();
-    void emergencyTemperatureDifferenceChanged();
     void emergencyMinimumTimeChanged();
-    void emergencyControlTypeChanged();
     void isAUXAutoChanged();
     void dualFuelManualHeatingChanged();
     void dualFuelHeatingModeDefaultChanged();
 
-
-    void emergencyTemperatureDiffrenceChanged();
+    void useAuxiliaryParallelHeatPumpChanged();
+    void driveAux1AndETogetherChanged();
+    void driveAuxAsEmergencyChanged();
+    void auxiliaryHeatingChanged();
 
 };

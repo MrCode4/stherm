@@ -13,6 +13,14 @@ class Scheme : public BaseScheme
 {
     Q_OBJECT
 
+private:
+    enum ReturnType {
+        Continue = 0,
+        Break,
+        Successful,
+        None
+    };
+
 public:
     explicit Scheme(DeviceAPI *deviceAPI, QSharedPointer<SchemeDataProvider> schemeDataProvider, QObject *parent = nullptr);
 
@@ -71,6 +79,8 @@ signals:
     //! The system mode change will be unblock after `miliSecs` mili-seconds.
     void manualEmergencyModeUnblockedAfter(int miliSecs);
 
+    void auxiliaryStatusChanged(bool running);
+
 protected:
     void run() override;
 
@@ -94,13 +104,16 @@ private:
     bool internalHeatingLoopStage2();
     bool internalHeatingLoopStage3();
 
-    void internalPumpHeatingLoopStage1();
     bool internalPumpHeatingLoopStage2();
+    void internalPumpHeatingLoopStage1();
+
+    void internalPumpHeatingWithAuxLoopStage1();
+    ReturnType internalPumpHeatingWithAuxLoopStage2();
 
     //! Users manually activate emergency heat., meaning Emergency heating will only be active when the system mode is set to Emergency or
     //!  emergency heating will be triggered by the Defrost Controller Board (if equipped) or based on system needs.
     void emergencyHeatingLoop();
-    void sendAlertIfNeeded();
+    void sendAlertIfNeeded(bool checkEmergencyAlert = false);
 
     //! Send relays into ti
     void sendRelays(bool forceSend = false);
@@ -126,9 +139,19 @@ private:
 
     void checkForRestart();
 
-    AppSpecCPP::SystemMode activeHeatPumpMode(const bool &checkWithManualEmergency = false);
-
     void manualEmergencyHeating();
+
+    void updateHeatPumpProperties();
+
+    //! Auxiliary heating loop 1
+    //! Return true to break the parent loop
+    //! Return false to continue the parent loop
+    bool auxiliaryHeatingLoopStage1();
+
+    //! Auxiliary heating loop 2
+    //! Return true to break the parent loop
+    //! Return false to continue the parent loop
+    bool auxiliaryHeatingLoopStage2();
 
 private:
     /* Attributes
@@ -172,4 +195,13 @@ private:
     AppSpecCPP::SystemType mActiveSysTypeHeating;
 
     AppSpecCPP::SystemMode mActiveHeatPumpMode;
+
+    //! Heat-Pump Stage 1 Turning ON temperature
+    double _HPT1;
+    //! Heat-Pump Stage 2 Turning ON temperature
+    double _HPT2;
+    //! Auxiliary Heating Stage 1 Turning ON temperature
+    double _AUXT1;
+    //! Auxiliary Heating Stage 2 Turning ON temperature
+    double _AUXT2;
 };

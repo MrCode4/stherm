@@ -27,13 +27,9 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
 
     //! Initialize emergency properties
     emergencyMinimumTime = AppSpecCPP::defaultEmergencyMinimumTime();
-    emergencyControlType = AppSpecCPP::ECTManually;
-    emergencyTemperatureDifference = AppSpecCPP::defaultEmergencyTemperatureDifferenceC();
-    emergencyTemperatureDiffrence = AppSpecCPP::defaultEmergencyTemperatureDifferenceC();
 
-    connect(this, &SystemSetup::emergencyTemperatureDiffrenceChanged, this, [this] () {
-        // we will not apply if the other already has change
-        if (emergencyTemperatureDifference == AppSpecCPP::defaultEmergencyTemperatureDifferenceC())
-            emergencyTemperatureDifference = emergencyTemperatureDiffrence;
-    });
+    auxiliaryHeating = true;
+    useAuxiliaryParallelHeatPump = true;
+    driveAux1AndETogether = true;
+    driveAuxAsEmergency = true;
 }
