@@ -711,11 +711,12 @@ void Sync::forgetDevice()
     mSerialNumber = QString();
     mContractorInfo = QVariantMap{};
 
-    // Save the serial number in settings
+    // remove serial number, hasClient and contractorInfo from settings file
     QSettings setting;
-    setting.setValue(cHasClientSetting, mHasClient);
-    setting.setValue(cSerialNumberSetting, mSerialNumber);
-    setting.setValue(cContractorSettings, mContractorInfo);
+    setting.remove(cHasClientSetting);
+    setting.remove(cSerialNumberSetting);
+    setting.remove(cContractorSettings);
+
     Device->reset();
 }
 
