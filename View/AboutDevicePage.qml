@@ -237,13 +237,18 @@ BasePageView {
                 RowLayout {
                     spacing: 16
                     Layout.alignment: Qt.AlignHCenter
-                    visible: modelData.visible == undefined || modelData.visible
+                    visible: modelData.visible ?? true
 
                     ButtonInverted {
                         leftPadding: 8
                         rightPadding: 8
                         text: modelData.text
-                        onClicked: if (modelData.action instanceof Function) modelData.action()
+
+                        onClicked: {
+                            if (modelData.action instanceof Function) {
+                                modelData.action()
+                            }
+                        }
                     }
 
                     Repeater {
@@ -252,8 +257,13 @@ BasePageView {
                             leftPadding: 8
                             rightPadding: 8
                             text: modelData.text
-                            visible: modelData.visible == undefined || modelData.visible
-                            onClicked: if (modelData.action instanceof Function) modelData.action()
+                            visible: modelData.visible ?? true
+
+                            onClicked: {
+                                if (modelData.action instanceof Function) {
+                                    modelData.action()
+                                }
+                            }
                         }
                     }
                 }
@@ -350,8 +360,8 @@ BasePageView {
 
         contentItem: Label {
             text: logBusyPop.message
-            horizontalAlignment: "AlignHCenter"
-            verticalAlignment: "AlignVCenter"
+            horizontalAlignment: Label.AlignHCenter
+            verticalAlignment: Label.AlignVCenter
             lineHeight: 1.4
         }
     }
@@ -361,7 +371,7 @@ BasePageView {
 
         onReset: {
             busyPopUp.open()
-            deviceController.sync.resetFactory();
+            deviceController.sync.resetFactory()
             resetFactoryPopUp.close()
         }
     }
@@ -379,7 +389,7 @@ BasePageView {
         }
     }
 
-    Connections{
+    Connections {
         target: deviceController?.sync ?? null
 
         function onResetFactorySucceeded() {
