@@ -72,4 +72,13 @@ QtObject {
             return Text.PlainText;
         }
     }
+
+    //! Truncates value to a specified number of decimal places
+    function getTruncatedvalue(value : real , decimalCount : int) {
+        if (decimalCount === -1) {
+               return value; // Return the original value if decimal is -1
+        }
+        const factor = Math.pow(10, decimalCount);
+        return Math.floor(value * factor) / factor;
+    }
 }

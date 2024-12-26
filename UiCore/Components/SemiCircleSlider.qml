@@ -22,24 +22,10 @@ Control {
     //! Max value of slider
     property real   to: 30.0
 
-    //! Number of decimal places to keep. If decimalCount is -1, the original value is returned without changes.
-    property int decimalCount: -1
-
     readonly property real darkerShade: 3.8
 
     //! Holds whether slider is being dragged
     readonly property alias pressed: _handleDh.dragging
-
-    /* Functions
-     * ****************************************************************************************/
-    //! Truncates value to a specified number of decimal places
-    function getTruncatedvalue() {
-        if (decimalCount === -1) {
-               return value; // Return the original value if decimal is -1
-        }
-        const factor = Math.pow(10, decimalCount);
-        return Math.floor(value * factor) / factor;
-    }
 
     /* Object properties
      * ****************************************************************************************/

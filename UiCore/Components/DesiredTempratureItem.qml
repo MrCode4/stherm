@@ -71,7 +71,6 @@ Control {
             enabled: labelVisible && !currentSchedule
             from: minTemprature
             to: maxTemprature
-            decimalCount: 0
 
             //! Note: Can not bind the value as will be broken so we use Connections instead
             //! Also binding will be called before broken too many times as the values are loading one by one and
@@ -172,9 +171,11 @@ Control {
 
             function updateAutoMinReqTempModel() {
                 if (deviceController && !first.pressed) {
+                    let value = Utils.getTruncatedvalue(first.value , 0)
+
                     deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(first.value)
-                                                       : first.value);
+                                                       ? Utils.fahrenheitToCelsius(value)
+                                                       : value);
                     deviceController.updateEditMode(AppSpec.EMAutoMode);
                     deviceController.saveSettings();
                 }
@@ -182,9 +183,11 @@ Control {
 
             function updateAutoMaxReqTempModel() {
                 if (deviceController && !second.pressed) {
+                    let value = Utils.getTruncatedvalue(second.value , 0)
+
                     deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(second.value)
-                                                       : second.value);
+                                                       ? Utils.fahrenheitToCelsius(value)
+                                                       : value);
                     deviceController.updateEditMode(AppSpec.EMAutoMode);
                     deviceController.saveSettings();
                 }
@@ -273,7 +276,7 @@ Control {
                 var temp = 0.0;
 
                 if (_tempSlider.pressed) {
-                    temp = _tempSlider.getTruncatedvalue();
+                    temp = Utils.getTruncatedvalue(_tempSlider.value , 0);
 
                 } else if (tempSliderDoubleHandle.first.pressed) {
                     temp = tempSliderDoubleHandle.first.value.toFixed(0);
@@ -510,7 +513,7 @@ Control {
                 x: (rightTempLabel.parent.width - rightTempLabel.width - rightUnitLbl.width) / 2
                 visible: labelVisible
                 opacity: 1
-                text: _tempSlider.getTruncatedvalue() //Number().toFixed(0)
+                text: Utils.getTruncatedvalue(_tempSlider.value , 0)
             }
 
             PropertyChanges {
@@ -683,8 +686,8 @@ Control {
     //! Update model based on _tempSlider value in heating/cooling mode.
     function updateTemperatureModel() {
         var celValue = (temperatureUnit === AppSpec.TempratureUnit.Cel)
-                ? _tempSlider.getTruncatedvalue() : Utils.fahrenheitToCelsius(_tempSlider.getTruncatedvalue());
-        console.log(_tempSlider.getTruncatedvalue() + " ----------------------- " + celValue)
+                ? Utils.getTruncatedvalue(_tempSlider.value , 0) : Utils.fahrenheitToCelsius(Utils.getTruncatedvalue(_tempSlider.value , 0));
+
         if (device && device.requestedTemp !== celValue) {
             deviceController.setDesiredTemperature(celValue);
             deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
