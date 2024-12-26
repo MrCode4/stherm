@@ -511,6 +511,14 @@ void DeviceControllerCPP::forgetDevice()
     m_system->forgetDevice();
 }
 
+void DeviceControllerCPP::resetToFactorySetting()
+{
+    QSettings settings;
+    settings.clear();
+
+    forgetDevice();
+}
+
 double DeviceControllerCPP::adaptiveBrightness() {
     return mAdaptiveBrightness;
 }

@@ -166,6 +166,9 @@ public:
     //! Forget device and system settings
     Q_INVOKABLE void forgetDevice();
 
+    //! Reset Device to Factory setting
+    Q_INVOKABLE void resetToFactorySetting();
+
     //! TODO
     //! Maybe call from server
     Q_INVOKABLE void setSampleRate(const int sampleRate);
