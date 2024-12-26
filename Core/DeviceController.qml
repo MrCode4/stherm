@@ -1747,17 +1747,19 @@ I_DeviceController {
         }
     }
 
-    function forgetDevice() {
-        // Remove the save files from the directory.
-        console.log("forgetDevice: remove file in ", uiSession.recoveryConfigFilePath, ": ", QSFileIO.removeFile(uiSession.recoveryConfigFilePath));
-        console.log("forgetDevice: remove file in ", uiSession.configFilePath, ": ", QSFileIO.removeFile(uiSession.configFilePath));
+    function removeSaveFiles() {
+        let resultRemoveConfigFile = QSFileIO.removeFile(uiSession.configFilePath)
+        let resultRemoveRecoveryConfigFile = QSFileIO.removeFile(uiSession.recoveryConfigFilePath)
 
-        deviceControllerCPP.forgetDevice();
+        console.log("removeSaveFiles: remove file in ", uiSession.configFilePath, ": ", resultRemoveConfigFile);
+        console.log("removeSaveFiles: remove file in ", uiSession.recoveryConfigFilePath, ": ", resultRemoveRecoveryConfigFile);
     }
 
     function resetDeviceToFactory() {
         console.log("resetDeviceToFactory: start reset factory process");
-        forgetDevice();
+        NetworkInterface.forgetAllWifis();
+        removeSaveFiles();
+        deviceControllerCPP.resetToFactorySetting();
         deviceControllerCPP.removeLogPartition();
     }
 
