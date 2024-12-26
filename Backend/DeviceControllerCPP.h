@@ -254,7 +254,7 @@ Q_SIGNALS:
     void temperatureSensorStatus(bool status = true);
     void humiditySensorStatus(bool status = true);
 
-    void effectiveTemperatureChanged(double effectiveTemperatureC);
+    void setTemperatureChanged(double averageSetTemperatureC);
 
     //! To block mode change in UI
     void manualEmergencyModeUnblockedAfter(int secs);
@@ -405,4 +405,5 @@ private:
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 
     bool mBackdoorSchemeEnabled = false;
+
 };

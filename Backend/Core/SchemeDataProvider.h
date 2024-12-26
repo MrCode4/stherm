@@ -80,6 +80,8 @@ public:
     //! result should be in Fahrenheit as well.
     double effectiveTemperature() const;
 
+    double effectiveTempratureMonitoring() const;
+
     double effectiveHumidity();
 
     bool isVacationEffective() const;
