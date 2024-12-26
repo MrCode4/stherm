@@ -164,13 +164,12 @@ BasePageView {
                     },
                     {
                         text: qsTr("Restart Device"), action: () => {
-                            rebootPopup.withForget = false;
-                            rebootPopup.open();
+                            root.showCountDownPopUpForRestartDevice()
                         },
                         buddies: [
                             {
                                 text: qsTr("Restart App"), visible: root.showTestMode || system.testMode, action: () => {
-                                    restartAppPopup.open();
+                                    root.showCountDownPopUpForRestartApp()
                                 }
                             }
                         ]
@@ -209,20 +208,18 @@ BasePageView {
                     },
                     {
                         text: qsTr("Forget Device"), visible: deviceController.initialSetup, action: () => {
-                            rebootPopup.withForget = true;
-                            rebootPopup.open();
+                            root.showCountDownPopUpForForgetDevice()
                         }
                     },
                     {
                         text: qsTr("Exit"), visible: system.testMode, action: () => {
-                            exitPopup.open();
+                            root.showCountDownPopUpForStopDevice()
                         },
                         buddies: [
                             {
                                 //! Forget device is visible in another row on initial setup
                                 text: qsTr("Forget Device"), visible: !deviceController.initialSetup, action: () => {
-                                    rebootPopup.withForget = true;
-                                    rebootPopup.open();
+                                    root.showCountDownPopUpForForgetDevice()
                                 }
                             }
                         ]
@@ -271,73 +268,6 @@ BasePageView {
         }
     }
 
-    //! Reboot popup with count down timer to send reboot request to system
-    RebootDevicePopup {
-        id: rebootPopup
-
-        //! Enable forget device in this popup
-        property bool withForget: false
-
-        title : withForget ? "   Forget Device   " :  " Restart Device   "
-        anchors.centerIn: Template.Overlay.overlay
-
-        onStartAction: {
-            if (withForget) {
-                deviceController.forgetDevice();
-            }
-
-            if (system) {
-                system.rebootDevice();
-            }
-        }
-    }
-
-    //! Restart popup with count down timer to send restart request to system
-    RebootDevicePopup {
-        id: restartAppPopup
-
-        title: "   Restart App   "
-        infoText: "Restarting App..."
-        anchors.centerIn: Template.Overlay.overlay
-
-        onStartAction: {
-            if (system) {
-                system.systemCtlRestartApp();
-            }
-        }
-    }
-
-    property RebootDevicePopup resetFactoryPopup: null
-    Component {
-        id: resetFactoryPopupComponent
-
-        RebootDevicePopup {
-            title : "   Forget Device   "
-            anchors.centerIn: Template.Overlay.overlay
-            cancelEnable: false
-
-            onStartAction: {
-                deviceController.resetDeviceToFactory();
-
-                if (system) {
-                    system.rebootDevice();
-                }
-            }
-
-            onClosed: {
-                destroy(this);
-                resetFactoryPopup = null;
-            }
-        }
-    }
-
-    //! Exit popup with count down timer to send exit request to system
-    ResetDevicePopup {
-        id: exitPopup
-        system: root.system
-        anchors.centerIn: Template.Overlay.overlay
-    }
-
     FontMetrics {
         id: _fontMetrics
     }
@@ -363,6 +293,26 @@ BasePageView {
             horizontalAlignment: Label.AlignHCenter
             verticalAlignment: Label.AlignVCenter
             lineHeight: 1.4
+        }
+    }
+
+    Component {
+        id: countDownPopUp
+
+        CountDownPopup {
+            property var callback
+
+            anchors.centerIn: Template.Overlay.overlay
+
+            onStartAction: {
+                if (callback instanceof Function) {
+                    callback()
+                }
+            }
+
+            onClosed: {
+                destroy(this)
+            }
         }
     }
 
@@ -393,24 +343,88 @@ BasePageView {
         target: deviceController?.sync ?? null
 
         function onResetFactorySucceeded() {
-            NetworkInterface.forgetAllWifis();
             busyPopUp.close()
-
-            showResetFactoryPopup();
+            root.showCountDownPopUpForResetFactory()
         }
 
         function onResetFactoryFailed() {
-            alertNotifPopup.open()
             busyPopUp.close()
+            alertNotifPopup.open()
         }
     }
 
-    //! Show the reset factory popup.
-    function showResetFactoryPopup() {
-        if (!resetFactoryPopup) {
-            resetFactoryPopup = resetFactoryPopupComponent.createObject(root);
-        }
+    function showCountDownPopUpForForgetDevice() {
+        var popup = countDownPopUp.createObject(root, {
+                                                    "title": qsTr("Forget Device"),
+                                                    "actionText": qsTr("Restarting Device..."),
+                                                    "callback": function () {
+                                                        deviceController.forgetDevice()
 
-        resetFactoryPopup.open();
+                                                        if (system) {
+                                                            system.rebootDevice()
+                                                        }
+                                                    }
+                                                })
+        popup.open()
+        return popup
+    }
+
+    function showCountDownPopUpForResetFactory() {
+        var popup = countDownPopUp.createObject(root, {
+                                                    "title": qsTr("Reset Device to Factory Setting"),
+                                                    "actionText": qsTr("Restarting Device..."),
+                                                    "cancelEnable": false,
+                                                    "callback": function () {
+                                                        deviceController.resetDeviceToFactory()
+
+                                                        if (system) {
+                                                            system.rebootDevice()
+                                                        }
+                                                    }
+                                                })
+        popup.open()
+        return popup
+    }
+
+    function showCountDownPopUpForRestartApp() {
+        var popup = countDownPopUp.createObject(root, {
+                                                    "title": qsTr("Restart App"),
+                                                    "actionText": qsTr("Restarting App..."),
+                                                    "callback": function () {
+                                                        if (system) {
+                                                            system.systemCtlRestartApp()
+                                                        }
+                                                    }
+                                                })
+        popup.open()
+        return popup
+    }
+
+    function showCountDownPopUpForRestartDevice() {
+        var popup = countDownPopUp.createObject(root, {
+                                                    "title": qsTr("Restart Device"),
+                                                    "actionText": qsTr("Restarting Device..."),
+                                                    "callback": function () {
+                                                        if (system) {
+                                                            system.rebootDevice()
+                                                        }
+                                                    }
+                                                })
+        popup.open()
+        return popup
+    }
+
+    function showCountDownPopUpForStopDevice() {
+        var popup = countDownPopUp.createObject(root, {
+                                                    "title": qsTr("Stop Device"),
+                                                    "actionText": qsTr("Stopping Device..."),
+                                                    "callback": function () {
+                                                        if (system) {
+                                                            system.stopDevice()
+                                                        }
+                                                    }
+                                                })
+        popup.open()
+        return popup
     }
 }
