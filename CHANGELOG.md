@@ -1,6 +1,51 @@
 
 Release Note
 -------------
+## Release R 1.4.9
+ 21th December 2024
+ Branch- r1_4_9, commit- 56cca7636
+ 
+### Release Articles
+update-V.1.4.9.zip
+
+### Reason
+Add new feature and fix some issues.
+
+### What’s Brand New
+- New Aux system added to heat pump for boosting the heating performance.
+- Send relays with backdoor settings.
+
+### What Been Updated
+- Update the emergency heating logics.
+
+### What’s Been Fixed
+- Fix some issues in the scheme.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
+## Release R 1.4.8
+ 11th December 2024
+ Branch- r1_4_8, commit- 64142d2
+ 
+### Release Articles
+update-V.1.4.8.zip
+
+### Reason
+Update feature.
+
+### What’s Brand New
+
+### What Been Updated
+- Enhanced compatibility logic to differentiate between WPA3 and WPA2/WPA3 mixed-mode networks, ensuring reliable connectivity.
+- Add a cmake attribute to enable/disable protobuffer module.
+
+### What’s Been Fixed
+
+### Known Issues
+- CPU usage in some cases should be check.
+- Some issues exit in block diagram parameters
+
 ## Release R 1.4.7
  8th December 2024
  Branch- r1_4_7, commit- 1b180ba4
@@ -59,6 +104,7 @@ Add new features and fix some issues.
 
 ### Known Issues
 - CPU usage in some cases should be check.
+- Issue with connecting to mixed WPA2/WPA3 points.
 
 ## Release R 1.4.5
  20th November 2024

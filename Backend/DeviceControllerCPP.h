@@ -393,7 +393,7 @@ private:
     {
         double correction = TEMPERATURE_COMPENSATION_OFFSET + mDeltaTemperatureIntegrator * TEMPERATURE_COMPENSATION_SCALER;
         // the hypothesis is correction value is in F and should be converted
-        return  correction / 1.8;
+        return  correction;
     }
 
     // Testing
