@@ -84,6 +84,9 @@ BasePageView {
 
         checked: false
 
+        indicator.width: 30
+        indicator.height: 30
+
         // Use TapHandler to handle checked in the checkbox.
         TapHandler {
             onTapped: {
