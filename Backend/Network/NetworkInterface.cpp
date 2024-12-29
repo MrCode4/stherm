@@ -10,8 +10,8 @@
 #include <QRegularExpression>
 #include <QNetworkReply>
 
-bool compareWifiStrength(const WifiInfo& a, const WifiInfo& b) {
-    return a.strength() < b.strength();
+bool compareWifiStrength(WifiInfo *a, WifiInfo *b) {
+    return a->strength() < b->strength();
 }
 
 NetworkInterface::NetworkInterface(QObject *parent)
@@ -24,6 +24,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
                                                           "http://google.com")) }
     , mForgettingWifis { false }
+    , mIsWifiDisconnectedManually { false }
 {
     connect(mNmcliInterface, &NmcliInterface::deviceIsOnChanged, this,
             &NetworkInterface::deviceIsOnChanged);
@@ -56,6 +57,9 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
             checkHasInternet();
         } else {
+            if (!mIsWifiDisconnectedManually)
+                mAutoConnectToWifiTimer.start();
+
             if (mCheckInternetAccessTmr.isActive()) {
                 mCheckInternetAccessTmr.stop();
             }
@@ -81,10 +85,6 @@ NetworkInterface::NetworkInterface(QObject *parent)
             processForgettingWiFis();
     });
 
-    connect(this, &NetworkInterface::wifisChanged, this, [this]() {
-        mAutoConnectToWifiTimer.start();
-    });
-
     connect(mNmcliInterface, &NmcliInterface::autoConnectSavedInrangeWifiFinished, this, [this](WifiInfo *wifi) {
         TRACE << "Auto connection for " << wifi->ssid() << " is " << wifi->connected();
         tryConnectToSavedInrangeWifi();
@@ -102,6 +102,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
         if (mAutoConnectSavedInrangeWifis.empty()) {
             mAutoConnectToWifiTimer.stop();
+            mIsWifiDisconnectedManually = false;
 
         } else {
             std::sort(mAutoConnectSavedInrangeWifis.begin(), mAutoConnectSavedInrangeWifis.end(), compareWifiStrength);
@@ -167,13 +168,15 @@ void NetworkInterface::refereshWifis(bool forced)
 }
 
 void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
-{
-    // Start the auto connection for try to connect when the manual connection failed.
-    mAutoConnectToWifiTimer.start();
-
+{    
     if (!wifiInfo || wifiInfo->connected() || wifiInfo->isConnecting() || mNmcliInterface->busy() || mForgettingWifis) {
         return;
     }
+
+    // Start the auto connection for try to connect when the manual connection failed.
+    mAutoConnectToWifiTimer.start();
+    // Set to false to start auto connection if needed.
+    mIsWifiDisconnectedManually = false;
 
     mRequestedToConnectedWifi = wifiInfo;
     mNmcliInterface->connectToWifi(wifiInfo, password);
@@ -181,13 +184,14 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 
 void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 {
-    // Stop auto connect timer for sure.
-    mAutoConnectToWifiTimer.stop();
 
     if (!wifiInfo || !wifiInfo->connected() || mNmcliInterface->busy()) {
         return;
     }
     
+    // Stop auto connect timer for sure.
+    mAutoConnectToWifiTimer.stop();
+    mIsWifiDisconnectedManually = true;
     mNmcliInterface->disconnectFromWifi(wifiInfo);
 }
 
@@ -327,6 +331,8 @@ bool NetworkInterface::checkWPA3Support()
 void NetworkInterface::checkHasInternet()
 {
     auto connectedWifiInfo = connectedWifi();
+    TRACE << "Checking the internet connectivity, " << connectedWifiInfo << mNamIsRunning;
+
     if (!connectedWifiInfo) {
         setHasInternet(false);
     }

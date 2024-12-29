@@ -196,6 +196,8 @@ private:
     //! Just used in the auto connect.
     QList<WifiInfo *>       mAutoConnectSavedInrangeWifis;
 
+    bool mIsWifiDisconnectedManually;
+
 };
 
 inline void NetworkInterface::setHasInternet(bool hasInternet)
