@@ -10,6 +10,10 @@
 #include <QRegularExpression>
 #include <QNetworkReply>
 
+bool compareWifiStrength(const WifiInfo& a, const WifiInfo& b) {
+    return a.strength() < b.strength();
+}
+
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
     , mNmcliInterface { new NmcliInterface(this) }
@@ -76,6 +80,54 @@ NetworkInterface::NetworkInterface(QObject *parent)
         if (mForgettingWifis && !busy())
             processForgettingWiFis();
     });
+
+    connect(this, &NetworkInterface::wifisChanged, this, [this]() {
+        mAutoConnectToWifiTimer.start();
+    });
+
+    connect(mNmcliInterface, &NmcliInterface::autoConnectSavedInrangeWifiFinished, this, [this](WifiInfo *wifi) {
+        TRACE << "Auto connection for " << wifi->ssid() << " is " << wifi->connected();
+        tryConnectToSavedInrangeWifi();
+    });
+
+    mAutoConnectToWifiTimer.setInterval(2 * 60 * 1000);
+    mAutoConnectToWifiTimer.setSingleShot(false);
+    connect(&mAutoConnectToWifiTimer, &QTimer::timeout, this, [this]() {
+
+        // Update the auto connection wifi list:
+        std::copy_if(mWifiInfos.begin(), mWifiInfos.end(),
+                     std::back_inserter(mAutoConnectSavedInrangeWifis), [&](WifiInfo* obj) {
+                         return obj->ssid().isEmpty() == false && obj->isSaved() && obj->strength() > -1;
+                     });
+
+        if (mAutoConnectSavedInrangeWifis.empty()) {
+            mAutoConnectToWifiTimer.stop();
+
+        } else {
+            std::sort(mAutoConnectSavedInrangeWifis.begin(), mAutoConnectSavedInrangeWifis.end(), compareWifiStrength);
+            tryConnectToSavedInrangeWifi();
+        }
+
+    });
+    mAutoConnectToWifiTimer.start();
+}
+
+
+void NetworkInterface::tryConnectToSavedInrangeWifi(WifiInfo *triedWifi) {
+    if (connectedWifi()) {
+        mAutoConnectToWifiTimer.stop();
+        return;
+    }
+
+    if (mAutoConnectSavedInrangeWifis.empty()) {
+        TRACE << "No saved inrange wifis for auto connection.";
+
+    } else {
+        auto wifi = mAutoConnectSavedInrangeWifis.front();
+        if (mNmcliInterface->autoConnectSavedWifi(wifi)) {
+            mAutoConnectSavedInrangeWifis.pop_front();
+        }
+    }
 }
 
 NetworkInterface::WifisQmlList NetworkInterface::wifis()
@@ -116,6 +168,9 @@ void NetworkInterface::refereshWifis(bool forced)
 
 void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 {
+    // Start the auto connection for try to connect when the manual connection failed.
+    mAutoConnectToWifiTimer.start();
+
     if (!wifiInfo || wifiInfo->connected() || wifiInfo->isConnecting() || mNmcliInterface->busy() || mForgettingWifis) {
         return;
     }
@@ -126,6 +181,9 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 
 void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 {
+    // Stop auto connect timer for sure.
+    mAutoConnectToWifiTimer.stop();
+
     if (!wifiInfo || !wifiInfo->connected() || mNmcliInterface->busy()) {
         return;
     }

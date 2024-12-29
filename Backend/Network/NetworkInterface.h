@@ -111,6 +111,8 @@ private slots:
 
     void processForgettingWiFis();
 
+    void tryConnectToSavedInrangeWifi(WifiInfo * triedWifi = nullptr);
+
     /* Signals
      * ****************************************************************************************/
 signals:
@@ -188,6 +190,12 @@ private:
     WifiInfo*               mRequestedToConnectedWifi;
 
     bool                    mForgettingWifis;
+
+    QTimer                  mAutoConnectToWifiTimer;
+
+    //! Just used in the auto connect.
+    QList<WifiInfo *>       mAutoConnectSavedInrangeWifis;
+
 };
 
 inline void NetworkInterface::setHasInternet(bool hasInternet)

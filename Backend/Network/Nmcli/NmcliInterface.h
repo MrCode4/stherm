@@ -171,6 +171,8 @@ public:
      */
     QStringList getDeviceSupportedCiphersList() const;
 
+    bool autoConnectSavedWifi(WifiInfo *wifi);
+
 private:
     /*!
      * \brief connectToWifi This is an overloaded method and connects to the given wifi without any
@@ -309,6 +311,9 @@ signals:
      * \brief ciphersAreReady
      */
     void ciphersAreReady();
+
+    //! Auto connection finished for wifi.
+    void autoConnectSavedInrangeWifiFinished(WifiInfo *wifi);
 
 private:
     /*!

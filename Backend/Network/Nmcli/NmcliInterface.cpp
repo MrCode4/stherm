@@ -118,6 +118,21 @@ void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
     }
 }
 
+bool NmcliInterface::autoConnectSavedWifi(WifiInfo* wifi)
+{
+    if (!wifi) {
+        return false;
+    }
+
+    setBusy(true);
+
+    mCliWifi->connectToSavedWifi(wifi->ssid(), wifi->security(), "", [&] (QProcess*) {
+        setBusy(false);
+        emit autoConnectSavedInrangeWifiFinished(wifi);
+    });
+
+    return true;
+}
 bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
 {
     //! It's supposed that this private method is only called on a saved wifi, so no need to check
