@@ -27,6 +27,7 @@ class NetworkInterface : public QObject
     Q_PROPERTY(QString ipv4Address              READ ipv4Address     CONSTANT)
     Q_PROPERTY(bool doesDeviceSupportWPA3 READ doesDeviceSupportWPA3 CONSTANT)
     Q_PROPERTY(bool forgettingAllWifis          READ forgettingAllWifis NOTIFY forgettingAllWifisChanged)
+    Q_PROPERTY(bool isWifiDisconnectedManually  READ isWifiDisconnectedManually NOTIFY isWifiDisconnectedManuallyChanged)
 
     QML_ELEMENT
     QML_SINGLETON
@@ -55,6 +56,8 @@ public:
     bool                deviceIsOn() const { return mNmcliInterface->isDeviceOn(); }
 
     bool                hasInternet() const { return mHasInternet; }
+
+    bool                isWifiDisconnectedManually() const { return mIsWifiDisconnectedManually; }
 
     QString             ipv4Address() const;
 
@@ -104,6 +107,8 @@ private:
 
     void setForgettingWifis(const bool &forgettingWifis);
 
+    void setIsWifiDisconnectedManually(const bool &isWifiDisconnectedManually);
+
 private slots:
     void                onErrorOccured(int error); //! error is: NmcliInterface::Error
     void                checkHasInternet();
@@ -136,6 +141,8 @@ signals:
     void                forgettingAllWifisChanged();
 
     void                allWiFiNetworksForgotten();
+
+    void                isWifiDisconnectedManuallyChanged();
 
     /* Private attributes
      * ****************************************************************************************/
@@ -196,7 +203,7 @@ private:
     //! Just used in the auto connect.
     QList<WifiInfo *>       mAutoConnectSavedInrangeWifis;
 
-    bool mIsWifiDisconnectedManually;
+    bool                    mIsWifiDisconnectedManually;
 
 };
 
