@@ -157,6 +157,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     if (!mountDirectory("/mnt/log", "/mnt/log/log"))
         qWarning() << "unable to create logs folder";
 
+    if (!mountDirectory("/mnt/log", "/mnt/log/networkLogs"))
+        qWarning() << "unable to create networkLogs folder";
+
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
     mIsManualUpdate          = setting.value(m_IsManualUpdateSetting, false).toBool();
@@ -2101,41 +2104,10 @@ bool NUVE::System::sendLogFile(bool showAlert)
         return false;
     }
 
+
     emit logPrepared(true);
 
-    auto sendCallback = [=](QString error) {
-        auto role = mLogSender.property("role").toString();
-        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
-
-        if (error.isEmpty()) {
-            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-                SYS_LOG <<"Reporting" <<Cmd_PushLogs;
-                auto callback = [this] (bool success, const QJsonObject& data) {
-                    mLastReceivedCommands.remove(Cmd_PushLogs);
-                    SYS_LOG <<"Log sending success. Command cleared" <<Cmd_PushLogs;
-                };
-                mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
-            }
-            if (showAlert) emit logSentSuccessfully();
-        }
-        else {
-            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-                SYS_LOG <<"Log sending failed. Command cleared" <<Cmd_PushLogs;
-                mLastReceivedCommands.remove(Cmd_PushLogs);
-            }
-            error = "error while sending log directory on remote: " + error;
-            qWarning() << error;
-            if (showAlert) emit logAlert(error);
-        }
-    };
-
-    mLogSender.setRole("sendLog", sendCallback);
-
-    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("sshpass -p '%1' rsync -avzhe 'ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\"' --progress  %2 %3@%4:%5").
-                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
-    TRACE << "sending log to server " << mLogRemoteFolder;
-    mLogSender.start("/bin/bash", {"-c", copyFile});
+    sendLogToServer(QStringList(filename), showAlert);
 
     return true;
 }
@@ -2298,5 +2270,77 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
             mErrorHandler(error);
         }
     });
+}
+
+void NUVE::System::saveNetworkLogs() {
+    auto filename = generateLog();
+    if (filename.isEmpty())
+        return;
+
+    auto newFileName = "/mnt/log/networkLogs/network_" + filename.remove("/mnt/log/log/");
+    if (!QFile::copy(filename, newFileName))
+        qWarning() << "unable to copy logs folder";
+}
+
+bool NUVE::System::sendNetworkLogs() {
+    QDir dir("/mnt/log/networkLogs/");
+    if (!dir.exists())
+        return false;
+
+    // Get a list of all files in the specified path
+    QStringList fileList = dir.entryList(QDir::Files);
+
+    if (fileList.isEmpty())
+        return false;
+
+    sendLogToServer(fileList, false);
+
+    return true;
+}
+
+void NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert) {
+
+    if (filenames.isEmpty())
+        return;
+
+    auto sendCallback = [=](QString error) {
+        auto role = mLogSender.property("role").toString();
+        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
+
+        if (error.isEmpty()) {
+            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG <<"Reporting" <<Cmd_PushLogs;
+                auto callback = [this] (bool success, const QJsonObject& data) {
+                    mLastReceivedCommands.remove(Cmd_PushLogs);
+                    SYS_LOG <<"Log sending success. Command cleared" <<Cmd_PushLogs;
+                };
+                mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
+            }
+            if (showAlert) emit logSentSuccessfully();
+
+            // Delete logs that have been sent to the server.
+            foreach (auto file, filenames) {
+                if (QFile::remove(file))
+                    qWarning() << "Could not remove the file: " << file;
+            }
+        }
+        else {
+            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG <<"Log sending failed. Command cleared" <<Cmd_PushLogs;
+                mLastReceivedCommands.remove(Cmd_PushLogs);
+            }
+            error = "error while sending log directory on remote: " + error;
+            qWarning() << error;
+            if (showAlert) emit logAlert(error);
+        }
+    };
+
+    mLogSender.setRole("sendLog", sendCallback);
+
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+                       arg(m_logPassword, filenames.join(" "), m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    TRACE << "sending log to server " << mLogRemoteFolder;
+    mLogSender.start("/bin/bash", {"-c", copyFile});
 }
 
