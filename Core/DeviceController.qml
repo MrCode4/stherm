@@ -88,6 +88,44 @@ I_DeviceController {
         property string syncReturnedZip: ""
     }
 
+    //! Active the Network Connection Watchdog when device has not internet for 1 hour.
+    property Timer networkWatchdogTimer: Timer {
+        repeat: false
+        running: !NetworkInterface.isWifiDisconnectedManually &&
+                 (!NetworkInterface.connectedWifi || !NetworkInterface.hasInternet)
+        interval: 1 * 60 * 60 * 1000
+
+        onTriggered: {
+            // Save the network log
+            system.saveNetworkLogs();
+
+            // Restart the app or device
+            uiSession.popUps.showRebootDevicePopup("Restarting Device due to network issue.", false);
+        }
+
+    }
+
+    property Timer sendNetworkWatchdogLogTimer: Timer {
+        repeat: false
+        running: NetworkInterface.hasInternet
+        interval: 20000
+
+        property int retry: 0;
+
+        onTriggered: {
+            retry++;
+            if (system.sendNetworkLogs()) {
+                if (retry < 10)
+                    restart();
+
+            } else {
+                // To break the binding
+                running = false;
+            }
+        }
+
+    }
+
     //! TODO: This will be used to retry the service titan fetch operation in case of errors
     //! Used delays in the fetchServiceTitanInformation calls to improve the overall user experience.
     property Timer fetchServiceTitanTimer: Timer {

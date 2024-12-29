@@ -194,6 +194,31 @@ Item {
         }
     }
 
+    property RebootDevicePopup _rebootDevicePopup: null
+    Component {
+        id: rebootPopupComponent
+
+        //! Reboot popup with count down timer to send reboot request to system
+        RebootDevicePopup {
+
+            //! Enable forget device in this popup
+            property bool withForget: false
+
+            title : withForget ? "   Forget Device   " :  " Restart Device   "
+            anchors.centerIn: T.Overlay.overlay
+
+            onStartAction: {
+                if (withForget) {
+                    deviceController.forgetDevice();
+                }
+
+                if (system) {
+                    system.rebootDevice();
+                }
+            }
+        }
+    }
+
     property SkipWIFIConnectionPopup _skipWIFIConnectionPopup: null
 
     Component {
@@ -395,6 +420,19 @@ Item {
 
         if (_limitedInitialSetupPopup) {
             uiSession.popupLayout.displayPopUp(_limitedInitialSetupPopup);
+        }
+    }
+
+    function showRebootDevicePopup(info: string, withForget: bool) {
+        if (!_rebootDevicePopup) {
+            _rebootDevicePopup = rebootPopupComponent.createObject(root);
+        }
+
+        if (_rebootDevicePopup) {
+            _rebootDevicePopup.infoText = info;
+            _rebootDevicePopup.withForget = withForget;
+
+            uiSession.popupLayout.displayPopUp(_rebootDevicePopup);
         }
     }
 
