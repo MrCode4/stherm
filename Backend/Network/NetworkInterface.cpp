@@ -10,6 +10,12 @@
 #include <QRegularExpression>
 #include <QNetworkReply>
 
+#include <QLoggingCategory>
+#include "LogHelper.h"
+
+Q_LOGGING_CATEGORY(NetworkInterfaceLogCat, "NetworkInterfaceLog")
+#define NI_LOG TRACE_CATEGORY(NetworkInterfaceLogCat)
+
 bool compareWifiStrength(WifiInfo *a, WifiInfo *b) {
     return a->strength() < b->strength();
 }
@@ -30,8 +36,17 @@ NetworkInterface::NetworkInterface(QObject *parent)
             &NetworkInterface::deviceIsOnChanged);
     connect(mNmcliInterface, &NmcliInterface::errorOccured, this,
             &NetworkInterface::onErrorOccured);
-    connect(mNmcliInterface, &NmcliInterface::busyRefreshingChanged, this,
-            &NetworkInterface::busyRefreshingChanged);
+
+    connect(mNmcliInterface, &NmcliInterface::busyRefreshingChanged, this, [this]() {
+        if (!mNmcliInterface->busyRefreshing()) {
+            foreach (auto wifi, mWifiInfos) {
+                NI_LOG << wifi->wifiInformation();
+            }
+        }
+
+        emit busyRefreshingChanged();
+    });
+
     connect(mNmcliInterface, &NmcliInterface::busyChanged, this,
             &NetworkInterface::busyChanged);
     connect(mNmcliInterface, &NmcliInterface::connectedWifiChanged, this,
@@ -71,7 +86,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     mSetNoInternetTimer.setInterval(cCheckInternetAccessInterval * 2);
     mSetNoInternetTimer.setSingleShot(true);
     connect(&mSetNoInternetTimer, &QTimer::timeout, this, [this](){
-        TRACE << "no internet found during last" << cCheckInternetAccessInterval * 2 / 1000 << "seconds."
+        NI_LOG << "no internet found during last" << cCheckInternetAccessInterval * 2 / 1000 << "seconds."
               << "settings no internet";
         setHasInternet(false);
     });
@@ -86,7 +101,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     });
 
     connect(mNmcliInterface, &NmcliInterface::autoConnectSavedInrangeWifiFinished, this, [this](WifiInfo *wifi) {
-        TRACE << "Auto connection for " << wifi->ssid() << " is " << wifi->connected();
+        NI_LOG << "Auto connection for " << wifi->ssid() << " is " << wifi->connected();
         tryConnectToSavedInrangeWifi(wifi);
     });
 
@@ -130,7 +145,7 @@ void NetworkInterface::tryConnectToSavedInrangeWifi(WifiInfo *triedWifi) {
     }
 
     if (mAutoConnectSavedInrangeWifis.empty()) {
-        TRACE << "No saved inrange wifis for auto connection.";
+        NI_LOG << "No saved inrange wifis for auto connection.";
 
     } else {
         auto wifi = mAutoConnectSavedInrangeWifis.front();
@@ -221,7 +236,7 @@ void NetworkInterface::processForgettingWiFis() {
 
     auto connectedWiFi = connectedWifi();
     if (connectedWiFi) {
-        TRACE << "Disconnect from " << connectedWiFi->ssid();
+        NI_LOG << "Disconnect from " << connectedWiFi->ssid();
         disconnectWifi(connectedWiFi);
     } else {
         QList <WifiInfo *> forgettingSavedWifis;
@@ -234,7 +249,7 @@ void NetworkInterface::processForgettingWiFis() {
 
         if (!forgettingSavedWifis.empty()) {
             auto forgetWF = forgettingSavedWifis.first();
-            TRACE << "Forget Wi-Fi with ssid " << forgetWF->ssid();
+            NI_LOG << "Forget Wi-Fi with ssid " << forgetWF->ssid();
             forgetWifi(forgetWF);
             if (!busy()) {
                 TRACE << "Worst case scenario: isBusy forgetting is false.";
@@ -356,7 +371,7 @@ bool NetworkInterface::checkWPA3Support()
 void NetworkInterface::checkHasInternet()
 {
     auto connectedWifiInfo = connectedWifi();
-    TRACE << "Checking the internet connectivity, " << connectedWifiInfo << mNamIsRunning;
+    NI_LOG << "Checking the internet connectivity, " << connectedWifiInfo << mNamIsRunning;
 
     if (!connectedWifiInfo) {
         setHasInternet(false);
@@ -376,7 +391,7 @@ void NetworkInterface::checkHasInternet()
                 mSetNoInternetTimer.stop();
                 setHasInternet(true);
             } else {
-                TRACE << "check has internet has error" << mHasInternet << mSetNoInternetTimer.isActive() << reply->error();
+                NI_LOG << "check has internet has error" << mHasInternet << mSetNoInternetTimer.isActive() << reply->error();
                 // sending a sooner request when we previously had internet but we get failed
                 if (mHasInternet) {
                     QTimer::singleShot(10000, this, &NetworkInterface::checkHasInternet);
