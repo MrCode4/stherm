@@ -1858,18 +1858,8 @@ bool NUVE::System::isBusylogSender() const {
 
 bool NUVE::System::sendLog(bool showAlert)
 {
-    if (isBusylogSender()){
-        QString error("Previous session is in progress.");
-        qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
+    if (!checkSendLog(showAlert))
         return false;
-    }
-
-    if (!installSSHPass()){
-        QString error("Device is not ready to send log!");
-        qWarning() << error;
-        if (showAlert) emit logAlert(error);
-        return false;
-    }
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
@@ -1897,8 +1887,9 @@ bool NUVE::System::sendLog(bool showAlert)
         mLogSender.setRole("dirLog", dirCreatorCallback);
 
         prepareLogDirectory(dirCreatorCallback);
-        return true;
     }
+
+    return true;
 }
 
 void NUVE::System::sendFirstRunLog()
@@ -2094,22 +2085,8 @@ void NUVE::System::sendFirstRunLogFile()
 bool NUVE::System::sendLogFile(bool showAlert)
 {
     auto filename = generateLog();
-    if (filename.isEmpty()) {
-        if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-            SYS_LOG <<"Log file generation failed. Command cleared" <<Cmd_PushLogs;
-            mLastReceivedCommands.remove(Cmd_PushLogs);
-            emit logPrepared(false);
-        }
 
-        return false;
-    }
-
-
-    emit logPrepared(true);
-
-    sendLogToServer(QStringList(filename), showAlert);
-
-    return true;
+    return sendLogToServer(QStringList(filename), showAlert);
 }
 
 void NUVE::System::sendResultsFile(const QString &filepath,
@@ -2273,16 +2250,24 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
 }
 
 void NUVE::System::saveNetworkLogs() {
-    auto filename = generateLog();
-    if (filename.isEmpty())
+    auto generatedFilename = generateLog();
+    if (generatedFilename.isEmpty())
         return;
 
+    auto filename = generatedFilename;
     auto newFileName = "/mnt/log/networkLogs/network_" + filename.remove("/mnt/log/log/");
-    if (!QFile::copy(filename, newFileName))
-        qWarning() << "unable to copy logs folder";
+    if (!QFile::copy(generatedFilename, newFileName))
+        qWarning() << "unable to copy logs to network folder";
 }
 
 bool NUVE::System::sendNetworkLogs() {
+
+    bool showAlert = false;
+
+    if (!checkSendLog(showAlert)) {
+        return false;
+    }
+
     QDir dir("/mnt/log/networkLogs/");
     if (!dir.exists())
         return false;
@@ -2293,15 +2278,55 @@ bool NUVE::System::sendNetworkLogs() {
     if (fileList.isEmpty())
         return false;
 
-    sendLogToServer(fileList, false);
+    QStringList absFileList;
+    // Get absolute file paths
+    for (const QString& fileName : fileList) {
+        QString absoluteFilePath = dir.absoluteFilePath(fileName);
+        absFileList.append(absoluteFilePath);
+    }
+
+    auto initialized = mLogSender.property("initialized");
+    if (initialized.isValid() && initialized.toBool()) {
+        return sendLogToServer(absFileList, false);
+
+    } else {
+        auto dirCreatorCallback = [=](QString error) {
+            auto role = mLogSender.property("role").toString();
+            TRACE_CHECK(role != "dirLog") << "role seems invalid" << role;
+
+            if (!error.isEmpty()) {
+                error = "error while creating log directory on remote: " + error;
+                qWarning() << error;
+                if (showAlert) emit logAlert(error);
+                return;
+            }
+
+            TRACE << "Folder created in server successfully";
+            mLogSender.setProperty("initialized", true);
+
+            sendLogToServer(absFileList, false);
+        };
+
+        mLogSender.setRole("dirLog", dirCreatorCallback);
+
+        prepareLogDirectory(dirCreatorCallback);
+    }
 
     return true;
 }
 
-void NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert) {
+bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert) {
+    if (filenames.isEmpty()) {
+        if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+            SYS_LOG <<"Log file generation failed. Command cleared" <<Cmd_PushLogs;
+            mLastReceivedCommands.remove(Cmd_PushLogs);
+        }
 
-    if (filenames.isEmpty())
-        return;
+        emit logPrepared(false);
+        return false;
+    }
+
+    emit logPrepared(true);
 
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
@@ -2320,7 +2345,7 @@ void NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
 
             // Delete logs that have been sent to the server.
             foreach (auto file, filenames) {
-                if (QFile::remove(file))
+                if (!QFile::remove(file))
                     qWarning() << "Could not remove the file: " << file;
             }
         }
@@ -2342,5 +2367,25 @@ void NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
                        arg(m_logPassword, filenames.join(" "), m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
+
+    return true;
+}
+
+bool NUVE::System::checkSendLog(bool showAlert)
+{
+    if (mLogSender.busy()){
+        QString error("Previous session is in progress.");
+        qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
+        return false;
+    }
+
+    if (!installSSHPass()){
+        QString error("Device is not ready to send log!");
+        qWarning() << error;
+        if (showAlert) emit logAlert(error);
+        return false;
+    }
+
+    return true;
 }
 
