@@ -1276,6 +1276,9 @@ I_DeviceController {
             }
         }
 
+        if (root.currentSchedule)
+            send_data.runningScheduleId = root.currentSchedule.id;
+
         device._sensors.forEach(sensor =>
                                 {
                                     send_data.sensors.push(
@@ -1668,6 +1671,8 @@ I_DeviceController {
 
         root.currentSchedule = schedule;
         deviceControllerCPP.setActivatedSchedule(schedule);
+
+        updateEditMode(AppSpec.EMSchedule)
     }
 
     function getFromBrandName(brandName) {

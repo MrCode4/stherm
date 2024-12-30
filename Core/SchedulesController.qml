@@ -15,8 +15,6 @@ QtObject {
 
     property I_Device device: deviceController.device
 
-    property ScheduleCPP runningSchedule: null
-
     property var deviceCurrentSchedules: [];
 
     //! Deleting schedules: Use in retry operation
