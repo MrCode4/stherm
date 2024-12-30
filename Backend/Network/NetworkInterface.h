@@ -88,6 +88,8 @@ public:
 
     bool forgettingAllWifis();
 
+    void printWifisInformation();
+
     /* Private methods and slots
      * ****************************************************************************************/
 private:

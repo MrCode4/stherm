@@ -17,7 +17,7 @@ Q_LOGGING_CATEGORY(NetworkInterfaceLogCat, "NetworkInterfaceLog")
 #define NI_LOG TRACE_CATEGORY(NetworkInterfaceLogCat)
 
 bool compareWifiStrength(WifiInfo *a, WifiInfo *b) {
-    return a->strength() < b->strength();
+    return a->strength() > b->strength();
 }
 
 NetworkInterface::NetworkInterface(QObject *parent)
@@ -36,17 +36,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
             &NetworkInterface::deviceIsOnChanged);
     connect(mNmcliInterface, &NmcliInterface::errorOccured, this,
             &NetworkInterface::onErrorOccured);
-
-    connect(mNmcliInterface, &NmcliInterface::busyRefreshingChanged, this, [this]() {
-        if (!mNmcliInterface->busyRefreshing()) {
-            foreach (auto wifi, mWifiInfos) {
-                NI_LOG << wifi->wifiInformation();
-            }
-        }
-
-        emit busyRefreshingChanged();
-    });
-
+    connect(mNmcliInterface, &NmcliInterface::busyRefreshingChanged,
+            this, &NetworkInterface::busyRefreshingChanged);
     connect(mNmcliInterface, &NmcliInterface::busyChanged, this,
             &NetworkInterface::busyChanged);
     connect(mNmcliInterface, &NmcliInterface::connectedWifiChanged, this,
@@ -59,6 +50,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     mCheckInternetAccessTmr.setInterval(cCheckInternetAccessInterval);
     connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
     connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
+        printWifisInformation();
+
         mSetNoInternetTimer.stop();
 
         // clear the cache to restore internet access faster
@@ -101,19 +94,22 @@ NetworkInterface::NetworkInterface(QObject *parent)
     });
 
     connect(mNmcliInterface, &NmcliInterface::autoConnectSavedInrangeWifiFinished, this, [this](WifiInfo *wifi) {
-        NI_LOG << "Auto connection for " << wifi->ssid() << " is " << wifi->connected();
+        NI_LOG << "Auto connection for " << wifi->wifiInformation();
         tryConnectToSavedInrangeWifi(wifi);
     });
 
     mAutoConnectToWifiTimer.setInterval(2 * 60 * 1000);
     mAutoConnectToWifiTimer.setSingleShot(false);
     connect(&mAutoConnectToWifiTimer, &QTimer::timeout, this, [this]() {
+        printWifisInformation();
 
         // Restart the timer if the mNmcliInterface is busy
         if (mNmcliInterface->busy()) {
             mAutoConnectToWifiTimer.start();
             return;
         }
+
+        NI_LOG << "Auto connection started.";
 
         // Update the auto connection wifi list:
         std::copy_if(mWifiInfos.begin(), mWifiInfos.end(),
@@ -192,7 +188,7 @@ void NetworkInterface::refereshWifis(bool forced)
 }
 
 void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
-{    
+{
     if (!wifiInfo || wifiInfo->connected() || wifiInfo->isConnecting() || mNmcliInterface->busy() || mForgettingWifis) {
         return;
     }
@@ -210,7 +206,7 @@ void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
     if (!wifiInfo || !wifiInfo->connected() || mNmcliInterface->busy()) {
         return;
     }
-    
+
     setIsWifiDisconnectedManually(true);
     mNmcliInterface->disconnectFromWifi(wifiInfo);
 }
@@ -293,6 +289,15 @@ bool NetworkInterface::forgettingAllWifis() {
     return mForgettingWifis;
 }
 
+void NetworkInterface::printWifisInformation()
+{
+    if (!mNmcliInterface->busyRefreshing()) {
+        foreach (auto wifi, mWifiInfos) {
+            NI_LOG << wifi->wifiInformation();
+        }
+    }
+}
+
 bool NetworkInterface::isWifiSaved(WifiInfo* wifiInfo)
 {
     if (!wifiInfo) {
@@ -371,7 +376,7 @@ bool NetworkInterface::checkWPA3Support()
 void NetworkInterface::checkHasInternet()
 {
     auto connectedWifiInfo = connectedWifi();
-    NI_LOG << "Checking the internet connectivity, " << connectedWifiInfo << mNamIsRunning;
+    NI_LOG << "Checking the internet connectivity, " << connectedWifiInfo->wifiInformation() << mNamIsRunning;
 
     if (!connectedWifiInfo) {
         setHasInternet(false);
