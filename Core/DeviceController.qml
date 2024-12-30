@@ -117,13 +117,8 @@ I_DeviceController {
             if (system.sendNetworkLogs()) {
                 if (retry < 10)
                     restart();
-
-            } else {
-                // To break the binding
-                running = false;
             }
         }
-
     }
 
     //! TODO: This will be used to retry the service titan fetch operation in case of errors
