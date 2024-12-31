@@ -99,7 +99,7 @@ ToolButton {
                 font.pointSize: Application.font.pointSize * 0.65
                 text: {
                     if (_control.state === "emergency")
-                        return "Emergency"
+                        return "Heating (Emergency)"
 
                     if (device.systemSetup.systemType === AppSpec.DualFuelHeating && (!device.systemSetup.isAUXAuto || dfhTroubleshootingMode)) {
 
