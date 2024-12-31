@@ -348,6 +348,7 @@ void Scheme::CoolingLoop()
             }
 
             // Stop countdown, delay is finished.
+            // We should not have any return or break before this unless we handle the stop
             if (hasDelay) {
                 emit stopSystemDelayCountdown();
             }
@@ -563,7 +564,7 @@ void Scheme::internalCoolingLoopStage1()
                 }
 
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
-                // avoid sending alert
+                // avoid sending alert either it went to stage2 and returned back or off time not yet elapsed
                 continue;
             }
         }
@@ -675,7 +676,7 @@ void Scheme::internalHeatingLoopStage1()
                 if (!internalHeatingLoopStage2())
                     break;
 
-                // avoid sending alert
+                // avoid sending alert either it went to stage2 and returned back
                 continue;
             }
         }
@@ -903,7 +904,8 @@ void Scheme::internalPumpHeatingLoopStage1()
                         }
                     }
 
-                    // avoid sending alert
+                    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
+                    // avoid sending alert either it went to stage2 and returned back or off time not yet elapsed
                     continue;
                 }
             }
@@ -1060,6 +1062,7 @@ void Scheme::internalPumpHeatingWithAuxLoopStage1()
                         break;
 
                     } else if (HPStage2 == Continue) {
+                        // no need to wait some moments because it will be done in internalPumpHeatingWithAuxLoopStage2
                         continue;
                     }
 
@@ -1074,6 +1077,7 @@ void Scheme::internalPumpHeatingWithAuxLoopStage1()
                     break;
 
                 } else {
+                    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
                     continue;
                 }
             }
@@ -1127,6 +1131,7 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
                     return Break;
                 } else {
                     Q_ASSERT_X(true, "auxiliaryHeatingLoopStage1", " continue case is not valid.");
+                    //! //TODO we need to handle all correctly here such as updating relay parameters etc..
                     return Continue;
                 }
 
@@ -1136,7 +1141,6 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
             }
 
         } else {
-            mTiming->s1Offtime.restart();
             SCHEME_LOG << "End the internalPumpHeatingWithAuxLoopStage2 loop";
             return Break;
         }
@@ -1304,8 +1308,8 @@ void Scheme::emergencyHeatingLoop()
     mActiveHeatPumpMode =  AppSpecCPP::EmergencyHeat;
     mRelay->setAllOff();
 
-
     if (sysSetup->heatStage == 1 || !sysSetup->driveAuxAsEmergency) {
+        // base on the variable it turns on different relays
         mRelay->auxiliaryHeatingStage1(sysSetup->driveAux1AndETogether);
 
     } else { //  for sysSetup->heatStage >= 2 and sysSetup->driveAuxAsEmergency is true
@@ -1342,7 +1346,7 @@ void Scheme::emergencyHeatingLoop()
         }
 
         if (effectiveTemperature() - effectiveCurrentTemperature() > -1) {
-            sendAlertIfNeeded(true);
+            sendAlertIfNeeded(ATEmergency);
         }
 
         // we need break condition here!
@@ -1367,23 +1371,25 @@ void Scheme::emergencyHeatingLoop()
     mActiveHeatPumpMode = AppSpecCPP:: SMUnknown;
 }
 
-void Scheme::sendAlertIfNeeded(bool checkEmergencyAlert)
+void Scheme::sendAlertIfNeeded(AlertType alertType)
 {
-    if (checkEmergencyAlert) {
-        // Generate alert for emergency mode
-        if (!mTiming->alerts && mTEONTimer.isValid() && mTEONTimer.elapsed() >= 30 * 60000) {
-            emit alert();
-            mTiming->alerts = true;
-        }
+    if (mTiming->alerts)
+        return;
 
-    } else {
-        // Generate Alert
-        if (!mTiming->alerts
-            && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() >= 120 * 60000)) {
-            SCHEME_LOG;
-            emit alert();
-            mTiming->alerts = true;
-        }
+    switch (alertType) {
+    case ATEmergency:
+        mTiming->alerts = mTEONTimer.isValid() && mTEONTimer.elapsed() >= 30 * 60000;
+        break;
+    case ATNone:
+        mTiming->alerts = mTiming->uptime.isValid() && mTiming->uptime.elapsed() >= 120 * 60000;
+        break;
+    default:
+        break;
+    }
+
+    if (mTiming->alerts) {
+        SCHEME_LOG << "Alert type: " << alertType;
+        emit alert();
     }
 }
 

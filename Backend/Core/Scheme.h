@@ -21,6 +21,11 @@ private:
         None
     };
 
+    enum AlertType {
+        ATNone = 0,
+        ATEmergency
+    };
+
 public:
     explicit Scheme(DeviceAPI *deviceAPI, QSharedPointer<SchemeDataProvider> schemeDataProvider, QObject *parent = nullptr);
 
@@ -113,7 +118,7 @@ private:
     //! Users manually activate emergency heat., meaning Emergency heating will only be active when the system mode is set to Emergency or
     //!  emergency heating will be triggered by the Defrost Controller Board (if equipped) or based on system needs.
     void emergencyHeatingLoop();
-    void sendAlertIfNeeded(bool checkEmergencyAlert = false);
+    void sendAlertIfNeeded(AlertType alertType = ATNone);
 
     //! Send relays into ti
     void sendRelays(bool forceSend = false);
