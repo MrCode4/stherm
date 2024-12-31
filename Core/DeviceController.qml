@@ -1310,7 +1310,7 @@ I_DeviceController {
                 "heatPumpOBState": device.systemSetup.heatPumpOBState,
                 "heatPumpEmergency": device.systemSetup.heatPumpEmergency,
                 "systemRunDelay": device.systemSetup.systemRunDelay,
-                "dualFuelThreshold": device.systemSetup.dualFuelThreshod,
+                "dualFuelThreshold": device.systemSetup.dualFuelThreshold,
                 "isAUXAuto": device.systemSetup.isAUXAuto,
                 "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
                 "dualFuelHeatingModeDefault": device.systemSetup.dualFuelHeatingModeDefault,
@@ -1454,7 +1454,7 @@ I_DeviceController {
     }
 
     function setSystemDualFuelHeating(heatPumpStage: int, stage: int, obState: int,
-                                      dualFuelThreshod: real, isAUXAuto: bool, dualFuelHeatingModeDefault: int) {
+                                      dualFuelThreshold: real, isAUXAuto: bool, dualFuelHeatingModeDefault: int) {
         device.systemSetup.isAUXAuto = isAUXAuto;
         device.systemSetup.dualFuelHeatingModeDefault = dualFuelHeatingModeDefault;
 
@@ -1464,7 +1464,7 @@ I_DeviceController {
 
         device.systemSetup.heatPumpOBState = obState;
 
-        device.systemSetup.dualFuelThreshod = dualFuelThreshod;
+        device.systemSetup.dualFuelThreshold = dualFuelThreshold;
         setSystemTypeTo(AppSpec.DualFuelHeating);
     }
 
@@ -1532,13 +1532,23 @@ I_DeviceController {
 
         // TODO: update the hasChanges after merge.
         var hasChanges = AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type ||
-                device.systemSetup.heatPumpEmergency  != settings.heatPumpEmergency ||
-                device.systemSetup.heatStage  != settings.heatStage ||
-                device.systemSetup.coolStage  != settings.coolStage ||
-                device.systemSetup.heatPumpOBState  != settings.heatPumpOBState ||
-                device.systemSetup.systemRunDelay  != settings.systemRunDelay ||
+                device.systemSetup.heatPumpEmergency != settings.heatPumpEmergency ||
+                device.systemSetup.heatStage != settings.heatStage ||
+                device.systemSetup.coolStage != settings.coolStage ||
+                device.systemSetup.heatPumpOBState != settings.heatPumpOBState ||
+                device.systemSetup.systemRunDelay != settings.systemRunDelay ||
                 device.systemSetup.systemAccessories.accessoriesType != settings.systemAccessories.mode ||
-                device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType;
+                device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType ||
+
+                device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold ||
+                device.systemSetup.isAUXAuto != settings.isAUXAuto ||
+                device.systemSetup.dualFuelHeatingModeDefault != settings.dualFuelHeatingModeDefault ||
+
+                (settings.hasOwnProperty("emergencyMinimumTime")         && device.systemSetup.emergencyMinimumTime != settings.emergencyMinimumTime) ||
+                (settings.hasOwnProperty("useAuxiliaryParallelHeatPump") && device.systemSetup.useAuxiliaryParallelHeatPump != settings.useAuxiliaryParallelHeatPump) ||
+                (settings.hasOwnProperty("driveAux1AndETogether")        && device.systemSetup.driveAux1AndETogether != settings.driveAux1AndETogether) ||
+                (settings.hasOwnProperty("driveAuxAsEmergency")          && device.systemSetup.driveAuxAsEmergency != settings.driveAuxAsEmergency) ||
+                (settings.hasOwnProperty("auxiliaryHeating")             && device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating);
 
         if (hasChanges) {
             uiSession.popUps.showSystemSetupUpdateConfirmation(settings);
@@ -1576,7 +1586,7 @@ I_DeviceController {
         else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
             setSystemDualFuelHeating(settings.coolStage, settings.heatStage,
                                      settings.heatPumpOBState,
-                                     settings.dualFuelThreshold ?? device.systemSetup.dualFuelThreshod,
+                                     settings.dualFuelThreshold ?? device.systemSetup.dualFuelThreshold,
                                      settings.isAUXAuto ?? device.systemSetup.isAUXAuto,
                                      settings.dualFuelHeatingModeDefault ?? device.systemSetup.dualFuelHeatingModeDefault);
         else

@@ -34,7 +34,10 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(AppSpecCPP::DualFuelManualHeating dualFuelManualHeating  MEMBER dualFuelManualHeating NOTIFY dualFuelManualHeatingChanged FINAL)
     Q_PROPERTY(AppSpecCPP::DualFuelManualHeating dualFuelHeatingModeDefault  MEMBER dualFuelHeatingModeDefault NOTIFY dualFuelHeatingModeDefaultChanged FINAL)
 
+    // TODO: remove
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
+
+    Q_PROPERTY(double dualFuelThreshold  MEMBER dualFuelThreshold NOTIFY dualFuelThresholdChanged FINAL)
 
     Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
     Q_PROPERTY(bool   useAuxiliaryParallelHeatPump    MEMBER useAuxiliaryParallelHeatPump     NOTIFY useAuxiliaryParallelHeatPumpChanged FINAL)
@@ -70,6 +73,9 @@ public:
     //! This is usually the outdoor temperature
     //! at which the heat pump becomes less efficient than the furnace.
     //! Celsius
+    double dualFuelThreshold;
+
+    // TODO: remove
     double dualFuelThreshod;
 
     bool   isAUXAuto;
@@ -103,7 +109,11 @@ signals:
     void systemAccessoriesChanged();
     void isVacationChanged();
     void isSystemShutoffChanged();
+
+    // TODO: remove
     void dualFuelThreshodChanged();
+
+    void dualFuelThresholdChanged();
     void emergencyMinimumTimeChanged();
     void isAUXAutoChanged();
     void dualFuelManualHeatingChanged();
@@ -114,4 +124,7 @@ signals:
     void driveAuxAsEmergencyChanged();
     void auxiliaryHeatingChanged();
 
+private:
+    // TODO: remove
+    void _connectDualFuelThreshodChanged();
 };

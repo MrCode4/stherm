@@ -255,7 +255,7 @@ BasePageView {
                     from: isCelsius ? Utils.fahrenheitToCelsius(AppSpec.minimumDualFuelThresholdF) : AppSpec.minimumDualFuelThresholdF;
                     to:   isCelsius ? Utils.fahrenheitToCelsius(AppSpec.maximumDualFuelThresholdF) : AppSpec.maximumDualFuelThresholdF;
 
-                    control.value: Utils.convertedTemperature(appModel.systemSetup.dualFuelThreshod, deviceController.temperatureUnit);
+                    control.value: Utils.convertedTemperature(appModel.systemSetup.dualFuelThreshold, deviceController.temperatureUnit);
                 }
             }
 
