@@ -51,6 +51,7 @@ const QString m_updateOnStartKey = "updateSequenceOnStart";
 const QString m_LimitedModeRemainigTime = "LimitedModeRemainigTime";
 const QString m_InitialSetupWithNoWIFI  = "InitialSetupWithNoWIFI";
 const QString m_alternativeNoWiFiFlow   = "alternativeNoWiFiFlow";
+const QString m_isDeviceForgotten       = "isDeviceForgotten";
 
 const QString Key_LastRebootAt = "LastRebootCommandAt";
 
@@ -951,6 +952,17 @@ bool NUVE::System::initialSetupWithNoWIFI()
     return settings.value(m_InitialSetupWithNoWIFI, false).toBool();
 }
 
+bool NUVE::System::isForgottenDeviceStarted()
+{
+    QSettings settings;
+    auto isDeviceForgotten = settings.value(m_isDeviceForgotten, false).toBool();
+
+    SYS_LOG << "Device starts after forgetton: " << isDeviceForgotten;
+
+    settings.setValue(m_isDeviceForgotten, false);
+    return isDeviceForgotten;
+}
+
 void NUVE::System::setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow)
 {
     QSettings settings;
@@ -1063,6 +1075,8 @@ void NUVE::System::forgetDevice()
 
     settings.remove(m_alternativeNoWiFiFlow);
 
+    // Device is forgotten
+    settings.setValue(m_isDeviceForgotten, true);
 
     QFile::remove(qApp->applicationDirPath() + "/files_info.json");
     QFile::remove(mUpdateFilePath);

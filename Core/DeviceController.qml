@@ -82,6 +82,10 @@ I_DeviceController {
 
     property bool isRunningAuxiliaryHeating: false
 
+    //! Just for initialize, will be brocken
+    //! true: The system can automatically update without requiring user confirmation.
+    property bool canUpdateSystemSetup: system.isForgottenDeviceStarted()
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -683,6 +687,12 @@ I_DeviceController {
             else {
                 lockStatePusher.interval = Math.min(lockStatePusher.interval * 2, 60 * 1000);
                 console.error('Pushing app lock state failed, retry internal is ', lockStatePusher.interval);
+            }
+        }
+
+        function onWarrantyReplacementFinished(success: bool, error: string, needToRetry: bool) {
+            if (success) {
+                canUpdateSystemSetup = true;
             }
         }
 
@@ -1530,6 +1540,18 @@ I_DeviceController {
 
     //! Checks system setup properties comes from the server for existing changes compared to a device
     function checkSystemSetupServer(settings: var) {
+        if (canUpdateSystemSetup) {
+            applySystemSetupServer(settings);
+
+            // The applySystemSetupServer function should disregard settings if the edit mode is EMSystemSetup.
+            // This is because the server settings are exclusively modified when in EMSystemSetup mode,
+            // so system setup update is unnecessary.
+            canUpdateSystemSetup = false;
+
+            console.log("System setup applied due to forget device:", system.isForgottenDeviceStarted(), " or warranty replacement flow.")
+
+            return;
+        }
 
         var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
 

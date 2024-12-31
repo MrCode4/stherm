@@ -130,6 +130,9 @@ public:
     Q_INVOKABLE void setInitialSetupWithNoWIFI(const bool &initialSetupNoWIFI);
     Q_INVOKABLE bool initialSetupWithNoWIFI();
 
+    //! Device starts after being forgotten.
+    Q_INVOKABLE bool isForgottenDeviceStarted();
+
     void wifiConnected(bool hasInternet);
 
     //! Getters
