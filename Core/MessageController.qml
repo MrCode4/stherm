@@ -73,7 +73,8 @@ QtObject {
         running: device
         repeat: false
 
-        interval: 1 * 60 * 1000
+        // Do not show alert on device during first 3 hours of lost connection.
+        interval: 3 * 60 * 60 * 1000
 
         onTriggered: {
             if (checkWifiConnection())
