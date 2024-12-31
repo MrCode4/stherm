@@ -50,7 +50,6 @@ NetworkInterface::NetworkInterface(QObject *parent)
     mCheckInternetAccessTmr.setInterval(cCheckInternetAccessInterval);
     connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
     connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
-        printWifisInformation();
 
         mSetNoInternetTimer.stop();
 
@@ -65,6 +64,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
             checkHasInternet();
         } else {
+            printWifisInformation();
             if (!mIsWifiDisconnectedManually)
                 mAutoConnectToWifiTimer.start();
 
@@ -127,6 +127,10 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
     });
     mAutoConnectToWifiTimer.start();
+
+    QTimer::singleShot(10 * 60 * 1000, this, [this]() {
+        printWifisInformation();
+    });
 }
 
 
@@ -382,6 +386,8 @@ void NetworkInterface::checkHasInternet()
         setHasInternet(false);
     }
     else if (!mNamIsRunning) {
+        NI_LOG << "connectedWifiInfo: " << connectedWifiInfo->wifiInformation();
+
         mNamIsRunning = true;
         QNetworkRequest request(cCheckInternetAccessUrl);
         request.setTransferTimeout(8000);
