@@ -149,9 +149,10 @@ private:
     void updateHeatPumpProperties();
 
     //! Auxiliary heating loop 1
+    //! When afterHP is true, do not check for temperature as already criteria met
     //! Return true to break the parent loop
     //! Return false to continue the parent loop
-    bool auxiliaryHeatingLoopStage1();
+    bool auxiliaryHeatingLoopStage1(bool afterHP);
 
     //! Auxiliary heating loop 2
     //! Return true to break the parent loop

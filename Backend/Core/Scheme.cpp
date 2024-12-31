@@ -1073,7 +1073,7 @@ void Scheme::internalPumpHeatingWithAuxLoopStage1()
 
             } else {
                 if (effectiveTemperature() - effectiveCurrentTemperature() >= _AUXT1 &&
-                    auxiliaryHeatingLoopStage1()) {
+                    auxiliaryHeatingLoopStage1(true)) {
                     break;
 
                 } else {
@@ -1126,7 +1126,7 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
             } else if (effectiveTemperature() - effectiveCurrentTemperature() >= _AUXT1 || // _AUXT1 is T3 for sure
                 mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() >= 10 * 60000) {
                 // Go to the AUX
-                if (auxiliaryHeatingLoopStage1()) {
+                if (auxiliaryHeatingLoopStage1(true)) {
                     SCHEME_LOG << "End the internalPumpHeatingWithAuxLoopStage2 loop after auxiliaryHeatingLoopStage1";
                     return Break;
                 } else {
@@ -1171,16 +1171,16 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
     return Successful;
 }
 
-bool Scheme::auxiliaryHeatingLoopStage1()
+bool Scheme::auxiliaryHeatingLoopStage1(bool afterHP)
 {
-    SCHEME_LOG << "Start: auxiliaryHeatingLoopStage1 " << stopWork << mDataProvider->systemSetup()->driveAux1AndETogether;
+    SCHEME_LOG << "Start: auxiliaryHeatingLoopStage1 " << stopWork << mDataProvider->systemSetup()->driveAux1AndETogether << afterHP;
 
     if (stopWork)
         return true;
 
 
     if (mDataProvider->systemSetup()->auxiliaryHeating) {
-        if (effectiveTemperature() - effectiveCurrentTemperature() < _AUXT1) {
+        if (!afterHP && effectiveTemperature() - effectiveCurrentTemperature() < _AUXT1) {
             return true;
         }
 
