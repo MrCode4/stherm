@@ -1276,8 +1276,9 @@ I_DeviceController {
             }
         }
 
-        if (root.currentSchedule)
-            send_data.runningScheduleId = root.currentSchedule.id;
+        if (root.currentSchedule) {
+            send_data.running_schedule_id = root.currentSchedule.id;
+        }
 
         device._sensors.forEach(sensor =>
                                 {
@@ -1672,7 +1673,10 @@ I_DeviceController {
         root.currentSchedule = schedule;
         deviceControllerCPP.setActivatedSchedule(schedule);
 
-        updateEditMode(AppSpec.EMSchedule)
+        if (!root.currentSchedule || root.currentSchedule.id > -1)
+            updateEditMode(AppSpec.EMSchedule);
+        else
+            console.log("current schedule id is invalid.")
     }
 
     function getFromBrandName(brandName) {

@@ -814,6 +814,12 @@ QtObject {
             deviceController.setActivatedSchedule(null);
             updateCurrentSchedules();
         }
+
+        function onIdChanged() {
+            // Send the new id of current schedule
+            if (deviceController.currentSchedule.id > -1)
+                deviceController.updateEditMode(AppSpec.EMSchedule);
+        }
     }
 
 
