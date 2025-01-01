@@ -26,7 +26,7 @@ BasePageView {
     //! Is Celsius selected as the unit?
     readonly property bool           isCelcius:  temperatureUnit === AppSpec.TempratureUnit.Cel
 
-    readonly property bool           isHeating:   schedule.systemMode === AppSpec.Heating || scheduleToDisplay.systemMode === AppSpec.EmergencyHeat
+    readonly property bool           isHeating:   schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.EmergencyHeat
     readonly property bool           isCooling:   schedule.systemMode === AppSpec.Cooling
 
     //! Temperature value: this is always in celsius

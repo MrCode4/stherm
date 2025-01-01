@@ -203,7 +203,7 @@ Control {
                     var diffAngle = angle - startAngle;
                     var newValue = value + diffAngle / (_handle.angleRange) * Math.abs(to - from);
 
-                    value = Math.max(from, Math.min(to, newValue))
+                    value = Math.max(from, Math.min(to, newValue));
 
                     startAngle = angle;
                 }

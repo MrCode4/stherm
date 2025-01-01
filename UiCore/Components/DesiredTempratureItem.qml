@@ -171,7 +171,7 @@ Control {
 
             function updateAutoMinReqTempModel() {
                 if (deviceController && !first.pressed) {
-                    let value = Utils.getTruncatedvalue(first.value , 0)
+                    let value = Utils.getTruncatedvalue(first.value)
 
                     deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(value)
@@ -183,7 +183,7 @@ Control {
 
             function updateAutoMaxReqTempModel() {
                 if (deviceController && !second.pressed) {
-                    let value = Utils.getTruncatedvalue(second.value , 0)
+                    let value = Utils.getTruncatedvalue(second.value)
 
                     deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(value)
@@ -197,20 +197,23 @@ Control {
             {
                 if (!device || currentSchedule) return;
 
-                first.value = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
-                                                                temperatureUnit,
-                                                                minTemprature,
-                                                                maxTemprature);
+                let value = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
+                                                              temperatureUnit,
+                                                              minTemprature,
+                                                              maxTemprature);
+
+                first.value = Utils.getTruncatedvalue(value)
             }
 
             function updateSecondValue()
             {
                 if (!device || currentSchedule) return;
 
-                second.value = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
-                                                                 temperatureUnit,
-                                                                 minTemprature,
-                                                                 maxTemprature)
+                let value = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
+                                                              temperatureUnit,
+                                                              minTemprature,
+                                                              maxTemprature);
+                second.value = Utils.getTruncatedvalue(value);
             }
 
             //! Update the first and second slider values.
@@ -232,6 +235,8 @@ Control {
                                                                    minTemprature,
                                                                    maxTemprature - tempSliderDoubleHandle.difference);
 
+                    firstValue = Utils.getTruncatedvalue(firstValue);
+
                     // The minimum value for the second slider should be the greater of
                     // AppSpec.minAutoMaxTemp and the sum of the first slider value and the difference value.
                     // So we need recalculate it when first slider changed.
@@ -240,6 +245,7 @@ Control {
                                                                     temperatureUnit,
                                                                     Math.max(minTemprature, minimumSecondarySlider),
                                                                     maxTemprature);
+                    secondValue = Utils.getTruncatedvalue(secondValue);
                 }
 
                 //! Now first set first.maxValue and second.minValue then update their actual values
@@ -276,14 +282,16 @@ Control {
                 var temp = 0.0;
 
                 if (_tempSlider.pressed) {
-                    temp = Utils.getTruncatedvalue(_tempSlider.value , 0);
+                    temp = _tempSlider.value;
 
                 } else if (tempSliderDoubleHandle.first.pressed) {
-                    temp = tempSliderDoubleHandle.first.value.toFixed(0);
+                    temp = tempSliderDoubleHandle.first.value;
 
                 } else if (tempSliderDoubleHandle.second.pressed) {
-                    temp = tempSliderDoubleHandle.second.value.toFixed(0);
+                    temp = tempSliderDoubleHandle.second.value;
                 }
+
+                temp = Utils.getTruncatedvalue(temp);
 
                 // The slider value is currently converted to the selected unit.
                 // However, we need to convert it to Celsius.
@@ -385,7 +393,7 @@ Control {
                 font {
                     pointSize: _root.font.pointSize * 0.65
                 }
-                text: tempSliderDoubleHandle.first.value.toFixed(0)
+                text: Utils.getTruncatedvalue(tempSliderDoubleHandle.first.value)
 
                 //! Unit
                 Row {
@@ -559,7 +567,7 @@ Control {
                 x: 5 * rightTempLabel.parent.width / 8 - rightUnitLbl.width / 2 - 4
                 visible: labelVisible
                 opacity: 1
-                text: tempSliderDoubleHandle.second.value.toFixed(0)
+                text: Utils.getTruncatedvalue(tempSliderDoubleHandle.second.value)
             }
 
             PropertyChanges {
@@ -625,7 +633,7 @@ Control {
                 target: rightTempLabel
                 x: (rightTempLabel.parent.width - rightTempLabel.width - rightUnitLbl.width) / 2
                 visible: true
-                text: tempSliderDoubleHandle.second.value.toFixed(0)
+                text: Utils.getTruncatedvalue(tempSliderDoubleHandle.second.value)
             }
 
             PropertyChanges {
@@ -677,16 +685,18 @@ Control {
      * ****************************************************************************************/
     //! Update _tempSlider.value
     function updateTemperatureValue(temperature: real) {
-        _tempSlider.value = Utils.convertedTemperatureClamped(temperature,
-                                                              temperatureUnit,
-                                                              minTemprature,
-                                                              maxTemprature);
+        var value = Utils.convertedTemperatureClamped(temperature,
+                                                      temperatureUnit,
+                                                      minTemprature,
+                                                      maxTemprature);
+        _tempSlider.value = Utils.getTruncatedvalue(value);
     }
 
     //! Update model based on _tempSlider value in heating/cooling mode.
     function updateTemperatureModel() {
+        var truncateValue = Utils.getTruncatedvalue(_tempSlider.value);
         var celValue = (temperatureUnit === AppSpec.TempratureUnit.Cel)
-                ? Utils.getTruncatedvalue(_tempSlider.value , 0) : Utils.fahrenheitToCelsius(Utils.getTruncatedvalue(_tempSlider.value , 0));
+                ? truncateValue : Utils.fahrenheitToCelsius(truncateValue);
 
         if (device && device.requestedTemp !== celValue) {
             deviceController.setDesiredTemperature(celValue);
@@ -699,8 +709,11 @@ Control {
     function updateAutoModeTemperatureValueFromSchedule() {
         if (currentSchedule) {
             // TODO: Check for clamping data
-            tempSliderDoubleHandle.first.value = Utils.convertedTemperature(currentSchedule.minimumTemperature, temperatureUnit);
-            tempSliderDoubleHandle.second.value = Utils.convertedTemperature(currentSchedule.maximumTemperature, temperatureUnit);
+            var tempValue = Utils.convertedTemperature(currentSchedule.minimumTemperature, temperatureUnit);
+            tempSliderDoubleHandle.first.value = Utils.getTruncatedvalue(tempValue);
+
+            tempValue = Utils.convertedTemperature(currentSchedule.maximumTemperature, temperatureUnit);
+            tempSliderDoubleHandle.second.value =  Utils.getTruncatedvalue(tempValue);
         }
     }
 
