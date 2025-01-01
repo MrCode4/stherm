@@ -513,10 +513,11 @@ void DeviceControllerCPP::forgetDevice()
 
 void DeviceControllerCPP::resetToFactorySetting()
 {
+    forgetDevice();
+
+    // Completely remove all settings, maybe forget device save some settings that should be remove.
     QSettings settings;
     settings.clear();
-
-    forgetDevice();
 }
 
 double DeviceControllerCPP::adaptiveBrightness() {
