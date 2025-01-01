@@ -1484,6 +1484,7 @@ void Scheme::sendRelays(bool forceSend)
                                   mRelay->currentHeatingStage(),
                                   mRelay->currentCoolingStage());
 
+    // Used to find the
     mDataProvider->setActiveSystemMode(mRelay->currentState());
 
     LOG_CHECK_SCHEME(false) << "finished";

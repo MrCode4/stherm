@@ -15,7 +15,7 @@ static  const QString m_DTIHeader             = "Delta Temperature Integrator";
 static  const QString m_BacklightFactorHeader = "backlightFactor";
 static  const QString m_BrightnessHeader      = "Brightness (%)";
 static  const QString m_RawTemperatureHeader  = "Raw Temperature (F)";
-static  const QString m_DisplayTemperatureHeader  = "Display Temperature (F)";
+static  const QString m_EffectiveTemperatureHeader  = "Effective Temperature (F)";
 static  const QString m_NightModeHeader       = "Is Night Mode Running";
 static  const QString m_BacklightRHeader      = "Backlight - R";
 static  const QString m_BacklightGHeader      = "Backlight - G";
@@ -92,6 +92,22 @@ inline void setCPUGovernorMode(QString governer) {
         }
     }
 #endif
+}
+
+//! Calculate round type based on the system mode
+inline RoundType getRoundType(AppSpecCPP::SystemMode mode) {
+    switch (mode) {
+    case AppSpecCPP::SystemMode::Cooling:
+        return RoundType::RoundUp;
+
+    case AppSpecCPP::SystemMode::Heating:
+    case AppSpecCPP::SystemMode::Emergency:
+    case AppSpecCPP::SystemMode::EmergencyHeat:
+        return RoundType::RoundDown;
+
+    default:
+        return RoundType::Round;
+    }
 }
 
 DeviceControllerCPP* DeviceControllerCPP::sInstance = nullptr;
@@ -245,7 +261,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         DC_LOG << "Brightness: " << brightness;
 
-        DC_LOG << "Raw Temperature: " << _mainData.value(temperatureRawKey) << ", Display Temperature: " << _mainData.value(displayTemperatureKey);
+        DC_LOG << "Raw Temperature: " << _mainData.value(temperatureRawKey) << ", Effective Temperature: " << _mainData.value(effectiveTemperatureKey);
         DC_LOG << "Corrected Temperature: " << _mainData.value(temperatureKey);
 
         DC_LOG << "Is night mode running: " << mIsNightModeRunning;
@@ -807,8 +823,8 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
             mainData.insert(fanSpeedKey, 0);
 
         // Keep the latest display temperature.
-        if (_mainData.contains(displayTemperatureKey))
-            mainData.insert(displayTemperatureKey, _mainData.value(displayTemperatureKey));
+        if (_mainData.contains(effectiveTemperatureKey))
+            mainData.insert(effectiveTemperatureKey, _mainData.value(effectiveTemperatureKey));
 
         _mainData = mainData;
 
@@ -817,8 +833,8 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
         auto rtAvg = (tc + rt) / 2;
         _mainData.insert(temperatureKey, rtAvg);
 
-        auto displayTemperatureC = calculateDisplayTemperature(rtAvg);
-        _mainData.insert(displayTemperatureKey, displayTemperatureC);
+        auto effectiveTemperatureC = calculateEffectiveTemperature(rtAvg);
+        _mainData.insert(effectiveTemperatureKey, effectiveTemperatureC);
 
         auto mh = mainData.value(humidityKey, 0.0).toDouble();
         auto rh = _lastMainData.value(humidityKey, mh).toDouble();
@@ -1261,7 +1277,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 #ifdef DEBUG_MODE
 
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
-                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader, m_DisplayTemperatureHeader
+                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader, m_EffectiveTemperatureHeader
                           m_NightModeHeader, m_BacklightState, m_BacklightRHeader, m_BacklightGHeader,
                           m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus};
 
@@ -1322,9 +1338,9 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 auto rawTemperatureC = _mainData.value(temperatureRawKey).toDouble();
                 dataStrList.append(QString::number(UtilityHelper::toFahrenheit(rawTemperatureC)));
 
-            } else if (key == m_DisplayTemperatureHeader) {
-                auto displayTemperatureC = _mainData.value(displayTemperatureKey).toDouble();
-                dataStrList.append(QString::number(UtilityHelper::toFahrenheit(displayTemperatureC)));
+            } else if (key == m_EffectiveTemperatureHeader) {
+                auto effectiveTemperatureC = _mainData.value(effectiveTemperatureKey).toDouble();
+                dataStrList.append(QString::number(UtilityHelper::toFahrenheit(effectiveTemperatureC)));
 
             } else if (key == m_NightModeHeader) {
                 dataStrList.append(mIsNightModeRunning ? "true" : "false");
@@ -1742,62 +1758,36 @@ double DeviceControllerCPP::effectiveHumidity() {
     return mSchemeDataProvider->effectiveHumidity();
 }
 
-double DeviceControllerCPP::calculateDisplayTemperature(const double &currentTemperatureC) const {
+double DeviceControllerCPP::calculateEffectiveTemperature(const double &currentTemperatureC) const {
 
     // Determine rounding direction based on system mode or active system mode
-    RoundType roundType = RoundType::Round;
-
     auto mode = mSchemeDataProvider->systemSetup()->systemMode;
-    switch (mode) {
-    case AppSpecCPP::SystemMode::Cooling:
-        roundType = RoundType::RoundUp;
-        break;
+    RoundType roundType = getRoundType(mode);
 
-    case AppSpecCPP::SystemMode::Heating:
-    case AppSpecCPP::SystemMode::Emergency:
-    case AppSpecCPP::SystemMode::EmergencyHeat:
-        roundType = RoundType::RoundDown;
-        break;
-
-    default: {
-        // Used in Auto and Vacation mode.
+    if (roundType == RoundType::Round) {
         auto activeSystemMode = mSchemeDataProvider->activeSystemMode();
-        switch (activeSystemMode) {
-        case AppSpecCPP::SystemMode::Cooling:
-            roundType = RoundType::RoundUp;
-            break;
-
-        case AppSpecCPP::SystemMode::Heating:
-        case AppSpecCPP::SystemMode::Emergency:
-        case AppSpecCPP::SystemMode::EmergencyHeat:
-            roundType = RoundType::RoundDown;
-            break;
-
-        default:
-            roundType = RoundType::Round;
-        }
-    } break;
+        roundType = getRoundType(activeSystemMode);
     }
 
     auto roundedCTF = UtilityHelper::toFahrenheit(currentTemperatureC);
     roundedCTF = UtilityHelper::roundNumber(roundType, roundedCTF);
 
-    auto displayTemperatureF = roundedCTF;
+    auto effectiveTemperatureF = roundedCTF;
 
-    if (_mainData.contains(displayTemperatureKey)) {
-        displayTemperatureF = _mainData.value(displayTemperatureKey).toDouble();
-        displayTemperatureF =  UtilityHelper::toFahrenheit(displayTemperatureF);
+    if (_mainData.contains(effectiveTemperatureKey)) {
+        effectiveTemperatureF = _mainData.value(effectiveTemperatureKey).toDouble();
+        effectiveTemperatureF =  UtilityHelper::toFahrenheit(effectiveTemperatureF);
     }
 
-    if (qAbs(displayTemperatureF - roundedCTF) >= m_IncrementPerStep) {
+    if (qAbs(effectiveTemperatureF - roundedCTF) >= m_IncrementPerStep) {
 
-        if (displayTemperatureF - roundedCTF > 0)
-            displayTemperatureF -= m_IncrementPerStep;
+        if (effectiveTemperatureF - roundedCTF > 0)
+            effectiveTemperatureF -= m_IncrementPerStep;
 
         else {
-            displayTemperatureF += m_IncrementPerStep;
+            effectiveTemperatureF += m_IncrementPerStep;
         }
     }
 
-    return UtilityHelper::toCelsius(displayTemperatureF);
+    return UtilityHelper::toCelsius(effectiveTemperatureF);
 }

@@ -21,7 +21,7 @@ void SchemeDataProvider::setMainData(QVariantMap mainData)
     _mainData = mainData;
 
     bool isOk;
-    double tc = mainData.value(displayTemperatureKey).toDouble(&isOk);
+    double tc = mainData.value(effectiveTemperatureKey).toDouble(&isOk);
 
     if (isOk) {
         double currentTemp = UtilityHelper::toFahrenheit(tc);
