@@ -93,7 +93,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
             processForgettingWiFis();
     });
 
-    connect(mNmcliInterface, &NmcliInterface::autoConnectSavedInrangeWifiFinished, this, [this](WifiInfo *wifi) {
+    connect(mNmcliInterface, &NmcliInterface::autoConnectSavedInRangeWifiFinished, this, [this](WifiInfo *wifi) {
         NI_LOG << "Auto connection for " << wifi->wifiInformation();
         tryConnectToSavedInrangeWifi(wifi);
     });
@@ -116,15 +116,15 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
         // Update the auto connection wifi list:
         std::copy_if(mWifiInfos.begin(), mWifiInfos.end(),
-                     std::back_inserter(mAutoConnectSavedInrangeWifis), [&](WifiInfo* obj) {
+                     std::back_inserter(mAutoConnectSavedInRangeWifis), [&](WifiInfo* obj) {
                          return obj->ssid().isEmpty() == false && obj->isSaved() && obj->strength() > -1;
                      });
 
-        if (mAutoConnectSavedInrangeWifis.empty()) {
+        if (mAutoConnectSavedInRangeWifis.empty()) {
             mAutoConnectToWifiTimer.stop();
 
         } else {
-            std::sort(mAutoConnectSavedInrangeWifis.begin(), mAutoConnectSavedInrangeWifis.end(), compareWifiStrength);
+            std::sort(mAutoConnectSavedInRangeWifis.begin(), mAutoConnectSavedInRangeWifis.end(), compareWifiStrength);
             tryConnectToSavedInrangeWifi();
         }
 
@@ -144,16 +144,16 @@ void NetworkInterface::tryConnectToSavedInrangeWifi(WifiInfo *triedWifi) {
     }
 
     if (triedWifi) {
-        mAutoConnectSavedInrangeWifis.removeOne(triedWifi);
+        mAutoConnectSavedInRangeWifis.removeOne(triedWifi);
     }
 
-    if (mAutoConnectSavedInrangeWifis.empty()) {
+    if (mAutoConnectSavedInRangeWifis.empty()) {
         NI_LOG << "No saved inrange wifis for auto connection.";
 
     } else {
-        auto wifi = mAutoConnectSavedInrangeWifis.front();
+        auto wifi = mAutoConnectSavedInRangeWifis.front();
         if (!mNmcliInterface->autoConnectSavedWifi(wifi)) {
-            mAutoConnectSavedInrangeWifis.pop_front();
+            mAutoConnectSavedInRangeWifis.pop_front();
         }
     }
 }
@@ -298,10 +298,8 @@ bool NetworkInterface::forgettingAllWifis() {
 
 void NetworkInterface::printWifisInformation()
 {
-    if (!mNmcliInterface->busyRefreshing()) {
-        foreach (auto wifi, mWifiInfos) {
-            NI_LOG << wifi->wifiInformation();
-        }
+    foreach (auto wifi, mWifiInfos) {
+        NI_LOG << wifi->wifiInformation();
     }
 }
 

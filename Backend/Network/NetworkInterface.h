@@ -203,7 +203,7 @@ private:
     QTimer                  mAutoConnectToWifiTimer;
 
     //! Just used in the auto connect.
-    QList<WifiInfo *>       mAutoConnectSavedInrangeWifis;
+    QList<WifiInfo *>       mAutoConnectSavedInRangeWifis;
 
     bool                    mIsWifiDisconnectedManually;
 

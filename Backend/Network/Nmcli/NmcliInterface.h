@@ -313,7 +313,7 @@ signals:
     void ciphersAreReady();
 
     //! Auto connection finished for wifi.
-    void autoConnectSavedInrangeWifiFinished(WifiInfo *wifi);
+    void autoConnectSavedInRangeWifiFinished(WifiInfo *wifi);
 
 private:
     /*!
