@@ -54,12 +54,12 @@ I_PopUp {
 
         //! Sending progress bar
         ProgressBar {
-            Layout.fillWidth: true
-
             id: progressBar
             from: 0.0
             to: 100
             value: 0
+
+            Layout.fillWidth: true
 
             Behavior on value {
                 enabled: root.visible
@@ -101,5 +101,13 @@ I_PopUp {
             height: 10
         }
 
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+    //! initialize parameters
+    function init() {
+        progressBar.value = 0;
+        logProgressStatus.text = "Sending Log..."
     }
 }

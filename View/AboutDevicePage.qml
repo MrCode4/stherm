@@ -40,8 +40,10 @@ BasePageView {
         target: system
         function onLogPrepared(isSuccess){
             logBusyPop.close()
-            if (!isSuccess){
-                logBusyPop.message = "file generation failed"
+            if (isSuccess){
+                uiSession.popUps.initSendingLogProgress();
+            } else {
+                logBusyPop.message = "File generation failed."
                 logBusyPop.open()
             }
         }
@@ -133,7 +135,7 @@ BasePageView {
                             if (NetworkInterface.hasInternet) {
                                 if (system.isBusylogSender()) {
                                     // Log sender is busy, open the progress bar.
-                                    system.showLogSendingProgress();
+                                    uiSession.popUps.showSendingLogProgress();
 
                                 } else {
                                     // Prepare the log
@@ -306,6 +308,7 @@ BasePageView {
         property string message: ""
 
         parent: Template.Overlay.overlay
+        closePolicy: Popup.NoAutoClose
         width: Math.max(implicitWidth, parent.width * 0.5)
         height: parent.height * 0.5
         anchors.centerIn: parent

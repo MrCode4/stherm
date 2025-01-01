@@ -1849,7 +1849,6 @@ bool NUVE::System::sendLog(bool showAlert)
     if (isBusylogSender()){
         QString error("Previous session is in progress.");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        if (showAlert) emit showLogSendingProgress();
         return false;
     }
 
@@ -2122,12 +2121,6 @@ bool NUVE::System::sendLogFile(bool showAlert)
     };
 
     mLogSender.setRole("sendLog", sendCallback);
-
-    // Start the sending log.
-    if (showAlert) {
-        emit sendLogProgressChanged(0);
-        emit showLogSendingProgress();
-    }
 
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
     QString copyFile = QString("sshpass -p '%1' rsync -avzhe 'ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\"' --progress  %2 %3@%4:%5").

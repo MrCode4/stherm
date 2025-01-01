@@ -275,14 +275,8 @@ Item {
             }
         }
 
-        function onShowLogSendingProgress() {
-            if (!sendingLogPopup.visible)
-                uiSession.popupLayout.displayPopUp(sendingLogPopup);
-        }
-
         function onLogSentSuccessfully() {
-            if (!sendingLogPopup.visible)
-                uiSession.popupLayout.displayPopUp(sendingLogPopup);
+            showSendingLogProgress();
         }
 
         function onLogAlert(message: string) {
@@ -372,5 +366,15 @@ Item {
         if (_limitedInitialSetupPopup) {
             uiSession.popupLayout.displayPopUp(_limitedInitialSetupPopup);
         }
+    }
+
+    function initSendingLogProgress() {
+        sendingLogPopup.init();
+        showSendingLogProgress();
+    }
+
+    function showSendingLogProgress() {
+        if (!sendingLogPopup.visible)
+            uiSession.popupLayout.displayPopUp(sendingLogPopup);
     }
 }
