@@ -296,26 +296,6 @@ BasePageView {
         }
     }
 
-    Component {
-        id: countDownPopUp
-
-        CountDownPopup {
-            property var callback
-
-            anchors.centerIn: Template.Overlay.overlay
-
-            onStartAction: {
-                if (callback instanceof Function) {
-                    callback()
-                }
-            }
-
-            onClosed: {
-                destroy(this);
-            }
-        }
-    }
-
     ResetFactoryPopUp {
         id: resetFactoryPopUp
 
@@ -354,73 +334,66 @@ BasePageView {
     }
 
     function showCountDownPopUpForForgetDevice() {
-        var popup = countDownPopUp.createObject(root, {
-                                                    "title": qsTr("Forget Device"),
-                                                    "actionText": qsTr("Restarting Device..."),
-                                                    "callback": function () {
-                                                        deviceController.forgetDevice();
+        uiSessionPopups.popUps.showCountDownPopUp(
+                    qsTr("Forget Device"),
+                    qsTr("Restarting Device..."),
+                    true,
+                    function () {
+                        deviceController.forgetDevice();
 
-                                                        if (system) {
-                                                            system.rebootDevice();
-                                                        }
-                                                    }
-                                                })
-
-        uiSession.popupLayout.displayPopUp(popup);
+                        if (system) {
+                            system.rebootDevice();
+                        }
+                    });
     }
 
     function showCountDownPopUpForResetFactory() {
-        var popup = countDownPopUp.createObject(root, {
-                                                    "title": qsTr("Reset Device to Factory Setting"),
-                                                    "actionText": qsTr("Restarting Device..."),
-                                                    "cancelEnable": false,
-                                                    "callback": function () {
-                                                        deviceController.resetDeviceToFactory();
+        uiSessionPopups.popUps.showCountDownPopUp(
+                    qsTr("Reset Device to Factory Setting"),
+                    qsTr("Restarting Device..."),
+                    false,
+                    function () {
+                        deviceController.resetDeviceToFactory();
 
-                                                        if (system) {
-                                                            system.rebootDevice();
-                                                        }
-                                                    }
-                                                })
-       uiSession.popupLayout.displayPopUp(popup);
+                        if (system) {
+                            system.rebootDevice();
+                        }
+                    });
     }
 
     function showCountDownPopUpForRestartApp() {
-        var popup = countDownPopUp.createObject(root, {
-                                                    "title": qsTr("Restart App"),
-                                                    "actionText": qsTr("Restarting App..."),
-                                                    "callback": function () {
-                                                        if (system) {
-                                                            system.systemCtlRestartApp();
-                                                        }
-                                                    }
-                                                })
-        uiSession.popupLayout.displayPopUp(popup);
+        uiSessionPopups.popUps.showCountDownPopUp(
+                    qsTr("Restart App"),
+                    qsTr("Restarting App..."),
+                    true,
+                    function () {
+                        if (system) {
+                            system.systemCtlRestartApp();
+                        }
+                    });
     }
 
     function showCountDownPopUpForRestartDevice() {
-        var popup = countDownPopUp.createObject(root, {
-                                                    "title": qsTr("Restart Device"),
-                                                    "actionText": qsTr("Restarting Device..."),
-                                                    "callback": function () {
-                                                        if (system) {
-                                                            system.rebootDevice();
-                                                        }
-                                                    }
-                                                })
-        uiSession.popupLayout.displayPopUp(popup);
+        uiSessionPopups.popUps.showCountDownPopUp(
+                    qsTr("Restart Device"),
+                    qsTr("Restarting Device..."),
+                    true,
+                    function () {
+                        if (system) {
+                            system.rebootDevice();
+                        }
+                    });
     }
 
     function showCountDownPopUpForStopDevice() {
-        var popup = countDownPopUp.createObject(root, {
-                                                    "title": qsTr("Stop Device"),
-                                                    "actionText": qsTr("Stopping Device..."),
-                                                    "callback": function () {
-                                                        if (system) {
-                                                            system.stopDevice();
-                                                        }
-                                                    }
-                                                })
-       uiSession.popupLayout.displayPopUp(popup);
+        uiSessionPopups.popUps.showCountDownPopUp(
+                    qsTr("Stop Device"),
+                    qsTr("Stopping Device..."),
+                    true,
+                    function () {
+                        if (system) {
+                            system.stopDevice();
+                        }
+                    });
     }
 }
