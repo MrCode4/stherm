@@ -103,6 +103,9 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(&mAutoConnectToWifiTimer, &QTimer::timeout, this, [this]() {
         printWifisInformation();
 
+        if (mIsWifiDisconnectedManually)
+            mAutoConnectToWifiTimer.stop();
+
         // Restart the timer if the mNmcliInterface is busy
         if (mNmcliInterface->busy()) {
             mAutoConnectToWifiTimer.start();

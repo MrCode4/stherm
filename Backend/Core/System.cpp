@@ -45,6 +45,7 @@ const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
 const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
 const QString m_IsManualUpdateSetting      = QString("Stherm/IsManualUpdate");
 const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
+const QString m_NetworkRequestRestartSetting = QString("Stherm/NetworkRequestRestart");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 const QString m_LimitedModeRemainigTime = "LimitedModeRemainigTime";
@@ -826,6 +827,10 @@ void NUVE::System::wifiConnected(bool hasInternet) {
         mUpdateTimer.stop();
         return;
     }
+
+    // To validate the network restart requests.
+    QSettings settings;
+    settings.remove(m_NetworkRequestRestartSetting);
 
     mUpdateTimer.start();
     if (!mIsNightModeRunning) {
@@ -2389,3 +2394,18 @@ bool NUVE::System::checkSendLog(bool showAlert)
     return true;
 }
 
+bool NUVE::System::isValidNetworkRequestRestart()
+{
+    QSettings settings;
+    int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt();
+
+    return networkRequestRestartTimes < 2;
+}
+
+void NUVE::System::saveNetworkRequestRestart()
+{
+    QSettings settings;
+    int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt();
+
+    settings.setValue(m_NetworkRequestRestartSetting, networkRequestRestartTimes++);
+}

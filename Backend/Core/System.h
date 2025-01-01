@@ -262,6 +262,9 @@ public:
     Q_INVOKABLE void saveNetworkLogs();
     Q_INVOKABLE bool sendNetworkLogs();
 
+    Q_INVOKABLE bool isValidNetworkRequestRestart();
+    Q_INVOKABLE void saveNetworkRequestRestart();
+
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);

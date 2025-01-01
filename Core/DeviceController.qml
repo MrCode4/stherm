@@ -91,32 +91,42 @@ I_DeviceController {
     //! Active the Network Connection Watchdog when device has not internet for 1 hour.
     property Timer networkWatchdogTimer: Timer {
         repeat: false
-        running: !NetworkInterface.isWifiDisconnectedManually &&
-                 (!NetworkInterface.connectedWifi || !NetworkInterface.hasInternet)
+        running: NetworkInterface.connectedWifi && !NetworkInterface.hasInternet
         interval: 1 * 60 * 60 * 1000
+
+        onTriggered: {
+            //  Check the isValidNetworkRequestRestart to check in direct calls (triggered).
+            if (system.isValidNetworkRequestRestart()) {
+                system.saveNetworkRequestRestart();
+                // Restart the app or device
+                uiSession.popUps.showRebootDevicePopup("Restarting Device due to network issue.", false);
+            }
+        }
+    }
+
+    property Timer networkWatchdogLoggerTimer: Timer {
+        repeat: true
+        running: NetworkInterface.connectedWifi && !NetworkInterface.hasInternet
+        interval: 15 * 60 * 1000
 
         onTriggered: {
             // Save the network log
             system.saveNetworkLogs();
 
-            // Restart the app or device
-            uiSession.popUps.showRebootDevicePopup("Restarting Device due to network issue.", false);
+            sendNetworkWatchdogLogTimer.canRetry = true;
         }
-
     }
 
     property Timer sendNetworkWatchdogLogTimer: Timer {
-        repeat: false
-        running: NetworkInterface.hasInternet
+        repeat: true
+        running: canRetry && NetworkInterface.hasInternet
         interval: 20000
 
-        property int retry: 0;
+        property bool canRetry: true
 
         onTriggered: {
-            retry++;
-            if (system.sendNetworkLogs()) {
-                if (retry < 10)
-                    restart();
+            if (!system.sendNetworkLogs()) {
+                    canRetry = false;
             }
         }
     }
