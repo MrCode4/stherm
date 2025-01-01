@@ -806,6 +806,10 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
         if (mFanOff)
             mainData.insert(fanSpeedKey, 0);
 
+        // Keep the latest display temperature.
+        if (_mainData.contains(displayTemperatureKey))
+            mainData.insert(displayTemperatureKey, _mainData.value(displayTemperatureKey));
+
         _mainData = mainData;
 
         // Average of the last two temperature and humidity
