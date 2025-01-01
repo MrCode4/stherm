@@ -91,6 +91,10 @@ Item {
         }
     }
 
+    SendingLogPopup{
+        id:sendingLogPopup
+    }
+
     DownloadingPopup {
         id: downloadingPopup
 
@@ -270,7 +274,16 @@ Item {
                 uiSession.popupLayout.displayPopUp(updateNotificationPopup);
             }
         }
-}
+
+        function onLogSentSuccessfully() {
+            showSendingLogProgress();
+        }
+
+        function onLogAlert(message: string) {
+            sendingLogPopup.close();
+        }
+    }
+
     Connections {
         target: deviceController.sync
 
@@ -353,5 +366,15 @@ Item {
         if (_limitedInitialSetupPopup) {
             uiSession.popupLayout.displayPopUp(_limitedInitialSetupPopup);
         }
+    }
+
+    function initSendingLogProgress() {
+        sendingLogPopup.init();
+        showSendingLogProgress();
+    }
+
+    function showSendingLogProgress() {
+        if (!sendingLogPopup.visible)
+            uiSession.popupLayout.displayPopUp(sendingLogPopup);
     }
 }

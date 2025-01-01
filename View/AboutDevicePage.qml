@@ -35,6 +35,20 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+
+    Connections {
+        target: system
+        function onLogPrepared(isSuccess){
+            logBusyPop.close()
+            if (isSuccess){
+                uiSession.popUps.initSendingLogProgress();
+            } else {
+                logBusyPop.message = "File generation failed."
+                logBusyPop.open()
+            }
+        }
+    }
+
     ListView {
         id: _infoLv
 
@@ -118,7 +132,18 @@ BasePageView {
                 model: [
                     {
                         text: "Send Log", action: () => {
-                            if (NetworkInterface.hasInternet) logBusyPop.open();
+                            if (NetworkInterface.hasInternet) {
+                                if (system.isBusylogSender()) {
+                                    // Log sender is busy, open the progress bar.
+                                    uiSession.popUps.showSendingLogProgress();
+
+                                } else {
+                                    // Prepare the log
+                                    logBusyPop.message = "Preparing log, \nplease wait ..."
+                                    logBusyPop.open();
+                                }
+                            }
+
                             else system.alert("No Internet, Please check your connection before sending log.")
                         },
                         buddies: [
@@ -280,7 +305,10 @@ BasePageView {
 
     Popup {
         id: logBusyPop
+        property string message: ""
+
         parent: Template.Overlay.overlay
+        closePolicy: Popup.NoAutoClose
         width: Math.max(implicitWidth, parent.width * 0.5)
         height: parent.height * 0.5
         anchors.centerIn: parent
@@ -289,11 +317,10 @@ BasePageView {
         onOpened: {
             //! Call sendLog()
             system.sendLog();
-            close();
         }
 
         contentItem: Label {
-            text: "Preparing log, \nplease wait ..."
+            text: logBusyPop.message
             horizontalAlignment: "AlignHCenter"
             verticalAlignment: "AlignVCenter"
             lineHeight: 1.4

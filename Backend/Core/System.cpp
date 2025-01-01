@@ -63,6 +63,36 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
+inline int parseProgress(const QString &in) {
+    QRegularExpression regex(R"((\d+)%\s+\d+)");
+    QRegularExpressionMatch match = regex.match(in);
+
+    if (match.hasMatch()) {
+        QString progress = match.captured(1);
+
+        bool ok;
+        auto progressValue = progress.toInt(&ok);
+
+        if(ok)
+            return progressValue;
+    }
+
+    // Attempt to parse error code
+    QRegularExpression errorRegex(R"(\(code (\d+)\))");
+    QRegularExpressionMatch errorMatch = errorRegex.match(in);
+    if (errorMatch.hasMatch()) {
+        bool ok;
+
+        int errorCode = errorMatch.captured(1).toInt(&ok);
+
+        //! rsync got error
+        if (errorCode != 0 || !ok)
+            return -2;
+    }
+
+    return -1;
+}
+
 //! isVersionNewer
 //! return true when version1 > version2
 //! return false when version1 <= version2
@@ -203,7 +233,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     downloaderTimer.setSingleShot(false);
 
     //! inits the connections of log sender responses
-    mLogSender.initialize([this](QString error){emit alert(error);}, "Log sender:", "\r\n");
+    mLogSender.initialize([this](QString error){emit logAlert(error);}, "Log sender:", "\r\n");
     //! inits the connections of file sender responses
     mFileSender.initialize([this](QString error){emit testPublishFinished(error);}, "Result sender:");
 
@@ -247,6 +277,18 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
     if (!serialNumber().isEmpty())
         onSerialNumberReady();
+
+    connect(&mLogSender, &QProcess::readyReadStandardOutput, this, [&]() {
+        if (isBusylogSender()) {
+            int progress = parseProgress(mLogSender.readAllStandardOutput());
+
+            // Send only valid values. readAllStandardOutput returns extra non-error outputs like `sending incremental file list\n` and file name.
+            if (progress > -1)
+                emit sendLogProgressChanged(progress);
+            else if (progress == -2)
+                emit alert("Sending log failed");
+        }
+    });
 }
 
 NUVE::System::~System()
@@ -1204,7 +1246,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         }
     };
 
-    // Fetch the file from web location    
+    // Fetch the file from web location
     if (!versionAddressInServer.startsWith("/")) versionAddressInServer = "/" + versionAddressInServer;
     QNetworkReply* reply = downloadFile(m_updateServerUrl + versionAddressInServer, callback, false);
     if (!reply) {
@@ -1798,19 +1840,22 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
     return true;
 }
 
+bool NUVE::System::isBusylogSender() const {
+    return mLogSender.busy();
+}
+
 bool NUVE::System::sendLog(bool showAlert)
 {
-    if (!installSSHPass()){
-        QString error("Device is not ready to send log!");
-        qWarning() << error;
-        if (showAlert) emit alert(error);
+    if (isBusylogSender()){
+        QString error("Previous session is in progress.");
+        qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
         return false;
     }
 
-    if (mLogSender.busy()){
-        QString error("Previous session is in progress, please try again later.");
-        qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        if (showAlert) emit alert(error);
+    if (!installSSHPass()){
+        QString error("Device is not ready to send log!");
+        qWarning() << error;
+        if (showAlert) emit logAlert(error);
         return false;
     }
 
@@ -1827,7 +1872,7 @@ bool NUVE::System::sendLog(bool showAlert)
             if (!error.isEmpty()) {
                 error = "error while creating log directory on remote: " + error;
                 qWarning() << error;
-                if (showAlert) emit alert(error);
+                if (showAlert) emit logAlert(error);
                 return;
             }
 
@@ -1849,14 +1894,14 @@ void NUVE::System::sendFirstRunLog()
     if (!installSSHPass()) {
         QString error("Device is not ready to send log on First run!");
         qWarning() << error;
-        emit alert(error);
+        emit logAlert(error);
         return;
     }
 
-    if (mLogSender.busy()){
+    if (isBusylogSender()){
         QString error("Sending log on first run is in progress!");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        emit alert(error);
+        emit logAlert(error);
         return;
     }
 
@@ -1873,7 +1918,7 @@ void NUVE::System::sendFirstRunLog()
             if (!error.isEmpty()) {
                 error = "error while creating first run log directory on remote: " + error;
                 qWarning() << error;
-                emit alert(error);
+                emit logAlert(error);
                 return;
             }
 
@@ -1996,7 +2041,7 @@ QString NUVE::System::generateLog()
     {
         QString error("Unable to create log file.");
         qWarning() << error << exitCode;
-        emit alert(error);
+        emit logAlert(error);
         return "";
     }
 
@@ -2016,11 +2061,11 @@ void NUVE::System::sendFirstRunLogFile()
         if (!error.isEmpty()) {
             error = "error while sending first run log directory on remote: " + error;
             qWarning() << error;
-            emit alert(error);
+            emit logAlert(error);
             return;
         }
 
-        emit alert("Log is sent for first run error!");
+        emit logAlert("Log is sent for first run error!");
     };
 
     mLogSender.setRole("sendFirstRunLog", sendCallback);
@@ -2041,13 +2086,17 @@ bool NUVE::System::sendLogFile(bool showAlert)
         if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
             SYS_LOG <<"Log file generation failed. Command cleared" <<Cmd_PushLogs;
             mLastReceivedCommands.remove(Cmd_PushLogs);
+            emit logPrepared(false);
         }
+
         return false;
     }
 
+    emit logPrepared(true);
+
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
-        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;        
+        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
 
         if (error.isEmpty()) {
             if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
@@ -2058,7 +2107,7 @@ bool NUVE::System::sendLogFile(bool showAlert)
                 };
                 mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
             }
-            if (showAlert) emit alert("Log is sent!");
+            if (showAlert) emit logSentSuccessfully();
         }
         else {
             if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
@@ -2067,17 +2116,18 @@ bool NUVE::System::sendLogFile(bool showAlert)
             }
             error = "error while sending log directory on remote: " + error;
             qWarning() << error;
-            if (showAlert) emit alert(error);
+            if (showAlert) emit logAlert(error);
         }
     };
 
     mLogSender.setRole("sendLog", sendCallback);
 
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+    QString copyFile = QString("sshpass -p '%1' rsync -avzhe 'ssh -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\"' --progress  %2 %3@%4:%5").
                        arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
     TRACE << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
+
     return true;
 }
 
@@ -2124,7 +2174,7 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
     SYS_LOG <<"Attempting command" << command <<tag;
 
     if (command == Cmd_PushLogs) {
-        if (mLogSender.busy()) {
+        if (isBusylogSender()) {
             SYS_LOG << "Log-sender is busy at this momemnt";
         }
         else {
@@ -2222,3 +2272,5 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
         }
     });
 }
+
+

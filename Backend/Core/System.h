@@ -23,7 +23,7 @@ public:
     void initialize(std::function<void(QString)> errorHandler, const QString &subject, const QString &joiner = " <br>");
     virtual ~senderProcess() {}
 
-    bool busy() {
+    bool busy() const {
         return state() != QProcess::NotRunning || !mCallbacks.isEmpty();
     }
 
@@ -254,6 +254,7 @@ public:
     Q_INVOKABLE void setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow);
     Q_INVOKABLE bool alternativeNoWiFiFlow();
 
+    Q_INVOKABLE bool isBusylogSender() const;
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);
@@ -323,6 +324,12 @@ signals:
 
     void serviceTitanInformationReady(bool hasError, bool isActive,
                                       QString email, QString zipCode);
+
+    //! Log
+    void logAlert(QString msg);
+    void logPrepared(bool isSuccess);
+    void logSentSuccessfully();
+    void sendLogProgressChanged(quint8 percent);
 
 private:
     //! verify dounloaded files and prepare to set up.
