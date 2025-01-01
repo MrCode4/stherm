@@ -99,7 +99,7 @@ I_PopUp {
                 text: "Cancel"
 
                 onClicked: {
-                    root.close()
+                    root.close();
                 }
             }
 
@@ -114,7 +114,7 @@ I_PopUp {
                 text: "Reset"
 
                 onClicked: {
-                    root.reset()
+                    root.reset();
                 }
             }
         }

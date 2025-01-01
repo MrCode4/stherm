@@ -311,7 +311,7 @@ BasePageView {
             }
 
             onClosed: {
-                destroy(this)
+                destroy(this);
             }
         }
     }
@@ -320,9 +320,9 @@ BasePageView {
         id: resetFactoryPopUp
 
         onReset: {
-            busyPopUp.open()
-            deviceController.sync.resetFactory()
-            resetFactoryPopUp.close()
+            busyPopUp.open();
+            deviceController.sync.resetFactory();
+            close();
         }
     }
 
@@ -348,8 +348,8 @@ BasePageView {
         }
 
         function onResetFactoryFailed() {
-            busyPopUp.close()
-            alertNotifPopup.open()
+            busyPopUp.close();
+            alertNotifPopup.open();
         }
     }
 
@@ -358,10 +358,10 @@ BasePageView {
                                                     "title": qsTr("Forget Device"),
                                                     "actionText": qsTr("Restarting Device..."),
                                                     "callback": function () {
-                                                        deviceController.forgetDevice()
+                                                        deviceController.forgetDevice();
 
                                                         if (system) {
-                                                            system.rebootDevice()
+                                                            system.rebootDevice();
                                                         }
                                                     }
                                                 })
@@ -375,10 +375,10 @@ BasePageView {
                                                     "actionText": qsTr("Restarting Device..."),
                                                     "cancelEnable": false,
                                                     "callback": function () {
-                                                        deviceController.resetDeviceToFactory()
+                                                        deviceController.resetDeviceToFactory();
 
                                                         if (system) {
-                                                            system.rebootDevice()
+                                                            system.rebootDevice();
                                                         }
                                                     }
                                                 })
@@ -391,7 +391,7 @@ BasePageView {
                                                     "actionText": qsTr("Restarting App..."),
                                                     "callback": function () {
                                                         if (system) {
-                                                            system.systemCtlRestartApp()
+                                                            system.systemCtlRestartApp();
                                                         }
                                                     }
                                                 })
@@ -404,7 +404,7 @@ BasePageView {
                                                     "actionText": qsTr("Restarting Device..."),
                                                     "callback": function () {
                                                         if (system) {
-                                                            system.rebootDevice()
+                                                            system.rebootDevice();
                                                         }
                                                     }
                                                 })
@@ -417,7 +417,7 @@ BasePageView {
                                                     "actionText": qsTr("Stopping Device..."),
                                                     "callback": function () {
                                                         if (system) {
-                                                            system.stopDevice()
+                                                            system.stopDevice();
                                                         }
                                                     }
                                                 })
