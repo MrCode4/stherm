@@ -146,8 +146,7 @@ signals:
     void scheduleEdited(int id, bool success);
     void scheduleAdded(QString scheduleUid, bool success, QVariantMap schedule = QVariantMap());
 
-    void resetFactorySucceeded();
-    void resetFactoryFailed(const QString &error);
+    void resetFactoryFinished(bool ok, const QString &message = "");
 
 private slots:
     //! Check firmware update with getSettings reply

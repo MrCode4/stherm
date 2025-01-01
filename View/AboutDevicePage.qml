@@ -322,19 +322,18 @@ BasePageView {
     Connections {
         target: deviceController?.sync ?? null
 
-        function onResetFactorySucceeded() {
+        function onResetFactoryFinished(ok: bool, message: string) {
             busyPopUp.close()
-            root.showCountDownPopUpForResetFactory()
-        }
-
-        function onResetFactoryFailed() {
-            busyPopUp.close();
-            alertNotifPopup.open();
+            if(ok === true) {
+                root.showCountDownPopUpForResetFactory()
+            } else {
+                alertNotifPopup.open();
+            }
         }
     }
 
     function showCountDownPopUpForForgetDevice() {
-        uiSessionPopups.popUps.showCountDownPopUp(
+        uiSession.popUps.showCountDownPopUp(
                     qsTr("Forget Device"),
                     qsTr("Restarting Device..."),
                     true,
@@ -348,7 +347,7 @@ BasePageView {
     }
 
     function showCountDownPopUpForResetFactory() {
-        uiSessionPopups.popUps.showCountDownPopUp(
+        uiSession.popUps.showCountDownPopUp(
                     qsTr("Reset Device to Factory Setting"),
                     qsTr("Restarting Device..."),
                     false,
@@ -362,7 +361,7 @@ BasePageView {
     }
 
     function showCountDownPopUpForRestartApp() {
-        uiSessionPopups.popUps.showCountDownPopUp(
+        uiSession.popUps.showCountDownPopUp(
                     qsTr("Restart App"),
                     qsTr("Restarting App..."),
                     true,
@@ -374,7 +373,7 @@ BasePageView {
     }
 
     function showCountDownPopUpForRestartDevice() {
-        uiSessionPopups.popUps.showCountDownPopUp(
+        uiSession.popUps.showCountDownPopUp(
                     qsTr("Restart Device"),
                     qsTr("Restarting Device..."),
                     true,
@@ -386,7 +385,7 @@ BasePageView {
     }
 
     function showCountDownPopUpForStopDevice() {
-        uiSessionPopups.popUps.showCountDownPopUp(
+        uiSession.popUps.showCountDownPopUp(
                     qsTr("Stop Device"),
                     qsTr("Stopping Device..."),
                     true,
