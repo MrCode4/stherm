@@ -1765,7 +1765,7 @@ I_DeviceController {
         NetworkInterface.forgetAllWifis();
         removeSaveFiles();
         deviceControllerCPP.resetToFactorySetting();
-        deviceControllerCPP.removeLogPartition();
+        system.removeLogPartition();
     }
 
     //! Lock/unlock the application

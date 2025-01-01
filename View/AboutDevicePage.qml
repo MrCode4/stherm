@@ -365,8 +365,8 @@ BasePageView {
                                                         }
                                                     }
                                                 })
-        popup.open()
-        return popup
+
+        uiSession.popupLayout.displayPopUp(popup);
     }
 
     function showCountDownPopUpForResetFactory() {
@@ -382,8 +382,7 @@ BasePageView {
                                                         }
                                                     }
                                                 })
-        popup.open()
-        return popup
+       uiSession.popupLayout.displayPopUp(popup);
     }
 
     function showCountDownPopUpForRestartApp() {
@@ -396,8 +395,7 @@ BasePageView {
                                                         }
                                                     }
                                                 })
-        popup.open()
-        return popup
+        uiSession.popupLayout.displayPopUp(popup);
     }
 
     function showCountDownPopUpForRestartDevice() {
@@ -410,8 +408,7 @@ BasePageView {
                                                         }
                                                     }
                                                 })
-        popup.open()
-        return popup
+        uiSession.popupLayout.displayPopUp(popup);
     }
 
     function showCountDownPopUpForStopDevice() {
@@ -424,7 +421,6 @@ BasePageView {
                                                         }
                                                     }
                                                 })
-        popup.open()
-        return popup
+       uiSession.popupLayout.displayPopUp(popup);
     }
 }
