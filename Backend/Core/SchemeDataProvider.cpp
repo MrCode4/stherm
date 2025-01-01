@@ -3,6 +3,7 @@
 #include "LogHelper.h"
 #include "UtilityHelper.h"
 #include "Relay.h"
+#include "AppUtilities.h"
 
 SchemeDataProvider::SchemeDataProvider(QObject *parent) :
     mActiveSystemMode(AppSpecCPP::Off),
@@ -90,7 +91,10 @@ double SchemeDataProvider::effectiveTemperature() const
     } else if (isVacationEffective()) {
         //! Vacation properites (Fahrenheit)
         double minimumTemperature = UtilityHelper::toFahrenheit(mVacation.minimumTemperature);
+        minimumTemperature = AppUtilities::getTruncatedvalue(minimumTemperature);
+
         double maximumTemperature = UtilityHelper::toFahrenheit(mVacation.maximumTemperature);
+        maximumTemperature = AppUtilities::getTruncatedvalue(maximumTemperature);
 
         if ((minimumTemperature - currentTemperature()) > 0.001) {
             effTemperature = minimumTemperature;
@@ -107,18 +111,26 @@ double SchemeDataProvider::effectiveTemperature() const
         // In off mode schedule() is null
         if (schedule() && effectiveSystemMode() != AppSpecCPP::SystemMode::Auto) {
             effTemperature = UtilityHelper::toFahrenheit(schedule()->effectiveTemperature(effectiveSystemMode()));
+            effTemperature = AppUtilities::getTruncatedvalue(effTemperature);
             monitoringTemprature = effTemperature;
 
         } else {
 
             // Use auto mode values by default and change later in schedule if needed.
-            double minReqTemp = mAutoMinReqTempF;
-            double maxReqTemp = mAutoMaxReqTempF;
+
+        } else {
+
+            // Use auto mode values by default and change later in schedule if needed.
+            double minReqTemp = AppUtilities::getTruncatedvalue(mAutoMinReqTempF);
+            double maxReqTemp = AppUtilities::getTruncatedvalue(mAutoMaxReqTempF);
 
             // Use schedule and use the auto mode logics.
             if (schedule()) {
                 minReqTemp = UtilityHelper::toFahrenheit(schedule()->minimumTemperature);
+                minReqTemp = AppUtilities::getTruncatedvalue(minReqTemp);
+
                 maxReqTemp = UtilityHelper::toFahrenheit(schedule()->maximumTemperature);
+                maxReqTemp = AppUtilities::getTruncatedvalue(maxReqTemp);
             }
 
             monitoringTemprature = (minReqTemp + maxReqTemp) / 2;
@@ -308,6 +320,8 @@ void SchemeDataProvider::setVacation(const STHERM::Vacation &newVacation)
 void SchemeDataProvider::setSetPointTemperature(const double& newSetPointTemperature)
 {
     auto newSetPointTemperatureF = UtilityHelper::toFahrenheit(newSetPointTemperature);
+    newSetPointTemperatureF = AppUtilities::getTruncatedvalue(newSetPointTemperatureF);
+
     if (qAbs(mSetPointTemperature - newSetPointTemperatureF) < 0.001)
         return;
 

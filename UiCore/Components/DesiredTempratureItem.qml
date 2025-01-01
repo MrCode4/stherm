@@ -171,7 +171,7 @@ Control {
 
             function updateAutoMinReqTempModel() {
                 if (deviceController && !first.pressed) {
-                    let value = Utils.getTruncatedvalue(first.value)
+                    let value = first.value;
 
                     deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(value)
@@ -183,7 +183,7 @@ Control {
 
             function updateAutoMaxReqTempModel() {
                 if (deviceController && !second.pressed) {
-                    let value = Utils.getTruncatedvalue(second.value)
+                    let value = second.value;
 
                     deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
                                                        ? Utils.fahrenheitToCelsius(value)
@@ -202,7 +202,7 @@ Control {
                                                               minTemprature,
                                                               maxTemprature);
 
-                first.value = Utils.getTruncatedvalue(value)
+                first.value = value;
             }
 
             function updateSecondValue()
@@ -213,7 +213,7 @@ Control {
                                                               temperatureUnit,
                                                               minTemprature,
                                                               maxTemprature);
-                second.value = Utils.getTruncatedvalue(value);
+                second.value = value;
             }
 
             //! Update the first and second slider values.
@@ -235,7 +235,6 @@ Control {
                                                                    minTemprature,
                                                                    maxTemprature - tempSliderDoubleHandle.difference);
 
-                    firstValue = Utils.getTruncatedvalue(firstValue);
 
                     // The minimum value for the second slider should be the greater of
                     // AppSpec.minAutoMaxTemp and the sum of the first slider value and the difference value.
@@ -245,7 +244,6 @@ Control {
                                                                     temperatureUnit,
                                                                     Math.max(minTemprature, minimumSecondarySlider),
                                                                     maxTemprature);
-                    secondValue = Utils.getTruncatedvalue(secondValue);
                 }
 
                 //! Now first set first.maxValue and second.minValue then update their actual values
@@ -291,7 +289,7 @@ Control {
                     temp = tempSliderDoubleHandle.second.value;
                 }
 
-                temp = Utils.getTruncatedvalue(temp);
+                temp = AppUtilities.getTruncatedvalue(temp);
 
                 // The slider value is currently converted to the selected unit.
                 // However, we need to convert it to Celsius.
@@ -393,7 +391,7 @@ Control {
                 font {
                     pointSize: _root.font.pointSize * 0.65
                 }
-                text: Utils.getTruncatedvalue(tempSliderDoubleHandle.first.value)
+                text: AppUtilities.getTruncatedvalue(tempSliderDoubleHandle.first.value)
 
                 //! Unit
                 Row {
@@ -521,7 +519,7 @@ Control {
                 x: (rightTempLabel.parent.width - rightTempLabel.width - rightUnitLbl.width) / 2
                 visible: labelVisible
                 opacity: 1
-                text: Utils.getTruncatedvalue(_tempSlider.value , 0)
+                text: AppUtilities.getTruncatedvalue(_tempSlider.value)
             }
 
             PropertyChanges {
@@ -567,7 +565,7 @@ Control {
                 x: 5 * rightTempLabel.parent.width / 8 - rightUnitLbl.width / 2 - 4
                 visible: labelVisible
                 opacity: 1
-                text: Utils.getTruncatedvalue(tempSliderDoubleHandle.second.value)
+                text: AppUtilities.getTruncatedvalue(tempSliderDoubleHandle.second.value)
             }
 
             PropertyChanges {
@@ -633,7 +631,7 @@ Control {
                 target: rightTempLabel
                 x: (rightTempLabel.parent.width - rightTempLabel.width - rightUnitLbl.width) / 2
                 visible: true
-                text: Utils.getTruncatedvalue(tempSliderDoubleHandle.second.value)
+                text: AppUtilities.getTruncatedvalue(tempSliderDoubleHandle.second.value)
             }
 
             PropertyChanges {
@@ -689,12 +687,12 @@ Control {
                                                       temperatureUnit,
                                                       minTemprature,
                                                       maxTemprature);
-        _tempSlider.value = Utils.getTruncatedvalue(value);
+        _tempSlider.value = (value);
     }
 
     //! Update model based on _tempSlider value in heating/cooling mode.
     function updateTemperatureModel() {
-        var truncateValue = Utils.getTruncatedvalue(_tempSlider.value);
+        var truncateValue = _tempSlider.value;
         var celValue = (temperatureUnit === AppSpec.TempratureUnit.Cel)
                 ? truncateValue : Utils.fahrenheitToCelsius(truncateValue);
 
@@ -710,10 +708,10 @@ Control {
         if (currentSchedule) {
             // TODO: Check for clamping data
             var tempValue = Utils.convertedTemperature(currentSchedule.minimumTemperature, temperatureUnit);
-            tempSliderDoubleHandle.first.value = Utils.getTruncatedvalue(tempValue);
+            tempSliderDoubleHandle.first.value = tempValue;
 
             tempValue = Utils.convertedTemperature(currentSchedule.maximumTemperature, temperatureUnit);
-            tempSliderDoubleHandle.second.value =  Utils.getTruncatedvalue(tempValue);
+            tempSliderDoubleHandle.second.value =  tempValue;
         }
     }
 

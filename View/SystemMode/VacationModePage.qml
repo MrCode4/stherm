@@ -97,7 +97,6 @@ BasePageView {
             id: _tempSlider
             Layout.fillWidth: true
 
-            isInteger: true
             from: tempratureUnit === AppSpec.TempratureUnit.Fah ?
                       AppSpec.vacationMinimumTemperatureF : AppSpec.vacationMinimumTemperatureC
             to: tempratureUnit === AppSpec.TempratureUnit.Fah ?
