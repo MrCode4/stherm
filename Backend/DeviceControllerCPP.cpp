@@ -29,7 +29,6 @@ static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
 static  const char* m_GetOutdoorTemperatureReceived  = "GetOutdoorTemperatureRecieved";
 
-static const int m_SensorReadingsCount = 6; // 6 readings per 30 seconds
 static const double m_IncrementPerStep = 1.0; // Increment temperature smoothly by 1°F per update
 
 static const QByteArray m_default_backdoor_backlight = R"({
@@ -420,50 +419,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     mSaveSensorDataTimer.start(sampleRate * 60 * 1000);
     mResponsivenessTimer.start();
 
-    //! Temp Smooth changing
-    connect(&mUpdateDisplayTimer, &QTimer::timeout, this, [&](){
-
-        //! Init first Temprature value
-        if(mTemperatureBuffer.count() == 1)
-            mDisplayCurrentTemp = mTemperatureBuffer.first();
-
-
-        if (mTemperatureBuffer.count() < m_SensorReadingsCount) {
-            return; // If there are less than 6 readings, we don't proceed yet
-        }
-
-
-        double average = std::accumulate(mTemperatureBuffer.begin(), mTemperatureBuffer.end(), 0.0) / m_SensorReadingsCount;
-        double difference = average - mDisplayCurrentTemp;
-
-        if (std::abs(difference) >= m_IncrementPerStep) {
-            if (difference > 0) {
-                mDisplayCurrentTemp += m_IncrementPerStep;
-            } else if (difference < 0) {
-                mDisplayCurrentTemp -= m_IncrementPerStep;
-            }
-        } else {
-            mDisplayCurrentTemp = average;
-        }
-
-        auto mode = mTempScheme->getCurrentSysMode();
-
-        switch (mode) {
-        case AppSpecCPP::SystemMode::Cooling:
-            mDisplayCurrentTemp = qCeil(mDisplayCurrentTemp);
-            break;
-        case AppSpecCPP::SystemMode::Heating:
-            mDisplayCurrentTemp = qFloor(mDisplayCurrentTemp);
-            break;
-        default:
-            break;
-        }
-
-        emit displayCurrentTempChanged();
-
-    });
-    mUpdateDisplayTimer.start(30 * 1000);
-
     //! Set sInstance to this
     if (!sInstance) {
         sInstance = this;
@@ -841,15 +796,14 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
             if (qAbs(dt) < 10) {
                 tc -= dt;
 
-                //! buffer Temprature
-                if(mTemperatureBuffer.count() >= m_SensorReadingsCount)
-                    mTemperatureBuffer.removeFirst();
-                mTemperatureBuffer.append(tc);
-
             } else {
                 qWarning() << "dt is greater than 10! check for any error.";
             }
             mainData.insert(temperatureKey, tc);
+
+
+            auto displayTemperatureC = calculateDisplayTemperature(tc);
+            mainData.insert(displayTemperatureKey, displayTemperatureC);
         }
 
         if (mFanOff)
@@ -1782,7 +1736,62 @@ double DeviceControllerCPP::effectiveHumidity() {
     return mSchemeDataProvider->effectiveHumidity();
 }
 
-double DeviceControllerCPP::displayCurrentTemp() const
-{
-    return mDisplayCurrentTemp;
+double DeviceControllerCPP::calculateDisplayTemperature(const double &currentTemperatureC) const {
+
+    // Determine rounding direction based on system mode or active system mode
+    RoundType roundType = RoundType::Round;
+
+    auto mode = mSchemeDataProvider->systemSetup()->systemMode;
+    switch (mode) {
+    case AppSpecCPP::SystemMode::Cooling:
+        roundType = RoundType::RoundUp;
+        break;
+
+    case AppSpecCPP::SystemMode::Heating:
+    case AppSpecCPP::SystemMode::Emergency:
+    case AppSpecCPP::SystemMode::EmergencyHeat:
+        roundType = RoundType::RoundDown;
+        break;
+
+    default: {
+        // Used in Auto and Vacation mode.
+        auto activeSystemMode = mSchemeDataProvider->activeSystemMode();
+        switch (activeSystemMode) {
+        case AppSpecCPP::SystemMode::Cooling:
+            roundType = RoundType::RoundUp;
+            break;
+
+        case AppSpecCPP::SystemMode::Heating:
+        case AppSpecCPP::SystemMode::Emergency:
+        case AppSpecCPP::SystemMode::EmergencyHeat:
+            roundType = RoundType::RoundDown;
+            break;
+
+        default:
+            roundType = RoundType::Round;
+        }
+    } break;
+    }
+
+    auto roundedCTF = UtilityHelper::toFahrenheit(currentTemperatureC);
+    roundedCTF = UtilityHelper::roundNumber(roundType, roundedCTF);
+
+    auto displayTemperatureF = roundedCTF;
+
+    if (_mainData.contains(displayTemperatureKey)) {
+        displayTemperatureF = _mainData.value(displayTemperatureKey).toDouble();
+        displayTemperatureF =  UtilityHelper::toFahrenheit(displayTemperatureF);
+    }
+
+    if (qAbs(displayTemperatureF - roundedCTF) >= m_IncrementPerStep) {
+
+        if (displayTemperatureF - roundedCTF > 0)
+            displayTemperatureF -= m_IncrementPerStep;
+
+        else {
+            displayTemperatureF += m_IncrementPerStep;
+        }
+    }
+
+    return UtilityHelper::toCelsius(displayTemperatureF);
 }

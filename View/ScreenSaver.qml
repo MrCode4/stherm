@@ -67,7 +67,7 @@ Popup {
                 visible: deviceController.temperatureSensorHealth
                 text: !deviceController.temperatureSensorHealth ?
                           "NAN" : Number(Utils.convertedTemperature(
-                                             device?.currentTemp ?? 0,
+                                             device?.displayCurrentTemp ?? 0,
                                              device?.setting?.tempratureUnit)).toLocaleString(locale, "f", 0)
 
                 Label {

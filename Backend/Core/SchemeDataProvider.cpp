@@ -5,6 +5,7 @@
 #include "Relay.h"
 
 SchemeDataProvider::SchemeDataProvider(QObject *parent) :
+    mActiveSystemMode(AppSpecCPP::Off),
     mOutdoorTemperature(25.0),
     mIsRelaysInitialized(false),
     QObject{parent}
@@ -19,14 +20,15 @@ void SchemeDataProvider::setMainData(QVariantMap mainData)
     _mainData = mainData;
 
     bool isOk;
-    double tc = mainData.value(temperatureKey).toDouble(&isOk);
-    double currentTemp = UtilityHelper::toFahrenheit(tc);
+    double tc = mainData.value(displayTemperatureKey).toDouble(&isOk);
 
     if (isOk) {
+        double currentTemp = UtilityHelper::toFahrenheit(tc);
         // meaningful change
-        if (qAbs(currentTemp - mCurrentTemperature) > 0.1)
+        if (qAbs(currentTemp - mCurrentTemperature) > 0.1) {
+            mCurrentTemperature = currentTemp;
             emit currentTemperatureChanged();
-        mCurrentTemperature = currentTemp;
+        }
     }
 
     double currentHumidity = mainData.value(humidityKey).toDouble(&isOk);
@@ -231,6 +233,16 @@ bool SchemeDataProvider::isRelaysInitialized() {
 
 void SchemeDataProvider::setIsRelaysInitialized(const bool &isRelaysInitialized) {
     mIsRelaysInitialized = isRelaysInitialized;
+}
+
+AppSpecCPP::SystemMode SchemeDataProvider::activeSystemMode() const
+{
+    return mActiveSystemMode;
+}
+
+void SchemeDataProvider::setActiveSystemMode(const AppSpecCPP::SystemMode &newActiveSystemMode)
+{
+    mActiveSystemMode = newActiveSystemMode;
 }
 
 double SchemeDataProvider::autoMaxReqTempF() const

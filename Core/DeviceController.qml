@@ -48,6 +48,8 @@ I_DeviceController {
 
     readonly property int  checkSNTryCount: checkSNTimer.tryCount;
 
+    property real           displayCurrentTemp:    18.0
+
     //! Air condition health
     property bool airConditionSensorHealth: false;
 
@@ -1316,7 +1318,7 @@ I_DeviceController {
             "temp": device.requestedTemp,
             "humidity": device.requestedHum,
             "current_humidity": device.currentHum.toString(),
-            "current_temp": device.currentTemp.toString(),
+            "current_temp": root.displayCurrentTemp.toString(),
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
@@ -1788,8 +1790,8 @@ I_DeviceController {
         // Fahrenheit is more sensitive than Celsius,
         // so for every one degree change,
         // it needs to be sent to the server.
-        var isVisualTempChangedF = Math.abs(Math.round(device.currentTemp * 1.8 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.8)) > 0
-        var isVisualTempChangedC = Math.abs(Math.round(device.currentTemp * 1.0 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.0)) > 0
+        var isVisualTempChangedF = Math.abs(Math.round(device.currentTemp * 1.8 ) - Math.round((result?.displayTemperature ?? device.currentTemp) * 1.8)) > 0
+        var isVisualTempChangedC = Math.abs(Math.round(device.currentTemp * 1.0 ) - Math.round((result?.displayTemperature ?? device.currentTemp) * 1.0)) > 0
         var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
         var isCo2IdChanged = device._co2_id !== co2Id;
         var isNeedToPushToServer = isVisualHumChanged ||
@@ -1798,6 +1800,7 @@ I_DeviceController {
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
+        root.displayCurrentTemp = result?.displayTemperature ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = co2 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brightness ?? 0
@@ -1807,7 +1810,7 @@ I_DeviceController {
 
         ProtoDataManager.setSetHumidity(deviceControllerCPP.effectiveHumidity());
         ProtoDataManager.setMCUTemperature(system.cpuTemperature());
-        ProtoDataManager.setCurrentTemperature(device.currentTemp);
+        ProtoDataManager.setCurrentTemperature(root.displayCurrentTemp);
         ProtoDataManager.setCurrentHumidity(device.currentHum);
         ProtoDataManager.setCurrentAirQuality(device._co2_id);
 

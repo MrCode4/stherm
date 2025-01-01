@@ -102,6 +102,9 @@ public:
     bool  isRelaysInitialized();
     void setIsRelaysInitialized(const bool &isRelaysInitialized);
 
+    AppSpecCPP::SystemMode activeSystemMode() const;
+    void setActiveSystemMode(const AppSpecCPP::SystemMode &newActiveSystemMode);
+
 signals:
 
     /* Public Signals
@@ -129,6 +132,8 @@ private:
     SystemSetup *mSystemSetup = nullptr;
 
     ScheduleCPP* mSchedule = nullptr;
+
+    AppSpecCPP::SystemMode mActiveSystemMode;
 
     //! Humidity parameters (Percentage)
     double mCurrentHumidity;

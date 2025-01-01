@@ -40,10 +40,6 @@ class DeviceControllerCPP  : public QObject
     Q_PROPERTY(bool  isNeedOutdoorTemperature READ  isNeedOutdoorTemperature NOTIFY isNeedOutdoorTemperatureChanged)
     Q_PROPERTY(bool  isEligibleOutdoorTemperature READ  isEligibleOutdoorTemperature NOTIFY isEligibleOutdoorTemperatureChanged)
 
-
-    Q_PROPERTY(double  displayCurrentTemp READ  displayCurrentTemp NOTIFY displayCurrentTempChanged)
-
-
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
 
@@ -203,8 +199,6 @@ public:
 
     Q_INVOKABLE double effectiveHumidity();
 
-    double displayCurrentTemp() const;
-
 Q_SIGNALS:
     /* Public Signals
      * ****************************************************************************************/
@@ -271,8 +265,6 @@ Q_SIGNALS:
     void isNeedOutdoorTemperatureChanged();
     void isEligibleOutdoorTemperatureChanged();
 
-    void displayCurrentTempChanged();
-
     void emulateWarrantyFlow();
 
 private:
@@ -321,6 +313,8 @@ private:
 
     //! Start/Stop the timer for get the outdoor temperature
     void checkForOutdoorTemperature();
+
+        double calculateDisplayTemperature(const double &currentTemperatureC) const;
 
 private:
     /* Attributes
@@ -387,10 +381,6 @@ private:
 
     int mFanSpeed;
     bool mFanOff;
-
-    QTimer mUpdateDisplayTimer;
-    QList<double> mTemperatureBuffer;
-    double mDisplayCurrentTemp;
 
     //! percent value
     double mAdaptiveBrightness;

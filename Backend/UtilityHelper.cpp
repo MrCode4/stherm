@@ -28,6 +28,28 @@ double UtilityHelper::toCelsius(const double &fahrenheit) {
     return (fahrenheit - 32.0) * 5 / 9;
 }
 
+double UtilityHelper::roundNumber(const RoundType &roundType, const double &value) {
+    double roundedValue = value;
+
+    switch (roundType) {
+    case RoundUp:
+        roundedValue = qCeil(value);
+        break;
+
+    case RoundDown:
+        roundedValue = qFloor(value);
+        break;
+
+    case Round:
+        roundedValue = qRound(value);
+        break;
+    default:
+        break;
+    }
+
+    return roundedValue;
+}
+
 bool UtilityHelper::configurePins(int gpio)
 {
     TRACE << gpio;

@@ -74,7 +74,7 @@ QtObject {
     }
 
     //! Truncates value to a specified number of decimal places
-    function getTruncatedvalue(value : real , decimalCount : int) {
+    function getTruncatedvalue(value : real , decimalCount = 0) {
         if (decimalCount === -1) {
                return value; // Return the original value if decimal is -1
         }
