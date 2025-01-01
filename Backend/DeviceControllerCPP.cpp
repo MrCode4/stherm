@@ -15,6 +15,7 @@ static  const QString m_DTIHeader             = "Delta Temperature Integrator";
 static  const QString m_BacklightFactorHeader = "backlightFactor";
 static  const QString m_BrightnessHeader      = "Brightness (%)";
 static  const QString m_RawTemperatureHeader  = "Raw Temperature (F)";
+static  const QString m_DisplayTemperatureHeader  = "Display Temperature (F)";
 static  const QString m_NightModeHeader       = "Is Night Mode Running";
 static  const QString m_BacklightRHeader      = "Backlight - R";
 static  const QString m_BacklightGHeader      = "Backlight - G";
@@ -244,7 +245,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         DC_LOG << "Brightness: " << brightness;
 
-        DC_LOG << "Raw Temperature: " << _mainData.value(temperatureRawKey);
+        DC_LOG << "Raw Temperature: " << _mainData.value(temperatureRawKey) << ", Display Temperature: " << _mainData.value(displayTemperatureKey);
         DC_LOG << "Corrected Temperature: " << _mainData.value(temperatureKey);
 
         DC_LOG << "Is night mode running: " << mIsNightModeRunning;
@@ -800,23 +801,20 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
                 qWarning() << "dt is greater than 10! check for any error.";
             }
             mainData.insert(temperatureKey, tc);
-
-
-            auto displayTemperatureC = calculateDisplayTemperature(tc);
-            mainData.insert(displayTemperatureKey, displayTemperatureC);
         }
 
         if (mFanOff)
             mainData.insert(fanSpeedKey, 0);
 
-        if (_mainData == mainData)
-            return;
-
         _mainData = mainData;
 
         // Average of the last two temperature and humidity
         auto rt = _lastMainData.value(temperatureKey, tc).toDouble();
-        _mainData.insert(temperatureKey, (tc + rt) / 2);
+        auto rtAvg = (tc + rt) / 2;
+        _mainData.insert(temperatureKey, rtAvg);
+
+        auto displayTemperatureC = calculateDisplayTemperature(rtAvg);
+        _mainData.insert(displayTemperatureKey, displayTemperatureC);
 
         auto mh = mainData.value(humidityKey, 0.0).toDouble();
         auto rh = _lastMainData.value(humidityKey, mh).toDouble();
@@ -1259,7 +1257,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 #ifdef DEBUG_MODE
 
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
-                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
+                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader, m_DisplayTemperatureHeader
                           m_NightModeHeader, m_BacklightState, m_BacklightRHeader, m_BacklightGHeader,
                           m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus};
 
@@ -1318,7 +1316,11 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 
             } else if (key == m_RawTemperatureHeader) {
                 auto rawTemperatureC = _mainData.value(temperatureRawKey).toDouble();
-                dataStrList.append(QString::number(rawTemperatureC * 1.8 + 32));
+                dataStrList.append(QString::number(UtilityHelper::toFahrenheit(rawTemperatureC)));
+
+            } else if (key == m_DisplayTemperatureHeader) {
+                auto displayTemperatureC = _mainData.value(displayTemperatureKey).toDouble();
+                dataStrList.append(QString::number(UtilityHelper::toFahrenheit(displayTemperatureC)));
 
             } else if (key == m_NightModeHeader) {
                 dataStrList.append(mIsNightModeRunning ? "true" : "false");

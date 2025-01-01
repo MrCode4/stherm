@@ -1790,8 +1790,8 @@ I_DeviceController {
         // Fahrenheit is more sensitive than Celsius,
         // so for every one degree change,
         // it needs to be sent to the server.
-        var isVisualTempChangedF = Math.abs(Math.round(device.currentTemp * 1.8 ) - Math.round((result?.displayTemperature ?? device.currentTemp) * 1.8)) > 0
-        var isVisualTempChangedC = Math.abs(Math.round(device.currentTemp * 1.0 ) - Math.round((result?.displayTemperature ?? device.currentTemp) * 1.0)) > 0
+        var isVisualTempChangedF = Math.abs(Math.round(root.displayTemperature * 1.8 ) - Math.round((result?.displayTemperature ?? root.displayTemperature) * 1.8)) > 0
+        var isVisualTempChangedC = Math.abs(Math.round(root.displayTemperature * 1.0 ) - Math.round((result?.displayTemperature ?? root.displayTemperature) * 1.0)) > 0
         var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
         var isCo2IdChanged = device._co2_id !== co2Id;
         var isNeedToPushToServer = isVisualHumChanged ||
