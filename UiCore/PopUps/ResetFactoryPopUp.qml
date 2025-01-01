@@ -14,7 +14,7 @@ I_PopUp {
 
     /* Object Properties
      * ****************************************************************************************/
-    height: AppStyle.size * 0.70
+    height: AppStyle.size * 0.72
     width: AppStyle.size * 0.80
     bottomPadding: 5
     leftPadding: 10
@@ -87,16 +87,16 @@ I_PopUp {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.leftMargin: 16
-            Layout.rightMargin: 16
+            Layout.leftMargin: 24
+            Layout.rightMargin: 24
+            Layout.topMargin: 24
+            spacing: 24
 
             ButtonInverted {
-                Layout.alignment: Qt.AlignHCenter
 
                 leftPadding: 8
                 rightPadding: 8
                 text: "Cancel"
-                font.pointSize: Qt.application.font.pointSize * 0.8
 
                 onClicked: {
                     root.close()
@@ -108,12 +108,10 @@ I_PopUp {
             }
 
             ButtonInverted {
-                Layout.alignment: Qt.AlignHCenter
 
                 leftPadding: 8
                 rightPadding: 8
                 text: "Reset"
-                font.pointSize: Qt.application.font.pointSize * 0.8
 
                 onClicked: {
                     root.reset()
