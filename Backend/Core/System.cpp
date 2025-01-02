@@ -131,6 +131,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     , mRestarting(false)
     , sshpassInstallCounter(0)
 {
+    startAutoSendLogTimer(15 * 60 * 1000); // 15 Minutes
+
     mUpdateFilePath = qApp->applicationDirPath() + "/" + m_updateInfoFile;
 
     connect(mSync, &NUVE::Sync::settingsFetched, this, [this](bool success) {
@@ -296,6 +298,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
 NUVE::System::~System()
 {
+    if (mAutoSendLogtimer) {
+        stopAutoSendLogTimer();
+    }
 }
 
 bool NUVE::System::areSettingsFetched() const {return mAreSettingsFetched;}
@@ -2162,6 +2167,43 @@ bool NUVE::System::removeDirectory(const QString &path)
     return true;
 }
 
+void NUVE::System::startAutoSendLogTimer(int interval)
+{
+    if (mAutoSendLogtimer == nullptr) {
+        mAutoSendLogtimer = new QTimer(this);
+    }
+
+    mAutoSendLogtimer->setSingleShot(true);
+    mAutoSendLogtimer->callOnTimeout([this]() {
+        qDebug() << "Sending log automatically:" << "Start sending";
+        bool result = this->sendLog(false);
+
+        if (result == true) {
+            qDebug() << "Sending log automatically:" << "Sent successfully";
+            stopAutoSendLogTimer();
+
+        } else {
+            qDebug() << "Sending log automatically:" << "Sent failed";
+            qDebug() << "Sending log automatically:" << "Retry again in 1 minute";
+
+            startAutoSendLogTimer(1 * 60 * 1000); // 1 Minute
+        }
+    });
+    mAutoSendLogtimer->start(interval);
+}
+
+void NUVE::System::stopAutoSendLogTimer()
+{
+    qDebug() << "Sending log automatically:" << "Stopping timer";
+    if (mAutoSendLogtimer == nullptr) {
+        return;
+    }
+
+    mAutoSendLogtimer->stop();
+    mAutoSendLogtimer->deleteLater();
+    mAutoSendLogtimer = nullptr;
+}
+
 bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)
 {
     if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag) {
@@ -2360,6 +2402,8 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             }
 
             if (showAlert) emit logSentSuccessfully();
+
+            stopAutoSendLogTimer();
 
             // Delete logs that have been sent to the server.
             foreach (auto file, filenames) {
