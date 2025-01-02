@@ -1276,6 +1276,10 @@ I_DeviceController {
             }
         }
 
+        if (root.currentSchedule) {
+            send_data.running_schedule_id = root.currentSchedule.id;
+        }
+
         device._sensors.forEach(sensor =>
                                 {
                                     send_data.sensors.push(
@@ -1668,6 +1672,12 @@ I_DeviceController {
 
         root.currentSchedule = schedule;
         deviceControllerCPP.setActivatedSchedule(schedule);
+
+        // Update the server when currentSchedule is null or changed to a valid schedule with valid id.
+        if (!root.currentSchedule || root.currentSchedule.id > -1)
+            updateEditMode(AppSpec.EMSchedule);
+        else
+            console.log("current schedule id is invalid.", root.currentSchedule.name);
     }
 
     function getFromBrandName(brandName) {
