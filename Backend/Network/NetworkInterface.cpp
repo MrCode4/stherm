@@ -153,7 +153,6 @@ void NetworkInterface::processForgettingWiFis() {
     if (connectedWiFi) {
         TRACE << "Disconnect from " << connectedWiFi->ssid();
         disconnectWifi(connectedWiFi);
-
     } else {
         QList <WifiInfo *> forgettingSavedWifis;
         std::copy_if(mWifiInfos.begin(), mWifiInfos.end(),
@@ -168,7 +167,10 @@ void NetworkInterface::processForgettingWiFis() {
             TRACE << "Forget Wi-Fi with ssid " << forgetWF->ssid();
             forgetWifi(forgetWF);
         }
+    }
 
+    if (mForgettingWifis == false) {
+        emit allWiFiNetworksForgotten();
     }
 }
 

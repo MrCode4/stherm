@@ -332,6 +332,14 @@ BasePageView {
         }
     }
 
+    Connections {
+        target: NetworkInterface
+
+        function onAllWiFiNetworksForgotten() {
+            deviceController.resetDeviceToFactory();
+        }
+    }
+
     function showCountDownPopUpForForgetDevice() {
         uiSession.popUps.showCountDownPopUp(
                     qsTr("Forget Device"),
@@ -352,11 +360,7 @@ BasePageView {
                     qsTr("Restarting Device..."),
                     false,
                     function () {
-                        deviceController.resetDeviceToFactory();
-
-                        if (system) {
-                            system.rebootDevice();
-                        }
+                        NetworkInterface.forgetAllWifis();
                     });
     }
 

@@ -1762,10 +1762,13 @@ I_DeviceController {
 
     function resetDeviceToFactory() {
         console.log("resetDeviceToFactory: start reset factory process");
-        NetworkInterface.forgetAllWifis();
         removeSaveFiles();
         deviceControllerCPP.resetToFactorySetting();
         system.removeLogPartition();
+
+        if (system) {
+            system.rebootDevice();
+        }
     }
 
     //! Lock/unlock the application

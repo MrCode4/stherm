@@ -131,6 +131,8 @@ signals:
 
     void                forgettingAllWifisChanged();
 
+    void allWiFiNetworksForgotten();
+
     /* Private attributes
      * ****************************************************************************************/
 private:
