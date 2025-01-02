@@ -395,7 +395,7 @@ private:
     bool sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog = false);
     bool checkSendLog(bool showAlert);
 
-    void startAutoSendLogTimer(int interval);
+    void startAutoSendLogTimer(int interval = 15 * 60 * 1000);
     void stopAutoSendLogTimer();
 
 private:
@@ -481,6 +481,8 @@ private:
     QMap<QString, QString> mLastReceivedCommands;
 
     QTimer *mAutoSendLogtimer{nullptr};
+    bool    mFirstLogSent;
+
 };
 
 } // namespace NUVE
