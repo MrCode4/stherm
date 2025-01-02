@@ -23,6 +23,9 @@ BasePageView {
     property string appVesion: ""
     property bool showTestMode: false
 
+    //! true: Restart device after all wifis forgotten in this page.
+    property bool _restartDeviceAfterForgotWiFis: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Device Info"
@@ -335,8 +338,11 @@ BasePageView {
     Connections {
         target: NetworkInterface
 
+        enabled: root.visible
+
         function onAllWiFiNetworksForgotten() {
-            deviceController.resetDeviceToFactory();
+            if (root._restartDeviceAfterForgotWiFis)
+                deviceController.resetDeviceToFactory();
         }
     }
 
@@ -355,6 +361,7 @@ BasePageView {
     }
 
     function showCountDownPopUpForResetFactory() {
+        root._restartDeviceAfterForgotWiFis = true;
         uiSession.popUps.showCountDownPopUp(
                     qsTr("Reset Device to Factory Setting"),
                     qsTr("Restarting Device..."),
