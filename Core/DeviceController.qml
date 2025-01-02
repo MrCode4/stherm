@@ -1319,6 +1319,7 @@ I_DeviceController {
                 "useAuxiliaryParallelHeatPump": device.systemSetup.useAuxiliaryParallelHeatPump,
                 "driveAux1AndETogether": device.systemSetup.driveAux1AndETogether,
                 "driveAuxAsEmergency": device.systemSetup.driveAuxAsEmergency,
+                "runFanWithAuxiliary": device.systemSetup.runFanWithAuxiliary,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
@@ -1431,7 +1432,8 @@ I_DeviceController {
                                emergencyMinimumTime: int, auxiliaryStages: int,
                                useAuxiliaryParallelHeatPump: bool,
                                driveAux1AndETogether: bool,
-                               driveAuxAsEmergency: bool) {
+                               driveAuxAsEmergency: bool,
+                               runFanWithAuxiliary = true) {
         device.systemSetup.auxiliaryHeating = auxiliaryHeating;
 
         // coolStage controls the Y wires.
@@ -1443,6 +1445,7 @@ I_DeviceController {
         device.systemSetup.useAuxiliaryParallelHeatPump = useAuxiliaryParallelHeatPump;
         device.systemSetup.driveAux1AndETogether = driveAux1AndETogether;
         device.systemSetup.driveAuxAsEmergency = driveAuxAsEmergency;
+        device.systemSetup.runFanWithAuxiliary = runFanWithAuxiliary;
 
         setSystemTypeTo(AppSpecCPP.HeatPump);
     }
@@ -1548,7 +1551,8 @@ I_DeviceController {
                 (settings.hasOwnProperty("useAuxiliaryParallelHeatPump") && device.systemSetup.useAuxiliaryParallelHeatPump != settings.useAuxiliaryParallelHeatPump) ||
                 (settings.hasOwnProperty("driveAux1AndETogether")        && device.systemSetup.driveAux1AndETogether != settings.driveAux1AndETogether) ||
                 (settings.hasOwnProperty("driveAuxAsEmergency")          && device.systemSetup.driveAuxAsEmergency != settings.driveAuxAsEmergency) ||
-                (settings.hasOwnProperty("auxiliaryHeating")             && device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating);
+                (settings.hasOwnProperty("auxiliaryHeating")             && device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating) ||
+                (settings.hasOwnProperty("runFanWithAuxiliary")          && device.systemSetup.runFanWithAuxiliary != settings.runFanWithAuxiliary);
 
         if (hasChanges) {
             uiSession.popUps.showSystemSetupUpdateConfirmation(settings);
@@ -1579,7 +1583,8 @@ I_DeviceController {
                               settings.heatStage,
                               settings.useAuxiliaryParallelHeatPump ?? device.systemSetup.useAuxiliaryParallelHeatPump,
                               settings.driveAux1AndETogether ?? device.systemSetup.driveAux1AndETogether,
-                              settings.driveAuxAsEmergency ?? device.systemSetup.driveAuxAsEmergency)
+                              settings.driveAuxAsEmergency ?? device.systemSetup.driveAuxAsEmergency,
+                              settings.runFanWithAuxiliary ?? device.systemSetup.runFanWithAuxiliary)
 
         } else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)

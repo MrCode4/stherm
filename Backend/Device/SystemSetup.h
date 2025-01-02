@@ -44,6 +44,7 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(bool   driveAux1AndETogether           MEMBER driveAux1AndETogether            NOTIFY driveAux1AndETogetherChanged FINAL)
     Q_PROPERTY(bool   driveAuxAsEmergency MEMBER driveAuxAsEmergency  NOTIFY driveAuxAsEmergencyChanged FINAL)
     Q_PROPERTY(bool   auxiliaryHeating                MEMBER auxiliaryHeating                 NOTIFY auxiliaryHeatingChanged FINAL)
+    Q_PROPERTY(bool   runFanWithAuxiliary             MEMBER runFanWithAuxiliary              NOTIFY runFanWithAuxiliaryChanged FINAL)
 
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
@@ -97,6 +98,7 @@ public:
     bool driveAuxAsEmergency;
 
     bool auxiliaryHeating;
+    bool runFanWithAuxiliary;
 
 signals:
     void systemTypeChanged();
@@ -123,6 +125,7 @@ signals:
     void driveAux1AndETogetherChanged();
     void driveAuxAsEmergencyChanged();
     void auxiliaryHeatingChanged();
+    void runFanWithAuxiliaryChanged();
 
 private:
     // TODO: remove

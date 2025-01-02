@@ -37,6 +37,7 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     useAuxiliaryParallelHeatPump = true;
     driveAux1AndETogether = true;
     driveAuxAsEmergency = true;
+    runFanWithAuxiliary = true;
 
     // TODO: remove
     // To call after model loaded completely.
