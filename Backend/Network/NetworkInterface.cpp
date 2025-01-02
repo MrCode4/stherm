@@ -31,6 +31,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
                                                           "http://google.com")) }
     , mForgettingWifis { false }
     , mIsWifiDisconnectedManually { false }
+    , mIsBusyAutoConnection { false }
 {
     connect(mNmcliInterface, &NmcliInterface::deviceIsOnChanged, this,
             &NetworkInterface::deviceIsOnChanged);
@@ -103,11 +104,13 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(&mAutoConnectToWifiTimer, &QTimer::timeout, this, [this]() {
         printWifisInformation();
 
-        if (mIsWifiDisconnectedManually)
+        if (mIsWifiDisconnectedManually) {
             mAutoConnectToWifiTimer.stop();
+            return;
+        }
 
         // Restart the timer if the mNmcliInterface is busy
-        if (mNmcliInterface->busy()) {
+        if (mNmcliInterface->busy() || mIsBusyAutoConnection) {
             mAutoConnectToWifiTimer.start();
             return;
         }
@@ -140,6 +143,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
 void NetworkInterface::tryConnectToSavedInrangeWifi(WifiInfo *triedWifi) {
     if (connectedWifi()) {
         mAutoConnectToWifiTimer.stop();
+        mIsBusyAutoConnection = false;
         return;
     }
 
@@ -149,11 +153,14 @@ void NetworkInterface::tryConnectToSavedInrangeWifi(WifiInfo *triedWifi) {
 
     if (mAutoConnectSavedInRangeWifis.empty()) {
         NI_LOG << "No saved inrange wifis for auto connection.";
+        mIsBusyAutoConnection = false;
 
     } else {
+        mIsBusyAutoConnection = true;
         auto wifi = mAutoConnectSavedInRangeWifis.front();
-        if (!mNmcliInterface->autoConnectSavedWifi(wifi)) {
+        if (!mNmcliInterface->autoConnectSavedWifiAsync(wifi)) {
             mAutoConnectSavedInRangeWifis.pop_front();
+            tryConnectToSavedInrangeWifi();
         }
     }
 }

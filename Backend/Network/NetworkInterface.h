@@ -204,6 +204,7 @@ private:
 
     //! Just used in the auto connect.
     QList<WifiInfo *>       mAutoConnectSavedInRangeWifis;
+    bool                    mIsBusyAutoConnection;
 
     bool                    mIsWifiDisconnectedManually;
 

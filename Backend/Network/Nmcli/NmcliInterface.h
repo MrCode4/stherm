@@ -171,7 +171,7 @@ public:
      */
     QStringList getDeviceSupportedCiphersList() const;
 
-    bool autoConnectSavedWifi(WifiInfo *wifi);
+    bool autoConnectSavedWifiAsync(WifiInfo *wifi);
 
 private:
     /*!

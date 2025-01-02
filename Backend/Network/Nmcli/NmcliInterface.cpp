@@ -118,7 +118,7 @@ void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
     }
 }
 
-bool NmcliInterface::autoConnectSavedWifi(WifiInfo* wifi)
+bool NmcliInterface::autoConnectSavedWifiAsync(WifiInfo* wifi)
 {
     if (!wifi) {
         return false;

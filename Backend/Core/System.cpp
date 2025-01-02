@@ -2399,7 +2399,7 @@ bool NUVE::System::isValidNetworkRequestRestart()
     QSettings settings;
     int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt();
 
-    return networkRequestRestartTimes < 2;
+    return networkRequestRestartTimes < 1;
 }
 
 void NUVE::System::saveNetworkRequestRestart()
@@ -2407,5 +2407,5 @@ void NUVE::System::saveNetworkRequestRestart()
     QSettings settings;
     int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt();
 
-    settings.setValue(m_NetworkRequestRestartSetting, networkRequestRestartTimes++);
+    settings.setValue(m_NetworkRequestRestartSetting, ++networkRequestRestartTimes);
 }
