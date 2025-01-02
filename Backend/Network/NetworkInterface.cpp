@@ -59,11 +59,9 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
         auto connectedWifiInfo = connectedWifi();
         if (connectedWifiInfo) {
-            if (!mCheckInternetAccessTmr.isActive()) {
-                mCheckInternetAccessTmr.start();
-            }
-
             checkHasInternet();
+            mCheckInternetAccessTmr.start();
+
         } else {
             printWifisInformation();
             if (!mIsWifiDisconnectedManually)
