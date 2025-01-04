@@ -132,10 +132,6 @@ public:
 
     void wifiConnected(bool hasInternet);
 
-    //! Get Contractor Information
-    QVariantMap getContractorInfo() const;
-    bool fetchContractorInfo();
-
     //! Getters
     QStringList availableVersions();
 
@@ -270,7 +266,6 @@ protected slots:
 signals:
     void serialNumberReady();
     void areSettingsFetchedChanged(bool success);
-    void contractorInfoReady(const bool& getDataFromServerSuccessfully = true);
     void settingsReady(QVariantMap settings);
     void appDataReady(QVariantMap settings);
 

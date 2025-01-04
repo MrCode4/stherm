@@ -270,6 +270,9 @@ I_DeviceController {
             root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName) : (iconUrl + "?version=" + version)
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
+
+            //! To load the contractor information as soon as the app starts, save it in the model. This avoids waiting for the ContractorInfoUpdated signal.
+            saveSettings();
         }
 
         //! Logics for check SN:
@@ -491,12 +494,6 @@ I_DeviceController {
                 deviceControllerCPP.system.fetchUpdateInformation(true);
             }
         }
-
-        function onContractorInfoReady(getDataFromServerSuccessfully : bool) {
-            fetchContractorInfoTimer._retryFetchContractorInfoTimerInterval = getDataFromServerSuccessfully ? fetchContractorInfoTimer._defaultInterval : 30000;
-
-            fetchContractorInfoTimer.restart();
-        }
     }
 
     property Connections syncConnections: Connections {
@@ -634,6 +631,12 @@ I_DeviceController {
                 lockStatePusher.interval = Math.min(lockStatePusher.interval * 2, 60 * 1000);
                 console.error('Pushing app lock state failed, retry internal is ', lockStatePusher.interval);
             }
+        }
+
+        function onContractorInfoReady(getDataFromServerSuccessfully : bool) {
+            fetchContractorInfoTimer._retryFetchContractorInfoTimerInterval = getDataFromServerSuccessfully ? fetchContractorInfoTimer._defaultInterval : 30000;
+
+            fetchContractorInfoTimer.restart();
         }
     }
 

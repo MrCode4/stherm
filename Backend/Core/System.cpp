@@ -137,7 +137,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         emit areSettingsFetchedChanged(success);
     });
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
-    connect(mSync, &NUVE::Sync::contractorInfoReady, this, &NUVE::System::contractorInfoReady);
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
         if (!mIsNightModeRunning)
@@ -950,15 +949,6 @@ bool NUVE::System::alternativeNoWiFiFlow()
 {
     QSettings settings;
     return settings.value(m_alternativeNoWiFiFlow, false).toBool();
-}
-
-QVariantMap NUVE::System::getContractorInfo() const
-{
-    return mSync->getContractorInfo();
-}
-
-bool NUVE::System::fetchContractorInfo() {
-    return mSync->fetchContractorInfo();
 }
 
 QStringList NUVE::System::availableVersions()
