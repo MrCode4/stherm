@@ -800,8 +800,9 @@ void Sync::resetFactory()
         if (reply->error() == QNetworkReply::NoError) {
             emit resetFactoryFinished(true);
         } else {
-            TRACE << "resetFactory" << reply->errorString();
-            emit resetFactoryFinished(false, reply->errorString());
+            TRACE << "resetFactory" << reply->errorString() << ", hasClient: " << mHasClient << ", rawData:" << rawData;
+            bool success = false; // we may change this according to the hasClient or other parameters like error string
+            emit resetFactoryFinished(success, reply->errorString());
         }
     };
 
