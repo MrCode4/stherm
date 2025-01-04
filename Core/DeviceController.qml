@@ -1764,7 +1764,6 @@ I_DeviceController {
         console.log("resetDeviceToFactory: start reset factory process");
         removeSaveFiles();
         deviceControllerCPP.resetToFactorySetting();
-        system.removeLogPartition();
 
         if (system) {
             system.rebootDevice();

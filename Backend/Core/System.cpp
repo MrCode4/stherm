@@ -1061,17 +1061,20 @@ void NUVE::System::forgetDevice()
 
     settings.remove(m_alternativeNoWiFiFlow);
 
+
+    QFile::remove(qApp->applicationDirPath() + "/files_info.json");
+    QFile::remove(mUpdateFilePath);
+
     mSync->forgetDevice();
 }
 
 bool NUVE::System::removeLogPartition()
 {
-    QStringList directories = {"/mnt/log/latestVersion/",
-                               "/mnt/log/sensor/",
+    QStringList directories = {"/mnt/update/latestVersion/",
+                               "/mnt/data/sensor/",
                                "/mnt/log/log/",
-                               "/mnt/log/nrf_fw/",
-                               "/mnt/log/recovery/",
-                               "/mnt/data/sensor/"};
+                               "/mnt/update/nrf_fw/",
+                               "/mnt/recovery/recovery/"};
     bool ok = true;
     for (const QString &dirPath : directories) {
         ok &= removeDirectory(dirPath);
