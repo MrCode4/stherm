@@ -22,7 +22,7 @@ I_PopUp {
 
     /* Object properties
      * ****************************************************************************************/
-    title: "title"
+    title: " "
     titleBar: false
 
     width: AppStyle.size * 0.80

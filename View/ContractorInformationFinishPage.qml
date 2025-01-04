@@ -42,13 +42,13 @@ BasePageView {
     }
 
     //! Reboot popup with count down timer to send reboot request to system
-    RebootDevicePopup {
+    CountDownPopup {
         id: forgetWiFiPopup
 
         anchors.centerIn: Template.Overlay.overlay
 
         title: "Forget Wi-Fis"
-        infoText: "Forgetting Wi-Fis ..."
+        actionText: "Forgetting Wi-Fis..."
 
         onOpened: {
             cancelEnable = true;
@@ -57,14 +57,18 @@ BasePageView {
         onStartAction: {
             cancelEnable = false;
             NetworkInterface.forgetAllWifis();
+            // when will end?
         }
     }
 
     //! Reboot popup with count down timer to send reboot request to system
-    RebootDevicePopup {
+    CountDownPopup {
         id: rebootPopup
 
         anchors.centerIn: Template.Overlay.overlay
+
+        title: "Restart Device"
+        actionText: "Restarting Device..."
 
         onStartAction: {
             if (deviceController.system) {
@@ -76,10 +80,8 @@ BasePageView {
     property Connections networkInterface: Connections {
         target: NetworkInterface
 
-        function onForgettingAllWifisChanged() {
-            if (!NetworkInterface.forgettingAllWifis) {
-                forgetWiFiPopup.close();
-            }
+        function onAllWiFiNetworksForgotten() {
+            forgetWiFiPopup.close();
         }
     }
 }
