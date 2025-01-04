@@ -78,6 +78,8 @@ public:
 
     Q_INVOKABLE void addSchedule(const QString &scheduleUid, const QVariantMap &schedule);
 
+    Q_INVOKABLE void resetFactory();
+
 public slots:
     void reportCommandResponse(ReportCommandCallback callback, const QString& command, const QString& data, int retryCount = 2);
 
@@ -143,6 +145,8 @@ signals:
     void scheduleCleared(int id, bool success);
     void scheduleEdited(int id, bool success);
     void scheduleAdded(QString scheduleUid, bool success, QVariantMap schedule = QVariantMap());
+
+    void resetFactoryFinished(bool ok, const QString &message = "");
 
 private slots:
     //! Check firmware update with getSettings reply

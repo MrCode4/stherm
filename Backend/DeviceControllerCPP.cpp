@@ -504,11 +504,47 @@ void DeviceControllerCPP::setCPUGovernor(AppSpecCPP::CPUGovernerOption CPUGovern
     }
 }
 
+inline void removeResultCSVFiles() {
+
+    QFile::remove(TEST_RESULTS_PATH);
+
+    QDir directory("/");
+    QStringList filters;
+    filters << "*.csv"; // Filter for .csv files
+
+    QStringList csvFiles = directory.entryList(filters, QDir::Files);
+    foreach (const QString &file, csvFiles) {
+        if (!directory.remove(file)) {
+            qWarning() << "Failed to remove file:" << file;
+        } else {
+            qDebug() << "Removed file:" << file;
+        }
+    }
+}
+
 void DeviceControllerCPP::forgetDevice()
 {
     QFile::remove("/usr/local/bin/QSCore.cfg");
+    QFile::remove(PROTOBUFF_FILE_PATH);
+    QFile::remove(CUSTOMER_IMAGE_PATH);
+    QFile::remove(MAIN_DATA_OVERRIDE_PATH);
+    removeResultCSVFiles();
+
+    QDir backdoor(m_backdoorPath);
+    backdoor.removeRecursively();
+
     _deviceAPI->forgetDevice();
     m_system->forgetDevice();
+}
+
+void DeviceControllerCPP::resetToFactorySetting()
+{
+    forgetDevice();
+    m_system->removeLogPartition();
+
+    // Completely remove all settings, maybe forget device save some settings that should be remove.
+    QSettings settings;
+    settings.clear();
 }
 
 double DeviceControllerCPP::adaptiveBrightness() {
@@ -1022,11 +1058,11 @@ QVariantMap DeviceControllerCPP::getMainData()
 
     auto overrideData = _mainData_override;
 #ifdef __unix__
-    QSettings override("/usr/local/bin/override.ini", QSettings::IniFormat);
+    QSettings override(MAIN_DATA_OVERRIDE_PATH, QSettings::IniFormat);
     bool hasOverride = override.value("on").toBool();
     if (hasOverride) {
         auto overrideTemp = override.value("temp").toDouble();
-        LOG_CHECK_DC(!_override_by_file) <<"temperature will be overriden by value: " << overrideTemp << ", read from /usr/local/bin/override.ini file.";
+        LOG_CHECK_DC(!_override_by_file) << "temperature will be overriden by value: " << overrideTemp << ", read from " << MAIN_DATA_OVERRIDE_PATH << " file.";
         overrideData.insert(temperatureKey, overrideTemp);
     }
 
@@ -1081,7 +1117,7 @@ void DeviceControllerCPP::saveTestResult(const QString &testName, bool testResul
         mAllTestNames.push_back(testName);
 
     QString result = testResult ? "PASS" : "FAIL";
-    writeTestResult("/test_results.csv", testName, result, description);
+    writeTestResult(TEST_RESULTS_PATH, testName, result, description);
 }
 
 QString DeviceControllerCPP::beginTesting()
@@ -1091,12 +1127,12 @@ QString DeviceControllerCPP::beginTesting()
     mAllTestNames.clear();
     //! TODO initialize all tests in mAllTestNames
 
-    QFile file("/test_results.csv");
+    QFile file(TEST_RESULTS_PATH);
     if (file.exists() && !file.remove())
     {
         qWarning() << "Unable to delete file" << file.fileName();
     }
-    writeTestResult("/test_results.csv", "Test name", QString("Test Result"), "Description");
+    writeTestResult(TEST_RESULTS_PATH, "Test name", QString("Test Result"), "Description");
 
     QString uid = _deviceAPI->uid();
     QString sn = m_system->serialNumber();

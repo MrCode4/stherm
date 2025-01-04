@@ -1061,7 +1061,26 @@ void NUVE::System::forgetDevice()
 
     settings.remove(m_alternativeNoWiFiFlow);
 
+
+    QFile::remove(qApp->applicationDirPath() + "/files_info.json");
+    QFile::remove(mUpdateFilePath);
+
     mSync->forgetDevice();
+}
+
+bool NUVE::System::removeLogPartition()
+{
+    QStringList directories = {"/mnt/update/latestVersion/",
+                               "/mnt/data/sensor/",
+                               "/mnt/log/log/",
+                               "/mnt/update/nrf_fw/",
+                               "/mnt/recovery/recovery/"};
+    bool ok = true;
+    for (const QString &dirPath : directories) {
+        ok &= removeDirectory(dirPath);
+    }
+
+    return ok;
 }
 
 void NUVE::System::setNightModeRunning(const bool running) {
@@ -2164,6 +2183,24 @@ void NUVE::System::sendResultsFile(const QString &filepath,
     mFileSender.start("/bin/bash", {"-c", copyFile});
 }
 
+bool NUVE::System::removeDirectory(const QString &path)
+{
+    QDir dir(path);
+
+    if (dir.exists()) {
+        if (dir.removeRecursively()) {
+            TRACE << "Successfully removed:" << path;
+        } else {
+            TRACE << "Failed to remove:" << path;
+            return false;
+        }
+    } else {
+        TRACE << "Directory does not exist:" << path;
+    }
+
+    return true;
+}
+
 bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)
 {
     if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag) {
@@ -2272,5 +2309,4 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
         }
     });
 }
-
 

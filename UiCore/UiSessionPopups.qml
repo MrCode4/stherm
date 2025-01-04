@@ -40,7 +40,7 @@ Item {
     property alias perfTestCheckPopup: popupPerfTest
 
     readonly property bool isAnyPopupOpened : updateNotificationPopup.opened
-                                                || successPopup.opened
+                                              || successPopup.opened
 
 
     /* Signal Handlers
@@ -230,6 +230,26 @@ Item {
         }
     }
 
+    Component {
+        id: countDownPopUp
+
+        CountDownPopup {
+            property var callback
+
+            anchors.centerIn: T.Overlay.overlay
+
+            onStartAction: {
+                if (callback instanceof Function) {
+                    callback()
+                }
+            }
+
+            onClosed: {
+                destroy(this);
+            }
+        }
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -341,6 +361,16 @@ Item {
                 showLimitedInitialSetupPopup();
             }
         }
+    }
+    function showCountDownPopUp(title: string, actionText: string, hasCancel: bool, callback: Function) {
+        var popup = countDownPopUp.createObject(root, {
+                                                    "title": title,
+                                                    "actionText": actionText,
+                                                    "cancelEnable": hasCancel,
+                                                    "callback": callback
+                                                })
+       uiSession.popupLayout.displayPopUp(popup);
+        return popup
     }
 
     function warrantyReplacementFinished() {

@@ -156,6 +156,8 @@ WifiInfo* NmcliInterface::connectedWifi()
 void NmcliInterface::forgetWifi(WifiInfo* wifi)
 {
     if (!wifi || !wifi->isSaved() || busy()) {
+        NC_DEBUG << "Worst case scenario: Error in forgetWifi" << wifi << busy();
+        NC_DEBUG_IF(wifi) << "Worst case scenario: Error in forgetWifi" << wifi->isSaved();
         return;
     }
 

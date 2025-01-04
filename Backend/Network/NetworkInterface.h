@@ -66,6 +66,8 @@ public:
     Q_INVOKABLE void refereshWifis(bool forced = false);
     Q_INVOKABLE void connectWifi(WifiInfo *wifiInfo, const QString &password = "");
     Q_INVOKABLE void disconnectWifi(WifiInfo *wifiInfo);
+
+    // forgetWifi is async
     Q_INVOKABLE void forgetWifi(WifiInfo *wifiInfo);
     Q_INVOKABLE bool isWifiSaved(WifiInfo *wifiInfo);
     Q_INVOKABLE void turnOn();
@@ -130,6 +132,8 @@ signals:
     void                incorrectWifiPassword(WifiInfo* wifi);
 
     void                forgettingAllWifisChanged();
+
+    void                allWiFiNetworksForgotten();
 
     /* Private attributes
      * ****************************************************************************************/

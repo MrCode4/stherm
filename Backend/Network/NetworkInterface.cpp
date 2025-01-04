@@ -136,6 +136,7 @@ void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
 {
     if (!wifiInfo || !mNmcliInterface->isDeviceOn()) {
+        TRACE << "Worst case scenario: Error in forgetWifi" << wifiInfo << mNmcliInterface->isDeviceOn();
         return;
     }
 
@@ -153,7 +154,6 @@ void NetworkInterface::processForgettingWiFis() {
     if (connectedWiFi) {
         TRACE << "Disconnect from " << connectedWiFi->ssid();
         disconnectWifi(connectedWiFi);
-
     } else {
         QList <WifiInfo *> forgettingSavedWifis;
         std::copy_if(mWifiInfos.begin(), mWifiInfos.end(),
@@ -167,8 +167,14 @@ void NetworkInterface::processForgettingWiFis() {
             auto forgetWF = forgettingSavedWifis.first();
             TRACE << "Forget Wi-Fi with ssid " << forgetWF->ssid();
             forgetWifi(forgetWF);
+            if (!busy()) {
+                TRACE << "Worst case scenario: isBusy forgetting is false.";
+            }
         }
+    }
 
+    if (mForgettingWifis == false) {
+        emit allWiFiNetworksForgotten();
     }
 }
 

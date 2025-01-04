@@ -260,7 +260,7 @@ void Sync::fetchContractorLogo(const QString &url)
                 // Use 'usr' directory in the windows. It will be change in unix.
                 QString imgPath = "/usr/local/customIcon.png";
 #ifdef unix
-                imgPath = "/home/root/customIcon.png";
+                imgPath = CUSTOMER_IMAGE_PATH;
 #endif
                 if (image.save(imgPath)) {
                     mContractorInfo.insert("logo", "file://" + imgPath);
@@ -711,11 +711,12 @@ void Sync::forgetDevice()
     mSerialNumber = QString();
     mContractorInfo = QVariantMap{};
 
-    // Save the serial number in settings
+    // remove serial number, hasClient and contractorInfo from settings file
     QSettings setting;
-    setting.setValue(cHasClientSetting, mHasClient);
-    setting.setValue(cSerialNumberSetting, mSerialNumber);
-    setting.setValue(cContractorSettings, mContractorInfo);
+    setting.remove(cHasClientSetting);
+    setting.remove(cSerialNumberSetting);
+    setting.remove(cContractorSettings);
+
     Device->reset();
 }
 
@@ -779,6 +780,36 @@ void Sync::addSchedule(const QString &scheduleUid, const QVariantMap &schedule)
 
     auto reply = callPostApi(baseUrl() + QString("api/sync/schedules"), QJsonDocument(reqData).toJson(), callback);
     if (reply) {// returned response has no data object and values are in root
+        reply->setProperty("noDataObject", true);
+    }
+}
+
+void Sync::resetFactory()
+{
+    // Forget request is unnecessary if the serial number is empty or, when the serial number is valid, if hasClient is false
+    // but the 2nd case is not important.
+    if (mSerialNumber.isEmpty()) {
+        emit resetFactoryFinished(true);
+        return;
+    }
+
+    QJsonObject reqData;
+    reqData["sn"] = mSerialNumber;
+
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit resetFactoryFinished(true);
+        } else {
+            TRACE << "resetFactory" << reply->errorString() << ", hasClient: " << mHasClient << ", rawData:" << rawData;
+            bool success = false; // we may change this according to the hasClient or other parameters like error string
+            emit resetFactoryFinished(success, reply->errorString());
+        }
+    };
+
+    auto reply = callPostApi(baseUrl() + QString("api/sync/forget?sn=%1").arg(mSerialNumber),
+                             QJsonDocument(reqData).toJson(),
+                             callback);
+    if (reply) { // returned response has no data object and values are in root
         reply->setProperty("noDataObject", true);
     }
 }
