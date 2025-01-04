@@ -260,7 +260,7 @@ void Sync::fetchContractorLogo(const QString &url)
                 // Use 'usr' directory in the windows. It will be change in unix.
                 QString imgPath = "/usr/local/customIcon.png";
 #ifdef unix
-                imgPath = "/home/root/customIcon.png";
+                imgPath = CUSTOMER_IMAGE_PATH;
 #endif
                 if (image.save(imgPath)) {
                     mContractorInfo.insert("logo", "file://" + imgPath);

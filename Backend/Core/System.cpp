@@ -1070,7 +1070,8 @@ bool NUVE::System::removeLogPartition()
                                "/mnt/log/sensor/",
                                "/mnt/log/log/",
                                "/mnt/log/nrf_fw/",
-                               "/mnt/log/recovery/"};
+                               "/mnt/log/recovery/",
+                               "/mnt/data/sensor/"};
     bool ok = true;
     for (const QString &dirPath : directories) {
         ok &= removeDirectory(dirPath);
