@@ -121,7 +121,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
     // When system is OFF, the set temperature will remain constant
-    connect(mSchemeDataProvider.get(), &SchemeDataProvider::effectiveTemperatureChanged, this, &DeviceControllerCPP::effectiveTemperatureChanged);
+    connect(mSchemeDataProvider.get(), &SchemeDataProvider::monitoringTemperatureUpdated, this, &DeviceControllerCPP::monitoringTemperatureUpdated);
 
     mAdaptiveBrightness = 50;
 

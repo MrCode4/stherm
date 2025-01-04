@@ -305,8 +305,8 @@ I_DeviceController {
             dfhSystemType = activeSystemType;
         }
 
-        function onEffectiveTemperatureChanged(effectiveTemperatureC: real) {
-            ProtoDataManager.setSetTemperature(effectiveTemperatureC);
+        function onMonitoringTemperatureUpdated(monitoringTempratureC: real) {
+            ProtoDataManager.setSetTemperature(monitoringTempratureC);
         }
 
         function onFanWorkChanged(fanState: bool) {

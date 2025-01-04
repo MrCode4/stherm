@@ -117,7 +117,7 @@ signals:
     void outdoorTemperatureReady();
     void outdoorTemperatureChanged();
 
-    void effectiveTemperatureChanged(double effectiveTemperatureC) const;
+    void monitoringTemperatureUpdated(double monitoringTempratureC) const;
     void effectiveHumidityChanged(double effectiveHumidity);
 
 private:
