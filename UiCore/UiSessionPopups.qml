@@ -446,9 +446,12 @@ Item {
             _systemSetupConfirmationPopup = _systemSetupConfirmationComponent.createObject(root);
         }
 
-        if (_systemSetupConfirmationPopup && !_systemSetupConfirmationPopup.visible) {
-            _systemSetupConfirmationPopup.systemSetup = settings;
-            uiSession.popupLayout.displayPopUp(_systemSetupConfirmationPopup);
+        if (!_systemSetupConfirmationPopup) {
+            console.log("_systemSetupConfirmationPopup is undefined!")
         }
+
+        _systemSetupConfirmationPopup.systemSetup = settings;
+
+        uiSession.popupLayout.displayPopUp(_systemSetupConfirmationPopup);
     }
 }

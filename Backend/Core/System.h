@@ -262,6 +262,8 @@ public:
     Q_INVOKABLE bool alternativeNoWiFiFlow();
 
     Q_INVOKABLE bool isBusylogSender() const;
+    Q_INVOKABLE void setIsForgottenDevice(const bool &isDeviceForgotten);
+
     Q_INVOKABLE void saveNetworkLogs();
     Q_INVOKABLE bool sendNetworkLogs();
 

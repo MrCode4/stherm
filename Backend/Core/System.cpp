@@ -955,12 +955,17 @@ bool NUVE::System::initialSetupWithNoWIFI()
 bool NUVE::System::isForgottenDeviceStarted()
 {
     QSettings settings;
-    auto isDeviceForgotten = settings.value(m_isDeviceForgotten, false).toBool();
+    auto isDeviceForgotten = settings.value(m_isDeviceForgotten, true).toBool();
 
-    SYS_LOG << "Device starts after forgetton: " << isDeviceForgotten;
+    SYS_LOG << "Device starts after forgotten: " << isDeviceForgotten;
 
-    settings.setValue(m_isDeviceForgotten, false);
     return isDeviceForgotten;
+}
+
+void NUVE::System::setIsForgottenDevice(const bool &isDeviceForgotten)
+{
+    QSettings settings;
+    settings.setValue(m_isDeviceForgotten, isDeviceForgotten);
 }
 
 void NUVE::System::setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow)
@@ -1075,8 +1080,7 @@ void NUVE::System::forgetDevice()
 
     settings.remove(m_alternativeNoWiFiFlow);
 
-    // Device is forgotten
-    settings.setValue(m_isDeviceForgotten, true);
+    settings.remove(m_isDeviceForgotten);
 
     QFile::remove(qApp->applicationDirPath() + "/files_info.json");
     QFile::remove(mUpdateFilePath);

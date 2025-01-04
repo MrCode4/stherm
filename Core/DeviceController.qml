@@ -1548,36 +1548,44 @@ I_DeviceController {
             // so system setup update is unnecessary.
             canUpdateSystemSetup = false;
 
+            system.setIsForgottenDevice(false);
+
             console.log("System setup applied due to forget device:", system.isForgottenDeviceStarted(), " or warranty replacement flow.")
 
             return;
         }
 
-        var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
+        if (true) {
+            var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
+            // TODO: update the hasChanges after merge.
+            var hasChanges = AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type ||
+                    device.systemSetup.heatPumpEmergency != settings.heatPumpEmergency ||
+                    device.systemSetup.heatStage != settings.heatStage ||
+                    device.systemSetup.coolStage != settings.coolStage ||
+                    device.systemSetup.heatPumpOBState != settings.heatPumpOBState ||
+                    device.systemSetup.systemRunDelay != settings.systemRunDelay ||
+                    device.systemSetup.systemAccessories.accessoriesType != settings.systemAccessories.mode ||
+                    device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType ||
 
-        // TODO: update the hasChanges after merge.
-        var hasChanges = AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type ||
-                device.systemSetup.heatPumpEmergency != settings.heatPumpEmergency ||
-                device.systemSetup.heatStage != settings.heatStage ||
-                device.systemSetup.coolStage != settings.coolStage ||
-                device.systemSetup.heatPumpOBState != settings.heatPumpOBState ||
-                device.systemSetup.systemRunDelay != settings.systemRunDelay ||
-                device.systemSetup.systemAccessories.accessoriesType != settings.systemAccessories.mode ||
-                device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType ||
+                    device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold ||
+                    device.systemSetup.isAUXAuto != settings.isAUXAuto ||
+                    device.systemSetup.dualFuelHeatingModeDefault != settings.dualFuelHeatingModeDefault ||
 
-                device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold ||
-                device.systemSetup.isAUXAuto != settings.isAUXAuto ||
-                device.systemSetup.dualFuelHeatingModeDefault != settings.dualFuelHeatingModeDefault ||
+                    (settings.hasOwnProperty("emergencyMinimumTime")         && device.systemSetup.emergencyMinimumTime != settings.emergencyMinimumTime) ||
+                    (settings.hasOwnProperty("useAuxiliaryParallelHeatPump") && device.systemSetup.useAuxiliaryParallelHeatPump != settings.useAuxiliaryParallelHeatPump) ||
+                    (settings.hasOwnProperty("driveAux1AndETogether")        && device.systemSetup.driveAux1AndETogether != settings.driveAux1AndETogether) ||
+                    (settings.hasOwnProperty("driveAuxAsEmergency")          && device.systemSetup.driveAuxAsEmergency != settings.driveAuxAsEmergency) ||
+                    (settings.hasOwnProperty("auxiliaryHeating")             && device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating) ||
+                    (settings.hasOwnProperty("runFanWithAuxiliary")          && device.systemSetup.runFanWithAuxiliary != settings.runFanWithAuxiliary);
 
-                (settings.hasOwnProperty("emergencyMinimumTime")         && device.systemSetup.emergencyMinimumTime != settings.emergencyMinimumTime) ||
-                (settings.hasOwnProperty("useAuxiliaryParallelHeatPump") && device.systemSetup.useAuxiliaryParallelHeatPump != settings.useAuxiliaryParallelHeatPump) ||
-                (settings.hasOwnProperty("driveAux1AndETogether")        && device.systemSetup.driveAux1AndETogether != settings.driveAux1AndETogether) ||
-                (settings.hasOwnProperty("driveAuxAsEmergency")          && device.systemSetup.driveAuxAsEmergency != settings.driveAuxAsEmergency) ||
-                (settings.hasOwnProperty("auxiliaryHeating")             && device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating) ||
-                (settings.hasOwnProperty("runFanWithAuxiliary")          && device.systemSetup.runFanWithAuxiliary != settings.runFanWithAuxiliary);
+            if (hasChanges) {
+                uiSession.popUps.showSystemSetupUpdateConfirmation(settings);
+            }
 
-        if (hasChanges) {
-            uiSession.popUps.showSystemSetupUpdateConfirmation(settings);
+        } else {
+            applySystemSetupServer(settings);
+            updateEditMode(AppSpec.EMSystemSetup);
+            saveSettings();
         }
     }
 
