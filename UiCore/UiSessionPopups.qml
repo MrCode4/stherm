@@ -141,7 +141,7 @@ Item {
 
             title: "Update system setup"
             message: ""
-            detailMessage: "The server and device system setups are different. Do you want to update the device to match the server?<br>Be sure to check the changes after the applying."
+            detailMessage: "The server and device system setups are out of sync. Do you want to update the device to match the server?<br>Please review the changes if applied."
             buttons: MessageDialog.Cancel | MessageDialog.Apply
             keepOpen: true
 
