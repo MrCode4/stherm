@@ -36,7 +36,7 @@ BasePageView {
 
         anchors.centerIn: Template.Overlay.overlay
 
-        title: "Restart Device"
+        title: "   Restart Device   "
         actionText: "Serial number is ready.\nRestarting Device..."
 
         onStartAction: {

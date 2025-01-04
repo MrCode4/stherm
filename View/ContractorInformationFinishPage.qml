@@ -51,13 +51,13 @@ BasePageView {
         actionText: "Forgetting Wi-Fis..."
 
         onOpened: {
+            // this should be reset on each show!
             cancelEnable = true;
         }
 
         onStartAction: {
             cancelEnable = false;
             NetworkInterface.forgetAllWifis();
-            // when will end?
         }
     }
 
@@ -67,7 +67,7 @@ BasePageView {
 
         anchors.centerIn: Template.Overlay.overlay
 
-        title: "Restart Device"
+        title: "   Restart Device   "
         actionText: "Restarting Device..."
 
         onStartAction: {
