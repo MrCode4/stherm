@@ -438,7 +438,7 @@ void NetworkInterface::onErrorOccured(int error)
 {
     switch (error) {
     default:
-        qDebug() << Q_FUNC_INFO << __LINE__ << " nmcli Error: " << error;
+        NI_LOG << error;
         break;
     }
 }
