@@ -130,7 +130,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     , mIsNightModeRunning(false)
     , mRestarting(false)
     , sshpassInstallCounter(0)
+    , mFirstLogSent(false)
 {
+    startAutoSendLogTimer(15 * 60 * 1000); // 15 Minutes
+
     mUpdateFilePath = qApp->applicationDirPath() + "/" + m_updateInfoFile;
 
     connect(mSync, &NUVE::Sync::settingsFetched, this, [this](bool success) {
@@ -296,6 +299,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
 NUVE::System::~System()
 {
+    stopAutoSendLogTimer();
 }
 
 bool NUVE::System::areSettingsFetched() const {return mAreSettingsFetched;}
@@ -2162,6 +2166,51 @@ bool NUVE::System::removeDirectory(const QString &path)
     return true;
 }
 
+void NUVE::System::startAutoSendLogTimer(int interval)
+{
+    if (mFirstLogSent) {
+        stopAutoSendLogTimer();
+        return;
+    }
+
+    if (mAutoSendLogtimer == nullptr) {
+        mAutoSendLogtimer = new QTimer(this);
+
+        mAutoSendLogtimer->setSingleShot(true);
+        mAutoSendLogtimer->callOnTimeout([this]() {
+            SYS_LOG << "Sending log automatically: Start sending";
+            bool result = this->sendLog(false);
+
+            if (result == true) {
+                SYS_LOG << "Sending log automatically: Sending...";
+                stopAutoSendLogTimer();
+
+            } else {
+                SYS_LOG << "Sending log automatically: Log Send Failed.";
+
+                SYS_LOG << "Sending log automatically: Next attempt in 1 minute.";
+                startAutoSendLogTimer(1 * 60 * 1000); // 1 Minute
+            }
+        });
+    }
+
+    if (mAutoSendLogtimer)
+        mAutoSendLogtimer->start(interval);
+}
+
+void NUVE::System::stopAutoSendLogTimer()
+{
+    SYS_LOG << "Sending log automatically: Stopping timer";
+    if (mAutoSendLogtimer == nullptr) {
+        return;
+    }
+
+    mAutoSendLogtimer->stop();
+    mAutoSendLogtimer->disconnect();
+    mAutoSendLogtimer->deleteLater();
+    mAutoSendLogtimer = nullptr;
+}
+
 bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)
 {
     if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag) {
@@ -2366,8 +2415,10 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
                 if (!QFile::remove(file))
                     qWarning() << "Could not remove the file: " << file;
             }
-        }
-        else {
+
+            if (isRegularLog) mFirstLogSent = true;
+
+        } else {
             if (isRegularLog && mLastReceivedCommands.contains(Cmd_PushLogs)) {
                 SYS_LOG << "Log sending failed. Command cleared" << Cmd_PushLogs;
                 mLastReceivedCommands.remove(Cmd_PushLogs);
@@ -2377,6 +2428,8 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             qWarning() << error;
             if (showAlert) emit logAlert(error);
         }
+
+        startAutoSendLogTimer(1 * 60 * 1000);
     };
 
     mLogSender.setRole("sendLog", sendCallback);
