@@ -498,8 +498,9 @@ I_DeviceController {
         function onPushSuccess() {
             console.log("DeviceController.qml: onPushSuccess", stageMode, editMode, lockMode)
 
-            // We don't need to check the system startup settings because we push all the settings in the post request.
+            // We don't need to check the edit mode, because we push all the settings in the post request.
             canUpdateSystemSetup = false;
+            system.setIsForgottenDevice(false);
 
             if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
                 stageMode = AppSpec.EMAutoMode;
@@ -695,7 +696,7 @@ I_DeviceController {
 
         function onWarrantyReplacementFinished(success: bool, error: string, needToRetry: bool) {
             if (success) {
-                warrantyReplacementFinsihed();
+                root.postWarrantyReplacementFinsihed();
             }
         }
 
