@@ -59,8 +59,11 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
         auto connectedWifiInfo = connectedWifi();
         if (connectedWifiInfo) {
-            checkHasInternet();
+            // Set to false to start auto connection if needed.
+            setIsWifiDisconnectedManually(false);
+
             mCheckInternetAccessTmr.start();
+            checkHasInternet();
 
         } else {
             printWifisInformation("Wi-Fi disconnected.");
@@ -100,6 +103,11 @@ NetworkInterface::NetworkInterface(QObject *parent)
     mAutoConnectToWifiTimer.setInterval(2 * 60 * 1000);
     mAutoConnectToWifiTimer.setSingleShot(false);
     connect(&mAutoConnectToWifiTimer, &QTimer::timeout, this, [this]() {
+        if (connectedWifi()) {
+            mAutoConnectToWifiTimer.stop();
+            return;
+        }
+
         printWifisInformation("Auto connect starting.");
 
         if (mIsWifiDisconnectedManually) {
