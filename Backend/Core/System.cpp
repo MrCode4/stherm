@@ -1863,6 +1863,12 @@ bool NUVE::System::isBusylogSender() const {
 
 bool NUVE::System::sendLog(bool showAlert)
 {
+    if (mLogSender.busy()){
+        QString error("Previous session is in progress.");
+        SYS_LOG << error << "State is :" << mLogSender.state() << mLogSender.keys();
+        return false;
+    }
+
     if (!checkSendLog(showAlert))
         return false;
 
@@ -2090,6 +2096,17 @@ void NUVE::System::sendFirstRunLogFile()
 bool NUVE::System::sendLogFile(bool showAlert)
 {
     auto filename = generateLog();
+    if (filename.isEmpty()) {
+        if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
+            SYS_LOG << "Log file generation failed. Command cleared" << Cmd_PushLogs;
+            mLastReceivedCommands.remove(Cmd_PushLogs);
+        }
+
+        emit logPrepared(false);
+        return false;
+    }
+
+    emit logPrepared(true);
 
     return sendLogToServer(QStringList(filename), showAlert);
 }
@@ -2266,6 +2283,11 @@ void NUVE::System::saveNetworkLogs() {
 }
 
 bool NUVE::System::sendNetworkLogs() {
+    if (mLogSender.busy()){
+        QString error("Previous session is in progress.");
+        SYS_LOG << error << "State is :" << mLogSender.state() << mLogSender.keys();
+        return true;
+    }
 
     bool showAlert = false;
 
@@ -2292,7 +2314,7 @@ bool NUVE::System::sendNetworkLogs() {
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
-        return sendLogToServer(absFileList, false);
+        sendLogToServer(absFileList, false);
 
     } else {
         auto dirCreatorCallback = [=](QString error) {
@@ -2321,18 +2343,6 @@ bool NUVE::System::sendNetworkLogs() {
 }
 
 bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert) {
-    if (filenames.isEmpty()) {
-        if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-            SYS_LOG <<"Log file generation failed. Command cleared" <<Cmd_PushLogs;
-            mLastReceivedCommands.remove(Cmd_PushLogs);
-        }
-
-        emit logPrepared(false);
-        return false;
-    }
-
-    emit logPrepared(true);
-
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
         TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
@@ -2378,12 +2388,6 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
 
 bool NUVE::System::checkSendLog(bool showAlert)
 {
-    if (mLogSender.busy()){
-        QString error("Previous session is in progress.");
-        qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        return false;
-    }
-
     if (!installSSHPass()){
         QString error("Device is not ready to send log!");
         qWarning() << error;
@@ -2405,7 +2409,7 @@ bool NUVE::System::isValidNetworkRequestRestart()
 void NUVE::System::saveNetworkRequestRestart()
 {
     QSettings settings;
-    int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt();
+    int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt() + 1;
 
-    settings.setValue(m_NetworkRequestRestartSetting, ++networkRequestRestartTimes);
+    settings.setValue(m_NetworkRequestRestartSetting, networkRequestRestartTimes);
 }
