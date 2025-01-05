@@ -172,24 +172,14 @@ Control {
             function updateAutoMinReqTempModel() {
                 if (deviceController && !first.pressed) {
                     let value = first.value;
-
-                    deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(value)
-                                                       : value);
-                    deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.saveSettings();
+                    deviceController.setAutoMinReqTemp(value);
                 }
             }
 
             function updateAutoMaxReqTempModel() {
                 if (deviceController && !second.pressed) {
                     let value = second.value;
-
-                    deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(value)
-                                                       : value);
-                    deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.saveSettings();
+                    deviceController.setAutoMaxReqTemp(value);
                 }
             }
 
@@ -692,15 +682,7 @@ Control {
 
     //! Update model based on _tempSlider value in heating/cooling mode.
     function updateTemperatureModel() {
-        var truncateValue = _tempSlider.value;
-        var celValue = (temperatureUnit === AppSpec.TempratureUnit.Cel)
-                ? truncateValue : Utils.fahrenheitToCelsius(truncateValue);
-
-        if (device && device.requestedTemp !== celValue) {
-            deviceController.setDesiredTemperature(celValue);
-            deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
-            deviceController.saveSettings();
-        }
+        deviceController.setDesiredTemperature(_tempSlider.value);
     }
 
     //! Update tempSliderDoubleHandle values

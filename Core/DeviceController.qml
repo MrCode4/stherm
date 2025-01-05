@@ -1427,16 +1427,32 @@ I_DeviceController {
         }
 
         var temperatureValue = Utils.clampValue(temperature, _minimumTemperatureC, _maximumTemperatureC);
+
+        // Conver to UI value
+        temperatureValue = Utils.convertedTemperature(temperatureValue, root.temperatureUnit);
+
         setDesiredTemperature(temperatureValue);
     }
 
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
-        //! Apply temperature in backend
-        deviceControllerCPP.setRequestedTemperature(temperature);
 
-        // Update device temperature when setTemperature is successful.
-        device.requestedTemp = temperature;
+        let truncatedValue = AppUtilities.getTruncatedvalue(temperature);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+        //! Apply temperature in backend
+        deviceControllerCPP.setRequestedTemperature(truncatedValue);
+
+        var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                     ? Utils.fahrenheitToCelsius(temperature)
+                     : temperature);
+        if (device.requestedTemp !== value) {
+            // Update device temperature when setTemperature is successful.
+            device.requestedTemp = value;
+            root.updateEditMode(AppSpec.EMDesiredTemperature);
+            root.saveSettings();
+        }
     }
 
     function setRequestedHumidityFromServer(humidity: real) {
@@ -1725,21 +1741,45 @@ I_DeviceController {
                                               AppSpec.autoMaximumTemperatureC);
         }
 
+        auto_temp_low = Utils.convertedTemperature(auto_temp_low, root.temperatureUnit);
         setAutoMinReqTemp(auto_temp_low);
-        setAutoMaxReqTemp(auto_temp_high);
+
+        auto_temp_high = Utils.convertedTemperature(auto_temp_high, root.temperatureUnit);        setAutoMaxReqTemp(auto_temp_high);
     }
 
-    function setAutoMinReqTemp(min) {
-        if (device && device.autoMinReqTemp !== min) {
-            device.autoMinReqTemp = min;
-            deviceControllerCPP.setAutoMinReqTemp(min);
+    //!? minTemperature is UI value.
+    function setAutoMinReqTemp(minTemperature: real) {
+        let truncatedValue = AppUtilities.getTruncatedvalue(minTemperature);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+        deviceControllerCPP.setAutoMinReqTemp(truncatedValue);
+
+        var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                ? Utils.fahrenheitToCelsius(minTemperature)
+                : minTemperature);
+        if (device.autoMinReqTemp !== value) {
+            device.autoMinReqTemp = value;
+            root.updateEditMode(AppSpec.EMAutoMode);
+            root.saveSettings();
         }
     }
 
-    function setAutoMaxReqTemp(max) {
-        if (device && device.autoMaxReqTemp !== max) {
-            device.autoMaxReqTemp = max;
-            deviceControllerCPP.setAutoMaxReqTemp(max);
+    //!? maxTemperature is UI value.
+    function setAutoMaxReqTemp(maxTemperature: real) {
+        let truncatedValue = AppUtilities.getTruncatedvalue(maxTemperature);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+        deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
+
+        var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                ? Utils.fahrenheitToCelsius(maxTemperature)
+                : maxTemperature);
+        if (device.autoMinReqTemp !== value) {
+            device.autoMaxReqTemp = value;
+            root.updateEditMode(AppSpec.EMAutoMode);
+            root.saveSettings();
         }
     }
 
