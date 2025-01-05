@@ -259,6 +259,12 @@ public:
     Q_INVOKABLE bool alternativeNoWiFiFlow();
 
     Q_INVOKABLE bool isBusylogSender() const;
+    Q_INVOKABLE void saveNetworkLogs();
+    Q_INVOKABLE bool sendNetworkLogs();
+
+    Q_INVOKABLE bool isValidNetworkRequestRestart();
+    Q_INVOKABLE void saveNetworkRequestRestart();
+
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);
@@ -385,6 +391,9 @@ private:
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
     bool removeDirectory(const QString &path);
+
+    bool sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog = false);
+    bool checkSendLog(bool showAlert);
 
 private:
     Sync *mSync;

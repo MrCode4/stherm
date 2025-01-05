@@ -96,3 +96,17 @@ void WifiInfo::setSecurity(const QString& security)
     mSecurity = security;
     emit securityChanged();
 }
+
+QString WifiInfo::wifiInformation() const
+{
+    QString info = "ssid: " + ssid();
+    info += ", incorrectSsid: " + incorrectSsid();
+    info += ", bssid: " + bssid();
+    info += ", security: " + security();
+    info += ", connected: " + QString(connected() ? "true" : "false");
+    info += ", isConnecting: " + QString(isConnecting() ? "true" : "false");
+    info += ", isSaved: " + QString(isSaved() ? "true" : "false");
+    info += ", strength: " + QString::number(strength());
+
+    return info;
+}

@@ -6,7 +6,6 @@
 #include <QImage>
 #include <QUrl>
 
-#include "LogHelper.h"
 #include "device_config.h"
 
 Q_LOGGING_CATEGORY(SyncLogCat, "SyncLog")

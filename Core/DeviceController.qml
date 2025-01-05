@@ -88,6 +88,59 @@ I_DeviceController {
         property string syncReturnedZip: ""
     }
 
+    //! Active the Network Connection Watchdog when device has not internet for 1 hour.
+    property Timer networkWatchdogTimer: Timer {
+        repeat: false
+        running: NetworkInterface.connectedWifi && !NetworkInterface.hasInternet
+        interval: 1 * 60 * 60 * 1000
+
+        onTriggered: {
+            //  Check the isValidNetworkRequestRestart to check in direct calls (triggered).
+            if (system.isValidNetworkRequestRestart()) {
+                // to prevent another restart call after restarting once unless the condition changed again
+                system.saveNetworkRequestRestart();
+                // Restart the app or device
+                uiSession.popUps.showCountDownPopUp(
+                            qsTr("  Restart Device  "),
+                            qsTr("Restarting Device due to network issue."),
+                            true,
+                            function () {
+                                if (system) {
+                                    system.rebootDevice();
+                                }
+                            });
+            }
+        }
+    }
+
+    property Timer networkWatchdogLoggerTimer: Timer {
+        repeat: true
+        running: NetworkInterface.connectedWifi && !NetworkInterface.hasInternet
+        interval: 15 * 60 * 1000
+
+        onTriggered: {
+            // Save the network log
+            system.saveNetworkLogs();
+
+            sendNetworkWatchdogLogTimer.canRetry = true;
+        }
+    }
+
+    property Timer sendNetworkWatchdogLogTimer: Timer {
+        repeat: true
+        running: canRetry && NetworkInterface.hasInternet
+        interval: 20000
+
+        property bool canRetry: true
+
+        onTriggered: {
+            if (!system.sendNetworkLogs()) {
+                canRetry = false;
+            }
+            console.log("sending network logs finished: ", canRetry)
+        }
+    }
+
     //! TODO: This will be used to retry the service titan fetch operation in case of errors
     //! Used delays in the fetchServiceTitanInformation calls to improve the overall user experience.
     property Timer fetchServiceTitanTimer: Timer {

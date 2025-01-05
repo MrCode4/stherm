@@ -53,6 +53,7 @@ I_PopUp {
 
             if (timer.counter <= 0) {
                 startAction();
+                stop();
             }
         }
     }
