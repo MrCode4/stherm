@@ -2295,6 +2295,8 @@ bool NUVE::System::sendNetworkLogs() {
         return false;
     }
 
+    SYS_LOG << "checking for network logs";
+
     QDir dir("/mnt/log/networkLogs/");
     if (!dir.exists())
         return false;
@@ -2328,7 +2330,7 @@ bool NUVE::System::sendNetworkLogs() {
                 return;
             }
 
-            TRACE << "Folder created in server successfully";
+            SYS_LOG << "Folder created in server successfully";
             mLogSender.setProperty("initialized", true);
 
             sendLogToServer(absFileList, false);

@@ -135,8 +135,9 @@ I_DeviceController {
 
         onTriggered: {
             if (!system.sendNetworkLogs()) {
-                    canRetry = false;
+                canRetry = false;
             }
+            console.log("sending network logs finished: ", canRetry)
         }
     }
 
