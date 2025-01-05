@@ -2108,7 +2108,7 @@ bool NUVE::System::sendLogFile(bool showAlert)
 
     emit logPrepared(true);
 
-    return sendLogToServer(QStringList(filename), showAlert);
+    return sendLogToServer(QStringList(filename), showAlert, true);
 }
 
 void NUVE::System::sendResultsFile(const QString &filepath,
@@ -2342,20 +2342,21 @@ bool NUVE::System::sendNetworkLogs() {
     return true;
 }
 
-bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert) {
+bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog) {
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
         TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
 
         if (error.isEmpty()) {
-            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-                SYS_LOG <<"Reporting" <<Cmd_PushLogs;
+            if (isRegularLog && mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG << "Reporting" << Cmd_PushLogs;
                 auto callback = [this] (bool success, const QJsonObject& data) {
                     mLastReceivedCommands.remove(Cmd_PushLogs);
-                    SYS_LOG <<"Log sending success. Command cleared" <<Cmd_PushLogs;
+                    SYS_LOG << "Log sending success. Command cleared" << Cmd_PushLogs;
                 };
                 mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
             }
+
             if (showAlert) emit logSentSuccessfully();
 
             // Delete logs that have been sent to the server.
@@ -2365,10 +2366,11 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             }
         }
         else {
-            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-                SYS_LOG <<"Log sending failed. Command cleared" <<Cmd_PushLogs;
+            if (isRegularLog && mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG << "Log sending failed. Command cleared" << Cmd_PushLogs;
                 mLastReceivedCommands.remove(Cmd_PushLogs);
             }
+
             error = "error while sending log directory on remote: " + error;
             qWarning() << error;
             if (showAlert) emit logAlert(error);
