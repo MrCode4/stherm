@@ -711,7 +711,7 @@ void Sync::pushAlertToServer(const QString alertUid, const QVariantMap &alerts)
         return;
     }
 
-    QJsonObject requestDataObj = QJsonObject::fromVariantMap(alerts);;
+    QJsonObject requestDataObj = QJsonObject::fromVariantMap(alerts);
     requestDataObj["sn"] = mSerialNumber;
 
     auto callback = [this, alertUid](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
@@ -726,7 +726,10 @@ void Sync::pushAlertToServer(const QString alertUid, const QVariantMap &alerts)
         }
 
         auto dataArray = data.value("data").toArray();
-        success = !dataArray.isEmpty();
+        success &= !dataArray.isEmpty();
+
+        //! success is a combination of different parameters such as return type and response data
+        //! ultimate purpose is to being able to get the alert id from response
         emit alertPushed(alertUid, success, success ? dataArray.first().toObject().toVariantMap() : QVariantMap());
     };
 
