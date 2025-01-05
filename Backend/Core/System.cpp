@@ -2175,25 +2175,27 @@ void NUVE::System::startAutoSendLogTimer(int interval)
 
     if (mAutoSendLogtimer == nullptr) {
         mAutoSendLogtimer = new QTimer(this);
+
+        mAutoSendLogtimer->setSingleShot(true);
+        mAutoSendLogtimer->callOnTimeout([this]() {
+            SYS_LOG << "Sending log automatically: Start sending";
+            bool result = this->sendLog(false);
+
+            if (result == true) {
+                SYS_LOG << "Sending log automatically: Sent successfully";
+                stopAutoSendLogTimer();
+
+            } else {
+                SYS_LOG << "Sending log automatically: Sent failed";
+
+                SYS_LOG << "Sending log automatically: Retry again in 1 minute";
+                startAutoSendLogTimer(1 * 60 * 1000); // 1 Minute
+            }
+        });
     }
 
-    mAutoSendLogtimer->setSingleShot(true);
-    mAutoSendLogtimer->callOnTimeout([this]() {
-        SYS_LOG << "Sending log automatically: Start sending";
-        bool result = this->sendLog(false);
-
-        if (result == true) {
-            SYS_LOG << "Sending log automatically: Sent successfully";
-            stopAutoSendLogTimer();
-
-        } else {
-            SYS_LOG << "Sending log automatically: Sent failed";
-
-            SYS_LOG << "Sending log automatically: Retry again in 1 minute";
-            startAutoSendLogTimer(1 * 60 * 1000); // 1 Minute
-        }
-    });
-    mAutoSendLogtimer->start(interval);
+    if (mAutoSendLogtimer)
+        mAutoSendLogtimer->start(interval);
 }
 
 void NUVE::System::stopAutoSendLogTimer()
@@ -2204,6 +2206,7 @@ void NUVE::System::stopAutoSendLogTimer()
     }
 
     mAutoSendLogtimer->stop();
+    mAutoSendLogtimer->disconnect();
     mAutoSendLogtimer->deleteLater();
     mAutoSendLogtimer = nullptr;
 }
