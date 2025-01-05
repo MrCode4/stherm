@@ -512,8 +512,11 @@ void Scheme::EmergencyLoop()
 
 void Scheme::OffLoop()
 {
-    //TODO
-    // we should check for system setup and if that is in default state, we should set relays off as well
+    // we check for system setup and if that is in default state, we should set relays off as well
+    // so we skip the waitloop to go for relays
+    if (mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::SysTUnknown)
+        return;
+
     waitLoop(-1, AppSpecCPP::ctMode);
 }
 
